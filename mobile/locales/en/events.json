@@ -775,6 +775,13 @@
           "attended": "Attended",
           "no_show": "No-show"
         }
+      },
+      "outcome_errors": {
+        "conflict": "This record changed. Refresh the roster and review its current state before trying again.",
+        "capacity": "The event is full. Review capacity before approving this registration.",
+        "forbidden": "You cannot make this change. Refresh the roster to check your current access.",
+        "member_unavailable": "This member is no longer available. Refresh the roster.",
+        "review": "This change failed. Refresh the roster and review this record before trying again."
       }
     },
     "check_in": {

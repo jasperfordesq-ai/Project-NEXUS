@@ -212,11 +212,32 @@ it('keeps mutations disabled if saved requests cannot be read', async () => {
 it('displays partial outcomes against the affected member instead of claiming every item succeeded', async () => {
   jest.mocked(getEventPeople).mockResolvedValue(manageable as never);
   jest.mocked(loadEventPeopleOperation).mockResolvedValue({ status: 'acknowledged', outcomes: [
-    { userId: 44, success: false, code: 'VERSION_CONFLICT' }, { userId: 45, success: true },
+    { userId: 44, success: false, code: 'EVENT_REGISTRATION_CONFLICT' }, { userId: 45, success: true },
   ] } as never);
   const screen = render(<EventPeopleRoster eventId={7} />);
   expect(await screen.findByText('1 record(s) updated.')).toBeTruthy();
-  expect(screen.getByText('Alex Member: The people records could not be updated.')).toBeTruthy();
+  expect(screen.getByText('Alex Member: This record changed. Refresh the roster and review its current state before trying again.')).toBeTruthy();
+});
+
+it.each([
+  ['EVENT_CAPACITY_FULL', 'The event is full. Review capacity before approving this registration.'],
+  ['EVENT_REGISTRATION_FORBIDDEN', 'You cannot make this change. Refresh the roster to check your current access.'],
+  ['EVENT_REGISTRATION_MEMBER_NOT_FOUND', 'This member is no longer available. Refresh the roster.'],
+  ['EVENT_REGISTRATION_TRANSITION_INVALID', 'This change failed. Refresh the roster and review this record before trying again.'],
+  ['UNRECOGNIZED_FAILURE', 'This change failed. Refresh the roster and review this record before trying again.'],
+  ['constructor', 'This change failed. Refresh the roster and review this record before trying again.'],
+])('explains the acknowledged %s outcome without exposing raw codes or replaying writes', async (code, message) => {
+  jest.mocked(getEventPeople).mockResolvedValue(manageable as never);
+  jest.mocked(loadEventPeopleOperation).mockResolvedValue({ status: 'acknowledged', outcomes: [
+    { userId: 44, success: false, code },
+  ] } as never);
+  const screen = render(<EventPeopleRoster eventId={7} />);
+  expect(await screen.findByText(`Alex Member: ${message}`)).toBeTruthy();
+  fireEvent.press(screen.getByText('Refresh'));
+  await waitFor(() => expect(getEventPeople).toHaveBeenCalledTimes(2));
+  expect(screen.queryByText(code)).toBeNull();
+  expect(executeEventPeopleOperation).not.toHaveBeenCalled();
+  expect(recoverEventPeopleOperation).not.toHaveBeenCalled();
 });
 
 it('blocks an older roster row after a newer registration receipt', async () => {

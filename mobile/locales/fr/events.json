@@ -775,6 +775,13 @@
           "attended": "A particip?",
           "no_show": "Absent"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Cette fiche a changé. Actualisez la liste et vérifiez son état actuel avant de réessayer.",
+        "capacity": "L’événement est complet. Vérifiez la capacité avant d’approuver cette inscription.",
+        "forbidden": "Vous ne pouvez pas effectuer cette modification. Actualisez la liste pour vérifier vos droits d’accès actuels.",
+        "member_unavailable": "Ce membre n’est plus disponible. Actualisez la liste.",
+        "review": "Cette modification a échoué. Actualisez la liste et vérifiez cette fiche avant de réessayer."
       }
     },
     "check_in": {

@@ -34,6 +34,12 @@ const filters = {
 const sorts = [
   ['name', 'asc'], ['name', 'desc'], ['registration_changed', 'desc'], ['queue_rank', 'asc'], ['attendance_changed', 'desc'],
 ] as const;
+const outcomeMessages = new Map(Object.entries({
+  EVENT_REGISTRATION_CONFLICT: 'conflict',
+  EVENT_CAPACITY_FULL: 'capacity',
+  EVENT_REGISTRATION_FORBIDDEN: 'forbidden',
+  EVENT_REGISTRATION_MEMBER_NOT_FOUND: 'member_unavailable',
+}));
 
 /** Organiser roster with explicit, durably recoverable registration changes. */
 export default function EventPeopleRoster({ eventId }: { eventId: number }) {
@@ -148,8 +154,11 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
       {data?.meta.projection === 'full' && data.meta.capabilities.manage_registration && operation.saved?.status === 'acknowledged' ? <View className="gap-2" accessibilityLiveRegion="polite">
         <Text className="text-foreground">{t(`${p}.action_success`, { count: operation.saved.outcomes.filter(item => item.success).length })}</Text>
         {operation.saved.outcomes.filter(item => !item.success).map(item => <Text key={item.userId} className="text-danger">
-          {data.data.find(person => person.member.id === item.userId)?.member.display_name ?? t(`${p}.member_fallback`, { id: item.userId })}: {t(`${p}.action_error`)}
+          {data.data.find(person => person.member.id === item.userId)?.member.display_name ?? t(`${p}.member_fallback`, { id: item.userId })}: {t(`${p}.outcome_errors.${outcomeMessages.get(item.code) ?? 'review'}`)}
         </Text>)}
+        {operation.saved.outcomes.some(item => !item.success) ? <Button variant="secondary" isDisabled={roster.isLoading || operation.busy} onPress={roster.refresh}>
+          <Button.Label>{t('analytics.refresh')}</Button.Label>
+        </Button> : null}
       </View> : null}
       {data?.meta.projection === 'full' && data.meta.capabilities.manage_registration && selectable.length > 0 ?
         <Button variant="secondary" isDisabled={operation.blocked} accessibilityState={{ selected: pageSelected }} onPress={() => {

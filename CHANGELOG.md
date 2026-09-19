@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native organiser People explains per-member registration failures for changed records, full capacity, withdrawn access and unavailable members in all seven app languages. A read-only Refresh action helps review current records without replaying successful changes; unknown failures retain a translated fallback.
+
 - Native organiser People reloads its roster and permissions after returning to the screen or foregrounding the app, discards departed confirmations and ignores late background reads while preserving pending actions for explicit recovery.
 
 - Native organiser People keeps its invitation form collapsed until requested, making member states and History reachable in the first Android viewport.

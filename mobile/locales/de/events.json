@@ -775,6 +775,13 @@
           "attended": "Teilgenommen",
           "no_show": "Nicht erschienen"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Dieser Eintrag wurde geändert. Aktualisieren Sie die Liste und prüfen Sie den aktuellen Stand, bevor Sie es erneut versuchen.",
+        "capacity": "Die Veranstaltung ist ausgebucht. Prüfen Sie die Kapazität, bevor Sie diese Anmeldung genehmigen.",
+        "forbidden": "Sie können diese Änderung nicht vornehmen. Aktualisieren Sie die Liste, um Ihre aktuellen Zugriffsrechte zu prüfen.",
+        "member_unavailable": "Dieses Mitglied ist nicht mehr verfügbar. Aktualisieren Sie die Liste.",
+        "review": "Diese Änderung ist fehlgeschlagen. Aktualisieren Sie die Liste und prüfen Sie diesen Eintrag, bevor Sie es erneut versuchen."
       }
     },
     "check_in": {

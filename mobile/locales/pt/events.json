@@ -775,6 +775,13 @@
           "attended": "Compareceu",
           "no_show": "N?o compareceu"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Este registo foi alterado. Atualize a lista e verifique o estado atual antes de tentar novamente.",
+        "capacity": "O evento está lotado. Verifique a capacidade antes de aprovar esta inscrição.",
+        "forbidden": "Não pode efetuar esta alteração. Atualize a lista para verificar os seus direitos de acesso atuais.",
+        "member_unavailable": "Este membro já não está disponível. Atualize a lista.",
+        "review": "Esta alteração falhou. Atualize a lista e verifique este registo antes de tentar novamente."
       }
     },
     "check_in": {

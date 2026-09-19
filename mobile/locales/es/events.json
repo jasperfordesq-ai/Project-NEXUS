@@ -775,6 +775,13 @@
           "attended": "Asisti?",
           "no_show": "No asisti?"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Este registro ha cambiado. Actualiza la lista y revisa su estado actual antes de intentarlo de nuevo.",
+        "capacity": "El evento está completo. Revisa el aforo antes de aprobar esta inscripción.",
+        "forbidden": "No puedes realizar este cambio. Actualiza la lista para comprobar tu acceso actual.",
+        "member_unavailable": "Este miembro ya no está disponible. Actualiza la lista.",
+        "review": "Este cambio ha fallado. Actualiza la lista y revisa este registro antes de intentarlo de nuevo."
       }
     },
     "check_in": {

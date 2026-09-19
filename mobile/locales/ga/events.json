@@ -775,6 +775,13 @@
           "attended": "D'fhreastail",
           "no_show": "Níor tháinig"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Athraíodh an taifead seo. Athnuaigh an liosta agus seiceáil a staid reatha sula ndéanfaidh tú iarracht eile.",
+        "capacity": "Tá an t-imeacht lán. Seiceáil an acmhainn sula gceadóidh tú an clárú seo.",
+        "forbidden": "Ní féidir leat an t-athrú seo a dhéanamh. Athnuaigh an liosta chun do chearta rochtana reatha a sheiceáil.",
+        "member_unavailable": "Níl an ball seo ar fáil a thuilleadh. Athnuaigh an liosta.",
+        "review": "Theip ar an athrú seo. Athnuaigh an liosta agus seiceáil an taifead seo sula ndéanfaidh tú iarracht eile."
       }
     },
     "check_in": {

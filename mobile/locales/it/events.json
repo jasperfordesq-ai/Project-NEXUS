@@ -775,6 +775,13 @@
           "attended": "Ha partecipato",
           "no_show": "Assente"
         }
+      },
+      "outcome_errors": {
+        "conflict": "Questo record è cambiato. Aggiorna l’elenco e verifica lo stato attuale prima di riprovare.",
+        "capacity": "L’evento è al completo. Verifica la capienza prima di approvare questa iscrizione.",
+        "forbidden": "Non puoi effettuare questa modifica. Aggiorna l’elenco per verificare i tuoi diritti di accesso attuali.",
+        "member_unavailable": "Questo membro non è più disponibile. Aggiorna l’elenco.",
+        "review": "Questa modifica non è riuscita. Aggiorna l’elenco e verifica questo record prima di riprovare."
       }
     },
     "check_in": {
