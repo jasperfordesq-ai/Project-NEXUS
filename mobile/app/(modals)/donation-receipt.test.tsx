@@ -6,7 +6,7 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
-let mockParams: Record<string, string> = {};
+let mockParams: Record<string, string | string[]> = {};
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -95,10 +95,11 @@ describe('DonationReceiptScreen', () => {
     await waitFor(() => expect(jest.mocked(getDonationReceipt).mock.calls.length).toBeGreaterThan(1));
   }, 15000);
 
-  it('does not call the API without a donation id', async () => {
-    mockParams = {};
-    const { getByText } = render(<DonationReceiptScreen />);
+  it.each([undefined, '', '0', '-1', '1.5', 'Infinity', 'NaN', '9007199254740993', '1e2', '0x10', ['12', '13']])('does not fetch or offer a dead retry for invalid id %p', async id => {
+    mockParams = id === undefined ? {} : { id };
+    const { getByText, queryByText } = render(<DonationReceiptScreen />);
     await waitFor(() => expect(getByText('Receipt not found.')).toBeTruthy());
     expect(getDonationReceipt).not.toHaveBeenCalled();
+    expect(queryByText('Retry')).toBeNull();
   });
 });

@@ -40,3 +40,8 @@ it('refuses a receipt for a different requested donation', async () => {
   (api.get as jest.Mock).mockResolvedValue({ data: { ...receipt, donation_id: 10 } });
   await expect(getDonationReceipt(9)).rejects.toMatchObject({ code: 'DONATION_RECEIPT_CONTRACT_DRIFT' });
 });
+
+it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])('refuses invalid id %p before transport', async id => {
+  await expect(getDonationReceipt(id)).rejects.toMatchObject({ code: 'DONATION_RECEIPT_INVALID_ID' });
+  expect(api.get).not.toHaveBeenCalled();
+});

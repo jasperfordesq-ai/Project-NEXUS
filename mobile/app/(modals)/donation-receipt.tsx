@@ -25,17 +25,18 @@ import { withRouteGate } from '@/components/withRouteGate';
 function DonationReceiptScreen() {
   const { t } = useTranslation(['volunteering', 'common']);
   const primary = usePrimaryColor();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const donationId = Number(id ?? 0);
-  const receipt = useApi(() => getDonationReceipt(donationId), [donationId], { enabled: donationId > 0 });
+  const validId = typeof id === 'string' && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(donationId);
+  const receipt = useApi(() => getDonationReceipt(donationId), [donationId], { enabled: validId });
 
   return (
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('donations.receipt_title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={receipt.isLoading && Boolean(receipt.data)} onRefresh={receipt.refresh} tintColor={primary} colors={[primary]} />}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={validId ? <RefreshControl refreshing={receipt.isLoading && Boolean(receipt.data)} onRefresh={receipt.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
           <RefreshFailedNotice error={receipt.data ? receipt.error : null} onRetry={receipt.refresh} />
-          {receipt.isLoading && !receipt.data ? <LoadingSpinner /> : isRefusalStatus(receipt.errorStatus) ? (
+          {!validId ? <EmptyState icon="warning-outline" title={t('donations.receipt_not_found')} /> : receipt.isLoading && !receipt.data ? <LoadingSpinner /> : isRefusalStatus(receipt.errorStatus) ? (
             /*
               🔴 A refusal is not a failure. A receipt belongs to one member; anybody
               else was offered a Retry that could never work. F-8, fixed 2026-09-08.

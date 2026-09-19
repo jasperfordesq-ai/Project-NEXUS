@@ -36,6 +36,9 @@ const receiptSchema = z.object({
 });
 
 export async function getDonationReceipt(id: number): Promise<DonationReceipt> {
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new ApiResponseError(404, i18n.t('volunteering:donations.receipt_not_found'), undefined, 'DONATION_RECEIPT_INVALID_ID');
+  }
   const response = await api.get<unknown>(`${API_V2}/donations/${id}/receipt`);
   const body = response && typeof response === 'object' && 'data' in response ? response.data : response;
   const parsed = receiptSchema.safeParse(body);
