@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The native event recovery transport reuses saved requests after uncertain responses, checks ownership after storage, and records accepted work after departure; recovery screen integration remains in progress.
+
 - The native event recovery journal preserves exact pending requests and validated receipts, refuses conflicting unresolved actions, and keeps replay identities when storage fails; screen integration remains in progress.
 
 - The native encrypted draft journal supports bounded full-length event communication snapshots, including JSON-escaped text, in preparation for durable retry recovery. Other draft limits remain unchanged.
