@@ -197,17 +197,39 @@ class EndorsementService
             ->where('se.endorsed_id', $userId)
             ->where('se.tenant_id', $tenantId)
             ->select(
-                'se.skill_name',
-                DB::raw('COUNT(*) as count'),
-                DB::raw("GROUP_CONCAT(CONCAT(u.first_name, ' ', u.last_name) ORDER BY se.created_at DESC SEPARATOR ', ') as endorsed_by_names"),
-                DB::raw('GROUP_CONCAT(u.id ORDER BY se.created_at DESC) as endorsed_by_ids'),
-                DB::raw('GROUP_CONCAT(u.avatar_url ORDER BY se.created_at DESC) as endorsed_by_avatars'),
-                DB::raw('MAX(se.created_at) as latest_endorsement')
+                'se.id', 'se.skill_name', 'se.comment', 'se.created_at', 'se.endorser_id',
+                'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url',
+                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as legacy_name")
             )
-            ->groupBy('se.skill_name')
-            ->orderByDesc('count')
+            ->orderByDesc('se.created_at')
+            ->orderByDesc('se.id')
             ->get()
-            ->map(fn ($row) => (array) $row)
+            ->groupBy('skill_name')
+            ->map(function ($group, $skillName) {
+                $legacyNames = $group->pluck('legacy_name')->filter(fn ($name) => $name !== null);
+                $legacyAvatars = $group->pluck('avatar_url')->filter(fn ($avatar) => $avatar !== null);
+                return [
+                    'skill_name' => (string) $skillName,
+                    'count' => $group->count(),
+                    // Keep the original grouped fields for existing clients. New clients
+                    // use records: comma-delimited values cannot preserve nullable avatars
+                    // or member names containing commas.
+                    'endorsed_by_names' => $legacyNames->isEmpty() ? null : $legacyNames->implode(', '),
+                    'endorsed_by_ids' => $group->pluck('endorser_id')->implode(','),
+                    'endorsed_by_avatars' => $legacyAvatars->isEmpty() ? null : $legacyAvatars->implode(','),
+                    'latest_endorsement' => $group->first()->created_at,
+                    'endorsements' => $group->map(fn ($row) => [
+                        'id' => (int) $row->id,
+                        'comment' => $row->comment,
+                        'created_at' => $row->created_at,
+                        'endorser_id' => (int) $row->endorser_id,
+                        'endorser_name' => UserDisplayName::resolve($row),
+                        'endorser_avatar' => $row->avatar_url,
+                    ])->values()->all(),
+                ];
+            })
+            ->sortByDesc('count')
+            ->values()
             ->all();
 
         return $rows;

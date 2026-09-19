@@ -63,6 +63,36 @@ const mockRawSkillsResponse = {
 describe('getUserEndorsements', () => {
   beforeEach(() => { jest.clearAllMocks(); });
 
+  it('still reads the legacy grouped response before the API upgrade', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: { endorsements: [{
+      skill_name: 'Gardening', count: 1, endorsed_by_names: 'Sam Jones',
+      endorsed_by_ids: '10', endorsed_by_avatars: '/sam.png', latest_endorsement: '2026-01-02',
+    }] } });
+    const result = await getUserEndorsements(42);
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].endorsed_by).toEqual({ id: 10, name: 'Sam Jones', avatar: '/sam.png' });
+    expect(result.data[0].skill.name).toBe('Gardening');
+  });
+
+  it('uses structured records without splitting names or shifting missing avatars', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: { endorsements: [
+      { skill_name: 'Gardening', count: 2, endorsed_by_names: 'incorrect legacy names', endorsements: [
+        { id: 701, endorser_id: 9, endorser_name: 'Alex, Jr. Smith', endorser_avatar: null, comment: 'Thank you', created_at: '2026-01-01' },
+        { id: 702, endorser_id: 10, endorser_name: 'Sam Jones', endorser_avatar: '/sam.png', comment: null, created_at: '2026-01-02' },
+      ] },
+      { skill_name: 'Cooking', count: 1, endorsements: [
+        { id: 703, endorser_id: 9, endorser_name: 'Alex, Jr. Smith', endorser_avatar: null, comment: null, created_at: '2026-01-03' },
+      ] },
+    ] } });
+    const result = await getUserEndorsements(42);
+    expect(result.data.map(row => row.id)).toEqual([701, 702, 703]);
+    expect(result.data[0].endorsed_by).toEqual({ id: 9, name: 'Alex, Jr. Smith', avatar: null });
+    expect(result.data[1].endorsed_by.avatar).toBe('/sam.png');
+    expect(result.data[0].message).toBe('Thank you');
+    expect(result.data[0].created_at).toBe('2026-01-01');
+    expect(result.data[2].skill.name).toBe('Cooking');
+  });
+
   it('calls the correct endpoint with no cursor on first page', async () => {
     (api.get as jest.Mock).mockResolvedValue(mockEndorsementsResponse);
     const result = await getUserEndorsements(42);

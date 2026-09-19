@@ -73,6 +73,36 @@ class EndorsementControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_grouped_endorsements_preserve_each_member_and_record(): void
+    {
+        $viewer = $this->authenticatedUser();
+        $first = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Alex, Jr.', 'last_name' => 'Smith', 'avatar_url' => null,
+        ]);
+        $second = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Sam', 'last_name' => 'Jones', 'avatar_url' => '/uploads/sam.png',
+        ]);
+        $records = [];
+        foreach ([$first, $second] as $member) {
+            $records[] = \App\Models\SkillEndorsement::create([
+                'tenant_id' => $this->testTenantId, 'endorsed_id' => $viewer->id,
+                'endorser_id' => $member->id, 'skill_name' => 'Gardening', 'comment' => 'Thoughtful help',
+            ]);
+        }
+        $response = $this->apiGet("/v2/members/{$viewer->id}/endorsements")->assertOk();
+        $group = $response->json('data.endorsements.0');
+        $this->assertSame('Gardening', $group['skill_name']);
+        $this->assertEquals(2, $group['count']);
+        $this->assertArrayHasKey('endorsed_by_names', $group);
+        $this->assertArrayHasKey('endorsements', $group);
+        $byMember = collect($group['endorsements'])->keyBy('endorser_id');
+        $this->assertSame('Alex, Jr. Smith', $byMember[$first->id]['endorser_name']);
+        $this->assertNull($byMember[$first->id]['endorser_avatar']);
+        $this->assertSame('/uploads/sam.png', $byMember[$second->id]['endorser_avatar']);
+        $this->assertEquals($records[0]->id, $byMember[$first->id]['id']);
+        $this->assertSame('Thoughtful help', $byMember[$first->id]['comment']);
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/members/top-endorsed
     // ------------------------------------------------------------------

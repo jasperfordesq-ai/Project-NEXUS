@@ -83,6 +83,14 @@ interface RawUserSkill {
 }
 
 interface RawEndorsementGroup {
+  endorsements?: {
+    id: number;
+    endorser_id: number;
+    endorser_name: string | null;
+    endorser_avatar: string | null;
+    comment: string | null;
+    created_at: string;
+  }[];
   skill_name?: string | null;
   count?: number | string | null;
   endorsed_by_names?: string | null;
@@ -116,6 +124,15 @@ function splitCsv(value?: string | null): string[] {
 function normalizeEndorsementGroups(groups: RawEndorsementGroup[]): Endorsement[] {
   return groups.flatMap((group, groupIndex) => {
     const skillName = group.skill_name ?? '';
+    if (Array.isArray(group.endorsements)) {
+      return group.endorsements.map((row) => ({
+        id: row.id,
+        skill: { id: groupIndex + 1, name: skillName, category: null },
+        endorsed_by: { id: row.endorser_id, name: row.endorser_name ?? '', avatar: row.endorser_avatar },
+        message: row.comment,
+        created_at: row.created_at,
+      }));
+    }
     const names = splitCsv(group.endorsed_by_names);
     const ids = splitCsv(group.endorsed_by_ids);
     const avatars = splitCsv(group.endorsed_by_avatars);
