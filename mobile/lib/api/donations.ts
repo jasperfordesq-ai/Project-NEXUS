@@ -8,6 +8,8 @@ import i18n from 'i18next';
 import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 
+const receiptStatusSchema = z.enum(['pending', 'completed', 'failed', 'refunded']);
+
 export interface DonationReceipt {
   id: number;
   donor_name: string;
@@ -16,7 +18,7 @@ export interface DonationReceipt {
   date: string;
   community_name: string;
   message: string | null;
-  status: string;
+  status: z.infer<typeof receiptStatusSchema>;
   payment_method: string;
   reference: string;
 }
@@ -30,7 +32,7 @@ const receiptSchema = z.object({
   date: z.string().min(1),
   tenant_name: z.string(),
   message: z.string().nullable(),
-  status: z.string().min(1),
+  status: receiptStatusSchema,
   payment_method: z.string().nullable(),
   payment_reference: z.string(),
 });

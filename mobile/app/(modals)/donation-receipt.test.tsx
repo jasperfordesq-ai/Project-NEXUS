@@ -52,7 +52,7 @@ const receipt = {
   date: '2026-08-01T10:00:00Z',
   community_name: 'Hour Timebank',
   message: 'Keep up the good work',
-  status: 'completed',
+  status: 'completed' as const,
   payment_method: 'Card',
   reference: 'DON-12',
 };

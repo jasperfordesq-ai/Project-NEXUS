@@ -16,6 +16,16 @@ const receipt = {
 
 beforeEach(() => jest.clearAllMocks());
 
+it.each(['pending', 'completed', 'failed', 'refunded'])('accepts the backend donation status %s', async status => {
+  (api.get as jest.Mock).mockResolvedValue({ data: { ...receipt, status } });
+  await expect(getDonationReceipt(9)).resolves.toMatchObject({ status });
+});
+
+it.each(['unrecognized', 'succeeded', '', null])('rejects unsupported receipt status %p', async status => {
+  (api.get as jest.Mock).mockResolvedValue({ data: { ...receipt, status } });
+  await expect(getDonationReceipt(9)).rejects.toMatchObject({ code: 'DONATION_RECEIPT_CONTRACT_DRIFT' });
+});
+
 it('loads only the authenticated donor receipt', async () => {
   (api.get as jest.Mock).mockResolvedValue({ data: receipt });
   await expect(getDonationReceipt(9)).resolves.toEqual({
