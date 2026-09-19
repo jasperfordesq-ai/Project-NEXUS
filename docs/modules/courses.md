@@ -151,7 +151,7 @@ Not enrolled
 
 **Idempotency:** `CourseEnrollmentService::enroll()` returns the existing enrollment row when a learner re-enrols while already `active` or `completed`. The unique index `(tenant_id, course_id, user_id)` on `course_enrollments` enforces one row per learner+course at the database layer.
 
-**Prerequisites:** before enrolment proceeds, `CoursePrerequisiteService::unmetIds()` checks that the learner has a `completed` enrollment in every course listed in the `courses.prerequisites` JSON array. Unmet prerequisites return `PREREQUISITES_NOT_MET` (HTTP 422).
+**Prerequisites:** before enrolment proceeds, `CoursePrerequisiteService::unmetIds()` checks that the learner has a `completed` enrollment and satisfies every quiz requirement in each course listed in the `courses.prerequisites` JSON array. Historical completed enrolments with missing, failed or unreviewed quizzes do not unlock dependent courses. Unmet prerequisites return `PREREQUISITES_NOT_MET` (HTTP 422).
 
 **Cohort assignment:** an optional `cohort_id` may be supplied at enrolment. The service validates that it belongs to the same course before accepting it, preventing roster pollution from an arbitrary or cross-course cohort id.
 

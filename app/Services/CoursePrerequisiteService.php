@@ -12,7 +12,7 @@ use App\Models\CourseEnrollment;
 /**
  * CoursePrerequisiteService — resolves a course's prerequisite courses and
  * whether a learner has satisfied them (a prerequisite is "met" when the learner
- * has a completed enrollment in it). Tenant-scoped via the models.
+ * has a completed enrollment and satisfies its quiz requirements). Tenant-scoped via the models.
  */
 class CoursePrerequisiteService
 {
@@ -35,6 +35,7 @@ class CoursePrerequisiteService
                 ->whereIn('course_id', $ids)
                 ->pluck('course_id')
                 ->map(fn ($v) => (int) $v)
+                ->filter(fn (int $id) => CourseProgressService::unmetQuizLessonIds($id, $userId) === [])
                 ->all()
             : [];
 

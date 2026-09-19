@@ -125,6 +125,28 @@ class CoursePrerequisiteServiceTest extends TestCase
 
     // ── statusFor() — with prerequisites ─────────────────────────────
 
+    public function test_legacy_completion_requires_a_graded_quiz_pass_to_satisfy_prerequisites(): void
+    {
+        $prereqId = $this->insertCourse('legacy-quiz');
+        $mainId = $this->insertCourse('requires-quiz', [$prereqId]);
+        $this->enrollCompleted($prereqId);
+        $lesson = \App\Models\CourseLesson::create(['course_id' => $prereqId, 'title' => 'Assessment', 'content_type' => 'quiz']);
+        $course = $this->loadCourse($mainId);
+        $this->assertSame([$prereqId], CoursePrerequisiteService::unmetIds($course, $this->userId));
+        $quiz = \App\Models\CourseQuiz::create(['course_id' => $prereqId, 'lesson_id' => $lesson->id, 'title' => 'Quiz']);
+        $attempt = \App\Models\CourseQuizAttempt::create([
+            'quiz_id' => $quiz->id, 'user_id' => $this->userId, 'answers' => [],
+            'score_percent' => 80, 'passed' => true, 'grading_status' => 'pending_review', 'submitted_at' => now(),
+        ]);
+        $this->assertFalse(CoursePrerequisiteService::statusFor($course, $this->userId)[0]['completed']);
+        $attempt->update(['passed' => false, 'grading_status' => 'graded']);
+        $this->assertSame([$prereqId], CoursePrerequisiteService::unmetIds($course, $this->userId));
+        $attempt->update(['passed' => true]);
+        $this->assertSame([], CoursePrerequisiteService::unmetIds($course, $this->userId));
+        $this->assertTrue(CoursePrerequisiteService::statusFor($course, $this->userId)[0]['completed']);
+        $this->assertSame('completed', DB::table('course_enrollments')->where('course_id', $prereqId)->where('user_id', $this->userId)->value('status'));
+    }
+
     public function test_statusFor_marks_completed_prerequisite_as_true(): void
     {
         $prereqId = $this->insertCourse('prereq-a');

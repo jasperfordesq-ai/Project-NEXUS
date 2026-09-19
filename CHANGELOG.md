@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Course prerequisites now honour the graded-quiz completion rule: an older completed enrolment cannot unlock a dependent course while its quizzes are missing, failed or awaiting review. Historical enrolment records remain intact.
+
 - Native data reads can discard retained content after access is refused, keeping it hidden during recovery while preserving content after temporary failures; the course player uses this policy.
 
 - Native quizzes show the learner’s server-saved grade when no local receipt exists, preserve newly edited answers during refresh, and remove answer prompts and editing controls when attempts are exhausted.
