@@ -53,7 +53,7 @@ function newMutationKey(eventId: number, memberId: number, action: EventAttendan
 }
 
 function EventAttendanceScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const { user } = useAuth();
   const { tenant } = useTenant();
   return (
@@ -65,13 +65,13 @@ function EventAttendanceScreen() {
 
 function EventAttendanceScreenInner() {
   const { t } = useTranslation(['events', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const eventId = Number(id);
-  const safeEventId = Number.isFinite(eventId) && eventId > 0 ? eventId : 0;
+  const safeEventId = typeof id === 'string' && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(eventId) ? eventId : 0;
   const [page, setPage] = useState(1);
   const [draftSearch, setDraftSearch] = useState('');
   const [search, setSearch] = useState('');
@@ -121,8 +121,9 @@ function EventAttendanceScreenInner() {
     setFilter('all');
   }, [safeEventId]);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
   }, []);
 
   function applySearch() {
@@ -138,7 +139,7 @@ function EventAttendanceScreenInner() {
   }
 
   async function runAttendanceAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction) {
-    if (mutationPendingRef.current) return;
+    if (!isMountedRef.current || mutationPendingRef.current) return;
     if ((confirmationsRef.current.get(person.member.id)?.attendance_version ?? 0) > (person.attendance.version ?? 0)) return;
     mutationPendingRef.current = true;
     const expectedVersion = person.attendance.version ?? 0;

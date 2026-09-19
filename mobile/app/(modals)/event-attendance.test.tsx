@@ -10,12 +10,14 @@ import { ScrollView } from 'react-native';
 const mockRefresh = jest.fn();
 const mockShowToast = jest.fn();
 const mockTransitionAttendance = jest.fn();
+const mockConfirm = jest.fn();
 let mockRealApi = false;
+let mockParams: { id?: string | string[] } = { id: '7' };
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
-  useLocalSearchParams: () => ({ id: '7' }),
+  useLocalSearchParams: () => mockParams,
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
 
@@ -40,7 +42,7 @@ jest.mock('@/components/ui/AppToast', () => ({
 }));
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: ({ onConfirm }: { onConfirm: () => void }) => onConfirm(),
+    confirm: (...args: unknown[]) => mockConfirm(...args),
     confirmDialog: null,
   }),
 }));
@@ -144,7 +146,9 @@ import { getEventAttendanceRoster } from '@/lib/api/events';
 
 beforeEach(() => {
   mockRealApi = false;
+  mockParams = { id: '7' };
   jest.clearAllMocks();
+  mockConfirm.mockImplementation(({ onConfirm }: { onConfirm: () => void }) => onConfirm());
   mockApiOverride = null;
   mockTransitionAttendance.mockReset();
   mockTransitionAttendance.mockResolvedValue({
@@ -156,6 +160,14 @@ beforeEach(() => {
 });
 
 describe('EventAttendanceScreen', () => {
+  it.each([undefined, '', '0', '-1', '1.5', 'Infinity', 'NaN', '9007199254740992', '1e2', '0x10', ['7'], ['7', '8']])('rejects malformed route ID %j without loading attendance or offline tools', (id) => {
+    mockRealApi = true;
+    mockParams = { id };
+    const screen = render(<EventAttendanceScreen />);
+    expect(getEventAttendanceRoster).not.toHaveBeenCalled();
+    expect(screen.queryByText('Offline check-in device workspace')).toBeNull();
+    expect(screen.queryByLabelText('Search confirmed attendees')).toBeNull();
+  });
   it('keeps confirmed check-in visible until a current roster supplies the next actions', async () => {
     mockRealApi = true;
     jest.mocked(getEventAttendanceRoster).mockResolvedValue(mockRoster as never);
@@ -182,6 +194,20 @@ describe('EventAttendanceScreen', () => {
     expect(screen.getByLabelText('Attendance summary')).toBeTruthy();
     expect(mockTransitionAttendance).toHaveBeenCalledTimes(1);
   });
+  it('does not submit a delayed no-show confirmation after leaving attendance', async () => {
+    mockConfirm.mockImplementation(() => undefined);
+    const screen = render(<EventAttendanceScreen />);
+    fireEvent.press(screen.getByText('Mark no-show'));
+    const confirmation = mockConfirm.mock.calls[0][0];
+    screen.unmount();
+
+    await act(async () => confirmation.onConfirm());
+
+    expect(mockTransitionAttendance).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('renders only the bounded attendance workspace and server-granted actions', () => {
     const screen = render(<EventAttendanceScreen />);
 
