@@ -57,12 +57,12 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
     ? registrationSettingsDraft({ ...review.settings, ...review.intent.input }, schedule!.timezone) : undefined;
   if (!data) return state.isLoading ? <LoadingSpinner /> : <EmptyState icon="warning-outline"
     title={t(isRefusalStatus(state.errorStatus) ? 'manage.access_denied_title' : 'manage.load_error_title')}
-    actionLabel={isRefusalStatus(state.errorStatus) ? undefined : t('common:retry')} onAction={state.refresh} />;
+    actionLabel={isRefusalStatus(state.errorStatus) ? undefined : t('common:buttons.retry')} onAction={state.refresh} />;
   if (!data.event.permissions.manage_registration) return <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} />;
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
       <View className="gap-4">
-        {state.error && <><Text accessibilityRole="alert">{t('manage.load_error_title')}</Text><Button onPress={state.refresh}>{t('common:retry')}</Button></>}
+        {state.error && <><Text accessibilityRole="alert">{t('manage.load_error_title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></>}
         {(operation.storageFailed || operation.saved?.status === 'pending') && <View className="gap-3">
           <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>
           <Text className="text-muted-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_description' : 'recovery_description'}`)}</Text>

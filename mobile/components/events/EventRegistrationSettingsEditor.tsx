@@ -38,7 +38,7 @@ export default function EventRegistrationSettingsEditor({ settings, timezone, ev
   const { confirm, confirmDialog } = useConfirm();
   useUnsavedChangesGuard({ isDirty: dirty, isSaving: busy, confirm,
     title: t('common:unsavedChanges.title'), message: t('common:unsavedChanges.message'),
-    discardLabel: t('common:unsavedChanges.discard'), cancelLabel: t('common:cancel') });
+    discardLabel: t('common:unsavedChanges.discard'), cancelLabel: t('common:buttons.cancel') });
   const disabled = blocked || busy;
   const current = useRef({ draft, disabled, settings });
   current.current = { draft, disabled, settings };
@@ -72,7 +72,7 @@ export default function EventRegistrationSettingsEditor({ settings, timezone, ev
     if (!registrationSettingsPayload(draft, settings, timezone, eventStart, recoveredInput)) { setInvalid(true); return; }
     if (publish || settings?.status === 'published') {
       confirm({ title: label(publish ? 'publish' : 'save'), message: label('live_hint'),
-        confirmLabel: label(publish ? 'publish' : 'save'), cancelLabel: t('common:cancel'),
+        confirmLabel: label(publish ? 'publish' : 'save'), cancelLabel: t('common:buttons.cancel'),
         onConfirm: () => act(publish).catch(() => undefined) });
     } else { void act(false).catch(() => undefined); }
   }
