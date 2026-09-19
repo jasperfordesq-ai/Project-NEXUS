@@ -66,7 +66,7 @@ class AiTurnTraceService
         }
     }
 
-    public function recordFeedback(int $traceId, int $tenantId, string $feedback, ?string $note = null): bool
+    public function recordFeedback(int $traceId, int $tenantId, int $userId, string $feedback, ?string $note = null): bool
     {
         if (!in_array($feedback, ['up', 'down'], true)) {
             return false;
@@ -74,6 +74,7 @@ class AiTurnTraceService
         return DB::table('ai_turn_traces')
             ->where('id', $traceId)
             ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
             ->update([
                 'feedback' => $feedback,
                 'feedback_note' => $note ? mb_substr($note, 0, 500) : null,
@@ -81,7 +82,7 @@ class AiTurnTraceService
             ]) > 0;
     }
 
-    public function recordFeedbackByMessage(int $messageId, int $tenantId, string $feedback, ?string $note = null): bool
+    public function recordFeedbackByMessage(int $messageId, int $tenantId, int $userId, string $feedback, ?string $note = null): bool
     {
         if (!in_array($feedback, ['up', 'down'], true)) {
             return false;
@@ -89,6 +90,7 @@ class AiTurnTraceService
         return DB::table('ai_turn_traces')
             ->where('message_id', $messageId)
             ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
             ->update([
                 'feedback' => $feedback,
                 'feedback_note' => $note ? mb_substr($note, 0, 500) : null,

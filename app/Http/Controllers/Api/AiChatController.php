@@ -280,9 +280,9 @@ TXT;
         $traceId = $this->inputInt('trace_id');
 
         if ($traceId) {
-            $ok = $this->traces->recordFeedback($traceId, (int) $tenantId, $vote, is_string($note) ? $note : null);
+            $ok = $this->traces->recordFeedback($traceId, (int) $tenantId, (int) $userId, $vote, is_string($note) ? $note : null);
         } elseif ($messageId) {
-            $ok = $this->traces->recordFeedbackByMessage($messageId, (int) $tenantId, $vote, is_string($note) ? $note : null);
+            $ok = $this->traces->recordFeedbackByMessage($messageId, (int) $tenantId, (int) $userId, $vote, is_string($note) ? $note : null);
         } else {
             return $this->respondWithError('VALIDATION', 'Either trace_id or message_id is required', null, 422);
         }

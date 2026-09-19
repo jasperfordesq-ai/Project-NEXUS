@@ -236,7 +236,7 @@ class AiTurnTraceServiceTest extends TestCase
         $userId = $this->insertUser();
         $id = $this->svc->record($this->baseRow($userId));
 
-        $result = $this->svc->recordFeedback($id, self::TENANT_ID, 'up', 'Great answer');
+        $result = $this->svc->recordFeedback($id, self::TENANT_ID, $userId, 'up', 'Great answer');
 
         $this->assertTrue($result);
         $row = DB::table('ai_turn_traces')->where('id', $id)->first();
@@ -250,7 +250,7 @@ class AiTurnTraceServiceTest extends TestCase
         $userId = $this->insertUser();
         $id = $this->svc->record($this->baseRow($userId));
 
-        $result = $this->svc->recordFeedback($id, self::TENANT_ID, 'down', 'Wrong info');
+        $result = $this->svc->recordFeedback($id, self::TENANT_ID, $userId, 'down', 'Wrong info');
 
         $this->assertTrue($result);
         $row = DB::table('ai_turn_traces')->where('id', $id)->first();
@@ -262,7 +262,7 @@ class AiTurnTraceServiceTest extends TestCase
         $userId = $this->insertUser();
         $id = $this->svc->record($this->baseRow($userId));
 
-        $result = $this->svc->recordFeedback($id, self::TENANT_ID, 'meh');
+        $result = $this->svc->recordFeedback($id, self::TENANT_ID, $userId, 'meh');
 
         $this->assertFalse($result);
         // Ensure nothing was written.
@@ -276,7 +276,7 @@ class AiTurnTraceServiceTest extends TestCase
         $id = $this->svc->record($this->baseRow($userId));
 
         // Use a different tenant ID — should not match the WHERE clause.
-        $result = $this->svc->recordFeedback($id, self::TENANT_ID + 9999, 'up');
+        $result = $this->svc->recordFeedback($id, self::TENANT_ID + 9999, $userId, 'up');
 
         $this->assertFalse($result);
     }
@@ -289,7 +289,7 @@ class AiTurnTraceServiceTest extends TestCase
         $messageId = 77001; // arbitrary; no real FK enforced by test tenant
         $id = $this->svc->record(array_merge($this->baseRow($userId), ['message_id' => $messageId]));
 
-        $result = $this->svc->recordFeedbackByMessage($messageId, self::TENANT_ID, 'down', 'Unhelpful');
+        $result = $this->svc->recordFeedbackByMessage($messageId, self::TENANT_ID, $userId, 'down', 'Unhelpful');
 
         $this->assertTrue($result);
         $row = DB::table('ai_turn_traces')->where('id', $id)->first();
@@ -299,7 +299,7 @@ class AiTurnTraceServiceTest extends TestCase
 
     public function test_recordFeedbackByMessage_returns_false_for_invalid_feedback(): void
     {
-        $result = $this->svc->recordFeedbackByMessage(999, self::TENANT_ID, 'neutral');
+        $result = $this->svc->recordFeedbackByMessage(999, self::TENANT_ID, 0, 'neutral');
 
         $this->assertFalse($result);
     }
@@ -346,9 +346,9 @@ class AiTurnTraceServiceTest extends TestCase
         $id2 = $this->svc->record($this->baseRow($userId));
         $id3 = $this->svc->record($this->baseRow($userId));
 
-        $this->svc->recordFeedback($id1, self::TENANT_ID, 'up');
-        $this->svc->recordFeedback($id2, self::TENANT_ID, 'up');
-        $this->svc->recordFeedback($id3, self::TENANT_ID, 'down');
+        $this->svc->recordFeedback($id1, self::TENANT_ID, $userId, 'up');
+        $this->svc->recordFeedback($id2, self::TENANT_ID, $userId, 'up');
+        $this->svc->recordFeedback($id3, self::TENANT_ID, $userId, 'down');
 
         $metrics = $this->svc->metricsFor(self::TENANT_ID, 30);
 
@@ -363,7 +363,7 @@ class AiTurnTraceServiceTest extends TestCase
             'user_text'      => 'What is timebanking?',
             'assistant_text' => 'I do not know.',
         ]));
-        $this->svc->recordFeedback($id, self::TENANT_ID, 'down', 'Totally wrong');
+        $this->svc->recordFeedback($id, self::TENANT_ID, $userId, 'down', 'Totally wrong');
 
         $metrics = $this->svc->metricsFor(self::TENANT_ID, 30);
 

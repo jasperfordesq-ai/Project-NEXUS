@@ -10,6 +10,8 @@ use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Feature tests for AiChatController — AI chat, conversations, content generation.
@@ -33,6 +35,48 @@ class AiChatControllerTest extends TestCase
     // ------------------------------------------------------------------
     //  POST /ai/chat
     // ------------------------------------------------------------------
+
+    public static function feedbackOwners(): array
+    {
+        return [
+            'own trace' => ['trace_id', 'own', 200],
+            'own message' => ['message_id', 'own', 200],
+            'another member trace' => ['trace_id', 'other', 404],
+            'another member message' => ['message_id', 'other', 404],
+            'foreign tenant trace' => ['trace_id', 'foreign', 404],
+            'foreign tenant message' => ['message_id', 'foreign', 404],
+        ];
+    }
+
+    #[DataProvider('feedbackOwners')]
+    public function test_feedback_is_owned_by_the_authenticated_member(string $key, string $owner, int $status): void
+    {
+        $actor = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $traceId = DB::table('ai_turn_traces')->insertGetId([
+            'tenant_id' => $owner === 'foreign' ? 1 : $this->testTenantId,
+            'user_id' => $owner === 'other' ? $other->id : $actor->id,
+            'message_id' => 987654321,
+            'user_text' => 'Synthetic feedback ownership check',
+            'assistant_text' => 'Synthetic answer',
+            'feedback' => 'up',
+            'feedback_note' => 'Original note',
+        ]);
+
+        $response = $this->apiPost('/ai/chat/feedback', [
+            $key => $key === 'trace_id' ? $traceId : 987654321,
+            'feedback' => 'down',
+            'note' => 'Updated note',
+        ]);
+
+        $response->assertStatus($status);
+        $row = DB::table('ai_turn_traces')->where('id', $traceId)->first();
+        $this->assertSame($status === 200 ? 'down' : 'up', $row->feedback);
+        $this->assertSame($status === 200 ? 'Updated note' : 'Original note', $row->feedback_note);
+        if ($status === 200) {
+            $response->assertJsonPath('data.recorded', true);
+        }
+    }
 
     public function test_chat_requires_authentication(): void
     {
@@ -170,10 +214,12 @@ class AiChatControllerTest extends TestCase
     {
         $this->authenticatedUser(['role' => 'admin']);
 
-        $response = $this->apiPost('/ai/test-provider', ['provider' => 'gemini']);
+        // Exercise the role gate without contacting a real provider.
+        $response = $this->apiPost('/ai/test-provider', ['provider' => '__unconfigured_test_provider__']);
 
         // Provider connectivity may legitimately fail in the test environment;
         // the point is the admin is not rejected by auth/role middleware.
         $response->assertStatus(200);
+        $response->assertJsonPath('data.success', false);
     }
 }
