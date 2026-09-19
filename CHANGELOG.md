@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native donation receipts clear retained data when the API withdraws availability, removing stale retry controls while preserving recoverable refresh behavior for temporary failures.
+
 - Native donation receipts display existing translated labels for known payment methods instead of raw wire codes such as bank_transfer.
 
 - Malformed native donation-receipt links no longer request invalid records or show retry controls that cannot succeed.

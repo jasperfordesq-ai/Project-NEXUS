@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 
 let mockParams: Record<string, string | string[]> = {};
 
@@ -79,6 +80,35 @@ describe('DonationReceiptScreen', () => {
     expect(await screen.findByText('bank transfer')).toBeTruthy();
     expect(screen.queryByText('bank_transfer')).toBeNull();
   });
+
+  it('clears a previously loaded receipt after refusal and does not reveal it during a later refresh', async () => {
+    const screen = render(<DonationReceiptScreen />);
+    await screen.findByText('Ada Member');
+    jest.mocked(getDonationReceipt).mockRejectedValueOnce(new ApiResponseError(403, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByTestId('donation-receipt-refused');
+    expect(screen.queryByText('Ada Member')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+    let finish!: (value: typeof receipt) => void;
+    jest.mocked(getDonationReceipt).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    act(() => screen.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
+    expect(screen.queryByText('Ada Member')).toBeNull();
+    await act(async () => finish(receipt));
+    expect(await screen.findByText('Ada Member')).toBeTruthy();
+  });
+
+  it('preserves a loaded receipt through a temporary refresh failure and clears the notice after retry', async () => {
+    const screen = render(<DonationReceiptScreen />);
+    await screen.findByText('Ada Member');
+    jest.mocked(getDonationReceipt).mockRejectedValue(new ApiResponseError(500, 'Temporary failure'));
+    act(() => screen.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByTestId('refresh-failed-notice', {}, { timeout: 8000 });
+    expect(screen.getByText('Ada Member')).toBeTruthy();
+    jest.mocked(getDonationReceipt).mockResolvedValue({ ...receipt, message: 'Refreshed receipt' });
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Refreshed receipt');
+    expect(screen.queryByTestId('refresh-failed-notice')).toBeNull();
+  }, 15000);
 
   /*
     🔴 This case USED to assert that a 404 offers a Retry, and passed — pinning the
