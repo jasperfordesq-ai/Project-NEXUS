@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native skills header text expands fully instead of truncating at enlarged text sizes.
+
 - Native skills tabs remain reachable by horizontal scrolling at enlarged text sizes.
 
 - Native skills preserve text edited during a save and prevent duplicate removals or late removal messages after leaving the screen.

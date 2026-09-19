@@ -612,9 +612,9 @@ function EndorsementsHeader({
               <Ionicons name="ribbon-outline" size={24} color={primary} />
             </View>
             <View className="min-w-0 flex-1">
-              <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('heroEyebrow')}</Text>
-              <Text className="mt-1 text-2xl font-bold leading-8" style={{ color: theme.text }} numberOfLines={2}>{t('title')}</Text>
-              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{t('subtitle')}</Text>
+              <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('heroEyebrow')}</Text>
+              <Text className="mt-1 text-2xl font-bold leading-8" style={{ color: theme.text }}>{t('title')}</Text>
+              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
             </View>
           </View>
           <View className="flex-row flex-wrap gap-3">
