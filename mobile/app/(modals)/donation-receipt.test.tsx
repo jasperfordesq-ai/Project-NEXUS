@@ -8,6 +8,8 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { ScrollView } from 'react-native';
 
 let mockParams: Record<string, string | string[]> = {};
+let mockUserId = 10;
+let mockTenantId = 2;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -34,7 +36,8 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#06f' }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
@@ -61,7 +64,38 @@ describe('DonationReceiptScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockParams = { id: '12' };
+    mockUserId = 10;
+    mockTenantId = 2;
     jest.mocked(getDonationReceipt).mockResolvedValue(receipt as never);
+  });
+
+  it.each(['account', 'community', 'receipt'])('discards a loaded receipt when the %s changes', async (identity) => {
+    const screen = render(<DonationReceiptScreen />);
+    await screen.findByText('Ada Member');
+    let finish!: (value: typeof receipt) => void;
+    jest.mocked(getDonationReceipt).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    if (identity === 'account') mockUserId = 11;
+    if (identity === 'community') mockTenantId = 3;
+    if (identity === 'receipt') mockParams = { id: '13' };
+    screen.rerender(<DonationReceiptScreen />);
+    expect(screen.queryByText('Ada Member')).toBeNull();
+    expect(getDonationReceipt).toHaveBeenCalledTimes(2);
+    await act(async () => finish({ ...receipt, donor_name: 'Current Member' }));
+    expect(await screen.findByText('Current Member')).toBeTruthy();
+  });
+
+  it.each(['account', 'community', 'receipt'])('ignores a late receipt response after the %s changes', async (identity) => {
+    let finishOld!: (value: typeof receipt) => void;
+    jest.mocked(getDonationReceipt).mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve; }));
+    const screen = render(<DonationReceiptScreen />);
+    jest.mocked(getDonationReceipt).mockResolvedValue({ ...receipt, donor_name: 'Current Member' });
+    if (identity === 'account') mockUserId = 11;
+    if (identity === 'community') mockTenantId = 3;
+    if (identity === 'receipt') mockParams = { id: '13' };
+    screen.rerender(<DonationReceiptScreen />);
+    await act(async () => finishOld(receipt));
+    expect(screen.queryByText('Ada Member')).toBeNull();
+    expect(await screen.findByText('Current Member')).toBeTruthy();
   });
 
   it('renders the receipt detail for the requested donation', async () => {

@@ -17,21 +17,31 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { getDonationReceipt } from '@/lib/api/donations';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import { formatDate } from '@/lib/utils/formatRelativeTime';
 import { withRouteGate } from '@/components/withRouteGate';
 
 function DonationReceiptScreen() {
-  const { t } = useTranslation(['volunteering', 'common']);
-  const primary = usePrimaryColor();
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const donationId = Number(id ?? 0);
   const validId = typeof id === 'string' && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(donationId);
+  return (
+    <ModalErrorBoundary>
+      <DonationReceiptContent key={JSON.stringify([tenant?.id, user?.id, id])} donationId={donationId} validId={validId} />
+    </ModalErrorBoundary>
+  );
+}
+
+function DonationReceiptContent({ donationId, validId }: { donationId: number; validId: boolean }) {
+  const { t } = useTranslation(['volunteering', 'common']);
+  const primary = usePrimaryColor();
   const receipt = useApi(() => getDonationReceipt(donationId), [donationId], { enabled: validId, clearOnRefusal: true });
 
   return (
-    <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('donations.receipt_title')} backLabel={t('common:back')} fallbackHref="/(modals)/volunteering" />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={validId ? <RefreshControl refreshing={receipt.isLoading && Boolean(receipt.data)} onRefresh={receipt.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
@@ -74,7 +84,6 @@ function DonationReceiptScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-    </ModalErrorBoundary>
   );
 }
 
