@@ -103,6 +103,26 @@ class EndorsementControllerTest extends TestCase
         $this->assertSame('Thoughtful help', $byMember[$first->id]['comment']);
     }
 
+    public function test_grouped_endorsements_keep_database_skill_name_equivalence(): void
+    {
+        $viewer = $this->authenticatedUser();
+        foreach (['Café help', 'CAFE HELP', 'Plumbing'] as $skillName) {
+            $member = User::factory()->forTenant($this->testTenantId)->create(['avatar_url' => null]);
+            \App\Models\SkillEndorsement::create([
+                'tenant_id' => $this->testTenantId, 'endorsed_id' => $viewer->id,
+                'endorser_id' => $member->id, 'skill_name' => $skillName,
+            ]);
+        }
+        $groups = $this->apiGet("/v2/members/{$viewer->id}/endorsements")
+            ->assertOk()->json('data.endorsements');
+        $this->assertCount(2, $groups);
+        $this->assertEquals(2, $groups[0]['count']);
+        $this->assertCount(2, $groups[0]['endorsements']);
+        $this->assertNull($groups[0]['endorsed_by_avatars']);
+        $this->assertSame('Plumbing', $groups[1]['skill_name']);
+        $this->assertEquals(1, $groups[1]['count']);
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/members/top-endorsed
     // ------------------------------------------------------------------

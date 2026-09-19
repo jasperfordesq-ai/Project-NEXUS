@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Endorsement skill grouping preserves database case and accent equivalence when returning structured member records.
+
 - Native endorsements use structured API records to preserve member names, nullable avatars, comments, timestamps and unique endorsement identifiers. Existing grouped response fields remain available.
 
 - Native skills and endorsements show retry controls after failed refreshes without hiding loaded content; discovery pull-to-refresh reloads categories and tracks its loading state.

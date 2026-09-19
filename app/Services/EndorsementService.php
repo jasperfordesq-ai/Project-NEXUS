@@ -199,17 +199,20 @@ class EndorsementService
             ->select(
                 'se.id', 'se.skill_name', 'se.comment', 'se.created_at', 'se.endorser_id',
                 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as legacy_name")
+                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as legacy_name"),
+                // Let the database apply the same collation as the former GROUP BY;
+                // PHP string keys would split equivalent case/accent spellings.
+                DB::raw('DENSE_RANK() OVER (ORDER BY se.skill_name) as skill_group')
             )
             ->orderByDesc('se.created_at')
             ->orderByDesc('se.id')
             ->get()
-            ->groupBy('skill_name')
-            ->map(function ($group, $skillName) {
+            ->groupBy('skill_group')
+            ->map(function ($group) {
                 $legacyNames = $group->pluck('legacy_name')->filter(fn ($name) => $name !== null);
                 $legacyAvatars = $group->pluck('avatar_url')->filter(fn ($avatar) => $avatar !== null);
                 return [
-                    'skill_name' => (string) $skillName,
+                    'skill_name' => $group->first()->skill_name,
                     'count' => $group->count(),
                     // Keep the original grouped fields for existing clients. New clients
                     // use records: comma-delimited values cannot preserve nullable avatars
