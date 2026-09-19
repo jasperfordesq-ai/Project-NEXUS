@@ -464,6 +464,7 @@ function ChatScreenInner() {
   const conversationIdRef = useRef<string | null>(null);
   const listRef = useRef<FlatList<DisplayMessage>>(null);
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeSendRef = useRef<object | null>(null);
 
   const fallbackStarters = useMemo(() => FALLBACK_STARTER_KEYS.map((key) => t(key)), [t]);
   const starterPrompts = starters.length > 0 ? starters : fallbackStarters;
@@ -482,6 +483,7 @@ function ChatScreenInner() {
       });
     return () => {
       cancelled = true;
+      activeSendRef.current = null;
       if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     };
   }, []);
@@ -493,6 +495,7 @@ function ChatScreenInner() {
   }, [messages.length]);
 
   const startNewConversation = useCallback(() => {
+    activeSendRef.current = null;
     if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     thinkingTimeoutRef.current = null;
     conversationIdRef.current = null;
@@ -507,7 +510,9 @@ function ChatScreenInner() {
 
   const handleSend = useCallback(async (rawText?: string) => {
     const text = (rawText ?? inputText).trim();
-    if (!text || sending) return;
+    if (!text || activeSendRef.current) return;
+    const request = {};
+    activeSendRef.current = request;
 
     setInputText('');
     setSending(true);
@@ -529,6 +534,9 @@ function ChatScreenInner() {
     setMessages((prev) => [thinkingMsg, userMsg, ...prev]);
 
     thinkingTimeoutRef.current = setTimeout(() => {
+      if (activeSendRef.current !== request) return;
+      activeSendRef.current = null;
+      thinkingTimeoutRef.current = null;
       setMessages((prev) => {
         if (!prev.some((m) => m.id === THINKING_ID)) return prev;
         const withoutThinking = prev.filter((m) => m.id !== THINKING_ID);
@@ -545,6 +553,7 @@ function ChatScreenInner() {
 
     try {
       const result = await sendChatMessage(text, conversationIdRef.current);
+      if (activeSendRef.current !== request) return;
       if (thinkingTimeoutRef.current) {
         clearTimeout(thinkingTimeoutRef.current);
         thinkingTimeoutRef.current = null;
@@ -556,6 +565,7 @@ function ChatScreenInner() {
 
       setMessages((prev) => [assistantMsg, ...prev.filter((m) => m.id !== THINKING_ID)]);
     } catch {
+      if (activeSendRef.current !== request) return;
       if (thinkingTimeoutRef.current) {
         clearTimeout(thinkingTimeoutRef.current);
         thinkingTimeoutRef.current = null;
@@ -568,9 +578,12 @@ function ChatScreenInner() {
         is_error: true,
       }, ...prev.filter((m) => m.id !== THINKING_ID)]);
     } finally {
-      setSending(false);
+      if (activeSendRef.current === request) {
+        activeSendRef.current = null;
+        setSending(false);
+      }
     }
-  }, [inputText, sending, t]);
+  }, [inputText, t]);
 
   const handleFeedback = useCallback(async (message: ChatMessage, vote: ChatFeedbackVote) => {
     const traceId = typeof message.trace_id === 'number' ? message.trace_id : null;

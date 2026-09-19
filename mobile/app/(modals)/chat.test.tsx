@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
@@ -189,9 +189,82 @@ jest.mock('@/components/ui/BottomSheet', () => {
 });
 
 import ChatScreen from './chat';
-import { submitChatFeedback } from '@/lib/api/chat';
+import { sendChatMessage, submitChatFeedback, type ChatResponse } from '@/lib/api/chat';
 
 describe('ChatScreen', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('sends only once for repeated gestures before the busy state renders', async () => {
+    let finish!: (value: ChatResponse) => void;
+    jest.mocked(sendChatMessage).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'One question');
+    const press = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Send message')!.props.onPress;
+    act(() => { press(); press(); });
+    expect(sendChatMessage).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: { conversation_id: 'one', message: { id: 'one', role: 'assistant', content: 'One answer', created_at: new Date().toISOString() } } }));
+  });
+
+  it.each([false, true])('ignores a previous conversation response (failure: %s)', async (failure) => {
+    let finish!: (value: ChatResponse) => void;
+    let reject!: (error: Error) => void;
+    jest.mocked(sendChatMessage).mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Old question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    fireEvent.press(screen.getByLabelText('Start new conversation'));
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else finish({ data: { conversation_id: 'old-conversation', message: { id: 'old', role: 'assistant', content: 'Old answer', created_at: new Date().toISOString() } } });
+    });
+    expect(screen.queryByText('Old answer')).toBeNull();
+    expect(screen.queryByText('Failed to connect to the AI service. Please check your connection and try again.')).toBeNull();
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'New question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await waitFor(() => expect(sendChatMessage).toHaveBeenLastCalledWith('New question', null));
+  });
+
+  it('keeps a new send busy when an older conversation request finishes', async () => {
+    let finishOld!: (value: ChatResponse) => void;
+    let finishNew!: (value: ChatResponse) => void;
+    jest.mocked(sendChatMessage)
+      .mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve; }))
+      .mockImplementationOnce(() => new Promise(resolve => { finishNew = resolve; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Old question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    fireEvent.press(screen.getByLabelText('Start new conversation'));
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'New question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await act(async () => finishOld({ data: { conversation_id: 'old', message: { id: 'old', role: 'assistant', content: 'Old answer', created_at: new Date().toISOString() } } }));
+    expect(screen.getByText('AI is typing')).toBeTruthy();
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Third question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    expect(sendChatMessage).toHaveBeenCalledTimes(2);
+    await act(async () => finishNew({ data: { conversation_id: 'new', message: { id: 'new', role: 'assistant', content: 'New answer', created_at: new Date().toISOString() } } }));
+    expect(screen.getByText('New answer')).toBeTruthy();
+    expect(screen.queryByText('Old answer')).toBeNull();
+  });
+
+  it('ignores a response after its visible timeout', async () => {
+    jest.useFakeTimers();
+    try {
+      let finish!: (value: ChatResponse) => void;
+      jest.mocked(sendChatMessage).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+      const screen = render(<ChatScreen />);
+      fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Slow question');
+      fireEvent.press(screen.getByLabelText('Send message'));
+      act(() => jest.advanceTimersByTime(30_000));
+      expect(screen.getByText('The response is taking too long. Please try again.')).toBeTruthy();
+      await act(async () => finish({ data: { conversation_id: 'late', message: { id: 'late', role: 'assistant', content: 'Late answer', created_at: new Date().toISOString() } } }));
+      expect(screen.queryByText('Late answer')).toBeNull();
+      screen.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('renders the chat screen without crashing', () => {
     const { toJSON } = render(<ChatScreen />);
     expect(toJSON()).toBeTruthy();

@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native AI chat isolates pending sends: starting a new conversation or reaching the response timeout prevents an older reply or error from replacing the current conversation, and repeated send gestures no longer issue duplicate requests.
+
 - Corrected the course maintenance guide to describe transactional completion and retryable certificate, notification and reward delivery, and replaced references to deleted regression tests.
 
 - Native instructor publishing dismisses confirmations when leaving the screen and suppresses delayed messages from an earlier visit. Returning refreshes course status, including writes that finish after the return refresh.
