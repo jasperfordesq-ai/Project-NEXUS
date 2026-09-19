@@ -89,6 +89,7 @@ function EventCommunicationsScreenInner() {
   const { confirm, confirmDialog } = useConfirm();
   const auditGeneration = useRef(0);
   const previewRequest = useRef<object | null>(null);
+  const draftRequest = useRef<object | null>(null);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -148,6 +149,7 @@ function EventCommunicationsScreenInner() {
   useEffect(() => () => {
     auditGeneration.current += 1;
     previewRequest.current = null;
+    draftRequest.current = null;
   }, []);
 
   async function loadMore() {
@@ -197,6 +199,8 @@ function EventCommunicationsScreenInner() {
   });
 
   function openNewComposer() {
+    draftRequest.current = null;
+    setOpeningDraftId(null);
     invalidatePreview();
     const fresh = initialInput();
     setEditing(null);
@@ -207,6 +211,8 @@ function EventCommunicationsScreenInner() {
   }
 
   function closeComposer() {
+    draftRequest.current = null;
+    setOpeningDraftId(null);
     invalidatePreview();
     setComposerOpen(false);
     setEditing(null);
@@ -231,10 +237,14 @@ function EventCommunicationsScreenInner() {
   }
 
   async function openEditComposer(broadcast: MobileEventBroadcast) {
+    if (draftRequest.current) return;
+    const request = {};
+    draftRequest.current = request;
     invalidatePreview();
     setOpeningDraftId(broadcast.id);
     try {
       const detail = await getEventCommunicationDetail(broadcast.id, 1, 1);
+      if (draftRequest.current !== request) return;
       const latest = detail.broadcast;
       replaceBroadcast(latest);
       if (!latest.capabilities.edit || latest.body === null) {
@@ -252,13 +262,17 @@ function EventCommunicationsScreenInner() {
       setPreview(null);
       setComposerOpen(true);
     } catch (err) {
+      if (draftRequest.current !== request) return;
       showToast({
         title: t('detail_failed_title'),
         description: describeApiError(err, t('detail_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setOpeningDraftId(null);
+      if (draftRequest.current === request) {
+        draftRequest.current = null;
+        setOpeningDraftId(null);
+      }
     }
   }
 

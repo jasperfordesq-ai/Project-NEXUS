@@ -376,6 +376,35 @@ describe('EventCommunicationsScreen', () => {
     ));
   });
 
+  it.each([false, true])('keeps a new composer when an old draft load settles (failure: %s)', async (failure) => {
+    let resolve!: (value: unknown) => void;
+    let reject!: (error: Error) => void;
+    mockGetDetail.mockImplementationOnce(() => new Promise((done, fail) => { resolve = done; reject = fail; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('Edit'));
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'New wording to preserve');
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else resolve({ broadcast: broadcast({ body: 'Old draft body' }) });
+    });
+    expect(screen.getByDisplayValue('New wording to preserve')).toBeTruthy();
+    expect(screen.getByText('Compose message')).toBeTruthy();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('ignores draft load failure after screen unmount', async () => {
+    let reject!: (error: Error) => void;
+    mockGetDetail.mockImplementationOnce(() => new Promise((_done, fail) => { reject = fail; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('Edit'));
+    screen.unmount();
+    await act(async () => reject(new Error('offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('shows the privacy-filtered append-only communication audit ledger', async () => {
     const screen = render(<EventCommunicationsScreen />);
     await screen.findByText('Announcement');

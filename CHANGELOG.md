@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event communications preserve a new message when an older draft finishes loading and ignore abandoned draft-load failures.
+
 - Native event audience previews discard stale results after composer changes and suppress late failures after the screen closes.
 
 - Endorsement skill grouping preserves database case and accent equivalence when returning structured member records.
