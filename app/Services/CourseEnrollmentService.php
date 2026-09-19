@@ -169,13 +169,36 @@ class CourseEnrollmentService
      */
     public static function forUser(int $userId): array
     {
-        return CourseEnrollment::where('user_id', $userId)
+        $rows = CourseEnrollment::where('user_id', $userId)
             ->whereIn('status', ['active', 'completed'])
             ->with(['course:id,title,slug,cover_image,level,author_user_id'])
             ->orderByDesc('last_accessed_at')
             ->orderByDesc('enrolled_at')
             ->get()
             ->toArray();
+
+        $unmet = CourseProgressService::unmetQuizLessonsByCourse(array_column($rows, 'course_id'), $userId);
+        if ($unmet === []) return $rows;
+
+        $lessons = \App\Models\CourseLesson::whereIn('course_id', array_keys($unmet))->get(['id', 'course_id']);
+        $totals = $lessons->countBy('course_id');
+        $blockedIds = array_merge(...array_values($unmet));
+        $completed = \App\Models\CourseLessonProgress::whereIn('enrollment_id', array_column($rows, 'id'))
+            ->where('user_id', $userId)->where('status', 'completed')
+            ->whereIn('lesson_id', $lessons->pluck('id'))->whereNotIn('lesson_id', $blockedIds)
+            ->selectRaw('enrollment_id, COUNT(*) AS total')->groupBy('enrollment_id')->pluck('total', 'enrollment_id');
+
+        foreach ($rows as &$row) {
+            if (!isset($unmet[$row['course_id']])) continue;
+            $total = (int) ($totals[$row['course_id']] ?? 0);
+            $row['progress_percent'] = $total > 0 ? round((int) ($completed[$row['id']] ?? 0) / $total * 100, 2) : 0;
+            if ($row['status'] === 'completed') {
+                $row['status'] = 'active';
+                $row['completed_at'] = null;
+            }
+        }
+        unset($row);
+        return $rows;
     }
 
     /**

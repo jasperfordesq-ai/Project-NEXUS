@@ -126,6 +126,10 @@ class CourseControllerTest extends TestCase
         $before = $this->apiGet('/v2/courses/' . $course->id . '/progress')->assertOk();
         $before->assertJsonPath('data.enrollment.status', 'active')->assertJsonPath('data.lessons.0.status', 'not_started');
         $this->assertEquals(0, $before->json('data.enrollment.progress_percent'));
+        $learning = $this->apiGet('/v2/me/courses')->assertOk();
+        $listed = collect($learning->json('data'))->keyBy('id')[$enrollment->id];
+        $this->assertSame('active', $listed['status']);
+        $this->assertEquals($before->json('data.enrollment.progress_percent'), $listed['progress_percent']);
         $availability = collect($before->json('data.availability'))->keyBy('lesson_id');
         $this->assertFalse($availability[$lesson->id]['completion_allowed']);
         $this->assertSame('completed', $enrollment->fresh()->status); // Read projection has no write side effects.

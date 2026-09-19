@@ -189,6 +189,8 @@ The transfer uses `WalletService`'s row-locked, atomic path. See [docs/modules/w
 
 Quiz lessons require a passing attempt belonging to the learner, with grading status `auto` or `graded`, before they can be marked complete. Missing quizzes, failed attempts and pending instructor reviews do not satisfy this requirement. Progress recomputation excludes unsatisfied quiz lessons, and certificate access rechecks every quiz requirement, including for older completion records.
 
+The learner's course list also excludes unsatisfied quiz lessons from displayed progress and presents affected historical completions as active. This is a read-only projection: stored completion records are retained. Quiz eligibility is fetched in batches for course lists and prerequisites.
+
 ## Quizzes
 
 **Question types:**

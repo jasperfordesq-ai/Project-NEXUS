@@ -35,9 +35,13 @@ class CoursePrerequisiteService
                 ->whereIn('course_id', $ids)
                 ->pluck('course_id')
                 ->map(fn ($v) => (int) $v)
-                ->filter(fn (int $id) => CourseProgressService::unmetQuizLessonIds($id, $userId) === [])
                 ->all()
             : [];
+
+        if ($completedIds !== []) {
+            $unmet = CourseProgressService::unmetQuizLessonsByCourse($completedIds, $userId);
+            $completedIds = array_values(array_diff($completedIds, array_keys($unmet)));
+        }
 
         return Course::whereIn('id', $ids)
             ->get(['id', 'title', 'slug'])

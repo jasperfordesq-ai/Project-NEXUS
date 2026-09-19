@@ -39,9 +39,21 @@ class CourseProgressService
 
     public static function unmetQuizLessonIds(int $courseId, int $userId): array
     {
-        return CourseLesson::where('course_id', $courseId)->where('content_type', 'quiz')->get()
-            ->filter(fn (CourseLesson $lesson) => !self::quizPassedForLesson($lesson, $userId))
-            ->pluck('id')->all();
+        return self::unmetQuizLessonsByCourse([$courseId], $userId)[$courseId] ?? [];
+    }
+
+    /** @return array<int,array<int,int>> Unsatisfied quiz lessons, fetched together for course lists. */
+    public static function unmetQuizLessonsByCourse(array $courseIds, int $userId): array
+    {
+        if ($courseIds === []) return [];
+
+        return CourseLesson::whereIn('course_id', $courseIds)->where('content_type', 'quiz')
+            ->whereDoesntHave('quiz', fn ($quiz) => $quiz
+                ->whereColumn('course_quizzes.course_id', 'course_lessons.course_id')
+                ->whereIn('course_quizzes.id', CourseQuizAttempt::where('user_id', $userId)
+                    ->where('passed', true)->whereIn('grading_status', ['auto', 'graded'])->select('quiz_id')))
+            ->get(['id', 'course_id'])->groupBy('course_id')
+            ->map(fn ($lessons) => $lessons->pluck('id')->all())->all();
     }
 
     /**

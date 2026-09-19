@@ -280,6 +280,46 @@ class CourseEnrollmentServiceTest extends TestCase
 
     // ── find ──────────────────────────────────────────────────────────────────
 
+    public function test_learning_list_projects_unpassed_quizzes_without_changing_history(): void
+    {
+        $userId = $this->insertUser();
+        $authorId = $this->insertUser();
+        $enrollments = [];
+        foreach (range(1, 3) as $index) {
+            $courseId = $this->insertCourse($authorId);
+            $enrollment = CourseEnrollmentService::enroll($courseId, $userId, null, false);
+            $enrollment->update(['status' => 'completed', 'progress_percent' => 100, 'completed_at' => now()]);
+            foreach (['text', 'quiz'] as $type) {
+                $lesson = \App\Models\CourseLesson::create(['course_id' => $courseId, 'title' => $type, 'content_type' => $type]);
+                \App\Models\CourseLessonProgress::create(['enrollment_id' => $enrollment->id, 'lesson_id' => $lesson->id, 'user_id' => $userId, 'status' => 'completed', 'completed_at' => now()]);
+                if ($type === 'quiz') {
+                    $quiz = \App\Models\CourseQuiz::create(['course_id' => $courseId, 'lesson_id' => $lesson->id, 'title' => 'Quiz']);
+                    \App\Models\CourseQuizAttempt::create(['quiz_id' => $quiz->id, 'user_id' => $index === 1 ? $authorId : $userId, 'answers' => [], 'score_percent' => 90, 'passed' => true, 'grading_status' => $index === 2 ? 'pending_review' : 'graded', 'submitted_at' => now()]);
+                }
+            }
+            $enrollments[] = $enrollment;
+        }
+
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        try {
+            $rows = array_column(CourseEnrollmentService::forUser($userId), null, 'id');
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+        }
+        foreach ($enrollments as $index => $enrollment) {
+            $row = $rows[$enrollment->id];
+            $this->assertSame($index === 2 ? 'completed' : 'active', $row['status']);
+            $this->assertEquals($index === 2 ? 100 : 50, $row['progress_percent']);
+            if ($index !== 2) $this->assertNull($row['completed_at']);
+            $this->assertNotEmpty($row['course']['title']);
+            $this->assertSame('completed', $enrollment->fresh()->status);
+            $this->assertEquals(100, $enrollment->fresh()->progress_percent);
+        }
+        $this->assertLessThanOrEqual(6, $queries, 'Learning list eligibility must use batched queries');
+    }
+
     public function test_find_returns_null_when_not_enrolled(): void
     {
         $userId   = $this->insertUser();
