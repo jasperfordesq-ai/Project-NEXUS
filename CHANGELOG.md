@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a streaming native CSV export transport for audited POST requests, with account-bound authentication, response validation, cancellation, timeout and partial-file cleanup. Registration export UI and share-file lifecycle integration remain unfinished.
+
 - Added the native registration submissions list and explicit audited answer-review controls, including pagination, restricted identities, purged-answer labels and separate sensitive-answer permission. Answers clear on departure, backgrounding, account changes and permission changes; native acceptance and export remain in progress.
 
 - Added native organiser submission-review API adapters with independent pagination, explicit permissions and audited answer access. The native review screen and export workflow remain in progress.
