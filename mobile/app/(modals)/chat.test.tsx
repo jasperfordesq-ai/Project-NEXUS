@@ -8,6 +8,9 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockFocus: () => void | (() => void);
 let mockBlur: (() => void) | undefined;
+let mockUserId = 1;
+let mockTenantId = 2;
+let mockFirstName = 'Jasper';
 
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
@@ -79,7 +82,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId }, hasFeature: () => true }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -97,7 +100,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
-    user: { first_name: 'Jasper', last_name: 'Ford', avatar_url: null },
+    user: { id: mockUserId, tenant_id: 2, first_name: mockFirstName, last_name: 'Ford', avatar_url: null },
     displayName: 'Jasper Ford',
   }),
 }));
@@ -202,7 +205,12 @@ import ChatScreen from './chat';
 import { sendChatMessage, submitChatFeedback, type ChatResponse } from '@/lib/api/chat';
 
 describe('ChatScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUserId = 1;
+    mockTenantId = 2;
+    mockFirstName = 'Jasper';
+  });
 
   async function openFeedbackNote() {
     const screen = render(<ChatScreen />);
@@ -214,6 +222,40 @@ describe('ChatScreen', () => {
     fireEvent.changeText(screen.getByPlaceholderText('Tell us what was missing or wrong'), 'Keep this note');
     return screen;
   }
+
+  it.each(['account', 'community'])('clears prior chat and draft on %s replacement', async (identity) => {
+    const screen = await openFeedbackNote();
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Private draft');
+    if (identity === 'account') mockUserId = 3;
+    else mockTenantId = 4;
+    screen.rerender(<ChatScreen />);
+    expect(screen.queryByText('Hello!')).toBeNull();
+    expect(screen.queryByText('What went wrong?')).toBeNull();
+    expect(screen.getByPlaceholderText('Ask me anything...').props.value).toBe('');
+  });
+
+  it('keeps the chat draft on a profile refresh for the same identity', () => {
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'My draft');
+    mockFirstName = 'Updated';
+    screen.rerender(<ChatScreen />);
+    expect(screen.getByPlaceholderText('Ask me anything...').props.value).toBe('My draft');
+  });
+
+  it('ignores the old account reply after replacing the account', async () => {
+    let finish!: (value: ChatResponse) => void;
+    jest.mocked(sendChatMessage).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Old account question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    mockUserId = 3;
+    screen.rerender(<ChatScreen />);
+    await act(async () => finish({ data: { conversation_id: 'private', message: { id: 'private', role: 'assistant', content: 'Old account answer', created_at: new Date().toISOString() } } }));
+    expect(screen.queryByText('Old account answer')).toBeNull();
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'New account question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await waitFor(() => expect(sendChatMessage).toHaveBeenLastCalledWith('New account question', null));
+  });
 
   it('dismisses the feedback note on departure while preserving conversation text', async () => {
     const screen = await openFeedbackNote();

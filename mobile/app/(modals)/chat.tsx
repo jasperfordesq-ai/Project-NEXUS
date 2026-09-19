@@ -32,7 +32,7 @@ import {
   type ToolInvocation,
 } from '@/lib/api/chat';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -441,8 +441,13 @@ function ChatHeader({
 }
 
 function ChatScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  // Reset private conversation state synchronously when either ownership boundary
+  // changes. Profile refreshes for the same member must retain the draft.
+  const identity = `${tenant?.id ?? ''}:${user?.tenant_id ?? ''}:${user?.id ?? ''}`;
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={identity}>
       <ChatScreenInner />
     </ModalErrorBoundary>
   );
