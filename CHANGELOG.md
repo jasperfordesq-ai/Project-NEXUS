@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Quiz recovery storage preserves pending submission identities and confirmed receipts separately for each account, community and quiz; it serializes writes, refuses conflicting unresolved answers, and reserves space for the result receipt.
+
+- Encrypted draft storage supports required reads that distinguish missing drafts from unavailable storage, corrupt manifests, and missing committed chunks, for durable retry recovery.
+
 - Native grading clears obsolete unsaved-work warnings when a refreshed queue removes an assessment or instructor access is revoked, while preserving editable feedback through temporary refresh failures.
 
 - Native instructor grading stops response-loss retries and late result notices after leaving or replacing the grading screen, while retaining exact retries for the active grading session.

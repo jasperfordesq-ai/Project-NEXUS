@@ -20,6 +20,7 @@ const values = new Map<string, string>();
 const scope = { kind: 'poll' as const, tenantId: 2, userId: 7 };
 
 beforeEach(() => {
+  jest.resetAllMocks();
   values.clear();
   jest.mocked(storage.get).mockImplementation(async key => values.get(key) ?? null);
   jest.mocked(storage.set).mockImplementation(async (key, value) => { values.set(key, value); });
@@ -112,4 +113,44 @@ it('returns safe failure values when encrypted manifest reads are unavailable', 
   await expect(saveCreationDraft(scope, { question: 'Keep this in memory' })).resolves.toBe(false);
   await expect(loadCreationDraft(scope)).resolves.toBeNull();
   await expect(clearCreationDraft(scope)).resolves.toBe(false);
+});
+
+it('distinguishes a missing draft from a failed required read', async () => {
+  await expect(loadCreationDraft(scope, { required: true })).resolves.toBeNull();
+  jest.mocked(storage.get).mockRejectedValueOnce(new Error('keystore unavailable'));
+  await expect(loadCreationDraft(scope, { required: true })).rejects.toThrow('keystore unavailable');
+});
+
+it('rejects a corrupt manifest in required mode instead of pretending no draft exists', async () => {
+  values.set('nexus_creation_draft_v1_poll_2_7', '{broken');
+  await expect(loadCreationDraft(scope, { required: true })).rejects.toThrow();
+});
+
+it('rejects a missing committed chunk in required mode', async () => {
+  await saveCreationDraft(scope, { question: 'Committed draft' });
+  const chunk = [...values.keys()].find(key => key !== 'nexus_creation_draft_v1_poll_2_7')!;
+  values.delete(chunk);
+  await expect(loadCreationDraft(scope, { required: true })).rejects.toThrow();
+});
+
+it('does not confuse a stored null payload with an absent draft in required mode', async () => {
+  await saveCreationDraft(scope, null);
+  await expect(loadCreationDraft(scope, { required: true })).rejects.toThrow();
+  await expect(loadCreationDraft(scope)).resolves.toBeNull();
+});
+
+it('round-trips required reads and accepts a committed tombstone', async () => {
+  const draft = { question: 'An intact draft' };
+  await saveCreationDraft(scope, draft);
+  await expect(loadCreationDraft(scope, { required: true })).resolves.toEqual(draft);
+  await clearCreationDraft(scope);
+  await expect(loadCreationDraft(scope, { required: true })).resolves.toBeNull();
+});
+
+it.each([
+  { version: 1, chunks: 1, cleared: true, generation: 'invalid' },
+  { version: 1, chunks: 0, cleared: 'true' },
+])('rejects malformed tombstones on required reads: %j', async (manifest) => {
+  values.set('nexus_creation_draft_v1_poll_2_7', JSON.stringify(manifest));
+  await expect(loadCreationDraft(scope, { required: true })).rejects.toThrow();
 });

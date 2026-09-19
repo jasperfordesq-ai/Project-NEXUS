@@ -5,7 +5,7 @@
 
 import { storage } from '@/lib/storage';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
@@ -24,6 +24,7 @@ interface DraftManifest {
 
 const CHUNK_CHARACTERS = 350;
 const MAX_CHUNKS = 32;
+export const CREATION_DRAFT_MAX_CHARACTERS = CHUNK_CHARACTERS * MAX_CHUNKS;
 const operationQueues = new Map<string, Promise<void>>();
 
 function safeKeyPart(value: string | number): string {
@@ -48,10 +49,28 @@ function splitUnicode(value: string): string[] {
   return chunks.length > 0 ? chunks : [''];
 }
 
-async function readManifest(base: string): Promise<DraftManifest | null> {
-  const manifest = await storage.getJson<DraftManifest>(base);
-  if (!manifest || manifest.version !== 1 || !Number.isInteger(manifest.chunks)) return null;
-  if (manifest.chunks < 0 || manifest.chunks > MAX_CHUNKS) return null;
+async function readManifest(base: string, required = false): Promise<DraftManifest | null> {
+  let manifest: DraftManifest | null;
+  if (required) {
+    const raw = await storage.get(base, { required: true });
+    if (raw === null) return null;
+    manifest = JSON.parse(raw) as DraftManifest;
+  } else {
+    manifest = await storage.getJson<DraftManifest>(base);
+  }
+  if (!manifest || manifest.version !== 1 || !Number.isInteger(manifest.chunks)
+      || manifest.chunks < 0 || manifest.chunks > MAX_CHUNKS) {
+    if (required) throw new Error('Invalid saved draft manifest');
+    return null;
+  }
+  if (required && ((manifest.cleared !== undefined && typeof manifest.cleared !== 'boolean')
+      || (manifest.cleared === true && manifest.chunks !== 0))) {
+    throw new Error('Invalid saved draft tombstone');
+  }
+  if (required && !(manifest.cleared === true && manifest.chunks === 0)
+      && (manifest.chunks === 0 || typeof manifest.generation !== 'string' || !/^[A-Za-z0-9_]+$/.test(manifest.generation))) {
+    throw new Error('Invalid saved draft generation');
+  }
   return manifest;
 }
 
@@ -101,20 +120,27 @@ export async function saveCreationDraft<T>(scope: CreationDraftScope, draft: T):
   });
 }
 
-export async function loadCreationDraft<T>(scope: CreationDraftScope): Promise<T | null> {
+/** Required reads throw on unavailable/corrupt storage; null means absent or explicitly cleared. */
+export async function loadCreationDraft<T>(scope: CreationDraftScope, options?: { required?: boolean }): Promise<T | null> {
   const base = baseKey(scope);
   await operationQueues.get(base);
   try {
-    const manifest = await readManifest(base);
+    const manifest = await readManifest(base, options?.required);
     if (!manifest || manifest.cleared || manifest.chunks === 0 || !manifest.generation) return null;
     const chunks: string[] = [];
     for (let index = 0; index < manifest.chunks; index += 1) {
-      const chunk = await storage.get(chunkKey(base, manifest.generation, index));
-      if (chunk === null) return null;
+      const chunk = await storage.get(chunkKey(base, manifest.generation, index), options);
+      if (chunk === null) {
+        if (options?.required) throw new Error('Saved draft chunk is missing');
+        return null;
+      }
       chunks.push(chunk);
     }
-    return JSON.parse(chunks.join('')) as T;
-  } catch {
+    const draft = JSON.parse(chunks.join('')) as T;
+    if (options?.required && draft === null) throw new Error('Saved draft payload is null');
+    return draft;
+  } catch (error) {
+    if (options?.required) throw error;
     return null;
   }
 }
