@@ -45,6 +45,13 @@ final class EventRegistrationSubmissionExportService
             throw new EventRegistrationFoundationException('event_registration_sensitive_answer_access_denied');
         }
 
+        // Validate even when there are no submissions to pass through readAnswers().
+        $purpose = trim($purpose);
+        if ($purpose === '' || mb_strlen($purpose) > 500) {
+            throw new EventRegistrationFoundationException('event_registration_answer_access_purpose_invalid');
+        }
+        $this->support->idempotencyHash($correlationId);
+
         $questions = DB::table('event_registration_form_questions')
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId)
@@ -94,12 +101,18 @@ final class EventRegistrationSubmissionExportService
 
         $rows = [];
         foreach ($records as $record) {
+            $recordCorrelation = $correlationId . ':' . (int) $record->id;
+            // Keep existing audit hashes stable, while accepting a full-length
+            // reference without truncating the submission-specific identity.
+            if (strlen($recordCorrelation) > 512) {
+                $recordCorrelation = hash('sha256', $recordCorrelation);
+            }
             $answers = $this->submissions->readAnswers(
                 $eventId,
                 (int) $record->id,
                 $persistedActor,
                 $purpose,
-                $correlationId . ':' . (int) $record->id,
+                $recordCorrelation,
                 'export',
                 $includeSensitive,
             );

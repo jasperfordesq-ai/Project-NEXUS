@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Registration answer exports now validate audit purpose and reference even when no submissions match, and accept maximum-length references without overflowing per-submission audit keys. Existing shorter-reference audit hashes remain unchanged.
+
 - Native registration answer reads now accept empty answer maps returned by PHP instead of reporting a contract error; organiser review preserves purged-answer status and rejects unexpected sensitive answer disclosure.
 
 - Registration form revision conflicts and immutable published-form refusals now identify the rejected form field, allowing clients to offer draft review without treating uncertain retry-key conflicts as rejected writes. The native form journal captures the rejection reason before its deferred storage callback.
