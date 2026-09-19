@@ -97,5 +97,11 @@
   "channels": { "email": "Ríomhphost", "in_app": "Fógra san aip", "push": "Brúfhógra" },
   "unsaved_title": "An teachtaireacht seo a chaitheamh i dtraipisí?",
   "unsaved_message": "Tá focail neamhshábháilte agat. Má dhúnann tú anois, caillfear iad.",
-  "discard": "Caith i dtraipisí"
+  "discard": "Caith i dtraipisí",
+  "recovery_title": "Ní mór an gníomh roimhe seo a aisghabháil",
+  "recovery_description": "Seans gur éirigh leis an ngníomh roimhe seo cheana féin. Aisghabh é chun an t-iarratas sábháilte céanna a thriail arís agus a thoradh a fháil sula dtosaíonn tú gníomh eile.",
+  "recovery_button": "Aisghabh an gníomh sábháilte",
+  "recovery_storage_title": "Níl gníomhartha sábháilte ar fáil",
+  "recovery_storage_description": "Níorbh fhéidir na gníomhartha sábháilte a sheiceáil. Bain triail eile as sula ndéanann tú athruithe.",
+  "recovery_reload": "Seiceáil gníomhartha sábháilte"
 }

@@ -97,5 +97,11 @@
   "channels": { "email": "Correo electrónico", "in_app": "Notificación en la aplicación", "push": "Notificación push" },
   "unsaved_title": "¿Descartar este mensaje?",
   "unsaved_message": "Tienes texto sin guardar. Si cierras ahora, se perderá.",
-  "discard": "Descartar"
+  "discard": "Descartar",
+  "recovery_title": "Recupera la acción anterior",
+  "recovery_description": "Es posible que la acción anterior ya se haya completado. Recupérala para repetir la solicitud guardada y obtener su resultado antes de iniciar otra acción.",
+  "recovery_button": "Recuperar acción guardada",
+  "recovery_storage_title": "Acciones guardadas no disponibles",
+  "recovery_storage_description": "No se pudieron comprobar las acciones guardadas. Inténtalo de nuevo antes de hacer cambios.",
+  "recovery_reload": "Comprobar acciones guardadas"
 }

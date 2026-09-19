@@ -117,5 +117,11 @@
   },
   "unsaved_title": "Abandonner ce message ?",
   "unsaved_message": "Vous avez un texte non enregistré. En fermant maintenant, vous le perdrez.",
-  "discard": "Abandonner"
+  "discard": "Abandonner",
+  "recovery_title": "Récupérer l’action précédente",
+  "recovery_description": "L’action précédente a peut-être déjà réussi. Récupérez-la pour réessayer la demande enregistrée à l’identique et obtenir son résultat avant de lancer une autre action.",
+  "recovery_button": "Récupérer l’action enregistrée",
+  "recovery_storage_title": "Actions enregistrées indisponibles",
+  "recovery_storage_description": "Impossible de vérifier les actions enregistrées. Réessayez avant de faire des modifications.",
+  "recovery_reload": "Vérifier les actions enregistrées"
 }

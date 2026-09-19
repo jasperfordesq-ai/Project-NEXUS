@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -21,14 +21,9 @@ import { eventLocalInputToIso, localEventTimeZone } from '@/lib/utils/eventDateT
 import { describeApiError } from '@/lib/api/describeApiError';
 import { refusalStatus } from '@/lib/api/refusal';
 import {
-  cancelEventCommunication,
-  createEventCommunication,
   getEventCommunicationDetail,
   getEventCommunications,
   previewEventCommunication,
-  reviseEventCommunication,
-  retryEventCommunication,
-  scheduleEventCommunication,
   type MobileEventBroadcast,
   type MobileEventBroadcastChannel,
   type MobileEventBroadcastDetail,
@@ -38,6 +33,10 @@ import {
   type MobileEventBroadcastVariant,
 } from '@/lib/api/eventCommunications';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
+import { executeEventCommunicationOperation, recoverEventCommunicationOperation } from '@/lib/eventCommunicationOperation';
+import { loadEventCommunicationOperation, type EventCommunicationIntent, type EventCommunicationScope, type SavedEventCommunicationOperation } from '@/lib/eventCommunicationOperationStore';
 import { withRouteGate } from '@/components/withRouteGate';
 
 const SEGMENTS: MobileEventBroadcastSegment[] = [
@@ -58,13 +57,6 @@ function initialInput(): MobileEventBroadcastInput {
   };
 }
 
-function idempotencyKey(action: string): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID();
-  }
-  return `mobile-event-broadcast-${action}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
 function statusColor(status: MobileEventBroadcast['status']): 'accent' | 'success' | 'warning' | 'danger' {
   if (status === 'sent') return 'success';
   if (status === 'failed' || status === 'cancelled') return 'danger';
@@ -74,19 +66,85 @@ function statusColor(status: MobileEventBroadcast['status']): 'accent' | 'succes
 
 function EventCommunicationsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const eventId = Number(id);
   const safeEventId = Number.isInteger(eventId) && eventId > 0 ? eventId : 0;
   return (
     <ModalErrorBoundary>
-      <EventCommunicationsScreenInner key={safeEventId} safeEventId={safeEventId} />
+      <EventCommunicationsScreenInner key={`${tenant?.id}:${user?.id}:${safeEventId}`} safeEventId={safeEventId} tenantId={Number(tenant?.id)} userId={Number(user?.id)} />
     </ModalErrorBoundary>
   );
 }
 
-function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }) {
+function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { safeEventId: number; tenantId: number; userId: number }) {
   const { t } = useTranslation(['event_communications', 'common']);
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
+  const scope = useMemo<EventCommunicationScope>(() => ({ tenantId, userId, eventId: safeEventId }), [tenantId, userId, safeEventId]);
+  const mounted = useRef(true);
+  const operationBusy = useRef(false);
+  const [operationLoading, setOperationLoading] = useState(true);
+  const [operationFailed, setOperationFailed] = useState(false);
+  const [pendingOperation, setPendingOperation] = useState<SavedEventCommunicationOperation | null>(null);
+  const [isOperating, setIsOperating] = useState(false);
+  const mutationsBlocked = operationLoading || operationFailed || pendingOperation !== null || isOperating;
+  const refreshOperation = useCallback(async () => {
+    try {
+      const saved = await loadEventCommunicationOperation(scope);
+      if (!mounted.current) return;
+      setPendingOperation(saved?.status === 'pending' ? saved : null);
+      setOperationFailed(false);
+    } catch {
+      if (mounted.current) setOperationFailed(true);
+    } finally {
+      if (mounted.current) setOperationLoading(false);
+    }
+  }, [scope]);
+  useEffect(() => {
+    mounted.current = true;
+    void refreshOperation();
+    return () => { mounted.current = false; };
+  }, [refreshOperation]);
+
+  async function performOperation(intent: EventCommunicationIntent) {
+    if (mutationsBlocked || operationBusy.current) throw new Error('Event operation unavailable');
+    operationBusy.current = true;
+    setIsOperating(true);
+    try {
+      return await executeEventCommunicationOperation(scope, intent, () => mounted.current);
+    } finally {
+      await refreshOperation();
+      operationBusy.current = false;
+      if (mounted.current) setIsOperating(false);
+    }
+  }
+
+  async function recoverOperation() {
+    if (!pendingOperation || operationBusy.current) return;
+    operationBusy.current = true;
+    setIsOperating(true);
+    const saved = pendingOperation;
+    const generation = composerGeneration.current;
+    try {
+      const result = await recoverEventCommunicationOperation(scope, () => mounted.current);
+      if (!mounted.current) return;
+      upsertBroadcast(result);
+      if ((saved.intent.action === 'create' || saved.intent.action === 'revise') && composerOpen && composerGeneration.current === generation) {
+        setEditing(result);
+        setComposerBaseline(saved.intent.input);
+        invalidatePreview();
+      }
+      setScheduleTarget(null);
+      setCancelTarget(null);
+    } catch (err) {
+      if (mounted.current) showToast({ title: t('recovery_title'), description: describeApiError(err, t('recovery_description')), variant: 'warning' });
+    } finally {
+      await refreshOperation();
+      operationBusy.current = false;
+      if (mounted.current) setIsOperating(false);
+    }
+  }
   const auditGeneration = useRef(0);
   const previewRequest = useRef<object | null>(null);
   const draftRequest = useRef<object | null>(null);
@@ -432,25 +490,16 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   }
 
   async function saveDraft() {
-    if (saveRequest.current || !preview || preview.recipient_count < 1 || !input.body.trim()) return;
+    if (mutationsBlocked || (editing && !editing.capabilities.edit) || saveRequest.current || !preview || preview.recipient_count < 1 || !input.body.trim()) return;
     const request = {};
     saveRequest.current = request;
     const generation = composerGeneration.current;
     const revision = inputRevision.current;
     setIsSaving(true);
     try {
-      const broadcast = editing
-        ? await reviseEventCommunication(
-          editing.id,
-          editing.version,
-          input,
-          idempotencyKey('revise'),
-        )
-        : await createEventCommunication(
-          safeEventId,
-          input,
-          idempotencyKey('create'),
-        );
+      const broadcast = await performOperation(editing
+        ? { action: 'revise', broadcastId: editing.id, expectedVersion: editing.version, input }
+        : { action: 'create', input });
       if (saveRequest.current !== request) return;
       upsertBroadcast(broadcast);
       const revised = editing !== null;
@@ -485,7 +534,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   }
 
   async function confirmSchedule() {
-    if (!scheduleTarget || scheduleRequest.current) return;
+    if (mutationsBlocked || !scheduleTarget || scheduleRequest.current) return;
     let timestamp: string | null = null;
     if (scheduledAt.trim()) {
       // The field is a local wall-clock time in the placeholder's format; the shared helper
@@ -505,12 +554,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
     scheduleRequest.current = request;
     setIsScheduling(true);
     try {
-      const broadcast = await scheduleEventCommunication(
-        scheduleTarget.id,
-        scheduleTarget.version,
-        timestamp,
-        idempotencyKey('schedule'),
-      );
+      const broadcast = await performOperation({ action: 'schedule', broadcastId: scheduleTarget.id, expectedVersion: scheduleTarget.version, scheduledAt: timestamp });
       if (scheduleRequest.current !== request) return;
       replaceBroadcast(broadcast);
       setScheduleTarget(null);
@@ -536,7 +580,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   }
 
   async function confirmCancel() {
-    if (!cancelTarget || cancelRequest.current) return;
+    if (mutationsBlocked || !cancelTarget || cancelRequest.current) return;
     const reason = cancelReason.trim();
     if (!reason || reason.length > 500) {
       showToast({
@@ -550,12 +594,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
     cancelRequest.current = request;
     setIsCancelling(true);
     try {
-      const broadcast = await cancelEventCommunication(
-        cancelTarget.id,
-        cancelTarget.version,
-        reason,
-        idempotencyKey('cancel'),
-      );
+      const broadcast = await performOperation({ action: 'cancel', broadcastId: cancelTarget.id, expectedVersion: cancelTarget.version, reason });
       if (cancelRequest.current !== request) return;
       replaceBroadcast(broadcast);
       setCancelTarget(null);
@@ -581,16 +620,12 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   }
 
   async function retryFailed(broadcast: MobileEventBroadcast) {
-    if (retryRequest.current) return;
+    if (mutationsBlocked || retryRequest.current) return;
     const request = {};
     retryRequest.current = request;
     setRetryingId(broadcast.id);
     try {
-      const result = await retryEventCommunication(
-        broadcast.id,
-        broadcast.version,
-        idempotencyKey('retry'),
-      );
+      const result = await performOperation({ action: 'retry', broadcastId: broadcast.id, expectedVersion: broadcast.version });
       if (retryRequest.current !== request) return;
       replaceBroadcast(result);
       showToast({
@@ -652,9 +687,37 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
           </Alert.Content>
         </Alert>
 
+        {pendingOperation || operationFailed ? (
+          <View className="gap-3" testID="event-operation-recovery">
+            <Alert status="warning">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>{t(operationFailed ? 'recovery_storage_title' : 'recovery_title')}</Alert.Title>
+                <Alert.Description>{t(operationFailed ? 'recovery_storage_description' : 'recovery_description')}</Alert.Description>
+              </Alert.Content>
+            </Alert>
+            {pendingOperation ? (
+              <View className="gap-2">
+                <Text className="font-semibold text-foreground">{t({ create: 'compose_title', revise: 'compose_edit_title', schedule: 'schedule_title', cancel: 'cancel_title', retry: 'retry_button' }[pendingOperation.intent.action])}</Text>
+                {pendingOperation.intent.action === 'create' || pendingOperation.intent.action === 'revise' ? (
+                  <Text className="text-foreground" selectable>{pendingOperation.intent.input.body}</Text>
+                ) : pendingOperation.intent.action === 'cancel' ? (
+                  <Text className="text-foreground" selectable>{pendingOperation.intent.reason}</Text>
+                ) : pendingOperation.intent.action === 'schedule' && pendingOperation.intent.scheduledAt ? (
+                  <Text className="text-foreground">{t('scheduled_for', { date: dateLabel(pendingOperation.intent.scheduledAt) })}</Text>
+                ) : null}
+              </View>
+            ) : null}
+            <Button isDisabled={isOperating} onPress={() => void (operationFailed ? refreshOperation() : recoverOperation())} accessibilityState={{ busy: isOperating }}>
+              {isOperating ? <Spinner size="sm" /> : null}
+              <Button.Label>{t(operationFailed ? 'recovery_reload' : 'recovery_button')}</Button.Label>
+            </Button>
+          </View>
+        ) : null}
+
         <Button
           variant="primary"
-          isDisabled={composerOpen || safeEventId <= 0 || isLoading || loadFailed}
+          isDisabled={mutationsBlocked || composerOpen || safeEventId <= 0 || isLoading || loadFailed}
           onPress={openNewComposer}
         >
           {t('new_message')}
@@ -767,7 +830,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Button.Label>{t('preview_button')}</Button.Label>
               </Button>
               <Button
-                isDisabled={isSaving || !preview || preview.recipient_count < 1}
+                isDisabled={mutationsBlocked || (editing !== null && !editing.capabilities.edit) || isSaving || !preview || preview.recipient_count < 1}
                 onPress={() => void saveDraft()}
                 accessibilityState={{ busy: isSaving }}
               >
@@ -787,6 +850,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Label>{t('schedule_label')}</Label>
                 <Input
                   testID="event-communication-scheduled-at"
+                  editable={!mutationsBlocked}
                   value={scheduledAt}
                   onChangeText={setScheduledAt}
                   placeholder={t('schedule_placeholder')}
@@ -798,7 +862,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
               <Button variant="secondary" isDisabled={isScheduling} onPress={() => setScheduleTarget(null)}>
                 {t('common:buttons.cancel')}
               </Button>
-              <Button isDisabled={isScheduling} onPress={() => void confirmSchedule()} accessibilityState={{ busy: isScheduling }}>
+              <Button isDisabled={mutationsBlocked || isScheduling} onPress={() => void confirmSchedule()} accessibilityState={{ busy: isScheduling }}>
                 {isScheduling ? <Spinner size="sm" /> : null}
                 <Button.Label>{t('confirm_schedule')}</Button.Label>
               </Button>
@@ -815,6 +879,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Label>{t('cancel_reason_label')}</Label>
                 <Input
                   testID="event-communication-cancel-reason"
+                  editable={!mutationsBlocked}
                   value={cancelReason}
                   onChangeText={setCancelReason}
                   maxLength={500}
@@ -825,7 +890,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
               <Button variant="secondary" isDisabled={isCancelling} onPress={() => setCancelTarget(null)}>
                 {t('common:buttons.cancel')}
               </Button>
-              <Button variant="danger" isDisabled={isCancelling} onPress={() => void confirmCancel()} accessibilityState={{ busy: isCancelling }}>
+              <Button variant="danger" isDisabled={mutationsBlocked || isCancelling} onPress={() => void confirmCancel()} accessibilityState={{ busy: isCancelling }}>
                 {isCancelling ? <Spinner size="sm" /> : null}
                 <Button.Label>{t('confirm_cancel')}</Button.Label>
               </Button>
@@ -979,7 +1044,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Button
                   size="sm"
                   variant="secondary"
-                  isDisabled={openingDraftId !== null || isSaving || composerOpen}
+                  isDisabled={mutationsBlocked || openingDraftId !== null || isSaving || composerOpen}
                   onPress={() => void openEditComposer(broadcast)}
                   accessibilityState={{ busy: openingDraftId === broadcast.id }}
                 >
@@ -998,13 +1063,13 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Button.Label>{t('history_button')}</Button.Label>
               </Button>
               {broadcast.capabilities.schedule ? (
-                <Button size="sm" onPress={() => {
+                <Button size="sm" isDisabled={mutationsBlocked} onPress={() => {
                   setScheduleTarget(broadcast);
                   setScheduledAt('');
                 }}>{t('schedule_button')}</Button>
               ) : null}
               {broadcast.capabilities.cancel ? (
-                <Button size="sm" variant="danger-soft" onPress={() => {
+                <Button size="sm" variant="danger-soft" isDisabled={mutationsBlocked} onPress={() => {
                   setCancelTarget(broadcast);
                   setCancelReason('');
                 }}>{t('cancel_button')}</Button>
@@ -1013,7 +1078,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
                 <Button
                   size="sm"
                   variant="secondary"
-                  isDisabled={retryingId !== null}
+                  isDisabled={mutationsBlocked || retryingId !== null}
                   onPress={() => void retryFailed(broadcast)}
                   accessibilityState={{ busy: retryingId === broadcast.id }}
                 >

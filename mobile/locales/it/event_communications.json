@@ -97,5 +97,11 @@
   "channels": { "email": "E-mail", "in_app": "Notifica nell’app", "push": "Notifica push" },
   "unsaved_title": "Scartare questo messaggio?",
   "unsaved_message": "Hai del testo non salvato. Se chiudi ora, andrà perduto.",
-  "discard": "Scarta"
+  "discard": "Scarta",
+  "recovery_title": "Recupera l’azione precedente",
+  "recovery_description": "L’azione precedente potrebbe essere già riuscita. Recuperala per ripetere la stessa richiesta salvata e ottenerne il risultato prima di avviare un’altra azione.",
+  "recovery_button": "Recupera azione salvata",
+  "recovery_storage_title": "Azioni salvate non disponibili",
+  "recovery_storage_description": "Non è stato possibile verificare le azioni salvate. Riprova prima di apportare modifiche.",
+  "recovery_reload": "Verifica azioni salvate"
 }

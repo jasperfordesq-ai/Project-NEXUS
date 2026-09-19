@@ -117,5 +117,11 @@
   },
   "unsaved_title": "Discard this message?",
   "unsaved_message": "You have unsaved wording. Closing now will lose it.",
-  "discard": "Discard"
+  "discard": "Discard",
+  "recovery_title": "Previous action needs recovery",
+  "recovery_description": "The previous action may already have succeeded. Recover it to retry the exact saved request and retrieve its result before starting another action.",
+  "recovery_button": "Recover saved action",
+  "recovery_storage_title": "Saved actions unavailable",
+  "recovery_storage_description": "Saved actions could not be checked. Try again before making changes.",
+  "recovery_reload": "Check saved actions"
 }

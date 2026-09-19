@@ -117,5 +117,11 @@
   },
   "unsaved_title": "Diese Nachricht verwerfen?",
   "unsaved_message": "Du hast ungespeicherten Text. Wenn du jetzt schließt, geht er verloren.",
-  "discard": "Verwerfen"
+  "discard": "Verwerfen",
+  "recovery_title": "Vorherige Aktion wiederherstellen",
+  "recovery_description": "Die vorherige Aktion war möglicherweise bereits erfolgreich. Wiederholen Sie die gespeicherte Anfrage, um ihr Ergebnis abzurufen, bevor Sie eine neue Aktion starten.",
+  "recovery_button": "Gespeicherte Aktion wiederherstellen",
+  "recovery_storage_title": "Gespeicherte Aktionen nicht verfügbar",
+  "recovery_storage_description": "Gespeicherte Aktionen konnten nicht geprüft werden. Versuchen Sie es erneut, bevor Sie Änderungen vornehmen.",
+  "recovery_reload": "Gespeicherte Aktionen prüfen"
 }

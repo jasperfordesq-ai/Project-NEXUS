@@ -5,6 +5,14 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { storage } from '@/lib/storage';
+import { prepareEventCommunicationOperation, loadEventCommunicationOperation } from '@/lib/eventCommunicationOperationStore';
+
+const mockStoredValues = new Map<string, string>();
+let mockUserId = 7;
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
+jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: 2 } }) }));
+jest.mock('@/lib/storage', () => ({ storage: { get: jest.fn(), set: jest.fn(), getJson: jest.fn(), setJson: jest.fn(), remove: jest.fn() } }));
 
 const mockGet = jest.fn();
 const mockGetDetail = jest.fn();
@@ -45,6 +53,7 @@ jest.mock('@/components/ui/AppToast', () => ({
   useAppToast: () => ({ show: mockShowToast }),
 }));
 jest.mock('@/lib/api/eventCommunications', () => ({
+  ...jest.requireActual('@/lib/api/eventCommunications'),
   getEventCommunications: (...args: unknown[]) => mockGet(...args),
   getEventCommunicationDetail: (...args: unknown[]) => mockGetDetail(...args),
   previewEventCommunication: (...args: unknown[]) => mockPreview(...args),
@@ -173,6 +182,15 @@ function broadcast(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockStoredValues.clear();
+  mockUserId = 7;
+  jest.mocked(storage.get).mockImplementation(async key => mockStoredValues.get(key) ?? null);
+  jest.mocked(storage.set).mockImplementation(async (key, value) => { mockStoredValues.set(key, value); });
+  jest.mocked(storage.getJson).mockImplementation(async key => {
+    const raw = mockStoredValues.get(key); return raw === undefined ? null : JSON.parse(raw);
+  });
+  jest.mocked(storage.setJson).mockImplementation(async (key, value) => { mockStoredValues.set(key, JSON.stringify(value)); });
+  jest.mocked(storage.remove).mockImplementation(async key => { mockStoredValues.delete(key); });
   mockEventId = '42';
   Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
   mockGet.mockResolvedValue({
@@ -225,6 +243,77 @@ beforeEach(() => {
 });
 
 describe('EventCommunicationsScreen', () => {
+  const operationScope = { tenantId: 2, userId: 7, eventId: 42 };
+  const savedInput = { variant: 'announcement' as const, segments: ['registration_confirmed' as const], channels: ['in_app' as const], body: 'Saved original wording' };
+
+  it('restores a pending request after remount without automatically sending it', async () => {
+    const saved = await prepareEventCommunicationOperation(operationScope, { action: 'create', input: savedInput });
+    const first = render(<EventCommunicationsScreen />);
+    await first.findByTestId('event-operation-recovery');
+    expect(mockCreate).not.toHaveBeenCalled();
+    first.unmount();
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByTestId('event-operation-recovery');
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+    mockCreate.mockResolvedValueOnce(broadcast({ id: 19, body: savedInput.body }));
+    fireEvent.press(screen.getByText('recovery_button'));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    expect(mockShowToast.mock.calls).toEqual([]);
+    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull());
+    expect(mockCreate).toHaveBeenCalledWith(42, savedInput, saved.key);
+    expect(await loadEventCommunicationOperation(operationScope)).toMatchObject({ status: 'acknowledged' });
+  });
+
+  it('recovers a lost create response while preserving newer composer wording', async () => {
+    mockCreate.mockRejectedValueOnce(new Error('Response lost'));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), savedInput.body);
+    fireEvent.press(screen.getByText('Preview audience'));
+    await screen.findByText('12 recipients, 24 deliveries');
+    fireEvent.press(screen.getByText('Save draft'));
+    await screen.findByTestId('event-operation-recovery');
+    const original = mockCreate.mock.calls[0];
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Newer unsaved wording');
+    mockCreate.mockResolvedValueOnce(broadcast({ id: 19, body: savedInput.body }));
+    fireEvent.press(screen.getByText('recovery_button'));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(2));
+    await act(async () => {});
+    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull());
+    expect(mockCreate.mock.calls[1]).toEqual(original);
+    expect(screen.getByDisplayValue('Newer unsaved wording')).toBeTruthy();
+    expect(screen.getByText('Save changes')).toBeTruthy();
+    expect(isGuardArmed()).toBe(true);
+  });
+
+  it('does not expose another account pending operation after switching accounts', async () => {
+    await prepareEventCommunicationOperation(operationScope, { action: 'create', input: savedInput });
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByTestId('event-operation-recovery');
+    mockUserId = 8;
+    screen.rerender(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    expect(screen.queryByTestId('event-operation-recovery')).toBeNull();
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(await loadEventCommunicationOperation(operationScope)).toMatchObject({ status: 'pending' });
+  });
+
+  it('blocks writes when saved operations cannot be read and offers a storage retry', async () => {
+    jest.mocked(storage.get).mockRejectedValueOnce(new Error('Keychain unavailable'));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('recovery_storage_title');
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+    fireEvent.press(screen.getByText('recovery_reload'));
+    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull());
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.getByTestId('event-communication-body')).toBeTruthy();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
   it.each(['invalid', 'refused', 'failed', 'loading'])('does not open a composer while the event is %s', async (state) => {
     const { ApiResponseError } = require('@/lib/api/client');
     if (state === 'invalid') mockEventId = 'not-an-event';
@@ -274,8 +363,8 @@ describe('EventCommunicationsScreen', () => {
     request.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
     const { press } = await openAction(action);
     act(() => { press(); press(); });
-    expect(request).toHaveBeenCalledTimes(1);
-    await act(async () => finish(broadcast()));
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
+    await act(async () => finish(broadcast({ version: 2 })));
   });
 
   it.each(['schedule', 'cancel', 'retry'])('ignores %s failure after screen departure', async (action) => {
@@ -284,6 +373,7 @@ describe('EventCommunicationsScreen', () => {
     request.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
     const { screen, press } = await openAction(action);
     act(() => press());
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
     screen.unmount();
     await act(async () => reject(new Error('offline')));
     expect(mockShowToast).not.toHaveBeenCalled();
@@ -327,11 +417,13 @@ describe('EventCommunicationsScreen', () => {
     await screen.findByText('12 recipients, 24 deliveries');
     fireEvent.press(screen.getByText('Save draft'));
     fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Later wording');
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
     await act(async () => finish(broadcast({ id: 19, body: 'First wording' })));
     expect(screen.getByDisplayValue('Later wording')).toBeTruthy();
     expect(isGuardArmed()).toBe(true);
     fireEvent.press(screen.getByText('Preview audience'));
     await screen.findByText('12 recipients, 24 deliveries');
+    mockRevise.mockResolvedValueOnce(broadcast({ id: 19, version: 2, body: 'Later wording' }));
     fireEvent.press(screen.getByText('Save changes'));
     await waitFor(() => expect(mockRevise).toHaveBeenCalledWith(19, 1,
       expect.objectContaining({ body: 'Later wording' }), expect.any(String)));
@@ -348,6 +440,7 @@ describe('EventCommunicationsScreen', () => {
     fireEvent.press(screen.getByText('Preview audience'));
     await screen.findByText('12 recipients, 24 deliveries');
     fireEvent.press(screen.getByText('Save draft'));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
     screen.unmount();
     await act(async () => reject(new Error('offline')));
     expect(mockShowToast).not.toHaveBeenCalled();
@@ -366,7 +459,7 @@ describe('EventCommunicationsScreen', () => {
     while (!button.props.onPress && button.parent) button = button.parent;
     expect(button.props.onPress).toEqual(expect.any(Function));
     act(() => { button.props.onPress(); button.props.onPress(); });
-    expect(mockCreate).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
     await act(async () => finish(broadcast({ id: 19, body: 'Draft wording' })));
   });
 
