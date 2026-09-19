@@ -19,6 +19,7 @@ use App\Services\EventBroadcastQueryService;
 use App\Services\EventBroadcastService;
 use App\Services\SafeguardingInteractionPolicy;
 use App\Support\Events\EventBroadcastRenderedMessage;
+use App\Exceptions\EventBroadcastException;
 use App\Support\Events\EventBroadcastTransportResult;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -31,6 +32,52 @@ use Tests\Laravel\TestCase;
 final class EventBroadcastRuntimeIntegrationTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public function test_accepted_schedule_replays_after_its_time_without_creating_another_delivery(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'features' => json_encode(['events' => true], JSON_THROW_ON_ERROR),
+        ]);
+        TenantContext::reset();
+        TenantContext::setById($this->testTenantId);
+        $organizer = $this->user('Schedule Recovery Organizer', 'en');
+        $recipient = $this->user('Schedule Recovery Recipient', 'en');
+        $eventId = $this->event((int) $organizer->id);
+        $this->confirmedRegistration($eventId, (int) $recipient->id, (int) $organizer->id);
+        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
+        $policy->shouldReceive('assertManyLocalContactsAllowed')->atLeast()->once();
+        $broadcasts = new EventBroadcastService(new EventBroadcastAudienceResolver($policy));
+        $created = $broadcasts->createDraft($eventId, $organizer, 'announcement',
+            ['registration_confirmed'], ['in_app'], 'Schedule recovery fixture', 'schedule-recovery-create');
+        $broadcastId = (int) $created['broadcast']->id;
+        $scheduledAt = CarbonImmutable::now('UTC')->addMinutes(5);
+        $scheduled = $broadcasts->schedule($broadcastId, $organizer, 1, $scheduledAt, 'schedule-recovery-accept');
+        self::assertTrue($scheduled['changed']);
+
+        // No delivery consumer is run: this exercises transaction/history recovery only.
+        $previousNow = CarbonImmutable::getTestNow();
+        CarbonImmutable::setTestNow($scheduledAt->addMinutes(10));
+        try {
+            $replay = $broadcasts->schedule($broadcastId, $organizer, 1, $scheduledAt, 'schedule-recovery-accept');
+            self::assertFalse($replay['changed']);
+            self::assertSame($broadcastId, (int) $replay['broadcast']->id);
+            self::assertSame(2, (int) $replay['broadcast']->broadcast_version);
+            self::assertSame(1, DB::table('event_broadcast_deliveries')->where('broadcast_id', $broadcastId)->count());
+            self::assertSame(1, DB::table('event_broadcast_history')->where('broadcast_id', $broadcastId)->where('action', 'scheduled')->count());
+
+            $fresh = $broadcasts->createDraft($eventId, $organizer, 'announcement',
+                ['registration_confirmed'], ['in_app'], 'New past schedule fixture', 'schedule-recovery-new-create');
+            try {
+                $broadcasts->schedule((int) $fresh['broadcast']->id, $organizer, 1, $scheduledAt, 'schedule-recovery-new-past');
+                self::fail('A new request must not schedule in the past');
+            } catch (EventBroadcastException $exception) {
+                self::assertSame('event_broadcast_schedule_in_past', $exception->reasonCode);
+            }
+            self::assertSame(0, DB::table('event_broadcast_deliveries')->where('broadcast_id', $fresh['broadcast']->id)->count());
+        } finally {
+            CarbonImmutable::setTestNow($previousNow);
+        }
+    }
 
     public function test_individual_broadcast_history_is_bounded_and_independently_paginated(): void
     {

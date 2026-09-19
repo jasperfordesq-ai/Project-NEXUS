@@ -316,9 +316,6 @@ final class EventBroadcastService
             ? null
             : CarbonImmutable::instance($scheduledAt)->utc();
         $effectiveSchedule = $requestedSchedule ?? CarbonImmutable::now('UTC');
-        if ($effectiveSchedule->lessThan(CarbonImmutable::now('UTC')->subMinute())) {
-            throw new EventBroadcastException('event_broadcast_schedule_in_past');
-        }
         $keyHash = $this->support->idempotencyHash($idempotencyKey);
 
         return DB::transaction(function () use (
@@ -350,6 +347,11 @@ final class EventBroadcastService
             );
             if ($replay !== null) {
                 return ['broadcast' => $this->broadcastModel($tenantId, $broadcastId), 'changed' => false];
+            }
+            // An accepted request remains replayable after its scheduled time passes.
+            // Only a new operation must satisfy the current scheduling window.
+            if ($effectiveSchedule->lessThan(CarbonImmutable::now('UTC')->subMinute())) {
+                throw new EventBroadcastException('event_broadcast_schedule_in_past');
             }
             $this->assertVersionAndStatus(
                 $broadcast,

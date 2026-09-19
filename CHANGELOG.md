@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Recovering an accepted event communication schedule now returns its existing result after the scheduled time has passed, while new requests to schedule in the past remain rejected.
+
 - Native event communications now offer explicit saved-action recovery, isolate recovery by account and event, preserve newer wording, and block conflicting writes while the previous result is uncertain.
 
 - The native event recovery transport reuses saved requests after uncertain responses, checks ownership after storage, and records accepted work after departure; recovery screen integration remains in progress.
