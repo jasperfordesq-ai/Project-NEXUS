@@ -79,6 +79,26 @@ function session(overrides: Partial<EventAgendaSession> = {}): EventAgendaSessio
 describe('EventAgendaEnterprisePanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(registerEventAgendaSession).mockReset();
+    jest.mocked(withdrawEventAgendaSession).mockReset();
+  });
+
+  it.each(['register', 'withdraw'] as const)('retries an uncertain %s with its original key and version', async (action) => {
+    const api = action === 'register' ? registerEventAgendaSession : withdrawEventAgendaSession;
+    const current = session({ registration: { state: action === 'register' ? 'not_registered' : 'registered',
+      version: 4, can_register: action === 'register', can_withdraw: action === 'withdraw' } });
+    jest.mocked(api).mockRejectedValueOnce(new Error('Response lost')).mockResolvedValueOnce({ data: { session: current } } as never);
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const submit = async () => {
+      fireEvent.press(view.getByText(action === 'register' ? 'Register for session' : 'Withdraw from session'));
+      if (action === 'withdraw') await act(async () => mockConfirm.mock.calls.at(-1)![0].onConfirm());
+    };
+    await submit();
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    const original = jest.mocked(api).mock.calls[0];
+    await submit();
+    await waitFor(() => expect(api).toHaveBeenCalledTimes(2));
+    expect(jest.mocked(api).mock.calls[1]).toEqual(original);
   });
 
   it('submits once when the same rendered registration callback is invoked twice', async () => {
@@ -90,6 +110,21 @@ describe('EventAgendaEnterprisePanel', () => {
     act(() => { press(); press(); });
     expect(registerEventAgendaSession).toHaveBeenCalledTimes(1);
     await act(async () => finish({ data: { session: current } }));
+  });
+
+  it('uses a different key when refreshed registration has a different version', async () => {
+    jest.mocked(registerEventAgendaSession).mockRejectedValue(new Error('Unknown outcome'));
+    const current = session();
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    fireEvent.press(view.getByText('Register for session'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledTimes(1));
+    const key = jest.mocked(registerEventAgendaSession).mock.calls[0][3];
+    view.rerender(<EventAgendaEnterprisePanel eventId={101} session={{ ...current,
+      registration: { ...current.registration, version: 2 } }} onSessionChange={jest.fn()} />);
+    fireEvent.press(view.getByText('Register for session'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledTimes(2));
+    expect(jest.mocked(registerEventAgendaSession).mock.calls[1][2]).toBe(2);
+    expect(jest.mocked(registerEventAgendaSession).mock.calls[1][3]).not.toBe(key);
   });
 
   it('does not withdraw through a confirmation retained after unmount', async () => {

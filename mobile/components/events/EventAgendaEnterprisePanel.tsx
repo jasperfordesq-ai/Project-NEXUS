@@ -47,6 +47,7 @@ export function EventAgendaEnterprisePanel({
   const [pending, setPending] = useState<'register' | 'withdraw' | null>(null);
   const mounted = useRef(true);
   const locked = useRef(false);
+  const requestKeys = useRef(new Map<string, string>());
   const current = useRef({ eventId, session });
   current.current = { eventId, session };
   useEffect(() => {
@@ -60,6 +61,9 @@ export function EventAgendaEnterprisePanel({
       && current.current.session.registration.version === session.registration.version;
     if (!stillCurrent() || locked.current || !current.current.session.registration[action === 'register' ? 'can_register' : 'can_withdraw']) return;
     locked.current = true;
+    const request = `${eventId}:${session.id}:${session.registration.version}:${action}`;
+    const key = requestKeys.current.get(request) ?? idempotencyKey();
+    requestKeys.current.set(request, key);
     setPending(action);
     try {
       const response = action === 'register'
@@ -67,14 +71,15 @@ export function EventAgendaEnterprisePanel({
             eventId,
             session.id,
             session.registration.version,
-            idempotencyKey(),
+            key,
           )
         : await withdrawEventAgendaSession(
             eventId,
             session.id,
             session.registration.version,
-            idempotencyKey(),
+            key,
           );
+      requestKeys.current.delete(request);
       if (!stillCurrent()) return;
       onSessionChange(response.data.session);
       showToast({
