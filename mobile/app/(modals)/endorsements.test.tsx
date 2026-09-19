@@ -239,6 +239,35 @@ describe('EndorsementsScreen', () => {
     await waitFor(() => expect(addSkill).toHaveBeenCalledTimes(2));
   });
 
+  it('preserves text edited while the previous skill name is saving', async () => {
+    let finish!: (value: Awaited<ReturnType<typeof addSkill>>) => void;
+    jest.mocked(addSkill).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = await openSkillForm();
+    fireEvent(screen.getByPlaceholderText('Enter skill name…'), 'submitEditing');
+    fireEvent.changeText(screen.getByPlaceholderText('Enter skill name…'), 'Repairs');
+    await act(async () => finish({ data: { id: 9, name: 'Gardening', category: null } }));
+    expect(screen.getByPlaceholderText('Enter skill name…').props.value).toBe('Repairs');
+    fireEvent(screen.getByPlaceholderText('Enter skill name…'), 'submitEditing');
+    await waitFor(() => expect(addSkill).toHaveBeenLastCalledWith('Repairs'));
+  });
+
+  it.each([false, true])('ignores removed-screen skill removal completion (failure: %s)', async (failure) => {
+    const refresh = jest.fn();
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getMySkills')
+      ? { ...defaultApiState, data: { data: { skills: [mockSkill] } }, refresh } : defaultApiState);
+    let finish!: () => void;
+    let reject!: (error: Error) => void;
+    jest.mocked(removeSkill).mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByLabelText('Remove'));
+    fireEvent.press(screen.getByLabelText('Remove'));
+    expect(removeSkill).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => { if (failure) reject(new Error('offline')); else finish(); });
+    expect(useAppToast().show).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
   it('does not close a replacement skill form after the old save finishes', async () => {
     let finish!: (value: Awaited<ReturnType<typeof addSkill>>) => void;
     jest.mocked(addSkill).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));

@@ -192,11 +192,20 @@ export default function EndorsementsScreen() {
   const membersRequestRef = useRef<object | null>(null);
   const addRequestRef = useRef<object | null>(null);
   const skillFormVersionRef = useRef(0);
+  const skillDraftRef = useRef(skillInput);
+  skillDraftRef.current = skillInput;
+  const mountedRef = useRef(true);
+  const removeRequestRef = useRef<object | null>(null);
 
-  useEffect(() => () => {
-    categoryRequestRef.current = null;
-    membersRequestRef.current = null;
-    addRequestRef.current = null;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      categoryRequestRef.current = null;
+      membersRequestRef.current = null;
+      addRequestRef.current = null;
+      removeRequestRef.current = null;
+    };
   }, []);
 
   const changeSkillFormVisibility = useCallback((visible: boolean) => {
@@ -248,7 +257,7 @@ export default function EndorsementsScreen() {
     try {
       await addSkill(name);
       if (addRequestRef.current !== request) return;
-      if (skillFormVersionRef.current === formVersion) {
+      if (skillFormVersionRef.current === formVersion && skillDraftRef.current.trim() === name) {
         setSkillInput('');
         setAddingSkill(false);
       }
@@ -320,6 +329,7 @@ export default function EndorsementsScreen() {
   }
 
   const handleRemoveSkill = useCallback((skillId: number) => {
+    if (!mountedRef.current || removeRequestRef.current) return;
     confirm({
       title: t('removeSkillTitle'),
       message: t('removeSkillConfirm'),
@@ -327,14 +337,21 @@ export default function EndorsementsScreen() {
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!mountedRef.current || removeRequestRef.current) return;
+        const request = {};
+        removeRequestRef.current = request;
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         try {
           await removeSkill(skillId);
+          if (removeRequestRef.current !== request) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           showToast({ title: t('skillRemovedTitle'), description: t('skillRemoved'), variant: 'success' });
           refreshSkills();
         } catch (err) {
+          if (removeRequestRef.current !== request) return;
           showToast({ title: t('removeSkillErrorTitle'), description: describeApiError(err, t('removeSkillError')), variant: 'danger' });
+        } finally {
+          if (removeRequestRef.current === request) removeRequestRef.current = null;
         }
       },
     });
