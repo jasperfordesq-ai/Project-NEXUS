@@ -92,6 +92,36 @@ final class EventRegistrationSettingsAndFormServiceTest extends TestCase
         self::assertSame(2, (int) $published['settings']->revision);
     }
 
+    public function test_explicit_null_clears_dates_while_omitted_dates_are_preserved(): void
+    {
+        $owner = $this->eventUser();
+        $service = new EventRegistrationSettingsService();
+        foreach (['_utc', ''] as $suffix) {
+            [$eventId, $start] = $this->registrationEvent((int) $owner->id);
+            $payload = [
+                'opens_at' . $suffix => $start->subDays(7)->toIso8601String(),
+                'closes_at' . $suffix => $start->toIso8601String(),
+                'cancellation_cutoff_at' . $suffix => $start->toIso8601String(),
+            ];
+            $service->save($eventId, $owner, $payload, 0, 'date-create-' . $eventId);
+            $preserved = $service->save($eventId, $owner, ['approval_mode' => 'manual'], 1, 'date-preserve-' . $eventId);
+            self::assertSame($start->format('Y-m-d H:i:s'), $preserved['settings']->closes_at_utc->format('Y-m-d H:i:s'));
+            self::assertNotNull($preserved['settings']->opens_at_utc);
+            self::assertNotNull($preserved['settings']->cancellation_cutoff_at_utc);
+
+            $clear = array_fill_keys(array_keys($payload), null);
+            $cleared = $service->save($eventId, $owner, $clear, 2, 'date-clear-' . $eventId);
+            foreach (['opens_at_utc', 'closes_at_utc', 'cancellation_cutoff_at_utc'] as $field) {
+                self::assertNull($cleared['settings']->{$field}, $field . ' must be cleared by explicit null');
+            }
+            self::assertSame(3, (int) $cleared['settings']->revision);
+            $replayed = $service->save($eventId, $owner, $clear, 2, 'date-clear-' . $eventId);
+            self::assertFalse($replayed['changed']);
+            self::assertSame(3, (int) $replayed['settings']->revision);
+            self::assertSame(3, DB::table('event_registration_settings_history')->where('event_id', $eventId)->count());
+        }
+    }
+
     public function test_forms_are_versioned_and_published_definitions_are_database_immutable(): void
     {
         $owner = $this->eventUser();

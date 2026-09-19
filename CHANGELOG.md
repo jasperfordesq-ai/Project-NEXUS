@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Registration settings now honour explicit date removal for registration windows and cancellation cutoffs, while preserving omitted dates and idempotent retries.
+
 - Native button labels and the People heading remeasure when system text size changes, fixing clipped labels after returning from Android Settings while preserving surrounding form state. Verified on the Android emulator at 100% and 200% text with the search draft retained.
 
 - Native agenda session panels now load owner-scoped saved requests before enabling changes and expose explicit recovery after uncertain results or reopening. Storage failures offer a separate reload, unresolved work blocks new requests, recovery failures remain visible, and older receipts cannot replace newer registration projections. Physical restart verification remains open.

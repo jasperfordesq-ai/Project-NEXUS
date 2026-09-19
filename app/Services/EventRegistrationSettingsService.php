@@ -265,13 +265,20 @@ final class EventRegistrationSettingsService
             return property_exists($row, $field) ? $row->{$field} : null;
         };
 
-        $opensInput = $attributes['opens_at_utc'] ?? $attributes['opens_at']
-            ?? ($current !== null ? $raw($current, 'opens_at_utc') : null);
-        $closesInput = $attributes['closes_at_utc'] ?? $attributes['closes_at']
-            ?? ($current !== null ? $raw($current, 'closes_at_utc') : null);
-        $cutoffInput = $attributes['cancellation_cutoff_at_utc']
-            ?? $attributes['cancellation_cutoff_at']
-            ?? ($current !== null ? $raw($current, 'cancellation_cutoff_at_utc') : null);
+        // An explicit null removes a date; only an omitted field preserves it.
+        // Alias pairs have already been rejected by assertAliasPairs().
+        $dateInput = static function (string $field) use ($attributes, $current, $raw): mixed {
+            foreach ([$field . '_utc', $field] as $key) {
+                if (array_key_exists($key, $attributes)) {
+                    return $attributes[$key];
+                }
+            }
+
+            return $current !== null ? $raw($current, $field . '_utc') : null;
+        };
+        $opensInput = $dateInput('opens_at');
+        $closesInput = $dateInput('closes_at');
+        $cutoffInput = $dateInput('cancellation_cutoff_at');
         $opens = $this->normalizeStoredOrInput($opensInput, $timezone, 'event_registration_opens_at_invalid');
         $closes = $this->normalizeStoredOrInput($closesInput, $timezone, 'event_registration_closes_at_invalid');
         $cutoff = $this->normalizeStoredOrInput($cutoffInput, $timezone, 'event_registration_cutoff_invalid');
