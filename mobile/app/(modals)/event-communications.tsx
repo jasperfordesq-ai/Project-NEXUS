@@ -230,6 +230,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   });
 
   function openNewComposer() {
+    if (safeEventId <= 0 || isLoading || loadFailed || composerOpen) return;
     composerGeneration.current += 1;
     draftRequest.current = null;
     setOpeningDraftId(null);
@@ -653,7 +654,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
 
         <Button
           variant="primary"
-          isDisabled={composerOpen}
+          isDisabled={composerOpen || safeEventId <= 0 || isLoading || loadFailed}
           onPress={openNewComposer}
         >
           {t('new_message')}

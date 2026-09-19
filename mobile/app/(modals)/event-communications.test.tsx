@@ -225,6 +225,31 @@ beforeEach(() => {
 });
 
 describe('EventCommunicationsScreen', () => {
+  it.each(['invalid', 'refused', 'failed', 'loading'])('does not open a composer while the event is %s', async (state) => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    if (state === 'invalid') mockEventId = 'not-an-event';
+    else if (state === 'loading') mockGet.mockImplementationOnce(() => new Promise(() => {}));
+    else mockGet.mockRejectedValueOnce(new ApiResponseError(state === 'refused' ? 403 : 500, 'Unavailable'));
+    const screen = render(<EventCommunicationsScreen />);
+    if (state === 'refused') await screen.findByTestId('event-communications-refused');
+    if (state === 'failed') await screen.findByText('load_failed_title');
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('enables composing after a failed list load recovers', async () => {
+    mockGet.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('load_failed_title');
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    expect(screen.getByTestId('event-communication-body')).toBeTruthy();
+  });
+
   async function openAction(action: string) {
     if (action === 'retry') mockGet.mockResolvedValueOnce({
       data: [broadcast({ status: 'failed', capabilities: { edit: false, schedule: false, cancel: false, retry: true } })],
