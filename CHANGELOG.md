@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a native Registration policy screen for organiser approval rules, dates, member limits, guests and retention settings. It preserves uncertain requests for explicit recovery and restores rejected drafts against refreshed policy and schedule for review. Published changes require confirmation; unsaved edits are protected. The management entry opens this screen. Android read-only rendering is verified; native writes/restart recovery and the remaining organiser form, invitation and submission workspaces are not yet verified or complete.
+
 - Added an internal native agenda registration journal preserving owner-scoped pending request identities and minimal acknowledged receipts through required saved-draft storage. Panel integration and restart recovery are not yet enabled.
 
 - Added a dedicated native organiser People workspace for filtered roster reads, member-name invitations, per-person history and registration changes. Individual or eligible-page selection, required cancellation/rejection reasons, confirmation and explicit recovery use a durable journal preserving original request keys and partial receipts. It blocks overlapping submissions, unresolved work and rows older than confirmed changes, checks screen ownership before sending, ignores obsolete saved-state reads and announces recovery failures. Invitation searches can retry unchanged text after failure. History follows server permissions and clears when the selected person changes or access is refused. CSV export reviews included/excluded fields before an authenticated download of all filtered rows. The organiser People entry now opens this workspace; Check-in retains its attendance screen. Native-device verification remains unfinished.
@@ -56,6 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Registration settings revision conflicts now identify the rejected version field while retaining the existing conflict code, allowing clients to distinguish them from uncertain retry-key conflicts without discarding saved changes.
+
+- Explicit UTC registration-setting dates now work for events in other timezones; legacy local-time fields retain event-offset validation.
 
 - Registration settings now honour explicit date removal for registration windows and cancellation cutoffs, while preserving omitted dates and idempotent retries.
 

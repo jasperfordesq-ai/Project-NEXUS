@@ -964,5 +964,38 @@
     "revoked": "Questo badge è stato revocato o sostituito.",
     "signingKeyUnknown": "Questo badge è stato emesso dopo l’ultima sincronizzazione di questo dispositivo. Sincronizza e riprova.",
     "queueFull": "La coda offline è piena. Sincronizza prima di continuare."
+  },
+  "registrationSettings": {
+    "title": "Politica di registrazione",
+    "description": "Configura l'approvazione, le finestre di registrazione, i tempi di cancellazione, i limiti dei membri, gli ospiti e il mantenimento della privacy prima di creare il modulo.",
+    "not_created": "Non configurato",
+    "revision": "Revisione {{revision}}",
+    "approval_mode": "Flusso di lavoro di approvazione",
+    "approval_modes": {
+      "auto": "Conferma automaticamente",
+      "manual": "Richiedi l'approvazione dell'organizzatore"
+    },
+    "opens_at": "Si apre la registrazione",
+    "closes_at": "La registrazione si chiude",
+    "window_hint": "Lascia vuote entrambe le date di registrazione per non avere alcuna finestra temporale.",
+    "cancellation_cutoff": "Limite di cancellazione",
+    "per_member_limit": "Iscrizioni per membro",
+    "guests_enabled": "Consenti ospiti",
+    "max_guests": "Ospiti massimi per registrazione",
+    "guest_retention": "Conservazione dei dati degli ospiti in giorni",
+    "save": "Salva politica",
+    "publish": "Pubblica la politica",
+    "live_hint": "Le modifiche a una politica pubblicata hanno effetto al salvataggio.",
+    "draft_hint": "Salva la bozza prima di pubblicarla.",
+    "time_hint": "Inserisci le date come YYYY-MM-DD HH:MM nel fuso {{timezone}}.",
+    "invalid": "Controlla le date e i limiti. Le date devono essere valide e rispettare gli orari dell’evento.",
+    "conflict_hint": "La politica è cambiata prima dell’applicazione della richiesta. Ricaricala per verificare le modifiche salvate.",
+    "review": "Ricarica e verifica",
+    "review_hint": "Le modifiche salvate sono state ripristinate sulla politica attuale. Verificale prima di salvare o pubblicare.",
+    "comparison": "Verifica le modifiche alla politica",
+    "current_value": "Attuale: {{value}}",
+    "proposed_value": "La tua modifica: {{value}}",
+    "not_set": "Non impostato",
+    "no_differences": "Nessuna differenza rispetto alla politica attuale."
   }
 }

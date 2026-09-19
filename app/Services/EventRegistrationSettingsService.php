@@ -279,9 +279,9 @@ final class EventRegistrationSettingsService
         $opensInput = $dateInput('opens_at');
         $closesInput = $dateInput('closes_at');
         $cutoffInput = $dateInput('cancellation_cutoff_at');
-        $opens = $this->normalizeStoredOrInput($opensInput, $timezone, 'event_registration_opens_at_invalid');
-        $closes = $this->normalizeStoredOrInput($closesInput, $timezone, 'event_registration_closes_at_invalid');
-        $cutoff = $this->normalizeStoredOrInput($cutoffInput, $timezone, 'event_registration_cutoff_invalid');
+        $opens = $this->normalizeStoredOrInput($opensInput, $timezone, 'event_registration_opens_at_invalid', array_key_exists('opens_at_utc', $attributes));
+        $closes = $this->normalizeStoredOrInput($closesInput, $timezone, 'event_registration_closes_at_invalid', array_key_exists('closes_at_utc', $attributes));
+        $cutoff = $this->normalizeStoredOrInput($cutoffInput, $timezone, 'event_registration_cutoff_invalid', array_key_exists('cancellation_cutoff_at_utc', $attributes));
         if (($opens === null) !== ($closes === null)
             || ($opens !== null && $closes !== null && ! $opens->lessThan($closes))) {
             throw new EventRegistrationFoundationException('event_registration_window_invalid');
@@ -352,12 +352,19 @@ final class EventRegistrationSettingsService
         mixed $value,
         string $timezone,
         string $reason,
+        bool $explicitUtc = false,
     ): ?CarbonImmutable {
         if ($value === null || $value === '') {
             return null;
         }
         if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value) === 1) {
             return CarbonImmutable::parse($value, 'UTC')->utc();
+        }
+
+        // Explicit UTC fields are sent as UTC ISO instants by web and native clients.
+        // Legacy local fields still require an offset matching the event timezone.
+        if ($explicitUtc && is_string($value) && preg_match('/(?:Z|[+-]00:00)$/', trim($value)) === 1) {
+            return $this->support->inputInstant($value, 'UTC', $reason);
         }
 
         return $this->support->inputInstant($value, $timezone, $reason);

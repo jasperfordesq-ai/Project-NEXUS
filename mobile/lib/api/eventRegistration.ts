@@ -156,6 +156,81 @@ export type RegistrationQuestion = z.infer<typeof registrationQuestionSchema>;
 export type RegistrationSubmission = z.infer<typeof registrationSubmissionSchema>;
 export type RegistrationGuest = z.infer<typeof registrationGuestSchema>;
 
+const safeId = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
+const revision = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const instant = z.string().datetime({ offset: true }).nullable();
+
+// Organiser settings include drafts. Keep the attendee's published-only contract separate.
+export const organizerRegistrationSettingsSchema = z.object({
+  id: safeId,
+  event_id: safeId,
+  revision: safeId,
+  status: z.enum(['draft', 'published']),
+  approval_mode: z.enum(['auto', 'manual']),
+  form_state: z.enum(['none', 'draft', 'published']),
+  published_form_version: safeId.nullable(),
+  per_member_limit: z.number().int().min(1).max(10),
+  guests_enabled: z.boolean(),
+  max_guests_per_registration: z.number().int().min(0).max(10),
+  guest_retention_days: z.number().int().min(1).max(36500),
+  opens_at_utc: instant,
+  closes_at_utc: instant,
+  cancellation_cutoff_at_utc: instant,
+  event_timezone_snapshot: z.string().min(1),
+});
+
+export const registrationSettingsInputSchema = organizerRegistrationSettingsSchema.pick({
+  approval_mode: true, per_member_limit: true, guests_enabled: true,
+  max_guests_per_registration: true, guest_retention_days: true,
+  opens_at_utc: true, closes_at_utc: true, cancellation_cutoff_at_utc: true,
+}).extend({ expected_revision: revision }).strict().superRefine((input, ctx) => {
+  if ((input.opens_at_utc === null) !== (input.closes_at_utc === null)
+    || (input.opens_at_utc !== null && input.closes_at_utc !== null
+      && Date.parse(input.opens_at_utc) >= Date.parse(input.closes_at_utc))) {
+    ctx.addIssue({ code: 'custom', path: ['closes_at_utc'], message: 'Invalid registration window' });
+  }
+  if (input.guests_enabled ? input.max_guests_per_registration < 1 : input.max_guests_per_registration !== 0) {
+    ctx.addIssue({ code: 'custom', path: ['max_guests_per_registration'], message: 'Invalid guest limit' });
+  }
+});
+
+export type OrganizerRegistrationSettings = z.infer<typeof organizerRegistrationSettingsSchema>;
+export type RegistrationSettingsInput = z.infer<typeof registrationSettingsInputSchema>;
+
+const settingsReadSchema = z.object({ data: z.object({ settings: organizerRegistrationSettingsSchema.nullable() }) });
+const settingsWriteSchema = z.object({ data: z.object({
+  settings: organizerRegistrationSettingsSchema,
+  changed: z.boolean(),
+  idempotent_replay: z.boolean(),
+}) });
+
+/** Read only the settings projection; do not retain unrelated roster/answer data. */
+export async function getOrganizerRegistrationSettings(eventId: number) {
+  safeId.parse(eventId);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/manage`;
+  return parse(endpoint, settingsReadSchema, await api.get<unknown>(endpoint, undefined, requestOptions()));
+}
+
+export async function saveOrganizerRegistrationSettings(eventId: number, input: RegistrationSettingsInput, idempotencyKey: string) {
+  safeId.parse(eventId);
+  const payload = registrationSettingsInputSchema.parse(input);
+  const key = z.string().min(1).max(191).refine(value => value.trim() === value).parse(idempotencyKey);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/settings`;
+  return parse(endpoint, settingsWriteSchema, await api.put<unknown>(endpoint, {
+    ...payload, idempotency_key: key,
+  }, requestOptions(key)));
+}
+
+export async function publishOrganizerRegistrationSettings(eventId: number, expectedRevision: number, idempotencyKey: string) {
+  safeId.parse(eventId);
+  safeId.parse(expectedRevision);
+  const key = z.string().min(1).max(191).refine(value => value.trim() === value).parse(idempotencyKey);
+  const endpoint = `${API_V2}/events/${eventId}/registration-product/settings/publish`;
+  return parse(endpoint, settingsWriteSchema, await api.post<unknown>(endpoint, {
+    expected_revision: expectedRevision, idempotency_key: key,
+  }, requestOptions(key)));
+}
+
 function requestOptions(idempotencyKey?: string): RequestOptions {
   return {
     headers: {

@@ -964,5 +964,38 @@
     "revoked": "This badge has been revoked or replaced.",
     "signingKeyUnknown": "This badge was issued after this device last synced. Sync, then scan again.",
     "queueFull": "The offline queue is full. Sync before scanning more."
+  },
+  "registrationSettings": {
+    "title": "Registration policy",
+    "description": "Configure approval, registration windows, cancellation timing, member limits, guests and privacy retention before building the form.",
+    "not_created": "Not configured",
+    "revision": "Revision {{revision}}",
+    "approval_mode": "Approval workflow",
+    "approval_modes": {
+      "auto": "Confirm automatically",
+      "manual": "Require organiser approval"
+    },
+    "opens_at": "Registration opens",
+    "closes_at": "Registration closes",
+    "window_hint": "Leave both registration dates blank for no time window.",
+    "cancellation_cutoff": "Cancellation cutoff",
+    "per_member_limit": "Registrations per member",
+    "guests_enabled": "Allow guests",
+    "max_guests": "Maximum guests per registration",
+    "guest_retention": "Guest data retention in days",
+    "save": "Save policy",
+    "publish": "Publish policy",
+    "live_hint": "Changes to a published policy take effect when saved.",
+    "draft_hint": "Save your draft before publishing it.",
+    "time_hint": "Enter dates as YYYY-MM-DD HH:MM in {{timezone}}.",
+    "invalid": "Check the dates and limits. Dates must be valid and within the event schedule.",
+    "conflict_hint": "The policy changed before this request was applied. Reload it to review your saved changes.",
+    "review": "Reload and review",
+    "review_hint": "Your saved changes are restored against the current policy. Review them before saving or publishing.",
+    "comparison": "Review policy changes",
+    "current_value": "Current: {{value}}",
+    "proposed_value": "Your change: {{value}}",
+    "not_set": "Not set",
+    "no_differences": "No differences from the current policy."
   }
 }

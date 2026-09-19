@@ -964,5 +964,38 @@
     "revoked": "Cúlghaireadh nó athsholáthraíodh an suaitheantas seo.",
     "signingKeyUnknown": "Eisíodh an suaitheantas seo tar éis an tsioncrónaithe is déanaí ar an ngléas seo. Sioncrónaigh, ansin scan arís.",
     "queueFull": "Tá an scuaine as líne lán. Sioncrónaigh sula scanann tú tuilleadh."
+  },
+  "registrationSettings": {
+    "title": "Beartas clárúcháin",
+    "description": "Cumraigh ceadú, fuinneoga clárúcháin, uainiú cealaithe, teorainneacha na mball, aíonna agus coinneáil príobháideachta roimh thógáil na foirme.",
+    "not_created": "Gan cumraithe",
+    "revision": "Athbhreithniú {{revision}}",
+    "approval_mode": "Sreabhadh oibre ceadaithe",
+    "approval_modes": {
+      "auto": "Deimhnigh go huathoibríoch",
+      "manual": "Teastaíonn cead ón eagraí"
+    },
+    "opens_at": "Osclaíonn clárú",
+    "closes_at": "Dúnann an clárú",
+    "window_hint": "Fág an dá dháta clárúcháin bán gan aon fhuinneog ama.",
+    "cancellation_cutoff": "Gearradh cealaithe",
+    "per_member_limit": "Clárúcháin in aghaidh an chomhalta",
+    "guests_enabled": "Ceadaigh aíonna",
+    "max_guests": "Uasmhéid aíonna in aghaidh an chlárúcháin",
+    "guest_retention": "Coimeád sonraí aoi i laethanta",
+    "save": "Sábháil polasaí",
+    "publish": "Polasaí a fhoilsiú",
+    "live_hint": "Cuirtear athruithe ar pholasaí foilsithe i bhfeidhm nuair a shábháiltear iad.",
+    "draft_hint": "Sábháil do dhréacht sula bhfoilsíonn tú é.",
+    "time_hint": "Cuir dátaí isteach mar YYYY-MM-DD HH:MM sa chrios {{timezone}}.",
+    "invalid": "Seiceáil na dátaí agus na teorainneacha. Caithfidh na dátaí a bheith bailí agus laistigh de sceideal na hócáide.",
+    "conflict_hint": "Athraíodh an polasaí sular cuireadh an t-iarratas seo i bhfeidhm. Athlódáil é chun do chuid athruithe sábháilte a athbhreithniú.",
+    "review": "Athlódáil agus athbhreithnigh",
+    "review_hint": "Cuireadh do chuid athruithe sábháilte ar ais leis an bpolasaí reatha. Athbhreithnigh iad sula sábhálann nó foilsíonn tú iad.",
+    "comparison": "Athbhreithnigh athruithe ar an bpolasaí",
+    "current_value": "Reatha: {{value}}",
+    "proposed_value": "D’athrú: {{value}}",
+    "not_set": "Gan socrú",
+    "no_differences": "Níl aon difríocht ón bpolasaí reatha."
   }
 }

@@ -964,5 +964,38 @@
     "revoked": "Dieser Ausweis wurde widerrufen oder ersetzt.",
     "signingKeyUnknown": "Dieser Ausweis wurde ausgestellt, nachdem dieses Gerät zuletzt synchronisiert hat. Synchronisiere und scanne erneut.",
     "queueFull": "Die Offline-Warteschlange ist voll. Synchronisiere, bevor du weiter scannst."
+  },
+  "registrationSettings": {
+    "title": "Registrierungsrichtlinien",
+    "description": "Konfigurieren Sie Genehmigung, Registrierungsfenster, Stornierungszeitpunkt, Mitgliederlimits, Gäste und Datenschutz, bevor Sie das Formular erstellen.",
+    "not_created": "Nicht konfiguriert",
+    "revision": "Stand {{revision}}",
+    "approval_mode": "Genehmigungsworkflow",
+    "approval_modes": {
+      "auto": "Automatisch bestätigen",
+      "manual": "Erfordern die Genehmigung des Veranstalters"
+    },
+    "opens_at": "Die Registrierung wird eröffnet",
+    "closes_at": "Die Registrierung endet",
+    "window_hint": "Lassen Sie beide Anmeldedaten leer, um kein Zeitfenster zu erhalten.",
+    "cancellation_cutoff": "Stornierungsfrist",
+    "per_member_limit": "Anmeldungen pro Mitglied",
+    "guests_enabled": "Gäste zulassen",
+    "max_guests": "Maximale Gästezahl pro Anmeldung",
+    "guest_retention": "Aufbewahrung von Gastdaten in Tagen",
+    "save": "Richtlinie speichern",
+    "publish": "Richtlinie veröffentlichen",
+    "live_hint": "Änderungen an einer veröffentlichten Richtlinie gelten nach dem Speichern.",
+    "draft_hint": "Speichere deinen Entwurf vor der Veröffentlichung.",
+    "time_hint": "Datum als YYYY-MM-DD HH:MM in {{timezone}} eingeben.",
+    "invalid": "Prüfe Datum und Grenzwerte. Die Daten müssen gültig sein und zum Veranstaltungszeitraum passen.",
+    "conflict_hint": "Die Richtlinie wurde geändert, bevor diese Anfrage angewendet wurde. Lade sie neu, um deine gespeicherten Änderungen zu prüfen.",
+    "review": "Neu laden und prüfen",
+    "review_hint": "Deine gespeicherten Änderungen wurden zur aktuellen Richtlinie wiederhergestellt. Prüfe sie vor dem Speichern oder Veröffentlichen.",
+    "comparison": "Richtlinienänderungen prüfen",
+    "current_value": "Aktuell: {{value}}",
+    "proposed_value": "Deine Änderung: {{value}}",
+    "not_set": "Nicht festgelegt",
+    "no_differences": "Keine Unterschiede zur aktuellen Richtlinie."
   }
 }

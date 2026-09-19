@@ -964,5 +964,38 @@
     "revoked": "Este cartão foi revogado ou substituído.",
     "signingKeyUnknown": "Este cartão foi emitido depois da última sincronização deste dispositivo. Sincronize e digitalize novamente.",
     "queueFull": "A fila offline está cheia. Sincronize antes de digitalizar mais."
+  },
+  "registrationSettings": {
+    "title": "Política de registro",
+    "description": "Configure aprovação, janelas de registro, tempo de cancelamento, limites de membros, convidados e retenção de privacidade antes de criar o formulário.",
+    "not_created": "Não configurado",
+    "revision": "Revisão {{revision}}",
+    "approval_mode": "Fluxo de trabalho de aprovação",
+    "approval_modes": {
+      "auto": "Confirmar automaticamente",
+      "manual": "Exigir aprovação do organizador"
+    },
+    "opens_at": "Inscrições abertas",
+    "closes_at": "Inscrições encerradas",
+    "window_hint": "Deixe ambas as datas de registro em branco sem janela de tempo.",
+    "cancellation_cutoff": "Limite de cancelamento",
+    "per_member_limit": "Inscrições por membro",
+    "guests_enabled": "Permitir convidados",
+    "max_guests": "Máximo de convidados por inscrição",
+    "guest_retention": "Retenção de dados de hóspedes em dias",
+    "save": "Salvar política",
+    "publish": "Publicar política",
+    "live_hint": "As alterações a uma política publicada entram em vigor ao guardar.",
+    "draft_hint": "Guarde o rascunho antes de o publicar.",
+    "time_hint": "Introduza as datas como YYYY-MM-DD HH:MM no fuso {{timezone}}.",
+    "invalid": "Verifique as datas e os limites. As datas devem ser válidas e respeitar o horário do evento.",
+    "conflict_hint": "A política mudou antes de este pedido ser aplicado. Recarregue-a para rever as alterações guardadas.",
+    "review": "Recarregar e rever",
+    "review_hint": "As alterações guardadas foram restauradas sobre a política atual. Reveja-as antes de guardar ou publicar.",
+    "comparison": "Rever alterações à política",
+    "current_value": "Atual: {{value}}",
+    "proposed_value": "A sua alteração: {{value}}",
+    "not_set": "Não definido",
+    "no_differences": "Sem diferenças em relação à política atual."
   }
 }

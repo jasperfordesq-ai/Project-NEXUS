@@ -5,7 +5,7 @@
 
 import { storage } from '@/lib/storage';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;

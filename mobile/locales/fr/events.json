@@ -964,5 +964,38 @@
     "revoked": "Ce badge a été révoqué ou remplacé.",
     "signingKeyUnknown": "Ce badge a été émis après la dernière synchronisation de cet appareil. Synchronisez, puis scannez de nouveau.",
     "queueFull": "La file hors ligne est pleine. Synchronisez avant de continuer."
+  },
+  "registrationSettings": {
+    "title": "Politique d'inscription",
+    "description": "Configurez l'approbation, les fenêtres d'inscription, le calendrier d'annulation, les limites de membres, les invités et la conservation de la confidentialité avant de créer le formulaire.",
+    "not_created": "Non configuré",
+    "revision": "Révision {{revision}}",
+    "approval_mode": "Flux de travail d'approbation",
+    "approval_modes": {
+      "auto": "Confirmer automatiquement",
+      "manual": "Exiger l’approbation de l’organisateur"
+    },
+    "opens_at": "Ouverture des inscriptions",
+    "closes_at": "Clôture des inscriptions",
+    "window_hint": "Laissez les deux dates d’inscription vides sans fenêtre horaire.",
+    "cancellation_cutoff": "Date limite d'annulation",
+    "per_member_limit": "Inscriptions par membre",
+    "guests_enabled": "Autoriser les invités",
+    "max_guests": "Nombre maximum d'invités par inscription",
+    "guest_retention": "Conservation des données des clients en jours",
+    "save": "Enregistrer la politique",
+    "publish": "Politique de publication",
+    "live_hint": "Les modifications d’une politique publiée prennent effet dès leur enregistrement.",
+    "draft_hint": "Enregistrez le brouillon avant de le publier.",
+    "time_hint": "Saisissez les dates au format YYYY-MM-DD HH:MM dans le fuseau {{timezone}}.",
+    "invalid": "Vérifiez les dates et les limites. Les dates doivent être valides et respecter les horaires de l’événement.",
+    "conflict_hint": "La politique a changé avant l’application de cette demande. Rechargez-la pour examiner vos modifications enregistrées.",
+    "review": "Recharger et examiner",
+    "review_hint": "Vos modifications enregistrées sont restaurées sur la politique actuelle. Vérifiez-les avant d’enregistrer ou de publier.",
+    "comparison": "Examiner les modifications de la politique",
+    "current_value": "Actuellement : {{value}}",
+    "proposed_value": "Votre modification : {{value}}",
+    "not_set": "Non défini",
+    "no_differences": "Aucune différence avec la politique actuelle."
   }
 }

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 jest.mock('@/lib/api/client', () => ({
-  api: { get: jest.fn(), post: jest.fn() },
+  api: { get: jest.fn(), post: jest.fn(), put: jest.fn() },
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
     code?: string;
@@ -27,6 +27,9 @@ import {
   attendeeRegistrationProductSchema,
   getAttendeeRegistrationProduct,
   saveRegistrationSubmission,
+  getOrganizerRegistrationSettings,
+  saveOrganizerRegistrationSettings,
+  publishOrganizerRegistrationSettings,
 } from './eventRegistration';
 
 const state = {
@@ -160,5 +163,69 @@ describe('mobile event registration product contract', () => {
       { idempotency_key: 'accept-key' },
       { headers: { ...options.headers, 'Idempotency-Key': 'accept-key' } },
     );
+  });
+});
+
+describe('organiser registration settings', () => {
+  const input = {
+    approval_mode: 'manual' as const, per_member_limit: 1, guests_enabled: false,
+    max_guests_per_registration: 0, guest_retention_days: 30,
+    opens_at_utc: null, closes_at_utc: null, cancellation_cutoff_at_utc: null,
+    expected_revision: 0,
+  };
+  const settings = {
+    ...input, id: 1, event_id: 42, revision: 1, status: 'draft', form_state: 'none',
+    published_form_version: null, event_timezone_snapshot: 'Europe/Dublin',
+  };
+  const receipt = { data: { settings, changed: true, idempotent_replay: false } };
+
+  it('reads drafts without retaining unrelated personal records', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { settings, submissions: [{ member_name: 'Private' }] } });
+    const result = await getOrganizerRegistrationSettings(42);
+    expect(result.data.settings?.status).toBe('draft');
+    expect(result.data).not.toHaveProperty('submissions');
+    expect(attendeeRegistrationProductSchema.safeParse({ ...state, settings }).success).toBe(false);
+  });
+
+  it('preserves null removal and caller-owned keys across retries', async () => {
+    jest.mocked(api.put).mockResolvedValue(receipt);
+    await saveOrganizerRegistrationSettings(42, input, 'settings-key');
+    await saveOrganizerRegistrationSettings(42, input, 'settings-key');
+    expect(jest.mocked(api.put).mock.calls[0]).toEqual(jest.mocked(api.put).mock.calls[1]);
+    expect(api.put).toHaveBeenCalledWith('/api/v2/events/42/registration-product/settings',
+      { ...input, idempotency_key: 'settings-key' },
+      { headers: { ...options.headers, 'Idempotency-Key': 'settings-key' } });
+  });
+
+  it('publishes the supplied revision and key', async () => {
+    jest.mocked(api.post).mockResolvedValue(receipt);
+    await publishOrganizerRegistrationSettings(42, 3, 'publish-key');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/events/42/registration-product/settings/publish',
+      { expected_revision: 3, idempotency_key: 'publish-key' },
+      { headers: { ...options.headers, 'Idempotency-Key': 'publish-key' } });
+  });
+
+  it.each([0, -1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1])('rejects invalid event ID %s before transport', async id => {
+    await expect(getOrganizerRegistrationSettings(id)).rejects.toThrow();
+    await expect(saveOrganizerRegistrationSettings(id, input, 'key')).rejects.toThrow();
+    await expect(publishOrganizerRegistrationSettings(id, 1, 'key')).rejects.toThrow();
+    expect(api.get).not.toHaveBeenCalled();
+    expect(api.put).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { opens_at_utc: '2030-01-01T10:00:00Z' },
+    { opens_at_utc: '2030-01-01T11:00:00Z', closes_at_utc: '2030-01-01T10:00:00Z' },
+    { expected_revision: -1 }, { per_member_limit: 11 },
+    { guests_enabled: true, max_guests_per_registration: 0 },
+  ])('rejects invalid settings %j before transport', async patch => {
+    await expect(saveOrganizerRegistrationSettings(42, { ...input, ...patch }, 'key')).rejects.toThrow();
+    expect(api.put).not.toHaveBeenCalled();
+  });
+
+  it('refuses malformed acknowledgements rather than reporting success', async () => {
+    jest.mocked(api.put).mockResolvedValue({ data: { settings } });
+    await expect(saveOrganizerRegistrationSettings(42, input, 'key')).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
   });
 });

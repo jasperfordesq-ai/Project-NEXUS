@@ -35,15 +35,15 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
       return { pathname: '/(modals)/event-attendance', params } as unknown as Href;
     case 'tickets': return { pathname: '/(modals)/event-tickets', params } as unknown as Href;
     case 'communications': return { pathname: '/(modals)/event-communications', params } as unknown as Href;
+    case 'registration': return { pathname: '/(modals)/event-registration-settings', params } as unknown as Href;
     case 'templates': return '/(modals)/event-templates' as Href;
     case 'series-definitions': return { pathname: '/(modals)/event-recurrence-blueprints', params } as unknown as Href;
     case 'agenda':
     case 'safety':
     case 'analytics':
-    case 'registration':
     case 'team':
     case 'federation':
-      // These management cards are embedded in the canonical event detail screen.
+      // Remaining organiser destinations still use the event detail screen.
       return { pathname: '/(modals)/event-detail', params } as unknown as Href;
     default: return null;
   }
@@ -102,7 +102,7 @@ function EventManageContent({ eventId, section }: { eventId: number; section?: s
       event.permissions.check_in && { label: t('manage.overview.check_in'), route: eventManagementRoute(event.id, 'check-in')! },
       event.permissions.manage_agenda && { label: t('manage.overview.agenda'), route: eventManagementRoute(event.id, 'agenda')! },
       event.permissions.edit && { label: t('analytics.title'), route: eventManagementRoute(event.id, 'analytics')! },
-      event.permissions.manage_registration && { label: t('analytics.sections.registration'), route: eventManagementRoute(event.id, 'registration')! },
+      event.permissions.manage_registration && { label: t('registrationSettings.title'), route: eventManagementRoute(event.id, 'registration')! },
       (event.permissions.manage_finance || event.permissions.reconcile_tickets) && { label: t('event_tickets:tickets.mobile.title'), route: eventManagementRoute(event.id, 'tickets')! },
       event.permissions.broadcast && { label: t('event_communications:title'), route: eventManagementRoute(event.id, 'communications')! },
       event.permissions.edit && { label: t('event_templates:templates.mobile.title'), route: eventManagementRoute(event.id, 'templates')! },

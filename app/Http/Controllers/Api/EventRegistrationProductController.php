@@ -719,6 +719,11 @@ final class EventRegistrationProductController extends BaseApiController
     private function productError(EventRegistrationFoundationException $exception): JsonResponse
     {
         $reason = $exception->getMessage();
+        if ($reason === 'event_registration_settings_revision_conflict') {
+            // Preserve the shared conflict code while identifying a rejected version.
+            // Idempotency conflicts must remain distinguishable for uncertain-write recovery.
+            return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_revision', 409);
+        }
         if ($reason === 'event_registration_guest_capacity_full') {
             // Same code/message as a full event on the registration path — from
             // the member's point of view it is the same fact, and the generic

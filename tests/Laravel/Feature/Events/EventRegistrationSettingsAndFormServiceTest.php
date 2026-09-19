@@ -122,6 +122,23 @@ final class EventRegistrationSettingsAndFormServiceTest extends TestCase
         }
     }
 
+    public function test_explicit_utc_fields_accept_client_instants_in_a_non_utc_event(): void
+    {
+        $owner = $this->eventUser();
+        $start = CarbonImmutable::parse('2030-07-20T10:00:00+01:00');
+        [$eventId] = $this->registrationEvent((int) $owner->id, $start, $start->addHours(2), 'Europe/Dublin');
+        $service = new EventRegistrationSettingsService();
+        $payload = ['opens_at_utc' => '2030-07-01T09:00:00.000Z', 'closes_at_utc' => '2030-07-20T09:00:00.000Z',
+            'cancellation_cutoff_at_utc' => '2030-07-20T08:30:00.000Z'];
+        $saved = $service->save($eventId, $owner, $payload, 0, 'utc-client-settings');
+        self::assertSame('2030-07-20 09:00:00', $saved['settings']->closes_at_utc->format('Y-m-d H:i:s'));
+        self::assertSame('Europe/Dublin', $saved['settings']->event_timezone_snapshot);
+        self::assertFalse($service->save($eventId, $owner, $payload, 0, 'utc-client-settings')['changed']);
+        $this->assertReason('event_registration_timezone_offset_mismatch', fn () => $service->save(
+            $eventId, $owner, ['opens_at' => '2030-07-01T09:00:00Z'], 1, 'local-wrong-offset',
+        ));
+    }
+
     public function test_forms_are_versioned_and_published_definitions_are_database_immutable(): void
     {
         $owner = $this->eventUser();
