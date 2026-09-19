@@ -142,6 +142,10 @@ jest.mock('@/lib/api/endorsements', () => ({
 
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
+jest.mock('@/components/ui/BottomSheet', () => {
+  const { View } = require('react-native');
+  return ({ visible, children }: { visible: boolean; children: React.ReactNode }) => visible ? <View>{children}</View> : null;
+});
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -166,7 +170,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 
 import EndorsementsScreen from './endorsements';
 import { useAppToast } from '@/components/ui/AppToast';
-import { getMembersWithSkill, getSkillCategory, removeSkill } from '@/lib/api/endorsements';
+import { addSkill, getMembersWithSkill, getSkillCategory, removeSkill } from '@/lib/api/endorsements';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
@@ -174,6 +178,7 @@ beforeEach(() => {
   mockUseApi.mockReturnValue(defaultApiState);
   (useAppToast() as unknown as { show: jest.Mock }).show.mockClear();
   (removeSkill as jest.Mock).mockClear();
+  (addSkill as jest.Mock).mockClear();
   (getSkillCategory as jest.Mock).mockClear();
   (getMembersWithSkill as jest.Mock).mockClear();
   (router.push as jest.Mock).mockClear();
@@ -206,6 +211,46 @@ const mockSkillCategory = {
 };
 
 describe('EndorsementsScreen', () => {
+  async function openSkillForm() {
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByLabelText('Add Skill'));
+    const input = await screen.findByPlaceholderText('Enter skill name…');
+    fireEvent.changeText(input, 'Gardening');
+    return screen;
+  }
+
+  it('sends one skill write for repeated keyboard submissions', async () => {
+    let finish!: (value: Awaited<ReturnType<typeof addSkill>>) => void;
+    jest.mocked(addSkill).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = await openSkillForm();
+    const submit = screen.getByPlaceholderText('Enter skill name…').props.onSubmitEditing;
+    act(() => { submit(); submit(); });
+    expect(addSkill).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: { id: 9, name: 'Gardening', category: null } }));
+  });
+
+  it('preserves a failed skill draft and allows retry', async () => {
+    jest.mocked(addSkill).mockRejectedValueOnce(new Error('offline'));
+    const screen = await openSkillForm();
+    fireEvent(screen.getByPlaceholderText('Enter skill name…'), 'submitEditing');
+    await waitFor(() => expect(useAppToast().show).toHaveBeenCalled());
+    expect(screen.getByPlaceholderText('Enter skill name…').props.value).toBe('Gardening');
+    fireEvent(screen.getByPlaceholderText('Enter skill name…'), 'submitEditing');
+    await waitFor(() => expect(addSkill).toHaveBeenCalledTimes(2));
+  });
+
+  it('does not close a replacement skill form after the old save finishes', async () => {
+    let finish!: (value: Awaited<ReturnType<typeof addSkill>>) => void;
+    jest.mocked(addSkill).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = await openSkillForm();
+    fireEvent(screen.getByPlaceholderText('Enter skill name…'), 'submitEditing');
+    fireEvent.press(screen.getByLabelText('common:buttons.cancel'));
+    fireEvent.press(screen.getByLabelText('Add Skill'));
+    fireEvent.changeText(await screen.findByPlaceholderText('Enter skill name…'), 'Repairs');
+    await act(async () => finish({ data: { id: 9, name: 'Gardening', category: null } }));
+    expect(screen.getByPlaceholderText('Enter skill name…').props.value).toBe('Repairs');
+  });
+
   it('shows category load failure with a retry instead of an empty directory', () => {
     const refresh = jest.fn();
     mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')

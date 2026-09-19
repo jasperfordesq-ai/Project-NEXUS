@@ -190,10 +190,18 @@ export default function EndorsementsScreen() {
   const skillInputRef = useRef<TextInput>(null);
   const categoryRequestRef = useRef<object | null>(null);
   const membersRequestRef = useRef<object | null>(null);
+  const addRequestRef = useRef<object | null>(null);
+  const skillFormVersionRef = useRef(0);
 
   useEffect(() => () => {
     categoryRequestRef.current = null;
     membersRequestRef.current = null;
+    addRequestRef.current = null;
+  }, []);
+
+  const changeSkillFormVisibility = useCallback((visible: boolean) => {
+    skillFormVersionRef.current += 1;
+    setAddingSkill(visible);
   }, []);
 
   const userId = user?.id ?? 0;
@@ -231,18 +239,28 @@ export default function EndorsementsScreen() {
 
   async function handleAddSkill() {
     const name = skillInput.trim();
-    if (!name) return;
+    if (!name || addRequestRef.current) return;
+    const request = {};
+    addRequestRef.current = request;
+    const formVersion = skillFormVersionRef.current;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSubmitting(true);
     try {
       await addSkill(name);
-      setSkillInput('');
-      setAddingSkill(false);
+      if (addRequestRef.current !== request) return;
+      if (skillFormVersionRef.current === formVersion) {
+        setSkillInput('');
+        setAddingSkill(false);
+      }
       refreshSkills();
     } catch (err) {
+      if (addRequestRef.current !== request || skillFormVersionRef.current !== formVersion) return;
       showToast({ title: t('addSkillErrorTitle'), description: describeApiError(err, t('addSkillError')), variant: 'danger' });
     } finally {
-      setSubmitting(false);
+      if (addRequestRef.current === request) {
+        addRequestRef.current = null;
+        setSubmitting(false);
+      }
     }
   }
 
@@ -439,7 +457,7 @@ export default function EndorsementsScreen() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               addingSkill={addingSkill}
-              setAddingSkill={setAddingSkill}
+              setAddingSkill={changeSkillFormVisibility}
               skillInput={skillInput}
               setSkillInput={setSkillInput}
               skillInputRef={skillInputRef}
