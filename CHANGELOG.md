@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda recovery state now checks saved work before allowing changes, blocks fresh requests while an unresolved operation exists, exposes failed recovery and storage retry states, and ignores obsolete loads or departed completions. Recovery controls are not yet connected to the session panel.
+
 - Native agenda recovery transport now requires a saved request before dispatch, reuses its original action/version/key, blocks overlapping sends and preserves accepted receipts after screen departure. Recovery is explicit; panel integration remains unfinished.
 
 - Native agenda registration and withdrawal retries preserve their request key and original version after uncertain failures while the panel remains mounted, allowing server replay instead of a new request. Changed registration versions receive distinct keys; restart recovery remains unfinished.
