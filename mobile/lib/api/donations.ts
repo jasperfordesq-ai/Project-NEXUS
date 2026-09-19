@@ -9,6 +9,12 @@ import { api, ApiResponseError } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 
 const receiptStatusSchema = z.enum(['pending', 'completed', 'failed', 'refunded']);
+// Laravel returns its UTC database timestamp without an offset. Convert that
+// exact wire shape before parsing; never let the device assume local time.
+const receiptDateSchema = z.string().transform(value =>
+  /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(value)
+    ? `${value.replace(' ', 'T')}Z` : value,
+).pipe(z.string().datetime({ offset: true })).transform(value => new Date(value).toISOString());
 
 export interface DonationReceipt {
   id: number;
@@ -29,7 +35,7 @@ const receiptSchema = z.object({
   amount: z.union([z.number().finite().nonnegative(), z.string().regex(/^\d+(?:\.\d+)?$/)])
     .transform(Number).refine(Number.isFinite),
   currency: z.string().regex(/^[a-zA-Z]{3}$/),
-  date: z.string().min(1),
+  date: receiptDateSchema,
   tenant_name: z.string(),
   message: z.string().nullable(),
   status: receiptStatusSchema,

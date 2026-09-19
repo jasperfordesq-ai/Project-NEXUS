@@ -31,7 +31,7 @@ it('loads only the authenticated donor receipt', async () => {
   await expect(getDonationReceipt(9)).resolves.toEqual({
     id: 9, donor_name: 'Alex', amount: 25.5, currency: 'EUR', status: 'completed',
     community_name: 'Local community', reference: 'donation-reference-9', payment_method: 'card',
-    date: receipt.date, message: '',
+    date: '2026-09-19T10:00:00.000Z', message: '',
   });
   expect(api.get).toHaveBeenCalledWith('/api/v2/donations/9/receipt');
 });
@@ -54,4 +54,18 @@ it('refuses a receipt for a different requested donation', async () => {
 it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])('refuses invalid id %p before transport', async id => {
   await expect(getDonationReceipt(id)).rejects.toMatchObject({ code: 'DONATION_RECEIPT_INVALID_ID' });
   expect(api.get).not.toHaveBeenCalled();
+});
+
+it.each([
+  ['2026-09-19 23:30:00', '2026-09-19T23:30:00.000Z'],
+  ['2024-02-29 10:00:00', '2024-02-29T10:00:00.000Z'],
+  ['2026-09-20T01:30:00+02:00', '2026-09-19T23:30:00.000Z'],
+])('normalizes receipt date %s to an unambiguous instant', async (date, expected) => {
+  (api.get as jest.Mock).mockResolvedValue({ data: { ...receipt, date } });
+  await expect(getDonationReceipt(9)).resolves.toMatchObject({ date: expected });
+});
+
+it.each(['not a date', '2026-02-30 10:00:00', '2026-13-01 10:00:00', '2026-09-19 25:00:00', '2026-09-19', '2026-09-19T10:00:00'])('rejects invalid or ambiguous receipt date %s', async date => {
+  (api.get as jest.Mock).mockResolvedValue({ data: { ...receipt, date } });
+  await expect(getDonationReceipt(9)).rejects.toMatchObject({ code: 'DONATION_RECEIPT_CONTRACT_DRIFT' });
 });
