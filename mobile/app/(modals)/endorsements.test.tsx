@@ -6,6 +6,7 @@
 import React from 'react';
 import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { RefreshControl } from 'react-native';
 
 // --- Mocks ---
 
@@ -211,6 +212,47 @@ const mockSkillCategory = {
 };
 
 describe('EndorsementsScreen', () => {
+  it.each(['skills', 'endorsements'])('keeps loaded %s visible with a refresh error and retry', (tab) => {
+    const refresh = jest.fn();
+    let failed = true;
+    mockUseApi.mockImplementation((loader: unknown) => {
+      const target = String(loader).includes(tab === 'skills' ? 'getMySkills' : 'getUserEndorsements');
+      return target ? {
+        ...defaultApiState,
+        data: tab === 'skills' ? { data: { skills: [mockSkill] } } : { data: [mockEndorsement] },
+        error: failed ? 'Refresh unavailable' : null,
+        refresh,
+      } : defaultApiState;
+    });
+    const screen = render(<EndorsementsScreen />);
+    if (tab === 'endorsements') fireEvent.press(screen.getByText('Endorsements'));
+    expect(screen.getByText('JavaScript')).toBeTruthy();
+    expect(screen.getByText('Refresh unavailable')).toBeTruthy();
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    failed = false;
+    screen.rerender(<EndorsementsScreen />);
+    expect(screen.queryByText('Refresh unavailable')).toBeNull();
+    expect(screen.getByText('JavaScript')).toBeTruthy();
+  });
+
+  it('refreshes discovery and shows its own loading indicator', () => {
+    const refresh = jest.fn();
+    let loading = false;
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, data: { data: [mockSkillCategory] }, refresh, isLoading: loading } : defaultApiState);
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    expect(refresh).toHaveBeenCalledTimes(1);
+    loading = true;
+    screen.rerender(<EndorsementsScreen />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(true);
+    loading = false;
+    screen.rerender(<EndorsementsScreen />);
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
+  });
+
   async function openSkillForm() {
     const screen = render(<EndorsementsScreen />);
     fireEvent.press(screen.getByLabelText('Add Skill'));

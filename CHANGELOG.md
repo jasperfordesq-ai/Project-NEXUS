@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native skills and endorsements show retry controls after failed refreshes without hiding loaded content; discovery pull-to-refresh reloads categories and tracks its loading state.
+
 - Native skills header text expands fully instead of truncating at enlarged text sizes.
 
 - Native skills tabs remain reachable by horizontal scrolling at enlarged text sizes.

@@ -236,11 +236,15 @@ export default function EndorsementsScreen() {
   } = useApi(() => getSkillCategories(), []);
 
   const handleRefresh = useCallback(() => {
+    if (activeTab === 'discover') {
+      refreshCategories();
+      return;
+    }
     // `refreshSkills()` returns void, so awaiting it cleared the indicator before any
     // request finished. The RefreshControl now reads the hooks' own loading flags.
     refreshSkills();
     refreshEndorsements();
-  }, [refreshSkills, refreshEndorsements]);
+  }, [activeTab, refreshSkills, refreshEndorsements, refreshCategories]);
 
   const skills = useMemo<Skill[]>(() => skillsData?.data?.skills ?? [], [skillsData?.data?.skills]);
   const endorsements = useMemo<Endorsement[]>(() => endorsementsData?.data ?? [], [endorsementsData?.data]);
@@ -463,44 +467,53 @@ export default function EndorsementsScreen() {
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 110 }}
           refreshControl={
             <RefreshControl
-              refreshing={Boolean(skillsData) && (skillsLoading || endorsementsLoading)}
+              refreshing={activeTab === 'discover'
+                ? Boolean(categoriesData) && categoriesLoading
+                : Boolean(activeTab === 'skills' ? skillsData : endorsementsData) && isLoading}
               onRefresh={() => void handleRefresh()}
               tintColor={primary}
               colors={[primary]}
             />
           }
           ListHeaderComponent={
-            <EndorsementsHeader
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              addingSkill={addingSkill}
-              setAddingSkill={changeSkillFormVisibility}
-              skillInput={skillInput}
-              setSkillInput={setSkillInput}
-              skillInputRef={skillInputRef}
-              submitting={submitting}
-              handleAddSkill={handleAddSkill}
-              skillsCount={skills.length}
-              endorsementsCount={endorsements.length}
-              categories={categories}
-              categoriesLoading={categoriesLoading}
-              categoriesError={categoriesError}
-              refreshCategories={refreshCategories}
-              categoryError={categoryError}
-              membersError={membersError}
-              selectedCategory={selectedCategory}
-              categorySkills={categorySkills}
-              loadingCategoryId={loadingCategoryId}
-              selectedSkill={selectedSkill}
-              skillMembers={skillMembers}
-              loadingSkill={loadingSkill}
-              onOpenCategory={handleOpenCategory}
-              onOpenMembers={handleOpenMembers}
-              onOpenMemberProfile={openMemberProfile}
-              primary={primary}
-              theme={theme}
-              t={t}
-            />
+            <>
+              <EndorsementsHeader
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                addingSkill={addingSkill}
+                setAddingSkill={changeSkillFormVisibility}
+                skillInput={skillInput}
+                setSkillInput={setSkillInput}
+                skillInputRef={skillInputRef}
+                submitting={submitting}
+                handleAddSkill={handleAddSkill}
+                skillsCount={skills.length}
+                endorsementsCount={endorsements.length}
+                categories={categories}
+                categoriesLoading={categoriesLoading}
+                categoriesError={categoriesError}
+                refreshCategories={refreshCategories}
+                categoryError={categoryError}
+                membersError={membersError}
+                selectedCategory={selectedCategory}
+                categorySkills={categorySkills}
+                loadingCategoryId={loadingCategoryId}
+                selectedSkill={selectedSkill}
+                skillMembers={skillMembers}
+                loadingSkill={loadingSkill}
+                onOpenCategory={handleOpenCategory}
+                onOpenMembers={handleOpenMembers}
+                onOpenMemberProfile={openMemberProfile}
+                primary={primary}
+                theme={theme}
+                t={t}
+              />
+              {listData.length > 0 && activeTab === 'skills' && skillsError ? (
+                <ErrorState subtitle={skillsError} onRetry={refreshSkills} isRetrying={skillsLoading} />
+              ) : listData.length > 0 && activeTab === 'endorsements' && endorsementsError ? (
+                <ErrorState subtitle={endorsementsError} onRetry={refreshEndorsements} isRetrying={endorsementsLoading} />
+              ) : null}
+            </>
           }
           ListEmptyComponent={
             activeTab === 'discover' && (categories.length > 0 || categoriesError) ? null :
