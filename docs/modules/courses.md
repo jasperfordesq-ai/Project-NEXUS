@@ -60,7 +60,8 @@ Services:
 - `app/Services/CourseCreditService.php` — time-credit charge for paid enrolment; routes the learner→author transfer through `WalletService::transfer()`.
 - `app/Services/CourseLessonService.php` — lesson CRUD and drip availability calculation.
 - `app/Services/CourseSectionService.php` — section CRUD.
-- `app/Services/CourseProgressService.php` — lesson-completion tracking, progress percentage recomputation, course-completion side effects.
+- `app/Services/CourseProgressService.php` — lesson-completion tracking, progress recomputation and the transactional completion transition.
+- `app/Services/CourseCompletionDeliveryService.php` — durable, retryable delivery of certificates, completion notifications and gamification awards.
 - `app/Services/CourseQuizService.php` — quiz delivery (without answer keys), attempt submission, auto-grading, instructor grading, max-attempts enforcement.
 - `app/Services/CourseCertificateService.php` — idempotent certificate issuance with a unique `CRS-*` serial, printable HTML generation.
 - `app/Services/CoursePrerequisiteService.php` — prerequisite course resolution and per-learner completion state.
@@ -175,7 +176,7 @@ The transfer uses `WalletService`'s row-locked, atomic path. See [docs/modules/w
 
 ## Lesson progress and drip scheduling
 
-`CourseProgressService::completeLesson()` calls `CourseLessonProgress::updateOrCreate()` (idempotent), then recomputes `enrollment.progress_percent` as `(completed_lessons / total_lessons) * 100`. When the ratio reaches 100%, the enrollment transitions to `completed` and `onCourseCompleted()` fires.
+`CourseProgressService::completeLesson()` checks quiz eligibility, records lesson progress with `CourseLessonProgress::updateOrCreate()`, then recomputes the completion percentage. Recalculation locks the persisted enrolment row, so concurrent requests carrying stale models cannot each perform the completion transition. The transition, completion-count increment and delivery-outbox record share one transaction; delivery runs afterwards.
 
 **Drip scheduling** (`drip_type` on `course_lessons`):
 
@@ -219,12 +220,17 @@ Apply `2026_09_19_120000_add_quiz_attempt_replay_identity` before enabling keyed
 
 ## Course completion side effects
 
-When the last lesson is marked complete, `CourseProgressService::onCourseCompleted()` fires the following — each step is individually `try/catch`-guarded so a failure in one never blocks the learner's progression record:
+`CourseProgressService` records delivery in `course_completion_delivery_outbox` in the completion transaction. `CourseCompletionDeliveryService` then attempts these steps in order:
 
-1. Increments `courses.completion_count`.
-2. Issues (or returns the existing) completion certificate via `CourseCertificateService::issue()`.
-3. Sends a completion notification + email to the learner in their `preferred_language` via `CourseNotificationService::completed()`.
-4. Awards 50 XP and the `course_graduate` badge via `GamificationService`.
+1. Issues or retrieves the certificate through `CourseCertificateService::issue()`, which rechecks quiz eligibility.
+2. Sends the completion notification and email through `CourseNotificationService::completedReliably()`, rendered in the recipient's preferred language.
+3. Awards 50 XP using an enrolment-specific source reference, verifies the XP record, and requests the `course_graduate` badge.
+
+Delivery failure leaves the committed progress intact and records a retry. It stops the current delivery attempt; later steps run on a subsequent successful retry. Certificate uniqueness, notification/email delivery identities and the XP source reference protect replay of previously completed steps. This does not establish exactly-once receipt by an external email provider.
+
+The outbox uses five-minute claims and up to eight attempts, with retry delays of 1, 2, 5, 15, 30, 60 and 180 minutes. Exhausted records are dead-lettered and logged at critical level. The scheduled `courses:process-completion-outbox --limit=100` command repairs due records; its supported batch limit is 1–500. Scheduler registration is in `bootstrap/app.php`; production scheduler execution and external delivery require separate operational verification.
+
+Apply `2026_09_15_120000_create_course_completion_delivery_outbox` before running this delivery path. Repeating completion can retry pending delivery immediately, but does not reset a dead-lettered record or increment the completion counter again.
 
 ## Certificates
 
@@ -280,8 +286,8 @@ Per-course analytics (`GET /v2/courses/{id}/analytics`, owner or admin only) inc
 | **Concurrent quiz submission** | The enrollment row is locked inside the `DB::transaction` for the attempt; only one write wins. |
 | **Certificate issuance race** | Idempotency: the unique index rejects the duplicate and `issue()` fetches and returns the winning row. |
 | **Feed post failure on publish** | Wrapped in `try/catch`; logs a warning; publish is not blocked. |
-| **Notification / email failure** | Wrapped in `try/catch` throughout; logged; never blocks enrolment, completion, or publish. |
-| **Gamification failure on completion** | Guarded individually; a GamificationService outage does not prevent the enrollment from reaching `completed`. |
+| **Completion notification / email failure** | Recorded by the completion outbox for retry; committed progress remains intact. Later delivery steps wait for the failed step to succeed. |
+| **Gamification failure on completion** | The outbox retries delivery; an absent XP record is treated as failure. Completion status is already committed. |
 | **Lesson drip gate** | A learner trying to complete a locked lesson receives HTTP 403 `LESSON_LOCKED`. The unlock time is included in the `progress` response (`availability[].unlock_at`). |
 | **Section id from another course** | `CourseLessonService` validates the `section_id` belongs to the same course and silently sets it to `null` if not. |
 | **Moderation pending** | A published course stays invisible in the authenticated member catalogue (not returned by `browse`) until `moderation_status = approved`. The instructor can still view it via `GET /v2/courses/mine`. |
@@ -294,7 +300,7 @@ Run the relevant suites (run one suite at a time):
 vendor/bin/phpunit tests/Laravel/Feature/Courses/ --colors=always
 vendor/bin/phpunit tests/Laravel/Feature/Controllers/CourseControllerTest.php --colors=always
 vendor/bin/phpunit tests/Laravel/Unit/Services/CourseLessonServiceTest.php --colors=always
-vendor/bin/phpunit tests/Laravel/Feature/GovukAlpha/CoursesFiltersQuizParityTest.php --colors=always
+vendor/bin/phpunit tests/Laravel/Integration/CourseCompletionDeliveryReliabilityTest.php --colors=always
 ```
 
 Key regression tests:
@@ -304,9 +310,9 @@ Key regression tests:
 | `tests/Laravel/Feature/Courses/CourseCreditTest.php` | Paid enrolment transfers credits learner→author; insufficient balance is blocked; free course is not charged; enrolling twice does not double-charge; `credits_paid` is recorded on the enrollment. |
 | `tests/Laravel/Feature/Courses/CourseProgressAndQuizTest.php` | Enrolment idempotency; drop/reactivate; completing all lessons transitions status to `completed`; MCQ auto-grading (correct answer = pass); max-attempts enforcement (race-safe); section-id cross-course injection rejected; moderation flag respected; tenant isolation (course invisible under another tenant). |
 | `tests/Laravel/Unit/Services/CourseLessonServiceTest.php` | Drip availability calculation for `none`, `days_after_enroll`, and `fixed_date` types; media URL validation. |
-| `tests/Laravel/Feature/GovukAlpha/CoursesFiltersQuizParityTest.php` | Accessible-frontend parity for catalogue filters and quiz flow. |
-| `tests/Laravel/Feature/GovukAlpha/CoursesPrereqCertParityTest.php` | Accessible-frontend parity for prerequisites and certificate. |
-| `tests/Laravel/Feature/GovukAlpha/CoursesReviewsParityTest.php` | Accessible-frontend parity for reviews. |
+| `tests/Laravel/Integration/CourseCompletionDeliveryReliabilityTest.php` | Forced certificate failure preserves completion; a later batch repairs delivery; repeated completion does not duplicate the tested certificate, notification, email-log or XP records. |
+| `tests/Laravel/Integration/CourseProgressConcurrencyTest.php` | Concurrent progress completion against the database. |
+| `tests/Laravel/Integration/CourseQuizReplayConcurrencyTest.php` | Concurrent keyed quiz retries return one attempt, including at the attempt limit. |
 | `tests/Laravel/Feature/Controllers/CourseControllerTest.php` | HTTP-level feature gate, authoring auth, and CRUD responses. |
 
 ## Related references
