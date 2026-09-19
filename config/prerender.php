@@ -74,6 +74,36 @@ return [
     // rendering snapshots, so a long-but-progressing rebuild never cries wolf.
     'authoritative_block_alert_seconds' => (int) env('PRERENDER_AUTHORITATIVE_BLOCK_ALERT_SECONDS', 1800),
 
+    // 🔴 Starvation guard for the claim order. claimNextJob() sorts strictly by
+    // priority, so a steady supply of PRIORITY_HIGH work starves every lower
+    // priority row behind it — for ever, not just for a while.
+    //
+    // That is not hypothetical. Between 2026-09-16 11:17 and 2026-09-19 the
+    // drift sweep enqueued one priority-3 job roughly every 2.3 minutes while
+    // the host processor could only claim one every ~3 minutes (each render
+    // takes 150-180s). The priority-3 backlog therefore never emptied once,
+    // 1,420 priority-3 jobs were claimed in three days, and exactly 2
+    // priority-5 jobs were — both in the final minute before the backlog
+    // closed over. Jobs #7125, #7126 (the platform master) and #8035
+    // (hour-timebank) sat 'queued' and unclaimable for days.
+    //
+    // It froze those tenants' snapshots completely, because both freshness
+    // loops skip a tenant that has any queued/claimed/running job: the starved
+    // job suppressed the only sweeps that would have displaced it. Master's
+    // crawler-served pages stayed pinned to one commit through three deploys.
+    //
+    // A job that has waited longer than this is claimed ahead of newer work
+    // whatever its priority, oldest first. Priority still decides everything
+    // inside the window; the guarantee this adds is only that waiting ends.
+    'starvation_promote_seconds' => (int) env('PRERENDER_STARVATION_PROMOTE_SECONDS', 1800),
+
+    // How long a single tenant's queued/claimed/running job may suppress that
+    // tenant's freshness sweeps before the sweep calls it stuck rather than
+    // busy. Same reasoning as authoritative_block_alert_seconds above, applied
+    // per tenant instead of platform-wide — that guard existed and this one did
+    // not, which is why a three-day freeze reported SUCCESS every two minutes.
+    'tenant_block_alert_seconds' => (int) env('PRERENDER_TENANT_BLOCK_ALERT_SECONDS', 7200),
+
     'auto_recache' => [
         // Cap the work the cron generates so a single tick can't blow up the
         // queue. The cron itself runs at a fixed interval (see deploy notes);

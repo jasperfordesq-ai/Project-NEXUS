@@ -1014,6 +1014,18 @@ jobs:
       # are tracked in .github/db-column-reference-baseline.json, shrink-only and
       # enforced in both directions: an entry that no longer occurs also fails, so
       # a fix cannot land without removing its entry.
+      # Added 2026-09-19. The crawler delivery probe asked only "is this a real
+      # page", so it passed 16/16 on 2026-09-17 while app.project-nexus.ie had
+      # been serving a snapshot frozen at one commit through three deploys — a
+      # genuine 58 KB page with an h1 and a description, and therefore invisible
+      # to every signal the probe measured. It now also asks whether the page is
+      # the CURRENT one. These tests pin that decision, and especially the two
+      # cases where it must stay quiet: the pipeline is deliberately incremental,
+      # so failing on "not the newest commit" would fire on every deploy for
+      # every unchanged page, and a check that cries wolf stops being read.
+      - name: "BLOCKING: Crawler delivery probe detects a frozen snapshot"
+        run: node --test scripts/test/check-prerender-delivery-freshness.test.mjs
+
       - name: "BLOCKING: DB column references resolve against the schema dump"
         run: node scripts/check-db-column-references.mjs
 

@@ -140,5 +140,45 @@ else
 fi
 
 echo ""
+echo "Scenario 8: deploy.sh tells the probe WHICH commit it just deployed"
+# Regression (2026-09-19): the probe could only ask "is this a real page", so it
+# reported 16/16 OK while app.project-nexus.ie served a snapshot frozen at one
+# commit through three deploys. It can now also ask "is this the CURRENT page",
+# but only if it is told what current means. Another seam between two halves
+# that each work: the probe reads NEXUS_DELIVERY_EXPECT_COMMIT, deploy.sh knows
+# the sha, and nothing proves deploy.sh hands it over.
+
+# a) the probe must actually consume the variable.
+assert "the probe reads NEXUS_DELIVERY_EXPECT_COMMIT" \
+    "$(grep -q 'NEXUS_DELIVERY_EXPECT_COMMIT' "$REPO_ROOT/scripts/check-prerender-delivery.mjs" && echo 1 || echo 0)"
+
+# b) THE SEAM: deploy.sh's probe invocation must carry the deployed sha, inline
+#    or via an earlier export. DEPLOY_SHA is a plain shell variable, so — exactly
+#    as in scenario 7 — a child process sees nothing without one of the two.
+# Exclude comments and the PROBE_NOTE/echo strings that also name the script as
+# a copy-paste remedy for the operator — they are text, not the invocation.
+probe_call="$(grep -nE 'node scripts/check-prerender-delivery\.mjs' "$DEPLOY" \
+    | grep -v ':[[:space:]]*#' | grep -vE 'PROBE_NOTE|echo ' | head -1)"
+probe_line="${probe_call%%:*}"
+probe_inline_ok=0
+echo "$probe_call" | grep -q 'NEXUS_DELIVERY_EXPECT_COMMIT=.*node scripts/check-prerender-delivery' \
+    && probe_inline_ok=1
+probe_export_line="$(grep -nE '^\s*export .*NEXUS_DELIVERY_EXPECT_COMMIT' "$DEPLOY" | head -1 | cut -d: -f1)"
+probe_export_ok=0
+if [ -n "$probe_export_line" ] && [ -n "$probe_line" ] && [ "$probe_export_line" -lt "$probe_line" ]; then
+    probe_export_ok=1
+fi
+if [ "$probe_inline_ok" = "1" ] || [ "$probe_export_ok" = "1" ]; then
+    assert "deploy.sh gives the probe the deployed commit" 1
+else
+    echo "    probe invoked at line ${probe_line:-?}; no inline env prefix and no earlier export"
+    assert "deploy.sh gives the probe the deployed commit" 0
+fi
+
+# c) the value it passes must be the deploy's own sha, not some other variable.
+assert "the commit deploy.sh passes is DEPLOY_SHA" \
+    "$(echo "$probe_call" | grep -q 'NEXUS_DELIVERY_EXPECT_COMMIT="\?\$DEPLOY_SHA"\?' && echo 1 || echo 0)"
+
+echo ""
 echo "Result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

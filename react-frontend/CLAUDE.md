@@ -382,7 +382,15 @@ External-system hook: `POST /api/v2/admin/prerender/invalidate` with HMAC or Bea
 - **5 NORMAL** — observer-triggered recache, manual API enqueue, bulk admin UI recache
 - **7 LOW** — TTL auto-recache, after-purge auto-recache
 
-Claim order is `(priority, queued_at, id)`. Duplicate-enqueue at a higher priority promotes the existing queued row.
+Claim order is `(starved?, priority, queued_at, id)`. Duplicate-enqueue at a higher priority promotes the existing queued row.
+
+🔴 **The `starved?` key is not decoration — priority alone starves, and it did.** The order was `(priority, queued_at, id)` until 2026-09-19, which is fair only while the queue periodically empties. It stopped emptying: the drift sweep enqueues a priority-3 job every ~2.3 minutes and each render takes 150–180s, so one processor tick per minute could never catch up. Over three days 1,420 priority-3 jobs were claimed and **2** priority-5 jobs were, both in the final minute before the backlog closed over. Jobs #7125, #7126 (the platform master) and #8035 (hour-timebank) sat `queued` and unclaimable for days.
+
+The cost was not the delay. **Both freshness sweeps skip a tenant that has any queued/claimed/running job**, so the starved row removed its own tenant from the only sweeps that could have displaced it — a trap that closes permanently once entered. Those tenants stopped re-rendering altogether and their crawler-served pages froze: `app.project-nexus.ie` served one snapshot across three deploys.
+
+Anything queued longer than `prerender.starvation_promote_seconds` (default 1800) is now claimed ahead of newer work whatever its priority, **oldest first** — priority is flattened inside the promoted set deliberately, or the same starvation reappears one level down. Priority still decides everything within the window. Set it to `0` to restore the old behaviour.
+
+The per-tenant skip now also has the time bound the platform-wide guard always had: past `prerender.tenant_block_alert_seconds` (default 7200) `PrerenderService::stuckTenantBlocks()` reports the tenant as `active_job_stuck`, both sweeps name it and exit non-zero, and their scheduler-liveness stamps go stale. A `running` job renewing its worker lease is exempt.
 
 ### HTTP status code propagation (Phase 1.2)
 

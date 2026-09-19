@@ -292,11 +292,15 @@ if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
         2) PROBE_NOTE=" (the render was STILL RUNNING when probed — re-run: node scripts/check-prerender-delivery.mjs)" ;;
         *) PROBE_NOTE=" (could not determine the render state — re-run: node scripts/check-prerender-delivery.mjs)" ;;
     esac
-    echo "===> Checking that crawlers receive real pages (not the empty shell)${PROBE_NOTE}..."
-    if node scripts/check-prerender-delivery.mjs; then
-        echo "===> ✓ Crawlers are being served real content.${PROBE_NOTE}"
+    echo "===> Checking that crawlers receive real, current pages${PROBE_NOTE}..."
+    # 🔴 Pass the commit being deployed. Without it the probe can only ask "is
+    # this a real page", which is what let app.project-nexus.ie serve a snapshot
+    # frozen at one commit through three deploys while this check passed 16/16.
+    if NEXUS_DELIVERY_EXPECT_COMMIT="$DEPLOY_SHA" node scripts/check-prerender-delivery.mjs; then
+        echo "===> ✓ Crawlers are being served real, current content.${PROBE_NOTE}"
     else
-        echo "===> ⚠⚠⚠ CRAWLERS ARE BEING SERVED BLANK PAGES — see above for the remedy.${PROBE_NOTE}"
+        echo "===> ⚠⚠⚠ CRAWLER DELIVERY CHECK FAILED — see above for which fault and its remedy.${PROBE_NOTE}"
+        echo "===>     Blank means nothing is being served; STALE means a host has stopped refreshing."
         echo "===>     The deploy itself is fine; SEO is not. Do not ignore this."
     fi
 else

@@ -36,6 +36,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     via `govukButton`, and what is deleted versus what may be retained as two separately
     headed lists rather than one mixed one.
 
+- **The deploy's crawler check now also asks whether the page is the CURRENT one.**
+  It compares each probed page's `data-build-commit` against the commit being deployed and
+  fails loudly when a snapshot's build is older than 24 hours (`NEXUS_DELIVERY_MAX_SNAPSHOT_AGE_HOURS`).
+  It reported 16 of 16 pages OK on 2026-09-17 while `app.project-nexus.ie` had been serving a
+  crawler snapshot frozen at one commit through three deploys: the page was a genuine 58 KB
+  document with an `h1` and a meta description, so every signal the check measured was
+  satisfied. Real content is not the same as current content, and the difference was invisible.
+  Deliberately age-based rather than an equality test: the prerender pipeline is incremental by
+  design, so a page nothing has invalidated is *supposed* to keep its snapshot across a deploy,
+  and failing on "not the newest commit" would fire on every deploy for every unchanged page.
+  New BLOCKING gate `Crawler delivery probe detects a frozen snapshot`; `scripts/deploy.sh`
+  passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
+
 ### Fixed
 
 - **Shared test animation mock no longer remounts the tree it wraps.** The
@@ -197,6 +210,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `::test_public_sales_order_honeypot_silently_accepts_without_sending`, and
   `SalesOrderControllerUnitTests.Submit_AcceptsGeneralEnquiryWithNoQuote` /
   `.Submit_StillRejectsHalfFilledQuote` on the ASP.NET side.
+
+- **Prerender jobs could be starved for ever, silently freezing a community's crawler pages.**
+  `PrerenderService::claimNextJob()` ordered strictly by `priority, queued_at`, which is only
+  fair while the queue periodically empties. It stopped emptying: the 2-minute drift sweep
+  enqueued a priority-3 job roughly every 2.3 minutes while each render takes 150–180s, so one
+  processor tick could never catch up. Between 2026-09-16 and 2026-09-19, 1,420 priority-3 jobs
+  were claimed and exactly 2 priority-5 jobs were — both in the last minute before the backlog
+  closed over. Jobs #7125, #7126 (the platform master) and #8035 (hour-timebank) then sat
+  `queued` and unclaimable for days.
+  The damage was not the delay but what the delay caused: both freshness sweeps skip a tenant
+  that has any queued/claimed/running job, so the starved row removed its own tenant from the
+  only sweeps that would have displaced it. Those tenants stopped re-rendering entirely —
+  `app.project-nexus.ie` served the same crawler snapshot across three deploys, and
+  `hour-timebank.ie` joined it two days later.
+  A job held past `prerender.starvation_promote_seconds` (default 30 minutes) is now claimed
+  ahead of newer work whatever its priority, oldest first; priority still decides the order
+  inside the window. Regression tests: `PrerenderServiceTest::test_a_starved_job_is_claimed_ahead_of_newer_higher_priority_work`,
+  `::test_priority_still_decides_the_order_inside_the_starvation_window`,
+  `::test_starved_jobs_are_drained_oldest_first`, `::test_promotion_can_be_switched_off`.
+
+- **A tenant blocked from refresh is now reported instead of skipped in silence.**
+  `prerender:detect-drift` and `prerender:auto-recache` both skip a tenant that already has work
+  in flight — correct, but unbounded in time and, unlike the equivalent platform-wide guard,
+  with no alert. A job that could never be claimed therefore excluded its tenant from every
+  freshness path permanently while both sweeps reported success every two minutes for three
+  days. `PrerenderService::stuckTenantBlocks()` applies the same time bound per tenant that
+  `blockingGlobalJob()` already applied platform-wide: past
+  `prerender.tenant_block_alert_seconds` (default 2 hours) the sweep names the tenant and the
+  job, reports `active_job_stuck`, and exits non-zero so its scheduler-liveness stamp goes
+  stale. A running job renewing its worker lease is exempt — it is doing the work, not blocking
+  it. Regression tests: `PrerenderAutoRecacheTest::test_a_long_blocked_tenant_is_reported_and_fails_the_sweep`,
+  `::test_a_recently_queued_blocking_job_is_still_skipped_quietly`.
 
 ### Changed
 

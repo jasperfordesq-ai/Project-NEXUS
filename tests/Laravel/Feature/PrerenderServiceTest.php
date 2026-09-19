@@ -194,6 +194,118 @@ HTML;
         $this->assertNull($third);
     }
 
+    /**
+     * 🔴 Regression: the claim order used to be `priority ASC, queued_at ASC`
+     * with nothing else, so a steady supply of PRIORITY_HIGH work starved every
+     * lower-priority row behind it permanently. On production the drift sweep
+     * produced priority-3 jobs faster than the host processor could drain them,
+     * so between 2026-09-16 and 2026-09-19 exactly two priority-5 jobs were
+     * claimed against 1,420 priority-3 ones, and three tenants (including the
+     * platform master) had a job sit 'queued' for days. Because both freshness
+     * sweeps skip a tenant that has an active job, those tenants' snapshots
+     * then froze: the starved job suppressed the sweeps that would have
+     * replaced it. Waiting must be bounded.
+     */
+    public function test_a_starved_job_is_claimed_ahead_of_newer_higher_priority_work(): void
+    {
+        config(['prerender.starvation_promote_seconds' => 1800]);
+        $service = new PrerenderService();
+
+        $starved = $service->enqueueJob(null, '/about', false, false, null, PrerenderService::PRIORITY_NORMAL);
+        // Backdate past the promotion threshold. Mirrors a row that has been
+        // queued for days while higher-priority work kept arriving.
+        DB::table('prerender_jobs')->where('id', $starved)->update([
+            'queued_at'       => date('Y-m-d H:i:s', time() - 7200),
+            'fence_ready_at'  => date('Y-m-d H:i:s', time() - 7200),
+        ]);
+
+        // Newer, higher-priority work — exactly what kept winning in production.
+        $fresh = $service->enqueueJob(null, '/faq', false, false, null, PrerenderService::PRIORITY_HIGH);
+
+        $claimed = $service->claimNextJob('starvation-worker');
+        $this->assertNotNull($claimed);
+        $this->assertSame(
+            $starved,
+            (int) $claimed['id'],
+            'A job held past the starvation threshold must be claimed before newer high-priority work'
+        );
+
+        $next = $service->claimNextJob('starvation-worker-2');
+        $this->assertNotNull($next);
+        $this->assertSame($fresh, (int) $next['id']);
+    }
+
+    /**
+     * The promotion must not flatten the queue into plain FIFO: inside the
+     * window, priority is still the whole point of having priorities.
+     */
+    public function test_priority_still_decides_the_order_inside_the_starvation_window(): void
+    {
+        config(['prerender.starvation_promote_seconds' => 1800]);
+        $service = new PrerenderService();
+
+        $normal = $service->enqueueJob(null, '/about', false, false, null, PrerenderService::PRIORITY_NORMAL);
+        DB::table('prerender_jobs')->where('id', $normal)->update([
+            'queued_at'      => date('Y-m-d H:i:s', time() - 300),
+            'fence_ready_at' => date('Y-m-d H:i:s', time() - 300),
+        ]);
+        $high = $service->enqueueJob(null, '/faq', false, false, null, PrerenderService::PRIORITY_HIGH);
+
+        $claimed = $service->claimNextJob('priority-worker');
+        $this->assertNotNull($claimed);
+        $this->assertSame(
+            $high,
+            (int) $claimed['id'],
+            'Within the starvation window the higher-priority job must still win'
+        );
+    }
+
+    /**
+     * Two starved jobs are drained oldest-first, so promotion cannot itself
+     * create a new starvation order.
+     */
+    public function test_starved_jobs_are_drained_oldest_first(): void
+    {
+        config(['prerender.starvation_promote_seconds' => 1800]);
+        $service = new PrerenderService();
+
+        $older = $service->enqueueJob(null, '/about', false, false, null, PrerenderService::PRIORITY_LOW);
+        DB::table('prerender_jobs')->where('id', $older)->update([
+            'queued_at'      => date('Y-m-d H:i:s', time() - 10800),
+            'fence_ready_at' => date('Y-m-d H:i:s', time() - 10800),
+        ]);
+        $newer = $service->enqueueJob(null, '/faq', false, false, null, PrerenderService::PRIORITY_HIGH);
+        DB::table('prerender_jobs')->where('id', $newer)->update([
+            'queued_at'      => date('Y-m-d H:i:s', time() - 7200),
+            'fence_ready_at' => date('Y-m-d H:i:s', time() - 7200),
+        ]);
+
+        $claimed = $service->claimNextJob('fifo-worker');
+        $this->assertNotNull($claimed);
+        $this->assertSame($older, (int) $claimed['id']);
+    }
+
+    /**
+     * Setting the threshold to 0 disables promotion, so the old behaviour is
+     * still reachable if it ever needs to be.
+     */
+    public function test_promotion_can_be_switched_off(): void
+    {
+        config(['prerender.starvation_promote_seconds' => 0]);
+        $service = new PrerenderService();
+
+        $starved = $service->enqueueJob(null, '/about', false, false, null, PrerenderService::PRIORITY_NORMAL);
+        DB::table('prerender_jobs')->where('id', $starved)->update([
+            'queued_at'      => date('Y-m-d H:i:s', time() - 86400),
+            'fence_ready_at' => date('Y-m-d H:i:s', time() - 86400),
+        ]);
+        $fresh = $service->enqueueJob(null, '/faq', false, false, null, PrerenderService::PRIORITY_HIGH);
+
+        $claimed = $service->claimNextJob('disabled-worker');
+        $this->assertNotNull($claimed);
+        $this->assertSame($fresh, (int) $claimed['id']);
+    }
+
     public function test_enqueue_dedupes_identical_queued_jobs(): void
     {
         $service = new PrerenderService();

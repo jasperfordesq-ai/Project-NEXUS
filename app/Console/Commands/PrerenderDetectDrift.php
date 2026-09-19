@@ -226,6 +226,21 @@ class PrerenderDetectDrift extends Command
             ->toArray();
         $activeSet = array_flip($activeTenants);
 
+        // 🔴 Same unbounded guard as blockingGlobalJob() had, one level down.
+        // Skipping a tenant that already has work in flight is right; doing it
+        // for ever without saying so is how the platform master's snapshots
+        // stayed pinned to a single commit across three deploys while this
+        // sweep reported success every two minutes. A block older than
+        // prerender.tenant_block_alert_seconds is stuck, not busy.
+        $stuckBlocks = PrerenderService::stuckTenantBlocks();
+        $stuckBySlug = [];
+        foreach ($tenants as $t) {
+            $blockedId = (int) ($t['tenant_id'] ?? 0);
+            if ($blockedId > 0 && isset($stuckBlocks[$blockedId])) {
+                $stuckBySlug[(string) $t['slug']] = $stuckBlocks[$blockedId];
+            }
+        }
+
         $now = time();
         $enqueued = [];
         $skipped = [];
@@ -238,7 +253,12 @@ class PrerenderDetectDrift extends Command
                 continue;
             }
             if (isset($activeSet[$t['slug']])) {
-                $skipped[$t['slug']] = 'active_job_exists';
+                if (isset($stuckBySlug[$t['slug']])) {
+                    $skipped[$t['slug']] = 'active_job_stuck';
+                    $planningErrors++;
+                } else {
+                    $skipped[$t['slug']] = 'active_job_exists';
+                }
                 continue;
             }
 
@@ -414,11 +434,27 @@ class PrerenderDetectDrift extends Command
             }
         }
 
+        $reportableStuck = array_intersect_key($stuckBySlug, $skipped);
+
+        // Human lines first so the JSON report stays the last thing on stdout
+        // and remains machine-readable as a whole.
+        foreach ($reportableStuck as $slug => $block) {
+            $this->error(sprintf(
+                'Tenant %s has had prerender job #%d %s for %ds (limit %ds). Drift detection has been suppressed for that tenant that whole time and none of its snapshots is being refreshed.',
+                $slug,
+                $block['job_id'],
+                $block['status'],
+                $block['age_seconds'],
+                $block['threshold_seconds']
+            ));
+        }
+
         $this->line(json_encode([
             'dry_run'   => $dryRun,
             'priority'  => $priority,
             'enqueued'  => $enqueued,
             'skipped'   => $skipped,
+            'stuck_tenant_blocks' => $reportableStuck,
             'planning_errors' => $planningErrors,
             'inventory_truncated' => $inventoryTruncated,
             'snapshot_count' => count($inventory),

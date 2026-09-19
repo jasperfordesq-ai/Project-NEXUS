@@ -137,6 +137,22 @@ class PrerenderAutoRecache extends Command
         }
         $activeSet = array_flip($activeTenants);
 
+        // 🔴 Skipping a busy tenant is correct; skipping one silently for ever
+        // is not. A job that cannot be claimed removes its tenant from this
+        // sweep AND from drift detection, so the tenant's snapshots freeze and
+        // the only thing that would have unstuck them is the sweep it just
+        // suppressed. Name the tenants that have been blocked past the
+        // threshold and fail, so the freeze is visible from the first sweep
+        // rather than from a crawler months later.
+        $stuckBlocks = PrerenderService::stuckTenantBlocks();
+        $stuckBySlug = [];
+        foreach ($tenants as $t) {
+            $blockedId = (int) ($t['tenant_id'] ?? 0);
+            if ($blockedId > 0 && isset($stuckBlocks[$blockedId])) {
+                $stuckBySlug[(string) $t['slug']] = $stuckBlocks[$blockedId];
+            }
+        }
+
         // Sort tenants by largest stale-route count first so the biggest
         // freshness wins land first when capped.
         uasort($byTenant, fn($a, $b) => count($b) <=> count($a));
@@ -150,7 +166,9 @@ class PrerenderAutoRecache extends Command
                 continue;
             }
             if (isset($activeSet[$slug])) {
-                $skipped[$slug] = 'active_job_exists';
+                $skipped[$slug] = isset($stuckBySlug[$slug])
+                    ? 'active_job_stuck'
+                    : 'active_job_exists';
                 continue;
             }
             // Dedup + cap routes per tenant.
@@ -186,13 +204,31 @@ class PrerenderAutoRecache extends Command
             $tenantCount++;
         }
 
+        // Report only the stuck tenants this sweep actually had work for —
+        // a tenant with nothing stale is not being harmed by its blocked job.
+        $reportableStuck = array_intersect_key($stuckBySlug, $skipped);
+
+        // The human lines go first so the JSON report stays the last thing on
+        // stdout and remains machine-readable as a whole.
+        foreach ($reportableStuck as $slug => $block) {
+            $this->error(sprintf(
+                'Tenant %s has had prerender job #%d %s for %ds (limit %ds). Its snapshots have not been refreshed for that whole time and this sweep cannot reach them.',
+                $slug,
+                $block['job_id'],
+                $block['status'],
+                $block['age_seconds'],
+                $block['threshold_seconds']
+            ));
+        }
+
         $this->line(json_encode([
             'dry_run'  => $dryRun,
             'enqueued' => $enqueued,
             'skipped'  => $skipped,
+            'stuck_tenant_blocks' => $reportableStuck,
             'inventory_truncated' => $inventoryTruncated,
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-        return $inventoryTruncated ? self::FAILURE : self::SUCCESS;
+        return ($inventoryTruncated || $reportableStuck !== []) ? self::FAILURE : self::SUCCESS;
     }
 
     /** @param list<string> $routes @return list<string> */

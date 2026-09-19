@@ -2215,12 +2215,46 @@ class PrerenderService
                 ->pluck('tenant_id')
                 ->all();
 
+            // 🔴 Priority alone starves. This ordered strictly by `priority,
+            // queued_at` until 2026-09-19, which is only fair while the queue
+            // periodically empties. It stopped emptying: the 2-minute drift
+            // sweep enqueued a priority-3 job every ~2.3 minutes and each render
+            // takes 150-180s, so one tick could never catch up. Over three days
+            // 1,420 priority-3 jobs were claimed and 2 priority-5 jobs were,
+            // both in the last minute before the backlog closed over. Jobs
+            // #7125, #7126 (platform master) and #8035 (hour-timebank) then sat
+            // 'queued' indefinitely — and because both freshness sweeps skip a
+            // tenant with an active job, the starved row suppressed the only
+            // sweeps that would have displaced it. Those tenants' crawler
+            // snapshots froze at one commit across three deploys.
+            //
+            // Anything that has waited past the threshold is claimed ahead of
+            // newer work regardless of priority, oldest first. Priority still
+            // orders everything inside the window (see the tests); all this
+            // guarantees is that waiting ends.
+            $promoteAfter = max(0, (int) config('prerender.starvation_promote_seconds', 1800));
             $q = DB::table('prerender_jobs')
                 ->where('status', 'queued')
-                ->orderBy('priority')
-                ->orderBy('queued_at')
-                ->orderBy('id')
                 ->lockForUpdate();
+
+            if ($promoteAfter > 0) {
+                // A literal cutoff rather than a database INTERVAL expression:
+                // bound parameters only, no dialect-specific date arithmetic.
+                //
+                // Two keys, not one. The first puts promoted rows in front; the
+                // second flattens priority to a constant *within* that group so
+                // they drain strictly oldest-first. Leaving priority live inside
+                // the promoted set would reintroduce the same starvation one
+                // level down — an old low-priority row losing for ever to a
+                // merely-old high-priority one.
+                $cutoff = date('Y-m-d H:i:s', time() - $promoteAfter);
+                $q->orderByRaw('CASE WHEN queued_at <= ? THEN 0 ELSE 1 END', [$cutoff])
+                    ->orderByRaw('CASE WHEN queued_at <= ? THEN 0 ELSE priority END', [$cutoff]);
+            } else {
+                $q->orderBy('priority');
+            }
+
+            $q->orderBy('queued_at')->orderBy('id');
 
             if ($this->hasJobFenceColumn()) {
                 $q->whereIn('fence_state', [self::FENCE_STATE_READY, self::FENCE_STATE_ACTIVATED])
@@ -2409,6 +2443,93 @@ class PrerenderService
             'progressing'       => $progressing,
             'stale'             => $ageSeconds > $threshold && !$progressing,
         ];
+    }
+
+    /**
+     * Per-tenant equivalent of blockingGlobalJob(): the tenants whose oldest
+     * unfinished job has been blocking long enough to be called stuck.
+     *
+     * 🔴 Both freshness sweeps skip a tenant that has any queued/claimed/running
+     * job ("active_job_exists"). That is right — piling recaches on top of work
+     * already in flight just fights it — but like the global guard above it had
+     * no time bound, and unlike the global guard it had no alert either. A job
+     * that can never be claimed therefore removed its tenant from every
+     * freshness path silently and permanently, while both sweeps went on
+     * reporting success. That is exactly what happened to jobs #7125, #7126
+     * (the platform master) and #8035 (hour-timebank): the master's
+     * crawler-served pages stayed pinned to one commit across three deploys and
+     * nothing anywhere said so.
+     *
+     * The starvation promotion in claimNextJob() removes the cause. This is the
+     * detector for whatever causes it next: a tenant excluded from refresh for
+     * longer than `prerender.tenant_block_alert_seconds` is a fault to report,
+     * not a tenant to keep skipping quietly.
+     *
+     * Same progress carve-out as the global guard — a 'running' job renewing
+     * its worker lease is doing the work, not blocking it.
+     *
+     * @return array<int, array{job_id:int,status:string,queued_at:?string,age_seconds:int,lease_age_seconds:?int,threshold_seconds:int}>
+     *         keyed by tenant_id, containing only the tenants judged stuck.
+     */
+    public static function stuckTenantBlocks(): array
+    {
+        if (!Schema::hasTable('prerender_jobs')) {
+            return [];
+        }
+
+        $hasHeartbeat = Schema::hasColumn('prerender_jobs', 'heartbeat_at');
+        $columns = ['id', 'tenant_id', 'status', 'queued_at', 'started_at'];
+        if ($hasHeartbeat) {
+            $columns[] = 'heartbeat_at';
+        }
+
+        $rows = DB::table('prerender_jobs')
+            ->whereNotNull('tenant_id')
+            ->whereIn('status', ['queued', 'claimed', 'running'])
+            // Oldest first so the row kept per tenant is the one that has been
+            // suppressing that tenant's sweeps the longest.
+            ->orderBy('id')
+            ->select($columns)
+            ->get();
+
+        $threshold = max(60, (int) config('prerender.tenant_block_alert_seconds', 7200));
+        $now = time();
+        $out = [];
+
+        foreach ($rows as $row) {
+            $tenantId = (int) $row->tenant_id;
+            if (isset($out[$tenantId])) {
+                continue;
+            }
+
+            $queuedAt = $row->queued_at ?? null;
+            $queuedTs = is_string($queuedAt) ? strtotime($queuedAt) : false;
+            $ageSeconds = $queuedTs === false ? 0 : max(0, $now - $queuedTs);
+            if ($ageSeconds <= $threshold) {
+                continue;
+            }
+
+            $leaseAt = ($hasHeartbeat ? ($row->heartbeat_at ?? null) : null) ?? ($row->started_at ?? null);
+            $leaseTs = is_string($leaseAt) ? strtotime($leaseAt) : false;
+            $leaseAgeSeconds = $leaseTs === false ? null : max(0, $now - $leaseTs);
+            $progressing = (string) $row->status === 'running'
+                && $leaseAgeSeconds !== null
+                && $leaseAgeSeconds <= $threshold;
+            if ($progressing) {
+                continue;
+            }
+
+            $out[$tenantId] = [
+                'job_id'            => (int) $row->id,
+                'status'            => (string) $row->status,
+                'queued_at'         => is_string($queuedAt) ? $queuedAt : null,
+                'age_seconds'       => $ageSeconds,
+                'lease_age_seconds' => $leaseAgeSeconds,
+                'threshold_seconds' => $threshold,
+            ];
+        }
+
+        return $out;
     }
 
     private function hasJobFenceColumn(): bool

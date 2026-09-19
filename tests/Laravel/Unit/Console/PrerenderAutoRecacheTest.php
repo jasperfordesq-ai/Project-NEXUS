@@ -304,6 +304,99 @@ class PrerenderAutoRecacheTest extends TestCase
             ->assertExitCode(0);
     }
 
+    /**
+     * 🔴 Regression: a tenant whose blocking job can never be claimed was
+     * skipped here silently and for ever, while the sweep reported success.
+     * On production that hid a three-day freeze of the platform master's
+     * crawler-served pages: the starved job suppressed the very sweep that
+     * would have refreshed them, and nothing anywhere said so. A block older
+     * than prerender.tenant_block_alert_seconds is stuck, not busy.
+     */
+    public function test_a_long_blocked_tenant_is_reported_and_fails_the_sweep(): void
+    {
+        config(['prerender.tenant_block_alert_seconds' => 7200]);
+        $slug = 'test-auto-recache-' . self::TENANT_ID;
+
+        $this->service
+            ->shouldReceive('inventory')
+            ->once()
+            ->andReturn([
+                [
+                    'host'          => 'example.local',
+                    'route'         => '/members',
+                    'age_s'         => 600,
+                    'content_stale' => true,
+                ],
+            ]);
+
+        $this->service
+            ->shouldReceive('loadTenantTargets')
+            ->once()
+            ->andReturn([[
+                'host'      => 'example.local',
+                'slug'      => $slug,
+                'prefix'    => '',
+                'tenant_id' => self::TENANT_ID,
+            ]]);
+
+        // Queued for three days and never claimed — jobs #7125/#7126/#8035.
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'status'    => 'queued',
+            'queued_at' => now()->subDays(3)->toDateTimeString(),
+        ]);
+
+        $this->service->shouldNotReceive('enqueueJob');
+
+        $this->artisan('prerender:auto-recache')
+            ->expectsOutputToContain('has had prerender job')
+            ->assertExitCode(1);
+    }
+
+    /**
+     * The complement: a job that is genuinely in flight must still be skipped
+     * quietly. Turning ordinary busy-ness into an alarm would make the alarm
+     * worthless, which is how the two-month blank-shell outage stayed unread.
+     */
+    public function test_a_recently_queued_blocking_job_is_still_skipped_quietly(): void
+    {
+        config(['prerender.tenant_block_alert_seconds' => 7200]);
+        $slug = 'test-auto-recache-' . self::TENANT_ID;
+
+        $this->service
+            ->shouldReceive('inventory')
+            ->once()
+            ->andReturn([
+                [
+                    'host'          => 'example.local',
+                    'route'         => '/members',
+                    'age_s'         => 600,
+                    'content_stale' => true,
+                ],
+            ]);
+
+        $this->service
+            ->shouldReceive('loadTenantTargets')
+            ->once()
+            ->andReturn([[
+                'host'      => 'example.local',
+                'slug'      => $slug,
+                'prefix'    => '',
+                'tenant_id' => self::TENANT_ID,
+            ]]);
+
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'status'    => 'running',
+            'queued_at' => now()->subMinutes(2)->toDateTimeString(),
+        ]);
+
+        $this->service->shouldNotReceive('enqueueJob');
+
+        $this->artisan('prerender:auto-recache')
+            ->assertExitCode(0);
+    }
+
     // -------------------------------------------------------------------------
     // max-tenants cap respected
     // -------------------------------------------------------------------------
