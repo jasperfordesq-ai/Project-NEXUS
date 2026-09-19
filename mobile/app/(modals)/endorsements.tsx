@@ -627,19 +627,21 @@ function EndorsementsHeader({
       <Surface variant="secondary" className="gap-3 rounded-panel p-2">
         <Tabs value={activeTab} onValueChange={(value) => selectTab(value as Tab)} variant="secondary">
           <Tabs.List>
-            <Tabs.Indicator />
-            <Tabs.Trigger value="skills">
-              <Ionicons name="construct-outline" size={15} color={activeTab === 'skills' ? primary : theme.textMuted} />
-              <Tabs.Label>{t('mySkills')}</Tabs.Label>
-            </Tabs.Trigger>
-            <Tabs.Trigger value="endorsements">
-              <Ionicons name="ribbon-outline" size={15} color={activeTab === 'endorsements' ? primary : theme.textMuted} />
-              <Tabs.Label>{t('endorsements')}</Tabs.Label>
-            </Tabs.Trigger>
-            <Tabs.Trigger value="discover">
-              <Ionicons name="folder-open-outline" size={15} color={activeTab === 'discover' ? primary : theme.textMuted} />
-              <Tabs.Label>{t('discover.title')}</Tabs.Label>
-            </Tabs.Trigger>
+            <Tabs.ScrollView scrollAlign="start" contentContainerClassName="gap-1 pr-2">
+              <Tabs.Indicator />
+              <Tabs.Trigger value="skills">
+                <Ionicons name="construct-outline" size={15} color={activeTab === 'skills' ? primary : theme.textMuted} />
+                <Tabs.Label>{t('mySkills')}</Tabs.Label>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="endorsements">
+                <Ionicons name="ribbon-outline" size={15} color={activeTab === 'endorsements' ? primary : theme.textMuted} />
+                <Tabs.Label>{t('endorsements')}</Tabs.Label>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="discover">
+                <Ionicons name="folder-open-outline" size={15} color={activeTab === 'discover' ? primary : theme.textMuted} />
+                <Tabs.Label>{t('discover.title')}</Tabs.Label>
+              </Tabs.Trigger>
+            </Tabs.ScrollView>
           </Tabs.List>
         </Tabs>
         <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
