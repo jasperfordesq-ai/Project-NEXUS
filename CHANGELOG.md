@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda session registration blocks rapid duplicate submissions, ignores confirmations after departure or changed registration permissions/version, and suppresses late completion updates after leaving the panel.
+
 - Native event attendance ignores delayed no-show confirmations after the screen unmounts, preventing departed confirmations from submitting changes.
 
 - Native event attendance rejects malformed, fractional, unsafe and repeated-array event links before loading the roster or offline device tools.

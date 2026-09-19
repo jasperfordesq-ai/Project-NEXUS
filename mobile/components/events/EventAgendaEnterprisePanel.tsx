@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Linking, Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card } from 'heroui-native';
@@ -45,9 +45,21 @@ export function EventAgendaEnterprisePanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [pending, setPending] = useState<'register' | 'withdraw' | null>(null);
+  const mounted = useRef(true);
+  const locked = useRef(false);
+  const current = useRef({ eventId, session });
+  current.current = { eventId, session };
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const mutate = async (action: 'register' | 'withdraw') => {
-    if (pending !== null) return;
+    const stillCurrent = () => mounted.current && current.current.eventId === eventId
+      && current.current.session.id === session.id
+      && current.current.session.registration.version === session.registration.version;
+    if (!stillCurrent() || locked.current || !current.current.session.registration[action === 'register' ? 'can_register' : 'can_withdraw']) return;
+    locked.current = true;
     setPending(action);
     try {
       const response = action === 'register'
@@ -63,6 +75,7 @@ export function EventAgendaEnterprisePanel({
             session.registration.version,
             idempotencyKey(),
           );
+      if (!stillCurrent()) return;
       onSessionChange(response.data.session);
       showToast({
         title: t(`agenda.enterprise.${action}SuccessTitle`),
@@ -70,13 +83,15 @@ export function EventAgendaEnterprisePanel({
         variant: 'success',
       });
     } catch (err) {
+      if (!stillCurrent()) return;
       showToast({
         title: t(`agenda.enterprise.${action}ErrorTitle`),
         description: describeApiError(err, t(`agenda.enterprise.${action}ErrorDescription`)),
         variant: 'danger',
       });
     } finally {
-      setPending(null);
+      locked.current = false;
+      if (mounted.current) setPending(null);
     }
   };
 

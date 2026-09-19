@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { Button } from '@/components/ui/NativeButton';
 import { Linking } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -78,6 +79,52 @@ function session(overrides: Partial<EventAgendaSession> = {}): EventAgendaSessio
 describe('EventAgendaEnterprisePanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('submits once when the same rendered registration callback is invoked twice', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(registerEventAgendaSession).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
+    const current = session({ resources: [] });
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const press = view.UNSAFE_getAllByType(Button)[0]!.props.onPress;
+    act(() => { press(); press(); });
+    expect(registerEventAgendaSession).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: { session: current } }));
+  });
+
+  it('does not withdraw through a confirmation retained after unmount', async () => {
+    const current = session({ registration: { state: 'registered', version: 4, can_register: false, can_withdraw: true } });
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    fireEvent.press(view.getByText('Withdraw from session'));
+    const confirm = mockConfirm.mock.calls[0][0].onConfirm;
+    view.unmount();
+    await act(async () => confirm());
+    expect(withdrawEventAgendaSession).not.toHaveBeenCalled();
+  });
+
+  it.each(['version', 'permission'] as const)('rejects a retained confirmation after its %s changes', async (change) => {
+    const current = session({ registration: { state: 'registered', version: 4, can_register: false, can_withdraw: true } });
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    fireEvent.press(view.getByText('Withdraw from session'));
+    const confirm = mockConfirm.mock.calls[0][0].onConfirm;
+    const next = { ...current, registration: { ...current.registration,
+      version: change === 'version' ? 5 : 4, can_withdraw: change !== 'permission' } };
+    view.rerender(<EventAgendaEnterprisePanel eventId={101} session={next} onSessionChange={jest.fn()} />);
+    await act(async () => confirm());
+    expect(withdrawEventAgendaSession).not.toHaveBeenCalled();
+  });
+
+  it('ignores completion after leaving the session panel', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(registerEventAgendaSession).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
+    const current = session();
+    const onSessionChange = jest.fn();
+    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={onSessionChange} />);
+    fireEvent.press(view.getByText('Register for session'));
+    view.unmount();
+    await act(async () => finish({ data: { session: current } }));
+    expect(onSessionChange).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   it('shows aggregate capacity and opens only server-revealed resources', async () => {
