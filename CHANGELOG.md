@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda recovery transport now requires a saved request before dispatch, reuses its original action/version/key, blocks overlapping sends and preserves accepted receipts after screen departure. Recovery is explicit; panel integration remains unfinished.
+
 - Native agenda registration and withdrawal retries preserve their request key and original version after uncertain failures while the panel remains mounted, allowing server replay instead of a new request. Changed registration versions receive distinct keys; restart recovery remains unfinished.
 
 - Native agenda session registration blocks rapid duplicate submissions, ignores confirmations after departure or changed registration permissions/version, and suppresses late completion updates after leaving the panel.
