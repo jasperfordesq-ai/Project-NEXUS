@@ -206,6 +206,22 @@ const mockSkillCategory = {
 };
 
 describe('EndorsementsScreen', () => {
+  it.each([0, 7])('uses the skill API count rather than a grouped endorsement ID (count: %s)', (count) => {
+    mockUseApi.mockImplementation((loader: unknown) => {
+      const source = String(loader);
+      if (source.includes('getMySkills')) {
+        return { ...defaultApiState, data: { data: { skills: [{ id: count === 0 ? 1 : 918, name: 'Gardening', category: null, endorsement_count: count }] } } };
+      }
+      if (source.includes('getUserEndorsements')) {
+        return { ...defaultApiState, data: { data: [mockEndorsement] } };
+      }
+      return defaultApiState;
+    });
+    const screen = render(<EndorsementsScreen />);
+    if (count > 0) expect(screen.getByText(`Endorsed by ${count}`)).toBeTruthy();
+    expect(screen.queryByText('Endorsed by 1')).toBeNull();
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<EndorsementsScreen />);
     expect(toJSON()).toBeTruthy();

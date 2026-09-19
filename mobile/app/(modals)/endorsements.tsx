@@ -294,7 +294,8 @@ export default function EndorsementsScreen() {
 
   const renderSkill = useCallback(
     ({ item }: { item: Skill }) => {
-      const endorseCount = endorsements.filter((e) => e.skill.id === item.id).length;
+      // Grouped endorsements use display-only IDs, not user_skills primary keys.
+      const endorseCount = Math.max(0, Math.trunc(asCount(item.endorsement_count)));
       return (
         <HeroCard
           variant="default"
@@ -334,7 +335,7 @@ export default function EndorsementsScreen() {
         </HeroCard>
       );
     },
-    [endorsements, handleRemoveSkill, primary, t, theme.success, theme.text, theme.textSecondary],
+    [handleRemoveSkill, primary, t, theme.success, theme.text, theme.textSecondary],
   );
 
   const renderEndorsement = useCallback(

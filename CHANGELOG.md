@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native skill cards show their authoritative endorsement totals instead of matching unrelated grouped display identifiers.
+
 - Native AI chat resets conversation and draft state when the member or community changes, while preserving drafts during profile refreshes.
 
 - Native AI chat dismisses feedback notes on departure and prevents delayed feedback prompts or errors from appearing on a later visit.
