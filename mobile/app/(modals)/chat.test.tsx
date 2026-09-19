@@ -194,6 +194,52 @@ import { sendChatMessage, submitChatFeedback, type ChatResponse } from '@/lib/ap
 describe('ChatScreen', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  async function openFeedbackNote() {
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await screen.findByText('Hello!');
+    fireEvent.press(screen.getByLabelText('Mark response not helpful'));
+    await screen.findByText('What went wrong?');
+    fireEvent.changeText(screen.getByPlaceholderText('Tell us what was missing or wrong'), 'Keep this note');
+    return screen;
+  }
+
+  it('submits a feedback note only once before busy state renders', async () => {
+    const screen = await openFeedbackNote();
+    let finish!: (value: Awaited<ReturnType<typeof submitChatFeedback>>) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const press = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Send note')!.props.onPress;
+    act(() => { press(); press(); });
+    expect(submitChatFeedback).toHaveBeenCalledTimes(2);
+    await act(async () => finish({ data: { recorded: true, feedback: 'down' } }));
+  });
+
+  it('shows a failed note save and preserves the note for retry', async () => {
+    const screen = await openFeedbackNote();
+    jest.mocked(submitChatFeedback).mockRejectedValueOnce(new Error('offline'));
+    fireEvent.press(screen.getByLabelText('Send note'));
+    await waitFor(() => expect(require('@/components/ui/AppToast').useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    expect(screen.getByPlaceholderText('Tell us what was missing or wrong').props.value).toBe('Keep this note');
+    fireEvent.press(screen.getByLabelText('Send note'));
+    await waitFor(() => expect(screen.queryByText('What went wrong?')).toBeNull());
+    expect(submitChatFeedback).toHaveBeenLastCalledWith(expect.objectContaining({ note: 'Keep this note' }));
+  });
+
+  it('does not close a replacement note when an older save completes', async () => {
+    const screen = await openFeedbackNote();
+    let finish!: (value: Awaited<ReturnType<typeof submitChatFeedback>>) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    fireEvent.press(screen.getByLabelText('Send note'));
+    fireEvent.press(screen.getByLabelText('Skip'));
+    fireEvent.press(screen.getByLabelText('Mark response not helpful'));
+    await screen.findByText('What went wrong?');
+    fireEvent.changeText(screen.getByPlaceholderText('Tell us what was missing or wrong'), 'Replacement note');
+    await act(async () => finish({ data: { recorded: true, feedback: 'down' } }));
+    expect(screen.getByPlaceholderText('Tell us what was missing or wrong').props.value).toBe('Replacement note');
+  });
+
   it('sends only once for repeated gestures before the busy state renders', async () => {
     let finish!: (value: ChatResponse) => void;
     jest.mocked(sendChatMessage).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));

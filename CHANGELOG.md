@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native AI feedback notes prevent duplicate submissions, keep text available for retry with visible failure feedback, and ignore old save responses after a note is closed or replaced.
+
 - Native AI chat serializes feedback votes, restores the saved selection when a change fails, and prevents old feedback responses from opening a note prompt in a new conversation.
 
 - Native AI chat isolates pending sends: starting a new conversation or reaching the response timeout prevents an older reply or error from replacing the current conversation, and repeated send gestures no longer issue duplicate requests.

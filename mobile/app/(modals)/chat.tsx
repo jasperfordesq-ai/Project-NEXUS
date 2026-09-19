@@ -464,6 +464,9 @@ function ChatScreenInner() {
   const [feedbackBusy, setFeedbackBusy] = useState(false);
   const activeFeedbackRef = useRef<object | null>(null);
   const [pendingFeedbackNote, setPendingFeedbackNote] = useState<PendingFeedbackNote | null>(null);
+  const pendingFeedbackNoteRef = useRef(pendingFeedbackNote);
+  pendingFeedbackNoteRef.current = pendingFeedbackNote;
+  const activeNoteRef = useRef<object | null>(null);
   const [feedbackNote, setFeedbackNote] = useState('');
   const [submittingFeedbackNote, setSubmittingFeedbackNote] = useState(false);
   const conversationIdRef = useRef<string | null>(null);
@@ -490,6 +493,8 @@ function ChatScreenInner() {
       cancelled = true;
       activeSendRef.current = null;
       activeFeedbackRef.current = null;
+      activeNoteRef.current = null;
+      pendingFeedbackNoteRef.current = null;
       if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     };
   }, []);
@@ -503,6 +508,9 @@ function ChatScreenInner() {
   const startNewConversation = useCallback(() => {
     activeSendRef.current = null;
     activeFeedbackRef.current = null;
+    activeNoteRef.current = null;
+    pendingFeedbackNoteRef.current = null;
+    setSubmittingFeedbackNote(false);
     setFeedbackBusy(false);
     if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     thinkingTimeoutRef.current = null;
@@ -611,6 +619,8 @@ function ChatScreenInner() {
         feedback: vote,
       });
       if (activeFeedbackRef.current !== request) return;
+      activeNoteRef.current = null;
+      setSubmittingFeedbackNote(false);
       if (vote === 'down') {
         setPendingFeedbackNote({ messageId: message.id, traceId, numericMessageId: messageId });
         setFeedbackNote('');
@@ -637,18 +647,22 @@ function ChatScreenInner() {
   }, [feedbackState, showToast, t]);
 
   const closeFeedbackNote = useCallback(() => {
+    activeNoteRef.current = null;
+    pendingFeedbackNoteRef.current = null;
     setPendingFeedbackNote(null);
     setFeedbackNote('');
     setSubmittingFeedbackNote(false);
   }, []);
 
   const submitFeedbackNote = useCallback(async () => {
+    if (activeNoteRef.current || !pendingFeedbackNote || pendingFeedbackNoteRef.current !== pendingFeedbackNote) return;
     const note = feedbackNote.trim();
-    if (!pendingFeedbackNote || !note) {
+    if (!note) {
       closeFeedbackNote();
       return;
     }
-
+    const request = {};
+    activeNoteRef.current = request;
     setSubmittingFeedbackNote(true);
     try {
       await submitChatFeedback({
@@ -657,11 +671,17 @@ function ChatScreenInner() {
         feedback: 'down',
         note,
       });
-      closeFeedbackNote();
-    } catch {
-      setSubmittingFeedbackNote(false);
+      if (activeNoteRef.current === request) closeFeedbackNote();
+    } catch (err) {
+      if (activeNoteRef.current !== request) return;
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
+    } finally {
+      if (activeNoteRef.current === request) {
+        activeNoteRef.current = null;
+        setSubmittingFeedbackNote(false);
+      }
     }
-  }, [closeFeedbackNote, feedbackNote, pendingFeedbackNote]);
+  }, [closeFeedbackNote, feedbackNote, pendingFeedbackNote, showToast, t]);
 
   const renderItem = useCallback(
     ({ item }: { item: DisplayMessage }) => (
@@ -776,6 +796,7 @@ function ChatScreenInner() {
           </Text>
           <Input
             value={feedbackNote}
+            editable={!submittingFeedbackNote}
             onChangeText={setFeedbackNote}
             placeholder={t('feedback.notePlaceholder')}
             placeholderTextColor={theme.textMuted}
