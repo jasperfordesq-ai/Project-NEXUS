@@ -5,7 +5,7 @@
 
 import AccentIcon from '@/components/ui/AccentIcon';
 import ErrorState from '@/components/ui/ErrorState';
-import { useCallback, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -186,6 +186,13 @@ export default function EndorsementsScreen() {
   const [loadingSkill, setLoadingSkill] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const skillInputRef = useRef<TextInput>(null);
+  const categoryRequestRef = useRef<object | null>(null);
+  const membersRequestRef = useRef<object | null>(null);
+
+  useEffect(() => () => {
+    categoryRequestRef.current = null;
+    membersRequestRef.current = null;
+  }, []);
 
   const userId = user?.id ?? 0;
 
@@ -236,6 +243,10 @@ export default function EndorsementsScreen() {
   }
 
   async function handleOpenCategory(category: SkillCategory) {
+    const request = {};
+    categoryRequestRef.current = request;
+    membersRequestRef.current = null;
+    setLoadingSkill(null);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedCategory(category);
     setCategorySkills([]);
@@ -244,26 +255,38 @@ export default function EndorsementsScreen() {
     setLoadingCategoryId(category.id);
     try {
       const response = await getSkillCategory(category.id);
+      if (categoryRequestRef.current !== request) return;
       setCategorySkills(response.data.skills ?? []);
     } catch (err) {
+      if (categoryRequestRef.current !== request) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadSkillsError')), variant: 'danger' });
     } finally {
-      setLoadingCategoryId(null);
+      if (categoryRequestRef.current === request) {
+        categoryRequestRef.current = null;
+        setLoadingCategoryId(null);
+      }
     }
   }
 
   async function handleOpenMembers(skillName: string) {
+    const request = {};
+    membersRequestRef.current = request;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedSkill(skillName);
     setSkillMembers([]);
     setLoadingSkill(skillName);
     try {
       const response = await getMembersWithSkill(skillName);
+      if (membersRequestRef.current !== request) return;
       setSkillMembers(response.data ?? []);
     } catch (err) {
+      if (membersRequestRef.current !== request) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('discover.loadMembersError')), variant: 'danger' });
     } finally {
-      setLoadingSkill(null);
+      if (membersRequestRef.current === request) {
+        membersRequestRef.current = null;
+        setLoadingSkill(null);
+      }
     }
   }
 

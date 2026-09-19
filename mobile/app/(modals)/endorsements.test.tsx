@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 // --- Mocks ---
@@ -206,6 +206,71 @@ const mockSkillCategory = {
 };
 
 describe('EndorsementsScreen', () => {
+  it('keeps the latest skill members when an earlier search finishes last', async () => {
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, data: { data: [mockSkillCategory] } } : defaultApiState);
+    jest.mocked(getSkillCategory).mockResolvedValueOnce({ data: { id: 4, name: 'Home & Garden', skills: [
+      { skill_name: 'Gardening', user_count: 1 }, { skill_name: 'Repairs', user_count: 1 },
+    ] } });
+    let finish!: (value: Awaited<ReturnType<typeof getMembersWithSkill>>) => void;
+    jest.mocked(getMembersWithSkill).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    fireEvent.press(screen.getByText('View skills'));
+    await screen.findByText('Gardening');
+    fireEvent.press(screen.getAllByText('View members')[0]);
+    fireEvent.press(screen.getByText('View members'));
+    await screen.findByText('Alice Gardener');
+    await act(async () => finish({ data: [{ id: 77, name: 'Stale member' }] }));
+    expect(screen.getByText('Members with Repairs')).toBeTruthy();
+    expect(screen.getByText('Alice Gardener')).toBeTruthy();
+    expect(screen.queryByText('Stale member')).toBeNull();
+  });
+
+  it.each([false, true])('ignores a replaced category response (failure: %s)', async (failure) => {
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, data: { data: [mockSkillCategory, { id: 8, name: 'Languages' }] } }
+      : defaultApiState);
+    let finish!: (value: Awaited<ReturnType<typeof getSkillCategory>>) => void;
+    let reject!: (error: Error) => void;
+    jest.mocked(getSkillCategory)
+      .mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }))
+      .mockResolvedValueOnce({ data: { id: 8, name: 'Languages', skills: [{ skill_name: 'French', user_count: 2 }] } });
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    fireEvent.press(screen.getAllByText('View skills')[0]);
+    fireEvent.press(screen.getByText('View skills'));
+    await screen.findByText('French');
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else finish({ data: { id: 4, name: 'Home & Garden', skills: [{ skill_name: 'Stale gardening', user_count: 1 }] } });
+    });
+    expect(screen.getByText('French')).toBeTruthy();
+    expect(screen.queryByText('Stale gardening')).toBeNull();
+    expect(useAppToast().show).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('ignores member results from a replaced category (failure: %s)', async (failure) => {
+    mockUseApi.mockImplementation((loader: unknown) => String(loader).includes('getSkillCategories')
+      ? { ...defaultApiState, data: { data: [mockSkillCategory, { id: 8, name: 'Languages' }] } }
+      : defaultApiState);
+    let finish!: (value: Awaited<ReturnType<typeof getMembersWithSkill>>) => void;
+    let reject!: (error: Error) => void;
+    jest.mocked(getMembersWithSkill).mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<EndorsementsScreen />);
+    fireEvent.press(screen.getByText('Discover'));
+    fireEvent.press(screen.getAllByText('View skills')[0]);
+    await screen.findByText('Gardening');
+    fireEvent.press(screen.getByText('View members'));
+    fireEvent.press(screen.getAllByText('View skills')[1]);
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else finish({ data: [{ id: 77, name: 'Stale member' }] });
+    });
+    expect(screen.queryByText('Stale member')).toBeNull();
+    expect(useAppToast().show).not.toHaveBeenCalled();
+  });
+
   it.each([0, 7])('uses the skill API count rather than a grouped endorsement ID (count: %s)', (count) => {
     mockUseApi.mockImplementation((loader: unknown) => {
       const source = String(loader);
