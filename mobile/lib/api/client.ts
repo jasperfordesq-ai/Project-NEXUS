@@ -251,7 +251,7 @@ export function registerTenantMismatchCallback(cb: () => void): void {
 }
 
 /** Resolve the identity carried by native transports that cannot use `fetch` through `api`. */
-export async function authenticatedApiIdentity(): Promise<{ token: string; tenantSlug: string }> {
+export async function authenticatedApiIdentity(): Promise<{ token: string; tenantSlug: string; assertCurrent: () => Promise<void> }> {
   const requestSessionGeneration = sessionGeneration;
   const [storedToken, tenantSlug] = await Promise.all([
     storage.get(STORAGE_KEYS.AUTH_TOKEN),
@@ -262,7 +262,17 @@ export async function authenticatedApiIdentity(): Promise<{ token: string; tenan
   }
   const token = inProcessAccessToken ?? storedToken;
   if (!token) throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
-  return { token, tenantSlug: tenantSlug?.trim() || DEFAULT_TENANT };
+  const resolvedTenant = tenantSlug?.trim() || DEFAULT_TENANT;
+  return {
+    token,
+    tenantSlug: resolvedTenant,
+    async assertCurrent() {
+      const currentTenant = await storage.get(STORAGE_KEYS.TENANT_SLUG);
+      if (requestSessionGeneration !== sessionGeneration || (currentTenant?.trim() || DEFAULT_TENANT) !== resolvedTenant) {
+        throw new ApiResponseError(401, i18n.t('common:errors.unauthorized'));
+      }
+    },
+  };
 }
 
 /** Build headers for native media players/downloaders without exposing tokens in URLs. */

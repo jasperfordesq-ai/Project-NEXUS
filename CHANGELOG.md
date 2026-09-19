@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a dedicated native organiser People workspace for filtered roster reads, member-name invitations, per-person history and registration changes. Individual or eligible-page selection, required cancellation/rejection reasons, confirmation and explicit recovery use a durable journal preserving original request keys and partial receipts. It blocks overlapping submissions, unresolved work and rows older than confirmed changes, checks screen ownership before sending, ignores obsolete saved-state reads and announces recovery failures. Invitation searches can retry unchanged text after failure. History follows server permissions and clears when the selected person changes or access is refused. CSV export reviews included/excluded fields before an authenticated download of all filtered rows. The organiser People entry now opens this workspace; Check-in retains its attendance screen. Native-device verification remains unfinished.
+
 - Quiz submissions accept optional retry identities that replay the saved result without consuming another attempt, including concurrent retries at the limit. Changed answers under one identity are rejected. Learner reads expose the caller's latest grade summary and remaining attempts. Apply the quiz-attempt replay migration before enabling keyed clients; rolling it back removes saved retry identities.
 
 - **The accessible frontend now publishes the account-deletion and child-safety-standards
@@ -52,6 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Native event management resets stale data and permissions when the account, community or event changes, ignores previous requests, and rejects malformed event links without a dead retry action.
+
+- Native event-management section links now respect the event permissions used by the management workspace instead of automatically redirecting members to unavailable tools.
+
+- Native event management removes retained event details and actions after access is refused, keeping them hidden during retry while preserving the workspace through temporary server failures.
+
+- Native authenticated file downloads retain Unicode filenames, isolate temporary files, clean up interrupted transfers and check account/community and screen identity before sharing.
 
 - **The prerender worker reported two very different tenant faults in identical words.**
   `assertExpectedTenant()` threw `tenant identity mismatch` both when the page resolved *no*

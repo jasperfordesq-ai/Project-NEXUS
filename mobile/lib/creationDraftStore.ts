@@ -5,7 +5,7 @@
 
 import { storage } from '@/lib/storage';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
@@ -26,6 +26,7 @@ const CHUNK_CHARACTERS = 350;
 const MAX_CHUNKS = 32;
 // Event bodies allow 20,000 characters. JSON can expand a character to six
 // characters; leave bounded headroom for the operation identity and receipt.
+// People batches share this bound for up to 100 targets and one shared reason.
 const EVENT_COMMUNICATION_MAX_CHUNKS = 384;
 export const CREATION_DRAFT_MAX_CHARACTERS = CHUNK_CHARACTERS * MAX_CHUNKS;
 const operationQueues = new Map<string, Promise<void>>();
@@ -53,7 +54,7 @@ function splitUnicode(value: string): string[] {
 }
 
 function maxChunks(scope: CreationDraftScope): number {
-  return scope.kind === 'event-communication' ? EVENT_COMMUNICATION_MAX_CHUNKS : MAX_CHUNKS;
+  return scope.kind === 'event-communication' || scope.kind === 'event-people' ? EVENT_COMMUNICATION_MAX_CHUNKS : MAX_CHUNKS;
 }
 
 async function readManifest(base: string, required = false, limit = MAX_CHUNKS): Promise<DraftManifest | null> {

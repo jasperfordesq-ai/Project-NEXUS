@@ -5,6 +5,7 @@
 
 const mockDownloadAsync = jest.fn();
 const mockDeleteAsync = jest.fn();
+const mockMakeDirectoryAsync = jest.fn();
 const mockIsAvailableAsync = jest.fn();
 const mockShareAsync = jest.fn();
 const mockStorageGet = jest.fn();
@@ -13,6 +14,7 @@ jest.mock('expo-file-system/legacy', () => ({
   cacheDirectory: 'file:///cache/',
   downloadAsync: (...args: unknown[]) => mockDownloadAsync(...args),
   deleteAsync: (...args: unknown[]) => mockDeleteAsync(...args),
+  makeDirectoryAsync: (...args: unknown[]) => mockMakeDirectoryAsync(...args),
 }));
 jest.mock('expo-sharing', () => ({
   isAvailableAsync: (...args: unknown[]) => mockIsAvailableAsync(...args),
@@ -30,7 +32,7 @@ jest.mock('@/lib/constants', () => ({
 jest.mock('i18next', () => ({ t: (key: string) => key }));
 
 import { ApiResponseError, clearApiSession, installApiSession } from '@/lib/api/client';
-import { SHARING_UNAVAILABLE, downloadAuthenticatedFile } from './authenticatedFileDownload';
+import { DOWNLOAD_CANCELLED, SHARING_UNAVAILABLE, downloadAuthenticatedFile } from './authenticatedFileDownload';
 
 /**
  * 🔴 S4-11. Group files and volunteering certificates used to be opened with
@@ -40,6 +42,59 @@ import { SHARING_UNAVAILABLE, downloadAuthenticatedFile } from './authenticatedF
  * file lands in the share sheet.
  */
 describe('downloadAuthenticatedFile', () => {
+  it.each([false, true])('removes partial downloads and preserves the transfer error (cleanup failure: %s)', async (cleanupFails) => {
+    const failure = new Error('Connection interrupted');
+    mockDownloadAsync.mockRejectedValueOnce(failure);
+    if (cleanupFails) mockDeleteAsync.mockRejectedValueOnce(new Error('Cache cleanup failed'));
+    await expect(downloadAuthenticatedFile('/api/v2/kb/7/attachments/11/download', 'guide.pdf')).rejects.toBe(failure);
+    const directory = mockMakeDirectoryAsync.mock.calls[0][0];
+    expect(mockDeleteAsync).toHaveBeenCalledWith(directory, { idempotent: true });
+    expect(mockShareAsync).not.toHaveBeenCalled();
+  });
+
+  it.each(['download', 'availability'])('cleans up without sharing when the screen closes during %s', async (stage) => {
+    let active = true;
+    if (stage === 'download') mockDownloadAsync.mockImplementationOnce(async () => {
+      active = false;
+      return { uri: 'file:///cache/abandoned.pdf', status: 200 };
+    });
+    else mockIsAvailableAsync.mockImplementationOnce(async () => { active = false; return true; });
+    await expect(downloadAuthenticatedFile('/api/v2/kb/7/attachments/11/download', 'guide.pdf', {}, { isActive: () => active }))
+      .rejects.toThrow(DOWNLOAD_CANCELLED);
+    expect(mockShareAsync).not.toHaveBeenCalled();
+    expect(mockDeleteAsync).toHaveBeenCalledWith(stage === 'download' ? 'file:///cache/abandoned.pdf' : 'file:///cache/nexus-download-1-guide.pdf', { idempotent: true });
+  });
+
+  it.each(['download', 'availability', 'community'])('does not share after identity replacement at %s', async (stage) => {
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    if (stage !== 'availability') {
+      mockDownloadAsync.mockImplementationOnce(async () => {
+        await pending;
+        return { uri: 'file:///cache/old-account.json', status: 200 };
+      });
+    } else {
+      mockIsAvailableAsync.mockImplementationOnce(async () => { await pending; return true; });
+    }
+    const result = downloadAuthenticatedFile('/api/v2/me/data-export', 'export.json');
+    const rejection = expect(result).rejects.toMatchObject({ status: 401 });
+    // Let identity loading and native download/availability reach their pending boundary.
+    for (let index = 0; index < 12; index += 1) await Promise.resolve();
+    expect(stage !== 'availability' ? mockDownloadAsync : mockIsAvailableAsync).toHaveBeenCalled();
+    if (stage === 'community') {
+      mockStorageGet.mockImplementation(async (key: string) => key === 'nexus_tenant_slug' ? 'replacement-community' : 'token-123');
+    } else {
+      installApiSession('replacement-account-token');
+    }
+    release();
+    await rejection;
+    expect(mockShareAsync).not.toHaveBeenCalled();
+    expect(mockDeleteAsync).toHaveBeenCalledWith(
+      stage !== 'availability' ? 'file:///cache/old-account.json' : 'file:///cache/nexus-download-1-guide.pdf',
+      { idempotent: true },
+    );
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     clearApiSession();
@@ -48,6 +103,7 @@ describe('downloadAuthenticatedFile', () => {
     ));
     mockDownloadAsync.mockResolvedValue({ uri: 'file:///cache/nexus-download-1-guide.pdf', status: 200 });
     mockDeleteAsync.mockResolvedValue(undefined);
+    mockMakeDirectoryAsync.mockResolvedValue(undefined);
     mockIsAvailableAsync.mockResolvedValue(true);
     mockShareAsync.mockResolvedValue(undefined);
   });
@@ -61,10 +117,21 @@ describe('downloadAuthenticatedFile', () => {
 
     expect(mockDownloadAsync).toHaveBeenCalledWith(
       'https://api.example.test/api/v2/groups/1/files/31/download',
-      expect.stringMatching(/^file:\/\/\/cache\/nexus-download-\d+-Planting_guide\.pdf$/),
+      expect.stringMatching(/^file:\/\/\/cache\/nexus-download-\d+-\d+\/Planting guide\.pdf$/),
       { headers: expect.objectContaining({ Authorization: 'Bearer token-123', 'X-Tenant-Slug': 'hour-timebank', 'Idempotency-Key': 'download-key-1' }) },
     );
     expect(mockShareAsync).toHaveBeenCalledWith('file:///cache/nexus-download-1-guide.pdf');
+  });
+
+  it('preserves readable Unicode names while keeping files in separate cache directories', async () => {
+    await downloadAuthenticatedFile('/api/v2/kb/7/attachments/11/download', 'Treoir cúnamh.pdf');
+    await downloadAuthenticatedFile('/api/v2/kb/7/attachments/11/download', '../Treoir cúnamh.pdf');
+    const first = mockDownloadAsync.mock.calls[0][1];
+    const second = mockDownloadAsync.mock.calls[1][1];
+    expect(first).toMatch(/\/Treoir cúnamh\.pdf$/);
+    expect(second).toMatch(/\/.._Treoir cúnamh\.pdf$/);
+    expect(first.slice(0, first.lastIndexOf('/'))).not.toBe(second.slice(0, second.lastIndexOf('/')));
+    expect(mockMakeDirectoryAsync).toHaveBeenCalledWith(first.slice(0, first.lastIndexOf('/') + 1), { intermediates: true });
   });
 
   it('uses a newly issued bearer and prevents caller identity overrides', async () => {

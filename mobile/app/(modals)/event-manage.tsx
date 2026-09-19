@@ -19,7 +19,8 @@ import NativePressable from '@/components/ui/NativePressable';
 import { getEvent } from '@/lib/api/events';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -29,6 +30,7 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
   const params = { id: String(eventId) };
   switch (section as ManagementSection) {
     case 'people':
+      return { pathname: '/(modals)/event-people', params } as unknown as Href;
     case 'check-in':
       return { pathname: '/(modals)/event-attendance', params } as unknown as Href;
     case 'tickets': return { pathname: '/(modals)/event-tickets', params } as unknown as Href;
@@ -48,12 +50,23 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
 }
 
 function EventManageScreen() {
+  const { id, section } = useLocalSearchParams<{ id?: string | string[]; section?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const parsedId = Number(id ?? 0);
+  const eventId = typeof id === 'string' && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(parsedId) ? parsedId : 0;
+  return (
+    <ModalErrorBoundary>
+      <EventManageContent key={JSON.stringify([tenant?.id, user?.id, id])} eventId={eventId} section={typeof section === 'string' ? section : undefined} />
+    </ModalErrorBoundary>
+  );
+}
+
+function EventManageContent({ eventId, section }: { eventId: number; section?: string }) {
   const { t } = useTranslation(['events', 'common', 'event_templates', 'event_tickets', 'event_communications', 'event_recurrence_blueprints']);
   const primary = usePrimaryColor();
-  const { id, section } = useLocalSearchParams<{ id?: string; section?: string }>();
-  const eventId = Number(id ?? 0);
   const theme = useTheme();
-  const eventState = useApi(() => getEvent(eventId), [eventId], { enabled: eventId > 0 });
+  const eventState = useApi(() => getEvent(eventId), [eventId], { enabled: eventId > 0, clearOnRefusal: true });
   /* 🔴 Managing an event you do not run answers 403/404, and the load-failure branch
      below offered a Try again that could never clear it. */
   const refused = isRefusalStatus(eventState.errorStatus);
@@ -61,6 +74,21 @@ function EventManageScreen() {
 
   useEffect(() => {
     if (!event || !section || section === 'overview') return;
+    const allowed: Partial<Record<ManagementSection, boolean>> = {
+      people: event.permissions.manage_people,
+      'check-in': event.permissions.check_in,
+      agenda: event.permissions.manage_agenda,
+      safety: event.permissions.edit,
+      analytics: event.permissions.edit,
+      tickets: event.permissions.manage_finance || event.permissions.reconcile_tickets,
+      communications: event.permissions.broadcast,
+      registration: event.permissions.manage_registration,
+      templates: event.permissions.edit,
+      'series-definitions': event.permissions.manage_agenda && Boolean(event.series.recurrence),
+      team: event.permissions.manage_staff,
+      federation: event.permissions.edit,
+    };
+    if (!allowed[section as ManagementSection]) return;
     const target = eventManagementRoute(eventId, section);
     if (target) router.replace(target);
   }, [event, eventId, section]);
@@ -84,12 +112,11 @@ function EventManageScreen() {
   }, [event, t]);
 
   return (
-    <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={event ? t('manage.page_title', { title: event.title }) : t('manage.page_title_fallback')} backLabel={t('common:back')} fallbackHref={eventId > 0 ? ({ pathname: '/(modals)/event-detail', params: { id: String(eventId) } } as unknown as Href) : '/(tabs)/events'} />
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={<RefreshControl refreshing={eventState.isLoading && Boolean(eventState.data)} onRefresh={eventState.refresh} tintColor={primary} colors={[primary]} />}>
-          <RefreshFailedNotice error={eventState.data ? eventState.error : null} onRetry={eventState.refresh} />
-          {eventState.isLoading && !event ? <LoadingSpinner /> : refused && !event ? (
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} refreshControl={eventId > 0 ? <RefreshControl refreshing={eventState.isLoading && Boolean(eventState.data)} onRefresh={eventState.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
+          <RefreshFailedNotice error={eventState.data ? eventState.error : null} onRetry={eventState.refresh} isRetrying={eventState.isLoading} />
+          {eventId <= 0 ? <EmptyState icon="warning-outline" title={t('detail.invalidId')} /> : eventState.isLoading && !event ? <LoadingSpinner /> : refused && !event ? (
             <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} subtitle={t('manage.access_denied_desc')} testID="event-manage-refused" />
           ) : !event ? (
             <EmptyState icon="warning-outline" title={t('manage.load_error_title')} subtitle={eventState.error ?? t('manage.load_error_desc')} actionLabel={t('manage.try_again')} onAction={eventState.refresh} />
@@ -107,7 +134,6 @@ function EventManageScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-    </ModalErrorBoundary>
   );
 }
 

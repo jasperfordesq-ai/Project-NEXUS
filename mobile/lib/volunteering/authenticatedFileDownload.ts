@@ -11,6 +11,8 @@ import { ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
 import { API_BASE_URL, APP_VERSION } from '@/lib/constants';
 
 export const SHARING_UNAVAILABLE = 'sharing_unavailable';
+export const DOWNLOAD_CANCELLED = 'download_cancelled';
+let downloadSequence = 0;
 
 /**
  * Download a file from an authenticated API endpoint and hand it to the share sheet.
@@ -31,16 +33,30 @@ export async function downloadAuthenticatedFile(
   path: string,
   filename: string,
   headers: Record<string, string> = {},
+  options: { isActive?: () => boolean } = {},
 ): Promise<void> {
+  const assertActive = () => {
+    if (options.isActive && !options.isActive()) throw new Error(DOWNLOAD_CANCELLED);
+  };
+  assertActive();
   const base = new URL(API_BASE_URL);
   const resolved = new URL(path, `${base.origin}/`);
   if (resolved.origin !== base.origin) {
     throw new ApiResponseError(400, i18n.t('common:errors.generic'));
   }
-  const { token, tenantSlug } = await authenticatedApiIdentity();
+  const { token, tenantSlug, assertCurrent } = await authenticatedApiIdentity();
+  assertActive();
 
-  const safeName = filename.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120) || 'download';
-  const target = `${FileSystem.cacheDirectory}nexus-download-${Date.now()}-${safeName}`;
+  const safeName = filename.replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/^\.+$/, 'download').slice(0, 120) || 'download';
+  const directory = `${FileSystem.cacheDirectory}nexus-download-${Date.now()}-${++downloadSequence}/`;
+  await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+  try {
+    assertActive();
+  } catch (error) {
+    await FileSystem.deleteAsync(directory, { idempotent: true }).catch(() => undefined);
+    throw error;
+  }
+  const target = `${directory}${safeName}`;
   const result = await FileSystem.downloadAsync(resolved.toString(), target, {
     headers: {
       ...headers,
@@ -49,6 +65,10 @@ export async function downloadAuthenticatedFile(
       'X-Nexus-Mobile': '1',
       'X-Nexus-Mobile-Version': APP_VERSION,
     },
+  }).catch(async (error: unknown) => {
+    // A native transfer may have written only part of the file before rejecting.
+    await FileSystem.deleteAsync(directory, { idempotent: true }).catch(() => undefined);
+    throw error;
   });
 
   // `downloadAsync` resolves for any HTTP status; a 401/404 body would otherwise be shared
@@ -61,6 +81,15 @@ export async function downloadAuthenticatedFile(
     );
   }
 
-  if (!(await Sharing.isAvailableAsync())) throw new Error(SHARING_UNAVAILABLE);
+  try {
+    await assertCurrent();
+    assertActive();
+    if (!(await Sharing.isAvailableAsync())) throw new Error(SHARING_UNAVAILABLE);
+    await assertCurrent();
+    assertActive();
+  } catch (error) {
+    await FileSystem.deleteAsync(result.uri, { idempotent: true }).catch(() => undefined);
+    throw error;
+  }
   await Sharing.shareAsync(result.uri);
 }
