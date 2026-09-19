@@ -116,6 +116,8 @@ jest.mock('react-i18next', () => {
     not_recorded: 'Not recorded',
     version: 'Version {{version}}',
     audience_summary: '{{count}} recipients across {{segments}}',
+    draft_audience_summary: 'Audience: {{segments}}',
+    draft_delivery_description: 'Totals are finalized when scheduled.',
     channels_summary: 'Channels: {{channels}}',
     delivery_summary: '{{delivered}} of {{total}} delivered; {{suppressed}} suppressed; {{dead}} dead-lettered',
     scheduled_for: 'Scheduled: {{date}}',
@@ -243,6 +245,22 @@ beforeEach(() => {
 });
 
 describe('EventCommunicationsScreen', () => {
+  it('shows draft audience selection without presenting unfinalized counts as zero recipients', async () => {
+    mockGet.mockResolvedValueOnce({ data: [broadcast({ audience: { segments: ['registration_confirmed'], recipient_count: 0 } })], meta: { current_page: 1, has_more: false } });
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Audience: Confirmed registrations');
+    expect(screen.getByText('Totals are finalized when scheduled.')).toBeTruthy();
+    expect(screen.queryByText('0 recipients across Confirmed registrations')).toBeNull();
+    expect(screen.queryByText('Scheduled: Not recorded')).toBeNull();
+  });
+
+  it('retains finalized audience and delivery counts for scheduled broadcasts', async () => {
+    mockGet.mockResolvedValueOnce({ data: [broadcast({ status: 'scheduled' })], meta: { current_page: 1, has_more: false } });
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('12 recipients across Confirmed registrations');
+    expect(screen.queryByText('Totals are finalized when scheduled.')).toBeNull();
+  });
+
   const operationScope = { tenantId: 2, userId: 7, eventId: 42 };
   const savedInput = { variant: 'announcement' as const, segments: ['registration_confirmed' as const], channels: ['in_app' as const], body: 'Saved original wording' };
 
@@ -411,6 +429,7 @@ describe('EventCommunicationsScreen', () => {
   });
 
   it('shows aggregate status without participant identities', async () => {
+    mockGet.mockResolvedValueOnce({ data: [broadcast({ status: 'scheduled' })], meta: { current_page: 1, has_more: false } });
     const screen = render(<EventCommunicationsScreen />);
 
     expect(await screen.findByText('Announcement')).toBeTruthy();
@@ -720,7 +739,7 @@ describe('EventCommunicationsScreen', () => {
         meta: { base_url: '', current_page: 1, per_page: 50, total: 51, total_pages: 2, has_more: true },
       })
       .mockResolvedValueOnce({
-        data: [broadcast({ id: 9, audience: { segments: ['registration_confirmed'], recipient_count: 3 } })],
+        data: [broadcast({ id: 9, status: 'scheduled', audience: { segments: ['registration_confirmed'], recipient_count: 3 } })],
         meta: { base_url: '', current_page: 2, per_page: 50, total: 51, total_pages: 2, has_more: false },
       });
     const screen = render(<EventCommunicationsScreen />);
@@ -737,7 +756,7 @@ describe('EventCommunicationsScreen', () => {
     mockGet.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
     const screen = render(<EventCommunicationsScreen />);
     mockGet.mockResolvedValueOnce({
-      data: [broadcast({ id: 9, event_id: 43, audience: { segments: ['registration_confirmed'], recipient_count: 3 } })],
+      data: [broadcast({ id: 9, event_id: 43, status: 'scheduled', audience: { segments: ['registration_confirmed'], recipient_count: 3 } })],
       meta: { current_page: 1, has_more: false },
     });
     mockEventId = '43';

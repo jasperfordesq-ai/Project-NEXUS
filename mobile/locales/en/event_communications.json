@@ -20,7 +20,7 @@
   "save_draft_button": "Save draft",
   "revise_draft_button": "Save changes",
   "preview_title": "Exact audience preview",
-  "preview_summary": "{{recipients}} recipients and {{deliveries}} channel deliveries match.",
+  "preview_summary": "Recipients: {{recipients}} · Channel deliveries: {{deliveries}}",
   "created_title": "Draft created",
   "created_description": "The message remains a draft until you schedule it.",
   "revised_title": "Draft revised",
@@ -123,5 +123,7 @@
   "recovery_button": "Recover saved action",
   "recovery_storage_title": "Saved actions unavailable",
   "recovery_storage_description": "Saved actions could not be checked. Try again before making changes.",
-  "recovery_reload": "Check saved actions"
+  "recovery_reload": "Check saved actions",
+  "draft_audience_summary": "Audience: {{segments}}",
+  "draft_delivery_description": "Recipient and delivery totals are finalized when you schedule this draft."
 }

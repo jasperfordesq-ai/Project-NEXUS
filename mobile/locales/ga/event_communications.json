@@ -20,7 +20,7 @@
   "save_draft_button": "Sábháil an dréacht",
   "revise_draft_button": "Sábháil athruithe",
   "preview_title": "Réamhamharc beacht ar an lucht féachana",
-  "preview_summary": "Meaitseálann {{recipients}} faighteoir agus {{deliveries}} seachadadh cainéil.",
+  "preview_summary": "Faighteoirí: {{recipients}} · Seachadtaí de réir cainéil: {{deliveries}}",
   "created_title": "Dréacht cruthaithe",
   "created_description": "Fanann an teachtaireacht ina dréacht go dtí go sceidealaíonn tú í.",
   "revised_title": "Dréacht athbhreithnithe",
@@ -103,5 +103,7 @@
   "recovery_button": "Aisghabh an gníomh sábháilte",
   "recovery_storage_title": "Níl gníomhartha sábháilte ar fáil",
   "recovery_storage_description": "Níorbh fhéidir na gníomhartha sábháilte a sheiceáil. Bain triail eile as sula ndéanann tú athruithe.",
-  "recovery_reload": "Seiceáil gníomhartha sábháilte"
+  "recovery_reload": "Seiceáil gníomhartha sábháilte",
+  "draft_audience_summary": "Lucht faighte: {{segments}}",
+  "draft_delivery_description": "Socraítear líon na bhfaighteoirí agus na seachadtaí nuair a sceidealaíonn tú an dréacht seo."
 }

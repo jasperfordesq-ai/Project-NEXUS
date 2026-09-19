@@ -20,7 +20,7 @@
   "save_draft_button": "Enregistrer le brouillon",
   "revise_draft_button": "Enregistrer les modifications",
   "preview_title": "Aperçu exact du public",
-  "preview_summary": "{{recipients}} destinataires et {{deliveries}} livraisons par canal correspondent.",
+  "preview_summary": "Destinataires : {{recipients}} · Envois par canal : {{deliveries}}",
   "created_title": "Brouillon créé",
   "created_description": "Le message reste un brouillon jusqu’à sa programmation.",
   "revised_title": "Brouillon révisé",
@@ -123,5 +123,7 @@
   "recovery_button": "Récupérer l’action enregistrée",
   "recovery_storage_title": "Actions enregistrées indisponibles",
   "recovery_storage_description": "Impossible de vérifier les actions enregistrées. Réessayez avant de faire des modifications.",
-  "recovery_reload": "Vérifier les actions enregistrées"
+  "recovery_reload": "Vérifier les actions enregistrées",
+  "draft_audience_summary": "Public : {{segments}}",
+  "draft_delivery_description": "Le nombre de destinataires et d’envois est déterminé lorsque vous programmez ce brouillon."
 }

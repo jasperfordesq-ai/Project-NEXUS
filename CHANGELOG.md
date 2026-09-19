@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event drafts now explain that recipient and delivery totals are finalized when scheduled instead of displaying misleading zero counts; audience preview labels also handle singular counts across all seven locales.
+
 - Native event organizers can correct a past-time schedule after the API confirms it was rejected; uncertain failures retain the original request for recovery.
 
 - Recovering an accepted event communication schedule now returns its existing result after the scheduled time has passed, while new requests to schedule in the past remain rejected.

@@ -1022,13 +1022,16 @@ function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { saf
             </Card.Header>
             <Card.Body className="gap-2">
               <Text className="text-sm text-muted-foreground">{t('version', { version: broadcast.version })}</Text>
-              <Text className="text-sm text-foreground">{t('audience_summary', {
+              <Text className="text-sm text-foreground">{t(broadcast.status === 'draft' ? 'draft_audience_summary' : 'audience_summary', {
                 count: broadcast.audience.recipient_count,
                 segments: broadcast.audience.segments.map((segment) => t(`segments.${segment}`)).join(', '),
               })}</Text>
               <Text className="text-sm text-foreground">{t('channels_summary', {
                 channels: broadcast.channels.map((channel) => t(`channels.${channel}`)).join(', '),
               })}</Text>
+              {broadcast.status === 'draft' ? (
+                <Text className="text-sm text-muted-foreground">{t('draft_delivery_description')}</Text>
+              ) : <>
               <Text className="text-sm text-foreground">{t('delivery_summary', {
                 delivered: broadcast.delivery.delivered,
                 total: broadcast.delivery.total,
@@ -1038,6 +1041,7 @@ function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { saf
               <Text className="text-sm text-muted-foreground">{t('scheduled_for', {
                 date: dateLabel(broadcast.scheduled_at),
               })}</Text>
+              </>}
             </Card.Body>
             <Card.Footer className="flex-row flex-wrap gap-2">
               {broadcast.capabilities.edit ? (

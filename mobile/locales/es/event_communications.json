@@ -20,7 +20,7 @@
   "save_draft_button": "Guardar borrador",
   "revise_draft_button": "Guardar cambios",
   "preview_title": "Vista previa exacta del público",
-  "preview_summary": "Coinciden {{recipients}} destinatarios y {{deliveries}} entregas por canal.",
+  "preview_summary": "Destinatarios: {{recipients}} · Entregas por canal: {{deliveries}}",
   "created_title": "Borrador creado",
   "created_description": "El mensaje sigue siendo un borrador hasta que lo programes.",
   "revised_title": "Borrador revisado",
@@ -103,5 +103,7 @@
   "recovery_button": "Recuperar acción guardada",
   "recovery_storage_title": "Acciones guardadas no disponibles",
   "recovery_storage_description": "No se pudieron comprobar las acciones guardadas. Inténtalo de nuevo antes de hacer cambios.",
-  "recovery_reload": "Comprobar acciones guardadas"
+  "recovery_reload": "Comprobar acciones guardadas",
+  "draft_audience_summary": "Audiencia: {{segments}}",
+  "draft_delivery_description": "Los totales de destinatarios y entregas se determinan al programar este borrador."
 }

@@ -20,7 +20,7 @@
   "save_draft_button": "Salva bozza",
   "revise_draft_button": "Salva modifiche",
   "preview_title": "Anteprima esatta del pubblico",
-  "preview_summary": "Corrispondono {{recipients}} destinatari e {{deliveries}} consegne di canale.",
+  "preview_summary": "Destinatari: {{recipients}} · Invii per canale: {{deliveries}}",
   "created_title": "Bozza creata",
   "created_description": "Il messaggio resta una bozza finché non lo programmi.",
   "revised_title": "Bozza rivista",
@@ -103,5 +103,7 @@
   "recovery_button": "Recupera azione salvata",
   "recovery_storage_title": "Azioni salvate non disponibili",
   "recovery_storage_description": "Non è stato possibile verificare le azioni salvate. Riprova prima di apportare modifiche.",
-  "recovery_reload": "Verifica azioni salvate"
+  "recovery_reload": "Verifica azioni salvate",
+  "draft_audience_summary": "Pubblico: {{segments}}",
+  "draft_delivery_description": "Il numero di destinatari e invii viene definito quando programmi questa bozza."
 }

@@ -20,7 +20,7 @@
   "save_draft_button": "Entwurf speichern",
   "revise_draft_button": "Änderungen speichern",
   "preview_title": "Genaue Zielgruppenvorschau",
-  "preview_summary": "{{recipients}} Empfänger und {{deliveries}} Kanalzustellungen entsprechen der Auswahl.",
+  "preview_summary": "Empfänger: {{recipients}} · Kanalzustellungen: {{deliveries}}",
   "created_title": "Entwurf erstellt",
   "created_description": "Die Nachricht bleibt ein Entwurf, bis Sie sie planen.",
   "revised_title": "Entwurf überarbeitet",
@@ -123,5 +123,7 @@
   "recovery_button": "Gespeicherte Aktion wiederherstellen",
   "recovery_storage_title": "Gespeicherte Aktionen nicht verfügbar",
   "recovery_storage_description": "Gespeicherte Aktionen konnten nicht geprüft werden. Versuchen Sie es erneut, bevor Sie Änderungen vornehmen.",
-  "recovery_reload": "Gespeicherte Aktionen prüfen"
+  "recovery_reload": "Gespeicherte Aktionen prüfen",
+  "draft_audience_summary": "Zielgruppe: {{segments}}",
+  "draft_delivery_description": "Die Anzahl der Empfänger und Zustellungen wird festgelegt, wenn Sie diesen Entwurf planen."
 }
