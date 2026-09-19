@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Quiz submissions accept optional retry identities that replay the saved result without consuming another attempt, including concurrent retries at the limit. Changed answers under one identity are rejected. Learner reads expose the caller's latest grade summary and remaining attempts. Apply the quiz-attempt replay migration before enabling keyed clients; rolling it back removes saved retry identities.
+
 - **The accessible frontend now publishes the account-deletion and child-safety-standards
   pages, so both footers offer the same pages.** They were the last two links in the React
   footer with no accessible equivalent — both 404ed. Verified by comparing the two footers'

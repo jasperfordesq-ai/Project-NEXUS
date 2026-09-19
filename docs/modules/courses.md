@@ -205,6 +205,12 @@ Quiz lessons require a passing attempt belonging to the learner, with grading st
 
 **Attempt limits:** `course_quizzes.max_attempts` (0 = unlimited). The service locks the enrollment row inside a `DB::transaction` before checking and recording the attempt count, preventing a race between two concurrent submission requests from the same learner. Exceeding the limit throws `MaxAttemptsExceededException`.
 
+**Retry recovery:** submitting a quiz accepts an optional `Idempotency-Key` header or `idempotency_key` body field (8–191 bytes after trimming; both must match when supplied). An exact retry returns the saved attempt and its current grading result without consuming another attempt, even at the limit. Reusing a key with different answers returns `IDEMPOTENCY_CONFLICT` (409); malformed keys return `IDEMPOTENCY_INVALID` (422). Every request still checks enrolment and lesson availability. A deliberate new attempt must use a new key. Keyed submissions also lock the quiz row, including service calls without an enrolment row.
+
+Learner quiz reads include the caller's `latest_attempt` grade summary and `attempts_remaining` (`null` for unlimited attempts). Submission responses also include the remaining count. These fields support grade refresh and exhausted-attempt controls without resubmitting answers.
+
+Apply `2026_09_19_120000_add_quiz_attempt_replay_identity` before enabling keyed clients. It adds nullable identity hashes and a unique learner/quiz/tenant/key index. Rolling it back preserves attempt rows but removes retry identities: clients with unresolved submissions must not keep retrying across such a downgrade, because replay protection would be lost.
+
 **Auto-grading:** for objective questions, `isCorrect()` compares sorted arrays of answer ids (handling both MCQ and multi-select), awards the question's `points` value, and computes `score_percent`. A quiz is `passed = true` when `score_percent >= pass_mark_percent` AND no subjective questions are present (a quiz with any `short`/`essay` question gets `grading_status = pending_review` and `passed = false` until manually graded).
 
 **Instructor grading queue:** `GET /v2/courses/{courseId}/grading` returns attempts at `grading_status = pending_review`, including question prompts and the learner's answers but never the answer key. `POST /v2/courses/attempts/{attemptId}/grade` applies an instructor score and sets `grading_status = graded`.

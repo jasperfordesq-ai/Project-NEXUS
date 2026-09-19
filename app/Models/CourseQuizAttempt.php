@@ -29,9 +29,11 @@ class CourseQuizAttempt extends Model
         'graded_by',
         'feedback',
         'submitted_at',
+        'idempotency_key_hash',
+        'request_hash',
     ];
 
-    protected $hidden = ['tenant_id'];
+    protected $hidden = ['tenant_id', 'idempotency_key_hash', 'request_hash'];
 
     protected $casts = [
         'answers' => 'array',

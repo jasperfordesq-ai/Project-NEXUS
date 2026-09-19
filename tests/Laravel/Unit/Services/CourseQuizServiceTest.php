@@ -162,6 +162,29 @@ class CourseQuizServiceTest extends TestCase
 
     // ── attemptsUsed ─────────────────────────────────────────────────────────
 
+    public function test_learner_result_refresh_is_scoped_and_exposes_only_the_grade(): void
+    {
+        $userId = $this->insertUser();
+        $otherId = $this->insertUser();
+        $quizId = $this->insertQuiz($this->insertCourse($otherId), 70, 0);
+        $this->insertQuestion($quizId, 'essay', [], []);
+        $submission = CourseQuizService::submitAttempt($quizId, $userId, []);
+        CourseQuizService::submitAttempt($quizId, $otherId, []);
+        $this->assertTrue(CourseQuizService::forLearner($quizId, $userId)['latest_attempt']['needs_review']);
+        $this->assertNull(CourseQuizService::forLearner($quizId)['latest_attempt']);
+        $submission['attempt']->update(['score_percent' => 85, 'passed' => true, 'grading_status' => 'graded']);
+        $result = CourseQuizService::forLearner($quizId, $userId)['latest_attempt'];
+        $this->assertSame(['attempt_id', 'score_percent', 'passed', 'needs_review'], array_keys($result));
+        $this->assertSame($submission['attempt']->id, $result['attempt_id']);
+        $this->assertSame(85.0, $result['score_percent']);
+        $this->assertTrue($result['passed']);
+        $this->assertFalse($result['needs_review']);
+        $this->assertNull(CourseQuizService::forLearner($quizId, $userId)['attempts_remaining']);
+        DB::table('course_quizzes')->where('id', $quizId)->update(['max_attempts' => 1]);
+        $this->assertSame(0, CourseQuizService::forLearner($quizId, $userId)['attempts_remaining']);
+        $this->assertSame(1, CourseQuizService::forLearner($quizId, $this->insertUser())['attempts_remaining']);
+    }
+
     public function test_attemptsUsed_returns_zero_when_no_attempts_exist(): void
     {
         $count = CourseQuizService::attemptsUsed(999888777, 1);
@@ -170,6 +193,63 @@ class CourseQuizServiceTest extends TestCase
     }
 
     // ── submitAttempt — scoring and pass/fail ─────────────────────────────────
+
+    public function test_keyed_retry_returns_original_attempt_before_enforcing_limit(): void
+    {
+        $userId = $this->insertUser();
+        $quizId = $this->insertQuiz($this->insertCourse($this->insertUser()), 70, 1);
+        $firstQuestion = $this->insertQuestion($quizId);
+        $secondQuestion = $this->insertQuestion($quizId);
+        $first = CourseQuizService::submitAttempt($quizId, $userId, [$firstQuestion => 'A', $secondQuestion => 'B'], null, 'quiz-retry-identity');
+        $retry = CourseQuizService::submitAttempt($quizId, $userId, [$secondQuestion => 'B', $firstQuestion => 'A'], null, 'quiz-retry-identity');
+        $this->assertSame($first['attempt']->id, $retry['attempt']->id);
+        $this->assertSame((float) $first['score_percent'], (float) $retry['score_percent']);
+        $this->assertSame(1, CourseQuizService::attemptsUsed($quizId, $userId));
+    }
+
+    public function test_keyed_retry_rejects_changed_answers_without_another_attempt(): void
+    {
+        $userId = $this->insertUser();
+        $quizId = $this->insertQuiz($this->insertCourse($this->insertUser()));
+        $question = $this->insertQuestion($quizId);
+        CourseQuizService::submitAttempt($quizId, $userId, [$question => 'A'], null, 'quiz-conflict-identity');
+        try {
+            CourseQuizService::submitAttempt($quizId, $userId, [$question => 'B'], null, 'quiz-conflict-identity');
+            $this->fail('Changed answers must not reuse a committed attempt identity');
+        } catch (\InvalidArgumentException $exception) {
+            $this->assertSame(1, CourseQuizService::attemptsUsed($quizId, $userId));
+        }
+    }
+
+    public function test_new_identity_creates_a_deliberate_new_attempt(): void
+    {
+        $userId = $this->insertUser();
+        $quizId = $this->insertQuiz($this->insertCourse($this->insertUser()));
+        $question = $this->insertQuestion($quizId);
+        $first = CourseQuizService::submitAttempt($quizId, $userId, [$question => 'A'], null, 'quiz-first-identity');
+        $second = CourseQuizService::submitAttempt($quizId, $userId, [$question => 'A'], null, 'quiz-second-identity');
+        $this->assertNotSame($first['attempt']->id, $second['attempt']->id);
+        $this->assertSame(2, CourseQuizService::attemptsUsed($quizId, $userId));
+    }
+
+    public function test_replay_returns_current_grading_and_does_not_cross_learners(): void
+    {
+        $userId = $this->insertUser();
+        $otherUserId = $this->insertUser();
+        $quizId = $this->insertQuiz($this->insertCourse($this->insertUser()));
+        $question = $this->insertQuestion($quizId, 'essay');
+        $answers = [$question => 'An hour of help'];
+        $first = CourseQuizService::submitAttempt($quizId, $userId, $answers, null, 'quiz-shared-client-key');
+        $other = CourseQuizService::submitAttempt($quizId, $otherUserId, $answers, null, 'quiz-shared-client-key');
+        $this->assertNotSame($first['attempt']->id, $other['attempt']->id);
+        $first['attempt']->update(['grading_status' => 'graded', 'score_percent' => 90, 'passed' => true]);
+        $retry = CourseQuizService::submitAttempt($quizId, $userId, $answers, null, 'quiz-shared-client-key');
+        $this->assertSame($first['attempt']->id, $retry['attempt']->id);
+        $this->assertSame(90.0, $retry['score_percent']);
+        $this->assertTrue($retry['passed']);
+        $this->assertFalse($retry['needs_review']);
+        $this->assertArrayNotHasKey('idempotency_key_hash', $retry['attempt']->toArray());
+    }
 
     public function test_submitAttempt_scores_100_percent_when_all_answers_correct(): void
     {

@@ -26,7 +26,7 @@ class CourseQuizService
     /**
      * Quiz payload for a learner — questions WITHOUT correct answers/explanations.
      */
-    public static function forLearner(int $quizId): ?array
+    public static function forLearner(int $quizId, ?int $userId = null): ?array
     {
         $quiz = CourseQuiz::with('questions')->find($quizId);
         if (!$quiz) {
@@ -44,6 +44,9 @@ class CourseQuizService
             ];
         })->values()->all();
 
+        $latest = $userId === null ? null : CourseQuizAttempt::where('quiz_id', $quizId)
+            ->where('user_id', $userId)->orderByDesc('id')->first();
+
         return [
             'id' => $quiz->id,
             'course_id' => $quiz->course_id,
@@ -52,8 +55,16 @@ class CourseQuizService
             'description' => $quiz->description,
             'pass_mark_percent' => $quiz->pass_mark_percent,
             'max_attempts' => $quiz->max_attempts,
+            'attempts_remaining' => $userId === null || $quiz->max_attempts <= 0
+                ? null : max(0, $quiz->max_attempts - self::attemptsUsed($quizId, $userId)),
             'time_limit_minutes' => $quiz->time_limit_minutes,
             'questions' => $questions,
+            'latest_attempt' => $latest === null ? null : [
+                'attempt_id' => $latest->id,
+                'score_percent' => (float) $latest->score_percent,
+                'passed' => (bool) $latest->passed,
+                'needs_review' => $latest->grading_status === 'pending_review',
+            ],
         ];
     }
 
@@ -70,9 +81,18 @@ class CourseQuizService
      * @param array<int|string,mixed> $answers map of question_id => answer(s)
      * @return array{attempt:CourseQuizAttempt,score_percent:float,passed:bool,needs_review:bool}
      */
-    public static function submitAttempt(int $quizId, int $userId, array $answers, ?int $enrollmentId = null): array
+    public static function submitAttempt(int $quizId, int $userId, array $answers, ?int $enrollmentId = null, ?string $idempotencyKey = null): array
     {
-        return DB::transaction(function () use ($quizId, $userId, $answers, $enrollmentId) {
+        $idempotencyKey = trim((string) $idempotencyKey);
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            throw new \InvalidArgumentException('Invalid quiz attempt identity');
+        }
+        $keyHash = $idempotencyKey === '' ? null : hash('sha256', $idempotencyKey);
+        $canonicalAnswers = $answers;
+        ksort($canonicalAnswers);
+        $requestHash = $keyHash === null ? null : hash('sha256', json_encode($canonicalAnswers, JSON_THROW_ON_ERROR));
+
+        return DB::transaction(function () use ($quizId, $userId, $answers, $enrollmentId, $keyHash, $requestHash) {
             // Serialize concurrent submissions for this learner so the max_attempts
             // ceiling can't be raced (count-then-insert was a TOCTOU hole). The
             // enrollment row is the natural lock target — one per learner+course, and
@@ -82,7 +102,29 @@ class CourseQuizService
                 CourseEnrollment::whereKey($enrollmentId)->lockForUpdate()->first();
             }
 
-            $quiz = CourseQuiz::with('questions')->findOrFail($quizId);
+            // Enrollment first, then quiz: keyed service callers without an enrollment
+            // still serialize replay lookup and insertion on the same quiz row.
+            $query = CourseQuiz::with('questions');
+            if ($keyHash !== null) $query->lockForUpdate();
+            $quiz = $query->findOrFail($quizId);
+
+            if ($keyHash !== null) {
+                $existing = CourseQuizAttempt::where('quiz_id', $quizId)
+                    ->where('user_id', $userId)
+                    ->where('idempotency_key_hash', $keyHash)
+                    ->first();
+                if ($existing) {
+                    if (!hash_equals((string) $existing->request_hash, (string) $requestHash)) {
+                        throw new \InvalidArgumentException('Quiz attempt identity was reused for different answers');
+                    }
+                    return [
+                        'attempt' => $existing,
+                        'score_percent' => (float) $existing->score_percent,
+                        'passed' => (bool) $existing->passed,
+                        'needs_review' => $existing->grading_status === 'pending_review',
+                    ];
+                }
+            }
 
             $maxAttempts = (int) $quiz->max_attempts;
             if ($maxAttempts > 0 && self::attemptsUsed($quizId, $userId) >= $maxAttempts) {
@@ -122,6 +164,10 @@ class CourseQuizService
                 'passed' => $passed,
                 'grading_status' => $needsReview ? 'pending_review' : 'auto',
                 'submitted_at' => Carbon::now(),
+                ...($keyHash === null ? [] : [
+                    'idempotency_key_hash' => $keyHash,
+                    'request_hash' => $requestHash,
+                ]),
             ]);
 
             return [

@@ -47,7 +47,7 @@ class CourseQuizController extends BaseApiController
             return $this->respondWithError('LESSON_LOCKED', __('api_controllers_2.courses.lesson_locked'), null, 403);
         }
 
-        return $this->respondWithData(CourseQuizService::forLearner($quizId));
+        return $this->respondWithData(CourseQuizService::forLearner($quizId, $userId));
     }
 
     /** POST /v2/courses/quizzes/{quizId}/attempt — submit answers, auto-grade. */
@@ -72,10 +72,24 @@ class CourseQuizController extends BaseApiController
         // max_attempts is enforced atomically inside submitAttempt (row-locked
         // transaction) so concurrent submissions can't race past the ceiling.
         $answers = (array) $this->input('answers', []);
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $this->input('idempotency_key');
+        if (($headerKey !== null && !is_string($headerKey)) || ($bodyKey !== null && !is_string($bodyKey))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        if ($headerKey !== null && $bodyKey !== null && !hash_equals(trim($headerKey), trim($bodyKey))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $key = $headerKey ?? $bodyKey;
+        if ($key !== null && (strlen(trim($key)) < 8 || strlen(trim($key)) > 191)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
         try {
-            $result = CourseQuizService::submitAttempt($quizId, $userId, $answers, $enrollment->id);
+            $result = CourseQuizService::submitAttempt($quizId, $userId, $answers, $enrollment->id, $key);
         } catch (MaxAttemptsExceededException) {
             return $this->respondWithError('MAX_ATTEMPTS_REACHED', __('api_controllers_2.courses.max_attempts_reached'), null, 422);
+        } catch (\InvalidArgumentException) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), 'idempotency_key', 409);
         }
 
         return $this->respondWithData([
@@ -83,6 +97,8 @@ class CourseQuizController extends BaseApiController
             'passed' => $result['passed'],
             'needs_review' => $result['needs_review'],
             'attempt_id' => $result['attempt']->id,
+            'attempts_remaining' => $quiz->max_attempts <= 0
+                ? null : max(0, $quiz->max_attempts - CourseQuizService::attemptsUsed($quizId, $userId)),
         ], null, 201);
     }
 

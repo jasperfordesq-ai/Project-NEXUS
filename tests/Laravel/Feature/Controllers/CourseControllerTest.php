@@ -137,6 +137,54 @@ class CourseControllerTest extends TestCase
         $this->apiPost($path, [])->assertOk()->assertJsonPath('data.course_completed', false);
     }
 
+    public function test_quiz_attempt_replay_survives_limit_and_rejects_changed_answers(): void
+    {
+        $this->enableCourses();
+        $learner = $this->authenticatedUser();
+        $course = $this->publishedCourse();
+        \App\Models\CourseEnrollment::create([
+            'course_id' => $course->id, 'user_id' => $learner->id,
+            'status' => 'active', 'enrolled_at' => now(),
+        ]);
+        $quiz = CourseQuiz::create(['course_id' => $course->id, 'title' => 'Replay quiz', 'max_attempts' => 1]);
+        $question = CourseQuestion::create(['quiz_id' => $quiz->id, 'type' => 'mcq', 'prompt' => 'Choose A', 'correct' => ['A'], 'points' => 1]);
+        $path = '/v2/courses/quizzes/' . $quiz->id . '/attempt';
+        $payload = ['answers' => [$question->id => 'A'], 'idempotency_key' => 'quiz-api-stable-identity'];
+        $first = $this->apiPost($path, $payload)->assertCreated();
+        $retry = $this->apiPost($path, $payload)->assertCreated();
+        $first->assertJsonPath('data.attempts_remaining', 0);
+        $retry->assertJsonPath('data.attempts_remaining', 0);
+        $this->apiGet('/v2/courses/quizzes/' . $quiz->id)->assertOk()->assertJsonPath('data.attempts_remaining', 0);
+        $this->assertSame($first->json('data.attempt_id'), $retry->json('data.attempt_id'));
+        $this->assertSame(1, \App\Models\CourseQuizAttempt::where('quiz_id', $quiz->id)->count());
+        $this->apiPost($path, ['answers' => [$question->id => 'B'], 'idempotency_key' => $payload['idempotency_key']])
+            ->assertStatus(409)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        $headerRetry = $this->apiPost($path, ['answers' => $payload['answers']], ['Idempotency-Key' => $payload['idempotency_key']])->assertCreated();
+        $this->assertSame($first->json('data.attempt_id'), $headerRetry->json('data.attempt_id'));
+        \App\Models\CourseEnrollment::where('course_id', $course->id)->where('user_id', $learner->id)->update(['status' => 'dropped']);
+        $this->apiPost($path, $payload)->assertStatus(403)->assertJsonPath('errors.0.code', 'NOT_ENROLLED');
+        $this->assertSame(1, \App\Models\CourseQuizAttempt::where('quiz_id', $quiz->id)->count());
+    }
+
+    public function test_quiz_attempt_rejects_malformed_retry_identity_before_spending_attempt(): void
+    {
+        $this->enableCourses();
+        $learner = $this->authenticatedUser();
+        $course = $this->publishedCourse();
+        \App\Models\CourseEnrollment::create([
+            'course_id' => $course->id, 'user_id' => $learner->id,
+            'status' => 'active', 'enrolled_at' => now(),
+        ]);
+        $quiz = CourseQuiz::create(['course_id' => $course->id, 'title' => 'Validation quiz']);
+        foreach (['short', ['invalid'], 1234, str_repeat('x', 192)] as $key) {
+            $this->apiPost('/v2/courses/quizzes/' . $quiz->id . '/attempt', ['answers' => [], 'idempotency_key' => $key])
+                ->assertStatus(422)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+        }
+        $this->apiPost('/v2/courses/quizzes/' . $quiz->id . '/attempt', ['answers' => [], 'idempotency_key' => 'body-identity'], ['Idempotency-Key' => 'header-identity'])
+            ->assertStatus(422)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+        $this->assertSame(0, \App\Models\CourseQuizAttempt::where('quiz_id', $quiz->id)->count());
+    }
+
     public function test_grading_preserves_fractional_score_and_stored_feedback(): void
     {
         $this->enableCourses();
