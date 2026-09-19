@@ -250,6 +250,60 @@ describe('EventCommunicationsScreen', () => {
     ));
   });
 
+  it('preserves edits made during creation and saves them as a revision', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreate.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'First wording');
+    fireEvent.press(screen.getByText('Preview audience'));
+    await screen.findByText('12 recipients, 24 deliveries');
+    fireEvent.press(screen.getByText('Save draft'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Later wording');
+    await act(async () => finish(broadcast({ id: 19, body: 'First wording' })));
+    expect(screen.getByDisplayValue('Later wording')).toBeTruthy();
+    expect(isGuardArmed()).toBe(true);
+    fireEvent.press(screen.getByText('Preview audience'));
+    await screen.findByText('12 recipients, 24 deliveries');
+    fireEvent.press(screen.getByText('Save changes'));
+    await waitFor(() => expect(mockRevise).toHaveBeenCalledWith(19, 1,
+      expect.objectContaining({ body: 'Later wording' }), expect.any(String)));
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores draft save failure after screen unmount', async () => {
+    let reject!: (error: Error) => void;
+    mockCreate.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Draft wording');
+    fireEvent.press(screen.getByText('Preview audience'));
+    await screen.findByText('12 recipients, 24 deliveries');
+    fireEvent.press(screen.getByText('Save draft'));
+    screen.unmount();
+    await act(async () => reject(new Error('offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('serializes repeated draft save callbacks before the button rerenders', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreate.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Draft wording');
+    fireEvent.press(screen.getByText('Preview audience'));
+    await screen.findByText('12 recipients, 24 deliveries');
+    let button = screen.getByText('Save draft');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    expect(button.props.onPress).toEqual(expect.any(Function));
+    act(() => { button.props.onPress(); button.props.onPress(); });
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    await act(async () => finish(broadcast({ id: 19, body: 'Draft wording' })));
+  });
+
   it('does not restore an audience preview after the audience changes', async () => {
     let finish!: (value: unknown) => void;
     mockPreview.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));

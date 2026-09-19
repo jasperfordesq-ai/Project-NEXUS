@@ -90,6 +90,9 @@ function EventCommunicationsScreenInner() {
   const auditGeneration = useRef(0);
   const previewRequest = useRef<object | null>(null);
   const draftRequest = useRef<object | null>(null);
+  const saveRequest = useRef<object | null>(null);
+  const composerGeneration = useRef(0);
+  const inputRevision = useRef(0);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -150,6 +153,7 @@ function EventCommunicationsScreenInner() {
     auditGeneration.current += 1;
     previewRequest.current = null;
     draftRequest.current = null;
+    saveRequest.current = null;
   }, []);
 
   async function loadMore() {
@@ -176,6 +180,7 @@ function EventCommunicationsScreenInner() {
   }
 
   function updateInput(next: Partial<MobileEventBroadcastInput>) {
+    inputRevision.current += 1;
     invalidatePreview();
     setInput((current) => ({ ...current, ...next }));
   }
@@ -199,6 +204,7 @@ function EventCommunicationsScreenInner() {
   });
 
   function openNewComposer() {
+    composerGeneration.current += 1;
     draftRequest.current = null;
     setOpeningDraftId(null);
     invalidatePreview();
@@ -211,6 +217,7 @@ function EventCommunicationsScreenInner() {
   }
 
   function closeComposer() {
+    composerGeneration.current += 1;
     draftRequest.current = null;
     setOpeningDraftId(null);
     invalidatePreview();
@@ -250,6 +257,7 @@ function EventCommunicationsScreenInner() {
       if (!latest.capabilities.edit || latest.body === null) {
         throw new Error('event_broadcast_not_editable');
       }
+      composerGeneration.current += 1;
       setEditing(latest);
       const loaded: MobileEventBroadcastInput = {
         variant: latest.variant,
@@ -397,7 +405,11 @@ function EventCommunicationsScreenInner() {
   }
 
   async function saveDraft() {
-    if (!preview || preview.recipient_count < 1 || !input.body.trim()) return;
+    if (saveRequest.current || !preview || preview.recipient_count < 1 || !input.body.trim()) return;
+    const request = {};
+    saveRequest.current = request;
+    const generation = composerGeneration.current;
+    const revision = inputRevision.current;
     setIsSaving(true);
     try {
       const broadcast = editing
@@ -412,22 +424,36 @@ function EventCommunicationsScreenInner() {
           input,
           idempotencyKey('create'),
         );
+      if (saveRequest.current !== request) return;
       upsertBroadcast(broadcast);
       const revised = editing !== null;
-      closeComposer();
+      if (composerGeneration.current === generation) {
+        if (inputRevision.current === revision) {
+          closeComposer();
+        } else {
+          // The accepted version is the baseline for the wording still being edited.
+          // A subsequent save must revise this record, not create a duplicate draft.
+          setEditing(broadcast);
+          setComposerBaseline(input);
+        }
+      }
       showToast({
         title: t(revised ? 'revised_title' : 'created_title'),
         description: t(revised ? 'revised_description' : 'created_description'),
         variant: 'success',
       });
     } catch (err) {
+      if (saveRequest.current !== request || composerGeneration.current !== generation) return;
       showToast({
         title: t('save_failed_title'),
         description: describeApiError(err, t('save_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setIsSaving(false);
+      if (saveRequest.current === request) {
+        saveRequest.current = null;
+        setIsSaving(false);
+      }
     }
   }
 

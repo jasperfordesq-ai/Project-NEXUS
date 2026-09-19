@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event draft saves preserve wording edited during a pending save, continue against the saved draft version, and prevent duplicate submissions or late failure alerts after closure.
+
 - Native event communications preserve a new message when an older draft finishes loading and ignore abandoned draft-load failures.
 
 - Native event audience previews discard stale results after composer changes and suppress late failures after the screen closes.
