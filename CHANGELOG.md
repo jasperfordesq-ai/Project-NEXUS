@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event attendance clears the roster and summary after access is refused, preventing old attendance details and actions from reappearing during a later refresh.
+
 - Native donation receipts clear immediately when the account, community, or receipt changes and ignore responses from the previous selection.
 
 - Native donation receipts interpret Laravel database timestamps as UTC and validate calendar dates before display, avoiding device-dependent date shifts and invalid-date output.

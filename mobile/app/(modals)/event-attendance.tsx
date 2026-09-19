@@ -87,7 +87,7 @@ function EventAttendanceScreenInner() {
       attendanceState: filter === 'all' ? null : filter,
     }),
     [safeEventId, page, search, filter],
-    { enabled: safeEventId > 0 },
+    { enabled: safeEventId > 0, clearOnRefusal: true },
   );
   const roster = rosterApi.data;
   const people = roster?.data ?? [];

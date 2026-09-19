@@ -4,8 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { ScrollView } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
+let mockRealApi = false;
 const mockRefresh = jest.fn();
 const mockShowToast = jest.fn();
 const mockTransitionAttendance = jest.fn();
@@ -110,7 +112,7 @@ const mockRoster = {
 // which is why no test could reach the error branch at all.
 let mockApiOverride: Record<string, unknown> | null = null;
 jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: () => ({
+  useApi: (...args: unknown[]) => mockRealApi ? jest.requireActual('@/lib/hooks/useApi').useApi(...args) : ({
     data: mockRoster,
     isLoading: false,
     error: null,
@@ -138,8 +140,10 @@ jest.mock('@/lib/api/events', () => ({
 
 import EventAttendanceScreen from './event-attendance';
 import { ApiResponseError } from '@/lib/api/client';
+import { getEventAttendanceRoster } from '@/lib/api/events';
 
 beforeEach(() => {
+  mockRealApi = false;
   jest.clearAllMocks();
   mockApiOverride = null;
   mockTransitionAttendance.mockReset();
@@ -268,6 +272,27 @@ describe('EventAttendanceScreen', () => {
 
     expect(screen.getByTestId('event-attendance-refused')).toBeTruthy();
     expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it('clears roster and metrics after refusal and keeps them hidden while retrying', async () => {
+    mockRealApi = true;
+    jest.mocked(getEventAttendanceRoster).mockResolvedValueOnce(mockRoster as never);
+    const screen = render(<EventAttendanceScreen />);
+    await screen.findByText('Taylor Member');
+    expect(screen.getByLabelText('Attendance summary')).toBeTruthy();
+    const refresh = () => screen.UNSAFE_getAllByType(ScrollView).find(view => view.props.refreshControl)?.props.refreshControl.props.onRefresh();
+    jest.mocked(getEventAttendanceRoster).mockRejectedValueOnce(new ApiResponseError(403, 'Forbidden'));
+    act(refresh);
+    await screen.findByTestId('event-attendance-refused');
+    expect(screen.queryByLabelText('Attendance summary')).toBeNull();
+    expect(screen.queryByText('Taylor Member')).toBeNull();
+    let finish!: (value: unknown) => void;
+    jest.mocked(getEventAttendanceRoster).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as (value: unknown) => void; }));
+    act(refresh);
+    expect(screen.queryByText('Taylor Member')).toBeNull();
+    expect(screen.queryByText('Check in')).toBeNull();
+    await act(async () => finish(mockRoster));
+    expect(await screen.findByText('Taylor Member')).toBeTruthy();
   });
 
   it('still offers Retry for a server failure, which retrying can fix', () => {
