@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { AppState, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Card } from 'heroui-native';
 import { Button } from '@/components/ui/NativeButton';
@@ -49,9 +50,16 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showInvitations, setShowInvitations] = useState(false);
+  const focused = useIsFocused();
+  const [appState, setAppState] = useState(AppState.currentState ?? 'active');
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', setAppState);
+    return () => subscription.remove();
+  }, []);
+  const active = focused && appState === 'active';
   const validId = Number.isSafeInteger(eventId) && eventId > 0;
-  const roster = useApi(() => getEventPeople(eventId, query), [eventId, query], { enabled: validId, clearOnRefusal: true });
-  const data = roster.data;
+  const roster = useApi(() => getEventPeople(eventId, query), [eventId, query], { enabled: validId && active, clearOnRefusal: true });
+  const data = active ? roster.data : null;
   const [selected, setSelected] = useState<number[]>([]);
   const [action, setAction] = useState<'approve' | 'reject' | 'cancel' | null>(null);
   const [historyTarget, setHistoryTarget] = useState<number | null>(null);
@@ -61,6 +69,10 @@ function PeopleRosterContent({ eventId }: { eventId: number }) {
     setSelected([]); setAction(null); roster.refresh();
   });
   useEffect(() => { setSelected([]); setAction(null); setHistoryTarget(null); }, [query]);
+  // A confirmation belongs to the current visit; returning requires fresh authority.
+  useEffect(() => {
+    if (!active) { setSelected([]); setAction(null); setHistoryTarget(null); }
+  }, [active]);
   const selectedPeople = (data?.data ?? []).filter(person => selected.includes(person.member.id));
   const staleRegistration = (userId: number, version: number | null) => operation.saved?.status === 'acknowledged'
     && operation.saved.outcomes.some(item => item.userId === userId && item.success && item.version > (version ?? -1));

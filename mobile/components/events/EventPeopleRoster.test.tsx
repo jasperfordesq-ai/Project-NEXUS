@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
-import { ScrollView } from 'react-native';
+import { AppState, ScrollView } from 'react-native';
 import EventPeopleRoster from './EventPeopleRoster';
 import { getEventPeople, getEventPeopleHistory } from '@/lib/api/eventPeople';
 import { ApiResponseError } from '@/lib/api/client';
@@ -20,6 +20,8 @@ jest.mock('@/lib/eventPeopleOperationStore', () => ({ loadEventPeopleOperation: 
 jest.mock('@/lib/eventPeopleOperation', () => ({ executeEventPeopleOperation: jest.fn(), recoverEventPeopleOperation: jest.fn() }));
 
 let mockUserId = 3;
+let mockFocused = true;
+jest.mock('@react-navigation/native', () => ({ useIsFocused: () => mockFocused }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: 2 } }) }));
 jest.mock('@/lib/api/eventPeople', () => ({ getEventPeople: jest.fn(), getEventPeopleHistory: jest.fn() }));
@@ -31,11 +33,49 @@ const result = {
 };
 beforeEach(() => {
   mockUserId = 3;
+  mockFocused = true;
+  AppState.currentState = 'active';
+  jest.mocked(AppState.addEventListener).mockReturnValue({ remove: jest.fn() });
   jest.mocked(getEventPeople).mockReset().mockResolvedValue(result as never);
   jest.mocked(getEventPeopleHistory).mockReset().mockResolvedValue({ data: [], meta: { has_more: false } } as never);
   jest.mocked(loadEventPeopleOperation).mockReset().mockResolvedValue(null);
   jest.mocked(executeEventPeopleOperation).mockReset().mockResolvedValue({} as never);
   jest.mocked(recoverEventPeopleOperation).mockReset().mockResolvedValue({} as never);
+});
+
+it('revalidates on return and discards a confirmation created before departure', async () => {
+  jest.mocked(getEventPeople).mockResolvedValue(manageable as never);
+  const screen = render(<EventPeopleRoster eventId={7} />);
+  fireEvent.press(await screen.findByText('Select Alex Member'));
+  fireEvent.press(screen.getByText('Approve'));
+  expect(screen.getByText('Approve registrations?')).toBeTruthy();
+  mockFocused = false;
+  screen.rerender(<EventPeopleRoster eventId={7} />);
+  expect(screen.queryByText('Approve registrations?')).toBeNull();
+  jest.mocked(getEventPeople).mockRejectedValueOnce(new ApiResponseError(403, 'Unavailable'));
+  mockFocused = true;
+  screen.rerender(<EventPeopleRoster eventId={7} />);
+  await screen.findByTestId('event-people-refused');
+  expect(getEventPeople).toHaveBeenCalledTimes(2);
+  expect(executeEventPeopleOperation).not.toHaveBeenCalled();
+});
+
+it('invalidates background reads and reloads when the app becomes active', async () => {
+  const listen = jest.spyOn(AppState, 'addEventListener');
+  listen.mockClear();
+  let finish!: (value: unknown) => void;
+  jest.mocked(getEventPeople).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
+  const screen = render(<EventPeopleRoster eventId={7} />);
+  const change = listen.mock.calls.find(([event]) => event === 'change')?.[1];
+  expect(change).toBeDefined();
+  act(() => change!('background'));
+  await act(async () => finish(manageable));
+  expect(screen.queryByText('Alex Member')).toBeNull();
+  act(() => change!('active'));
+  await screen.findByText('Alex Member');
+  expect(getEventPeople).toHaveBeenCalledTimes(2);
+  screen.unmount();
+  listen.mockRestore();
 });
 
 it('shows registration and waitlist information without truncating member names', async () => {

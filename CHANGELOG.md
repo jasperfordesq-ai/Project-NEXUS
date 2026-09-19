@@ -55,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native organiser People reloads its roster and permissions after returning to the screen or foregrounding the app, discards departed confirmations and ignores late background reads while preserving pending actions for explicit recovery.
+
 - Native organiser People keeps its invitation form collapsed until requested, making member states and History reachable in the first Android viewport.
 
 - Native event management resets stale data and permissions when the account, community or event changes, ignores previous requests, and rejects malformed event links without a dead retry action.
