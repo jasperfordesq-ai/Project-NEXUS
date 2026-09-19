@@ -325,6 +325,46 @@ describe('ChatScreen', () => {
     });
   });
 
+  it('does not open an old feedback note after starting a new conversation', async () => {
+    let finish!: (value: never) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await screen.findByText('Hello!');
+    fireEvent.press(screen.getByLabelText('Mark response not helpful'));
+    fireEvent.press(screen.getByLabelText('Start new conversation'));
+    await act(async () => finish({ data: { recorded: true, feedback: 'down' } } as never));
+    expect(screen.queryByText('What went wrong?')).toBeNull();
+  });
+
+  it('serializes repeated feedback gestures before rendering the pending state', async () => {
+    let finish!: (value: never) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await screen.findByText('Hello!');
+    const press = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Mark response helpful')!.props.onPress;
+    act(() => { press(); press(); });
+    expect(submitChatFeedback).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: { recorded: true, feedback: 'up' } } as never));
+  });
+
+  it('restores the previously saved vote when a replacement vote fails', async () => {
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await screen.findByText('Hello!');
+    fireEvent.press(screen.getByLabelText('Mark response helpful'));
+    await act(async () => {});
+    jest.mocked(submitChatFeedback).mockRejectedValueOnce(new Error('offline'));
+    fireEvent.press(screen.getByLabelText('Mark response not helpful'));
+    await waitFor(() => expect(screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Mark response helpful')!.props.accessibilityState.selected).toBe(true));
+  });
+
   it('submits an optional note after negative feedback', async () => {
     const { getByLabelText, getByPlaceholderText, findByText } = render(<ChatScreen />);
 

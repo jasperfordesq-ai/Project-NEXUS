@@ -220,6 +220,7 @@ function MessageBubble({
   userAvatar,
   t,
   feedback,
+  feedbackBusy,
   onFeedback,
 }: {
   message: DisplayMessage;
@@ -229,6 +230,7 @@ function MessageBubble({
   userAvatar?: string | null;
   t: (key: string, opts?: Record<string, unknown>) => string;
   feedback?: ChatFeedbackVote;
+  feedbackBusy?: boolean;
   onFeedback?: (message: ChatMessage, vote: ChatFeedbackVote) => void;
 }) {
   const isUser = message.role === 'user';
@@ -301,6 +303,7 @@ function MessageBubble({
                   variant={selected ? (vote === 'up' ? 'primary' : 'danger') : 'secondary'}
                   accessibilityLabel={t(`feedback.${vote === 'up' ? 'upLabel' : 'downLabel'}`)}
                   accessibilityState={{ selected }}
+                  isDisabled={feedbackBusy}
                   onPress={() => onFeedback?.(message as ChatMessage, vote)}
                 >
                   {selected && vote === 'up' ? (
@@ -458,6 +461,8 @@ function ChatScreenInner() {
   const [starters, setStarters] = useState<string[]>([]);
   const [limits, setLimits] = useState<{ daily_remaining: number; monthly_remaining: number } | null>(null);
   const [feedbackState, setFeedbackState] = useState<FeedbackState>({});
+  const [feedbackBusy, setFeedbackBusy] = useState(false);
+  const activeFeedbackRef = useRef<object | null>(null);
   const [pendingFeedbackNote, setPendingFeedbackNote] = useState<PendingFeedbackNote | null>(null);
   const [feedbackNote, setFeedbackNote] = useState('');
   const [submittingFeedbackNote, setSubmittingFeedbackNote] = useState(false);
@@ -484,6 +489,7 @@ function ChatScreenInner() {
     return () => {
       cancelled = true;
       activeSendRef.current = null;
+      activeFeedbackRef.current = null;
       if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     };
   }, []);
@@ -496,6 +502,8 @@ function ChatScreenInner() {
 
   const startNewConversation = useCallback(() => {
     activeSendRef.current = null;
+    activeFeedbackRef.current = null;
+    setFeedbackBusy(false);
     if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
     thinkingTimeoutRef.current = null;
     conversationIdRef.current = null;
@@ -586,11 +594,15 @@ function ChatScreenInner() {
   }, [inputText, t]);
 
   const handleFeedback = useCallback(async (message: ChatMessage, vote: ChatFeedbackVote) => {
+    if (activeFeedbackRef.current) return;
     const traceId = typeof message.trace_id === 'number' ? message.trace_id : null;
     const numericMessageId = typeof message.message_id === 'number' ? message.message_id : Number(message.id);
     const messageId = Number.isFinite(numericMessageId) ? numericMessageId : null;
     if (!traceId && !messageId) return;
-
+    const request = {};
+    activeFeedbackRef.current = request;
+    const previousVote = feedbackState[message.id];
+    setFeedbackBusy(true);
     setFeedbackState((prev) => ({ ...prev, [message.id]: vote }));
     try {
       await submitChatFeedback({
@@ -598,6 +610,7 @@ function ChatScreenInner() {
         message_id: messageId,
         feedback: vote,
       });
+      if (activeFeedbackRef.current !== request) return;
       if (vote === 'down') {
         setPendingFeedbackNote({ messageId: message.id, traceId, numericMessageId: messageId });
         setFeedbackNote('');
@@ -606,15 +619,22 @@ function ChatScreenInner() {
         setFeedbackNote('');
       }
     } catch (err) {
+      if (activeFeedbackRef.current !== request) return;
       setFeedbackState((prev) => {
         const next = { ...prev };
-        delete next[message.id];
+        if (previousVote) next[message.id] = previousVote;
+        else delete next[message.id];
         return next;
       });
       // The thumb used to simply un-select itself, which reads as the tap being ignored.
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
+    } finally {
+      if (activeFeedbackRef.current === request) {
+        activeFeedbackRef.current = null;
+        setFeedbackBusy(false);
+      }
     }
-  }, [showToast, t]);
+  }, [feedbackState, showToast, t]);
 
   const closeFeedbackNote = useCallback(() => {
     setPendingFeedbackNote(null);
@@ -653,10 +673,11 @@ function ChatScreenInner() {
         userAvatar={userAvatar}
         t={t}
         feedback={'id' in item ? feedbackState[item.id] : undefined}
+        feedbackBusy={feedbackBusy}
         onFeedback={handleFeedback}
       />
     ),
-    [displayName, feedbackState, handleFeedback, primary, t, theme, userAvatar],
+    [displayName, feedbackBusy, feedbackState, handleFeedback, primary, t, theme, userAvatar],
   );
 
   const hasMessages = messages.length > 0;
