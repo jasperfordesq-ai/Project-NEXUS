@@ -655,7 +655,7 @@ function ChatScreenInner() {
   }, []);
 
   const submitFeedbackNote = useCallback(async () => {
-    if (activeNoteRef.current || !pendingFeedbackNote || pendingFeedbackNoteRef.current !== pendingFeedbackNote) return;
+    if (activeFeedbackRef.current || activeNoteRef.current || !pendingFeedbackNote || pendingFeedbackNoteRef.current !== pendingFeedbackNote) return;
     const note = feedbackNote.trim();
     if (!note) {
       closeFeedbackNote();
@@ -663,6 +663,10 @@ function ChatScreenInner() {
     }
     const request = {};
     activeNoteRef.current = request;
+    // Closing the sheet abandons its UI, not the dispatched write. Keep votes
+    // serialized until this request settles instead of dispatching overlapping writes.
+    activeFeedbackRef.current = request;
+    setFeedbackBusy(true);
     setSubmittingFeedbackNote(true);
     try {
       await submitChatFeedback({
@@ -676,6 +680,10 @@ function ChatScreenInner() {
       if (activeNoteRef.current !== request) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
     } finally {
+      if (activeFeedbackRef.current === request) {
+        activeFeedbackRef.current = null;
+        setFeedbackBusy(false);
+      }
       if (activeNoteRef.current === request) {
         activeNoteRef.current = null;
         setSubmittingFeedbackNote(false);

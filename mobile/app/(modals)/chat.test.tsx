@@ -227,16 +227,28 @@ describe('ChatScreen', () => {
     expect(submitChatFeedback).toHaveBeenLastCalledWith(expect.objectContaining({ note: 'Keep this note' }));
   });
 
-  it('does not close a replacement note when an older save completes', async () => {
+  it.each([false, true])('keeps votes disabled after closing an in-flight note (failure: %s)', async (failure) => {
     const screen = await openFeedbackNote();
     let finish!: (value: Awaited<ReturnType<typeof submitChatFeedback>>) => void;
-    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    let reject!: (error: Error) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
     fireEvent.press(screen.getByLabelText('Send note'));
     fireEvent.press(screen.getByLabelText('Skip'));
+    const up = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Mark response helpful')!;
+    expect(up.props.isDisabled).toBe(true);
+    // Even a callback captured before React applies disabled state cannot race the note.
+    act(() => { up.props.onPress(); });
+    expect(submitChatFeedback).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else finish({ data: { recorded: true, feedback: 'down' } });
+    });
+    expect(screen.queryByText('What went wrong?')).toBeNull();
+    expect(require('@/components/ui/AppToast').useAppToast().show).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText('Mark response not helpful'));
     await screen.findByText('What went wrong?');
     fireEvent.changeText(screen.getByPlaceholderText('Tell us what was missing or wrong'), 'Replacement note');
-    await act(async () => finish({ data: { recorded: true, feedback: 'down' } }));
     expect(screen.getByPlaceholderText('Tell us what was missing or wrong').props.value).toBe('Replacement note');
   });
 
