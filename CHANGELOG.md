@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native donation receipts now map the API community, reference and donation identity correctly, and reject malformed amounts instead of displaying them as zero.
+
 - Late event communication list and pagination responses no longer replace a newer confirmed message version or restore obsolete lifecycle actions in the native app.
 
 - Native event drafts now explain that recipient and delivery totals are finalized when scheduled instead of displaying misleading zero counts; audience preview labels also handle singular counts across all seven locales.
