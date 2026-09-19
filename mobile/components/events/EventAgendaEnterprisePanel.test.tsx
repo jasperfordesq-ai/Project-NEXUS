@@ -17,6 +17,18 @@ import {
 
 const mockShowToast = jest.fn();
 const mockConfirm = jest.fn();
+let mockSaved: import('@/lib/eventSessionOperationStore').SavedEventSessionOperation | null = null;
+let mockStorageFailure = false;
+let mockUserId = 7;
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
+jest.mock('@/lib/eventSessionOperationStore', () => ({
+  loadEventSessionOperation: jest.fn(async () => { if (mockStorageFailure) throw new Error('Locked'); return mockSaved; }),
+  prepareEventSessionOperation: jest.fn(async (scope, intent) => {
+    mockSaved = { ...scope, schemaVersion: 1, key: 'saved-key', intent, status: 'pending' };
+    return mockSaved;
+  }),
+  acknowledgeEventSessionOperation: jest.fn(async () => { mockSaved = null; }),
+}));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockShowToast }) }));
@@ -24,7 +36,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({ confirm: mockConfirm, confirmDialog: null }),
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => {
   const actual = jest.requireActual('@/lib/hooks/useTheme');
   return { ...actual, useTheme: () => actual.DARK };
@@ -76,11 +88,58 @@ function session(overrides: Partial<EventAgendaSession> = {}): EventAgendaSessio
   };
 }
 
+async function renderReady(element: React.ReactElement) {
+  const view = render(element);
+  await act(async () => { await Promise.resolve(); });
+  return view;
+}
+
 describe('EventAgendaEnterprisePanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSaved = null; mockStorageFailure = false; mockUserId = 7;
     jest.mocked(registerEventAgendaSession).mockReset();
     jest.mocked(withdrawEventAgendaSession).mockReset();
+  });
+
+  it('reopens with pending work, does not auto-replay, and recovers its original request explicitly', async () => {
+    jest.mocked(registerEventAgendaSession).mockRejectedValueOnce(new Error('Lost'))
+      .mockResolvedValueOnce({ data: { session: session() } } as never);
+    const first = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={session()} onSessionChange={jest.fn()} />);
+    fireEvent.press(first.getByText('Register for session'));
+    await first.findByText('event_communications:recovery_button');
+    const request = jest.mocked(registerEventAgendaSession).mock.calls[0];
+    first.unmount();
+    const next = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={session()} onSessionChange={jest.fn()} />);
+    expect(registerEventAgendaSession).toHaveBeenCalledTimes(1);
+    expect(next.getByRole('button', { name: 'Register for session' })).toBeDisabled();
+    fireEvent.press(next.getByText('event_communications:recovery_button'));
+    await waitFor(() => expect(registerEventAgendaSession).toHaveBeenCalledTimes(2));
+    expect(jest.mocked(registerEventAgendaSession).mock.calls[1]).toEqual(request);
+    await waitFor(() => expect(next.queryByText('event_communications:recovery_button')).toBeNull());
+  });
+
+  it('requires an explicit storage reload before enabling registration', async () => {
+    mockStorageFailure = true;
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={session()} onSessionChange={jest.fn()} />);
+    expect(view.getByText('event_communications:recovery_storage_title')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Register for session' })).toBeDisabled();
+    mockStorageFailure = false;
+    fireEvent.press(view.getByText('event_communications:recovery_reload'));
+    await waitFor(() => expect(view.getByRole('button', { name: 'Register for session' })).not.toBeDisabled());
+    expect(registerEventAgendaSession).not.toHaveBeenCalled();
+  });
+
+  it('announces failed recovery and keeps the unresolved request blocked', async () => {
+    mockSaved = { tenantId: 2, userId: 7, eventId: 101, sessionId: session().id, schemaVersion: 1,
+      key: 'original', status: 'pending', intent: { action: 'register', expectedVersion: 0 } };
+    jest.mocked(registerEventAgendaSession).mockRejectedValue(new Error('Private transport detail'));
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={session()} onSessionChange={jest.fn()} />);
+    fireEvent.press(view.getByText('event_communications:recovery_button'));
+    await view.findByText('common:errors.generic');
+    expect(view.queryByText('Private transport detail')).toBeNull();
+    expect(view.getByRole('button', { name: 'Register for session' })).toBeDisabled();
+    expect(view.getByText('event_communications:recovery_button')).toBeTruthy();
   });
 
   it.each(['register', 'withdraw'] as const)('retries an uncertain %s with its original key and version', async (action) => {
@@ -88,7 +147,7 @@ describe('EventAgendaEnterprisePanel', () => {
     const current = session({ registration: { state: action === 'register' ? 'not_registered' : 'registered',
       version: 4, can_register: action === 'register', can_withdraw: action === 'withdraw' } });
     jest.mocked(api).mockRejectedValueOnce(new Error('Response lost')).mockResolvedValueOnce({ data: { session: current } } as never);
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     const submit = async () => {
       await act(async () => {
         fireEvent.press(view.getByText(action === 'register' ? 'Register for session' : 'Withdraw from session'));
@@ -98,7 +157,7 @@ describe('EventAgendaEnterprisePanel', () => {
     await submit();
     await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
     const original = jest.mocked(api).mock.calls[0];
-    await submit();
+    fireEvent.press(view.getByText('event_communications:recovery_button'));
     await waitFor(() => expect(api).toHaveBeenCalledTimes(2));
     expect(jest.mocked(api).mock.calls[1]).toEqual(original);
   });
@@ -107,31 +166,29 @@ describe('EventAgendaEnterprisePanel', () => {
     let finish!: (value: unknown) => void;
     jest.mocked(registerEventAgendaSession).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
     const current = session({ resources: [] });
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     const press = view.UNSAFE_getAllByType(Button)[0]!.props.onPress;
     act(() => { press(); press(); });
-    expect(registerEventAgendaSession).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(registerEventAgendaSession).toHaveBeenCalledTimes(1));
     await act(async () => finish({ data: { session: current } }));
   });
 
-  it('uses a different key when refreshed registration has a different version', async () => {
+  it('keeps unresolved original work when refreshed registration has a different version', async () => {
     jest.mocked(registerEventAgendaSession).mockRejectedValue(new Error('Unknown outcome'));
     const current = session();
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     fireEvent.press(view.getByText('Register for session'));
     await waitFor(() => expect(mockShowToast).toHaveBeenCalledTimes(1));
-    const key = jest.mocked(registerEventAgendaSession).mock.calls[0][3];
     view.rerender(<EventAgendaEnterprisePanel eventId={101} session={{ ...current,
       registration: { ...current.registration, version: 2 } }} onSessionChange={jest.fn()} />);
     fireEvent.press(view.getByText('Register for session'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledTimes(2));
-    expect(jest.mocked(registerEventAgendaSession).mock.calls[1][2]).toBe(2);
-    expect(jest.mocked(registerEventAgendaSession).mock.calls[1][3]).not.toBe(key);
+    expect(registerEventAgendaSession).toHaveBeenCalledTimes(1);
+    expect(view.getByText('event_communications:recovery_button')).toBeTruthy();
   });
 
   it('does not withdraw through a confirmation retained after unmount', async () => {
     const current = session({ registration: { state: 'registered', version: 4, can_register: false, can_withdraw: true } });
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     fireEvent.press(view.getByText('Withdraw from session'));
     const confirm = mockConfirm.mock.calls[0][0].onConfirm;
     view.unmount();
@@ -141,7 +198,7 @@ describe('EventAgendaEnterprisePanel', () => {
 
   it.each(['version', 'permission'] as const)('rejects a retained confirmation after its %s changes', async (change) => {
     const current = session({ registration: { state: 'registered', version: 4, can_register: false, can_withdraw: true } });
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />);
     fireEvent.press(view.getByText('Withdraw from session'));
     const confirm = mockConfirm.mock.calls[0][0].onConfirm;
     const next = { ...current, registration: { ...current.registration,
@@ -156,18 +213,33 @@ describe('EventAgendaEnterprisePanel', () => {
     jest.mocked(registerEventAgendaSession).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
     const current = session();
     const onSessionChange = jest.fn();
-    const view = render(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={onSessionChange} />);
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={onSessionChange} />);
     fireEvent.press(view.getByText('Register for session'));
+    await waitFor(() => expect(registerEventAgendaSession).toHaveBeenCalledTimes(1));
     view.unmount();
     await act(async () => finish({ data: { session: current } }));
     expect(onSessionChange).not.toHaveBeenCalled();
     expect(mockShowToast).not.toHaveBeenCalled();
   });
 
+  it('does not replace a newer registration projection with a delayed receipt', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(registerEventAgendaSession).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as typeof finish; }));
+    const current = session();
+    const changed = jest.fn();
+    const view = await renderReady(<EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={changed} />);
+    fireEvent.press(view.getByText('Register for session'));
+    await waitFor(() => expect(registerEventAgendaSession).toHaveBeenCalledTimes(1));
+    view.rerender(<EventAgendaEnterprisePanel eventId={101} session={{ ...current,
+      registration: { ...current.registration, version: 3 } }} onSessionChange={changed} />);
+    await act(async () => finish({ data: { session: current, registration_version: 1 } }));
+    expect(changed).not.toHaveBeenCalled();
+  });
+
   it('shows aggregate capacity and opens only server-revealed resources', async () => {
     jest.spyOn(Linking, 'openURL').mockResolvedValueOnce(undefined);
     const current = session();
-    const view = render(
+    const view = await renderReady(
       <EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />,
     );
 
@@ -199,7 +271,7 @@ describe('EventAgendaEnterprisePanel', () => {
       },
     });
     const onSessionChange = jest.fn();
-    const view = render(
+    const view = await renderReady(
       <EventAgendaEnterprisePanel
         eventId={101}
         session={current}
@@ -233,7 +305,7 @@ describe('EventAgendaEnterprisePanel', () => {
     (withdrawEventAgendaSession as jest.Mock).mockResolvedValue({
       data: { session: current },
     });
-    const view = render(
+    const view = await renderReady(
       <EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />,
     );
 

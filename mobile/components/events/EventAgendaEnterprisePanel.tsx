@@ -13,12 +13,10 @@ import { useTranslation } from 'react-i18next';
 
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
-import {
-  registerEventAgendaSession,
-  withdrawEventAgendaSession,
-  type EventAgendaSession,
-} from '@/lib/api/events';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { type EventAgendaSession } from '@/lib/api/events';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useEventSessionOperations } from '@/lib/hooks/useEventSessionOperations';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
 
@@ -28,18 +26,20 @@ interface EventAgendaEnterprisePanelProps {
   onSessionChange: (session: EventAgendaSession | null) => void;
 }
 
-function idempotencyKey(): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
-
-  return `mobile-event-session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+export function EventAgendaEnterprisePanel(props: EventAgendaEnterprisePanelProps) {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <SessionPanel key={`${tenant?.id}:${user?.id}:${props.eventId}:${props.session.id}`} {...props}
+    tenantId={Number(tenant?.id)} userId={Number(user?.id)} />;
 }
 
-export function EventAgendaEnterprisePanel({
+function SessionPanel({
   eventId,
   session,
   onSessionChange,
-}: EventAgendaEnterprisePanelProps) {
-  const { t } = useTranslation('events');
+  tenantId, userId,
+}: EventAgendaEnterprisePanelProps & { tenantId: number; userId: number }) {
+  const { t } = useTranslation(['events', 'event_communications', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
@@ -47,46 +47,34 @@ export function EventAgendaEnterprisePanel({
   const [pending, setPending] = useState<'register' | 'withdraw' | null>(null);
   const mounted = useRef(true);
   const locked = useRef(false);
-  const requestKeys = useRef(new Map<string, string>());
+  const actionRef = useRef<'register' | 'withdraw' | null>(null);
   const current = useRef({ eventId, session });
   current.current = { eventId, session };
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+  const operation = useEventSessionOperations({ tenantId, userId, eventId, sessionId: session.id },
+    [tenantId, userId, eventId, session.id].every(id => Number.isSafeInteger(id) && id > 0), response => {
+      if (response.data.registration_version < current.current.session.registration.version) return;
+      onSessionChange(response.data.session);
+      const action = actionRef.current;
+      if (action && response.data.session?.registration.state === (action === 'register' ? 'registered' : 'withdrawn')) {
+        showToast({ title: t(`agenda.enterprise.${action}SuccessTitle`),
+          description: t(`agenda.enterprise.${action}SuccessDescription`), variant: 'success' });
+      }
+    });
 
   const mutate = async (action: 'register' | 'withdraw') => {
     const stillCurrent = () => mounted.current && current.current.eventId === eventId
       && current.current.session.id === session.id
       && current.current.session.registration.version === session.registration.version;
-    if (!stillCurrent() || locked.current || !current.current.session.registration[action === 'register' ? 'can_register' : 'can_withdraw']) return;
+    if (!stillCurrent() || locked.current || operation.blocked || !current.current.session.registration[action === 'register' ? 'can_register' : 'can_withdraw']) return;
     locked.current = true;
-    const request = `${eventId}:${session.id}:${session.registration.version}:${action}`;
-    const key = requestKeys.current.get(request) ?? idempotencyKey();
-    requestKeys.current.set(request, key);
+    actionRef.current = action;
     setPending(action);
     try {
-      const response = action === 'register'
-        ? await registerEventAgendaSession(
-            eventId,
-            session.id,
-            session.registration.version,
-            key,
-          )
-        : await withdrawEventAgendaSession(
-            eventId,
-            session.id,
-            session.registration.version,
-            key,
-          );
-      requestKeys.current.delete(request);
-      if (!stillCurrent()) return;
-      onSessionChange(response.data.session);
-      showToast({
-        title: t(`agenda.enterprise.${action}SuccessTitle`),
-        description: t(`agenda.enterprise.${action}SuccessDescription`),
-        variant: 'success',
-      });
+      await operation.submit({ action, expectedVersion: session.registration.version });
     } catch (err) {
       if (!stillCurrent()) return;
       showToast({
@@ -131,6 +119,18 @@ export function EventAgendaEnterprisePanel({
     <>
     <Card variant="secondary" className="mt-3" testID={`agenda-enterprise-${session.id}`}>
       <Card.Body className="gap-3 p-3">
+        {operation.storageFailed || operation.saved?.status === 'pending' ? <View className="gap-2">
+          <Text accessibilityRole="header" className="font-semibold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>
+          <Text className="text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_description' : 'recovery_description'}`)}</Text>
+          {operation.operationFailed ? <Text accessibilityRole="alert" className="text-danger">{t('common:errors.generic')}</Text> : null}
+          <Button isDisabled={operation.busy} onPress={() => {
+            if (operation.storageFailed) void operation.reload();
+            else {
+              actionRef.current = operation.saved?.intent.action ?? null;
+              void operation.submit().catch(() => undefined);
+            }
+          }}><Button.Label>{t(`event_communications:${operation.storageFailed ? 'recovery_reload' : 'recovery_button'}`)}</Button.Label></Button>
+        </View> : null}
         <View className="flex-row flex-wrap items-center gap-2">
           <Ionicons name="people-outline" size={16} color={theme.textSecondary} />
           <Text className="text-sm" style={{ color: theme.textSecondary }}>
@@ -182,7 +182,7 @@ export function EventAgendaEnterprisePanel({
           <Button
             size="sm"
             variant="primary"
-            isDisabled={pending !== null}
+            isDisabled={pending !== null || operation.blocked}
             onPress={() => requestMutation('register')}
             testID={`agenda-register-${session.id}`}
           >
@@ -193,7 +193,7 @@ export function EventAgendaEnterprisePanel({
           <Button
             size="sm"
             variant="outline"
-            isDisabled={pending !== null}
+            isDisabled={pending !== null || operation.blocked}
             onPress={() => requestMutation('withdraw')}
             testID={`agenda-withdraw-${session.id}`}
           >

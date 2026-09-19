@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda session panels now load owner-scoped saved requests before enabling changes and expose explicit recovery after uncertain results or reopening. Storage failures offer a separate reload, unresolved work blocks new requests, recovery failures remain visible, and older receipts cannot replace newer registration projections. Physical restart verification remains open.
+
 - Native agenda recovery state now checks saved work before allowing changes, blocks fresh requests while an unresolved operation exists, exposes failed recovery and storage retry states, and ignores obsolete loads or departed completions. Recovery controls are not yet connected to the session panel.
 
 - Native agenda recovery transport now requires a saved request before dispatch, reuses its original action/version/key, blocks overlapping sends and preserves accepted receipts after screen departure. Recovery is explicit; panel integration remains unfinished.
