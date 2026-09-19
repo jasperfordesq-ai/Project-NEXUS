@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native course analytics retains loaded results through refresh and temporary failures, tracks actual refresh progress, removes refused data without dead retry actions, rejects malformed course links, and draws zero completions as empty bars.
+
 - The learner course list now excludes unpassed quizzes from displayed progress, matching the player while retaining historical completion records. Course-list and prerequisite quiz eligibility uses batched queries rather than querying each quiz separately.
 
 - Course prerequisites now honour the graded-quiz completion rule: an older completed enrolment cannot unlock a dependent course while its quizzes are missing, failed or awaiting review. Historical enrolment records remain intact.

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetCourseAnalytics = jest.fn();
 let mockParams: { id?: string } = { id: '42' };
@@ -125,6 +125,13 @@ describe('CourseAnalyticsRoute', () => {
     expect(getByText('4')).toBeTruthy();
   });
 
+  it('draws zero completions as an empty bar', async () => {
+    mockGetCourseAnalytics.mockResolvedValue({ ...analytics, per_lesson: [{ lesson_id: 90, title: 'Not started', completed: 0 }] });
+    const screen = render(<CourseAnalyticsRoute />);
+    await screen.findByText('Not started');
+    expect(screen.getByTestId('course-analytics-bar-90').props.style.width).toBe('0%');
+  });
+
   it('says so when a course has no lessons to chart', async () => {
     mockGetCourseAnalytics.mockResolvedValue({ ...analytics, per_lesson: [] });
 
@@ -152,16 +159,48 @@ describe('CourseAnalyticsRoute', () => {
   });
 
   it('offers a retry when analytics fail to load', async () => {
-    // A 403 is deliberately NOT one of `useApi`'s retryable statuses, so the failure
-    // surfaces immediately instead of after its 2s single-retry timer.
-    mockGetCourseAnalytics.mockRejectedValue(new ApiResponseError(403, 'Only the author can see this.'));
+    mockGetCourseAnalytics.mockRejectedValue(new ApiResponseError(429, 'Please try later.'));
 
     const { getByText } = render(<CourseAnalyticsRoute />);
 
-    await waitFor(() => expect(getByText('Only the author can see this.')).toBeTruthy());
+    await waitFor(() => expect(getByText('Please try later.')).toBeTruthy());
     mockGetCourseAnalytics.mockResolvedValue(analytics);
     fireEvent.press(getByText('Retry'));
 
     await waitFor(() => expect(getByText('Repair skills')).toBeTruthy());
+  });
+
+  it.each(['1.5', '1e2', '9007199254740992', '0', '-1'])('does not fetch malformed course identity %s', async (id) => {
+    mockParams = { id };
+    const screen = render(<CourseAnalyticsRoute />);
+    await screen.findByTestId('course-analytics-unavailable');
+    expect(mockGetCourseAnalytics).not.toHaveBeenCalled();
+  });
+
+  it('retains loaded analytics and keeps the refresh indicator until the request finishes', async () => {
+    const screen = render(<CourseAnalyticsRoute />);
+    await screen.findByText('Repair skills');
+    let fail!: (error: Error) => void;
+    mockGetCourseAnalytics.mockImplementationOnce(() => new Promise((_, reject) => { fail = reject; }));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await waitFor(() => expect(mockGetCourseAnalytics).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('Repair skills')).toBeTruthy();
+    expect(screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.refreshing).toBe(true);
+    await act(async () => fail(new ApiResponseError(429, 'Refresh later.')));
+    expect(screen.getByText('Repair skills')).toBeTruthy();
+    expect(screen.getByText('Refresh later.')).toBeTruthy();
+    expect(screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.refreshing).toBe(false);
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.queryByText('Refresh later.')).toBeNull());
+  });
+
+  it.each([401, 403, 404])('removes refused analytics and does not offer a dead retry (%s)', async (status) => {
+    const screen = render(<CourseAnalyticsRoute />);
+    await screen.findByText('Repair skills');
+    mockGetCourseAnalytics.mockRejectedValueOnce(new ApiResponseError(status, 'No access.'));
+    act(() => screen.UNSAFE_getByType(ReactNative.ScrollView).props.refreshControl.props.onRefresh());
+    await screen.findByText('No access.');
+    expect(screen.queryByText('Repair skills')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
   });
 });

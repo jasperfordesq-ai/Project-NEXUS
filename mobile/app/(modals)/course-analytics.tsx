@@ -17,7 +17,6 @@
  * Opened as `/(modals)/course-analytics?id=<courseId>`.
  */
 
-import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -31,6 +30,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import FeatureGate from '@/components/FeatureGate';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { getCourseAnalytics, type CourseAnalytics } from '@/lib/api/courses';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -62,40 +62,33 @@ function CourseAnalyticsScreen() {
   const primary = usePrimaryColor();
 
   const courseId = Number(params.id);
-  const hasCourse = Number.isFinite(courseId) && courseId > 0;
+  const hasCourse = typeof params.id === 'string' && /^\d+$/.test(params.id)
+    && Number.isSafeInteger(courseId) && courseId > 0;
 
-  const { data, isLoading, error, refresh } = useApi<CourseAnalytics>(
+  const { data, isLoading, error, errorStatus, refresh } = useApi<CourseAnalytics>(
     () => getCourseAnalytics(courseId),
     [courseId],
-    { enabled: hasCourse },
+    { enabled: hasCourse, clearOnRefusal: true },
   );
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const onRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refresh();
-    setIsRefreshing(false);
-  }, [refresh]);
+  const errorNotice = error ? (
+    <ErrorState
+      subtitle={error}
+      retryLabel={t('common:buttons.retry')}
+      onRetry={isRefusalStatus(errorStatus) ? undefined : refresh}
+      testID="course-analytics-error"
+    />
+  ) : null;
 
   function body() {
-    if (isLoading) {
+    if (isLoading && !data) {
       return (
         <View className="py-12">
           <LoadingSpinner />
         </View>
       );
     }
-    if (error) {
-      return (
-        <ErrorState
-          subtitle={error}
-          retryLabel={t('common:buttons.retry')}
-          onRetry={() => refresh()}
-          testID="course-analytics-error"
-        />
-      );
-    }
+    if (error && !data) return errorNotice;
     /*
       The web page collapses "no course id", "the request returned nothing" and "analytics
       are off" into one sentence. Keep that: a course with no analytics is not a failure the
@@ -126,6 +119,7 @@ function CourseAnalyticsScreen() {
 
     return (
       <>
+        {errorNotice}
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1" style={{ backgroundColor: primary }} />
           <HeroCard.Body className="gap-1 p-4">
@@ -168,10 +162,11 @@ function CourseAnalyticsScreen() {
                     style={{ backgroundColor: theme.borderSubtle }}
                   >
                     <View
+                      testID={`course-analytics-bar-${lesson.lesson_id}`}
                       className="h-full rounded-full"
                       style={{
                         backgroundColor: primary,
-                        width: `${Math.max(4, ((lesson.completed ?? 0) / maxCompleted) * 100)}%`,
+                        width: `${Math.max(0, ((lesson.completed ?? 0) / maxCompleted) * 100)}%`,
                       }}
                     />
                   </View>
@@ -197,8 +192,8 @@ function CourseAnalyticsScreen() {
         contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 48 }}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
+            refreshing={isLoading && data !== null}
+            onRefresh={refresh}
             tintColor={primary}
             colors={[primary]}
           />
