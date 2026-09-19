@@ -326,7 +326,7 @@ const organizerSubmissionsSchema = z.object({ data: z.object({
   forms: z.array(organizerRegistrationFormSchema), submissions: z.array(organizerSubmissionSchema),
   pagination: z.object({ submissions: registrationOverviewPageSchema }),
   permissions: z.object({ view_roster: z.boolean(), view_sensitive_answers: z.boolean(), export_answers: z.boolean() }),
-}) }).transform(response => ({ data: { ...response.data, submissions: response.data.submissions.map(submission => {
+}) }).transform(response => ({ data: { ...response.data, submissions: response.data.submissions.map((submission): z.infer<typeof organizerSubmissionSchema> => {
   if (response.data.permissions.view_roster) return submission;
   const { member_name: _name, ...anonymous } = submission;
   return anonymous;

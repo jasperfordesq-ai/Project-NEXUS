@@ -155,6 +155,8 @@
     "is_not_answered": "Hat keine Antwort"
   },
   "submissions": {
+    "no_readable_answers": "Für die gewählte Zugriffsstufe sind keine Antworten verfügbar.",
+    "unavailable_answer": "Antwort nicht verfügbar.",
     "title": "Registrierungseinreichungen",
     "description": "Überprüfen Sie wirksame und überholte Versuche, ohne die Antworten in der Liste preiszugeben.",
     "empty": "Es sind keine Einsendungen eingegangen.",

@@ -106,6 +106,7 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
   'event-people': F('events'),
   'event-registration-settings': F('events'),
   'event-registration-forms': F('events'),
+  'event-registration-submissions': F('events'),
   'event-communications': F('events'),
   'event-lifecycle-history': F('events'),
   'event-manage': F('events'),

@@ -65,6 +65,9 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
         <Button isDisabled={!permitted || operation.busy} onPress={() => router.push({
           pathname: '/(modals)/event-registration-forms', params: { id: String(eventId) },
         } as Href)}>{t('eventRegistration:forms.title')}</Button>
+        <Button isDisabled={!permitted || operation.busy} onPress={() => router.push({
+          pathname: '/(modals)/event-registration-submissions', params: { id: String(eventId) },
+        } as Href)}>{t('eventRegistration:submissions.title')}</Button>
         {state.error && <><Text accessibilityRole="alert">{t('manage.load_error_title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></>}
         {(operation.storageFailed || operation.saved?.status === 'pending') && <View className="gap-3">
           <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>

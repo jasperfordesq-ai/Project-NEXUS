@@ -155,6 +155,8 @@
     "is_not_answered": "Has no answer"
   },
   "submissions": {
+    "no_readable_answers": "No answers are available with the selected access level.",
+    "unavailable_answer": "Answer unavailable.",
     "title": "Registration submissions",
     "description": "Review effective and superseded attempts without exposing answers in the roster.",
     "empty": "No submissions have been received.",

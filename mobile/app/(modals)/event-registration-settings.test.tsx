@@ -60,3 +60,8 @@ it('opens the organiser forms list for this event',()=>{
  const v=render(<Screen/>);fireEvent.press(v.getByText('eventRegistration:forms.title'));
  expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-forms',params:{id:'42'}});
 });
+
+it('opens the organiser submissions list for this event',()=>{
+ const v=render(<Screen/>);fireEvent.press(v.getByText('eventRegistration:submissions.title'));
+ expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-submissions',params:{id:'42'}});
+});
