@@ -15,6 +15,7 @@ const mockSchedule = jest.fn();
 const mockCancel = jest.fn();
 const mockRetry = jest.fn();
 const mockShowToast = jest.fn();
+let mockEventId = '42';
 
 const mockConfirm = jest.fn();
 const mockNavListeners: Record<string, (e: unknown) => void> = {};
@@ -31,7 +32,7 @@ jest.mock('expo-router', () => ({
     },
     dispatch: (...args: unknown[]) => mockNavDispatch(...args),
   }),
-  useLocalSearchParams: () => ({ id: '42' }),
+  useLocalSearchParams: () => ({ id: mockEventId }),
   router: { canGoBack: () => true, back: jest.fn(), replace: jest.fn() },
 }));
 jest.mock('@/components/ui/AppTopBar', () => {
@@ -172,6 +173,7 @@ function broadcast(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockEventId = '42';
   Object.keys(mockNavListeners).forEach((key) => { delete mockNavListeners[key]; });
   mockGet.mockResolvedValue({
     data: [broadcast()],
@@ -540,6 +542,44 @@ describe('EventCommunicationsScreen', () => {
 
     await waitFor(() => expect(mockGet).toHaveBeenLastCalledWith(42, 2));
     expect(await screen.findByText('3 recipients across Confirmed registrations')).toBeTruthy();
+  });
+
+  it('ignores the previous event list after switching events', async () => {
+    let finish!: (value: unknown) => void;
+    mockGet.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    mockGet.mockResolvedValueOnce({
+      data: [broadcast({ id: 9, event_id: 43, audience: { segments: ['registration_confirmed'], recipient_count: 3 } })],
+      meta: { current_page: 1, has_more: false },
+    });
+    mockEventId = '43';
+    screen.rerender(<EventCommunicationsScreen />);
+    await screen.findByText('3 recipients across Confirmed registrations');
+    await act(async () => finish({ data: [broadcast()], meta: { current_page: 1, has_more: false } }));
+    expect(screen.getByText('3 recipients across Confirmed registrations')).toBeTruthy();
+    expect(screen.queryByText('12 recipients across Confirmed registrations')).toBeNull();
+  });
+
+  it('does not carry a composer into another event', async () => {
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('New message'));
+    fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Event 42 wording');
+    mockEventId = '43';
+    screen.rerender(<EventCommunicationsScreen />);
+    await waitFor(() => expect(mockGet).toHaveBeenLastCalledWith(43));
+    expect(screen.queryByTestId('event-communication-body')).toBeNull();
+  });
+
+  it('ignores a pagination failure after leaving the screen', async () => {
+    mockGet.mockResolvedValueOnce({ data: [broadcast()], meta: { current_page: 1, has_more: true } });
+    let reject!: (error: Error) => void;
+    mockGet.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const screen = render(<EventCommunicationsScreen />);
+    fireEvent.press(await screen.findByText('Load more'));
+    screen.unmount();
+    await act(async () => reject(new Error('offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   /*

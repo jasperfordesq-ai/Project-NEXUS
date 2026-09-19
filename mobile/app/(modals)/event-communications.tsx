@@ -73,18 +73,18 @@ function statusColor(status: MobileEventBroadcast['status']): 'accent' | 'succes
 }
 
 function EventCommunicationsScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const eventId = Number(id);
+  const safeEventId = Number.isInteger(eventId) && eventId > 0 ? eventId : 0;
   return (
     <ModalErrorBoundary>
-      <EventCommunicationsScreenInner />
+      <EventCommunicationsScreenInner key={safeEventId} safeEventId={safeEventId} />
     </ModalErrorBoundary>
   );
 }
 
-function EventCommunicationsScreenInner() {
+function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }) {
   const { t } = useTranslation(['event_communications', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const eventId = Number(id);
-  const safeEventId = Number.isInteger(eventId) && eventId > 0 ? eventId : 0;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const auditGeneration = useRef(0);
@@ -93,6 +93,8 @@ function EventCommunicationsScreenInner() {
   const saveRequest = useRef<object | null>(null);
   const composerGeneration = useRef(0);
   const inputRevision = useRef(0);
+  const listRequest = useRef<object | null>(null);
+  const pageRequest = useRef<object | null>(null);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -123,6 +125,10 @@ function EventCommunicationsScreenInner() {
   const [auditLoadFailed, setAuditLoadFailed] = useState(false);
 
   const load = useCallback(async () => {
+    const request = {};
+    listRequest.current = request;
+    pageRequest.current = null;
+    setIsLoadingMore(false);
     if (safeEventId <= 0) {
       setBroadcasts([]);
       setLoadFailed(true);
@@ -134,14 +140,19 @@ function EventCommunicationsScreenInner() {
     setRefusedStatus(null);
     try {
       const response = await getEventCommunications(safeEventId);
+      if (listRequest.current !== request) return;
       setBroadcasts(response.data);
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
     } catch (error) {
+      if (listRequest.current !== request) return;
       setRefusedStatus(refusalStatus(error));
       setLoadFailed(true);
     } finally {
-      setIsLoading(false);
+      if (listRequest.current === request) {
+        listRequest.current = null;
+        setIsLoading(false);
+      }
     }
   }, [safeEventId]);
 
@@ -154,13 +165,18 @@ function EventCommunicationsScreenInner() {
     previewRequest.current = null;
     draftRequest.current = null;
     saveRequest.current = null;
+    listRequest.current = null;
+    pageRequest.current = null;
   }, []);
 
   async function loadMore() {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMore || isLoading || pageRequest.current) return;
+    const request = {};
+    pageRequest.current = request;
     setIsLoadingMore(true);
     try {
       const response = await getEventCommunications(safeEventId, page + 1);
+      if (pageRequest.current !== request) return;
       setBroadcasts((current) => {
         const byId = new Map(current.map((broadcast) => [broadcast.id, broadcast]));
         response.data.forEach((broadcast) => byId.set(broadcast.id, broadcast));
@@ -169,13 +185,17 @@ function EventCommunicationsScreenInner() {
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
     } catch (err) {
+      if (pageRequest.current !== request) return;
       showToast({
         title: t('load_failed_title'),
         description: describeApiError(err, t('load_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setIsLoadingMore(false);
+      if (pageRequest.current === request) {
+        pageRequest.current = null;
+        setIsLoadingMore(false);
+      }
     }
   }
 
