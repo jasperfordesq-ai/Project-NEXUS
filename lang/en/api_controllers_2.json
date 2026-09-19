@@ -13,6 +13,7 @@
   "courses.user_id_required": "A user ID is required.",
   "courses.certificate_requires_completion": "Complete the course to access your certificate.",
   "courses.comment_required": "A comment cannot be empty.",
+  "courses.quiz_pass_required": "Pass the quiz and wait for any instructor grading before completing this lesson or receiving a certificate.",
   "courses.lesson_locked": "This lesson isn't available yet.",
   "courses.insufficient_credits": "You don't have enough time credits to enrol in this course.",
   "courses.prerequisites_not_met": "Complete the required prerequisite courses before enrolling.",

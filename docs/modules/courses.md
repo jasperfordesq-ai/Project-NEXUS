@@ -187,6 +187,8 @@ The transfer uses `WalletService`'s row-locked, atomic path. See [docs/modules/w
 
 `CourseLessonService::availability()` computes the `{available: bool, unlock_at: ?ISO8601}` response. A locked lesson returns `LESSON_LOCKED` (HTTP 403) if the learner tries to mark it complete.
 
+Quiz lessons require a passing attempt belonging to the learner, with grading status `auto` or `graded`, before they can be marked complete. Missing quizzes, failed attempts and pending instructor reviews do not satisfy this requirement. Progress recomputation excludes unsatisfied quiz lessons, and certificate access rechecks every quiz requirement, including for older completion records.
+
 ## Quizzes
 
 **Question types:**

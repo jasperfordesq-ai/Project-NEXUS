@@ -30,6 +30,11 @@ class CourseCertificateService
      */
     public static function issue(int $courseId, int $userId): CourseCertificate
     {
+        if (CourseProgressService::unmetQuizLessonIds($courseId, $userId) !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'course' => __('api_controllers_2.courses.quiz_pass_required'),
+            ]);
+        }
         $existing = self::findForUser($courseId, $userId);
         if ($existing) {
             return $existing;

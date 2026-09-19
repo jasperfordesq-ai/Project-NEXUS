@@ -288,6 +288,52 @@ class CourseProgressServiceTest extends TestCase
 
     // ── completeLesson ────────────────────────────────────────────────────────
 
+    public function test_quiz_completion_requires_a_fully_graded_pass_for_this_learner(): void
+    {
+        $userId = $this->insertUser();
+        $otherId = $this->insertUser();
+        $courseId = $this->insertCourse($otherId);
+        $lessonId = $this->insertLesson($courseId);
+        $this->insertLesson($courseId, 1); // Avoid completion integrations in this fixture.
+        DB::table('course_lessons')->where('id', $lessonId)->update(['content_type' => 'quiz']);
+        $enrollment = $this->insertEnrollment($courseId, $userId);
+        $quiz = \App\Models\CourseQuiz::create(['course_id' => $courseId, 'lesson_id' => $lessonId, 'title' => 'Assessment']);
+
+        foreach ([null, [$otherId, true, 'auto'], [$userId, false, 'auto'], [$userId, true, 'pending_review']] as $attempt) {
+            if ($attempt !== null) {
+                \App\Models\CourseQuizAttempt::create(['quiz_id' => $quiz->id, 'user_id' => $attempt[0], 'answers' => [], 'score_percent' => 100, 'passed' => $attempt[1], 'grading_status' => $attempt[2], 'submitted_at' => now()]);
+            }
+            try {
+                CourseProgressService::completeLesson($enrollment, $lessonId, $userId);
+                $this->fail('An unpassed assessment was completed');
+            } catch (\Illuminate\Validation\ValidationException $error) {
+                $this->assertArrayHasKey('lesson', $error->errors());
+            }
+            $this->assertSame(0, DB::table('course_lesson_progress')->where('enrollment_id', $enrollment->id)->count());
+        }
+
+        \App\Models\CourseQuizAttempt::create(['quiz_id' => $quiz->id, 'user_id' => $userId, 'answers' => [], 'score_percent' => 80, 'passed' => true, 'grading_status' => 'graded', 'submitted_at' => now()]);
+        $result = CourseProgressService::completeLesson($enrollment, $lessonId, $userId);
+        $this->assertSame(50.0, $result['progress_percent']);
+        $this->assertFalse($result['course_completed']);
+    }
+
+    public function test_legacy_completed_quiz_without_a_pass_does_not_count_or_issue_a_certificate(): void
+    {
+        $userId = $this->insertUser();
+        $courseId = $this->insertCourse($this->insertUser());
+        $lessonId = $this->insertLesson($courseId);
+        DB::table('course_lessons')->where('id', $lessonId)->update(['content_type' => 'quiz']);
+        $enrollment = $this->insertEnrollment($courseId, $userId);
+        DB::table('course_lesson_progress')->insert(['tenant_id' => self::TENANT_ID, 'enrollment_id' => $enrollment->id, 'lesson_id' => $lessonId, 'user_id' => $userId, 'status' => 'completed', 'watch_percent' => 100, 'created_at' => now(), 'updated_at' => now()]);
+        $result = CourseProgressService::recompute($enrollment, $userId);
+        $this->assertSame(0.0, $result['progress_percent']);
+        $this->assertFalse($result['course_completed']);
+        $this->assertSame(0, DB::table('course_completion_delivery_outbox')->where('enrollment_id', $enrollment->id)->count());
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        \App\Services\CourseCertificateService::issue($courseId, $userId);
+    }
+
     public function test_completeLesson_creates_progress_row(): void
     {
         $userId   = $this->insertUser();

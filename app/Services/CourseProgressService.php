@@ -10,6 +10,8 @@ use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\CourseLesson;
 use App\Models\CourseLessonProgress;
+use App\Models\CourseQuiz;
+use App\Models\CourseQuizAttempt;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +22,28 @@ use Illuminate\Support\Facades\DB;
  */
 class CourseProgressService
 {
+    /** A missing quiz or an unreviewed/failed attempt cannot satisfy an assessment. */
+    public static function quizPassedForLesson(CourseLesson $lesson, int $userId): bool
+    {
+        if ($lesson->content_type !== 'quiz') {
+            return true;
+        }
+
+        $quiz = CourseQuiz::where('course_id', $lesson->course_id)->where('lesson_id', $lesson->id)->first();
+        return $quiz !== null && CourseQuizAttempt::where('quiz_id', $quiz->id)
+            ->where('user_id', $userId)
+            ->where('passed', true)
+            ->whereIn('grading_status', ['auto', 'graded'])
+            ->exists();
+    }
+
+    public static function unmetQuizLessonIds(int $courseId, int $userId): array
+    {
+        return CourseLesson::where('course_id', $courseId)->where('content_type', 'quiz')->get()
+            ->filter(fn (CourseLesson $lesson) => !self::quizPassedForLesson($lesson, $userId))
+            ->pluck('id')->all();
+    }
+
     /**
      * Mark a lesson complete for a user and recompute course progress.
      *
@@ -27,6 +51,13 @@ class CourseProgressService
      */
     public static function completeLesson(CourseEnrollment $enrollment, int $lessonId, int $userId, int $watchPercent = 100): array
     {
+        $lesson = CourseLesson::where('course_id', $enrollment->course_id)->findOrFail($lessonId);
+        if (!self::quizPassedForLesson($lesson, $userId)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'lesson' => __('api_controllers_2.courses.quiz_pass_required'),
+            ]);
+        }
+
         CourseLessonProgress::updateOrCreate(
             [
                 'enrollment_id' => $enrollment->id,
@@ -59,6 +90,7 @@ class CourseProgressService
 
             $completedLessons = CourseLessonProgress::where('enrollment_id', $enrollment->id)
                 ->where('status', 'completed')
+                ->whereNotIn('lesson_id', self::unmetQuizLessonIds((int) $enrollment->course_id, $userId))
                 ->count();
 
             $percent = $totalLessons > 0
@@ -79,13 +111,13 @@ class CourseProgressService
             if ($justCompleted) {
                 Course::where('id', $enrollment->course_id)->increment('completion_count');
             }
-            if ($enrollment->status === 'completed') {
+            if ($enrollment->status === 'completed' && $percent >= 100) {
                 CourseCompletionDeliveryService::record($enrollment);
             }
             return [$enrollment, $percent, $justCompleted];
         });
 
-        if ($enrollment->status === 'completed') {
+        if ($enrollment->status === 'completed' && $percent >= 100) {
             app(CourseCompletionDeliveryService::class)->dispatchForEnrollment(
                 (int) $enrollment->tenant_id,
                 (int) $enrollment->id,

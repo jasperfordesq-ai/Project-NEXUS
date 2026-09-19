@@ -109,6 +109,34 @@ class CourseControllerTest extends TestCase
         $this->assertSame(403, $response->status());
     }
 
+    public function test_quiz_completion_and_legacy_certificate_require_a_pass(): void
+    {
+        $this->enableCourses();
+        $learner = $this->authenticatedUser();
+        $course = $this->publishedCourse();
+        $enrollment = \App\Models\CourseEnrollment::create(['course_id' => $course->id, 'user_id' => $learner->id, 'status' => 'active', 'enrolled_at' => now()]);
+        $lesson = CourseLesson::create(['course_id' => $course->id, 'title' => 'Assessment', 'content_type' => 'quiz', 'drip_type' => 'none']);
+        CourseLesson::create(['course_id' => $course->id, 'title' => 'Later lesson', 'content_type' => 'text']);
+        $quiz = CourseQuiz::create(['course_id' => $course->id, 'lesson_id' => $lesson->id, 'title' => 'Quiz']);
+        $path = '/v2/courses/' . $course->id . '/lessons/' . $lesson->id . '/complete';
+        $this->apiPost($path, [])->assertStatus(422)->assertJsonPath('errors.0.code', 'QUIZ_PASS_REQUIRED');
+        $this->assertSame(0, DB::table('course_lesson_progress')->where('enrollment_id', $enrollment->id)->count());
+        $enrollment->update(['status' => 'completed', 'progress_percent' => 100]);
+        DB::table('course_lesson_progress')->insert(['tenant_id' => $this->testTenantId, 'enrollment_id' => $enrollment->id, 'lesson_id' => $lesson->id, 'user_id' => $learner->id, 'status' => 'completed', 'watch_percent' => 100, 'created_at' => now(), 'updated_at' => now()]);
+        $before = $this->apiGet('/v2/courses/' . $course->id . '/progress')->assertOk();
+        $before->assertJsonPath('data.enrollment.status', 'active')->assertJsonPath('data.lessons.0.status', 'not_started');
+        $this->assertEquals(0, $before->json('data.enrollment.progress_percent'));
+        $availability = collect($before->json('data.availability'))->keyBy('lesson_id');
+        $this->assertFalse($availability[$lesson->id]['completion_allowed']);
+        $this->assertSame('completed', $enrollment->fresh()->status); // Read projection has no write side effects.
+        $this->apiGet('/v2/courses/' . $course->id . '/certificate')->assertStatus(422)->assertJsonPath('errors.0.code', 'QUIZ_PASS_REQUIRED');
+        $enrollment->update(['status' => 'active', 'progress_percent' => 0]);
+        \App\Models\CourseQuizAttempt::create(['quiz_id' => $quiz->id, 'user_id' => $learner->id, 'answers' => [], 'passed' => true, 'grading_status' => 'graded', 'score_percent' => 80, 'submitted_at' => now()]);
+        $after = $this->apiGet('/v2/courses/' . $course->id . '/progress')->assertOk();
+        $this->assertTrue(collect($after->json('data.availability'))->keyBy('lesson_id')[$lesson->id]['completion_allowed']);
+        $this->apiPost($path, [])->assertOk()->assertJsonPath('data.course_completed', false);
+    }
+
     public function test_grading_preserves_fractional_score_and_stored_feedback(): void
     {
         $this->enableCourses();

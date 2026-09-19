@@ -97,17 +97,38 @@ class CourseEnrollmentController extends BaseApiController
             ->get(['lesson_id', 'status', 'watch_percent', 'completed_at'])
             ->toArray();
 
+        $unmetQuizIds = CourseProgressService::unmetQuizLessonIds($id, $userId);
+        $lessons = CourseLesson::where('course_id', $id)->get();
+        $enrollmentData = $enrollment->toArray();
+        if ($unmetQuizIds !== []) {
+            // Preserve historical rows, but do not present an unpassed assessment as complete.
+            foreach ($lessonProgress as &$progress) {
+                if (in_array((int) $progress['lesson_id'], $unmetQuizIds, true)) {
+                    $progress['status'] = 'not_started';
+                    $progress['completed_at'] = null;
+                }
+            }
+            unset($progress);
+            $completed = count(array_filter($lessonProgress, fn ($row) => $row['status'] === 'completed'));
+            $enrollmentData['progress_percent'] = $lessons->count() > 0 ? round($completed / $lessons->count() * 100, 2) : 0;
+            if ($enrollmentData['status'] === 'completed') {
+                $enrollmentData['status'] = 'active';
+                $enrollmentData['completed_at'] = null;
+            }
+        }
+
         // Drip availability per lesson (relative to enrolment date).
         $availability = [];
-        foreach (CourseLesson::where('course_id', $id)->get() as $lesson) {
+        foreach ($lessons as $lesson) {
+            $drip = CourseLessonService::availability($lesson, $enrollment->enrolled_at);
             $availability[] = array_merge(
-                ['lesson_id' => $lesson->id],
-                CourseLessonService::availability($lesson, $enrollment->enrolled_at)
+                ['lesson_id' => $lesson->id, 'completion_allowed' => $drip['available'] && !in_array((int) $lesson->id, $unmetQuizIds, true)],
+                $drip
             );
         }
 
         return $this->respondWithData([
-            'enrollment' => $enrollment->toArray(),
+            'enrollment' => $enrollmentData,
             'lessons' => $lessonProgress,
             'availability' => $availability,
         ]);
@@ -137,6 +158,9 @@ class CourseEnrollmentController extends BaseApiController
         }
 
         $watchPercent = $this->inputInt('watch_percent', 100, 0, 100);
+        if (!CourseProgressService::quizPassedForLesson($lesson, $userId)) {
+            return $this->respondWithError('QUIZ_PASS_REQUIRED', __('api_controllers_2.courses.quiz_pass_required'), null, 422);
+        }
         $result = CourseProgressService::completeLesson($enrollment, $lessonId, $userId, $watchPercent);
 
         return $this->respondWithData([
@@ -159,6 +183,9 @@ class CourseEnrollmentController extends BaseApiController
             return $this->respondWithError('COURSE_NOT_COMPLETED', __('api_controllers_2.courses.certificate_requires_completion'), null, 403);
         }
 
+        if (CourseProgressService::unmetQuizLessonIds($id, $userId) !== []) {
+            return $this->respondWithError('QUIZ_PASS_REQUIRED', __('api_controllers_2.courses.quiz_pass_required'), null, 422);
+        }
         $cert = \App\Services\CourseCertificateService::issue($id, $userId);
 
         return $this->respondWithData([
