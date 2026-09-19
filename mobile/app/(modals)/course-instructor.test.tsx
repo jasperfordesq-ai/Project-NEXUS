@@ -5,7 +5,7 @@
 
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetAuthoredCourses = jest.fn();
 const mockPublishCourse = jest.fn();
@@ -93,6 +93,9 @@ const published = { ...draft, id: 43, title: 'Timebanking basics', status: 'publ
 describe('CourseInstructorRoute', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPublishCourse.mockReset();
+    mockUnpublishCourse.mockReset();
+    mockGetAuthoredCourses.mockReset();
     mockShowToast.mockClear();
     mockGetAuthoredCourses.mockResolvedValue([draft]);
   });
@@ -133,6 +136,44 @@ describe('CourseInstructorRoute', () => {
       title: 'Course published — it is now visible to members.',
       variant: 'success',
     }));
+  });
+
+  it('ignores repeated publish gestures before React renders the busy state', async () => {
+    let finish!: (value: typeof draft) => void;
+    mockPublishCourse.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Repair skills');
+    const press = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.testID === 'course-toggle-publish-42')!.props.onPress;
+    act(() => { press(); press(); });
+    expect(mockPublishCourse).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ ...draft, status: 'published' }));
+  });
+
+  it.each([false, true])('ignores a departed publish result (failure: %s)', async (failure) => {
+    let finish!: (value: typeof draft) => void;
+    let reject!: (error: Error) => void;
+    mockPublishCourse.mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Repair skills');
+    fireEvent.press(screen.getByText('Publish'));
+    await waitFor(() => expect(mockPublishCourse).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => { if (failure) reject(new ApiResponseError(422, 'Unavailable')); else finish({ ...draft, status: 'published' }); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockGetAuthoredCourses).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not unpublish through a confirmation after its course disappears', async () => {
+    mockGetAuthoredCourses.mockResolvedValueOnce([published]).mockResolvedValue([]);
+    const screen = render(<CourseInstructorRoute />);
+    await screen.findByText('Timebanking basics');
+    fireEvent.press(screen.getByText('Unpublish'));
+    const confirm = screen.getByTestId('course-confirm-unpublish-43');
+    act(() => screen.UNSAFE_getByType(ReactNative.FlatList).props.refreshControl.props.onRefresh());
+    await waitFor(() => expect(screen.UNSAFE_getByType(ReactNative.FlatList).props.data).toEqual([]));
+    await act(async () => fireEvent.press(confirm));
+    expect(mockUnpublishCourse).not.toHaveBeenCalled();
   });
 
   it('unpublishes a published course', async () => {

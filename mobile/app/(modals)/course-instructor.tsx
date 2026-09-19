@@ -12,7 +12,7 @@
  * all. This screen and `new-course.tsx` are that builder.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -62,6 +62,14 @@ function CourseInstructorScreen() {
   const { confirm, confirmDialog } = useConfirm();
   const { data, isLoading, error, refresh } = useApi(() => getAuthoredCourses(), []);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const togglingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const coursesRef = useRef(data);
+  coursesRef.current = error ? null : data;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const courses = data ?? [];
@@ -98,7 +106,7 @@ function CourseInstructorScreen() {
     Found by the 2026-09-07 audit (G/F-11).
   */
   function togglePublish(course: Course) {
-    if (togglingId !== null) return;
+    if (!mountedRef.current || togglingRef.current) return;
     if (course.status !== 'published') {
       void runTogglePublish(course);
       return;
@@ -115,11 +123,15 @@ function CourseInstructorScreen() {
   }
 
   async function runTogglePublish(course: Course) {
+    const current = coursesRef.current?.find(item => item.id === course.id);
+    if (!mountedRef.current || togglingRef.current || !current || current.status !== course.status) return;
+    togglingRef.current = true;
     setTogglingId(course.id);
     try {
       const updated = course.status === 'published'
         ? await unpublishCourse(course.id)
         : await publishCourse(course.id);
+      if (!mountedRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
       showToast({
         title: updated.status === 'published'
           ? updated.moderation_status === 'approved'
@@ -130,13 +142,15 @@ function CourseInstructorScreen() {
       });
       refresh();
     } catch (err) {
+      if (!mountedRef.current || !coursesRef.current?.some(item => item.id === course.id)) return;
       showToast({
         title: t('instructor.create_error'),
         description: describeApiError(err, ''),
         variant: 'danger',
       });
     } finally {
-      setTogglingId(null);
+      togglingRef.current = false;
+      if (mountedRef.current) setTogglingId(null);
     }
   }
 
@@ -218,7 +232,7 @@ function CourseInstructorScreen() {
                 <HeroButton
                   className={largeText ? 'w-full' : undefined}
                   size={largeText ? 'md' : 'sm'}
-                  isDisabled={togglingId === course.id}
+                  isDisabled={togglingId !== null}
                   onPress={() => togglePublish(course)}
                   testID={`course-toggle-publish-${course.id}`}
                 >

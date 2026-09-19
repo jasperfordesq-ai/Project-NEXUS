@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native instructor publishing prevents duplicate submissions, ignores stale confirmations after a course disappears or changes status, and suppresses late publish results after leaving the screen.
+
 - Native course analytics retains loaded results through refresh and temporary failures, tracks actual refresh progress, removes refused data without dead retry actions, rejects malformed course links, and draws zero completions as empty bars.
 
 - The learner course list now excludes unpassed quizzes from displayed progress, matching the player while retaining historical completion records. Course-list and prerequisite quiz eligibility uses batched queries rather than querying each quiz separately.
