@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added an internal native agenda registration journal preserving owner-scoped pending request identities and minimal acknowledged receipts through required saved-draft storage. Panel integration and restart recovery are not yet enabled.
+
 - Added a dedicated native organiser People workspace for filtered roster reads, member-name invitations, per-person history and registration changes. Individual or eligible-page selection, required cancellation/rejection reasons, confirmation and explicit recovery use a durable journal preserving original request keys and partial receipts. It blocks overlapping submissions, unresolved work and rows older than confirmed changes, checks screen ownership before sending, ignores obsolete saved-state reads and announces recovery failures. Invitation searches can retry unchanged text after failure. History follows server permissions and clears when the selected person changes or access is refused. CSV export reviews included/excluded fields before an authenticated download of all filtered rows. The organiser People entry now opens this workspace; Check-in retains its attendance screen. Native-device verification remains unfinished.
 
 - Quiz submissions accept optional retry identities that replay the saved result without consuming another attempt, including concurrent retries at the limit. Changed answers under one identity are rejected. Learner reads expose the caller's latest grade summary and remaining attempts. Apply the quiz-attempt replay migration before enabling keyed clients; rolling it back removes saved retry identities.
