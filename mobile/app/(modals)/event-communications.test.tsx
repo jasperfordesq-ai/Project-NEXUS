@@ -266,7 +266,7 @@ describe('EventCommunicationsScreen', () => {
     expect(await loadEventCommunicationOperation(operationScope)).toMatchObject({ status: 'acknowledged' });
   });
 
-  it('recovers a lost create response while preserving newer composer wording', async () => {
+  it.each([false, true])('preserves newer wording when recovered creation is already sent: %s', async (alreadySent) => {
     mockCreate.mockRejectedValueOnce(new Error('Response lost'));
     const screen = render(<EventCommunicationsScreen />);
     await screen.findByText('Announcement');
@@ -278,7 +278,9 @@ describe('EventCommunicationsScreen', () => {
     await screen.findByTestId('event-operation-recovery');
     const original = mockCreate.mock.calls[0];
     fireEvent.changeText(screen.getByTestId('event-communication-body'), 'Newer unsaved wording');
-    mockCreate.mockResolvedValueOnce(broadcast({ id: 19, body: savedInput.body }));
+    mockCreate.mockResolvedValueOnce(broadcast({ id: 19, body: savedInput.body,
+      ...(alreadySent ? { status: 'sent', version: 4, capabilities: { edit: false, schedule: false, cancel: false, retry: false } } : {}),
+    }));
     fireEvent.press(screen.getByText('recovery_button'));
     await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(2));
     await act(async () => {});
@@ -287,6 +289,35 @@ describe('EventCommunicationsScreen', () => {
     expect(screen.getByDisplayValue('Newer unsaved wording')).toBeTruthy();
     expect(screen.getByText('Save changes')).toBeTruthy();
     expect(isGuardArmed()).toBe(true);
+    if (alreadySent) {
+      fireEvent.press(screen.getByText('Preview audience'));
+      await screen.findByText('12 recipients, 24 deliveries');
+      fireEvent.press(screen.getByText('Save changes'));
+      expect(mockRevise).not.toHaveBeenCalled();
+      expect(screen.getByDisplayValue('Newer unsaved wording')).toBeTruthy();
+    }
+  });
+
+  it('lets the organizer correct a definitively rejected schedule without losing the form', async () => {
+    const { ApiResponseError } = require('@/lib/api/client');
+    mockSchedule.mockRejectedValueOnce(new ApiResponseError(422, 'Past schedule', undefined, 'EVENT_BROADCAST_SCHEDULE_IN_PAST'));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    fireEvent.press(screen.getByText('Schedule'));
+    fireEvent.changeText(screen.getByTestId('event-communication-scheduled-at'), '2020-01-01T10:00');
+    fireEvent.press(screen.getByText('Confirm schedule'));
+    await waitFor(() => expect(mockSchedule).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'schedule_failed_title' })));
+    expect(screen.getByDisplayValue('2020-01-01T10:00')).toBeTruthy();
+    expect(screen.queryByTestId('event-operation-recovery')).toBeNull();
+    fireEvent.changeText(screen.getByTestId('event-communication-scheduled-at'), '');
+    fireEvent.press(screen.getByText('Confirm schedule'));
+    await waitFor(() => expect(mockSchedule).toHaveBeenCalledTimes(2));
+    await act(async () => {});
+    expect(mockSchedule.mock.calls[1].slice(0, 3)).toEqual([8, 1, null]);
+    expect(mockSchedule.mock.calls[1][3]).not.toBe(mockSchedule.mock.calls[0][3]);
+    await waitFor(() => expect(screen.queryByTestId('event-communication-scheduled-at')).toBeNull());
   });
 
   it('does not expose another account pending operation after switching accounts', async () => {
