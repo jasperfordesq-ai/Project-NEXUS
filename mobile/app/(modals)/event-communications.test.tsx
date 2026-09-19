@@ -225,6 +225,45 @@ beforeEach(() => {
 });
 
 describe('EventCommunicationsScreen', () => {
+  async function openAction(action: string) {
+    if (action === 'retry') mockGet.mockResolvedValueOnce({
+      data: [broadcast({ status: 'failed', capabilities: { edit: false, schedule: false, cancel: false, retry: true } })],
+      meta: { current_page: 1, has_more: false },
+    });
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Announcement');
+    if (action === 'schedule') fireEvent.press(screen.getByText('Schedule'));
+    if (action === 'cancel') {
+      fireEvent.press(screen.getByText('Cancel'));
+      fireEvent.changeText(screen.getByTestId('event-communication-cancel-reason'), 'Changed plans');
+    }
+    const label = action === 'schedule' ? 'Confirm schedule' : action === 'cancel' ? 'Confirm cancellation' : 'Retry';
+    let button = screen.getByText(label);
+    while (!button.props.onPress && button.parent) button = button.parent;
+    return { screen, press: button.props.onPress as () => void };
+  }
+
+  it.each(['schedule', 'cancel', 'retry'])('serializes repeated %s callbacks', async (action) => {
+    const request = action === 'schedule' ? mockSchedule : action === 'cancel' ? mockCancel : mockRetry;
+    let finish!: (value: unknown) => void;
+    request.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const { press } = await openAction(action);
+    act(() => { press(); press(); });
+    expect(request).toHaveBeenCalledTimes(1);
+    await act(async () => finish(broadcast()));
+  });
+
+  it.each(['schedule', 'cancel', 'retry'])('ignores %s failure after screen departure', async (action) => {
+    const request = action === 'schedule' ? mockSchedule : action === 'cancel' ? mockCancel : mockRetry;
+    let reject!: (error: Error) => void;
+    request.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    const { screen, press } = await openAction(action);
+    act(() => press());
+    screen.unmount();
+    await act(async () => reject(new Error('offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('shows aggregate status without participant identities', async () => {
     const screen = render(<EventCommunicationsScreen />);
 

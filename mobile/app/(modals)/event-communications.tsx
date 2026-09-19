@@ -95,6 +95,9 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   const inputRevision = useRef(0);
   const listRequest = useRef<object | null>(null);
   const pageRequest = useRef<object | null>(null);
+  const scheduleRequest = useRef<object | null>(null);
+  const cancelRequest = useRef<object | null>(null);
+  const retryRequest = useRef<object | null>(null);
   const [broadcasts, setBroadcasts] = useState<MobileEventBroadcast[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -167,6 +170,9 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
     saveRequest.current = null;
     listRequest.current = null;
     pageRequest.current = null;
+    scheduleRequest.current = null;
+    cancelRequest.current = null;
+    retryRequest.current = null;
   }, []);
 
   async function loadMore() {
@@ -478,7 +484,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
   }
 
   async function confirmSchedule() {
-    if (!scheduleTarget) return;
+    if (!scheduleTarget || scheduleRequest.current) return;
     let timestamp: string | null = null;
     if (scheduledAt.trim()) {
       // The field is a local wall-clock time in the placeholder's format; the shared helper
@@ -494,6 +500,8 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
       }
       timestamp = parsed;
     }
+    const request = {};
+    scheduleRequest.current = request;
     setIsScheduling(true);
     try {
       const broadcast = await scheduleEventCommunication(
@@ -502,6 +510,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
         timestamp,
         idempotencyKey('schedule'),
       );
+      if (scheduleRequest.current !== request) return;
       replaceBroadcast(broadcast);
       setScheduleTarget(null);
       setScheduledAt('');
@@ -511,18 +520,22 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
         variant: 'success',
       });
     } catch (err) {
+      if (scheduleRequest.current !== request) return;
       showToast({
         title: t('schedule_failed_title'),
         description: describeApiError(err, t('schedule_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setIsScheduling(false);
+      if (scheduleRequest.current === request) {
+        scheduleRequest.current = null;
+        setIsScheduling(false);
+      }
     }
   }
 
   async function confirmCancel() {
-    if (!cancelTarget) return;
+    if (!cancelTarget || cancelRequest.current) return;
     const reason = cancelReason.trim();
     if (!reason || reason.length > 500) {
       showToast({
@@ -532,6 +545,8 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
       });
       return;
     }
+    const request = {};
+    cancelRequest.current = request;
     setIsCancelling(true);
     try {
       const broadcast = await cancelEventCommunication(
@@ -540,6 +555,7 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
         reason,
         idempotencyKey('cancel'),
       );
+      if (cancelRequest.current !== request) return;
       replaceBroadcast(broadcast);
       setCancelTarget(null);
       setCancelReason('');
@@ -549,37 +565,50 @@ function EventCommunicationsScreenInner({ safeEventId }: { safeEventId: number }
         variant: 'success',
       });
     } catch (err) {
+      if (cancelRequest.current !== request) return;
       showToast({
         title: t('cancel_failed_title'),
         description: describeApiError(err, t('cancel_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setIsCancelling(false);
+      if (cancelRequest.current === request) {
+        cancelRequest.current = null;
+        setIsCancelling(false);
+      }
     }
   }
 
   async function retryFailed(broadcast: MobileEventBroadcast) {
+    if (retryRequest.current) return;
+    const request = {};
+    retryRequest.current = request;
     setRetryingId(broadcast.id);
     try {
-      replaceBroadcast(await retryEventCommunication(
+      const result = await retryEventCommunication(
         broadcast.id,
         broadcast.version,
         idempotencyKey('retry'),
-      ));
+      );
+      if (retryRequest.current !== request) return;
+      replaceBroadcast(result);
       showToast({
         title: t('retry_queued_title'),
         description: t('retry_queued_description'),
         variant: 'success',
       });
     } catch (err) {
+      if (retryRequest.current !== request) return;
       showToast({
         title: t('retry_failed_title'),
         description: describeApiError(err, t('retry_failed_description')),
         variant: 'danger',
       });
     } finally {
-      setRetryingId(null);
+      if (retryRequest.current === request) {
+        retryRequest.current = null;
+        setRetryingId(null);
+      }
     }
   }
 

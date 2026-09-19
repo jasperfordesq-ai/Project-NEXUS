@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event scheduling, cancellation and retry actions prevent duplicate submissions and ignore late responses after the screen closes.
+
 - Native event communications reset event-specific forms when changing events and ignore stale list or pagination responses after departure.
 
 - Native event draft saves preserve wording edited during a pending save, continue against the saved draft version, and prevent duplicate submissions or late failure alerts after closure.
