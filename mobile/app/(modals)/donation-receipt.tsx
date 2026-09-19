@@ -60,7 +60,9 @@ function DonationReceiptScreen() {
                 <ReceiptRow label={t('donations.receipt_donor')} value={receipt.data.donor_name} />
                 <ReceiptRow label={t('donations.receipt_date')} value={formatDate(receipt.data.date)} />
                 <ReceiptRow label={t('donations.receipt_community')} value={receipt.data.community_name} />
-                <ReceiptRow label={t('donations.receipt_method')} value={receipt.data.payment_method} />
+                <ReceiptRow label={t('donations.receipt_method')} value={['card', 'bank_transfer', 'paypal'].includes(receipt.data.payment_method)
+                  ? t(`donations.payment_methods.${receipt.data.payment_method}`)
+                  : receipt.data.payment_method} />
                 {receipt.data.message ? (
                   <View className="gap-1 border-t border-default-100 pt-3">
                     <Text className="text-xs text-muted-foreground">{t('donations.receipt_message')}</Text>

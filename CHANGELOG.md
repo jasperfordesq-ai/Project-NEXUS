@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native donation receipts display existing translated labels for known payment methods instead of raw wire codes such as bank_transfer.
+
 - Malformed native donation-receipt links no longer request invalid records or show retry controls that cannot succeed.
 
 - Native donation receipts now map the API community, reference and donation identity correctly, and reject malformed amounts instead of displaying them as zero.

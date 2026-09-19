@@ -24,6 +24,7 @@ jest.mock('react-i18next', () => ({
       'donations.receipt_date': 'Date',
       'donations.receipt_community': 'Community',
       'donations.receipt_method': 'Payment method',
+      'donations.payment_methods.bank_transfer': 'bank transfer',
       'donations.receipt_message': 'Message',
       'donations.status.completed': 'Completed',
       'common:buttons.retry': 'Retry',
@@ -70,6 +71,13 @@ describe('DonationReceiptScreen', () => {
     expect(getByText('Completed')).toBeTruthy();
     expect(getByText('Hour Timebank')).toBeTruthy();
     expect(getByText('Keep up the good work')).toBeTruthy();
+  });
+
+  it('renders a translated known payment method rather than its wire code', async () => {
+    jest.mocked(getDonationReceipt).mockResolvedValue({ ...receipt, payment_method: 'bank_transfer' });
+    const screen = render(<DonationReceiptScreen />);
+    expect(await screen.findByText('bank transfer')).toBeTruthy();
+    expect(screen.queryByText('bank_transfer')).toBeNull();
   });
 
   /*
