@@ -64,6 +64,16 @@ function statusColor(status: MobileEventBroadcast['status']): 'accent' | 'succes
   return 'accent';
 }
 
+/** Late list/detail responses must not undo a confirmed lifecycle transition. */
+function mergeBroadcasts(current: MobileEventBroadcast[], incoming: MobileEventBroadcast[]): MobileEventBroadcast[] {
+  const byId = new Map(current.map(broadcast => [broadcast.id, broadcast]));
+  for (const broadcast of incoming) {
+    const known = byId.get(broadcast.id);
+    if (!known || broadcast.version >= known.version) byId.set(broadcast.id, broadcast);
+  }
+  return [...byId.values()];
+}
+
 function EventCommunicationsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -202,7 +212,7 @@ function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { saf
     try {
       const response = await getEventCommunications(safeEventId);
       if (listRequest.current !== request) return;
-      setBroadcasts(response.data);
+      setBroadcasts(current => mergeBroadcasts(current, response.data));
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
     } catch (error) {
@@ -241,11 +251,7 @@ function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { saf
     try {
       const response = await getEventCommunications(safeEventId, page + 1);
       if (pageRequest.current !== request) return;
-      setBroadcasts((current) => {
-        const byId = new Map(current.map((broadcast) => [broadcast.id, broadcast]));
-        response.data.forEach((broadcast) => byId.set(broadcast.id, broadcast));
-        return [...byId.values()];
-      });
+      setBroadcasts(current => mergeBroadcasts(current, response.data));
       setPage(response.meta.current_page);
       setHasMore(response.meta.has_more);
     } catch (err) {
@@ -649,12 +655,12 @@ function EventCommunicationsScreenInner({ safeEventId, tenantId, userId }: { saf
   }
 
   function replaceBroadcast(next: MobileEventBroadcast) {
-    setBroadcasts((current) => current.map((broadcast) => broadcast.id === next.id ? next : broadcast));
+    setBroadcasts((current) => current.map((broadcast) => broadcast.id === next.id && next.version >= broadcast.version ? next : broadcast));
   }
 
   function upsertBroadcast(next: MobileEventBroadcast) {
     setBroadcasts((current) => current.some((broadcast) => broadcast.id === next.id)
-      ? current.map((broadcast) => broadcast.id === next.id ? next : broadcast)
+      ? mergeBroadcasts(current, [next])
       : [next, ...current]);
   }
 

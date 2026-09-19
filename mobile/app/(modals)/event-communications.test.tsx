@@ -245,6 +245,42 @@ beforeEach(() => {
 });
 
 describe('EventCommunicationsScreen', () => {
+  it('keeps a recovered newer version when an older initial list finishes afterward', async () => {
+    await prepareEventCommunicationOperation({ tenantId: 2, userId: 7, eventId: 42 }, {
+      action: 'create', input: { variant: 'announcement', segments: ['registration_confirmed'], channels: ['in_app'], body: 'Saved request' },
+    });
+    let finishList!: (value: unknown) => void;
+    mockGet.mockImplementationOnce(() => new Promise(resolve => { finishList = resolve; }));
+    mockCreate.mockResolvedValueOnce(broadcast({ version: 4, status: 'sent', capabilities: { edit: false, schedule: false, cancel: false, retry: false } }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByTestId('event-operation-recovery');
+    fireEvent.press(screen.getByText('recovery_button'));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull());
+    await act(async () => finishList({ data: [broadcast({ version: 1 })], meta: { current_page: 1, has_more: false } }));
+    expect(screen.getByText('Version 4')).toBeTruthy();
+    expect(screen.queryByText('Version 1')).toBeNull();
+    expect(screen.queryByText('Schedule')).toBeNull();
+  });
+
+  it('does not roll back a scheduled message when an overlapping next page returns an old version', async () => {
+    let finishPage!: (value: unknown) => void;
+    mockGet.mockResolvedValueOnce({ data: [broadcast()], meta: { current_page: 1, has_more: true } })
+      .mockImplementationOnce(() => new Promise(resolve => { finishPage = resolve; }));
+    const screen = render(<EventCommunicationsScreen />);
+    await screen.findByText('Load more');
+    fireEvent.press(screen.getByText('Load more'));
+    fireEvent.press(screen.getByText('Schedule'));
+    fireEvent.press(screen.getByText('Confirm schedule'));
+    await waitFor(() => expect(mockSchedule).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+    await screen.findByText('Version 2');
+    await act(async () => finishPage({ data: [broadcast({ version: 1 })], meta: { current_page: 2, has_more: false } }));
+    expect(screen.getByText('Version 2')).toBeTruthy();
+    expect(screen.queryByText('Version 1')).toBeNull();
+  });
+
   it('shows draft audience selection without presenting unfinalized counts as zero recipients', async () => {
     mockGet.mockResolvedValueOnce({ data: [broadcast({ audience: { segments: ['registration_confirmed'], recipient_count: 0 } })], meta: { current_page: 1, has_more: false } });
     const screen = render(<EventCommunicationsScreen />);
