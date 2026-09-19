@@ -4,13 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { ScrollView } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 
-let mockRealApi = false;
 const mockRefresh = jest.fn();
 const mockShowToast = jest.fn();
 const mockTransitionAttendance = jest.fn();
+let mockRealApi = false;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -156,6 +156,32 @@ beforeEach(() => {
 });
 
 describe('EventAttendanceScreen', () => {
+  it('keeps confirmed check-in visible until a current roster supplies the next actions', async () => {
+    mockRealApi = true;
+    jest.mocked(getEventAttendanceRoster).mockResolvedValue(mockRoster as never);
+    let finishRefresh!: (value: unknown) => void;
+    const screen = render(<EventAttendanceScreen />);
+    await screen.findByText('Taylor Member');
+    jest.mocked(getEventAttendanceRoster).mockImplementationOnce(() => new Promise(resolve => { finishRefresh = resolve as (value: unknown) => void; }));
+    mockTransitionAttendance.mockResolvedValueOnce({ data: {
+      member: { id: 44, display_name: 'Taylor Member' },
+      mutation: { attendance_id: 8, event_id: 7, user_id: 44, action: 'check_in', from_state: 'not_checked_in', to_state: 'checked_in', changed: true, idempotent_replay: false, attendance_version: 1, changed_at: null, checked_in_at: null, checked_out_at: null, history_entry_id: 1 },
+    } });
+    fireEvent.press(screen.getByText('Check in'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' })));
+    expect(screen.queryByText('Check in')).toBeNull();
+    expect(screen.queryAllByText('Not checked in')).toHaveLength(1); // Filter label remains; the stale row state does not.
+    expect(screen.queryByLabelText('Attendance summary')).toBeNull();
+    await act(async () => finishRefresh(mockRoster));
+    expect(screen.queryByText('Check in')).toBeNull();
+    expect(screen.queryAllByText('Not checked in')).toHaveLength(1); // Filter label remains; the stale row state does not.
+    const current = { ...mockRoster, data: [{ ...mockRoster.data[0], attendance: { ...mockRoster.data[0].attendance, id: 8, state: 'checked_in', version: 1 }, management_actions: { ...mockRoster.data[0].management_actions, check_in: false, no_show: false, check_out: true } }] };
+    jest.mocked(getEventAttendanceRoster).mockResolvedValueOnce(current as never);
+    act(() => screen.UNSAFE_getAllByType(ScrollView).find(view => view.props.refreshControl)?.props.refreshControl.props.onRefresh());
+    expect(await screen.findByText('Check out')).toBeTruthy();
+    expect(screen.getByLabelText('Attendance summary')).toBeTruthy();
+    expect(mockTransitionAttendance).toHaveBeenCalledTimes(1);
+  });
   it('renders only the bounded attendance workspace and server-granted actions', () => {
     const screen = render(<EventAttendanceScreen />);
 

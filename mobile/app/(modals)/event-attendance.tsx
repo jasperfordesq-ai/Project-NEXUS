@@ -38,6 +38,7 @@ import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 
 type AttendanceFilter = 'all' | 'not_checked_in' | 'checked_in' | 'checked_out' | 'no_show';
+type AttendanceConfirmation = Awaited<ReturnType<typeof transitionEventAttendance>>['data']['mutation'];
 
 const FILTERS: AttendanceFilter[] = [
   'all',
@@ -79,6 +80,8 @@ function EventAttendanceScreenInner() {
   const mutationKeys = useRef(new Map<string, string>());
   const mutationPendingRef = useRef(false);
   const isMountedRef = useRef(true);
+  const confirmationsRef = useRef(new Map<number, AttendanceConfirmation>());
+  const [confirmations, setConfirmations] = useState(confirmationsRef.current);
 
   const rosterApi = useApi(
     () => getEventAttendanceRoster(safeEventId, {
@@ -90,7 +93,24 @@ function EventAttendanceScreenInner() {
     { enabled: safeEventId > 0, clearOnRefusal: true },
   );
   const roster = rosterApi.data;
-  const people = roster?.data ?? [];
+  const awaitingCurrentRoster = (roster?.data ?? []).some(person =>
+    (confirmations.get(person.member.id)?.attendance_version ?? 0) > (person.attendance.version ?? 0));
+  const people = (roster?.data ?? []).map(person => {
+    const confirmed = confirmations.get(person.member.id);
+    if (!confirmed || confirmed.attendance_version <= (person.attendance.version ?? 0)) return person;
+    const updated: EventAttendanceRosterPerson = { ...person };
+    updated.attendance = {
+        id: confirmed.attendance_id,
+        state: confirmed.to_state,
+        version: confirmed.attendance_version,
+        changed_at: confirmed.changed_at,
+        checked_in_at: confirmed.checked_in_at,
+        checked_out_at: confirmed.checked_out_at,
+    };
+    // The mutation confirms state, but only a fresh roster grants subsequent actions.
+    updated.management_actions = { ...person.management_actions, check_in: false, check_out: false, no_show: false, undo_attendance: false };
+    return updated;
+  }).filter(person => filter === 'all' || person.attendance.state === filter);
   const meta = roster?.meta ?? null;
 
   useEffect(() => {
@@ -119,6 +139,7 @@ function EventAttendanceScreenInner() {
 
   async function runAttendanceAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction) {
     if (mutationPendingRef.current) return;
+    if ((confirmationsRef.current.get(person.member.id)?.attendance_version ?? 0) > (person.attendance.version ?? 0)) return;
     mutationPendingRef.current = true;
     const expectedVersion = person.attendance.version ?? 0;
     const operationId = `${person.member.id}:${action}:${expectedVersion}`;
@@ -129,13 +150,15 @@ function EventAttendanceScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     try {
-      await transitionEventAttendance(safeEventId, person.member.id, {
+      const result = await transitionEventAttendance(safeEventId, person.member.id, {
         action,
         expectedVersion,
         idempotencyKey,
       });
       mutationKeys.current.delete(operationId);
       if (!isMountedRef.current) return;
+      confirmationsRef.current = new Map(confirmationsRef.current).set(person.member.id, result.data.mutation);
+      setConfirmations(confirmationsRef.current);
       showToast({
         title: t('attendance.updated'),
         description: t(`attendance.actions.${action}`),
@@ -275,7 +298,7 @@ function EventAttendanceScreenInner() {
           </ScrollView>
         </Surface>
 
-        {meta ? (
+        {meta && !awaitingCurrentRoster ? (
           <View className="flex-row flex-wrap gap-2" accessibilityLabel={t('attendance.metricsLabel')}>
             <Metric label={t('attendance.metrics.confirmed')} value={meta.metrics.confirmed} />
             <Metric label={t('attendance.metrics.checked_in')} value={meta.metrics.checked_in} />

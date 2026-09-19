@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event attendance retains the server-confirmed check-in state while the roster refreshes, suppresses older actions and totals, and waits for current roster permissions before offering the next action.
+
 - Native event attendance clears the roster and summary after access is refused, preventing old attendance details and actions from reappearing during a later refresh.
 
 - Native donation receipts clear immediately when the account, community, or receipt changes and ignore responses from the previous selection.
