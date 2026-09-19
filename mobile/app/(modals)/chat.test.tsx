@@ -6,13 +6,23 @@
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
+let mockFocus: () => void | (() => void);
+let mockBlur: (() => void) | undefined;
+
 jest.mock('@/components/ui/AppToast', () => {
   const show = jest.fn();
   const hide = jest.fn();
   return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
 });
 jest.mock('expo-router', () => ({
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (callback: () => void | (() => void)) => {
+    const React = require('react');
+    React.useEffect(() => {
+      mockFocus = callback;
+      mockBlur = callback() || undefined;
+      return () => mockBlur?.();
+    }, [callback]);
+  },
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => ({}),
@@ -204,6 +214,37 @@ describe('ChatScreen', () => {
     fireEvent.changeText(screen.getByPlaceholderText('Tell us what was missing or wrong'), 'Keep this note');
     return screen;
   }
+
+  it('dismisses the feedback note on departure while preserving conversation text', async () => {
+    const screen = await openFeedbackNote();
+    act(() => { mockBlur?.(); });
+    act(() => { mockBlur = mockFocus?.() || undefined; });
+    expect(screen.queryByText('What went wrong?')).toBeNull();
+    expect(screen.getByText('Hello!')).toBeTruthy();
+  });
+
+  it.each([false, true])('does not show feedback UI from a previous visit (failure: %s)', async (failure) => {
+    let finish!: (value: Awaited<ReturnType<typeof submitChatFeedback>>) => void;
+    let reject!: (error: Error) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise((resolve, fail) => { finish = resolve; reject = fail; }));
+    const screen = render(<ChatScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Ask me anything...'), 'Question');
+    fireEvent.press(screen.getByLabelText('Send message'));
+    await screen.findByText('Hello!');
+    fireEvent.press(screen.getByLabelText('Mark response not helpful'));
+    act(() => { mockBlur?.(); });
+    act(() => { mockBlur = mockFocus?.() || undefined; });
+    await act(async () => {
+      if (failure) reject(new Error('offline'));
+      else finish({ data: { recorded: true, feedback: 'down' } });
+    });
+    expect(screen.queryByText('What went wrong?')).toBeNull();
+    expect(require('@/components/ui/AppToast').useAppToast().show).not.toHaveBeenCalled();
+    const down = screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
+      .find(node => node.props.accessibilityLabel === 'Mark response not helpful')!;
+    expect(down.props.isDisabled).toBe(false);
+    expect(down.props.accessibilityState.selected).toBe(!failure);
+  });
 
   it('submits a feedback note only once before busy state renders', async () => {
     const screen = await openFeedbackNote();

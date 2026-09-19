@@ -20,6 +20,7 @@ import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from 'expo-router';
 
 import {
   getChatStarters,
@@ -463,6 +464,8 @@ function ChatScreenInner() {
   const [feedbackState, setFeedbackState] = useState<FeedbackState>({});
   const [feedbackBusy, setFeedbackBusy] = useState(false);
   const activeFeedbackRef = useRef<object | null>(null);
+  const feedbackFocusedRef = useRef(false);
+  const feedbackVisitRef = useRef(0);
   const [pendingFeedbackNote, setPendingFeedbackNote] = useState<PendingFeedbackNote | null>(null);
   const pendingFeedbackNoteRef = useRef(pendingFeedbackNote);
   pendingFeedbackNoteRef.current = pendingFeedbackNote;
@@ -602,7 +605,8 @@ function ChatScreenInner() {
   }, [inputText, t]);
 
   const handleFeedback = useCallback(async (message: ChatMessage, vote: ChatFeedbackVote) => {
-    if (activeFeedbackRef.current) return;
+    if (!feedbackFocusedRef.current || activeFeedbackRef.current) return;
+    const visit = feedbackVisitRef.current;
     const traceId = typeof message.trace_id === 'number' ? message.trace_id : null;
     const numericMessageId = typeof message.message_id === 'number' ? message.message_id : Number(message.id);
     const messageId = Number.isFinite(numericMessageId) ? numericMessageId : null;
@@ -619,6 +623,7 @@ function ChatScreenInner() {
         feedback: vote,
       });
       if (activeFeedbackRef.current !== request) return;
+      if (!feedbackFocusedRef.current || feedbackVisitRef.current !== visit) return;
       activeNoteRef.current = null;
       setSubmittingFeedbackNote(false);
       if (vote === 'down') {
@@ -637,7 +642,9 @@ function ChatScreenInner() {
         return next;
       });
       // The thumb used to simply un-select itself, which reads as the tap being ignored.
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
+      if (feedbackFocusedRef.current && feedbackVisitRef.current === visit) {
+        showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('chat:feedback.failed')), variant: 'danger' });
+      }
     } finally {
       if (activeFeedbackRef.current === request) {
         activeFeedbackRef.current = null;
@@ -653,6 +660,15 @@ function ChatScreenInner() {
     setFeedbackNote('');
     setSubmittingFeedbackNote(false);
   }, []);
+
+  useFocusEffect(useCallback(() => {
+    feedbackFocusedRef.current = true;
+    return () => {
+      feedbackFocusedRef.current = false;
+      feedbackVisitRef.current += 1;
+      closeFeedbackNote();
+    };
+  }, [closeFeedbackNote]));
 
   const submitFeedbackNote = useCallback(async () => {
     if (activeFeedbackRef.current || activeNoteRef.current || !pendingFeedbackNote || pendingFeedbackNoteRef.current !== pendingFeedbackNote) return;
