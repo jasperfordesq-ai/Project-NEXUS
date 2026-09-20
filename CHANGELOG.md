@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Aligned event registration retention operations with their declared permissions.
+
 ### Added
 
 - Connected native event invitation management to registration settings, with paginated campaign and preview review, event-time-zone scheduling and expiry, cancellation confirmation, and explicit durable request recovery.

@@ -12,6 +12,7 @@ use App\Enums\EventRegistrationSubmissionStatus;
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Models\EventRegistrationRetentionRun;
 use App\Models\User;
+use App\Policies\EventRegistrationPolicy;
 use App\Support\Events\EventRegistrationFoundationSupport;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -26,6 +27,7 @@ final class EventRegistrationRetentionService
 
     public function __construct(
         private readonly EventRegistrationFoundationSupport $support = new EventRegistrationFoundationSupport(),
+        private readonly EventRegistrationPolicy $policy = new EventRegistrationPolicy(),
     ) {
     }
 
@@ -49,7 +51,9 @@ final class EventRegistrationRetentionService
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, false);
             $persistedActor = $this->support->actor($tenantId, $actor, false);
-            $this->support->authorizeManager($persistedActor, $event);
+            if (! $this->policy->manageRetention($persistedActor, $event)) {
+                throw new EventRegistrationFoundationException('event_registration_retention_denied');
+            }
             $asOfUtc = $this->support->inputInstant(
                 $asOf,
                 $this->support->eventTimezone($event),
@@ -122,7 +126,9 @@ final class EventRegistrationRetentionService
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
             $persistedActor = $this->support->actor($tenantId, $actor, true);
-            $this->support->authorizeManager($persistedActor, $event);
+            if (! $this->policy->manageRetention($persistedActor, $event)) {
+                throw new EventRegistrationFoundationException('event_registration_retention_denied');
+            }
             $preview = DB::table('event_registration_retention_runs')
                 ->where('tenant_id', $tenantId)
                 ->where('event_id', $eventId)
