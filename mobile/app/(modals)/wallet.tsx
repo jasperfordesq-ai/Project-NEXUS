@@ -54,6 +54,12 @@ import WalletReconciliationNotice from '@/components/wallet/WalletReconciliation
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
 type WalletAction = 'transfer' | 'donate' | null;
+
+function recipientLabel(user: WalletUserSearchResult): string {
+  const username = user.username?.trim();
+  return username ? `${user.name} (@${username})` : user.name;
+}
+
 type DonationTarget = 'community_fund' | 'user';
 
 /**
@@ -746,7 +752,7 @@ function WalletActionPanel({
       return;
     }
 
-    const targetName = needsRecipient ? (selectedUser?.name ?? t('actions.memberFallback')) : t('actions.communityFundOption');
+    const targetName = needsRecipient ? (selectedUser ? recipientLabel(selectedUser) : t('actions.memberFallback')) : t('actions.communityFundOption');
     const amountLabel = formatDecimal(parsedAmount, 2);
     confirm({
       title: t(action === 'transfer' ? 'actions.confirmTransferTitle' : 'actions.confirmDonationTitle'),
@@ -889,6 +895,7 @@ function WalletActionPanel({
                 <Avatar uri={selectedUser.avatar_url ?? null} name={selectedUser.name} size={36} />
                 <View className="min-w-0 flex-1">
                   <Text className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={1}>{selectedUser.name}</Text>
+                  {selectedUser.username?.trim() ? <Text className="text-xs" style={{ color: theme.textSecondary }}>@{selectedUser.username.trim()}</Text> : null}
                   <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('actions.selectedRecipient')}</Text>
                 </View>
               </Surface>
@@ -901,7 +908,7 @@ function WalletActionPanel({
                     variant="ghost"
                     feedbackVariant="scale"
                     className="w-full p-0"
-                    accessibilityLabel={user.name}
+                    accessibilityLabel={recipientLabel(user)}
                     onPress={() => {
                       recipientVersionRef.current += 1;
                       setIsResolvingRecipient(false);
@@ -913,7 +920,7 @@ function WalletActionPanel({
                       <Avatar uri={user.avatar_url ?? null} name={user.name} size={36} />
                       <View className="min-w-0 flex-1">
                         <Text className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={1}>{user.name}</Text>
-                        <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>{user.location ?? user.email ?? t('actions.memberFallback')}</Text>
+                        <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>{user.username?.trim() ? `@${user.username.trim()}` : user.location ?? user.email ?? t('actions.memberFallback')}</Text>
                       </View>
                       <Ionicons name={selectedUser?.id === user.id ? 'checkmark-circle' : 'chevron-forward'} size={18} color={primary} />
                     </Surface>

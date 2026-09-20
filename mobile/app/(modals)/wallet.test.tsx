@@ -78,6 +78,7 @@ jest.mock('react-i18next', () => ({
         'actions.donateSubtitle': 'Support the community fund or send a donation to another member.',
         'actions.closeAction': 'Close wallet action',
         'actions.selectedRecipient': 'Selected recipient',
+        'actions.confirmTransferMessage': `Confirm ${String(opts?.name ?? '')}`,
         'actions.memberFallback': 'Community member',
         'actions.recipientSearch': 'Recipient search',
         'actions.recipientSearchPlaceholder': 'Search by name or email',
@@ -543,6 +544,27 @@ describe('WalletModal', () => {
 
     expect(getByDisplayValue('2')).toBeTruthy();
     expect(getByDisplayValue('Garden help')).toBeTruthy();
+  });
+
+  it('distinguishes same-name recipients using their public usernames', async () => {
+    mockSearchParams.mockReturnValue({ to: '260' });
+    jest.mocked(searchWalletUsers).mockResolvedValueOnce({ data: { users: [
+      { id: 43, name: 'Mary', username: 'mary-gardens' },
+      { id: 44, name: 'Mary', username: 'mary-repairs' },
+    ] } } as never);
+    const payloads = [{ balance: 12.5 }, [], { balance: 3 }, []];
+    let call = 0;
+    mockUseApi.mockReset().mockImplementation(() => ({ data: { data: payloads[call++ % 4] }, isLoading: false, error: null, refresh: jest.fn() }));
+    const screen = render(<WalletModal />);
+    await screen.findByText('Jasper Ford');
+    fireEvent.changeText(screen.getByPlaceholderText('Search by name or email'), 'Mary');
+    fireEvent.press(screen.getByText('Search members'));
+    expect(await screen.findByLabelText('Mary (@mary-gardens)')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Mary (@mary-repairs)'));
+    expect(screen.getAllByText('@mary-repairs')).toHaveLength(2);
+    fireEvent.changeText(screen.getByPlaceholderText('Hours to send'), '0.25');
+    fireEvent.press(screen.getByTestId('wallet-action-submit'));
+    expect(await screen.findByText('Confirm Mary (@mary-repairs)')).toBeTruthy();
   });
 
   it.each(['success', 'failure'])('keeps a manually selected recipient after a late linked-recipient %s', async (outcome) => {
