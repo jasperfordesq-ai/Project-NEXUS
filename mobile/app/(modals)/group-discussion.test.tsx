@@ -10,8 +10,11 @@
  * (`routes/api.php:665-666`). Found by the 2026-09-07 audit.
  */
 
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { ApiResponseError } from '@/lib/api/client';
 
@@ -87,6 +90,114 @@ beforeEach(() => {
 });
 
 describe('GroupDiscussionScreen', () => {
+  it('retains a failed reply draft and allows an explicit retry', async () => {
+    mockPostMessage.mockRejectedValueOnce(new ApiResponseError(422, 'Reply unavailable'));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Thank you, that would be great.');
+    await act(async () => fireEvent.press(screen.getByTestId('group-discussion-reply-send')));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Reply unavailable' }));
+    expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('Thank you, that would be great.');
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    await screen.findByText('Thank you, that would be great.');
+    expect(mockPostMessage).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('');
+  });
+
+  it('reconciles a posted reply with the refreshed server page without duplicates', async () => {
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Thank you, that would be great.');
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    await screen.findByText('Thank you, that would be great.');
+    mockGetThread.mockResolvedValue({ ...THREAD, data: { ...THREAD.data, messages: [...THREAD.data.messages, { ...THREAD.data.messages[0], id: 901, content: 'Server edited reply' }] } });
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    await screen.findByText('Server edited reply');
+    expect(screen.queryByText('Thank you, that would be great.')).toBeNull();
+    expect(screen.getAllByText('Server edited reply')).toHaveLength(1);
+  });
+
+  it('retains accepted replies when refresh fails and reports that failure', async () => {
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Thank you, that would be great.');
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    await screen.findByText('Thank you, that would be great.');
+    mockGetThread.mockRejectedValue(new ApiResponseError(422, 'Temporary read failure'));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    await screen.findByTestId('group-discussion-refresh-error');
+    expect(screen.getByText('Thank you, that would be great.')).toBeTruthy();
+    expect(screen.getByText('I can do Tuesday morning.')).toBeTruthy();
+  });
+
+  it('does not append an older page that completes after a refresh', async () => {
+    let resolvePage!: (value: unknown) => void;
+    mockGetThread.mockResolvedValueOnce({ ...THREAD, meta: { cursor: 'older', has_more: true } });
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByTestId('group-discussion-show-earlier');
+    mockGetThread.mockReturnValueOnce(new Promise((resolve) => { resolvePage = resolve; }));
+    fireEvent.press(screen.getByTestId('group-discussion-show-earlier'));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    await waitFor(() => expect(mockGetThread).toHaveBeenCalledTimes(3));
+    await act(async () => { resolvePage({ ...THREAD, data: { ...THREAD.data, messages: [{ ...THREAD.data.messages[0], id: 800, content: 'Obsolete older page' }] } }); });
+    expect(screen.queryByText('Obsolete older page')).toBeNull();
+  });
+
+  it('hides retained discussion content when refreshed access is refused', async () => {
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    mockGetThread.mockRejectedValue(new ApiResponseError(403, 'Membership ended'));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    await screen.findByTestId('group-discussion-forbidden');
+    expect(screen.queryByText('I can do Tuesday morning.')).toBeNull();
+    expect(screen.queryByTestId('group-discussion-reply-input')).toBeNull();
+  });
+
+  it('starts a changed route with a clean draft and ignores the previous send', async () => {
+    let resolveSend!: (value: unknown) => void;
+    mockPostMessage.mockReturnValue(new Promise((resolve) => { resolveSend = resolve; }));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Old thread reply');
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    mockParams = { id: '7', discussionId: '43' };
+    screen.rerender(<GroupDiscussionScreen />);
+    await screen.findByTestId('group-discussion-reply-input');
+    await act(async () => { resolveSend({ data: { ...THREAD.data.messages[0], id: 901, content: 'Old thread reply' } }); });
+    expect(screen.queryByText('Old thread reply')).toBeNull();
+    expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('');
+  });
+
+  it('locks repeated send callbacks immediately and preserves a newer draft', async () => {
+    let resolveSend!: (value: unknown) => void;
+    mockPostMessage.mockReturnValue(new Promise((resolve) => { resolveSend = resolve; }));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'First reply');
+    let button = screen.getByTestId('group-discussion-reply-send');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const send = button.props.onPress;
+    act(() => { void send(); void send(); });
+    expect(mockPostMessage).toHaveBeenCalledTimes(1);
+    // A native edit queued before the disabled state reached the input may arrive late.
+    act(() => screen.getByTestId('group-discussion-reply-input').props.onChangeText('Next reply draft'));
+    await act(async () => { resolveSend({ data: { ...THREAD.data.messages[0], id: 901, content: 'First reply' } }); });
+    expect(screen.getByText('First reply')).toBeTruthy();
+    expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('Next reply draft');
+  });
+
+  it('does not show a delayed send failure after leaving the discussion', async () => {
+    let rejectSend!: (error: Error) => void;
+    mockPostMessage.mockReturnValue(new Promise((_resolve, reject) => { rejectSend = reject; }));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'First reply');
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    screen.unmount();
+    await act(async () => { rejectSend(new Error('Delayed failure')); });
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
   it('shows the opening post and the replies, with the stored HTML turned into readable text', async () => {
     const { getByText, queryByText } = render(<GroupDiscussionScreen />);
 

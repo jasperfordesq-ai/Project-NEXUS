@@ -19,7 +19,7 @@
  * than the usual "Load more".
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -91,9 +91,10 @@ function DiscussionShell({
 }
 
 function GroupDiscussionScreen() {
+  const { id, discussionId } = useLocalSearchParams<{ id: string; discussionId: string }>();
   return (
     <ModalErrorBoundary>
-      <GroupDiscussionScreenInner />
+      <GroupDiscussionScreenInner key={`${id}:${discussionId}`} />
     </ModalErrorBoundary>
   );
 }
@@ -126,11 +127,19 @@ function GroupDiscussionScreenInner() {
   const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  const pageRequestRef = useRef(0);
+  const pagePendingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const discussion = data?.data?.discussion ?? null;
   const firstPage = useMemo(() => data?.data?.messages ?? [], [data]);
   const messages = useMemo(
-    () => [...earlier, ...firstPage, ...posted],
+    () => Array.from(new Map([...earlier, ...firstPage, ...posted].map((message) => [message.id, message])).values()),
     [earlier, firstPage, posted],
   );
 
@@ -138,32 +147,49 @@ function GroupDiscussionScreenInner() {
   const nextCursor = pagedCursor === undefined ? baseCursor : pagedCursor;
 
   const handleRefresh = useCallback(() => {
-    setEarlier([]);
-    setPosted([]);
-    setPagedCursor(undefined);
+    pageRequestRef.current += 1;
+    pagePendingRef.current = false;
+    setLoadingEarlier(false);
     refresh();
   }, [refresh]);
 
+  // Keep the accepted conversation until a replacement first page succeeds.
+  useEffect(() => {
+    if (!data) return;
+    setEarlier([]);
+    setPagedCursor(undefined);
+    const acceptedIds = new Set(data.data.messages.map((message) => message.id));
+    setPosted((current) => current.filter((message) => !acceptedIds.has(message.id)));
+  }, [data]);
+
   async function handleShowEarlier() {
-    if (loadingEarlier || !nextCursor) return;
+    if (!mountedRef.current || pagePendingRef.current || isLoading || !nextCursor) return;
+    const request = ++pageRequestRef.current;
+    pagePendingRef.current = true;
     setLoadingEarlier(true);
     try {
       const page = await getGroupDiscussionThread(safeGroupId, safeThreadId, nextCursor);
+      if (!mountedRef.current || request !== pageRequestRef.current) return;
       setEarlier((prev) => [...page.data.messages, ...prev]);
       setPagedCursor(page.meta.has_more ? (page.meta.cursor ?? null) : null);
     } catch (err) {
+      if (!mountedRef.current || request !== pageRequestRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('detail.discussionReplies.loadError')),
         variant: 'danger',
       });
     } finally {
-      setLoadingEarlier(false);
+      if (mountedRef.current && request === pageRequestRef.current) {
+        pagePendingRef.current = false;
+        setLoadingEarlier(false);
+      }
     }
   }
 
   async function handleSend() {
-    if (sending) return;
+    if (!mountedRef.current || sendingRef.current) return;
+    const submittedDraft = draft;
     const content = draft.trim();
     if (!content) {
       showToast({
@@ -173,12 +199,15 @@ function GroupDiscussionScreenInner() {
       });
       return;
     }
+    sendingRef.current = true;
     setSending(true);
     try {
       const created = await postGroupDiscussionMessage(safeGroupId, safeThreadId, { content });
+      if (!mountedRef.current) return;
       setPosted((prev) => [...prev, created.data]);
-      setDraft('');
+      setDraft((current) => current === submittedDraft ? '' : current);
     } catch (err) {
+      if (!mountedRef.current) return;
       // The server's own reason has to reach the member here: a closed discussion (409),
       // a membership that ended (403) and a deleted thread (404) all need different
       // actions from them, and a fixed sentence would hide which happened.
@@ -188,7 +217,8 @@ function GroupDiscussionScreenInner() {
         variant: 'danger',
       });
     } finally {
-      setSending(false);
+      sendingRef.current = false;
+      if (mountedRef.current) setSending(false);
     }
   }
 
@@ -224,7 +254,7 @@ function GroupDiscussionScreenInner() {
   // A refusal is not a failure. Retry can never turn a 403 or a 404 into a thread, so
   // these two say what happened and offer the way back instead (audit 2026-09-07).
   // One list of refusal statuses for the whole app — see lib/api/refusal.ts.
-  if (error && !discussion && isRefusalStatus(errorStatus)) {
+  if (error && isRefusalStatus(errorStatus)) {
     return (
       <DiscussionShell {...shellProps}>
         <EmptyState
@@ -261,7 +291,7 @@ function GroupDiscussionScreenInner() {
     <DiscussionShell {...shellProps}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView
@@ -276,6 +306,15 @@ function GroupDiscussionScreenInner() {
             />
           }
         >
+          {error && discussion ? (
+            <ErrorState
+              title={t('detail.discussionReplies.loadError')}
+              subtitle={error}
+              onRetry={handleRefresh}
+              isRetrying={isLoading}
+              testID="group-discussion-refresh-error"
+            />
+          ) : null}
           {isLoading && !discussion ? (
             <View className="min-h-[160px] items-center justify-center">
               <Spinner size="md" />
@@ -329,7 +368,7 @@ function GroupDiscussionScreenInner() {
           {nextCursor ? (
             <HeroButton
               variant="tertiary"
-              isDisabled={loadingEarlier}
+              isDisabled={loadingEarlier || isLoading}
               onPress={handleShowEarlier}
               testID="group-discussion-show-earlier"
             >

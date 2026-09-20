@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile group discussions preserve replies and drafts through recovery, prevent duplicate sends, ignore outdated paging results, and keep the Android reply composer above the keyboard.
+
 - Mobile event details reject array-valued, fractional and unsafe numeric route IDs before enabling event reads.
 
 - Mobile event details replace RSVP counts with newly refreshed event data and correctly apply RSVP updates after StrictMode lifecycle replay.
