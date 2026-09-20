@@ -218,6 +218,41 @@ describe('CourseBuilder', () => {
     expect(screen.getByText('Preserved')).toBeTruthy();
   });
 
+  it('preserves newer lesson text when an earlier save finishes', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
+    const changed = jest.fn();
+    let accept!: (value: object) => void;
+    mockUpdateCourseLesson.mockImplementationOnce(() => new Promise(resolve => { accept = resolve; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} onPendingChangesChange={changed} />);
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Submitted title');
+    fireEvent.press(screen.getByText('Save lesson'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Newer unsaved title');
+    await act(async () => accept({ ...lesson, title: 'Submitted title' }));
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Newer unsaved title');
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+  });
+
+  it('preserves a newer question draft and lesson title when question creation finishes', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Quiz', content_type: 'quiz' as const, position: 0, is_preview: false, quiz: { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } };
+    const changed = jest.fn();
+    let accept!: (value: object) => void;
+    mockCreateQuizQuestion.mockImplementationOnce(() => new Promise(resolve => { accept = resolve; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} onPendingChangesChange={changed} />);
+    fireEvent.press(screen.getByLabelText('Quiz'));
+    fireEvent.changeText(screen.getByLabelText('Question'), 'Submitted question');
+    fireEvent.press(screen.getByText('Add question'));
+    await waitFor(() => expect(mockCreateQuizQuestion).toHaveBeenCalled());
+    fireEvent.press(screen.getByText('Save lesson'));
+    expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByLabelText('Question'), 'Next question');
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Newer quiz title');
+    await act(async () => accept({ id: 501, prompt: 'Submitted question' }));
+    expect(screen.getByLabelText('Question').props.value).toBe('Next question');
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Newer quiz title');
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+  });
+
   it('reports dirty, saving, failed and confirmed lesson state to the route guard', async () => {
     const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
     const changed = jest.fn();

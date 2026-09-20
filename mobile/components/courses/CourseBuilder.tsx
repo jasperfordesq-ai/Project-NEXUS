@@ -594,13 +594,17 @@ function LessonRow({
   }, []);
   const saveInFlight = useRef(false);
   const questionInFlight = useRef(false);
+  const draftRevision = useRef(0);
+  const questionRevision = useRef(0);
 
   function set(patch: Partial<CourseLesson>) {
+    draftRevision.current += 1;
     setDraft((current) => ({ ...current, ...patch }));
   }
 
   async function save() {
-    if (!mountedRef.current || saveInFlight.current) return;
+    if (!mountedRef.current || saveInFlight.current || questionInFlight.current) return;
+    const submittedRevision = draftRevision.current;
     saveInFlight.current = true;
     setIsSaving(true);
     try {
@@ -640,7 +644,7 @@ function LessonRow({
         next = { ...next, quiz: { ...quiz, questions: quiz.questions ?? [] } };
       }
       setSavedSnapshot(lessonSnapshot(next));
-      setDraft(next);
+      setDraft(current => draftRevision.current === submittedRevision ? next : { ...current, quiz: next.quiz });
       onChange(next);
       showToast({ title: t('builder.lesson_saved'), variant: 'success' });
     } catch (error) {
@@ -654,7 +658,8 @@ function LessonRow({
 
   async function addQuestion() {
     const quiz = draft.quiz;
-    if (!mountedRef.current || questionInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
+    if (!mountedRef.current || questionInFlight.current || saveInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
+    const submittedRevision = questionRevision.current;
     questionInFlight.current = true;
     setAddingQuestion(true);
     const labels = questionOptions.split(',').map((value) => value.trim()).filter(Boolean);
@@ -675,14 +680,16 @@ function LessonRow({
       await completeCourseAuthoringCreationOperation(operation);
       if (!mountedRef.current) return;
       const next: CourseLesson = {
-        ...draft,
+        ...lesson,
         quiz: { ...quiz, questions: [...(quiz.questions ?? []), question] },
       };
-      setDraft(next);
+      setDraft(current => ({ ...current, quiz: next.quiz }));
       onChange(next);
-      setQuestionPrompt('');
-      setQuestionOptions('');
-      setQuestionCorrect('');
+      if (questionRevision.current === submittedRevision) {
+        setQuestionPrompt('');
+        setQuestionOptions('');
+        setQuestionCorrect('');
+      }
       showToast({ title: t('builder.question_added'), variant: 'success' });
     } catch (error) {
       if (!mountedRef.current) return;
@@ -834,7 +841,7 @@ function LessonRow({
                 label={t('builder.question_prompt')}
                 accessibilityLabel={t('builder.question_prompt')}
                 value={questionPrompt}
-                onChangeText={setQuestionPrompt}
+                onChangeText={value => { questionRevision.current += 1; setQuestionPrompt(value); }}
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
               />
@@ -842,7 +849,7 @@ function LessonRow({
                 label={t('builder.question_options')}
                 accessibilityLabel={t('builder.question_options')}
                 value={questionOptions}
-                onChangeText={setQuestionOptions}
+                onChangeText={value => { questionRevision.current += 1; setQuestionOptions(value); }}
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
               />
@@ -850,7 +857,7 @@ function LessonRow({
                 label={t('builder.question_correct')}
                 accessibilityLabel={t('builder.question_correct')}
                 value={questionCorrect}
-                onChangeText={setQuestionCorrect}
+                onChangeText={value => { questionRevision.current += 1; setQuestionCorrect(value); }}
                 autoCapitalize="none"
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
@@ -858,7 +865,7 @@ function LessonRow({
               <HeroButton
                 size="sm"
                 variant="secondary"
-                isDisabled={!draft.quiz?.id || !questionPrompt.trim()}
+                isDisabled={isSaving || addingQuestion || !draft.quiz?.id || !questionPrompt.trim()}
                 onPress={() => void addQuestion()}
               >
                 <HeroButton.Label>{t('builder.add_question')}</HeroButton.Label>
@@ -906,7 +913,7 @@ function LessonRow({
             label={t('builder.free_preview')}
           />
 
-          <HeroButton size="sm" isDisabled={isSaving} onPress={() => void save()}>
+          <HeroButton size="sm" isDisabled={isSaving || addingQuestion} onPress={() => void save()}>
             <HeroButton.Label>{t('builder.save_lesson')}</HeroButton.Label>
           </HeroButton>
         </View>
