@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile confirmation dialogs dismiss the keyboard when opened so discard and confirmation actions remain reachable.
+
 - Native wallet recipient search, selection and confirmation now include public usernames when available so members sharing a first name can be distinguished without exposing private surnames.
 
 - Native offline event check-in now offers Settings after permanent camera refusal and refreshes permission on return, preserving manual entry and attendance controls.
