@@ -141,9 +141,10 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+let mockRealRead = false;
 const mockUsePaginatedApi = jest.fn();
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUsePaginatedApi(...args),
 }));
 
 const mockUseApi = jest.fn();
@@ -228,6 +229,7 @@ const defaultPaginatedState = {
 };
 
 beforeEach(() => {
+  mockRealRead = false;
   mockUser = { id: 1 };
   mockTenant = { id: 2, slug: 'hour-timebank' };
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
@@ -306,6 +308,49 @@ const mockAlert: JobAlert = {
 };
 
 describe('JobsScreen', () => {
+  it.each([[0, 'Browse'], [1, 'My Applications'], [2, 'My Postings']] as const)('retries the same failed page on tab %s', async (index, label) => {
+    mockRealRead = true;
+    const api = require('@/lib/api/jobs');
+    const endpoints = [api.getJobs, api.getMyApplications, api.getMyPostings];
+    for (const endpoint of endpoints) endpoint.mockReset().mockResolvedValue({ data: [], meta: { cursor: null, has_more: false } });
+    const first = index === 1 ? mockApplication : mockJob;
+    const second = index === 1
+      ? { ...mockApplication, id: 11, vacancy_id: 2, vacancy: { ...mockApplication.vacancy, title: 'Recovered role' } }
+      : { ...mockJob, id: 2, title: 'Recovered role' };
+    const endpoint = endpoints[index];
+    endpoint.mockResolvedValueOnce({ data: [first], meta: { cursor: 'page-two', has_more: true } })
+      .mockRejectedValueOnce(new Error('Page failed'))
+      .mockResolvedValueOnce({ data: [second], meta: { cursor: null, has_more: false } });
+    const screen = render(<JobsScreen />);
+    if (index !== 0) fireEvent.press(screen.getByText(label));
+    await screen.findByText('Community Coordinator');
+    await act(async () => screen.UNSAFE_getByType(require('react-native').FlatList).props.onEndReached());
+    const failedRequest = endpoint.mock.calls[1];
+    expect(screen.UNSAFE_getByType(require('react-native').FlatList).props.onEndReached).toBeUndefined();
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Recovered role');
+    expect(endpoint.mock.calls[2]).toEqual(failedRequest);
+    expect(screen.getByText('Community Coordinator')).toBeTruthy();
+  });
+
+  it.each([[0, 'Browse'], [1, 'My Applications'], [2, 'My Postings']] as const)('retains loaded rows and offers retry on tab %s', (index, label) => {
+    const retry = jest.fn();
+    let call = 0;
+    mockUsePaginatedApi.mockImplementation(() => {
+      const current = call++ % 3;
+      return current === index
+        ? { ...defaultPaginatedState, items: [index === 1 ? mockApplication : mockJob], error: 'Jobs unavailable', refresh: retry }
+        : defaultPaginatedState;
+    });
+    const screen = render(<JobsScreen />);
+    if (index !== 0) fireEvent.press(screen.getByText(label));
+    expect(screen.getByText('Community Coordinator')).toBeTruthy();
+    expect(screen.getByText('Jobs unavailable')).toBeTruthy();
+    retry.mockClear();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<JobsScreen />);
     expect(toJSON()).toBeTruthy();

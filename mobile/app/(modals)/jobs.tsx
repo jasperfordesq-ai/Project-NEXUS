@@ -56,6 +56,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { ListSkeleton } from '@/components/ui/Skeleton';
@@ -1098,15 +1099,21 @@ function JobsScreen() {
     };
   }, []);
 
+  const jobsCursor = useRef<string | null>(null);
+  const appsCursor = useRef<string | null>(null);
+  const postingsCursor = useRef<string | null>(null);
+
   // Browse tab — paginated job list
   const jobFetchFn = useCallback(
-    (cursor: string | null) =>
-      getJobs({
+    (cursor: string | null) => {
+      jobsCursor.current = cursor;
+      return getJobs({
         cursor,
         search: committedSearch || undefined,
         type: typeFilter || undefined,
         commitment: commitmentFilter || undefined,
-      }),
+      });
+    },
     [committedSearch, typeFilter, commitmentFilter],
   );
 
@@ -1135,7 +1142,10 @@ function JobsScreen() {
 
   // My Applications tab — paginated
   const appFetchFn = useCallback(
-    (cursor: string | null) => getMyApplications({ cursor }),
+    (cursor: string | null) => {
+      appsCursor.current = cursor;
+      return getMyApplications({ cursor });
+    },
     [],
   );
 
@@ -1160,7 +1170,10 @@ function JobsScreen() {
 
   // My Postings tab — owner-facing parity with the React web jobs page.
   const postingsFetchFn = useCallback(
-    (cursor: string | null) => getMyPostings({ cursor }),
+    (cursor: string | null) => {
+      postingsCursor.current = cursor;
+      return getMyPostings({ cursor });
+    },
     [],
   );
 
@@ -1399,7 +1412,7 @@ function JobsScreen() {
             data={jobs}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderJob}
-            onEndReached={jobsHasMore ? loadMoreJobs : undefined}
+            onEndReached={jobsHasMore && !jobsError ? loadMoreJobs : undefined}
             onEndReachedThreshold={0.3}
             refreshControl={
               <RefreshControl
@@ -1427,7 +1440,9 @@ function JobsScreen() {
               )
             }
             ListFooterComponent={
-              jobsLoadingMore ? (
+              jobsError && jobs.length > 0 ? (
+                <ErrorState subtitle={jobsError} onRetry={() => { if (jobsCursor.current !== null) loadMoreJobs(); else refreshJobs(); }} retryLabel={t('retry')} isRetrying={jobsLoading || jobsLoadingMore} />
+              ) : jobsLoadingMore ? (
                 <View className="py-4">
                   <LoadingSpinner />
                 </View>
@@ -1441,7 +1456,7 @@ function JobsScreen() {
           data={applications}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderApplication}
-          onEndReached={appsHasMore ? loadMoreApps : undefined}
+          onEndReached={appsHasMore && !appsError ? loadMoreApps : undefined}
           onEndReachedThreshold={0.3}
           refreshControl={
             <RefreshControl
@@ -1469,7 +1484,9 @@ function JobsScreen() {
             )
           }
           ListFooterComponent={
-            appsLoadingMore ? (
+            appsError && applications.length > 0 ? (
+              <ErrorState subtitle={appsError} onRetry={() => { if (appsCursor.current !== null) loadMoreApps(); else refreshApps(); }} retryLabel={t('retry')} isRetrying={appsLoading || appsLoadingMore} />
+            ) : appsLoadingMore ? (
               <View className="py-4">
                 <LoadingSpinner />
               </View>
@@ -1482,7 +1499,7 @@ function JobsScreen() {
           data={postings}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderJob}
-          onEndReached={postingsHasMore ? loadMorePostings : undefined}
+          onEndReached={postingsHasMore && !postingsError ? loadMorePostings : undefined}
           onEndReachedThreshold={0.3}
           refreshControl={
             <RefreshControl
@@ -1510,7 +1527,9 @@ function JobsScreen() {
             )
           }
           ListFooterComponent={
-            postingsLoadingMore ? (
+            postingsError && postings.length > 0 ? (
+              <ErrorState subtitle={postingsError} onRetry={() => { if (postingsCursor.current !== null) loadMorePostings(); else refreshPostings(); }} retryLabel={t('retry')} isRetrying={postingsLoading || postingsLoadingMore} />
+            ) : postingsLoadingMore ? (
               <View className="py-4">
                 <LoadingSpinner />
               </View>
