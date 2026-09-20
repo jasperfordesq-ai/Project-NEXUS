@@ -4,8 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import ErrorState from '@/components/ui/ErrorState';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { buildWebUrl } from '@/lib/utils/webUrl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAppToast } from '@/components/ui/AppToast';
 import {
   RefreshControl,
   ScrollView,
@@ -75,12 +77,23 @@ function ActionPill({
 }
 
 function BlogPostScreen() {
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const slug = typeof id === 'string' ? id.trim() : '';
+  return <BlogPostContent key={slug} slug={slug} />;
+}
+
+function BlogPostContent({ slug }: { slug: string }) {
   const { t } = useTranslation(['blog', 'home', 'exchanges', 'common']);
-  const { id, openComments, commentId } = useLocalSearchParams<{ id: string; openComments?: string; commentId?: string }>();
+  const { openComments, commentId } = useLocalSearchParams<{ openComments?: string; commentId?: string }>();
   const primary = usePrimaryColor();
   const { tenant } = useTenant();
   const theme = useTheme();
-  const slug = id?.trim() || '';
+  const { show: showToast } = useAppToast();
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
   const [commentsVisible, setCommentsVisible] = useState(openComments === '1');
 
   useEffect(() => {
@@ -88,12 +101,17 @@ function BlogPostScreen() {
   }, [openComments, slug]);
 
   const handleShare = useCallback(async (sharePost: { title: string; slug: string; excerpt: string | null }) => {
+    if (!isMounted.current) return;
     const url = buildWebUrl(tenant?.slug, `/blog/${sharePost.slug}`);
     const message = sharePost.excerpt
       ? `${sharePost.title}\n\n${sharePost.excerpt}\n\n${url}`
       : `${sharePost.title}\n\n${url}`;
-    await Share.share({ message, url });
-  }, [tenant?.slug]);
+    try {
+      await Share.share({ message, url });
+    } catch {
+      if (isMounted.current) showToast({ title: t('common:errors.generic'), variant: 'danger' });
+    }
+  }, [tenant?.slug, showToast, t]);
 
   const { data, isLoading, error: postError, errorStatus: postErrorStatus, refresh } = useApi(
     () => getBlogPost(slug),
@@ -118,7 +136,7 @@ function BlogPostScreen() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !post) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/blog" />
@@ -143,7 +161,7 @@ function BlogPostScreen() {
     `errorStatus` for exactly this (F/F-8).
   */
   // One list of refusal statuses for the whole app — see lib/api/refusal.ts.
-  if (!post && postError && isRefusalStatus(postErrorStatus)) {
+  if (postError && isRefusalStatus(postErrorStatus)) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref="/(modals)/blog" />
@@ -212,6 +230,7 @@ function BlogPostScreen() {
             <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={primary} colors={[primary]} />
           }
         >
+          <RefreshFailedNotice error={postError} onRetry={refresh} isRetrying={isLoading} />
           <HeroCard className="mb-4 overflow-hidden rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.16) }}>
             {post.featured_image ? (
               <RemoteImage

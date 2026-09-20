@@ -4,11 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
+import { Share } from 'react-native';
+import AppTopBar from '@/components/ui/AppTopBar';
 
 // --- Mocks ---
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
+const mockShowToast = jest.fn();
+jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockShowToast }) }));
 
-let mockSearchParams: { id: string; openComments?: string } = { id: '7' };
+let mockSearchParams: { id?: string | string[]; openComments?: string } = { id: '7' };
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -77,7 +82,14 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 const mockCommentSheet = jest.fn((_props: unknown) => null);
-jest.mock('@/components/comments/CommentSheet', () => (props: unknown) => mockCommentSheet(props));
+const mockCommentUnmount = jest.fn();
+jest.mock('@/components/comments/CommentSheet', () => {
+  const React = require('react');
+  return function MockCommentSheet(props: unknown) {
+    React.useEffect(() => () => mockCommentUnmount(), []);
+    return mockCommentSheet(props);
+  };
+});
 
 // --- Tests ---
 
@@ -96,11 +108,93 @@ const mockPost = {
 };
 
 beforeEach(() => {
+  jest.restoreAllMocks();
+  mockShowToast.mockClear();
   mockSearchParams = { id: '7' };
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
 });
 
 describe('BlogPostScreen', () => {
+  it.each([[['first', 'second']], [['first']], [undefined]])('does not crash or load an article for ambiguous or missing route input %s', id => {
+    mockSearchParams = { id };
+    const screen = render(<BlogPostScreen />);
+    expect(screen.toJSON()).toBeTruthy();
+    expect(mockUseApi.mock.calls.at(-1)[2].enabled).toBe(false);
+  });
+  it.each([undefined, '1'])('resets comment visibility for the next article (openComments=%s)', (openComments) => {
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<BlogPostScreen />);
+    fireEvent.press(screen.getByText('Comment'));
+    mockSearchParams = { id: 'next-article', openComments };
+    mockUseApi.mockReturnValue({ data: { data: { ...mockPost, id: 8, slug: 'next-article' } }, isLoading: false, error: null, refresh: jest.fn() });
+    screen.rerender(<BlogPostScreen />);
+    expect(mockCommentSheet).toHaveBeenLastCalledWith(expect.objectContaining({ targetId: 8, visible: openComments === '1' }));
+  });
+
+  it('ignores a retained share action from the previous article', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: null, refresh: jest.fn() });
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.dismissedAction });
+    const screen = render(<BlogPostScreen />);
+    const action = screen.UNSAFE_getByType(AppTopBar).props.rightAction;
+    mockSearchParams = { id: 'next-article' };
+    screen.rerender(<BlogPostScreen />);
+    await act(async () => { await action.onPress(); });
+    expect(share).not.toHaveBeenCalled();
+  });
+  it('does not show a late share failure after leaving the article', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: null, refresh: jest.fn() });
+    let rejectShare!: (error: Error) => void;
+    jest.spyOn(Share, 'share').mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectShare = reject; }));
+    const screen = render(<BlogPostScreen />);
+    const pending = screen.UNSAFE_getByType(AppTopBar).props.rightAction.onPress();
+    screen.unmount();
+    await act(async () => {
+      rejectShare(new Error('Native share unavailable'));
+      await pending;
+    });
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+  it.each(['failure', 'dismissed'] as const)('handles native sharing %s without an unhandled rejection', async (outcome) => {
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: null, refresh: jest.fn() });
+    const share = jest.spyOn(Share, 'share');
+    if (outcome === 'failure') share.mockRejectedValueOnce(new Error('Native share unavailable'));
+    else share.mockResolvedValueOnce({ action: Share.dismissedAction });
+    const screen = render(<BlogPostScreen />);
+    const action = screen.UNSAFE_getByType(AppTopBar).props.rightAction;
+    await act(async () => {
+      await expect(action.onPress()).resolves.toBeUndefined();
+    });
+    expect(share).toHaveBeenCalledTimes(1);
+    if (outcome === 'failure') expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+    else expect(mockShowToast).not.toHaveBeenCalled();
+    share.mockRestore();
+  });
+  it('keeps the article and open comment sheet mounted during refresh', () => {
+    const state = { data: { data: mockPost }, isLoading: false, error: null, refresh: jest.fn() };
+    mockUseApi.mockReturnValue(state);
+    const screen = render(<BlogPostScreen />);
+    fireEvent.press(screen.getByText('Comment'));
+    mockCommentUnmount.mockClear();
+    mockUseApi.mockReturnValue({ ...state, isLoading: true });
+    screen.rerender(<BlogPostScreen />);
+    expect(mockCommentUnmount).not.toHaveBeenCalled();
+    expect(screen.getByText(mockPost.title)).toBeTruthy();
+  });
+  it('keeps the loaded article with a retry notice after a transient refresh failure', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: 'Server error', errorStatus: 500, refresh });
+    const screen = render(<BlogPostScreen />);
+    expect(screen.getByText(mockPost.title)).toBeTruthy();
+    expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('common:buttons.retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+  it('does not retain an article after the server refuses access on refresh', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockPost }, isLoading: false, error: 'Unavailable', errorStatus: 403, refresh: jest.fn() });
+    const screen = render(<BlogPostScreen />);
+    expect(screen.getByTestId('blog-post-refused')).toBeTruthy();
+    expect(screen.queryByText(mockPost.title)).toBeNull();
+  });
   it('renders without crashing when data is loaded', () => {
     mockUseApi.mockReturnValue({
       data: { data: mockPost },
