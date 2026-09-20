@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native offline event check-in now offers Settings after permanent camera refusal and refreshes permission on return, preserving manual entry and attendance controls.
+
 - Native marketplace QR scanners now offer Settings after permanent camera refusal, refresh permission on return, and handle permission/settings failures with translated recovery feedback.
 
 - Podcast browse and show episode counts now reflect the episodes visible to listeners instead of including hidden or unavailable episodes.

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { AppState, Linking, type AppStateStatus } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetWorkspace = jest.fn();
@@ -14,6 +15,8 @@ const mockPurgeSession = jest.fn();
 const mockConfirm = jest.fn();
 const mockShowToast = jest.fn();
 const mockCameraPermission = jest.fn();
+const mockGetCameraPermission = jest.fn();
+let mockPermissionState = { granted: false, canAskAgain: true };
 const mockPendingRegistration = jest.fn();
 const mockReserveRegistration = jest.fn();
 const mockRecoverRegistration = jest.fn();
@@ -54,7 +57,7 @@ jest.mock('expo-camera', () => ({
     const { Text } = require('react-native');
     return <Text>Camera active</Text>;
   },
-  useCameraPermissions: () => [{ granted: false }, mockCameraPermission],
+  useCameraPermissions: () => [mockPermissionState, mockCameraPermission, mockGetCameraPermission],
 }));
 
 jest.mock('@/components/ui/Icon', () => ({ Ionicons: () => null }));
@@ -90,6 +93,9 @@ const emptyWorkspace = {
 describe('EventOfflineCheckinCard', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    jest.spyOn(AppState, 'addEventListener').mockReturnValue({ remove: jest.fn() });
+    mockGetCameraPermission.mockResolvedValue({ granted: true });
+    mockPermissionState = { granted: false, canAskAgain: true };
     mockCacheWorkspace.mockImplementation(async session => session);
     mockCachedWorkspace.mockResolvedValue({ session: null, workspace: null, inactive: null });
     mockInvalidateCache.mockResolvedValue(undefined);
@@ -155,6 +161,37 @@ describe('EventOfflineCheckinCard', () => {
     expect(await findByText('conflicts.empty')).toBeTruthy();
     expect(mockGetWorkspace).toHaveBeenCalledWith(77);
     expect(mockPurgeExpired).toHaveBeenCalledWith(emptyWorkspace);
+  });
+
+  it.each(['granted', 'settings failure'])('recovers permanent camera refusal: %s', async scenario => {
+    mockPermissionState = { granted: false, canAskAgain: false };
+    mockGetWorkspace.mockResolvedValue({ ...emptyWorkspace, devices: [{ id: 5, label: 'Door', status: 'active' }] });
+    mockLoadSessionForReview.mockResolvedValue({ inactive: null, session: {
+      eventId: 77, deviceId: 5, manifest: { manifest_version: 3 }, queue: [],
+    } });
+    let resume: ((state: AppStateStatus) => void) | undefined;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => { resume = callback; return { remove: jest.fn() }; });
+    const settings = jest.spyOn(Linking, 'openSettings');
+    if (scenario === 'settings failure') settings.mockRejectedValue(new Error('unavailable'));
+    else settings.mockResolvedValue(undefined);
+    try {
+      const screen = render(<EventOfflineCheckinCard eventId={77} />);
+      fireEvent.press(await screen.findByText('notifications:permissionCard.openSettings'));
+      await waitFor(() => expect(settings).toHaveBeenCalledTimes(1));
+      expect(mockCameraPermission).not.toHaveBeenCalled();
+      expect(screen.queryByText('Camera active')).toBeNull();
+      if (scenario === 'settings failure') {
+        await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'scan.cameraUnavailable' })));
+      } else {
+        await act(async () => resume?.('active'));
+        expect(mockGetCameraPermission).toHaveBeenCalledTimes(1);
+        mockPermissionState = { granted: true, canAskAgain: true };
+        screen.rerender(<EventOfflineCheckinCard eventId={77} />);
+        fireEvent.press(screen.getByText('scan.openCamera'));
+        expect(await screen.findByText('Camera active')).toBeTruthy();
+        expect(mockCameraPermission).not.toHaveBeenCalled();
+      }
+    } finally { settings.mockRestore(); }
   });
 
   it.each(['refused', 'error', 'departed', 'double tap'])('handles camera permission: %s', async (scenario) => {

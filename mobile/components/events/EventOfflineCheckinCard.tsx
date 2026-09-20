@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { AppState, Linking, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@/components/ui/Icon';
 import { Alert, Card, Spinner, Surface } from 'heroui-native';
@@ -57,12 +57,12 @@ function mutationKey(prefix: string): string {
 }
 
 export default function EventOfflineCheckinCard({ eventId }: { eventId: number }) {
-  const { t } = useTranslation('eventOfflineCheckin');
+  const { t } = useTranslation(['eventOfflineCheckin', 'notifications']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
   const { confirm: showConfirmation, confirmDialog } = useConfirm();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [workspace, setWorkspace] = useState<MobileOfflineWorkspace | null>(null);
   const [session, setSession] = useState<MobileOfflineSession | null>(null);
   /**
@@ -304,9 +304,24 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
     });
   }
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void getPermission().catch(() => {
+          if (mountedRef.current) showToast({ title: t('scan.cameraUnavailable'), variant: 'warning' });
+        });
+      }
+    });
+    return () => subscription.remove();
+  }, [getPermission, showToast, t]);
+
   async function openCamera() {
     if (!session || sessionInactive || !beginMutation()) return;
     try {
+      if (!permission?.granted && permission?.canAskAgain === false) {
+        await Linking.openSettings();
+        return;
+      }
       if (!permission?.granted) {
         const granted = await requestPermission();
         if (!mountedRef.current) return;
@@ -556,7 +571,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('scan.description')}</Text>
               <Button variant="secondary" isDisabled={busy} onPress={() => void openCamera()}>
                 <Ionicons name="scan-outline" size={18} color={primary} />
-                <Button.Label>{t('scan.openCamera')}</Button.Label>
+                <Button.Label>{!permission?.granted && permission?.canAskAgain === false ? t('notifications:permissionCard.openSettings') : t('scan.openCamera')}</Button.Label>
               </Button>
               {cameraOpen ? (
                 <View className="h-72 overflow-hidden rounded-panel-inner">
