@@ -224,6 +224,29 @@ describe('AuthContext', () => {
     sessionNoticeStore.__resetForTests();
   });
 
+  it.each([true, false])('preserves a replacement sign-in when refused-session cleanup finishes late (cached=%s)', async (cached) => {
+    mockStorageGet.mockResolvedValue('old-token');
+    mockStorageGetJson.mockResolvedValue(cached ? mockUser : null);
+    mockGetMe.mockRejectedValueOnce({ status: 401 });
+    let finishCleanup!: () => void;
+    mockPurgeOfflineCheckin.mockReturnValueOnce(new Promise<void>(resolve => { finishCleanup = resolve; }));
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(mockPurgeOfflineCheckin).toHaveBeenCalled());
+    await act(async () => {
+      await result.current.completeMfa({
+        access_token: 'replacement-token',
+        refresh_token: 'replacement-refresh',
+        user: { ...mockUser, id: 2 },
+      } as never);
+    });
+    mockClearApiSession.mockClear();
+    await act(async () => { finishCleanup(); });
+    expect(result.current.token).toBe('replacement-token');
+    expect(result.current.user?.id).toBe(2);
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(mockClearApiSession).not.toHaveBeenCalled();
+  });
+
   it('ignores a password response received after logout', async () => {
     const { result } = renderHook(() => useAuthContext(), { wrapper });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -509,6 +532,20 @@ describe('AuthContext', () => {
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
   });
 
+  it('finishes sign-out even if offline cleanup rejects', async () => {
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => result.current.setSession('current-token', mockUser as never));
+    mockPurgeOfflineCheckin.mockRejectedValueOnce(new Error('Offline cleanup failed'));
+
+    await act(async () => { await expect(result.current.logout()).resolves.toBeUndefined(); });
+
+    expect(result.current.token).toBeNull();
+    expect(result.current.user).toBeNull();
+    expect(mockClearApiSession).toHaveBeenCalled();
+    expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
+  });
+
   it('ends a server-revoked session locally without making another authenticated request', async () => {
     mockStorageGet.mockResolvedValue('stored-token');
     mockStorageGetJson.mockResolvedValue(mockUser);
@@ -539,6 +576,28 @@ describe('AuthContext', () => {
       variant: 'success',
     });
     expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
+  });
+
+  it('invalidates captured ownership when a session is replaced', async () => {
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => result.current.setSession('first-token', mockUser as never));
+    const isCurrent = result.current.captureSessionGuard();
+    expect(isCurrent()).toBe(true);
+    act(() => result.current.setSession('replacement-token', { id: 2 } as never));
+    expect(isCurrent()).toBe(false);
+    expect(result.current.captureSessionGuard()()).toBe(true);
+  });
+
+  it.each(['logout', 'unmount'])('invalidates captured ownership on %s', async (boundary) => {
+    const { result, unmount } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => result.current.setSession('current-token', mockUser as never));
+    const isCurrent = result.current.captureSessionGuard();
+    expect(isCurrent()).toBe(true);
+    if (boundary === 'logout') await act(async () => result.current.logout());
+    else unmount();
+    expect(isCurrent()).toBe(false);
   });
 
   it('does not route a replacement session back to login when local cleanup finishes late', async () => {

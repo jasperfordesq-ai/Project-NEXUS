@@ -65,6 +65,8 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
+  /** Capture ownership for work that may finish after its screen leaves. */
+  captureSessionGuard: () => () => boolean;
   login: (payload: LoginPayload) => Promise<LoginChallenge | null>;
   completeMfa: (session: MfaSession) => Promise<void>;
   logout: () => Promise<void>;
@@ -124,6 +126,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [sessionRestoreFailed, setSessionRestoreFailed] = useState(false);
   const isMountedRef = useRef(true);
   const sessionVersionRef = useRef(0);
+  const captureSessionGuard = useCallback(() => {
+    const version = sessionVersionRef.current;
+    return () => isMountedRef.current && sessionVersionRef.current === version;
+  }, []);
   /** Track whether push notifications were successfully registered */
 
   /**
@@ -298,15 +304,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [adoptSignInCommunity, tenantContext, token, user]);
 
   /** Throw the session away. Only ever correct when the server REFUSED the credentials. */
-  const discardStoredSession = useCallback(async () => {
-    await Promise.all([
+  const discardStoredSession = useCallback(async (isCurrent: () => boolean) => {
+    if (!isCurrent()) return;
+    await Promise.allSettled([
       storage.remove(STORAGE_KEYS.AUTH_TOKEN),
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
     ]);
+    // Cleanup may outlive a new sign-in; only the rejected session owns this reset.
+    if (!isCurrent()) return;
     clearApiSession();
-    if (!isMountedRef.current) return;
     setToken(null);
     setUser(null);
   }, []);
@@ -356,7 +364,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!isCurrent()) return;
           // Refused, not unreachable. Anything else keeps the cached user so the app
           // stays usable offline.
-          if (isCredentialRejection(err)) await discardStoredSession();
+          if (isCredentialRejection(err)) await discardStoredSession(isCurrent);
         }
         return;
       }
@@ -374,7 +382,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err: unknown) {
         if (!isCurrent()) return;
         if (isCredentialRejection(err)) {
-          await discardStoredSession();
+          await discardStoredSession(isCurrent);
           if (isCurrent()) setSessionRestoreFailed(false);
           return;
         }
@@ -468,8 +476,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [completeMfa]);
 
   /**
-   * Adopt a session established outside `login()` — registration is the caller that
-   * matters.
+   * Adopt an already-persisted session without navigation. New authentication flows
+   * should use completeMfa so persistence and completion share session ownership.
+   * Registration now uses that path too.
    *
    * 🔴 It used to set React state only. The API client keeps its own in-memory bearer
    * that WINS over the stored one, so a registration following a failed sign-out sent the
@@ -509,7 +518,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     if (!isCurrent()) return;
 
-    await Promise.all([
+    await Promise.allSettled([
       storage.remove(STORAGE_KEYS.AUTH_TOKEN),
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
@@ -550,6 +559,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       completeMfa,
       logout,
       endSessionLocally,
+      captureSessionGuard,
       setSession,
       refreshUser,
       displayName,
@@ -557,7 +567,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       user, token, isLoading, sessionRestoreFailed, login, completeMfa, logout, endSessionLocally, setSession,
-      refreshUser, displayName, retrySessionRestore,
+      refreshUser, displayName, retrySessionRestore, captureSessionGuard,
     ],
   );
 

@@ -16,22 +16,19 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { router, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, Card as HeroCard } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 
-import { extractToken, getRegistrationResult, register as apiRegister, resendVerificationByEmail, type LoginUser, type RegisterResult } from '@/lib/api/auth';
+import { getRegistrationResult, register as apiRegister, resendVerificationByEmail, type LoginUser, type MfaSession, type RegisterResult } from '@/lib/api/auth';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { ApiResponseError } from '@/lib/api/client';
-import { STORAGE_KEYS } from '@/lib/constants';
-import { storage } from '@/lib/storage';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
-import { registerForPushNotifications } from '@/lib/notifications';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
@@ -86,7 +83,7 @@ function hasAuthSession(result: RegisterResult): result is RegisterResult & {
 
 export default function RegisterScreen() {
   const { t } = useTranslation(['auth', 'common']);
-  const { setSession } = useAuth();
+  const { completeMfa: completeSession, captureSessionGuard } = useAuth();
   const authRouter = useRouter();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -116,6 +113,12 @@ export default function RegisterScreen() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const submitting = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   /*
     🔴 A validation failure the server blamed on ONE input was shown as a banner at the top
@@ -180,21 +183,24 @@ export default function RegisterScreen() {
   */
   const [pendingEmail, setPendingEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const resendPending = useRef(false);
   const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [resendError, setResendError] = useState<string | null>(null);
 
   async function resendVerification() {
-    if (isResending || !pendingEmail) return;
+    if (resendPending.current || !mounted.current || !pendingEmail) return;
+    resendPending.current = true;
     setIsResending(true);
     setResendError(null);
     setResendNotice(null);
     try {
       await resendVerificationByEmail(pendingEmail);
-      setResendNotice(t('register.resendSent'));
+      if (mounted.current) setResendNotice(t('register.resendSent'));
     } catch (err) {
-      setResendError(describeApiError(err, t('register.resendFailed')));
+      if (mounted.current) setResendError(describeApiError(err, t('register.resendFailed')));
     } finally {
-      setIsResending(false);
+      resendPending.current = false;
+      if (mounted.current) setIsResending(false);
     }
   }
   // Set the moment the server has created the account, so the guard below stands down
@@ -218,6 +224,9 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function onSubmit(data: RegisterFormValues) {
+    if (submitting.current || !mounted.current) return;
+    submitting.current = true;
+    const isCurrentSession = captureSessionGuard();
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsLoading(true);
     setGlobalError(null);
@@ -235,6 +244,9 @@ export default function RegisterScreen() {
         terms_accepted: data.termsAccepted,
         form_started_at: formStartedAt,
       });
+      // The server may have created the account, but a departed form or a newer
+      // session decision must not be replaced by this delayed response.
+      if (!mounted.current || !isCurrentSession()) return;
       const result = getRegistrationResult(response);
 
       if (!hasAuthSession(result)) {
@@ -243,39 +255,25 @@ export default function RegisterScreen() {
         return;
       }
 
-      const token = extractToken({
+      const session: MfaSession = {
         success: true,
         access_token: result.access_token ?? result.token ?? '',
         refresh_token: result.refresh_token,
         token_type: result.token_type ?? 'Bearer',
         expires_in: result.expires_in ?? 0,
         user: result.user,
-      });
+      };
+      // Account creation has succeeded. Release the unsaved-form guard before
+      // the provider completes persistence, community adoption and navigation.
+      setRegistered(true);
       try {
-        // Do not display a session that cannot survive restart. Save refresh first,
-        // then access, matching the MFA path; remove any partial write on failure.
-        await storage.set(STORAGE_KEYS.REFRESH_TOKEN, result.refresh_token, { required: true });
-        await storage.set(STORAGE_KEYS.AUTH_TOKEN, token, { required: true });
-        await storage.setJson(STORAGE_KEYS.USER_DATA, result.user);
+        await completeSession(session);
       } catch (error) {
         sessionPersistenceFailed = true;
-        await Promise.all([
-          storage.remove(STORAGE_KEYS.AUTH_TOKEN),
-          storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-          storage.remove(STORAGE_KEYS.USER_DATA),
-        ]);
         throw error;
       }
-
-      setRegistered(true);
-      setSession(token, result.user);
-      const destination = result.user.onboarding_completed === false
-        ? '/(modals)/onboarding'
-        : '/(tabs)/home';
-      // Deferred one tick so the guard has re-rendered with hasSaved before the screen goes.
-      setTimeout(() => router.replace(destination), 0);
-      void registerForPushNotifications();
     } catch (err) {
+      if (!mounted.current || (!sessionPersistenceFailed && !isCurrentSession())) return;
       /**
        * 🔴 A timeout on THIS request must not claim the account was not created.
        *
@@ -305,7 +303,8 @@ export default function RegisterScreen() {
         setGlobalError(t('errors.unableToRegister'));
       }
     } finally {
-      setIsLoading(false);
+      submitting.current = false;
+      if (mounted.current) setIsLoading(false);
     }
   }
 
@@ -381,6 +380,7 @@ export default function RegisterScreen() {
                   variant="outline"
                   fullWidth
                   disabled={isResending}
+                  isLoading={isResending}
                   onPress={() => void resendVerification()}
                   accessibilityLabel={t('register.resendAction')}
                   testID="register-resend-verification"
@@ -616,7 +616,7 @@ export default function RegisterScreen() {
                 />
 
                 <View className="mt-6">
-                  <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} fullWidth>
+                  <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} accessibilityLabel={t('register.submit')} fullWidth>
                     {t('register.submit')}
                   </Button>
                 </View>

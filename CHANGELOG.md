@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native registration shares session persistence and navigation with sign-in, prevents duplicate submissions, and ignores delayed responses after logout or a replacement sign-in. Session cleanup preserves newer sign-ins and completes even when offline cleanup fails.
+
 - Native password recovery and verification resend prevent duplicate submissions, retain retryable forms after failure, ignore departed-screen results, and keep replacement reset links independent. Recovery actions retain explicit accessible names while busy.
 
 - Native bundles share the Zod and Sentry core implementations across import styles while preserving native browser-replay exclusions; bundle-export failures now include their exit status.

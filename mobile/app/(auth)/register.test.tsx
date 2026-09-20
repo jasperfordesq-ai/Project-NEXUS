@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { ScrollView } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -15,6 +15,8 @@ const mockStorageSet = jest.fn().mockResolvedValue(undefined);
 const mockStorageSetJson = jest.fn().mockResolvedValue(undefined);
 const mockStorageRemove = jest.fn().mockResolvedValue(undefined);
 const mockSetSession = jest.fn();
+const mockCompleteSession = jest.fn().mockResolvedValue(undefined);
+let mockUseRealAuth = false;
 
 jest.mock('expo-router', () => {
   const React = require('react');
@@ -41,9 +43,14 @@ jest.mock('@/lib/api/auth', () => ({
   extractToken: (...args: any[]) => mockExtractToken(...args),
   getRegistrationResult: (response: any) => ('data' in response ? response.data : response),
   resendVerificationByEmail: (...args: any[]) => mockResendVerification(...args),
+  buildDisplayName: (user: { first_name?: string }) => user.first_name ?? '',
+  logout: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/lib/api/client', () => ({
+  registerUnauthorizedCallback: jest.fn(),
+  installApiSession: jest.fn(),
+  clearApiSession: jest.fn(),
   ApiResponseError: class ApiResponseError extends Error {
     status!: number;
     field?: string;
@@ -80,10 +87,10 @@ jest.mock('@/lib/notifications', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({
+  useAuth: () => mockUseRealAuth ? jest.requireActual('@/lib/context/AuthContext').useAuthContext() : ({
     user: null, token: null, isLoading: false, isAuthenticated: false,
     login: jest.fn(), logout: jest.fn(), displayName: '',
-    setSession: mockSetSession, refreshUser: jest.fn(),
+    setSession: mockSetSession, completeMfa: mockCompleteSession, captureSessionGuard: () => () => true, refreshUser: jest.fn(),
   }),
 }));
 
@@ -107,6 +114,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 
 import RegisterScreen from './register';
 import { ApiResponseError } from '@/lib/api/client';
+import { AuthProvider, useAuthContext } from '@/lib/context/AuthContext';
+
+jest.mock('@/lib/eventOfflineCheckinStore', () => ({ purgeAllMobileOfflineCheckinData: jest.fn().mockResolvedValue(undefined) }));
 
 const mockUser = {
   id: 1, first_name: 'Jane', last_name: 'Smith',
@@ -178,9 +188,116 @@ function fillRequiredRegistrationFields(
 describe('RegisterScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseRealAuth = false;
+    mockExtractToken.mockImplementation((response: { access_token?: string }) => response.access_token ?? '');
+    mockCompleteSession.mockResolvedValue(undefined);
     mockStorageSet.mockResolvedValue(undefined);
     mockStorageSetJson.mockResolvedValue(undefined);
     mockStorageRemove.mockResolvedValue(undefined);
+  });
+
+  it.each(['sign-out', 'replacement sign-in'])('does not reinstate registration after %s during credential storage', async (change) => {
+    mockUseRealAuth = true;
+    mockApiRegister.mockResolvedValue(validAuthResponse);
+    let finishWrite!: () => void;
+    mockStorageSet.mockImplementationOnce(() => new Promise<void>(resolve => { finishWrite = resolve; }));
+    let auth!: ReturnType<typeof useAuthContext>;
+    function ObserveAuth() { auth = useAuthContext(); return null; }
+    const screen = render(<AuthProvider><RegisterScreen /><ObserveAuth /></AuthProvider>);
+    await waitFor(() => expect(auth.isLoading).toBe(false));
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    pressSubmit(screen.getAllByText);
+    await waitFor(() => expect(mockStorageSet).toHaveBeenCalledWith('refresh_token', 'ref_xyz', { required: true }));
+    await act(async () => {
+      if (change === 'sign-out') await auth.logout();
+      else await auth.completeMfa({
+        ...validAuthResponse,
+        access_token: 'replacement-token',
+        refresh_token: 'replacement-refresh',
+        user: { ...mockUser, id: 2, onboarding_completed: true },
+      });
+    });
+    mockRouter.replace.mockClear();
+    await act(async () => { finishWrite(); });
+
+    expect(auth.isAuthenticated).toBe(change === 'replacement sign-in');
+    expect(auth.user?.id ?? null).toBe(change === 'replacement sign-in' ? 2 : null);
+    expect(auth.token).toBe(change === 'replacement sign-in' ? 'replacement-token' : null);
+    expect(mockStorageSet).not.toHaveBeenCalledWith('auth_token', 'tok_abc', { required: true });
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(jest.requireMock('@/lib/notifications').registerForPushNotifications).toHaveBeenCalledTimes(change === 'replacement sign-in' ? 1 : 0);
+  });
+
+  it.each(['sign-out', 'replacement sign-in'])('ignores registration arriving after %s while the form remains mounted', async (change) => {
+    mockUseRealAuth = true;
+    let finishRegistration!: (value: unknown) => void;
+    mockApiRegister.mockReturnValueOnce(new Promise(resolve => { finishRegistration = resolve; }));
+    let auth!: ReturnType<typeof useAuthContext>;
+    function ObserveAuth() { auth = useAuthContext(); return null; }
+    const screen = render(<AuthProvider><RegisterScreen /><ObserveAuth /></AuthProvider>);
+    await waitFor(() => expect(auth.isLoading).toBe(false));
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    pressSubmit(screen.getAllByText);
+    await waitFor(() => expect(mockApiRegister).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      if (change === 'sign-out') await auth.logout();
+      else await auth.completeMfa({
+        ...validAuthResponse,
+        access_token: 'replacement-token',
+        refresh_token: 'replacement-refresh',
+        user: { ...mockUser, id: 2, onboarding_completed: true },
+      });
+    });
+    mockRouter.replace.mockClear();
+    mockStorageSet.mockClear();
+    await act(async () => { finishRegistration(validAuthResponse); });
+    expect(auth.token).toBe(change === 'replacement sign-in' ? 'replacement-token' : null);
+    expect(auth.user?.id ?? null).toBe(change === 'replacement sign-in' ? 2 : null);
+    expect(mockStorageSet).not.toHaveBeenCalled();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('sends only one registration for same-frame submit taps', async () => {
+    let finish!: (value: unknown) => void;
+    const pending = new Promise(resolve => { finish = resolve; });
+    mockApiRegister.mockReturnValue(pending);
+    const screen = render(<RegisterScreen />);
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    await act(async () => { pressSubmit(screen.getAllByText); pressSubmit(screen.getAllByText); });
+    const calls = mockApiRegister.mock.calls.length;
+    expect(screen.getByRole('button', { name: 'Create account' }).props.accessibilityState)
+      .toMatchObject({ busy: true, disabled: true });
+    await act(async () => { finish({ success: true, message: 'Check your email' }); });
+    expect(calls).toBe(1);
+  });
+
+  it('does not persist or adopt a registration response after departure', async () => {
+    let finish!: (value: unknown) => void;
+    mockApiRegister.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    const screen = render(<RegisterScreen />);
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    pressSubmit(screen.getAllByText);
+    await waitFor(() => expect(mockApiRegister).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => { finish(validAuthResponse); });
+    expect(mockStorageSet).not.toHaveBeenCalled();
+    expect(mockStorageSetJson).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
+    expect(mockCompleteSession).not.toHaveBeenCalled();
+  });
+
+  it('allows retry after a refused registration and preserves the entered email', async () => {
+    mockApiRegister
+      .mockRejectedValueOnce(new ApiResponseError(422, 'Please check your details'))
+      .mockResolvedValueOnce({ success: true, message: 'Check your email' });
+    const screen = render(<RegisterScreen />);
+    fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
+    pressSubmit(screen.getAllByText);
+    await waitFor(() => expect(screen.getByText('Please check your details')).toBeTruthy());
+    expect(screen.getByTestId('register-email').props.value).toBe('jane@example.com');
+    pressSubmit(screen.getAllByText);
+    await waitFor(() => expect(screen.getAllByText('Check your email').length).toBeGreaterThan(0));
+    expect(mockApiRegister).toHaveBeenCalledTimes(2);
   });
 
   it('renders key form elements', () => {
@@ -256,11 +373,12 @@ describe('RegisterScreen', () => {
     expect(mockApiRegister).not.toHaveBeenCalled();
   });
 
-  it('calls apiRegister and navigates to home on success', async () => {
+  it('completes registration through the real provider and navigates to onboarding', async () => {
+    mockUseRealAuth = true;
     mockApiRegister.mockResolvedValue(validAuthResponse);
     mockExtractToken.mockReturnValue('tok_abc');
 
-    const { getAllByText, getByTestId, getByText } = render(<RegisterScreen />);
+    const { getAllByText, getByTestId, getByText } = render(<AuthProvider><RegisterScreen /></AuthProvider>);
 
     fillRequiredRegistrationFields(getByTestId, getByText);
     pressSubmit(getAllByText);
@@ -282,14 +400,15 @@ describe('RegisterScreen', () => {
       ['refresh_token', 'ref_xyz', { required: true }],
       ['auth_token', 'tok_abc', { required: true }],
     ]);
-    expect(mockSetSession).toHaveBeenCalledWith('tok_abc', mockUser);
+    expect(jest.requireMock('@/lib/api/client').installApiSession).toHaveBeenCalledWith('tok_abc');
   });
 
   it('does not display a session when encrypted credential persistence fails', async () => {
+    mockUseRealAuth = true;
     mockApiRegister.mockResolvedValue(validAuthResponse);
     mockExtractToken.mockReturnValue('tok_abc');
     mockStorageSet.mockRejectedValueOnce(new Error('Keychain unavailable'));
-    const screen = render(<RegisterScreen />);
+    const screen = render(<AuthProvider><RegisterScreen /></AuthProvider>);
 
     fillRequiredRegistrationFields(screen.getByTestId, screen.getByText);
     pressSubmit(screen.getAllByText);
@@ -299,7 +418,7 @@ describe('RegisterScreen', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
     expect(mockStorageRemove).toHaveBeenCalledWith('auth_token');
     expect(mockStorageRemove).toHaveBeenCalledWith('refresh_token');
-    expect(mockStorageRemove).toHaveBeenCalledWith('user_data');
+    expect(mockStorageSetJson).not.toHaveBeenCalled();
   });
 
   it('submits backend-required registration fields and shows pending verification when no token is issued', async () => {
@@ -479,6 +598,21 @@ describe('RegisterScreen', () => {
 
     // Lowercased and trimmed, exactly as it was sent to register().
     await waitFor(() => expect(mockResendVerification).toHaveBeenCalledWith('mobile.pending@example.com'));
+  });
+
+  it('resends verification once for same-frame taps', async () => {
+    let finish!: () => void;
+    mockResendVerification.mockReturnValue(new Promise<void>(resolve => { finish = resolve; }));
+    const screen = render(<RegisterScreen />);
+    await reachPendingVerification(screen);
+    act(() => {
+      fireEvent.press(screen.getByTestId('register-resend-verification'));
+      fireEvent.press(screen.getByTestId('register-resend-verification'));
+    });
+    const calls = mockResendVerification.mock.calls.length;
+    expect(screen.getByTestId('register-resend-verification').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    await act(async () => { finish(); });
+    expect(calls).toBe(1);
   });
 
   it('confirms without revealing whether the address is registered', async () => {
