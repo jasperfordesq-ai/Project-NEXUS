@@ -3,8 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import React from 'react';
-import { Platform, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Keyboard, Platform, View } from 'react-native';
 import { Dialog, Spinner } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 
@@ -41,6 +41,10 @@ export default function ConfirmDialog({
   isConfirming = false,
   confirmDisabled = false,
 }: ConfirmDialogProps) {
+  useEffect(() => {
+    if (visible) Keyboard.dismiss();
+  }, [visible]);
+
   return (
     <Dialog
       // Android Fabric can crash while removing an animated dialog portal and

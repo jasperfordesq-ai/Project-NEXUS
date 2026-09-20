@@ -56,6 +56,20 @@ jest.mock('heroui-native', () => {
 });
 
 describe('ConfirmDialog', () => {
+  it('dismisses the keyboard when opened so it cannot cover the actions', () => {
+    const dismiss = jest.spyOn(require('react-native').Keyboard, 'dismiss');
+    try {
+      const props = { title: 'Discard?', cancelLabel: 'Cancel', confirmLabel: 'Discard', onClose: jest.fn(), onConfirm: jest.fn() };
+      const ui = render(<ConfirmDialog {...props} visible={false} />);
+      dismiss.mockClear();
+      ui.rerender(<ConfirmDialog {...props} visible />);
+      expect(dismiss).toHaveBeenCalledTimes(1);
+      ui.rerender(<ConfirmDialog {...props} visible isConfirming />);
+      expect(dismiss).toHaveBeenCalledTimes(1);
+    } finally {
+      dismiss.mockRestore();
+    }
+  });
   it('keeps the dialog open and announces progress while confirmation is pending', () => {
     const onClose = jest.fn();
     const { getByTestId, getByLabelText } = render(
