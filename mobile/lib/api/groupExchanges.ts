@@ -65,6 +65,7 @@ export interface GroupExchangeSplitShare {
 }
 
 export interface GroupExchangeDetail extends GroupExchange {
+  terms_token?: string;
   tenant_id: number;
   listing_id: number | null;
   broker_id: number | null;
@@ -117,8 +118,8 @@ export function createGroupExchange(payload: CreateGroupExchangePayload): Promis
   return api.post<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges`, payload);
 }
 
-export function confirmGroupExchange(id: number): Promise<{ data: GroupExchangeDetail }> {
-  return api.post<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges/${id}/confirm`);
+export function confirmGroupExchange(id: number, termsToken?: string): Promise<{ data: GroupExchangeDetail }> {
+  return api.post<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges/${id}/confirm`, { terms_token: termsToken });
 }
 
 export function completeGroupExchange(id: number): Promise<{ data: { message: string; transaction_ids: number[] } }> {

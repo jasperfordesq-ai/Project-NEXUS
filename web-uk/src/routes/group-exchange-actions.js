@@ -232,7 +232,7 @@ router.post('/:id(\\d+)/confirm', asyncRoute(async (req, res) => {
     res,
     'POST',
     `/${id}/confirm`,
-    undefined,
+    { terms_token: typeof req.body.terms_token === 'string' ? req.body.terms_token : '' },
     exchangeRedirect(id, 'confirmed'),
     exchangeRedirect(id, 'failed')
   );

@@ -102,12 +102,17 @@ class GroupExchangeService
      */
     public function get(int $id): ?array
     {
+        return DB::transaction(fn () => $this->getLockedSnapshot($id));
+    }
+
+    private function getLockedSnapshot(int $id): ?array
+    {
         $tenantId = TenantContext::getId();
 
         $exchange = DB::table('group_exchanges')
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
-            ->first();
+            ->lockForUpdate()->first();
 
         if (! $exchange) {
             return null;
@@ -189,6 +194,8 @@ class GroupExchangeService
             'completed_at'      => $exchange->completed_at,
             'created_at'        => $exchange->created_at,
             'updated_at'        => $exchange->updated_at,
+            'calculated_split'  => $this->calculateSplit($id),
+            'terms_token'       => $this->termsToken((array) $exchange, $participantList),
             'participant_count' => count($participantList),
             'participants'      => $participantList,
         ];
@@ -820,15 +827,40 @@ class GroupExchangeService
     }
 
     /**
-     * Confirm a user's participation in an exchange.
+     * Identify settlement terms, excluding presentation and confirmation state.
      */
-    public function confirmParticipation(int $exchangeId, int $userId): bool
+    private function termsToken(array $exchange, array $participants): string
+    {
+        $members = array_map(static fn ($p) => [
+            (int) $p['user_id'], (string) $p['role'], (float) $p['hours'], (float) $p['weight'],
+        ], $participants);
+        usort($members, static fn ($a, $b) => $a[0] <=> $b[0]);
+        return hash('sha256', json_encode([
+            (int) $exchange['tenant_id'], (int) $exchange['id'],
+            (string) $exchange['split_type'], (float) $exchange['total_hours'], $members,
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    private bool $lastTermsMismatch = false;
+
+    public function hadTermsMismatch(): bool
+    {
+        return $this->lastTermsMismatch;
+    }
+
+    public function confirmParticipation(int $exchangeId, int $userId, ?string $termsToken = null): bool
     {
         $this->lastContactRestriction = null;
-        return DB::transaction(function () use ($exchangeId, $userId): bool {
+        $this->lastTermsMismatch = false;
+        return DB::transaction(function () use ($exchangeId, $userId, $termsToken): bool {
             $exchange = DB::table('group_exchanges')->where('id', $exchangeId)
                 ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first(['status']);
             if (! $exchange || $exchange->status !== 'pending_confirmation') {
+                return false;
+            }
+            $snapshot = $this->getLockedSnapshot($exchangeId);
+            if ($termsToken === null || ! hash_equals($snapshot['terms_token'], $termsToken)) {
+                $this->lastTermsMismatch = true;
                 return false;
             }
             return $this->confirmAwaitingParticipation($exchangeId, $userId);

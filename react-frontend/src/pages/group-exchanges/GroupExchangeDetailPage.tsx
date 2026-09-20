@@ -84,6 +84,7 @@ interface GroupExchangeParticipant {
 }
 
 interface GroupExchangeDetail {
+  terms_token?: string;
   id: number;
   tenant_id: number;
   title: string;
@@ -256,7 +257,7 @@ export function GroupExchangeDetailPage() {
 
     try {
       setIsSubmitting(true);
-      const response = await api.post(`/v2/group-exchanges/${exchange.id}/confirm`);
+      const response = await api.post(`/v2/group-exchanges/${exchange.id}/confirm`, { terms_token: exchange.terms_token });
       if (response.success) {
         toastRef.current.success(tRef.current('toast.hours_confirmed'));
         loadExchange();
@@ -264,6 +265,7 @@ export function GroupExchangeDetailPage() {
         // A failed confirm resolves to { success: false } without throwing, so the
         // unconditional success toast + reload reported a fake success.
         toastRef.current.error(response.error || tRef.current('toast.confirm_failed'));
+        loadExchange();
       }
     } catch (err) {
       toastRef.current.error(tRef.current('toast.confirm_failed'));

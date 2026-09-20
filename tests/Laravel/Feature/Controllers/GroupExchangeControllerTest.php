@@ -243,9 +243,9 @@ class GroupExchangeControllerTest extends TestCase
 
         // Each participant confirms.
         Sanctum::actingAs($provider, ['*']);
-        $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
         Sanctum::actingAs($receiver, ['*']);
-        $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
 
         // Organizer completes.
         Sanctum::actingAs($organizer, ['*']);
@@ -288,7 +288,7 @@ class GroupExchangeControllerTest extends TestCase
             $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
             foreach ([$provider, $receiver] as $member) {
                 Sanctum::actingAs($member, ['*']);
-                $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
             }
             Sanctum::actingAs($organizer, ['*']);
             $this->apiPut("/v2/group-exchanges/{$id}", ['title' => 'Updated title', 'total_hours' => '6.00', 'split_type' => 'equal'])->assertStatus(200);
@@ -303,7 +303,7 @@ class GroupExchangeControllerTest extends TestCase
 
             foreach ([$provider, $receiver] as $member) {
                 Sanctum::actingAs($member, ['*']);
-                $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
             }
             Sanctum::actingAs($organizer, ['*']);
             $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(200);
@@ -324,7 +324,7 @@ class GroupExchangeControllerTest extends TestCase
 
         // Only the provider confirms.
         Sanctum::actingAs($provider, ['*']);
-        $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
 
         Sanctum::actingAs($organizer, ['*']);
         $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(400);
@@ -412,8 +412,9 @@ class GroupExchangeControllerTest extends TestCase
                 $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
                 foreach ($operation === 'remove' ? [$provider, $receiver, $extra] : [$provider, $receiver] as $member) {
                     Sanctum::actingAs($member, ['*']);
-                    $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                    $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
                 }
+                $reviewedToken = app(\App\Services\GroupExchangeService::class)->get($id)['terms_token'];
                 Sanctum::actingAs($organizer, ['*']);
                 if ($operation === 'add') {
                     $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(200);
@@ -422,11 +423,14 @@ class GroupExchangeControllerTest extends TestCase
                 }
                 $participants = DB::table('group_exchange_participants')->where('group_exchange_id', $id);
                 $remaining = $operation === 'add' ? [$provider, $receiver, $extra] : [$provider, $receiver];
+                Sanctum::actingAs($receiver, ['*']);
+                $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => $reviewedToken])->assertStatus(409);
+                Sanctum::actingAs($organizer, ['*']);
                 $this->assertSame(count($remaining), (clone $participants)->where('confirmed', 0)->whereNull('confirmed_at')->count());
                 $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(400);
                 foreach ($remaining as $member) {
                     Sanctum::actingAs($member, ['*']);
-                    $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                    $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => app(\App\Services\GroupExchangeService::class)->get($id)['terms_token']])->assertStatus(200);
                 }
                 Sanctum::actingAs($organizer, ['*']);
                 if ($operation === 'add') {
@@ -464,5 +468,27 @@ class GroupExchangeControllerTest extends TestCase
         $create->assertStatus(201);
 
         return (int) $create->json('data.id');
+    }
+
+    public function test_confirmation_requires_the_terms_that_were_reviewed(): void
+    {
+        foreach ([['total_hours' => 8], ['split_type' => 'weighted']] as $change) {
+            $organizer = $this->authenticatedUser();
+            $provider = $this->makeUser(0);
+            $receiver = $this->makeUser(10);
+            $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+            $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+            Sanctum::actingAs($receiver, ['*']);
+            $seen = $this->apiGet("/v2/group-exchanges/{$id}")->assertStatus(200)->json('data.terms_token');
+            $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(409);
+            Sanctum::actingAs($organizer, ['*']);
+            $this->apiPut("/v2/group-exchanges/{$id}", $change)->assertStatus(200);
+            Sanctum::actingAs($receiver, ['*']);
+            $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => $seen])->assertStatus(409)->assertJsonPath('errors.0.code', 'TERMS_CHANGED');
+            $this->assertSame(0, (int) DB::table('group_exchange_participants')->where('group_exchange_id', $id)->where('user_id', $receiver->id)->value('confirmed'));
+            $fresh = $this->apiGet("/v2/group-exchanges/{$id}")->assertStatus(200)->json('data.terms_token');
+            $this->assertNotSame($seen, $fresh);
+            $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => $fresh])->assertStatus(200);
+        }
     }
 }

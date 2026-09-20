@@ -100,7 +100,7 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.group_exchange_forbidden'), null, 403);
         }
 
-        $exchange['calculated_split'] = $this->groupExchangeService->calculateSplit($id);
+        // Detail and split are read under the same exchange lock as the terms token.
 
         return $this->respondWithData($exchange);
     }
@@ -279,7 +279,10 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.group_exchange_participant_required'), null, 403);
         }
 
-        if (!$this->groupExchangeService->confirmParticipation($id, $userId)) {
+        if (!$this->groupExchangeService->confirmParticipation($id, $userId, is_string(request()->input('terms_token')) ? request()->input('terms_token') : null)) {
+            if ($this->groupExchangeService->hadTermsMismatch()) {
+                return $this->respondWithError('TERMS_CHANGED', __('api.group_exchange_terms_changed'), null, 409);
+            }
             if ($restriction = $this->groupExchangeService->getLastContactRestriction()) {
                 $error = MessageService::buildSafeguardingError([
                     'status' => $restriction->status,

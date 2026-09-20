@@ -22059,9 +22059,9 @@ describe('shared accessible frontend shell', () => {
     expect(removeResponse.headers.location).toBe('/group-exchanges/7?status=participant-removed#group-exchange-top');
     expect(api.callGroupExchangeApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/7/participants/55');
 
-    const confirmResponse = await post('/group-exchanges/7/confirm');
+    const confirmResponse = await post('/group-exchanges/7/confirm', { terms_token: 'reviewed-terms' });
     expect(confirmResponse.headers.location).toBe('/group-exchanges/7?status=confirmed#group-exchange-top');
-    expect(api.callGroupExchangeApi).toHaveBeenLastCalledWith('test-token', 'POST', '/7/confirm');
+    expect(api.callGroupExchangeApi).toHaveBeenLastCalledWith('test-token', 'POST', '/7/confirm', { terms_token: 'reviewed-terms' });
 
     const completeResponse = await post('/group-exchanges/7/complete');
     expect(completeResponse.headers.location).toBe('/group-exchanges/7?status=completed#group-exchange-top');
@@ -35824,11 +35824,14 @@ describe('shared accessible frontend shell', () => {
     expect(api.callGroupExchangeApi).toHaveBeenLastCalledWith('test-token', 'POST', '/7/start');
 
     // Once started, Confirm and Complete appear and Start does not.
-    api.callGroupExchangeApi.mockReset().mockResolvedValue(exchange('pending_confirmation'));
+    const reviewed = exchange('pending_confirmation');
+    reviewed.data.terms_token = 'rendered-terms';
+    api.callGroupExchangeApi.mockReset().mockResolvedValue(reviewed);
     const running = await agent
       .get('/group-exchanges/7?status=started')
       .set('Cookie', cookie);
     expect(running.text).toContain('action="/group-exchanges/7/confirm"');
+    expect(running.text).toContain('name="terms_token" value="rendered-terms"');
     expect(running.text).toContain('action="/group-exchanges/7/complete"');
     expect(running.text).not.toContain('action="/group-exchanges/7/start"');
     expect(running.text).toContain('The exchange has started.');

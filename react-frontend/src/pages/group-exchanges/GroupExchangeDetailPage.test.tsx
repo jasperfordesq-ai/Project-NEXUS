@@ -126,6 +126,18 @@ describe('GroupExchangeDetailPage', () => {
     api.delete.mockResolvedValue({ success: true });
   });
 
+  it('sends the displayed terms and reloads a refusal without retrying consent', async () => {
+    api.get.mockResolvedValueOnce({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', terms_token: 'seen' } });
+    api.get.mockResolvedValue({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', total_hours: 8, terms_token: 'fresh' } });
+    api.post.mockResolvedValueOnce({ success: false, error: 'Terms changed' } as never);
+    render(<GroupExchangeDetailPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /confirm my hours/i }));
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/v2/group-exchanges/1/confirm', { terms_token: 'seen' }));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(toastSuccessSpy).not.toHaveBeenCalled();
+  });
+
   it('shows an error toast (not a fake success) when an action request fails', async () => {
     // Regression: handlers did `await api.X(...)` WITHOUT capturing the response,
     // then unconditionally showed a success toast and reloaded/navigated. Since

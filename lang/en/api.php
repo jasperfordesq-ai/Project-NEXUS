@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    'group_exchange_terms_changed' => 'The exchange terms have changed. Review the latest details before confirming again.',
     'events_config_settings_required' => 'Provide at least one Events setting.',
     'events_config_version_required' => 'A valid Events configuration version is required.',
     'events_config_reason_required' => 'Explain why this Events configuration is changing.',

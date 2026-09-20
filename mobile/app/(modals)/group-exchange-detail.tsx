@@ -103,7 +103,7 @@ function GroupExchangeDetailScreenInner() {
     setSubmitting(true);
     try {
       if (action === 'confirm') {
-        await confirmGroupExchange(exchange.id);
+        await confirmGroupExchange(exchange.id, exchange.terms_token);
       } else if (action === 'complete') {
         await completeGroupExchange(exchange.id);
       } else {
@@ -116,6 +116,7 @@ function GroupExchangeDetailScreenInner() {
       }
     } catch (err) {
       if (!mountedRef.current) return;
+      if (action === 'confirm') refresh();
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(`groupExchanges.detail.actions.${action}Failed`)), variant: 'danger' });
     } finally {
       submittingRef.current = false;

@@ -128,6 +128,7 @@ import { ApiResponseError } from '@/lib/api/client';
 
 const baseExchange = {
   id: 42,
+  terms_token: 'reviewed-terms',
   tenant_id: 2,
   title: 'Community garden shift',
   description: 'Three members worked together.',
@@ -300,6 +301,19 @@ describe('GroupExchangeDetailScreen', () => {
     }
   });
 
+  it('refreshes rejected terms without silently confirming the refreshed version', async () => {
+    mockConfirmGroupExchange.mockRejectedValueOnce(new Error('Terms changed'));
+    const screen = render(<GroupExchangeDetailScreen />);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+    expect(mockConfirmGroupExchange).toHaveBeenCalledWith(42, 'reviewed-terms');
+    mockUseApi.mockReturnValue({ data: { data: { ...baseExchange, total_hours: 8, terms_token: 'fresh-terms' } }, isLoading: false, error: null, refresh: mockRefresh });
+    screen.rerender(<GroupExchangeDetailScreen />);
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    await waitFor(() => expect(mockConfirmGroupExchange).toHaveBeenLastCalledWith(42, 'fresh-terms'));
+  });
+
   it.each(['route', 'account', 'tenant'])('ignores an earlier confirmation and response after %s replacement', async replacement => {
     let reject!: (error: Error) => void;
     mockConfirmGroupExchange.mockImplementationOnce(() => new Promise((_, decline) => { reject = decline; }));
@@ -406,7 +420,7 @@ describe('GroupExchangeDetailScreen', () => {
 
     fireEvent.press(getByText('Confirm hours'));
 
-    await waitFor(() => expect(mockConfirmGroupExchange).toHaveBeenCalledWith(42));
+    await waitFor(() => expect(mockConfirmGroupExchange).toHaveBeenCalledWith(42, 'reviewed-terms'));
     expect(mockRefresh).toHaveBeenCalled();
   });
 

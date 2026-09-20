@@ -759,6 +759,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING:** Group-exchange confirmation now requires the reviewed `terms_token` from the detail response and rejects missing or stale terms with HTTP 409. Native, React and accessible clients submit the displayed token; members must review changed terms before confirming again.
+
 - **BREAKING:** Quiz lessons now require the learner to have a passing, fully graded attempt before lesson completion or certificate issuance/access through the course API. Failed or pending-review attempts cannot satisfy completion. Progress reads present historical unpassed quiz completions as unfinished without deleting stored history. Clients must handle `QUIZ_PASS_REQUIRED` (HTTP 422) and may use lesson `completion_allowed` to disable completion until eligible.
 
 - **The footer's "Powered by Project NEXUS" badge links to project-nexus.net.** The marketing

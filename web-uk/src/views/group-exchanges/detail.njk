@@ -126,6 +126,7 @@
       {% else %}
         <p class="govuk-body">{{ t("group_exchanges.confirm_body") }}</p>
         <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/confirm') }}">
+          <input type="hidden" name="terms_token" value="{{ exchange.terms_token }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button" data-module="govuk-button">{{ t("group_exchanges.confirm_button") }}</button>
         </form>
