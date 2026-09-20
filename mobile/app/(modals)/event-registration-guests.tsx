@@ -48,7 +48,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const data = state.data; const pagination = data.pagination.guests;
   const selected = data.guests.find(guest => guest.id === selection);
   const refresh = () => { setSelection(null); state.refresh(); };
-  return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+  return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       refreshControl={selected ? undefined : <RefreshControl refreshing={state.isLoading} onRefresh={refresh} />}>
       <View className="gap-4">
