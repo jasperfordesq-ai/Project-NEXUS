@@ -696,6 +696,33 @@ describe('WalletModal', () => {
       expect(transferWalletCredits).not.toHaveBeenCalled();
     });
 
+    it.each(['account', 'community'])('does not send an old transfer when %s changes during preparation', async (change) => {
+      let finish!: (value: walletOperations.WalletOperation) => void;
+      const reservation = jest.spyOn(walletOperations, 'reserveWalletOperation').mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+      const completion = jest.spyOn(walletOperations, 'completeWalletOperation');
+      try {
+        const ui = renderTransferPanel();
+        await ui.findByText('Jasper Ford');
+        fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+        fireEvent.changeText(ui.getByPlaceholderText('What is this transfer for?'), 'Original account intent');
+        fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+        fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+        await waitFor(() => expect(reservation).toHaveBeenCalled());
+        if (change === 'account') mockWalletUserId = 2;
+        else mockWalletTenantSlug = 'other-community';
+        ui.rerender(<WalletModal />);
+        await ui.findByText('Jasper Ford');
+        await act(async () => finish({ storageKey: 'original-operation', key: 'original-retry', createdAt: Date.now() }));
+        expect(transferWalletCredits).not.toHaveBeenCalled();
+        expect(completion).not.toHaveBeenCalled();
+        expect(ui.getByPlaceholderText('Hours to send').props.value).toBe('');
+        expect(ui.getByPlaceholderText('What is this transfer for?').props.value).toBe('');
+      } finally {
+        reservation.mockRestore();
+        completion.mockRestore();
+      }
+    });
+
     it('does not start a transfer if preparation finishes after the panel departs', async () => {
       let finish!: (value: walletOperations.WalletOperation) => void;
       const reservation = jest.spyOn(walletOperations, 'reserveWalletOperation').mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
