@@ -10,9 +10,13 @@ import * as Haptics from 'expo-haptics';
 import { ApiResponseError } from '@/lib/api/client';
 
 // --- Mocks ---
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 const mockSearchParams = jest.fn(() => ({}));
 const mockGetWalletTransactions = jest.fn();
+let mockWalletUserId = 1;
+let mockWalletTenantSlug = 'hour-timebank';
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockWalletUserId } }) }));
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
@@ -102,7 +106,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { slug: mockWalletTenantSlug }, hasFeature: () => true }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -209,10 +213,14 @@ jest.mock('@/components/ui/BottomSheet', () => {
 
 import WalletModal from './wallet';
 import { searchWalletUsers, transferWalletCredits } from '@/lib/api/wallet';
+import { getMember } from '@/lib/api/members';
+import * as walletOperations from '@/lib/walletOperation';
 
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
+  mockWalletUserId = 1;
+  mockWalletTenantSlug = 'hour-timebank';
   mockSearchParams.mockReturnValue({});
   mockGetWalletTransactions.mockReset();
   mockUseApi
@@ -537,6 +545,45 @@ describe('WalletModal', () => {
     expect(getByDisplayValue('Garden help')).toBeTruthy();
   });
 
+  it.each(['success', 'failure'])('keeps a manually selected recipient after a late linked-recipient %s', async (outcome) => {
+    let finish!: (value: unknown) => void;
+    mockSearchParams.mockReturnValue({ to: '260' });
+    jest.mocked(getMember).mockImplementationOnce(() => new Promise((resolve, reject) => { finish = outcome === 'success' ? resolve : reject; }) as never);
+    jest.mocked(searchWalletUsers).mockResolvedValueOnce({ data: { users: [{ id: 43, name: 'Bob Jones', avatar_url: null }] } } as never);
+    const payloads = [{ balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' }, [], { balance: 3 }, []];
+    let call = 0;
+    mockUseApi.mockReset().mockImplementation(() => ({ data: { data: payloads[call++ % 4] }, isLoading: false, error: null, refresh: jest.fn() }));
+    const screen = render(<WalletModal />);
+    fireEvent.changeText(screen.getByPlaceholderText('Search by name or email'), 'Bob');
+    fireEvent.press(screen.getByText('Search members'));
+    await waitFor(() => expect(screen.getByLabelText('Bob Jones')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('Bob Jones'));
+    await act(async () => finish(outcome === 'success' ? { data: { id: 260, name: 'Original link recipient' } } : new Error('Lookup failed')));
+    expect(screen.queryByText('Original link recipient')).toBeNull();
+    expect(screen.getAllByText('Bob Jones')).toHaveLength(2);
+    expect(screen.getByTestId('wallet-action-submit').props.accessibilityState?.disabled).toBe(false);
+  });
+
+  it('does not show recipients from a search that finishes after the query changes', async () => {
+    let finish!: (value: unknown) => void;
+    jest.mocked(searchWalletUsers).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }) as never);
+    jest.mocked(searchWalletUsers).mockResolvedValueOnce({ data: { users: [{ id: 43, name: 'Bob Jones', avatar_url: null }] } } as never);
+    const payloads = [{ balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' }, [], { balance: 3 }, []];
+    let call = 0;
+    mockUseApi.mockReset().mockImplementation(() => ({ data: { data: payloads[call++ % 4] }, isLoading: false, error: null, refresh: jest.fn() }));
+    const screen = render(<WalletModal />);
+    fireEvent.press(screen.getByText('Send credits'));
+    const query = screen.getByPlaceholderText('Search by name or email');
+    fireEvent.changeText(query, 'Alice');
+    fireEvent.press(screen.getByText('Search members'));
+    fireEvent.changeText(query, 'Bob');
+    fireEvent.press(screen.getByText('Search members'));
+    await waitFor(() => expect(screen.getByLabelText('Bob Jones')).toBeTruthy());
+    await act(async () => finish({ data: { users: [{ id: 42, name: 'Alice Smith', avatar_url: null }] } }));
+    expect(screen.queryByLabelText('Alice Smith')).toBeNull();
+    expect(screen.getByLabelText('Bob Jones')).toBeTruthy();
+  });
+
   it('selects transfer recipients from HeroUI Native-backed search result rows', async () => {
     const walletState = { data: { data: { balance: 12.5, total_credits: 20, total_debits: 7.5, currency: 'hours' } }, isLoading: false, error: null, refresh: jest.fn() };
     const transactionsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
@@ -612,6 +659,54 @@ describe('WalletModal', () => {
       return jest.mocked(transferWalletCredits).mock.calls
         .map((call) => (call[0] as { idempotency_key?: string }).idempotency_key);
     }
+
+    it.each(['account', 'community'])('resets the transfer draft when the mounted wallet changes %s', async (change) => {
+      const ui = renderTransferPanel();
+      await ui.findByText('Jasper Ford');
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      fireEvent.changeText(ui.getByPlaceholderText('What is this transfer for?'), 'Previous account draft');
+      if (change === 'account') mockWalletUserId = 2;
+      else mockWalletTenantSlug = 'other-community';
+      ui.rerender(<WalletModal />);
+      await ui.findByText('Jasper Ford');
+      expect(ui.getByPlaceholderText('Hours to send').props.value).toBe('');
+      expect(ui.getByPlaceholderText('What is this transfer for?').props.value).toBe('');
+      expect(transferWalletCredits).not.toHaveBeenCalled();
+    });
+
+    it('does not start a transfer if preparation finishes after the panel departs', async () => {
+      let finish!: (value: walletOperations.WalletOperation) => void;
+      const reservation = jest.spyOn(walletOperations, 'reserveWalletOperation').mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      await waitFor(() => expect(reservation).toHaveBeenCalled());
+      ui.unmount();
+      await act(async () => finish({ storageKey: 'audit-departed', key: 'audit-unsent', createdAt: Date.now() }));
+      reservation.mockRestore();
+      expect(transferWalletCredits).not.toHaveBeenCalled();
+    });
+
+    it('does not refresh the departed wallet after a delayed transfer response', async () => {
+      let finish!: (value: unknown) => void;
+      const complete = jest.spyOn(walletOperations, 'completeWalletOperation');
+      jest.mocked(transferWalletCredits).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }) as never);
+      const ui = renderTransferPanel();
+      fireEvent.changeText(ui.getByPlaceholderText('Hours to send'), '2');
+      await ui.findByText('Jasper Ford');
+      fireEvent.press(ui.getAllByText('Send credits').at(-1)!);
+      fireEvent.press(await ui.findByTestId('wallet-confirm-submit'));
+      await waitFor(() => expect(transferWalletCredits).toHaveBeenCalledTimes(1));
+      ui.unmount();
+      mockRefreshWallet.mockClear();
+      await act(async () => finish({ success: true }));
+      const completedOperations = complete.mock.calls.length;
+      complete.mockRestore();
+      expect(completedOperations).toBe(1);
+      expect(mockRefreshWallet).not.toHaveBeenCalled();
+    });
 
     it('does not offer a failed-transfer retry when secure cleanup fails after a successful transfer', async () => {
       jest.mocked(transferWalletCredits).mockResolvedValueOnce({ success: true } as never);

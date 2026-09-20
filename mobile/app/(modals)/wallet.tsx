@@ -18,7 +18,8 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import {
@@ -148,8 +149,10 @@ function csvCell(value: string | number | null | undefined): string {
 }
 
 function WalletModal() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`}>
       <WalletModalInner />
     </ModalErrorBoundary>
   );
@@ -648,7 +651,9 @@ function WalletActionPanel({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WalletUserSearchResult[]>([]);
   const [selectedUser, setSelectedUser] = useState<WalletUserSearchResult | null>(initialRecipient);
+  const recipientVersionRef = useRef(0);
   useEffect(() => {
+    const version = ++recipientVersionRef.current;
     const numericId = Number(initialRecipientIdValue);
     if (!initialRecipientIdValue || !Number.isFinite(numericId) || numericId <= 0) {
       setIsResolvingRecipient(false);
@@ -659,7 +664,7 @@ function WalletActionPanel({
     setIsResolvingRecipient(true);
     getMember(numericId)
       .then((response) => {
-        if (cancelled) return;
+        if (cancelled || version !== recipientVersionRef.current) return;
         const member = response.data;
         const resolvedName = member.name?.trim() || member.first_name?.trim() || t('actions.memberFallback');
         // Both in the same tick, so there is no render in which the recipient is known but
@@ -668,7 +673,7 @@ function WalletActionPanel({
         setIsResolvingRecipient(false);
       })
       .catch(() => {
-        if (cancelled) return;
+        if (cancelled || version !== recipientVersionRef.current) return;
         setSelectedUser(null);
         setIsResolvingRecipient(false);
         showToast({ title: t('actions.validationTitle'), description: t('actions.recipientUnresolved'), variant: 'warning' });
@@ -677,7 +682,8 @@ function WalletActionPanel({
       cancelled = true;
     };
     // The URL's recipient is read once; a member who then searches for someone else must
-    // not be overwritten by a late answer, hence the cancel flag.
+    // not be overwritten by a late answer. Manual changes invalidate its version;
+    // effect cleanup also cancels work after route changes or departure.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRecipientIdValue]);
   const [amount, setAmount] = useState('');
@@ -687,21 +693,36 @@ function WalletActionPanel({
   const [operationUnresolved, setOperationUnresolved] = useState(false);
   const needsRecipient = action === 'transfer' || donationTarget === 'user';
   const submittingRef = useRef(false);
+  const panelMountedRef = useRef(true);
+  useEffect(() => {
+    panelMountedRef.current = true;
+    return () => { panelMountedRef.current = false; };
+  }, []);
+  const searchVersionRef = useRef(0);
+  useEffect(() => {
+    searchVersionRef.current += 1;
+    setResults([]);
+    setIsSearching(false);
+    return () => { searchVersionRef.current += 1; };
+  }, [query]);
 
   async function runSearch() {
     if (query.trim().length < 2) return;
+    const version = ++searchVersionRef.current;
     setIsSearching(true);
     try {
       const response = await searchWalletUsers(query.trim(), 10);
+      if (version !== searchVersionRef.current) return;
       setResults(response.data?.users ?? []);
     } catch (err) {
+      if (version !== searchVersionRef.current) return;
       showToast({
         title: t('actions.searchFailedTitle'),
         description: describeApiError(err, t('actions.searchFailedMessage')),
         variant: 'danger',
       });
     } finally {
-      setIsSearching(false);
+      if (version === searchVersionRef.current) setIsSearching(false);
     }
   }
 
@@ -738,7 +759,7 @@ function WalletActionPanel({
   }
 
   async function performSubmit(parsedAmount: number) {
-    if (submittingRef.current) return;
+    if (submittingRef.current || !panelMountedRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
     setOperationUnresolved(false);
@@ -750,6 +771,7 @@ function WalletActionPanel({
         const description = note.trim();
         const intent = JSON.stringify([selectedUser?.id ?? '', parsedAmount, description]);
         const operation = await reserveWalletOperation('transfer', intent);
+        if (!panelMountedRef.current) return;
 
         await transferWalletCredits({
           recipient: selectedUser?.id ?? '',
@@ -758,11 +780,14 @@ function WalletActionPanel({
           idempotency_key: operation.key,
         });
         await completeWalletOperation(operation);
+        if (!panelMountedRef.current) return;
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (!panelMountedRef.current) return;
         showToast({ title: t('actions.transferSuccessTitle'), description: t('actions.transferSuccessMessage'), variant: 'success' });
       } else {
         const donationIntent = JSON.stringify([donationTarget, donationTarget === 'user' ? selectedUser?.id ?? '' : '', parsedAmount, note.trim()]);
         const operation = await reserveWalletOperation('donation', donationIntent);
+        if (!panelMountedRef.current) return;
         await donateWalletCredits({
           recipient_type: donationTarget,
           recipient_id: donationTarget === 'user' ? selectedUser?.id : undefined,
@@ -771,11 +796,14 @@ function WalletActionPanel({
           idempotency_key: operation.key,
         });
         await completeWalletOperation(operation);
+        if (!panelMountedRef.current) return;
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (!panelMountedRef.current) return;
         showToast({ title: t('actions.donationSuccessTitle'), description: t('actions.donationSuccessMessage'), variant: 'success' });
       }
       onComplete();
     } catch (error) {
+      if (!panelMountedRef.current) return;
       setOperationUnresolved(isUnresolvedWalletOperationError(error));
       // The server's own reason when it is fit to show — "not enough credits" beats a raw
       // message or "Action failed" (B/F-17).
@@ -787,7 +815,7 @@ function WalletActionPanel({
       onRefresh();
     } finally {
       submittingRef.current = false;
-      setIsSubmitting(false);
+      if (panelMountedRef.current) setIsSubmitting(false);
     }
   }
 
@@ -841,6 +869,8 @@ function WalletActionPanel({
                 placeholderTextColor={theme.textMuted}
                 value={query}
                 onChangeText={(value) => {
+                  recipientVersionRef.current += 1;
+                  setIsResolvingRecipient(false);
                   setQuery(value);
                   setSelectedUser(null);
                   setOperationUnresolved(false);
@@ -872,7 +902,12 @@ function WalletActionPanel({
                     feedbackVariant="scale"
                     className="w-full p-0"
                     accessibilityLabel={user.name}
-                    onPress={() => { setSelectedUser(user); setOperationUnresolved(false); }}
+                    onPress={() => {
+                      recipientVersionRef.current += 1;
+                      setIsResolvingRecipient(false);
+                      setSelectedUser(user);
+                      setOperationUnresolved(false);
+                    }}
                   >
                     <Surface variant="secondary" className="flex-row items-center gap-3 rounded-panel-inner p-3">
                       <Avatar uri={user.avatar_url ?? null} name={user.name} size={36} />
