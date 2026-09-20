@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { act, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 let mockParams: { uri?: string; title?: string } = {
   uri: 'https://example.test/photo.jpg',
@@ -75,5 +75,15 @@ it('contains a failed native share and leaves the image open', async () => {
   while (!button.props.onPress) button = button.parent!;
   await act(async () => { await button.props.onPress(); });
   expect(mockToast).toHaveBeenCalled();
+  expect(screen.getByLabelText('Close')).toBeTruthy();
+});
+
+it('offers a new image load after failure without closing the viewer', () => {
+  mockParams = { uri: 'https://example.test/missing.jpg', title: 'Missing photo' };
+  const screen = render(<ImageViewerScreen />);
+  fireEvent(screen.getByTestId('viewer-image'), 'error', { error: 'unavailable' });
+  expect(screen.queryByTestId('viewer-image')).toBeNull();
+  fireEvent.press(screen.getByText('common:buttons.retry'));
+  expect(screen.getByTestId('viewer-image')).toBeTruthy();
   expect(screen.getByLabelText('Close')).toBeTruthy();
 });

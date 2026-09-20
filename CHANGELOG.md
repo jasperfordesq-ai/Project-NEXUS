@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native image viewer now explains image-loading failures and offers retry instead of leaving a blank canvas.
+
 - Native image-viewer close and share controls now sit inside the safe-area layout instead of being clipped beneath the Android status bar.
 
 - Native image viewer now handles unavailable sharing with translated feedback while keeping the image open.

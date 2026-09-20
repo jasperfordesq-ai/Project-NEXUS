@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, Share, StatusBar, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -14,6 +14,7 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
+import ErrorState from '@/components/ui/ErrorState';
 
 function ImageViewerScreenInner() {
   const { t } = useTranslation('home');
@@ -21,6 +22,9 @@ function ImageViewerScreenInner() {
   const { uri, title } = useLocalSearchParams<{ uri: string; title?: string }>();
 
   const { width, height } = Dimensions.get('window');
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { setFailed(false); setAttempt(0); }, [uri]);
 
   async function handleShare() {
     if (!uri) return;
@@ -83,7 +87,11 @@ function ImageViewerScreenInner() {
             Using flex: 1 or width: '100%' collapses to 0px inside a zoomable
             ScrollView on Android — explicit width/height from Dimensions fixes this.
         */}
-        <ScrollView
+        {failed ? (
+          <Surface className="m-4 rounded-panel">
+            <ErrorState onRetry={() => { setFailed(false); setAttempt((value) => value + 1); }} />
+          </Surface>
+        ) : <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             width,
@@ -100,12 +108,15 @@ function ImageViewerScreenInner() {
           centerContent
         >
           <Image
+            key={`${uri}:${attempt}`}
+            testID="viewer-image"
+            onError={() => setFailed(true)}
             source={{ uri }}
             style={{ width, height }}
             contentFit="contain"
             accessibilityLabel={title ?? t('imageViewer.close')}
           />
-        </ScrollView>
+        </ScrollView>}
 
         <View className="pb-3" />
       </SafeAreaView>
