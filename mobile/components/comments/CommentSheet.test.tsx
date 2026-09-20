@@ -878,6 +878,54 @@ describe('CommentSheet', () => {
     jest.useRealTimers();
   });
 
+  it.each([
+    { liked: false, closed: false }, { liked: true, closed: false },
+    { liked: false, closed: true }, { liked: true, closed: true },
+  ])('restores a rejected reaction even when recovery is unavailable (%j)', async ({ liked, closed }) => {
+    let failReaction!: () => void;
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((_resolve, reject) => {
+      failReaction = () => reject(new Error('Offline'));
+    }));
+    const screen = await openSheetWithComments([makeComment({
+      reactions: liked ? { like: 2 } : { love: 2 }, user_reactions: [liked ? 'like' : 'love'],
+    })]);
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(!liked);
+    mockGetComments.mockRejectedValueOnce(new Error('Still offline'));
+    if (closed) screen.rerender(<CommentSheet visible={false} targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    await act(async () => { failReaction(); });
+    if (closed) screen.rerender(<CommentSheet visible targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(liked);
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.busy).toBe(false);
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(mockGetComments).toHaveBeenCalledTimes(closed ? 1 : 2);
+    if (closed) expect(mockShowToast).not.toHaveBeenCalled();
+    else expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
+  });
+
+  it('rolls back only reaction fields and accepts a later authoritative recovery', async () => {
+    let failReaction!: () => void;
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((_resolve, reject) => {
+      failReaction = () => reject(new Error('Offline'));
+    }));
+    const screen = await openSheetWithComments([makeComment({ reactions: { love: 2 }, user_reactions: ['love'] })]);
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    mockGetComments.mockResolvedValueOnce({ data: { comments: [makeComment({ content: 'Updated content', reactions: { love: 2 }, user_reactions: ['love'] })], count: 1 } });
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Another comment');
+    await act(async () => { fireEvent.press(screen.getByLabelText('Send')); });
+    mockGetComments.mockRejectedValueOnce(new Error('Still offline'));
+    await act(async () => { failReaction(); });
+    expect(screen.getByText('Updated content')).toBeTruthy();
+    expect(screen.queryByText('First comment')).toBeNull();
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(false);
+    mockGetComments.mockResolvedValueOnce({ data: { comments: [makeComment({ content: 'Latest content', reactions: { like: 5 }, user_reactions: ['like'] })], count: 1 } });
+    await act(async () => { fireEvent.press(screen.getByLabelText('Retry')); });
+    expect(screen.getByText('Latest content')).toBeTruthy();
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByText('5')).toBeTruthy();
+    expect(mockToggleCommentReaction).toHaveBeenCalledTimes(1);
+  });
+
   it('shows visible feedback and reloads comments when a reaction fails', async () => {
     mockToggleCommentReaction.mockRejectedValueOnce(new Error('Network failed'));
     const { getByTestId } = await openSheetWithComments([

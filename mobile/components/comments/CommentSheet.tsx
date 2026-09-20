@@ -328,8 +328,10 @@ function CommentSheetContent({
     reactionVersions.current.set(comment.id, (reactionVersions.current.get(comment.id) ?? 0) + 1);
     setReactingIds(new Set(pendingReactions.current));
     const reactionVisibilityVersion = visibilityVersion.current;
-    const wasLiked = (comment.user_reactions ?? []).includes('like');
-    // Optimistic toggle — apply locally first, refetch authoritative state on failure.
+    const previousReactions = normalizeCommentReactions(comment.reactions);
+    const previousUserReactions = [...(comment.user_reactions ?? [])];
+    const wasLiked = previousUserReactions.includes('like');
+    // Optimistic toggle — restore the previous reaction on failure, then reconcile with the server.
     setComments((prev) => updateCommentTree(prev, comment.id, (c) => {
       const reactions = normalizeCommentReactions(c.reactions);
       // The server permits one reaction per viewer: changing type replaces it.
@@ -358,7 +360,13 @@ function CommentSheetContent({
     }).catch((err) => {
       reactionVersions.current.set(comment.id, (reactionVersions.current.get(comment.id) ?? 0) + 1);
       pendingReactions.current.delete(comment.id);
-      if (!isMounted.current || !isVisible.current || reactionVisibilityVersion !== visibilityVersion.current) return;
+      if (!isMounted.current) return;
+      setComments((prev) => updateCommentTree(prev, comment.id, (c) => ({
+        ...c,
+        reactions: previousReactions,
+        user_reactions: previousUserReactions,
+      })));
+      if (!isVisible.current || reactionVisibilityVersion !== visibilityVersion.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: strings.actionFailedTitle,

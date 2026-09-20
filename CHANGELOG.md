@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Failed native comment reactions now restore the previous reaction even if the recovery read also fails or the sheet is closed, without replacing newer comment text.
+
 - Native comments preserve drafts and reaction state through failed or overlapping requests, expire obsolete Send callbacks, and refresh after successful writes even when an older comment read is pending.
 
 - Native marketplace load failures now show translated recovery guidance instead of empty-catalogue advice; category and featured-list failures remain visible with a guarded retry while available listings are preserved.
