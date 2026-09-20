@@ -11,6 +11,7 @@ const mockRefresh = jest.fn();
 const mockConfirmGroupExchange = jest.fn();
 const mockCompleteGroupExchange = jest.fn();
 const mockCancelGroupExchange = jest.fn();
+const mockGetGroupExchange = jest.fn();
 const mockDismiss = jest.fn();
 let mockParams: { id?: string | string[] } = { id: '42' };
 let mockHoldConfirmation = false;
@@ -83,7 +84,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/api/groupExchanges', () => ({
-  getGroupExchange: jest.fn(),
+  getGroupExchange: (...args: unknown[]) => mockGetGroupExchange(...args),
   cancelGroupExchange: (...args: unknown[]) => mockCancelGroupExchange(...args),
   confirmGroupExchange: (...args: unknown[]) => mockConfirmGroupExchange(...args),
   completeGroupExchange: (...args: unknown[]) => mockCompleteGroupExchange(...args),
@@ -123,6 +124,7 @@ jest.mock('@/components/ui/useConfirm', () => ({
 }));
 
 import GroupExchangeDetailScreen from './group-exchange-detail';
+import { ApiResponseError } from '@/lib/api/client';
 
 const baseExchange = {
   id: 42,
@@ -168,6 +170,7 @@ beforeEach(() => {
     refresh: mockRefresh,
   });
   mockRefresh.mockReset();
+  mockGetGroupExchange.mockReset();
   mockDismiss.mockClear();
   mockConfirmGroupExchange.mockReset().mockResolvedValue({});
   mockCompleteGroupExchange.mockReset().mockResolvedValue({});
@@ -176,6 +179,76 @@ beforeEach(() => {
 });
 
 describe('GroupExchangeDetailScreen', () => {
+  it.each(['route', 'account', 'tenant'] as const)('discards a late accepted-action refresh after %s replacement with the real hook', async identity => {
+    let resolveOldRead!: (value: { data: typeof baseExchange }) => void;
+    const oldRead = new Promise<{ data: typeof baseExchange }>(resolve => { resolveOldRead = resolve; });
+    const replacement = { ...baseExchange, id: identity === 'route' ? 43 : 42, title: 'Replacement exchange' };
+    mockGetGroupExchange.mockResolvedValueOnce({ data: baseExchange })
+      .mockReturnValueOnce(oldRead).mockResolvedValueOnce({ data: replacement });
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<GroupExchangeDetailScreen />);
+    await act(async () => {});
+    await act(async () => fireEvent.press(screen.getByText('Confirm hours')));
+    const oldConfirmation = mockConfirmCalls[0]!.onConfirm;
+    expect(mockGetGroupExchange).toHaveBeenCalledTimes(2);
+    if (identity === 'route') mockParams = { id: '43' };
+    if (identity === 'account') mockUserId = 8;
+    if (identity === 'tenant') mockTenantId = 3;
+    screen.rerender(<GroupExchangeDetailScreen />);
+    await act(async () => {});
+    expect(screen.getByText('Replacement exchange')).toBeTruthy();
+    await act(async () => resolveOldRead({ data: { ...baseExchange, status: 'completed' } }));
+    await act(async () => oldConfirmation());
+    expect(screen.getByText('Replacement exchange')).toBeTruthy();
+    expect(screen.queryByText('Community garden shift')).toBeNull();
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    expect(mockGetGroupExchange).toHaveBeenCalledTimes(3);
+  });
+
+  it.each(['confirm', 'complete', 'cancel'] as const)('keeps accepted %s read-only through actual hook retry and recovery', async action => {
+    jest.useFakeTimers();
+    const initial = action === 'complete'
+      ? { ...baseExchange, participants: baseExchange.participants.map(p => ({ ...p, confirmed: true })) }
+      : baseExchange;
+    const fresh = action === 'confirm'
+      ? { ...initial, participants: initial.participants.map(p => ({ ...p, confirmed: true })) }
+      : { ...initial, status: action === 'complete' ? 'completed' : 'cancelled' };
+    const mutation = action === 'confirm' ? mockConfirmGroupExchange : action === 'complete' ? mockCompleteGroupExchange : mockCancelGroupExchange;
+    const label = action === 'confirm' ? 'Confirm hours' : action === 'complete' ? 'Complete exchange' : 'Cancel exchange';
+    let resolveRecovery!: (value: { data: typeof fresh }) => void;
+    const recovery = new Promise<{ data: typeof fresh }>(resolve => { resolveRecovery = resolve; });
+    mockGetGroupExchange.mockResolvedValueOnce({ data: initial })
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Offline'))
+      .mockRejectedValueOnce(new ApiResponseError(0, 'Offline'))
+      .mockReturnValueOnce(recovery);
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<GroupExchangeDetailScreen />);
+    try {
+      await act(async () => {});
+      await act(async () => fireEvent.press(screen.getByText(label)));
+      const oldConfirmation = mockConfirmCalls[0]!.onConfirm;
+      expect(mockGetGroupExchange).toHaveBeenCalledTimes(2);
+      await act(async () => oldConfirmation());
+      expect(mutation).toHaveBeenCalledTimes(1);
+      await act(async () => jest.advanceTimersByTime(2000));
+      expect(mockGetGroupExchange).toHaveBeenCalledTimes(3);
+      expect(screen.getByText('Offline')).toBeTruthy();
+      await act(async () => fireEvent.press(screen.getByTestId('empty-state-action')));
+      expect(mockGetGroupExchange).toHaveBeenCalledTimes(4);
+      await act(async () => oldConfirmation());
+      expect(mutation).toHaveBeenCalledTimes(1);
+      await act(async () => resolveRecovery({ data: fresh }));
+      expect(screen.queryByText('Offline')).toBeNull();
+      expect(screen.queryByText(label)).toBeNull();
+      await act(async () => oldConfirmation());
+      expect(mutation).toHaveBeenCalledTimes(1);
+      expect(mockGetGroupExchange.mock.calls.every(([id]) => id === 42)).toBe(true);
+    } finally {
+      screen.unmount();
+      jest.useRealTimers();
+    }
+  });
+
   it('does not replay an accepted action before fresh details arrive or after refresh fails', async () => {
     const screen = render(<GroupExchangeDetailScreen />);
     await act(async () => fireEvent.press(screen.getByText('Confirm hours')));
