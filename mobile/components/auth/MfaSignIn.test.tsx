@@ -10,7 +10,14 @@ import { beginMfaSetup, verifyMfa } from '@/lib/api/auth';
 import { ApiResponseError } from '@/lib/api/client';
 
 const mockComplete = jest.fn();
-jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ completeMfa: mockComplete }) }));
+let mockSessionVersion = 0;
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({
+  completeMfa: (...args: unknown[]) => { mockSessionVersion += 1; return mockComplete(...args); },
+  captureSessionGuard: () => {
+    const version = mockSessionVersion;
+    return () => version === mockSessionVersion;
+  },
+}) }));
 jest.mock('@/lib/api/auth', () => ({ beginMfaSetup: jest.fn(), verifyMfa: jest.fn() }));
 
 const challenge = { success: false as const, requires_2fa: true, two_factor_token: 'challenge' };
@@ -18,8 +25,69 @@ const session = { access_token: 'issued', refresh_token: 'refresh', backup_codes
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockComplete.mockReset().mockResolvedValue(undefined);
+  mockSessionVersion = 0;
   jest.mocked(beginMfaSetup).mockResolvedValue({ data: { secret: 'SETUPKEY' } });
   jest.mocked(verifyMfa).mockResolvedValue(session as never);
+});
+
+it('does not adopt a delayed verification after the session changes', async () => {
+  let finish!: (value: never) => void;
+  jest.mocked(verifyMfa).mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  mockSessionVersion += 1;
+  await act(async () => { finish({ access_token: 'old', refresh_token: 'old-refresh' } as never); });
+  expect(mockComplete).not.toHaveBeenCalled();
+  expect(view.queryByTestId('mfa-code')).toBeNull();
+  expect(view.getByText('Return to sign in')).toBeTruthy();
+});
+
+it('does not adopt saved recovery credentials after the session changes', async () => {
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  await view.findByText('RECOVERY-ONE');
+  mockSessionVersion += 1;
+  await act(async () => { fireEvent.press(view.getByText('I have saved my recovery codes')); });
+  expect(mockComplete).not.toHaveBeenCalled();
+  expect(view.queryByText('RECOVERY-ONE')).toBeNull();
+});
+
+it('discards recovery credentials when a replacement challenge arrives', async () => {
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  await view.findByText('RECOVERY-ONE');
+  view.rerender(<MfaSignIn challenge={{ ...challenge, two_factor_token: 'replacement' }} onCancel={jest.fn()} />);
+  expect(view.queryByText('RECOVERY-ONE')).toBeNull();
+  expect(view.getByTestId('mfa-code').props.value).toBe('');
+});
+
+it('clears recovery credentials when auth context re-renders after session replacement', async () => {
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  await view.findByText('RECOVERY-ONE');
+  mockSessionVersion += 1;
+  view.rerender(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  expect(view.queryByText('RECOVERY-ONE')).toBeNull();
+  expect(view.getByText('Return to sign in')).toBeTruthy();
+});
+
+it('keeps the new setup secret when an older challenge setup finishes later', async () => {
+  let finishOld!: (value: never) => void;
+  jest.mocked(beginMfaSetup)
+    .mockReturnValueOnce(new Promise(resolve => { finishOld = resolve; }))
+    .mockResolvedValueOnce({ data: { secret: 'NEWSECRET' } } as never);
+  const view = render(<MfaSignIn challenge={{ ...challenge, requires_2fa_setup: true }} onCancel={jest.fn()} />);
+  view.rerender(<MfaSignIn challenge={{ ...challenge, two_factor_token: 'new', requires_2fa_setup: true }} onCancel={jest.fn()} />);
+  await view.findByText('NEWSECRET');
+  await act(async () => { finishOld({ data: { secret: 'OLDSECRET' } } as never); });
+  expect(view.queryByText('OLDSECRET')).toBeNull();
+  expect(view.getByText('NEWSECRET')).toBeTruthy();
+  expect(beginMfaSetup).toHaveBeenCalledTimes(2);
 });
 
 it('keeps issued setup tokens while recovery codes are saved and retries profile completion without consuming another code', async () => {
@@ -94,4 +162,35 @@ it('keeps server failures readable without exposing an internal exception', asyn
   const view = render(<MfaSignIn challenge={{ ...challenge, requires_2fa_setup: true }} onCancel={jest.fn()} />);
   await view.findByText('Setup could not be completed. Retry, or return to sign in if your session has expired.');
   expect(view.queryByText(/SQLSTATE/)).toBeNull();
+});
+
+it.each(['', '123', 'ABCDEF'])('does not submit an invalid authenticator code from the keyboard (%s)', async (code) => {
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), code);
+  await act(async () => { fireEvent(view.getByTestId('mfa-code'), 'submitEditing'); });
+  expect(verifyMfa).not.toHaveBeenCalled();
+});
+
+it('does not complete sign-in after the challenge screen has departed', async () => {
+  let finish!: (value: never) => void;
+  jest.mocked(verifyMfa).mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+  fireEvent.press(view.getByText('Verify'));
+  view.unmount();
+  await act(async () => { finish({ access_token: 'issued', refresh_token: 'refresh' } as never); });
+  expect(mockComplete).not.toHaveBeenCalled();
+});
+
+it('allows a valid keyboard submission after rejecting an empty backup code', async () => {
+  jest.mocked(verifyMfa).mockResolvedValueOnce({ access_token: 'issued', refresh_token: 'refresh' } as never);
+  mockComplete.mockResolvedValueOnce(undefined);
+  const view = render(<MfaSignIn challenge={challenge} onCancel={jest.fn()} />);
+  fireEvent.press(view.getByText('Use backup code instead'));
+  await act(async () => { fireEvent(view.getByTestId('mfa-code'), 'submitEditing'); });
+  expect(verifyMfa).not.toHaveBeenCalled();
+  fireEvent.changeText(view.getByTestId('mfa-code'), 'RECOVERY-CODE');
+  await act(async () => { fireEvent(view.getByTestId('mfa-code'), 'submitEditing'); });
+  expect(verifyMfa).toHaveBeenCalledWith(challenge, 'RECOVERY-CODE', true);
+  expect(mockComplete).toHaveBeenCalledTimes(1);
 });
