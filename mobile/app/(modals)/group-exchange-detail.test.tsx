@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockRefresh = jest.fn();
@@ -12,6 +12,8 @@ const mockConfirmGroupExchange = jest.fn();
 const mockCompleteGroupExchange = jest.fn();
 const mockCancelGroupExchange = jest.fn();
 let mockParams: { id?: string } = { id: '42' };
+let mockUserId = 7;
+let mockTenantId = 2;
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -59,11 +61,11 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 7 } }),
+  useAuth: () => ({ user: { id: mockUserId } }),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -106,11 +108,11 @@ jest.mock('@/components/ui/AppToast', () => {
 
 // Auto-confirm: invoking confirm() runs the action immediately, mirroring the
 // old Alert.alert destructive button-press simulation.
-const mockConfirmCalls: { title?: string; message?: string }[] = [];
+const mockConfirmCalls: { title?: string; message?: string; onConfirm: () => void | Promise<void> }[] = [];
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: (opts: { title?: string; message?: string; onConfirm: () => void | Promise<void> }) => {
-      mockConfirmCalls.push({ title: opts.title, message: opts.message });
+      mockConfirmCalls.push(opts);
       void opts.onConfirm();
     },
     confirmDialog: null,
@@ -152,6 +154,8 @@ const baseExchange = {
 };
 
 beforeEach(() => {
+  mockUserId = 7;
+  mockTenantId = 2;
   mockParams = { id: '42' };
   mockUseApi.mockReset().mockReturnValue({
     data: { data: baseExchange },
@@ -167,6 +171,49 @@ beforeEach(() => {
 });
 
 describe('GroupExchangeDetailScreen', () => {
+  it.each(['route', 'account', 'tenant'])('ignores an earlier confirmation and response after %s replacement', async replacement => {
+    let reject!: (error: Error) => void;
+    mockConfirmGroupExchange.mockImplementationOnce(() => new Promise((_, decline) => { reject = decline; }));
+    const toast = jest.requireMock('@/components/ui/AppToast').useAppToast().show;
+    const screen = render(<GroupExchangeDetailScreen />);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    const oldConfirmation = mockConfirmCalls[0]!.onConfirm;
+    if (replacement === 'route') mockParams = { id: '43' };
+    if (replacement === 'account') mockUserId = 8;
+    if (replacement === 'tenant') mockTenantId = 3;
+    screen.rerender(<GroupExchangeDetailScreen />);
+    toast.mockClear();
+    await act(async () => reject(new Error('Old failure')));
+    await act(async () => oldConfirmation());
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    expect(mockRefresh).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('sends only one mutation when the confirmation callback repeats before rendering', async () => {
+    let resolve!: () => void;
+    mockConfirmGroupExchange.mockImplementationOnce(() => new Promise<void>(accept => { resolve = accept; }));
+    const screen = render(<GroupExchangeDetailScreen />);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    await act(async () => { void mockConfirmCalls[0]!.onConfirm(); });
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    await act(async () => resolve());
+  });
+
+  it.each([false, true])('does not publish an action response after unmount (failure=%s)', async failure => {
+    let resolve!: () => void;
+    let reject!: (error: Error) => void;
+    mockConfirmGroupExchange.mockImplementationOnce(() => new Promise<void>((accept, decline) => { resolve = accept; reject = decline; }));
+    const toast = jest.requireMock('@/components/ui/AppToast').useAppToast().show;
+    const screen = render(<GroupExchangeDetailScreen />);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    screen.unmount();
+    toast.mockClear();
+    await act(async () => { if (failure) reject(new Error('Late failure')); else resolve(); });
+    expect(mockRefresh).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
   it('renders participant and split details from the backend shape', () => {
     const { getByText, queryByText } = render(<GroupExchangeDetailScreen />);
 
@@ -258,14 +305,13 @@ describe('GroupExchangeDetailScreen', () => {
    */
   it('asks before completing, because completing moves credits', async () => {
     mockUseApi.mockReturnValue({
-      data: { data: { ...baseExchange, status: 'confirmed', organizer_id: 7, can_complete: true, viewer: { is_organizer: true } } },
+      data: { data: { ...baseExchange, participants: baseExchange.participants.map(participant => ({ ...participant, confirmed: true })) } },
       isLoading: false,
       error: null,
       refresh: jest.fn(),
     });
-    const { queryByText } = render(<GroupExchangeDetailScreen />);
-    const button = queryByText('Complete exchange');
-    if (!button) return; // the fixture does not expose the action for this viewer; covered by the organiser tests above
+    const { getByText } = render(<GroupExchangeDetailScreen />);
+    const button = getByText('Complete exchange');
     fireEvent.press(button);
     await waitFor(() => expect(mockCompleteGroupExchange).toHaveBeenCalledWith(42));
     expect(mockConfirmCalls[0]?.title).toBe('groupExchanges.detail.actions.completeTitle');

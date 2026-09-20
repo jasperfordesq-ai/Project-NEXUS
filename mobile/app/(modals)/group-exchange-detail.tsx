@@ -10,7 +10,7 @@ import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -23,7 +23,7 @@ import { cancelGroupExchange, completeGroupExchange, confirmGroupExchange, getGr
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -49,9 +49,12 @@ function formatDate(value?: string | null) {
 }
 
 function GroupExchangeDetailScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
     <ModalErrorBoundary>
-      <GroupExchangeDetailScreenInner />
+      <GroupExchangeDetailScreenInner key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`} />
     </ModalErrorBoundary>
   );
 }
@@ -65,6 +68,12 @@ function GroupExchangeDetailScreenInner() {
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const exchangeId = Number(id);
   const safeExchangeId = Number.isFinite(exchangeId) && exchangeId > 0 ? exchangeId : 0;
@@ -72,7 +81,8 @@ function GroupExchangeDetailScreenInner() {
   const exchange = data?.data ?? null;
 
   async function runAction(action: 'confirm' | 'complete' | 'cancel') {
-    if (!exchange) return;
+    if (!exchange || !mountedRef.current || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       if (action === 'confirm') {
@@ -82,11 +92,13 @@ function GroupExchangeDetailScreenInner() {
       } else {
         await cancelGroupExchange(exchange.id);
       }
-      await refresh();
+      if (mountedRef.current) refresh();
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(`groupExchanges.detail.actions.${action}Failed`)), variant: 'danger' });
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      if (mountedRef.current) setSubmitting(false);
     }
   }
 
