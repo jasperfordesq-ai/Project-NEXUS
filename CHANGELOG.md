@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native curriculum moves now use atomic ordering, wait for confirmed results, and read back uncertain saves before allowing another move; recovery preserves lesson drafts and independently saved curriculum changes.
+
 - Native course section renames now save in order and preserve other successfully saved curriculum changes when a rename fails; failed title edits remain available to retry.
 
 - Native curriculum editing now ignores departed confirmations and stops new section, lesson, quiz, and question requests after leaving, while retaining acknowledgements for creations already accepted by the server.

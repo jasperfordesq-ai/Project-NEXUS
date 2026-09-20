@@ -1,17 +1,17 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2242 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2247 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 59,
-    "call_sites": 648,
-    "distinct_endpoints": 525,
-    "verified": 525,
+    "api_modules": 60,
+    "call_sites": 675,
+    "distinct_endpoints": 531,
+    "verified": 531,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
-    "dynamic_unverifiable": 82,
+    "dynamic_unverifiable": 101,
     "inline_fetch_offenders": 0
   },
   "missing_from_routes": [],
@@ -58,98 +58,193 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:235",
+      "at": "eventOfflineCheckin.ts:238",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:242",
+      "at": "eventOfflineCheckin.ts:245",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:250",
+      "at": "eventOfflineCheckin.ts:253",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:264",
+      "at": "eventOfflineCheckin.ts:267",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:276",
+      "at": "eventOfflineCheckin.ts:279",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:288",
+      "at": "eventOfflineCheckin.ts:291",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:303",
+      "at": "eventOfflineCheckin.ts:305",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:314",
+      "at": "eventOfflineCheckin.ts:318",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:336",
+      "at": "eventOfflineCheckin.ts:329",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:346",
+      "at": "eventOfflineCheckin.ts:369",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:357",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "eventRegistration.ts:191",
+      "at": "eventOfflineCheckin.ts:378",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventRegistration.ts:205",
+      "at": "eventOfflineCheckin.ts:398",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventRegistration.ts:221",
+      "at": "eventOfflineCheckin.ts:408",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:419",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventRegistration.ts:234",
+      "at": "eventRegistration.ts:212",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:220",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:230",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventRegistration.ts:246",
-      "http": "POST",
+      "at": "eventRegistration.ts:289",
+      "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventRegistration.ts:264",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "eventRegistration.ts:285",
-      "http": "POST",
+      "at": "eventRegistration.ts:306",
+      "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "eventRegistration.ts:307",
       "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:338",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:364",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:384",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:402",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:450",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:464",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:480",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:493",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:505",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:523",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:544",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:566",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:593",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:622",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:646",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:660",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:684",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventRegistration.ts:711",
+      "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
@@ -643,7 +738,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "comments.ts:74",
+        "comments.ts:75",
         "exchanges.ts:240"
       ]
     },
@@ -653,7 +748,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "comments.ts:86",
+        "comments.ts:87",
         "exchanges.ts:247"
       ]
     },
@@ -663,7 +758,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "comments.ts:106"
+        "comments.ts:107"
       ]
     },
     {
@@ -672,7 +767,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "comments.ts:98"
+        "comments.ts:99"
       ]
     },
     {
@@ -681,7 +776,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "comments.ts:113"
+        "comments.ts:114"
       ]
     },
     {
@@ -798,7 +893,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:243"
+        "courses.ts:246"
       ]
     },
     {
@@ -807,8 +902,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:343",
-        "courses.ts:344"
+        "courses.ts:348",
+        "courses.ts:349"
       ]
     },
     {
@@ -817,7 +912,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:255"
+        "courses.ts:258"
       ]
     },
     {
@@ -826,7 +921,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:352"
+        "courses.ts:357"
       ]
     },
     {
@@ -835,7 +930,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:515"
+        "courses.ts:534"
       ]
     },
     {
@@ -844,7 +939,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:443"
+        "courses.ts:462"
       ]
     },
     {
@@ -853,8 +948,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:447",
-        "courses.ts:448"
+        "courses.ts:466",
+        "courses.ts:467"
       ]
     },
     {
@@ -863,7 +958,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:267"
+        "courses.ts:270"
       ]
     },
     {
@@ -872,7 +967,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:499"
+        "courses.ts:518"
       ]
     },
     {
@@ -881,8 +976,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:390",
-        "courses.ts:391"
+        "courses.ts:409",
+        "courses.ts:410"
       ]
     },
     {
@@ -891,7 +986,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:410"
+        "courses.ts:429"
       ]
     },
     {
@@ -900,7 +995,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:403"
+        "courses.ts:422"
       ]
     },
     {
@@ -909,7 +1004,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:282"
+        "courses.ts:285"
       ]
     },
     {
@@ -918,7 +1013,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:263"
+        "courses.ts:266"
       ]
     },
     {
@@ -927,7 +1022,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:356"
+        "courses.ts:361"
       ]
     },
     {
@@ -936,8 +1031,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:416",
-        "courses.ts:417"
+        "courses.ts:435",
+        "courses.ts:436"
       ]
     },
     {
@@ -946,8 +1041,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:431",
-        "courses.ts:435"
+        "courses.ts:450",
+        "courses.ts:454"
       ]
     },
     {
@@ -956,8 +1051,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:364",
-        "courses.ts:365"
+        "courses.ts:369",
+        "courses.ts:370"
       ]
     },
     {
@@ -966,7 +1061,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:384"
+        "courses.ts:403"
       ]
     },
     {
@@ -975,7 +1070,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:377"
+        "courses.ts:382"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/courses/{param}/sections/{param}/lessons/reorder",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:397"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/courses/{param}/sections/reorder",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:391"
       ]
     },
     {
@@ -984,7 +1097,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:360"
+        "courses.ts:365"
       ]
     },
     {
@@ -993,7 +1106,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:507"
+        "courses.ts:526"
       ]
     },
     {
@@ -1002,7 +1115,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:334"
+        "courses.ts:339"
       ]
     },
     {
@@ -1011,7 +1124,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:339"
+        "courses.ts:344"
       ]
     },
     {
@@ -1020,7 +1133,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:306"
+        "courses.ts:310"
       ]
     },
     {
@@ -1029,7 +1142,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:322"
+        "courses.ts:327"
       ]
     },
     {
@@ -1038,7 +1151,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "donations.ts:23"
+        "donations.ts:50"
       ]
     },
     {
@@ -1057,6 +1170,33 @@
       "matched_via": "exact",
       "sites": [
         "eventLifecycleHistory.ts:62"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/people",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventPeople.ts:116"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/people/{param}/history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventPeople.ts:66"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/events/{param}/people/bulk",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventPeople.ts:173"
       ]
     },
     {
@@ -1101,7 +1241,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:774",
+        "client.ts:784",
         "exchanges.ts:217"
       ]
     },
@@ -2758,7 +2898,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "resources.ts:100"
+        "resources.ts:106"
       ]
     },
     {
@@ -2767,7 +2907,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "resources.ts:110"
+        "resources.ts:123"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/kb/{param}/feedback",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "resources.ts:132"
       ]
     },
     {
@@ -2776,7 +2925,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "resources.ts:105"
+        "resources.ts:111",
+        "resources.ts:116"
       ]
     },
     {
@@ -3679,7 +3829,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:259"
+        "courses.ts:262"
       ]
     },
     {
@@ -3706,7 +3856,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:215"
+        "endorsements.ts:232"
       ]
     },
     {
@@ -3715,7 +3865,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:197"
+        "endorsements.ts:214"
       ]
     },
     {
@@ -3724,7 +3874,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:152"
+        "endorsements.ts:169"
       ]
     },
     {
@@ -4314,7 +4464,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "resources.ts:90"
+        "resources.ts:96"
       ]
     },
     {
@@ -4323,7 +4473,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "resources.ts:95"
+        "resources.ts:101"
       ]
     },
     {
@@ -4423,7 +4573,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:255"
+        "endorsements.ts:272"
       ]
     },
     {
@@ -4432,7 +4582,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:259"
+        "endorsements.ts:276"
       ]
     },
     {
@@ -4441,7 +4591,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:263"
+        "endorsements.ts:280"
       ]
     },
     {
@@ -4450,7 +4600,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:250"
+        "endorsements.ts:267"
       ]
     },
     {
@@ -4505,7 +4655,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "client.ts:773",
+        "client.ts:783",
+        "eventPeople.ts:92",
         "members.ts:76"
       ]
     },
@@ -4533,7 +4684,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:147"
+        "settings.ts:148"
       ]
     },
     {
@@ -4542,7 +4693,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:143"
+        "settings.ts:144"
       ]
     },
     {
@@ -4569,7 +4720,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:131"
+        "settings.ts:132"
       ]
     },
     {
@@ -4578,7 +4729,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:127"
+        "settings.ts:128"
       ]
     },
     {
@@ -4641,7 +4792,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:165"
+        "settings.ts:166"
       ]
     },
     {
@@ -4650,7 +4801,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:206"
+        "settings.ts:207"
       ]
     },
     {
@@ -4668,7 +4819,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:151"
+        "settings.ts:152"
       ]
     },
     {
@@ -4677,7 +4828,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:156"
+        "settings.ts:157"
       ]
     },
     {
@@ -4686,7 +4837,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:171"
+        "endorsements.ts:188"
       ]
     },
     {
@@ -4695,7 +4846,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:225"
+        "endorsements.ts:242"
       ]
     },
     {
@@ -4704,7 +4855,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "endorsements.ts:238"
+        "endorsements.ts:255"
       ]
     },
     {
@@ -4713,7 +4864,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:160"
+        "settings.ts:161"
       ]
     },
     {
@@ -4722,7 +4873,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:170"
+        "settings.ts:171"
       ]
     },
     {
@@ -4731,7 +4882,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:237"
+        "settings.ts:238"
       ]
     },
     {
@@ -4740,7 +4891,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:278"
+        "settings.ts:279"
       ]
     },
     {
@@ -4749,7 +4900,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:174"
+        "settings.ts:175"
       ]
     },
     {
@@ -4758,8 +4909,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "settings.ts:181",
-        "settings.ts:197"
+        "settings.ts:182",
+        "settings.ts:198"
       ]
     },
     {

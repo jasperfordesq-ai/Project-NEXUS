@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2735,
-  "api_route_rows": 2700,
-  "distinct_api_paths": 2245,
+  "total_registered_routes": 2737,
+  "api_route_rows": 2702,
+  "distinct_api_paths": 2247,
   "route_source_fingerprint": {
-    "digest": "3f048997c5637c35240cf5f55be336d61b1a10b3cd70a92484944681a22301e5",
+    "digest": "17af615636ac34a7cd8219be69b112c8aa414805c8c583707a2684227cb691f2",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "53dfcdd83e16e27408327a7645fc4bd0dc05df1c0537ba307efed8c59b14e7fa"
+        "sha256": "843dd0a9fc539a8ef70eb601b65a00957deabb11e1c13cd52cb096f97e678381"
       },
       {
         "file": "routes/channels.php",
@@ -3930,8 +3930,14 @@
     "/api/v2/courses/{courseId}/sections": [
       "POST"
     ],
+    "/api/v2/courses/{courseId}/sections/reorder": [
+      "PUT"
+    ],
     "/api/v2/courses/{courseId}/sections/{sectionId}": [
       "DELETE",
+      "PUT"
+    ],
+    "/api/v2/courses/{courseId}/sections/{sectionId}/lessons/reorder": [
       "PUT"
     ],
     "/api/v2/courses/{idOrSlug}": [

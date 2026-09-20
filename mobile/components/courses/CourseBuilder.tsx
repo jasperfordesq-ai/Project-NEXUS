@@ -14,7 +14,7 @@
  * drag handle inside a vertically scrolling form is the classic way to make a list
  * unusable on a phone. Keep the buttons.
  *
- * Reordering displays the new order before both position updates finish.
+ * Reordering uses one atomic request and reconciles uncertain results before another move.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -28,11 +28,15 @@ import { Ionicons } from '@/components/ui/Icon';
 import Checkbox from '@/components/ui/Checkbox';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 import Input from '@/components/ui/Input';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import NativePressable from '@/components/ui/NativePressable';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import {
+  getCourse,
+  reorderCourseSections,
+  reorderCourseLessons,
   createCourseLesson,
   createCourseQuiz,
   createCourseSection,
@@ -81,6 +85,12 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+  const structureVersion = useRef(0);
+  const orderInFlight = useRef(false);
+  const recoveryScope = useRef<{ sectionId: number | null } | null>(null);
+  const [ordering, setOrdering] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const movesDisabled = ordering || orderError !== null;
   const sectionRenames = useRef(new Map<number, Promise<void>>());
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
@@ -103,6 +113,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
       const created = await createCourseSection(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
       if (!mountedRef.current) return;
+      structureVersion.current += 1;
       setSections((prev) => [...prev, { ...created, lessons: [] }]);
     } catch {
       reportFailure();
@@ -136,6 +147,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     try {
       await deleteCourseSection(courseId, sectionId);
       if (!mountedRef.current) return;
+      structureVersion.current += 1;
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
     } catch {
       reportFailure();
@@ -154,26 +166,85 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     });
   }
 
-  async function moveSection(index: number, direction: -1 | 1) {
+  async function recoverOrder(scope: { sectionId: number | null }) {
+    const version = structureVersion.current;
+    const fresh = await getCourse(courseId);
     if (!mountedRef.current) return;
-    const target = index + direction;
-    if (target < 0 || target >= sections.length) return;
-    const previous = sections;
-    const next = [...sections];
-    const moved = next[index]!;
-    next[index] = next[target]!;
-    next[target] = moved;
-    setSections(next);
+    if (version !== structureVersion.current || !Array.isArray(fresh.sections)) throw new Error('Unconfirmed curriculum');
+    const freshSections = fresh.sections;
+    if (scope.sectionId === null) {
+      setSections(current => freshSections.map((section, position) => ({
+        ...section, ...current.find(item => item.id === section.id), position,
+      })));
+    } else {
+      const freshSection = freshSections.find(section => section.id === scope.sectionId);
+      if (freshSection && !Array.isArray(freshSection.lessons)) throw new Error('Unconfirmed lessons');
+      setSections(current => current.flatMap(section => {
+        if (section.id !== scope.sectionId) return [section];
+        if (!freshSection) return [];
+        return [{ ...section, lessons: freshSection.lessons!.map((lesson, position) => ({
+          ...lesson, ...section.lessons?.find(item => item.id === lesson.id), position,
+        })) }];
+      }));
+    }
+    recoveryScope.current = null;
+    setOrderError(null);
+  }
+
+  async function retryOrderRead() {
+    const scope = recoveryScope.current;
+    if (!mountedRef.current || orderInFlight.current || !scope) return;
+    orderInFlight.current = true;
+    setOrdering(true);
+    try { await recoverOrder(scope); }
+    catch { if (mountedRef.current) setOrderError(t('common:errors.loadFailedSubtitle')); }
+    finally {
+      orderInFlight.current = false;
+      if (mountedRef.current) setOrdering(false);
+    }
+  }
+
+  async function moveItems(sectionId: number | null, expected: number[], desired: number[]) {
+    if (!mountedRef.current || orderInFlight.current || recoveryScope.current) return;
+    const scope = { sectionId };
+    orderInFlight.current = true;
+    recoveryScope.current = scope;
+    setOrdering(true);
     try {
-      await Promise.all([
-        updateCourseSection(courseId, next[index]!.id, { position: index }),
-        updateCourseSection(courseId, next[target]!.id, { position: target }),
-      ]);
+      const receipt = sectionId === null
+        ? await reorderCourseSections(courseId, expected, desired)
+        : await reorderCourseLessons(courseId, sectionId, expected, desired);
+      if (!mountedRef.current) return;
+      if (!Array.isArray(receipt?.ordered_ids) || receipt.ordered_ids.length !== desired.length
+        || receipt.ordered_ids.some((id, index) => id !== desired[index])) throw new Error('Unconfirmed order');
+      // Apply positions to current objects, retaining edits accepted while the order saved.
+      const ordered = <T extends { id: number; position: number }>(items: T[]) => {
+        const ranks = new Map(desired.map((id, index) => [id, index]));
+        return items.map(item => ({ ...item, position: ranks.get(item.id) ?? item.position }))
+          .sort((a, b) => (ranks.get(a.id) ?? desired.length) - (ranks.get(b.id) ?? desired.length));
+      };
+      setSections(current => sectionId === null ? ordered(current) : current.map(section => section.id === sectionId
+        ? { ...section, lessons: ordered(section.lessons ?? []) } : section));
+      recoveryScope.current = null;
+      setOrderError(null);
     } catch {
       if (!mountedRef.current) return;
-      setSections(previous);
       reportFailure();
+      try { await recoverOrder(scope); }
+      catch { if (mountedRef.current) setOrderError(t('common:errors.loadFailedSubtitle')); }
+    } finally {
+      orderInFlight.current = false;
+      if (mountedRef.current) setOrdering(false);
     }
+  }
+
+  function moveSection(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (index < 0 || index >= sections.length || target < 0 || target >= sections.length) return;
+    const expected = sections.map(section => section.id);
+    const desired = [...expected];
+    [desired[index], desired[target]] = [desired[target]!, desired[index]!];
+    void moveItems(null, expected, desired);
   }
 
   async function addLesson(sectionId: number) {
@@ -192,6 +263,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
       const created = await createCourseLesson(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
       if (!mountedRef.current) return;
+      structureVersion.current += 1;
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: [...(s.lessons ?? []), created] } : s
       )));
@@ -216,6 +288,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     try {
       await deleteCourseLesson(courseId, lessonId);
       if (!mountedRef.current) return;
+      structureVersion.current += 1;
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: (s.lessons ?? []).filter((l) => l.id !== lessonId) } : s
       )));
@@ -236,28 +309,14 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     });
   }
 
-  async function moveLesson(sectionId: number, index: number, direction: -1 | 1) {
-    if (!mountedRef.current) return;
-    const section = sections.find((s) => s.id === sectionId);
-    if (!section) return;
-    const lessons = [...(section.lessons ?? [])];
+  function moveLesson(sectionId: number, index: number, direction: -1 | 1) {
+    const lessons = sections.find(section => section.id === sectionId)?.lessons ?? [];
     const target = index + direction;
-    if (target < 0 || target >= lessons.length) return;
-    const previous = sections;
-    const moved = lessons[index]!;
-    lessons[index] = lessons[target]!;
-    lessons[target] = moved;
-    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, lessons } : s)));
-    try {
-      await Promise.all([
-        updateCourseLesson(courseId, lessons[index]!.id, { position: index }),
-        updateCourseLesson(courseId, lessons[target]!.id, { position: target }),
-      ]);
-    } catch {
-      if (!mountedRef.current) return;
-      setSections(previous);
-      reportFailure();
-    }
+    if (index < 0 || index >= lessons.length || target < 0 || target >= lessons.length) return;
+    const expected = lessons.map(lesson => lesson.id);
+    const desired = [...expected];
+    [desired[index], desired[target]] = [desired[target]!, desired[index]!];
+    void moveItems(sectionId, expected, desired);
   }
 
   return (
@@ -269,6 +328,8 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
         </HeroButton>
       </View>
 
+      <RefreshFailedNotice error={orderError} onRetry={() => void retryOrderRead()} isRetrying={ordering} />
+      {ordering ? <Text accessibilityLiveRegion="polite">{t('quiz.submitting')}</Text> : null}
       {sections.length === 0 ? (
         <HeroCard className="rounded-panel">
           <HeroCard.Body className="p-5">
@@ -281,6 +342,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
             <HeroCard.Body className="gap-3 p-4">
               <SectionHeader
                 section={section}
+                movesDisabled={movesDisabled}
                 isFirst={sectionIndex === 0}
                 isLast={sectionIndex === sections.length - 1}
                 onRename={(title) => void renameSection(section.id, title)}
@@ -294,6 +356,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
                     key={lesson.id}
                     courseId={courseId}
                     lesson={lesson}
+                    movesDisabled={movesDisabled}
                     isFirst={lessonIndex === 0}
                     isLast={lessonIndex === (section.lessons?.length ?? 0) - 1}
                     primary={primary}
@@ -320,6 +383,7 @@ function SectionHeader({
   section,
   isFirst,
   isLast,
+  movesDisabled,
   onRename,
   onMove,
   onDelete,
@@ -327,6 +391,7 @@ function SectionHeader({
   section: CourseSection;
   isFirst: boolean;
   isLast: boolean;
+  movesDisabled: boolean;
   onRename: (title: string) => void;
   onMove: (direction: -1 | 1) => void;
   onDelete: () => void;
@@ -353,13 +418,13 @@ function SectionHeader({
         <IconAction
           icon="chevron-up"
           label={t('builder.move_up')}
-          disabled={isFirst}
+          disabled={isFirst || movesDisabled}
           onPress={() => onMove(-1)}
         />
         <IconAction
           icon="chevron-down"
           label={t('builder.move_down')}
-          disabled={isLast}
+          disabled={isLast || movesDisabled}
           onPress={() => onMove(1)}
         />
         <IconAction
@@ -378,6 +443,7 @@ function LessonRow({
   lesson,
   isFirst,
   isLast,
+  movesDisabled,
   primary,
   largeText,
   onChange,
@@ -388,6 +454,7 @@ function LessonRow({
   lesson: CourseLesson;
   isFirst: boolean;
   isLast: boolean;
+  movesDisabled: boolean;
   primary: string;
   largeText: boolean;
   onChange: (lesson: CourseLesson) => void;
@@ -530,8 +597,8 @@ function LessonRow({
           </NativePressable>
         </View>
         <View className="flex-row items-center gap-2">
-          <IconAction icon="chevron-up" label={t('builder.move_up')} disabled={isFirst} onPress={() => onMove(-1)} />
-          <IconAction icon="chevron-down" label={t('builder.move_down')} disabled={isLast} onPress={() => onMove(1)} />
+          <IconAction icon="chevron-up" label={t('builder.move_up')} disabled={isFirst || movesDisabled} onPress={() => onMove(-1)} />
+          <IconAction icon="chevron-down" label={t('builder.move_down')} disabled={isLast || movesDisabled} onPress={() => onMove(1)} />
           <IconAction icon="trash-outline" label={t('builder.delete_lesson')} tone="danger" onPress={onDelete} />
         </View>
       </View>

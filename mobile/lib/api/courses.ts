@@ -385,6 +385,20 @@ export async function updateCourseSection(
   ));
 }
 
+export interface CourseOrderResult { ordered_ids: number[] }
+
+export async function reorderCourseSections(courseId: number, expectedIds: number[], orderedIds: number[]): Promise<CourseOrderResult> {
+  return unwrap(await api.put<DataEnvelope<CourseOrderResult>>(
+    `${API_V2}/courses/${courseId}/sections/reorder`, { expected_ids: expectedIds, ordered_ids: orderedIds },
+  ));
+}
+
+export async function reorderCourseLessons(courseId: number, sectionId: number, expectedIds: number[], orderedIds: number[]): Promise<CourseOrderResult> {
+  return unwrap(await api.put<DataEnvelope<CourseOrderResult>>(
+    `${API_V2}/courses/${courseId}/sections/${sectionId}/lessons/reorder`, { expected_ids: expectedIds, ordered_ids: orderedIds },
+  ));
+}
+
 export async function deleteCourseSection(courseId: number, sectionId: number): Promise<{ deleted: boolean }> {
   return unwrap(await api.delete<DataEnvelope<{ deleted: boolean }>>(
     `${API_V2}/courses/${courseId}/sections/${sectionId}`,

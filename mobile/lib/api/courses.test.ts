@@ -31,6 +31,8 @@ import {
   updateCourse,
   updateCourseLesson,
   updateCourseSection,
+  reorderCourseSections,
+  reorderCourseLessons,
 } from './courses';
 
 jest.mock('@/lib/api/client', () => ({
@@ -44,6 +46,14 @@ jest.mock('@/lib/api/client', () => ({
 
 describe('courses API', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('sends the expected and desired order in a single scoped request', async () => {
+    jest.mocked(api.put).mockResolvedValue({ data: { ordered_ids: [6, 5] } });
+    expect(await reorderCourseSections(42, [5, 6], [6, 5])).toEqual({ ordered_ids: [6, 5] });
+    expect(api.put).toHaveBeenLastCalledWith('/api/v2/courses/42/sections/reorder', { expected_ids: [5, 6], ordered_ids: [6, 5] });
+    await reorderCourseLessons(42, 8, [5, 6], [6, 5]);
+    expect(api.put).toHaveBeenLastCalledWith('/api/v2/courses/42/sections/8/lessons/reorder', { expected_ids: [5, 6], ordered_ids: [6, 5] });
+  });
 
   it('forwards a stable quiz attempt identity without changing the result', async () => {
     const receipt = { attempt_id: 12, score_percent: 80, passed: true, needs_review: false };

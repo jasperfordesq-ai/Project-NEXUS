@@ -15,6 +15,9 @@ import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateCourseSection = jest.fn();
+const mockReorderSections = jest.fn();
+const mockReorderLessons = jest.fn();
+const mockGetCourse = jest.fn();
 const mockUpdateCourseSection = jest.fn();
 const mockDeleteCourseSection = jest.fn();
 const mockCreateCourseLesson = jest.fn();
@@ -71,6 +74,9 @@ jest.mock('@/components/ui/useConfirm', () => ({
 }));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/lib/api/courses', () => ({
+  reorderCourseSections: (...args: unknown[]) => mockReorderSections(...args),
+  reorderCourseLessons: (...args: unknown[]) => mockReorderLessons(...args),
+  getCourse: (...args: unknown[]) => mockGetCourse(...args),
   createCourseSection: (...args: unknown[]) => mockCreateCourseSection(...args),
   updateCourseSection: (...args: unknown[]) => mockUpdateCourseSection(...args),
   deleteCourseSection: (...args: unknown[]) => mockDeleteCourseSection(...args),
@@ -150,6 +156,9 @@ describe('CourseBuilder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockShowToast.mockClear();
+    mockReorderSections.mockReset();
+    mockReorderLessons.mockReset();
+    mockGetCourse.mockReset();
     mockHoldConfirm = false;
     mockHeldConfirm = null;
     mockUpdateCourseSection.mockResolvedValue({ id: 1 });
@@ -367,28 +376,105 @@ describe('CourseBuilder', () => {
     expect(mockUpdateCourseSection).toHaveBeenCalledTimes(2);
   });
 
-  it('reorders sections optimistically and puts them back when the API refuses', async () => {
-    mockUpdateCourseSection.mockRejectedValue(new Error('nope'));
+  it('uses one atomic section move and waits for confirmation before changing order', async () => {
+    let resolveMove!: (value: object) => void;
+    mockReorderSections.mockImplementationOnce(() => new Promise(resolve => { resolveMove = resolve; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />);
+    const move = screen.getAllByLabelText('Move down')[0]!;
+    fireEvent.press(move);
+    fireEvent.press(move);
+    await waitFor(() => expect(mockReorderSections).toHaveBeenCalledTimes(1));
+    expect(mockReorderSections).toHaveBeenCalledWith(42, [5, 6], [6, 5]);
+    expect(mockUpdateCourseSection).not.toHaveBeenCalled();
+    expect(screen.getAllByDisplayValue(/Week/).map(field => field.props.value)).toEqual(['Week one', 'Week two']);
+    await act(async () => resolveMove({ ordered_ids: [6, 5] }));
+    expect(screen.getAllByDisplayValue(/Week/).map(field => field.props.value)).toEqual(['Week two', 'Week one']);
+  });
 
-    const { getAllByLabelText, getAllByDisplayValue } = render(
-      <CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />,
-    );
+  it('uses one atomic lesson move while preserving the open lesson draft', async () => {
+    const lessons = [90, 91].map(id => ({ id, course_id: 42, section_id: 5, title: 'Lesson ' + id, content_type: 'text' as const, position: id - 90, is_preview: false }));
+    mockReorderLessons.mockResolvedValue({ ordered_ids: [91, 90] });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', lessons)]} />);
+    fireEvent.press(screen.getByLabelText('Lesson 90'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsent title');
+    fireEvent.press(screen.getAllByLabelText('Move down')[1]!);
+    await waitFor(() => expect(mockReorderLessons).toHaveBeenCalledWith(42, 5, [90, 91], [91, 90]));
+    expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Unsent title')).toBeTruthy();
+    const ids = screen.getAllByTestId(/course-lesson-.*-header/).map(row => row.props.testID);
+    expect(ids).toEqual(['course-lesson-91-header', 'course-lesson-90-header']);
+  });
 
-    expect(getAllByDisplayValue(/Week/).map((field) => field.props.value)).toEqual(['Week one', 'Week two']);
+  it('reads the accepted order after a lost response without discarding a title draft', async () => {
+    mockReorderSections.mockRejectedValue(new Error('Lost response'));
+    mockGetCourse.mockResolvedValue({ id: 42, sections: [section(6, 'Week two'), section(5, 'Week one')] });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />);
+    fireEvent.changeText(screen.getByDisplayValue('Week one'), 'Unsent name');
+    fireEvent.press(screen.getAllByLabelText('Move down')[0]!);
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledWith(42));
+    await waitFor(() => expect(screen.getAllByLabelText('Section title').map(field => field.props.value)).toEqual(['Week two', 'Unsent name']));
+    expect(mockReorderSections).toHaveBeenCalledTimes(1);
+  });
 
-    fireEvent.press(getAllByLabelText('Move down')[0]!);
+  it('locks further moves after failed readback and retries only the read', async () => {
+    mockReorderSections.mockRejectedValue(new Error('Lost response'));
+    mockGetCourse.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ id: 42, sections: [section(6, 'Week two'), section(5, 'Week one')] });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />);
+    fireEvent.press(screen.getAllByLabelText('Move down')[0]!);
+    await waitFor(() => expect(screen.getByLabelText('Retry')).toBeTruthy());
+    fireEvent.press(screen.getAllByLabelText('Move down')[0]!);
+    expect(mockReorderSections).toHaveBeenCalledTimes(1);
+    await act(async () => fireEvent.press(screen.getByLabelText('Retry')));
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByLabelText('Retry')).toBeNull());
+    expect(mockGetCourse).toHaveBeenCalledTimes(2);
+    expect(mockReorderSections).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByDisplayValue(/Week/).map(field => field.props.value)).toEqual(['Week two', 'Week one']);
+  });
 
-    await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledTimes(2));
-    expect(mockUpdateCourseSection).toHaveBeenCalledWith(42, 6, { position: 0 });
-    expect(mockUpdateCourseSection).toHaveBeenCalledWith(42, 5, { position: 1 });
+  it('does not replace a lesson accepted while an order readback was pending', async () => {
+    let resolveRead!: (value: object) => void;
+    mockReorderSections.mockRejectedValue(new Error('Lost response'));
+    mockGetCourse.mockImplementationOnce(() => new Promise(resolve => { resolveRead = resolve; }));
+    const savedLesson = { id: 90, course_id: 42, section_id: 5, title: 'Saved lesson', content_type: 'text' as const, position: 0, is_preview: false };
+    mockCreateCourseLesson.mockResolvedValue(savedLesson);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />);
+    fireEvent.press(screen.getAllByLabelText('Move down')[0]!);
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getAllByText('Add lesson')[0]!);
+    await waitFor(() => expect(screen.getByText('Saved lesson')).toBeTruthy());
+    await act(async () => resolveRead({ id: 42, sections: [section(6, 'Week two'), section(5, 'Week one')] }));
+    expect(screen.getByText('Saved lesson')).toBeTruthy();
+    expect(screen.getByLabelText('Retry')).toBeTruthy();
+    mockGetCourse.mockResolvedValue({ id: 42, sections: [section(6, 'Week two'), section(5, 'Week one', [savedLesson])] });
+    await act(async () => fireEvent.press(screen.getByLabelText('Retry')));
+    await waitFor(() => expect(screen.queryByLabelText('Retry')).toBeNull());
+    expect(screen.getByText('Saved lesson')).toBeTruthy();
+  });
 
-    // Rolled back — the member is not shown an order the server rejected.
-    await waitFor(() => {
-      expect(getAllByDisplayValue(/Week/).map((field) => field.props.value)).toEqual(['Week one', 'Week two']);
-    });
-    expect(mockShowToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Could not save. Please try again.', variant: 'danger' }),
-    );
+  it('recovers a lesson order without replacing its unsaved contents', async () => {
+    const lessons = [90, 91].map(id => ({ id, course_id: 42, section_id: 5, title: 'Lesson ' + id, content_type: 'text' as const, position: id - 90, is_preview: false }));
+    mockReorderLessons.mockRejectedValue(new Error('Lost response'));
+    mockGetCourse.mockResolvedValue({ id: 42, sections: [section(5, 'Week one', [...lessons].reverse())] });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', lessons)]} />);
+    fireEvent.press(screen.getByLabelText('Lesson 90'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsent title');
+    fireEvent.press(screen.getAllByLabelText('Move down')[1]!);
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getAllByTestId(/course-lesson-.*-header/)[0]!.props.testID).toBe('course-lesson-91-header'));
+    expect(screen.getByDisplayValue('Unsent title')).toBeTruthy();
+    expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
+  });
+
+  it('does not read back or toast an ordering failure after leaving', async () => {
+    let rejectMove!: (reason: Error) => void;
+    mockReorderSections.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectMove = reject; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one'), section(6, 'Week two')]} />);
+    fireEvent.press(screen.getAllByLabelText('Move down')[0]!);
+    screen.unmount();
+    await act(async () => rejectMove(new Error('Offline')));
+    expect(mockGetCourse).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   it('deletes a lesson after confirmation and drops it from the section', async () => {
