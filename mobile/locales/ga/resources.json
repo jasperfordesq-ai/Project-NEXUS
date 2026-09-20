@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Féach ar an bhfíseán",
+  "videoExternalHint": "Osclaítear é i d’aip físeáin nó i do bhrabhsálaí.",
   "title": "Acmhainní",
   "subtitle": "Brabhsáil comhaid chomhroinnte agus ailt sa bhunachar eolais.",
   "articleTitle": "Alt",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Acmhainn shábháilte: {{title}}",
   "categoriesFailed": "Níorbh fhéidir na catagóirí a luchtú",
   "kbEmptySubtitle": "Níl aon alt ar fáil fós.",
-  "kbSearchEmptySubtitle": "Bain triail as téarma cuardaigh eile."
+  "kbSearchEmptySubtitle": "Bain triail as téarma cuardaigh eile.",
+  "attachments": "Ceangaltáin",
+  "relatedArticles": "Ailt ghaolmhara",
+  "downloadFailed": "Níorbh fhéidir an comhad a íoslódáil.",
+  "sharingUnavailable": "Ní féidir leis an ngléas seo comhaid íoslódáilte a oscailt.",
+  "feedback": {
+    "question": "An raibh an t-alt seo cabhrach?",
+    "yes": "Tá",
+    "no": "Níl"
+  },
+  "feedbackThanks": "Go raibh maith agat as d'aiseolas!",
+  "feedbackFailed": "Theip ar an aiseolas a sheoladh."
 }

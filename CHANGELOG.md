@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Native knowledge articles now show structured content, related articles, video links, authenticated attachments, and saved helpfulness feedback with recovery for failed requests.
+
 - Shared native article rendering now supports HTML and Markdown structure, accessible headings and links, and literal plain text, with reproducible dependency patches that avoid unused imports.
 
 - Added a native organiser invitation history and revocation screen with permission-controlled recipient details, reason validation, separate confirmation, explicit saved-request recovery and seven-language labels.
@@ -97,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Article attachment and feedback controls retain meaningful accessible names during loading and clear stale busy descriptions after completion or cancellation.
 
 - Native article text now refreshes when the system font size changes, preventing stale enlarged or undersized body text.
 

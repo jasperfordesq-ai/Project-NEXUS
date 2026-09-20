@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Ver vídeo",
+  "videoExternalHint": "Se abre en tu aplicación de vídeo o navegador.",
   "title": "Recursos",
   "subtitle": "Explora archivos compartidos y artículos de la base de conocimientos.",
   "articleTitle": "Artículo",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Recurso guardado: {{title}}",
   "categoriesFailed": "No se pudieron cargar las categorías",
   "kbEmptySubtitle": "Aún no hay artículos disponibles.",
-  "kbSearchEmptySubtitle": "Prueba con otro término de búsqueda."
+  "kbSearchEmptySubtitle": "Prueba con otro término de búsqueda.",
+  "attachments": "Archivos adjuntos",
+  "relatedArticles": "Artículos relacionados",
+  "downloadFailed": "No se pudo descargar el archivo.",
+  "sharingUnavailable": "Este dispositivo no puede abrir archivos descargados.",
+  "feedback": {
+    "question": "¿Fue útil este artículo?",
+    "yes": "S?",
+    "no": "No"
+  },
+  "feedbackThanks": "¡Gracias por tu opinión!",
+  "feedbackFailed": "Error al enviar la opinión."
 }

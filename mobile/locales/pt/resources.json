@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Ver vídeo",
+  "videoExternalHint": "Abre na sua aplicação de vídeo ou no navegador.",
   "title": "Recursos",
   "subtitle": "Consulte ficheiros partilhados e artigos da base de conhecimento.",
   "articleTitle": "Artigo",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Recurso guardado: {{title}}",
   "categoriesFailed": "Não foi possível carregar as categorias",
   "kbEmptySubtitle": "Ainda não há artigos disponíveis.",
-  "kbSearchEmptySubtitle": "Experimente outro termo de pesquisa."
+  "kbSearchEmptySubtitle": "Experimente outro termo de pesquisa.",
+  "attachments": "Anexos",
+  "relatedArticles": "Artigos relacionados",
+  "downloadFailed": "Não foi possível transferir o ficheiro.",
+  "sharingUnavailable": "Este dispositivo não consegue abrir ficheiros transferidos.",
+  "feedback": {
+    "question": "Este artigo foi útil?",
+    "yes": "Sim",
+    "no": "Não"
+  },
+  "feedbackThanks": "Obrigado pelo seu feedback!",
+  "feedbackFailed": "Falha ao enviar o feedback."
 }

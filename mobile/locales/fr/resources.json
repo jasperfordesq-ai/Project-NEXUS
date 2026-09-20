@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Regarder la vidéo",
+  "videoExternalHint": "S’ouvre dans votre application vidéo ou votre navigateur.",
   "title": "Ressources",
   "subtitle": "Parcourez les fichiers partagés et les articles de la base de connaissances.",
   "articleTitle": "Article",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Ressource enregistrée : {{title}}",
   "categoriesFailed": "Impossible de charger les catégories",
   "kbEmptySubtitle": "Aucun article n’est disponible pour le moment.",
-  "kbSearchEmptySubtitle": "Essayez un autre terme de recherche."
+  "kbSearchEmptySubtitle": "Essayez un autre terme de recherche.",
+  "attachments": "Pièces jointes",
+  "relatedArticles": "Articles connexes",
+  "downloadFailed": "Impossible de télécharger le fichier.",
+  "sharingUnavailable": "Cet appareil ne peut pas ouvrir les fichiers téléchargés.",
+  "feedback": {
+    "question": "Cet article vous a-t-il été utile ?",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "feedbackThanks": "Merci pour votre retour !",
+  "feedbackFailed": "Échec de l'envoi du commentaire."
 }

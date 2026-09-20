@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Guarda il video",
+  "videoExternalHint": "Si apre nella tua app video o nel browser.",
   "title": "Risorse",
   "subtitle": "Sfoglia i file condivisi e gli articoli della base di conoscenza.",
   "articleTitle": "Articolo",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Risorsa salvata: {{title}}",
   "categoriesFailed": "Impossibile caricare le categorie",
   "kbEmptySubtitle": "Non ci sono ancora articoli disponibili.",
-  "kbSearchEmptySubtitle": "Prova un altro termine di ricerca."
+  "kbSearchEmptySubtitle": "Prova un altro termine di ricerca.",
+  "attachments": "Allegati",
+  "relatedArticles": "Articoli correlati",
+  "downloadFailed": "Non è stato possibile scaricare il file.",
+  "sharingUnavailable": "Questo dispositivo non può aprire i file scaricati.",
+  "feedback": {
+    "question": "Questo articolo è stato utile?",
+    "yes": "S?",
+    "no": "No"
+  },
+  "feedbackThanks": "Grazie per il tuo feedback!",
+  "feedbackFailed": "Impossibile inviare il feedback."
 }

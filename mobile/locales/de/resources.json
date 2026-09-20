@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Video ansehen",
+  "videoExternalHint": "Wird in Ihrer Video-App oder Ihrem Browser geöffnet.",
   "title": "Ressourcen",
   "subtitle": "Durchsuche gemeinsam genutzte Dateien und Artikel der Wissensdatenbank.",
   "articleTitle": "Artikel",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Gespeicherte Ressource: {{title}}",
   "categoriesFailed": "Kategorien konnten nicht geladen werden",
   "kbEmptySubtitle": "Es sind noch keine Artikel verfügbar.",
-  "kbSearchEmptySubtitle": "Versuchen Sie einen anderen Suchbegriff."
+  "kbSearchEmptySubtitle": "Versuchen Sie einen anderen Suchbegriff.",
+  "attachments": "Anhänge",
+  "relatedArticles": "Verwandte Artikel",
+  "downloadFailed": "Die Datei konnte nicht heruntergeladen werden.",
+  "sharingUnavailable": "Dieses Gerät kann heruntergeladene Dateien nicht öffnen.",
+  "feedback": {
+    "question": "War dieser Artikel hilfreich?",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "feedbackThanks": "Vielen Dank für Ihr Feedback!",
+  "feedbackFailed": "Feedback konnte nicht gesendet werden."
 }

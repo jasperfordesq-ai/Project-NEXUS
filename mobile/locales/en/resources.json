@@ -1,4 +1,6 @@
 {
+  "watchVideo": "Watch video",
+  "videoExternalHint": "Opens in your video app or browser.",
   "title": "Resources",
   "subtitle": "Browse shared files and knowledge base articles.",
   "articleTitle": "Article",
@@ -25,5 +27,16 @@
   "savedItemHighlighted": "Saved resource: {{title}}",
   "categoriesFailed": "Could not load categories",
   "kbEmptySubtitle": "No articles are available yet.",
-  "kbSearchEmptySubtitle": "Try another search term."
+  "kbSearchEmptySubtitle": "Try another search term.",
+  "attachments": "Attachments",
+  "relatedArticles": "Related articles",
+  "downloadFailed": "Could not download the file.",
+  "sharingUnavailable": "This device cannot open downloaded files.",
+  "feedback": {
+    "question": "Was this article helpful?",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "feedbackThanks": "Thank you for your feedback!",
+  "feedbackFailed": "Failed to submit feedback."
 }
