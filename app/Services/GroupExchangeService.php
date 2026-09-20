@@ -539,18 +539,24 @@ class GroupExchangeService
         $allowed = ['title', 'description', 'split_type', 'total_hours', 'broker_id', 'broker_notes', 'listing_id'];
         $updates = collect($data)->only($allowed)->filter(fn ($v) => $v !== null)->all();
 
-        if (empty($updates)) {
+        return DB::transaction(function () use ($id, $tenantId, $updates): bool {
+            $query = DB::table('group_exchanges')->where('id', $id)->where('tenant_id', $tenantId);
+            $exchange = (clone $query)->lockForUpdate()->first();
+            if (! $exchange || in_array($exchange->status, ['completed', 'cancelled'], true)) {
+                return false;
+            }
+            if (empty($updates)) {
+                return true;
+            }
+            $termsChanged = (array_key_exists('total_hours', $updates) && (float) $updates['total_hours'] !== (float) $exchange->total_hours)
+                || (array_key_exists('split_type', $updates) && $updates['split_type'] !== $exchange->split_type);
+            $query->update([...$updates, 'updated_at' => now()]);
+            if ($termsChanged) {
+                DB::table('group_exchange_participants')->where('group_exchange_id', $id)
+                    ->update(['confirmed' => 0, 'confirmed_at' => null]);
+            }
             return true;
-        }
-
-        $updates['updated_at'] = now();
-
-        $affected = DB::table('group_exchanges')
-            ->where('id', $id)
-            ->where('tenant_id', $tenantId)
-            ->update($updates);
-
-        return $affected >= 0;
+        });
     }
 
     /** Cancel without overwriting a completion that has already claimed settlement. */

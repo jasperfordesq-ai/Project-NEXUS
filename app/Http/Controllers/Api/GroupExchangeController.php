@@ -125,7 +125,9 @@ class GroupExchangeController extends BaseApiController
         }
 
         $data = $this->getAllInput();
-        $this->groupExchangeService->update($id, $data);
+        if (!$this->groupExchangeService->update($id, $data)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_update_completed_exchange'), null, 400);
+        }
 
         $updated = $this->groupExchangeService->get($id);
 

@@ -278,6 +278,41 @@ class GroupExchangeControllerTest extends TestCase
         $this->assertEqualsWithDelta(10, (float) DB::table('users')->where('id', $receiver->id)->value('balance'), 0.001);
     }
 
+    public function test_changed_hours_or_split_require_fresh_confirmation_before_settlement(): void
+    {
+        foreach ([['total_hours' => 8], ['split_type' => 'weighted']] as $change) {
+            $organizer = $this->authenticatedUser();
+            $provider = $this->makeUser(0);
+            $receiver = $this->makeUser(10);
+            $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+            $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+            foreach ([$provider, $receiver] as $member) {
+                Sanctum::actingAs($member, ['*']);
+                $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+            }
+            Sanctum::actingAs($organizer, ['*']);
+            $this->apiPut("/v2/group-exchanges/{$id}", ['title' => 'Updated title', 'total_hours' => '6.00', 'split_type' => 'equal'])->assertStatus(200);
+            $participants = DB::table('group_exchange_participants')->where('group_exchange_id', $id);
+            $this->assertSame(2, (clone $participants)->where('confirmed', 1)->count(), 'unchanged terms preserve confirmation');
+
+            $this->apiPut("/v2/group-exchanges/{$id}", $change)->assertStatus(200);
+            $this->assertSame(2, (clone $participants)->where('confirmed', 0)->whereNull('confirmed_at')->count());
+            $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(400);
+            $this->assertSame(0.0, (float) DB::table('users')->where('id', $provider->id)->value('balance'));
+            $this->assertSame(10.0, (float) DB::table('users')->where('id', $receiver->id)->value('balance'));
+
+            foreach ([$provider, $receiver] as $member) {
+                Sanctum::actingAs($member, ['*']);
+                $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+            }
+            Sanctum::actingAs($organizer, ['*']);
+            $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(200);
+            $hours = (float) ($change['total_hours'] ?? 6);
+            $this->assertSame($hours, (float) DB::table('users')->where('id', $provider->id)->value('balance'));
+            $this->assertSame(10 - $hours, (float) DB::table('users')->where('id', $receiver->id)->value('balance'));
+        }
+    }
+
     public function test_complete_blocked_until_all_confirmed(): void
     {
         $organizer = $this->authenticatedUser();

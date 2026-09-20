@@ -240,6 +240,16 @@ class GroupExchangeServiceTest extends TestCase
         $this->assertSame('pending_confirmation', $status);
     }
 
+    public function test_update_rechecks_terminal_state_inside_the_service(): void
+    {
+        foreach (['completed', 'cancelled'] as $status) {
+            $id = $this->seedExchange([], $status);
+            $this->assertFalse($this->service->update($id, ['total_hours' => 99, 'title' => 'Stale edit']));
+            $this->assertSame('Barn raising', DB::table('group_exchanges')->where('id', $id)->value('title'));
+            $this->assertSame(0.0, (float) DB::table('group_exchanges')->where('id', $id)->value('total_hours'));
+        }
+    }
+
     public function test_stale_start_cannot_overwrite_cancellation_or_repeat_another_start(): void
     {
         foreach (['cancel', 'start'] as $competingAction) {
