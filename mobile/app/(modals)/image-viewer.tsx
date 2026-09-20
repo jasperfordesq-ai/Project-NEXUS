@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useAppToast } from '@/components/ui/AppToast';
 import ErrorState from '@/components/ui/ErrorState';
+import { describeApiError } from '@/lib/api/describeApiError';
 
 function ImageViewerScreenInner() {
   const { t } = useTranslation('home');
@@ -32,8 +33,8 @@ function ImageViewerScreenInner() {
     const message = title ? `${title}\n${uri}` : uri;
     try {
       await Share.share({ message, url: uri });
-    } catch {
-      showToast({ title: t('common:errors.alertTitle'), description: t('common:errors.generic'), variant: 'danger' });
+    } catch (error) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(error, t('common:errors.generic')), variant: 'danger' });
     }
   }
 
