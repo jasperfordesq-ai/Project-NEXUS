@@ -3,14 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Input from '@/components/ui/Input';
 import { Button } from '@/components/ui/NativeButton';
 import { useRegistrationExport } from '@/lib/hooks/useRegistrationExport';
 import { isRefusalStatus } from '@/lib/api/refusal';
-interface Props { tenantId: number; userId: number; eventId: number; permitted: boolean; sensitive: boolean; active: boolean; onClose: () => void }
-export default function EventRegistrationExport({ permitted, sensitive, active, onClose, ...scope }: Props) {
+interface Props { tenantId: number; userId: number; eventId: number; permitted: boolean; sensitive: boolean; active: boolean; onClose: () => void; onErrorLayout?: () => void }
+export default function EventRegistrationExport({ permitted, sensitive, active, onClose, onErrorLayout, ...scope }: Props) {
   const { t } = useTranslation(['eventRegistration', 'events', 'common']);
   const [purpose, setPurpose] = useState(''); const [reference, setReference] = useState('');
   const [includeSensitive, setIncludeSensitive] = useState(false);
@@ -32,9 +32,9 @@ export default function EventRegistrationExport({ permitted, sensitive, active, 
       <View className="flex-row flex-wrap gap-2">{[false, true].map(value => <Button key={String(value)} variant={includeSensitive === value ? 'primary' : 'secondary'}
         accessibilityState={{ selected: includeSensitive === value }} isDisabled={busy} onPress={() => { if (!busy) setIncludeSensitive(value); }}>
         {t(value ? 'common:yes' : 'common:no')}</Button>)}</View></View>}
-    <Button isDisabled={!valid || busy} onPress={() => { if (valid) void download.open({ purpose, correlation_id: reference, include_sensitive: includeSensitive && sensitive }); }}>
+    <Button isDisabled={!valid || busy} onPress={() => { if (valid) { Keyboard.dismiss(); void download.open({ purpose, correlation_id: reference, include_sensitive: includeSensitive && sensitive }); } }}>
       {t(busy ? 'common:loading' : 'submissions.export_action')}</Button>
-    {download.status === 'failed' && <Text accessibilityRole="alert" className="text-danger">{t(isRefusalStatus(download.errorStatus) ? 'events:manage.access_denied_title'
+    {download.status === 'failed' && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" onLayout={onErrorLayout} className="text-danger">{t(isRefusalStatus(download.errorStatus) ? 'events:manage.access_denied_title'
       : download.unavailable ? 'submissions.sharing_unavailable' : 'submissions.export_error')}</Text>}
   </View>;
 }

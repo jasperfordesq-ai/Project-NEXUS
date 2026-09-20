@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppState, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
@@ -37,6 +37,14 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const permitted = active && !state.isLoading && !state.error && Boolean(state.data?.permitted);
   useEffect(() => { if (!permitted) setSelection(null); }, [permitted]);
   useEffect(() => { if (!permitted || !state.data?.permissions.export_answers) setExporting(false); }, [permitted, state.data?.permissions.export_answers]);
+  const scroll = useRef<ScrollView>(null);
+  const visibleForm = useRef<{ name: string | null; epoch: number }>({ name: null, epoch: 0 });
+  const formName = permitted ? exporting ? 'export' : selection !== null ? 'review:' + selection : null : null;
+  if (visibleForm.current.name !== formName) visibleForm.current = { name: formName, epoch: visibleForm.current.epoch + 1 };
+  const revealError = (form: string) => {
+    const epoch = visibleForm.current.epoch;
+    return () => { if (visibleForm.current.name === form && visibleForm.current.epoch === epoch) scroll.current?.scrollToEnd({ animated: false }); };
+  };
   if (!active) return null;
   if (state.isLoading) return <LoadingSpinner />;
   if (isRefusalStatus(state.errorStatus) || (state.data && !state.data.permitted)) return <EmptyState icon="lock-closed-outline" title={t('events:manage.access_denied_title')} />;
@@ -46,15 +54,15 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const selected = data.submissions.find(item => item.id === selection);
   const move = (next: number | null) => { if (permitted && next) { setSelection(null); setPage(next); } };
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
+    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       refreshControl={selected || exporting ? undefined : <RefreshControl refreshing={state.isLoading} onRefresh={() => { setSelection(null); state.refresh(); }} />}>
       {exporting ? <EventRegistrationExport tenantId={tenantId} userId={userId} eventId={eventId}
-        permitted={permitted && data.permissions.export_answers} sensitive={data.permissions.view_sensitive_answers} active={active} onClose={() => setExporting(false)} />
+        permitted={permitted && data.permissions.export_answers} sensitive={data.permissions.view_sensitive_answers} active={active} onErrorLayout={revealError('export')} onClose={() => setExporting(false)} />
         : selected ? <View className="gap-4"><Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{data.permissions.view_roster && selected.member_name ? selected.member_name : t('submissions.member_hidden')}</Text>
         <Text className="text-muted-foreground">{t('submissions.attempt', { attempt: selected.attempt_number })}</Text>
         <EventRegistrationAnswerReview key={selected.id + ':' + selected.revision} tenantId={tenantId} userId={userId} eventId={eventId}
         submissionId={selected.id} revision={selected.revision} form={data.forms.find(form => form.id === selected.form_version_id)}
-        permitted={permitted} sensitive={data.permissions.view_sensitive_answers} active={active} onClose={() => setSelection(null)} /></View>
+        permitted={permitted} sensitive={data.permissions.view_sensitive_answers} active={active} onErrorLayout={revealError('review:' + selected.id)} onClose={() => setSelection(null)} /></View>
         : <View className="gap-4">
           <Text className="text-muted-foreground">{t('submissions.description')}</Text>
           {data.permissions.export_answers && <Button variant="secondary" onPress={() => { if (permitted) setExporting(true); }}>{t('submissions.export')}</Button>}

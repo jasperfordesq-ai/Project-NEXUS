@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Registration answer-review and export failures now scroll into view after layout, retain entered evidence and expose updated feedback through an accessibility live region. Submitting dismisses the keyboard, and departed-form callbacks cannot move a newly opened form.
+
 - Fixed native audited CSV exports failing after access-token expiry: a read-only session check now uses normal token renewal before the single export POST, while retaining the originating account and screen guards. The audited export itself is never automatically replayed.
 
 - Registration answer exports now validate audit purpose and reference even when no submissions match, and accept maximum-length references without overflowing per-submission audit keys. Existing shorter-reference audit hashes remain unchanged.

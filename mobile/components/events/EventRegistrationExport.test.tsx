@@ -47,3 +47,14 @@ it('prevents a reference exceeding the backend UTF-8 boundary', () => {
   fireEvent.changeText(view.getByLabelText('submissions.correlation'), 'é'.repeat(257));
   fireEvent.press(view.getByText('submissions.export_action')); expect(share).not.toHaveBeenCalled();
 });
+
+it('requests visibility after the failure text is laid out and preserves the evidence', async () => {
+  const onErrorLayout = jest.fn(); jest.mocked(share).mockRejectedValueOnce(new Error('network'));
+  const view = render(<Export {...props} onErrorLayout={onErrorLayout} />); evidence(view);
+  await act(async () => { fireEvent.press(view.getByText('submissions.export_action')); });
+  expect(onErrorLayout).not.toHaveBeenCalled();
+  const error = view.getByText('submissions.export_error'); fireEvent(error, 'layout', { nativeEvent: { layout: { x: 0, y: 1400, width: 320, height: 100 } } });
+  expect(onErrorLayout).toHaveBeenCalledTimes(1);
+  expect(error.props.accessibilityLiveRegion).toBe('polite');
+  expect(view.getByLabelText('submissions.correlation').props.value).toBe('case-1');
+});

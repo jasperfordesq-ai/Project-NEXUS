@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Input from '@/components/ui/Input';
 import { Button } from '@/components/ui/NativeButton';
@@ -11,8 +11,8 @@ import { useRegistrationAnswerReview } from '@/lib/hooks/useRegistrationAnswerRe
 import { isRefusalStatus } from '@/lib/api/refusal';
 import type { OrganizerRegistrationForm } from '@/lib/api/eventRegistration';
 interface Props { tenantId: number; userId: number; eventId: number; submissionId: number; revision: number;
-  form?: OrganizerRegistrationForm; permitted: boolean; sensitive: boolean; active: boolean; onClose: () => void }
-export default function EventRegistrationAnswerReview({ form, permitted, sensitive, active, onClose, ...scope }: Props) {
+  form?: OrganizerRegistrationForm; permitted: boolean; sensitive: boolean; active: boolean; onClose: () => void; onErrorLayout?: () => void }
+export default function EventRegistrationAnswerReview({ form, permitted, sensitive, active, onClose, onErrorLayout, ...scope }: Props) {
   const { t } = useTranslation(['eventRegistration', 'events', 'common']);
   const [purpose, setPurpose] = useState(''); const [reference, setReference] = useState('');
   const [includeSensitive, setIncludeSensitive] = useState(false);
@@ -39,9 +39,9 @@ export default function EventRegistrationAnswerReview({ form, permitted, sensiti
       <View className="flex-row flex-wrap gap-2">{[false, true].map(value => <Button key={String(value)} variant={includeSensitive === value ? 'primary' : 'secondary'}
         accessibilityState={{ selected: includeSensitive === value }} isDisabled={busy} onPress={() => { review.clear(); setIncludeSensitive(value); }}>
         {t(value ? 'common:yes' : 'common:no')}</Button>)}</View></View>}
-    <Button isDisabled={!valid || busy} onPress={() => { void review.open({ purpose, correlation_id: reference, include_sensitive: includeSensitive && sensitive }); }}>
+    <Button isDisabled={!valid || busy} onPress={() => { Keyboard.dismiss(); void review.open({ purpose, correlation_id: reference, include_sensitive: includeSensitive && sensitive }); }}>
       {t(busy ? 'common:loading' : 'submissions.open_answers')}</Button>
-    {review.status === 'failed' && <Text accessibilityRole="alert" className="text-danger">{t(isRefusalStatus(review.errorStatus) ? 'events:manage.access_denied_title' : 'messages.review_error')}</Text>}
+    {review.status === 'failed' && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" onLayout={onErrorLayout} className="text-danger">{t(isRefusalStatus(review.errorStatus) ? 'events:manage.access_denied_title' : 'messages.review_error')}</Text>}
     {review.status === 'ready' && entries.length === 0 && <Text className="text-muted-foreground">{t('submissions.no_readable_answers')}</Text>}
     {entries.map(([key, answer], index) => { const question = form?.questions.find(item => item.stable_key === key && item.id === answer.question_id);
       return <View key={key} className="gap-2 border-b border-separator pb-3">

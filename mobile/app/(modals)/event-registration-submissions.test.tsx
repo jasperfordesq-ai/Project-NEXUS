@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import React from 'react';
-import { AppState, RefreshControl } from 'react-native';
+import { AppState, RefreshControl, ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import Export from '@/components/events/EventRegistrationExport';
 import Review from '@/components/events/EventRegistrationAnswerReview';
@@ -92,4 +92,25 @@ it('removes the export form on background and returns to the roster', () => {
   expect(view.UNSAFE_queryByType(Export)).toBeNull();
   act(() => { jest.mocked(AppState.addEventListener).mock.calls.at(-1)?.[1]('active'); });
   expect(view.UNSAFE_queryByType(Export)).toBeNull(); expect(view.getByText('Synthetic member')).toBeTruthy();
+});
+
+it('reveals an export failure after layout but ignores its callback after the form is closed', () => {
+  mockState.data.permissions.export_answers = true; const view = render(<Screen />);
+  fireEvent.press(view.getByText('submissions.export'));
+  const scroll = jest.spyOn(view.UNSAFE_getByType(ScrollView).instance, 'scrollToEnd');
+  const form = view.UNSAFE_getByType(Export); const reveal = form.props.onErrorLayout;
+  act(() => reveal()); expect(scroll).toHaveBeenCalledWith({ animated: false });
+  act(() => form.props.onClose()); scroll.mockClear();
+  act(() => reveal()); expect(scroll).not.toHaveBeenCalled();
+  fireEvent.press(view.getByText('submissions.export'));
+  act(() => reveal()); expect(scroll).not.toHaveBeenCalled();
+  act(() => view.UNSAFE_getByType(Export).props.onErrorLayout()); expect(scroll).toHaveBeenCalledTimes(1);
+});
+
+it('reveals answer-review errors only while that attempt remains selected', () => {
+  const view = render(<Screen />); fireEvent.press(view.getByText('submissions.review'));
+  const scroll = jest.spyOn(view.UNSAFE_getByType(ScrollView).instance, 'scrollToEnd');
+  const reveal = view.UNSAFE_getByType(Review).props.onErrorLayout;
+  act(() => reveal()); expect(scroll).toHaveBeenCalledWith({ animated: false }); scroll.mockClear();
+  mockFocused = false; view.rerender(<Screen />); act(() => reveal()); expect(scroll).not.toHaveBeenCalled();
 });

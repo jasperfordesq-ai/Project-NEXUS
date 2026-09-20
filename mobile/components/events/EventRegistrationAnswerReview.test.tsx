@@ -56,3 +56,13 @@ it('hides answers and clears evidence across backgrounding', async () => {
   view.rerender(<Review {...props} />); expect(view.getByLabelText('submissions.purpose').props.value).toBe('');
   expect(read).toHaveBeenCalledTimes(1);
 });
+
+it('reveals a laid-out answer failure without issuing another audited read', async () => {
+  jest.mocked(read).mockRejectedValueOnce(new Error('network')); const onErrorLayout = jest.fn();
+  const view = render(<Review {...props} onErrorLayout={onErrorLayout} />); evidence(view);
+  await act(async () => { fireEvent.press(view.getByText('submissions.open_answers')); });
+  const error = view.getByText('messages.review_error');
+  fireEvent(error, 'layout', { nativeEvent: { layout: { x: 0, y: 1300, width: 320, height: 120 } } });
+  expect(onErrorLayout).toHaveBeenCalledTimes(1); expect(error.props.accessibilityLiveRegion).toBe('polite');
+  expect(read).toHaveBeenCalledTimes(1);
+});
