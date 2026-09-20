@@ -73,6 +73,30 @@ final class EventInvitationCampaignService
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
             $persistedActor = $this->support->actor($tenantId, $actor, true);
             $this->support->authorizeManager($persistedActor, $event);
+            // Bind recovery to the submitted request, not to a recipient set that
+            // can change while a successful preview's response is in flight.
+            $requestHash = $this->support->requestHash([
+                'action' => 'campaign_preview_input_v2',
+                'event_id' => $eventId,
+                'actor_id' => (int) $persistedActor->id,
+                'campaign_type' => $type->value,
+                'source' => $source,
+                'default_locale' => $defaultLocale,
+            ]);
+            $replay = DB::table('event_invitation_campaigns')
+                ->where('tenant_id', $tenantId)
+                ->where('idempotency_hash', $keyHash)
+                ->first();
+            if ($replay !== null && hash_equals((string) $replay->request_hash, $requestHash)) {
+                if (in_array($type, [EventInvitationCampaignType::Group, EventInvitationCampaignType::Audience], true)) {
+                    $frozen = $this->expander->restoreSnapshot((string) $replay->source_snapshot_ciphertext, $type);
+                    $this->expander->assertSnapshotSourceAuthority($tenantId, $type, $frozen['snapshot'], $persistedActor);
+                }
+                return [
+                    'campaign' => $this->campaignModel($tenantId, (int) $replay->id),
+                    'changed' => false,
+                ];
+            }
             $expanded = $this->expander->expand(
                 $tenantId,
                 $type,
@@ -86,7 +110,9 @@ final class EventInvitationCampaignService
                 $expanded,
             );
             $locale = $this->locale($defaultLocale ?? (string) ($persistedActor->preferred_language ?? 'en'));
-            $requestHash = $this->support->requestHash([
+            // Older previews stored only an expanded-snapshot fingerprint. Keep
+            // their original comparison; the missing raw input cannot be inferred.
+            $legacyRequestHash = $this->support->requestHash([
                 'action' => 'campaign_previewed',
                 'event_id' => $eventId,
                 'actor_id' => (int) $persistedActor->id,
@@ -94,12 +120,8 @@ final class EventInvitationCampaignService
                 'source_hash' => $expanded['source_hash'],
                 'default_locale' => $locale,
             ]);
-            $replay = DB::table('event_invitation_campaigns')
-                ->where('tenant_id', $tenantId)
-                ->where('idempotency_hash', $keyHash)
-                ->first();
             if ($replay !== null) {
-                if (! hash_equals((string) $replay->request_hash, $requestHash)) {
+                if (! hash_equals((string) $replay->request_hash, $legacyRequestHash)) {
                     throw new EventRegistrationFoundationException('event_invitation_campaign_idempotency_conflict');
                 }
 

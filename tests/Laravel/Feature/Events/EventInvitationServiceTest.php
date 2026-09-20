@@ -279,6 +279,62 @@ final class EventInvitationServiceTest extends TestCase
         self::assertSame(2, (int) $preview['campaign']->valid_count);
         self::assertSame(0, (int) $preview['campaign']->error_count);
         self::assertSame('group:' . $group->id, $preview['campaign']->source_reference);
+        $campaignId = (int) $preview['campaign']->id;
+        $before = DB::table('event_invitation_campaigns')->find($campaignId);
+        $historyCount = DB::table('event_invitation_campaign_history')->count();
+        DB::table('group_members')->where('group_id', $group->id)->where('user_id', $active->id)->update(['status' => 'pending']);
+        $replay = (new EventInvitationCampaignService())->preview(
+            $eventId, $owner, 'group', ['group_id' => (int) $group->id], 'campaign-group-preview',
+        );
+        self::assertFalse($replay['changed']);
+        self::assertSame($campaignId, (int) $replay['campaign']->id);
+        self::assertSame(2, (int) $replay['campaign']->valid_count);
+        $after = DB::table('event_invitation_campaigns')->find($campaignId);
+        self::assertSame($before->source_hash, $after->source_hash);
+        self::assertSame($before->source_snapshot_ciphertext, $after->source_snapshot_ciphertext);
+        self::assertSame($historyCount, DB::table('event_invitation_campaign_history')->count());
+        $fresh = (new EventInvitationCampaignService())->preview(
+            $eventId, $owner, 'group', ['group_id' => (int) $group->id], 'campaign-group-preview-fresh',
+        );
+        self::assertSame(1, (int) $fresh['campaign']->valid_count);
+        DB::table('groups')->where('id', $group->id)->update(['owner_id' => (int) $pending->id]);
+        DB::table('group_members')->where('group_id', $group->id)->where('user_id', $owner->id)->delete();
+        $this->assertReason('event_invitation_group_not_found', fn () =>
+            (new EventInvitationCampaignService())->preview(
+                $eventId, $owner, 'group', ['group_id' => (int) $group->id], 'campaign-group-preview',
+            ));
+    }
+
+    public function test_preview_replay_keeps_legacy_hash_compatibility_and_rejects_changed_input(): void
+    {
+        $owner = $this->eventUser();
+        $member = $this->eventUser();
+        [$eventId] = $this->registrationEvent((int) $owner->id);
+        $service = new EventInvitationCampaignService();
+        $source = ['member_ids' => [(int) $member->id]];
+        $preview = $service->preview($eventId, $owner, 'member', $source, 'legacy-preview-fixture', 'en');
+        $campaignId = (int) $preview['campaign']->id;
+        $legacyHash = (new \App\Support\Events\EventRegistrationFoundationSupport())->requestHash([
+            'action' => 'campaign_previewed', 'event_id' => $eventId, 'actor_id' => (int) $owner->id,
+            'campaign_type' => 'member', 'source_hash' => $preview['campaign']->source_hash, 'default_locale' => 'en',
+        ]);
+        $legacy = (array) DB::table('event_invitation_campaigns')->find($campaignId);
+        unset($legacy['id']);
+        $legacy['request_hash'] = $legacyHash;
+        $legacy['idempotency_hash'] = hash('sha256', 'legacy-preview-recovery');
+        $campaignId = (int) DB::table('event_invitation_campaigns')->insertGetId($legacy);
+        $replay = $service->preview($eventId, $owner, 'member', $source, 'legacy-preview-recovery', 'en');
+        self::assertFalse($replay['changed']);
+        self::assertSame($campaignId, (int) $replay['campaign']->id);
+        $this->assertReason('event_invitation_campaign_idempotency_conflict', fn () =>
+            $service->preview($eventId, $owner, 'member', ['member_ids' => [(int) $owner->id]], 'legacy-preview-recovery', 'en'));
+        $new = $service->preview($eventId, $owner, 'member', $source, 'new-preview-recovery', 'en');
+        $this->assertReason('event_invitation_campaign_idempotency_conflict', fn () =>
+            $service->preview($eventId, $owner, 'member', $source, 'new-preview-recovery', 'fr'));
+        // Even equivalent expanded recipients must not silently replace a new request's raw input.
+        $this->assertReason('event_invitation_campaign_idempotency_conflict', fn () =>
+            $service->preview($eventId, $owner, 'member', ['member_id' => (int) $member->id], 'new-preview-recovery', 'en'));
+        self::assertSame((int) $new['campaign']->id, (int) $service->preview($eventId, $owner, 'member', $source, 'new-preview-recovery', 'en')['campaign']->id);
     }
 
     /** @param callable():mixed $operation */
