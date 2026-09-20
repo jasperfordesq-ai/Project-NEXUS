@@ -71,10 +71,35 @@ class KnowledgeBaseService
         }
 
         if ($cursor !== null) {
-            $query->where('a.id', '<', (int) base64_decode($cursor));
+            $decoded = base64_decode($cursor, true);
+            $anchor = $decoded !== false ? json_decode($decoded, true) : null;
+            if ($decoded !== false && ctype_digit($decoded)) {
+                $legacy = DB::table('knowledge_base_articles')->where('tenant_id', $tenantId)
+                    ->where('id', $decoded)->first();
+                $anchor = $legacy ? ['v' => 1, 'sort' => (int) $legacy->sort_order,
+                    'created' => $legacy->created_at, 'id' => (int) $legacy->id] : null;
+            }
+            $created = is_array($anchor) ? ($anchor['created'] ?? null) : null;
+            $date = is_string($created) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $created)
+                ? \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $created) : false;
+            if (!is_array($anchor) || ($anchor['v'] ?? null) !== 1
+                || !is_int($anchor['sort'] ?? null) || !is_int($anchor['id'] ?? null) || $anchor['id'] <= 0
+                || !$date || $date->format('Y-m-d H:i:s') !== $created) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['cursor' => __('api.invalid_cursor')]);
+            }
+            $query->where(function ($q) use ($anchor) {
+                $q->where('a.sort_order', '>', $anchor['sort'])
+                    ->orWhere(function ($q) use ($anchor) {
+                        $q->where('a.sort_order', $anchor['sort'])->where('a.created_at', '<', $anchor['created']);
+                    })
+                    ->orWhere(function ($q) use ($anchor) {
+                        $q->where('a.sort_order', $anchor['sort'])->where('a.created_at', $anchor['created'])
+                            ->where('a.id', '<', $anchor['id']);
+                    });
+            });
         }
 
-        $query->orderBy('a.sort_order')->orderByDesc('a.created_at');
+        $query->orderBy('a.sort_order')->orderByDesc('a.created_at')->orderByDesc('a.id');
 
         $query->select(
             'a.id', 'a.title', 'a.slug', 'a.content_type', 'a.category_id',
@@ -117,7 +142,10 @@ class KnowledgeBaseService
 
         return [
             'items'    => $formatted,
-            'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
+            'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode(json_encode([
+                'v' => 1, 'sort' => (int) $items->last()->sort_order,
+                'created' => $items->last()->created_at, 'id' => (int) $items->last()->id,
+            ], JSON_THROW_ON_ERROR)) : null,
             'has_more' => $hasMore,
         ];
     }
@@ -222,28 +250,68 @@ class KnowledgeBaseService
      */
     public function search(string $term, int $limit = 20): array
     {
+        return $this->searchPage($term, $limit)['items'];
+    }
+
+    /** Search pages retain title-match priority, then popularity, with an ID tie-break. */
+    public function searchPage(string $term, int $limit = 20, ?string $cursor = null): array
+    {
+        $term = trim($term);
+        $limit = max(1, min($limit, 50));
         $like     = '%' . $term . '%';
         $tenantId = TenantContext::getId();
+        $queryHash = hash('sha256', $term);
+        $rankSql = 'CASE WHEN a.title LIKE ? THEN 0 ELSE 1 END';
 
-        return DB::table('knowledge_base_articles as a')
+        $query = DB::table('knowledge_base_articles as a')
             ->leftJoin('categories as rc', 'a.category_id', '=', 'rc.id')
             ->where('a.tenant_id', $tenantId)
             ->where('a.is_published', true)
             ->where(function ($q) use ($like) {
                 $q->where('a.title', 'LIKE', $like)
                   ->orWhere('a.content', 'LIKE', $like);
-            })
-            ->orderByRaw('CASE WHEN a.title LIKE ? THEN 0 ELSE 1 END', [$like])
+            });
+        if ($cursor !== null) {
+            $decoded = base64_decode($cursor, true);
+            $anchor = $decoded !== false ? json_decode($decoded, true) : null;
+            if (!is_array($anchor) || ($anchor['v'] ?? null) !== 1 || ($anchor['q'] ?? null) !== $queryHash
+                || !in_array($anchor['rank'] ?? null, [0, 1], true)
+                || !is_int($anchor['views'] ?? null) || $anchor['views'] < 0
+                || !is_int($anchor['id'] ?? null) || $anchor['id'] <= 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['cursor' => __('api.invalid_cursor')]);
+            }
+            $query->where(function ($q) use ($anchor, $rankSql, $like) {
+                $q->whereRaw("($rankSql) > ?", [$like, $anchor['rank']])
+                    ->orWhere(function ($q) use ($anchor, $rankSql, $like) {
+                        $q->whereRaw("($rankSql) = ?", [$like, $anchor['rank']])
+                            ->where(function ($q) use ($anchor) {
+                                $q->where('a.views_count', '<', $anchor['views'])
+                                    ->orWhere(function ($q) use ($anchor) {
+                                        $q->where('a.views_count', $anchor['views'])->where('a.id', '<', $anchor['id']);
+                                    });
+                            });
+                    });
+            });
+        }
+        $rows = $query->orderByRaw($rankSql, [$like])
             ->orderByDesc('a.views_count')
-            ->limit($limit)
+            ->orderByDesc('a.id')
+            ->limit($limit + 1)
             ->select(
                 'a.id', 'a.title', 'a.slug', 'a.content_type', 'a.views_count',
                 'a.helpful_yes', 'a.helpful_no', 'a.created_at',
                 'rc.name as category_name',
                 DB::raw('SUBSTRING(a.content, 1, 200) as content_preview')
             )
-            ->get()
-            ->map(function ($a) {
+            ->selectRaw("($rankSql) as search_rank", [$like])
+            ->get();
+        $hasMore = $rows->count() > $limit;
+        if ($hasMore) $rows->pop();
+        $nextCursor = $hasMore ? base64_encode(json_encode([
+            'v' => 1, 'q' => $queryHash, 'rank' => (int) $rows->last()->search_rank,
+            'views' => (int) $rows->last()->views_count, 'id' => (int) $rows->last()->id,
+        ], JSON_THROW_ON_ERROR)) : null;
+        $items = $rows->map(function ($a) {
                 $total = (int) $a->helpful_yes + (int) $a->helpful_no;
                 return [
                     'id'              => (int) $a->id,
@@ -256,6 +324,7 @@ class KnowledgeBaseService
                 ];
             })
             ->all();
+        return ['items' => $items, 'cursor' => $nextCursor, 'has_more' => $hasMore];
     }
 
     /**

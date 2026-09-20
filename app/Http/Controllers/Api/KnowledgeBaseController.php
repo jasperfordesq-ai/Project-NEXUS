@@ -158,7 +158,7 @@ class KnowledgeBaseController extends BaseApiController
      * GET /api/v2/kb/search
      *
      * Search knowledge base articles.
-     * Query: q (required), limit.
+     * Query: q (required), limit; per_page opts into cursor-paginated results.
      */
     public function search(): JsonResponse
     {
@@ -167,6 +167,11 @@ class KnowledgeBaseController extends BaseApiController
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.kb_search_query_required'), 'q', 400);
         }
 
+        if ($this->query('per_page') !== null) {
+            $limit = $this->queryInt('per_page', 20, 1, 50);
+            $page = $this->kbService->searchPage($query, $limit, $this->query('cursor'));
+            return $this->respondWithCollection($page['items'], $page['cursor'], $limit, $page['has_more']);
+        }
         $limit = $this->queryInt('limit', 20, 1, 50);
         $results = $this->kbService->search($query, $limit);
 

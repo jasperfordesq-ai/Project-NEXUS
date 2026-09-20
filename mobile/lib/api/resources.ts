@@ -37,12 +37,15 @@ export interface ResourceCategory {
 }
 
 export interface KbArticle {
+  children?: { id: number; title: string; slug?: string | null }[];
+  attachments?: { id: number; file_name: string; file_size?: number; mime_type?: string }[];
   id: number;
   title: string;
   slug?: string | null;
   content?: string | null;
   content_preview?: string | null;
   content_type?: string | null;
+  video_url?: string | null;
   category_id?: number | null;
   category_name?: string | null;
   parent_article_id?: number | null;
@@ -51,6 +54,7 @@ export interface KbArticle {
   view_count?: number;
   helpful_yes?: number;
   helpful_no?: number;
+  my_feedback?: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
   author?: { id: number; name: string } | null;
@@ -77,6 +81,7 @@ interface CollectionEnvelope<T> {
 type ArrayEnvelope<T> = T[] | { data?: T[] | { items?: T[] }; items?: T[] };
 
 export async function getResources(options: {
+  resourceId?: number;
   search?: string;
   categoryId?: number | null;
   cursor?: string | null;
@@ -86,6 +91,7 @@ export async function getResources(options: {
   if (options.search?.trim()) params.search = options.search.trim();
   if (options.categoryId) params.category_id = String(options.categoryId);
   if (options.cursor) params.cursor = options.cursor;
+  if (options.resourceId !== undefined) params.resource_id = String(options.resourceId);
 
   const response = await api.get<CollectionEnvelope<ResourceItem>>(`${API_V2}/resources`, params);
   return normalizeCollection(response);
@@ -96,8 +102,8 @@ export async function getResourceCategories(): Promise<ResourceCategory[]> {
   return normalizeArray(response);
 }
 
-export async function getKbArticles(): Promise<CursorPage<KbArticle>> {
-  const response = await api.get<CollectionEnvelope<KbArticle>>(`${API_V2}/kb`, { per_page: '100' });
+export async function getKbArticles(cursor?: string | null): Promise<CursorPage<KbArticle>> {
+  const response = await api.get<CollectionEnvelope<KbArticle>>(`${API_V2}/kb`, { per_page: '100', ...(cursor ? { cursor } : {}) });
   return normalizeCollection(response);
 }
 
@@ -106,12 +112,25 @@ export async function searchKbArticles(query: string): Promise<KbArticle[]> {
   return normalizeArray(response);
 }
 
+export async function searchKbArticlePage(query: string, cursor: string | null = null): Promise<CursorPage<KbArticle>> {
+  const response = await api.get<CollectionEnvelope<KbArticle>>(`${API_V2}/kb/search`, {
+    q: query.trim(), per_page: '20', ...(cursor ? { cursor } : {}),
+  });
+  return normalizeCollection(response);
+}
+
 export async function getKbArticle(id: number): Promise<KbArticle> {
   const response = await api.get<{ data?: KbArticle } | KbArticle>(`${API_V2}/kb/${id}`);
   if (isObjectWithData(response) && response.data) {
     return response.data;
   }
   return response as KbArticle;
+}
+
+/** A feedback receipt has no counts; read the saved choice and totals before showing success. */
+export async function submitKbFeedback(id: number, isHelpful: boolean): Promise<KbArticle> {
+  await api.post(`${API_V2}/kb/${id}/feedback`, { is_helpful: isHelpful });
+  return getKbArticle(id);
 }
 
 function normalizeCollection<T>(response: CollectionEnvelope<T>): CursorPage<T> {

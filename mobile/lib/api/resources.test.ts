@@ -10,13 +10,42 @@ import {
   getResources,
   getResourceCategories,
   searchKbArticles,
+  searchKbArticlePage,
+  submitKbFeedback,
 } from './resources';
 
 jest.mock('@/lib/api/client', () => ({
-  api: { get: jest.fn() },
+  api: { get: jest.fn(), post: jest.fn() },
 }));
 
 describe('resources API', () => {
+  it('reads the saved feedback and totals after the write receipt', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { message: 'Saved' } });
+    const article = { id: 7, title: 'Guide', my_feedback: false, helpful_yes: 2, helpful_no: 3 };
+    (api.get as jest.Mock).mockResolvedValue({ data: article });
+    expect(await submitKbFeedback(7, false)).toEqual(article);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/kb/7/feedback', { is_helpful: false });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/kb/7');
+    expect((api.post as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan((api.get as jest.Mock).mock.invocationCallOrder[0]);
+  });
+
+  it('does not read or claim success after a rejected feedback write', async () => {
+    (api.post as jest.Mock).mockRejectedValueOnce(new Error('Write refused'));
+    await expect(submitKbFeedback(7, true)).rejects.toThrow('Write refused');
+    expect(api.get).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a failed confirmation read instead of inventing saved totals', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { message: 'Saved' } });
+    (api.get as jest.Mock).mockRejectedValueOnce(new Error('Read failed'));
+    await expect(submitKbFeedback(7, true)).rejects.toThrow('Read failed');
+  });
+  it('carries Knowledge search term and cursor with collection metadata', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [{ id: 23, title: 'Later match' }], meta: { cursor: 'next', has_more: true } });
+    const page = await searchKbArticlePage('  credits  ', 'previous');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/kb/search', { q: 'credits', per_page: '20', cursor: 'previous' });
+    expect(page).toEqual({ items: [{ id: 23, title: 'Later match' }], cursor: 'next', hasMore: true });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -70,5 +99,17 @@ describe('resources API', () => {
 
     expect(api.get).toHaveBeenCalledWith('/api/v2/kb/7');
     expect(result.title).toBe('Getting started');
+  });
+  it('requests a saved resource by exact id without browse filters', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [{ id: 999, title: 'Saved file' }] });
+    const page = await getResources({ resourceId: 999, perPage: 1 });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/resources', { per_page: '1', resource_id: '999' });
+    expect(page.items[0].id).toBe(999);
+  });
+  it('forwards the knowledge browse cursor and returns next-page metadata', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [{ id: 101, title: 'Older article' }], meta: { cursor: 'next-page', has_more: true } });
+    const page = await getKbArticles('previous-page');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/kb', { per_page: '100', cursor: 'previous-page' });
+    expect(page).toEqual({ items: [{ id: 101, title: 'Older article' }], cursor: 'next-page', hasMore: true });
   });
 });

@@ -41,11 +41,36 @@ class ResourcePublicController extends BaseApiController
             ->leftJoin('categories as c', 'r.category_id', '=', 'c.id')
             ->where('r.tenant_id', $tenantId);
 
+        if ($this->query('resource_id') !== null) {
+            $query->where('r.id', $this->queryInt('resource_id', 0));
+        }
+
         if ($cursor) {
             $decoded = $this->decodeCursor($cursor);
-            if ($decoded !== null) {
-                $query->where('r.id', '<', (int) $decoded);
+            $anchor = $decoded !== null ? json_decode($decoded, true) : null;
+            // Accept existing numeric cursors while the referenced tenant row exists.
+            if ($decoded !== null && ctype_digit($decoded)) {
+                $legacy = DB::table('resources')->where('tenant_id', $tenantId)->where('id', $decoded)->first();
+                $anchor = $legacy ? ['v' => 1, 'sort' => (int) $legacy->sort_order, 'created' => $legacy->created_at, 'id' => (int) $legacy->id] : null;
             }
+            $created = is_array($anchor) ? ($anchor['created'] ?? null) : null;
+            $date = is_string($created) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $created)
+                ? \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $created) : false;
+            if (!is_array($anchor) || ($anchor['v'] ?? null) !== 1
+                || !is_int($anchor['sort'] ?? null) || !is_int($anchor['id'] ?? null) || $anchor['id'] <= 0
+                || !$date || $date->format('Y-m-d H:i:s') !== $created) {
+                return $this->respondWithError('INVALID_CURSOR', __('api.invalid_cursor'), 'cursor', 422);
+            }
+            $query->where(function ($q) use ($anchor) {
+                $q->where('r.sort_order', '>', $anchor['sort'])
+                    ->orWhere(function ($q) use ($anchor) {
+                        $q->where('r.sort_order', $anchor['sort'])->where('r.created_at', '<', $anchor['created']);
+                    })
+                    ->orWhere(function ($q) use ($anchor) {
+                        $q->where('r.sort_order', $anchor['sort'])->where('r.created_at', $anchor['created'])
+                            ->where('r.id', '<', $anchor['id']);
+                    });
+            });
         }
 
         if ($search) {
@@ -63,6 +88,7 @@ class ResourcePublicController extends BaseApiController
         $items = $query
             ->orderBy('r.sort_order')
             ->orderByDesc('r.created_at')
+            ->orderByDesc('r.id')
             ->limit($perPage + 1)
             ->select(
                 'r.id', 'r.title', 'r.description', 'r.file_path', 'r.file_type', 'r.file_size',
@@ -83,7 +109,10 @@ class ResourcePublicController extends BaseApiController
 
         $baseUrl = UrlHelper::getBaseUrl();
         $nextCursor = $hasMore && $items->isNotEmpty()
-            ? $this->encodeCursor($items->last()->id)
+            ? $this->encodeCursor(json_encode([
+                'v' => 1, 'sort' => (int) $items->last()->sort_order,
+                'created' => $items->last()->created_at, 'id' => (int) $items->last()->id,
+            ], JSON_THROW_ON_ERROR))
             : null;
 
         $formatted = $items->map(function ($row) use ($baseUrl, $tenantId) {
