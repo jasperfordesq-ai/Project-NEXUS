@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Prevent repeated native group-exchange actions after acceptance while refreshed details are pending; failed refreshes retry the read without replaying the action.
+
 - Group-exchange cancellation can no longer overwrite a completed settlement; repeated cancellation remains safe and cancelled exchanges cannot complete.
 
 - Mobile listing-load recovery now consults the shared refusal-status policy; podcast retry regression coverage explicitly controls response completion.

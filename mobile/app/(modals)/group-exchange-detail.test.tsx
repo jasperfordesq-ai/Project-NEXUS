@@ -94,9 +94,9 @@ jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/EmptyState', () => {
   const React = require('react');
-  const { Text, View } = require('react-native');
-  return function EmptyState({ title, subtitle }: { title?: string; subtitle?: string }) {
-    return <View>{title ? <Text>{title}</Text> : null}{subtitle ? <Text>{subtitle}</Text> : null}</View>;
+  const { Text, View, Pressable } = require('react-native');
+  return function EmptyState({ title, subtitle, actionLabel, onAction }: { title?: string; subtitle?: string; actionLabel?: string; onAction?: () => void }) {
+    return <View>{title ? <Text>{title}</Text> : null}{subtitle ? <Text>{subtitle}</Text> : null}{actionLabel && onAction ? <Pressable testID="empty-state-action" onPress={onAction}><Text>{actionLabel}</Text></Pressable> : null}</View>;
   };
 });
 
@@ -176,6 +176,27 @@ beforeEach(() => {
 });
 
 describe('GroupExchangeDetailScreen', () => {
+  it('does not replay an accepted action before fresh details arrive or after refresh fails', async () => {
+    const screen = render(<GroupExchangeDetailScreen />);
+    await act(async () => fireEvent.press(screen.getByText('Confirm hours')));
+    const oldConfirmation = mockConfirmCalls[0]!.onConfirm;
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+    await act(async () => oldConfirmation());
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    mockUseApi.mockReturnValue({ data: { data: baseExchange }, isLoading: false, error: 'Offline', errorStatus: 0, refresh: mockRefresh });
+    screen.rerender(<GroupExchangeDetailScreen />);
+    await act(async () => oldConfirmation());
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    await act(async () => fireEvent.press(screen.getByTestId('empty-state-action')));
+    expect(mockRefresh).toHaveBeenCalledTimes(2);
+    expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+    mockUseApi.mockReturnValue({ data: { data: { ...baseExchange, participants: baseExchange.participants.map(p => ({ ...p, confirmed: true })) } }, isLoading: false, error: null, refresh: mockRefresh });
+    screen.rerender(<GroupExchangeDetailScreen />);
+    expect(screen.queryByText('Confirm hours')).toBeNull();
+    await act(async () => fireEvent.press(screen.getByText('Complete exchange')));
+    expect(mockCompleteGroupExchange).toHaveBeenCalledTimes(1);
+  });
+
   it.each(['1.5', '0x2a', '4.2e1', '9007199254740993', ['42'], ['42', '43']])('does not load malformed group exchange ID %j', id => {
     mockParams = { id };
     const screen = render(<GroupExchangeDetailScreen />);

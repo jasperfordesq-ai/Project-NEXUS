@@ -79,6 +79,15 @@ function GroupExchangeDetailScreenInner() {
   const safeExchangeId = Number.isSafeInteger(exchangeId) && exchangeId > 0 ? exchangeId : 0;
   const { data, isLoading, error, errorStatus, refresh } = useApi(() => getGroupExchange(safeExchangeId), [safeExchangeId], { enabled: safeExchangeId > 0 });
   const exchange = data?.data ?? null;
+  const [awaitingRead, setAwaitingRead] = useState(false);
+  const acceptedSnapshot = useRef<typeof exchange>(null);
+  useEffect(() => {
+    if (acceptedSnapshot.current && exchange && exchange !== acceptedSnapshot.current
+      && !isLoading && !error && exchange.id === safeExchangeId) {
+      acceptedSnapshot.current = null;
+      setAwaitingRead(false);
+    }
+  }, [exchange, isLoading, error, safeExchangeId]);
   const currentRead = useRef({ exchange, isLoading, error, safeExchangeId });
   currentRead.current = { exchange, isLoading, error, safeExchangeId };
   useEffect(() => {
@@ -86,7 +95,7 @@ function GroupExchangeDetailScreenInner() {
   }, [exchange, isLoading, error, dismiss]);
 
   async function runAction(action: 'confirm' | 'complete' | 'cancel') {
-    if (!exchange || !mountedRef.current || submittingRef.current) return;
+    if (!exchange || !mountedRef.current || submittingRef.current || acceptedSnapshot.current) return;
     const current = currentRead.current;
     if (current.exchange !== exchange || current.isLoading || current.error
       || current.safeExchangeId !== exchange.id) return;
@@ -100,7 +109,11 @@ function GroupExchangeDetailScreenInner() {
       } else {
         await cancelGroupExchange(exchange.id);
       }
-      if (mountedRef.current) refresh();
+      if (mountedRef.current) {
+        acceptedSnapshot.current = currentRead.current.exchange;
+        setAwaitingRead(true);
+        refresh();
+      }
     } catch (err) {
       if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(`groupExchanges.detail.actions.${action}Failed`)), variant: 'danger' });
@@ -245,17 +258,17 @@ function GroupExchangeDetailScreenInner() {
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.actions.title')}</Text>
             <View className="flex-row flex-wrap gap-2">
               {canConfirm ? (
-                <HeroButton variant="primary" onPress={confirmConfirm} isDisabled={submitting}>
+                <HeroButton variant="primary" onPress={confirmConfirm} isDisabled={submitting || awaitingRead}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.confirm')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
               {canComplete ? (
-                <HeroButton variant="primary" onPress={confirmComplete} isDisabled={submitting}>
+                <HeroButton variant="primary" onPress={confirmComplete} isDisabled={submitting || awaitingRead}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.complete')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
               {canCancel ? (
-                <HeroButton variant="secondary" onPress={confirmCancel} isDisabled={submitting}>
+                <HeroButton variant="secondary" onPress={confirmCancel} isDisabled={submitting || awaitingRead}>
                   <HeroButton.Label>{t('groupExchanges.detail.actions.cancel')}</HeroButton.Label>
                 </HeroButton>
               ) : null}
