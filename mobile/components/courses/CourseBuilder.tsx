@@ -14,9 +14,7 @@
  * drag handle inside a vertically scrolling form is the classic way to make a list
  * unusable on a phone. Keep the buttons.
  *
- * Every mutation is optimistic and rolls back on failure, exactly as the web builder does:
- * the member sees the new order immediately, and if the API refuses, the previous state is
- * restored and a toast explains it rather than leaving the screen lying about what is saved.
+ * Reordering displays the new order before both position updates finish.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -83,6 +81,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+  const sectionRenames = useRef(new Map<number, Promise<void>>());
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
 
@@ -112,17 +111,24 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     }
   }
 
-  async function renameSection(sectionId: number, title: string) {
+  function renameSection(sectionId: number, title: string) {
     if (!mountedRef.current) return;
-    const previous = sections;
-    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, title } : s)));
-    try {
-      await updateCourseSection(courseId, sectionId, { title });
-    } catch {
+    // Preserve the order typed without replacing unrelated curriculum changes on failure.
+    const previous = sectionRenames.current.get(sectionId) ?? Promise.resolve();
+    const operation = previous.then(async () => {
       if (!mountedRef.current) return;
-      setSections(previous);
-      reportFailure();
-    }
+      try {
+        await updateCourseSection(courseId, sectionId, { title });
+        if (!mountedRef.current) return;
+        setSections(current => current.map(section => section.id === sectionId ? { ...section, title } : section));
+      } catch {
+        reportFailure();
+      }
+    });
+    sectionRenames.current.set(sectionId, operation);
+    void operation.finally(() => {
+      if (sectionRenames.current.get(sectionId) === operation) sectionRenames.current.delete(sectionId);
+    });
   }
 
   async function removeSection(sectionId: number) {

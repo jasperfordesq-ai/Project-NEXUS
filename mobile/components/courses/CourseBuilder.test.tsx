@@ -328,6 +328,45 @@ describe('CourseBuilder', () => {
     await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledWith(42, 5, { title: 'Week two' }));
   });
 
+  it('retains a newly saved lesson when an older section rename fails', async () => {
+    let rejectRename!: (reason: Error) => void;
+    mockUpdateCourseSection.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectRename = reject; }));
+    mockCreateCourseLesson.mockResolvedValue({ id: 90, course_id: 42, section_id: 5, title: 'Saved lesson', content_type: 'text', position: 0, is_preview: false });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one')]} />);
+    const field = screen.getByDisplayValue('Week one');
+    fireEvent.changeText(field, 'Revised week');
+    fireEvent(field, 'blur');
+    await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByText('Add lesson'));
+    await waitFor(() => expect(screen.getByText('Saved lesson')).toBeTruthy());
+    await act(async () => rejectRename(new Error('Refused')));
+    expect(screen.getByText('Saved lesson')).toBeTruthy();
+    expect(screen.getByDisplayValue('Revised week')).toBeTruthy();
+    fireEvent(screen.getByDisplayValue('Revised week'), 'blur');
+    await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledTimes(2));
+  });
+
+  it('sends consecutive section renames in order instead of racing the saved title', async () => {
+    let resolveRename!: (value: object) => void;
+    mockUpdateCourseSection.mockImplementationOnce(() => new Promise(resolve => { resolveRename = resolve; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one')]} />);
+    const field = screen.getByDisplayValue('Week one');
+    fireEvent.changeText(field, 'First edit');
+    fireEvent(field, 'blur');
+    await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledTimes(1));
+    fireEvent.changeText(field, 'Second edit');
+    fireEvent(field, 'blur');
+    await act(async () => {});
+    expect(mockUpdateCourseSection).toHaveBeenCalledTimes(1);
+    await act(async () => resolveRename({ id: 5, title: 'First edit' }));
+    await waitFor(() => expect(mockUpdateCourseSection).toHaveBeenCalledTimes(2));
+    expect(mockUpdateCourseSection).toHaveBeenLastCalledWith(42, 5, { title: 'Second edit' });
+    expect(screen.getByDisplayValue('Second edit')).toBeTruthy();
+    fireEvent(screen.getByDisplayValue('Second edit'), 'blur');
+    await act(async () => {});
+    expect(mockUpdateCourseSection).toHaveBeenCalledTimes(2);
+  });
+
   it('reorders sections optimistically and puts them back when the API refuses', async () => {
     mockUpdateCourseSection.mockRejectedValue(new Error('nope'));
 
