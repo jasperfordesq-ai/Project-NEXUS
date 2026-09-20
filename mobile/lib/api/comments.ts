@@ -5,6 +5,7 @@
 
 import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
+import type { ReactionToggleResult } from '@/lib/api/feed';
 
 export type CommentTargetType =
   | 'post'
@@ -109,8 +110,8 @@ export function deleteComment(
 export function toggleCommentReaction(
   commentId: number,
   reactionType: CommentReactionType,
-): Promise<{ data?: { action: 'added' | 'removed' | 'updated'; reaction_type: string; reactions: Record<string, number> } }> {
-  return api.post<{ data?: { action: 'added' | 'removed' | 'updated'; reaction_type: string; reactions: Record<string, number> } }>(
+): Promise<{ data?: ReactionToggleResult }> {
+  return api.post<{ data?: ReactionToggleResult }>(
     `${API_V2}/comments/${commentId}/reactions`,
     { reaction_type: reactionType },
   );

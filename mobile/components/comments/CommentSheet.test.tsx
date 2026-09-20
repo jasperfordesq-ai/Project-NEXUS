@@ -35,6 +35,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
       data?: unknown[];
       renderItem?: (info: { item: unknown }) => React.ReactElement;
       ListEmptyComponent?: unknown;
+      ListHeaderComponent?: React.ReactElement;
     }, ref: unknown) => {
       React.useImperativeHandle(ref, () => ({
         scrollToIndex: mockScrollToIndex,
@@ -46,6 +47,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
 
       return (
         <View testID="comment-list">
+          {props.ListHeaderComponent}
           {items.length === 0
             ? typeof ListEmptyComponent === 'function'
               ? React.createElement(ListEmptyComponent as React.ComponentType)
@@ -105,7 +107,7 @@ jest.mock('heroui-native', () => {
 
   return {
     BottomSheet,
-    Button,
+    Button: Object.assign(Button, { Label: Text }),
     Spinner: () => <View />,
     Surface: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
     useBottomSheetAwareHandlers: () => ({ onBlur: mockAwareOnBlur, onFocus: mockAwareOnFocus }),
@@ -254,6 +256,204 @@ async function longPressRow(getByTestId: (id: string) => unknown, rowTestId: str
 }
 
 describe('CommentSheet', () => {
+  it.each([true, false])('preserves a newer reaction across an overlapping reload (reactionFirst=%s)', async (reactionFirst) => {
+    let finishRead!: (value: unknown) => void;
+    let finishReaction!: (value: unknown) => void;
+    const screen = await openSheetWithComments([makeComment()]);
+    mockGetComments.mockImplementationOnce(() => new Promise((resolve) => { finishRead = resolve; }));
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Another comment');
+    await act(async () => { fireEvent.press(screen.getByLabelText('Send')); });
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((resolve) => { finishReaction = resolve; }));
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    const reaction = { data: { action: 'added', reaction_type: 'like', reactions: { counts: { love: 1, like: 1 }, total: 2, user_reaction: 'like' } } };
+    if (reactionFirst) await act(async () => { finishReaction(reaction); });
+    await act(async () => { finishRead({ data: { comments: [makeComment({ content: 'Fresh content' })], count: 1 } }); });
+    expect(screen.getByText('Fresh content')).toBeTruthy();
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByText('2')).toBeTruthy();
+    if (!reactionFirst) await act(async () => { finishReaction(reaction); });
+    mockGetComments.mockResolvedValueOnce({ data: {
+      comments: [makeComment({ reactions: { like: 5 }, user_reactions: ['like'] })], count: 1,
+    } });
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Later comment');
+    await act(async () => { fireEvent.press(screen.getByLabelText('Send')); });
+    expect(screen.getByText('5')).toBeTruthy();
+  });
+  it.each(['open', 'closed', 'departed'])('guards repeated retained reaction callbacks (%s)', async (state) => {
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = await openSheetWithComments([makeComment()]);
+    let button = screen.getByTestId('comment-like-7');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const press = button.props.onPress;
+    if (state === 'departed') screen.unmount();
+    if (state === 'closed') screen.rerender(<CommentSheet visible={false} targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    await act(async () => { press(); press(); });
+    expect(mockToggleCommentReaction).toHaveBeenCalledTimes(state === 'open' ? 1 : 0);
+  });
+
+  it('suppresses a pending reaction failure after departure', async () => {
+    let rejectReaction!: (error: Error) => void;
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectReaction = reject; }));
+    const screen = await openSheetWithComments([makeComment()]);
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    screen.unmount();
+    await act(async () => { rejectReaction(new Error('Offline')); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockGetComments).toHaveBeenCalledTimes(1);
+  });
+  it('keeps unrelated reactions available and unlocks a completed reaction', async () => {
+    let finish!: (value: unknown) => void;
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = await openSheetWithComments([makeComment(), makeComment({ id: 8 })]);
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.busy).toBe(true);
+    expect(screen.getByTestId('comment-like-8').props.accessibilityState.disabled).toBe(false);
+    await act(async () => { fireEvent.press(screen.getByTestId('comment-like-8')); });
+    expect(mockToggleCommentReaction).toHaveBeenCalledTimes(2);
+    await act(async () => { finish({ data: {} }); });
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.busy).toBe(false);
+    await act(async () => { fireEvent.press(screen.getByTestId('comment-like-7')); });
+    expect(mockToggleCommentReaction).toHaveBeenCalledTimes(3);
+  });
+  it.each(['open', 'closed', 'reopened', 'departed'])('guards retained delete confirmations (%s)', async (state) => {
+    mockDeleteComment.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = await openSheetWithComments([makeComment()]);
+    await longPressRow(screen.getByTestId, 'comment-row-7');
+    fireEvent.press(screen.getByTestId('comment-action-Delete'));
+    const options = mockConfirm.mock.calls[0][0] as ConfirmOptions;
+    if (state === 'departed') screen.unmount();
+    if (state === 'closed' || state === 'reopened') {
+      screen.rerender(<CommentSheet visible={false} targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+      if (state === 'reopened') screen.rerender(<CommentSheet visible targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    }
+    await act(async () => { void options.onConfirm?.(); void options.onConfirm?.(); });
+    expect(mockDeleteComment).toHaveBeenCalledTimes(state === 'open' ? 1 : 0);
+  });
+  it.each(['open', 'closed', 'reopened', 'changed', 'departed'])('guards retained send callbacks (%s)', async (state) => {
+    mockSubmitComment.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = await openSheetWithComments([]);
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Draft comment');
+    let button = screen.getByLabelText('Send');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const press = button.props.onPress;
+    if (state === 'departed') screen.unmount();
+    if (state === 'changed') fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Replacement draft');
+    if (state === 'closed' || state === 'reopened') {
+      screen.rerender(<CommentSheet visible={false} targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+      if (state === 'reopened') screen.rerender(<CommentSheet visible targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    }
+    await act(async () => { void press(); void press(); });
+    expect(mockSubmitComment).toHaveBeenCalledTimes(state === 'open' ? 1 : 0);
+    if (state === 'changed' || state === 'reopened') {
+      fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Current draft');
+      await act(async () => { fireEvent.press(screen.getByLabelText('Send')); });
+      expect(mockSubmitComment).toHaveBeenCalledWith('listing', 213, 'Current draft', undefined);
+    }
+  });
+  it('refreshes after a send completes during the initial read and ignores that older snapshot', async () => {
+    let finishInitial!: (value: unknown) => void;
+    mockGetComments.mockImplementationOnce(() => new Promise(resolve => { finishInitial = resolve; }));
+    const screen = render(<CommentSheet visible targetType="listing" targetId={213} strings={baseStrings} onClose={jest.fn()} />);
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Newly sent');
+    mockGetComments.mockResolvedValueOnce({ data: { comments: [makeComment({ content: 'Newly sent' })], count: 1 } });
+    await act(async () => { fireEvent.press(screen.getByLabelText('Send')); });
+    expect(mockGetComments).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('Newly sent')).toBeTruthy();
+    await act(async () => { finishInitial({ data: { comments: [], count: 0 } }); });
+    expect(screen.getByText('Newly sent')).toBeTruthy();
+  });
+
+  it('preserves text typed while a comment send is pending', async () => {
+    let finish!: () => void;
+    mockSubmitComment.mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve({ data: {} }); }));
+    const screen = await openSheetWithComments([]);
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'First comment draft');
+    fireEvent.press(screen.getByLabelText('Send'));
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Next comment draft');
+    await act(async () => { finish(); });
+    expect(screen.getByTestId('native-comment-text-area').props.value).toBe('Next comment draft');
+  });
+  it.each([false, true])('ignores submitted-comment completion after departure (refused=%s)', async (refused) => {
+    let finish!: () => void;
+    mockSubmitComment.mockImplementationOnce(() => new Promise((resolve, reject) => {
+      finish = () => refused ? reject(new Error('Refused')) : resolve({ data: {} });
+    }));
+    const onCountChange = jest.fn();
+    const screen = render(<CommentSheet visible targetType="blog" targetId={7} strings={baseStrings} onCountChange={onCountChange} onClose={jest.fn()} />);
+    await waitFor(() => expect(onCountChange).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Submitted comment');
+    fireEvent.press(screen.getByLabelText('Send'));
+    onCountChange.mockClear();
+    screen.unmount();
+    await act(async () => { finish(); });
+    expect(onCountChange).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockGetComments).toHaveBeenCalledTimes(1);
+  });
+  it('keeps existing comments and offers read-only retry after a post-send reload fails', async () => {
+    const screen = await openSheetWithComments([makeComment()]);
+    mockGetComments.mockRejectedValueOnce(new Error('Offline'));
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'New comment');
+    fireEvent.press(screen.getByLabelText('Send'));
+    await waitFor(() => expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy());
+    expect(screen.getByTestId('comment-row-7')).toBeTruthy();
+    mockGetComments.mockResolvedValueOnce({ data: { comments: [makeComment({ content: 'Refreshed comment' })], count: 1 } });
+    fireEvent.press(screen.getByLabelText('Retry'));
+    await waitFor(() => expect(screen.getByText('Refreshed comment')).toBeTruthy());
+    expect(screen.queryByTestId('refresh-failed-notice')).toBeNull();
+    expect(mockGetComments).toHaveBeenCalledTimes(3);
+    expect(mockSubmitComment).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves a refused draft and allows an explicit retry', async () => {
+    mockSubmitComment.mockRejectedValueOnce(new Error('Refused'));
+    const screen = await openSheetWithComments([]);
+    fireEvent.changeText(screen.getByTestId('native-comment-text-area'), 'Keep this draft');
+    fireEvent.press(screen.getByLabelText('Send'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(screen.getByTestId('native-comment-text-area').props.value).toBe('Keep this draft');
+    fireEvent.press(screen.getByLabelText('Send'));
+    await waitFor(() => expect(mockSubmitComment).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByTestId('native-comment-text-area').props.value).toBe(''));
+  });
+  it('starts the new target read immediately and ignores a late previous-target response', async () => {
+    let finishPrevious!: () => void;
+    let finishCurrent!: () => void;
+    mockGetComments.mockImplementationOnce(() => new Promise((resolve) => {
+      finishPrevious = () => resolve({ data: { comments: [makeComment({ content: 'Old article comment' })], count: 9 } });
+    })).mockImplementationOnce(() => new Promise((resolve) => {
+      finishCurrent = () => resolve({ data: { comments: [makeComment({ id: 8, content: 'New article comment' })], count: 1 } });
+    }));
+    const onCountChange = jest.fn();
+    const screen = render(<CommentSheet visible targetType="blog" targetId={7} strings={baseStrings} onCountChange={onCountChange} onClose={jest.fn()} />);
+    screen.rerender(<CommentSheet visible targetType="blog" targetId={8} strings={baseStrings} onCountChange={onCountChange} onClose={jest.fn()} />);
+    expect(mockGetComments).toHaveBeenLastCalledWith('blog', 8);
+    await act(async () => { finishCurrent(); });
+    await act(async () => { finishPrevious(); });
+    expect(screen.getByText('New article comment')).toBeTruthy();
+    expect(screen.queryByText('Old article comment')).toBeNull();
+    expect(onCountChange.mock.calls).toEqual([[1]]);
+  });
+  it('does not report a read failure after the sheet unmounts', async () => {
+    let fail!: () => void;
+    mockGetComments.mockImplementationOnce(() => new Promise((_, reject) => { fail = () => reject(new Error('Offline')); }));
+    const screen = render(<CommentSheet visible targetType="blog" targetId={7} strings={baseStrings} onClose={jest.fn()} />);
+    screen.unmount();
+    await act(async () => { fail(); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+  it('stops after a failed initial read instead of immediately requesting again', async () => {
+    mockGetComments.mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce({ data: { comments: [makeComment()], count: 1 } });
+    const screen = render(<CommentSheet visible targetType="blog" targetId={7} strings={baseStrings} onClose={jest.fn()} />);
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockGetComments).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('No comments yet')).toBeNull();
+    expect(screen.getAllByText('Could not load comments').length).toBeGreaterThan(0);
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('First comment');
+    expect(mockGetComments).toHaveBeenCalledTimes(2);
+  });
   const originalPlatformOS = Platform.OS;
 
   beforeEach(() => {
@@ -267,11 +467,11 @@ describe('CommentSheet', () => {
     bottomSheetFlatListProps.length = 0;
     bottomSheetFooterProps.length = 0;
     jest.useRealTimers();
-    mockGetComments.mockResolvedValue({ data: { comments: [], count: 0 } });
-    mockSubmitComment.mockResolvedValue({ data: {} });
+    mockGetComments.mockReset().mockResolvedValue({ data: { comments: [], count: 0 } });
+    mockSubmitComment.mockReset().mockResolvedValue({ data: {} });
     mockEditComment.mockResolvedValue({ data: {} });
-    mockDeleteComment.mockResolvedValue({ data: {} });
-    mockToggleCommentReaction.mockResolvedValue({ data: {} });
+    mockDeleteComment.mockReset().mockResolvedValue({ data: {} });
+    mockToggleCommentReaction.mockReset().mockResolvedValue({ data: {} });
     Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalPlatformOS });
   });
 
@@ -332,7 +532,7 @@ describe('CommentSheet', () => {
     });
   });
 
-  it('mounts closed before opening so HeroUI Native can snap comments into view', () => {
+  it('mounts closed before opening so HeroUI Native can snap comments into view', async () => {
     jest.useFakeTimers();
     const props = {
       targetType: 'listing' as const,
@@ -351,6 +551,7 @@ describe('CommentSheet', () => {
     });
 
     expect(bottomSheetRootProps.at(-1)?.isOpen).toBe(true);
+    await act(async () => { await mockGetComments.mock.results[0].value; });
   });
 
   it('keeps the full-screen sheet container transparent', async () => {
@@ -553,6 +754,10 @@ describe('CommentSheet', () => {
 
     expect(mockDeleteComment).toHaveBeenCalledWith(7);
     expect(onCountChange).toHaveBeenLastCalledWith(0);
+    await act(async () => {
+      await options.onConfirm();
+    });
+    expect(mockDeleteComment).toHaveBeenCalledTimes(1);
   });
 
   it('hides Edit/Delete for comments that are not own', async () => {
@@ -570,6 +775,32 @@ describe('CommentSheet', () => {
     expect(getByTestId('comment-action-Reply')).toBeTruthy();
     expect(queryByTestId('comment-action-Edit')).toBeNull();
     expect(queryByTestId('comment-action-Delete')).toBeNull();
+  });
+
+  it('replaces the viewers previous reaction and accepts authoritative reaction counts', async () => {
+    let resolveReaction!: (value: unknown) => void;
+    mockToggleCommentReaction.mockImplementationOnce(() => new Promise((resolve) => { resolveReaction = resolve; }));
+    const screen = await openSheetWithComments([makeComment({ reactions: { love: 2 }, user_reactions: ['love'] })]);
+    fireEvent.press(screen.getByTestId('comment-like-7'));
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.queryByText('3')).toBeNull();
+    await act(async () => { resolveReaction({ data: {
+      action: 'updated', reaction_type: 'like',
+      reactions: { counts: { love: 3, like: 1 }, total: 4, user_reaction: 'like' },
+    } }); });
+    expect(screen.getByText('4')).toBeTruthy();
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(true);
+  });
+
+  it('accepts authoritative removal with a null viewer reaction', async () => {
+    mockToggleCommentReaction.mockResolvedValueOnce({ data: {
+      action: 'removed', reaction_type: null,
+      reactions: { counts: { love: 5 }, total: 5, user_reaction: null },
+    } });
+    const screen = await openSheetWithComments([makeComment({ reactions: { like: 1 }, user_reactions: ['like'] })]);
+    await act(async () => { fireEvent.press(screen.getByTestId('comment-like-7')); });
+    expect(screen.getByText('5')).toBeTruthy();
+    expect(screen.getByTestId('comment-like-7').props.accessibilityState.selected).toBe(false);
   });
 
   it('optimistically toggles a comment like and calls the reaction endpoint', async () => {

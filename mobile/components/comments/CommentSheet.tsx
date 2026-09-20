@@ -14,6 +14,8 @@ import { useBottomInset } from '@/lib/ui/rootInsets';
 import * as Haptics from '@/lib/haptics';
 
 import Avatar from '@/components/ui/Avatar';
+import ErrorState from '@/components/ui/ErrorState';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import TextArea from '@/components/ui/TextArea';
 import ActionSheet from '@/components/ui/ActionSheet';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -82,7 +84,11 @@ interface FlatComment extends CommentItem {
   depth: number;
 }
 
-export default function CommentSheet({
+export default function CommentSheet(props: CommentSheetProps) {
+  return <CommentSheetContent key={`${props.targetType}:${props.targetId}`} {...props} />;
+}
+
+function CommentSheetContent({
   visible,
   targetType,
   targetId,
@@ -93,15 +99,36 @@ export default function CommentSheet({
   onCountChange,
 }: CommentSheetProps) {
   const primary = usePrimaryColor();
+  const isMounted = useRef(true);
+  const isVisible = useRef(visible);
+  const visibilityVersion = useRef(0);
+  const deletingIds = useRef(new Set<number>());
+  const pendingReactions = useRef(new Set<number>());
+  const reactionVersions = useRef(new Map<number, number>());
+  const [reactingIds, setReactingIds] = useState(new Set<number>());
+  useEffect(() => {
+    isVisible.current = visible;
+    visibilityVersion.current += 1;
+  }, [visible]);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
   const theme = useTheme();
   const footerBottomInset = useBottomInset();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const loadPending = useRef(false);
+  const loadVersion = useRef(0);
   const [loadedTargetKey, setLoadedTargetKey] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ targetKey: string; message: string } | null>(null);
   const [draft, setDraft] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitPending = useRef(false);
+  const composerVersion = useRef(0);
+  const renderedComposerVersion = composerVersion.current;
   const [replyTarget, setReplyTarget] = useState<{ id: number; name: string } | null>(null);
   const [editTarget, setEditTarget] = useState<{ id: number } | null>(null);
   const [actionComment, setActionComment] = useState<FlatComment | null>(null);
@@ -123,26 +150,49 @@ export default function CommentSheet({
   );
 
   const loadSheetComments = useCallback(async (force = false) => {
-    if (!visible || isLoading || (!force && loadedTargetKey === targetKey)) return;
+    if (!isMounted.current || !isVisible.current || (!force && (loadPending.current || loadedTargetKey === targetKey || loadError?.targetKey === targetKey))) return;
+    const version = ++loadVersion.current;
+    loadPending.current = true;
     setIsLoading(true);
+    setLoadError(null);
+    const readReactionVersions = new Map(reactionVersions.current);
     try {
       const response = await getComments(targetType, targetId);
+      if (!isMounted.current || version !== loadVersion.current) return;
       const payload = ('data' in response && response.data ? response.data : response) as { comments?: CommentItem[]; count?: number };
       const nextComments = payload.comments ?? [];
       const nextCount = payload.count ?? countComments(nextComments);
-      setComments(nextComments);
+      setComments((current) => {
+        const currentById = new Map(flattenComments(current).map((comment) => [comment.id, comment]));
+        const reconcile = (rows: CommentItem[]): CommentItem[] => rows.map((row) => {
+          const previous = currentById.get(row.id);
+          const preserveReaction = previous && (pendingReactions.current.has(row.id)
+            || (readReactionVersions.get(row.id) ?? 0) !== (reactionVersions.current.get(row.id) ?? 0));
+          return {
+            ...row,
+            ...(preserveReaction ? { reactions: previous.reactions, user_reactions: previous.user_reactions } : {}),
+            ...(row.replies ? { replies: reconcile(row.replies) } : {}),
+          };
+        });
+        return reconcile(nextComments);
+      });
       setLoadedTargetKey(targetKey);
       onCountChange?.(nextCount);
     } catch (err) {
+      if (!isMounted.current || version !== loadVersion.current) return;
+      setLoadError({ targetKey, message: describeApiError(err, strings.loadFailed) });
       showToast({
         title: strings.actionFailedTitle,
         description: describeApiError(err, strings.loadFailed),
         variant: 'danger',
       });
     } finally {
-      setIsLoading(false);
+      if (isMounted.current && version === loadVersion.current) {
+        loadPending.current = false;
+        setIsLoading(false);
+      }
     }
-  }, [isLoading, loadedTargetKey, onCountChange, showToast, strings.actionFailedTitle, strings.loadFailed, targetId, targetKey, targetType, visible]);
+  }, [loadedTargetKey, loadError, onCountChange, showToast, strings.actionFailedTitle, strings.loadFailed, targetId, targetKey, targetType]);
 
   useEffect(() => {
     if (visible) {
@@ -152,6 +202,7 @@ export default function CommentSheet({
 
   useEffect(() => {
     if (!visible) return;
+    composerVersion.current += 1;
     setDraft('');
     setReplyTarget(null);
     setEditTarget(null);
@@ -171,25 +222,36 @@ export default function CommentSheet({
     return () => clearTimeout(timer);
   }, [focusedCommentIndex, isLoading, visible]);
 
-  async function handleSubmit() {
+  async function handleSubmit(expectedComposerVersion: number) {
     const content = draft.trim();
-    if (!content || isSubmitting) return;
+    if (!isMounted.current || !isVisible.current || !content || submitPending.current
+      || expectedComposerVersion !== composerVersion.current) return;
+    submitPending.current = true;
+    const submittedVersion = composerVersion.current;
     setIsSubmitting(true);
     try {
       if (editTarget) {
         await editComment(editTarget.id, content);
-        setDraft('');
-        setEditTarget(null);
+        if (!isMounted.current) return;
+        if (submittedVersion === composerVersion.current) {
+          setDraft('');
+          setEditTarget(null);
+        }
       } else {
         await submitComment(targetType, targetId, content, replyTarget?.id);
-        setDraft('');
-        setReplyTarget(null);
+        if (!isMounted.current) return;
+        if (submittedVersion === composerVersion.current) {
+          setDraft('');
+          setReplyTarget(null);
+        }
         const optimisticCount = Math.max(initialCount, countComments(comments)) + 1;
         onCountChange?.(optimisticCount);
       }
       await loadSheetComments(true);
+      if (!isMounted.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMounted.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: strings.actionFailedTitle,
@@ -197,28 +259,35 @@ export default function CommentSheet({
         variant: 'danger',
       });
     } finally {
-      setIsSubmitting(false);
+      submitPending.current = false;
+      if (isMounted.current) setIsSubmitting(false);
     }
   }
 
   function startReply(comment: FlatComment) {
+    composerVersion.current += 1;
     setEditTarget(null);
     setReplyTarget({ id: comment.id, name: comment.author?.name || strings.authorFallback });
   }
 
   function startEdit(comment: FlatComment) {
+    composerVersion.current += 1;
     setReplyTarget(null);
     setEditTarget({ id: comment.id });
     setDraft(stripHtml(comment.content));
   }
 
   function cancelComposerContext() {
+    composerVersion.current += 1;
     if (editTarget) setDraft('');
     setReplyTarget(null);
     setEditTarget(null);
   }
 
   function requestDelete(comment: FlatComment) {
+    if (!isMounted.current || !isVisible.current || deletingIds.current.has(comment.id)) return;
+    const confirmationVersion = visibilityVersion.current;
+    let consumed = false;
     confirm({
       title: strings.deleteConfirmTitle,
       message: strings.deleteConfirmMessage,
@@ -226,42 +295,70 @@ export default function CommentSheet({
       cancelLabel: strings.cancel,
       variant: 'danger',
       onConfirm: async () => {
+        if (!isMounted.current || !isVisible.current || confirmationVersion !== visibilityVersion.current
+          || consumed || deletingIds.current.has(comment.id)) return;
+        consumed = true;
+        deletingIds.current.add(comment.id);
         try {
           await deleteComment(comment.id);
+          if (!isMounted.current || confirmationVersion !== visibilityVersion.current) return;
           if (editTarget?.id === comment.id) cancelComposerContext();
           if (replyTarget?.id === comment.id) setReplyTarget(null);
           await loadSheetComments(true);
+          if (!isMounted.current || confirmationVersion !== visibilityVersion.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err) {
+          if (!isMounted.current || confirmationVersion !== visibilityVersion.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           showToast({
             title: strings.actionFailedTitle,
             description: describeApiError(err, strings.deleteFailed),
             variant: 'danger',
           });
+        } finally {
+          deletingIds.current.delete(comment.id);
         }
       },
     });
   }
 
   function handleToggleLike(comment: FlatComment) {
+    if (!isMounted.current || !isVisible.current || pendingReactions.current.has(comment.id)) return;
+    pendingReactions.current.add(comment.id);
+    reactionVersions.current.set(comment.id, (reactionVersions.current.get(comment.id) ?? 0) + 1);
+    setReactingIds(new Set(pendingReactions.current));
+    const reactionVisibilityVersion = visibilityVersion.current;
     const wasLiked = (comment.user_reactions ?? []).includes('like');
     // Optimistic toggle — apply locally first, refetch authoritative state on failure.
     setComments((prev) => updateCommentTree(prev, comment.id, (c) => {
       const reactions = normalizeCommentReactions(c.reactions);
-      const userReactions = (c.user_reactions ?? []).filter((type) => type !== 'like');
-      if (wasLiked) {
-        const next = (reactions.like ?? 0) - 1;
-        if (next > 0) reactions.like = next;
-        else delete reactions.like;
-      } else {
+      // The server permits one reaction per viewer: changing type replaces it.
+      for (const type of c.user_reactions ?? []) {
+        const next = (reactions[type] ?? 0) - 1;
+        if (next > 0) reactions[type] = next;
+        else delete reactions[type];
+      }
+      const userReactions: string[] = [];
+      if (!wasLiked) {
         reactions.like = (reactions.like ?? 0) + 1;
         userReactions.push('like');
       }
       return { ...c, reactions, user_reactions: userReactions };
     }));
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    toggleCommentReaction(comment.id, 'like').catch((err) => {
+    toggleCommentReaction(comment.id, 'like').then((response) => {
+      reactionVersions.current.set(comment.id, (reactionVersions.current.get(comment.id) ?? 0) + 1);
+      if (!isMounted.current || !response.data?.reactions) return;
+      const summary = response.data.reactions;
+      setComments((prev) => updateCommentTree(prev, comment.id, (c) => ({
+        ...c,
+        reactions: normalizeCommentReactions(summary.counts),
+        user_reactions: summary.user_reaction ? [summary.user_reaction] : [],
+      })));
+    }).catch((err) => {
+      reactionVersions.current.set(comment.id, (reactionVersions.current.get(comment.id) ?? 0) + 1);
+      pendingReactions.current.delete(comment.id);
+      if (!isMounted.current || !isVisible.current || reactionVisibilityVersion !== visibilityVersion.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({
         title: strings.actionFailedTitle,
@@ -269,6 +366,9 @@ export default function CommentSheet({
         variant: 'danger',
       });
       void loadSheetComments(true);
+    }).finally(() => {
+      pendingReactions.current.delete(comment.id);
+      if (isMounted.current) setReactingIds(new Set(pendingReactions.current));
     });
   }
 
@@ -314,9 +414,9 @@ export default function CommentSheet({
                   cancelLabel={strings.cancel}
                   isSubmitting={isSubmitting}
                   bottomPadding={composerBottomPadding}
-                  onChangeDraft={setDraft}
+                  onChangeDraft={(value) => { composerVersion.current += 1; setDraft(value); }}
                   onCancelContext={cancelComposerContext}
-                  onSubmit={() => void handleSubmit()}
+                  onSubmit={() => void handleSubmit(renderedComposerVersion)}
                 />
               </BottomSheetFooter>
             )}
@@ -358,6 +458,9 @@ export default function CommentSheet({
                     <View className="flex-1 items-center justify-center py-12">
                       <Spinner size="sm" />
                     </View>
+                  ) : loadError?.targetKey === targetKey ? (
+                    <ErrorState title={strings.loadFailed} subtitle={loadError.message}
+                      onRetry={() => void loadSheetComments(true)} />
                   ) : (
                     <Surface variant="secondary" className="items-center gap-3 rounded-panel p-6">
                       <View className="h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
@@ -367,6 +470,13 @@ export default function CommentSheet({
                     </Surface>
                   )
                 }
+                ListHeaderComponent={flattenedComments.length > 0 ? (
+                  <RefreshFailedNotice
+                    error={loadError?.targetKey === targetKey ? loadError.message : null}
+                    onRetry={() => void loadSheetComments(true)}
+                    isRetrying={isLoading}
+                  />
+                ) : null}
                 renderItem={({ item }) => (
                   <CommentRow
                     comment={item}
@@ -376,6 +486,7 @@ export default function CommentSheet({
                     likeLabel={strings.like}
                     primary={primary}
                     focused={item.id === focusCommentId}
+                    isReacting={reactingIds.has(item.id)}
                     onReply={startReply}
                     onToggleLike={handleToggleLike}
                     onOpenActions={setActionComment}
@@ -512,6 +623,7 @@ function CommentRow({
   likeLabel,
   primary,
   focused,
+  isReacting,
   onReply,
   onToggleLike,
   onOpenActions,
@@ -523,6 +635,7 @@ function CommentRow({
   likeLabel: string;
   primary: string;
   focused: boolean;
+  isReacting: boolean;
   onReply: (comment: FlatComment) => void;
   onToggleLike: (comment: FlatComment) => void;
   onOpenActions: (comment: FlatComment) => void;
@@ -609,10 +722,11 @@ function CommentRow({
               <View className="mt-1 flex-row items-center gap-4">
                 <Pressable
                   onPress={() => onToggleLike(comment)}
+                  disabled={isReacting}
                   hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={likeLabel}
-                  accessibilityState={{ selected: liked }}
+                  accessibilityState={{ selected: liked, disabled: isReacting, busy: isReacting }}
                   testID={`comment-like-${comment.id}`}
                   className="flex-row items-center gap-1"
                 >

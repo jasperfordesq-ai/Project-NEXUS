@@ -80,9 +80,10 @@ describe('comments api', () => {
   });
 
   it('toggles comment reactions with reaction_type', async () => {
-    (api.post as jest.Mock).mockResolvedValue({ data: { action: 'added', reaction_type: 'like', reactions: { like: 1 } } });
+    const response = { data: { action: 'added', reaction_type: 'like', reactions: { counts: { like: 1 }, total: 1, user_reaction: 'like' } } };
+    (api.post as jest.Mock).mockResolvedValue(response);
 
-    await toggleCommentReaction(12, 'like');
+    await expect(toggleCommentReaction(12, 'like')).resolves.toEqual(response);
 
     expect(api.post).toHaveBeenCalledWith('/api/v2/comments/12/reactions', { reaction_type: 'like' });
   });
