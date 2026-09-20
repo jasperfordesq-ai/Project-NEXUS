@@ -62,7 +62,11 @@ class PodcastService
         $query = PodcastShow::query()
             ->published()
             ->with(['owner:id,name,avatar_url'])
-            ->withCount(['episodes as approved_episode_count' => fn (Builder $q) => $q->published()->distributionReady()]);
+            ->withCount(['episodes as approved_episode_count' => fn (Builder $q) => $q->published()
+                ->distributionReady()
+                ->whereIn('visibility', empty($filters['include_member_only'])
+                    ? ['inherit', 'public']
+                    : ['inherit', 'public', 'members'])]);
 
         if (empty($filters['include_member_only'])) {
             $query->where('visibility', 'public');
@@ -92,7 +96,12 @@ class PodcastService
             default => $query->orderByDesc('published_at')->orderByDesc('id'),
         };
 
-        $items = $query->forPage($page, $perPage)->get()->toArray();
+        $items = $query->forPage($page, $perPage)->get()->map(function (PodcastShow $show): array {
+            $data = $show->toArray();
+            // Listener counts describe the distributable catalogue, not the stored total.
+            $data['episode_count'] = (int) $show->approved_episode_count;
+            return $data;
+        })->all();
 
         return [
             'items' => $items,

@@ -73,6 +73,7 @@ class PodcastController extends BaseApiController
         }
 
         $data = $show->toArray();
+        $data['episode_count'] = $show->episodes->count();
         $data['rss_enabled'] = $show->visibility === 'public'
             && PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_RSS_FEED);
 

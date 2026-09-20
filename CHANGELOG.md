@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Podcast browse and show episode counts now reflect the episodes visible to listeners instead of including hidden or unavailable episodes.
+
 - Native form field labels and action-footer guidance now remeasure after system font-size changes without resetting inputs or drafts.
 
 - Corrected the native group-exchange draft exit warning to use shared translated unsaved-change wording instead of calling the exchange a listing.

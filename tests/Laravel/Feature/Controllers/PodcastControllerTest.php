@@ -568,6 +568,10 @@ class PodcastControllerTest extends TestCase
         $publicShow = $this->apiGet("/v2/podcasts/{$showSlug}");
         $publicShow->assertStatus(200);
         $this->assertSame(['Public Episode'], array_column($publicShow->json('data.episodes'), 'title'));
+        $publicShow->assertJsonPath('data.episode_count', 1);
+        $browse = $this->apiGet('/v2/podcasts?q=Public%20Show');
+        $browse->assertStatus(200)->assertJsonPath('data.0.episode_count', 1);
+
 
         $rss = $this->get("/api/v2/podcasts/{$showSlug}/feed.xml", $this->withTenantHeader());
         $rss->assertStatus(200);
