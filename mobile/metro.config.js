@@ -70,15 +70,15 @@ config.transformer.transformIgnorePatterns = [
   '))',
 ];
 
-// The mobile bundle is route-heavy. Inline requires keep non-initial route
-// modules from being evaluated during cold start, which shortens the blank
-// pre-render window in release builds.
-// On SDK 55, enabling the alternative import transform with this inline-require
-// setup increased the measured Hermes bundle. Re-measure before changing it.
+// Keep module loading explicit. With the current SDK, inline requires add about
+// 502 KB to the Android Hermes bundle and exceed its existing size budget.
+// Android startup/navigation was compared with both settings; development
+// startup samples were variable, so no signed-release speed improvement is claimed.
+// Re-measure bundle size and native startup before changing either option.
 config.transformer.getTransformOptions = async () => ({
   transform: {
     experimentalImportSupport: false,
-    inlineRequires: true,
+    inlineRequires: false,
   },
 });
 
