@@ -18,7 +18,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { ApiResponseError } from '@/lib/api/client';
 
-let mockParams: Record<string, string> = { id: '7', discussionId: '42' };
+let mockParams: Record<string, string | string[]> = { id: '7', discussionId: '42' };
 const mockBack = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -90,6 +90,17 @@ beforeEach(() => {
 });
 
 describe('GroupDiscussionScreen', () => {
+  it.each(['id', 'discussionId'])('rejects invalid %s values without fetching a thread', async (field) => {
+    for (const invalid of [['7'], ['7', '8'], '7.5', '9007199254740993', '0', '-1']) {
+      mockParams = { id: '7', discussionId: '42', [field]: invalid };
+      mockGetThread.mockClear();
+      const screen = render(<GroupDiscussionScreen />);
+      expect(screen.getByTestId('group-discussion-invalid')).toBeTruthy();
+      expect(mockGetThread).not.toHaveBeenCalled();
+      screen.unmount();
+    }
+  });
+
   it('retains a failed reply draft and allows an explicit retry', async () => {
     mockPostMessage.mockRejectedValueOnce(new ApiResponseError(422, 'Reply unavailable'));
     const screen = render(<GroupDiscussionScreen />);

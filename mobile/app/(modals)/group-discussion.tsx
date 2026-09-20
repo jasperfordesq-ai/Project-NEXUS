@@ -91,7 +91,7 @@ function DiscussionShell({
 }
 
 function GroupDiscussionScreen() {
-  const { id, discussionId } = useLocalSearchParams<{ id: string; discussionId: string }>();
+  const { id, discussionId } = useLocalSearchParams<{ id?: string | string[]; discussionId?: string | string[] }>();
   return (
     <ModalErrorBoundary>
       <GroupDiscussionScreenInner key={`${id}:${discussionId}`} />
@@ -105,11 +105,11 @@ function GroupDiscussionScreenInner() {
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
 
-  const { id, discussionId } = useLocalSearchParams<{ id: string; discussionId: string }>();
-  const groupId = Number(id);
-  const threadId = Number(discussionId);
-  const safeGroupId = Number.isFinite(groupId) && groupId > 0 ? groupId : 0;
-  const safeThreadId = Number.isFinite(threadId) && threadId > 0 ? threadId : 0;
+  const { id, discussionId } = useLocalSearchParams<{ id?: string | string[]; discussionId?: string | string[] }>();
+  const groupId = typeof id === 'string' ? Number(id) : 0;
+  const threadId = typeof discussionId === 'string' ? Number(discussionId) : 0;
+  const safeGroupId = Number.isSafeInteger(groupId) && groupId > 0 ? groupId : 0;
+  const safeThreadId = Number.isSafeInteger(threadId) && threadId > 0 ? threadId : 0;
   const isValidId = safeGroupId > 0 && safeThreadId > 0;
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
