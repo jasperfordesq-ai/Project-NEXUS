@@ -16,7 +16,7 @@
  * card's link preview, where the card stays readable and there is nothing to recover.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAppToast } from '@/components/ui/AppToast';
@@ -25,10 +25,16 @@ import { openExternalUrl, type OpenExternalUrlOptions, type OpenExternalUrlOutco
 export function useOpenExternalUrl() {
   const { t } = useTranslation('common');
   const { show: showToast } = useAppToast();
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   return useCallback(
     async (url: string | null | undefined, options?: OpenExternalUrlOptions): Promise<OpenExternalUrlOutcome> => {
       const outcome = await openExternalUrl(url, options);
+      if (!mounted.current) return outcome;
 
       if (outcome === 'invalid') {
         // Missing, malformed, or a scheme the app refuses. The member did nothing wrong and

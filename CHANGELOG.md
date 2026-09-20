@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile external-link errors no longer appear after the screen that opened the link has unmounted.
+
 - Mobile club directories now reach all result pages, preserve earlier clubs when loading fails, retry the failed page, and display complete club descriptions.
 
 - Mobile connection decisions update promptly without waiting for vibration; departing the screen prevents subsequent recovery reads and delayed error feedback.
