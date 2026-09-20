@@ -1815,6 +1815,7 @@ return [
     'group_exchange_confirm_failed'     => 'Failed to confirm participation',
     'group_exchange_not_found'          => 'Exchange not found',
     'group_exchange_already_completed'  => 'Exchange is already completed',
+    'group_exchange_not_ready_to_complete' => 'Only exchanges awaiting participant confirmation can be completed.',
     'group_exchange_unconfirmed_remaining' => ':count participant(s) still need to confirm',
     'group_exchange_no_participants'    => 'Exchange has no participants',
     'group_exchange_transaction_description' => 'Group exchange: :title',

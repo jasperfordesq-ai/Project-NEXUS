@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Restrict group-exchange settlement to exchanges awaiting confirmation, preserving terminal-state errors.
+
 - Clear group-exchange confirmations when participant membership changes so revised credit shares require renewed consent; duplicate additions and repeated removals preserve fresh confirmations.
 
 - Require renewed group-exchange confirmations after hours or split rules change, serialize these edits with settlement, and reject stale edits after completion or cancellation.

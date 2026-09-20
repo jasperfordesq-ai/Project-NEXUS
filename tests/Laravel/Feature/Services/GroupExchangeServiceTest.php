@@ -250,6 +250,24 @@ class GroupExchangeServiceTest extends TestCase
         }
     }
 
+    public function test_complete_rejects_states_that_are_not_awaiting_confirmation(): void
+    {
+        foreach (['draft', 'pending_participants', 'pending_broker', 'active', 'disputed'] as $status) {
+            $provider = $this->makeUser(0);
+            $receiver = $this->makeUser(10);
+            $id = $this->seedExchange([
+                ['user_id' => $provider, 'role' => 'provider', 'hours' => 6],
+                ['user_id' => $receiver, 'role' => 'receiver', 'hours' => 6],
+            ], $status);
+            $result = $this->service->complete($id);
+            $this->assertFalse($result['success'], $status . ' must not settle');
+            $this->assertSame($status, DB::table('group_exchanges')->where('id', $id)->value('status'));
+            $this->assertSame(0.0, $this->balanceOf($provider));
+            $this->assertSame(10.0, $this->balanceOf($receiver));
+            $this->assertSame(0, $this->exchangeCreditCount($provider));
+        }
+    }
+
     public function test_stale_start_cannot_overwrite_cancellation_or_repeat_another_start(): void
     {
         foreach (['cancel', 'start'] as $competingAction) {

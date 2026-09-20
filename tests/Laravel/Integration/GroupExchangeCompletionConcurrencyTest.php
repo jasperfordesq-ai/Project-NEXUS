@@ -17,11 +17,11 @@ final class GroupExchangeCompletionConcurrencyTest extends TestCase
 {
     public static function mutations(): array
     {
-        return [['remove'], ['hours']];
+        return [['remove', false], ['hours', false], ['remove', true], ['hours', true]];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('mutations')]
-    public function test_completion_revalidates_after_a_concurrent_mutation(string $mutation): void
+    public function test_completion_serializes_with_a_concurrent_mutation(string $mutation, bool $completionFirst): void
     {
         foreach (['pcntl_fork', 'pcntl_waitpid', 'stream_socket_pair', 'posix_kill'] as $function) {
             if (!function_exists($function)) self::markTestSkipped($function . ' required');
@@ -54,7 +54,9 @@ final class GroupExchangeCompletionConcurrencyTest extends TestCase
                 ]);
             }
             DB::purge();
-            foreach (['writer', 'completer'] as $role) {
+            $first = $completionFirst ? 'completer' : 'writer';
+            $second = $completionFirst ? 'writer' : 'completer';
+            foreach ([$first, $second] as $role) {
                 $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
                 self::assertNotFalse($sockets);
                 $pid = pcntl_fork();
@@ -65,16 +67,17 @@ final class GroupExchangeCompletionConcurrencyTest extends TestCase
                         DB::reconnect(); DB::statement('SET SESSION innodb_lock_wait_timeout = 10');
                         TenantContext::reset(); TenantContext::setById($tenantId);
                         $announced = false;
-                        DB::connection()->beforeExecuting(function (string $query) use ($role, $mutation, &$announced, $sockets): void {
+                        DB::connection()->beforeExecuting(function (string $query) use ($role, $first, $second, $mutation, &$announced, $sockets): void {
                             $sql = strtolower($query);
                             $mutationWrite = $mutation === 'remove'
                                 ? str_starts_with($sql, 'delete from `group_exchange_participants`')
                                 : str_starts_with($sql, 'update `group_exchanges`');
-                            if (!$announced && $role === 'writer' && $mutationWrite) {
+                            $firstWrite = $role === 'writer' ? $mutationWrite : str_starts_with($sql, 'update `group_exchanges`');
+                            if (!$announced && $role === $first && $firstWrite) {
                                 $announced = true; fwrite($sockets[1], "ready\n");
                                 if (trim((string) fgets($sockets[1])) !== 'go') throw new \RuntimeException('Mutation barrier timed out');
                             }
-                            if (!$announced && $role === 'completer' && str_contains($sql, 'from `group_exchanges`')) {
+                            if (!$announced && $role === $second && str_contains($sql, 'from `group_exchanges`')) {
                                 $announced = true; fwrite($sockets[1], "ready\n");
                             }
                         });
@@ -92,23 +95,26 @@ final class GroupExchangeCompletionConcurrencyTest extends TestCase
                 $workers[$role] = ['pid' => $pid, 'socket' => $sockets[0]];
                 self::assertSame('ready', trim((string) fgets($sockets[0])));
             }
-            $read = [$workers['completer']['socket']]; $write = null; $except = null;
+            $read = [$workers[$second]['socket']]; $write = null; $except = null;
             stream_select($read, $write, $except, 0, 500000);
-            fwrite($workers['writer']['socket'], "go\n");
+            fwrite($workers[$first]['socket'], "go\n");
             $results = [];
             foreach ($workers as $role => $worker) {
                 $results[$role] = json_decode((string) fgets($worker['socket']), true);
                 self::assertIsArray($results[$role]);
                 self::assertArrayNotHasKey('exception', $results[$role], json_encode($results[$role]));
             }
-            self::assertTrue($results['writer']['changed']);
-            self::assertFalse($results['completer']['success'], 'Settlement must revalidate a changed participant split');
+            self::assertSame(!$completionFirst, $results['writer']['changed']);
+            self::assertSame($completionFirst, $results['completer']['success']);
             DB::reconnect();
-            self::assertSame('pending_confirmation', DB::table('group_exchanges')->where('id', $exchangeId)->value('status'));
-            self::assertSame(0.0, (float) DB::table('users')->where('id', $users[1])->value('balance'));
-            self::assertSame(10.0, (float) DB::table('users')->where('id', $users[2])->value('balance'));
-            self::assertSame(0, DB::table('transactions')->where('sender_id', $users[0])->count());
-            if ($mutation === 'hours') {
+            self::assertSame($completionFirst ? 'completed' : 'pending_confirmation', DB::table('group_exchanges')->where('id', $exchangeId)->value('status'));
+            self::assertSame($completionFirst ? 6.0 : 0.0, (float) DB::table('users')->where('id', $users[1])->value('balance'));
+            self::assertSame($completionFirst ? 4.0 : 10.0, (float) DB::table('users')->where('id', $users[2])->value('balance'));
+            self::assertSame($completionFirst ? 1 : 0, DB::table('transactions')->where('sender_id', $users[0])->count());
+            if ($completionFirst) {
+                self::assertSame(6.0, (float) DB::table('group_exchanges')->where('id', $exchangeId)->value('total_hours'));
+                self::assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $exchangeId)->where('confirmed', 1)->count());
+            } elseif ($mutation === 'hours') {
                 self::assertSame(8.0, (float) DB::table('group_exchanges')->where('id', $exchangeId)->value('total_hours'));
                 self::assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $exchangeId)->where('confirmed', 0)->whereNull('confirmed_at')->count());
             }

@@ -911,6 +911,10 @@ class GroupExchangeService
             return ['success' => false, 'error' => __('api_controllers_1.group_exchange.exchange_cancelled')];
         }
 
+        if ($exchange->status !== 'pending_confirmation') {
+            return ['success' => false, 'error' => __('api.group_exchange_not_ready_to_complete')];
+        }
+
         // Check all participants have confirmed
         $unconfirmed = DB::table('group_exchange_participants')
             ->where('group_exchange_id', $exchangeId)
