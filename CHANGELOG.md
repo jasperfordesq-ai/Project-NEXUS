@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native podcast browsing shows refresh progress, preserves loaded shows after a page failure, and retries the failed page instead of restarting the catalogue. Automatic pagination waits for explicit recovery after an error.
+
 - Native organisation detail actions ignore departed share and website callbacks, and suppress website errors that arrive after navigation.
 
 - Native organisation registration validates website URLs, preserves field-specific server feedback, scrolls to the first invalid field, and rejects departed submissions. Organisation browsing retries failed pages without losing loaded records and clears refused content; detail links reject ambiguous IDs and website links use the shared validated opener.

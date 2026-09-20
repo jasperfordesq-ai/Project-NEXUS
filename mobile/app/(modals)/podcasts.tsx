@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
@@ -31,6 +32,7 @@ function PodcastsScreen() {
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
+  const requestedCursor = useRef<string | null>(null);
   /*
     🔴 The catalogue asked for one page and stopped. `getPodcastShows` has always
     returned `page`, `total` and `hasMore` and this screen read none of them, so a
@@ -42,11 +44,14 @@ function PodcastsScreen() {
     `usePaginatedApi` is the next page number as a string.
   */
   const fetchShows = useCallback(
-    (cursor: string | null) => getPodcastShows({
+    (cursor: string | null) => {
+      requestedCursor.current = cursor;
+      return getPodcastShows({
       query: query || undefined,
       sort: 'newest',
       page: cursor ? Number(cursor) : 1,
-    }),
+      });
+    },
     [query],
   );
 
@@ -69,7 +74,7 @@ function PodcastsScreen() {
           data={items}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={{ padding: 16, paddingBottom: 44 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => refresh()} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={isLoading && items.length > 0} onRefresh={() => refresh()} tintColor={primary} colors={[primary]} />}
           ListHeaderComponent={<View className="mb-4 gap-4"><HeroCard className="overflow-hidden rounded-panel p-0"><View className="h-1" style={{ backgroundColor: primary }} /><HeroCard.Body className="gap-1 p-4"><Text className="text-2xl font-bold" style={{ color: theme.text }}>{t('title')}</Text><Text className="leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
                 {/*
                   🔴 The studio needs a door on this screen, exactly as
@@ -88,8 +93,10 @@ function PodcastsScreen() {
                   </HeroButton>
                 </View></HeroCard.Body></HeroCard><SearchInput value={search} onChangeText={(value) => { setSearch(value); if (!value) setQuery(''); }} onSubmitEditing={() => setQuery(search.trim())} placeholder={t('browse.search_placeholder')} accessibilityLabel={t('browse.search_placeholder')} clearLabel={t('common:actions.clear')} returnKeyType="search" /></View>}
           onEndReachedThreshold={0.5}
-          onEndReached={() => loadMore()}
-          ListFooterComponent={isLoadingMore ? <View className="py-6"><LoadingSpinner /></View> : null}
+          onEndReached={() => { if (!error) loadMore(); }}
+          ListFooterComponent={error && items.length > 0
+            ? <ErrorState subtitle={error} onRetry={requestedCursor.current ? loadMore : refresh} isRetrying={isLoading || isLoadingMore} />
+            : isLoadingMore ? <View className="py-6"><LoadingSpinner /></View> : null}
           renderItem={({ item }) => <NativePressable accessibilityLabel={item.title} feedback="highlight" onPress={() => router.push({ pathname: '/(modals)/podcast-show', params: { slug: item.slug } })}><HeroCard className="mb-3 rounded-panel"><HeroCard.Body className="gap-2 p-4"><View className="flex-row flex-wrap gap-2">{item.category ? <Chip size="sm" variant="secondary"><Chip.Label>{item.category}</Chip.Label></Chip> : null}<Chip size="sm" variant="secondary"><Chip.Label>{t('show.episode_count', { count: item.episode_count })}</Chip.Label></Chip></View><Text className="text-lg font-bold" style={{ color: theme.text }}>{item.title}</Text>{item.summary ? <Text className="leading-5" style={{ color: theme.textSecondary }} numberOfLines={3}>{item.summary}</Text> : null}</HeroCard.Body></HeroCard></NativePressable>}
           ListEmptyComponent={isLoading ? <View className="py-12"><LoadingSpinner /></View> : <EmptyState icon={error ? 'warning-outline' : 'mic-outline'} title={error ?? t('browse.empty')} subtitle={error ? undefined : t('browse.empty_hint')} actionLabel={error ? t('browse.retry') : undefined} onAction={error ? () => refresh() : undefined} />}
         />

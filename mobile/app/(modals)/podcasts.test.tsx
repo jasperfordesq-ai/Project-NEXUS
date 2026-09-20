@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { FlatList, RefreshControl } from 'react-native';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -21,11 +22,42 @@ jest.mock('@/lib/api/podcasts', () => ({ getPodcastShows: jest.fn() }));
 
 import PodcastsScreen from './podcasts';
 import { getPodcastShows } from '@/lib/api/podcasts';
+import { ApiResponseError } from '@/lib/api/client';
 
 describe('PodcastsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(getPodcastShows).mockResolvedValue({ items: [{ id: 2, title: 'Time stories', slug: 'time-stories', summary: 'Local voices.', episode_count: 4, subscriber_count: 9 }], page: 1, total: 1, hasMore: false, categories: [] });
+  });
+
+  it('retains shows and offers recovery after a later page fails', async () => {
+    jest.mocked(getPodcastShows).mockResolvedValueOnce({ items: [{ id: 2, title: 'Time stories', slug: 'time-stories', episode_count: 4, subscriber_count: 9 }], page: 1, total: 2, hasMore: true, categories: [] })
+      .mockRejectedValueOnce(new ApiResponseError(422, 'Shows unavailable'))
+      .mockResolvedValueOnce({ items: [{ id: 3, title: 'Recovered show', slug: 'recovered', episode_count: 1, subscriber_count: 0 }], page: 2, total: 2, hasMore: false, categories: [] });
+    const screen = render(<PodcastsScreen />);
+    await waitFor(() => expect(screen.getByText('Time stories')).toBeTruthy());
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    await waitFor(() => expect(screen.getByText('Shows unavailable')).toBeTruthy());
+    expect(screen.getByText('Time stories')).toBeTruthy();
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    expect(getPodcastShows).toHaveBeenCalledTimes(2);
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await waitFor(() => expect(screen.queryByText('Shows unavailable')).toBeNull());
+    expect(getPodcastShows).toHaveBeenCalledTimes(3);
+    expect(getPodcastShows).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    expect(screen.getByText('Time stories')).toBeTruthy();
+    expect(screen.getByText('Recovered show')).toBeTruthy();
+  });
+
+  it('shows progress while refreshing loaded shows', async () => {
+    const screen = render(<PodcastsScreen />);
+    await waitFor(() => expect(screen.getByText('Time stories')).toBeTruthy());
+    let finish!: (value: Awaited<ReturnType<typeof getPodcastShows>>) => void;
+    jest.mocked(getPodcastShows).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(true);
+    await act(async () => { finish({ items: [], page: 1, total: 0, hasMore: false, categories: [] }); });
+    expect(screen.UNSAFE_getByType(RefreshControl).props.refreshing).toBe(false);
   });
 
   /**
