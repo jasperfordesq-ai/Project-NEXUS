@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import ListingPartialSaveNotice from '@/components/exchanges/ListingPartialSaveNotice';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 const mockUseApi = jest.fn();
 const mockBack = jest.fn();
@@ -16,6 +19,9 @@ const mockUploadExchangeImage = jest.fn();
 const mockDeleteExchangeImage = jest.fn();
 const mockGenerateExchangeDescription = jest.fn();
 let mockListingCategoryId: number | null = 2;
+let mockRouteId = '5';
+let mockUserId = 1;
+let mockTenantSlug = 'hour-timebank';
 let mockListingDescription = 'Listing body with enough detail.';
 let mockExperienceLabel = 'Experience';
 let mockEquipmentLabel = 'Equipment';
@@ -24,7 +30,7 @@ let mockAccessibilityLabel = 'Accessibility';
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   router: { back: (...args: unknown[]) => mockBack(...args), replace: (...args: unknown[]) => mockReplace(...args), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ id: '5' }),
+  useLocalSearchParams: () => ({ id: mockRouteId }),
   // The unsaved-changes guard replays the prevented action through `dispatch`.
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn() }),
 }));
@@ -74,12 +80,12 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { slug: mockTenantSlug }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 1, location: 'Dublin' } }),
+  useAuth: () => ({ user: { id: mockUserId, location: 'Dublin' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -138,12 +144,15 @@ beforeEach(() => {
   mockDeleteExchangeImage.mockReset().mockResolvedValue(undefined);
   mockGenerateExchangeDescription.mockReset().mockResolvedValue({ data: { description: 'Generated listing body' } });
   mockListingCategoryId = 2;
+  mockRouteId = '5';
+  mockUserId = 1;
+  mockTenantSlug = 'hour-timebank';
   mockListingDescription = 'Listing body with enough detail.';
   mockExperienceLabel = 'Experience';
   mockEquipmentLabel = 'Equipment';
   mockAccessibilityLabel = 'Accessibility';
   const listingData = {
-    id: 5,
+    get id() { return Number(mockRouteId); },
     title: 'Edit me',
     get description() { return mockListingDescription; },
     type: 'offer',
@@ -173,6 +182,41 @@ beforeEach(() => {
 });
 
 describe('EditExchangeModal', () => {
+  it.each(['listing', 'account', 'community'])('does not continue the previous listing save when the mounted route changes %s', async (change) => {
+    let finishSave!: (value: unknown) => void;
+    mockUpdateExchange.mockImplementationOnce(() => new Promise((resolve) => { finishSave = resolve; }));
+    const screen = render(<EditExchangeModal />);
+    fireEvent.changeText(screen.getByDisplayValue('Edit me'), 'First listing draft');
+    fireEvent.press(screen.getByText('Save changes'));
+    expect(mockUpdateExchange).toHaveBeenCalledWith(5, expect.anything());
+    if (change === 'listing') mockRouteId = '6';
+    else if (change === 'account') mockUserId = 2;
+    else mockTenantSlug = 'another-community';
+    screen.rerender(<EditExchangeModal />);
+    await act(async () => finishSave({ data: { id: 5 } }));
+    expect(mockSetExchangeTags).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByDisplayValue('Edit me'), 'Second listing draft');
+    fireEvent.press(screen.getByText('Save changes'));
+    await waitFor(() => expect(mockUpdateExchange).toHaveBeenLastCalledWith(Number(mockRouteId), expect.objectContaining({ title: 'Second listing draft' })));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-detail', params: { id: mockRouteId } }));
+  });
+
+  it('sends an empty tag list when the member removes all existing skills', async () => {
+    const screen = render(<EditExchangeModal />);
+    fireEvent.changeText(screen.getByDisplayValue('gardening'), '');
+    fireEvent.press(screen.getByText('Save changes'));
+    await waitFor(() => expect(mockSetExchangeTags).toHaveBeenCalledWith(5, []));
+  });
+
+  it('sends one update when save is pressed twice before rerender', async () => {
+    mockUpdateExchange.mockImplementation(() => new Promise(() => {}));
+    const screen = render(<EditExchangeModal />);
+    const submit = screen.getByText('Save changes');
+    act(() => { fireEvent.press(submit); fireEvent.press(submit); });
+    await waitFor(() => expect(mockUpdateExchange).toHaveBeenCalledTimes(1));
+  });
+
   it('renders the editable listing fields', () => {
     const { getAllByText, getByDisplayValue, getByPlaceholderText } = render(<EditExchangeModal />);
     expect(getAllByText('Edit Listing').length).toBeGreaterThan(0);
@@ -236,6 +280,17 @@ describe('EditExchangeModal', () => {
       notes: 'Listing body with enough detail.',
     }));
     expect(getByDisplayValue('Generated listing body')).toBeTruthy();
+  });
+
+  it('preserves description edits made while a generated suggestion is pending', async () => {
+    let finishGeneration!: (value: unknown) => void;
+    mockGenerateExchangeDescription.mockImplementationOnce(() => new Promise((resolve) => { finishGeneration = resolve; }));
+    const screen = render(<EditExchangeModal />);
+    fireEvent.press(screen.getByText('Help write description'));
+    fireEvent.changeText(screen.getByDisplayValue('Listing body with enough detail.'), 'My newer description with additional important details.');
+    await act(async () => finishGeneration({ data: { description: 'Older generated suggestion' } }));
+    expect(screen.getByDisplayValue('My newer description with additional important details.')).toBeTruthy();
+    expect(screen.queryByDisplayValue('Older generated suggestion')).toBeNull();
   });
 
   it('preserves localized service details when saving an edited listing', async () => {
@@ -349,7 +404,7 @@ describe('EditExchangeModal', () => {
 
     // The write is in flight. Leaving now is still challenged, and nothing navigates.
     expect(isGuardArmed()).toBe(true);
-    firePreventedRemoval();
+    act(() => { firePreventedRemoval(); });
     expect(mockReplace).not.toHaveBeenCalled();
 
     await act(async () => { confirmSave({ data: { id: 5 } }); });
@@ -369,6 +424,10 @@ describe('EditExchangeModal', () => {
     await waitFor(() => expect(mockUpdateExchange).toHaveBeenCalled());
     await waitFor(() => expect(isGuardArmed()).toBe(true));
     expect(mockReplace).not.toHaveBeenCalled();
+    mockUpdateExchange.mockResolvedValueOnce({ data: { id: 5 } });
+    fireEvent.press(getByText('Save changes'));
+    await waitFor(() => expect(mockUpdateExchange).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
   });
 
   it('continues with extras when readback proves an uncertain edit was committed', async () => {
@@ -446,6 +505,17 @@ describe('EditExchangeModal', () => {
    * their own skills was to type them again.
    */
   describe('partial save', () => {
+    it.each(['onRetry', 'onContinue'] as const)('ignores retained %s after leaving the form', async (action) => {
+      mockSetExchangeTags.mockReset().mockRejectedValueOnce(new Error('offline'));
+      const screen = render(<EditExchangeModal />);
+      fireEvent.press(screen.getByText('Save changes'));
+      await screen.findByTestId('listing-partial-save');
+      const callback = screen.UNSAFE_getByType(ListingPartialSaveNotice).props[action];
+      screen.unmount();
+      await act(async () => { await callback(); });
+      expect(mockSetExchangeTags).toHaveBeenCalledTimes(1);
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
     it('stays on the form with the failed skills when only the skills fail', async () => {
       mockSetExchangeTags.mockReset().mockRejectedValueOnce(new Error('network unreachable'));
 
@@ -472,7 +542,8 @@ describe('EditExchangeModal', () => {
       fireEvent.press(getByText('Save changes'));
       await waitFor(() => expect(getByTestId('listing-partial-save')).toBeTruthy());
 
-      fireEvent.press(getByTestId('listing-partial-save-retry'));
+      const retry = getByTestId('listing-partial-save-retry');
+      act(() => { fireEvent.press(retry); fireEvent.press(retry); });
 
       await waitFor(() => expect(mockSetExchangeTags).toHaveBeenCalledTimes(2));
       // 🔴 The listing was already saved. Sending it again is how a listing gets edited twice.

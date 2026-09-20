@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native listing creation and editing prevent duplicate saves and retry only failed skills or photos after a partial save. Retry progress blocks premature continuation, departed forms ignore retained actions, and delayed description suggestions preserve newer edits.
+
 - Native group join-request confirmations expire when the group, management permission, or server access changes. Returning to the previous context requires fresh confirmation, and older responses cannot clear a newer action or show stale feedback.
 
 - Native notification permission checks now show a retryable error when the device cannot read permission state. Retry honours saved choices without opening a permission prompt or recording a new decision.

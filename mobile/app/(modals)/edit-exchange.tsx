@@ -123,6 +123,7 @@ function EditExchangeModalInner() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [hydratedListingId, setHydratedListingId] = useState<number | null>(null);
   /**
    * 🔴 Audit 2026-09-06, F06. Set when the LISTING saved but its skills or photo did not.
@@ -131,9 +132,13 @@ function EditExchangeModalInner() {
    */
   const [partialSave, setPartialSave] = useState<{ extras: ListingExtras; result: ListingExtrasResult } | null>(null);
   const [retryingExtras, setRetryingExtras] = useState(false);
+  const retryingExtrasRef = useRef(false);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getExchange(safeListingId),
@@ -194,8 +199,8 @@ function EditExchangeModalInner() {
   const isDirty = baseline !== null && formSnapshot !== baseline;
   // 🔴 Same guard as new-exchange and edit-profile (audit 2026-09-05, F05).
   useUnsavedChangesGuard({
-    isDirty,
-    isSaving: saving,
+    isDirty: isDirty || partialSave !== null,
+    isSaving: saving || retryingExtras,
     hasSaved,
     confirm,
     title: t('form.unsavedTitle'),
@@ -235,7 +240,7 @@ function EditExchangeModalInner() {
       if (!isMountedRef.current) return;
       const generated = response.data?.description?.trim();
       if (generated) {
-        setDescription(generated);
+        setDescription(current => current === description ? generated : current);
         if (fieldErrors.description) setFieldErrors((current) => ({ ...current, description: undefined }));
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -248,6 +253,7 @@ function EditExchangeModalInner() {
   }
 
   async function handleSave() {
+    if (!isMountedRef.current || savingRef.current) return;
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     // Locale-aware: "1,5" is valid input for half the app's locales (audit F06).
@@ -283,6 +289,7 @@ function EditExchangeModalInner() {
     }
 
     setFieldErrors({});
+    savingRef.current = true;
     setSaving(true);
     const listingPayload = {
         title: trimmedTitle,
@@ -347,12 +354,14 @@ function EditExchangeModalInner() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.editSaveFailed')), variant: 'danger' });
     } finally {
-      setSaving(false);
+      savingRef.current = false;
+      if (isMountedRef.current) setSaving(false);
     }
   }
 
   /** The listing is saved either way; this is only about how the member leaves. */
   function leaveForListing() {
+    if (!isMountedRef.current) return;
     setPartialSave(null);
     setHasSaved(true);
     router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } });
@@ -363,7 +372,8 @@ function EditExchangeModalInner() {
    * 🔴 The listing must never be part of a retry — it saved the first time.
    */
   async function handleRetryExtras() {
-    if (!partialSave || retryingExtras) return;
+    if (!isMountedRef.current || !partialSave || retryingExtrasRef.current) return;
+    retryingExtrasRef.current = true;
     setRetryingExtras(true);
     try {
       const outstanding = remainingListingExtras(partialSave.extras, partialSave.result);
@@ -376,7 +386,8 @@ function EditExchangeModalInner() {
       showToast({ title: t('detail.editSavedTitle'), description: t('detail.editSavedMessage'), variant: 'success' });
       leaveForListing();
     } finally {
-      setRetryingExtras(false);
+      retryingExtrasRef.current = false;
+      if (isMountedRef.current) setRetryingExtras(false);
     }
   }
 
@@ -692,7 +703,7 @@ function EditExchangeModalInner() {
                 imageFailed={partialSave.result.imageFailed}
                 isRetrying={retryingExtras}
                 onRetry={() => void handleRetryExtras()}
-                onContinue={leaveForListing}
+                onContinue={() => { if (!retryingExtrasRef.current) leaveForListing(); }}
                 title={t('form.partialSaveTitle')}
                 tags={t('form.partialSaveTags')}
                 image={t('form.partialSaveImage')}

@@ -21,7 +21,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import { Card as HeroCard, Text } from 'heroui-native';
+import { Card as HeroCard, Spinner, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 
 import { Ionicons } from '@/components/ui/Icon';
@@ -80,14 +80,18 @@ export default function ListingPartialSaveNotice({
             className="flex-1"
             variant="primary"
             isDisabled={isRetrying}
+            accessibilityState={{ busy: isRetrying, disabled: isRetrying }}
+            accessibilityLabel={retry}
             onPress={onRetry}
             testID="listing-partial-save-retry"
           >
+            {isRetrying ? <Spinner size="sm" /> : null}
             <HeroButton.Label>{retry}</HeroButton.Label>
           </HeroButton>
           <HeroButton
             className="flex-1"
             variant="secondary"
+            isDisabled={isRetrying}
             onPress={onContinue}
             testID="listing-partial-save-continue"
           >

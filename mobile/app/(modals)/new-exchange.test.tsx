@@ -188,6 +188,7 @@ jest.mock('expo-image-picker', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-image', () => ({ Image: 'View' }));
 jest.mock('@/components/OfflineBanner', () => () => null);
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 import NewExchangeModal from './new-exchange';
 import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
@@ -209,6 +210,48 @@ beforeEach(() => {
 });
 
 describe('NewExchangeModal', () => {
+  it('does not start auxiliary writes or navigate after leaving a pending creation', async () => {
+    let finish!: (value: { data: { id: number } }) => void;
+    mockCreateExchange.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewExchangeModal />);
+    fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Garden help');
+    fireEvent.changeText(screen.getByPlaceholderText('Add more details...'), 'I can help with planting and garden maintenance.');
+    fireEvent.changeText(screen.getByPlaceholderText('gardening, mentoring'), 'gardening');
+    fireEvent.press(screen.getByText('Gardening'));
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => { finish({ data: { id: 9 } }); });
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(mockSetExchangeTags).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('sends one creation when submit is pressed twice before rerender', async () => {
+    mockCreateExchange.mockImplementation(() => new Promise(() => {}));
+    const screen = render(<NewExchangeModal />);
+    fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Garden help');
+    fireEvent.changeText(screen.getByPlaceholderText('Add more details...'), 'I can help with planting and garden maintenance.');
+    fireEvent.press(screen.getByText('Gardening'));
+    const submit = screen.getByTestId('new-exchange-submit');
+    act(() => { fireEvent.press(submit); fireEvent.press(submit); });
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledTimes(1));
+  });
+
+  it('allows another creation attempt after the previous request fails', async () => {
+    mockCreateExchange.mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ data: { id: 9 } });
+    const screen = render(<NewExchangeModal />);
+    fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Garden help');
+    fireEvent.changeText(screen.getByPlaceholderText('Add more details...'), 'I can help with planting and garden maintenance.');
+    fireEvent.press(screen.getByText('Gardening'));
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(screen.getByText('Failed to create exchange.')).toBeTruthy());
+    fireEvent.press(screen.getByText('Post Offer'));
+    await waitFor(() => expect(mockCreateExchange).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+  });
+
   it('renders the polished create form', () => {
     const { getAllByText, getByPlaceholderText } = render(<NewExchangeModal />);
     expect(getAllByText('New Listing').length).toBeGreaterThan(0);
@@ -330,7 +373,8 @@ describe('NewExchangeModal', () => {
     await waitFor(() => expect(getByTestId('listing-partial-save')).toBeTruthy());
 
     const tagCallsBeforeRetry = mockSetExchangeTags.mock.calls.length;
-    fireEvent.press(getByTestId('listing-partial-save-retry'));
+    const retry = getByTestId('listing-partial-save-retry');
+    act(() => { fireEvent.press(retry); fireEvent.press(retry); });
 
     await waitFor(() => expect(mockUploadExchangeImage).toHaveBeenCalledTimes(2));
     // The tags already landed; re-sending them would apply the same write twice.
@@ -535,7 +579,7 @@ describe('NewExchangeModal — audit 2026-09-05 regressions', () => {
     fireEvent.changeText(screen.getByPlaceholderText('What are you offering?'), 'Half-typed title');
     expect(isGuardArmed()).toBe(true);
 
-    firePreventedRemoval();
+    act(() => { firePreventedRemoval(); });
     expect(mockNavDispatch).not.toHaveBeenCalled();
   });
 

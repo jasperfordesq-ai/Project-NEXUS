@@ -24,6 +24,19 @@ const labels = {
 };
 
 describe('ListingPartialSaveNotice', () => {
+  it('keeps both actions disabled and announces the pending retry', () => {
+    const onContinue = jest.fn();
+    const onRetry = jest.fn();
+    const screen = render(<ListingPartialSaveNotice tagsFailed imageFailed={false}
+      isRetrying onRetry={onRetry} onContinue={onContinue} {...labels} />);
+    fireEvent.press(screen.getByTestId('listing-partial-save-continue'));
+    fireEvent.press(screen.getByTestId('listing-partial-save-retry'));
+    expect(onContinue).not.toHaveBeenCalled();
+    expect(onRetry).not.toHaveBeenCalled();
+    expect(screen.getByTestId('listing-partial-save-retry').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(screen.getByTestId('listing-partial-save-retry').props.accessibilityLabel).toBe(labels.retry);
+  });
+
   /**
    * 🔴 Audit 2026-09-06, F06. The member has to be able to tell what DID save from what
    * did not, or the only safe-looking action is to fill the form in again — which on the

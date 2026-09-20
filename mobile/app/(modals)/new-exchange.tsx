@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, type TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -97,6 +97,11 @@ function NewExchangeModalInner() {
   const profileLocation = getProfileLocation(user);
   const descriptionRef = useRef<TextInput>(null);
   const hoursRef = useRef<TextInput>(null);
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   // 🔴 All four fields, not just `data`. Reading only `data` made a failed category
   // request look like "no categories": the picker (and even its required-field
@@ -127,6 +132,7 @@ function NewExchangeModalInner() {
     { listingId: number; extras: ListingExtras; result: ListingExtrasResult } | null
   >(null);
   const [retryingExtras, setRetryingExtras] = useState(false);
+  const retryingExtrasRef = useRef(false);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceOption | ''>('');
   const [equipmentProvided, setEquipmentProvided] = useState<EquipmentOption | ''>('');
   const [accessibilityNotes, setAccessibilityNotes] = useState('');
@@ -136,6 +142,7 @@ function NewExchangeModalInner() {
   const [error, setError] = useState<string | null>(null);
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Anything the member has typed, chosen or attached beyond the defaults.
   const isDirty =
@@ -154,7 +161,7 @@ function NewExchangeModalInner() {
   // image without a word (audit 2026-09-05, F05). Same guard as edit-profile.
   useUnsavedChangesGuard({
     isDirty,
-    isSaving: submitting,
+    isSaving: submitting || retryingExtras,
     hasSaved,
     confirm,
     title: t('form.unsavedTitle'),
@@ -175,8 +182,10 @@ function NewExchangeModalInner() {
       });
       if (result.canceled || !result.assets?.[0]?.uri) return;
       const prepared = await prepareImageForUpload(result.assets[0]);
+      if (!isMountedRef.current) return;
       setSelectedImageUri(prepared.uri);
     } catch {
+      if (!isMountedRef.current) return;
       setError(t('detail.imagePickFailed'));
     }
   }
@@ -192,6 +201,7 @@ function NewExchangeModalInner() {
         type,
         notes: description.trim(),
       });
+      if (!isMountedRef.current) return;
       const generated = response.data?.description?.trim();
       if (generated) {
         setDescription(current => current === description ? generated : current);
@@ -199,14 +209,16 @@ function NewExchangeModalInner() {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.aiGenerateFailed')), variant: 'danger' });
     } finally {
-      setGeneratingDescription(false);
+      if (isMountedRef.current) setGeneratingDescription(false);
     }
   }
 
   async function handleSubmit() {
+    if (!isMountedRef.current || submittingRef.current) return;
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
     // Locale-aware: "1,5" is valid input for half the app's locales (audit F06).
@@ -250,6 +262,7 @@ function NewExchangeModalInner() {
 
     setFieldErrors({});
     setError(null);
+    submittingRef.current = true;
     setSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
     // 🔴 Only a confirmed creation may leave this form. Before this flag existed the
@@ -274,19 +287,23 @@ function NewExchangeModalInner() {
       // Persist before sending so an app restart or lost response reuses the same
       // server operation for the same unchanged listing content.
       const operation = await reserveListingOperation(JSON.stringify(createPayload));
+      if (!isMountedRef.current) return;
       const createdResponse = await createExchange(createPayload, operation.key);
       await completeListingOperation(operation);
+      if (!isMountedRef.current) return;
       created = true;
       const listingId = createdResponse.data?.id;
       if (listingId) {
         // The listing exists from here on. Its skills and photo are separate requests,
         // and this screen is the only place the member's input still lives if one fails.
+        const tags = skillTags.split(',').map((tag) => tag.trim()).filter(Boolean);
         const extras: ListingExtras = {
-          tags: skillTags.split(',').map((tag) => tag.trim()).filter(Boolean),
+          tags: tags.length > 0 ? tags : null,
           imageUri: selectedImageUri,
           removeImage: false,
         };
         const result = await saveListingExtras(listingId, extras);
+        if (!isMountedRef.current) return;
         if (listingExtrasFailed(result)) {
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           setPartialSave({ listingId, extras, result });
@@ -299,10 +316,12 @@ function NewExchangeModalInner() {
       }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError(err instanceof ApiResponseError ? err.message : t('createError'));
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      if (isMountedRef.current) setSubmitting(false);
     }
 
     // Failed: stay here with every field, tag and image intact, and the error visible.
@@ -322,9 +341,10 @@ function NewExchangeModalInner() {
     // also the right history: going "back" to a form whose contents have already been
     // posted is a duplicate-post trap in itself.
     if (successDestination) {
-      setTimeout(() => router.replace(successDestination), 0);
+      setTimeout(() => { if (isMountedRef.current) router.replace(successDestination); }, 0);
     } else {
       setTimeout(() => {
+        if (!isMountedRef.current) return;
         if (typeof router.canGoBack === 'function' && router.canGoBack()) router.back();
         else router.replace('/(tabs)/exchanges');
       }, 0);
@@ -333,9 +353,12 @@ function NewExchangeModalInner() {
 
   /** Open the listing that already exists. Nothing here re-posts it. */
   function leaveForListing(listingId: number) {
+    if (!isMountedRef.current) return;
     setPartialSave(null);
     setHasSaved(true);
-    setTimeout(() => router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(listingId) } }), 0);
+    setTimeout(() => {
+      if (isMountedRef.current) router.replace({ pathname: '/(modals)/exchange-detail', params: { id: String(listingId) } });
+    }, 0);
   }
 
   /**
@@ -343,18 +366,21 @@ function NewExchangeModalInner() {
    * 🔴 `createExchange` must never appear here.
    */
   async function handleRetryExtras() {
-    if (!partialSave || retryingExtras) return;
+    if (!isMountedRef.current || !partialSave || retryingExtrasRef.current) return;
+    retryingExtrasRef.current = true;
     setRetryingExtras(true);
     try {
       const outstanding = remainingListingExtras(partialSave.extras, partialSave.result);
       const result = await saveListingExtras(partialSave.listingId, outstanding);
+      if (!isMountedRef.current) return;
       if (listingExtrasFailed(result)) {
         setPartialSave({ listingId: partialSave.listingId, extras: outstanding, result });
         return;
       }
       leaveForListing(partialSave.listingId);
     } finally {
-      setRetryingExtras(false);
+      retryingExtrasRef.current = false;
+      if (isMountedRef.current) setRetryingExtras(false);
     }
   }
 
@@ -651,7 +677,7 @@ function NewExchangeModalInner() {
                 imageFailed={partialSave.result.imageFailed}
                 isRetrying={retryingExtras}
                 onRetry={() => void handleRetryExtras()}
-                onContinue={() => leaveForListing(partialSave.listingId)}
+                onContinue={() => { if (!retryingExtrasRef.current) leaveForListing(partialSave.listingId); }}
                 title={t('form.partialSaveTitle')}
                 tags={t('form.partialSaveTags')}
                 image={t('form.partialSaveImage')}
