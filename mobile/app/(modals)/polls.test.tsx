@@ -113,9 +113,10 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+let mockRealRead = false;
 const mockUsePaginatedApi = jest.fn();
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUsePaginatedApi(...args),
 }));
 
 jest.mock('@/components/PollCard', () => {
@@ -188,6 +189,7 @@ const defaultState = {
 
 describe('PollsScreen', () => {
   beforeEach(() => {
+    mockRealRead = false;
     mockPollSearchParams = {};
     mockUsePaginatedApi.mockReset();
     mockUsePaginatedApi.mockReturnValue(defaultState);
@@ -206,6 +208,36 @@ describe('PollsScreen', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  it('retries the failed poll page without losing earlier polls', async () => {
+    mockRealRead = true;
+    const { getFeed } = require('@/lib/api/feed');
+    const poll = { id: 1, type: 'poll', poll_data: { question: 'First question?', total_votes: 3, options: [] } };
+    getFeed.mockResolvedValueOnce({ data: [poll], meta: { cursor: 'page-two', has_more: true } })
+      .mockRejectedValueOnce(new Error('Page failed'))
+      .mockResolvedValueOnce({ data: [{ ...poll, id: 2, poll_data: { ...poll.poll_data, question: 'Second question?' } }], meta: { cursor: null, has_more: false } });
+    const screen = render(<PollsScreen />);
+    await screen.findAllByText('First question?');
+    await act(async () => screen.UNSAFE_getByType(ReactNative.FlatList).props.onEndReached());
+    const failedRequest = getFeed.mock.calls[1];
+    fireEvent(screen.UNSAFE_getByType(ReactNative.FlatList), 'endReached');
+    expect(getFeed).toHaveBeenCalledTimes(2);
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findAllByText('Second question?');
+    expect(getFeed.mock.calls[2]).toEqual(failedRequest);
+    expect(screen.getAllByText('First question?').length).toBeGreaterThan(0);
+  });
+
+  it('keeps loaded polls visible with Retry instead of an end marker after failure', () => {
+    const retry = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultState, items: [{ id: 1, type: 'poll', poll_data: { question: 'Bike shelter?', total_votes: 3, options: [] } }], error: 'Polls unavailable', refresh: retry });
+    const screen = render(<PollsScreen />);
+    expect(screen.getAllByText('Bike shelter?').length).toBeGreaterThan(0);
+    expect(screen.getByText('Polls unavailable')).toBeTruthy();
+    expect(screen.queryByText('End of list')).toBeNull();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the native poll list frame full height with an explicit background', () => {

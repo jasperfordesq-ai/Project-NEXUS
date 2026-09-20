@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile polls preserve earlier questions when a later page fails, show a retry instead of an end marker, and retry the failed page without restarting the list.
+
 - Mobile external-link errors no longer appear after the screen that opened the link has unmounted.
 
 - Mobile club directories now reach all result pages, preserve earlier clubs when loading fails, retry the failed page, and display complete club descriptions.

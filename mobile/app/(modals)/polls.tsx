@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import DraftStorageWarning from '@/components/ui/DraftStorageWarning';
@@ -180,8 +181,12 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
     return () => subscription.remove();
   }, [draftScope, isDraftDirty, persistDraft]);
 
+  const requestedCursor = useRef<string | null>(null);
   const fetchPolls = useCallback(
-    (cursor: string | null) => getFeed(1, cursor, { filter: 'polls', mode: 'recent', perPage: 20 }),
+    (cursor: string | null) => {
+      requestedCursor.current = cursor;
+      return getFeed(1, cursor, { filter: 'polls', mode: 'recent', perPage: 20 });
+    },
     [],
   );
 
@@ -390,7 +395,7 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={primary} colors={[primary]} />
           }
-          onEndReached={loadMore}
+          onEndReached={() => { if (hasMore && !error) loadMore(); }}
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
             <View className="gap-3 px-4 pb-4">
@@ -579,7 +584,9 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
             )
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            error && items.length > 0 ? (
+              <ErrorState subtitle={error} onRetry={() => { if (requestedCursor.current !== null) loadMore(); else refresh(); }} isRetrying={isLoading || isLoadingMore} />
+            ) : isLoadingMore ? (
               <View className="items-center py-4">
                 <Spinner size="sm" />
               </View>
