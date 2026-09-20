@@ -68,3 +68,15 @@ it('serializes clear behind an in-flight save', async () => {
   expect(await clearing).toBe(true);
   expect(await load(scope, { required: true })).toBeNull();
 });
+
+it('stores large campaign recipient input encrypted and removes it after acknowledgement', async () => {
+  const campaignScope = { ...scope, kind: 'event-invitation-campaign' as const };
+  const pending = { status: 'pending', source: { csv: 'synthetic@example.invalid\n'.repeat(3000) } };
+  expect(await save(campaignScope, pending)).toBe(true);
+  expect(await load(campaignScope, { required: true })).toEqual(pending);
+  expect(files.size).toBe(1);
+  expect([...files.values()][0]).not.toContain('synthetic@example.invalid');
+  expect(await save(campaignScope, { status: 'acknowledged', campaignId: 12 })).toBe(true);
+  expect(await load(campaignScope, { required: true })).toEqual({ status: 'acknowledged', campaignId: 12 });
+  expect(files.size).toBe(1);
+});
