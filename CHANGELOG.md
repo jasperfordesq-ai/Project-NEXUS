@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native blog browsing preserves loaded articles and retries the failed pagination cursor, with explicit recovery instead of automatic repeated requests after an error.
+
 - Native podcast browsing shows refresh progress, preserves loaded shows after a page failure, and retries the failed page instead of restarting the catalogue. Automatic pagination waits for explicit recovery after an error.
 
 - Native organisation detail actions ignore departed share and website callbacks, and suppress website errors that arrive after navigation.

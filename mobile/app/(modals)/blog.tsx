@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import AccentIcon from '@/components/ui/AccentIcon';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -23,6 +23,7 @@ import { getBlogPosts, type BlogPost, type BlogListResponse } from '@/lib/api/bl
 import AppTopBar from '@/components/ui/AppTopBar';
 import { Chip } from '@/components/ui/StatusChip';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -94,9 +95,13 @@ function BlogScreen() {
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const [committedSearch, setCommittedSearch] = useState('');
+  const requestedCursor = useRef<string | null>(null);
 
   const fetchPosts = useCallback(
-    (cursor: string | null) => getBlogPosts(cursor, committedSearch.trim() || undefined),
+    (cursor: string | null) => {
+      requestedCursor.current = cursor;
+      return getBlogPosts(cursor, committedSearch.trim() || undefined);
+    },
     [committedSearch],
   );
 
@@ -255,7 +260,7 @@ function BlogScreen() {
           refreshControl={
             <RefreshControl refreshing={isLoading && items.length > 0} onRefresh={refresh} tintColor={primary} colors={[primary]} />
           }
-          onEndReached={() => { if (hasMore) loadMore(); }}
+          onEndReached={() => { if (hasMore && !error) loadMore(); }}
           onEndReachedThreshold={0.3}
           ListEmptyComponent={
             isLoading ? (
@@ -281,7 +286,9 @@ function BlogScreen() {
             )
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            error && items.length > 0 ? (
+              <ErrorState subtitle={error} onRetry={requestedCursor.current ? loadMore : refresh} isRetrying={isLoading || isLoadingMore} />
+            ) : isLoadingMore ? (
               <View className="items-center py-4">
                 <LoadingSpinner />
               </View>

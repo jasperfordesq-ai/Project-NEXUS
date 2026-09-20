@@ -36,7 +36,7 @@ describe('PodcastsScreen', () => {
       .mockResolvedValueOnce({ items: [{ id: 3, title: 'Recovered show', slug: 'recovered', episode_count: 1, subscriber_count: 0 }], page: 2, total: 2, hasMore: false, categories: [] });
     const screen = render(<PodcastsScreen />);
     await waitFor(() => expect(screen.getByText('Time stories')).toBeTruthy());
-    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    await act(async () => fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached'));
     await waitFor(() => expect(screen.getByText('Shows unavailable')).toBeTruthy());
     expect(screen.getByText('Time stories')).toBeTruthy();
     fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');

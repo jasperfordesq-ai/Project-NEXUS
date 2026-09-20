@@ -4,7 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
+import { getBlogPosts } from '@/lib/api/blog';
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 // --- Mocks ---
 
@@ -64,8 +67,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 const mockUsePaginatedApi = jest.fn();
+let mockRealRead = false;
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUsePaginatedApi(...args),
 }));
 
 jest.mock('expo-haptics', () => ({
@@ -99,11 +103,14 @@ const defaultPaginatedState = {
 };
 
 beforeEach(() => {
+  mockRealRead = false;
+  jest.mocked(getBlogPosts).mockReset();
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
 });
 
 const mockBlogPost = {
   id: 7,
+  slug: 'getting-started',
   title: 'Getting Started with Timebanking',
   excerpt: 'Learn how to exchange time credits in your community.',
   featured_image: null,
@@ -113,6 +120,31 @@ const mockBlogPost = {
 };
 
 describe('BlogScreen', () => {
+  it('retries the failed later cursor without losing earlier articles', async () => {
+    mockRealRead = true;
+    jest.mocked(getBlogPosts)
+      .mockResolvedValueOnce({ data: [mockBlogPost], meta: { cursor: 'page-two', has_more: true } })
+      .mockRejectedValueOnce(new Error('Articles unavailable'))
+      .mockResolvedValueOnce({ data: [{ ...mockBlogPost, id: 8, slug: 'recovered', title: 'Recovered article' }], meta: { cursor: null, has_more: false } });
+    const screen = render(<BlogScreen />);
+    await screen.findByText(mockBlogPost.title);
+    await act(async () => screen.UNSAFE_getByType(FlatList).props.onEndReached());
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Recovered article');
+    expect(getBlogPosts).toHaveBeenLastCalledWith('page-two', undefined);
+    expect(screen.getByText(mockBlogPost.title)).toBeTruthy();
+  });
+
+  it('keeps loaded articles visible alongside an error and Retry', () => {
+    const retry = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockBlogPost], error: 'Articles unavailable', refresh: retry });
+    const screen = render(<BlogScreen />);
+    expect(screen.getByText(mockBlogPost.title)).toBeTruthy();
+    expect(screen.getByText('Articles unavailable')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the blog list without crashing', () => {
     const { toJSON } = render(<BlogScreen />);
     expect(toJSON()).toBeTruthy();
