@@ -4,6 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { AppState, Linking, type AppStateStatus } from 'react-native';
+import { useCameraPermissions } from 'expo-camera';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockParams: Record<string, string> = {};
@@ -332,6 +334,8 @@ const coupon = {
 describe('MarketplaceToolsRoute', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(AppState, 'addEventListener').mockReturnValue({ remove: jest.fn() });
+    jest.mocked(useCameraPermissions).mockReturnValue([{ granted: true }, jest.fn(), jest.fn()] as never);
     mockParams = {};
     mockHasFeature.mockReturnValue(true);
     mockAuthState = {
@@ -610,6 +614,60 @@ describe('MarketplaceToolsRoute', () => {
     });
     expect(await findByText('Coupon QR redeemed')).toBeTruthy();
     expect(getMerchantCoupons).toHaveBeenCalledTimes(2);
+  });
+
+  it('opens settings instead of re-requesting permanently denied camera access', async () => {
+    const request = jest.fn().mockResolvedValue({ granted: false, canAskAgain: false });
+    jest.mocked(useCameraPermissions).mockReturnValue([{ granted: false, canAskAgain: false }, request, jest.fn()] as never);
+    const settings = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+    try {
+      const screen = render(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+      expect(request).not.toHaveBeenCalled();
+      fireEvent.press(screen.getByText('notifications:permissionCard.openSettings'));
+      await waitFor(() => expect(settings).toHaveBeenCalledTimes(1));
+    } finally { settings.mockRestore(); }
+  });
+
+  it('refreshes camera permission on return from settings and removes the listener on close', async () => {
+    const getPermission = jest.fn().mockResolvedValue({ granted: true });
+    jest.mocked(useCameraPermissions).mockReturnValue([{ granted: false, canAskAgain: false }, jest.fn(), getPermission] as never);
+    let onChange: ((state: AppStateStatus) => void) | undefined;
+    const remove = jest.fn();
+    const listener = jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
+      onChange = callback;
+      return { remove };
+    });
+    try {
+      const screen = render(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+      await act(async () => onChange?.('active'));
+      expect(getPermission).toHaveBeenCalledTimes(1);
+      jest.mocked(useCameraPermissions).mockReturnValue([{ granted: true }, jest.fn(), getPermission] as never);
+      screen.rerender(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+      expect(screen.getByText('Mock camera scanner')).toBeTruthy();
+      screen.rerender(<QrScannerSheet visible={false} title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+      expect(remove).toHaveBeenCalled();
+    } finally { listener.mockRestore(); }
+  });
+
+  it('handles a failed permission request and allows an explicit retry', async () => {
+    const request = jest.fn().mockRejectedValueOnce(new Error('camera unavailable')).mockResolvedValue({ granted: false });
+    jest.mocked(useCameraPermissions).mockReturnValue([{ granted: false, canAskAgain: true }, request, jest.fn()] as never);
+    const screen = render(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+    await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith({ title: 'common:errors.generic', variant: 'warning' }));
+    fireEvent.press(screen.getByText('tools.scanner.permissionAction'));
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+  });
+
+  it('handles settings failure without requesting a permanently refused permission', async () => {
+    const request = jest.fn();
+    jest.mocked(useCameraPermissions).mockReturnValue([{ granted: false, canAskAgain: false }, request, jest.fn()] as never);
+    const settings = jest.spyOn(Linking, 'openSettings').mockRejectedValue(new Error('unavailable'));
+    try {
+      const screen = render(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={jest.fn()} />);
+      fireEvent.press(screen.getByText('notifications:permissionCard.openSettings'));
+      await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith({ title: 'common:errors.generic', variant: 'warning' }));
+      expect(request).not.toHaveBeenCalled();
+    } finally { settings.mockRestore(); }
   });
 
   it('accepts only one camera event per scanner opening', () => {

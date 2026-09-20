@@ -5,7 +5,7 @@
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
+import { AppState, Linking, FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -1581,22 +1581,58 @@ export function QrScannerSheet({
   onClose: () => void;
   onScanned: (token: string) => void;
 }) {
-  const { t } = useTranslation(['marketplace', 'common']);
+  const { t } = useTranslation(['marketplace', 'common', 'notifications']);
   const theme = useTheme();
-  const [permission, requestPermission] = useCameraPermissions();
+  const { show: showToast } = useAppToast();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const scanClaimed = useRef(false);
+  const permissionBusy = useRef(false);
+  const permissionAttempted = useRef(false);
+  const active = useRef(false);
+
+  const recoverPermission = useCallback(async () => {
+    if (!active.current || permissionBusy.current) return;
+    permissionBusy.current = true;
+    try {
+      if (permission?.canAskAgain === false) await Linking.openSettings();
+      else await requestPermission();
+    } catch {
+      if (active.current) showToast({ title: t('common:errors.generic'), variant: 'warning' });
+    } finally {
+      permissionBusy.current = false;
+    }
+  }, [permission?.canAskAgain, requestPermission, showToast, t]);
+
+  useEffect(() => {
+    active.current = visible;
+    return () => { active.current = false; };
+  }, [visible]);
 
   useEffect(() => {
     if (!visible) {
       scanClaimed.current = false;
+      permissionAttempted.current = false;
       setScanned(false);
       return;
     }
-    if (!permission?.granted) {
-      void requestPermission();
+    if (permission && !permission.granted && permission.canAskAgain !== false && !permissionAttempted.current) {
+      permissionAttempted.current = true;
+      void recoverPermission();
     }
-  }, [permission?.granted, requestPermission, visible]);
+  }, [permission, recoverPermission, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void getPermission().catch(() => {
+          if (active.current) showToast({ title: t('common:errors.generic'), variant: 'warning' });
+        });
+      }
+    });
+    return () => subscription.remove();
+  }, [getPermission, showToast, t, visible]);
 
   return (
     <BottomSheet visible={visible} onClose={onClose} snapPoints={['60%', '88%']} title={title}>
@@ -1619,8 +1655,8 @@ export function QrScannerSheet({
           <Surface variant="secondary" className="gap-2 rounded-panel-inner p-4">
             <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('tools.scanner.permissionTitle')}</Text>
             <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('tools.scanner.permissionHint')}</Text>
-            <HeroButton variant="primary" onPress={() => void requestPermission()}>
-              <HeroButton.Label>{t('tools.scanner.permissionAction')}</HeroButton.Label>
+            <HeroButton variant="primary" onPress={() => void recoverPermission()}>
+              <HeroButton.Label>{permission?.canAskAgain === false ? t('notifications:permissionCard.openSettings') : t('tools.scanner.permissionAction')}</HeroButton.Label>
             </HeroButton>
           </Surface>
         )}
