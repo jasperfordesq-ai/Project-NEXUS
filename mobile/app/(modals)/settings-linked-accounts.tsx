@@ -92,7 +92,10 @@ function SettingsLinkedAccountsScreen() {
   const isMountedRef = useRef(true);
   const query = useApi(loadLinkedAccounts, []);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   useUnsavedChangesGuard({
     isDirty: email.trim().length > 0,
@@ -105,7 +108,7 @@ function SettingsLinkedAccountsScreen() {
   });
 
   async function sendRequest() {
-    if (mutationInFlight.current) return;
+    if (!isMountedRef.current || mutationInFlight.current) return;
     const trimmed = email.trim();
     if (!trimmed) {
       showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.emailRequired'), variant: 'warning' });
@@ -128,7 +131,7 @@ function SettingsLinkedAccountsScreen() {
   }
 
   async function approve(item: SubAccountRelationship) {
-    if (mutationInFlight.current) return;
+    if (!isMountedRef.current || mutationInFlight.current) return;
     mutationInFlight.current = true;
     try {
       setBusyId(item.relationship_id);
@@ -161,7 +164,7 @@ function SettingsLinkedAccountsScreen() {
   }
 
   async function performRevoke(item: SubAccountRelationship) {
-    if (mutationInFlight.current) return;
+    if (!isMountedRef.current || mutationInFlight.current) return;
     mutationInFlight.current = true;
     try {
       setBusyId(item.relationship_id);
@@ -192,7 +195,7 @@ function SettingsLinkedAccountsScreen() {
    * when disabling. This screen can therefore never escalate anything.
    */
   async function togglePermission(item: SubAccountRelationship, permission: SubAccountPermission, asMember = false) {
-    if (mutationInFlight.current) return;
+    if (!isMountedRef.current || mutationInFlight.current) return;
     const capability: SupportTierCapability | null =
       permission === 'can_view_activity' ? 'activity'
       : permission === 'can_manage_listings' ? 'listings'

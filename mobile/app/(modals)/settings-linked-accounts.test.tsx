@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockRefresh = jest.fn();
@@ -15,12 +15,13 @@ const mockUpdateSubAccountPermissions = jest.fn();
 const mockUpdateSubAccountTiers = jest.fn();
 const mockUpdateManagerSubAccountTiers = jest.fn();
 const mockGetSubAccountActivity = jest.fn();
+const mockConfirm = jest.fn();
 
 // Removing a linked account is confirmed first (audit 2026-09-06, S3-17); the mock
 // resolves immediately so the revoke itself is still what this suite exercises.
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirm: mockConfirm,
     confirmDialog: null,
   }),
 }));
@@ -137,6 +138,7 @@ jest.mock('@/lib/api/settings', () => ({
 import SettingsLinkedAccountsRoute from './settings-linked-accounts';
 
 beforeEach(() => {
+  mockConfirm.mockReset().mockImplementation((options: { onConfirm: () => void }) => options.onConfirm());
   mockUserId = 1;
   mockRefresh.mockReset();
   mockRequestSubAccount.mockReset().mockResolvedValue({});
@@ -188,6 +190,30 @@ beforeEach(() => {
 });
 
 describe('SettingsLinkedAccountsRoute', () => {
+  it('ignores a retained removal confirmation after leaving the screen', async () => {
+    mockConfirm.mockImplementation(() => {});
+    const screen = render(<SettingsLinkedAccountsRoute />);
+    fireEvent.press(screen.getAllByText('Remove')[0]);
+    const confirmation = mockConfirm.mock.calls[0][0];
+    screen.unmount();
+    await act(async () => { confirmation.onConfirm(); });
+    expect(mockRevokeSubAccount).not.toHaveBeenCalled();
+  });
+
+  it('preserves the requested email after failure and allows retry', async () => {
+    mockRequestSubAccount.mockRejectedValueOnce(new Error('Unavailable'));
+    const screen = render(<SettingsLinkedAccountsRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('member@example.com'), 'child@example.com');
+    fireEvent.press(screen.getByText('Send request'));
+    await waitFor(() => expect(screen.getByText('Send request')).toBeTruthy());
+    expect(screen.getByDisplayValue('child@example.com')).toBeTruthy();
+    expect(mockRefresh).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText('Send request'));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+    expect(mockRequestSubAccount.mock.calls).toEqual([['child@example.com'], ['child@example.com']]);
+    expect(screen.queryByDisplayValue('child@example.com')).toBeNull();
+  });
+
   it('renders managed and manager linked account relationships', () => {
     const { getByText } = render(<SettingsLinkedAccountsRoute />);
 
