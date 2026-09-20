@@ -646,7 +646,16 @@ class GroupExchangeService
             ];
         }
 
-        $this->updateStatus($exchangeId, 'pending_confirmation');
+        // A cancellation or another start may have won after the initial read.
+        // Only the request that claims the transition may notify participants.
+        $started = DB::table('group_exchanges')
+            ->where('id', $exchangeId)
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['draft', 'pending_participants'])
+            ->update(['status' => 'pending_confirmation', 'updated_at' => now()]);
+        if ($started === 0) {
+            return ['success' => false, 'error' => __('api.group_exchange_cannot_start')];
+        }
 
         // Bell + push + email each participant that the exchange is live and awaiting
         // their confirmation. Fail-safe: a notification failure never unwinds the start.

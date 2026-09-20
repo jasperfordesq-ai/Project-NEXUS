@@ -240,6 +240,38 @@ class GroupExchangeServiceTest extends TestCase
         $this->assertSame('pending_confirmation', $status);
     }
 
+    public function test_stale_start_cannot_overwrite_cancellation_or_repeat_another_start(): void
+    {
+        foreach (['cancel', 'start'] as $competingAction) {
+            $provider = $this->makeUser(0);
+            $receiver = $this->makeUser(10);
+            $exchangeId = $this->seedExchange([
+                ['user_id' => $provider, 'role' => 'provider', 'hours' => 6],
+                ['user_id' => $receiver, 'role' => 'receiver', 'hours' => 6],
+            ], 'draft');
+            $service = \Mockery::mock(GroupExchangeService::class)->makePartial();
+            $notificationsAfterCompetition = null;
+            $service->shouldReceive('calculateSplit')->once()->with($exchangeId)
+                ->andReturnUsing(function () use ($exchangeId, $competingAction, &$notificationsAfterCompetition): array {
+                    $split = $this->service->calculateSplit($exchangeId);
+                    // Interleave after the first request read draft, before its final write.
+                    $result = $this->service->{$competingAction}($exchangeId);
+                    $this->assertTrue(is_array($result) ? $result['success'] : $result);
+                    $notificationsAfterCompetition = DB::table('notifications')->count();
+                    return $split;
+                });
+
+            $result = $service->start($exchangeId);
+
+            $this->assertFalse($result['success'], 'stale start must lose to ' . $competingAction);
+            $this->assertSame($competingAction === 'cancel' ? 'cancelled' : 'pending_confirmation',
+                DB::table('group_exchanges')->where('id', $exchangeId)->value('status'));
+            $this->assertSame(0.0, $this->balanceOf($provider));
+            $this->assertSame(10.0, $this->balanceOf($receiver));
+            $this->assertSame($notificationsAfterCompetition, DB::table('notifications')->count(), 'losing start must not notify');
+        }
+    }
+
     public function test_complete_rejects_negative_hours_disguising_imbalance(): void
     {
         // A plain SUM() would call this balanced (10 + (-5) = 5 == 5), but

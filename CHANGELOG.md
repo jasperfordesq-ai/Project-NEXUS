@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep group-exchange starts from overwriting a concurrent cancellation or repeating participant notifications after another start has already succeeded.
+
 - Prevent repeated native group-exchange actions after acceptance while refreshed details are pending; failed refreshes retry the read without replaying the action.
 
 - Group-exchange cancellation can no longer overwrite a completed settlement; repeated cancellation remains safe and cancelled exchanges cannot complete.
