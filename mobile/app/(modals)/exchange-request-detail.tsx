@@ -19,7 +19,7 @@
  */
 
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -47,6 +47,7 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -133,6 +134,12 @@ function ExchangeRequestDetailScreen() {
   );
 
   const [busy, setBusy] = useState<string | null>(null);
+  const pendingActionRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const [confirmSheetOpen, setConfirmSheetOpen] = useState(false);
   // Journey 3.20 — reporting a problem. No reason is pre-selected: a pre-ticked answer in
   // a report is a guess put in the member's mouth, and a broker reads these.
@@ -145,14 +152,18 @@ function ExchangeRequestDetailScreen() {
 
   const run = useCallback(
     async (key: string, fn: () => Promise<unknown>, successMessage: string): Promise<boolean> => {
+      if (pendingActionRef.current || !mountedRef.current || isLoading || error) return false;
+      pendingActionRef.current = true;
       setBusy(key);
       try {
         await fn();
+        if (!mountedRef.current) return false;
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast({ title: successMessage, variant: 'success' });
         refresh();
         return true;
       } catch (err) {
+        if (!mountedRef.current) return false;
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         showToast({
           variant: 'danger',
@@ -169,15 +180,18 @@ function ExchangeRequestDetailScreen() {
         // means the screen is showing a state the server no longer has — so the buttons
         // that just failed would stay on screen, inviting the same tap again. Re-read
         // (audit 2026-09-07, B/F-07).
-        if (err instanceof ApiResponseError && [404, 409, 422].includes(err.status)) {
+        // A lost response can also hide a committed action. Re-read without
+        // automatically repeating the write or claiming it succeeded.
+        if (err instanceof ApiResponseError && ([0, 404, 409, 422].includes(err.status) || err.status >= 500)) {
           refresh();
         }
         return false;
       } finally {
-        setBusy(null);
+        pendingActionRef.current = false;
+        if (mountedRef.current) setBusy(null);
       }
     },
-    [refresh, showToast, t],
+    [refresh, showToast, t, isLoading, error],
   );
 
   const submitReport = useCallback(async () => {
@@ -416,7 +430,7 @@ function ExchangeRequestDetailScreen() {
               <HeroButton
                 key={button.key}
                 variant={button.variant ?? 'primary'}
-                isDisabled={busy !== null}
+                isDisabled={busy !== null || isLoading || Boolean(error)}
                 onPress={button.onPress}
                 style={{ flexGrow: 1, flexBasis: 'auto' }}
                 testID={`exchange-action-${button.key}`}
@@ -604,7 +618,7 @@ function ExchangeRequestDetailScreen() {
               onPress={() => void submitReport()}
               // Disabled until a reason is chosen: the server refuses without one, and a
               // button that fails on purpose is worse than one that waits.
-              isDisabled={busy !== null || reportReason === null}
+              isDisabled={busy !== null || isLoading || Boolean(error) || reportReason === null}
               style={{ flexGrow: 1, flexBasis: 'auto' }}
               testID="exchange-dispute-submit"
             >
@@ -645,7 +659,7 @@ function ExchangeRequestDetailScreen() {
             </HeroButton>
             <HeroButton
               onPress={() => void submitConfirmation()}
-              isDisabled={busy !== null}
+              isDisabled={busy !== null || isLoading || Boolean(error)}
               style={{ flexGrow: 1, flexBasis: 'auto' }}
               testID="exchange-confirm-submit"
             >
@@ -660,8 +674,11 @@ function ExchangeRequestDetailScreen() {
 }
 
 function ExchangeRequestDetailModal() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
       <ExchangeRequestDetailScreen />
     </ModalErrorBoundary>
   );

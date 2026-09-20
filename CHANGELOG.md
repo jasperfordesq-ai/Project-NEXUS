@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile exchange actions prevent overlapping submissions, ignore departed-screen completions, and refresh status after uncertain network/server responses before allowing further actions.
+
 - Mobile exchange lists retain loaded requests after refresh or pagination failure and retry the failed page without restarting the list.
 
 - Mobile jobs, applications and owner postings retain loaded results after a page failure and retry the failed page without restarting the list.

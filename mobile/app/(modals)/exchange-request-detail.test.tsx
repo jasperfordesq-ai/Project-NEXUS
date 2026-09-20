@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockRefresh = jest.fn();
@@ -17,6 +17,8 @@ const mockCancel = jest.fn();
 const mockShowToast = jest.fn();
 const mockBack = jest.fn();
 let mockViewerId = 674;
+let mockRouteId = '61';
+let mockTenantSlug = 'hour-timebank';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -72,6 +74,9 @@ jest.mock('@/lib/hooks/useApi', () => ({
 jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: mockViewerId } }),
 }));
+jest.mock('@/lib/hooks/useTenant', () => ({
+  useTenant: () => ({ tenant: { slug: mockTenantSlug } }),
+}));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({ bg: '#fff', surface: '#f8f9fa', text: '#000', border: '#ddd', warning: '#aa4c00' }),
 }));
@@ -108,7 +113,7 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   router: { back: (...args: unknown[]) => mockBack(...args) },
-  useLocalSearchParams: () => ({ id: '61' }),
+  useLocalSearchParams: () => ({ id: mockRouteId }),
   // Runs the effect once on mount, which is what focus does on a freshly opened screen.
   useFocusEffect: (cb: () => void) => {
     const React = require('react');
@@ -163,6 +168,7 @@ jest.mock('@/components/ModalErrorBoundary', () => {
 });
 
 import ExchangeRequestDetailScreen from './exchange-request-detail';
+import { ApiResponseError } from '@/lib/api/client';
 
 function exchange(overrides: Record<string, unknown> = {}) {
   return {
@@ -203,11 +209,70 @@ function mount(data: Record<string, unknown>) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockViewerId = 674;
+  mockRouteId = '61';
+  mockTenantSlug = 'hour-timebank';
   mockAccept.mockResolvedValue({ data: exchange({ status: 'accepted' }) });
   mockConfirm.mockResolvedValue({ data: exchange({ status: 'completed' }) });
 });
 
 describe('ExchangeRequestDetailScreen', () => {
+  it.each(['exchange', 'account', 'community'])('ignores a pending decline after the mounted route changes %s', async (change) => {
+    let finishDecline!: (value: unknown) => void;
+    mockDecline.mockImplementationOnce(() => new Promise((resolve) => { finishDecline = resolve; }));
+    const screen = mount(exchange());
+    fireEvent.press(screen.getByTestId('exchange-action-decline'));
+    if (change === 'exchange') mockRouteId = '62';
+    else if (change === 'account') mockViewerId = 675;
+    else mockTenantSlug = 'another-community';
+    mockUseApi.mockReturnValue({ data: { data: exchange({ id: Number(mockRouteId) }) }, isLoading: false, error: null, refresh: mockRefresh });
+    screen.rerender(<ExchangeRequestDetailScreen />);
+    mockRefresh.mockClear();
+    await act(async () => finishDecline({ data: {} }));
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('sends one acceptance for two presses before rerender', async () => {
+    mockAccept.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = mount(exchange());
+    const accept = screen.getByTestId('exchange-action-accept');
+    act(() => { fireEvent.press(accept); fireEvent.press(accept); });
+    expect(mockAccept).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not navigate or announce a decline completed after departure', async () => {
+    let finishDecline!: (value: unknown) => void;
+    mockDecline.mockImplementationOnce(() => new Promise((resolve) => { finishDecline = resolve; }));
+    const screen = mount(exchange());
+    fireEvent.press(screen.getByTestId('exchange-action-decline'));
+    screen.unmount();
+    mockRefresh.mockClear();
+    await act(async () => finishDecline({ data: exchange({ status: 'declined' }) }));
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('releases the action lock after refusal so the member can retry', async () => {
+    mockAccept.mockRejectedValueOnce(new Error('temporarily unavailable'));
+    const screen = mount(exchange());
+    fireEvent.press(screen.getByTestId('exchange-action-accept'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    fireEvent.press(screen.getByTestId('exchange-action-accept'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Request accepted' })));
+    expect(mockAccept).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not start a competing decline while acceptance is pending', () => {
+    mockAccept.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = mount(exchange());
+    const accept = screen.getByTestId('exchange-action-accept');
+    const decline = screen.getByTestId('exchange-action-decline');
+    act(() => { fireEvent.press(accept); fireEvent.press(decline); });
+    expect(mockDecline).not.toHaveBeenCalled();
+  });
+
   it('offers accept and decline to the provider on a pending request', () => {
     const { getByTestId } = mount(exchange());
 
@@ -303,6 +368,42 @@ describe('ExchangeRequestDetailScreen', () => {
     fireEvent.press(getByTestId('exchange-confirm-submit'));
 
     await waitFor(() => expect(mockConfirm).toHaveBeenCalledWith(61, 1.5));
+  });
+
+  it.each([0, 500, 502, 503, 504])('reloads after uncertain confirmation status %s instead of retaining stale actions', async (status) => {
+    mockConfirm.mockRejectedValueOnce(new ApiResponseError(status, 'Response lost'));
+    const screen = mount(exchange({ status: 'pending_confirmation' }));
+    mockRefresh.mockClear();
+    fireEvent.press(screen.getByTestId('exchange-action-confirm'));
+    fireEvent.press(screen.getByTestId('exchange-confirm-submit'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+    expect(mockConfirm).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
+    mockUseApi.mockReturnValue({ data: { data: exchange({ status: 'completed' }) }, isLoading: false, error: null, refresh: mockRefresh });
+    screen.rerender(<ExchangeRequestDetailScreen />);
+    expect(screen.queryByTestId('exchange-action-confirm')).toBeNull();
+  });
+
+  it('blocks actions while the displayed exchange is being refreshed', () => {
+    mockUseApi.mockReturnValue({ data: { data: exchange() }, isLoading: true, error: null, refresh: mockRefresh });
+    const screen = render(<ExchangeRequestDetailScreen />);
+    const accept = screen.getByTestId('exchange-action-accept');
+    expect(accept.props.accessibilityState?.disabled).toBe(true);
+    fireEvent.press(accept);
+    expect(mockAccept).not.toHaveBeenCalled();
+  });
+
+  it('disables an already-open confirmation sheet when its status readback fails', () => {
+    const screen = mount(exchange({ status: 'pending_confirmation' }));
+    fireEvent.press(screen.getByTestId('exchange-action-confirm'));
+    mockUseApi.mockReturnValue({ data: { data: exchange({ status: 'pending_confirmation' }) }, isLoading: false, error: 'Offline', refresh: mockRefresh });
+    screen.rerender(<ExchangeRequestDetailScreen />);
+    const submit = screen.getByTestId('exchange-confirm-submit');
+    expect(submit.props.accessibilityState?.disabled).toBe(true);
+    fireEvent.press(submit);
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('exchange-action-confirm')).toBeNull();
   });
 
   it('refuses a confirmation of zero hours without calling the server', async () => {
