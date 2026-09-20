@@ -36,6 +36,9 @@ import {
   getOrganizerRegistrationForms,
   getOrganizerRegistrationSubmissions,
   getOrganizerRegistrationGuests,
+  getOrganizerInvitationCampaigns,
+  mutateOrganizerInvitationCampaign,
+  type InvitationCampaignIntent,
   transitionOrganizerRegistrationGuest,
   reviewOrganizerRegistrationAnswers,
   prepareOrganizerRegistrationExport,
@@ -457,6 +460,48 @@ describe('organizer guest attendance writes', () => {
   it('does not retry an ambiguous write', async () => {
     const error = new Error('connection lost'); jest.mocked(api.post).mockRejectedValue(error);
     await expect(transitionOrganizerRegistrationGuest(42, intent, 'guest-action-1')).rejects.toBe(error);
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+describe('organizer invitation campaigns', () => {
+  const campaign = { id: 12, event_id: 42, campaign_type: 'member', status: 'previewed', revision: 1,
+    preview_count: 2, valid_count: 1, error_count: 1, preview_errors: [{ row: 2, code: 'member_not_found' }], default_locale: 'en' };
+  const pagination = { page: 1, per_page: 25, total: 1, last_page: 1, page_count: 1, from: 1, to: 1,
+    has_more: false, previous_page: null, next_page: null };
+  it('reads independently paginated campaigns and strips unrelated and private data', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { campaigns: [{ ...campaign, source_snapshot_ciphertext: 'private', delivery_counts: [] }],
+      guests: ['private'], pagination: { campaigns: pagination } } });
+    const result = await getOrganizerInvitationCampaigns(42);
+    expect(result.data.campaigns[0]).not.toHaveProperty('source_snapshot_ciphertext');
+    expect(result.data).not.toHaveProperty('guests');
+    expect(result.data.campaigns[0].delivery_counts).toEqual({});
+    expect(api.get).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/manage',
+      { campaigns_page: '1', campaigns_per_page: '25', submissions_per_page: '1', guests_per_page: '1' }, expect.anything());
+  });
+  const cases: [InvitationCampaignIntent, string, Record<string, unknown>][] = [
+    [{ action: 'preview', campaignType: 'member', source: { member_ids: [7, 8] }, defaultLocale: 'en' }, 'preview',
+      { campaign_type: 'member', source: { member_ids: [7, 8] }, default_locale: 'en' }],
+    [{ action: 'issue', campaignId: 12, expectedRevision: 1, expiresAt: '2026-10-01T12:00:00Z' }, '12/issue',
+      { expected_revision: 1, expires_at: '2026-10-01T12:00:00Z' }],
+    [{ action: 'schedule', campaignId: 12, expectedRevision: 1, scheduledFor: '2026-10-01T12:00:00Z' }, '12/schedule',
+      { expected_revision: 1, scheduled_for: '2026-10-01T12:00:00Z' }],
+    [{ action: 'cancel', campaignId: 12, expectedRevision: 1, reason: 'Cancelled event' }, '12/cancel',
+      { expected_revision: 1, reason: 'Cancelled event' }],
+  ];
+  it.each(cases)('preserves caller-owned identity for %j', async (intent, path, body) => {
+    jest.mocked(api.post).mockResolvedValue({ data: { campaign, changed: true, idempotent_replay: false, invitations: ['private'] } });
+    const result = await mutateOrganizerInvitationCampaign(42, intent, 'saved-campaign-key');
+    expect(api.post).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/campaigns/' + path,
+      { ...body, idempotency_key: 'saved-campaign-key' }, { headers: expect.objectContaining({ 'Idempotency-Key': 'saved-campaign-key' }) });
+    expect(result.data).not.toHaveProperty('invitations');
+  });
+  it('rejects mismatched receipts and never automatically retries uncertain failures', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { campaign: { ...campaign, event_id: 99 }, changed: true, idempotent_replay: false } });
+    await expect(mutateOrganizerInvitationCampaign(42, cases[1][0], 'saved-key')).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+    jest.mocked(api.post).mockClear(); const failure = new Error('network uncertain'); jest.mocked(api.post).mockRejectedValue(failure);
+    await expect(mutateOrganizerInvitationCampaign(42, cases[1][0], 'saved-key')).rejects.toBe(failure);
     expect(api.post).toHaveBeenCalledTimes(1);
   });
 });

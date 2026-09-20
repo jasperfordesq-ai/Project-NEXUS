@@ -568,3 +568,56 @@ export async function cancelRegistrationGuest(
     reason,
   }, requestOptions()));
 }
+
+// Campaign responses intentionally exclude encrypted source snapshots and recipient identities.
+const campaignType = z.enum(['member', 'email', 'group', 'audience', 'csv']);
+export const organizerInvitationCampaignSchema = z.object({
+  id: safeId, event_id: safeId, campaign_type: campaignType,
+  status: z.enum(['previewed', 'scheduled', 'issuing', 'issued', 'cancelled']), revision: safeId,
+  preview_count: revision, valid_count: revision, error_count: revision,
+  preview_errors: z.array(z.object({ row: safeId, code: z.string() })),
+  default_locale: z.string(), scheduled_for_utc: z.string().nullable().optional(),
+  issued_at: z.string().nullable().optional(), cancelled_at: z.string().nullable().optional(),
+  segment_criteria_summary: z.record(z.string(), z.unknown()).nullable().optional(),
+  invitations_count: revision.optional(),
+  delivery_counts: z.union([z.record(z.string(), revision), z.array(z.never()).length(0).transform(() => ({}))]).optional(),
+}).strip();
+export type OrganizerInvitationCampaign = z.infer<typeof organizerInvitationCampaignSchema>;
+export async function getOrganizerInvitationCampaigns(eventId: number, page = 1, perPage = 25) {
+  safeId.parse(eventId); safeId.parse(page); z.number().int().min(1).max(100).parse(perPage);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/manage';
+  const schema = z.object({ data: z.object({
+    campaigns: z.array(organizerInvitationCampaignSchema.refine(item => item.event_id === eventId)),
+    pagination: z.object({ campaigns: registrationOverviewPageSchema }),
+  }) });
+  return parse(endpoint, schema, await api.get<unknown>(endpoint,
+    { campaigns_page: String(page), campaigns_per_page: String(perPage), submissions_per_page: '1', guests_per_page: '1' }, requestOptions()));
+}
+export const invitationCampaignIntentSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('preview'), campaignType, source: z.record(z.string(), z.unknown()),
+    defaultLocale: z.enum(['ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt']) }).strict(),
+  z.object({ action: z.literal('issue'), campaignId: safeId, expectedRevision: safeId, expiresAt: z.string().datetime({ offset: true }) }).strict(),
+  z.object({ action: z.literal('schedule'), campaignId: safeId, expectedRevision: safeId, scheduledFor: z.string().datetime({ offset: true }) }).strict(),
+  z.object({ action: z.literal('cancel'), campaignId: safeId, expectedRevision: safeId,
+    reason: z.string().trim().min(1).refine(value => Array.from(value).length <= 500) }).strict(),
+]);
+export type InvitationCampaignIntent = z.infer<typeof invitationCampaignIntentSchema>;
+/** Caller owns and persists the request key. Never automatically retries or issues a preview. */
+export async function mutateOrganizerInvitationCampaign(eventId: number, intent: InvitationCampaignIntent, idempotencyKey: string) {
+  safeId.parse(eventId);
+  const input = invitationCampaignIntentSchema.parse(intent);
+  const key = z.string().min(1).max(191).refine(value => value.trim() === value).parse(idempotencyKey);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/campaigns/'
+    + (input.action === 'preview' ? 'preview' : input.campaignId + '/' + input.action);
+  const body = input.action === 'preview'
+    ? { campaign_type: input.campaignType, source: input.source, default_locale: input.defaultLocale }
+    : { expected_revision: input.expectedRevision,
+      ...(input.action === 'issue' ? { expires_at: input.expiresAt }
+        : input.action === 'schedule' ? { scheduled_for: input.scheduledFor } : { reason: input.reason }) };
+  const schema = z.object({ data: z.object({
+    campaign: organizerInvitationCampaignSchema.refine(item => item.event_id === eventId
+      && (input.action === 'preview' ? item.campaign_type === input.campaignType : item.id === input.campaignId)),
+    changed: z.boolean(), idempotent_replay: z.boolean(),
+  }) });
+  return parse(endpoint, schema, await api.post<unknown>(endpoint, { ...body, idempotency_key: key }, requestOptions(key)));
+}

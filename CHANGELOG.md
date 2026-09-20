@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added native organiser invitation campaign API contracts for paginated reads, preview, issue, scheduling and cancellation with caller-owned retry keys and scoped response validation. The native campaign screen and saved-request recovery are not yet implemented.
+
 - Added the native organiser guest roster and attendance screen with paginated records, permission-gated contact details, confirmed attendance actions, required undo reasons, and explicit saved-action recovery and stale-version review.
 
 
