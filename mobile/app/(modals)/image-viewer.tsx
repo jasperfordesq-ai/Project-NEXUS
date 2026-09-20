@@ -13,9 +13,11 @@ import { Surface } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import { useAppToast } from '@/components/ui/AppToast';
 
 function ImageViewerScreenInner() {
   const { t } = useTranslation('home');
+  const { show: showToast } = useAppToast();
   const { uri, title } = useLocalSearchParams<{ uri: string; title?: string }>();
 
   const { width, height } = Dimensions.get('window');
@@ -23,7 +25,11 @@ function ImageViewerScreenInner() {
   async function handleShare() {
     if (!uri) return;
     const message = title ? `${title}\n${uri}` : uri;
-    await Share.share({ message, url: uri });
+    try {
+      await Share.share({ message, url: uri });
+    } catch {
+      showToast({ title: t('common:errors.alertTitle'), description: t('common:errors.generic'), variant: 'danger' });
+    }
   }
 
   function handleClose() {

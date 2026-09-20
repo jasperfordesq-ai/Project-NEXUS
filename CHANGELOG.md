@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native image viewer now handles unavailable sharing with translated feedback while keeping the image open.
+
 - Native marketplace QR scanning now accepts one camera event per opening, preventing rapid duplicate pickup or coupon callbacks while allowing a fresh scan after reopening.
 
 - Native federation setup now blocks progress when saved preferences cannot be loaded and offers a retry, preserving existing choices after recovery.

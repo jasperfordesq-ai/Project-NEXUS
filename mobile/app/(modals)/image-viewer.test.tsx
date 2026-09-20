@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 let mockParams: { uri?: string; title?: string } = {
   uri: 'https://example.test/photo.jpg',
@@ -39,6 +39,10 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
 }));
 
+import { Share } from 'react-native';
+const mockToast = jest.fn();
+jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockToast }) }));
+
 import ImageViewerScreen from './image-viewer';
 
 describe('ImageViewerScreen', () => {
@@ -61,4 +65,15 @@ describe('ImageViewerScreen', () => {
     render(<ImageViewerScreen />);
     expect(jest.requireMock('expo-router').router.back).toHaveBeenCalled();
   });
+});
+
+it('contains a failed native share and leaves the image open', async () => {
+  mockParams = { uri: 'https://example.test/photo.jpg', title: 'Community photo' };
+  jest.spyOn(Share, 'share').mockRejectedValueOnce(new Error('share unavailable'));
+  const screen = render(<ImageViewerScreen />);
+  let button = screen.getByLabelText('Share image');
+  while (!button.props.onPress) button = button.parent!;
+  await act(async () => { await button.props.onPress(); });
+  expect(mockToast).toHaveBeenCalled();
+  expect(screen.getByLabelText('Close')).toBeTruthy();
 });
