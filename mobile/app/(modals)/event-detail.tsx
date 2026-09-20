@@ -149,14 +149,21 @@ function EventDetailScreenInner() {
   const rsvpMutationKeysRef = useRef<Partial<Record<'going' | 'interested', string>>>({});
 
   useEffect(() => {
+    // A new accepted event read supersedes the last mutation's local snapshot.
+    setRelationship(null);
+    setMetrics(null);
+  }, [event]);
+
+  useEffect(() => {
     setRelationship(null);
     setMetrics(null);
     acceptOfferMutationKeyRef.current = null;
     rsvpMutationKeysRef.current = {};
   }, [safeEventId]);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
   }, []);
 
   async function authoritativeEvent(): Promise<CanonicalEvent | null> {

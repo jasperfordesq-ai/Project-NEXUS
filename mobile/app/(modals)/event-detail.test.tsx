@@ -724,6 +724,28 @@ describe('EventDetailScreen', () => {
     });
   });
 
+  it.each([false, true])('replaces RSVP state with a later snapshot (StrictMode=%s)', async (strictMode) => {
+    let hookIndex = 0;
+    const eventState = { data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() };
+    mockUseApi.mockImplementation(() => {
+      const state = hookIndex % 5 === 0 ? eventState
+        : hookIndex % 5 === 1 ? reminderPreferencesState
+          : hookIndex % 5 === 4 ? emptyAgendaState
+            : { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+      hookIndex += 1;
+      return state;
+    });
+    const tree = () => strictMode ? <React.StrictMode><EventDetailScreen /></React.StrictMode> : <EventDetailScreen />;
+    const screen = render(tree());
+    fireEvent.press(screen.getByTestId('event-going-action'));
+    await waitFor(() => expect(screen.getByText(/1 going.*0 interested/)).toBeTruthy());
+
+    // Another attendance change is now reflected by the authoritative event read.
+    eventState.data = { data: { ...mockEvent, metrics: { ...mockEvent.metrics, confirmed_count: 8 } } };
+    screen.rerender(tree());
+    expect(screen.getByText(/8 going.*5 interested/)).toBeTruthy();
+  });
+
   it('serializes rapid RSVP actions before the busy state renders', async () => {
     let resolveRsvp!: (value: unknown) => void;
     (rsvpEvent as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => {
