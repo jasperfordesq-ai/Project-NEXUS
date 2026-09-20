@@ -91,6 +91,36 @@ class MarketplaceOrderControllerTest extends TestCase
 
     // -------- Smoke (kept) --------
 
+    public function test_checkout_outcome_requires_auth(): void
+    {
+        $this->assertContains($this->apiPost('/v2/marketplace/orders/checkout-outcome', [
+            'idempotency_key' => 'checkout-outcome-fixture',
+        ])->status(), [401, 403]);
+    }
+
+    public function test_checkout_outcome_reads_only_current_buyer_and_tenant_without_replaying_purchase(): void
+    {
+        $this->enableMarketplaceFeature();
+        $buyer = $this->authenticatedUser();
+        $seller = User::factory()->forTenant(2)->create();
+        $key = 'checkout-outcome-fixture';
+        $ownId = $this->makeOrder(2, $buyer->id, $seller->id, ['checkout_key' => hash('sha256', $key)]);
+        $this->apiPost('/v2/marketplace/orders/checkout-outcome', ['idempotency_key' => $key])
+            ->assertOk()->assertJsonPath('data.order.id', $ownId);
+
+        $foreignKey = 'checkout-foreign-buyer';
+        $this->makeOrder(2, $seller->id, $buyer->id, ['checkout_key' => hash('sha256', $foreignKey)]);
+        $this->apiPost('/v2/marketplace/orders/checkout-outcome', ['idempotency_key' => $foreignKey])
+            ->assertOk()->assertJsonPath('data.order', null);
+        $tenantKey = 'checkout-foreign-tenant';
+        $this->makeOrder(1, $buyer->id, $seller->id, ['checkout_key' => hash('sha256', $tenantKey)]);
+        $this->apiPost('/v2/marketplace/orders/checkout-outcome', ['idempotency_key' => $tenantKey])
+            ->assertOk()->assertJsonPath('data.order', null);
+        $this->apiPost('/v2/marketplace/orders/checkout-outcome', ['idempotency_key' => 'checkout-no-order-yet'])
+            ->assertOk()->assertJsonPath('data.order', null);
+        $this->assertDatabaseHas('marketplace_orders', ['id' => $ownId, 'status' => 'pending_payment']);
+    }
+
     public function test_store_requires_auth(): void
     {
         $response = $this->apiPost('/v2/marketplace/orders', []);

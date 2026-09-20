@@ -557,7 +557,14 @@
     "paymentTakenHint": "Nous confirmons encore la commande {{order}}. Ne payez pas à nouveau — vérifiez Commandes dans une minute.",
     "paymentCancelledTitle": "Paiement annulé",
     "paymentCancelledHint": "La commande {{order}} est enregistrée comme impayée. Terminez-la ou annulez-la depuis Commandes.",
-    "confirmTimeCredits_one": "{{count}} crédit-temps va quitter votre portefeuille pour « {{title}} ». Cette action est irréversible."
+    "confirmTimeCredits_one": "{{count}} crédit-temps va quitter votre portefeuille pour « {{title}} ». Cette action est irréversible.",
+    "recoveryTitle": "Récupérer un achat précédent",
+    "recoveryHint": "Un achat précédent n’a pas de résultat confirmé. Consultez vos commandes ou réessayez cet achat avant d’en commencer un autre.",
+    "recoveryConfirm": "Réessayez l’achat précédent avec les choix de paiement et de livraison d’origine. Si la commande n’a pas été créée, cette action peut la créer et débiter des crédits de temps. Le paiement par carte se poursuivra séparément dans Commandes.",
+    "recoveryRetry": "Réessayer l’achat précédent",
+    "recoveryOrders": "Voir mes commandes",
+    "recoveryStorageError": "Votre achat enregistré n’a pas pu être vérifié. Réessayez avant de commencer un autre achat.",
+    "recoveryReview": "Vérifier les options d’achat"
   },
   "communityDelivery": {
     "eyebrow": "Livraison assurée par la communauté",

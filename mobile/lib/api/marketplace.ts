@@ -845,6 +845,13 @@ export function createMarketplacePaymentIntent(orderId: number): Promise<Marketp
   });
 }
 
+/** A missing order is a snapshot only; callers must retain the original key. */
+export function getMarketplaceCheckoutOutcome(idempotencyKey: string): Promise<MarketplaceDataResponse<{
+  order: { id: number; order_number: string; status: string } | null;
+}>> {
+  return api.post(`${API_V2}/marketplace/orders/checkout-outcome`, { idempotency_key: idempotencyKey });
+}
+
 export function confirmMarketplacePayment(paymentIntentId: string): Promise<MarketplaceDataResponse<{
   payment_id: number;
   status: string;

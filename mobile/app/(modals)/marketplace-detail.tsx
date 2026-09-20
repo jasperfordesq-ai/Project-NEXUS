@@ -12,7 +12,6 @@ import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import NativeVideo from '@/components/media/NativeVideo';
 import { Ionicons } from '@/components/ui/Icon';
-import { randomUUID } from 'expo-crypto';
 import { CloseButton, Card as HeroCard, Surface, Text } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -38,6 +37,7 @@ import {
   getMarketplaceSellerListings,
   getMarketplaceCollections,
   getMarketplaceListing,
+  getMarketplaceCheckoutOutcome,
   getMarketplaceOffers,
   makeMarketplaceOffer,
   reportMarketplaceListing,
@@ -65,20 +65,108 @@ import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
+import { acknowledgeMarketplaceCheckout, readMarketplaceCheckout, reserveMarketplaceCheckout, reviseMarketplaceCheckout, type CheckoutIdentity, type CheckoutPayload, type CheckoutOperation } from '@/lib/marketplaceCheckoutOperation';
 
 function MarketplaceDetailModal() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const params = useLocalSearchParams<{ id?: string; offer_id?: string }>();
   return (
     <ModalErrorBoundary>
-      <MarketplaceDetailScreen />
+      <MarketplaceCheckoutGate key={`${user?.id}:${tenant?.slug}:${params.id}:${params.offer_id}`} identity={{ userId: user?.id ?? 0, tenantSlug: tenant?.slug ?? '' }} listingId={Number(params.id)} />
     </ModalErrorBoundary>
   );
+}
+
+function MarketplaceCheckoutGate({ identity, listingId }: { identity: CheckoutIdentity; listingId: number }) {
+  const { t } = useTranslation(['marketplace', 'common']);
+  const theme = useTheme();
+  const [operation, setOperation] = useState<CheckoutOperation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const mounted = useRef(true);
+  const busy = useRef(false);
+  const { confirm, confirmDialog } = useConfirm();
+  useEffect(() => {
+    mounted.current = true;
+    void load();
+    return () => { mounted.current = false; };
+    // The outer key owns the identity/listing lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  async function load() {
+    setEditing(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const saved = Number.isInteger(listingId) && listingId > 0 && identity.userId
+        ? await readMarketplaceCheckout(identity, listingId) : null;
+      if (mounted.current) setOperation(saved);
+    } catch {
+      if (mounted.current) setError(t('checkout.recoveryStorageError'));
+    } finally {
+      if (mounted.current) setLoading(false);
+    }
+  }
+  async function recover(reviewChoices = false) {
+    if (!operation || busy.current || !mounted.current) return;
+    busy.current = true;
+    setLoading(true);
+    setError(null);
+    try {
+      const current = await readMarketplaceCheckout(identity, listingId);
+      if (!mounted.current) return;
+      if (!current || current.key !== operation.key) { await load(); return; }
+      const outcome = await getMarketplaceCheckoutOutcome(current.key);
+      if (!mounted.current) return;
+      if (!outcome.data || !Object.prototype.hasOwnProperty.call(outcome.data, 'order')) throw new Error('Invalid checkout outcome');
+      if (outcome.data.order === null && reviewChoices) { setEditing(true); return; }
+      const order = outcome.data.order ?? (await createMarketplaceOrder({ ...current.payload, idempotency_key: current.key })).data;
+      if (!mounted.current) return;
+      const id = Number(order?.id);
+      if (!Number.isInteger(id) || id <= 0 || !order?.order_number) throw new Error('Invalid order response');
+      // Recovery never starts a payment. Orders owns the next explicit action.
+      await acknowledgeMarketplaceCheckout(current);
+      if (!mounted.current) return;
+      router.replace({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases', order_id: String(id) } } as unknown as Href);
+    } catch (err) {
+      if (mounted.current) setError(describeApiError(err, t('checkout.recoveryStorageError')));
+    } finally {
+      busy.current = false;
+      if (mounted.current) setLoading(false);
+    }
+  }
+  if (!loading && ((!operation && !error) || editing)) return <MarketplaceDetailScreen revision={editing ? operation : null} onUncertain={() => void load()} />;
+  return <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
+    <AppTopBar title={t('detail.title')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+      {loading ? <LoadingSpinner /> : <>
+        <Text className="text-xl font-bold">{t('checkout.recoveryTitle')}</Text>
+        <Text>{t('checkout.recoveryHint')}</Text>
+        {error ? <ErrorState subtitle={error} onRetry={() => void load()} /> : null}
+        {operation ? <HeroButton testID="marketplace-recover-purchase" onPress={() => confirm({
+          title: t('checkout.recoveryTitle'), message: t('checkout.recoveryConfirm'),
+          confirmLabel: t('checkout.recoveryRetry'), cancelLabel: t('common:buttons.cancel'),
+          confirmTestID: 'marketplace-confirm-recovery', onConfirm: () => recover(),
+        })}><HeroButton.Label>{t('checkout.recoveryRetry')}</HeroButton.Label></HeroButton> : null}
+        {operation ? <HeroButton variant="secondary" testID="marketplace-review-purchase" onPress={() => void recover(true)}>
+          <HeroButton.Label>{t('checkout.recoveryReview')}</HeroButton.Label>
+        </HeroButton> : null}
+        <HeroButton variant="secondary" onPress={() => router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href)}>
+          <HeroButton.Label>{t('checkout.recoveryOrders')}</HeroButton.Label>
+        </HeroButton>
+      </>}
+    </ScrollView>
+    {confirmDialog}
+  </SafeAreaView>;
 }
 
 type ReportReason = 'counterfeit' | 'illegal' | 'unsafe' | 'misleading' | 'discrimination' | 'ip_violation' | 'other';
 const REPORT_REASONS: ReportReason[] = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
 type FulfilmentChoice = 'pickup' | `shipping:${number}`;
 
-function MarketplaceDetailScreen() {
+function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () => void; revision: CheckoutOperation | null }) {
   const { t } = useTranslation(['marketplace', 'common']);
   const params = useLocalSearchParams<{ id?: string; offer_id?: string; offer_amount?: string }>();
   const primary = usePrimaryColor();
@@ -127,7 +215,7 @@ function MarketplaceDetailScreen() {
   const [offerMessage, setOfferMessage] = useState('');
   const [reportReason, setReportReason] = useState<ReportReason>('misleading');
   const [reportDescription, setReportDescription] = useState('');
-  const checkoutIdempotencyKeyRef = useRef<string | null>(null);
+  const checkoutOperationRef = useRef<CheckoutOperation | null>(null);
   const checkoutSubmittingRef = useRef(false);
   const saveSubmittingRef = useRef(false);
   const offerSubmittingRef = useRef(false);
@@ -138,7 +226,7 @@ function MarketplaceDetailScreen() {
   }, []);
 
   useEffect(() => {
-    checkoutIdempotencyKeyRef.current = null;
+    checkoutOperationRef.current = null;
     setCheckoutPaymentMethod('cash');
     void loadListing();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -432,13 +520,10 @@ function MarketplaceDetailScreen() {
     checkoutSubmittingRef.current = true;
     setIsActionLoading(true);
     try {
-      const idempotencyKey = checkoutIdempotencyKeyRef.current ?? `mobile-marketplace-${randomUUID()}`;
-      checkoutIdempotencyKeyRef.current = idempotencyKey;
-      const response = await createMarketplaceOrder({
+      const payload: CheckoutPayload = {
         listing_id: listing.id,
         ...(acceptedOfferId ? { offer_id: acceptedOfferId } : {}),
         quantity: 1,
-        idempotency_key: idempotencyKey,
         ...(selectedShippingOptionId !== null ? { shipping_option_id: selectedShippingOptionId } : {}),
         ...(fulfilmentChoice === 'pickup'
           ? {
@@ -452,18 +537,34 @@ function MarketplaceDetailScreen() {
           ? { coupon_code: couponCode.trim().toUpperCase() }
           : {}),
         payment_method: effectivePaymentMethod,
-      });
+      };
+      const identity = { userId: user?.id ?? 0, tenantSlug: tenant?.slug ?? '' };
+      const reserved = revision
+        ? { operation: await reviseMarketplaceCheckout(identity, revision, payload), recovered: false }
+        : await reserveMarketplaceCheckout(identity, payload);
+      if (!isMountedRef.current) return;
+      if (reserved.recovered && checkoutOperationRef.current?.key !== reserved.operation.key) {
+        onUncertain();
+        return;
+      }
+      checkoutOperationRef.current = reserved.operation;
+      const response = await createMarketplaceOrder({ ...reserved.operation.payload, idempotency_key: reserved.operation.key });
+      if (!isMountedRef.current) return;
       const orderId = Number(response.data?.id);
       const orderNumber = response.data?.order_number;
       if (!Number.isInteger(orderId) || orderId <= 0 || !orderNumber) {
         showToast({ title: t('common:errors.alertTitle'), description: t('detail.orderFailed'), variant: 'danger' });
+        onUncertain();
         return;
       }
       if (response.data.requires_payment === false || response.data.status === 'paid') {
         // This purchase is finished; the next one is a different purchase and must claim its
         // own key, or the server replays this order instead of creating one (D/F-4).
-        checkoutIdempotencyKeyRef.current = null;
+        await acknowledgeMarketplaceCheckout(reserved.operation);
+        if (!isMountedRef.current) return;
+        checkoutOperationRef.current = null;
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (!isMountedRef.current) return;
         showToast({
           title: t('detail.orderCreated'),
           description: t('detail.orderCreatedHint', { order: orderNumber }),
@@ -476,15 +577,19 @@ function MarketplaceDetailScreen() {
       try {
         payment = await createMarketplacePaymentIntent(orderId);
       } catch (err) {
+        if (!isMountedRef.current) return;
         showToast({ title: t('checkout.paymentRecoveryTitle'), description: describeApiError(err, t('checkout.paymentRecoveryHint', { order: orderNumber })), variant: 'danger' });
         router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
         return;
       }
+      if (!isMountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!isMountedRef.current) return;
       if (payment.data.checkout_url) {
         try {
           await Linking.openURL(payment.data.checkout_url);
         } catch (err) {
+          if (!isMountedRef.current) return;
           showToast({ title: t('checkout.paymentRecoveryTitle'), description: describeApiError(err, t('checkout.paymentRecoveryHint', { order: orderNumber })), variant: 'danger' });
           router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
         }
@@ -496,6 +601,7 @@ function MarketplaceDetailScreen() {
           merchantDisplayName: t('checkout.merchantDisplayName'),
           tenantSlug: tenant?.slug,
         });
+        if (!isMountedRef.current) return;
         if (paymentResult.status === 'completed' && payment.data.payment_intent_id) {
           /*
             🔴 The card has been charged by this point. If our confirm call then fails —
@@ -505,12 +611,14 @@ function MarketplaceDetailScreen() {
           */
           try {
             await confirmMarketplacePayment(payment.data.payment_intent_id);
+            if (!isMountedRef.current) return;
             showToast({ title: t('checkout.paymentCompleteTitle'), description: t('checkout.paymentCompleteHint'), variant: 'success' });
           } catch {
-            checkoutIdempotencyKeyRef.current = null;
+            if (!isMountedRef.current) return;
+            checkoutOperationRef.current = null;
             showToast({ title: t('checkout.paymentTakenTitle'), description: t('checkout.paymentTakenHint', { order: orderNumber }), variant: 'warning' });
           }
-          checkoutIdempotencyKeyRef.current = null;
+          checkoutOperationRef.current = null;
           router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
           return;
         }
@@ -534,10 +642,12 @@ function MarketplaceDetailScreen() {
       showToast({ title: t('checkout.paymentRecoveryTitle'), description: t('checkout.paymentRecoveryHint', { order: orderNumber }), variant: 'danger' });
       router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.orderFailed')), variant: 'danger' });
+      if (checkoutOperationRef.current) onUncertain();
     } finally {
       checkoutSubmittingRef.current = false;
-      setIsActionLoading(false);
+      if (isMountedRef.current) setIsActionLoading(false);
     }
   }
 

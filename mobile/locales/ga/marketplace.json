@@ -557,7 +557,14 @@
     "paymentTakenHint": "Táimid fós ag deimhniú ordú {{order}}. Ná híoc arís — féach ar Orduithe i gceann nóiméid.",
     "paymentCancelledTitle": "Cealaíodh an íocaíocht",
     "paymentCancelledHint": "Tá ordú {{order}} sábháilte gan íoc. Críochnaigh nó cealaigh é ó Orduithe.",
-    "confirmTimeCredits_one": "Fágfaidh {{count}} chreidmheas ama do sparán anois le haghaidh “{{title}}”. Ní féidir é seo a chealú."
+    "confirmTimeCredits_one": "Fágfaidh {{count}} chreidmheas ama do sparán anois le haghaidh “{{title}}”. Ní féidir é seo a chealú.",
+    "recoveryTitle": "Ceannach roimhe seo a aisghabháil",
+    "recoveryHint": "Níl toradh deimhnithe ar cheannach roimhe seo. Seiceáil d’orduithe nó bain triail eile as an gceannach sin sula dtosaíonn tú ceann eile.",
+    "recoveryConfirm": "Bain triail eile as an gceannach roimhe seo leis na roghanna íocaíochta agus seachadta bunaidh. Murar cruthaíodh é, d’fhéadfadh sé seo an t-ordú a chur isteach agus creidmheasanna ama a chaitheamh. Leanfar le híocaíocht chárta ar leithligh ó Orduithe.",
+    "recoveryRetry": "Bain triail eile as an gceannach",
+    "recoveryOrders": "Féach ar m’orduithe",
+    "recoveryStorageError": "Níorbh fhéidir do cheannach sábháilte a sheiceáil. Bain triail eile as sula dtosaíonn tú ceannach eile.",
+    "recoveryReview": "Athbhreithnigh na roghanna ceannaigh"
   },
   "communityDelivery": {
     "eyebrow": "Seachadadh faoi thiomáint an Chomhphobail",

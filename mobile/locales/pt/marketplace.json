@@ -557,7 +557,14 @@
     "paymentTakenHint": "Ainda estamos a confirmar a encomenda {{order}}. Não pague novamente — verifique as Encomendas dentro de um minuto.",
     "paymentCancelledTitle": "Pagamento cancelado",
     "paymentCancelledHint": "A encomenda {{order}} foi guardada como não paga. Conclua-a ou cancele-a nas Encomendas.",
-    "confirmTimeCredits_one": "{{count}} crédito de tempo vai sair da sua carteira agora por “{{title}}”. Esta ação não pode ser anulada."
+    "confirmTimeCredits_one": "{{count}} crédito de tempo vai sair da sua carteira agora por “{{title}}”. Esta ação não pode ser anulada.",
+    "recoveryTitle": "Recuperar uma compra anterior",
+    "recoveryHint": "Uma compra anterior não tem um resultado confirmado. Consulta as tuas encomendas ou tenta novamente essa compra antes de iniciar outra.",
+    "recoveryConfirm": "Tenta novamente a compra anterior com as opções originais de pagamento e entrega. Se não foi criada, isto pode efetuar a encomenda e gastar créditos de tempo. O pagamento por cartão continuará separadamente em Encomendas.",
+    "recoveryRetry": "Tentar novamente a compra anterior",
+    "recoveryOrders": "Ver as minhas encomendas",
+    "recoveryStorageError": "Não foi possível verificar a compra guardada. Tenta novamente antes de iniciar outra compra.",
+    "recoveryReview": "Rever opções de compra"
   },
   "communityDelivery": {
     "eyebrow": "Entrega com tecnologia comunitária",

@@ -1427,6 +1427,7 @@ Route::get('/v2/marketplace/seller/onboard/status', [\App\Http\Controllers\Api\M
 
 // Marketplace Orders — Purchase lifecycle
 Route::post('/v2/marketplace/orders', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'store']);
+Route::post('/v2/marketplace/orders/checkout-outcome', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'checkoutOutcome']);
 Route::get('/v2/marketplace/orders/purchases', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'purchases']);
 Route::get('/v2/marketplace/orders/sales', [\App\Http\Controllers\Api\MarketplaceOrderController::class, 'sales']);
 Route::get('/v2/marketplace/orders/deliveries', [\App\Http\Controllers\Api\MarketplaceCommunityDeliveryController::class, 'opportunities']);

@@ -557,7 +557,14 @@
     "paymentTakenHint": "Stiamo ancora confermando l’ordine {{order}}. Non pagare di nuovo: controlla gli Ordini tra un minuto.",
     "paymentCancelledTitle": "Pagamento annullato",
     "paymentCancelledHint": "L’ordine {{order}} è salvato come non pagato. Completalo o annullalo dagli Ordini.",
-    "confirmTimeCredits_one": "{{count}} credito tempo lascerà ora il tuo portafoglio per «{{title}}». L’operazione non può essere annullata."
+    "confirmTimeCredits_one": "{{count}} credito tempo lascerà ora il tuo portafoglio per «{{title}}». L’operazione non può essere annullata.",
+    "recoveryTitle": "Recupera un acquisto precedente",
+    "recoveryHint": "Un acquisto precedente non ha un esito confermato. Controlla i tuoi ordini o riprova quell’acquisto prima di iniziarne un altro.",
+    "recoveryConfirm": "Riprova l’acquisto precedente con le opzioni di pagamento e consegna originali. Se non è stato creato, questa azione può effettuare l’ordine e spendere crediti di tempo. Il pagamento con carta proseguirà separatamente da Ordini.",
+    "recoveryRetry": "Riprova l’acquisto precedente",
+    "recoveryOrders": "Visualizza i miei ordini",
+    "recoveryStorageError": "Non è stato possibile verificare l’acquisto salvato. Riprova prima di iniziare un altro acquisto.",
+    "recoveryReview": "Rivedi le opzioni di acquisto"
   },
   "communityDelivery": {
     "eyebrow": "Consegna fornita dalla community",

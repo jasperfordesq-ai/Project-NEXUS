@@ -557,7 +557,14 @@
     "paymentTakenHint": "Todavía estamos confirmando el pedido {{order}}. No pagues otra vez: revisa Pedidos en un minuto.",
     "paymentCancelledTitle": "Pago cancelado",
     "paymentCancelledHint": "El pedido {{order}} se guardó como no pagado. Complétalo o cancélalo desde Pedidos.",
-    "confirmTimeCredits_one": "Se descontará ahora {{count}} crédito de tiempo de tu monedero por «{{title}}». Esta acción no se puede deshacer."
+    "confirmTimeCredits_one": "Se descontará ahora {{count}} crédito de tiempo de tu monedero por «{{title}}». Esta acción no se puede deshacer.",
+    "recoveryTitle": "Recuperar una compra anterior",
+    "recoveryHint": "Una compra anterior no tiene un resultado confirmado. Consulta tus pedidos o reintenta esa compra antes de iniciar otra.",
+    "recoveryConfirm": "Reintenta la compra anterior con las opciones originales de pago y entrega. Si no se creó, esto puede realizar el pedido y gastar créditos de tiempo. El pago con tarjeta continuará por separado desde Pedidos.",
+    "recoveryRetry": "Reintentar compra anterior",
+    "recoveryOrders": "Ver mis pedidos",
+    "recoveryStorageError": "No se pudo comprobar la compra guardada. Inténtalo de nuevo antes de iniciar otra.",
+    "recoveryReview": "Revisar opciones de compra"
   },
   "communityDelivery": {
     "eyebrow": "Entrega impulsada por la comunidad",

@@ -5,9 +5,15 @@
 
 import React from 'react';
 import { ApiResponseError } from '@/lib/api/client';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as SecureStore from 'expo-secure-store';
+import { storage } from '@/lib/storage';
+
+jest.mock('@/lib/storage');
+const mockCheckoutRecords = new Map<string, string>();
 
 let mockFeatures = new Set(['merchant_coupons']);
+let mockUserId = 99;
 let mockRouteParams: { id?: string; offer_id?: string; offer_amount?: string } = { id: '9' };
 
 jest.mock('expo-router', () => ({
@@ -17,7 +23,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockRouteParams,
 }));
 
-jest.mock('expo-crypto', () => ({ randomUUID: () => 'checkout-test-uuid' }));
+jest.mock('expo-crypto', () => ({ randomUUID: jest.fn(() => 'checkout-test-uuid'), CryptoDigestAlgorithm: { SHA256: 'SHA256' }, digestStringAsync: jest.fn(async (_algorithm: string, value: string) => value) }));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -119,7 +125,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ tenant: { currency: 'EUR' }, hasFeature: (feature: string) => mockFeatures.has(feature) }),
+  useTenant: () => ({ tenant: { currency: 'EUR', slug: 'hour-timebank' }, hasFeature: (feature: string) => mockFeatures.has(feature) }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -138,7 +144,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 99, name: 'Current User' } }),
+  useAuth: () => ({ user: { id: mockUserId, name: 'Current User' } }),
 }));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
@@ -178,6 +184,7 @@ jest.mock('@/lib/api/marketplace', () => ({
   getMarketplaceSellerListings: jest.fn().mockResolvedValue({ data: [] }),
   getMarketplaceCollections: jest.fn().mockResolvedValue({ data: [] }),
   getMarketplaceListing: jest.fn(),
+  getMarketplaceCheckoutOutcome: jest.fn(),
   getMarketplaceOffers: jest.fn(),
   makeMarketplaceOffer: jest.fn(),
   reportMarketplaceListing: jest.fn(),
@@ -228,6 +235,7 @@ import {
   createMarketplaceOrder,
   createMarketplacePaymentIntent,
   getMarketplaceListing,
+  getMarketplaceCheckoutOutcome,
   getMarketplaceOffers,
   getMarketplaceListingPickupSlots,
   getMarketplaceSellerShippingOptions,
@@ -276,9 +284,17 @@ describe('MarketplaceDetailRoute', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCheckoutRecords.clear();
+    mockUserId = 99;
+    jest.mocked(storage.getJson).mockResolvedValue({ id: 99 });
+    jest.mocked(storage.get).mockResolvedValue('hour-timebank');
+    jest.mocked(SecureStore.getItemAsync).mockImplementation(async key => mockCheckoutRecords.get(key) ?? null);
+    jest.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => { mockCheckoutRecords.set(key, value); });
+    jest.mocked(SecureStore.deleteItemAsync).mockImplementation(async key => { mockCheckoutRecords.delete(key); });
     mockRouteParams = { id: '9' };
     mockFeatures = new Set(['merchant_coupons']);
     (getMarketplaceListing as jest.Mock).mockResolvedValue({ data: mockListing });
+    (getMarketplaceCheckoutOutcome as jest.Mock).mockResolvedValue({ data: { order: null } });
     (getMarketplaceListingPickupSlots as jest.Mock).mockResolvedValue({ data: [] });
     (getMarketplaceSellerShippingOptions as jest.Mock).mockResolvedValue({ data: [] });
     (getMarketplaceSellerListings as jest.Mock).mockResolvedValue({ data: [] });
@@ -442,7 +458,7 @@ describe('MarketplaceDetailRoute', () => {
     fireEvent.press(buyNow);
     fireEvent.press(buyNow);
 
-    expect(createMarketplaceOrder).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(createMarketplaceOrder).toHaveBeenCalledTimes(1));
     finishOrder();
     await waitFor(() => expect(createMarketplacePaymentIntent).toHaveBeenCalledTimes(1));
   });
@@ -596,6 +612,79 @@ describe('MarketplaceDetailRoute', () => {
       payment_method: 'time_credits',
     })));
     expect(createMarketplacePaymentIntent).not.toHaveBeenCalled();
+  });
+
+  it('recovers the original purchase after response loss and remount without starting payment', async () => {
+    const uuid = require('expo-crypto').randomUUID as jest.Mock;
+    uuid.mockReturnValueOnce('first-intent').mockReturnValueOnce('second-intent');
+    (createMarketplaceOrder as jest.Mock).mockRejectedValueOnce(new Error('Response lost'));
+    const first = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await first.findByText(/^Buy for /));
+    await first.findByTestId('marketplace-recover-purchase');
+    const firstPayload = (createMarketplaceOrder as jest.Mock).mock.calls[0][0];
+    first.unmount();
+    (getMarketplaceListing as jest.Mock).mockResolvedValue({ data: { ...mockListing, status: 'sold', quantity: 0 } });
+    const second = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await second.findByTestId('marketplace-recover-purchase'));
+    expect(createMarketplaceOrder).toHaveBeenCalledTimes(1);
+    (createMarketplaceOrder as jest.Mock).mockResolvedValueOnce({ data: { id: 44, order_number: 'MKT-44', status: 'pending_payment' } });
+    fireEvent.press(await second.findByTestId('marketplace-confirm-recovery'));
+    await waitFor(() => expect(require('expo-router').router.replace).toHaveBeenCalledWith({
+      pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases', order_id: '44' },
+    }));
+    expect((createMarketplaceOrder as jest.Mock).mock.calls[1][0]).toEqual(firstPayload);
+    expect(createMarketplacePaymentIntent).not.toHaveBeenCalled();
+    expect(mockCheckoutRecords.size).toBe(0);
+    uuid.mockReset().mockReturnValue('checkout-test-uuid');
+  });
+
+  it('does not send a purchase when its retry identity cannot be saved', async () => {
+    jest.mocked(SecureStore.setItemAsync).mockRejectedValueOnce(new Error('Storage locked'));
+    const screen = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await screen.findByText(/^Buy for /));
+    await waitFor(() => expect(showToast).toHaveBeenCalled());
+    expect(createMarketplaceOrder).not.toHaveBeenCalled();
+  });
+
+  it('lets a refused purchase be reviewed without rotating its retry key', async () => {
+    (createMarketplaceOrder as jest.Mock).mockRejectedValueOnce(new ApiResponseError(422, 'Choose another delivery option'));
+    const screen = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await screen.findByText(/^Buy for /));
+    fireEvent.press(await screen.findByTestId('marketplace-review-purchase'));
+    const key = (createMarketplaceOrder as jest.Mock).mock.calls[0][0].idempotency_key;
+    (createMarketplaceOrder as jest.Mock).mockResolvedValueOnce({ data: { id: 44, order_number: 'MKT-44', status: 'pending_payment' } });
+    (createMarketplacePaymentIntent as jest.Mock).mockRejectedValueOnce(new Error('Payment unavailable'));
+    fireEvent.press(await screen.findByText(/^Buy for /));
+    await waitFor(() => expect(createMarketplaceOrder).toHaveBeenCalledTimes(2));
+    expect((createMarketplaceOrder as jest.Mock).mock.calls[1][0].idempotency_key).toBe(key);
+    await waitFor(() => expect(createMarketplacePaymentIntent).toHaveBeenCalledWith(44));
+  });
+
+  it('opens a committed order without replaying checkout when its offer is no longer valid', async () => {
+    const storageKey = `nexus_marketplace_checkout_${JSON.stringify(['hour-timebank', 99, 9])}`;
+    mockCheckoutRecords.set(storageKey, JSON.stringify({ storageKey, key: 'mobile-earlier-offer-purchase', payload: { listing_id: 9, offer_id: 12 } }));
+    (getMarketplaceCheckoutOutcome as jest.Mock).mockResolvedValueOnce({ data: { order: { id: 44, order_number: 'MKT-44', status: 'paid' } } });
+    const screen = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await screen.findByTestId('marketplace-review-purchase'));
+    await waitFor(() => expect(require('expo-router').router.replace).toHaveBeenCalledWith({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases', order_id: '44' } }));
+    expect(createMarketplaceOrder).not.toHaveBeenCalled();
+    expect(createMarketplacePaymentIntent).not.toHaveBeenCalled();
+    expect(mockCheckoutRecords.size).toBe(0);
+  });
+
+  it('does not start payment or navigate when an old account order response arrives', async () => {
+    let resolveOrder!: (value: unknown) => void;
+    (createMarketplaceOrder as jest.Mock).mockImplementationOnce(() => new Promise(resolve => { resolveOrder = resolve; }));
+    const screen = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await screen.findByText(/^Buy for /));
+    await waitFor(() => expect(createMarketplaceOrder).toHaveBeenCalledTimes(1));
+    mockUserId = 100;
+    jest.mocked(storage.getJson).mockResolvedValue({ id: 100 });
+    screen.rerender(<MarketplaceDetailRoute />);
+    await act(async () => { resolveOrder({ data: { id: 44, order_number: 'MKT-44', status: 'pending_payment' } }); });
+    expect(createMarketplacePaymentIntent).not.toHaveBeenCalled();
+    expect(require('expo-router').router.push).not.toHaveBeenCalled();
+    expect(mockCheckoutRecords.size).toBe(1);
   });
 
   it('submits only the server-owned shipping option id with a stable idempotency key', async () => {

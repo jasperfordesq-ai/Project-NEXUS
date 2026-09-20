@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2737,
-  "api_route_rows": 2702,
-  "distinct_api_paths": 2247,
+  "total_registered_routes": 2738,
+  "api_route_rows": 2703,
+  "distinct_api_paths": 2248,
   "route_source_fingerprint": {
-    "digest": "17af615636ac34a7cd8219be69b112c8aa414805c8c583707a2684227cb691f2",
+    "digest": "5fc7daf471a25dc71c21e62a5a1566ed91467eac22f405982e9936b0a19c9084",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "843dd0a9fc539a8ef70eb601b65a00957deabb11e1c13cd52cb096f97e678381"
+        "sha256": "1267a73bd6a32db8f232d92680a82cd67670b9097860b661f2ab9513a4eed972"
       },
       {
         "file": "routes/channels.php",
@@ -5761,6 +5761,9 @@
       "PUT"
     ],
     "/api/v2/marketplace/orders": [
+      "POST"
+    ],
+    "/api/v2/marketplace/orders/checkout-outcome": [
       "POST"
     ],
     "/api/v2/marketplace/orders/deliveries": [

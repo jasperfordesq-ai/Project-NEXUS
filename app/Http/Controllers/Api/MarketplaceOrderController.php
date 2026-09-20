@@ -32,6 +32,28 @@ class MarketplaceOrderController extends BaseApiController
     //  Orders
     // -----------------------------------------------------------------
 
+    /** Look up a committed checkout without re-running purchase validation or payment. */
+    public function checkoutOutcome(): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->requireAuth();
+        $this->rateLimit('marketplace_order_read', 30, 60);
+        $data = request()->validate(['idempotency_key' => 'required|string|min:16|max:100']);
+        $order = MarketplaceOrder::withoutGlobalScopes()
+            ->where('tenant_id', TenantContext::getId())
+            ->where('buyer_id', $userId)
+            ->where('checkout_key', hash('sha256', trim($data['idempotency_key'])))
+            ->first();
+
+        // Absence is only a snapshot, not permission to rotate the key: an earlier
+        // request could still commit. Corrections must retain this purchase key.
+        return $this->respondWithData(['order' => $order ? [
+            'id' => (int) $order->id,
+            'order_number' => $order->order_number,
+            'status' => $order->status,
+        ] : null]);
+    }
+
     /**
      * POST /v2/marketplace/orders — Create order (buy now or from accepted offer).
      */

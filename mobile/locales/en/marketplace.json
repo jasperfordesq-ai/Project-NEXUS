@@ -557,7 +557,14 @@
     "paymentTakenHint": "We are still confirming order {{order}}. Do not pay again — check Orders in a minute.",
     "paymentCancelledTitle": "Payment cancelled",
     "paymentCancelledHint": "Order {{order}} is saved as unpaid. Finish or cancel it from Orders.",
-    "confirmTimeCredits_one": "{{count}} time credit will leave your wallet now for “{{title}}”. This cannot be undone."
+    "confirmTimeCredits_one": "{{count}} time credit will leave your wallet now for “{{title}}”. This cannot be undone.",
+    "recoveryTitle": "Recover an earlier purchase",
+    "recoveryHint": "An earlier checkout has no confirmed result. Check your orders or retry that purchase before starting another.",
+    "recoveryConfirm": "Retry the earlier purchase with its original payment and delivery choices. If it was not created, this may place the order and spend time credits. Card payment will continue separately from Orders.",
+    "recoveryRetry": "Retry earlier purchase",
+    "recoveryOrders": "View my orders",
+    "recoveryStorageError": "Your saved checkout could not be checked. Try again before starting another purchase.",
+    "recoveryReview": "Review purchase choices"
   },
   "communityDelivery": {
     "eyebrow": "Community-powered delivery",

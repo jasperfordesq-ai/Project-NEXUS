@@ -557,7 +557,14 @@
     "paymentTakenHint": "Wir bestätigen Bestellung {{order}} noch. Zahle nicht erneut — sieh in einer Minute unter Bestellungen nach.",
     "paymentCancelledTitle": "Zahlung abgebrochen",
     "paymentCancelledHint": "Bestellung {{order}} ist als unbezahlt gespeichert. Schließe sie unter Bestellungen ab oder storniere sie.",
-    "confirmTimeCredits_one": "{{count}} Zeitgutschrift wird jetzt für „{{title}}“ von deinem Konto abgebucht. Das kann nicht rückgängig gemacht werden."
+    "confirmTimeCredits_one": "{{count}} Zeitgutschrift wird jetzt für „{{title}}“ von deinem Konto abgebucht. Das kann nicht rückgängig gemacht werden.",
+    "recoveryTitle": "Früheren Kauf wiederherstellen",
+    "recoveryHint": "Für einen früheren Kauf liegt kein bestätigtes Ergebnis vor. Prüfe deine Bestellungen oder wiederhole diesen Kauf, bevor du einen neuen startest.",
+    "recoveryConfirm": "Wiederhole den früheren Kauf mit den ursprünglichen Zahlungs- und Lieferoptionen. Falls noch keine Bestellung erstellt wurde, kann diese Aktion eine Bestellung aufgeben und Zeitguthaben abbuchen. Kartenzahlungen werden separat unter Bestellungen fortgesetzt.",
+    "recoveryRetry": "Früheren Kauf wiederholen",
+    "recoveryOrders": "Meine Bestellungen",
+    "recoveryStorageError": "Dein gespeicherter Kauf konnte nicht geprüft werden. Versuche es erneut, bevor du einen neuen Kauf startest.",
+    "recoveryReview": "Kaufoptionen prüfen"
   },
   "communityDelivery": {
     "eyebrow": "Community-gestützte Lieferung",

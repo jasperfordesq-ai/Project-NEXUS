@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added an authenticated, buyer- and tenant-scoped marketplace checkout outcome lookup so native recovery can find an existing order without replaying checkout or payment.
+
 - Added atomic course section and lesson reorder APIs with expected-order checks, owner authorization, replay-safe target ordering, and transactional position updates.
 
 - Added an authorized, read-only offline attendance batch lookup for recovering saved client requests after a lost response, including batches outside recent history.
@@ -103,6 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Native marketplace checkout now retains purchase identity across reopening and offers explicit recovery with the original choices, including sold-out listings, without automatically restarting card payment.
 
 - Fixed the mobile bundle-budget export on Windows by reusing the bounded Node shutdown-crash retry wrapper. Ordinary export errors still fail; the size ceiling is unchanged.
 

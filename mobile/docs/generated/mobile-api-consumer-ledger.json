@@ -1,13 +1,13 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2247 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2248 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
     "api_modules": 60,
-    "call_sites": 675,
-    "distinct_endpoints": 531,
-    "verified": 531,
+    "call_sites": 676,
+    "distinct_endpoints": 532,
+    "verified": 532,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -513,12 +513,12 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:872",
+      "at": "marketplace.ts:879",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "marketplace.ts:873",
+      "at": "marketplace.ts:880",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     }
@@ -848,7 +848,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1201"
+        "marketplace.ts:1208"
       ]
     },
     {
@@ -857,7 +857,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1205"
+        "marketplace.ts:1212"
       ]
     },
     {
@@ -866,7 +866,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1209"
+        "marketplace.ts:1216"
       ]
     },
     {
@@ -875,7 +875,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1213"
+        "marketplace.ts:1220"
       ]
     },
     {
@@ -884,7 +884,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:892"
+        "marketplace.ts:899"
       ]
     },
     {
@@ -893,7 +893,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:246"
+        "courses.ts:247"
       ]
     },
     {
@@ -902,8 +902,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:348",
-        "courses.ts:349"
+        "courses.ts:349",
+        "courses.ts:350"
       ]
     },
     {
@@ -912,7 +912,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:258"
+        "courses.ts:259"
       ]
     },
     {
@@ -921,7 +921,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:357"
+        "courses.ts:358"
       ]
     },
     {
@@ -930,7 +930,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:534"
+        "courses.ts:535"
       ]
     },
     {
@@ -939,7 +939,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:462"
+        "courses.ts:463"
       ]
     },
     {
@@ -948,8 +948,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:466",
-        "courses.ts:467"
+        "courses.ts:467",
+        "courses.ts:468"
       ]
     },
     {
@@ -958,7 +958,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:270"
+        "courses.ts:271"
       ]
     },
     {
@@ -967,7 +967,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:518"
+        "courses.ts:519"
       ]
     },
     {
@@ -976,8 +976,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:409",
-        "courses.ts:410"
+        "courses.ts:410",
+        "courses.ts:411"
       ]
     },
     {
@@ -986,7 +986,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:429"
+        "courses.ts:430"
       ]
     },
     {
@@ -995,7 +995,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:422"
+        "courses.ts:423"
       ]
     },
     {
@@ -1004,7 +1004,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:285"
+        "courses.ts:286"
       ]
     },
     {
@@ -1013,7 +1013,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:266"
+        "courses.ts:267"
       ]
     },
     {
@@ -1022,7 +1022,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:361"
+        "courses.ts:362"
       ]
     },
     {
@@ -1031,8 +1031,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:435",
-        "courses.ts:436"
+        "courses.ts:436",
+        "courses.ts:437"
       ]
     },
     {
@@ -1041,8 +1041,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:450",
-        "courses.ts:454"
+        "courses.ts:451",
+        "courses.ts:455"
       ]
     },
     {
@@ -1051,8 +1051,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:369",
-        "courses.ts:370"
+        "courses.ts:370",
+        "courses.ts:371"
       ]
     },
     {
@@ -1061,7 +1061,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:403"
+        "courses.ts:404"
       ]
     },
     {
@@ -1070,7 +1070,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:382"
+        "courses.ts:383"
       ]
     },
     {
@@ -1079,7 +1079,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:397"
+        "courses.ts:398"
       ]
     },
     {
@@ -1088,7 +1088,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:391"
+        "courses.ts:392"
       ]
     },
     {
@@ -1097,7 +1097,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:365"
+        "courses.ts:366"
       ]
     },
     {
@@ -1106,7 +1106,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:526"
+        "courses.ts:527"
       ]
     },
     {
@@ -1115,7 +1115,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:339"
+        "courses.ts:340"
       ]
     },
     {
@@ -1124,7 +1124,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:344"
+        "courses.ts:345"
       ]
     },
     {
@@ -1133,7 +1133,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:310"
+        "courses.ts:311"
       ]
     },
     {
@@ -1142,7 +1142,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:327"
+        "courses.ts:328"
       ]
     },
     {
@@ -1951,7 +1951,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:109"
+        "groupExchanges.ts:110"
       ]
     },
     {
@@ -1960,7 +1960,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:117"
+        "groupExchanges.ts:118"
       ]
     },
     {
@@ -1969,7 +1969,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:129"
+        "groupExchanges.ts:130"
       ]
     },
     {
@@ -1978,7 +1978,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:113"
+        "groupExchanges.ts:114"
       ]
     },
     {
@@ -1987,7 +1987,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:125"
+        "groupExchanges.ts:126"
       ]
     },
     {
@@ -1996,7 +1996,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groupExchanges.ts:121"
+        "groupExchanges.ts:122"
       ]
     },
     {
@@ -3098,7 +3098,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1017"
+        "marketplace.ts:1024"
       ]
     },
     {
@@ -3107,7 +3107,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1025"
+        "marketplace.ts:1032"
       ]
     },
     {
@@ -3116,7 +3116,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1029"
+        "marketplace.ts:1036"
       ]
     },
     {
@@ -3125,7 +3125,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1040"
+        "marketplace.ts:1047"
       ]
     },
     {
@@ -3134,7 +3134,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1044"
+        "marketplace.ts:1051"
       ]
     },
     {
@@ -3143,7 +3143,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1051"
+        "marketplace.ts:1058"
       ]
     },
     {
@@ -3152,7 +3152,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:991"
+        "marketplace.ts:998"
       ]
     },
     {
@@ -3161,7 +3161,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:995"
+        "marketplace.ts:1002"
       ]
     },
     {
@@ -3234,7 +3234,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1063"
+        "marketplace.ts:1070"
       ]
     },
     {
@@ -3333,7 +3333,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1144"
+        "marketplace.ts:1151"
       ]
     },
     {
@@ -3478,7 +3478,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:877"
+        "marketplace.ts:884"
       ]
     },
     {
@@ -3509,6 +3509,15 @@
       ]
     },
     {
+      "http": "POST",
+      "endpoint": "/api/v2/marketplace/orders/checkout-outcome",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "marketplace.ts:852"
+      ]
+    },
+    {
       "http": "GET",
       "endpoint": "/api/v2/marketplace/orders/deliveries",
       "status": "verified",
@@ -3523,7 +3532,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:855"
+        "marketplace.ts:862"
       ]
     },
     {
@@ -3541,7 +3550,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1059"
+        "marketplace.ts:1066"
       ]
     },
     {
@@ -3550,7 +3559,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1055"
+        "marketplace.ts:1062"
       ]
     },
     {
@@ -3559,7 +3568,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:999"
+        "marketplace.ts:1006"
       ]
     },
     {
@@ -3568,7 +3577,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1009"
+        "marketplace.ts:1016"
       ]
     },
     {
@@ -3577,7 +3586,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1013"
+        "marketplace.ts:1020"
       ]
     },
     {
@@ -3586,7 +3595,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:936"
+        "marketplace.ts:943"
       ]
     },
     {
@@ -3595,7 +3604,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1152"
+        "marketplace.ts:1159"
       ]
     },
     {
@@ -3604,7 +3613,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1169"
+        "marketplace.ts:1176"
       ]
     },
     {
@@ -3613,7 +3622,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1193"
+        "marketplace.ts:1200"
       ]
     },
     {
@@ -3622,7 +3631,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1189"
+        "marketplace.ts:1196"
       ]
     },
     {
@@ -3631,7 +3640,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1197"
+        "marketplace.ts:1204"
       ]
     },
     {
@@ -3640,7 +3649,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:966"
+        "marketplace.ts:973"
       ]
     },
     {
@@ -3649,7 +3658,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:947"
+        "marketplace.ts:954"
       ]
     },
     {
@@ -3658,7 +3667,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:932"
+        "marketplace.ts:939"
       ]
     },
     {
@@ -3667,7 +3676,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:943"
+        "marketplace.ts:950"
       ]
     },
     {
@@ -3676,7 +3685,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1148"
+        "marketplace.ts:1155"
       ]
     },
     {
@@ -3685,7 +3694,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1069"
+        "marketplace.ts:1076"
       ]
     },
     {
@@ -3694,7 +3703,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1122"
+        "marketplace.ts:1129"
       ]
     },
     {
@@ -3703,7 +3712,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1140"
+        "marketplace.ts:1147"
       ]
     },
     {
@@ -3712,7 +3721,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1136"
+        "marketplace.ts:1143"
       ]
     },
     {
@@ -3721,7 +3730,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1073"
+        "marketplace.ts:1080"
       ]
     },
     {
@@ -3730,7 +3739,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1092"
+        "marketplace.ts:1099"
       ]
     },
     {
@@ -3739,7 +3748,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1111"
+        "marketplace.ts:1118"
       ]
     },
     {
@@ -3748,7 +3757,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1107"
+        "marketplace.ts:1114"
       ]
     },
     {
@@ -3757,7 +3766,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:951"
+        "marketplace.ts:958"
       ]
     },
     {
@@ -3766,7 +3775,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:962"
+        "marketplace.ts:969"
       ]
     },
     {
@@ -3775,7 +3784,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:1079"
+        "marketplace.ts:1086"
       ]
     },
     {
@@ -3829,7 +3838,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "courses.ts:262"
+        "courses.ts:263"
       ]
     },
     {
@@ -3883,7 +3892,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:928"
+        "marketplace.ts:935"
       ]
     },
     {
@@ -3892,7 +3901,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:900"
+        "marketplace.ts:907"
       ]
     },
     {
@@ -3901,7 +3910,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:910"
+        "marketplace.ts:917"
       ]
     },
     {
@@ -3910,7 +3919,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:917"
+        "marketplace.ts:924"
       ]
     },
     {
@@ -3919,7 +3928,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "marketplace.ts:924"
+        "marketplace.ts:931"
       ]
     },
     {
