@@ -99,6 +99,7 @@ export interface Course {
   enrollment_count: number;
   author?: { id: number; name: string; avatar_url?: string | null };
   sections?: CourseSection[];
+  unassigned_lessons?: CourseLesson[];
   is_enrolled?: boolean;
   /**
    * Authoring fields. Optional because an enrolment embeds only a partial course,

@@ -171,7 +171,7 @@ function CourseDetailScreenInner() {
               </View>
             ) : null}
             <Text className="mb-3 text-lg font-bold" style={{ color: theme.text }}>{t('detail.syllabus')}</Text>
-            {(course.sections ?? []).length === 0 ? <Text style={{ color: theme.textSecondary }}>{t('detail.no_lessons')}</Text> : course.sections?.map((section) => (
+            {(course.sections ?? []).length === 0 && !(course.unassigned_lessons?.length) ? <Text style={{ color: theme.textSecondary }}>{t('detail.no_lessons')}</Text> : course.sections?.map((section) => (
               <HeroCard key={section.id} className="mb-3 rounded-panel">
                 <HeroCard.Body className="gap-2 p-4">
                   <Text className="font-bold" style={{ color: theme.text }}>{section.title}</Text>
@@ -179,6 +179,13 @@ function CourseDetailScreenInner() {
                 </HeroCard.Body>
               </HeroCard>
             ))}
+            {course.unassigned_lessons?.length ? (
+              <HeroCard className="mb-3 rounded-panel">
+                <HeroCard.Body className="gap-2 p-4">
+                  {course.unassigned_lessons.map((lesson) => <Text key={lesson.id} style={{ color: theme.textSecondary }}>• {lesson.title}</Text>)}
+                </HeroCard.Body>
+              </HeroCard>
+            ) : null}
           </ScrollView>
         )}
         {course && !refused ? confirmDialog : null}

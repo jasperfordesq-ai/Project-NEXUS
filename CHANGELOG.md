@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native courses:** Keep lessons preserved after section deletion visible in the course syllabus and player, including existing lesson availability restrictions. Course detail responses now include unassigned lessons for both ID and slug lookups.
+
 - Native curriculum moves now use atomic ordering, wait for confirmed results, and read back uncertain saves before allowing another move; recovery preserves lesson drafts and independently saved curriculum changes.
 
 - Native course section renames now save in order and preserve other successfully saved curriculum changes when a rename fails; failed title edits remain available to retry.

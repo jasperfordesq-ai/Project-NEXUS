@@ -54,6 +54,14 @@ describe('CourseDetailScreen', () => {
     expect(screen.queryByText('Enroll')).toBeNull();
   });
 
+  it('includes preserved unassigned lessons in the syllabus', async () => {
+    const course = await getCourse('basics');
+    jest.mocked(getCourse).mockResolvedValue({ ...course, sections: [], unassigned_lessons: [{ id: 12, course_id: 7, section_id: null, title: 'Preserved lesson', content_type: 'text', position: 0, is_preview: false }] });
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('• Preserved lesson')).toBeTruthy());
+    expect(screen.queryByText('detail.no_lessons')).toBeNull();
+  });
+
   it('does not submit a paid enrolment from a confirmation after leaving the screen', async () => {
     const course = await getCourse('basics');
     jest.mocked(getCourse).mockResolvedValue({ ...course, credit_cost: 2 });

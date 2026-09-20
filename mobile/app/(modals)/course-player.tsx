@@ -101,7 +101,10 @@ function CoursePlayerScreenInner() {
   const canSaveRef = useRef(false);
   canSaveRef.current = Boolean(courseState.data && progressState.data && !refused);
   const lessons = useMemo(
-    () => courseState.data?.sections?.flatMap((section) => section.lessons ?? []) ?? [],
+    () => [
+      ...(courseState.data?.sections?.flatMap((section) => section.lessons ?? []) ?? []),
+      ...(courseState.data?.unassigned_lessons ?? []),
+    ],
     [courseState.data],
   );
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);

@@ -92,13 +92,13 @@ class CourseService
 
     public static function findById(int $id): ?Course
     {
-        return Course::with(['category', 'author:id,name,avatar_url', 'sections.lessons.quiz'])->find($id);
+        return Course::with(['category', 'author:id,name,avatar_url', 'sections.lessons.quiz', 'unassignedLessons.quiz'])->find($id);
     }
 
     public static function findBySlug(string $slug): ?Course
     {
         return Course::where('slug', $slug)
-            ->with(['category', 'author:id,name,avatar_url', 'sections.lessons.quiz'])
+            ->with(['category', 'author:id,name,avatar_url', 'sections.lessons.quiz', 'unassignedLessons.quiz'])
             ->first();
     }
 

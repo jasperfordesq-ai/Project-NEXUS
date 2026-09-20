@@ -36,6 +36,24 @@ describe('CoursePlayerScreen', () => {
     jest.mocked(completeCourseLesson).mockResolvedValue({ progress_percent: 100, course_completed: true });
   });
 
+  it.each([true, false])('keeps an unassigned lesson in the player with its existing availability (available=%s)', async (available) => {
+    const course = await getCourse(7);
+    jest.mocked(getCourse).mockResolvedValue({ ...course, sections: [], unassigned_lessons: [{
+      id: 12, course_id: 7, section_id: null, title: 'Preserved lesson', content_type: 'text', body: 'Retained learning material', position: 0, is_preview: false,
+    }] });
+    jest.mocked(getCourseProgress).mockResolvedValue({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [{ lesson_id: 12, available, unlock_at: null }] });
+    const screen = render(<CoursePlayerScreen />);
+    if (available) {
+      await waitFor(() => expect(screen.getByText('Retained learning material')).toBeTruthy());
+      fireEvent.press(screen.getByText('Mark as complete'));
+      await waitFor(() => expect(completeCourseLesson).toHaveBeenCalledWith(7, 12, 100));
+    } else {
+      await waitFor(() => expect(screen.getByTestId('lesson-locked')).toBeTruthy());
+      expect(screen.queryByText('Retained learning material')).toBeNull();
+      expect(completeCourseLesson).not.toHaveBeenCalled();
+    }
+  });
+
   it('stacks lesson navigation at large text', async () => {
     const dimensions = jest.spyOn(ReactNative, 'useWindowDimensions').mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
     const screen = render(<CoursePlayerScreen />);

@@ -101,6 +101,28 @@ class CourseControllerTest extends TestCase
         return $course;
     }
 
+    public function test_deleted_section_lessons_remain_visible_and_can_be_reassigned(): void
+    {
+        $this->enableCourses();
+        $owner = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $owner]);
+        $section = CourseSection::create(['course_id' => $course->id, 'title' => 'Original']);
+        $lesson = CourseLesson::create(['course_id' => $course->id, 'section_id' => $section->id, 'title' => 'Preserved lesson', 'content_type' => 'text', 'body' => 'Retained learning material']);
+        $this->apiDelete('/v2/courses/' . $course->id . '/sections/' . $section->id)->assertOk();
+        $this->assertNull($lesson->fresh()->section_id);
+        foreach ([$course->id, $course->slug] as $identifier) {
+            $this->apiGet('/v2/courses/' . $identifier)->assertOk()
+                ->assertJsonPath('data.sections', [])
+                ->assertJsonPath('data.unassigned_lessons.0.id', $lesson->id)
+                ->assertJsonPath('data.unassigned_lessons.0.body', 'Retained learning material');
+        }
+        $replacement = CourseSection::create(['course_id' => $course->id, 'title' => 'Replacement']);
+        $this->apiPut('/v2/courses/' . $course->id . '/lessons/' . $lesson->id, ['section_id' => $replacement->id])->assertOk();
+        $this->apiGet('/v2/courses/' . $course->id)->assertOk()
+            ->assertJsonPath('data.unassigned_lessons', [])
+            ->assertJsonPath('data.sections.0.lessons.0.id', $lesson->id);
+    }
+
     public function test_curriculum_section_order_is_atomic_replayable_and_rejects_stale_or_invalid_sets(): void
     {
         $this->enableCourses();

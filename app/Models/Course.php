@@ -80,6 +80,11 @@ class Course extends Model
         return $this->hasMany(CourseLesson::class)->orderBy('position');
     }
 
+    public function unassignedLessons(): HasMany
+    {
+        return $this->hasMany(CourseLesson::class)->whereNull('section_id')->orderBy('position')->orderBy('id');
+    }
+
     public function enrollments(): HasMany
     {
         return $this->hasMany(CourseEnrollment::class);
