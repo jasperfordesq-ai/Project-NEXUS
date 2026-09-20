@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added lifecycle guards for native guest-attendance operations: obsolete callbacks cannot act after account, event, guest, permission or foreground changes, and duplicate taps cannot start overlapping requests. Guest-screen integration remains pending.
+
 - Added durable native guest-attendance recovery: save requests before sending, preserve the original key after uncertain outcomes, and explicitly review rejected versions without storing guest contact details. Organiser screen integration remains pending.
 
 - Native organiser guest-management API support now includes paginated guest records and versioned attendance actions, with separate roster/contact permissions and a required reason for undo. The organiser screen is still pending.
