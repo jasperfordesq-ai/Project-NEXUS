@@ -52,7 +52,7 @@ function ImageViewerScreenInner() {
       <SafeAreaView style={{ flex: 1 }}>
         <Surface
           variant="default"
-          className="absolute left-4 right-4 top-2 z-10 flex-row items-center justify-between rounded-panel-inner px-2 py-2"
+          className="mx-4 mt-2 flex-row items-center justify-between rounded-panel-inner px-2 py-2"
           style={{ backgroundColor: 'rgba(0,0,0,0.52)' }}
         >
           <HeroButton
