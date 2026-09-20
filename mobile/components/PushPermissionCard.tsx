@@ -41,16 +41,17 @@ import { isPushPermissionGranted, registerForPushNotifications } from '@/lib/not
 import { storage } from '@/lib/storage';
 import { withAlpha } from '@/lib/utils/color';
 
-type CardState = 'checking' | 'hidden' | 'offer' | 'blocked';
+type CardState = 'checking' | 'hidden' | 'offer' | 'blocked' | 'error';
 
 export default function PushPermissionCard() {
   const { t } = useTranslation(['notifications', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const [state, setState] = useState<CardState>('checking');
-  const [workingAction, setWorkingAction] = useState<'enable' | 'dismiss' | null>(null);
+  const [workingAction, setWorkingAction] = useState<'check' | 'enable' | 'dismiss' | null>(null);
   const isWorking = workingAction !== null;
   const working = useRef(false);
+  const checkVersion = useRef(0);
   // Guards a late resolve after the member has navigated away.
   const isMountedRef = useRef(true);
 
@@ -61,26 +62,40 @@ export default function PushPermissionCard() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
+  const checkPermission = useCallback(async () => {
+    if (!isMountedRef.current || working.current) return;
+    working.current = true;
+    const version = ++checkVersion.current;
+    const isCurrent = () => isMountedRef.current && version === checkVersion.current;
+    setWorkingAction('check');
+    try {
       const decision = await storage.get(STORAGE_KEYS.PUSH_PROMPT_DECISION);
-      if (cancelled) return;
+      if (!isCurrent()) return;
       if (decision) {
         setState('hidden');
         return;
       }
 
       const granted = await isPushPermissionGranted();
-      if (cancelled) return;
+      if (!isCurrent()) return;
       setState(granted ? 'hidden' : 'offer');
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    } catch {
+      if (isCurrent()) setState('error');
+    } finally {
+      if (isCurrent()) {
+        working.current = false;
+        setWorkingAction(null);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    void checkPermission();
+    return () => {
+      checkVersion.current += 1;
+      working.current = false;
+    };
+  }, [checkPermission]);
 
   const handleEnable = useCallback(async () => {
     if (!isMountedRef.current || working.current) return;
@@ -152,13 +167,18 @@ export default function PushPermissionCard() {
             {isBlocked ? t('notifications:permissionCard.blockedTitle') : t('notifications:permissionCard.title')}
           </Text>
           <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} maxFontSizeMultiplier={1.8}>
-            {isBlocked ? t('notifications:permissionCard.blockedBody') : t('notifications:permissionCard.body')}
+            {state === 'error' ? t('common:errors.generic') : isBlocked ? t('notifications:permissionCard.blockedBody') : t('notifications:permissionCard.body')}
           </Text>
         </View>
       </View>
 
       <View className="flex-row gap-2">
-        {isBlocked ? (
+        {state === 'error' ? (
+          <Button size="sm" isLoading={workingAction === 'check'} onPress={() => void checkPermission()}
+            accessibilityLabel={t('common:buttons.retry')} testID="push-permission-retry">
+            {t('common:buttons.retry')}
+          </Button>
+        ) : isBlocked ? (
           <Button size="sm" onPress={handleOpenSettings} testID="push-permission-settings">
             {t('notifications:permissionCard.openSettings')}
           </Button>

@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native notification permission checks now show a retryable error when the device cannot read permission state. Retry honours saved choices without opening a permission prompt or recording a new decision.
+
 - Native notification permission choices prevent duplicate permission requests and conflicting dismissals, with progress shown on the selected action.
 
 - Native offline banners reserve measured layout space above navigation, including enlarged text. Feedback defaults above an open keyboard so validation messages remain visible.

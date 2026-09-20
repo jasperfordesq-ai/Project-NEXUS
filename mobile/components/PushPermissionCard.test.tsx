@@ -66,6 +66,25 @@ describe('PushPermissionCard', () => {
     expect(await screen.findByTestId('push-permission-card')).toBeTruthy();
   });
 
+  it.each([true, false])('recovers a failed permission read without asking or saving a decision (granted=%s)', async (granted) => {
+    mockIsPushPermissionGranted.mockRejectedValueOnce(new Error('Native permission read failed'));
+    render(<PushPermissionCard />);
+    expect(await screen.findByText('Something went wrong. Please try again.')).toBeTruthy();
+    expect(screen.queryByTestId('push-permission-enable')).toBeNull();
+    expect(screen.queryByTestId('push-permission-settings')).toBeNull();
+    let finish!: (value: boolean) => void;
+    mockIsPushPermissionGranted.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    const retry = screen.getByTestId('push-permission-retry');
+    await act(async () => { fireEvent.press(retry); fireEvent.press(retry); });
+    expect(mockIsPushPermissionGranted).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('push-permission-retry').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    await act(async () => { finish(granted); });
+    if (granted) expect(screen.queryByTestId('push-permission-card')).toBeNull();
+    else expect(screen.getByTestId('push-permission-enable')).toBeTruthy();
+    expect(mockRegisterForPushNotifications).not.toHaveBeenCalled();
+    expect(mockStorageSet).not.toHaveBeenCalled();
+  });
+
   it('runs one permission request and ignores dismissal while it is pending', async () => {
     let finish!: (result: string) => void;
     mockRegisterForPushNotifications.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
@@ -81,6 +100,18 @@ describe('PushPermissionCard', () => {
     await act(async () => { finish('registered'); });
     expect(requests).toBe(1);
     expect(mockStorageSet.mock.calls).toEqual([['nexus_push_prompt_decision', 'asked']]);
+  });
+
+  it('honours a saved decision on recovery without reading permission again', async () => {
+    mockIsPushPermissionGranted.mockRejectedValueOnce(new Error('Read failed'));
+    render(<PushPermissionCard />);
+    const retry = await screen.findByTestId('push-permission-retry');
+    mockStorageGet.mockResolvedValueOnce('dismissed');
+    await act(async () => { fireEvent.press(retry); });
+    expect(screen.queryByTestId('push-permission-card')).toBeNull();
+    expect(mockIsPushPermissionGranted).toHaveBeenCalledTimes(1);
+    expect(mockRegisterForPushNotifications).not.toHaveBeenCalled();
+    expect(mockStorageSet).not.toHaveBeenCalled();
   });
 
   it('keeps dismissal in progress and prevents a simultaneous permission request', async () => {
