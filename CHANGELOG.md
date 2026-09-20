@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile connection decisions update promptly without waiting for vibration; departing the screen prevents subsequent recovery reads and delayed error feedback.
+
 - Mobile connections retain loaded members and confirmed decisions during refresh recovery; Retry resumes a failed later page without discarding earlier connections.
 
 - Mobile activity history keeps loaded totals and timeline visible during refresh recovery, offers retry after failure, and waits for successful loading before displaying totals.

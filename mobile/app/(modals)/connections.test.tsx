@@ -160,6 +160,52 @@ function paginated(overrides: Partial<{
 }
 
 describe('ConnectionsRoute', () => {
+  it('applies a confirmed acceptance without waiting for device feedback', async () => {
+    const { acceptConnection } = require('@/lib/api/connections');
+    const { notificationAsync } = require('@/lib/haptics');
+    let finishFeedback!: () => void;
+    notificationAsync.mockImplementationOnce(() => new Promise<void>(resolve => { finishFeedback = resolve; }));
+    acceptConnection.mockResolvedValueOnce({ data: {} });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{ ...connection, status: 'pending' }] }));
+    const screen = render(<ConnectionsRoute />);
+    fireEvent.press(screen.getByText('Received'));
+    await act(async () => fireEvent.press(screen.getByText('Accept')));
+    const remainedVisible = screen.queryByText('Katherine') !== null;
+    await act(async () => finishFeedback());
+    expect(remainedVisible).toBe(false);
+  });
+
+  it('does not start relationship recovery after the screen has departed', async () => {
+    const { acceptConnection, getConnectionStatus } = require('@/lib/api/connections');
+    let fail!: (error: Error) => void;
+    acceptConnection.mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject; }));
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{ ...connection, status: 'pending' }] }));
+    const screen = render(<ConnectionsRoute />);
+    fireEvent.press(screen.getByText('Received'));
+    fireEvent.press(screen.getByText('Accept'));
+    screen.unmount();
+    await act(async () => fail(new Error('Response lost')));
+    expect(getConnectionStatus).not.toHaveBeenCalled();
+  });
+
+  it('does not display delayed failure feedback after departure', async () => {
+    const { acceptConnection, getConnectionStatus } = require('@/lib/api/connections');
+    const { notificationAsync } = require('@/lib/haptics');
+    const { show } = require('@/components/ui/AppToast').useAppToast();
+    let finishFeedback!: () => void;
+    notificationAsync.mockImplementationOnce(() => new Promise<void>(resolve => { finishFeedback = resolve; }));
+    acceptConnection.mockRejectedValueOnce(new Error('Request failed'));
+    getConnectionStatus.mockResolvedValueOnce({ data: { status: 'pending_received' } });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{ ...connection, status: 'pending' }] }));
+    const screen = render(<ConnectionsRoute />);
+    fireEvent.press(screen.getByText('Received'));
+    await act(async () => fireEvent.press(screen.getByText('Accept')));
+    screen.unmount();
+    show.mockClear();
+    await act(async () => finishFeedback());
+    expect(show).not.toHaveBeenCalled();
+  });
+
   it('retries the failed connection page while retaining earlier members', async () => {
     mockRealRead = true;
     const { getConnections } = require('@/lib/api/connections');

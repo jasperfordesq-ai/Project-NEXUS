@@ -193,6 +193,7 @@ function ConnectionsScreen() {
           await removeConnection(id, tab === 'pending_sent' ? 'pending' : 'accepted');
         }
       } catch (error) {
+        if (!isMountedRef.current) return;
         // A transport failure can arrive after Laravel committed the decision. Read the
         // relationship back before asking the member to retry an operation that already
         // succeeded (and would otherwise return 404/409 on the next attempt).
@@ -215,7 +216,7 @@ function ConnectionsScreen() {
         if (!committed) throw error;
       }
       if (!isMountedRef.current) return;
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       // Drop the row here rather than reloading, which would discard every page after the
       // first. See `actedOnIds`.
       if (currentTabRef.current === tab) {
@@ -223,7 +224,7 @@ function ConnectionsScreen() {
       }
     } catch (err) {
       if (!isMountedRef.current) return;
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('connections.actionFailedTitle'), description: describeApiError(err, t('connections.actionFailedDescription')), variant: 'danger' });
     } finally {
       actionPendingRef.current = false;
