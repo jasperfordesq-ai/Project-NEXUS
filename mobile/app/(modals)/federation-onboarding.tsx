@@ -20,6 +20,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AppTopBar from '@/components/ui/AppTopBar';
+import ErrorState from '@/components/ui/ErrorState';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -73,6 +74,8 @@ function FederationOnboardingScreen() {
   const [settings, setSettings] = useState<FederationSettings>(defaultSettings);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  const [settingsFailed, setSettingsFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   /*
     🔴 Re-opening this wizard used to silently switch every privacy control back ON.
@@ -89,6 +92,8 @@ function FederationOnboardingScreen() {
   */
   useEffect(() => {
     let cancelled = false;
+    setIsLoadingSettings(true);
+    setSettingsFailed(false);
     getFederationSettings()
       .then((response) => {
         if (cancelled) return;
@@ -96,19 +101,21 @@ function FederationOnboardingScreen() {
         if (existing) setSettings((current) => ({ ...current, ...existing }));
       })
       .catch(() => {
-        // Absent settings mean a first-time set-up; the defaults above are the right start.
+        // A failed read cannot establish that this member has no saved preferences.
+        if (!cancelled) setSettingsFailed(true);
       })
       .finally(() => {
         if (!cancelled) setIsLoadingSettings(false);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [loadAttempt]);
 
   function updateSetting(key: keyof FederationSettings, value: boolean | FederationSettings['service_reach']) {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
   async function finish() {
+    if (isLoadingSettings || settingsFailed) return;
     setIsSaving(true);
     try {
       await setupFederation(settings);
@@ -145,6 +152,8 @@ function FederationOnboardingScreen() {
             </View>
           </HeroCard.Body>
         </HeroCard>
+
+        {settingsFailed ? <ErrorState testID="federation-onboarding-load-error" onRetry={() => setLoadAttempt((value) => value + 1)} /> : null}
 
         {step === 0 ? (
           <View className="gap-3">
@@ -234,7 +243,7 @@ function FederationOnboardingScreen() {
           </HeroButton>
           {/* Held until the member's existing choices have arrived, so a fast Finish cannot
               post the all-on defaults over them (G/F-13). */}
-          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving || isLoadingSettings} testID="federation-onboarding-next">
+          <HeroButton className="flex-1" variant="primary" onPress={step === 3 ? finish : () => setStep((value) => Math.min(3, value + 1) as Step)} isDisabled={isSaving || isLoadingSettings || settingsFailed} testID="federation-onboarding-next">
             {isSaving ? <Spinner size="sm" /> : <AccentIcon name={step === 3 ? 'checkmark-outline' : 'arrow-forward-outline'} size={16} />}
             <HeroButton.Label>{step === 3 ? t('directory.onboarding.finish') : t('directory.onboarding.next')}</HeroButton.Label>
           </HeroButton>

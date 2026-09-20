@@ -17,6 +17,7 @@ jest.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'common:back': 'Back',
+        'common:buttons.retry': 'Try again',
         'directory.onboarding.eyebrow': 'Federation setup',
         'directory.onboarding.title': 'Federation Setup',
         'directory.onboarding.subtitle': 'Choose what you share with partner communities.',
@@ -171,3 +172,23 @@ describe('FederationOnboardingRoute', () => {
     })));
   });
 });
+
+ it('keeps setup blocked after a settings read fails', async () => {
+    mockGetFederationSettings.mockRejectedValue(new Error('offline'));
+    const screen = render(<FederationOnboardingRoute />);
+    await waitFor(() => expect(screen.getByTestId('federation-onboarding-load-error')).toBeTruthy());
+    expect(screen.getByTestId('federation-onboarding-next').props.accessibilityState?.disabled).toBe(true);
+  });
+
+ it('reloads existing choices after a failed read before allowing setup', async () => {
+    mockGetFederationSettings.mockRejectedValueOnce(new Error('offline')).mockResolvedValue({ data: { settings: { show_location_federated: false }, enabled: true } });
+    const screen = render(<FederationOnboardingRoute />);
+    await waitFor(() => expect(screen.getByTestId('federation-onboarding-load-error')).toBeTruthy());
+    fireEvent.press(screen.getByText('Try again'));
+    await waitFor(() => expect(screen.getByTestId('federation-onboarding-next').props.accessibilityState?.disabled).toBeFalsy());
+    fireEvent.press(screen.getByText('Next'));
+    fireEvent.press(screen.getByText('Next'));
+    fireEvent.press(screen.getByText('Next'));
+    fireEvent.press(screen.getByText('Enable federation'));
+    await waitFor(() => expect(setupFederation).toHaveBeenLastCalledWith(expect.objectContaining({ show_location_federated: false })));
+ });
