@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native form field labels and action-footer guidance now remeasure after system font-size changes without resetting inputs or drafts.
+
 - Corrected the native group-exchange draft exit warning to use shared translated unsaved-change wording instead of calling the exchange a listing.
 
 - Native confirmation dialogs now dismiss when their screen loses focus, preventing stale actions from appearing over a newly opened deep link.

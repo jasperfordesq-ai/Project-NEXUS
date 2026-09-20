@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { View } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Spinner, Surface, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -35,6 +35,9 @@ export default function FormActionFooter({
   onSecondary?: () => void;
 }) {
   const theme = useTheme();
+  // Recreate only text nodes after a system font change so native measurement
+  // uses the new scale. Keep input, form, and navigation state mounted.
+  const { fontScale } = useWindowDimensions();
 
   /**
    * 🔴 The actions ALWAYS sit below the text, and they wrap. Both halves of that were
@@ -78,10 +81,10 @@ export default function FormActionFooter({
           about one axis, and turning the container silently repurposes it.
         */}
         <View>
-          <Text className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={1}>
+          <Text key={`title-${fontScale}`} className="text-sm font-bold" style={{ color: theme.text }} numberOfLines={1}>
             {title}
           </Text>
-          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
+          <Text key={`subtitle-${fontScale}`} className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>
             {subtitle}
           </Text>
         </View>

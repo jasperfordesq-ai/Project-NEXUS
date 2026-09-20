@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React, { forwardRef } from 'react';
-import { TextInput, View, type TextInputProps } from 'react-native';
+import { TextInput, View, useWindowDimensions, type TextInputProps } from 'react-native';
 import { useSheetFormFocus } from './sheetFormFocus';
 import {
   Description,
@@ -55,6 +55,9 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
   },
   ref,
 ) {
+  // Recreate only text nodes after a system font change so native measurement
+  // uses the new scale. Keep input, form, and navigation state mounted.
+  const { fontScale } = useWindowDimensions();
   const isDisabled = editable === false;
   const sheetFocus = useSheetFormFocus(ref);
   // HeroUI Native inputs need to tell Gorhom when they receive focus. Without
@@ -91,7 +94,7 @@ const Input = forwardRef<TextInput, InputProps>(function Input(
   return (
     <TextField isInvalid={!!error} isDisabled={isDisabled} className={containerClasses}>
       {label ? (
-        <Label focusable={false} className="mb-1.5 text-sm font-semibold">{label}</Label>
+        <Label key={fontScale} focusable={false} className="mb-1.5 text-sm font-semibold">{label}</Label>
       ) : null}
       <View className="w-full flex-row items-center">
         {leftIcon ? (
