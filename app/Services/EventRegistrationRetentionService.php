@@ -81,6 +81,10 @@ final class EventRegistrationRetentionService
             if ($replay !== null) {
                 return ['run' => $this->runModel($tenantId, (int) $replay->id), 'changed' => false];
             }
+            if (! DB::table('event_registration_settings')
+                ->where('tenant_id', $tenantId)->where('event_id', $eventId)->exists()) {
+                throw new EventRegistrationFoundationException('event_registration_retention_settings_required');
+            }
             if ($asOfUtc->lessThan($this->support->eventEnd($event))) {
                 throw new EventRegistrationFoundationException('event_registration_retention_post_event_only');
             }

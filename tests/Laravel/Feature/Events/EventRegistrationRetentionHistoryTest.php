@@ -75,4 +75,21 @@ final class EventRegistrationRetentionHistoryTest extends TestCase
             ->assertOk()->assertJsonPath('data.runs', [])->assertJsonPath('data.pagination.total', 0)
             ->assertJsonPath('data.pagination.from', null)->assertJsonPath('data.pagination.has_more', false);
     }
+    public function test_preview_requires_settings_without_reserving_the_request_key(): void
+    {
+        $owner = $this->eventUser();
+        [$eventId, $start, $end] = $this->registrationEvent((int) $owner->id);
+        Sanctum::actingAs($owner, ['*']);
+        $url = "/v2/events/{$eventId}/registration-product/retention/dry-run";
+        $input = ['as_of' => $end->addDay()->toIso8601String(), 'idempotency_key' => 'configure-before-retention'];
+        $this->apiPost($url, $input)->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_REGISTRATION_VALIDATION_FAILED')
+            ->assertJsonPath('errors.0.field', 'registration_settings');
+        self::assertSame(0, \Illuminate\Support\Facades\DB::table('event_registration_retention_runs')->where('event_id', $eventId)->count());
+        $this->registrationSettings($eventId, $owner, $start);
+        $this->apiPost($url, $input)->assertCreated()->assertJsonPath('data.run.mode', 'dry_run');
+        $this->apiPost($url, $input)->assertOk()->assertJsonPath('data.idempotent_replay', true);
+        self::assertSame(1, \Illuminate\Support\Facades\DB::table('event_registration_retention_runs')->where('event_id', $eventId)->count());
+    }
+
 }
