@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native profile-load retries wait for active profile or photo updates, preventing recovery reads from racing with a save.
+
 - Native profile editing retries failed full-profile loads without losing drafts, saves only edited fields, keeps newer queued edits open after saving, and ignores photo selection results after departure.
 
 - Native linked-account actions stop at screen departure, including delayed removal confirmations; failed requests retain the email for retry.

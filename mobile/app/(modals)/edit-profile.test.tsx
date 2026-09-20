@@ -209,13 +209,15 @@ describe('EditProfileScreen', () => {
     (getMe as jest.Mock).mockReset().mockResolvedValue(defaultProfileResponse);
   });
 
-  it('renders without crashing', () => {
+  it('renders without crashing', async () => {
     const { toJSON } = render(<EditProfileScreen />);
+    await act(async () => {});
     expect(toJSON()).toBeTruthy();
   });
 
-  it('renders the field labels', () => {
+  it('renders the field labels', async () => {
     const { getByText } = render(<EditProfileScreen />);
+    await act(async () => {});
     expect(getByText('First Name')).toBeTruthy();
     expect(getByText('Last Name')).toBeTruthy();
     expect(getByText('About You')).toBeTruthy();
@@ -223,8 +225,9 @@ describe('EditProfileScreen', () => {
     expect(getByText('Phone (Optional)')).toBeTruthy();
   });
 
-  it('renders the Save Changes button', () => {
+  it('renders the Save Changes button', async () => {
     const { getByText } = render(<EditProfileScreen />);
+    await act(async () => {});
     expect(getByText('Save Changes')).toBeTruthy();
   });
 
@@ -348,8 +351,9 @@ describe('EditProfileScreen', () => {
     })));
   });
 
-  it('pre-fills form fields with user data', () => {
+  it('pre-fills form fields with user data', async () => {
     const { getByDisplayValue } = render(<EditProfileScreen />);
+    await act(async () => {});
     expect(getByDisplayValue('Jane')).toBeTruthy();
     expect(getByDisplayValue('Doe')).toBeTruthy();
     expect(getByDisplayValue('Community builder')).toBeTruthy();
@@ -377,8 +381,9 @@ describe('EditProfileScreen', () => {
     expect(getByDisplayValue('Janet')).toBeTruthy();
   });
 
-  it('renders placeholders on inputs', () => {
+  it('renders placeholders on inputs', async () => {
     const { getByPlaceholderText } = render(<EditProfileScreen />);
+    await act(async () => {});
     expect(getByPlaceholderText('Tell us about yourself...')).toBeTruthy();
     expect(getByPlaceholderText('e.g. New York, USA')).toBeTruthy();
   });
@@ -485,6 +490,22 @@ describe('EditProfileScreen', () => {
     fireEvent.press(screen.getByText('Save Changes'));
     await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
     expect(updateProfile).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not reload stale profile data while a save is pending', async () => {
+    (getMe as jest.Mock).mockRejectedValueOnce(new Error('Profile unavailable'));
+    let finish!: (value: unknown) => void;
+    (updateProfile as jest.Mock).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EditProfileScreen />);
+    await screen.findByTestId('profile-load-error');
+    let retry = screen.getByText('common:buttons.retry');
+    while (!retry.props.onPress && retry.parent) retry = retry.parent;
+    const retryLoad = retry.props.onPress;
+    fireEvent.changeText(screen.getByDisplayValue('Community builder'), 'Saved draft');
+    fireEvent.press(screen.getByText('Save Changes'));
+    await act(async () => { retryLoad(); });
+    expect(getMe).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ data: { ...defaultProfileResponse.data, bio: 'Saved draft' } }));
   });
 
   it('does not resubmit untouched cached fields when full profile loading fails', async () => {

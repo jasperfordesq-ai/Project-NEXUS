@@ -313,7 +313,10 @@ function EditProfileScreenInner() {
           keyboardShouldPersistTaps="handled"
         >
           {hydrationFailed ? (
-            <ErrorState testID="profile-load-error" onRetry={() => setHasHydratedFullProfile(false)} />
+            <ErrorState testID="profile-load-error" isRetrying={hydrating || saving || uploadingAvatar} onRetry={() => {
+              if (!isMountedRef.current || saveInFlightRef.current || avatarInFlightRef.current || hydrating) return;
+              setHasHydratedFullProfile(false);
+            }} />
           ) : null}
 
           <HeroCard variant="default" className="overflow-hidden">
