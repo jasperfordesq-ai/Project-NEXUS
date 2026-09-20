@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, Share, StatusBar, View } from 'react-native';
+import { Share, StatusBar, View } from 'react-native';
 import { Image } from 'expo-image';
+import { ResumableZoom } from 'react-native-zoom-toolkit';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,7 +22,7 @@ function ImageViewerScreenInner() {
   const { show: showToast } = useAppToast();
   const { uri, title } = useLocalSearchParams<{ uri: string; title?: string }>();
 
-  const { width, height } = Dimensions.get('window');
+  const [canvas, setCanvas] = useState({ width: 0, height: 0 });
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => { setFailed(false); setAttempt(0); }, [uri]);
@@ -79,44 +80,31 @@ function ImageViewerScreenInner() {
           </HeroButton>
         </Surface>
 
-        {/*
-          Pinch-to-zoom via ScrollView:
-          - iOS: native pinch gesture via maximumZoomScale + pinchGestureEnabled
-          - Android: ScrollView zoom works on both platforms when the content
-            has an explicit pixel size driven by Dimensions (not flex/percentage).
-            Using flex: 1 or width: '100%' collapses to 0px inside a zoomable
-            ScrollView on Android — explicit width/height from Dimensions fixes this.
-        */}
-        {failed ? (
-          <Surface className="m-4 rounded-panel">
-            <ErrorState onRetry={() => { setFailed(false); setAttempt((value) => value + 1); }} />
-          </Surface>
-        ) : <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            width,
-            height,
-            alignItems: 'center',
-            justifyContent: 'center',
+        <View
+          testID="viewer-canvas"
+          style={{ flex: 1, overflow: 'hidden' }}
+          onLayout={({ nativeEvent: { layout } }) => {
+            setCanvas({ width: layout.width, height: layout.height });
           }}
-          maximumZoomScale={5}
-          minimumZoomScale={1}
-          pinchGestureEnabled
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-          bouncesZoom
-          centerContent
         >
-          <Image
-            key={`${uri}:${attempt}`}
-            testID="viewer-image"
-            onError={() => setFailed(true)}
-            source={{ uri }}
-            style={{ width, height }}
-            contentFit="contain"
-            accessibilityLabel={title ?? t('imageViewer.close')}
-          />
-        </ScrollView>}
+          {failed ? (
+            <Surface className="m-4 rounded-panel">
+              <ErrorState onRetry={() => { setFailed(false); setAttempt((value) => value + 1); }} />
+            </Surface>
+          ) : canvas.width > 0 && canvas.height > 0 ? (
+            <ResumableZoom key={[uri, attempt, canvas.width, canvas.height].join(':')} maxScale={5}>
+              <Image
+                testID="viewer-image"
+                onError={() => setFailed(true)}
+                source={{ uri }}
+                style={canvas}
+                contentFit="contain"
+                accessibilityRole="image"
+                accessibilityLabel={title?.trim() || t('imageViewer.image')}
+              />
+            </ResumableZoom>
+          ) : null}
+        </View>
 
         <View className="pb-3" />
       </SafeAreaView>

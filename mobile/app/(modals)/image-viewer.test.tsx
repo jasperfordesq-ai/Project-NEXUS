@@ -24,12 +24,15 @@ jest.mock('react-i18next', () => ({
       const map: Record<string, string> = {
         'imageViewer.close': 'Close',
         'imageViewer.share': 'Share image',
+        'imageViewer.image': 'Image',
       };
       return map[key] ?? key;
     },
     i18n: { language: 'en' },
   }),
 }));
+
+jest.mock('react-native-zoom-toolkit', () => ({ ResumableZoom: 'View' }));
 
 jest.mock('expo-image', () => ({
   Image: 'View',
@@ -81,9 +84,21 @@ it('contains a failed native share and leaves the image open', async () => {
 it('offers a new image load after failure without closing the viewer', () => {
   mockParams = { uri: 'https://example.test/missing.jpg', title: 'Missing photo' };
   const screen = render(<ImageViewerScreen />);
+  fireEvent(screen.getByTestId('viewer-canvas'), 'layout', { nativeEvent: { layout: { width: 360, height: 600 } } });
   fireEvent(screen.getByTestId('viewer-image'), 'error', { error: 'unavailable' });
   expect(screen.queryByTestId('viewer-image')).toBeNull();
   fireEvent.press(screen.getByText('common:buttons.retry'));
   expect(screen.getByTestId('viewer-image')).toBeTruthy();
   expect(screen.getByLabelText('Close')).toBeTruthy();
+});
+
+it('fits the remaining canvas and labels an untitled image independently of Close', () => {
+  mockParams = { uri: 'https://example.test/photo.jpg' };
+  const screen = render(<ImageViewerScreen />);
+  fireEvent(screen.getByTestId('viewer-canvas'), 'layout', { nativeEvent: { layout: { width: 360, height: 600 } } });
+  expect(screen.getByTestId('viewer-image').props.style).toEqual({ width: 360, height: 600 });
+  expect(screen.getByLabelText('Image')).toBeTruthy();
+  expect(screen.getByLabelText('Close')).toBeTruthy();
+  fireEvent(screen.getByTestId('viewer-canvas'), 'layout', { nativeEvent: { layout: { width: 320, height: 500 } } });
+  expect(screen.getByTestId('viewer-image').props.style).toEqual({ width: 320, height: 500 });
 });
