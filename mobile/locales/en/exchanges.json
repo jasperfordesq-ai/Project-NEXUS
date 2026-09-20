@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "The other member has confirmed {{hours}} hours. A difference of more than a quarter of an hour sends this exchange for review instead of completing it.",
+    "confirmSheetOtherConfirmed_one": "The other member has confirmed {{hours}} hour. A difference of more than a quarter of an hour sends this exchange for review instead of completing it.",
+    "confirmSheetOtherConfirmed_other": "The other member has confirmed {{hours}} hours. A difference of more than a quarter of an hour sends this exchange for review instead of completing it.",
     "loadMore": "Show more exchanges"
   },
   "unknownMember": "Unknown member"

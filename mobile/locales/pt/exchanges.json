@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "O outro membro confirmou {{hours}} horas. Uma diferença superior a um quarto de hora envia esta troca para revisão em vez de a concluir.",
+    "confirmSheetOtherConfirmed_one": "O outro membro confirmou {{hours}} hora. Uma diferença superior a um quarto de hora envia esta troca para revisão em vez de a concluir.",
+    "confirmSheetOtherConfirmed_other": "O outro membro confirmou {{hours}} horas. Uma diferença superior a um quarto de hora envia esta troca para revisão em vez de a concluir.",
     "loadMore": "Mostrar mais trocas"
   },
   "unknownMember": "Membro desconhecido"

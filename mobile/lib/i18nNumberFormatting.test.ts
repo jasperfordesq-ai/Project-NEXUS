@@ -33,6 +33,11 @@ jest.mock('expo-localization', () => ({
 import i18n, { changeLanguage } from './i18n';
 
 describe('interpolated numbers follow the member locale', () => {
+  it('uses singular and plural hours in the exchange confirmation warning', () => {
+    expect(i18n.t('exchanges:requests.confirmSheetOtherConfirmed', { count: 1, hours: '1' })).toContain('confirmed 1 hour.');
+    expect(i18n.t('exchanges:requests.confirmSheetOtherConfirmed', { count: 2, hours: '2' })).toContain('confirmed 2 hours.');
+    expect(i18n.t('exchanges:requests.confirmSheetOtherConfirmed', { count: 1.5, hours: '1.5' })).toContain('confirmed 1.5 hours.');
+  });
   afterEach(async () => {
     await changeLanguage('en');
   });

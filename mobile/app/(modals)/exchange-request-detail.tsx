@@ -638,7 +638,7 @@ function ExchangeRequestDetailScreen() {
           <Text className="text-sm text-muted-foreground">{t('requests.confirmSheetBody')}</Text>
           {otherPartyConfirmedHours !== null ? (
             <Text className="text-sm font-medium" style={{ color: theme.warning }} testID="exchange-confirm-other-hours">
-              {t('requests.confirmSheetOtherConfirmed', { hours: formatDecimal(otherPartyConfirmedHours, 2) })}
+              {t('requests.confirmSheetOtherConfirmed', { count: otherPartyConfirmedHours, hours: formatDecimal(otherPartyConfirmedHours, 2) })}
             </Text>
           ) : null}
           <Input

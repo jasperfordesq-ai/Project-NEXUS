@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "Das andere Mitglied hat {{hours}} Stunden bestätigt. Eine Abweichung von mehr als einer Viertelstunde schickt diesen Austausch zur Prüfung, statt ihn abzuschließen.",
+    "confirmSheetOtherConfirmed_one": "Das andere Mitglied hat {{hours}} Stunde bestätigt. Eine Abweichung von mehr als einer Viertelstunde schickt diesen Austausch zur Prüfung, statt ihn abzuschließen.",
+    "confirmSheetOtherConfirmed_other": "Das andere Mitglied hat {{hours}} Stunden bestätigt. Eine Abweichung von mehr als einer Viertelstunde schickt diesen Austausch zur Prüfung, statt ihn abzuschließen.",
     "loadMore": "Weitere Austausche anzeigen"
   },
   "unknownMember": "Unbekanntes Mitglied"

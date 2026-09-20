@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "Tá {{hours}} uair deimhnithe ag an gcomhalta eile. Má tá difríocht níos mó ná ceathrú uaire ann, seoltar an malartú seo le hathbhreithniú in ionad é a chur i gcrích.",
+    "confirmSheetOtherConfirmed_one": "Tá {{hours}} uair deimhnithe ag an gcomhalta eile. Má tá difríocht níos mó ná ceathrú uaire ann, seoltar an malartú seo le hathbhreithniú in ionad é a chur i gcrích.",
+    "confirmSheetOtherConfirmed_other": "Tá {{hours}} uair deimhnithe ag an gcomhalta eile. Má tá difríocht níos mó ná ceathrú uaire ann, seoltar an malartú seo le hathbhreithniú in ionad é a chur i gcrích.",
     "loadMore": "Taispeáin tuilleadh malartuithe"
   },
   "unknownMember": "Ball anaithnid"

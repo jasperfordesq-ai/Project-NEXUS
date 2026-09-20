@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "L’autre membre a confirmé {{hours}} heures. Un écart de plus d’un quart d’heure envoie cet échange en révision au lieu de le clôturer.",
+    "confirmSheetOtherConfirmed_one": "L’autre membre a confirmé {{hours}} heure. Un écart de plus d’un quart d’heure envoie cet échange en révision au lieu de le clôturer.",
+    "confirmSheetOtherConfirmed_other": "L’autre membre a confirmé {{hours}} heures. Un écart de plus d’un quart d’heure envoie cet échange en révision au lieu de le clôturer.",
     "loadMore": "Afficher plus d’échanges"
   },
   "unknownMember": "Membre inconnu"

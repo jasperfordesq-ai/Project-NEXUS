@@ -517,6 +517,8 @@
       }
     },
     "confirmSheetOtherConfirmed": "La otra persona ha confirmado {{hours}} horas. Una diferencia de más de un cuarto de hora envía este intercambio a revisión en lugar de completarlo.",
+    "confirmSheetOtherConfirmed_one": "La otra persona ha confirmado {{hours}} hora. Una diferencia de más de un cuarto de hora envía este intercambio a revisión en lugar de completarlo.",
+    "confirmSheetOtherConfirmed_other": "La otra persona ha confirmado {{hours}} horas. Una diferencia de más de un cuarto de hora envía este intercambio a revisión en lugar de completarlo.",
     "loadMore": "Mostrar más intercambios"
   },
   "unknownMember": "Miembro desconocido"
