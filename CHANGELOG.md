@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed native audited CSV exports failing after access-token expiry: a read-only session check now uses normal token renewal before the single export POST, while retaining the originating account and screen guards. The audited export itself is never automatically replayed.
+
 - Registration answer exports now validate audit purpose and reference even when no submissions match, and accept maximum-length references without overflowing per-submission audit keys. Existing shorter-reference audit hashes remain unchanged.
 
 - Native registration answer reads now accept empty answer maps returned by PHP instead of reporting a contract error; organiser review preserves purged-answer status and rejects unexpected sensitive answer disclosure.

@@ -6,8 +6,8 @@ import { fetch } from 'expo/fetch';
 import { File, type FileHandle } from 'expo-file-system';
 import { createAuditedExportDirectory } from './auditedExportCache';
 import i18n from 'i18next';
-import { ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
-import { API_BASE_URL, APP_VERSION } from '@/lib/constants';
+import { api, ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
+import { API_BASE_URL, API_V2, APP_VERSION } from '@/lib/constants';
 
 /** Dispose unshared files immediately; release shared files to the foreground cache cleanup. */
 export interface PreparedAuditedCsv { uri: string; assertCurrent: () => Promise<void>; dispose: () => void; releaseAfterSharing: () => void }
@@ -19,8 +19,14 @@ export async function prepareAuditedCsv(path: string, filename: string, body: un
   const base = new URL(API_BASE_URL); const url = new URL(path, base.origin);
   if (url.origin !== base.origin || !url.pathname.startsWith('/api/v2/') || url.username || url.password
     || !/^[A-Za-z0-9_-]+\.csv$/.test(filename)) throw new Error('invalid_export_target');
+  const origin = await authenticatedApiIdentity();
+  await origin.assertCurrent(); assertActive();
+  // Renew an expired session using a safe read through the ordinary API client.
+  // Never replay the audited POST to discover whether renewal is needed.
+  await api.get(API_V2 + '/users/me');
+  await origin.assertCurrent(); assertActive();
   const identity = await authenticatedApiIdentity();
-  const assertCurrent = async () => { assertActive(); await identity.assertCurrent(); assertActive(); };
+  const assertCurrent = async () => { assertActive(); await origin.assertCurrent(); await identity.assertCurrent(); assertActive(); };
   await assertCurrent();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);

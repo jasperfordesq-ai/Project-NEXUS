@@ -5,7 +5,7 @@
 
 import { prepareAuditedCsv } from './prepareAuditedCsv';
 import { fetch } from 'expo/fetch';
-import { authenticatedApiIdentity } from '@/lib/api/client';
+import { api, authenticatedApiIdentity } from '@/lib/api/client';
 const mockWrite = jest.fn(), mockClose = jest.fn(), mockDelete = jest.fn(), mockCreate = jest.fn();
 jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'test-export' }));
@@ -13,8 +13,8 @@ jest.mock('expo-file-system', () => ({ Paths: { cache: 'file:///cache' },
   Directory: class { uri = 'file:///cache/export'; exists = true; create() { mockCreate(); } delete() { mockDelete(); } },
   File: class { uri = 'file:///cache/export/export.csv'; create() {} open() { return { writeBytes: mockWrite, close: mockClose }; } },
 }));
-jest.mock('@/lib/constants', () => ({ API_BASE_URL: 'https://api.example.test', APP_VERSION: '1' }));
-jest.mock('@/lib/api/client', () => ({ authenticatedApiIdentity: jest.fn(), ApiResponseError: class extends Error {
+jest.mock('@/lib/constants', () => ({ API_BASE_URL: 'https://api.example.test', APP_VERSION: '1', API_V2: '/api/v2' }));
+jest.mock('@/lib/api/client', () => ({ api: { get: jest.fn() }, authenticatedApiIdentity: jest.fn(), ApiResponseError: class extends Error {
   status: number; constructor(status: number, message: string) { super(message); this.status = status; }
 } }));
 const mockIdentity = jest.fn(); const active = () => true;
@@ -25,7 +25,7 @@ function response(chunks = [new Uint8Array([97, 44, 98, 10]), new Uint8Array([49
   read.mockResolvedValue({ done: true });
   return { ok: true, status: 200, headers: { get: () => 'text/csv; charset=UTF-8' }, body: { getReader: () => ({ read, releaseLock: jest.fn() }) } };
 }
-beforeEach(() => { jest.clearAllMocks(); mockWrite.mockReset(); mockIdentity.mockReset();
+beforeEach(() => { jest.clearAllMocks(); jest.mocked(api.get).mockReset(); mockWrite.mockReset(); mockIdentity.mockReset();
   jest.mocked(authenticatedApiIdentity).mockResolvedValue({ token: 'test-token', tenantSlug: 'test-tenant', assertCurrent: mockIdentity });
   jest.mocked(fetch).mockResolvedValue(response() as never);
 });
@@ -63,7 +63,7 @@ it('rejects an empty stream and removes its file', async () => {
   await expect(prepareAuditedCsv(endpoint, 'export.csv', input, {}, active)).rejects.toThrow('empty_export_response'); expect(mockDelete).toHaveBeenCalledTimes(1);
 });
 it('removes the file when account identity changes before handoff', async () => {
-  mockIdentity.mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('account changed'));
+  mockWrite.mockImplementationOnce(() => { mockIdentity.mockRejectedValue(new Error('account changed')); });
   await expect(prepareAuditedCsv(endpoint, 'export.csv', input, {}, active)).rejects.toThrow('account changed'); expect(mockDelete).toHaveBeenCalledTimes(1);
 });
 it('stops writing when the originating screen departs', async () => {
@@ -86,4 +86,34 @@ it.each([250, 120000])('aborts an outstanding native request on departure or tim
     await rejected;
     expect(jest.getTimerCount()).toBe(0); expect(mockCreate).not.toHaveBeenCalled();
   } finally { jest.useRealTimers(); }
+});
+
+it('checks the session through the normal refresh-aware client before its single audited POST', async () => {
+  const oldIdentity = { token: 'expired-token', tenantSlug: 'test-tenant', assertCurrent: jest.fn() };
+  jest.mocked(authenticatedApiIdentity).mockResolvedValueOnce(oldIdentity);
+  jest.mocked(api.get).mockImplementationOnce(async () => {
+    jest.mocked(authenticatedApiIdentity).mockResolvedValue({ ...oldIdentity, token: 'renewed-token' });
+    return { data: {} };
+  });
+  const file = await prepareAuditedCsv(endpoint, 'export.csv', input, {}, active);
+  expect(api.get).toHaveBeenCalledWith('/api/v2/users/me');
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer renewed-token' }) }));
+  file.dispose();
+});
+it('does not start an audited export when the session preflight fails', async () => {
+  const error = new Error('refresh unreachable'); jest.mocked(api.get).mockRejectedValueOnce(error);
+  await expect(prepareAuditedCsv(endpoint, 'export.csv', input, {}, active)).rejects.toBe(error);
+  expect(fetch).not.toHaveBeenCalled(); expect(mockCreate).not.toHaveBeenCalled();
+});
+
+it('pins the originating account across the read-only renewal request', async () => {
+  jest.mocked(api.get).mockImplementationOnce(async () => { mockIdentity.mockRejectedValue(new Error('account changed')); return {}; });
+  await expect(prepareAuditedCsv(endpoint, 'export.csv', input, {}, active)).rejects.toThrow('account changed');
+  expect(fetch).not.toHaveBeenCalled();
+});
+it('stops before the audited POST when the originating screen departs during renewal', async () => {
+  let live = true; jest.mocked(api.get).mockImplementationOnce(async () => { live = false; return {}; });
+  await expect(prepareAuditedCsv(endpoint, 'export.csv', input, {}, () => live)).rejects.toThrow('download_cancelled');
+  expect(fetch).not.toHaveBeenCalled();
 });
