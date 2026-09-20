@@ -55,11 +55,17 @@ final class EventRegistrationRetentionService
                 $this->support->eventTimezone($event),
                 'event_registration_retention_as_of_invalid',
             );
-            if ($asOfUtc === null || $asOfUtc->lessThan($this->support->eventEnd($event))) {
+            if ($asOfUtc === null) {
                 throw new EventRegistrationFoundationException('event_registration_retention_post_event_only');
             }
-            $candidates = $this->candidates($tenantId, $eventId, $asOfUtc);
-            $candidateHash = $this->candidateHash($candidates);
+            // Replay the immutable snapshot, including older records using this hash
+            // format. Applied or amended data must not change a saved request's identity.
+            $existing = DB::table('event_registration_retention_runs')
+                ->where('tenant_id', $tenantId)
+                ->where('idempotency_hash', $keyHash)
+                ->first();
+            $candidates = $existing === null ? $this->candidates($tenantId, $eventId, $asOfUtc) : [];
+            $candidateHash = $existing === null ? $this->candidateHash($candidates) : (string) $existing->candidate_hash;
             $requestHash = $this->support->requestHash([
                 'action' => 'retention_dry_run',
                 'event_id' => $eventId,
@@ -70,6 +76,9 @@ final class EventRegistrationRetentionService
             $replay = $this->runReplay($tenantId, $keyHash, $requestHash);
             if ($replay !== null) {
                 return ['run' => $this->runModel($tenantId, (int) $replay->id), 'changed' => false];
+            }
+            if ($asOfUtc->lessThan($this->support->eventEnd($event))) {
+                throw new EventRegistrationFoundationException('event_registration_retention_post_event_only');
             }
             $now = CarbonImmutable::now('UTC');
             $runId = (int) DB::table('event_registration_retention_runs')->insertGetId([

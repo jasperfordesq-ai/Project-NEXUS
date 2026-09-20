@@ -90,7 +90,8 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
             {campaign.invitations_count !== undefined && campaign.delivery_counts !== undefined && <Text className="text-muted-foreground">{t('invitations.delivery_summary', { invitations: campaign.invitations_count ?? 0, delivered: campaign.delivery_counts?.delivered ?? 0, failed: campaign.delivery_counts?.failed ?? 0 })}</Text>}
             {selected ? <>
               <Button variant="secondary" isDisabled={operation.busy} onPress={() => setSelection(null)}>{t('common:close')}</Button>
-              <Text className="text-foreground">{t('invitations.snapshot_notice')}</Text>
+              {['previewed', 'scheduled'].includes(campaign.status)
+                && <Text className="text-foreground">{t('invitations.snapshot_notice')}</Text>}
               {previewErrors.slice(errorPage * 25, (errorPage + 1) * 25).map((error, index) => <Text key={errorPage * 25 + index} className="text-danger">
                 {t('invitations.row_error', { row: error.row, code: t('invitations.error_codes.' + error.code, { defaultValue: t('accessible.validation_error') }) })}</Text>)}
               {previewErrors.length > 25 && <View className="gap-2">

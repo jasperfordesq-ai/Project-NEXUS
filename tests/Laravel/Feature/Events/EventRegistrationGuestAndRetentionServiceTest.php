@@ -198,6 +198,20 @@ final class EventRegistrationGuestAndRetentionServiceTest extends TestCase
             $owner,
             'retention-apply',
         );
+        // A lost preview response must remain recoverable after another organiser
+        // applies that snapshot; current candidates no longer describe the request.
+        $afterApplyReplay = $retention->dryRun($eventId, $owner, $dryRun['run']->as_of_utc, 'retention-dry-run');
+        self::assertFalse($afterApplyReplay['changed']);
+        self::assertSame((int) $dryRun['run']->id, (int) $afterApplyReplay['run']->id);
+        self::assertSame(5, (int) $afterApplyReplay['run']->eligible_count);
+        self::assertSame(2, DB::table('event_registration_retention_runs')->where('event_id', $eventId)->count());
+        $this->assertReason('event_registration_retention_idempotency_conflict', fn () =>
+            $retention->dryRun($eventId, $owner, $asOf->addHour(), 'retention-dry-run'));
+        $this->assertReason('event_registration_retention_idempotency_conflict', fn () =>
+            $retention->dryRun($eventId, $owner, $asOf, 'retention-apply'));
+        $freshPreview = $retention->dryRun($eventId, $owner, $asOf, 'retention-fresh-after-apply');
+        self::assertTrue($freshPreview['changed']);
+        self::assertSame(0, (int) $freshPreview['run']->eligible_count);
         self::assertTrue($applied['changed']);
         self::assertFalse($applyReplay['changed']);
         self::assertSame(5, (int) $applied['run']->affected_count);
