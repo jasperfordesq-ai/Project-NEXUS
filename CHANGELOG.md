@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added owner- and event-scoped saved retention actions that preserve original retry keys through uncertain outcomes and store validated completion receipts. Native screen integration remains pending.
+
 - Added a permission-gated, paginated event retention history API and native contracts for history, preview and apply receipts, with event binding and caller-owned retry keys. The native retention screen is not yet connected.
 
 - Connected native event invitation management to registration settings, with paginated campaign and preview review, event-time-zone scheduling and expiry, cancellation confirmation, and explicit durable request recovery.
