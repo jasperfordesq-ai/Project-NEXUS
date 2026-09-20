@@ -22,5 +22,8 @@
   "categoryCount": "{{count}} Einträge",
   "categoryCount_one": "{{count}} Eintrag",
   "uncategorized": "Allgemein",
-  "savedItemHighlighted": "Gespeicherte Ressource: {{title}}"
+  "savedItemHighlighted": "Gespeicherte Ressource: {{title}}",
+  "categoriesFailed": "Kategorien konnten nicht geladen werden",
+  "kbEmptySubtitle": "Es sind noch keine Artikel verfügbar.",
+  "kbSearchEmptySubtitle": "Versuchen Sie einen anderen Suchbegriff."
 }

@@ -22,5 +22,8 @@
   "categoryCount": "{{count}} éléments",
   "categoryCount_one": "{{count}} élément",
   "uncategorized": "Général",
-  "savedItemHighlighted": "Ressource enregistrée : {{title}}"
+  "savedItemHighlighted": "Ressource enregistrée : {{title}}",
+  "categoriesFailed": "Impossible de charger les catégories",
+  "kbEmptySubtitle": "Aucun article n’est disponible pour le moment.",
+  "kbSearchEmptySubtitle": "Essayez un autre terme de recherche."
 }

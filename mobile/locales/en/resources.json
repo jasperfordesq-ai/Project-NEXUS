@@ -22,5 +22,8 @@
   "categoryCount": "{{count}} items",
   "categoryCount_one": "{{count}} item",
   "uncategorized": "General",
-  "savedItemHighlighted": "Saved resource: {{title}}"
+  "savedItemHighlighted": "Saved resource: {{title}}",
+  "categoriesFailed": "Could not load categories",
+  "kbEmptySubtitle": "No articles are available yet.",
+  "kbSearchEmptySubtitle": "Try another search term."
 }

@@ -22,5 +22,8 @@
   "categoryCount": "{{count}} elementi",
   "categoryCount_one": "{{count}} elemento",
   "uncategorized": "Generale",
-  "savedItemHighlighted": "Risorsa salvata: {{title}}"
+  "savedItemHighlighted": "Risorsa salvata: {{title}}",
+  "categoriesFailed": "Impossibile caricare le categorie",
+  "kbEmptySubtitle": "Non ci sono ancora articoli disponibili.",
+  "kbSearchEmptySubtitle": "Prova un altro termine di ricerca."
 }

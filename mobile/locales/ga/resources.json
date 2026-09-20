@@ -22,5 +22,8 @@
   "categoryCount": "Líon míreanna: {{count}}",
   "categoryCount_one": "Líon míreanna: {{count}}",
   "uncategorized": "Ginearálta",
-  "savedItemHighlighted": "Acmhainn shábháilte: {{title}}"
+  "savedItemHighlighted": "Acmhainn shábháilte: {{title}}",
+  "categoriesFailed": "Níorbh fhéidir na catagóirí a luchtú",
+  "kbEmptySubtitle": "Níl aon alt ar fáil fós.",
+  "kbSearchEmptySubtitle": "Bain triail as téarma cuardaigh eile."
 }
