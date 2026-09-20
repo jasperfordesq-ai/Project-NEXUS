@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native bundles share the Zod and Sentry core implementations across import styles while preserving native browser-replay exclusions; bundle-export failures now include their exit status.
+
 - Article attachment and feedback controls retain meaningful accessible names during loading and clear stale busy descriptions after completion or cancellation.
 
 - Native article text now refreshes when the system font size changes, preventing stale enlarged or undersized body text.

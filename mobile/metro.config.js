@@ -8,6 +8,23 @@ const { withUniwindConfig } = require('uniwind/metro');
 const { withSentryResolver } = require('@sentry/react-native/metro');
 
 const config = getDefaultConfig(__dirname);
+// Share Zod's ESM core between app schemas and the CommonJS form resolver.
+// Its nested packages have legacy main/module fields as well as root exports.
+// Both resolution paths must prefer ESM, or Metro includes a second core/locales.
+// Sentry core also exposes two entry points; share its ESM implementation so
+// imports and requires do not bundle duplicate instrumentation and scope code.
+const upstreamResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const resolve = upstreamResolveRequest ?? context.resolveRequest;
+  if (moduleName === 'zod' || moduleName.startsWith('zod/') || moduleName === '@sentry/core') {
+    return resolve({
+      ...context,
+      isESMImport: true,
+      mainFields: ['module', ...context.mainFields.filter((name) => name !== 'module')],
+    }, moduleName, platform);
+  }
+  return resolve(context, moduleName, platform);
+};
 
 // Preserve Expo's exclusions and keep native build scratch directories out of
 // Metro's Windows watcher: CMake creates/removes them while Gradle is running.
@@ -56,6 +73,8 @@ config.transformer.transformIgnorePatterns = [
 // The mobile bundle is route-heavy. Inline requires keep non-initial route
 // modules from being evaluated during cold start, which shortens the blank
 // pre-render window in release builds.
+// On SDK 55, enabling the alternative import transform with this inline-require
+// setup increased the measured Hermes bundle. Re-measure before changing it.
 config.transformer.getTransformOptions = async () => ({
   transform: {
     experimentalImportSupport: false,

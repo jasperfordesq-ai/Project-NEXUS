@@ -85,7 +85,7 @@ function exportBundle() {
     );
   } catch (error) {
     const detail = (error.stderr?.toString() || error.stdout?.toString() || error.message || '').slice(-400);
-    return { error: `expo export failed: ${detail}` };
+    return { error: `expo export failed (status ${error.status ?? 'unknown'}, signal ${error.signal ?? 'none'}): ${detail}` };
   }
   return findBundle(outDir);
 }
