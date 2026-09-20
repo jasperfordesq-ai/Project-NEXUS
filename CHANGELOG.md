@@ -15,7 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added owner- and event-scoped saved retention actions that preserve original retry keys through uncertain outcomes and store validated completion receipts. Lifecycle controls prevent automatic replay, duplicate submissions and stale screen callbacks. Native screen integration remains pending.
+- Added a native organiser retention workspace with paginated history, UTC preview validation, saved-action recovery, and a separate review and confirmation before anonymisation.
+
+- Added owner- and event-scoped saved retention actions that preserve original retry keys through uncertain outcomes and store validated completion receipts. Lifecycle controls prevent automatic replay, duplicate submissions and stale screen callbacks.
 
 - Added a permission-gated, paginated event retention history API and native contracts for history, preview and apply receipts, with event binding and caller-owned retry keys. The native retention screen is not yet connected.
 

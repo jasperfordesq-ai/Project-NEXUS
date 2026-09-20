@@ -316,7 +316,12 @@
       "apply": "Fheidhmeach"
     },
     "preview": "Rith réamhamharc",
-    "apply": "Cuir anaithnideacht i bhfeidhm"
+    "apply": "Cuir anaithnideacht i bhfeidhm",
+    "empty": "Níl aon rith coinneála ann fós.",
+    "settings_required": "Cumraigh na socruithe clárúcháin sula gcruthaíonn tú réamhamharc coinneála.",
+    "time_hint": "Úsáid BBBB-MM-LL HH:mm in UTC, tar éis dheireadh na hócáide agus tráth nach déanaí ná anois.",
+    "preview_reference": "Réamhamharc {{id}}",
+    "confirm": "An réamhamharc {{id}} a chur i bhfeidhm ar suas le {{count}} taifead incháilithe? Ní féidir é seo a chealú."
   },
   "statuses": {
     "draft": "Dréacht",

@@ -65,3 +65,11 @@ it('opens the organiser submissions list for this event',()=>{
  const v=render(<Screen/>);fireEvent.press(v.getByText('eventRegistration:submissions.title'));
  expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-submissions',params:{id:'42'}});
 });
+
+it('offers retention only with ownership-transfer authority and preserves the event route', () => {
+ const v=render(<Screen/>);expect(v.queryByText('eventRegistration:retention.title')).toBeNull();
+ mockState.data.event.permissions.transfer_ownership=true;v.rerender(<Screen/>);
+ fireEvent.press(v.getByText('eventRegistration:retention.title'));
+ expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-retention',params:{id:'42'}});
+});
+jest.mock('@/lib/observability/report', () => ({ reportSentryMessage: jest.fn() }));

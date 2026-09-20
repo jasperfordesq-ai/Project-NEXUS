@@ -316,7 +316,12 @@
       "apply": "Aplicado"
     },
     "preview": "Ejecutar vista previa",
-    "apply": "Aplicar anonimización"
+    "apply": "Aplicar anonimización",
+    "empty": "Todavía no hay ejecuciones de retención.",
+    "settings_required": "Configure los ajustes de inscripción antes de crear una vista previa de retención.",
+    "time_hint": "Use AAAA-MM-DD HH:mm en UTC, después de finalizar el evento y no después del momento actual.",
+    "preview_reference": "Vista previa {{id}}",
+    "confirm": "¿Aplicar la vista previa {{id}} a un máximo de {{count}} registros elegibles? Esta acción no se puede deshacer."
   },
   "statuses": {
     "draft": "Borrador",

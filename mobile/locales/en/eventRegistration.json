@@ -316,7 +316,12 @@
       "apply": "Applied"
     },
     "preview": "Run preview",
-    "apply": "Apply anonymisation"
+    "apply": "Apply anonymisation",
+    "empty": "No retention runs yet.",
+    "settings_required": "Configure registration settings before creating a retention preview.",
+    "time_hint": "Use YYYY-MM-DD HH:mm in UTC, after the event ends and no later than now.",
+    "preview_reference": "Preview {{id}}",
+    "confirm": "Apply preview {{id}} to up to {{count}} eligible records? This cannot be undone."
   },
   "statuses": {
     "draft": "Draft",

@@ -316,7 +316,12 @@
       "apply": "Applicato"
     },
     "preview": "Esegui l'anteprima",
-    "apply": "Applicare l'anonimizzazione"
+    "apply": "Applicare l'anonimizzazione",
+    "empty": "Nessuna operazione di conservazione disponibile.",
+    "settings_required": "Configura le impostazioni di iscrizione prima di creare un’anteprima di conservazione.",
+    "time_hint": "Usa AAAA-MM-GG HH:mm in UTC, dopo la fine dell’evento e non oltre il momento attuale.",
+    "preview_reference": "Anteprima {{id}}",
+    "confirm": "Applicare l’anteprima {{id}} a un massimo di {{count}} record idonei? Questa azione non può essere annullata."
   },
   "statuses": {
     "draft": "Bozza",

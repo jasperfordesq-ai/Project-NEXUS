@@ -70,6 +70,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
         } as Href)}>{t('eventRegistration:submissions.title')}</Button>
         <Button variant="secondary" onPress={() => router.push({ pathname: '/(modals)/event-registration-guests', params: { id: String(eventId) } } as Href)}>{t('eventRegistration:guests.title')}</Button>
         <Button variant="secondary" isDisabled={!permitted || operation.busy} onPress={() => router.push({ pathname: '/(modals)/event-registration-invitations', params: { id: String(eventId) } } as Href)}>{t('eventRegistration:invitations.builder_title')}</Button>
+        {data.event.permissions.transfer_ownership && <Button variant="secondary" isDisabled={!permitted || operation.busy} onPress={() => router.push({ pathname: '/(modals)/event-registration-retention', params: { id: String(eventId) } } as Href)}>{t('eventRegistration:retention.title')}</Button>}
         {state.error && <><Text accessibilityRole="alert">{t('manage.load_error_title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></>}
         {(operation.storageFailed || operation.saved?.status === 'pending') && <View className="gap-3">
           <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{t(`event_communications:${operation.storageFailed ? 'recovery_storage_title' : 'recovery_title'}`)}</Text>
