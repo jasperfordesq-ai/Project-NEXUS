@@ -230,4 +230,41 @@ class CourseSectionServiceTest extends TestCase
         $this->assertNotNull($lesson, 'Lesson row should still exist');
         $this->assertNull($lesson->section_id, 'Lesson section_id should be nullified, not deleted');
     }
+
+    public function test_failed_section_delete_keeps_its_lessons_attached(): void
+    {
+        $section = CourseSectionService::create($this->courseId, ['title' => 'Keep curriculum']);
+        $lesson = \App\Services\CourseLessonService::create($this->courseId, ['section_id' => $section->id, 'title' => 'Keep lesson']);
+        $dispatcher = CourseSection::getEventDispatcher();
+        CourseSection::setEventDispatcher(clone $dispatcher);
+        CourseSection::deleted(function () { throw new \RuntimeException('Injected delete failure'); });
+        try {
+            try {
+                CourseSectionService::delete($section->id);
+                $this->fail('Expected injected failure');
+            } catch (\RuntimeException $error) {
+                $this->assertSame('Injected delete failure', $error->getMessage());
+            }
+            $this->assertNotNull($section->fresh());
+            $this->assertSame($section->id, $lesson->fresh()->section_id);
+        } finally {
+            CourseSection::setEventDispatcher($dispatcher);
+        }
+    }
+
+    public function test_vetoed_section_delete_keeps_its_lessons_attached(): void
+    {
+        $section = CourseSectionService::create($this->courseId, ['title' => 'Keep curriculum']);
+        $lesson = \App\Services\CourseLessonService::create($this->courseId, ['section_id' => $section->id, 'title' => 'Keep lesson']);
+        $dispatcher = CourseSection::getEventDispatcher();
+        CourseSection::setEventDispatcher(clone $dispatcher);
+        CourseSection::deleting(fn () => false);
+        try {
+            $this->assertFalse(CourseSectionService::delete($section->id));
+            $this->assertNotNull($section->fresh());
+            $this->assertSame($section->id, $lesson->fresh()->section_id);
+        } finally {
+            CourseSection::setEventDispatcher($dispatcher);
+        }
+    }
 }

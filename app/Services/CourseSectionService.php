@@ -7,6 +7,9 @@
 namespace App\Services;
 
 use App\Models\CourseSection;
+use App\Models\Course;
+use App\Models\CourseLesson;
+use Illuminate\Support\Facades\DB;
 
 /**
  * CourseSectionService — tenant-scoped section CRUD for the course builder.
@@ -47,10 +50,20 @@ class CourseSectionService
             return false;
         }
 
-        // Orphan lessons rather than cascade-delete content silently.
-        \App\Models\CourseLesson::where('section_id', $id)->update(['section_id' => null]);
+        return DB::transaction(function () use ($section, $id) {
+            Course::whereKey($section->course_id)->lockForUpdate()->firstOrFail();
+            $current = CourseSection::whereKey($id)->lockForUpdate()->first();
+            if (!$current || !$current->delete()) {
+                return false;
+            }
 
-        return (bool) $section->delete();
+            // Preserve content, but only detach it when deletion succeeds. Both writes
+            // roll back together if a database operation or model observer throws.
+            CourseLesson::where('course_id', $current->course_id)
+                ->where('section_id', $id)->update(['section_id' => null]);
+
+            return true;
+        });
     }
 
     private static function nextPosition(int $courseId): int
