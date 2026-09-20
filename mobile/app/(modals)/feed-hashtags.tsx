@@ -18,6 +18,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -32,18 +33,25 @@ function FeedHashtagsScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { hasModule } = useTenant();
+  const feedEnabled = hasModule('feed');
   const [hashtags, setHashtags] = useState<HashtagItem[]>([]);
   const [searchResults, setSearchResults] = useState<HashtagItem[]>([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchFailed, setSearchFailed] = useState(false);
   const [searchAttempt, setSearchAttempt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trendingVersionRef = useRef(0);
 
   const loadTrending = useCallback(async () => {
-    if (!hasModule('feed')) {
+    const version = ++trendingVersionRef.current;
+    if (!feedEnabled) {
+      setHashtags([]);
+      setHasLoaded(false);
+      setError(null);
       setIsLoading(false);
       return;
     }
@@ -51,26 +59,32 @@ function FeedHashtagsScreen() {
     setError(null);
     try {
       const response = await getTrendingHashtags(50);
+      if (version !== trendingVersionRef.current) return;
       setHashtags(normalizeHashtags(response));
+      setHasLoaded(true);
     } catch {
+      if (version !== trendingVersionRef.current) return;
       setError(t('hashtags.loadFailed'));
     } finally {
-      setIsLoading(false);
+      if (version === trendingVersionRef.current) setIsLoading(false);
     }
-  }, [hasModule, t]);
+  }, [feedEnabled, t]);
 
   useEffect(() => {
     void loadTrending();
+    return () => { trendingVersionRef.current += 1; };
   }, [loadTrending]);
 
   useEffect(() => {
+    let cancelled = false;
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
     }
     const trimmed = query.trim();
-    if (trimmed.length < 2) {
+    if (!feedEnabled || trimmed.length < 2) {
       setSearchResults([]);
       setIsSearching(false);
+      setSearchFailed(false);
       return;
     }
 
@@ -79,8 +93,10 @@ function FeedHashtagsScreen() {
     searchTimerRef.current = setTimeout(async () => {
       try {
         const response = await searchHashtags(trimmed);
+        if (cancelled) return;
         setSearchResults(normalizeHashtags(response));
       } catch {
+        if (cancelled) return;
         /*
           🔴 An empty result list is rendered below as "No hashtags match …", so a dropped
           request told the member the tag does not exist (audit 2026-09-06). Same fault as
@@ -89,16 +105,17 @@ function FeedHashtagsScreen() {
         setSearchResults([]);
         setSearchFailed(true);
       } finally {
-        setIsSearching(false);
+        if (!cancelled) setIsSearching(false);
       }
     }, 250);
 
     return () => {
+      cancelled = true;
       if (searchTimerRef.current) {
         clearTimeout(searchTimerRef.current);
       }
     };
-  }, [query, searchAttempt]);
+  }, [query, searchAttempt, feedEnabled]);
 
   const displayHashtags = useMemo(() => (query.trim().length >= 2 ? searchResults : hashtags), [hashtags, query, searchResults]);
 
@@ -137,9 +154,9 @@ function FeedHashtagsScreen() {
         <AppTopBar title={t('hashtags.title')} backLabel={t('common:buttons.back')} fallbackHref="/(tabs)/home" />
         {!hasModule('feed') ? (
           <EmptyState icon="pricetag-outline" title={t('common:errors.notFound')} subtitle={t('feed.emptySubtitle')} />
-        ) : isLoading ? (
+        ) : isLoading && !hasLoaded ? (
           <LoadingSpinner />
-        ) : error ? (
+        ) : error && !hasLoaded ? (
           <EmptyState
             icon="warning-outline"
             title={t('hashtags.unableToLoad')}
@@ -157,8 +174,18 @@ function FeedHashtagsScreen() {
             renderItem={renderHashtag}
             keyboardShouldPersistTaps="handled"
             refreshControl={
-              <RefreshControl refreshing={isLoading} onRefresh={() => void loadTrending()} tintColor={primary} colors={[primary]} />
+              <RefreshControl refreshing={query.trim().length >= 2 ? isSearching : isLoading}
+                onRefresh={() => { if (query.trim().length >= 2) setSearchAttempt(attempt => attempt + 1); else void loadTrending(); }}
+                tintColor={primary} colors={[primary]} />
             }
+            ListFooterComponent={error ? (
+              <ErrorState
+                title={t('hashtags.unableToLoad')}
+                subtitle={error}
+                onRetry={() => void loadTrending()}
+                isRetrying={isLoading}
+              />
+            ) : null}
             ListHeaderComponent={
               <View className="mx-4 mb-4 gap-3">
                 <HeroCard variant="secondary">

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockGetHashtagFeed = jest.fn();
 const mockUseLocalSearchParams = jest.fn();
@@ -118,6 +118,32 @@ describe('FeedHashtagScreen', () => {
     expect(getByText('Seed swap')).toBeTruthy();
   });
 
+  it('does not replace a new hashtag with a late response for the previous tag', async () => {
+    let finishOld!: (value: unknown) => void;
+    mockGetHashtagFeed.mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
+      .mockResolvedValueOnce({ data: [{ id: 2, type: 'post', title: 'Repair cafe' }], meta: { has_more: false, total_items: 1 } });
+    const screen = render(<FeedHashtagScreen />);
+    await waitFor(() => expect(mockGetHashtagFeed).toHaveBeenCalledTimes(1));
+    mockUseLocalSearchParams.mockReturnValue({ tag: 'repair' });
+    screen.rerender(<FeedHashtagScreen />);
+    await waitFor(() => expect(screen.getByText('Repair cafe')).toBeTruthy());
+    await act(async () => finishOld({ data: [{ id: 1, type: 'post', title: 'Old gardening post' }], meta: { has_more: false, total_items: 90 } }));
+    expect(screen.getByText('Repair cafe')).toBeTruthy();
+    expect(screen.queryByText('Old gardening post')).toBeNull();
+    expect(screen.getByText('1 posts')).toBeTruthy();
+  });
+
+  it('keeps loaded posts visible and explains a next-page failure', async () => {
+    mockGetHashtagFeed.mockResolvedValueOnce({ data: [{ id: 1, type: 'post', title: 'Seed swap' }], meta: { has_more: true, cursor: 'next', total_items: 2 } })
+      .mockRejectedValueOnce(new Error('Offline'));
+    const screen = render(<FeedHashtagScreen />);
+    await waitFor(() => expect(screen.getByText('Seed swap')).toBeTruthy());
+    fireEvent.press(screen.getByText('Load more'));
+    await waitFor(() => expect(screen.getByText('Could not load posts for this hashtag.')).toBeTruthy());
+    expect(screen.getByText('Seed swap')).toBeTruthy();
+    expect(screen.getByText('Retry')).toBeTruthy();
+  });
+
   it('falls back when the feed module is unavailable', async () => {
     mockHasModule.mockReturnValue(false);
 
@@ -125,5 +151,19 @@ describe('FeedHashtagScreen', () => {
 
     await waitFor(() => expect(mockGetHashtagFeed).not.toHaveBeenCalled());
     expect(getByText('Not found.')).toBeTruthy();
+  });
+
+  it('accepts literal percent characters in already-decoded route parameters', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ tag: '100%community' });
+    mockGetHashtagFeed.mockResolvedValue({ data: [], meta: { has_more: false } });
+    render(<FeedHashtagScreen />);
+    await waitFor(() => expect(mockGetHashtagFeed).toHaveBeenCalledWith('100%community', null));
+  });
+
+  it('does not decode a literal percent-encoded sequence a second time', async () => {
+    mockUseLocalSearchParams.mockReturnValue({ tag: '%23community' });
+    mockGetHashtagFeed.mockResolvedValue({ data: [], meta: { has_more: false } });
+    render(<FeedHashtagScreen />);
+    await waitFor(() => expect(mockGetHashtagFeed).toHaveBeenCalledWith('%23community', null));
   });
 });

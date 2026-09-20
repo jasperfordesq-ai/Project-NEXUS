@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
 
 const mockGetTrendingHashtags = jest.fn();
 const mockSearchHashtags = jest.fn();
@@ -117,6 +118,85 @@ describe('FeedHashtagsScreen', () => {
     await waitFor(() => expect(mockGetTrendingHashtags).not.toHaveBeenCalled());
     expect(getByText('Not found.')).toBeTruthy();
   });
+
+  it.each(['success', 'failure'])('ignores an older trending refresh %s after the newer refresh succeeds', async (outcome) => {
+    let finishOld!: (value: unknown) => void;
+    let failOld!: (reason: Error) => void;
+    mockGetTrendingHashtags.mockResolvedValueOnce({ data: [{ tag: 'initial', post_count: 1 }] })
+      .mockImplementationOnce(() => new Promise((resolve, reject) => { finishOld = resolve; failOld = reject; }))
+      .mockResolvedValueOnce({ data: [{ tag: 'latest', post_count: 2 }] });
+    const screen = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(screen.getByText('#initial')).toBeTruthy());
+    const refresh = screen.UNSAFE_getByType(RefreshControl).props.onRefresh;
+    act(() => { refresh(); refresh(); });
+    await waitFor(() => expect(screen.getByText('#latest')).toBeTruthy());
+    await act(async () => {
+      if (outcome === 'success') finishOld({ data: [{ tag: 'obsolete', post_count: 9 }] });
+      else failOld(new Error('old request failed'));
+    });
+    expect(screen.getByText('#latest')).toBeTruthy();
+    expect(screen.queryByText('#obsolete')).toBeNull();
+    expect(screen.queryByText('Could not load hashtags')).toBeNull();
+  });
+
+  it('keeps loaded hashtags and the search field available when refresh fails, then recovers', async () => {
+    mockGetTrendingHashtags.mockResolvedValueOnce({ data: [{ tag: 'gardening', post_count: 3 }] })
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ data: [{ tag: 'repair', post_count: 4 }] });
+    const screen = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(screen.getByText('#gardening')).toBeTruthy());
+    fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+    await waitFor(() => expect(screen.getByText('Could not load hashtags')).toBeTruthy());
+    expect(screen.getByText('#gardening')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Search hashtags')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.getByText('#repair')).toBeTruthy());
+    expect(screen.queryByText('Could not load hashtags')).toBeNull();
+  });
+
+  it('invalidates pending trending data when feed access changes and reloads when restored', async () => {
+    let finishOld!: (value: unknown) => void;
+    mockGetTrendingHashtags.mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
+      .mockResolvedValueOnce({ data: [{ tag: 'current', post_count: 2 }] });
+    const screen = render(<FeedHashtagsScreen />);
+    mockHasModule.mockReturnValue(false);
+    screen.rerender(<FeedHashtagsScreen />);
+    expect(screen.getByText('Not found.')).toBeTruthy();
+    mockHasModule.mockReturnValue(true);
+    screen.rerender(<FeedHashtagsScreen />);
+    await waitFor(() => expect(screen.getByText('#current')).toBeTruthy());
+    await act(async () => finishOld({ data: [{ tag: 'obsolete', post_count: 9 }] }));
+    expect(screen.getByText('#current')).toBeTruthy();
+    expect(screen.queryByText('#obsolete')).toBeNull();
+  });
+
+  it('ignores results from an older search that completes after a newer search', async () => {
+    let finishOld!: (value: unknown) => void;
+    mockGetTrendingHashtags.mockResolvedValue({ data: [] });
+    mockSearchHashtags.mockImplementationOnce(() => new Promise((resolve) => { finishOld = resolve; }))
+      .mockResolvedValueOnce({ data: [{ tag: 'repair', post_count: 2 }] });
+    const screen = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(screen.getByPlaceholderText('Search hashtags')).toBeTruthy());
+    fireEvent.changeText(screen.getByPlaceholderText('Search hashtags'), 'garden');
+    await waitFor(() => expect(mockSearchHashtags).toHaveBeenCalledWith('garden'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search hashtags'), 'repair');
+    await waitFor(() => expect(screen.getByText('#repair')).toBeTruthy());
+    await act(async () => finishOld({ data: [{ tag: 'gardening', post_count: 9 }] }));
+    expect(screen.getByText('#repair')).toBeTruthy();
+    expect(screen.queryByText('#gardening')).toBeNull();
+  });
+
+  it('clears a search failure when returning to trending hashtags', async () => {
+    mockGetTrendingHashtags.mockResolvedValue({ data: [] });
+    mockSearchHashtags.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<FeedHashtagsScreen />);
+    await waitFor(() => expect(screen.getByPlaceholderText('Search hashtags')).toBeTruthy());
+    fireEvent.changeText(screen.getByPlaceholderText('Search hashtags'), 'garden');
+    await waitFor(() => expect(screen.getByText('Hashtag search is unavailable')).toBeTruthy());
+    fireEvent.press(screen.getByLabelText('Clear search'));
+    expect(screen.queryByText('Hashtag search is unavailable')).toBeNull();
+    expect(screen.getByText('Trending topics will appear here.')).toBeTruthy();
+  });
   /**
    * 🔴 A failed hashtag search set the results to an empty list, and an empty list renders
    * as "No hashtags match …" — so a dropped request told the member the tag does not exist
@@ -148,4 +228,20 @@ describe('FeedHashtagsScreen', () => {
     await waitFor(() => expect(getByText('No hashtags match "garden".')).toBeTruthy());
     expect(queryByText('Hashtag search is unavailable')).toBeNull();
   });
+});
+
+it('pulls fresh results for the active search instead of refreshing trending topics', async () => {
+ mockHasModule.mockReturnValue(true); mockGetTrendingHashtags.mockReset(); mockSearchHashtags.mockReset();
+ mockGetTrendingHashtags.mockResolvedValue({ data: [] });
+ mockSearchHashtags.mockResolvedValueOnce({ data: [{ tag: 'garden', post_count: 1 }] })
+   .mockResolvedValueOnce({ data: [{ tag: 'gardening', post_count: 2 }] });
+ const screen=render(<FeedHashtagsScreen />);
+ await waitFor(() => expect(screen.getByPlaceholderText('Search hashtags')).toBeTruthy());
+ fireEvent.changeText(screen.getByPlaceholderText('Search hashtags'), 'garden');
+ await waitFor(() => expect(screen.getByText('#garden')).toBeTruthy());
+ const trendingCalls=mockGetTrendingHashtags.mock.calls.length;
+ fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
+ await waitFor(() => expect(screen.getByText('#gardening')).toBeTruthy());
+ expect(mockSearchHashtags).toHaveBeenLastCalledWith('garden');
+ expect(mockGetTrendingHashtags).toHaveBeenCalledTimes(trendingCalls);
 });
