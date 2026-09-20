@@ -105,3 +105,16 @@ describe('node-retrying', () => {
     expect(calls).toHaveLength(1);
   });
 });
+
+it('retries standalone Expo exports only for the observed access violation', () => {
+  const cli = 'C:/app/node_modules/expo/bin/cli';
+  const { spawn, calls } = spawnReturning(3221225477, 0);
+  expect(run([cli, 'export', '--platform', 'android'], { spawn, log: () => {} })).toBe(0);
+  expect(calls).toHaveLength(2);
+  const invalid = spawnReturning(1, 0);
+  expect(run([cli, 'export'], { spawn: invalid.spawn, log: () => {} })).toBe(1);
+  expect(invalid.calls).toHaveLength(1);
+  const other = spawnReturning(3221225477, 0);
+  expect(run([cli, 'prebuild'], { spawn: other.spawn, log: () => {} })).toBe(3221225477);
+  expect(other.calls).toHaveLength(1);
+});

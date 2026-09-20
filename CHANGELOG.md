@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed the mobile bundle-budget export on Windows by reusing the bounded Node shutdown-crash retry wrapper. Ordinary export errors still fail; the size ceiling is unchanged.
+
 - Fixed the native image viewer share-failure handler to use the shared safe error-description helper, satisfying the app-wide failure-message consistency check.
 
 - Fixed native onboarding retaining the previous account after a delayed response: account/community changes now reset the screen, and stale media, profile-save and completion callbacks cannot publish state or navigation after departure.

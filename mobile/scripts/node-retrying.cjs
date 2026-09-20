@@ -60,6 +60,9 @@ function isMetroBundleInvocation(argv) {
 function retryableStep(argv) {
   if (isUpdatesResourcesScript(argv?.[0])) return 'createUpdatesResources.js';
   if (isMetroBundleInvocation(argv)) return 'the Metro bundle (export:embed)';
+  if (normalize(argv?.[0]).endsWith('/expo/bin/cli') && argv?.[1] === 'export') {
+    return 'the Expo export';
+  }
   return null;
 }
 

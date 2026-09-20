@@ -72,6 +72,8 @@ function exportBundle() {
     🔴 Run Expo's CLI through node directly, never `npx`. On Windows `execFileSync('npx.cmd')`
     fails with EINVAL — Node refuses to spawn a .cmd without a shell — and `shell: true`
     would then need every argument quoted by hand. The CLI file is a plain script.
+    Reuse the bounded shutdown-crash wrapper; a written artifact alone never
+    converts a failed export into a passing budget gate.
   */
   const cli = path.join(MOBILE, 'node_modules', 'expo', 'bin', 'cli');
   if (!fs.existsSync(cli)) {
@@ -80,7 +82,7 @@ function exportBundle() {
   try {
     execFileSync(
       process.execPath,
-      [cli, 'export', '--platform', 'android', '--output-dir', outDir],
+      [path.join(HERE, 'node-retrying.cjs'), cli, 'export', '--platform', 'android', '--output-dir', outDir],
       { cwd: MOBILE, stdio: 'pipe', timeout: 20 * 60 * 1000 },
     );
   } catch (error) {
