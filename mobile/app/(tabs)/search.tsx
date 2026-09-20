@@ -5,8 +5,8 @@
 
 import NativePressable from '@/components/ui/NativePressable';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useState, useCallback } from 'react';
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { FlatList, RefreshControl, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -31,7 +31,8 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useDebounce } from '@/lib/hooks/useDebounce';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -40,6 +41,8 @@ import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import Input from '@/components/ui/Input';
 import SearchInput from '@/components/ui/SearchInput';
 import { SkeletonBox } from '@/components/ui/Skeleton';
@@ -122,6 +125,13 @@ function SearchResultSkeleton() {
 }
 
 function SearchScreen() {
+  const { tenant } = useTenant();
+  const { user } = useAuth();
+  return <SearchContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} />;
+}
+
+function SearchContent() {
+  const largeText = useWindowDimensions().fontScale > 1.3;
   const { t } = useTranslation(['search', 'common']);
   const params = useLocalSearchParams<{ q?: string; type?: string }>();
   const primary = usePrimaryColor();
@@ -134,12 +144,21 @@ function SearchScreen() {
   const [showSaveSearch, setShowSaveSearch] = useState(false);
   const [saveSearchName, setSaveSearchName] = useState('');
   const [isSavingSearch, setIsSavingSearch] = useState(false);
+  const savePending = useRef(false);
+  const pendingDeletes = useRef(new Set<number>());
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const debouncedQuery = useDebounce(query, 400);
 
   const activeType = activeFilter === 'all' ? undefined : activeFilter;
+  const requestedCursor = useRef<string | null>(null);
 
   const fetchSearch = useCallback(
     (cursor: string | null) => {
+      requestedCursor.current = cursor;
       if (!debouncedQuery.trim()) {
         return Promise.resolve({ data: [], meta: { total: 0, has_more: false, cursor: null } } as SearchResponse);
       }
@@ -148,14 +167,14 @@ function SearchScreen() {
     [debouncedQuery, activeType],
   );
 
-  const { items: results, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
+  const { items: results, isLoading, isLoadingMore, error, errorStatus, hasMore, loadMore, refresh } =
     usePaginatedApi<SearchResult, SearchResponse>(
       fetchSearch,
       extractSearchPage,
       [debouncedQuery, activeFilter],
-      { getKey: (item) => `${item.type}-${item.id}` },
+      { getKey: (item) => `${item.type}-${item.id}`, clearOnRefusal: true },
     );
-  const savedSearchesQuery = useApi(() => getSavedSearches(), []);
+  const savedSearchesQuery = useApi(() => getSavedSearches(), [], { clearOnRefusal: true });
   const savedSearches = savedSearchesQuery.data?.data ?? [];
 
   const filters: FilterOption[] = ['all', 'user', 'listing', 'event', 'group', 'blog_post'];
@@ -166,9 +185,11 @@ function SearchScreen() {
   }
 
   async function handleSaveSearch() {
-    const trimmedQuery = debouncedQuery.trim();
+    if (savePending.current) return;
+    const trimmedQuery = query.trim();
     const trimmedName = saveSearchName.trim();
     if (!trimmedQuery || !trimmedName) return;
+    savePending.current = true;
     try {
       setIsSavingSearch(true);
       await saveSearch({
@@ -178,13 +199,15 @@ function SearchScreen() {
           ...(activeFilter !== 'all' ? { type: activeFilter } : {}),
         },
       });
+      if (!mounted.current) return;
       setSaveSearchName('');
       setShowSaveSearch(false);
       savedSearchesQuery.refresh();
     } catch (err) {
-      showToast({ title: t('saved.saveFailedTitle'), description: describeApiError(err, t('saved.saveFailedMessage')), variant: 'danger' });
+      if (mounted.current) showToast({ title: t('saved.saveFailedTitle'), description: describeApiError(err, t('saved.saveFailedMessage')), variant: 'danger' });
     } finally {
-      setIsSavingSearch(false);
+      savePending.current = false;
+      if (mounted.current) setIsSavingSearch(false);
     }
   }
 
@@ -194,8 +217,8 @@ function SearchScreen() {
     setQuery(savedQuery);
     setActiveFilter(savedType);
     try {
-      await runSavedSearch(item.id, results.length);
-      savedSearchesQuery.refresh();
+      await runSavedSearch(item.id);
+      if (mounted.current) savedSearchesQuery.refresh();
     } catch {
       // Running the search locally is still useful if analytics bookkeeping fails.
     }
@@ -212,11 +235,15 @@ function SearchScreen() {
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
+        if (!mounted.current || pendingDeletes.current.has(item.id)) return;
+        pendingDeletes.current.add(item.id);
         try {
           await deleteSavedSearch(item.id);
-          savedSearchesQuery.refresh();
+          if (mounted.current) savedSearchesQuery.refresh();
         } catch (err) {
-          showToast({ title: t('saved.deleteFailedTitle'), description: describeApiError(err, t('saved.deleteFailedMessage')), variant: 'danger' });
+          if (mounted.current) showToast({ title: t('saved.deleteFailedTitle'), description: describeApiError(err, t('saved.deleteFailedMessage')), variant: 'danger' });
+        } finally {
+          pendingDeletes.current.delete(item.id);
         }
       },
     });
@@ -243,7 +270,7 @@ function SearchScreen() {
       >
         <HeroCard variant="default" className="w-full overflow-hidden rounded-panel p-0">
           <View className="h-1 w-full" style={{ backgroundColor: tone }} />
-          <HeroCard.Body className="flex-row items-center gap-3 p-4">
+          <HeroCard.Body className={largeText ? "items-start gap-3 p-4" : "flex-row items-center gap-3 p-4"}>
             {item.type === 'user' ? (
               <Avatar uri={item.avatar} name={item.title} size={44} />
             ) : (
@@ -254,10 +281,10 @@ function SearchScreen() {
                 <Ionicons name={icon} size={21} color={tone} />
               </View>
             )}
-            <View className="min-w-0 flex-1 gap-1">
-              <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={2}>{item.title}</Text>
+            <View className={largeText ? "w-full gap-1" : "min-w-0 flex-1 gap-1"}>
+              <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>{item.title}</Text>
               {item.subtitle ? (
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{item.subtitle}</Text>
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 2}>{item.subtitle}</Text>
               ) : null}
             </View>
             <View className="items-end gap-2">
@@ -294,6 +321,9 @@ function SearchScreen() {
         </View>
       );
     }
+    if (isRefusalStatus(errorStatus)) {
+      return <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} />;
+    }
     if (error) {
       return (
         <View className="px-4 py-8">
@@ -328,7 +358,7 @@ function SearchScreen() {
         keyExtractor={(item) => `${item.type}-${item.id}`}
         renderItem={renderResult}
         ListEmptyComponent={renderEmpty}
-        onEndReached={() => { if (hasMore) void loadMore(); }}
+        onEndReached={() => { if (hasMore && !error) void loadMore(); }}
         onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
@@ -354,6 +384,9 @@ function SearchScreen() {
             t={t}
             savedSearches={savedSearches}
             savedSearchesLoading={savedSearchesQuery.isLoading}
+            savedSearchesError={savedSearchesQuery.error}
+            savedSearchesStatus={savedSearchesQuery.errorStatus}
+            retrySavedSearches={savedSearchesQuery.refresh}
             showSaveSearch={showSaveSearch}
             setShowSaveSearch={setShowSaveSearch}
             saveSearchName={saveSearchName}
@@ -366,7 +399,7 @@ function SearchScreen() {
         }
         ListFooterComponent={
           error && results.length > 0 ? (
-            <ErrorState title={t('errorTitle')} subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+            <ErrorState title={t('errorTitle')} subtitle={error} onRetry={requestedCursor.current ? loadMore : refresh} isRetrying={isLoading || isLoadingMore} />
           ) : isLoadingMore ? (
             <View className="py-4 items-center"><Spinner size="sm" /></View>
           ) : !hasMore && results.length > 0 && !isLoading ? (
@@ -398,6 +431,9 @@ function SearchHeader({
   t,
   savedSearches,
   savedSearchesLoading,
+  savedSearchesError,
+  savedSearchesStatus,
+  retrySavedSearches,
   showSaveSearch,
   setShowSaveSearch,
   saveSearchName,
@@ -421,6 +457,9 @@ function SearchHeader({
   t: (key: string, options?: Record<string, unknown>) => string;
   savedSearches: SavedSearch[];
   savedSearchesLoading: boolean;
+  savedSearchesError: string | null;
+  savedSearchesStatus: number | null;
+  retrySavedSearches: () => void;
   showSaveSearch: boolean;
   setShowSaveSearch: (value: boolean) => void;
   saveSearchName: string;
@@ -430,17 +469,18 @@ function SearchHeader({
   onRunSavedSearch: (item: SavedSearch) => void;
   onDeleteSavedSearch: (item: SavedSearch) => void;
 }) {
+  const largeText = useWindowDimensions().fontScale > 1.3;
   const canSaveSearch = hasQuery && query.trim().length > 0;
   return (
     <View className="gap-3 pb-2">
       <HeroCard variant="default" className="mx-4 overflow-hidden rounded-panel p-0">
         <View className="h-1 w-full" style={{ backgroundColor: '#10B981' }} />
         <HeroCard.Body className="gap-4 p-4">
-          <View className="flex-row items-start gap-3">
+          <View className={largeText ? "items-start gap-3" : "flex-row items-start gap-3"}>
             <View className="size-13 items-center justify-center rounded-3xl" style={{ backgroundColor: withAlpha('#10B981', 0.14) }}>
               <Ionicons name="search-outline" size={24} color="#10B981" />
             </View>
-            <View className="min-w-0 flex-1">
+            <View className={largeText ? "w-full" : "min-w-0 flex-1"}>
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('heroEyebrow')}</Text>
               <Text className="mt-1 text-2xl font-bold leading-8" style={{ color: theme.text }}>{t('title')}</Text>
               <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
@@ -487,13 +527,13 @@ function SearchHeader({
         </Tabs>
 
         <View className="gap-3 rounded-panel-inner bg-surface-secondary p-3">
-          <View className="flex-row items-center justify-between gap-3">
-            <View className="min-w-0 flex-1">
+          <View className={largeText ? "items-start gap-3" : "flex-row items-center justify-between gap-3"}>
+            <View className={largeText ? "w-full" : "min-w-0 flex-1"}>
               <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t('saved.title')}</Text>
               <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('saved.subtitle')}</Text>
             </View>
             {canSaveSearch ? (
-              <HeroButton size="sm" variant="secondary" onPress={() => setShowSaveSearch(!showSaveSearch)}>
+              <HeroButton size="sm" variant="secondary" isDisabled={isSavingSearch} onPress={() => setShowSaveSearch(!showSaveSearch)}>
                 <Ionicons name="bookmark-outline" size={14} color={primary} />
                 <HeroButton.Label>{t('saved.saveThis')}</HeroButton.Label>
               </HeroButton>
@@ -504,17 +544,18 @@ function SearchHeader({
             <View className="gap-2">
               <Input
                 value={saveSearchName}
+                editable={!isSavingSearch}
                 onChangeText={setSaveSearchName}
                 placeholder={t('saved.namePlaceholder')}
                 returnKeyType="done"
                 onSubmitEditing={onSaveSearch}
                 accessibilityLabel={t('saved.namePlaceholder')}
               />
-              <View className="flex-row gap-2">
-                <HeroButton className="flex-1" size="sm" variant="primary" onPress={onSaveSearch} isDisabled={!saveSearchName.trim() || isSavingSearch}>
+              <View className={largeText ? "gap-2" : "flex-row gap-2"}>
+                <HeroButton className={largeText ? "w-full" : "flex-1"} size="sm" variant="primary" onPress={onSaveSearch} isDisabled={!saveSearchName.trim() || isSavingSearch}>
                   <HeroButton.Label>{isSavingSearch ? t('saved.saving') : t('saved.save')}</HeroButton.Label>
                 </HeroButton>
-                <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => {
+                <HeroButton className={largeText ? "w-full" : "flex-1"} size="sm" variant="secondary" isDisabled={isSavingSearch} onPress={() => {
                   setShowSaveSearch(false);
                   setSaveSearchName('');
                 }}>
@@ -524,17 +565,22 @@ function SearchHeader({
             </View>
           ) : null}
 
-          {savedSearchesLoading ? (
+          {savedSearches.length > 0 && !isRefusalStatus(savedSearchesStatus) ? (
+            <RefreshFailedNotice error={savedSearchesError} onRetry={retrySavedSearches} isRetrying={savedSearchesLoading} />
+          ) : null}
+          {isRefusalStatus(savedSearchesStatus) ? (
+            <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} />
+          ) : savedSearchesLoading && savedSearches.length === 0 ? (
             <View className="items-center py-2"><Spinner size="sm" /></View>
           ) : savedSearches.length > 0 ? (
             <View className="gap-2">
-              {savedSearches.slice(0, 4).map((item) => (
+              {savedSearches.map((item) => (
                 <View key={item.id} className="gap-2 rounded-panel-inner bg-background p-3">
-                  <View className="flex-row items-center gap-2">
+                  <View className={largeText ? "items-start gap-2" : "flex-row items-center gap-2"}>
                     <Ionicons name="bookmark" size={14} color={primary} />
-                    <View className="min-w-0 flex-1">
-                      <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={1}>{item.name}</Text>
-                      <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                    <View className={largeText ? "w-full" : "min-w-0 flex-1"}>
+                      <Text className="text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>{item.name}</Text>
+                      <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
                         {item.query_params.q || t('saved.noQuery')}
                       </Text>
                     </View>
@@ -544,17 +590,19 @@ function SearchHeader({
                       </Chip>
                     ) : null}
                   </View>
-                  <View className="flex-row gap-2">
-                    <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => onRunSavedSearch(item)}>
+                  <View className={largeText ? "gap-2" : "flex-row gap-2"}>
+                    <HeroButton className={largeText ? "w-full" : "flex-1"} size="sm" variant="secondary" onPress={() => onRunSavedSearch(item)}>
                       <HeroButton.Label>{t('saved.run')}</HeroButton.Label>
                     </HeroButton>
-                    <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => onDeleteSavedSearch(item)} accessibilityLabel={t('saved.deleteNamed', { name: item.name })}>
+                    <HeroButton className={largeText ? "w-full" : "flex-1"} size="sm" variant="secondary" onPress={() => onDeleteSavedSearch(item)} accessibilityLabel={t('saved.deleteNamed', { name: item.name })}>
                       <HeroButton.Label>{t('saved.delete')}</HeroButton.Label>
                     </HeroButton>
                   </View>
                 </View>
               ))}
             </View>
+          ) : savedSearchesError ? (
+            <ErrorState subtitle={savedSearchesError} onRetry={retrySavedSearches} isRetrying={savedSearchesLoading} />
           ) : (
             <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('saved.empty')}</Text>
           )}

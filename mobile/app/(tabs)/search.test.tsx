@@ -4,7 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { FlatList, RefreshControl } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 const mockRouterPush = jest.fn();
 let mockSearchParams: Record<string, string | undefined> = {};
@@ -12,6 +14,10 @@ const mockUseApi = jest.fn();
 const mockSaveSearch = jest.fn();
 const mockRunSavedSearch = jest.fn();
 const mockDeleteSavedSearch = jest.fn();
+let mockDebouncedQuery: string | undefined;
+let mockUserId = 7;
+let mockTenantId = 2;
+const mockConfirm = jest.fn();
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -72,8 +78,9 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId }, hasFeature: () => true }),
 }));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -97,7 +104,7 @@ jest.mock('@/lib/hooks/usePaginatedApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useDebounce', () => ({
-  useDebounce: (value: string) => value,
+  useDebounce: (value: string) => mockDebouncedQuery ?? value,
 }));
 
 jest.mock('expo-haptics', () => ({
@@ -124,7 +131,7 @@ jest.mock('@/components/OfflineBanner', () => () => null);
 // Confirmations resolve immediately so the guarded action runs in the test.
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirm: (options: { onConfirm: () => void }) => mockConfirm(options),
     confirmDialog: null,
   }),
 }));
@@ -147,6 +154,10 @@ const defaultPaginatedState = {
 };
 
 beforeEach(() => {
+  mockUserId = 7;
+  mockTenantId = 2;
+  mockConfirm.mockReset().mockImplementation((options: { onConfirm: () => void }) => options.onConfirm());
+  mockDebouncedQuery = undefined;
   mockRouterPush.mockReset();
   mockSearchParams = {};
   mockSaveSearch.mockReset().mockResolvedValue({ data: { id: 2 } });
@@ -158,7 +169,8 @@ beforeEach(() => {
     error: null,
     refresh: jest.fn(),
   });
-  mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
+  mockUsePaginatedApi.mockReset().mockReturnValue(defaultPaginatedState);
+  jest.requireMock('@/lib/api/search').search.mockReset();
 });
 
 const mockSearchResult = {
@@ -172,7 +184,130 @@ const mockSearchResult = {
 };
 
 describe('SearchScreen', () => {
-  it('keeps loaded results and offers recovery when a later page fails', () => {
+  it('serializes deletion of a saved entry and ignores its completion after unmount', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: [{ id: 4, name: 'Saved', query_params: { q: 'garden' } }] }, isLoading: false, error: null, refresh });
+    let finish!: (value: unknown) => void;
+    mockDeleteSavedSearch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<SearchScreen />);
+    fireEvent.press(screen.getByText('Delete'));
+    fireEvent.press(screen.getByText('Delete'));
+    expect(mockDeleteSavedSearch).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => finish({ data: { deleted: true } }));
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it.each(['account', 'community'])('resets search state and ignores late save completion after changing %s', async (change) => {
+    let finish!: (value: unknown) => void;
+    mockSaveSearch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh });
+    const screen = render(<SearchScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Search for people, listings...'), 'private query');
+    fireEvent.press(screen.getByText('Save search'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search name'), 'Private name');
+    fireEvent.press(screen.getByText('Save'));
+    if (change === 'account') mockUserId = 8;
+    else mockTenantId = 3;
+    screen.rerender(<SearchScreen />);
+    expect(screen.getByPlaceholderText('Search for people, listings...').props.value).toBe('');
+    expect(screen.queryByPlaceholderText('Search name')).toBeNull();
+    await act(async () => finish({ data: { id: 1 } }));
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('does not execute a delete confirmation after leaving the old search screen', async () => {
+    mockConfirm.mockImplementation(() => undefined);
+    mockUseApi.mockReturnValue({ data: { data: [{ id: 4, name: 'Saved', query_params: { q: 'garden' } }] }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<SearchScreen />);
+    fireEvent.press(screen.getByText('Delete'));
+    const confirmation = mockConfirm.mock.calls[0][0];
+    screen.unmount();
+    await act(async () => confirmation.onConfirm());
+    expect(mockDeleteSavedSearch).not.toHaveBeenCalled();
+  });
+
+  it('retries a failed search page at the same cursor and preserves prior results', async () => {
+    mockSearchParams = { q: 'garden' };
+    mockUsePaginatedApi.mockImplementation(jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi);
+    const fetch = jest.requireMock('@/lib/api/search').search;
+    fetch.mockResolvedValueOnce({ data: [mockSearchResult], meta: { total: 2, has_more: true, cursor: 'page-two' } })
+      .mockRejectedValueOnce(new ApiResponseError(503, 'Connection interrupted'))
+      .mockResolvedValueOnce({ data: [{ ...mockSearchResult, id: 43, title: 'Another member' }], meta: { total: 2, has_more: false, cursor: null } });
+    const screen = render(<SearchScreen />);
+    await screen.findByText('Jane Doe');
+    await act(async () => screen.UNSAFE_getByType(FlatList).props.onEndReached());
+    await screen.findByText('Connection interrupted');
+    await act(async () => screen.UNSAFE_getByType(FlatList).props.onEndReached());
+    expect(fetch).toHaveBeenCalledTimes(2);
+    fireEvent.press(screen.getByRole('button', { name: 'common:buttons.retry' }));
+    await screen.findByText('Another member');
+    expect(fetch).toHaveBeenLastCalledWith('garden', 'page-two', undefined);
+    expect(screen.getByText('Jane Doe')).toBeTruthy();
+  });
+
+  it.each([401, 403, 404])('removes results after refresh returns %s', async (status) => {
+    mockSearchParams = { q: 'garden' };
+    mockUsePaginatedApi.mockImplementation(jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi);
+    jest.requireMock('@/lib/api/search').search
+      .mockResolvedValueOnce({ data: [mockSearchResult], meta: { total: 1, has_more: false, cursor: null } })
+      .mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
+    const screen = render(<SearchScreen />);
+    await screen.findByText('Jane Doe');
+    await act(async () => screen.UNSAFE_getByType(RefreshControl).props.onRefresh());
+    await screen.findByText('common:errors.notAvailableTitle');
+    expect(screen.queryByText('Jane Doe')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common:buttons.retry' })).toBeNull();
+  });
+
+  it('clears saved entries after an actual refresh refusal', async () => {
+    const realUseApi = jest.requireActual('@/lib/hooks/useApi').useApi;
+    let refreshSaved!: () => void;
+    mockUseApi.mockImplementation((...args: unknown[]) => {
+      const state = realUseApi(...args);
+      refreshSaved = state.refresh;
+      return state;
+    });
+    jest.requireMock('@/lib/api/search').getSavedSearches
+      .mockResolvedValueOnce({ data: [{ id: 7, name: 'Private saved search', query_params: { q: 'garden' } }] })
+      .mockRejectedValueOnce(new ApiResponseError(403, 'Unavailable'));
+    const screen = render(<SearchScreen />);
+    await screen.findByText('Private saved search');
+    await act(async () => refreshSaved());
+    await screen.findByText('common:errors.notAvailableTitle');
+    expect(screen.queryByText('Private saved search')).toBeNull();
+    expect(screen.queryByText('Run')).toBeNull();
+  });
+
+  it('shows a retryable saved-search failure instead of claiming the list is empty', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Saved searches unavailable', refresh });
+    const screen = render(<SearchScreen />);
+    expect(screen.getByText('Saved searches unavailable')).toBeTruthy();
+    expect(screen.queryByText('No saved searches yet.')).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'common:buttons.retry' }));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps all saved searches accessible during a refresh, including entries beyond the fourth', () => {
+    mockUseApi.mockReturnValue({ data: { data: Array.from({ length: 6 }, (_, index) => ({
+      id: index + 1, name: `Saved search ${index + 1}`, query_params: { q: `query ${index}` },
+    })) }, isLoading: true, error: null, refresh: jest.fn() });
+    const screen = render(<SearchScreen />);
+    expect(screen.getByText('Saved search 1')).toBeTruthy();
+    expect(screen.getByText('Saved search 6')).toBeTruthy();
+  });
+
+  it('shows saved-search refusal without retry or an empty-list claim', () => {
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Unavailable', errorStatus: 403, refresh: jest.fn() });
+    const screen = render(<SearchScreen />);
+    expect(screen.getByText('common:errors.notAvailableTitle')).toBeTruthy();
+    expect(screen.queryByText('No saved searches yet.')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'common:buttons.retry' })).toBeNull();
+  });
+
+  it('keeps loaded results and offers recovery when a refresh fails', () => {
     const refresh = jest.fn();
     mockSearchParams = { q: 'garden' };
     mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
@@ -257,6 +392,37 @@ describe('SearchScreen', () => {
     });
   });
 
+  it('saves the visible query while results are still debouncing and serializes keyboard submissions', async () => {
+    mockSearchParams = { q: 'gardening', type: 'event' };
+    mockDebouncedQuery = 'gardening';
+    let finish!: (value: unknown) => void;
+    mockSaveSearch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<SearchScreen />);
+    fireEvent.press(screen.getByText('Save search'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search name'), 'New search');
+    fireEvent.changeText(screen.getByPlaceholderText('Search for people, listings...'), 'cooking');
+    fireEvent(screen.getByPlaceholderText('Search name'), 'submitEditing');
+    fireEvent(screen.getByPlaceholderText('Search name'), 'submitEditing');
+    expect(mockSaveSearch).toHaveBeenCalledTimes(1);
+    expect(screen.getByPlaceholderText('Search name').props.editable).toBe(false);
+    expect(mockSaveSearch).toHaveBeenCalledWith({ name: 'New search', query_params: { q: 'cooking', type: 'event' } });
+    await act(async () => finish({ data: {} }));
+    mockDebouncedQuery = undefined;
+  });
+
+  it('preserves a failed save draft and unlocks retry', async () => {
+    mockSearchParams = { q: 'garden' };
+    mockSaveSearch.mockRejectedValueOnce(new Error('Offline'));
+    const screen = render(<SearchScreen />);
+    fireEvent.press(screen.getByText('Save search'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search name'), 'My garden');
+    fireEvent.press(screen.getByText('Save'));
+    await waitFor(() => expect(screen.getByPlaceholderText('Search name').props.editable).toBe(true));
+    expect(screen.getByPlaceholderText('Search name').props.value).toBe('My garden');
+    fireEvent.press(screen.getByText('Save'));
+    await waitFor(() => expect(mockSaveSearch).toHaveBeenCalledTimes(2));
+  });
+
   it('runs and deletes saved searches from the native search surface', async () => {
     const refresh = jest.fn();
     mockUseApi.mockReturnValue({
@@ -278,7 +444,7 @@ describe('SearchScreen', () => {
     const { getByPlaceholderText, getByText } = render(<SearchScreen />);
 
     fireEvent.press(getByText('Run'));
-    await waitFor(() => expect(mockRunSavedSearch).toHaveBeenCalledWith(9, 0));
+    await waitFor(() => expect(mockRunSavedSearch).toHaveBeenCalledWith(9));
     expect(getByPlaceholderText('Search for people, listings...').props.value).toBe('garden');
 
     fireEvent.press(getByText('Delete'));
