@@ -266,8 +266,8 @@ export async function getCourseProgress(courseId: number): Promise<CourseProgres
   return unwrap(await api.get<DataEnvelope<CourseProgress>>(`${API_V2}/courses/${courseId}/progress`));
 }
 
-export async function enrollInCourse(courseId: number): Promise<CourseEnrollment> {
-  return unwrap(await api.post<DataEnvelope<CourseEnrollment>>(`${API_V2}/courses/${courseId}/enroll`, {}));
+export async function enrollInCourse(courseId: number, expectedCreditCost: number): Promise<CourseEnrollment> {
+  return unwrap(await api.post<DataEnvelope<CourseEnrollment>>(`${API_V2}/courses/${courseId}/enroll`, { expected_credit_cost: expectedCreditCost }));
 }
 
 /**

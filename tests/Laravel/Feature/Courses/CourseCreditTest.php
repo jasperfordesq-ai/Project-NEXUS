@@ -48,6 +48,23 @@ class CourseCreditTest extends TestCase
         return $course;
     }
 
+    public function test_changed_course_price_is_rejected_before_charging_or_enrolling(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 0]);
+        $learner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 0]);
+        $course = $this->paidCourse($author->id, 2);
+        \Illuminate\Support\Facades\DB::table('courses')->where('id', $course->id)->update(['credit_cost' => 5]);
+        try {
+            CourseEnrollmentService::enrollWithPayment($course, $learner->id, null, 2.0);
+            $this->fail('A changed price must require new consent');
+        } catch (\DomainException $error) {
+            $this->assertSame('course_price_changed', $error->getMessage());
+        }
+        $this->assertFalse(CourseEnrollmentService::isEnrolled($course->id, $learner->id));
+        $this->assertEquals(0, $learner->fresh()->balance);
+        $this->assertEquals(0, $author->fresh()->balance);
+    }
+
     public function test_paid_enrolment_transfers_credits_from_learner_to_author(): void
     {
         $author = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 0]);

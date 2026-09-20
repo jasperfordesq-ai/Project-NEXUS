@@ -1,4 +1,5 @@
 {
+  "courses.price_changed": "The course price changed. Refresh the course and confirm the current price before enrolling.",
   "courses.feature_disabled": "The courses feature is not enabled for this community.",
   "courses.not_found": "Course not found.",
   "courses.grade_conflict": "This attempt has already been graded. Refresh the grading list before making another decision.",

@@ -129,7 +129,7 @@ describe('CourseDetailScreen', () => {
     const { getByText } = render(<CourseDetailScreen />);
     await waitFor(() => expect(getByText('Timebanking basics')).toBeTruthy());
     fireEvent.press(getByText('Enroll'));
-    await waitFor(() => expect(enrollInCourse).toHaveBeenCalledWith(7));
+    await waitFor(() => expect(enrollInCourse).toHaveBeenCalledWith(7, 0));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/course-player', params: { id: '7' } });
   });
   /**
@@ -152,7 +152,7 @@ describe('CourseDetailScreen', () => {
 
     // The member says yes.
     await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
-    expect(enrollInCourse).toHaveBeenCalledWith(7);
+    expect(enrollInCourse).toHaveBeenCalledWith(7, 2.5);
   });
 
   it('serializes repeated paid-enrolment confirmations before React re-renders', async () => {
@@ -188,7 +188,7 @@ describe('CourseDetailScreen', () => {
 
     fireEvent.press(getByText('Enroll'));
 
-    await waitFor(() => expect(enrollInCourse).toHaveBeenCalledWith(7));
+    await waitFor(() => expect(enrollInCourse).toHaveBeenCalledWith(7, 0));
     expect(mockConfirm).not.toHaveBeenCalled();
     expect(queryByText('Enrol in this course?')).toBeNull();
   });
@@ -197,9 +197,9 @@ describe('CourseDetailScreen', () => {
    * 🔴 The reason was thrown away, so the likeliest failure — not enough credits — reached
    * the member as "please try again", which cannot work.
    */
-  it('tells the member why enrolment was refused instead of just saying try again', async () => {
+  it.each([[422, 'You need 2 more time credits.'], [409, 'The course price changed. Refresh the course.']] as const)('explains enrolment refusal %s without opening the player', async (status, message) => {
     jest.mocked(enrollInCourse).mockRejectedValue(
-      new ApiResponseError(422, 'You need 2 more time credits.'),
+      new ApiResponseError(status, message),
     );
 
     const { getByText } = render(<CourseDetailScreen />);
@@ -207,7 +207,7 @@ describe('CourseDetailScreen', () => {
     fireEvent.press(getByText('Enroll'));
 
     await waitFor(() => expect(mockShow).toHaveBeenCalledWith(expect.objectContaining({
-      description: 'You need 2 more time credits.',
+      description: message,
       variant: 'danger',
     })));
     expect(mockPush).not.toHaveBeenCalled();

@@ -49,9 +49,15 @@ class CourseEnrollmentController extends BaseApiController
             return $this->respondWithError('PREREQUISITES_NOT_MET', __('api_controllers_2.courses.prerequisites_not_met'), null, 422);
         }
 
+        $validated = request()->validate([
+            'expected_credit_cost' => ['sometimes', 'required', 'numeric', 'min:0', 'decimal:0,2'],
+        ]);
+        $expectedCost = array_key_exists('expected_credit_cost', $validated) ? (float) $validated['expected_credit_cost'] : null;
         $cohortId = $this->inputInt('cohort_id', null, 1);
         try {
-            $enrollment = CourseEnrollmentService::enrollWithPayment($course, $userId, $cohortId);
+            $enrollment = CourseEnrollmentService::enrollWithPayment($course, $userId, $cohortId, $expectedCost);
+        } catch (\DomainException) {
+            return $this->respondWithError('COURSE_PRICE_CHANGED', __('api_controllers_2.courses.price_changed'), null, 409);
         } catch (\RuntimeException) {
             return $this->respondWithError('INSUFFICIENT_CREDITS', __('api_controllers_2.courses.insufficient_credits'), null, 422);
         }

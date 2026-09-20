@@ -74,7 +74,7 @@ function CourseDetailScreenInner() {
     enrollingRef.current = true;
     setEnrolling(true);
     try {
-      await enrollInCourse(course.id);
+      await enrollInCourse(course.id, parseDecimalInput(String(course.credit_cost ?? '')) ?? 0);
       if (!isMountedRef.current) return;
       show({ title: t('detail.enroll_success'), variant: 'success' });
       router.push({ pathname: '/(modals)/course-player', params: { id: String(course.id) } });

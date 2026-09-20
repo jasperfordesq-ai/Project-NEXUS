@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native course enrolment now submits the confirmed credit price; the API rejects changed prices before charging and asks the member to refresh and confirm again.
+
 - Preserve course lists during refresh failures and invalidate stale native enrolment confirmations when the displayed course price or availability changes.
 
 - Keep loaded Groups and Listings visible after a later request fails, with retry feedback and recovery controls alongside existing results.

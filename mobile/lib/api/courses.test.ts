@@ -89,9 +89,9 @@ describe('courses API', () => {
       .mockResolvedValueOnce({ data: { id: 4, course_id: 7, status: 'active' } })
       .mockResolvedValueOnce({ data: { progress_percent: 50, course_completed: false } });
 
-    await expect(enrollInCourse(7)).resolves.toMatchObject({ id: 4 });
+    await expect(enrollInCourse(7, 2)).resolves.toMatchObject({ id: 4 });
     await expect(completeCourseLesson(7, 12)).resolves.toEqual({ progress_percent: 50, course_completed: false });
-    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/courses/7/enroll', {});
+    expect(api.post).toHaveBeenNthCalledWith(1, '/api/v2/courses/7/enroll', { expected_credit_cost: 2 });
     expect(api.post).toHaveBeenNthCalledWith(2, '/api/v2/courses/7/lessons/12/complete', { watch_percent: 100 });
   });
 

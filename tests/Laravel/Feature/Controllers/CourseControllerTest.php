@@ -101,6 +101,26 @@ class CourseControllerTest extends TestCase
         return $course;
     }
 
+    public function test_enrolment_requires_the_confirmed_price_before_charging(): void
+    {
+        $this->enableCourses();
+        $learner = $this->authenticatedUser();
+        DB::table('users')->where('id', $learner->id)->update(['balance' => 0]);
+        $course = $this->publishedCourse(['credit_cost' => 5]);
+        $path = '/v2/courses/' . $course->id . '/enroll';
+        foreach ([0, 2, 8] as $quote) {
+            $this->apiPost($path, ['expected_credit_cost' => $quote])
+                ->assertStatus(409)->assertJsonPath('errors.0.code', 'COURSE_PRICE_CHANGED');
+        }
+        foreach ([-1, 'invalid', 1.234, null] as $quote) {
+            $this->apiPost($path, ['expected_credit_cost' => $quote])->assertStatus(422);
+        }
+        $this->assertFalse(\App\Services\CourseEnrollmentService::isEnrolled($course->id, $learner->id));
+        $this->assertEquals(0, $learner->fresh()->balance);
+        $this->apiPost($path, ['expected_credit_cost' => 5])
+            ->assertStatus(422)->assertJsonPath('errors.0.code', 'INSUFFICIENT_CREDITS');
+    }
+
     public function test_browse_returns_403_when_feature_disabled(): void
     {
         $this->enableCourses(false);

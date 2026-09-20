@@ -107,11 +107,11 @@ class CourseEnrollmentService
     /**
      * Enroll a user and charge any configured course credit cost exactly once.
      */
-    public static function enrollWithPayment(Course $course, int $userId, ?int $cohortId = null): CourseEnrollment
+    public static function enrollWithPayment(Course $course, int $userId, ?int $cohortId = null, ?float $expectedCreditCost = null): CourseEnrollment
     {
         $tenantId = (int) ($course->tenant_id ?: TenantContext::getId());
         if ($tenantId > 0 && TenantContext::currentId() !== $tenantId) {
-            return TenantContext::runForTenant($tenantId, fn () => self::enrollWithPayment($course, $userId, $cohortId));
+            return TenantContext::runForTenant($tenantId, fn () => self::enrollWithPayment($course, $userId, $cohortId, $expectedCreditCost));
         }
 
         $existing = self::findAny((int) $course->id, $userId);
@@ -128,7 +128,7 @@ class CourseEnrollmentService
         // Run the charge + enrollment atomically under a row lock, but defer the
         // enrollment notification (push/HTTP I/O) until AFTER commit so we never hold
         // the locked course/wallet rows open across network calls.
-        [$enrollment, $shouldNotify] = DB::transaction(function () use ($course, $userId, $cohortId) {
+        [$enrollment, $shouldNotify] = DB::transaction(function () use ($course, $userId, $cohortId, $expectedCreditCost) {
             // Re-read the course under the lock so credit_cost / author_user_id are the
             // freshest values, not the (possibly stale) instance passed into the method.
             $locked = Course::whereKey($course->id)->lockForUpdate()->first() ?? $course;
@@ -139,6 +139,14 @@ class CourseEnrollmentService
             }
             if ($existing && $existing->status === 'dropped') {
                 return [self::enroll((int) $course->id, $userId, $cohortId, false), true];
+            }
+
+            // Compare the displayed quote to the locked price before any wallet mutation.
+            // Existing enrolments above remain safe to replay without another charge.
+            if ($expectedCreditCost !== null
+                && (!is_finite($expectedCreditCost) || $expectedCreditCost < 0
+                    || round($expectedCreditCost * 100) !== round((float) $locked->credit_cost * 100))) {
+                throw new \DomainException('course_price_changed');
             }
 
             $payment = CourseCreditService::chargeEnrollment($locked, $userId);
