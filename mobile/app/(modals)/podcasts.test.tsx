@@ -31,9 +31,10 @@ describe('PodcastsScreen', () => {
   });
 
   it('retains shows and offers recovery after a later page fails', async () => {
+    let recover!: (value: Awaited<ReturnType<typeof getPodcastShows>>) => void;
     jest.mocked(getPodcastShows).mockResolvedValueOnce({ items: [{ id: 2, title: 'Time stories', slug: 'time-stories', episode_count: 4, subscriber_count: 9 }], page: 1, total: 2, hasMore: true, categories: [] })
       .mockRejectedValueOnce(new ApiResponseError(422, 'Shows unavailable'))
-      .mockResolvedValueOnce({ items: [{ id: 3, title: 'Recovered show', slug: 'recovered', episode_count: 1, subscriber_count: 0 }], page: 2, total: 2, hasMore: false, categories: [] });
+      .mockImplementationOnce(() => new Promise(resolve => { recover = resolve; }));
     const screen = render(<PodcastsScreen />);
     await waitFor(() => expect(screen.getByText('Time stories')).toBeTruthy());
     await act(async () => fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached'));
@@ -41,10 +42,12 @@ describe('PodcastsScreen', () => {
     expect(screen.getByText('Time stories')).toBeTruthy();
     fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
     expect(getPodcastShows).toHaveBeenCalledTimes(2);
-    fireEvent.press(screen.getByText('common:buttons.retry'));
-    await waitFor(() => expect(screen.queryByText('Shows unavailable')).toBeNull());
+    await act(async () => fireEvent.press(screen.getByText('common:buttons.retry')));
     expect(getPodcastShows).toHaveBeenCalledTimes(3);
     expect(getPodcastShows).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    expect(screen.getByText('Time stories')).toBeTruthy();
+    await act(async () => recover({ items: [{ id: 3, title: 'Recovered show', slug: 'recovered', episode_count: 1, subscriber_count: 0 }], page: 2, total: 2, hasMore: false, categories: [] }));
+    expect(screen.queryByText('Shows unavailable')).toBeNull();
     expect(screen.getByText('Time stories')).toBeTruthy();
     expect(screen.getByText('Recovered show')).toBeTruthy();
   });

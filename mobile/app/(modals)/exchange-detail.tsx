@@ -60,6 +60,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { ApiResponseError } from '@/lib/api/client';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
 
@@ -267,7 +268,8 @@ function ExchangeDetailModalInner() {
         backLabel={t('common:back')}
         message={error ?? t('detail.notFound')}
         onAction={() => router.back()}
-        onRetry={error && (!errorStatus || errorStatus >= 500 || errorStatus === 408 || errorStatus === 429) ? refresh : undefined}
+        onRetry={error && !isRefusalStatus(errorStatus)
+          && (!errorStatus || errorStatus >= 500 || errorStatus === 408 || errorStatus === 429) ? refresh : undefined}
       />
     );
   }
