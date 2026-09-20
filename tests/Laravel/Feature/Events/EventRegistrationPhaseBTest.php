@@ -32,6 +32,51 @@ final class EventRegistrationPhaseBTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_schedule_retry_after_due_time_returns_receipt_without_rescheduling(): void
+    {
+        $now = CarbonImmutable::parse('2027-08-01T10:00:00Z');
+        CarbonImmutable::setTestNow($now);
+        $owner = $this->eventUser();
+        $member = $this->eventUser();
+        [$eventId] = $this->registrationEvent((int) $owner->id, $now->addDay());
+        $service = new EventInvitationCampaignService();
+        $source = ['member_ids' => [(int) $member->id]];
+        $preview = $service->preview($eventId, $owner, 'member', $source, 'due-replay-preview');
+        $campaignId = (int) $preview['campaign']->id;
+        $scheduledFor = $now->addHour();
+        $scheduled = $service->schedule($eventId, $campaignId, $owner, $scheduledFor, 1, 'due-replay-schedule');
+        self::assertTrue($scheduled['changed']);
+        $tables = ['event_invitation_campaign_history', 'event_invitations', 'event_domain_outbox'];
+        $counts = array_map(fn ($table) => DB::table($table)->count(), $tables);
+        CarbonImmutable::setTestNow($now->addHours(2));
+        $replay = $service->schedule($eventId, $campaignId, $owner, $scheduledFor, 1, 'due-replay-schedule');
+        self::assertFalse($replay['changed']);
+        self::assertSame($campaignId, (int) $replay['campaign']->id);
+        self::assertSame(2, (int) $replay['campaign']->revision);
+        self::assertSame($counts, array_map(fn ($table) => DB::table($table)->count(), $tables));
+        $this->assertReason('event_invitation_campaign_idempotency_conflict', fn () =>
+            $service->schedule($eventId, $campaignId, $owner, $scheduledFor->addMinute(), 1, 'due-replay-schedule'));
+        $this->assertReason('event_invitation_campaign_schedule_invalid', fn () =>
+            $service->schedule($eventId, $campaignId, $owner, '', 1, 'due-replay-schedule'));
+
+        $fresh = $service->preview($eventId, $owner, 'member', $source, 'due-fresh-preview');
+        $this->assertReason('event_invitation_campaign_schedule_invalid', fn () =>
+            $service->schedule($eventId, (int) $fresh['campaign']->id, $owner, $scheduledFor, 1, 'due-fresh-schedule'));
+        $this->assertReason('event_invitation_campaign_schedule_invalid', fn () =>
+            $service->schedule($eventId, (int) $fresh['campaign']->id, $owner, $now->addDay(), 1, 'due-start-schedule'));
+        self::assertSame('previewed', $fresh['campaign']->fresh()->status->value);
+
+        $service->cancel($eventId, $campaignId, $owner, 2, 'Synthetic cancellation', 'due-replay-cancel');
+        $historyCount = DB::table('event_invitation_campaign_history')->count();
+        $cancelledReplay = $service->schedule($eventId, $campaignId, $owner, $scheduledFor, 1, 'due-replay-schedule');
+        self::assertFalse($cancelledReplay['changed']);
+        self::assertSame('cancelled', $cancelledReplay['campaign']->status->value);
+        self::assertSame(3, (int) $cancelledReplay['campaign']->revision);
+        self::assertSame($historyCount, DB::table('event_invitation_campaign_history')->count());
+        self::assertSame($counts[1], DB::table('event_invitations')->count());
+        self::assertSame($counts[2], DB::table('event_domain_outbox')->count());
+    }
+
     public function test_submitted_answers_are_amended_as_an_immutable_lineage(): void
     {
         $owner = $this->eventUser();

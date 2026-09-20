@@ -78,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed invitation campaign scheduling recovery after the scheduled time: an exact retry returns the existing campaign without rescheduling, while new invalid send times remain rejected.
+
 - Exact retries of successfully issued event invitation campaigns now return their saved result after invitation expiry, without issuing or queuing anything again. New issuance still requires a valid future expiry.
 
 - Android guest attendance forms now explicitly resize above the keyboard, keeping undo reasons and scrollable confirmation controls usable at enlarged text sizes.

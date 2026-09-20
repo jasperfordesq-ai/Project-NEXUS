@@ -197,9 +197,7 @@ final class EventInvitationCampaignService
                 'event_invitation_campaign_schedule_invalid',
             );
             $now = CarbonImmutable::now('UTC');
-            if ($instant === null
-                || ! $instant->greaterThan($now)
-                || ! $instant->lessThan($this->support->eventStart($event))) {
+            if ($instant === null) {
                 throw new EventRegistrationFoundationException('event_invitation_campaign_schedule_invalid');
             }
             $requestHash = $this->support->requestHash([
@@ -216,6 +214,12 @@ final class EventInvitationCampaignService
                     'campaign' => $this->campaignModel($tenantId, (int) $replay->campaign_id),
                     'changed' => false,
                 ];
+            }
+            // A lost acknowledgement can be retried after the send time. Exact
+            // replay returns the current campaign without scheduling it again.
+            if (! $instant->greaterThan($now)
+                || ! $instant->lessThan($this->support->eventStart($event))) {
+                throw new EventRegistrationFoundationException('event_invitation_campaign_schedule_invalid');
             }
             $campaign = $this->campaign($tenantId, $eventId, $campaignId, true);
             if ((string) $campaign->status !== EventInvitationCampaignStatus::Previewed->value
