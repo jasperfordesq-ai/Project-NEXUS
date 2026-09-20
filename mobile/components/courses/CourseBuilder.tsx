@@ -17,7 +17,7 @@
  * Reordering uses one atomic request and reconciles uncertain results before another move.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useWindowDimensions, View } from 'react-native';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -60,17 +60,27 @@ import {
 const CONTENT_TYPES: LessonContentType[] = ['text', 'video', 'pdf', 'embed', 'quiz'];
 const DRIP_TYPES: LessonDripType[] = ['none', 'days_after_enroll', 'fixed_date'];
 
+export interface CurriculumChangeState { isDirty: boolean; isSaving: boolean }
+type ReportDraft = (key: string, state: CurriculumChangeState | null) => void;
+
+function lessonSnapshot(lesson: CourseLesson) {
+  return JSON.stringify([lesson.title, lesson.content_type, lesson.body, lesson.transcript,
+    lesson.video_url, lesson.embed_url, lesson.attachment_url, lesson.min_watch_percent,
+    lesson.drip_type ?? 'none', lesson.drip_offset_days, lesson.drip_date, lesson.is_preview]);
+}
+
 interface CourseBuilderProps {
   courseId: number;
   initialSections: CourseSection[];
   initialUnassignedLessons?: CourseLesson[];
+  onPendingChangesChange?: (state: CurriculumChangeState) => void;
 }
 
 export function CourseBuilder(props: CourseBuilderProps) {
   return <CourseBuilderBody key={props.courseId} {...props} />;
 }
 
-function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons = [] }: CourseBuilderProps) {
+function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons = [], onPendingChangesChange }: CourseBuilderProps) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
@@ -86,6 +96,21 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   sectionsRef.current = sections;
   const assignmentInFlight = useRef(false);
   const [assigning, setAssigning] = useState(false);
+  const [draftStates, setDraftStates] = useState<Record<string, CurriculumChangeState>>({});
+  const reportDraft = useCallback<ReportDraft>((key, state) => {
+    setDraftStates(current => {
+      if (!state && !current[key]) return current;
+      if (state && current[key]?.isDirty === state.isDirty && current[key]?.isSaving === state.isSaving) return current;
+      const next = { ...current };
+      if (state) next[key] = state; else delete next[key];
+      return next;
+    });
+  }, []);
+  const hasDraft = Object.values(draftStates).some(state => state.isDirty);
+  const hasPendingSave = Object.values(draftStates).some(state => state.isSaving);
+  useEffect(() => {
+    onPendingChangesChange?.({ isDirty: hasDraft || hasPendingSave, isSaving: hasPendingSave });
+  }, [hasDraft, hasPendingSave, onPendingChangesChange]);
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -148,6 +173,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
     void operation.finally(() => {
       if (sectionRenames.current.get(sectionId) === operation) sectionRenames.current.delete(sectionId);
     });
+    return operation;
   }
 
   async function removeSection(sectionId: number) {
@@ -395,10 +421,11 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
             <HeroCard.Body className="gap-3 p-4">
               <SectionHeader
                 section={section}
+                reportDraft={reportDraft}
                 movesDisabled={movesDisabled}
                 isFirst={sectionIndex === 0}
                 isLast={sectionIndex === sections.length - 1}
-                onRename={(title) => void renameSection(section.id, title)}
+                onRename={(title) => renameSection(section.id, title)}
                 onMove={(direction) => void moveSection(sectionIndex, direction)}
                 onDelete={() => confirmRemoveSection(section)}
               />
@@ -409,6 +436,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
                     key={lesson.id}
                     courseId={courseId}
                     lesson={lesson}
+                    reportDraft={reportDraft}
                     movesDisabled={movesDisabled}
                     isFirst={lessonIndex === 0}
                     isLast={lessonIndex === (section.lessons?.length ?? 0) - 1}
@@ -450,6 +478,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
 
 function SectionHeader({
   section,
+  reportDraft,
   isFirst,
   isLast,
   movesDisabled,
@@ -458,16 +487,21 @@ function SectionHeader({
   onDelete,
 }: {
   section: CourseSection;
+  reportDraft: ReportDraft;
   isFirst: boolean;
   isLast: boolean;
   movesDisabled: boolean;
-  onRename: (title: string) => void;
+  onRename: (title: string) => void | Promise<void>;
   onMove: (direction: -1 | 1) => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation(['courses', 'common']);
   const theme = useTheme();
   const [title, setTitle] = useState(section.title);
+  const [renaming, setRenaming] = useState(0);
+  const alive = useRef(true);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; reportDraft('section-' + section.id, null); }; }, [reportDraft, section.id]);
+  useEffect(() => { reportDraft('section-' + section.id, { isDirty: title !== section.title, isSaving: renaming > 0 }); }, [reportDraft, section.id, section.title, title, renaming]);
 
   return (
     <View className="gap-2">
@@ -478,7 +512,11 @@ function SectionHeader({
         onChangeText={setTitle}
         onBlur={() => {
           const trimmed = title.trim();
-          if (trimmed && trimmed !== section.title) onRename(trimmed);
+          if (trimmed && trimmed !== section.title) {
+            setTitle(trimmed);
+            setRenaming(count => count + 1);
+            void Promise.resolve(onRename(trimmed)).finally(() => { if (alive.current) setRenaming(count => count - 1); });
+          }
         }}
         style={{ color: theme.text }}
         containerClassName="mb-0"
@@ -509,6 +547,7 @@ function SectionHeader({
 
 function LessonRow({
   courseId,
+  reportDraft,
   lesson,
   isFirst,
   isLast,
@@ -521,6 +560,7 @@ function LessonRow({
 }: {
   courseId: number;
   lesson: CourseLesson;
+  reportDraft: ReportDraft;
   isFirst: boolean;
   isLast: boolean;
   movesDisabled: boolean;
@@ -535,10 +575,18 @@ function LessonRow({
   const { show: showToast } = useAppToast();
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<CourseLesson>(lesson);
+  const [savedSnapshot, setSavedSnapshot] = useState(() => lessonSnapshot(lesson));
   const [isSaving, setIsSaving] = useState(false);
   const [questionPrompt, setQuestionPrompt] = useState('');
   const [questionOptions, setQuestionOptions] = useState('');
   const [questionCorrect, setQuestionCorrect] = useState('');
+  const [addingQuestion, setAddingQuestion] = useState(false);
+  const draftDirty = lessonSnapshot(draft) !== savedSnapshot
+    || Boolean(questionPrompt || questionOptions || questionCorrect);
+  useEffect(() => {
+    reportDraft('lesson-' + lesson.id, { isDirty: draftDirty, isSaving: isSaving || addingQuestion });
+  }, [reportDraft, lesson.id, draftDirty, isSaving, addingQuestion]);
+  useEffect(() => () => reportDraft('lesson-' + lesson.id, null), [reportDraft, lesson.id]);
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -591,6 +639,7 @@ function LessonRow({
         if (!mountedRef.current) return;
         next = { ...next, quiz: { ...quiz, questions: quiz.questions ?? [] } };
       }
+      setSavedSnapshot(lessonSnapshot(next));
       setDraft(next);
       onChange(next);
       showToast({ title: t('builder.lesson_saved'), variant: 'success' });
@@ -607,6 +656,7 @@ function LessonRow({
     const quiz = draft.quiz;
     if (!mountedRef.current || questionInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
     questionInFlight.current = true;
+    setAddingQuestion(true);
     const labels = questionOptions.split(',').map((value) => value.trim()).filter(Boolean);
     const options = labels.map((label, index) => ({ id: String.fromCharCode(97 + index), label }));
     const correct = questionCorrect.trim() || options[0]?.id || 'a';
@@ -639,6 +689,7 @@ function LessonRow({
       showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       questionInFlight.current = false;
+      if (mountedRef.current) setAddingQuestion(false);
     }
   }
 

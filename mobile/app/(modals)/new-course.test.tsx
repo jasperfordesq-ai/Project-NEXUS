@@ -240,6 +240,27 @@ describe('NewCourseRoute', () => {
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
+  it('protects unsaved inline lesson edits even when course details are unchanged', async () => {
+    mockSearchParams = { id: '42' };
+    mockGetCourse.mockResolvedValue({ ...existingCourse, sections: [{ id: 5, course_id: 42, title: 'Section', position: 0, lessons: [{ id: 90, course_id: 42, section_id: 5, title: 'Original lesson', content_type: 'text', position: 0, is_preview: false }] }] });
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByLabelText('Original lesson')).toBeTruthy());
+    expect(lastIsDirty()).toBe(false);
+    fireEvent.press(screen.getByLabelText('Original lesson'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsaved lesson title');
+    expect(lastIsDirty()).toBe(true);
+  });
+
+  it('protects an unsaved section rename before the field loses focus', async () => {
+    mockSearchParams = { id: '42' };
+    mockGetCourse.mockResolvedValue({ ...existingCourse, sections: [{ id: 5, course_id: 42, title: 'Section', position: 0, lessons: [] }] });
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByDisplayValue('Section')).toBeTruthy());
+    expect(lastIsDirty()).toBe(false);
+    fireEvent.changeText(screen.getByLabelText('Section title'), 'Unsaved section');
+    expect(lastIsDirty()).toBe(true);
+  });
+
   it('passes preserved lessons into the curriculum after loading an existing course', async () => {
     mockSearchParams = { id: '42' };
     mockGetCourse.mockResolvedValue({ ...existingCourse, unassigned_lessons: [{ id: 90, course_id: 42, section_id: null, title: 'Preserved lesson', content_type: 'text', position: 0, is_preview: false }] });

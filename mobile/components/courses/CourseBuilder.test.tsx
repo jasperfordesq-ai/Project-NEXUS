@@ -218,6 +218,48 @@ describe('CourseBuilder', () => {
     expect(screen.getByText('Preserved')).toBeTruthy();
   });
 
+  it('reports dirty, saving, failed and confirmed lesson state to the route guard', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
+    const changed = jest.fn();
+    let rejectSave!: (error: Error) => void;
+    mockUpdateCourseLesson.mockImplementationOnce(() => new Promise((_, reject) => { rejectSave = reject; }))
+      .mockResolvedValueOnce({ ...lesson, title: 'Changed' });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} onPendingChangesChange={changed} />);
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: false, isSaving: false });
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Changed');
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+    fireEvent.press(screen.getByText('Save lesson'));
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: true });
+    await act(async () => rejectSave(new Error('Offline')));
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+    fireEvent.press(screen.getByText('Save lesson'));
+    await waitFor(() => expect(changed).toHaveBeenLastCalledWith({ isDirty: false, isSaving: false }));
+  });
+
+  it('reports an unfinished quiz question even if the lesson itself is unchanged', () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Quiz', content_type: 'quiz' as const, position: 0, is_preview: false, quiz: { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } };
+    const changed = jest.fn();
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} onPendingChangesChange={changed} />);
+    fireEvent.press(screen.getByLabelText('Quiz'));
+    fireEvent.changeText(screen.getByLabelText('Question'), 'Unfinished question');
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+  });
+
+  it('does not consider an unsaved lesson title saved when a quiz question is added', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Quiz', content_type: 'quiz' as const, position: 0, is_preview: false, quiz: { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } };
+    const changed = jest.fn();
+    mockCreateQuizQuestion.mockResolvedValue({ id: 501, prompt: 'Question' });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} onPendingChangesChange={changed} />);
+    fireEvent.press(screen.getByLabelText('Quiz'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsent title');
+    fireEvent.changeText(screen.getByLabelText('Question'), 'Question');
+    fireEvent.press(screen.getByText('Add question'));
+    await waitFor(() => expect(screen.getByLabelText('Question').props.value).toBe(''));
+    expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
+    expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
+  });
+
   it('keeps lessons visible after section deletion and assigns them to another section', async () => {
     const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Retained lesson', content_type: 'text' as const, position: 0, is_preview: false };
     mockDeleteCourseSection.mockResolvedValue(undefined);
@@ -236,11 +278,11 @@ describe('CourseBuilder', () => {
     const lesson = { id: 90, course_id: 42, section_id: null, title: 'Preserved', content_type: 'text' as const, position: 0, is_preview: false };
     mockUpdateCourseLesson.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ ...lesson, section_id: 6 });
     const screen = render(<CourseBuilder courseId={42} initialSections={[section(6, 'Destination')]} initialUnassignedLessons={[lesson]} />);
-    fireEvent.press(screen.getByText('Destination'));
+    await act(async () => fireEvent.press(screen.getByText('Destination')));
     await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
     expect(screen.getByText('Preserved')).toBeTruthy();
     expect(screen.getByText('Lessons without a section')).toBeTruthy();
-    fireEvent.press(screen.getByText('Destination'));
+    await act(async () => fireEvent.press(screen.getByText('Destination')));
     await waitFor(() => expect(screen.queryByText('Lessons without a section')).toBeNull());
     expect(mockUpdateCourseLesson).toHaveBeenCalledTimes(2);
     expect(screen.getByLabelText('Preserved')).toBeTruthy();

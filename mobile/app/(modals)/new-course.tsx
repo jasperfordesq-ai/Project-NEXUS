@@ -33,7 +33,7 @@ import TextArea from '@/components/ui/TextArea';
 import { Chip } from '@/components/ui/StatusChip';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { CourseBuilder, ChoiceGroup } from '@/components/courses/CourseBuilder';
+import { CourseBuilder, ChoiceGroup, type CurriculumChangeState } from '@/components/courses/CourseBuilder';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
   createCourse,
@@ -175,13 +175,14 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
   const editedSnapshot = JSON.stringify({
     title, summary, description, level, visibility, enrollmentType, categoryId, creditCost, prerequisites,
   });
+  const [curriculumChanges, setCurriculumChanges] = useState<CurriculumChangeState>({ isDirty: false, isSaving: false });
   const isDirtyForEdit = loadedSnapshot !== null && editedSnapshot !== loadedSnapshot;
 
   useUnsavedChangesGuard({
-    isDirty: isEditing
+    isDirty: curriculumChanges.isDirty || (isEditing
       ? isDirtyForEdit
-      : Boolean(title.trim() || summary.trim() || description.trim()),
-    isSaving,
+      : Boolean(title.trim() || summary.trim() || description.trim())),
+    isSaving: isSaving || curriculumChanges.isSaving,
     confirm,
     title: t('instructor.unsaved_title'),
     message: t('instructor.unsaved_message'),
@@ -533,7 +534,7 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
 
               {isEditing ? (
                 <View className="gap-4">
-                  <CourseBuilder courseId={courseId} initialSections={sections} initialUnassignedLessons={unassignedLessons} />
+                  <CourseBuilder courseId={courseId} initialSections={sections} initialUnassignedLessons={unassignedLessons} onPendingChangesChange={setCurriculumChanges} />
 
                   {enrollmentType === 'cohort' ? (
                     <FormSection title={t('builder.cohorts')} icon="calendar-outline">
