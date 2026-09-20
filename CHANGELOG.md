@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile exchange lists retain loaded requests after refresh or pagination failure and retry the failed page without restarting the list.
+
 - Mobile jobs, applications and owner postings retain loaded results after a page failure and retry the failed page without restarting the list.
 
 - Mobile polls preserve earlier questions when a later page fails, show a retry instead of an end marker, and retry the failed page without restarting the list.

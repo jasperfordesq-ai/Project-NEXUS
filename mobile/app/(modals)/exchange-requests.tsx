@@ -16,7 +16,7 @@
  * starting, and both sides confirming hours are all steps a member must be told about.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -68,6 +68,7 @@ function ExchangeRequestsScreen() {
   const theme = useTheme();
   const { user } = useAuth();
   const viewerId = user?.id ?? null;
+  const requestedCursor = useRef<string | null>(null);
 
   /*
     🔴 This fetched ONE page of 50 and read neither `meta.has_more` nor `meta.cursor`, so a
@@ -80,7 +81,10 @@ function ExchangeRequestsScreen() {
     ExchangeRequest,
     Awaited<ReturnType<typeof listExchangeRequests>>
   >(
-    (cursor) => listExchangeRequests({ perPage: 50, cursor: cursor ?? undefined }),
+    (cursor) => {
+      requestedCursor.current = cursor;
+      return listExchangeRequests({ perPage: 50, cursor: cursor ?? undefined });
+    },
     (response) => {
       const rows = response?.data;
       return {
@@ -176,7 +180,7 @@ function ExchangeRequestsScreen() {
 
       {isLoading && items.length === 0 ? (
         <LoadingSpinner />
-      ) : error ? (
+      ) : error && items.length === 0 ? (
         <View className="px-4">
           <ErrorState
             title={t('requests.loadFailed')}
@@ -217,7 +221,9 @@ function ExchangeRequestsScreen() {
                 </>
               ) : null}
 
-              {hasMore ? (
+              {error ? (
+                <ErrorState title={t('requests.loadFailed')} subtitle={error} onRetry={() => { if (requestedCursor.current !== null) loadMore(); else refresh(); }} isRetrying={isLoading || isLoadingMore} />
+              ) : hasMore ? (
                 <View className="items-center py-3">
                   <HeroButton
                     size="sm"

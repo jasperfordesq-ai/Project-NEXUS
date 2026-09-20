@@ -4,9 +4,15 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
+let mockRealRead = false;
 const mockUseApi = jest.fn();
+const mockListRequests = jest.fn();
+jest.mock('@/lib/api/exchangeRequests', () => ({
+  ...jest.requireActual('@/lib/api/exchangeRequests'),
+  listExchangeRequests: (...args: unknown[]) => mockListRequests(...args),
+}));
 const mockRefresh = jest.fn();
 const mockRouterPush = jest.fn();
 
@@ -34,7 +40,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUseApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUseApi(...args),
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
@@ -66,13 +72,6 @@ jest.mock('@/components/ui/EmptyState', () => {
   const React = require('react');
   const { Text, View } = require('react-native');
   return function EmptyState({ title }: { title?: string }) {
-    return <View>{title ? <Text>{title}</Text> : null}</View>;
-  };
-});
-jest.mock('@/components/ui/ErrorState', () => {
-  const React = require('react');
-  const { Text, View } = require('react-native');
-  return function ErrorState({ title }: { title?: string }) {
     return <View>{title ? <Text>{title}</Text> : null}</View>;
   };
 });
@@ -116,11 +115,43 @@ function paged(items: unknown[], overrides: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
+  mockRealRead = false;
+  mockListRequests.mockReset();
   mockUseApi.mockReset().mockReturnValue(paged([AS_PROVIDER, FINISHED]));
   mockRouterPush.mockReset();
 });
 
 describe('ExchangeRequestsScreen', () => {
+  it('retries a failed later page while retaining earlier exchanges', async () => {
+    mockRealRead = true;
+    let failed = false;
+    mockListRequests.mockImplementation(async ({ cursor }) => {
+      if (!cursor) return { data: [AS_PROVIDER], meta: { cursor: 'page-two', has_more: true } };
+      if (!failed) { failed = true; throw new Error('Page unavailable'); }
+      return { data: [{ ...FINISHED, listing: { ...FINISHED.listing, title: 'Recovered exchange' } }], meta: { has_more: false } };
+    });
+    const screen = render(<ExchangeRequestsScreen />);
+    await screen.findByText('Gardening help');
+    await act(async () => fireEvent.press(screen.getByTestId('exchange-requests-load-more')));
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await screen.findByText('Recovered exchange');
+    expect(mockListRequests).toHaveBeenLastCalledWith({ perPage: 50, cursor: 'page-two' });
+    expect(screen.getByText('Gardening help')).toBeTruthy();
+  });
+
+  it('keeps loaded requests actionable after a failed refresh', () => {
+    const retry = jest.fn();
+    mockUseApi.mockReturnValue(paged([AS_PROVIDER], { error: 'Exchanges unavailable', refresh: retry }));
+    const screen = render(<ExchangeRequestsScreen />);
+    expect(screen.getByText('Gardening help')).toBeTruthy();
+    expect(screen.getByText('Exchanges unavailable')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('exchange-request-61'));
+    expect(mockRouterPush).toHaveBeenCalledWith({ pathname: '/(modals)/exchange-request-detail', params: { id: '61' } });
+    retry.mockClear();
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
   it('separates the exchanges waiting on this member from the rest', () => {
     const { getByText } = render(<ExchangeRequestsScreen />);
 
