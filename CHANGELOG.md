@@ -78,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Hide native invitation sending and scheduling controls when an event has already started or has no valid start time, while keeping campaign cancellation available.
+
 - Fixed retries of newly created invitation previews after audience membership changes by matching the submitted request to its frozen snapshot, retaining current group access checks and legacy preview compatibility.
 
 - Fixed invitation campaign scheduling recovery after the scheduled time: an exact retry returns the existing campaign without rescheduling, while new invalid send times remain rejected.

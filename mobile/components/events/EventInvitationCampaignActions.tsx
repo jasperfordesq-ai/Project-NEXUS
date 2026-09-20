@@ -17,6 +17,7 @@ export default function EventInvitationCampaignActions({ campaign, timezone, eve
   const [action, setAction] = useState<'issue' | 'schedule' | 'cancel' | null>(null);
   const [value, setValue] = useState(''); const [invalid, setInvalid] = useState(false);
   const mutable = ['previewed', 'scheduled'].includes(campaign.status);
+  const beforeEvent = eventStart !== null && Number.isFinite(Date.parse(eventStart)) && Date.parse(eventStart) > Date.now();
   const label = (kind: string) => t('invitations.' + (kind === 'issue' ? 'send_now' : kind));
   function submit() {
     if (disabled || !mutable || !action) return;
@@ -38,8 +39,8 @@ export default function EventInvitationCampaignActions({ campaign, timezone, eve
   if (!mutable) return null;
   return <View className="gap-3">
     {!action ? <>
-      {campaign.valid_count > 0 && (campaign.status === 'previewed' || (campaign.status === 'scheduled' && campaign.scheduled_for_utc && Date.parse(campaign.scheduled_for_utc) <= Date.now())) && <Button isDisabled={disabled} onPress={() => setAction('issue')}>{label('issue')}</Button>}
-      {campaign.valid_count > 0 && campaign.status === 'previewed' && <Button variant="secondary" isDisabled={disabled} onPress={() => setAction('schedule')}>{label('schedule')}</Button>}
+      {beforeEvent && campaign.valid_count > 0 && (campaign.status === 'previewed' || (campaign.status === 'scheduled' && campaign.scheduled_for_utc && Date.parse(campaign.scheduled_for_utc) <= Date.now())) && <Button isDisabled={disabled} onPress={() => setAction('issue')}>{label('issue')}</Button>}
+      {beforeEvent && campaign.valid_count > 0 && campaign.status === 'previewed' && <Button variant="secondary" isDisabled={disabled} onPress={() => setAction('schedule')}>{label('schedule')}</Button>}
       <Button variant="secondary" isDisabled={disabled} onPress={() => setAction('cancel')}>{label('cancel')}</Button>
     </> : <>
       <Text accessibilityRole="header" className="font-semibold text-foreground">{label(action)}</Text>
