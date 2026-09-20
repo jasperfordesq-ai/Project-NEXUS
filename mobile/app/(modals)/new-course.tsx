@@ -24,6 +24,7 @@ import * as Haptics from '@/lib/haptics';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ErrorState from '@/components/ui/ErrorState';
 import FeatureGate from '@/components/FeatureGate';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import { FormHero, FormSection, SummaryTile } from '@/components/ui/FormSection';
@@ -103,6 +104,10 @@ function NewCourseScreen() {
 
   const [categories, setCategories] = useState<CourseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(hasParamCourse);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRevision, setLoadRevision] = useState(0);
+  const [loadedCourseId, setLoadedCourseId] = useState<number | null>(null);
+  const canEditCourse = !hasParamCourse || loadedCourseId === paramCourseId;
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [status, setStatus] = useState<CourseStatus>('draft');
@@ -175,9 +180,12 @@ function NewCourseScreen() {
     if (!hasParamCourse) return;
     let isMounted = true;
     setIsLoading(true);
+    setLoadError(null);
+    setLoadedCourseId(null);
     getCourse(paramCourseId)
       .then((course) => {
         if (!isMounted) return;
+        setLoadedCourseId(paramCourseId);
         setTitle(course.title ?? '');
         setSummary(course.summary ?? '');
         setDescription(course.description ?? '');
@@ -209,16 +217,12 @@ function NewCourseScreen() {
       })
       .catch((err) => {
         if (!isMounted) return;
-        showToast({
-          title: t('instructor.create_error'),
-          description: describeApiError(err, ''),
-          variant: 'danger',
-        });
+        setLoadError(describeApiError(err, t('common:errors.loadFailedSubtitle')));
       })
       .finally(() => { if (isMounted) setIsLoading(false); });
     return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasParamCourse, paramCourseId]);
+  }, [hasParamCourse, paramCourseId, loadRevision]);
 
   function buildPayload(): CourseInput {
     return {
@@ -245,7 +249,7 @@ function NewCourseScreen() {
   }
 
   async function saveDetails() {
-    if (saveInFlight.current) return;
+    if (saveInFlight.current || !canEditCourse) return;
     if (!title.trim()) {
       setTitleError(t('instructor.title_required'));
       showToast({ title: t('form.required'), variant: 'warning' });
@@ -284,7 +288,7 @@ function NewCourseScreen() {
   }
 
   async function togglePublish() {
-    if (publishInFlight.current || !isEditing) return;
+    if (publishInFlight.current || !isEditing || !canEditCourse) return;
     publishInFlight.current = true;
     setIsPublishing(true);
     try {
@@ -320,7 +324,7 @@ function NewCourseScreen() {
     delete one. Nothing in the request is idempotent, so the guard has to be here.
   */
   async function addCohort() {
-    if (cohortInFlight.current || !isEditing || !cohortName.trim()) return;
+    if (cohortInFlight.current || !isEditing || !canEditCourse || !cohortName.trim()) return;
     cohortInFlight.current = true;
     setIsAddingCohort(true);
     try {
@@ -362,8 +366,10 @@ function NewCourseScreen() {
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {isLoading ? (
+        {isLoading || (!canEditCourse && loadError === null) ? (
           <View className="flex-1 items-center justify-center"><LoadingSpinner /></View>
+        ) : !canEditCourse ? (
+          <ErrorState subtitle={loadError ?? undefined} onRetry={() => setLoadRevision(value => value + 1)} />
         ) : (
           <>
             <ScrollView

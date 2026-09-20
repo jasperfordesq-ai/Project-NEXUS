@@ -235,6 +235,32 @@ describe('NewCourseRoute', () => {
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
+  it.each([0, 403, 404, 500])('requires a successful edit read after load failure %s before exposing writes', async (status) => {
+    mockSearchParams = { id: '42' };
+    mockGetCourse.mockRejectedValueOnce(Object.assign(new Error('Course read failed'), { status }));
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledWith(42));
+    await act(async () => {});
+    expect(screen.queryByLabelText('Title')).toBeNull();
+    expect(screen.queryByTestId('footer-submit')).toBeNull();
+    expect(screen.queryByText('Course builder')).toBeNull();
+    let resolveRead!: (value: typeof existingCourse) => void;
+    mockGetCourse.mockImplementationOnce(() => new Promise(resolve => { resolveRead = resolve; }));
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(mockGetCourse).toHaveBeenCalledTimes(2));
+    expect(screen.queryByLabelText('Title')).toBeNull();
+    expect(mockUpdateCourse).not.toHaveBeenCalled();
+    expect(mockPublishCourse).not.toHaveBeenCalled();
+    expect(mockCreateCourseCohort).not.toHaveBeenCalled();
+    await act(async () => resolveRead(existingCourse));
+    await waitFor(() => expect(screen.getByLabelText('Title').props.value).toBe('Repair skills'));
+    fireEvent.changeText(screen.getByLabelText('Title'), 'Updated repair skills');
+    fireEvent.press(screen.getByTestId('footer-submit'));
+    await waitFor(() => expect(mockUpdateCourse).toHaveBeenCalledWith(42, expect.objectContaining({
+      title: 'Updated repair skills', description: 'A longer description.', credit_cost: 2,
+    })));
+  });
+
   it('refuses to save a course with no title', async () => {
     const { getByText } = render(<NewCourseRoute />);
 
