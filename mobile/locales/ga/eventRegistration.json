@@ -244,6 +244,28 @@
       "email_invalid": "seoladh ríomhphoist neamhbhailí",
       "csv_header_missing": "Ceanntásc CSV in easnamh",
       "csv_email_column_missing": "colún ríomhphoist in easnamh"
+    },
+    "filters": {
+      "roles": "Róil na mball",
+      "roles_hint": "Roghnach: suas le 20 ról, scartha le camóga. Fág bán le gach ról a chur san áireamh.",
+      "languages": "Teangacha roghnaithe",
+      "languages_hint": "Cóid roghnacha: ar, de, en, es, fr, ga, it, ja, nl, pl, pt.",
+      "groups": "Aitheantais grúpaí",
+      "groups_hint": "Roghnach: suas le 25 aitheantas grúpa, scartha le camóga.",
+      "excluded": "Aitheantais ball eisiata",
+      "excluded_hint": "Roghnach: suas le 1,000 aitheantas ball, scartha le camóga.",
+      "joinedAfter": "Cláraithe ar an dáta nó ina dhiaidh",
+      "joinedAfter_hint": "Dáta roghnach: BBBB-MM-LL.",
+      "joinedBefore": "Cláraithe ar an dáta nó roimhe",
+      "joinedBefore_hint": "Dáta roghnach: BBBB-MM-LL.",
+      "approved": "Baill cheadaithe",
+      "hasEmail": "Baill a bhfuil seoladh ríomhphoist acu",
+      "groupMatch": "Ballraíocht sna grúpaí",
+      "any": "Aon cheann",
+      "all": "Gach ceann",
+      "yes": "Tá",
+      "no": "Níl",
+      "limits": "10,000 faighteoir ar a mhéad. CSV: 5 MB ar a mhéad. Seiceálann an réamhamharc faighteoirí agus ceadanna."
     }
   },
   "guests": {

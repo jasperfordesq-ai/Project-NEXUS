@@ -244,6 +244,28 @@
       "email_invalid": "endereço de e-mail inválido",
       "csv_header_missing": "Cabeçalho CSV ausente",
       "csv_email_column_missing": "coluna de e-mail ausente"
+    },
+    "filters": {
+      "roles": "Funções dos membros",
+      "roles_hint": "Opcional: até 20 funções separadas por vírgulas. Em branco inclui todas.",
+      "languages": "Idiomas preferidos",
+      "languages_hint": "Códigos opcionais: ar, de, en, es, fr, ga, it, ja, nl, pl, pt.",
+      "groups": "IDs dos grupos",
+      "groups_hint": "Opcional: até 25 IDs de grupo separados por vírgulas.",
+      "excluded": "IDs dos membros excluídos",
+      "excluded_hint": "Opcional: até 1.000 IDs de membro separados por vírgulas.",
+      "joinedAfter": "Adesão em ou após",
+      "joinedAfter_hint": "Data opcional: AAAA-MM-DD.",
+      "joinedBefore": "Adesão em ou antes",
+      "joinedBefore_hint": "Data opcional: AAAA-MM-DD.",
+      "approved": "Membros aprovados",
+      "hasEmail": "Membros com endereço de email",
+      "groupMatch": "Correspondência de grupos",
+      "any": "Qualquer",
+      "all": "Todos",
+      "yes": "Sim",
+      "no": "Não",
+      "limits": "Máximo de 10.000 destinatários. CSV: máximo de 5 MB. A pré-visualização verifica destinatários e permissões."
     }
   },
   "guests": {

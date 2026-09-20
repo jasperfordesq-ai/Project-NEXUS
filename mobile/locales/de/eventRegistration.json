@@ -244,6 +244,28 @@
       "email_invalid": "Ungültige E-Mail-Adresse",
       "csv_header_missing": "CSV-Header fehlt",
       "csv_email_column_missing": "E-Mail-Spalte fehlt"
+    },
+    "filters": {
+      "roles": "Mitgliederrollen",
+      "roles_hint": "Optional: bis zu 20 Rollen, durch Kommas getrennt. Leer umfasst alle Rollen.",
+      "languages": "Bevorzugte Sprachen",
+      "languages_hint": "Optionale Sprachcodes: ar, de, en, es, fr, ga, it, ja, nl, pl, pt.",
+      "groups": "Gruppen-IDs",
+      "groups_hint": "Optional: bis zu 25 Gruppen-IDs, durch Kommas getrennt.",
+      "excluded": "Ausgeschlossene Mitglieder-IDs",
+      "excluded_hint": "Optional: bis zu 1.000 Mitglieder-IDs, durch Kommas getrennt.",
+      "joinedAfter": "Beigetreten am oder nach",
+      "joinedAfter_hint": "Optionales Datum: JJJJ-MM-TT.",
+      "joinedBefore": "Beigetreten am oder vor",
+      "joinedBefore_hint": "Optionales Datum: JJJJ-MM-TT.",
+      "approved": "Genehmigte Mitglieder",
+      "hasEmail": "Mitglieder mit E-Mail-Adresse",
+      "groupMatch": "Gruppenzugehörigkeit",
+      "any": "Beliebig",
+      "all": "Alle",
+      "yes": "Ja",
+      "no": "Nein",
+      "limits": "Maximal 10.000 Empfänger. CSV: maximal 5 MB. Die Vorschau prüft Empfänger und Zugriffsrechte."
     }
   },
   "guests": {

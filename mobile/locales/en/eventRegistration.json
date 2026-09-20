@@ -244,6 +244,28 @@
       "email_invalid": "invalid email address",
       "csv_header_missing": "CSV header missing",
       "csv_email_column_missing": "email column missing"
+    },
+    "filters": {
+      "roles": "Member roles",
+      "roles_hint": "Optional: up to 20 roles, separated by commas. Blank includes all roles.",
+      "languages": "Preferred languages",
+      "languages_hint": "Optional language codes: ar, de, en, es, fr, ga, it, ja, nl, pl, pt.",
+      "groups": "Group IDs",
+      "groups_hint": "Optional: up to 25 group IDs, separated by commas.",
+      "excluded": "Excluded member IDs",
+      "excluded_hint": "Optional: up to 1,000 member IDs, separated by commas.",
+      "joinedAfter": "Joined on or after",
+      "joinedAfter_hint": "Optional date: YYYY-MM-DD.",
+      "joinedBefore": "Joined on or before",
+      "joinedBefore_hint": "Optional date: YYYY-MM-DD.",
+      "approved": "Approved members",
+      "hasEmail": "Members with an email address",
+      "groupMatch": "Group membership match",
+      "any": "Any",
+      "all": "All",
+      "yes": "Yes",
+      "no": "No",
+      "limits": "Maximum 10,000 recipients. CSV: maximum 5 MB. Preview checks recipient validity and access."
     }
   },
   "guests": {

@@ -244,6 +244,28 @@
       "email_invalid": "indirizzo e-mail non valido",
       "csv_header_missing": "Manca l'intestazione CSV",
       "csv_email_column_missing": "colonna email mancante"
+    },
+    "filters": {
+      "roles": "Ruoli dei membri",
+      "roles_hint": "Facoltativo: fino a 20 ruoli separati da virgole. Vuoto include tutti i ruoli.",
+      "languages": "Lingue preferite",
+      "languages_hint": "Codici facoltativi: ar, de, en, es, fr, ga, it, ja, nl, pl, pt.",
+      "groups": "ID dei gruppi",
+      "groups_hint": "Facoltativo: fino a 25 ID di gruppo separati da virgole.",
+      "excluded": "ID dei membri esclusi",
+      "excluded_hint": "Facoltativo: fino a 1.000 ID di membro separati da virgole.",
+      "joinedAfter": "Iscrizione dal",
+      "joinedAfter_hint": "Data facoltativa: AAAA-MM-GG.",
+      "joinedBefore": "Iscrizione fino al",
+      "joinedBefore_hint": "Data facoltativa: AAAA-MM-GG.",
+      "approved": "Membri approvati",
+      "hasEmail": "Membri con indirizzo email",
+      "groupMatch": "Appartenenza ai gruppi",
+      "any": "Qualsiasi",
+      "all": "Tutti",
+      "yes": "Sì",
+      "no": "No",
+      "limits": "Massimo 10.000 destinatari. CSV: massimo 5 MB. L’anteprima verifica destinatari e autorizzazioni."
     }
   },
   "guests": {
