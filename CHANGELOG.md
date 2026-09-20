@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Connected native event invitation management to registration settings, with paginated campaign and preview review, event-time-zone scheduling and expiry, cancellation confirmation, and explicit durable request recovery.
+
 - Added the native invitation recipient editor component with member, email, group, CSV and full audience-filter inputs, seven-language labels, and recipient-selection validation. Campaign screen integration remains in progress.
 
 - Added lifecycle handling for native invitation campaign operations: account, event, permission and focus changes invalidate stale actions; recovery remains explicit and failures stay visible. Campaign screen integration remains pending.

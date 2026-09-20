@@ -580,7 +580,7 @@ export const organizerInvitationCampaignSchema = z.object({
   issued_at: z.string().nullable().optional(), cancelled_at: z.string().nullable().optional(),
   segment_criteria_summary: z.record(z.string(), z.unknown()).nullable().optional(),
   invitations_count: revision.optional(),
-  delivery_counts: z.union([z.record(z.string(), revision), z.array(z.never()).length(0).transform(() => ({}))]).optional(),
+  delivery_counts: z.union([z.record(z.string(), revision), z.array(z.never()).length(0).transform((): Record<string, number> => ({}))]).optional(),
 }).strip();
 export type OrganizerInvitationCampaign = z.infer<typeof organizerInvitationCampaignSchema>;
 export async function getOrganizerInvitationCampaigns(eventId: number, page = 1, perPage = 25) {
