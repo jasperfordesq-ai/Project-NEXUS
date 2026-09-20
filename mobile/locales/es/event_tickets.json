@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Entradas para eventos",
+      "unavailableTitle": "Entradas no disponibles",
+      "unavailableDescription": "No se pueden consultar las entradas de este evento en este momento. Contacte con la organización para obtener ayuda.",
+      "pendingTitle": "Solicitud de entradas pendiente de confirmación",
+      "pendingDescription": "Vuelva a intentar la solicitud original para comprobar el resultado antes de iniciar otra. Se usará la cantidad o el motivo de cancelación original.",
       "gatewayDisabledTitle": "El pago pagado y con crédito por tiempo está deshabilitado",
       "gatewayDisabledDescription": "Este flujo móvil solo admite la asignación gratuita de boletos. Nunca cobra dinero ni créditos de tiempo y no cambia su billetera.",
       "loading": "Cargando entradas para eventos",

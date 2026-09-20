@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event tickets persist unresolved requests for explicit recovery, preserve the original quantity and cancellation reason, and reject obsolete retries instead of creating another claim.
+
 - Failed native comment reactions now restore the previous reaction even if the recovery read also fails or the sheet is closed, without replacing newer comment text.
 
 - Native comments preserve drafts and reaction state through failed or overlapping requests, expire obsolete Send callbacks, and refresh after successful writes even when an older comment read is pending.

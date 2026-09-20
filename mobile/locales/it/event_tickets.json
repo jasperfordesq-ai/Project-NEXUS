@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Biglietti per eventi",
+      "unavailableTitle": "Biglietti non disponibili",
+      "unavailableDescription": "Al momento non è possibile visualizzare i biglietti per questo evento. Contatta l’organizzatore per assistenza.",
+      "pendingTitle": "Richiesta di biglietti in attesa di conferma",
+      "pendingDescription": "Riprova la richiesta originale per verificarne l’esito prima di iniziarne un’altra. Verrà usata la quantità o il motivo di annullamento originale.",
       "gatewayDisabledTitle": "Il pagamento a pagamento e il pagamento con credito temporale sono disabilitati",
       "gatewayDisabledDescription": "Questo flusso mobile supporta solo l'assegnazione gratuita dei biglietti. Non addebita mai denaro o crediti di tempo e non cambia il tuo portafoglio.",
       "loading": "Caricamento dei biglietti per gli eventi",

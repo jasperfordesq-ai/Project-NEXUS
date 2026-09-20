@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Veranstaltungstickets",
+      "unavailableTitle": "Tickets nicht verfügbar",
+      "unavailableDescription": "Tickets für diese Veranstaltung können derzeit nicht angezeigt werden. Wenden Sie sich an den Veranstalter, wenn Sie Hilfe benötigen.",
+      "pendingTitle": "Ticketanfrage wartet auf Bestätigung",
+      "pendingDescription": "Wiederholen Sie die ursprüngliche Anfrage, um das Ergebnis zu prüfen, bevor Sie eine weitere starten. Die ursprüngliche Anzahl oder der ursprüngliche Stornierungsgrund wird verwendet.",
       "gatewayDisabledTitle": "Bezahlter Checkout und Zeitguthaben-Checkout sind deaktiviert",
       "gatewayDisabledDescription": "Dieser mobile Ablauf unterstützt nur die kostenlose Ticketzuteilung. Es belastet weder Geld noch Zeitguthaben und verändert Ihren Geldbeutel nicht.",
       "loading": "Veranstaltungstickets werden geladen",

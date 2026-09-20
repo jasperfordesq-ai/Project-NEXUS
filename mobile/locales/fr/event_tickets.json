@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Billets d'événement",
+      "unavailableTitle": "Billets indisponibles",
+      "unavailableDescription": "Les billets de cet événement ne peuvent pas être consultés actuellement. Contactez l’organisateur pour obtenir de l’aide.",
+      "pendingTitle": "Demande de billet en attente de confirmation",
+      "pendingDescription": "Réessayez la demande initiale pour vérifier son résultat avant d’en commencer une autre. La quantité ou le motif d’annulation d’origine sera utilisé.",
       "gatewayDisabledTitle": "Le paiement payant et avec crédit de temps est désactivé",
       "gatewayDisabledDescription": "Ce flux mobile prend uniquement en charge l'attribution de billets gratuits. Il ne facture jamais d'argent ni de crédits de temps et ne change pas votre portefeuille.",
       "loading": "Chargement des billets d'événement",

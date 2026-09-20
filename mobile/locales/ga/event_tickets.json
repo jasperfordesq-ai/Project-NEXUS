@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Ticéid imeachta",
+      "unavailableTitle": "Níl ticéid ar fáil",
+      "unavailableDescription": "Ní féidir ticéid don imeacht seo a fheiceáil faoi láthair. Déan teagmháil leis an eagraí chun cabhair a fháil.",
+      "pendingTitle": "Iarratas ar thicéad ag fanacht le deimhniú",
+      "pendingDescription": "Bain triail eile as an iarratas bunaidh chun a thoradh a sheiceáil sula dtosaíonn tú ceann eile. Úsáidfear an líon ticéad nó an chúis chealaithe a thug tú ar dtús.",
       "gatewayDisabledTitle": "Tá seiceáil amach íoctha agus creidmheasa ama díchumasaithe",
       "gatewayDisabledDescription": "Ní thacaíonn an sreabhadh soghluaiste seo ach le leithdháileadh ticéad saor in aisce. Ní ghearrann sé airgead nó creidmheasanna ama riamh agus ní athraíonn sé do sparán.",
       "loading": "Ticéid imeachtaí á lódáil",

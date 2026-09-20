@@ -2,6 +2,10 @@
   "tickets": {
     "mobile": {
       "title": "Event tickets",
+      "unavailableTitle": "Tickets unavailable",
+      "unavailableDescription": "Tickets cannot currently be viewed for this event. Contact the organiser for help.",
+      "pendingTitle": "Ticket request awaiting confirmation",
+      "pendingDescription": "Retry the original request to check its outcome before starting another. Your original quantity or cancellation reason will be used.",
       "gatewayDisabledTitle": "Paid and time-credit checkout is disabled",
       "gatewayDisabledDescription": "This mobile flow supports free ticket allocation only. It never charges money or time credits and does not change your wallet.",
       "loading": "Loading event tickets",

@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -23,17 +23,15 @@ import {
   type MobileEventTicketType,
 } from '@/lib/api/eventTickets';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { refusalStatus } from '@/lib/api/refusal';
+import { ApiResponseError } from '@/lib/api/client';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import { withRouteGate } from '@/components/withRouteGate';
-
-function idempotencyKey(action: 'allocate' | 'cancel'): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID();
-  }
-  return `mobile-event-ticket-${action}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+import { EventTicketOperationChangedError, reserveEventTicketOperation, completeEventTicketOperation, getPendingEventTicketOperation, eventTicketRequest, type EventTicketOperation } from '@/lib/eventTicketOperation';
 
 function allocatableUnits(ticket: MobileEventTicketType): number {
   return Math.min(
@@ -56,8 +54,11 @@ function canAllocate(
 }
 
 function EventTicketsScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   return (
-    <ModalErrorBoundary>
+    <ModalErrorBoundary key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id ?? 'invalid'}`}>
       <EventTicketsScreenInner />
     </ModalErrorBoundary>
   );
@@ -79,12 +80,38 @@ function EventTicketsScreenInner() {
   const [cancelTarget, setCancelTarget] = useState<MobileEventTicketEntitlement | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [pendingOperation, setPendingOperation] = useState<EventTicketOperation | null>(null);
+  const actionPendingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const loadVersionRef = useRef(0);
+
+  async function recordFirstRefusal(error: unknown, operation: EventTicketOperation | null) {
+    // A refusal of a NEW request proves no mutation. A refusal after an unknown
+    // earlier attempt does not, so its original retry record must remain intact.
+    if (operation?.newlyCreated && error instanceof ApiResponseError
+      && [403, 404, 409, 422].includes(error.status)
+      && ['EVENT_TICKET_FORBIDDEN', 'EVENT_TICKET_NOT_FOUND', 'EVENT_TICKET_CONFLICT', 'EVENT_TICKET_VALIDATION_FAILED'].includes(error.code ?? '')) {
+      await completeEventTicketOperation(operation);
+      if (mountedRef.current) setPendingOperation(null);
+    }
+  }
+
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      loadVersionRef.current += 1;
+    };
+  }, []);
 
   const ticketNames = useMemo(() => new Map(
     (catalogue?.ticket_types ?? []).map((ticket) => [ticket.id, ticket.name]),
   ), [catalogue]);
 
   const load = useCallback(async () => {
+    if (!mountedRef.current) return;
+    const version = ++loadVersionRef.current;
     if (safeEventId <= 0) {
       setCatalogue(null);
       setLoadFailed(true);
@@ -95,7 +122,15 @@ function EventTicketsScreenInner() {
     setLoadFailed(false);
     setRefusedStatus(null);
     try {
-      const result = await getEventTickets(safeEventId);
+      const [pending, catalogueResult] = await Promise.allSettled([
+        getPendingEventTicketOperation(safeEventId),
+        getEventTickets(safeEventId),
+      ]);
+      if (!mountedRef.current || version !== loadVersionRef.current) return;
+      if (pending.status === 'rejected') throw pending.reason;
+      setPendingOperation(pending.value);
+      if (catalogueResult.status === 'rejected') throw catalogueResult.reason;
+      const result = catalogueResult.value;
       setCatalogue(result);
       setUnits((current) => {
         const next = { ...current };
@@ -105,10 +140,13 @@ function EventTicketsScreenInner() {
         return next;
       });
     } catch (error) {
-      setRefusedStatus(refusalStatus(error));
+      if (!mountedRef.current || version !== loadVersionRef.current) return;
+      setRefusedStatus(error instanceof ApiResponseError
+        && error.status === 422 && error.code === 'EVENT_TICKET_VALIDATION_FAILED'
+        ? 422 : refusalStatus(error));
       setLoadFailed(true);
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current && version === loadVersionRef.current) setIsLoading(false);
     }
   }, [safeEventId]);
 
@@ -117,7 +155,7 @@ function EventTicketsScreenInner() {
   }, [load]);
 
   async function allocate(ticket: MobileEventTicketType) {
-    if (!catalogue || !canAllocate(catalogue, ticket)) return;
+    if (!mountedRef.current || actionPendingRef.current || pendingOperation || isLoading || !catalogue || !canAllocate(catalogue, ticket)) return;
     const quantity = Number(units[ticket.id] ?? '1');
     const maximum = allocatableUnits(ticket);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > maximum) {
@@ -129,14 +167,23 @@ function EventTicketsScreenInner() {
       return;
     }
 
+    actionPendingRef.current = true;
     setAllocatingId(ticket.id);
+    const request = JSON.stringify(['allocate', safeEventId, ticket.id, quantity]);
+    let operation: EventTicketOperation | null = null;
     try {
+      operation = await reserveEventTicketOperation(request);
+      if (!mountedRef.current) return;
+      setPendingOperation(operation);
       await allocateFreeEventTicket(
         safeEventId,
         ticket.id,
         quantity,
-        idempotencyKey('allocate'),
+        operation.key,
       );
+      await completeEventTicketOperation(operation);
+      if (!mountedRef.current) return;
+      setPendingOperation(null);
       showToast({
         title: t('tickets.mobile.allocatedTitle'),
         description: t('tickets.mobile.allocatedDescription'),
@@ -144,18 +191,21 @@ function EventTicketsScreenInner() {
       });
       await load();
     } catch (err) {
+      await recordFirstRefusal(err, operation);
+      if (!mountedRef.current) return;
       showToast({
         title: t('tickets.mobile.allocateFailedTitle'),
         description: describeApiError(err, t('tickets.mobile.allocateFailedDescription')),
         variant: 'danger',
       });
     } finally {
-      setAllocatingId(null);
+      actionPendingRef.current = false;
+      if (mountedRef.current) setAllocatingId(null);
     }
   }
 
   async function confirmCancellation() {
-    if (!cancelTarget) return;
+    if (!mountedRef.current || actionPendingRef.current || pendingOperation || isLoading || !cancelTarget) return;
     const reason = cancelReason.trim();
     if (!reason || reason.length > 500) {
       showToast({
@@ -166,15 +216,24 @@ function EventTicketsScreenInner() {
       return;
     }
 
+    actionPendingRef.current = true;
     setIsCancelling(true);
+    const request = JSON.stringify(['cancel', safeEventId, cancelTarget.id, cancelTarget.version, reason]);
+    let operation: EventTicketOperation | null = null;
     try {
+      operation = await reserveEventTicketOperation(request);
+      if (!mountedRef.current) return;
+      setPendingOperation(operation);
       await cancelEventTicket(
         safeEventId,
         cancelTarget.id,
         cancelTarget.version,
         reason,
-        idempotencyKey('cancel'),
+        operation.key,
       );
+      await completeEventTicketOperation(operation);
+      if (!mountedRef.current) return;
+      setPendingOperation(null);
       showToast({
         title: t('tickets.mobile.cancelledTitle'),
         description: t('tickets.mobile.cancelledDescription'),
@@ -184,15 +243,57 @@ function EventTicketsScreenInner() {
       setCancelReason('');
       await load();
     } catch (err) {
+      await recordFirstRefusal(err, operation);
+      if (!mountedRef.current) return;
       showToast({
         title: t('tickets.mobile.cancelFailedTitle'),
         description: describeApiError(err, t('tickets.mobile.cancelFailedDescription')),
         variant: 'danger',
       });
     } finally {
-      setIsCancelling(false);
+      actionPendingRef.current = false;
+      if (mountedRef.current) setIsCancelling(false);
     }
   }
+
+  async function retryPendingOperation() {
+    if (!pendingOperation || actionPendingRef.current || !mountedRef.current) return;
+    actionPendingRef.current = true;
+    const request = eventTicketRequest(pendingOperation.intent);
+    if (request[0] === 'allocate') setAllocatingId(request[2]);
+    else setIsCancelling(true);
+    try {
+      const operation = await reserveEventTicketOperation(pendingOperation.intent, pendingOperation.key);
+      if (!mountedRef.current) return;
+      if (request[0] === 'allocate') {
+        await allocateFreeEventTicket(request[1], request[2], request[3], operation.key);
+      } else {
+        await cancelEventTicket(request[1], request[2], request[3], request[4], operation.key);
+      }
+      await completeEventTicketOperation(operation);
+      if (!mountedRef.current) return;
+      setPendingOperation(null);
+      setCancelTarget(null);
+      setCancelReason('');
+      showToast({ title: t(request[0] === 'allocate' ? 'tickets.mobile.allocatedTitle' : 'tickets.mobile.cancelledTitle'), variant: 'success' });
+      await load();
+    } catch (error) {
+      if (!mountedRef.current) return;
+      if (error instanceof EventTicketOperationChangedError) {
+        await load();
+        return;
+      }
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(error, t('tickets.mobile.pendingDescription')), variant: 'danger' });
+    } finally {
+      actionPendingRef.current = false;
+      if (mountedRef.current) {
+        setAllocatingId(null);
+        setIsCancelling(false);
+      }
+    }
+  }
+
+  const pendingRequest = pendingOperation ? eventTicketRequest(pendingOperation.intent) : null;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']} style={{ flex: 1 }}>
@@ -213,6 +314,29 @@ function EventTicketsScreenInner() {
           </Alert.Content>
         </Alert>
 
+        {pendingRequest ? (
+          <Card testID="event-ticket-pending">
+            <Card.Body>
+              <Card.Title>{t('tickets.mobile.pendingTitle')}</Card.Title>
+              <Card.Description>{t('tickets.mobile.pendingDescription')}</Card.Description>
+              <Text style={{ color: theme.text }}>
+                {t(pendingRequest[0] === 'allocate' ? 'tickets.mobile.ticketFallback' : 'tickets.mobile.cancelTitle')}
+              </Text>
+              <Text style={{ color: theme.text }}>
+                {pendingRequest[0] === 'allocate'
+                  ? t('tickets.mobile.entitlementSummary', { count: pendingRequest[3], status: t('tickets.mobile.pendingTitle') })
+                  : pendingRequest[4]}
+              </Text>
+            </Card.Body>
+            <Card.Footer>
+              <Button testID="event-ticket-retry-pending" isDisabled={allocatingId !== null || isCancelling}
+                accessibilityState={{ busy: allocatingId !== null || isCancelling }} onPress={() => void retryPendingOperation()}>
+                <Button.Label>{t('common:buttons.retry')}</Button.Label>
+              </Button>
+            </Card.Footer>
+          </Card>
+        ) : null}
+
         {isLoading && !catalogue ? (
           <View className="items-center py-16" accessibilityLabel={t('tickets.mobile.loading')}>
             <Spinner size="lg" />
@@ -220,21 +344,17 @@ function EventTicketsScreenInner() {
         ) : refusedStatus !== null ? (
           <EmptyState
             icon="lock-closed-outline"
-            title={t('common:errors.notAvailableTitle')}
-            subtitle={t('common:errors.notAvailableHint')}
+            title={t(refusedStatus === 422 ? 'tickets.mobile.unavailableTitle' : 'common:errors.notAvailableTitle')}
+            subtitle={t(refusedStatus === 422 ? 'tickets.mobile.unavailableDescription' : 'common:errors.notAvailableHint')}
             testID="event-tickets-refused"
           />
         ) : loadFailed || !catalogue ? (
-          <Alert status="danger">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>{t('tickets.mobile.loadFailedTitle')}</Alert.Title>
-              <Alert.Description>{t('tickets.mobile.loadFailedDescription')}</Alert.Description>
-            </Alert.Content>
-            <Button size="sm" variant="danger" onPress={() => void load()}>
-              {t('common:buttons.retry')}
-            </Button>
-          </Alert>
+          <ErrorState
+            title={t('tickets.mobile.loadFailedTitle')}
+            subtitle={t('tickets.mobile.loadFailedDescription')}
+            onRetry={() => void load()}
+            isRetrying={isLoading}
+          />
         ) : (
           <>
             <View className="gap-3">
@@ -297,7 +417,7 @@ function EventTicketsScreenInner() {
                 <Card.Footer className="gap-3">
                   <Button
                     variant="secondary"
-                    isDisabled={isCancelling}
+                    isDisabled={isCancelling || allocatingId !== null}
                     onPress={() => {
                       setCancelTarget(null);
                       setCancelReason('');
@@ -307,7 +427,7 @@ function EventTicketsScreenInner() {
                   </Button>
                   <Button
                     variant="danger"
-                    isDisabled={isCancelling}
+                    isDisabled={isCancelling || allocatingId !== null || pendingOperation !== null || isLoading}
                     onPress={() => void confirmCancellation()}
                     accessibilityState={{ busy: isCancelling }}
                   >
@@ -374,7 +494,7 @@ function EventTicketsScreenInner() {
                     {ticket.kind === 'free' && available ? (
                       <Card.Footer>
                         <Button
-                          isDisabled={allocatingId !== null}
+                          isDisabled={allocatingId !== null || isCancelling || pendingOperation !== null || isLoading}
                           onPress={() => void allocate(ticket)}
                           accessibilityState={{ busy: allocatingId === ticket.id }}
                         >
