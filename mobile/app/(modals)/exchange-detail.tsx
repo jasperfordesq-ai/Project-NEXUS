@@ -68,12 +68,14 @@ interface DetailStateProps {
   backLabel: string;
   message: string;
   onAction: () => void;
+  onRetry?: () => void;
 }
 
 const reportReasons = ['safety_concern', 'inappropriate', 'misleading', 'spam', 'not_timebank_service', 'other'] as const;
 
-function DetailState({ title, backLabel, message, onAction }: DetailStateProps) {
+function DetailState({ title, backLabel, message, onAction, onRetry }: DetailStateProps) {
   const theme = useTheme();
+  const { t } = useTranslation('common');
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
@@ -81,6 +83,11 @@ function DetailState({ title, backLabel, message, onAction }: DetailStateProps) 
       <Surface variant="secondary" className="mx-4 my-8 items-center gap-4 rounded-panel p-6">
         <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
         <Text className="text-center text-sm text-muted-foreground">{message}</Text>
+        {onRetry ? (
+          <HeroButton onPress={onRetry}>
+            <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+          </HeroButton>
+        ) : null}
         <HeroButton variant="secondary" onPress={onAction}>
           <HeroButton.Label>{backLabel}</HeroButton.Label>
         </HeroButton>
@@ -99,7 +106,7 @@ function ExchangeDetailModal() {
 
 function ExchangeDetailModalInner() {
   const { t } = useTranslation(['exchanges', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const primary = usePrimaryColor();
   const onPrimary = contrastText(primary);
   const theme = useTheme();
@@ -158,10 +165,10 @@ function ExchangeDetailModalInner() {
     return () => { isMountedRef.current = false; };
   }, []);
 
-  const exchangeId = Number(id);
-  const safeExchangeId = isNaN(exchangeId) || exchangeId <= 0 ? 0 : exchangeId;
+  const exchangeId = typeof id === 'string' && /^\d+$/.test(id) ? Number(id) : NaN;
+  const safeExchangeId = Number.isSafeInteger(exchangeId) && exchangeId > 0 ? exchangeId : 0;
 
-  const { data, isLoading, error, refresh } = useApi(
+  const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getExchange(safeExchangeId),
     [safeExchangeId],
     { enabled: safeExchangeId > 0 },
@@ -240,7 +247,7 @@ function ExchangeDetailModalInner() {
     [safeExchangeId],
   );
 
-  if (isNaN(exchangeId) || exchangeId <= 0) {
+  if (safeExchangeId === 0) {
     return (
       <DetailState
         title={t('detailTitle')}
@@ -260,6 +267,7 @@ function ExchangeDetailModalInner() {
         backLabel={t('common:back')}
         message={error ?? t('detail.notFound')}
         onAction={() => router.back()}
+        onRetry={error && (!errorStatus || errorStatus >= 500 || errorStatus === 408 || errorStatus === 429) ? refresh : undefined}
       />
     );
   }

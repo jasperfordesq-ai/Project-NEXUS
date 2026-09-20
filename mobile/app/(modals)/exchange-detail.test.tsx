@@ -8,7 +8,7 @@ import { RefreshControl, StyleSheet } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
-let mockRouteId = '5';
+let mockRouteId: string | string[] | undefined = '5';
 let mockUserId = 99;
 let mockTenantId = 2;
 
@@ -243,6 +243,34 @@ const mockExchange = {
 };
 
 describe('ExchangeDetailModal', () => {
+  it.each(['Infinity', '1.5', '1e2', '0x10', '9007199254740993', ' 5 ', ['5'], ['5', '6'], '', '0', '-1', undefined])('rejects malformed listing ID %j without enabling requests', invalidId => {
+    mockRouteId = invalidId;
+    const screen = render(<ExchangeDetailModal />);
+    expect(screen.getByText('Invalid exchange ID.')).toBeTruthy();
+    expect(mockUseApi).toHaveBeenLastCalledWith(expect.any(Function), [0], { enabled: false });
+    const { checkActiveExchange, getExchangeWorkflowConfig } = require('@/lib/api/exchanges');
+    expect(checkActiveExchange).not.toHaveBeenCalled();
+    expect(getExchangeWorkflowConfig).not.toHaveBeenCalled();
+  });
+
+  it('offers retry after a transient listing load failure and renders the recovered listing', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ ...defaultApiState, error: 'Offline', errorStatus: 0, refresh });
+    const screen = render(<ExchangeDetailModal />);
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    mockUseApi.mockReturnValue({ ...defaultApiState, data: { data: mockExchange }, refresh });
+    screen.rerender(<ExchangeDetailModal />);
+    expect(screen.getByText(mockExchange.title)).toBeTruthy();
+  });
+
+  it.each([403, 404])('does not offer retry for unavailable listing status %i', status => {
+    mockUseApi.mockReturnValue({ ...defaultApiState, error: 'Unavailable', errorStatus: status });
+    const screen = render(<ExchangeDetailModal />);
+    expect(screen.getByText('Unavailable')).toBeTruthy();
+    expect(screen.queryByText('common:buttons.retry')).toBeNull();
+  });
+
   it('renders without crashing when data is loaded', () => {
     mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
 

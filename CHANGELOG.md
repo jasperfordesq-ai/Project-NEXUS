@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile listing links reject malformed or unsafe numeric IDs before loading, and temporary listing-load failures offer Retry without reopening the screen.
+
 - Mobile listing reports no longer show late failure alerts or vibration after leaving the screen or switching listing, account or community; current-screen failures still preserve the draft for retry.
 
 - Mobile course sections now show deletion progress and temporarily lock their editors and actions until the request finishes, restoring editing after a failed deletion.
