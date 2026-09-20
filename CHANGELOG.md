@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native notification permission choices prevent duplicate permission requests and conflicting dismissals, with progress shown on the selected action.
+
 - Native offline banners reserve measured layout space above navigation, including enlarged text. Feedback defaults above an open keyboard so validation messages remain visible.
 
 - Native two-step sign-in binds verification and recovery credentials to their original session and challenge, discards superseded setup responses, validates keyboard submissions, and retains accessible names on busy actions.

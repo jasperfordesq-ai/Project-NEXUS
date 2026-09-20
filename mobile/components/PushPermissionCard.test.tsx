@@ -13,7 +13,7 @@
  * The rest pin the "once, ever" rule, which is what stops the fix becoming a nag.
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
 import PushPermissionCard from './PushPermissionCard';
@@ -64,6 +64,37 @@ describe('PushPermissionCard', () => {
     render(<PushPermissionCard />);
 
     expect(await screen.findByTestId('push-permission-card')).toBeTruthy();
+  });
+
+  it('runs one permission request and ignores dismissal while it is pending', async () => {
+    let finish!: (result: string) => void;
+    mockRegisterForPushNotifications.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    render(<PushPermissionCard />);
+    const enable = await screen.findByTestId('push-permission-enable');
+    const dismiss = screen.getByTestId('push-permission-dismiss');
+    act(() => {
+      fireEvent.press(enable);
+      fireEvent.press(enable);
+      fireEvent.press(dismiss);
+    });
+    const requests = mockRegisterForPushNotifications.mock.calls.length;
+    await act(async () => { finish('registered'); });
+    expect(requests).toBe(1);
+    expect(mockStorageSet.mock.calls).toEqual([['nexus_push_prompt_decision', 'asked']]);
+  });
+
+  it('keeps dismissal in progress and prevents a simultaneous permission request', async () => {
+    let finish!: () => void;
+    mockStorageSet.mockReturnValueOnce(new Promise<void>(resolve => { finish = resolve; }));
+    render(<PushPermissionCard />);
+    const dismiss = await screen.findByTestId('push-permission-dismiss');
+    const enable = screen.getByTestId('push-permission-enable');
+    act(() => { fireEvent.press(dismiss); fireEvent.press(dismiss); fireEvent.press(enable); });
+    expect(screen.getByTestId('push-permission-dismiss').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(mockRegisterForPushNotifications).not.toHaveBeenCalled();
+    await act(async () => { finish(); });
+    expect(mockStorageSet.mock.calls).toEqual([['nexus_push_prompt_decision', 'dismissed']]);
+    expect(screen.queryByTestId('push-permission-card')).toBeNull();
   });
 
   it('raises the system permission dialog when the member accepts', async () => {

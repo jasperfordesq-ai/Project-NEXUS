@@ -48,7 +48,9 @@ export default function PushPermissionCard() {
   const theme = useTheme();
   const primary = usePrimaryColor();
   const [state, setState] = useState<CardState>('checking');
-  const [isWorking, setIsWorking] = useState(false);
+  const [workingAction, setWorkingAction] = useState<'enable' | 'dismiss' | null>(null);
+  const isWorking = workingAction !== null;
+  const working = useRef(false);
   // Guards a late resolve after the member has navigated away.
   const isMountedRef = useRef(true);
 
@@ -81,7 +83,9 @@ export default function PushPermissionCard() {
   }, []);
 
   const handleEnable = useCallback(async () => {
-    setIsWorking(true);
+    if (!isMountedRef.current || working.current) return;
+    working.current = true;
+    setWorkingAction('enable');
     try {
       const result = await registerForPushNotifications(true);
       // Recorded before anything else: whatever happened, the member has now been asked,
@@ -96,13 +100,22 @@ export default function PushPermissionCard() {
       */
       setState(result === 'permission-denied' ? 'blocked' : 'hidden');
     } finally {
-      if (isMountedRef.current) setIsWorking(false);
+      working.current = false;
+      if (isMountedRef.current) setWorkingAction(null);
     }
   }, []);
 
   const handleDismiss = useCallback(async () => {
-    await storage.set(STORAGE_KEYS.PUSH_PROMPT_DECISION, 'dismissed');
-    if (isMountedRef.current) setState('hidden');
+    if (!isMountedRef.current || working.current) return;
+    working.current = true;
+    setWorkingAction('dismiss');
+    try {
+      await storage.set(STORAGE_KEYS.PUSH_PROMPT_DECISION, 'dismissed');
+      if (isMountedRef.current) setState('hidden');
+    } finally {
+      working.current = false;
+      if (isMountedRef.current) setWorkingAction(null);
+    }
   }, []);
 
   const handleOpenSettings = useCallback(() => {
@@ -151,10 +164,10 @@ export default function PushPermissionCard() {
           </Button>
         ) : (
           <>
-            <Button size="sm" isLoading={isWorking} onPress={() => void handleEnable()} testID="push-permission-enable">
+            <Button size="sm" disabled={isWorking} isLoading={workingAction === 'enable'} accessibilityLabel={t('notifications:permissionCard.enable')} onPress={() => void handleEnable()} testID="push-permission-enable">
               {t('notifications:permissionCard.enable')}
             </Button>
-            <Button size="sm" variant="ghost" disabled={isWorking} onPress={() => void handleDismiss()} testID="push-permission-dismiss">
+            <Button size="sm" variant="ghost" disabled={isWorking} isLoading={workingAction === 'dismiss'} accessibilityLabel={t('notifications:permissionCard.notNow')} onPress={() => void handleDismiss()} testID="push-permission-dismiss">
               {t('notifications:permissionCard.notNow')}
             </Button>
           </>
