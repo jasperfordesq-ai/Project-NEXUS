@@ -18,6 +18,7 @@
  */
 
 import React from 'react';
+import { NavigationContext } from '@react-navigation/native';
 import { act, render, renderHook, screen } from '@testing-library/react-native';
 
 import { useConfirm, type ConfirmOptions } from './useConfirm';
@@ -82,6 +83,30 @@ describe('useConfirm — the warning colour is reserved', () => {
 
 
 describe('useConfirm invalidation', () => {
+  it('dismisses on screen blur and refuses stale or background confirmations', async () => {
+    const listeners = new Map<string, () => void>();
+    const focused = jest.fn(() => true);
+    const navigation = {
+      isFocused: focused,
+      addListener: (event: string, listener: () => void) => {
+        listeners.set(event, listener);
+        return () => { listeners.delete(event); };
+      },
+    } as unknown as NonNullable<React.ContextType<typeof NavigationContext>>;
+    const wrapper = ({ children }: { children: React.ReactNode }) => <NavigationContext.Provider value={navigation}>{children}</NavigationContext.Provider>;
+    const action = jest.fn();
+    const { result } = renderHook(() => useConfirm(), { wrapper });
+    act(() => result.current.confirm({ ...baseOptions, onConfirm: action }));
+    const oldConfirm = result.current.confirmDialog.props.onConfirm;
+    act(() => { focused.mockReturnValue(false); listeners.get('blur')?.(); });
+    expect(result.current.confirmDialog.props.visible).toBe(false);
+    await act(async () => oldConfirm());
+    act(() => result.current.confirm({ ...baseOptions, onConfirm: action }));
+    expect(result.current.confirmDialog.props.visible).toBe(false);
+    expect(action).not.toHaveBeenCalled();
+    act(() => { focused.mockReturnValue(true); result.current.confirm(baseOptions); });
+    expect(result.current.confirmDialog.props.visible).toBe(true);
+  });
   it('hides a dismissed confirmation and rejects its delayed callback', async () => {
     const action = jest.fn();
     const { result } = renderHook(() => useConfirm());

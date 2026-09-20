@@ -3,7 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { NavigationContext } from '@react-navigation/native';
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -48,20 +49,31 @@ export interface ConfirmOptions {
  * unpublish, archive and sign-out. Everything else takes the default.
  */
 export function useConfirm() {
+  // Optional context also supports confirmations outside a navigation screen.
+  const navigation = useContext(NavigationContext);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const confirmingRef = useRef(false);
   const optionsRef = useRef<ConfirmOptions | null>(null);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
+    if (navigation && !navigation.isFocused()) return;
     optionsRef.current = opts;
     setOptions(opts);
-  }, []);
+  }, [navigation]);
 
   const dismiss = useCallback(() => {
     optionsRef.current = null;
     setOptions(null);
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation?.addListener('blur', dismiss);
+    return () => {
+      unsubscribe?.();
+      optionsRef.current = null;
+    };
+  }, [navigation, dismiss]);
 
   const close = useCallback(() => {
     if (isConfirming) return;
@@ -69,7 +81,7 @@ export function useConfirm() {
   }, [isConfirming, dismiss]);
 
   const handleConfirm = useCallback(async () => {
-    if (!options || optionsRef.current !== options || confirmingRef.current) return;
+    if (!options || optionsRef.current !== options || confirmingRef.current || (navigation && !navigation.isFocused())) return;
     confirmingRef.current = true;
     const action = options.onConfirm;
     setIsConfirming(true);
@@ -80,7 +92,7 @@ export function useConfirm() {
       setIsConfirming(false);
       if (optionsRef.current === options) dismiss();
     }
-  }, [options, dismiss]);
+  }, [options, dismiss, navigation]);
 
   const confirmDialog = (
     <ConfirmDialog
