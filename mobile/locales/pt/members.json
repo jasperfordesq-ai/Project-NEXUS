@@ -250,6 +250,8 @@
     "signInTitle": "Inicie sessão para reagir",
     "signInMessage": "As reações ficam disponíveis depois de iniciar sessão.",
     "reactionFailed": "Não foi possível atualizar esta reação.",
+    "reactionUnconfirmed": "Reação não confirmada",
+    "reactionUnconfirmedBody": "Não foi possível confirmar se a tua reação foi guardada. Recarrega o mural antes de reagir novamente.",
     "reaction": {
       "heart": "Reagir com coração",
       "clap": "Reagir com aplauso",

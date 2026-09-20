@@ -59,10 +59,10 @@ class AppreciationsController extends BaseApiController
 
     public function publicForUser(int $userId): JsonResponse
     {
-        $this->getOptionalUserId();
+        $viewerId = $this->getOptionalUserId();
         $page = $this->queryInt('page', 1, 1) ?? 1;
         $perPage = $this->queryInt('per_page', 20, 1, 100) ?? 20;
-        $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, true);
+        $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, true, $viewerId);
         return $this->respondWithData($result['data'], $result['meta']);
     }
 
@@ -77,7 +77,7 @@ class AppreciationsController extends BaseApiController
             $result = $this->service->getMyAppreciations($userId, $page, $perPage);
         } else {
             // received tab: include private since it's the receiver
-            $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, false);
+            $result = $this->service->getReceivedAppreciations($userId, $page, $perPage, false, $userId);
         }
         return $this->respondWithData($result['data'], $result['meta']);
     }

@@ -217,7 +217,7 @@ class AppreciationService
         });
     }
 
-    public function getReceivedAppreciations(int $userId, int $page = 1, int $perPage = 20, bool $publicOnly = true): array
+    public function getReceivedAppreciations(int $userId, int $page = 1, int $perPage = 20, bool $publicOnly = true, ?int $viewerId = null): array
     {
         $q = Appreciation::where('receiver_id', $userId)
             ->where('tenant_id', TenantContext::getId())
@@ -228,6 +228,14 @@ class AppreciationService
         $paginator = $q->paginate($perPage, ['*'], 'page', $page);
         $items = $paginator->items();
         $this->attachSenderInfo($items);
+        $reactions = $viewerId === null ? collect() : AppreciationReaction::query()
+            ->where('tenant_id', TenantContext::getId())
+            ->where('user_id', $viewerId)
+            ->whereIn('appreciation_id', array_map(fn ($item) => $item->id, $items))
+            ->pluck('reaction_type', 'appreciation_id');
+        foreach ($items as $item) {
+            $item->setAttribute('my_reaction', $reactions->get($item->id));
+        }
         return [
             'data' => $items,
             'meta' => [

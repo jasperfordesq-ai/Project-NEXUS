@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -28,6 +28,9 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import { ApiResponseError } from '@/lib/api/client';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -48,28 +51,43 @@ function formatDate(value: string): string {
 }
 
 function AppreciationsScreen() {
+  const params = useLocalSearchParams<{ userId?: string | string[]; id?: string | string[] }>();
   return (
     <ModalErrorBoundary>
-      <AppreciationsScreenInner />
+      <AppreciationsScreenInner key={JSON.stringify(params.userId ?? params.id ?? '')} />
     </ModalErrorBoundary>
   );
 }
 
 function AppreciationsScreenInner() {
   const { t } = useTranslation(['members', 'common']);
-  const params = useLocalSearchParams<{ userId?: string; id?: string; name?: string }>();
-  const userId = params.userId ?? params.id ?? '';
-  const titleName = params.name;
+  const params = useLocalSearchParams<{ userId?: string | string[]; id?: string | string[]; name?: string | string[] }>();
+  const rawUserId = params.userId ?? params.id;
+  const numericUserId = typeof rawUserId === 'string' ? Number(rawUserId) : 0;
+  const userId = Number.isSafeInteger(numericUserId) && numericUserId > 0 ? String(numericUserId) : '';
+  const titleName = typeof params.name === 'string' ? params.name : undefined;
   const { isAuthenticated } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<Appreciation[]>([]);
-  const [isReacting, setIsReacting] = useState<number | null>(null);
+  const [reactingIds, setReactingIds] = useState<Set<number>>(new Set());
+  const pendingReactions = useRef(new Set<number>());
+  const reactionVersions = useRef(new Map<number, number>());
+  const unconfirmedReactions = useRef(new Set<number>());
+  const [unconfirmedIds, setUnconfirmedIds] = useState<Set<number>>(new Set());
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
-    () => getUserAppreciations(userId, page, 20),
+    async () => {
+      const versions = new Map(reactionVersions.current);
+      return { ...await getUserAppreciations(userId, page, 20), requestedPage: page, reactionVersions: versions };
+    },
     [userId, page],
     { enabled: userId.trim().length > 0 },
   );
@@ -79,30 +97,58 @@ function AppreciationsScreenInner() {
 
   useEffect(() => {
     if (!data?.data) return;
+    for (const item of data.data) {
+      if (!pendingReactions.current.has(item.id)
+        && (reactionVersions.current.get(item.id) ?? 0) === (data.reactionVersions?.get(item.id) ?? 0)) {
+        unconfirmedReactions.current.delete(item.id);
+      }
+    }
+    setUnconfirmedIds(new Set(unconfirmedReactions.current));
     setItems((current) => {
-      if (page === 1) return data.data;
-      // useApi keeps the previous page's data while the next loads, so this effect runs
-      // once with page 1's rows under page 2 — they were appended twice. Dedupe by id.
+      const currentById = new Map(current.map((item) => [item.id, item]));
+      // A read begun before/during a reaction cannot confirm that write's result.
+      // Fresh reads after settlement remain authoritative, including other members' counts.
+      const incoming = data.data.map((item) => {
+        const previous = currentById.get(item.id);
+        const changedDuringRead = (reactionVersions.current.get(item.id) ?? 0)
+          !== (data.reactionVersions?.get(item.id) ?? 0);
+        if (previous && (pendingReactions.current.has(item.id) || changedDuringRead)) {
+          return { ...item, my_reaction: previous.my_reaction, reactions_count: previous.reactions_count };
+        }
+        return item;
+      });
+      if (data.requestedPage === 1) return incoming;
+      // Attribute rows to the response's page, never the currently requested page.
       const seen = new Set(current.map((item) => item.id));
-      return [...current, ...data.data.filter((item) => !seen.has(item.id))];
+      return [...current, ...incoming.filter((item) => !seen.has(item.id))];
     });
-  }, [data, page]);
+  }, [data]);
 
   const totalPages = useMemo(() => data?.meta?.last_page ?? data?.meta?.total_pages ?? 1, [data?.meta?.last_page, data?.meta?.total_pages]);
   const canLoadMore = page < totalPages;
+  const hasUnconfirmedReaction = items.some((item) => unconfirmedIds.has(item.id));
 
   function handleRefresh() {
     setPage(1);
     refresh();
   }
 
+  function handleLoadMore() {
+    if (!isMounted.current || isLoading || error || !canLoadMore || data?.requestedPage !== page) return;
+    // Captured callbacks can repeat before React renders the loading state.
+    setPage(page + 1);
+  }
+
   async function handleReaction(appreciation: Appreciation, reactionType: AppreciationReactionType) {
+    if (!isMounted.current || pendingReactions.current.has(appreciation.id) || unconfirmedReactions.current.has(appreciation.id)) return;
     if (!isAuthenticated) {
       showToast({ title: t('appreciations.signInTitle'), description: t('appreciations.signInMessage'), variant: 'warning' });
       return;
     }
     const priorReaction = appreciation.my_reaction ?? null;
-    setIsReacting(appreciation.id);
+    pendingReactions.current.add(appreciation.id);
+    reactionVersions.current.set(appreciation.id, (reactionVersions.current.get(appreciation.id) ?? 0) + 1);
+    setReactingIds(new Set(pendingReactions.current));
     setItems((current) =>
       current.map((item) => item.id === appreciation.id
         ? {
@@ -119,15 +165,28 @@ function AppreciationsScreenInner() {
 
     try {
       const response = await reactToAppreciation(appreciation.id, reactionType);
+      if (!isMounted.current) return;
       const nextReaction = response.data?.reaction_type ?? null;
       setItems((current) =>
         current.map((item) => item.id === appreciation.id ? { ...item, my_reaction: nextReaction } : item),
       );
     } catch (err) {
-      setItems((current) => current.map((item) => item.id === appreciation.id ? appreciation : item));
+      if (!isMounted.current) return;
+      if (!(err instanceof ApiResponseError) || err.status === 0 || err.status >= 500) {
+        // The toggle may have committed. A second write could undo it: read first.
+        unconfirmedReactions.current.add(appreciation.id);
+        setUnconfirmedIds(new Set(unconfirmedReactions.current));
+        handleRefresh();
+        return;
+      }
+      setItems((current) => current.map((item) => item.id === appreciation.id
+        ? { ...item, my_reaction: appreciation.my_reaction, reactions_count: appreciation.reactions_count }
+        : item));
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('appreciations.reactionFailed')), variant: 'danger' });
     } finally {
-      setIsReacting(null);
+      reactionVersions.current.set(appreciation.id, (reactionVersions.current.get(appreciation.id) ?? 0) + 1);
+      pendingReactions.current.delete(appreciation.id);
+      if (isMounted.current) setReactingIds(new Set(pendingReactions.current));
     }
   }
 
@@ -139,11 +198,12 @@ function AppreciationsScreenInner() {
         fallbackHref={userId ? { pathname: '/(modals)/member-profile', params: { id: userId } } : '/(tabs)/profile'}
       />
       <FlatList<Appreciation>
-        data={items}
+        data={refused ? [] : items}
         keyExtractor={(item) => String(item.id)}
         refreshControl={<RefreshControl refreshing={isLoading && page === 1} onRefresh={handleRefresh} tintColor={primary} colors={[primary]} />}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         ListHeaderComponent={
+          <>
           <HeroCard variant="default" className="mb-4 overflow-hidden rounded-panel p-0">
             <View className="h-1" style={{ backgroundColor: primary }} />
             <HeroCard.Body className="gap-3 p-4">
@@ -162,12 +222,22 @@ function AppreciationsScreenInner() {
               </View>
             </HeroCard.Body>
           </HeroCard>
+          {hasUnconfirmedReaction && !refused ? (
+            <ErrorState title={t('appreciations.reactionUnconfirmed')}
+              subtitle={t('appreciations.reactionUnconfirmedBody')}
+              onRetry={handleRefresh} isRetrying={isLoading} />
+          ) : null}
+          {items.length > 0 && !refused && !hasUnconfirmedReaction ? (
+            <RefreshFailedNotice error={error} onRetry={refresh} isRetrying={isLoading} />
+          ) : null}
+          </>
         }
         renderItem={({ item }) => (
           <AppreciationCard
             item={item}
             primary={primary}
-            isReacting={isReacting === item.id}
+            isReacting={reactingIds.has(item.id)}
+            isUnconfirmed={unconfirmedIds.has(item.id)}
             onReact={(reaction) => void handleReaction(item, reaction)}
           />
         )}
@@ -180,8 +250,8 @@ function AppreciationsScreenInner() {
             <Surface variant="secondary" className="rounded-panel p-4">
               <EmptyState
                 icon={error ? 'warning-outline' : 'chatbubble-ellipses-outline'}
-                title={error ? t('appreciations.errorTitle') : t('appreciations.emptyTitle')}
-                subtitle={error ?? t('appreciations.emptySubtitle')}
+                title={!userId ? t('common:errors.notAvailableTitle') : error ? t('appreciations.errorTitle') : t('appreciations.emptyTitle')}
+                subtitle={!userId ? t('common:errors.notAvailableHint') : error ?? t('appreciations.emptySubtitle')}
                 // 🔴 A private profile answers 403/404 — no Retry can clear that.
                 actionLabel={error && !refused ? t('common:buttons.retry') : undefined}
                 onAction={error && !refused ? handleRefresh : undefined}
@@ -190,8 +260,8 @@ function AppreciationsScreenInner() {
           )
         }
         ListFooterComponent={
-          canLoadMore ? (
-            <HeroButton className="mt-4" variant="secondary" onPress={() => setPage((current) => current + 1)} isDisabled={isLoading}>
+          canLoadMore && !error ? (
+            <HeroButton className="mt-4" variant="secondary" onPress={handleLoadMore} isDisabled={isLoading}>
               {isLoading && page > 1 ? <Spinner size="sm" /> : <Ionicons name="chevron-down-outline" size={16} color={primary} />}
               <HeroButton.Label>{t('appreciations.loadMore')}</HeroButton.Label>
             </HeroButton>
@@ -206,11 +276,13 @@ function AppreciationCard({
   item,
   primary,
   isReacting,
+  isUnconfirmed,
   onReact,
 }: {
   item: Appreciation;
   primary: string;
   isReacting: boolean;
+  isUnconfirmed: boolean;
   onReact: (reaction: AppreciationReactionType) => void;
 }) {
   /*
@@ -256,7 +328,7 @@ function AppreciationCard({
                 key={reaction.key}
                 size="sm"
                 variant={selected ? 'secondary' : 'ghost'}
-                isDisabled={isReacting}
+                isDisabled={isReacting || isUnconfirmed}
                 onPress={() => onReact(reaction.key)}
                 accessibilityLabel={t(`appreciations.reaction.${reaction.key}`)}
               >

@@ -250,6 +250,8 @@
     "signInTitle": "Inicia sesión para reaccionar",
     "signInMessage": "Las reacciones están disponibles después de iniciar sesión.",
     "reactionFailed": "No se pudo actualizar esta reacción.",
+    "reactionUnconfirmed": "Reacción no confirmada",
+    "reactionUnconfirmedBody": "No pudimos confirmar si se guardó tu reacción. Vuelve a cargar el muro antes de reaccionar de nuevo.",
     "reaction": {
       "heart": "Reaccionar con un corazón",
       "clap": "Reaccionar con un aplauso",

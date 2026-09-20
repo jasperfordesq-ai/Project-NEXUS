@@ -250,6 +250,8 @@
     "signInTitle": "Zum Reagieren anmelden",
     "signInMessage": "Reaktionen sind nach der Anmeldung verfügbar.",
     "reactionFailed": "Diese Reaktion konnte nicht aktualisiert werden.",
+    "reactionUnconfirmed": "Reaktion nicht bestätigt",
+    "reactionUnconfirmedBody": "Wir konnten nicht bestätigen, ob deine Reaktion gespeichert wurde. Lade die Pinnwand neu, bevor du erneut reagierst.",
     "reaction": {
       "heart": "Mit Herz reagieren",
       "clap": "Mit Applaus reagieren",

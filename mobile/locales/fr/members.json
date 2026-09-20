@@ -250,6 +250,8 @@
     "signInTitle": "Connectez-vous pour réagir",
     "signInMessage": "Les réactions sont disponibles après votre connexion.",
     "reactionFailed": "Impossible de mettre à jour cette réaction.",
+    "reactionUnconfirmed": "Réaction non confirmée",
+    "reactionUnconfirmedBody": "Nous ne pouvons pas confirmer si votre réaction a été enregistrée. Rechargez le mur avant de réagir à nouveau.",
     "reaction": {
       "heart": "Réagir avec un cœur",
       "clap": "Réagir avec des applaudissements",

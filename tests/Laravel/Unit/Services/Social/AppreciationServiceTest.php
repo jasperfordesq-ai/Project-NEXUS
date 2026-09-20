@@ -300,6 +300,33 @@ class AppreciationServiceTest extends TestCase
         $this->assertNotEmpty($found, 'Public appreciation should appear');
     }
 
+    public function test_received_appreciations_include_only_the_viewers_tenant_scoped_reaction(): void
+    {
+        $sender = $this->insertUser('viewer');
+        $receiver = $this->insertUser('receiver');
+        $note = Appreciation::create([
+            'sender_id' => $sender, 'receiver_id' => $receiver,
+            'tenant_id' => self::TENANT_ID, 'message' => 'Viewer reaction fixture',
+            'is_public' => true, 'reactions_count' => 1,
+        ]);
+        AppreciationReaction::create([
+            'appreciation_id' => $note->id, 'user_id' => $sender,
+            'tenant_id' => self::TENANT_ID, 'reaction_type' => 'heart', 'created_at' => now(),
+        ]);
+        AppreciationReaction::create([
+            'appreciation_id' => $note->id, 'user_id' => $receiver,
+            'tenant_id' => 1, 'reaction_type' => 'star', 'created_at' => now(),
+        ]);
+
+        $own = $this->svc->getReceivedAppreciations($receiver, 1, 20, true, $sender);
+        $this->assertSame('heart', $own['data'][0]->toArray()['my_reaction'] ?? null);
+        $other = $this->svc->getReceivedAppreciations($receiver, 1, 20, true, $receiver);
+        $this->assertArrayHasKey('my_reaction', $other['data'][0]->toArray());
+        $this->assertNull($other['data'][0]->my_reaction);
+        $guest = $this->svc->getReceivedAppreciations($receiver, 1, 20, true);
+        $this->assertNull($guest['data'][0]->my_reaction);
+    }
+
     // ── getMostAppreciatedMembers() ───────────────────────────────────────────
 
     public function test_getMostAppreciatedMembers_returns_ranked_results(): void

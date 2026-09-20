@@ -250,6 +250,8 @@
     "signInTitle": "Sínigh isteach chun freagairt",
     "signInMessage": "Tá freagairtí ar fáil tar éis duit síniú isteach.",
     "reactionFailed": "Níorbh fhéidir an fhreagairt sin a nuashonrú.",
+    "reactionUnconfirmed": "Níl an fhreagairt deimhnithe",
+    "reactionUnconfirmedBody": "Níorbh fhéidir linn a dheimhniú ar sábháladh do fhreagairt. Athlódáil an balla sula bhfreagraíonn tú arís.",
     "reaction": {
       "heart": "Freagair le croí",
       "clap": "Freagair le bualadh bos",

@@ -250,6 +250,8 @@
     "signInTitle": "Accedi per reagire",
     "signInMessage": "Le reazioni sono disponibili dopo l’accesso.",
     "reactionFailed": "Impossibile aggiornare questa reazione.",
+    "reactionUnconfirmed": "Reazione non confermata",
+    "reactionUnconfirmedBody": "Non è stato possibile confermare se la tua reazione è stata salvata. Ricarica la bacheca prima di reagire di nuovo.",
     "reaction": {
       "heart": "Reagisci con un cuore",
       "clap": "Reagisci con un applauso",

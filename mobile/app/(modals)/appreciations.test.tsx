@@ -4,15 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockReactToAppreciation = jest.fn();
+const mockGetAppreciations = jest.fn();
+let mockUserId: string | string[] = '7';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
-  useLocalSearchParams: () => ({ userId: '7', name: 'Alice' }),
+  useLocalSearchParams: () => ({ userId: mockUserId, name: 'Alice' }),
 }));
 
 jest.mock('@/lib/hooks/useApi', () => ({
@@ -92,7 +95,7 @@ jest.mock('react-i18next', () => ({
 }));
 
 jest.mock('@/lib/api/appreciations', () => ({
-  getUserAppreciations: jest.fn(),
+  getUserAppreciations: (...args: unknown[]) => mockGetAppreciations(...args),
   reactToAppreciation: (...args: unknown[]) => mockReactToAppreciation(...args),
 }));
 
@@ -103,13 +106,25 @@ jest.mock('@/components/ui/AppToast', () => {
 });
 
 import AppreciationsScreen from './appreciations';
+import { ApiResponseError } from '@/lib/api/client';
+import type { AppreciationListResponse } from '@/lib/api/appreciations';
+
+function pendingPage() {
+  let resolve!: (value: AppreciationListResponse) => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<AppreciationListResponse>((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+}
 
 describe('AppreciationsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReactToAppreciation.mockResolvedValue({ data: { reacted: true, reaction_type: 'heart' } });
+    mockUserId = '7';
+    mockGetAppreciations.mockReset();
+    mockReactToAppreciation.mockReset().mockResolvedValue({ data: { reacted: true, reaction_type: 'heart' } });
     mockUseApi.mockReturnValue({
       data: {
+        requestedPage: 1,
         data: [
           {
             id: 12,
@@ -131,6 +146,14 @@ describe('AppreciationsScreen', () => {
     });
   });
 
+  it.each([{ value: ['7'] }, { value: ['7', '8'] }, { value: '' }, { value: '0' }, { value: '-1' }, { value: '1.5' }, { value: '9007199254740992' }])('rejects invalid member route %j without a request', async ({ value }) => {
+    mockUserId = value;
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    expect(screen.getByText('common:errors.notAvailableTitle')).toBeTruthy();
+    expect(mockGetAppreciations).not.toHaveBeenCalled();
+  });
+
   it('renders public appreciations and posts reactions', async () => {
     const { findByText, getByText } = render(<AppreciationsScreen />);
 
@@ -142,6 +165,209 @@ describe('AppreciationsScreen', () => {
     await waitFor(() => {
       expect(mockReactToAppreciation).toHaveBeenCalledWith(12, 'heart');
     });
+  });
+  it('retries the same failed page through the real hook and preserves rows during refresh', async () => {
+    const initial = mockUseApi().data;
+    const first = { data: initial.data, meta: { current_page: 1, last_page: 2 } };
+    const second = { data: [{ ...initial.data[0], id: 13, message: 'Second page note' }], meta: { current_page: 2, last_page: 2 } };
+    const failedPage = pendingPage();
+    const retryPage = pendingPage();
+    const refreshedPage = pendingPage();
+    mockGetAppreciations.mockResolvedValueOnce(first)
+      .mockReturnValueOnce(failedPage.promise).mockReturnValueOnce(retryPage.promise)
+      .mockReturnValueOnce(refreshedPage.promise);
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Load more');
+    fireEvent.press(screen.getByText('Load more'));
+    await waitFor(() => expect(mockGetAppreciations).toHaveBeenLastCalledWith('7', 2, 20));
+    await act(async () => { failedPage.reject(new ApiResponseError(429, 'Try later')); });
+    expect(screen.getByText('Thank you for helping with the garden.')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Retry'));
+    await waitFor(() => expect(mockGetAppreciations).toHaveBeenCalledTimes(3));
+    expect(mockGetAppreciations).toHaveBeenLastCalledWith('7', 2, 20);
+    await act(async () => { retryPage.resolve(second); });
+    expect(screen.getByText('Second page note')).toBeTruthy();
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    await waitFor(() => expect(mockGetAppreciations).toHaveBeenLastCalledWith('7', 1, 20));
+    expect(screen.getByText('Thank you for helping with the garden.')).toBeTruthy();
+    expect(screen.getByText('Second page note')).toBeTruthy();
+    await act(async () => { refreshedPage.resolve(first); });
+    expect(screen.queryByText('Second page note')).toBeNull();
+  });
+  it('ignores a delayed response for the previous member through the real hook', async () => {
+    const initial = mockUseApi().data;
+    const previous = pendingPage();
+    const current = pendingPage();
+    mockGetAppreciations.mockReturnValueOnce(previous.promise).mockReturnValueOnce(current.promise);
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    mockUserId = '8';
+    screen.rerender(<AppreciationsScreen />);
+    await act(async () => { current.resolve({ ...initial, data: [{ ...initial.data[0], id: 20, message: 'Current member note' }] }); });
+    await act(async () => { previous.resolve(initial); });
+    expect(screen.getByText('Current member note')).toBeTruthy();
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+    expect(mockGetAppreciations.mock.calls).toEqual([['7', 1, 20], ['8', 1, 20]]);
+  });
+  it.each([false, true])('keeps reaction counts when an overlapping refresh resolves (writeFirst=%s)', async (writeFirst) => {
+    const initial = mockUseApi().data;
+    const refreshed = pendingPage();
+    let finishReaction!: () => void;
+    mockGetAppreciations.mockResolvedValueOnce(initial).mockReturnValueOnce(refreshed.promise);
+    mockReactToAppreciation.mockImplementationOnce(() => new Promise((resolve) => {
+      finishReaction = () => resolve({ data: { reacted: true, reaction_type: 'heart' } });
+    }));
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Heart');
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    fireEvent.press(screen.getByText('Heart'));
+    expect(screen.getByText('2')).toBeTruthy();
+    if (writeFirst) await act(async () => { finishReaction(); });
+    await act(async () => { refreshed.resolve(initial); });
+    if (!writeFirst) await act(async () => { finishReaction(); });
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.queryByText('1')).toBeNull();
+    mockGetAppreciations.mockResolvedValueOnce({ ...initial, data: [
+      { ...initial.data[0], my_reaction: 'heart', reactions_count: 4 },
+    ] });
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    await screen.findByText('4');
+    expect(screen.queryByText('2')).toBeNull();
+  });
+  it('preserves accumulated rows while refreshing from a later page', async () => {
+    const state = mockUseApi();
+    state.data.meta.last_page = 2;
+    const screen = render(<AppreciationsScreen />);
+    fireEvent.press(screen.getByText('Load more'));
+    mockUseApi.mockReturnValue({ ...state, data: { requestedPage: 2, data: [
+      { ...state.data.data[0], id: 13, message: 'Second page note' },
+    ], meta: { current_page: 2, last_page: 2 } } });
+    screen.rerender(<AppreciationsScreen />);
+    expect(screen.getByText('Second page note')).toBeTruthy();
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    expect(screen.getByText('Thank you for helping with the garden.')).toBeTruthy();
+    expect(screen.getByText('Second page note')).toBeTruthy();
+  });
+  it('preserves refreshed note content when a pending reaction is refused', async () => {
+    const initial = mockUseApi().data;
+    const refreshed = pendingPage();
+    let refuseReaction!: () => void;
+    mockGetAppreciations.mockResolvedValueOnce(initial).mockReturnValueOnce(refreshed.promise);
+    mockReactToAppreciation.mockImplementationOnce(() => new Promise((_, reject) => {
+      refuseReaction = () => reject(new ApiResponseError(403, 'Reaction refused'));
+    }));
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Heart');
+    fireEvent.press(screen.getByText('Heart'));
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    await act(async () => { refreshed.resolve({ ...initial, data: [
+      { ...initial.data[0], message: 'Updated note content' },
+    ] }); });
+    expect(screen.getByText('Updated note content')).toBeTruthy();
+    await act(async () => { refuseReaction(); });
+    expect(screen.getByText('Updated note content')).toBeTruthy();
+    expect(screen.getByText('1')).toBeTruthy();
+    expect(screen.queryByText('2')).toBeNull();
+  });
+  it.each([false, true])('reconciles a lost reaction response before another toggle (readFails=%s)', async (readFails) => {
+    const initial = mockUseApi().data;
+    const reconciled = pendingPage();
+    const retried = pendingPage();
+    mockGetAppreciations.mockResolvedValueOnce(initial).mockReturnValueOnce(reconciled.promise).mockReturnValueOnce(retried.promise);
+    mockReactToAppreciation.mockRejectedValueOnce(new ApiResponseError(0, 'Connection lost'));
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Heart');
+    let button = screen.getByLabelText('React with heart');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const press = button.props.onPress;
+    await act(async () => { press(); });
+    await waitFor(() => expect(mockGetAppreciations).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('appreciations.reactionUnconfirmed')).toBeTruthy();
+    await act(async () => { press(); });
+    expect(mockReactToAppreciation).toHaveBeenCalledTimes(1);
+    if (readFails) {
+      await act(async () => { reconciled.reject(new ApiResponseError(429, 'Try later')); });
+      expect(screen.getByText('appreciations.reactionUnconfirmed')).toBeTruthy();
+      await act(async () => { press(); });
+      expect(mockReactToAppreciation).toHaveBeenCalledTimes(1);
+      fireEvent.press(screen.getAllByText('Retry')[0]);
+      await waitFor(() => expect(mockGetAppreciations).toHaveBeenCalledTimes(3));
+    }
+    await act(async () => { (readFails ? retried : reconciled).resolve({ ...initial, data: [
+      { ...initial.data[0], my_reaction: 'heart', reactions_count: 2 },
+    ] }); });
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.queryByText('appreciations.reactionUnconfirmed')).toBeNull();
+    fireEvent.press(screen.getByText('Heart'));
+    await waitFor(() => expect(mockReactToAppreciation).toHaveBeenCalledTimes(2));
+  });
+  it('removes the previous member rows when the route changes', () => {
+    const screen = render(<AppreciationsScreen />);
+    mockUserId = '8';
+    mockUseApi.mockReturnValue({ data: null, isLoading: true, error: null, refresh: jest.fn() });
+    screen.rerender(<AppreciationsScreen />);
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+  });
+  it('offers retry for a failed later page while keeping existing rows', () => {
+    const state = mockUseApi();
+    state.data.meta.last_page = 3;
+    const screen = render(<AppreciationsScreen />);
+    fireEvent.press(screen.getByText('Load more'));
+    mockUseApi.mockReturnValue({ ...state, data: null, error: 'Unavailable', errorStatus: 500 });
+    screen.rerender(<AppreciationsScreen />);
+    expect(screen.getByText('Thank you for helping with the garden.')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Retry'));
+    expect(state.refresh).toHaveBeenCalledTimes(1);
+    expect(mockUseApi.mock.calls.at(-1)[1]).toEqual(['7', 2]);
+  });
+  it('does not skip a page on rapid load-more callbacks', () => {
+    const state = mockUseApi();
+    state.data.meta.last_page = 4;
+    const screen = render(<AppreciationsScreen />);
+    let button = screen.getByText('Load more');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const press = button.props.onPress;
+    act(() => { press(); press(); });
+    expect(mockUseApi.mock.calls.at(-1)[1]).toEqual(['7', 2]);
+  });
+  it.each([false, true])('guards retained reaction callbacks (departed=%s)', async (departed) => {
+    mockReactToAppreciation.mockImplementationOnce(() => new Promise(() => {}));
+    const screen = render(<AppreciationsScreen />);
+    let button = screen.getByLabelText('React with heart');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const press = button.props.onPress;
+    expect(press).toEqual(expect.any(Function));
+    if (departed) screen.unmount();
+    await act(async () => { press(); press(); });
+    expect(mockReactToAppreciation).toHaveBeenCalledTimes(departed ? 0 : 1);
+  });
+  it('keeps another reaction locked when one request settles, then allows retry', async () => {
+    const state = mockUseApi();
+    mockUseApi.mockReturnValue({ ...state, data: { ...state.data, data: [
+      state.data.data[0], { ...state.data.data[0], id: 13 },
+    ] } });
+    let finishFirst!: () => void;
+    let finishSecond!: () => void;
+    mockReactToAppreciation
+      .mockImplementationOnce(() => new Promise((resolve) => { finishFirst = () => resolve({ data: { reaction_type: 'heart' } }); }))
+      .mockImplementationOnce(() => new Promise((resolve) => { finishSecond = () => resolve({ data: { reaction_type: 'heart' } }); }));
+    const screen = render(<AppreciationsScreen />);
+    const presses = screen.getAllByLabelText('React with heart').map((button) => {
+      while (!button.props.onPress && button.parent) button = button.parent;
+      return button.props.onPress;
+    });
+    await act(async () => { presses[0](); presses[1](); });
+    expect(mockReactToAppreciation).toHaveBeenCalledTimes(2);
+    await act(async () => { finishSecond(); });
+    await act(async () => { presses[0](); });
+    expect(mockReactToAppreciation).toHaveBeenCalledTimes(2);
+    await act(async () => { finishFirst(); });
+    fireEvent.press(screen.getAllByLabelText('React with heart')[0]);
+    await waitFor(() => expect(mockReactToAppreciation).toHaveBeenCalledTimes(3));
   });
   it('🔴 labels the reaction buttons instead of printing raw translation keys', async () => {
     const { findByText, queryByText } = render(<AppreciationsScreen />);

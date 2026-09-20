@@ -250,6 +250,8 @@
     "signInTitle": "Sign in to react",
     "signInMessage": "Reactions are available after you sign in.",
     "reactionFailed": "Could not update that reaction.",
+    "reactionUnconfirmed": "Reaction not confirmed",
+    "reactionUnconfirmedBody": "We could not confirm whether your reaction was saved. Reload the wall before reacting again.",
     "reaction": {
       "heart": "React with heart",
       "clap": "React with clap",
