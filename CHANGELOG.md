@@ -94,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Distinguished rejected invitation revocations from uncertain requests, allowing explicit current-state review while preserving original retry keys for unknown outcomes.
+
 - Clarified that the native retention history control opens a saved run without reloading or applying it.
 
 - Retention previews clear stale date validation after a valid submission, and confirmation wording handles single-record previews correctly.

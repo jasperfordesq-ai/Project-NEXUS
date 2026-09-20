@@ -5,9 +5,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useInvitationRevocationOperations } from './useInvitationRevocationOperations';
 import { loadInvitationRevocationOperation as load, executeInvitationRevocationOperation as execute,
-  recoverInvitationRevocationOperation as recover, type SavedInvitationRevocationOperation } from '../eventInvitationRevocationOperation';
+  recoverInvitationRevocationOperation as recover, reviewInvitationRevocationOperation as review, type SavedInvitationRevocationOperation } from '../eventInvitationRevocationOperation';
 jest.mock('../eventInvitationRevocationOperation', () => ({ loadInvitationRevocationOperation: jest.fn(), executeInvitationRevocationOperation: jest.fn(),
-  recoverInvitationRevocationOperation: jest.fn() }));
+  recoverInvitationRevocationOperation: jest.fn(), reviewInvitationRevocationOperation: jest.fn() }));
 const scope = { tenantId: 2, userId: 7, eventId: 42 };
 const intent = { invitationId: 12, reason: 'Duplicate invitation' };
 const pending: SavedInvitationRevocationOperation = { ...scope, schemaVersion: 1, status: 'pending', key: 'original', intent };
@@ -74,4 +74,19 @@ it('keeps recovery errors visible after reloading the pending request', async ()
   await act(async () => result.current.recover());
   expect(result.current.operationFailed).toBe(true); expect(result.current.saved).toEqual(pending);
   expect(result.current.busy).toBe(false); expect(result.current.blocked).toBe(true);
+});
+
+it('reviews a rejected revocation explicitly and surfaces a failed review', async () => {
+  const rejected: SavedInvitationRevocationOperation = { ...scope, schemaVersion: 1, status: 'rejected', key: 'rejected', intent };
+  jest.mocked(load).mockResolvedValue(rejected);
+  const reviewed = jest.fn();
+  const invitation = { ...receipt.data.invitation, target_type: 'member' as const, token_expires_at: '2027-01-01T00:00:00Z', accepted_at: null, expired_at: null };
+  jest.mocked(review).mockResolvedValueOnce(invitation);
+  const { result } = renderHook(() => useInvitationRevocationOperations(scope, true, true, jest.fn(), reviewed));
+  await waitFor(() => expect(result.current.ready).toBe(true)); expect(result.current.blocked).toBe(true);
+  await act(async () => result.current.submit(intent)); await act(async () => result.current.recover());
+  expect(execute).not.toHaveBeenCalled(); expect(recover).not.toHaveBeenCalled();
+  await act(async () => result.current.review()); expect(reviewed).toHaveBeenCalledWith(invitation);
+  jest.mocked(review).mockRejectedValueOnce(new Error('Offline'));
+  await act(async () => result.current.review()); expect(result.current.operationFailed).toBe(true);
 });

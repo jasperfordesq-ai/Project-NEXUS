@@ -3,15 +3,18 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { z } from 'zod';
+import { ApiResponseError } from './api/client';
 import { loadCreationDraft, saveCreationDraft, type CreationDraftScope } from './creationDraftStore';
 import { mutationIdempotencyKey } from './utils/idempotencyKey';
-import { revokeOrganizerInvitation, revokedInvitationSchema, invitationRevocationIntentSchema, type InvitationRevocationIntent } from './api/eventRegistration';
+import { getOrganizerInvitations, revokeOrganizerInvitation, revokedInvitationSchema, invitationRevocationIntentSchema, type InvitationRevocationIntent } from './api/eventRegistration';
 
 const id = z.number().int().positive().safe();
 const scopeSchema = z.object({ tenantId: id, userId: id, eventId: id }).strict();
 const base = scopeSchema.extend({ schemaVersion: z.literal(1), key: z.string().min(1).max(191) });
 const savedSchema = z.discriminatedUnion('status', [
   base.extend({ status: z.literal('pending'), intent: invitationRevocationIntentSchema }).strict(),
+  base.extend({ status: z.literal('rejected'), intent: invitationRevocationIntentSchema }).strict(),
+  base.extend({ status: z.literal('review'), invitationId: id, invitationVersion: id }).strict(),
   base.extend({ status: z.literal('acknowledged'), invitation: revokedInvitationSchema }).strict(),
 ]);
 export type InvitationRevocationScope = z.infer<typeof scopeSchema>;
@@ -46,6 +49,7 @@ async function prepare(scope: InvitationRevocationScope, intent: InvitationRevoc
   return ordered(scope, async () => {
     const parsed = invitationRevocationIntentSchema.parse(intent);
     const previous = await read(scope);
+    if (previous?.status === 'rejected') throw new Error('Rejected revocation needs review');
     if (previous?.status === 'pending') {
       if (JSON.stringify(previous.intent) !== JSON.stringify(parsed)) throw new Error('Pending invitation revocation request differs');
       return previous;
@@ -65,9 +69,21 @@ async function run(scope: InvitationRevocationScope, current: () => boolean, res
     const pending = await reserve();
     if (!current()) throw new Error('InvitationRevocation departed');
     if (pending?.status !== 'pending') throw new Error('No pending invitation revocation request');
-    // Any failure retains the exact request. Do not infer non-application from
-    // a network error, validation failure, conflict, or a changed permission.
-    const response = await revokeOrganizerInvitation(scope.eventId, pending.intent, pending.key);
+    let response: Awaited<ReturnType<typeof revokeOrganizerInvitation>>;
+    try {
+      response = await revokeOrganizerInvitation(scope.eventId, pending.intent, pending.key);
+    } catch (error) {
+      // Only the server's after-replay state refusal proves this exact request did not apply.
+      if (error instanceof ApiResponseError && error.status === 422
+        && error.code === 'EVENT_REGISTRATION_VALIDATION_FAILED' && error.field === 'invitation_state') {
+        await ordered(scope, async () => {
+          const saved = await read(scope);
+          if (saved?.status !== 'pending' || saved.key !== pending.key) throw new Error('Revocation rejection mismatch');
+          if (!await saveCreationDraft(draftScope(scope), { ...saved, status: 'rejected' })) throw new Error('Rejection not saved');
+        });
+      }
+      throw error;
+    }
     await ordered(scope, async () => {
       const saved = await read(scope);
       const receipt = revokedInvitationSchema.parse(response.data.invitation);
@@ -87,3 +103,30 @@ export const executeInvitationRevocationOperation = (scope: InvitationRevocation
   run(scope, current, () => prepare(scope, intent));
 export const recoverInvitationRevocationOperation = (scope: InvitationRevocationScope, current: () => boolean) =>
   run(scope, current, () => loadInvitationRevocationOperation(scope));
+
+/** Read-only explicit review cannot discard an uncertain request. */
+export async function reviewInvitationRevocationOperation(scope: InvitationRevocationScope, key: string, current: () => boolean) {
+  const rejected = await loadInvitationRevocationOperation(scope);
+  if (!current() || rejected?.status !== 'rejected' || rejected.key !== key) throw new Error('No rejected revocation');
+  const seen = new Set<number>(); let page: number | null = 1;
+  while (page !== null) {
+    if (!current() || seen.has(page)) throw new Error('Review departed or invalid pagination');
+    seen.add(page);
+    const { data } = await getOrganizerInvitations(scope.eventId, page, 100);
+    if (!current() || data.event_id !== scope.eventId || !data.permissions.manage_invitations) throw new Error('Review unavailable');
+    const invitation = data.invitations.find(item => item.id === rejected.intent.invitationId);
+    if (invitation) {
+      if (invitation.event_id !== scope.eventId) throw new Error('Review owner mismatch');
+      await ordered(scope, async () => {
+        const saved = await read(scope);
+        if (!current() || saved?.status !== 'rejected' || saved.key !== key) throw new Error('Review mismatch');
+        const reviewed = savedSchema.parse({ ...scope, schemaVersion: 1, key, status: 'review',
+          invitationId: invitation.id, invitationVersion: invitation.invitation_version });
+        if (!await saveCreationDraft(draftScope(scope), reviewed)) throw new Error('Review not saved');
+      });
+      return invitation;
+    }
+    page = data.pagination.next_page;
+  }
+  throw new Error('Invitation no longer available');
+}

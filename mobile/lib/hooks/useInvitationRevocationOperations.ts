@@ -4,9 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiResponseError } from '../api/client';
-import type { InvitationRevocationIntent } from '../api/eventRegistration';
+import type { InvitationRevocationIntent, OrganizerInvitation } from '../api/eventRegistration';
 import { executeInvitationRevocationOperation, recoverInvitationRevocationOperation,
-  loadInvitationRevocationOperation, type InvitationRevocationScope, type SavedInvitationRevocationOperation } from '../eventInvitationRevocationOperation';
+  loadInvitationRevocationOperation, reviewInvitationRevocationOperation, type InvitationRevocationScope, type SavedInvitationRevocationOperation } from '../eventInvitationRevocationOperation';
 
 type Receipt = Awaited<ReturnType<typeof executeInvitationRevocationOperation>>;
 type State = { epoch: number; saved: SavedInvitationRevocationOperation | null; ready: boolean; storageFailed: boolean;
@@ -14,7 +14,7 @@ type State = { epoch: number; saved: SavedInvitationRevocationOperation | null; 
 const empty = (epoch: number): State => ({ epoch, saved: null, ready: false, storageFailed: false, busy: false, operationFailed: false, errorStatus: null });
 
 /** active must represent both screen focus and foreground. Loading never replays work. */
-export function useInvitationRevocationOperations(scope: InvitationRevocationScope, permitted: boolean, active: boolean, onAccepted: (receipt: Receipt) => void) {
+export function useInvitationRevocationOperations(scope: InvitationRevocationScope, permitted: boolean, active: boolean, onAccepted: (receipt: Receipt) => void, onReviewed?: (invitation: OrganizerInvitation) => void) {
   const { tenantId, userId, eventId } = scope;
   const valid = [tenantId, userId, eventId].every(id => Number.isSafeInteger(id) && id > 0);
   const identity = JSON.stringify([tenantId, userId, eventId, permitted, active]);
@@ -22,6 +22,7 @@ export function useInvitationRevocationOperations(scope: InvitationRevocationSco
   if (current.current.identity !== identity) current.current = { ...current.current, identity, epoch: current.current.epoch + 1, locked: false, read: 0 };
   const epoch = current.current.epoch;
   const [state, setState] = useState<State>(empty(0));
+  const reviewedCallback = useRef(onReviewed); reviewedCallback.current = onReviewed;
   const callback = useRef(onAccepted); callback.current = onAccepted;
   const isCurrent = useCallback(() => current.current.mounted && current.current.epoch === epoch && valid && permitted && active,
     [epoch, valid, permitted, active]);
@@ -42,25 +43,34 @@ export function useInvitationRevocationOperations(scope: InvitationRevocationSco
   }, []);
   useEffect(() => { setState(empty(epoch)); void reload(); }, [epoch, reload]);
   const visible = isCurrent() && state.epoch === epoch ? state : empty(epoch);
-  async function perform(kind: 'submit' | 'recover', intent?: InvitationRevocationIntent) {
+  async function perform(kind: 'submit' | 'recover' | 'review', intent?: InvitationRevocationIntent) {
     if (!isCurrent() || current.current.locked || !visible.ready || visible.storageFailed) return;
-    if (kind === 'submit' && (!intent || visible.saved?.status === 'pending')) return;
+    if (kind === 'submit' && (!intent || ['pending', 'rejected'].includes(visible.saved?.status ?? ''))) return;
     if (kind === 'recover' && visible.saved?.status !== 'pending') return;
+    if (kind === 'review' && visible.saved?.status !== 'rejected') return;
     current.current.locked = true;
     setState(previous => ({ ...previous, busy: true, operationFailed: false, errorStatus: null }));
     try {
       const owner = { tenantId, userId, eventId };
+      if (kind === 'review') {
+        const invitation = await reviewInvitationRevocationOperation(owner, visible.saved!.key, isCurrent);
+        if (isCurrent()) reviewedCallback.current?.(invitation);
+        return;
+      }
       const receipt = kind === 'submit' ? await executeInvitationRevocationOperation(owner, intent!, isCurrent)
           : await recoverInvitationRevocationOperation(owner, isCurrent);
       if (isCurrent()) callback.current(receipt);
     } catch (error) {
-      if (isCurrent()) setState(previous => ({ ...previous, operationFailed: true, errorStatus: error instanceof ApiResponseError ? error.status : null }));
+      const attempted = kind === 'submit' ? intent : visible.saved?.status === 'pending' ? visible.saved.intent : undefined;
+      const explainedRejection = kind !== 'review' && attempted && error instanceof ApiResponseError && error.status === 422
+        && error.code === 'EVENT_REGISTRATION_VALIDATION_FAILED' && error.field === 'invitation_state';
+      if (isCurrent()) setState(previous => ({ ...previous, operationFailed: !explainedRejection, errorStatus: error instanceof ApiResponseError ? error.status : null }));
     } finally {
       await reload();
       if (isCurrent()) { current.current.locked = false; setState(previous => ({ ...previous, busy: false })); }
     }
   }
   return { ...visible, reload, submit: (intent: InvitationRevocationIntent) => perform('submit', intent),
-    recover: () => perform('recover'),
-    blocked: !visible.ready || visible.storageFailed || visible.busy || visible.saved?.status === 'pending' };
+    recover: () => perform('recover'), review: () => perform('review'),
+    blocked: !visible.ready || visible.storageFailed || visible.busy || ['pending', 'rejected'].includes(visible.saved?.status ?? '') };
 }

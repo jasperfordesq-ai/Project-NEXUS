@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
+import { ApiResponseError } from './api/client';
 import { loadCreationDraft, saveCreationDraft } from './creationDraftStore';
-import { revokeOrganizerInvitation as mutate } from './api/eventRegistration';
-import { executeInvitationRevocationOperation as execute, recoverInvitationRevocationOperation as recover, loadInvitationRevocationOperation as load } from './eventInvitationRevocationOperation';
+import { getOrganizerInvitations, revokeOrganizerInvitation as mutate } from './api/eventRegistration';
+import { executeInvitationRevocationOperation as execute, recoverInvitationRevocationOperation as recover, loadInvitationRevocationOperation as load, reviewInvitationRevocationOperation as review } from './eventInvitationRevocationOperation';
 jest.mock('./creationDraftStore', () => ({ loadCreationDraft: jest.fn(), saveCreationDraft: jest.fn() }));
-jest.mock('./api/eventRegistration', () => ({ ...jest.requireActual('./api/eventRegistration'), revokeOrganizerInvitation: jest.fn() }));
+jest.mock('./api/eventRegistration', () => ({ ...jest.requireActual('./api/eventRegistration'), revokeOrganizerInvitation: jest.fn(), getOrganizerInvitations: jest.fn() }));
 jest.mock('@/lib/observability/report', () => ({ reportSentryMessage: jest.fn() }));
 const scope = { tenantId: 2, userId: 7, eventId: 42 };
 const instant = '2027-01-01T12:00:00Z';
@@ -80,4 +81,32 @@ it('refuses corrupted owner data before sending', async () => {
   jest.mocked(loadCreationDraft).mockResolvedValue({ ...scope, userId: 999, schemaVersion: 1, status: 'pending', intent: apply, key: 'wrong-owner' });
   await expect(recover(scope, () => true)).rejects.toThrow('owner mismatch');
   expect(mutate).not.toHaveBeenCalled();
+});
+
+it('requires explicit fresh review of a definitive rejection without another revocation', async () => {
+  jest.mocked(mutate).mockRejectedValueOnce(new ApiResponseError(422, 'Refused', undefined, 'EVENT_REGISTRATION_VALIDATION_FAILED', 'invitation_state'));
+  await expect(execute(scope, apply, () => true)).rejects.toThrow();
+  const saved = await load(scope); expect(saved?.status).toBe('rejected');
+  await expect(recover(scope, () => true)).rejects.toThrow('No pending');
+  await expect(execute(scope, other, () => true)).rejects.toThrow('needs review');
+  const invitation = { ...receipt.data.invitation, target_type: 'member' as const, token_expires_at: instant, accepted_at: null, expired_at: null };
+  const data = { event_id: 42, invitations: [invitation], permissions: { manage_invitations: true, view_roster: false, view_recipient_email: false },
+    pagination: { page: 1, per_page: 100, total: 1, last_page: 1, page_count: 1, from: 1, to: 1, has_more: false, previous_page: null, next_page: null } };
+  jest.mocked(getOrganizerInvitations).mockResolvedValueOnce({ data: { ...data, invitations: [], pagination: { ...data.pagination, next_page: 2 } } }).mockResolvedValue({ data });
+  expect(await review(scope, saved!.key, () => true)).toEqual(invitation);
+  expect(getOrganizerInvitations).toHaveBeenLastCalledWith(42, 2, 100);
+  expect(await load(scope)).toMatchObject({ status: 'review', invitationId: 9, invitationVersion: 2 });
+  expect(await load(scope)).not.toHaveProperty('intent'); expect(mutate).toHaveBeenCalledTimes(1);
+});
+it.each([new ApiResponseError(422, 'Generic validation'), new ApiResponseError(409, 'Conflict', undefined, 'EVENT_REGISTRATION_CONFLICT')])('never offers discard/review for ambiguous refusal %j', async error => {
+  jest.mocked(mutate).mockRejectedValueOnce(error); await expect(execute(scope, apply, () => true)).rejects.toThrow();
+  const saved = await load(scope); expect(saved?.status).toBe('pending');
+  await expect(review(scope, saved!.key, () => true)).rejects.toThrow('No rejected');
+});
+it('keeps the rejection when current authority cannot be verified', async () => {
+  jest.mocked(mutate).mockRejectedValueOnce(new ApiResponseError(422, 'Refused', undefined, 'EVENT_REGISTRATION_VALIDATION_FAILED', 'invitation_state'));
+  await expect(execute(scope, apply, () => true)).rejects.toThrow(); const saved = await load(scope);
+  jest.mocked(getOrganizerInvitations).mockRejectedValueOnce(new Error('Forbidden'));
+  await expect(review(scope, saved!.key, () => true)).rejects.toThrow('Forbidden');
+  expect((await load(scope))?.status).toBe('rejected'); expect(mutate).toHaveBeenCalledTimes(1);
 });

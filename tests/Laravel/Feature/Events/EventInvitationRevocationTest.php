@@ -48,8 +48,10 @@ final class EventInvitationRevocationTest extends TestCase
         $replay = $this->apiPost($url, $payload)->assertOk()->assertJsonPath('data.idempotent_replay', true)
             ->assertJsonPath('data.changed', false);
         self::assertSame($first->json('data.invitation'), $replay->json('data.invitation'));
-        $this->apiPost($url, array_replace($payload, ['reason' => 'Changed reason']))->assertStatus(409);
-        $this->apiPost($url, array_replace($payload, ['idempotency_key' => 'new-revoke-key']))->assertStatus(422);
+        $conflict = $this->apiPost($url, array_replace($payload, ['reason' => 'Changed reason']))->assertStatus(409);
+        self::assertArrayNotHasKey('field', $conflict->json('errors.0'));
+        $this->apiPost($url, array_replace($payload, ['idempotency_key' => 'new-revoke-key']))->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_REGISTRATION_VALIDATION_FAILED')->assertJsonPath('errors.0.field', 'invitation_state');
         self::assertSame($before, $counts());
         self::assertSame(1, DB::table('event_invitation_history')->where('event_id', $eventId)->where('action', 'revoked')->count());
     }
