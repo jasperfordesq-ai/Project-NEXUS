@@ -214,7 +214,7 @@
       "email": "Email addresses",
       "group": "Group members",
       "audience": "Audience segment",
-      "csv": "CSV upload"
+      "csv": "CSV data"
     },
     "sources": {
       "member": {

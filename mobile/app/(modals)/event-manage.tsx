@@ -127,7 +127,7 @@ function EventManageContent({ eventId, section }: { eventId: number; section?: s
               <HeroCard className="rounded-panel"><HeroCard.Body className="gap-2 p-5"><Text accessibilityRole="header" className="text-xl font-bold text-foreground">{t('manage.workspace_label')}</Text><Text className="text-sm leading-5 text-muted-foreground">{t('manage.subtitle')}</Text></HeroCard.Body></HeroCard>
               {operations.map((operation) => (
                 <NativePressable key={operation.label} accessibilityLabel={operation.label} onPress={() => router.push(operation.route)} feedback="highlight">
-                  <HeroCard className="rounded-panel"><HeroCard.Body className="flex-row items-center justify-between gap-3 p-4"><Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }}>{operation.label}</Text><Text className="text-xl text-primary">›</Text></HeroCard.Body></HeroCard>
+                  <HeroCard className="rounded-panel"><HeroCard.Body className="flex-row items-center justify-between gap-3 p-4"><Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }}>{operation.label}</Text><Text className="text-xl" style={{ color: theme.textSecondary }} importantForAccessibility="no">›</Text></HeroCard.Body></HeroCard>
                 </NativePressable>
               ))}
             </View>
