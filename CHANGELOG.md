@@ -68,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native guest attendance hides Undo when the current history entry cannot be undone, using server-confirmed availability while preserving valid check-out actions.
+
 - Invalid guest-attendance transitions and repeated undo attempts now expose definitive rejection details, allowing native saved-action review instead of trapping organisers in an endless recovery retry. Unmarked failures remain uncertain.
 
 - Guest attendance conflicts now identify a definitively rejected attendance version separately from idempotency conflicts, allowing clients to review stale state without misclassifying uncertain retries.

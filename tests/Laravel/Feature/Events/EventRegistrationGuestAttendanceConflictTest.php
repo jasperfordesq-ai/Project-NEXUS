@@ -45,12 +45,16 @@ final class EventRegistrationGuestAttendanceConflictTest extends TestCase
         self::assertArrayNotHasKey('field', $collision->json('errors.0'));
         $this->apiPost($url . '/check_out', ['expected_version' => 1, 'idempotency_key' => 'guest-checkout'])
             ->assertOk()->assertJsonPath('data.attendance.attendance_version', 2);
+        $this->apiGet("/v2/events/{$eventId}/registration-product/manage")->assertOk()
+            ->assertJsonPath('data.guests.0.attendance.can_undo', true);
         $advanced = $this->apiPost($url . '/check_in', ['expected_version' => 0, 'idempotency_key' => 'guest-original']);
         $advanced->assertStatus(409);
         self::assertArrayNotHasKey('field', $advanced->json('errors.0'));
         self::assertSame(2, DB::table('event_registration_guest_attendance_history')->where('guest_id', $guestId)->count());
         $this->apiPost($url . '/undo', ['expected_version' => 2, 'reason' => 'Incorrect checkout', 'idempotency_key' => 'guest-undo'])
             ->assertOk()->assertJsonPath('data.attendance.attendance_version', 3);
+        $this->apiGet("/v2/events/{$eventId}/registration-product/manage")->assertOk()
+            ->assertJsonPath('data.guests.0.attendance.can_undo', false);
         $this->apiPost($url . '/undo', ['expected_version' => 3, 'reason' => 'Undo twice', 'idempotency_key' => 'guest-undo-again'])
             ->assertStatus(422)->assertJsonPath('errors.0.code', 'EVENT_REGISTRATION_VALIDATION_FAILED')
             ->assertJsonPath('errors.0.field', 'attendance_action');

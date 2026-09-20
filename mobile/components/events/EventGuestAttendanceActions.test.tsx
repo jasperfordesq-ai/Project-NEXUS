@@ -19,7 +19,7 @@ it('requires confirmation before recording attendance', () => {
   expect(mockOperation.submit).toHaveBeenCalledWith({ guestId: 9, action: 'check_in', expectedVersion: 0 });
 });
 it('requires a nonblank undo reason', () => {
-  const attendance = { id: 3, status: 'checked_in' as const, version: 2, checked_in_at: null, checked_out_at: null, no_show_at: null };
+  const attendance = { can_undo: true, id: 3, status: 'checked_in' as const, version: 2, checked_in_at: null, checked_out_at: null, no_show_at: null };
   const view = render(<Actions {...props} guest={{ ...guest, attendance }} />); fireEvent.press(view.getByText('guests.undo'));
   fireEvent.press(view.getByText('common:buttons.confirm')); expect(mockOperation.submit).not.toHaveBeenCalled();
   fireEvent.changeText(view.getByLabelText('guests.undo_reason'), 'Incorrect check-in'); fireEvent.press(view.getByText('common:buttons.confirm'));
@@ -39,4 +39,11 @@ it('requires refreshed roster after reviewing a different version', () => {
 it('does not expose actions for inactive guests or lost authority', () => {
   const view = render(<Actions {...props} guest={{ ...guest, status: 'withdrawn' }} />); expect(view.queryByText('guests.check_in')).toBeNull();
   view.rerender(<Actions {...props} permitted={false} />); expect(view.toJSON()).toBeNull();
+});
+
+it.each([false, undefined])('hides undo without server-confirmed availability (%s)', canUndo => {
+  const attendance = { id: 3, status: 'checked_in' as const, version: 3, can_undo: canUndo, checked_in_at: null, checked_out_at: null, no_show_at: null };
+  const view = render(<Actions {...props} guest={{ ...guest, attendance }} />);
+  expect(view.queryByText('guests.undo')).toBeNull();
+  expect(view.getByText('guests.check_out')).toBeTruthy();
 });

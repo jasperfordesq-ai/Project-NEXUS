@@ -344,7 +344,7 @@ const organizerGuestSchema = registrationGuestSchema.extend({
   withdrawn_at: z.string().nullable(), anonymised_at: z.string().nullable(),
   attendance: z.object({
     id: safeId, status: z.enum(['not_checked_in', 'checked_in', 'checked_out', 'attended', 'no_show']),
-    version: revision, checked_in_at: z.string().nullable(), checked_out_at: z.string().nullable(), no_show_at: z.string().nullable(),
+    can_undo: z.boolean().optional(), version: revision, checked_in_at: z.string().nullable(), checked_out_at: z.string().nullable(), no_show_at: z.string().nullable(),
   }).nullable(),
 }).strip();
 const organizerGuestsSchema = z.object({ data: z.object({

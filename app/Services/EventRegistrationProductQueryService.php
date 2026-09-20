@@ -123,6 +123,13 @@ final class EventRegistrationProductQueryService
                     ->on('attendance.event_id', '=', 'guest.event_id')
                     ->on('attendance.guest_id', '=', 'guest.id');
             })
+            ->leftJoin('event_registration_guest_attendance_history as attendance_history', function ($join): void {
+                $join->on('attendance_history.tenant_id', '=', 'attendance.tenant_id')
+                    ->on('attendance_history.event_id', '=', 'attendance.event_id')
+                    ->on('attendance_history.guest_id', '=', 'attendance.guest_id')
+                    ->on('attendance_history.attendance_id', '=', 'attendance.id')
+                    ->on('attendance_history.attendance_version', '=', 'attendance.attendance_version');
+            })
             ->where('guest.tenant_id', $tenantId)
             ->where('guest.event_id', $eventId);
         $guestTotal = (clone $guestQuery)->count('guest.id');
@@ -140,7 +147,7 @@ final class EventRegistrationProductQueryService
                 'guest.withdrawn_at', 'guest.anonymised_at',
                 'attendance.id as attendance_id', 'attendance.attendance_status',
                 'attendance.attendance_version', 'attendance.checked_in_at', 'attendance.checked_out_at',
-                'attendance.no_show_at',
+                'attendance.no_show_at', 'attendance_history.action as latest_attendance_action',
             ])
             ->map(function (object $guest) use ($canViewRoster, $canViewSensitive): array {
                 $row = [
@@ -161,6 +168,7 @@ final class EventRegistrationProductQueryService
                         'id' => (int) $guest->attendance_id,
                         'status' => (string) $guest->attendance_status,
                         'version' => (int) $guest->attendance_version,
+                        'can_undo' => $guest->latest_attendance_action !== null && $guest->latest_attendance_action !== 'undo',
                         'checked_in_at' => $guest->checked_in_at,
                         'checked_out_at' => $guest->checked_out_at,
                         'no_show_at' => $guest->no_show_at,

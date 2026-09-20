@@ -22,7 +22,8 @@ export default function EventGuestAttendanceActions({ scope, guest, permitted, a
   const acknowledged = operation.saved?.status === 'acknowledged' ? operation.saved.attendanceVersion : null;
   const stale = (reviewed !== null && reviewed !== version) || (acknowledged !== null && acknowledged > version);
   const blocked = operation.blocked || stale || !permitted || !active || guest.status !== 'captured';
-  const actions: Action[] = status === 'not_checked_in' ? ['check_in', 'no_show'] : status === 'checked_in' ? ['check_out', 'undo'] : ['undo'];
+  const actions: Action[] = status === 'not_checked_in' ? ['check_in', 'no_show'] : status === 'checked_in' ? ['check_out'] : [];
+  if (guest.attendance?.can_undo === true) actions.push('undo');
   if (!active || !permitted) return null;
   return <View className="gap-3">
     {operation.storageFailed || operation.saved?.status === 'pending' ? <>
