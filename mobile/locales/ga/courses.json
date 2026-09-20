@@ -151,7 +151,7 @@
     "create_error": "Níorbh fhéidir a shábháil. Bain triail eile as.",
     "no_category": "Gan chatagóir",
     "no_courses": "Níl aon chúrsaí cruthaithe agat fós.",
-    "unsaved_title": "An cúrsa seo a chaitheamh i dtraipisí?",
+    "unsaved_title": "An bhfuil fonn ort athruithe gan sábháil a scriosadh?",
     "unsaved_message": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
     "discard": "Cuir i leataobh",
     "loadError": "Níorbh fhéidir do chúrsaí a lódáil.",
@@ -168,7 +168,7 @@
     "footer_title": "Réidh le sábháil?",
     "footer_missing": "Cuir teideal leis roimh shábháil.",
     "footer_ready": "Sábháil na sonraí, ansin cuir rannóga agus ceachtanna leis.",
-    "footer_ready_edit": "Sábhálfar d'athruithe sa chúrsa ar an toirt.",
+    "footer_ready_edit": "Sábháil sonraí an chúrsa anseo. Sábháil gach ceacht ina eagarthóir féin.",
     "title_required": "Tabhair teideal don chúrsa.",
     "credit_cost_hint": "Cé mhéad creidmheas ama a chaitheann ball le clárú. Fág ag 0 do chúrsa saor in aisce.",
     "prerequisites_hint": "Roghnach. Uimhreacha aitheantais na gcúrsaí a chaithfidh ball a chríochnú ar dtús, scartha le camóga."

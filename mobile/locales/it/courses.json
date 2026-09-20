@@ -147,7 +147,7 @@
     "create_error": "Impossibile salvare. Per favore riprova.",
     "no_category": "Nessuna categoria",
     "no_courses": "Non hai ancora creato nessun corso.",
-    "unsaved_title": "Scartare questo corso?",
+    "unsaved_title": "Scartare le modifiche non salvate?",
     "unsaved_message": "Hai dati non salvati. Se esci ora, andranno perduti.",
     "discard": "Elimina",
     "loadError": "Non è stato possibile caricare i tuoi corsi.",
@@ -164,7 +164,7 @@
     "footer_title": "Pronto per salvare?",
     "footer_missing": "Aggiungi un titolo prima di salvare.",
     "footer_ready": "Salva i dettagli, poi aggiungi sezioni e lezioni.",
-    "footer_ready_edit": "Le modifiche vengono salvate subito nel corso.",
+    "footer_ready_edit": "Salva qui i dettagli del corso. Salva ogni lezione nel suo editor.",
     "title_required": "Dai un titolo al corso.",
     "credit_cost_hint": "Quanti crediti-tempo spende un membro per iscriversi. Lascia 0 per un corso gratuito.",
     "prerequisites_hint": "Facoltativo. I numeri ID dei corsi che un membro deve completare prima, separati da virgole."

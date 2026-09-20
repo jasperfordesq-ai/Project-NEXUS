@@ -145,7 +145,7 @@
     "create_error": "Could not save. Please try again.",
     "no_category": "No category",
     "no_courses": "You haven't created any courses yet.",
-    "unsaved_title": "Discard this course?",
+    "unsaved_title": "Discard unsaved changes?",
     "unsaved_message": "You have unsaved details. Leaving now will lose them.",
     "discard": "Discard",
     "loadError": "Could not load your courses.",
@@ -162,7 +162,7 @@
     "footer_title": "Ready to save?",
     "footer_missing": "Add a title before saving.",
     "footer_ready": "Save the details, then add sections and lessons.",
-    "footer_ready_edit": "Your changes are saved to the course straight away.",
+    "footer_ready_edit": "Save course details here. Save each lesson in its editor.",
     "title_required": "Give the course a title.",
     "credit_cost_hint": "How many time credits a member spends to enrol. Leave at 0 for a free course.",
     "prerequisites_hint": "Optional. The ID numbers of courses a member must finish first, separated by commas."

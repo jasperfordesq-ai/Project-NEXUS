@@ -147,7 +147,7 @@
     "create_error": "No se pudo guardar. Por favor inténtalo de nuevo.",
     "no_category": "Sin categoría",
     "no_courses": "Aún no has creado ningún curso.",
-    "unsaved_title": "¿Descartar este curso?",
+    "unsaved_title": "¿Descartar los cambios sin guardar?",
     "unsaved_message": "Tienes datos sin guardar. Si sales ahora, se perderán.",
     "discard": "Descartar",
     "loadError": "No se han podido cargar tus cursos.",
@@ -164,7 +164,7 @@
     "footer_title": "¿Listo para guardar?",
     "footer_missing": "Añade un título antes de guardar.",
     "footer_ready": "Guarda los detalles y luego añade secciones y lecciones.",
-    "footer_ready_edit": "Tus cambios se guardan en el curso de inmediato.",
+    "footer_ready_edit": "Guarda aquí los datos del curso. Guarda cada lección en su editor.",
     "title_required": "Ponle un título al curso.",
     "credit_cost_hint": "Cuántos créditos de tiempo gasta un miembro para inscribirse. Deja 0 para un curso gratuito.",
     "prerequisites_hint": "Opcional. Los números de identificación de los cursos que un miembro debe terminar primero, separados por comas."

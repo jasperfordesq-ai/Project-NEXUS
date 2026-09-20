@@ -145,7 +145,7 @@
     "create_error": "Konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "no_category": "Keine Kategorie",
     "no_courses": "Sie haben noch keine Kurse erstellt.",
-    "unsaved_title": "Diesen Kurs verwerfen?",
+    "unsaved_title": "Ungespeicherte Änderungen verwerfen?",
     "unsaved_message": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
     "discard": "Verwerfen",
     "loadError": "Deine Kurse konnten nicht geladen werden.",
@@ -162,7 +162,7 @@
     "footer_title": "Bereit zum Speichern?",
     "footer_missing": "Gib vor dem Speichern einen Titel ein.",
     "footer_ready": "Speichere die Details und füge dann Abschnitte und Lektionen hinzu.",
-    "footer_ready_edit": "Deine Änderungen werden sofort im Kurs gespeichert.",
+    "footer_ready_edit": "Kursdetails hier speichern. Jede Lektion im jeweiligen Editor speichern.",
     "title_required": "Gib dem Kurs einen Titel.",
     "credit_cost_hint": "Wie viele Zeitguthaben ein Mitglied für die Anmeldung ausgibt. Für einen kostenlosen Kurs bei 0 lassen.",
     "prerequisites_hint": "Optional. Die ID-Nummern der Kurse, die ein Mitglied zuerst abschließen muss, durch Kommas getrennt."
