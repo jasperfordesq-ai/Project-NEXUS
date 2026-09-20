@@ -9,6 +9,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 const mockShow = jest.fn();
+const mockDismiss = jest.fn();
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(), router: { push: (...args: unknown[]) => mockPush(...args) }, useLocalSearchParams: () => ({ id: 'basics' }) }));
@@ -27,7 +28,7 @@ jest.mock('@/lib/api/courses', () => ({ getCourse: jest.fn(), enrollInCourse: je
 // so here we assert on WHAT was asked and run the confirmed action.
 const mockConfirm = jest.fn<void, [{ title: string; message?: string; onConfirm: () => void }]>();
 jest.mock('@/components/ui/useConfirm', () => ({
-  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...(args as [never])), confirmDialog: null }),
+  useConfirm: () => ({ confirm: (...args: unknown[]) => mockConfirm(...(args as [never])), confirmDialog: null, dismiss: mockDismiss }),
 }));
 
 import CourseDetailScreen from './course-detail';
@@ -39,6 +40,79 @@ describe('CourseDetailScreen', () => {
     jest.clearAllMocks();
     jest.mocked(getCourse).mockResolvedValue({ id: 7, slug: 'basics', title: 'Timebanking basics', summary: 'Start here.', description: 'Learn how exchanges work.', level: 'beginner', credit_cost: 0, enrollment_count: 12, is_enrolled: false, sections: [] });
     jest.mocked(enrollInCourse).mockResolvedValue({ id: 3, course_id: 7, status: 'active', progress_percent: 0 });
+  });
+
+
+  it.each([401, 403, 404])('removes loaded course content and actions after refresh refusal %s', async status => {
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Timebanking basics')).toBeTruthy());
+    jest.mocked(getCourse).mockRejectedValue(new ApiResponseError(status, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ReactNative.RefreshControl).props.onRefresh());
+    await waitFor(() => expect(screen.getByTestId('course-detail-refused')).toBeTruthy());
+    expect(screen.queryByText('Timebanking basics')).toBeNull();
+    expect(screen.queryByText('Learn how exchanges work.')).toBeNull();
+    expect(screen.queryByText('Enroll')).toBeNull();
+  });
+
+  it('does not submit a paid enrolment from a confirmation after leaving the screen', async () => {
+    const course = await getCourse('basics');
+    jest.mocked(getCourse).mockResolvedValue({ ...course, credit_cost: 2 });
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Enroll')).toBeTruthy());
+    fireEvent.press(screen.getByText('Enroll'));
+    const confirm = mockConfirm.mock.calls[0][0].onConfirm;
+    screen.unmount();
+    await act(async () => confirm());
+    expect(enrollInCourse).not.toHaveBeenCalled();
+  });
+
+
+  it('ignores a failed enrolment readback after leaving the screen', async () => {
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Enroll')).toBeTruthy());
+    let rejectReadback!: (error: Error) => void;
+    jest.mocked(getCourse).mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectReadback = reject; }));
+    jest.mocked(enrollInCourse).mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    fireEvent.press(screen.getByText('Enroll'));
+    await waitFor(() => expect(getCourse).toHaveBeenCalledWith(7));
+    screen.unmount();
+    await act(async () => rejectReadback(new ApiResponseError(422, 'Unavailable')));
+    expect(mockShow).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+
+  it('does not submit an old paid confirmation after the course becomes unavailable', async () => {
+    const course = await getCourse('basics');
+    jest.mocked(getCourse).mockResolvedValue({ ...course, credit_cost: 2 });
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Enroll')).toBeTruthy());
+    fireEvent.press(screen.getByText('Enroll'));
+    const confirm = mockConfirm.mock.calls[0][0].onConfirm;
+    jest.mocked(getCourse).mockRejectedValue(new ApiResponseError(403, 'Unavailable'));
+    act(() => screen.UNSAFE_getByType(ReactNative.RefreshControl).props.onRefresh());
+    await waitFor(() => expect(screen.getByTestId('course-detail-refused')).toBeTruthy());
+    await act(async () => confirm());
+    expect(enrollInCourse).not.toHaveBeenCalled();
+  });
+
+
+  it('discards the old price confirmation and requires a new confirmation after refresh', async () => {
+    const course = await getCourse('basics');
+    jest.mocked(getCourse).mockResolvedValue({ ...course, credit_cost: 2 });
+    const screen = render(<CourseDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Enroll')).toBeTruthy());
+    fireEvent.press(screen.getByText('Enroll'));
+    const oldConfirm = mockConfirm.mock.calls[0][0].onConfirm;
+    mockDismiss.mockClear();
+    jest.mocked(getCourse).mockResolvedValue({ ...course, credit_cost: 5 });
+    act(() => screen.UNSAFE_getByType(ReactNative.RefreshControl).props.onRefresh());
+    await waitFor(() => expect(mockDismiss).toHaveBeenCalled());
+    await act(async () => oldConfirm());
+    expect(enrollInCourse).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByText('Enroll'));
+    await act(async () => mockConfirm.mock.calls[1][0].onConfirm());
+    expect(enrollInCourse).toHaveBeenCalledTimes(1);
   });
 
   it('uses readable status chips at large text', async () => {

@@ -50,6 +50,7 @@ jest.mock('@/lib/api/courses', () => ({
 
 import CoursesScreen from './courses';
 import { getCourses, getMyCourses } from '@/lib/api/courses';
+import { ApiResponseError } from '@/lib/api/client';
 
 describe('CoursesScreen', () => {
   beforeEach(() => {
@@ -93,6 +94,32 @@ describe('CoursesScreen', () => {
 
     fireEvent.press(getByText('Create course'));
     expect(mockPush).toHaveBeenCalledWith('/(modals)/new-course');
+  });
+
+  it.each(['browse', 'learning'])('retains %s rows and offers retry after a failed refresh', async tab => {
+    mockParams = { tab };
+    jest.mocked(getMyCourses).mockResolvedValue([{ id: 1, progress_percent: 10, course: { id: 7, title: 'Timebanking basics', slug: 'basics' } }] as never);
+    const screen = render(<CoursesScreen />);
+    await waitFor(() => expect(screen.getByText('Timebanking basics')).toBeTruthy());
+    if (tab === 'browse') jest.mocked(getCourses).mockRejectedValueOnce(new ApiResponseError(422, 'Courses unavailable'));
+    else jest.mocked(getMyCourses).mockRejectedValueOnce(new ApiResponseError(422, 'Courses unavailable'));
+    fireEvent(screen.UNSAFE_getByType(ReactNative.RefreshControl), 'refresh');
+    await waitFor(() => expect(screen.getByText('Courses unavailable')).toBeTruthy());
+    expect(screen.getByText('Timebanking basics')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.queryByText('Courses unavailable')).toBeNull());
+    expect(tab === 'browse' ? getCourses : getMyCourses).toHaveBeenCalledTimes(3);
+  });
+
+  it('shows progress during a catalogue refresh', async () => {
+    const screen = render(<CoursesScreen />);
+    await waitFor(() => expect(screen.getByText('Timebanking basics')).toBeTruthy());
+    let finish!: (value: Awaited<ReturnType<typeof getCourses>>) => void;
+    jest.mocked(getCourses).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    fireEvent(screen.UNSAFE_getByType(ReactNative.RefreshControl), 'refresh');
+    expect(screen.UNSAFE_getByType(ReactNative.RefreshControl).props.refreshing).toBe(true);
+    await act(async () => { finish({ items: [], page: 1, total: 0, hasMore: false }); });
+    expect(screen.UNSAFE_getByType(ReactNative.RefreshControl).props.refreshing).toBe(false);
   });
 
   it('stacks teaching actions and does not clamp course copy at large text', async () => {

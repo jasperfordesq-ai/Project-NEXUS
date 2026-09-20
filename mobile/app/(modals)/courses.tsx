@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
@@ -92,7 +93,7 @@ function CoursesScreen() {
           data={items}
           keyExtractor={(item) => `${activeTab}-${item.id}`}
           contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={() => refresh()} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={loading && items.length > 0} onRefresh={() => refresh()} tintColor={primary} colors={[primary]} />}
           ListHeaderComponent={
             <View className="mb-4 gap-4">
               <HeroCard className="overflow-hidden rounded-panel p-0">
@@ -154,7 +155,9 @@ function CoursesScreen() {
           onEndReachedThreshold={0.5}
           onEndReached={() => { if (activeTab === 'browse') catalogue.loadMore(); }}
           ListFooterComponent={
-            activeTab === 'browse' && catalogue.isLoadingMore
+            error && items.length > 0
+              ? <ErrorState subtitle={error} onRetry={refresh} isRetrying={loading || (activeTab === 'browse' && catalogue.isLoadingMore)} />
+              : activeTab === 'browse' && catalogue.isLoadingMore
               ? <View className="py-6"><LoadingSpinner /></View>
               : null
           }

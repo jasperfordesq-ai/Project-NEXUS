@@ -48,20 +48,29 @@ function CourseDetailScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show } = useAppToast();
-  const { confirm, confirmDialog } = useConfirm();
+  const { confirm, confirmDialog, dismiss } = useConfirm();
   const [enrolling, setEnrolling] = useState(false);
   const enrollingRef = useRef(false);
   const isMountedRef = useRef(true);
-  const { data: course, isLoading, error, errorStatus, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id) });
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  const { data: course, isLoading, error, errorStatus, refresh } = useApi(() => getCourse(id || ''), [id], { enabled: Boolean(id), clearOnRefusal: true });
+  const currentCourseRef = useRef(course);
+  currentCourseRef.current = course;
+  const consentRevision = useRef(0);
+  const displayedCost = course ? parseDecimalInput(String(course.credit_cost ?? '')) ?? 0 : null;
+  useEffect(() => {
+    consentRevision.current += 1;
+    dismiss();
+  }, [course?.id, course?.is_enrolled, displayedCost, dismiss]);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
   }, []);
   /* 🔴 A course a member is not enrolled on, or one taken down, answers 403/404. That
      was rendered as a load failure with a Retry that can never succeed (audit F/F-8). */
   const refused = isRefusalStatus(errorStatus);
 
   async function enroll() {
-    if (!course || enrollingRef.current) return;
+    if (!isMountedRef.current || !course || currentCourseRef.current?.id !== course.id || enrollingRef.current) return;
     enrollingRef.current = true;
     setEnrolling(true);
     try {
@@ -88,6 +97,7 @@ function CourseDetailScreenInner() {
         credits — reached the member as "Could not enroll. Please try again." Trying again
         cannot work (audit 2026-09-06).
       */
+      if (!isMountedRef.current) return;
       show({ title: t('detail.enroll_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
       enrollingRef.current = false;
@@ -108,12 +118,16 @@ function CourseDetailScreenInner() {
       void enroll();
       return;
     }
+    const revision = consentRevision.current;
     confirm({
       title: t('detail.enroll_confirm_title'),
       message: t('detail.enroll_confirm_message', { credits: cost }),
       confirmLabel: t('detail.enroll_confirm_cta'),
       cancelLabel: t('common:buttons.cancel'),
-      onConfirm: () => enroll(),
+      onConfirm: () => {
+        if (revision !== consentRevision.current) return;
+        return enroll();
+      },
     });
   }
 
@@ -167,7 +181,7 @@ function CourseDetailScreenInner() {
             ))}
           </ScrollView>
         )}
-        {confirmDialog}
+        {course && !refused ? confirmDialog : null}
     </SafeAreaView>
   );
 }
