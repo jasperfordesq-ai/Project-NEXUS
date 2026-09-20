@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added saved invitation-revocation recovery with stable retry keys, duplicate-action guards and screen lifecycle checks; organiser UI integration is pending.
+
 - Added paginated organiser invitation history with permission-controlled recipient details and a validated native client contract.
 
 - Added validated native invitation-revocation requests with preserved retry keys and minimal completion receipts; organiser screen integration is pending.
