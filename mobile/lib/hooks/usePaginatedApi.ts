@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
 import { ApiResponseError } from '@/lib/api/client';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import i18n from 'i18next';
 
 /** HTTP status codes worth retrying (transient server/network errors). */
@@ -24,8 +25,10 @@ const RETRYABLE_STATUSES = new Set([0, 500, 502, 503, 504]);
 /** Delay before a single retry attempt (ms). */
 const RETRY_DELAY_MS = 2000;
 
-export interface PaginatedApiState<TItem> {
+export interface PaginatedApiState<TItem, TResponse = unknown> {
   items: TItem[];
+  /** Last accepted page response; metadata follows the same identity guard as rows. */
+  response: TResponse | null;
   isLoading: boolean;
   isLoadingMore: boolean;
   error: string | null;
@@ -52,6 +55,8 @@ export interface PaginatedApiState<TItem> {
 }
 
 interface UsePaginatedApiOptions<TItem> {
+  /** Discard retained rows and pagination when the server withdraws read access. */
+  clearOnRefusal?: boolean;
   /** When false, the initial fetch and later refresh/load-more calls are skipped. Defaults to true. */
   enabled?: boolean;
   /**
@@ -156,8 +161,9 @@ export function usePaginatedApi<TItem, TResponse>(
   },
   deps?: DependencyList,
   options?: UsePaginatedApiOptions<TItem>,
-): PaginatedApiState<TItem> {
+): PaginatedApiState<TItem, TResponse> {
   const enabled = options?.enabled ?? true;
+  const clearOnRefusal = options?.clearOnRefusal ?? false;
   /*
     Held in a ref so a caller passing an inline arrow — which almost every caller does —
     cannot change the identity of `fetchPage` on every render and restart the list.
@@ -165,6 +171,7 @@ export function usePaginatedApi<TItem, TResponse>(
   const getKeyRef = useRef(options?.getKey ?? defaultKey);
   getKeyRef.current = options?.getKey ?? defaultKey;
   const [items, setItems] = useState<TItem[]>([]);
+  const [response, setResponse] = useState<TResponse | null>(null);
   const [isLoading, setIsLoading] = useState(enabled);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -224,6 +231,7 @@ export function usePaginatedApi<TItem, TResponse>(
         if (!isMountedRef.current || requestVersion !== requestVersionRef.current) return;
 
         const { items: newItems, cursor: nextCursor, hasMore: more } = extractor(response);
+        setResponse(response);
 
         cursorRef.current = nextCursor;
 
@@ -261,6 +269,12 @@ export function usePaginatedApi<TItem, TResponse>(
         }
 
         if (err instanceof ApiResponseError) {
+          if (clearOnRefusal && isRefusalStatus(err.status)) {
+            setItems([]);
+            setResponse(null);
+            setHasMore(false);
+            cursorRef.current = null;
+          }
           setError(err.message);
           setErrorStatus(err.status);
           setErrorCode(err.code ?? null);
@@ -285,7 +299,7 @@ export function usePaginatedApi<TItem, TResponse>(
         }
       }
     },
-    [fetchFn, extractor],
+    [fetchFn, extractor, clearOnRefusal],
   );
 
   // Initial load on mount, and reset + re-fetch when deps change.
@@ -304,6 +318,7 @@ export function usePaginatedApi<TItem, TResponse>(
       }
       isFetchingRef.current = false;
       setItems([]);
+      setResponse(null);
       setIsLoading(false);
       setIsLoadingMore(false);
       setError(null);
@@ -318,6 +333,7 @@ export function usePaginatedApi<TItem, TResponse>(
     // (audit 2026-09-07, C/F-18). `refresh()` deliberately does NOT do this: a pull to
     // refresh keeps what is loaded until the new page replaces it.
     setItems([]);
+    setResponse(null);
     void fetchPage(null, true);
 
     return () => {
@@ -351,5 +367,5 @@ export function usePaginatedApi<TItem, TResponse>(
     void fetchPage(null, true);
   }, [enabled, fetchPage]);
 
-  return { items, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh };
+  return { items, response, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh };
 }

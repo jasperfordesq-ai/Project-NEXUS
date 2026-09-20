@@ -41,6 +41,23 @@ function extractor(r: FakeResponse) {
 // ---------------------------------------------------------------------------
 
 describe('usePaginatedApi', () => {
+  it('keeps accepted metadata on a failed refresh and clears it when the query is disabled', async () => {
+    const accepted = makeResponse(['current'], 'next', true);
+    const fetchFn = jest.fn().mockResolvedValueOnce(accepted)
+      .mockRejectedValueOnce(new ApiResponseError(422, 'Rejected'));
+    let enabled = true;
+    const { result, rerender } = renderHook(() => usePaginatedApi(fetchFn, extractor, [], { enabled }));
+    await waitFor(() => expect(result.current.response).toBe(accepted));
+    act(() => result.current.refresh());
+    await waitFor(() => expect(result.current.error).toBe('Rejected'));
+    expect(result.current.response).toBe(accepted);
+    expect(result.current.items).toEqual(['current']);
+    enabled = false;
+    rerender({});
+    expect(result.current.response).toBeNull();
+    expect(result.current.items).toEqual([]);
+  });
+
   it('can load another page after a refresh supersedes an in-flight next page', async () => {
     let finishOldPage!: (value: FakeResponse) => void;
     const fetchFn = jest.fn()
@@ -179,6 +196,7 @@ describe('usePaginatedApi', () => {
     });
 
     expect(result.current.items).toEqual(['fresh']);
+    expect(result.current.response?.data).toEqual(['fresh']);
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -478,4 +496,19 @@ describe('usePaginatedApi — a row cannot appear twice', () => {
     // Same array reference: a page of nothing new must not re-render every row.
     expect(result.current.items).toBe(before);
   });
+});
+
+// Refusal must remove metadata along with rows, including during pagination.
+it.each([401, 403, 404])('clears retained rows and metadata on opted-in refusal %s', async status => {
+  const fetchFn = jest.fn().mockResolvedValueOnce(makeResponse(['current'], 'next', true))
+    .mockRejectedValueOnce(new ApiResponseError(status, 'Refused'));
+  const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor, [], { clearOnRefusal: true }));
+  await waitFor(() => expect(result.current.items).toEqual(['current']));
+  act(() => result.current.loadMore());
+  await waitFor(() => expect(result.current.errorStatus).toBe(status));
+  expect(result.current.items).toEqual([]);
+  expect(result.current.response).toBeNull();
+  expect(result.current.hasMore).toBe(false);
+  act(() => result.current.loadMore());
+  expect(fetchFn).toHaveBeenCalledTimes(2);
 });

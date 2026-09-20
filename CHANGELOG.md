@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep native pagination metadata aligned with accepted rows, preserve it during recoverable refresh failures, and clear it with rows when access is withdrawn.
+
 - Keep reviewed invitation states current when returning to the native organiser list, preventing obsolete revocation actions from reappearing after concurrent acceptance.
 
 - Distinguished rejected invitation revocations from uncertain requests, allowing explicit current-state review while preserving original retry keys for unknown outcomes.
