@@ -336,6 +336,8 @@
     "doneBody": "Ihr Konto und Ihre persönlichen Daten wurden gelöscht.",
     "failed": "Konto nicht gelöscht",
     "failedBody": "Ihr Konto wurde nicht gelöscht. Prüfen Sie Ihr Passwort und versuchen Sie es erneut.",
+    "unconfirmedTitle": "Löschung nicht bestätigt",
+    "unconfirmedBody": "Wir konnten nicht bestätigen, ob dein Konto gelöscht wurde. Prüfe deine Verbindung und melde dich erneut an, um zu prüfen, ob dein Konto noch verfügbar ist.",
     "tooSoon": "Sie haben es gerade erst versucht. Warten Sie etwa eine Minute und versuchen Sie es dann erneut.",
     "confirmRequired": "Bestätigung erforderlich",
     "confirmRequiredBody": "Geben Sie {{keyword}} und Ihr Passwort ein, um fortzufahren.",

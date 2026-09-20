@@ -102,6 +102,44 @@ beforeEach(() => {
 });
 
 describe('SettingsDataExportScreen', () => {
+  it('invalidates an in-flight export before sharing after departure', async () => {
+    mockGetDataExportHistory.mockResolvedValue([]);
+    let finish!: () => void;
+    mockRequestDataExport.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
+    const screen = render(<SettingsDataExportScreen />);
+    await screen.findByText('No exports yet');
+    fireEvent.press(screen.getByText('Request export'));
+    const options = mockRequestDataExport.mock.calls[0][2];
+    expect(options?.isActive?.()).toBe(true);
+    screen.unmount();
+    expect(options?.isActive?.()).toBe(false);
+    await act(async () => finish());
+  });
+
+  it('does not request an export from a retained button after departure', async () => {
+    mockGetDataExportHistory.mockResolvedValue([]);
+    const screen = render(<SettingsDataExportScreen />);
+    await waitFor(() => expect(screen.getByText('No exports yet')).toBeTruthy());
+    let button = screen.getByText('Request export');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    expect(button.props.onPress).toEqual(expect.any(Function));
+    const onPress = button.props.onPress;
+    screen.unmount();
+    await act(async () => { await onPress(); });
+    expect(mockRequestDataExport).not.toHaveBeenCalled();
+  });
+
+  it('does not claim zero exports while history is loading or unavailable', async () => {
+    let rejectHistory!: (reason: Error) => void;
+    mockGetDataExportHistory.mockReturnValueOnce(new Promise((_, reject) => { rejectHistory = reject; }));
+    const screen = render(<SettingsDataExportScreen />);
+    expect(screen.queryByText('0 exports')).toBeNull();
+    await act(async () => rejectHistory(new Error('Unavailable')));
+    expect(screen.getByTestId('data-export-history-error')).toBeTruthy();
+    expect(screen.queryByText('0 exports')).toBeNull();
+    expect(screen.queryByText('No exports yet')).toBeNull();
+  });
+
   it('renders export history and format options', async () => {
     mockGetDataExportHistory.mockResolvedValue([
       { id: 7, format: 'json', requested_at: '2026-05-01T10:00:00Z', completed_at: '2026-05-01T10:01:00Z', file_size_bytes: 2048 },
@@ -131,7 +169,7 @@ describe('SettingsDataExportScreen', () => {
       fireEvent.press(getByText('Request export'));
     });
 
-    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledWith('zip', 'mobile-export-key-1'));
+    await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledWith('zip', 'mobile-export-key-1', { isActive: expect.any(Function) }));
   });
 
   it('starts only one archive download for rapid repeated taps', async () => {
@@ -163,8 +201,8 @@ describe('SettingsDataExportScreen', () => {
 
     await waitFor(() => expect(mockRequestDataExport).toHaveBeenCalledTimes(2));
     expect(mockRequestDataExport.mock.calls).toEqual([
-      ['json', 'mobile-export-key-1'],
-      ['json', 'mobile-export-key-1'],
+      ['json', 'mobile-export-key-1', { isActive: expect.any(Function) }],
+      ['json', 'mobile-export-key-1', { isActive: expect.any(Function) }],
     ]);
   });
 

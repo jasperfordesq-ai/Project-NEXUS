@@ -63,7 +63,10 @@ function SettingsDataExportScreen() {
   const requestAttempt = useRef<{ format: DataExportFormat; key: string } | null>(null);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const loadHistory = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -97,14 +100,14 @@ function SettingsDataExportScreen() {
   );
 
   async function handleRequest() {
-    if (requestInFlight.current) return;
+    if (!isMountedRef.current || requestInFlight.current) return;
     requestInFlight.current = true;
     if (!requestAttempt.current || requestAttempt.current.format !== format) {
       requestAttempt.current = { format, key: mutationIdempotencyKey('mobile-data-export') };
     }
     setIsRequesting(true);
     try {
-      await requestDataExport(format, requestAttempt.current.key);
+      await requestDataExport(format, requestAttempt.current.key, { isActive: () => isMountedRef.current });
       if (!isMountedRef.current) return;
       requestAttempt.current = null;
       showToast({ title: t('dataExport.downloaded'), description: t('dataExport.downloadedBody'), variant: 'success' });
@@ -178,9 +181,11 @@ function SettingsDataExportScreen() {
             <HeroCard.Body className="gap-3 p-4">
               <View className="flex-row items-center justify-between gap-3">
                 <Text className="text-base font-bold" style={{ color: theme.text }}>{t('dataExport.history.title')}</Text>
-                <Chip size="sm" variant="soft" color="default">
-                  <Chip.Label>{t('dataExport.history.count', { count: history.length })}</Chip.Label>
-                </Chip>
+                {!isLoading && !loadError ? (
+                  <Chip size="sm" variant="soft" color="default">
+                    <Chip.Label>{t('dataExport.history.count', { count: history.length })}</Chip.Label>
+                  </Chip>
+                ) : null}
               </View>
               {isLoading ? (
                 <LoadingSpinner />

@@ -99,12 +99,13 @@ export async function getDataExportHistory(): Promise<DataExportHistoryRow[]> {
  * only verb `expo-file-system` can stream to disk; the file is then offered to the share
  * sheet so it can be saved or sent on.
  */
-export function requestDataExport(format: DataExportFormat, idempotencyKey?: string): Promise<void> {
+export function requestDataExport(format: DataExportFormat, idempotencyKey?: string, options: { isActive?: () => boolean } = {}): Promise<void> {
   const stamp = new Date().toISOString().slice(0, 10);
   return downloadAuthenticatedFile(
     `${API_V2}/me/data-export?format=${format}`,
     `nexus-data-export-${stamp}.${format}`,
     idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {},
+    options,
   );
 }
 

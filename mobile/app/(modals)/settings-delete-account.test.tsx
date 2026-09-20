@@ -84,7 +84,8 @@ jest.mock('@/lib/hooks/useTenant', () => ({
 jest.mock('@/lib/api/settings', () => ({ deleteAccount: jest.fn() }));
 
 const mockLogout = jest.fn();
-jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 }, logout: mockLogout }) }));
+const mockSessionIsCurrent = jest.fn(() => true);
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 1 }, logout: mockLogout, captureSessionGuard: () => mockSessionIsCurrent }) }));
 
 const mockShowToast = jest.fn();
 jest.mock('@/components/ui/AppToast', () => ({
@@ -94,6 +95,7 @@ jest.mock('@/components/ui/AppToast', () => ({
 const mockDelete = deleteAccount as jest.MockedFunction<typeof deleteAccount>;
 
 beforeEach(() => {
+  mockSessionIsCurrent.mockReturnValue(true);
   jest.clearAllMocks();
 });
 
@@ -111,6 +113,18 @@ function fill(
 }
 
 describe('SettingsDeleteAccountScreen', () => {
+  it('does not delete from a retained submit callback after departure', async () => {
+    const screen = render(<SettingsDeleteAccountScreen />);
+    fill(screen, { confirmation: 'DELETE', password: 'hunter2' });
+    let button = screen.getByTestId('delete-account-submit');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const onPress = button.props.onPress;
+    expect(onPress).toEqual(expect.any(Function));
+    screen.unmount();
+    await act(async () => { await onPress(); });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
   it('tells the member what deletion actually does', () => {
     const screen = render(<SettingsDeleteAccountScreen />);
 
@@ -200,7 +214,7 @@ describe('SettingsDeleteAccountScreen', () => {
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
   });
 
-  it('does not sign out a replacement session when deletion finishes after this route unmounts', async () => {
+  it.each([false, true])('cleans up only the submitting session after deletion and departure (replaced=%s)', async (replaced) => {
     let finishDeletion!: () => void;
     mockDelete.mockImplementationOnce(() => new Promise((resolve) => { finishDeletion = () => resolve({}); }));
     const screen = render(<SettingsDeleteAccountScreen />);
@@ -209,8 +223,23 @@ describe('SettingsDeleteAccountScreen', () => {
     expect(mockDelete).toHaveBeenCalledTimes(1);
 
     screen.unmount();
+    mockSessionIsCurrent.mockReturnValue(!replaced);
     await act(async () => finishDeletion());
+    expect(mockLogout).toHaveBeenCalledTimes(replaced ? 0 : 1);
+  });
+
+  it.each([0, 500, 502])('does not claim deletion failed when its outcome is uncertain (%s)', async (status) => {
+    mockDelete.mockRejectedValueOnce(new ApiResponseError(status, 'Connection lost'));
+    const screen = render(<SettingsDeleteAccountScreen />);
+    fill(screen, { confirmation: 'DELETE', password: 'hunter2' });
+    await act(async () => { fireEvent.press(screen.getByTestId('delete-account-submit')); });
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'deleteAccount.unconfirmedTitle',
+      description: 'deleteAccount.unconfirmedBody',
+      variant: 'warning',
+    }));
     expect(mockLogout).not.toHaveBeenCalled();
+    expect(mockDelete).toHaveBeenCalledTimes(1);
   });
 
   it('does NOT sign the member out when the server refuses', async () => {

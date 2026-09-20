@@ -336,6 +336,8 @@
     "doneBody": "A sua conta e os seus dados pessoais foram eliminados.",
     "failed": "Conta não eliminada",
     "failedBody": "A sua conta não foi eliminada. Verifique a palavra-passe e tente novamente.",
+    "unconfirmedTitle": "Eliminação não confirmada",
+    "unconfirmedBody": "Não foi possível confirmar se a tua conta foi eliminada. Verifica a ligação e inicia sessão novamente para verificar se a tua conta ainda está disponível.",
     "tooSoon": "Acabou de tentar. Aguarde cerca de um minuto e tente novamente.",
     "confirmRequired": "É necessária confirmação",
     "confirmRequiredBody": "Escreva {{keyword}} e introduza a palavra-passe para continuar.",

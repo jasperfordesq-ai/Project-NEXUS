@@ -11,11 +11,14 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import { api } from '@/lib/api/client';
+import { downloadAuthenticatedFile } from '@/lib/volunteering/authenticatedFileDownload';
+jest.mock('@/lib/volunteering/authenticatedFileDownload', () => ({ downloadAuthenticatedFile: jest.fn() }));
 import {
   approveSubAccount,
   blockUser,
   getBlockedUsers,
   getDataExportHistory,
+  requestDataExport,
   getManagedSubAccounts,
   getManagerSubAccounts,
   getSubAccountActivity,
@@ -26,6 +29,14 @@ import {
 } from './settings';
 
 describe('settings sub-account API', () => {
+  it('forwards export screen lifetime to the authenticated download', async () => {
+    const options = { isActive: () => false };
+    await requestDataExport('json', 'saved-key', options);
+    expect(downloadAuthenticatedFile).toHaveBeenCalledWith(
+      '/api/v2/me/data-export?format=json', expect.stringMatching(/\.json$/),
+      { 'Idempotency-Key': 'saved-key' }, options,
+    );
+  });
   beforeEach(() => {
     jest.clearAllMocks();
   });

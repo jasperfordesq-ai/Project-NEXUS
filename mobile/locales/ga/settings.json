@@ -336,6 +336,8 @@
     "doneBody": "Scriosadh do chuntas agus do shonraí pearsanta.",
     "failed": "Níor scriosadh an cuntas",
     "failedBody": "Níor scriosadh do chuntas. Seiceáil do phasfhocal agus bain triail eile as.",
+    "unconfirmedTitle": "Níl an scriosadh deimhnithe",
+    "unconfirmedBody": "Níorbh fhéidir linn a dheimhniú ar scriosadh do chuntas. Seiceáil do nasc agus sínigh isteach arís le fáil amach an bhfuil do chuntas ar fáil fós.",
     "tooSoon": "Bhain tú triail as nóiméad ó shin. Fan tuairim is nóiméad, ansin bain triail eile as.",
     "confirmRequired": "Deimhniú de dhíth",
     "confirmRequiredBody": "Clóscríobh {{keyword}} agus cuir isteach do phasfhocal chun leanúint ar aghaidh.",

@@ -336,6 +336,8 @@
     "doneBody": "Votre compte et vos données personnelles ont été supprimés.",
     "failed": "Compte non supprimé",
     "failedBody": "Votre compte n'a pas été supprimé. Vérifiez votre mot de passe et réessayez.",
+    "unconfirmedTitle": "Suppression non confirmée",
+    "unconfirmedBody": "Nous ne pouvons pas confirmer si votre compte a été supprimé. Vérifiez votre connexion et reconnectez-vous pour vérifier si votre compte est toujours disponible.",
     "tooSoon": "Vous venez d'essayer. Attendez environ une minute, puis réessayez.",
     "confirmRequired": "Confirmation requise",
     "confirmRequiredBody": "Tapez {{keyword}} et saisissez votre mot de passe pour continuer.",

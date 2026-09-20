@@ -336,6 +336,8 @@
     "doneBody": "Your account and personal data have been deleted.",
     "failed": "Account not deleted",
     "failedBody": "Your account was not deleted. Check your password and try again.",
+    "unconfirmedTitle": "Deletion not confirmed",
+    "unconfirmedBody": "We could not confirm whether your account was deleted. Check your connection and sign in again to check whether your account is still available.",
     "tooSoon": "You tried a moment ago. Wait about a minute, then try again.",
     "confirmRequired": "Confirmation needed",
     "confirmRequiredBody": "Type {{keyword}} and enter your password to continue.",

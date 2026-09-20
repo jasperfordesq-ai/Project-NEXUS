@@ -55,7 +55,7 @@ function SettingsDeleteAccountScreen() {
   const { t } = useTranslation(['settings', 'common']);
   const theme = useTheme();
   const { show: showToast } = useAppToast();
-  const { logout } = useAuth();
+  const { logout, captureSessionGuard } = useAuth();
 
   const [confirmation, setConfirmation] = useState('');
   const [password, setPassword] = useState('');
@@ -63,7 +63,10 @@ function SettingsDeleteAccountScreen() {
   const deletionInFlight = useRef(false);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const keyword = t('deleteAccount.keyword');
   const canDelete = isDeleteConfirmed(confirmation, keyword) && password.length > 0;
@@ -71,7 +74,7 @@ function SettingsDeleteAccountScreen() {
   async function handleDelete() {
     // Defensive: the button is disabled, but a stale press or a future refactor must not
     // reach the server with an unconfirmed request.
-    if (deletionInFlight.current) return;
+    if (!isMountedRef.current || deletionInFlight.current) return;
     if (!canDelete) {
       showToast({
         title: t('deleteAccount.confirmRequired'),
@@ -82,11 +85,12 @@ function SettingsDeleteAccountScreen() {
     }
 
     deletionInFlight.current = true;
+    const isCurrentSession = captureSessionGuard();
     setIsDeleting(true);
     try {
       await deleteAccount(password);
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || !isCurrentSession()) return;
       // Worth distinguishing: "wrong password" and "you tried this a moment ago" are both
       // recoverable, and a generic message hides which one it is.
       //
@@ -96,28 +100,33 @@ function SettingsDeleteAccountScreen() {
       // exceeded. Please try again later." — jargon, and silent about how long "later" is,
       // when the server had sent `Retry-After: 60` all along.
       const isTooSoon = err instanceof ApiResponseError && err.code === 'RATE_LIMIT_EXCEEDED';
+      // A missing response or server failure cannot establish whether erasure committed.
+      const isUnconfirmed = !(err instanceof ApiResponseError) || err.status === 0 || err.status >= 500;
       showToast({
-        title: t('deleteAccount.failed'),
-        description: isTooSoon
+        title: t(isUnconfirmed ? 'deleteAccount.unconfirmedTitle' : 'deleteAccount.failed'),
+        description: isUnconfirmed
+          ? t('deleteAccount.unconfirmedBody')
+          : isTooSoon
           ? t('deleteAccount.tooSoon')
           : describeApiError(err, t('deleteAccount.failedBody')),
-        variant: 'danger',
+        variant: isUnconfirmed ? 'warning' : 'danger',
       });
       deletionInFlight.current = false;
       setIsDeleting(false);
       return;
     }
-    // An account or community switch remounts this route. The accepted deletion belongs
-    // to the session that sent it; never sign out a replacement session that became active
-    // while the network request was in flight.
-    if (!isMountedRef.current) return;
-    setPassword('');
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    showToast({
-      title: t('deleteAccount.done'),
-      description: t('deleteAccount.doneBody'),
-      variant: 'success',
-    });
+    // Navigation can remove the form without replacing its session. Clean up that
+    // deleted account, but never end a different session installed while awaiting it.
+    if (!isCurrentSession()) return;
+    if (isMountedRef.current) {
+      setPassword('');
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({
+        title: t('deleteAccount.done'),
+        description: t('deleteAccount.doneBody'),
+        variant: 'success',
+      });
+    }
     // Keep logout outside the deletion catch. If local sign-out ever fails after the
     // server has erased the account, we must never tell the member it was not deleted.
     // logout() owns its cleanup/recovery and normally resolves even when its server call

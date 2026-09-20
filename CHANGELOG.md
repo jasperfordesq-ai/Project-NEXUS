@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native personal-data export cancels sharing when its screen is left, rejects departed request callbacks, and hides history counts until loading succeeds. Account deletion reports uncertain outcomes accurately and cleans up only the submitting session after confirmed deletion, including after departure.
+
 - Native password changes finish only the submitting session after departure, and ignore departed submit callbacks. Blocked-user settings reject departed unblock actions, preserve failed unblocks for retry, and show counts only after a successful load.
 
 - Native offline check-in now restores encrypted pending device setup and validated offline rosters, preserves scan queues across concurrent scans, synchronization and roster refresh, and reuses durable batch identities for explicit recovery. Removed sessions and obsolete confirmations cannot recreate or delete changed attendance data.
