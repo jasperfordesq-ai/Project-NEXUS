@@ -621,3 +621,43 @@ export async function mutateOrganizerInvitationCampaign(eventId: number, intent:
   }) });
   return parse(endpoint, schema, await api.post<unknown>(endpoint, { ...body, idempotency_key: key }, requestOptions(key)));
 }
+
+
+export const organizerRetentionRunSchema = z.object({
+  id: safeId, event_id: safeId, mode: z.enum(['dry_run', 'apply']), dry_run_id: safeId.nullable(),
+  as_of_utc: z.string().datetime({ offset: true }), eligible_count: z.number().int().nonnegative().safe(),
+  affected_count: z.number().int().nonnegative().safe(), completed_at: z.string().datetime({ offset: true }),
+  created_at: z.string().datetime({ offset: true }),
+}).strip().refine(run => run.affected_count <= run.eligible_count
+  && (run.mode === 'dry_run' ? run.dry_run_id === null && run.affected_count === 0 : run.dry_run_id !== null));
+export type OrganizerRetentionRun = z.infer<typeof organizerRetentionRunSchema>;
+export const retentionIntentSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('preview'), asOf: z.string().datetime({ offset: true }) }).strict(),
+  z.object({ action: z.literal('apply'), dryRunId: safeId }).strict(),
+]);
+export type RetentionIntent = z.infer<typeof retentionIntentSchema>;
+export async function getOrganizerRetentionHistory(eventId: number, page = 1, perPage = 25) {
+  safeId.parse(eventId); safeId.parse(page); z.number().int().min(1).max(100).parse(perPage);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/retention';
+  const schema = z.object({ data: z.object({ event_id: z.literal(eventId),
+    runs: z.array(organizerRetentionRunSchema.refine(run => run.event_id === eventId)),
+    permissions: z.object({ manage_retention: z.boolean() }), pagination: registrationOverviewPageSchema,
+  }) });
+  return parse(endpoint, schema, await api.get<unknown>(endpoint, { page: String(page), per_page: String(perPage) }, requestOptions()));
+}
+export async function mutateOrganizerRetention(eventId: number, intent: RetentionIntent, key: string) {
+  safeId.parse(eventId);
+  z.string().min(1).max(191).refine(value => value === value.trim()).parse(key);
+  const input = retentionIntentSchema.parse(intent);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/retention/'
+    + (input.action === 'preview' ? 'dry-run' : input.dryRunId + '/apply');
+  const schema = z.object({ data: z.object({
+    run: organizerRetentionRunSchema.refine(run => run.event_id === eventId
+      && (input.action === 'preview' ? run.mode === 'dry_run' && Date.parse(run.as_of_utc) === Date.parse(input.asOf)
+        : run.mode === 'apply' && run.dry_run_id === input.dryRunId)),
+    changed: z.boolean(), idempotent_replay: z.boolean(),
+  }).refine(data => data.changed !== data.idempotent_replay) });
+  return parse(endpoint, schema, await api.post<unknown>(endpoint, {
+    ...(input.action === 'preview' ? { as_of: input.asOf } : {}), idempotency_key: key,
+  }, requestOptions(key)));
+}

@@ -37,6 +37,8 @@ import {
   getOrganizerRegistrationSubmissions,
   getOrganizerRegistrationGuests,
   getOrganizerInvitationCampaigns,
+  getOrganizerRetentionHistory,
+  mutateOrganizerRetention,
   mutateOrganizerInvitationCampaign,
   type InvitationCampaignIntent,
   transitionOrganizerRegistrationGuest,
@@ -503,5 +505,45 @@ describe('organizer invitation campaigns', () => {
     jest.mocked(api.post).mockClear(); const failure = new Error('network uncertain'); jest.mocked(api.post).mockRejectedValue(failure);
     await expect(mutateOrganizerInvitationCampaign(42, cases[1][0], 'saved-key')).rejects.toBe(failure);
     expect(api.post).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('organiser retention contracts', () => {
+  const instant = '2027-01-01T12:00:00Z';
+  const run = { id: 8, event_id: 42, mode: 'dry_run', dry_run_id: null, as_of_utc: instant,
+    eligible_count: 3, affected_count: 0, completed_at: instant, created_at: instant };
+  const pagination = { page: 1, per_page: 25, total: 1, last_page: 1, page_count: 1, from: 1, to: 1,
+    has_more: false, previous_page: null, next_page: null };
+  it('reads only the current event history projection with contract headers', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { event_id: 42, runs: [{ ...run, candidate_hash: 'private' }],
+      permissions: { manage_retention: true }, pagination, unrelated: 'discard' } });
+    const result = await getOrganizerRetentionHistory(42);
+    expect(result.data.runs[0]).toEqual(run); expect(result.data).not.toHaveProperty('unrelated');
+    expect(api.get).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/retention',
+      { page: '1', per_page: '25' }, expect.objectContaining({ headers: expect.objectContaining({ 'X-Event-Registration-Product-Contract': '1' }) }));
+  });
+  it('preserves preview intent and caller retry key and accepts equivalent UTC instants', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { run, changed: true, idempotent_replay: false } });
+    await mutateOrganizerRetention(42, { action: 'preview', asOf: '2027-01-01T13:00:00+01:00' }, 'saved-key');
+    expect(api.post).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/retention/dry-run',
+      { as_of: '2027-01-01T13:00:00+01:00', idempotency_key: 'saved-key' }, expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': 'saved-key' }) }));
+  });
+  it('binds apply receipts to the chosen preview', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { run: { ...run, id: 9, mode: 'apply', dry_run_id: 8, affected_count: 2 }, changed: false, idempotent_replay: true } });
+    const result = await mutateOrganizerRetention(42, { action: 'apply', dryRunId: 8 }, 'apply-key');
+    expect(result.data.run.affected_count).toBe(2);
+    expect(api.post).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/retention/8/apply', { idempotency_key: 'apply-key' }, expect.anything());
+    await expect(mutateOrganizerRetention(42, { action: 'apply', dryRunId: 7 }, 'apply-key')).rejects.toThrow();
+  });
+  it.each([{ event_id: 99 }, { affected_count: 1 }, { as_of_utc: '2027-01-02T12:00:00Z' }, { dry_run_id: 7 }])('refuses unrelated or inconsistent preview receipt %j', async invalid => {
+    jest.mocked(api.post).mockResolvedValue({ data: { run: { ...run, ...invalid }, changed: true, idempotent_replay: false } });
+    await expect(mutateOrganizerRetention(42, { action: 'preview', asOf: instant }, 'key')).rejects.toThrow();
+  });
+  it('rejects invalid inputs before transport', async () => {
+    jest.mocked(api.post).mockClear(); jest.mocked(api.get).mockClear();
+    await expect(mutateOrganizerRetention(42, { action: 'preview', asOf: '2027-01-01' }, 'key')).rejects.toThrow();
+    await expect(mutateOrganizerRetention(42, { action: 'apply', dryRunId: 0 }, 'key')).rejects.toThrow();
+    await expect(getOrganizerRetentionHistory(42, 1, 101)).rejects.toThrow();
+    expect(api.post).not.toHaveBeenCalled(); expect(api.get).not.toHaveBeenCalled();
   });
 });

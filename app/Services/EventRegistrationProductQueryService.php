@@ -12,6 +12,7 @@ use App\Exceptions\EventRegistrationFoundationException;
 use App\Models\EventInvitationCampaign;
 use App\Models\EventRegistrationFormVersion;
 use App\Models\EventRegistrationSettings;
+use App\Models\EventRegistrationRetentionRun;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use App\Policies\EventRegistrationPolicy;
@@ -31,6 +32,36 @@ final class EventRegistrationProductQueryService
         private readonly EventPolicy $eventPolicy = new EventPolicy(),
         private readonly EventRegistrationPolicy $registrationPolicy = new EventRegistrationPolicy(),
     ) {
+    }
+
+    /** @return array<string,mixed> */
+    public function retentionHistory(int $eventId, User|int $actor, int $page = 1, int $perPage = 25): array
+    {
+        $tenantId = $this->support->tenantId();
+        $event = $this->support->concreteEvent($tenantId, $eventId, false);
+        $persistedActor = $this->support->actor($tenantId, $actor, false);
+        if (! $this->registrationPolicy->manageRetention($persistedActor, $event)) {
+            throw new EventRegistrationFoundationException('event_registration_retention_denied');
+        }
+        if (! Schema::hasTable('event_registration_retention_runs')) {
+            throw new EventRegistrationFoundationException('event_registration_product_schema_unavailable');
+        }
+        $perPage = max(1, min(self::MAX_OVERVIEW_PAGE_SIZE, $perPage));
+        $query = EventRegistrationRetentionRun::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)->where('event_id', $eventId);
+        $total = (clone $query)->count();
+        $page = $this->clampPage(max(1, $page), $perPage, $total);
+        $runs = $query->orderByDesc('id')->forPage($page, $perPage)->get([
+            'id', 'event_id', 'mode', 'dry_run_id', 'as_of_utc', 'eligible_count',
+            'affected_count', 'completed_at', 'created_at',
+        ]);
+
+        return [
+            'event_id' => $eventId,
+            'runs' => $runs,
+            'pagination' => $this->pageMetadata($page, $perPage, $total, $runs->count()),
+            'permissions' => ['manage_retention' => true],
+        ];
     }
 
     /**

@@ -467,6 +467,8 @@ Route::middleware('feature:events')->group(function () {
     Route::post('/v2/events/{id}/registration-product/guests/{guestId}/attendance/{action}', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'transitionGuestAttendance'])
         ->whereNumber('id')->whereNumber('guestId')->whereIn('action', ['check_in', 'check_out', 'no_show', 'undo'])
         ->middleware('throttle:nexus-route-30-per-1m');
+    Route::get('/v2/events/{id}/registration-product/retention', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'retentionHistory'])
+        ->whereNumber('id')->middleware('throttle:nexus-route-120-per-1m');
     Route::post('/v2/events/{id}/registration-product/retention/dry-run', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'retentionDryRun'])
         ->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/events/{id}/registration-product/retention/{dryRunId}/apply', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'retentionApply'])
