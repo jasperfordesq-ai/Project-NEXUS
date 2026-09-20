@@ -16,6 +16,7 @@ import { Chip } from '@/components/ui/StatusChip';
 
 import { reportException } from '@/lib/observability/report';
 import { useTranslation } from 'react-i18next';
+import ErrorState from '@/components/ui/ErrorState';
 import { excludeGamificationMilestones, getFeed, type FeedFilter, type FeedItem as FeedItemType, type FeedMode, type FeedResponse } from '@/lib/api/feed';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -554,7 +555,9 @@ export default function HomeScreen() {
           )
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && items.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <>
               <FeedItemSkeleton />
               <FeedItemSkeleton />

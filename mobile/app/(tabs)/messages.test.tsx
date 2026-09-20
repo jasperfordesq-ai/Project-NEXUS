@@ -183,6 +183,21 @@ const mockConversation = {
 };
 
 describe('MessagesScreen', () => {
+  it('offers recovery without losing loaded rows after a later request fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [mockConversation], error: 'Connection interrupted', hasMore: true, refresh });
+    const screen = render(<MessagesScreen />);
+    expect(screen.getByText('Bob Builder')).toBeTruthy();
+    expect(screen.getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockConversation], refresh });
+    screen.rerender(<MessagesScreen />);
+    expect(screen.getByText('Bob Builder')).toBeTruthy();
+    expect(screen.queryByText('Connection interrupted')).toBeNull();
+  });
+
   it('renders the screen title', () => {
     const { getByText } = render(<MessagesScreen />);
     expect(getByText('Messages')).toBeTruthy();

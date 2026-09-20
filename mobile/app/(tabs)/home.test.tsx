@@ -239,6 +239,21 @@ const mockFeedItem = {
 };
 
 describe('HomeScreen', () => {
+  it('offers recovery without losing loaded rows after a later request fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [mockFeedItem], error: 'Connection interrupted', hasMore: true, refresh });
+    const screen = render(<HomeScreen />);
+    expect(screen.getByText('Hello, timebank!')).toBeTruthy();
+    expect(screen.getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockFeedItem], refresh });
+    screen.rerender(<HomeScreen />);
+    expect(screen.getByText('Hello, timebank!')).toBeTruthy();
+    expect(screen.queryByText('Connection interrupted')).toBeNull();
+  });
+
   it('renders the greeting with the user first name', () => {
     const { getByText } = render(<HomeScreen />);
     expect(getByText('Hello, Alice', { exact: false })).toBeTruthy();

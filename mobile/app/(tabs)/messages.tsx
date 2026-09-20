@@ -15,6 +15,7 @@ import { Card as HeroCard, Separator, Spinner, Surface } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
+import ErrorState from '@/components/ui/ErrorState';
 
 import { archiveConversation, getConversations, restoreConversation, displayName, type Conversation, type ConversationListResponse } from '@/lib/api/messages';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
@@ -330,7 +331,9 @@ function MessagesScreen() {
           )
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && filteredConversations.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="py-4 items-center"><Spinner size="sm" /></View>
           ) : !hasMore && filteredConversations.length > 0 && !isLoading ? (
             <View className="py-4 items-center">
