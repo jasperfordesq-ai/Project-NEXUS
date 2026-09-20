@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { contrastText } from '@/lib/utils/color';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -33,7 +33,7 @@ export default function SelectTenantScreen() {
   const { t } = useTranslation(['auth', 'common']);
   const router = useRouter();
   const { show: showToast } = useAppToast();
-  const { isAuthenticated, logout } = useAuthContext();
+  const { isAuthenticated, logout, captureSessionGuard } = useAuthContext();
   const { setTenantSlug, tenantSlug, hasSelectedTenant } = useTenant();
   const primary = usePrimaryColor();
   const { data, isLoading, error, refresh } = useApi(() => listTenants());
@@ -44,6 +44,15 @@ export default function SelectTenantScreen() {
     : undefined;
   const [pendingSwitch, setPendingSwitch] = useState<TenantListItem | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [busySlug, setBusySlug] = useState<string | null>(null);
+  const selectionPending = useRef(false);
+  const signOutStarted = useRef(false);
+  const switchSessionGuard = useRef<(() => boolean) | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   /**
    * 🔴 Choosing a different community WHILE SIGNED IN used to be a dead end, and it was
@@ -75,18 +84,28 @@ export default function SelectTenantScreen() {
       // Anonymous, and explicitly addressed to the target community, so it neither
       // needs nor disturbs the current session. Nothing is stored by this call.
       await getTenantConfigFor(tenant.slug);
+      if (!mounted.current || !switchSessionGuard.current?.()) return;
 
-      await logout();
+      signOutStarted.current = true;
+      // logout advances session ownership synchronously, before its first await.
+      // Its completion may be superseded by a new sign-in while cleanup runs.
+      const signOut = logout();
+      const isCurrentSignOut = captureSessionGuard();
+      switchSessionGuard.current = isCurrentSignOut;
+      await signOut;
+      if (!isCurrentSignOut()) return;
       await setTenantSlug(tenant.slug);
-      router.replace('/login');
+      if (mounted.current && isCurrentSignOut()) router.replace('/login');
     },
-    [logout, setTenantSlug, router],
+    [logout, setTenantSlug, router, captureSessionGuard],
   );
 
   async function handleSelect(tenant: TenantListItem) {
+    if (selectionPending.current || !mounted.current) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (isAuthenticated && tenant.slug !== tenantSlug) {
+      switchSessionGuard.current = captureSessionGuard();
       setPendingSwitch(tenant);
       return;
     }
@@ -94,8 +113,12 @@ export default function SelectTenantScreen() {
     // Same community, or nobody signed in: no sign-out confirmation is needed.
     // Loading the selected community can still fail, so remain on the picker and
     // explain it instead of navigating to a login with unusable tenant context.
+    selectionPending.current = true;
+    setIsSwitching(true);
+    setBusySlug(tenant.slug);
     try {
       await setTenantSlug(tenant.slug);
+      if (!mounted.current) return;
       const recoveryLink = !isAuthenticated
         ? pendingRecoveryLinkStore.consume()
         : null;
@@ -105,39 +128,57 @@ export default function SelectTenantScreen() {
       }
       router.replace(isAuthenticated ? '/home' : '/login');
     } catch (error) {
+      if (!mounted.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(error, t('common:errors.generic')),
         variant: 'danger',
       });
+    } finally {
+      selectionPending.current = false;
+      if (mounted.current) {
+        setIsSwitching(false);
+        setBusySlug(null);
+      }
     }
   }
 
   const confirmSwitch = useCallback(async () => {
-    if (!pendingSwitch) return;
+    if (!pendingSwitch || selectionPending.current || !mounted.current) return;
+    if (!switchSessionGuard.current?.()) {
+      setPendingSwitch(null);
+      return;
+    }
+    selectionPending.current = true;
+    signOutStarted.current = false;
     setIsSwitching(true);
+    setBusySlug(pendingSwitch.slug);
     try {
       await applySwitch(pendingSwitch);
     } catch (error) {
-      // Two things the member needs, in this order: why it failed, and that nothing
-      // was given up. The reason comes from the server through `describeApiError`
-      // (which withholds anything not fit to show); the reassurance is only true
-      // because the pre-flight above runs before the sign-out, so state it plainly
-      // rather than leaving them wondering whether they are still signed in.
+      if (!mounted.current || !switchSessionGuard.current?.()) return;
+      // Only a failed preflight guarantees that the session was untouched.
+      // Logout or the subsequent config load can also fail after sign-out starts.
       showToast({
         title: t('selectTenant.switchFailedTitle'),
-        description: t('selectTenant.switchFailed', {
-          reason: describeApiError(
-            error,
-            t('selectTenant.switchUnreachable', { next: pendingSwitch.name }),
-          ),
-          current: activeTenant?.name ?? t('selectTenant.switchCurrentFallback'),
-        }),
+        description: signOutStarted.current
+          ? describeApiError(error, t('common:errors.generic'))
+          : t('selectTenant.switchFailed', {
+            reason: describeApiError(
+              error,
+              t('selectTenant.switchUnreachable', { next: pendingSwitch.name }),
+            ),
+            current: activeTenant?.name ?? t('selectTenant.switchCurrentFallback'),
+          }),
         variant: 'danger',
       });
     } finally {
-      setIsSwitching(false);
-      setPendingSwitch(null);
+      selectionPending.current = false;
+      if (mounted.current) {
+        setIsSwitching(false);
+        setBusySlug(null);
+        setPendingSwitch(null);
+      }
     }
   }, [pendingSwitch, applySwitch, showToast, t, activeTenant?.name]);
 
@@ -233,8 +274,9 @@ export default function SelectTenantScreen() {
               className="w-full"
               testID={`tenant-option-${item.slug}`}
               onPress={() => void handleSelect(item)}
+              disabled={isSwitching}
               accessibilityLabel={item.name}
-              accessibilityState={{ selected: isActive }}
+              accessibilityState={{ selected: isActive, disabled: isSwitching, busy: busySlug === item.slug }}
             >
               <HeroCard variant={isActive ? 'secondary' : 'default'} className="overflow-hidden">
                 {isActive ? <View className="h-1 bg-accent" /> : null}
@@ -271,11 +313,11 @@ export default function SelectTenantScreen() {
                         isActive ? 'bg-accent/15' : 'bg-default/10'
                       }`}
                     >
-                      <Ionicons
+                      {busySlug === item.slug ? <Spinner size="sm" /> : <Ionicons
                         name={isActive ? 'checkmark' : 'chevron-forward'}
                         size={18}
                         color={primary}
-                      />
+                      />}
                     </View>
                   </View>
                 </HeroCard.Body>

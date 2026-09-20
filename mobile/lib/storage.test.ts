@@ -72,6 +72,28 @@ const mockReportException = jest.fn();
 const mockPublicRead = jest.fn();
 const mockPublicWrite = jest.fn();
 const mockPublicInfo = jest.fn();
+
+it('preserves the latest community in memory and on disk behind a delayed public write', async () => {
+  const storage = loadStorageFor('android');
+  const disk = new Map<string, string>();
+  let finishFirst!: () => void;
+  mockPublicWrite.mockClear();
+  mockPublicWrite
+    .mockImplementationOnce((path: string, value: string) => new Promise<void>(resolve => {
+      finishFirst = () => { disk.set(path, value); resolve(); };
+    }))
+    .mockImplementationOnce(async (path: string, value: string) => { disk.set(path, value); });
+  const first = storage.set('nexus_tenant_slug', 'old-bank');
+  await Promise.resolve();
+  const second = storage.set('nexus_tenant_slug', 'new-bank');
+  await Promise.resolve();
+  expect(mockPublicWrite).toHaveBeenCalledTimes(1);
+  finishFirst();
+  await Promise.all([first, second]);
+  expect(disk.get('file:///documents/public-nexus_tenant_slug.json')).toBe('new-bank');
+  await expect(storage.get('nexus_tenant_slug')).resolves.toBe('new-bank');
+});
+
 jest.mock('expo-file-system/legacy', () => ({
   documentDirectory: 'file:///documents/',
   getInfoAsync: (...args: unknown[]) => mockPublicInfo(...args),

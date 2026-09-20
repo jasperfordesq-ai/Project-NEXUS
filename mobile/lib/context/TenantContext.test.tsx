@@ -93,6 +93,28 @@ describe('TenantContext', () => {
     expect(mockStorageSet).toHaveBeenCalledWith('tenant_slug', 'my-community');
   });
 
+  it('keeps selection busy until the previous community has been restored in storage', async () => {
+    mockStorageGet.mockResolvedValue('hour-timebank');
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    let finishRollback!: () => void;
+    mockStorageSet.mockImplementationOnce(async () => undefined)
+      .mockImplementationOnce(() => new Promise<void>(resolve => { finishRollback = resolve; }));
+    mockGetTenantConfig.mockRejectedValueOnce(new Error('Unavailable'));
+    let selection!: Promise<unknown>;
+    await act(async () => {
+      selection = result.current.setTenantSlug('unavailable-bank').catch(error => error);
+    });
+    await waitFor(() => expect(finishRollback).toBeDefined());
+    expect(result.current.isLoading).toBe(true);
+    expect(mockStorageSet).toHaveBeenLastCalledWith('tenant_slug', 'hour-timebank');
+    await act(async () => { finishRollback(); await selection; });
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.tenantSlug).toBe('hour-timebank');
+    expect(result.current.tenant).toEqual(mockTenant);
+    expect(result.current.hasSelectedTenant).toBe(true);
+  });
+
   it('forgets a removed remembered community and returns a signed-out install to the picker', async () => {
     mockStorageGet.mockResolvedValue('removed-community');
     mockGetTenantConfig
@@ -208,6 +230,151 @@ describe('TenantContext', () => {
       await result.current.setTenantSlug('unreachable-bank');
     })).rejects.toThrow('Unable to load community');
 
+    expect(result.current.tenantSlug).toBe('hour-timebank');
+    expect(result.current.tenant).toEqual(mockTenant);
+    expect(result.current.hasSelectedTenant).toBe(true);
+    expect(mockStorageSet).toHaveBeenLastCalledWith('tenant_slug', 'hour-timebank');
+  });
+
+  it('keeps a newer successful selection when an older switch fails later', async () => {
+    let rejectFirst!: (error: Error) => void;
+    const newTenant = { ...mockTenant, slug: 'new-bank' };
+    mockStorageGet.mockResolvedValue('hour-timebank');
+    mockGetTenantConfig
+      .mockResolvedValueOnce({ data: mockTenant })
+      .mockReturnValueOnce(new Promise<never>((_resolve, reject) => { rejectFirst = reject; }))
+      .mockResolvedValueOnce({ data: newTenant });
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    let first!: Promise<unknown>;
+    await act(async () => { first = result.current.setTenantSlug('first-bank').catch(error => error); });
+    await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(2));
+    await act(async () => { await result.current.setTenantSlug('new-bank'); });
+    await act(async () => {
+      rejectFirst(Object.assign(new Error('Old community removed'), { status: 404 }));
+      await first;
+    });
+    expect(result.current.tenant).toEqual(newTenant);
+    expect(result.current.tenantSlug).toBe('new-bank');
+    expect(result.current.isLoading).toBe(false);
+    expect(mockStorageSet).toHaveBeenLastCalledWith('tenant_slug', 'new-bank');
+
+    // A later failure must now restore the new working community, not the
+    // baseline from the earlier overlap.
+    mockGetTenantConfig.mockRejectedValueOnce(new Error('Unavailable'));
+    await act(async () => {
+      await expect(result.current.setTenantSlug('unavailable-bank')).rejects.toThrow('Unable to load community');
+    });
+    expect(result.current.tenant).toEqual(newTenant);
+    expect(result.current.tenantSlug).toBe('new-bank');
+    expect(mockStorageSet).toHaveBeenLastCalledWith('tenant_slug', 'new-bank');
+  });
+
+  it.each(['success', 'missing'] as const)(
+    'ignores an old cached-community refresh after switching (%s)',
+    async (outcome) => {
+      const newTenant = { ...mockTenant, slug: 'new-bank', name: 'New Bank' };
+      let resolveOld!: (value: { data: typeof mockTenant }) => void;
+      let rejectOld!: (error: Error) => void;
+      mockStorageGet.mockResolvedValue('hour-timebank');
+      mockStorageGetJson.mockResolvedValue(mockTenant);
+      mockGetTenantConfig
+        .mockReturnValueOnce(new Promise<{ data: typeof mockTenant }>((resolve, reject) => {
+          resolveOld = resolve;
+          rejectOld = reject;
+        }))
+        .mockResolvedValueOnce({ data: newTenant });
+
+      const { result } = renderHook(() => useTenantContext(), { wrapper });
+      await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(1));
+      expect(result.current.tenant).toEqual(mockTenant);
+
+      await act(async () => { await result.current.setTenantSlug('new-bank'); });
+      mockStorageRemove.mockClear();
+      mockStorageSetJson.mockClear();
+      await act(async () => {
+        if (outcome === 'success') resolveOld({ data: mockTenant });
+        else rejectOld(Object.assign(new Error('Removed community'), { status: 404 }));
+      });
+
+      expect(result.current.tenantSlug).toBe('new-bank');
+      expect(result.current.tenant).toEqual(newTenant);
+      expect(result.current.hasSelectedTenant).toBe(true);
+      expect(mockStorageRemove).not.toHaveBeenCalledWith('tenant_slug');
+      expect(mockStorageSetJson).not.toHaveBeenCalled();
+      expect(mockGetTenantConfig).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it('does not let startup finish over an in-flight explicit selection', async () => {
+    let resolveStartup!: (value: { data: typeof mockTenant }) => void;
+    let resolveSelection!: (value: { data: typeof mockTenant }) => void;
+    mockGetTenantConfig
+      .mockReturnValueOnce(new Promise<{ data: typeof mockTenant }>((resolve) => {
+        resolveStartup = resolve;
+      }))
+      .mockReturnValueOnce(new Promise<{ data: typeof mockTenant }>((resolve) => {
+        resolveSelection = resolve;
+      }));
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(1));
+    let selection!: Promise<void>;
+    await act(async () => { selection = result.current.setTenantSlug('new-bank'); });
+    await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(2));
+    await act(async () => { resolveStartup({ data: mockTenant }); });
+    expect(result.current.tenantSlug).toBe('new-bank');
+    expect(result.current.tenant).toBeNull();
+    expect(result.current.isLoading).toBe(true);
+    const newTenant = { ...mockTenant, slug: 'new-bank' };
+    await act(async () => {
+      resolveSelection({ data: newTenant });
+      await selection;
+    });
+    expect(result.current.tenant).toEqual(newTenant);
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('does not clear the remembered community after an unmounted background failure', async () => {
+    let rejectOld!: (error: Error) => void;
+    mockStorageGet.mockResolvedValue('hour-timebank');
+    mockStorageGetJson.mockResolvedValue(mockTenant);
+    mockGetTenantConfig.mockReturnValueOnce(new Promise<never>((_resolve, reject) => {
+      rejectOld = reject;
+    }));
+    const { unmount } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(1));
+    unmount();
+    mockStorageRemove.mockClear();
+    await act(async () => {
+      rejectOld(Object.assign(new Error('Removed community'), { status: 410 }));
+    });
+    expect(mockStorageRemove).not.toHaveBeenCalled();
+    expect(mockGetTenantConfig).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores the last working community when a newer overlapping selection fails', async () => {
+    let finishFirst!: (value: { data: typeof mockTenant }) => void;
+    mockStorageGet.mockResolvedValue('hour-timebank');
+    mockGetTenantConfig
+      .mockResolvedValueOnce({ data: mockTenant })
+      .mockReturnValueOnce(new Promise<{ data: typeof mockTenant }>((resolve) => {
+        finishFirst = resolve;
+      }))
+      .mockRejectedValueOnce(new Error('Second community unavailable'));
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    let first!: Promise<unknown>;
+    await act(async () => {
+      first = result.current.setTenantSlug('first-bank').catch(error => error);
+    });
+    await waitFor(() => expect(mockGetTenantConfig).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      await expect(result.current.setTenantSlug('second-bank')).rejects.toThrow('Unable to load community');
+    });
+    await act(async () => {
+      finishFirst({ data: { ...mockTenant, slug: 'first-bank' } });
+      await first;
+    });
     expect(result.current.tenantSlug).toBe('hour-timebank');
     expect(result.current.tenant).toEqual(mockTenant);
     expect(result.current.hasSelectedTenant).toBe(true);

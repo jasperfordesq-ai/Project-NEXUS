@@ -60,7 +60,7 @@ function isMissingTenantError(error: unknown): boolean {
   return status === 404 || status === 410;
 }
 
-type TenantLoadResult = 'loaded' | 'missing' | 'unavailable';
+type TenantLoadResult = 'loaded' | 'missing' | 'unavailable' | 'superseded';
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   // Start with null slug to indicate "not yet read from storage".
@@ -94,14 +94,29 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   }, [tenant]);
   const [isLoading, setIsLoading] = useState(true);
   const isMountedRef = useRef(true);
+  const loadVersion = useRef(0);
+  const selectionBaseline = useRef<{
+    slug: string;
+    tenant: TenantConfig | null;
+    selected: boolean;
+  } | null>(null);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      loadVersion.current += 1;
+    };
   }, []);
 
-  const recoverFromMissingTenant = useCallback(async () => {
+  const isCurrentLoad = useCallback((version: number) => (
+    isMountedRef.current && version === loadVersion.current
+  ), []);
+
+  const recoverFromMissingTenant = useCallback(async (version: number) => {
+    if (!isCurrentLoad(version)) return;
     await storage.remove(STORAGE_KEYS.TENANT_SLUG);
-    if (!isMountedRef.current) return;
+    if (!isCurrentLoad(version)) return;
 
     setSlug(DEFAULT_TENANT);
     setHasSelectedTenant(false);
@@ -112,34 +127,36 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     // remembering that fallback as the member's chosen community.
     try {
       const response = await getTenantConfig();
-      if (!isMountedRef.current) return;
+      if (!isCurrentLoad(version)) return;
       setTenant(response.data);
       await storage.setJson(tenantConfigCacheKey(DEFAULT_TENANT), response.data);
     } catch {
       // The community picker itself is anonymous and remains usable with the
       // platform colour if the neutral bootstrap is temporarily unavailable.
     }
-  }, []);
+  }, [isCurrentLoad]);
 
   const loadTenantConfig = useCallback(async (
     slug: string,
+    version: number,
     skipCache = false,
     persistSlug = true,
   ): Promise<TenantLoadResult> => {
-    if (!isMountedRef.current) return 'unavailable';
+    if (!isCurrentLoad(version)) return 'superseded';
     setIsLoading(true);
     try {
       // Write the slug so the API client's X-Tenant-Slug header is correct.
       if (persistSlug) {
         await storage.set(STORAGE_KEYS.TENANT_SLUG, slug);
       }
+      if (!isCurrentLoad(version)) return 'superseded';
       const cacheKey = tenantConfigCacheKey(slug);
 
       // Cache-first: render from cached config immediately, then validate
       // in the background. Mirrors AuthContext's session restore pattern.
       if (!skipCache) {
         const cached = await storage.getJson<TenantConfig>(cacheKey);
-        if (!isMountedRef.current) return 'unavailable';
+        if (!isCurrentLoad(version)) return 'superseded';
         if (cached?.slug === slug) {
           setTenant(cached);
           setIsLoading(false);
@@ -148,14 +165,14 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
           // On network failure, keep the cached config (offline resilience).
           getTenantConfig()
             .then(async (response) => {
-              if (!isMountedRef.current) return;
+              if (!isCurrentLoad(version)) return;
               setTenant(response.data);
               await storage.setJson(cacheKey, response.data);
             })
             .catch(async (error: unknown) => {
-              if (isMissingTenantError(error)) {
+              if (isCurrentLoad(version) && isMissingTenantError(error)) {
                 await storage.remove(cacheKey);
-                await recoverFromMissingTenant();
+                await recoverFromMissingTenant(version);
               }
               // For an ordinary network failure, keep the cached config.
             });
@@ -168,73 +185,91 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       }
 
       // No cache (first launch or explicit refresh) — must wait for network
+      if (!isCurrentLoad(version)) return 'superseded';
       const response = await getTenantConfig();
-      if (!isMountedRef.current) return 'unavailable';
+      if (!isCurrentLoad(version)) return 'superseded';
       setTenant(response.data);
       await storage.setJson(cacheKey, response.data);
       return 'loaded';
     } catch (error: unknown) {
       // Tenant config failed — app still works with null tenant (graceful degradation)
-      if (isMountedRef.current) setTenant(null);
+      if (!isCurrentLoad(version)) return 'superseded';
+      setTenant(null);
       if (isMissingTenantError(error)) {
-        await recoverFromMissingTenant();
+        await recoverFromMissingTenant(version);
         return 'missing';
       }
       return 'unavailable';
     } finally {
-      if (isMountedRef.current) setIsLoading(false);
+      // Explicit selections finish loading only after commit or rollback below.
+      if (!skipCache && isCurrentLoad(version)) setIsLoading(false);
     }
-  }, [recoverFromMissingTenant]);
+  }, [isCurrentLoad, recoverFromMissingTenant]);
 
   // Restore previously selected tenant on app start — read storage FIRST,
   // then set slug and load config, so the initial render never shows the
   // wrong tenant.
   useEffect(() => {
+    const version = ++loadVersion.current;
     async function init() {
       const stored = (await storage.get(STORAGE_KEYS.TENANT_SLUG))?.trim() || null;
-      if (!isMountedRef.current) return;
+      if (!isCurrentLoad(version)) return;
       const slug = stored ?? DEFAULT_TENANT;
       setSlug(slug);
       setHasSelectedTenant(stored !== null);
       // The default tenant supplies neutral startup branding and the API context
       // needed to list communities, but it must not become a remembered choice.
-      await loadTenantConfig(slug, false, stored !== null);
+      await loadTenantConfig(slug, version, false, stored !== null);
     }
     void init();
-  }, [loadTenantConfig, recoverFromMissingTenant]);
+  }, [isCurrentLoad, loadTenantConfig]);
 
   const setTenantSlug = useCallback(
     async (slug: string) => {
-      const previousSlug = tenantSlug ?? DEFAULT_TENANT;
-      const previousTenant = tenant;
-      const previouslySelected = hasSelectedTenant === true;
+      // Invalidate startup/background work before the first asynchronous write.
+      const version = ++loadVersion.current;
+      // Overlapping calls share the last working selection. A pending slug is
+      // never a valid rollback target, even if React has already rendered it.
+      selectionBaseline.current ??= {
+        slug: tenantSlug ?? DEFAULT_TENANT,
+        tenant,
+        selected: hasSelectedTenant === true,
+      };
+      const previous = selectionBaseline.current;
 
+      setIsLoading(true);
       setSlug(slug);
       // Clear stale cache when switching tenants — force fresh fetch
       await storage.remove(TENANT_CONFIG_CACHE_PREFIX);
+      if (!isCurrentLoad(version)) throw new Error('Community selection superseded');
       await storage.remove(tenantConfigCacheKey(slug));
-      const result = await loadTenantConfig(slug, true);
-      if (result === 'loaded' && isMountedRef.current) {
+      const result = await loadTenantConfig(slug, version, true);
+      if (!isCurrentLoad(version)) throw new Error('Community selection superseded');
+      if (result === 'loaded') {
+        selectionBaseline.current = null;
         setHasSelectedTenant(true);
+        setIsLoading(false);
         return;
       }
 
       // A failed selection must not strand the installation on a slug whose
       // config could not be loaded. Restore the last working community (or the
       // neutral, unremembered default on first install) before surfacing failure.
-      if (previouslySelected) {
-        await storage.set(STORAGE_KEYS.TENANT_SLUG, previousSlug);
+      if (previous.selected) {
+        await storage.set(STORAGE_KEYS.TENANT_SLUG, previous.slug);
       } else {
         await storage.remove(STORAGE_KEYS.TENANT_SLUG);
       }
-      if (isMountedRef.current) {
-        setSlug(previousSlug);
-        setTenant(previousTenant);
-        setHasSelectedTenant(previouslySelected);
+      if (isCurrentLoad(version)) {
+        selectionBaseline.current = null;
+        setSlug(previous.slug);
+        setTenant(previous.tenant);
+        setHasSelectedTenant(previous.selected);
+        setIsLoading(false);
       }
       throw new Error('Unable to load community');
     },
-    [hasSelectedTenant, loadTenantConfig, tenant, tenantSlug],
+    [hasSelectedTenant, isCurrentLoad, loadTenantConfig, tenant, tenantSlug],
   );
 
   const hasFeature = useCallback(

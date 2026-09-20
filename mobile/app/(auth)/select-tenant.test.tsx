@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Image as ExpoImage } from 'expo-image';
 
 const mockReplace = jest.fn();
@@ -17,6 +17,7 @@ const mockNavigateToLink = jest.fn();
 /** Order matters in one of the cases below, so record the sequence, not just the calls. */
 const callOrder: string[] = [];
 let mockIsAuthenticated = false;
+let mockSessionVersion = 0;
 let mockHasSelectedTenant = true;
 let mockApiState: {
   data: { data: { id: number; slug: string; name: string; logo_url: string | null }[] } | null;
@@ -48,7 +49,13 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/context/AuthContext', () => ({
-  useAuthContext: () => ({ isAuthenticated: mockIsAuthenticated, logout: mockLogout }),
+  useAuthContext: () => ({
+    isAuthenticated: mockIsAuthenticated, logout: mockLogout,
+    captureSessionGuard: () => {
+      const version = mockSessionVersion;
+      return () => version === mockSessionVersion;
+    },
+  }),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
@@ -122,12 +129,14 @@ describe('SelectTenantScreen', () => {
       return { data: { slug: 'west-cork' } };
     });
     mockLogout.mockImplementation(async () => {
+      mockSessionVersion += 1;
       callOrder.push('logout');
     });
     mockSetTenantSlug.mockImplementation(async () => {
       callOrder.push('setTenantSlug');
     });
     mockIsAuthenticated = false;
+    mockSessionVersion = 0;
     mockHasSelectedTenant = true;
     pendingRecoveryLinkStore.clear();
     mockApiState = {
@@ -150,8 +159,99 @@ describe('SelectTenantScreen', () => {
     expect(getByText('West Cork Timebank')).toBeTruthy();
     expect(getByTestId('tenant-option-hour-timebank')).toBeTruthy();
     expect(getByTestId('tenant-option-west-cork')).toBeTruthy();
+    expect(getByTestId('tenant-option-hour-timebank').props.accessibilityState).toMatchObject({ selected: true });
+    expect(getByTestId('tenant-option-west-cork').props.accessibilityState).toMatchObject({ selected: false });
     expect(getByText('Current community: hOUR Timebank')).toBeTruthy();
     expect(getByText('Selected community')).toBeTruthy();
+  });
+
+  it.each(['preflight', 'logout', 'selection'])('preserves a newer session during switch %s', async (stage) => {
+    mockIsAuthenticated = true;
+    let finish!: () => void;
+    const pending = new Promise<void>(resolve => { finish = resolve; });
+    if (stage === 'preflight') mockGetTenantConfigFor.mockReturnValueOnce(pending);
+    else if (stage === 'logout') mockLogout.mockImplementationOnce(() => {
+      mockSessionVersion += 1;
+      return pending;
+    });
+    else mockSetTenantSlug.mockReturnValueOnce(pending);
+    const screen = render(<SelectTenantScreen />);
+    fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+    fireEvent.press(screen.getByTestId('tenant-switch-confirm'));
+    await waitFor(() => expect(stage === 'preflight' ? mockGetTenantConfigFor : stage === 'logout' ? mockLogout : mockSetTenantSlug).toHaveBeenCalledTimes(1));
+    mockSessionVersion += 1;
+    await act(async () => { finish(); });
+    if (stage === 'preflight') expect(mockLogout).not.toHaveBeenCalled();
+    if (stage !== 'selection') expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('requires a new confirmation when the session changes before confirmation', async () => {
+    mockIsAuthenticated = true;
+    const screen = render(<SelectTenantScreen />);
+    fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+    mockSessionVersion += 1;
+    await act(async () => { fireEvent.press(screen.getByTestId('tenant-switch-confirm')); });
+    expect(screen.queryByTestId('tenant-switch-confirm')).toBeNull();
+    expect(mockGetTenantConfigFor).not.toHaveBeenCalled();
+    expect(mockLogout).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+  });
+
+  it('serializes same-frame selections and releases the picker after failure', async () => {
+    let fail!: (error: Error) => void;
+    mockSetTenantSlug.mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject; }));
+    const screen = render(<SelectTenantScreen />);
+    act(() => {
+      fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+      fireEvent.press(screen.getByTestId('tenant-option-hour-timebank'));
+    });
+    expect(mockSetTenantSlug).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('tenant-option-west-cork').props.accessibilityState).toEqual(expect.objectContaining({ busy: true, disabled: true }));
+    await act(async () => { fail(new Error('offline')); });
+    fireEvent.press(screen.getByTestId('tenant-option-hour-timebank'));
+    await waitFor(() => expect(mockSetTenantSlug).toHaveBeenCalledTimes(2));
+    expect(mockSetTenantSlug).toHaveBeenLastCalledWith('hour-timebank');
+  });
+
+  it('does not navigate or consume a recovery link after the picker is closed', async () => {
+    let finish!: () => void;
+    mockSetTenantSlug.mockImplementationOnce(() => new Promise<void>(resolve => { finish = resolve; }));
+    pendingRecoveryLinkStore.remember('nexus://forgot-password');
+    const screen = render(<SelectTenantScreen />);
+    fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+    screen.unmount();
+    await act(async () => { finish(); });
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockNavigateToLink).not.toHaveBeenCalled();
+    expect(pendingRecoveryLinkStore.consume()).toBe('nexus://forgot-password');
+  });
+
+  it('dispatches one confirmed switch and stops before logout if the picker closes during preflight', async () => {
+    mockIsAuthenticated = true;
+    let finish!: (value: unknown) => void;
+    mockGetTenantConfigFor.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<SelectTenantScreen />);
+    fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+    const confirm = screen.getByTestId('tenant-switch-confirm');
+    act(() => { fireEvent.press(confirm); fireEvent.press(confirm); });
+    expect(mockGetTenantConfigFor).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => { finish({ data: { slug: 'west-cork' } }); });
+    expect(mockLogout).not.toHaveBeenCalled();
+    expect(mockSetTenantSlug).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('does not claim the session is intact when selection fails after logout', async () => {
+    mockIsAuthenticated = true;
+    mockSetTenantSlug.mockRejectedValueOnce(new Error('offline'));
+    const screen = render(<SelectTenantScreen />);
+    fireEvent.press(screen.getByTestId('tenant-option-west-cork'));
+    fireEvent.press(screen.getByTestId('tenant-switch-confirm'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(mockLogout).toHaveBeenCalledTimes(1);
+    expect(mockShowToast.mock.calls.at(-1)?.[0].description).not.toContain('still signed in');
   });
 
   it('caps the community list width on landscape tablets', () => {
