@@ -147,7 +147,9 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.organizer_only_cancel'), null, 403);
         }
 
-        $this->groupExchangeService->updateStatus($id, 'cancelled');
+        if (!$this->groupExchangeService->cancel($id)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_update_completed_exchange'), null, 400);
+        }
 
         return $this->respondWithData(['message' => __('api_controllers_1.group_exchange.exchange_cancelled')]);
     }

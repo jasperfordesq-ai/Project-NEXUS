@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group-exchange cancellation can no longer overwrite a completed settlement; repeated cancellation remains safe and cancelled exchanges cannot complete.
+
 - Mobile listing-load recovery now consults the shared refusal-status policy; podcast retry regression coverage explicitly controls response completion.
 
 - Mobile group-exchange confirmations close when their displayed information changes or refreshes, cannot submit stale or refused reads, and reject malformed group-exchange links.

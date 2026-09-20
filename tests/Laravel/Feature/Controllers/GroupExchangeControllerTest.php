@@ -255,6 +255,27 @@ class GroupExchangeControllerTest extends TestCase
         $this->assertEqualsWithDelta(6, (float) DB::table('users')->where('id', $provider->id)->value('balance'), 0.001);
         $this->assertEqualsWithDelta(4, (float) DB::table('users')->where('id', $receiver->id)->value('balance'), 0.001);
         $this->assertSame('completed', (string) DB::table('group_exchanges')->where('id', $id)->value('status'));
+
+        // A stale organiser cancellation must not relabel an already settled ledger.
+        $this->apiDelete("/v2/group-exchanges/{$id}")->assertStatus(400);
+        $this->assertSame('completed', (string) DB::table('group_exchanges')->where('id', $id)->value('status'));
+        $this->assertEqualsWithDelta(6, (float) DB::table('users')->where('id', $provider->id)->value('balance'), 0.001);
+        $this->assertEqualsWithDelta(4, (float) DB::table('users')->where('id', $receiver->id)->value('balance'), 0.001);
+    }
+
+    public function test_cancellation_is_repeatable_and_prevents_completion(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser(0);
+        $receiver = $this->makeUser(10);
+        $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+
+        $this->apiDelete("/v2/group-exchanges/{$id}")->assertStatus(200);
+        $this->apiDelete("/v2/group-exchanges/{$id}")->assertStatus(200);
+        $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(400);
+        $this->assertSame('cancelled', (string) DB::table('group_exchanges')->where('id', $id)->value('status'));
+        $this->assertEqualsWithDelta(0, (float) DB::table('users')->where('id', $provider->id)->value('balance'), 0.001);
+        $this->assertEqualsWithDelta(10, (float) DB::table('users')->where('id', $receiver->id)->value('balance'), 0.001);
     }
 
     public function test_complete_blocked_until_all_confirmed(): void

@@ -535,6 +535,22 @@ class GroupExchangeService
         return $affected >= 0;
     }
 
+    /** Cancel without overwriting a completion that has already claimed settlement. */
+    public function cancel(int $id): bool
+    {
+        $query = DB::table('group_exchanges')
+            ->where('id', $id)
+            ->where('tenant_id', TenantContext::getId());
+
+        $affected = (clone $query)->whereNotIn('status', ['completed', 'cancelled'])->update([
+            'status' => 'cancelled',
+            'updated_at' => now(),
+        ]);
+
+        // Replaying an accepted cancellation is harmless; completion is never cancelled.
+        return $affected > 0 || $query->value('status') === 'cancelled';
+    }
+
     /**
      * Update the status of an exchange.
      */
