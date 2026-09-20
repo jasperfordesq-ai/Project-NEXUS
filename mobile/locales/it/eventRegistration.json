@@ -184,6 +184,8 @@
     "export_error": "Impossibile condividere l’esportazione. L’accesso potrebbe essere già stato registrato. Controlla la connessione prima di riprovare."
   },
   "invitations": {
+    "conflict_description": "Questa campagna è cambiata. La tua richiesta non è stata applicata. Controlla la campagna attuale prima di scegliere un’altra azione.",
+    "review_current": "Controlla la campagna attuale",
     "builder_title": "Campagna di inviti",
     "builder_description": "Visualizza in anteprima e blocca l'istantanea del destinatario prima di pianificarla o inviarla.",
     "type_label": "Origine del pubblico",

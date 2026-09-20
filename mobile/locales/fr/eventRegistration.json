@@ -184,6 +184,8 @@
     "export_error": "Impossible de partager l’export. L’accès a peut-être déjà été enregistré. Vérifiez votre connexion avant de réessayer."
   },
   "invitations": {
+    "conflict_description": "Cette campagne a changé. Votre demande n’a pas été appliquée. Consultez la campagne actuelle avant de choisir une autre action.",
+    "review_current": "Consulter la campagne actuelle",
     "builder_title": "Campagne d'invitations",
     "builder_description": "Prévisualisez et figez l’instantané du destinataire avant de planifier ou d’envoyer.",
     "type_label": "Source d'audience",

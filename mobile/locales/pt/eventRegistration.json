@@ -184,6 +184,8 @@
     "export_error": "Não foi possível partilhar a exportação. O acesso pode já ter sido registado. Verifique a ligação antes de tentar novamente."
   },
   "invitations": {
+    "conflict_description": "Esta campanha mudou. O seu pedido não foi aplicado. Reveja a campanha atual antes de escolher outra ação.",
+    "review_current": "Rever campanha atual",
     "builder_title": "Campanha de convite",
     "builder_description": "Visualize e congele o instantâneo do destinatário antes de agendar ou enviar.",
     "type_label": "Fonte de público",

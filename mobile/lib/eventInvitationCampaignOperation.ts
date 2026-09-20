@@ -5,13 +5,17 @@
 import { z } from 'zod';
 import { loadCreationDraft, saveCreationDraft, type CreationDraftScope } from './creationDraftStore';
 import { mutationIdempotencyKey } from './utils/idempotencyKey';
-import { invitationCampaignIntentSchema, mutateOrganizerInvitationCampaign, organizerInvitationCampaignSchema, type InvitationCampaignIntent } from './api/eventRegistration';
+import { ApiResponseError } from './api/client';
+import { getEvent } from './api/events';
+import { getOrganizerInvitationCampaigns, invitationCampaignIntentSchema, mutateOrganizerInvitationCampaign, organizerInvitationCampaignSchema, type InvitationCampaignIntent } from './api/eventRegistration';
 
 const id = z.number().int().positive().safe();
 const scopeSchema = z.object({ tenantId: id, userId: id, eventId: id }).strict();
 const base = scopeSchema.extend({ schemaVersion: z.literal(1), key: z.string().min(1).max(191) });
 const savedSchema = z.discriminatedUnion('status', [
   base.extend({ status: z.literal('pending'), intent: invitationCampaignIntentSchema }).strict(),
+  base.extend({ status: z.literal('rejected'), intent: invitationCampaignIntentSchema }).strict(),
+  base.extend({ status: z.literal('review'), campaignId: id, campaignRevision: id }).strict(),
   base.extend({ status: z.literal('acknowledged'), campaignId: id, campaignRevision: id }).strict(),
 ]);
 export type InvitationCampaignScope = z.infer<typeof scopeSchema>;
@@ -47,6 +51,11 @@ async function prepare(scope: InvitationCampaignScope, intent: InvitationCampaig
   return ordered(scope, async () => {
     const parsed = invitationCampaignIntentSchema.parse(intent);
     const previous = await read(scope);
+    if (previous?.status === 'rejected') throw new InvitationCampaignOperationError('Conflict needs review');
+    if (previous?.status === 'review' && parsed.action !== 'preview'
+      && parsed.campaignId === previous.campaignId && parsed.expectedRevision < previous.campaignRevision) {
+      throw new InvitationCampaignOperationError('Review revision mismatch');
+    }
     if (previous?.status === 'pending') {
       if (JSON.stringify(previous.intent) !== JSON.stringify(parsed)) throw new InvitationCampaignOperationError('Pending request differs');
       return previous;
@@ -67,9 +76,20 @@ async function run(scope: InvitationCampaignScope, isCurrent: () => boolean,
     const pending = await reserve();
     if (!isCurrent()) throw new InvitationCampaignOperationError('Departed');
     if (!pending || pending.status !== 'pending') throw new InvitationCampaignOperationError('No pending request');
-    // Conflict, validation and network errors can follow a successful earlier request.
-    // Preserve them as uncertain until the server provides definitive non-application evidence.
-    const response = await mutateOrganizerInvitationCampaign(scope.eventId, pending.intent, pending.key);
+    let response: Awaited<ReturnType<typeof mutateOrganizerInvitationCampaign>>;
+    try {
+      response = await mutateOrganizerInvitationCampaign(scope.eventId, pending.intent, pending.key);
+    } catch (error) {
+      if (pending.intent.action !== 'preview' && error instanceof ApiResponseError && error.status === 409
+        && error.code === 'EVENT_REGISTRATION_CONFLICT' && error.field === 'expected_campaign_revision') {
+        await ordered(scope, async () => {
+          const saved = await read(scope);
+          if (saved?.status !== 'pending' || saved.key !== pending.key) throw new InvitationCampaignOperationError('Rejection mismatch');
+          if (!await saveCreationDraft(draftScope(scope), { ...saved, status: 'rejected' })) throw new InvitationCampaignOperationError('Rejection not saved');
+        });
+      }
+      throw error;
+    }
     await ordered(scope, async () => {
       const saved = await read(scope);
       const campaign = organizerInvitationCampaignSchema.parse(response.data.campaign);
@@ -96,4 +116,36 @@ export function executeInvitationCampaignOperation(scope: InvitationCampaignScop
 }
 export function recoverInvitationCampaignOperation(scope: InvitationCampaignScope, isCurrent: () => boolean) {
   return run(scope, isCurrent, () => loadInvitationCampaignOperation(scope));
+}
+
+/** Explicit read-only review; uncertain requests cannot be replaced through this path. */
+export async function reviewInvitationCampaignOperation(scope: InvitationCampaignScope, key: string, current: () => boolean) {
+  const rejected = await loadInvitationCampaignOperation(scope);
+  if (!current() || rejected?.status !== 'rejected' || rejected.key !== key || rejected.intent.action === 'preview') {
+    throw new InvitationCampaignOperationError('No rejected campaign');
+  }
+  const campaignId = rejected.intent.campaignId;
+  const seen = new Set<number>();
+  let page: number | null = 1;
+  while (page !== null) {
+    if (!current() || seen.has(page)) throw new InvitationCampaignOperationError('Review departed or invalid pagination');
+    seen.add(page);
+    const { data } = await getOrganizerInvitationCampaigns(scope.eventId, page, 100);
+    if (!current()) throw new InvitationCampaignOperationError('Review departed');
+    const campaign = data.campaigns.find(item => item.id === campaignId);
+    if (campaign) {
+      const event = await getEvent(scope.eventId);
+      if (!current() || event.data.id !== scope.eventId || !event.data.permissions.manage_registration
+        || campaign.event_id !== scope.eventId) throw new InvitationCampaignOperationError('Review unavailable');
+      await ordered(scope, async () => {
+        const saved = await read(scope);
+        if (!current() || saved?.status !== 'rejected' || saved.key !== key) throw new InvitationCampaignOperationError('Review mismatch');
+        const reviewed = savedSchema.parse({ ...scope, schemaVersion: 1, key, status: 'review', campaignId, campaignRevision: campaign.revision });
+        if (!await saveCreationDraft(draftScope(scope), reviewed)) throw new InvitationCampaignOperationError('Review not saved');
+      });
+      return campaign;
+    }
+    page = data.pagination.campaigns.next_page;
+  }
+  throw new InvitationCampaignOperationError('Campaign no longer available');
 }

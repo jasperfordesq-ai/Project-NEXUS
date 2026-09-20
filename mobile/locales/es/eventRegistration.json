@@ -184,6 +184,8 @@
     "export_error": "No se pudo compartir la exportación. Es posible que el acceso ya se haya registrado. Comprueba la conexión antes de volver a intentarlo."
   },
   "invitations": {
+    "conflict_description": "Esta campaña ha cambiado. Tu solicitud no se aplicó. Revisa la campaña actual antes de elegir otra acción.",
+    "review_current": "Revisar campaña actual",
     "builder_title": "Campaña de invitación",
     "builder_description": "Obtenga una vista previa y congele la instantánea del destinatario antes de programarla o enviarla.",
     "type_label": "Fuente de audiencia",

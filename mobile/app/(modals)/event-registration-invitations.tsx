@@ -41,6 +41,8 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const permitted = active && !state.isLoading && !state.error && Boolean(state.data?.permitted);
   const operation = useInvitationCampaignOperations({ eventId, tenantId, userId }, permitted, active, receipt => {
     setAccepted(receipt.data.campaign); setSelection(receipt.data.campaign.id); setEditing(false); setErrorPage(0);
+  }, campaign => {
+    setAccepted(campaign); setSelection(campaign.id); setEditing(false); setErrorPage(0);
   });
   useEffect(() => { if (!permitted) { setSelection(null); setEditing(false); setAccepted(null); } }, [permitted]);
   if (!active) return null;
@@ -63,6 +65,10 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
           {operation.saved?.status === 'pending' && <Text className="text-foreground">{t('invitations.' + ({ preview: 'preview', issue: 'send_now', schedule: 'schedule', cancel: 'cancel' }[operation.saved.intent.action]))}</Text>}
           <Button isDisabled={!permitted || operation.busy} onPress={() => { void (operation.storageFailed ? operation.reload() : operation.recover()); }}>
             {t('event_communications:' + (operation.storageFailed ? 'recovery_reload' : 'recovery_button'))}</Button>
+        </View>}
+        {operation.saved?.status === 'rejected' && <View className="gap-3">
+          <Text accessibilityRole="alert" className="text-foreground">{t('invitations.conflict_description')}</Text>
+          <Button isDisabled={!permitted || operation.busy} onPress={() => { void operation.review(); }}>{t('invitations.review_current')}</Button>
         </View>}
         {operation.operationFailed && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-danger">{t('common:errors.generic')}</Text>}
         {!operation.ready && !operation.storageFailed && <Text className="text-muted-foreground">{t('common:loading')}</Text>}

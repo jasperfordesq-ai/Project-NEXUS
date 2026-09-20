@@ -184,6 +184,8 @@
     "export_error": "Der Export konnte nicht geteilt werden. Der Zugriff wurde möglicherweise bereits protokolliert. Prüfen Sie vor einem erneuten Versuch Ihre Verbindung."
   },
   "invitations": {
+    "conflict_description": "Diese Kampagne wurde geändert. Deine Anfrage wurde nicht ausgeführt. Prüfe die aktuelle Kampagne, bevor du eine weitere Aktion auswählst.",
+    "review_current": "Aktuelle Kampagne prüfen",
     "builder_title": "Einladungsaktion",
     "builder_description": "Sehen Sie sich den Schnappschuss des Empfängers in der Vorschau an und frieren Sie ihn ein, bevor Sie ihn planen oder senden.",
     "type_label": "Zielgruppenquelle",

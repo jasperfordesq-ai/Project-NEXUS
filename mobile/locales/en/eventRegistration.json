@@ -184,6 +184,8 @@
     "export_error": "The export could not be shared. Access may already have been recorded. Check your connection before trying again."
   },
   "invitations": {
+    "conflict_description": "This campaign changed. Your request was not applied. Review the current campaign before choosing another action.",
+    "review_current": "Review current campaign",
     "builder_title": "Invitation campaign",
     "builder_description": "Preview and freeze the recipient snapshot before scheduling or sending.",
     "type_label": "Audience source",

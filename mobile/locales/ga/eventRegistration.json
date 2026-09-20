@@ -184,6 +184,8 @@
     "export_error": "Níorbh fhéidir an t-easpórtáil a roinnt. Seans go bhfuil an rochtain taifeadta cheana féin. Seiceáil do cheangal sula ndéanann tú iarracht eile."
   },
   "invitations": {
+    "conflict_description": "Athraíodh an feachtas seo. Níor cuireadh d’iarratas i bhfeidhm. Athbhreithnigh an feachtas reatha sula roghnaíonn tú gníomh eile.",
+    "review_current": "Athbhreithnigh an feachtas reatha",
     "builder_title": "Feachtas cuireadh",
     "builder_description": "Réamhamhairc agus reo an pictiúr faighteora roimh sceidealú nó a sheoladh.",
     "type_label": "Foinse lucht féachana",

@@ -69,3 +69,16 @@ it('hides controls when permission is removed and pages history independently', 
 it.each(['0', ['42', '43'], undefined])('rejects malformed route IDs', id => {
   mockId = id; render(<Screen />); expect(mockUseApi).not.toHaveBeenCalled();
 });
+
+it('offers current campaign review for a definitive rejection without retrying the mutation', () => {
+  mockOperation = { ...mockOperation, blocked: true, saved: { status: 'rejected' }, review: jest.fn() };
+  const view = render(<Screen />);
+  expect(view.getByText('invitations.conflict_description')).toBeTruthy();
+  fireEvent.press(view.getByText('invitations.review_current'));
+  expect(mockOperation.review).toHaveBeenCalledTimes(1);
+  expect(mockOperation.recover).not.toHaveBeenCalled();
+  act(() => mockUseOperation.mock.calls.at(-1)?.[4]({ ...campaign, revision: 2, status: 'scheduled' }));
+  expect(view.UNSAFE_getByType(Actions).props.campaign.revision).toBe(2);
+});
+
+jest.mock('@/lib/observability/report', () => ({ reportSentryMessage: jest.fn() }));

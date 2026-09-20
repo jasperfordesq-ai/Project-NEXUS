@@ -5,9 +5,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useInvitationCampaignOperations } from './useInvitationCampaignOperations';
 import { loadInvitationCampaignOperation as load, executeInvitationCampaignOperation as execute,
-  recoverInvitationCampaignOperation as recover, type SavedInvitationCampaignOperation } from '../eventInvitationCampaignOperation';
+  recoverInvitationCampaignOperation as recover, reviewInvitationCampaignOperation as review, type SavedInvitationCampaignOperation } from '../eventInvitationCampaignOperation';
 jest.mock('../eventInvitationCampaignOperation', () => ({ loadInvitationCampaignOperation: jest.fn(), executeInvitationCampaignOperation: jest.fn(),
-  recoverInvitationCampaignOperation: jest.fn() }));
+  recoverInvitationCampaignOperation: jest.fn(), reviewInvitationCampaignOperation: jest.fn() }));
 const scope = { tenantId: 2, userId: 7, eventId: 42 };
 const intent = { action: 'preview' as const, campaignType: 'member' as const, source: { member_ids: [9] }, defaultLocale: 'en' as const };
 const pending: SavedInvitationCampaignOperation = { ...scope, schemaVersion: 1, status: 'pending', key: 'original', intent };
@@ -74,4 +74,21 @@ it('keeps recovery errors visible after reloading the pending request', async ()
   await act(async () => result.current.recover());
   expect(result.current.operationFailed).toBe(true); expect(result.current.saved).toEqual(pending);
   expect(result.current.busy).toBe(false); expect(result.current.blocked).toBe(true);
+});
+
+it('reviews a rejected request explicitly without replaying it', async () => {
+  const rejected: SavedInvitationCampaignOperation = { ...scope, schemaVersion: 1, key: 'rejected-key', status: 'rejected',
+    intent: { action: 'cancel', campaignId: 12, expectedRevision: 1, reason: 'Synthetic' } };
+  jest.mocked(load).mockResolvedValue(rejected);
+  const reviewed = jest.fn();
+  jest.mocked(review).mockResolvedValue(receipt.data.campaign);
+  const { result } = renderHook(() => useInvitationCampaignOperations(scope, true, true, jest.fn(), reviewed));
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  expect(result.current.blocked).toBe(true);
+  await act(async () => result.current.submit(intent));
+  await act(async () => result.current.recover());
+  expect(execute).not.toHaveBeenCalled(); expect(recover).not.toHaveBeenCalled();
+  await act(async () => result.current.review());
+  expect(review).toHaveBeenCalledWith(scope, 'rejected-key', expect.any(Function));
+  expect(reviewed).toHaveBeenCalledWith(receipt.data.campaign);
 });
