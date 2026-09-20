@@ -36,6 +36,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import FormActionFooter from '@/components/ui/FormActionFooter';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -77,6 +78,7 @@ function EditProfileScreenInner() {
   const latestUserRef = useRef<User | null>(fullUser);
   const avatarUpdatedLocallyRef = useRef(false);
   const [hydrating, setHydrating] = useState(false);
+  const [hydrationFailed, setHydrationFailed] = useState(false);
   const [hasHydratedFullProfile, setHasHydratedFullProfile] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const saveInFlightRef = useRef(false);
@@ -85,7 +87,10 @@ function EditProfileScreenInner() {
   const hydrationBaselineRevisionRef = useRef(draftRevisionRef.current);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   // Track whether the form has unsaved changes
   const isDirty =
@@ -117,12 +122,13 @@ function EditProfileScreenInner() {
   }
 
   async function handlePickAvatar() {
-    if (avatarInFlightRef.current || saveInFlightRef.current) return;
+    if (!isMountedRef.current || avatarInFlightRef.current || saveInFlightRef.current) return;
     avatarInFlightRef.current = true;
-      setUploadingAvatar(true);
+    setUploadingAvatar(true);
 
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!isMountedRef.current) return;
       if (!permission.granted) {
         showToast({ title: t('permissionNeeded'), description: t('permissionMessage'), variant: 'warning' });
         return;
@@ -134,9 +140,10 @@ function EditProfileScreenInner() {
         allowsMultipleSelection: false,
       });
 
-      if (result.canceled || !result.assets?.[0]?.uri) return;
+      if (!isMountedRef.current || result.canceled || !result.assets?.[0]?.uri) return;
 
       const prepared = await prepareImageForUpload(result.assets[0]);
+      if (!isMountedRef.current) return;
       const response = await updateAvatar(prepared.uri);
       if (!isMountedRef.current) return;
       const nextAvatarUrl = withImageVersion(response.data.avatar_url);
@@ -172,6 +179,7 @@ function EditProfileScreenInner() {
     async function hydrateProfile() {
       const startingDraftRevision = hydrationBaselineRevisionRef.current;
       setHydrating(true);
+      setHydrationFailed(false);
       try {
         const response = await getMe();
         if (!isMounted) return;
@@ -186,6 +194,7 @@ function EditProfileScreenInner() {
         await storage.setJson(STORAGE_KEYS.USER_DATA, nextUser).catch(() => undefined);
       } catch {
         if (!isMounted) return;
+        setHydrationFailed(true);
         if (draftRevisionRef.current === startingDraftRevision) {
           applyProfileData((latestUserRef.current ?? {}) as Partial<User>);
         }
@@ -236,7 +245,7 @@ function EditProfileScreenInner() {
   const firstFooterError = fieldErrors.firstName ?? fieldErrors.phone ?? null;
 
   async function handleSave() {
-    if (saveInFlightRef.current || avatarInFlightRef.current || hydrating) return;
+    if (!isMountedRef.current || saveInFlightRef.current || avatarInFlightRef.current || hydrating) return;
     const errors = validate();
     if (Object.keys(errors).length > 0) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -245,15 +254,16 @@ function EditProfileScreenInner() {
     }
 
     setFieldErrors({});
+    const submittedRevision = draftRevisionRef.current;
     saveInFlightRef.current = true;
     setSaving(true);
     try {
       const payload: UpdateProfilePayload = {
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        bio: bio.trim(),
-        location: location.trim(),
-        phone: phone.trim(),
+        ...(firstName !== baselineProfile.firstName ? { first_name: firstName.trim() } : {}),
+        ...(lastName !== baselineProfile.lastName ? { last_name: lastName.trim() } : {}),
+        ...(bio !== baselineProfile.bio ? { bio: bio.trim() } : {}),
+        ...(location !== baselineProfile.location ? { location: location.trim() } : {}),
+        ...(phone !== baselineProfile.phone ? { phone: phone.trim() } : {}),
       };
 
       const response = await updateProfile(payload);
@@ -272,6 +282,8 @@ function EditProfileScreenInner() {
       });
       await storage.setJson(STORAGE_KEYS.USER_DATA, response.data).catch(() => undefined);
       if (!isMountedRef.current) return;
+      // Preserve native input events queued before the fields became read-only.
+      if (draftRevisionRef.current !== submittedRevision) return;
 
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       showToast({ title: t('edit.saved'), description: t('edit.savedMessage'), variant: 'success' });
@@ -300,6 +312,9 @@ function EditProfileScreenInner() {
           contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 116, gap: 12 }}
           keyboardShouldPersistTaps="handled"
         >
+          {hydrationFailed ? (
+            <ErrorState testID="profile-load-error" onRetry={() => setHasHydratedFullProfile(false)} />
+          ) : null}
 
           <HeroCard variant="default" className="overflow-hidden">
             <View className="h-1 w-full" style={{ backgroundColor: primary }} />

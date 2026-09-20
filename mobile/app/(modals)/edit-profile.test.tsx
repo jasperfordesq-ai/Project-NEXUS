@@ -125,6 +125,7 @@ jest.mock('@/lib/haptics', () => ({
 }));
 
 jest.mock('expo-image-picker', () => ({
+  PermissionStatus: { GRANTED: 'granted' },
   MediaTypeOptions: { Images: 'Images' },
   requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
   launchImageLibraryAsync: jest.fn().mockResolvedValue({
@@ -248,6 +249,28 @@ describe('EditProfileScreen', () => {
 
     await waitFor(() => expect(updateAvatar).toHaveBeenCalledTimes(1));
     expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not upload a photo returned after leaving the profile editor', async () => {
+    let resolvePicker!: (value: ImagePicker.ImagePickerResult) => void;
+    jest.mocked(ImagePicker.launchImageLibraryAsync).mockReturnValueOnce(new Promise((resolve) => { resolvePicker = resolve; }));
+    const screen = render(<EditProfileScreen />);
+    fireEvent.press(screen.getByLabelText('Change profile photo'));
+    await waitFor(() => expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled());
+    screen.unmount();
+    await act(async () => resolvePicker({ canceled: false, assets: [{ uri: 'file:///tmp/departed.jpg', width: 100, height: 100 }] }));
+    expect(updateAvatar).not.toHaveBeenCalled();
+  });
+
+  it('does not open the photo picker when permission resolves after departure', async () => {
+    let resolvePermission!: (value: ImagePicker.MediaLibraryPermissionResponse) => void;
+    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockReturnValueOnce(new Promise((resolve) => { resolvePermission = resolve; }));
+    const screen = render(<EditProfileScreen />);
+    fireEvent.press(screen.getByLabelText('Change profile photo'));
+    screen.unmount();
+    await act(async () => resolvePermission({ granted: true, canAskAgain: true, expires: 'never', status: ImagePicker.PermissionStatus.GRANTED }));
+    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
+    expect(updateAvatar).not.toHaveBeenCalled();
   });
 
   it('keeps an accepted avatar update successful when the local user cache cannot refresh', async () => {
@@ -429,5 +452,59 @@ describe('EditProfileScreen', () => {
 
     await waitFor(() => expect(router.back).toHaveBeenCalled());
     expect(updateProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a newer queued edit open when the submitted profile finishes saving', async () => {
+    let finish!: (value: unknown) => void;
+    (updateProfile as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const { router } = require('expo-router');
+    const screen = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByDisplayValue('Community builder'), 'Submitted bio');
+    fireEvent.press(screen.getByText('Save Changes'));
+    // A native change already queued before editable=false can still be delivered.
+    act(() => screen.getByPlaceholderText('Tell us about yourself...').props.onChangeText('Newer draft'));
+    await act(async () => finish({ data: { ...defaultProfileResponse.data, bio: 'Submitted bio' } }));
+    expect(screen.getByDisplayValue('Newer draft')).toBeTruthy();
+    expect(router.back).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText('Tell us about yourself...').props.editable).toBe(true);
+    expect(mockRefreshUser).toHaveBeenLastCalledWith(expect.objectContaining({ bio: 'Submitted bio' }));
+  });
+
+  it('preserves the profile draft and unlocks retry after a failed save', async () => {
+    (updateProfile as jest.Mock).mockRejectedValueOnce(new Error('Unavailable'));
+    const { router } = require('expo-router');
+    const screen = render(<EditProfileScreen />);
+    await waitFor(() => expect(storage.setJson).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByDisplayValue('Community builder'), 'Preserved draft');
+    fireEvent.press(screen.getByText('Save Changes'));
+    await waitFor(() => expect(screen.getByPlaceholderText('Tell us about yourself...').props.editable).toBe(true));
+    expect(screen.getByDisplayValue('Preserved draft')).toBeTruthy();
+    expect(router.back).not.toHaveBeenCalled();
+    (updateProfile as jest.Mock).mockResolvedValueOnce({ data: { ...defaultProfileResponse.data, bio: 'Preserved draft' } });
+    fireEvent.press(screen.getByText('Save Changes'));
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(updateProfile).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not resubmit untouched cached fields when full profile loading fails', async () => {
+    (getMe as jest.Mock).mockRejectedValueOnce(new Error('Profile unavailable'));
+    const screen = render(<EditProfileScreen />);
+    await act(async () => {});
+    fireEvent.changeText(screen.getByDisplayValue('Jane'), 'Janet');
+    fireEvent.press(screen.getByText('Save Changes'));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ first_name: 'Janet' }));
+  });
+
+  it.each([false, true])('retries profile loading while preserving a changed draft: %s', async (editDraft) => {
+    (getMe as jest.Mock).mockRejectedValueOnce(new Error('Profile unavailable'));
+    const screen = render(<EditProfileScreen />);
+    await screen.findByTestId('profile-load-error');
+    if (editDraft) fireEvent.changeText(screen.getByDisplayValue('Community builder'), 'Unsaved local bio');
+    (getMe as jest.Mock).mockResolvedValueOnce({ data: { ...defaultProfileResponse.data, bio: 'Fresh server bio' } });
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await waitFor(() => expect(getMe).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByTestId('profile-load-error')).toBeNull());
+    expect(screen.getByDisplayValue(editDraft ? 'Unsaved local bio' : 'Fresh server bio')).toBeTruthy();
   });
 });
