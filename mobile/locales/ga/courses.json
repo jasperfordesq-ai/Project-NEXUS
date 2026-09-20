@@ -319,7 +319,9 @@
     "url_placeholder": "Sampla: https://example.com/file",
     "transcript": "Tras-scríbhinn",
     "transcript_hint": "Leagan scríofa de na rudaí a deirtear. Bíonn foghlaimeoirí nach féidir leo an físeán a chloisteáil nó a fheiceáil ag brath air seo.",
-    "cohort_adding": "Á chur leis…"
+    "cohort_adding": "Á chur leis…",
+    "unassigned": "Ceachtanna gan rannán",
+    "assign_section": "Bog go rannán"
   },
   "lesson_content": {
     "text": "Téacs",

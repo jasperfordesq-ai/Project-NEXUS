@@ -240,6 +240,14 @@ describe('NewCourseRoute', () => {
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
+  it('passes preserved lessons into the curriculum after loading an existing course', async () => {
+    mockSearchParams = { id: '42' };
+    mockGetCourse.mockResolvedValue({ ...existingCourse, unassigned_lessons: [{ id: 90, course_id: 42, section_id: null, title: 'Preserved lesson', content_type: 'text', position: 0, is_preview: false }] });
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByText('Preserved lesson')).toBeTruthy());
+    expect(screen.getByText('Lessons without a section')).toBeTruthy();
+  });
+
   it.each(['', 'bad', '0', '-2', '1.5', '9007199254740992', ['42']])('does not open a creation or edit form for malformed edit ID %j', async (id) => {
     mockSearchParams = { id };
     const screen = render(<NewCourseRoute />);

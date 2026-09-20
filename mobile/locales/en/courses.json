@@ -307,7 +307,9 @@
     "url_placeholder": "Example: https://example.com/file",
     "transcript": "Transcript",
     "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this.",
-    "cohort_adding": "Adding…"
+    "cohort_adding": "Adding…",
+    "unassigned": "Lessons without a section",
+    "assign_section": "Move to section"
   },
   "lesson_content": {
     "text": "Text",

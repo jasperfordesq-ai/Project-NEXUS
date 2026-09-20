@@ -51,6 +51,7 @@ import {
   type CourseLevel,
   type CourseModerationStatus,
   type CourseSection,
+  type CourseLesson,
   type CourseStatus,
   type CourseVisibility,
 } from '@/lib/api/courses';
@@ -127,6 +128,7 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
   const [status, setStatus] = useState<CourseStatus>('draft');
   const [moderationStatus, setModerationStatus] = useState<CourseModerationStatus>('pending');
   const [sections, setSections] = useState<CourseSection[]>([]);
+  const [unassignedLessons, setUnassignedLessons] = useState<CourseLesson[]>([]);
   const [cohorts, setCohorts] = useState<CourseCohort[]>([]);
   const [cohortName, setCohortName] = useState('');
   const [isAddingCohort, setIsAddingCohort] = useState(false);
@@ -215,6 +217,7 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
         setCreditCost(String(course.credit_cost ?? 0));
         setPrerequisites(Array.isArray(course.prerequisites) ? course.prerequisites.join(', ') : '');
         setSections(course.sections ?? []);
+        setUnassignedLessons(course.unassigned_lessons ?? []);
         setStatus(course.status ?? 'draft');
         setModerationStatus(course.moderation_status ?? 'pending');
         // Built from the same values just written to state, in the same order as the
@@ -296,6 +299,7 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
         setStatus(saved.status ?? 'draft');
         setModerationStatus(saved.moderation_status ?? 'pending');
         setSections(saved.sections ?? []);
+        setUnassignedLessons(saved.unassigned_lessons ?? []);
       }
     } catch (err) {
       if (!mountedRef.current) return;
@@ -529,7 +533,7 @@ function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
 
               {isEditing ? (
                 <View className="gap-4">
-                  <CourseBuilder courseId={courseId} initialSections={sections} />
+                  <CourseBuilder courseId={courseId} initialSections={sections} initialUnassignedLessons={unassignedLessons} />
 
                   {enrollmentType === 'cohort' ? (
                     <FormSection title={t('builder.cohorts')} icon="calendar-outline">

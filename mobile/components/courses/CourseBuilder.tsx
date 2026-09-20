@@ -63,13 +63,14 @@ const DRIP_TYPES: LessonDripType[] = ['none', 'days_after_enroll', 'fixed_date']
 interface CourseBuilderProps {
   courseId: number;
   initialSections: CourseSection[];
+  initialUnassignedLessons?: CourseLesson[];
 }
 
 export function CourseBuilder(props: CourseBuilderProps) {
   return <CourseBuilderBody key={props.courseId} {...props} />;
 }
 
-function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
+function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons = [] }: CourseBuilderProps) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
@@ -80,6 +81,11 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
   const [sections, setSections] = useState<CourseSection[]>(
     () => (initialSections ?? []).map((section) => ({ ...section, lessons: section.lessons ?? [] })),
   );
+  const [unassignedLessons, setUnassignedLessons] = useState(initialUnassignedLessons);
+  const sectionsRef = useRef(sections);
+  sectionsRef.current = sections;
+  const assignmentInFlight = useRef(false);
+  const [assigning, setAssigning] = useState(false);
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -90,7 +96,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
   const recoveryScope = useRef<{ sectionId: number | null } | null>(null);
   const [ordering, setOrdering] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
-  const movesDisabled = ordering || orderError !== null;
+  const movesDisabled = ordering || assigning || orderError !== null;
   const sectionRenames = useRef(new Map<number, Promise<void>>());
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
@@ -148,6 +154,9 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
       await deleteCourseSection(courseId, sectionId);
       if (!mountedRef.current) return;
       structureVersion.current += 1;
+      const retained = sectionsRef.current.find(section => section.id === sectionId)?.lessons ?? [];
+      setUnassignedLessons(current => [...current.filter(lesson => !retained.some(item => item.id === lesson.id)),
+        ...retained.map(lesson => ({ ...lesson, section_id: null }))]);
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
     } catch {
       reportFailure();
@@ -172,6 +181,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     if (!mountedRef.current) return;
     if (version !== structureVersion.current || !Array.isArray(fresh.sections)) throw new Error('Unconfirmed curriculum');
     const freshSections = fresh.sections;
+    setUnassignedLessons(fresh.unassigned_lessons ?? []);
     if (scope.sectionId === null) {
       setSections(current => freshSections.map((section, position) => ({
         ...section, ...current.find(item => item.id === section.id), position,
@@ -205,7 +215,7 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
   }
 
   async function moveItems(sectionId: number | null, expected: number[], desired: number[]) {
-    if (!mountedRef.current || orderInFlight.current || recoveryScope.current) return;
+    if (!mountedRef.current || orderInFlight.current || assignmentInFlight.current || recoveryScope.current) return;
     const scope = { sectionId };
     orderInFlight.current = true;
     recoveryScope.current = scope;
@@ -309,6 +319,29 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
     });
   }
 
+  async function assignLesson(lesson: CourseLesson, sectionId: number) {
+    if (!mountedRef.current || assignmentInFlight.current || orderInFlight.current || recoveryScope.current) return;
+    const target = sectionsRef.current.find(section => section.id === sectionId);
+    if (!target) return;
+    assignmentInFlight.current = true;
+    setAssigning(true);
+    try {
+      const saved = await updateCourseLesson(courseId, lesson.id, { section_id: sectionId, position: target.lessons?.length ?? 0 });
+      if (!mountedRef.current) return;
+      if (saved.id !== lesson.id || saved.section_id !== sectionId) throw new Error('Unconfirmed assignment');
+      structureVersion.current += 1;
+      // A destination deleted while this write was pending preserves the lesson as unassigned.
+      if (!sectionsRef.current.some(section => section.id === sectionId)) return;
+      setSections(current => current.map(section => section.id === sectionId
+        ? { ...section, lessons: [...(section.lessons ?? []).filter(item => item.id !== lesson.id), saved] } : section));
+      setUnassignedLessons(current => current.filter(item => item.id !== lesson.id));
+    } catch { reportFailure(); }
+    finally {
+      assignmentInFlight.current = false;
+      if (mountedRef.current) setAssigning(false);
+    }
+  }
+
   function moveLesson(sectionId: number, index: number, direction: -1 | 1) {
     const lessons = sections.find(section => section.id === sectionId)?.lessons ?? [];
     const target = index + direction;
@@ -374,6 +407,22 @@ function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
           </HeroCard>
         ))
       )}
+      {unassignedLessons.length > 0 ? (
+        <HeroCard className="rounded-panel">
+          <HeroCard.Body className="gap-3 p-4">
+            <Text className="text-lg font-bold" style={{ color: theme.text }}>{t('builder.unassigned')}</Text>
+            {unassignedLessons.map(lesson => (
+              <View key={lesson.id} className="gap-2">
+                <Text style={{ color: theme.text }}>{lesson.title || t('builder.untitled_lesson')}</Text>
+                <ChoiceChips label={t('builder.assign_section')} selected={null}
+                  options={sections.map(section => ({ value: String(section.id), label: section.title, disabled: assigning || movesDisabled }))}
+                  onSelect={value => { if (value) void assignLesson(lesson, Number(value)); }} />
+              </View>
+            ))}
+            {assigning ? <Text accessibilityLiveRegion="polite">{t('quiz.submitting')}</Text> : null}
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
       {confirmDialog}
     </View>
   );

@@ -311,7 +311,9 @@
     "url_placeholder": "Ejemplo: https://example.com/file",
     "transcript": "Transcripción",
     "transcript_hint": "Una versión escrita de lo que se dice. Las personas que no pueden oír ni ver el vídeo dependen de esto.",
-    "cohort_adding": "Añadiendo…"
+    "cohort_adding": "Añadiendo…",
+    "unassigned": "Lecciones sin sección",
+    "assign_section": "Mover a una sección"
   },
   "lesson_content": {
     "text": "Texto",

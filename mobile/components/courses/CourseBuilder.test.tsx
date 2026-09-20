@@ -169,6 +169,46 @@ describe('CourseBuilder', () => {
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
+  it('keeps lessons visible after section deletion and assigns them to another section', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Retained lesson', content_type: 'text' as const, position: 0, is_preview: false };
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    mockUpdateCourseLesson.mockResolvedValue({ ...lesson, section_id: 6 });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original', [lesson]), section(6, 'Destination')]} />);
+    fireEvent.press(screen.getAllByLabelText('Delete section')[0]!);
+    await waitFor(() => expect(screen.getByText('Lessons without a section')).toBeTruthy());
+    expect(screen.getByText('Retained lesson')).toBeTruthy();
+    fireEvent.press(screen.getByText('Destination'));
+    await waitFor(() => expect(mockUpdateCourseLesson).toHaveBeenCalledWith(42, 90, { section_id: 6, position: 0 }));
+    await waitFor(() => expect(screen.queryByText('Lessons without a section')).toBeNull());
+    expect(screen.getByText('Retained lesson')).toBeTruthy();
+  });
+
+  it('hydrates an unassigned lesson and keeps it available after a failed assignment for retry', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: null, title: 'Preserved', content_type: 'text' as const, position: 0, is_preview: false };
+    mockUpdateCourseLesson.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ ...lesson, section_id: 6 });
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(6, 'Destination')]} initialUnassignedLessons={[lesson]} />);
+    fireEvent.press(screen.getByText('Destination'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(screen.getByText('Preserved')).toBeTruthy();
+    expect(screen.getByText('Lessons without a section')).toBeTruthy();
+    fireEvent.press(screen.getByText('Destination'));
+    await waitFor(() => expect(screen.queryByText('Lessons without a section')).toBeNull());
+    expect(mockUpdateCourseLesson).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText('Preserved')).toBeTruthy();
+  });
+
+  it('blocks repeated assignment taps and ignores a departed failure', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: null, title: 'Preserved', content_type: 'text' as const, position: 0, is_preview: false };
+    let rejectSave!: (error: Error) => void;
+    mockUpdateCourseLesson.mockImplementationOnce(() => new Promise((_, reject) => { rejectSave = reject; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(6, 'Destination')]} initialUnassignedLessons={[lesson]} />);
+    act(() => { fireEvent.press(screen.getByText('Destination')); fireEvent.press(screen.getByText('Destination')); });
+    expect(mockUpdateCourseLesson).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => rejectSave(new Error('Offline')));
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it.each(['section', 'lesson', 'quiz', 'question'])('does not start %s creation after leaving during operation storage', async (resource) => {
     let resolveOperation!: (value: object) => void;
     mockReserveCourseAuthoringCreationOperation.mockImplementationOnce(() => new Promise(resolve => { resolveOperation = resolve; }));
