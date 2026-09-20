@@ -56,6 +56,8 @@ import {
 } from '@/lib/api/courses';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useTenant } from '@/lib/hooks/useTenant';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { completeCourseCreationOperation, reserveCourseCreationOperation } from '@/lib/courseCreationOperation';
@@ -76,30 +78,42 @@ function NewCourseRoute() {
     menu entry was never a gate: a deep link, a notification or a shared URL all
     reach this screen directly. See components/FeatureGate.tsx.
   */
-  const { t } = useTranslation('courses');
+  const { t } = useTranslation(['courses', 'common']);
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  const theme = useTheme();
+  const numericId = typeof id === 'string' && id.trim() ? Number(id) : NaN;
+  const courseId = Number.isSafeInteger(numericId) && numericId > 0 ? numericId : null;
+  const invalidLink = id !== undefined && courseId === null;
   return (
     <FeatureGate feature="courses" title={t('instructor.new_course')} fallbackHref="/(modals)/course-instructor">
       <ModalErrorBoundary>
-        <NewCourseScreen />
+        {invalidLink ? (
+          <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
+            <AppTopBar title={t('instructor.edit_course')} backLabel={t('common:back')} fallbackHref="/(modals)/course-instructor" />
+            <ErrorState title={t('common:errors.notFound')} subtitle={t('common:errors.linkUnavailable')} />
+          </SafeAreaView>
+        ) : (
+          <NewCourseScreen key={JSON.stringify([tenant?.id ?? tenant?.slug, user?.id, courseId])} paramCourseId={courseId} />
+        )}
       </ModalErrorBoundary>
     </FeatureGate>
   );
 }
 
-function NewCourseScreen() {
+function NewCourseScreen({ paramCourseId }: { paramCourseId: number | null }) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
-  const params = useLocalSearchParams<{ id?: string }>();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
 
-  const paramCourseId = Number(params.id);
-  const hasParamCourse = Number.isFinite(paramCourseId) && paramCourseId > 0;
+  const hasParamCourse = paramCourseId !== null;
   /** Set once a newly created course exists, which is what unlocks the builder. */
   const [createdCourseId, setCreatedCourseId] = useState<number | null>(null);
-  const courseId = hasParamCourse ? paramCourseId : createdCourseId ?? 0;
+  const courseId = paramCourseId ?? createdCourseId ?? 0;
   const isEditing = courseId > 0;
 
   const [categories, setCategories] = useState<CourseCategory[]>([]);
@@ -118,6 +132,11 @@ function NewCourseScreen() {
   const [isAddingCohort, setIsAddingCohort] = useState(false);
   // State disables the controls after React renders. These refs close the smaller
   // same-frame window in which two native press events can still run the old handler.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const saveInFlight = useRef(false);
   const publishInFlight = useRef(false);
   const cohortInFlight = useRef(false);
@@ -177,7 +196,7 @@ function NewCourseScreen() {
   }, []);
 
   useEffect(() => {
-    if (!hasParamCourse) return;
+    if (paramCourseId === null) return;
     let isMounted = true;
     setIsLoading(true);
     setLoadError(null);
@@ -249,7 +268,7 @@ function NewCourseScreen() {
   }
 
   async function saveDetails() {
-    if (saveInFlight.current || !canEditCourse) return;
+    if (!mountedRef.current || saveInFlight.current || !canEditCourse) return;
     if (!title.trim()) {
       setTitleError(t('instructor.title_required'));
       showToast({ title: t('form.required'), variant: 'warning' });
@@ -260,11 +279,14 @@ function NewCourseScreen() {
     try {
       const payload = buildPayload();
       const creationOperation = isEditing ? null : await reserveCourseCreationOperation(JSON.stringify(payload));
+      if (!mountedRef.current) return;
       const saved = isEditing
         ? await updateCourse(courseId, payload)
         : await createCourse(payload, creationOperation!.key);
       if (creationOperation) await completeCourseCreationOperation(creationOperation);
+      if (!mountedRef.current) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!mountedRef.current) return;
       showToast({ title: t('instructor.saved'), variant: 'success' });
       // What is on screen is now what the server holds, so leaving straight after
       // saving must not be challenged as unsaved work.
@@ -276,6 +298,7 @@ function NewCourseScreen() {
         setSections(saved.sections ?? []);
       }
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({
         title: t('instructor.create_error'),
         description: describeApiError(err, ''),
@@ -283,18 +306,19 @@ function NewCourseScreen() {
       });
     } finally {
       saveInFlight.current = false;
-      setIsSaving(false);
+      if (mountedRef.current) setIsSaving(false);
     }
   }
 
   async function togglePublish() {
-    if (publishInFlight.current || !isEditing || !canEditCourse) return;
+    if (!mountedRef.current || publishInFlight.current || !isEditing || !canEditCourse) return;
     publishInFlight.current = true;
     setIsPublishing(true);
     try {
       const updated = status === 'published'
         ? await unpublishCourse(courseId)
         : await publishCourse(courseId);
+      if (!mountedRef.current) return;
       setStatus(updated.status ?? 'draft');
       setModerationStatus(updated.moderation_status ?? 'pending');
       showToast({
@@ -306,6 +330,7 @@ function NewCourseScreen() {
         variant: 'success',
       });
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({
         title: t('builder.save_error'),
         description: describeApiError(err, ''),
@@ -313,7 +338,7 @@ function NewCourseScreen() {
       });
     } finally {
       publishInFlight.current = false;
-      setIsPublishing(false);
+      if (mountedRef.current) setIsPublishing(false);
     }
   }
 
@@ -324,23 +349,27 @@ function NewCourseScreen() {
     delete one. Nothing in the request is idempotent, so the guard has to be here.
   */
   async function addCohort() {
-    if (cohortInFlight.current || !isEditing || !canEditCourse || !cohortName.trim()) return;
+    if (!mountedRef.current || cohortInFlight.current || !isEditing || !canEditCourse || !cohortName.trim()) return;
     cohortInFlight.current = true;
     setIsAddingCohort(true);
     try {
       const payload = { name: cohortName.trim() };
       const operation = await reserveCourseAuthoringCreationOperation('cohort', courseId, payload);
+      if (!mountedRef.current) return;
       await createCourseCohort(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
+      if (!mountedRef.current) return;
       const list = await getCourseCohorts(courseId);
+      if (!mountedRef.current) return;
       setCohorts(list ?? []);
       setCohortName('');
       showToast({ title: t('builder.cohort_added'), variant: 'success' });
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('builder.save_error'), description: describeApiError(err, ''), variant: 'danger' });
     } finally {
       cohortInFlight.current = false;
-      setIsAddingCohort(false);
+      if (mountedRef.current) setIsAddingCohort(false);
     }
   }
 

@@ -27,7 +27,10 @@ const mockCompleteCourseCreationOperation = jest.fn();
 const mockReserveCourseAuthoringCreationOperation = jest.fn();
 const mockCompleteCourseAuthoringCreationOperation = jest.fn();
 const mockPush = jest.fn();
-let mockSearchParams: Record<string, string> = {};
+let mockSearchParams: Record<string, string | string[]> = {};
+let mockUserId = 1;
+let mockTenantId = 2;
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUserId } }) }));
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -84,7 +87,7 @@ jest.mock('react-i18next', () => {
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
 }));
 jest.mock('@/lib/hooks/useTheme', () => ({
   useTheme: () => ({
@@ -224,6 +227,8 @@ describe('NewCourseRoute', () => {
     jest.clearAllMocks();
     mockShowToast.mockClear();
     mockSearchParams = {};
+    mockUserId = 1;
+    mockTenantId = 2;
     mockGetCourseCategories.mockResolvedValue([{ id: 3, name: 'Wellbeing', slug: 'wellbeing' }]);
     mockGetCourseCohorts.mockResolvedValue([]);
     mockGetCourse.mockResolvedValue(existingCourse);
@@ -233,6 +238,89 @@ describe('NewCourseRoute', () => {
     mockCompleteCourseCreationOperation.mockResolvedValue(undefined);
     mockReserveCourseAuthoringCreationOperation.mockResolvedValue({ storageKey: 'cohort-op', key: 'cohort-key', createdAt: 1 });
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
+  });
+
+  it.each(['', 'bad', '0', '-2', '1.5', '9007199254740992', ['42']])('does not open a creation or edit form for malformed edit ID %j', async (id) => {
+    mockSearchParams = { id };
+    const screen = render(<NewCourseRoute />);
+    await act(async () => {});
+    expect(screen.queryByLabelText('Title')).toBeNull();
+    expect(screen.queryByTestId('footer-submit')).toBeNull();
+    expect(screen.getByText('That link is missing or cannot be opened.')).toBeTruthy();
+    expect(mockGetCourse).not.toHaveBeenCalled();
+  });
+
+  it.each(['route', 'account', 'community'])('discards the previous editor when its %s changes', async (change) => {
+    mockSearchParams = { id: '42' };
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByLabelText('Title').props.value).toBe('Repair skills'));
+    fireEvent.changeText(screen.getByLabelText('Title'), 'Private old draft');
+    if (change === 'route') mockSearchParams = {};
+    if (change === 'account') mockUserId = 3;
+    if (change === 'community') mockTenantId = 4;
+    mockGetCourse.mockResolvedValue({ ...existingCourse, title: 'Current course' });
+    screen.rerender(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByLabelText('Title').props.value).toBe(change === 'route' ? '' : 'Current course'));
+    expect(mockUpdateCourse).not.toHaveBeenCalled();
+  });
+
+  it('does not create a course when leaving while its retry identity is being stored', async () => {
+    let resolveOperation!: (value: object) => void;
+    mockReserveCourseCreationOperation.mockImplementationOnce(() => new Promise(resolve => { resolveOperation = resolve; }));
+    const screen = render(<NewCourseRoute />);
+    fireEvent.changeText(screen.getByLabelText('Title'), 'New draft');
+    fireEvent.press(screen.getByTestId('footer-submit'));
+    await waitFor(() => expect(mockReserveCourseCreationOperation).toHaveBeenCalled());
+    screen.unmount();
+    await act(async () => resolveOperation({ storageKey: 'departed', key: 'old-key', createdAt: 1 }));
+    expect(mockCreateCourse).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('records an accepted creation after departure without changing the replacement editor', async () => {
+    let resolveCreate!: (value: typeof existingCourse) => void;
+    mockCreateCourse.mockImplementationOnce(() => new Promise(resolve => { resolveCreate = resolve; }));
+    const screen = render(<NewCourseRoute />);
+    fireEvent.changeText(screen.getByLabelText('Title'), 'Old draft');
+    fireEvent.press(screen.getByTestId('footer-submit'));
+    await waitFor(() => expect(mockCreateCourse).toHaveBeenCalledTimes(1));
+    mockUserId = 3;
+    screen.rerender(<NewCourseRoute />);
+    await act(async () => resolveCreate(existingCourse));
+    expect(mockCompleteCourseCreationOperation).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText('Title').props.value).toBe('');
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(screen.queryByText('Course builder')).toBeNull();
+  });
+
+  it.each([true, false])('ignores a departed publishing result (accepted=%s)', async (accepted) => {
+    mockSearchParams = { id: '42' };
+    let resolvePublish!: (value: object) => void;
+    let rejectPublish!: (reason: Error) => void;
+    mockPublishCourse.mockImplementationOnce(() => new Promise((resolve, reject) => { resolvePublish = resolve; rejectPublish = reject; }));
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByLabelText('Title').props.value).toBe('Repair skills'));
+    fireEvent.press(screen.getByText('Publish'));
+    await waitFor(() => expect(mockPublishCourse).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => { if (accepted) resolvePublish({ ...existingCourse, status: 'published' }); else rejectPublish(new Error('Offline')); });
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('acknowledges an accepted cohort after departure without fetching for the old screen', async () => {
+    mockSearchParams = { id: '42' };
+    let resolveCohort!: (value: object) => void;
+    mockCreateCourseCohort.mockImplementationOnce(() => new Promise(resolve => { resolveCohort = resolve; }));
+    const screen = render(<NewCourseRoute />);
+    await waitFor(() => expect(screen.getByLabelText('Title').props.value).toBe('Repair skills'));
+    fireEvent.changeText(screen.getByLabelText('Cohort name'), 'Autumn');
+    fireEvent.press(screen.getByText('Add cohort'));
+    await waitFor(() => expect(mockCreateCourseCohort).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => resolveCohort({ id: 8, course_id: 42, name: 'Autumn' }));
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalledTimes(1);
+    expect(mockGetCourseCohorts).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   it.each([0, 403, 404, 500])('requires a successful edit read after load failure %s before exposing writes', async (status) => {
