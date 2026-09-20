@@ -7,7 +7,7 @@ import { memo } from 'react';
 
 import { View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
-import { Card as HeroCard, Surface, Text } from 'heroui-native';
+import { Card as HeroCard, Spinner, Surface, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
@@ -54,10 +54,12 @@ function MarketplaceListingCardRow({
   item,
   onPress,
   onSavePress,
+  isSaving = false,
 }: {
   item: MarketplaceListingItem;
   onPress: () => void;
   onSavePress?: () => void;
+  isSaving?: boolean;
 }) {
   const { t } = useTranslation('marketplace');
   const { tenant } = useTenant();
@@ -116,9 +118,11 @@ function MarketplaceListingCardRow({
                   variant="secondary"
                   accessibilityLabel={item.is_saved ? t('detail.unsave') : t('detail.save')}
                   onPress={onSavePress}
+                  isDisabled={isSaving}
+                  accessibilityState={{ busy: isSaving, disabled: isSaving }}
                   style={{ backgroundColor: withAlpha(primary, 0.12) }}
                 >
-                  <Ionicons name={item.is_saved ? 'heart' : 'heart-outline'} size={18} color={primary} />
+                  {isSaving ? <Spinner size="sm" /> : <Ionicons name={item.is_saved ? 'heart' : 'heart-outline'} size={18} color={primary} />}
                 </HeroButton>
               ) : null}
             </View>

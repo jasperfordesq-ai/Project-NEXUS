@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -16,6 +16,7 @@ import * as Haptics from '@/lib/haptics';
 
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { ListSkeleton } from '@/components/ui/Skeleton';
@@ -54,6 +55,7 @@ function MarketplaceRoute() {
 function MarketplaceScreen() {
   const { t } = useTranslation(['marketplace', 'common']);
   const { hasFeature } = useTenant();
+  const marketplaceEnabled = hasFeature('marketplace');
   const params = useLocalSearchParams<{
     q?: string | string[];
     category?: string | string[];
@@ -81,6 +83,19 @@ function MarketplaceScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [failedPage, setFailedPage] = useState(false);
+  const requestVersion = useRef(0);
+  const requestPending = useRef(false);
+  const mounted = useRef(true);
+  const pendingSaves = useRef(new Set<number>());
+  const [savingIds, setSavingIds] = useState(new Set<number>());
+  const saveRevision = useRef(0);
+  const savedChanges = useRef(new Map<number, { saved: boolean; revision: number }>());
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; requestVersion.current += 1; };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300);
@@ -88,7 +103,7 @@ function MarketplaceScreen() {
   }, [query]);
 
   useEffect(() => {
-    if (!hasFeature('marketplace')) return;
+    if (!marketplaceEnabled) return;
     let mounted = true;
     Promise.all([
       getMarketplaceCategories().then((response) => response.data).catch(() => []),
@@ -101,13 +116,18 @@ function MarketplaceScreen() {
     return () => {
       mounted = false;
     };
-  }, [hasFeature]);
+  }, [marketplaceEnabled]);
 
   const fetchListings = useCallback(async (append = false) => {
-    if (!hasFeature('marketplace')) return;
+    if (!marketplaceEnabled || !mounted.current) return;
+    if (append && (requestPending.current || !hasMore)) return;
+    const version = ++requestVersion.current;
+    const readSaveRevision = saveRevision.current;
+    requestPending.current = true;
     if (append) setIsLoadingMore(true);
     else setIsLoading(true);
     setError(null);
+    setFailedPage(false);
 
     try {
       const response = await getMarketplaceListings({
@@ -118,26 +138,49 @@ function MarketplaceScreen() {
         limit: 20,
         sort: 'newest',
       });
+      if (!mounted.current || version !== requestVersion.current) return;
       setCursor(marketplaceNextCursor(response));
       setHasMore(marketplaceHasMore(response));
-      setListings((current) => append ? [...current, ...response.data] : response.data);
+      setListings((current) => {
+        const seen = new Set(append ? current.map(item => item.id) : []);
+        const incoming = response.data.filter(item => {
+          if (seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        }).map(item => {
+          const change = savedChanges.current.get(item.id);
+          return change && (change.revision > readSaveRevision || pendingSaves.current.has(item.id))
+            ? { ...item, is_saved: change.saved }
+            : item;
+        });
+        return append ? [...current, ...incoming] : incoming;
+      });
     } catch (err) {
-      if (!append) {
-        setError(err instanceof Error ? err.message : t('hub.unable_to_load'));
-      } else {
-        showToast({ title: t('common:errors.alertTitle'), description: t('hub.load_more_failed'), variant: 'danger' });
-      }
+      if (!mounted.current || version !== requestVersion.current) return;
+      setFailedPage(append);
+      setError(err instanceof Error ? err.message : t('hub.unable_to_load'));
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      setIsLoadingMore(false);
+      if (mounted.current && version === requestVersion.current) {
+        requestPending.current = false;
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setIsLoadingMore(false);
+      }
     }
-  }, [cursor, debouncedQuery, hasFeature, priceType, selectedCategory, showToast, t]);
+  }, [cursor, debouncedQuery, marketplaceEnabled, hasMore, priceType, selectedCategory, t]);
 
   useEffect(() => {
+    setListings([]);
+    setCursor(null);
+    setHasMore(false);
+    setError(null);
+    setIsRefreshing(false);
+    setIsLoadingMore(false);
+    if (!marketplaceEnabled) setIsLoading(false);
     void fetchListings(false);
+    return () => { requestVersion.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, selectedCategory, priceType]);
+  }, [debouncedQuery, selectedCategory, priceType, marketplaceEnabled]);
 
   const categoryLabel = useMemo(() => {
     if (!selectedCategory) return t('filters.allCategories');
@@ -159,8 +202,15 @@ function MarketplaceScreen() {
   }
 
   async function toggleSave(item: MarketplaceListingItem) {
+    if (!mounted.current || pendingSaves.current.has(item.id)) return;
+    pendingSaves.current.add(item.id);
+    setSavingIds(new Set(pendingSaves.current));
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const nextSaved = !item.is_saved;
+    const rememberSaved = (saved: boolean) => {
+      savedChanges.current.set(item.id, { saved, revision: ++saveRevision.current });
+    };
+    rememberSaved(nextSaved);
     const update = (list: MarketplaceListingItem[]) =>
       list.map((listing) => listing.id === item.id ? { ...listing, is_saved: nextSaved } : listing);
     setListings(update);
@@ -168,10 +218,22 @@ function MarketplaceScreen() {
     try {
       if (nextSaved) await saveMarketplaceListing(item.id);
       else await unsaveMarketplaceListing(item.id);
+      if (!mounted.current) return;
+      // A concurrent refresh may have returned the previous saved flag.
+      rememberSaved(nextSaved);
+      setListings(update);
+      setFeatured(update);
     } catch (err) {
-      setListings((list) => list.map((listing) => listing.id === item.id ? item : listing));
-      setFeatured((list) => list.map((listing) => listing.id === item.id ? item : listing));
+      if (!mounted.current) return;
+      rememberSaved(item.is_saved);
+      const rollback = (list: MarketplaceListingItem[]) =>
+        list.map(listing => listing.id === item.id ? { ...listing, is_saved: item.is_saved } : listing);
+      setListings(rollback);
+      setFeatured(rollback);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common.save_failed')), variant: 'danger' });
+    } finally {
+      pendingSaves.current.delete(item.id);
+      if (mounted.current) setSavingIds(new Set(pendingSaves.current));
     }
   }
 
@@ -343,7 +405,7 @@ function MarketplaceScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <MarketplaceListingCard item={item} onPress={() => openDetail(item)} onSavePress={() => void toggleSave(item)} />
+          <MarketplaceListingCard item={item} onPress={() => openDetail(item)} onSavePress={() => void toggleSave(item)} isSaving={savingIds.has(item.id)} />
         )}
         ListEmptyComponent={
           isLoading ? (
@@ -359,11 +421,13 @@ function MarketplaceScreen() {
           )
         }
         onEndReached={() => {
-          if (hasMore && !isLoadingMore) void fetchListings(true);
+          if (hasMore && !isLoadingMore && !error) void fetchListings(true);
         }}
         onEndReachedThreshold={0.35}
         ListFooterComponent={
-          isLoadingMore ? (
+          error && listings.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={() => { if (failedPage) void fetchListings(true); else refresh(); }} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="py-4">
               <LoadingSpinner />
             </View>
