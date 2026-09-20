@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Native course builder:** Preserve accepted lessons when their section is deleted during creation, prevent creation against removed sections, and ignore stale lesson-deletion confirmations after section removal.
+
 - **Native course authoring:** Keep preserved lessons visible after section deletion and let instructors assign them to another section, with confirmed saves, retry after failure and duplicate-tap protection.
 
 - **Native courses:** Keep lessons preserved after section deletion visible in the course syllabus and player, including existing lesson availability restrictions. Course detail responses now include unassigned lessons for both ID and slug lookups.

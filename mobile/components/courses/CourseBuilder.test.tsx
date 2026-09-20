@@ -169,6 +169,55 @@ describe('CourseBuilder', () => {
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
   });
 
+  it.each([false, true])('retains an accepted lesson whose section was deleted before its response arrived (same batch=%s)', async sameBatch => {
+    let accept!: (value: object) => void;
+    let remove!: () => void;
+    mockCreateCourseLesson.mockImplementationOnce(() => new Promise(resolve => { accept = resolve; }));
+    mockDeleteCourseSection.mockImplementationOnce(() => new Promise<void>(resolve => { remove = resolve; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original')]} />);
+    fireEvent.press(screen.getByText('Add lesson'));
+    await waitFor(() => expect(mockCreateCourseLesson).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText('Delete section'));
+    if (!sameBatch) {
+      await act(async () => remove());
+      await waitFor(() => expect(screen.queryByDisplayValue('Original')).toBeNull());
+    }
+    await act(async () => {
+      if (sameBatch) remove();
+      accept({ id: 90, course_id: 42, section_id: 5, title: 'Accepted late', content_type: 'text', position: 0, is_preview: false });
+    });
+    expect(screen.getByText('Accepted late')).toBeTruthy();
+    expect(screen.getByText('Lessons without a section')).toBeTruthy();
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalled();
+  });
+
+  it('does not create a lesson after its section disappears during operation storage', async () => {
+    let reserve!: (value: object) => void;
+    mockReserveCourseAuthoringCreationOperation.mockImplementationOnce(() => new Promise(resolve => { reserve = resolve; }));
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original')]} />);
+    fireEvent.press(screen.getByText('Add lesson'));
+    fireEvent.press(screen.getByLabelText('Delete section'));
+    await waitFor(() => expect(screen.queryByDisplayValue('Original')).toBeNull());
+    await act(async () => reserve({ key: 'held', storageKey: 'held', createdAt: 1 }));
+    expect(mockCreateCourseLesson).not.toHaveBeenCalled();
+  });
+
+  it('does not apply an old lesson deletion confirmation after its section has been removed', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Preserved', content_type: 'text' as const, position: 0, is_preview: false };
+    mockHoldConfirm = true;
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original', [lesson])]} />);
+    fireEvent.press(screen.getByLabelText('Delete lesson'));
+    const oldConfirmation = mockHeldConfirm!;
+    mockHoldConfirm = false;
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    fireEvent.press(screen.getByLabelText('Delete section'));
+    await waitFor(() => expect(screen.queryByDisplayValue('Original')).toBeNull());
+    await act(async () => oldConfirmation());
+    expect(mockDeleteCourseLesson).not.toHaveBeenCalled();
+    expect(screen.getByText('Preserved')).toBeTruthy();
+  });
+
   it('keeps lessons visible after section deletion and assigns them to another section', async () => {
     const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Retained lesson', content_type: 'text' as const, position: 0, is_preview: false };
     mockDeleteCourseSection.mockResolvedValue(undefined);

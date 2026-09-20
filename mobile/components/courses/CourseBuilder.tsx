@@ -100,6 +100,8 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   const sectionRenames = useRef(new Map<number, Promise<void>>());
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
+  const deletingSections = useRef(new Set<number>());
+  const deletingLessons = useRef(new Set<number>());
 
   function reportFailure() {
     if (!mountedRef.current) return;
@@ -149,17 +151,23 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   }
 
   async function removeSection(sectionId: number) {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current || deletingSections.current.has(sectionId)
+      || !sectionsRef.current.some(section => section.id === sectionId)) return;
+    deletingSections.current.add(sectionId);
     try {
       await deleteCourseSection(courseId, sectionId);
       if (!mountedRef.current) return;
       structureVersion.current += 1;
       const retained = sectionsRef.current.find(section => section.id === sectionId)?.lessons ?? [];
+      // Publish membership immediately: another response may settle before React renders.
+      sectionsRef.current = sectionsRef.current.filter(section => section.id !== sectionId);
       setUnassignedLessons(current => [...current.filter(lesson => !retained.some(item => item.id === lesson.id)),
         ...retained.map(lesson => ({ ...lesson, section_id: null }))]);
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
     } catch {
       reportFailure();
+    } finally {
+      deletingSections.current.delete(sectionId);
     }
   }
 
@@ -258,9 +266,10 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   }
 
   async function addLesson(sectionId: number) {
-    if (!mountedRef.current || addLessonInFlight.current.has(sectionId)) return;
+    if (!mountedRef.current || addLessonInFlight.current.has(sectionId) || deletingSections.current.has(sectionId)) return;
+    const section = sectionsRef.current.find((s) => s.id === sectionId);
+    if (!section) return;
     addLessonInFlight.current.add(sectionId);
-    const section = sections.find((s) => s.id === sectionId);
     try {
       const payload = {
         section_id: sectionId,
@@ -269,11 +278,18 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
         position: section?.lessons?.length ?? 0,
       };
       const operation = await reserveCourseAuthoringCreationOperation('lesson', courseId, payload);
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || deletingSections.current.has(sectionId)
+        || !sectionsRef.current.some(item => item.id === sectionId)) return;
       const created = await createCourseLesson(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
       if (!mountedRef.current) return;
       structureVersion.current += 1;
+      if (!sectionsRef.current.some(item => item.id === sectionId)) {
+        setUnassignedLessons(current => [...current.filter(item => item.id !== created.id), { ...created, section_id: null }]);
+        return;
+      }
+      sectionsRef.current = sectionsRef.current.map(section => section.id === sectionId
+        ? { ...section, lessons: [...(section.lessons ?? []), created] } : section);
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: [...(s.lessons ?? []), created] } : s
       )));
@@ -294,7 +310,9 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   }
 
   async function removeLesson(sectionId: number, lessonId: number) {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current || deletingLessons.current.has(lessonId) || deletingSections.current.has(sectionId)
+      || !sectionsRef.current.some(section => section.id === sectionId && section.lessons?.some(lesson => lesson.id === lessonId))) return;
+    deletingLessons.current.add(lessonId);
     try {
       await deleteCourseLesson(courseId, lessonId);
       if (!mountedRef.current) return;
@@ -304,6 +322,8 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
       )));
     } catch {
       reportFailure();
+    } finally {
+      deletingLessons.current.delete(lessonId);
     }
   }
 
