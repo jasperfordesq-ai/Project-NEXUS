@@ -183,6 +183,32 @@ class ExchangesControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_confirmation_and_history_timestamps_describe_the_same_instant(): void
+    {
+        $requester = $this->authenticatedUser();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listing = Listing::factory()->create(['tenant_id' => $this->testTenantId, 'user_id' => $provider->id]);
+        $stamp = '2026-09-20 22:39:00';
+        $exchange = \App\Models\ExchangeRequest::factory()->forTenant($this->testTenantId)->create([
+            'listing_id' => $listing->id, 'requester_id' => $requester->id,
+            'provider_id' => $provider->id, 'status' => 'pending_confirmation',
+            'provider_confirmed_at' => $stamp, 'provider_confirmed_hours' => 1,
+            'created_at' => $stamp,
+        ]);
+        \App\Models\ExchangeHistory::create([
+            'tenant_id' => $this->testTenantId, 'exchange_id' => $exchange->id,
+            'action' => 'provider_confirmed', 'actor_id' => $provider->id,
+            'actor_role' => 'provider', 'created_at' => $stamp,
+        ]);
+        $response = $this->apiGet('/v2/exchanges/' . $exchange->id);
+        $response->assertOk();
+        $historyTime = $response->json('data.status_history.0.created_at');
+        self::assertSame('2026-09-20T22:39:00.000000Z', $historyTime);
+        self::assertSame($historyTime, $response->json('data.provider_confirmed_at'));
+        self::assertSame($historyTime, $response->json('data.created_at'));
+        self::assertNull($response->json('data.requester_confirmed_at'));
+    }
+
     // ================================================================
     // SHOW — Authentication required
     // ================================================================

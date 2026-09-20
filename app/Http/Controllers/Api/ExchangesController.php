@@ -470,12 +470,18 @@ class ExchangesController extends BaseApiController
             'status'                   => $exchange['status'],
             'risk_level'               => $exchange['risk_level'] ?? null,
             'message'                  => $exchange['requester_notes'] ?? null,
-            'requester_confirmed_at'   => $exchange['requester_confirmed_at'] ?? null,
+            'requester_confirmed_at'   => $this->exchangeTimestamp($exchange['requester_confirmed_at'] ?? null),
             'requester_confirmed_hours' => $exchange['requester_confirmed_hours'] ? (float) $exchange['requester_confirmed_hours'] : null,
-            'provider_confirmed_at'    => $exchange['provider_confirmed_at'] ?? null,
+            'provider_confirmed_at'    => $this->exchangeTimestamp($exchange['provider_confirmed_at'] ?? null),
             'provider_confirmed_hours' => $exchange['provider_confirmed_hours'] ? (float) $exchange['provider_confirmed_hours'] : null,
             'broker_notes'             => $exchange['broker_notes'] ?? null,
-            'created_at'               => $exchange['created_at'],
+            'created_at'               => $this->exchangeTimestamp($exchange['created_at']),
         ];
+    }
+
+    private function exchangeTimestamp(?string $value): ?string
+    {
+        // Query-builder dates lack the timezone carried by Eloquent history dates.
+        return $value === null ? null : \Illuminate\Support\Carbon::parse($value, config('app.timezone'))->toISOString();
     }
 }
