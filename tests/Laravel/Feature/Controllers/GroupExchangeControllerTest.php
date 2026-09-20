@@ -396,6 +396,53 @@ class GroupExchangeControllerTest extends TestCase
         $this->assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $id)->count());
     }
 
+    public function test_membership_changes_require_reconfirmation_but_retries_preserve_it(): void
+    {
+        foreach (['equal', 'weighted'] as $split) {
+            foreach (['add', 'remove'] as $operation) {
+                $organizer = $this->authenticatedUser();
+                $provider = $this->makeUser();
+                $receiver = $this->makeUser(10);
+                $extra = $this->makeUser();
+                $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+                $this->apiPut("/v2/group-exchanges/{$id}", ['split_type' => $split])->assertStatus(200);
+                if ($operation === 'remove') {
+                    $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(200);
+                }
+                $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+                foreach ($operation === 'remove' ? [$provider, $receiver, $extra] : [$provider, $receiver] as $member) {
+                    Sanctum::actingAs($member, ['*']);
+                    $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                }
+                Sanctum::actingAs($organizer, ['*']);
+                if ($operation === 'add') {
+                    $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(200);
+                } else {
+                    $this->apiDelete("/v2/group-exchanges/{$id}/participants/{$extra->id}")->assertStatus(200);
+                }
+                $participants = DB::table('group_exchange_participants')->where('group_exchange_id', $id);
+                $remaining = $operation === 'add' ? [$provider, $receiver, $extra] : [$provider, $receiver];
+                $this->assertSame(count($remaining), (clone $participants)->where('confirmed', 0)->whereNull('confirmed_at')->count());
+                $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(400);
+                foreach ($remaining as $member) {
+                    Sanctum::actingAs($member, ['*']);
+                    $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+                }
+                Sanctum::actingAs($organizer, ['*']);
+                if ($operation === 'add') {
+                    $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(400);
+                } else {
+                    $this->apiDelete("/v2/group-exchanges/{$id}/participants/{$extra->id}")->assertStatus(200);
+                }
+                $this->assertSame(count($remaining), (clone $participants)->where('confirmed', 1)->count());
+                $this->apiPost("/v2/group-exchanges/{$id}/complete")->assertStatus(200);
+                $this->assertSame($operation === 'add' ? 3.0 : 6.0, (float) DB::table('users')->where('id', $provider->id)->value('balance'));
+                $this->assertSame(4.0, (float) DB::table('users')->where('id', $receiver->id)->value('balance'));
+                $this->assertSame($operation === 'add' ? 3.0 : 0.0, (float) DB::table('users')->where('id', $extra->id)->value('balance'));
+            }
+        }
+    }
+
     /**
      * Create an equal-split exchange as the organizer with one provider + one
      * receiver, returning its id.

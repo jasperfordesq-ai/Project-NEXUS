@@ -357,6 +357,10 @@ class GroupExchangeService
             'created_at'        => now(),
         ]);
 
+        // Membership can change every participant's share; old consent no longer applies.
+        DB::table('group_exchange_participants')->where('group_exchange_id', $exchangeId)
+            ->update(['confirmed' => 0, 'confirmed_at' => null]);
+
         return true;
     }
 
@@ -376,8 +380,12 @@ class GroupExchangeService
             if (! $exchange || in_array($exchange->status, ['completed', 'cancelled'], true)) {
                 return false;
             }
-            DB::table('group_exchange_participants')
+            $deleted = DB::table('group_exchange_participants')
                 ->where('group_exchange_id', $exchangeId)->where('user_id', $userId)->delete();
+            if ($deleted > 0) {
+                DB::table('group_exchange_participants')->where('group_exchange_id', $exchangeId)
+                    ->update(['confirmed' => 0, 'confirmed_at' => null]);
+            }
             // Removing an already absent member is an accepted no-op on an open exchange.
             return true;
         });
