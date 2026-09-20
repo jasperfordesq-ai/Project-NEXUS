@@ -170,6 +170,21 @@ const mockExchange = {
 };
 
 describe('ExchangesScreen', () => {
+  it('offers recovery without losing loaded rows after a later request fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [mockExchange], error: 'Connection interrupted', hasMore: true, refresh });
+    const screen = render(<ExchangesScreen />);
+    expect(screen.getByText('Gardening Help Offered')).toBeTruthy();
+    expect(screen.getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockExchange], refresh });
+    screen.rerender(<ExchangesScreen />);
+    expect(screen.getByText('Gardening Help Offered')).toBeTruthy();
+    expect(screen.queryByText('Connection interrupted')).toBeNull();
+  });
+
   it('renders the screen title', () => {
     const { getByText } = render(<ExchangesScreen />);
     expect(getByText('Listings')).toBeTruthy();

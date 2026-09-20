@@ -15,6 +15,7 @@ import { Tabs } from '@/components/ui/NativeTabs';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
+import ErrorState from '@/components/ui/ErrorState';
 
 import {
   getExchangeCategories,
@@ -657,7 +658,9 @@ function ExchangesScreen() {
           )
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && visibleItems.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="py-4 items-center"><Spinner size="sm" /></View>
           ) : !hasMore && visibleItems.length > 0 && !isLoading ? (
             <View className="py-4 items-center">

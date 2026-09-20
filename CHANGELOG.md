@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep loaded Groups and Listings visible after a later request fails, with retry feedback and recovery controls alongside existing results.
+
 - Show retryable loading errors alongside retained Home feed and message-list content, keeping existing results available during recovery.
 
 - Keep hashtag feeds and discovery results stable across navigation and failed refreshes, and refresh the active hashtag search instead of unrelated trending topics.

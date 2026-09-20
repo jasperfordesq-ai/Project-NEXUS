@@ -136,6 +136,21 @@ const mockGroup = {
 };
 
 describe('GroupsScreen', () => {
+  it('offers recovery without losing loaded rows after a later request fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [mockGroup], error: 'Connection interrupted', hasMore: true, refresh });
+    const screen = render(<GroupsScreen />);
+    expect(screen.getByText('Garden Club')).toBeTruthy();
+    expect(screen.getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockGroup], refresh });
+    screen.rerender(<GroupsScreen />);
+    expect(screen.getByText('Garden Club')).toBeTruthy();
+    expect(screen.queryByText('Connection interrupted')).toBeNull();
+  });
+
   it('renders the screen title', () => {
     const { getAllByText } = render(<GroupsScreen />);
     expect(getAllByText('Groups').length).toBeGreaterThan(0);

@@ -13,6 +13,7 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
+import ErrorState from '@/components/ui/ErrorState';
 
 import { getGroups, type Group, type GroupsResponse } from '@/lib/api/groups';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -401,7 +402,9 @@ function GroupsScreen() {
           )
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && groups.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="items-center py-4"><Spinner size="sm" /></View>
           ) : !hasMore && groups.length > 0 && !isLoading ? (
             <View className="items-center py-4">
