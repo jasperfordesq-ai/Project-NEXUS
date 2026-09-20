@@ -1,0 +1,55 @@
+diff --git a/node_modules/heroui-native/lib/module/helpers/internal/components/hero-text.js b/node_modules/heroui-native/lib/module/helpers/internal/components/hero-text.js
+index 3e39b90..81c0ebe 100644
+--- a/node_modules/heroui-native/lib/module/helpers/internal/components/hero-text.js
++++ b/node_modules/heroui-native/lib/module/helpers/internal/components/hero-text.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ 
+ import React from 'react';
+-import { Text as RNText } from 'react-native';
++import { Text as RNText, useWindowDimensions } from 'react-native';
+ import { useTextComponent } from "../../external/hooks/index.js";
+ import { cn } from "../../external/utils/index.js";
+ 
+@@ -55,12 +55,13 @@ export const HeroText = /*#__PURE__*/React.forwardRef((props, ref) => {
+   const {
+     textProps
+   } = useTextComponent();
++  const { fontScale } = useWindowDimensions();
+   const mergedProps = Object.assign({}, textProps, restProps);
+   return /*#__PURE__*/_jsx(RNText, {
+     ref: ref,
+     className: cn('font-normal', className),
+     ...mergedProps
+-  });
++  }, fontScale);
+ });
+ HeroText.displayName = 'HeroText';
+ //# sourceMappingURL=hero-text.js.map
+\ No newline at end of file
+diff --git a/node_modules/heroui-native/src/helpers/internal/components/hero-text.tsx b/node_modules/heroui-native/src/helpers/internal/components/hero-text.tsx
+index 0dc1c1a..3c0ec4c 100644
+--- a/node_modules/heroui-native/src/helpers/internal/components/hero-text.tsx
++++ b/node_modules/heroui-native/src/helpers/internal/components/hero-text.tsx
+@@ -1,5 +1,5 @@
+ import React from 'react';
+-import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
++import { Text as RNText, useWindowDimensions, type TextProps as RNTextProps } from 'react-native';
+ import { useTextComponent } from '../../external/hooks';
+ import { cn } from '../../external/utils';
+ 
+@@ -54,12 +54,14 @@ export interface HeroTextProps extends RNTextProps {
+ export const HeroText = React.forwardRef<RNText, HeroTextProps>(
+   (props, ref) => {
+     const { className, ...restProps } = props;
++    const { fontScale } = useWindowDimensions();
+     const { textProps } = useTextComponent();
+ 
+     const mergedProps = Object.assign({}, textProps, restProps);
+ 
+     return (
+       <RNText
++        key={fontScale}
+         ref={ref}
+         className={cn('font-normal', className)}
+         {...mergedProps}
