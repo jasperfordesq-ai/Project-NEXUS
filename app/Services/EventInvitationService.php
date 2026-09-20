@@ -115,8 +115,7 @@ final class EventInvitationService
                 'event_invitation_expiry_invalid',
             );
             $now = CarbonImmutable::now('UTC');
-            if ($expiry === null || ! $expiry->greaterThan($now)
-                || $expiry->greaterThan($this->support->eventStart($event))) {
+            if ($expiry === null) {
                 throw new EventRegistrationFoundationException('event_invitation_expiry_invalid');
             }
 
@@ -167,6 +166,12 @@ final class EventInvitationService
                     'changed' => false,
                     'invitations' => $results,
                 ];
+            }
+            // An exact replay only returns the saved result. Time-window changes must
+            // prevent new issuance, not obscure a successful earlier request.
+            if (! $expiry->greaterThan($now)
+                || $expiry->greaterThan($this->support->eventStart($event))) {
+                throw new EventRegistrationFoundationException('event_invitation_expiry_invalid');
             }
             $this->expander->assertSnapshotSourceAuthority(
                 $tenantId,

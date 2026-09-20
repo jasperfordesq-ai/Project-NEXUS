@@ -143,7 +143,7 @@ final class EventInvitationServiceTest extends TestCase
                 'invitee@example.test',
             ),
         );
-        self::assertSame(1, DB::table('event_registrations')->count());
+        self::assertSame(1, DB::table('event_registrations')->where('event_id', $eventId)->count());
         self::assertSame(
             'confirmed',
             DB::table('event_registrations')
@@ -219,7 +219,7 @@ final class EventInvitationServiceTest extends TestCase
                 'expired-member-token',
             ),
         );
-        self::assertSame(1, DB::table('event_registrations')->count());
+        self::assertSame(1, DB::table('event_registrations')->where('event_id', $eventId)->count());
         self::assertSame(
             'confirmed',
             DB::table('event_registrations')
@@ -282,6 +282,36 @@ final class EventInvitationServiceTest extends TestCase
     }
 
     /** @param callable():mixed $operation */
+    public function test_issued_campaign_replay_survives_expiry_without_reissuing(): void
+    {
+        $now = CarbonImmutable::parse('2027-05-01T12:00:00Z');
+        CarbonImmutable::setTestNow($now);
+        $owner = $this->eventUser();
+        $member = $this->eventUser();
+        [$eventId] = $this->registrationEvent((int) $owner->id, $now->addDay());
+        $campaigns = new EventInvitationCampaignService();
+        $source = ['member_ids' => [(int) $member->id]];
+        $preview = $campaigns->preview($eventId, $owner, 'member', $source, 'late-replay-preview');
+        $campaignId = (int) $preview['campaign']->id;
+        $service = new EventInvitationService();
+        $expiry = $now->addHour()->toIso8601String();
+        $issued = $service->issueCampaign($eventId, $campaignId, $owner, [], 1, 'late-replay-issue', $expiry);
+        $tables = ['event_invitations', 'event_invitation_history', 'event_invitation_campaign_history', 'event_domain_outbox'];
+        $counts = array_map(static fn (string $table): int => DB::table($table)->count(), $tables);
+        CarbonImmutable::setTestNow($now->addHours(2));
+        $replay = $service->issueCampaign($eventId, $campaignId, $owner, [], 1, 'late-replay-issue', $expiry);
+        self::assertFalse($replay['changed']);
+        self::assertSame((int) $issued['invitations'][0]['invitation']->id, (int) $replay['invitations'][0]['invitation']->id);
+        self::assertNull($replay['invitations'][0]['secret']);
+        self::assertSame($counts, array_map(static fn (string $table): int => DB::table($table)->count(), $tables));
+        $this->assertReason('event_invitation_issue_idempotency_conflict', fn () =>
+            $service->issueCampaign($eventId, $campaignId, $owner, [], 1, 'late-replay-issue', $now->addMinutes(30)->toIso8601String()));
+        $fresh = $campaigns->preview($eventId, $owner, 'member', $source, 'late-fresh-preview');
+        $this->assertReason('event_invitation_expiry_invalid', fn () =>
+            $service->issueCampaign($eventId, (int) $fresh['campaign']->id, $owner, [], 1, 'late-fresh-issue', $expiry));
+        self::assertSame($counts[0], DB::table('event_invitations')->count());
+    }
+
     private function assertReason(string $reason, callable $operation): void
     {
         try {
