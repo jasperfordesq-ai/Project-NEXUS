@@ -5,15 +5,18 @@
 
 import React from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
+let mockRouteId = '5';
+let mockUserId = 99;
+let mockTenantId = 2;
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({ id: '5' }),
+  useLocalSearchParams: () => ({ id: mockRouteId }),
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -71,7 +74,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId }, hasFeature: () => true }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -99,7 +102,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 99, name: 'Current User' } }),
+  useAuth: () => ({ user: { id: mockUserId, name: 'Current User' } }),
 }));
 
 jest.mock('expo-haptics', () => ({
@@ -208,6 +211,9 @@ import ExchangeDetailModal from './exchange-detail';
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
+  mockRouteId = '5';
+  mockUserId = 99;
+  mockTenantId = 2;
   mockUseApi.mockReturnValue(defaultApiState);
   const exchangeApi = jest.requireMock('@/lib/api/exchanges') as Record<string, jest.Mock>;
   exchangeApi.getExchange.mockReset();
@@ -480,7 +486,7 @@ describe('ExchangeDetailModal', () => {
     expect(getByLabelText('Exchange open')).toBeTruthy();
   });
 
-  it('does not publish a request result after the account or route is replaced', async () => {
+  it('does not publish a request result after the screen unmounts', async () => {
     mockUseApi.mockReturnValue({ data: { data: mockExchange }, isLoading: false, error: null, refresh: jest.fn() });
     const { createExchangeRequest } = require('@/lib/api/exchanges');
     const toast = (jest.requireMock('@/components/ui/AppToast') as { useAppToast: () => { show: jest.Mock } }).useAppToast().show;
@@ -516,6 +522,52 @@ describe('ExchangeDetailModal', () => {
 
     await waitFor(() => expect(getExchange).toHaveBeenCalledWith(5));
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/exchanges'));
+  });
+
+  it.each(['route', 'account', 'tenant', 'unmount'])('does not publish a late report failure after %s replacement', async replacement => {
+    mockUseApi.mockReturnValue({ ...defaultApiState, data: { data: mockExchange } });
+    const { reportExchange } = require('@/lib/api/exchanges');
+    const toast = (jest.requireMock('@/components/ui/AppToast') as { useAppToast: () => { show: jest.Mock } }).useAppToast().show;
+    const haptics = jest.requireMock('expo-haptics');
+    let reject!: (error: Error) => void;
+    reportExchange.mockImplementationOnce(() => new Promise((_, rejectPromise) => { reject = rejectPromise; }));
+    const screen = render(<ExchangeDetailModal />);
+    fireEvent.press(screen.getByText('Report'));
+    fireEvent.changeText(screen.getByPlaceholderText('Add details (optional)'), 'Old report draft');
+    fireEvent.press(screen.getByLabelText('Submit report'));
+    expect(reportExchange).toHaveBeenCalledTimes(1);
+    if (replacement === 'route') mockRouteId = '6';
+    if (replacement === 'account') mockUserId = 100;
+    if (replacement === 'tenant') mockTenantId = 3;
+    if (replacement === 'unmount') screen.unmount();
+    else {
+      screen.rerender(<ExchangeDetailModal />);
+      expect(screen.queryByTestId('exchange-report-sheet')).toBeNull();
+      fireEvent.press(screen.getByText('Report'));
+      expect(screen.getByPlaceholderText('Add details (optional)').props.value).toBe('');
+    }
+    toast.mockClear();
+    haptics.notificationAsync.mockClear();
+    await act(async () => reject(new Error('Late failure')));
+    expect(toast).not.toHaveBeenCalled();
+    expect(haptics.notificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('keeps a failed report draft available for retry on the current screen', async () => {
+    mockUseApi.mockReturnValue({ ...defaultApiState, data: { data: mockExchange } });
+    const { reportExchange } = require('@/lib/api/exchanges');
+    const toast = (jest.requireMock('@/components/ui/AppToast') as { useAppToast: () => { show: jest.Mock } }).useAppToast().show;
+    reportExchange.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({});
+    const screen = render(<ExchangeDetailModal />);
+    fireEvent.press(screen.getByText('Report'));
+    fireEvent.changeText(screen.getByPlaceholderText('Add details (optional)'), 'Retain these details');
+    toast.mockClear();
+    await act(async () => fireEvent.press(screen.getByLabelText('Submit report')));
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+    expect(screen.getByPlaceholderText('Add details (optional)').props.value).toBe('Retain these details');
+    await act(async () => fireEvent.press(screen.getByLabelText('Submit report')));
+    expect(reportExchange).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('exchange-report-sheet')).toBeNull();
   });
 
   it('opens the report listing form as a bottom sheet and submits it', async () => {

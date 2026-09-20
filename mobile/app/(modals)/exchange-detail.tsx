@@ -153,7 +153,10 @@ function ExchangeDetailModalInner() {
   const deletingRef = useRef(false);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const exchangeId = Number(id);
   const safeExchangeId = isNaN(exchangeId) || exchangeId <= 0 ? 0 : exchangeId;
@@ -411,7 +414,7 @@ function ExchangeDetailModalInner() {
   }
 
   async function handleReportSubmit() {
-    if (reportingRef.current || isReported || !reportReason.trim()) return;
+    if (!isMountedRef.current || reportingRef.current || isReported || !reportReason.trim()) return;
     reportingRef.current = true;
     setIsReporting(true);
     try {
@@ -430,11 +433,12 @@ function ExchangeDetailModalInner() {
       setReportDetails('');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('detail.actionFailedTitle'), description: describeApiError(err, t('detail.reportFailed')), variant: 'danger' });
     } finally {
       reportingRef.current = false;
-      setIsReporting(false);
+      if (isMountedRef.current) setIsReporting(false);
     }
   }
 
