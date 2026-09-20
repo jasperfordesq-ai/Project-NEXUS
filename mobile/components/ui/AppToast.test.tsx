@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Keyboard, Pressable, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { useAppToast } from './AppToast';
@@ -56,6 +56,20 @@ function ToastHarness({ onActionPress }: { onActionPress?: () => void }) {
 describe('useAppToast', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Keyboard, 'isVisible').mockReturnValue(false);
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it('keeps feedback visible when the keyboard opens after the screen renders', () => {
+    const { getByLabelText } = render(<ToastHarness />);
+    jest.mocked(Keyboard.isVisible).mockReturnValue(true);
+    fireEvent.press(getByLabelText('show toast'));
+    expect(mockToastShow).toHaveBeenLastCalledWith(expect.objectContaining({ placement: 'top' }));
+
+    jest.mocked(Keyboard.isVisible).mockReturnValue(false);
+    fireEvent.press(getByLabelText('show toast'));
+    expect(mockToastShow).toHaveBeenLastCalledWith(expect.objectContaining({ placement: 'bottom' }));
   });
 
   it('shows HeroUI Native toasts with the app mobile defaults', () => {

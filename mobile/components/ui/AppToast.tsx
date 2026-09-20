@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback } from 'react';
+import { Keyboard } from 'react-native';
 import { useToast } from 'heroui-native';
 
 import * as Haptics from '@/lib/haptics';
@@ -44,7 +45,7 @@ export function useAppToast() {
       description: options.description,
       duration: options.duration,
       label: options.title,
-      placement: options.placement ?? 'bottom',
+      placement: options.placement ?? (Keyboard.isVisible() ? 'top' : 'bottom'),
       variant,
       onActionPress: options.actionLabel
         ? ({ hide }) => {

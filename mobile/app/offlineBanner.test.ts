@@ -12,11 +12,10 @@
  * "you have no signal", which is the one failure they can do something about. Audit
  * 2026-09-09, item 8.
  *
- * 🔴 The inset override is the part that must not be lost. Screens position their content
- * with `insets.top`, so a banner drawn over the window would sit on top of the back button
- * of every screen behind it. `ThemedShell` adds the banner's measured height to the top
- * inset it reports to everything below, so each screen starts underneath it — as if the
- * status bar had grown. Without that, this change would trade one defect for a worse one.
+ * Native SafeAreaView ignores a JavaScript inset-provider override. The shell reserves
+ * the measured banner height as physical space around the navigator (DN-068), while
+ * screens keep their normal safe-area handling. These structural checks complement
+ * the Android large-text screenshots; they cannot prove native geometry themselves.
  */
 
 import fs from 'fs';
@@ -54,14 +53,12 @@ describe('offline banner', () => {
 
   it('pushes screens down instead of covering them', () => {
     /*
-      Three things together, and all three are needed: the height is measured rather than
-      assumed (the banner's text grows with the OS text-size setting), it is added to the
-      top inset, and that inset is handed to the subtree through the safe-area context so
-      every screen's own SafeAreaView picks it up.
+      Measure variable-height text, reserve that height around the navigator, and
+      anchor the banner below the status area without adding that area twice.
     */
-    expect(layoutSource).toContain('onLayout=');
-    expect(layoutSource).toContain('setOfflineBannerHeight');
-    expect(layoutSource).toContain('top: insets.top + offlineBannerHeight');
-    expect(layoutSource).toMatch(/SafeAreaInsetsContext\.Provider value=\{shellInsets\}/);
+    expect(layoutSource).toContain('setOfflineBannerHeight(event.nativeEvent.layout.height)');
+    expect(layoutSource).toMatch(/<View style=\{\{ flex: 1, paddingTop: offlineBannerHeight \}\}>\s*<RootNavigator\s*\/>/);
+    expect(layoutSource).toContain("position: 'absolute', top: insets.top");
+    expect(layoutSource).not.toContain('SafeAreaInsetsContext.Provider');
   });
 });
