@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Text } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockAuth = {
   isLoading: false,
@@ -82,5 +82,46 @@ describe('SessionRestoreGate', () => {
     const { getByText } = renderGate();
 
     expect(getByText('App content')).toBeTruthy();
+  });
+
+  it.each(['retry', 'sign-out'])('starts only one %s action for same-frame taps', async (action) => {
+    mockAuth.sessionRestoreFailed = true;
+    let finish!: () => void;
+    const operation = action === 'retry' ? mockAuth.retrySessionRestore : mockAuth.logout;
+    operation.mockReturnValueOnce(new Promise<void>(resolve => { finish = resolve; }));
+    const screen = renderGate();
+    const button = screen.getByTestId(`session-restore-${action}`);
+    expect(button.props.accessibilityLabel).toEqual(expect.any(String));
+    act(() => { fireEvent.press(button); fireEvent.press(button); });
+    const calls = operation.mock.calls.length;
+    await act(async () => { finish(); });
+    expect(calls).toBe(1);
+  });
+
+  it('keeps sign-out progress when the superseded retry completes', async () => {
+    mockAuth.sessionRestoreFailed = true;
+    let finishRetry!: () => void;
+    let finishLogout!: () => void;
+    mockAuth.retrySessionRestore.mockReturnValueOnce(new Promise<void>(resolve => { finishRetry = resolve; }));
+    mockAuth.logout.mockReturnValueOnce(new Promise<void>(resolve => { finishLogout = resolve; }));
+    const screen = renderGate();
+    fireEvent.press(screen.getByTestId('session-restore-retry'));
+    fireEvent.press(screen.getByTestId('session-restore-sign-out'));
+    await act(async () => { finishRetry(); });
+    expect(screen.getByTestId('session-restore-sign-out').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(screen.getByTestId('session-restore-retry').props.accessibilityState).toMatchObject({ disabled: true });
+    await act(async () => { finishLogout(); });
+    expect(mockAuth.logout).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['retry', 'sign-out'])('explains a rejected %s and allows another attempt', async (action) => {
+    mockAuth.sessionRestoreFailed = true;
+    const operation = action === 'retry' ? mockAuth.retrySessionRestore : mockAuth.logout;
+    operation.mockRejectedValueOnce(new Error('Local failure'));
+    const screen = renderGate();
+    fireEvent.press(screen.getByTestId(`session-restore-${action}`));
+    await waitFor(() => expect(screen.getByText('Something went wrong. Please try again.')).toBeTruthy());
+    fireEvent.press(screen.getByTestId(`session-restore-${action}`));
+    await waitFor(() => expect(operation).toHaveBeenCalledTimes(2));
   });
 });

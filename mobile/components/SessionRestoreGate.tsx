@@ -18,7 +18,7 @@
  * overnight, with no explanation and nothing to press.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -26,19 +26,43 @@ import ErrorState from '@/components/ui/ErrorState';
 import Button from '@/components/ui/Button';
 import { useAuthContext } from '@/lib/context/AuthContext';
 
+type RecoveryAction = 'retry' | 'signout';
+
 export default function SessionRestoreGate({ children }: { children: React.ReactNode }) {
   const { sessionRestoreFailed, retrySessionRestore, logout } = useAuthContext();
   const { t } = useTranslation(['common']);
-  const [isRetrying, setIsRetrying] = useState(false);
+  const [action, setAction] = useState<RecoveryAction | null>(null);
+  const [actionFailed, setActionFailed] = useState(false);
+  const pending = useRef<{ kind: RecoveryAction } | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
-  const handleRetry = useCallback(() => {
-    setIsRetrying(true);
-    void Promise.resolve(retrySessionRestore()).finally(() => setIsRetrying(false));
-  }, [retrySessionRestore]);
+  const runAction = useCallback(async (kind: RecoveryAction, perform: () => Promise<void>) => {
+    if (!mounted.current || pending.current?.kind === 'signout') return;
+    if (kind === 'retry' && pending.current) return;
+    // Sign-out can supersede a pending retry. Its completion owns the UI until
+    // it settles, so the old retry cannot clear its progress or show an error.
+    const operation = { kind };
+    pending.current = operation;
+    setAction(kind);
+    setActionFailed(false);
+    try {
+      await perform();
+    } catch {
+      if (mounted.current && pending.current === operation) setActionFailed(true);
+    } finally {
+      if (mounted.current && pending.current === operation) {
+        pending.current = null;
+        setAction(null);
+      }
+    }
+  }, []);
 
-  const handleSignOut = useCallback(() => {
-    void logout();
-  }, [logout]);
+  const handleRetry = useCallback(() => { void runAction('retry', retrySessionRestore); }, [retrySessionRestore, runAction]);
+  const handleSignOut = useCallback(() => { void runAction('signout', logout); }, [logout, runAction]);
 
   if (!sessionRestoreFailed) return <>{children}</>;
 
@@ -51,19 +75,20 @@ export default function SessionRestoreGate({ children }: { children: React.React
       <ErrorState
         icon="cloud-offline-outline"
         title={t('common:sessionRestore.title')}
-        subtitle={t('common:sessionRestore.subtitle')}
+        subtitle={t(actionFailed ? 'common:errors.generic' : 'common:sessionRestore.subtitle')}
       />
       <View className="w-full items-center gap-3 px-8">
         <Button
           fullWidth
           onPress={handleRetry}
-          isLoading={isRetrying}
-          disabled={isRetrying}
+          isLoading={action === 'retry'}
+          disabled={action !== null}
           testID="session-restore-retry"
+          accessibilityLabel={t('common:sessionRestore.retry')}
         >
           {t('common:sessionRestore.retry')}
         </Button>
-        <Button variant="ghost" fullWidth onPress={handleSignOut} testID="session-restore-sign-out">
+        <Button variant="ghost" fullWidth onPress={handleSignOut} isLoading={action === 'signout'} testID="session-restore-sign-out" accessibilityLabel={t('common:sessionRestore.signOut')}>
           {t('common:sessionRestore.signOut')}
         </Button>
       </View>

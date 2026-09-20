@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { contrastText } from '@/lib/utils/color';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -75,24 +75,35 @@ export default function LoginScreen() {
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [challenge, setChallenge] = useState<LoginChallenge | null>(null);
+  const submitting = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   async function onSubmit(data: LoginFormValues) {
+    if (submitting.current || !mounted.current) return;
+    submitting.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsLoading(true);
     setGlobalError(null);
 
     try {
       const pending = await authLogin({ email: data.email.trim().toLowerCase(), password: data.password });
+      if (!mounted.current) return;
       if (pending) { resetField('password'); setChallenge(pending); return; }
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      if (!mounted.current) return;
       if (err instanceof ApiResponseError) {
         setGlobalError(describeApiError(err, t('errors.unableToSignIn')));
       } else {
         setGlobalError(t('errors.unableToSignIn'));
       }
     } finally {
-      setIsLoading(false);
+      submitting.current = false;
+      if (mounted.current) setIsLoading(false);
     }
   }
 
@@ -209,6 +220,7 @@ export default function LoginScreen() {
                     testID="login-submit"
                     onPress={handleSubmit(onSubmit)}
                     isLoading={isLoading}
+                    accessibilityLabel={t('login.submit')}
                     fullWidth
                   >
                     {t('login.submit')}

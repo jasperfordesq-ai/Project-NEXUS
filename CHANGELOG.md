@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native sign-in, session recovery and biometric-lock actions prevent duplicate requests, retain clear busy labels, and allow retry after failure. Sign-out supersedes older restore or unlock completions so those completions cannot clear its progress or uncover protected content.
+
 - Native community selection serializes taps, keeps busy state through rollback, and ignores superseded configuration loads. Confirmed switches preserve newer sessions during preflight or sign-out and avoid misleading reassurance after sign-out has started.
 
 - Native registration shares session persistence and navigation with sign-in, prevents duplicate submissions, and ignores delayed responses after logout or a replacement sign-in. Session cleanup preserves newer sign-ins and completes even when offline cleanup fails.

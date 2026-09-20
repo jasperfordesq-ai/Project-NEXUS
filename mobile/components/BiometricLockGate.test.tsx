@@ -55,10 +55,62 @@ const SLOW_CI = { timeout: 5000 };
 describe('BiometricLockGate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthenticate.mockReset();
+    mockLogout.mockReset();
     mockAuthState = { isAuthenticated: true, isLoading: false, sessionRestoreFailed: false };
     mockEnabled.mockResolvedValue(true);
     mockCapability.mockResolvedValue({ usable: true });
     mockAuthenticate.mockResolvedValue({ ok: true });
+    mockLogout.mockResolvedValue(undefined);
+  });
+
+  it('starts one prompt for rapid unlock taps', async () => {
+    let finish!: (value: { ok: boolean; reason?: string }) => void;
+    mockAuthenticate.mockResolvedValueOnce({ ok: false, reason: 'cancelled' })
+      .mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+    await view.findByTestId('biometric-lock-error');
+    act(() => {
+      fireEvent.press(view.getByText('settings:biometricLock.unlock'));
+      fireEvent.press(view.getByText('settings:biometricLock.unlock'));
+    });
+    const calls = mockAuthenticate.mock.calls.length;
+    await act(async () => { finish({ ok: true }); });
+    expect(calls).toBe(2); // Startup prompt plus one deliberate retry.
+  });
+
+  it('keeps content covered when an old prompt succeeds during sign-out', async () => {
+    let finishPrompt!: (value: { ok: true }) => void;
+    let finishLogout!: () => void;
+    mockAuthenticate.mockReturnValueOnce(new Promise(resolve => { finishPrompt = resolve; }));
+    mockLogout.mockReturnValueOnce(new Promise<void>(resolve => { finishLogout = resolve; }));
+    const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+    await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledTimes(1));
+    act(() => {
+      fireEvent.press(view.getByText('common:labels.signOut'));
+      fireEvent.press(view.getByText('common:labels.signOut'));
+    });
+    expect(mockLogout).toHaveBeenCalledTimes(1);
+    expect(view.getByTestId('biometric-sign-out').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    expect(view.getByTestId('biometric-sign-out').props.accessibilityLabel).toBe('common:labels.signOut');
+    expect(view.getByTestId('biometric-unlock').props.accessibilityLabel).toBe('settings:biometricLock.unlock');
+    expect(view.getByTestId('biometric-unlock').props.accessibilityState).toMatchObject({ disabled: true });
+    await act(async () => { finishPrompt({ ok: true }); });
+    const covered = view.queryByTestId('biometric-lock-gate') !== null;
+    await act(async () => { finishLogout(); });
+    expect(covered).toBe(true);
+  });
+
+  it('keeps the lock recoverable after a sign-out failure', async () => {
+    mockAuthenticate.mockResolvedValueOnce({ ok: false, reason: 'cancelled' }).mockResolvedValueOnce({ ok: true });
+    mockLogout.mockRejectedValueOnce(new Error('Local failure'));
+    const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+    await view.findByTestId('biometric-lock-error');
+    fireEvent.press(view.getByTestId('biometric-sign-out'));
+    expect(await view.findByText('common:errors.generic')).toBeTruthy();
+    expect(view.queryByText('Private account')).toBeNull();
+    fireEvent.press(view.getByTestId('biometric-unlock'));
+    await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull());
   });
 
   it('never blocks a signed-out member from reaching the login UI', async () => {
@@ -105,7 +157,7 @@ describe('BiometricLockGate', () => {
     expect(await findByTestId('biometric-lock-error')).toHaveTextContent(
       'settings:biometricLock.errors.cancelled',
     );
-    fireEvent.press(getByText('common:labels.signOut'));
+    await act(async () => { fireEvent.press(getByText('common:labels.signOut')); });
     expect(mockLogout).toHaveBeenCalledTimes(1);
 
     fireEvent.press(getByText('settings:biometricLock.unlock'));

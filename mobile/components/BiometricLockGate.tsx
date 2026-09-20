@@ -38,7 +38,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from 'heroui-native';
+import { Spinner, Text } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
 
@@ -65,12 +65,27 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
   const [state, setState] = useState<GateState>('checking');
   const [failure, setFailure] = useState<BiometricFailure | null>(null);
   const [isPrompting, setIsPrompting] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutFailed, setSignOutFailed] = useState(false);
+  const prompting = useRef(false);
+  const signingOut = useRef(false);
+  const promptVersion = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; promptVersion.current += 1; };
+  }, []);
   /** One decision per app start. Re-deciding on every auth change would re-lock a member. */
   const decided = useRef(false);
 
   const unlock = useCallback(async () => {
+    if (!mounted.current || prompting.current || signingOut.current) return;
+    prompting.current = true;
+    const version = ++promptVersion.current;
     setIsPrompting(true);
     const result = await authenticate(t('settings:biometricLock.prompt'));
+    if (!mounted.current || version !== promptVersion.current) return;
+    prompting.current = false;
     setIsPrompting(false);
     if (result.ok) {
       setFailure(null);
@@ -79,6 +94,24 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     }
     setFailure(result.reason ?? 'failed');
   }, [t]);
+
+  const signOut = useCallback(async () => {
+    if (!mounted.current || signingOut.current) return;
+    signingOut.current = true;
+    promptVersion.current += 1;
+    prompting.current = false;
+    setIsPrompting(false);
+    setIsSigningOut(true);
+    setSignOutFailed(false);
+    try {
+      await logout();
+    } catch {
+      if (mounted.current) setSignOutFailed(true);
+    } finally {
+      signingOut.current = false;
+      if (mounted.current) setIsSigningOut(false);
+    }
+  }, [logout]);
 
   /**
    * Nothing stored to protect: never stand in the way of signing in.
@@ -100,6 +133,8 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     // A failed restore can later recover the stored session without a password.
     // Only a real signed-out state completes the startup decision.
     decided.current = !sessionRestoreFailed;
+    promptVersion.current += 1;
+    prompting.current = false;
     setIsPrompting(false);
     setFailure(null);
     setState('open');
@@ -191,7 +226,10 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
                 */}
                 <HeroButton
                   variant="primary"
-                  isDisabled={isPrompting}
+                  testID="biometric-unlock"
+                  accessibilityLabel={t('settings:biometricLock.unlock')}
+                  isDisabled={isPrompting || isSigningOut}
+                  accessibilityState={{ busy: isPrompting, disabled: isPrompting || isSigningOut }}
                   style={{ alignSelf: 'stretch' }}
                   onPress={() => void unlock()}
                 >
@@ -202,7 +240,13 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
                   has stopped reading needs a way back into their account tonight, not after
                   enough failed attempts.
                 */}
-                <HeroButton variant="ghost" onPress={() => void logout()}>
+                {signOutFailed ? <Text accessibilityRole="alert" style={{ color: theme.error }}>{t('common:errors.generic')}</Text> : null}
+                <HeroButton variant="ghost" isDisabled={isSigningOut}
+                  testID="biometric-sign-out"
+                  accessibilityLabel={t('common:labels.signOut')}
+                  accessibilityState={{ busy: isSigningOut, disabled: isSigningOut }}
+                  onPress={() => void signOut()}>
+                  {isSigningOut ? <Spinner size="sm" /> : null}
                   <HeroButton.Label>{t('common:labels.signOut')}</HeroButton.Label>
                 </HeroButton>
               </>

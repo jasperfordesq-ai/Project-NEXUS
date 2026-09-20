@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -72,13 +72,53 @@ jest.mock('@/lib/api/auth', () => ({
 import LoginScreen from './login';
 import { ApiResponseError } from '@/lib/api/client';
 
+async function renderLoginScreen() {
+  const screen = render(<LoginScreen />);
+  await act(async () => {
+    await mockGetRegistrationInfo.mock.results.at(-1)?.value.catch(() => undefined);
+  });
+  return screen;
+}
+
 describe('LoginScreen', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  it('starts only one sign-in for simultaneous submit actions', async () => {
+    let finish!: (value: null) => void;
+    mockLogin.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const screen = await renderLoginScreen();
+    fireEvent.changeText(screen.getByTestId('email-input'), 'member@example.com');
+    fireEvent.changeText(screen.getByTestId('password-input'), 'TestPassword123!');
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('login-submit'));
+      fireEvent.press(screen.getByTestId('login-submit'));
+    });
+    const calls = mockLogin.mock.calls.length;
+    expect(screen.getByTestId('login-submit').props.accessibilityLabel).toBe('Sign in');
+    expect(screen.getByTestId('login-submit').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    await act(async () => { finish(null); });
+    expect(screen.getByTestId('login-submit').props.accessibilityState).toMatchObject({ busy: false, disabled: false });
+    expect(calls).toBe(1);
   });
 
-  it('renders key UI elements', () => {
-    const { getByText, getByPlaceholderText, getByTestId } = render(<LoginScreen />);
+  it('allows sign-in retry after refusal without clearing the email', async () => {
+    mockLogin.mockRejectedValueOnce(new ApiResponseError(401, 'Credentials refused')).mockResolvedValueOnce(null);
+    const screen = await renderLoginScreen();
+    fireEvent.changeText(screen.getByTestId('email-input'), 'member@example.com');
+    fireEvent.changeText(screen.getByTestId('password-input'), 'TestPassword123!');
+    await act(async () => { fireEvent.press(screen.getByTestId('login-submit')); });
+    expect(screen.getByTestId('email-input').props.value).toBe('member@example.com');
+    await act(async () => { fireEvent.press(screen.getByTestId('login-submit')); });
+    expect(mockLogin).toHaveBeenCalledTimes(2);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockLogin.mockReset();
+    mockGetRegistrationInfo.mockReset();
+    mockGetRegistrationInfo.mockResolvedValue({ data: { can_register: true } });
+  });
+
+  it('renders key UI elements', async () => {
+    const { getByText, getByPlaceholderText, getByTestId } = await renderLoginScreen();
     expect(getByText('Sign in')).toBeTruthy();
     expect(getByPlaceholderText('you@example.com')).toBeTruthy();
     expect(getByTestId('email-input')).toBeTruthy();
@@ -87,8 +127,8 @@ describe('LoginScreen', () => {
     expect(getByText('Create account')).toBeTruthy();
   });
 
-  it('keeps the sign-in form readable on landscape tablets', () => {
-    const { getByTestId } = render(<LoginScreen />);
+  it('keeps the sign-in form readable on landscape tablets', async () => {
+    const { getByTestId } = await renderLoginScreen();
 
     expect(getByTestId('login-content')).toHaveStyle({
       width: '100%',
@@ -98,7 +138,7 @@ describe('LoginScreen', () => {
   });
 
   it('shows field error when email is invalid on submit', async () => {
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await renderLoginScreen();
 
     // type an invalid email
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'not-an-email');
@@ -111,7 +151,7 @@ describe('LoginScreen', () => {
   });
 
   it('shows field error when password is empty on submit', async () => {
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await renderLoginScreen();
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     // leave password empty
@@ -125,7 +165,7 @@ describe('LoginScreen', () => {
 
   it('calls login with trimmed, lowercased email on valid submit', async () => {
     mockLogin.mockResolvedValue(undefined);
-    const { getByText, getByPlaceholderText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText } = await renderLoginScreen();
 
     // Note: Zod validates before onSubmit trims; use a valid email, verify lowercase normalisation
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'User@Example.COM');
@@ -141,7 +181,7 @@ describe('LoginScreen', () => {
 
   it('shows API error message in banner when login fails', async () => {
     mockLogin.mockRejectedValue(new ApiResponseError(401, 'Invalid credentials'));
-    const { getByText, getByPlaceholderText, findByText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText, findByText } = await renderLoginScreen();
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'wrongpassword');
@@ -152,7 +192,7 @@ describe('LoginScreen', () => {
 
   it('shows generic error when login fails with non-API error', async () => {
     mockLogin.mockRejectedValue(new Error('Network failure'));
-    const { getByText, getByPlaceholderText, findByText } = render(<LoginScreen />);
+    const { getByText, getByPlaceholderText, findByText } = await renderLoginScreen();
 
     fireEvent.changeText(getByPlaceholderText('you@example.com'), 'user@example.com');
     fireEvent.changeText(getByPlaceholderText('Your password'), 'somepassword');
@@ -161,24 +201,24 @@ describe('LoginScreen', () => {
     expect(await findByText('Unable to sign in. Please try again.')).toBeTruthy();
   });
 
-  it('opens the registration route from the create account action', () => {
-    const { getByLabelText } = render(<LoginScreen />);
+  it('opens the registration route from the create account action', async () => {
+    const { getByLabelText } = await renderLoginScreen();
 
     fireEvent.press(getByLabelText('Create account'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/register');
   });
 
-  it('opens the native forgot-password route', () => {
-    const { getByLabelText } = render(<LoginScreen />);
+  it('opens the native forgot-password route', async () => {
+    const { getByLabelText } = await renderLoginScreen();
 
     fireEvent.press(getByLabelText('Forgot password?'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/forgot-password');
   });
 
-  it('opens the community switcher from the switch community action', () => {
-    const { getByLabelText } = render(<LoginScreen />);
+  it('opens the community switcher from the switch community action', async () => {
+    const { getByLabelText } = await renderLoginScreen();
 
     fireEvent.press(getByLabelText('Switch community'));
 
@@ -198,7 +238,7 @@ describe('LoginScreen', () => {
           requires_invite_code: false, requires_verification: false, is_waitlist: false },
       });
 
-      const screen = render(<LoginScreen />);
+      const screen = await renderLoginScreen();
 
       expect(await screen.findByTestId('login-registration-closed')).toBeTruthy();
       expect(screen.queryByText('Create account')).toBeNull();
@@ -211,7 +251,7 @@ describe('LoginScreen', () => {
           requires_verification: false, is_waitlist: false },
       });
 
-      const screen = render(<LoginScreen />);
+      const screen = await renderLoginScreen();
 
       expect(await screen.findByText('We reopen in September.')).toBeTruthy();
     });
@@ -222,7 +262,7 @@ describe('LoginScreen', () => {
     // must not remove the only route into a community that IS open.
     mockGetRegistrationInfo.mockRejectedValue(new Error('offline'));
 
-    const screen = render(<LoginScreen />);
+    const screen = await renderLoginScreen();
 
     await waitFor(() => expect(screen.getByText('Create account')).toBeTruthy());
     expect(screen.queryByTestId('login-registration-closed')).toBeNull();
