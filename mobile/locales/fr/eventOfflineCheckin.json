@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Arrêter la configuration",
+    "stopDescription": "Arrêter cette configuration ? Tout appareil déjà autorisé le restera. Vous pouvez révoquer son autorisation dans la liste des appareils. Les présences enregistrées seront conservées.",
+    "title": "Terminer l’autorisation de cet appareil",
+    "description": "Une autorisation précédente est inachevée. Reprenez la demande enregistrée avant d’en commencer une autre.",
+    "resume": "Reprendre l’autorisation",
+    "reauthorize": "Autoriser à nouveau cet appareil",
+    "reauthorizeDescription": "Cet appareil a été enregistré, mais son secret n’a pas été sauvegardé. Autorisez-le à nouveau pour remplacer le secret manquant."
+  },
   "workspace": {
+    "cachedTitle": "Utilisation des données hors ligne enregistrées",
+    "cachedDescription": "Le serveur est indisponible. Votre liste et votre file enregistrées restent accessibles tant que la liste est valide. Reconnectez-vous pour actualiser les accès et examiner les conflits.",
     "title": "Enregistrement QR hors ligne",
     "description": "Autorisez cet appareil et continuez à enregistrer les présences en cas de perte de connexion.",
     "privacyTitle": "Confidentiel par conception",
@@ -56,6 +67,10 @@
     "transitionInvalid": "Cette action ne correspond pas à l’état hors ligne actuel du participant."
   },
   "queue": {
+    "stoppedTitle": "La présence doit être vérifiée",
+    "stoppedDescription": "Le serveur a arrêté le traitement de ce lot. Les actions en attente restent non résolues et enregistrées sur cet appareil. Demandez à un organisateur de comparer ces actions aux présences actuelles avant toute correction. Vérifier les résultats ne renvoie pas les actions.",
+    "checkResult": "Vérifier les résultats envoyés",
+    "processing": "Les présences ont été reçues et sont en cours de traitement. Synchronisez à nouveau pour vérifier le résultat.",
     "title": "File hors ligne chiffrée",
     "pending": "{{count}} actions en attente",
     "pending_one": "{{count}} action en attente",

@@ -110,6 +110,7 @@ import {
   enqueueMobileOfflineCredential,
   loadMobileOfflineSession,
   loadMobileOfflineSessionForReview,
+  purgeMobileOfflineSession,
   refreshMobileOfflineManifest,
   sealMobileOfflinePayload,
   syncMobileOfflineSession,
@@ -218,7 +219,7 @@ function manifest(registrations: ReturnType<typeof registration>[] = []): Mobile
 }
 
 function session(overrides: Partial<MobileOfflineSession> = {}): MobileOfflineSession {
-  return {
+  const saved: MobileOfflineSession = {
     eventId: EVENT_ID,
     deviceId: DEVICE_ID,
     deviceVersion: 1,
@@ -232,12 +233,30 @@ function session(overrides: Partial<MobileOfflineSession> = {}): MobileOfflineSe
     updatedAt: new Date().toISOString(),
     ...overrides,
   };
+  seedStoredSession(saved);
+  return saved;
+}
+
+function seedStoredSession(saved: MobileOfflineSession): void {
+  const keyName = 'nexus_event_checkin_encryption_key_v1';
+  const encoded = mockStorageMap.get(keyName);
+  const key = encoded ? new Uint8Array(Buffer.from(encoded, 'base64')) : new Uint8Array(32).fill(9);
+  mockStorageMap.set(keyName, Buffer.from(key).toString('base64'));
+  mockFiles.set('file:///documents/event-offline-checkin-v1/event-' + saved.eventId + '-device-' + saved.deviceId + '.nqx', sealMobileOfflinePayload(JSON.stringify(saved), key));
+}
+
+async function persistRosterUpdate(active: MobileOfflineSession): Promise<void> {
+  await refreshMobileOfflineManifest(active, active.manifest, {
+    event_id: active.eventId,
+    limits: { replay_window_minutes: active.replayWindowMinutes, batch_max_items: active.batchMaxItems },
+  } as Parameters<typeof refreshMobileOfflineManifest>[2]);
 }
 
 function batchResponse(
   items: { client_nonce: string; state: string; code?: string | null; decision_version?: number | null }[],
 ): MobileOfflineBatch {
   return {
+    batch: { id: 73, status: 'completed' },
     items: items.map((item) => ({
       client_nonce: item.client_nonce,
       state: item.state,
@@ -334,6 +353,32 @@ describe('verifying a scanned credential', () => {
 });
 
 describe('queueing an attendance change while offline', () => {
+  it('preserves two simultaneous scans made from the same session snapshot', async () => {
+    const first = issueCredential();
+    const second = issueCredential({ jti: 'credential-jti-2' });
+    const active = session({ manifest: manifest([
+      registration({ credential: first }), registration({ credential: second, registrationId: 45, userId: 56 }),
+    ]) });
+    await Promise.all([
+      enqueueMobileOfflineCredential(active, first.credential, 'check_in', null),
+      enqueueMobileOfflineCredential(active, second.credential, 'check_in', null),
+    ]);
+    const saved = (await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))!;
+    expect(saved.queue.map(item => item.registrationId).sort()).toEqual([44, 45]);
+  });
+
+  it('rejects a simultaneous duplicate scan from the same snapshot', async () => {
+    const issued = issueCredential();
+    const active = session({ manifest: manifest([registration({ credential: issued })]) });
+    const results = await Promise.allSettled([
+      enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null),
+      enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null),
+    ]);
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter(result => result.status === 'rejected')).toHaveLength(1);
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue).toHaveLength(1);
+  });
+
   it('queues a check-in for a member who has not arrived yet', async () => {
     const issued = issueCredential();
     const active = session({ manifest: manifest([registration({ credential: issued })]) });
@@ -361,6 +406,7 @@ describe('queueing an attendance change while offline', () => {
     // refusing, not the copied-credential guard.
     afterFirst.manifest.registrations[0]!.credential_verifier = other.hash;
     afterFirst.manifest.registrations[0]!.credential_fingerprint = other.fingerprint;
+    await persistRosterUpdate(afterFirst);
 
     await expect(enqueueMobileOfflineCredential(afterFirst, other.credential, 'check_in', null))
       .rejects.toThrow('transition_invalid');
@@ -385,6 +431,7 @@ describe('queueing an attendance change while offline', () => {
     const afterCheckIn = await enqueueMobileOfflineCredential(active, first.credential, 'check_in', null);
     afterCheckIn.manifest.registrations[0]!.credential_verifier = second.hash;
     afterCheckIn.manifest.registrations[0]!.credential_fingerprint = second.fingerprint;
+    await persistRosterUpdate(afterCheckIn);
     const afterCheckOut = await enqueueMobileOfflineCredential(afterCheckIn, second.credential, 'check_out', null);
 
     expect(afterCheckOut.queue.map((item) => item.operation)).toEqual(['check_in', 'check_out']);
@@ -480,6 +527,35 @@ describe('syncing the queue when signal comes back', () => {
     return { active, nonce: active.queue[0]!.clientNonce };
   }
 
+  it('uses one durable batch identity for overlapping sync preparations', async () => {
+    const { active } = await queuedSession();
+    mockSyncBatch.mockResolvedValue({ batch: { id: 73, status: 'processing' }, items: [] });
+    const results = await Promise.allSettled([syncMobileOfflineSession(active), syncMobileOfflineSession(active)]);
+    expect(results.every(result => result.status === 'fulfilled')).toBe(true);
+    expect(mockSyncBatch).toHaveBeenCalledTimes(2);
+    const first = mockSyncBatch.mock.calls[0][1];
+    const second = mockSyncBatch.mock.calls[1][1];
+    expect(second).toEqual(first);
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.activeBatchId).toBe(first.clientBatchId);
+  });
+
+  it('preserves a scan started alongside batch preparation', async () => {
+    const first = issueCredential();
+    const second = issueCredential({ jti: 'credential-jti-2' });
+    const original = session({ manifest: manifest([
+      registration({ credential: first }), registration({ credential: second, registrationId: 45, userId: 56 }),
+    ]) });
+    const active = await enqueueMobileOfflineCredential(original, first.credential, 'check_in', null);
+    mockSyncBatch.mockResolvedValue(batchResponse([{ client_nonce: active.queue[0].clientNonce, state: 'synced' }]));
+    await Promise.all([
+      syncMobileOfflineSession(active),
+      enqueueMobileOfflineCredential(active, second.credential, 'check_in', null),
+    ]);
+    const saved = (await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))!;
+    expect(saved.queue.map(item => [item.registrationId, item.state])).toEqual([[44, 'synced'], [45, 'pending']]);
+    expect(mockSyncBatch.mock.calls[0][1].items).toHaveLength(1);
+  });
+
   it('applies the server decision to the matching queued item', async () => {
     const { active, nonce } = await queuedSession();
     mockSyncBatch.mockResolvedValue(batchResponse([{ client_nonce: nonce, state: 'synced', decision_version: 1 }]));
@@ -488,6 +564,35 @@ describe('syncing the queue when signal comes back', () => {
 
     expect(after.queue[0]).toMatchObject({ state: 'synced', decisionVersion: 1, code: null });
     expect(after.activeBatchId).toBeNull();
+  });
+
+  it.each(['success', 'failure'])('preserves attendance queued while sync is pending (%s)', async outcome => {
+    const first = issueCredential();
+    const second = issueCredential({ jti: 'credential-jti-2' });
+    const initial = session({ manifest: manifest([
+      registration({ credential: first }),
+      registration({ credential: second, registrationId: 45, userId: 56 }),
+    ]) });
+    const active = await enqueueMobileOfflineCredential(initial, first.credential, 'check_in', null);
+    let finish!: () => void;
+    let started!: () => void;
+    const dispatched = new Promise<void>(resolve => { started = resolve; });
+    mockSyncBatch.mockImplementationOnce(() => new Promise((resolve, reject) => {
+      finish = () => outcome === 'failure' ? reject(new Error('Lost response'))
+        : resolve(batchResponse([{ client_nonce: active.queue[0].clientNonce, state: 'synced' }]));
+      started();
+    }));
+    const syncing = syncMobileOfflineSession(active).catch(() => null);
+    await dispatched;
+    const persisted = (await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))!;
+    const added = await enqueueMobileOfflineCredential(persisted, second.credential, 'check_in', null);
+    finish();
+    await syncing;
+    const restored = (await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))!;
+    expect(restored.queue).toHaveLength(2);
+    expect(restored.queue[1]).toEqual(added.queue[1]);
+    expect(restored.queue[0].state).toBe(outcome === 'success' ? 'synced' : 'pending');
+    expect(restored.activeBatchId).toBe(outcome === 'success' ? null : persisted.activeBatchId);
   });
 
   it('records a conflict rather than dropping the item', async () => {
@@ -550,6 +655,7 @@ describe('syncing the queue when signal comes back', () => {
       displayName: 'Second Member',
       credential: second,
     }));
+    await persistRosterUpdate(stalled);
     const withSecond = await enqueueMobileOfflineCredential(stalled, second.credential, 'check_in', null);
     expect(withSecond.queue).toHaveLength(2);
 
@@ -564,13 +670,16 @@ describe('syncing the queue when signal comes back', () => {
     // The server would refuse it anyway. Rejecting it here means the steward is told
     // while they can still act, instead of the item sitting as "pending" for ever.
     const { active, nonce } = await queuedSession();
-    const stale: MobileOfflineSession = {
-      ...active,
-      replayWindowMinutes: 30,
-      queue: [{ ...active.queue[0]!, observedAt: new Date(Date.now() - 60 * 60_000).toISOString() }],
-    };
-
-    const { session: after, batch } = await syncMobileOfflineSession(stale);
+    // Retry reads durable state; advancing time exercises the real stored queue
+    // instead of mutating only a screen snapshot that must be ignored.
+    const clock = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + 25 * 60 * 60_000);
+    let result;
+    try {
+      result = await syncMobileOfflineSession(active);
+    } finally {
+      clock.mockRestore();
+    }
+    const { session: after, batch } = result;
 
     expect(after.queue[0]).toMatchObject({ state: 'rejected', code: 'replay_window_expired' });
     expect(after.queue[0]?.clientNonce).toBe(nonce);
@@ -625,6 +734,7 @@ describe('syncing the queue when signal comes back', () => {
         decisionVersion: null,
       })),
     };
+    seedStoredSession(active);
     mockSyncBatch.mockResolvedValue(batchResponse([{ client_nonce: 'nonce-1', state: 'synced' }]));
 
     await syncMobileOfflineSession(active);
@@ -726,12 +836,60 @@ describe('starting and refreshing a device session', () => {
     expect(mockFiles.size).toBe(1);
   });
 
+  it('refuses a second activation instead of erasing queued attendance', async () => {
+    const issued = issueCredential();
+    const roster = manifest([registration({ credential: issued })]);
+    const active = await activateMobileOfflineSession('nxd1_device-secret', roster, workspace());
+    const queued = await enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null);
+    await expect(activateMobileOfflineSession('nxd1_device-secret', roster, workspace()))
+      .rejects.toThrow('existing_session');
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue).toEqual(queued.queue);
+  });
+
+  it.each(['scan', 'sync'])('does not recreate a removed session through a retained %s callback', async action => {
+    const issued = issueCredential();
+    const active = await activateMobileOfflineSession('nxd1_device-secret', manifest([registration({ credential: issued })]), workspace());
+    await purgeMobileOfflineSession(EVENT_ID, DEVICE_ID);
+    await expect(action === 'scan'
+      ? enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null)
+      : syncMobileOfflineSession(active)).rejects.toThrow('offline_session_ended');
+    expect(await loadMobileOfflineSession(EVENT_ID, DEVICE_ID)).toBeNull();
+    expect(mockSyncBatch).not.toHaveBeenCalled();
+  });
+
+  it('serializes competing activations so only one can create the device session', async () => {
+    const results = await Promise.allSettled([
+      activateMobileOfflineSession('nxd1_device-secret', manifest(), workspace()),
+      activateMobileOfflineSession('nxd1_device-secret', manifest(), workspace()),
+    ]);
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter(result => result.status === 'rejected')).toHaveLength(1);
+  });
+
   it('refuses to activate when the roster and the workspace disagree', async () => {
     // Two separate requests fetch these. If the manifest version moved between them
     // the roster is already out of date, and check-ins against it would conflict.
     await expect(activateMobileOfflineSession('nxd1_device-secret', manifest(), workspace({ manifest_version: 4 })))
       .rejects.toThrow('manifest_stale');
     expect(mockFiles.size).toBe(0);
+  });
+
+  it('preserves scans recorded after a roster refresh captured its session', async () => {
+    const issued = issueCredential();
+    const roster = manifest([registration({ credential: issued })]);
+    const beforeScan = await activateMobileOfflineSession('nxd1_device-secret', roster, workspace());
+    const queued = await enqueueMobileOfflineCredential(beforeScan, issued.credential, 'check_in', null);
+    const refreshed = await refreshMobileOfflineManifest(beforeScan, { ...roster, manifest_version: 4 }, workspace({ manifest_version: 4 }));
+    expect(refreshed.queue).toEqual(queued.queue);
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue).toEqual(queued.queue);
+  });
+
+  it('refuses a delayed older roster after a newer roster has already been persisted', async () => {
+    const original = await activateMobileOfflineSession('nxd1_device-secret', manifest(), workspace());
+    await refreshMobileOfflineManifest(original, { ...manifest(), manifest_version: 5 }, workspace({ manifest_version: 5 }));
+    await expect(refreshMobileOfflineManifest(original, { ...manifest(), manifest_version: 4 }, workspace({ manifest_version: 4 })))
+      .rejects.toThrow('manifest_stale');
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.manifest.manifest_version).toBe(5);
   });
 
   it('takes a fresh roster for the same device', async () => {

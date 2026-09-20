@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Detener configuración",
+    "stopDescription": "¿Desea detener esta configuración? Los dispositivos ya autorizados seguirán autorizados. Puede revocar su autorización en la lista de dispositivos. Se conservará la asistencia guardada.",
+    "title": "Completar la autorización de este dispositivo",
+    "description": "Hay una autorización anterior sin terminar. Reanude la solicitud guardada antes de iniciar otra.",
+    "resume": "Reanudar autorización",
+    "reauthorize": "Volver a autorizar este dispositivo",
+    "reauthorizeDescription": "Este dispositivo se registró, pero no se guardó su clave secreta. Vuelva a autorizarlo para reemplazar la clave que falta."
+  },
   "workspace": {
+    "cachedTitle": "Usando datos guardados sin conexión",
+    "cachedDescription": "El servidor no está disponible. La lista y la cola guardadas están disponibles mientras la lista siga vigente. Vuelve a conectarte para actualizar el acceso del dispositivo y revisar conflictos.",
     "title": "Registro QR sin conexión",
     "description": "Autoriza este dispositivo y sigue registrando la asistencia cuando se pierda la conexión.",
     "privacyTitle": "Privacidad desde el diseño",
@@ -56,6 +67,10 @@
     "transitionInvalid": "La acción no corresponde al estado sin conexión actual del asistente."
   },
   "queue": {
+    "stoppedTitle": "La asistencia requiere revisión",
+    "stoppedDescription": "El servidor dejó de procesar este lote. Las acciones pendientes siguen sin resolverse y se conservan en este dispositivo. Pide a quien organiza el evento que las compare con la asistencia actual antes de hacer correcciones. Consultar los resultados no vuelve a enviarlas.",
+    "checkResult": "Consultar resultados enviados",
+    "processing": "Se recibió la asistencia y aún se está procesando. Sincronice de nuevo para comprobar el resultado.",
     "title": "Cola sin conexión cifrada",
     "pending": "{{count}} acciones pendientes",
     "pending_one": "{{count}} acción pendiente",

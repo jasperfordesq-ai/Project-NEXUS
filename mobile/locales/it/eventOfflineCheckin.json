@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Interrompi configurazione",
+    "stopDescription": "Interrompere questa configurazione? I dispositivi già autorizzati resteranno autorizzati. Puoi revocarne l’autorizzazione nell’elenco dei dispositivi. Le presenze salvate saranno conservate.",
+    "title": "Completa l’autorizzazione di questo dispositivo",
+    "description": "Un’autorizzazione precedente non è stata completata. Riprendi la richiesta salvata prima di iniziarne un’altra.",
+    "resume": "Riprendi autorizzazione",
+    "reauthorize": "Autorizza nuovamente questo dispositivo",
+    "reauthorizeDescription": "Questo dispositivo è stato registrato, ma la sua chiave segreta non è stata salvata. Autorizzalo nuovamente per sostituire la chiave mancante."
+  },
   "workspace": {
+    "cachedTitle": "Uso dei dati offline salvati",
+    "cachedDescription": "Il server non è disponibile. Elenco e coda salvati sono disponibili finché l’elenco è valido. Riconnettiti per aggiornare l’accesso del dispositivo e verificare i conflitti.",
     "title": "Check-in QR offline",
     "description": "Autorizza questo dispositivo e continua a registrare le presenze quando la connessione si interrompe.",
     "privacyTitle": "Privacy fin dalla progettazione",
@@ -56,6 +67,10 @@
     "transitionInvalid": "L’azione non è coerente con lo stato offline attuale del partecipante."
   },
   "queue": {
+    "stoppedTitle": "Le presenze richiedono una verifica",
+    "stoppedDescription": "Il server ha interrotto l’elaborazione di questo gruppo di azioni. Le azioni in sospeso restano irrisolte e salvate su questo dispositivo. Chiedi a chi organizza l’evento di confrontarle con le presenze attuali prima di apportare correzioni. Controllare i risultati non le invia di nuovo.",
+    "checkResult": "Controlla i risultati inviati",
+    "processing": "Le presenze sono state ricevute e sono ancora in elaborazione. Sincronizza di nuovo per verificare il risultato.",
     "title": "Coda offline cifrata",
     "pending": "{{count}} azioni in attesa",
     "pending_one": "{{count}} azione in attesa",

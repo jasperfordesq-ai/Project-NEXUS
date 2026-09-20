@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Stop an socrú",
+    "stopDescription": "An bhfuil tú ag iarraidh stop a chur leis an socrú seo? Fanfaidh aon ghléas atá údaraithe cheana féin údaraithe. Is féidir leat a údarú a chúlghairm sa liosta gléasanna. Coinneofar an tinreamh sábháilte.",
+    "title": "Críochnaigh údarú an ghléis seo",
+    "description": "Tá údarú roimhe seo gan chríochnú. Lean leis an iarratas sábháilte sula dtosaíonn tú ceann eile.",
+    "resume": "Lean leis an údarú",
+    "reauthorize": "Athúdaraigh an gléas seo",
+    "reauthorizeDescription": "Cláraíodh an gléas seo, ach níor sábháladh a rún. Athúdaraigh é chun an rún atá ar iarraidh a athsholáthar."
+  },
   "workspace": {
+    "cachedTitle": "Sonraí sábháilte as líne á n-úsáid",
+    "cachedDescription": "Níl an freastalaí ar fáil. Tá an liosta agus an scuaine sábháilte ar fáil fad atá an liosta bailí. Athcheangail chun rochtain an ghléis a nuashonrú agus coinbhleachtaí a athbhreithniú.",
     "title": "Seiceáil isteach QR as líne",
     "description": "Údaraigh an gléas seo agus lean ort ag taifeadadh tinrimh nuair a chailltear an nasc.",
     "privacyTitle": "Príobháideachas mar bhunphrionsabal",
@@ -56,6 +67,10 @@
     "transitionInvalid": "Ní leanann an gníomh sin staid reatha as líne an fhreastalaí."
   },
   "queue": {
+    "stoppedTitle": "Ní mór an tinreamh a athbhreithniú",
+    "stoppedDescription": "Stop an freastalaí den bhaisc seo a phróiseáil. Tá na gníomhartha ar feitheamh gan réiteach agus fós sábháilte ar an ngléas seo. Iarr ar eagraí na hócáide na gníomhartha seo a chur i gcomparáid leis an tinreamh reatha sula ndéantar ceartúcháin. Ní sheoltar arís iad nuair a sheiceáiltear na torthaí.",
+    "checkResult": "Seiceáil torthaí na ngníomhartha a seoladh",
+    "processing": "Fuarthas an tinreamh agus tá sé fós á phróiseáil. Sioncronaigh arís chun an toradh a sheiceáil.",
     "title": "Scuaine chriptithe as líne",
     "pending": "{{count}} gníomh ar feitheamh",
     "pending_one": "{{count}} ghníomh ar feitheamh",

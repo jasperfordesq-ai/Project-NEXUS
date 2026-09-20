@@ -207,6 +207,9 @@ const credentialMutationSchema = z.object({
 const envelope = <T extends z.ZodTypeAny>(schema: T) => z.object({ data: schema }).passthrough();
 
 export type MobileOfflineWorkspace = z.infer<typeof workspaceSchema>;
+export function parseOfflineWorkspaceCache(value: unknown): MobileOfflineWorkspace {
+  return workspaceSchema.parse(value);
+}
 export type MobileOfflineManifest = z.infer<typeof manifestSchema>;
 export type MobileOfflineBatch = z.infer<typeof batchSchema>;
 export type MobileOfflineConflicts = z.infer<typeof conflictListSchema>;
@@ -292,6 +295,18 @@ export async function registerOfflineCheckinDevice(
   ));
 }
 
+export async function rotateOfflineCheckinDevice(
+  eventId: number,
+  deviceId: number,
+  expectedVersion: number,
+  idempotencyKey: string,
+) {
+  const endpoint = `${API_V2}/events/${eventId}/offline-checkin/devices/${deviceId}/rotate`;
+  return parse(endpoint, deviceMutationSchema, await api.post<unknown>(endpoint, {
+    expected_version: expectedVersion,
+  }, options(idempotencyKey)));
+}
+
 export async function revokeOfflineCheckinDevice(
   eventId: number,
   deviceId: number,
@@ -318,6 +333,53 @@ export async function downloadOfflineCheckinManifest(
   ));
 }
 
+interface OfflineBatchIdentity {
+  clientBatchId: string;
+  items: {
+    client_nonce: string;
+    operation: OfflineAttendanceOperation;
+    expected_attendance_version: number;
+  }[];
+}
+
+function matchingBatchSchema(eventId: number, input: OfflineBatchIdentity, batchId?: number) {
+  const submitted = new Map(input.items.map(item => [item.client_nonce, item]));
+  return batchSchema.refine(response =>
+    response.event_id === eventId
+    && (batchId === undefined || response.batch.id === batchId)
+    && response.batch.client_batch_id === input.clientBatchId
+    && response.batch.item_count === input.items.length
+    && response.items.length === input.items.length
+    && new Set(response.items.map(item => item.client_nonce)).size === input.items.length
+    && response.items.every(item => {
+      const original = submitted.get(item.client_nonce);
+      return original && original.operation === item.operation
+        && original.expected_attendance_version === item.expected_attendance_version;
+    }), { message: 'Offline batch response does not match submitted work' });
+}
+
+/** Retrieve existing decisions without requiring a current manifest or sending attendance. */
+export async function getOfflineCheckinBatch(
+  eventId: number,
+  batchId: number,
+  expected: OfflineBatchIdentity,
+): Promise<MobileOfflineBatch> {
+  const endpoint = `${API_V2}/events/${eventId}/offline-checkin/batches/${batchId}`;
+  return parse(endpoint, matchingBatchSchema(eventId, expected, batchId),
+    await api.get<unknown>(endpoint, undefined, options()));
+}
+
+export async function findOfflineCheckinBatch(
+  eventId: number,
+  deviceId: number,
+  expected: OfflineBatchIdentity,
+): Promise<MobileOfflineBatch> {
+  const endpoint = `${API_V2}/events/${eventId}/offline-checkin/batches/lookup`;
+  return parse(endpoint, matchingBatchSchema(eventId, expected), await api.get<unknown>(endpoint, {
+    device_id: String(deviceId), client_batch_id: expected.clientBatchId,
+  }, options()));
+}
+
 export async function syncOfflineCheckinBatch(eventId: number, input: {
   deviceSecret: string;
   clientBatchId: string;
@@ -333,7 +395,7 @@ export async function syncOfflineCheckinBatch(eventId: number, input: {
   }[];
 }): Promise<MobileOfflineBatch> {
   const endpoint = `${API_V2}/events/${eventId}/offline-checkin/sync`;
-  return parse(endpoint, batchSchema, await api.post<unknown>(endpoint, {
+  return parse(endpoint, matchingBatchSchema(eventId, input), await api.post<unknown>(endpoint, {
     device_secret: input.deviceSecret,
     client_batch_id: input.clientBatchId,
     manifest_version: input.manifestVersion,

@@ -340,6 +340,20 @@ final class EventOfflineCheckinController extends BaseApiController
         }
     }
 
+    public function lookupBatch(int $id): JsonResponse
+    {
+        try {
+            return $this->privateData($this->projection->batchByClientId(
+                $id,
+                $this->positiveIntegerRequired(request()->query('device_id')),
+                $this->requiredText(request()->query('client_batch_id'), 100),
+                $this->actor(),
+            ));
+        } catch (EventOfflineCheckinException $exception) {
+            return $this->offlineError($exception);
+        }
+    }
+
     public function conflicts(int $id): JsonResponse
     {
         try {

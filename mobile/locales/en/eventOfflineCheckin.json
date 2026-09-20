@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Stop setup",
+    "stopDescription": "Stop trying to finish this setup? Any device already authorized will stay authorized. You can revoke it in the device list. Saved attendance will be kept.",
+    "title": "Finish authorizing this device",
+    "description": "A previous authorization is unfinished. Resume the saved request before starting another.",
+    "resume": "Resume authorization",
+    "reauthorize": "Reauthorize this device",
+    "reauthorizeDescription": "This device was registered, but its secret was not saved. Reauthorize it to replace the missing secret."
+  },
   "workspace": {
+    "cachedTitle": "Using saved offline data",
+    "cachedDescription": "The server is unavailable. Your saved roster and queue are available while the roster remains valid. Reconnect to refresh device access and review conflicts.",
     "title": "Offline QR check-in",
     "description": "Authorize this device and keep recording attendance when connectivity drops.",
     "privacyTitle": "Private by design",
@@ -56,6 +67,10 @@
     "transitionInvalid": "That action does not follow the attendee's current offline state."
   },
   "queue": {
+    "stoppedTitle": "Attendance needs review",
+    "stoppedDescription": "The server stopped processing this batch. Pending actions are unresolved and remain saved on this device. Ask an event organiser to compare these actions with current attendance before making corrections. Checking results does not resend them.",
+    "checkResult": "Check submitted results",
+    "processing": "Attendance was received and is still being processed. Sync again to check the result.",
     "title": "Encrypted offline queue",
     "pending": "{{count}} pending actions",
     "pending_one": "{{count}} pending action",

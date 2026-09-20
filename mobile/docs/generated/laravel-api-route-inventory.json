@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2732,
-  "api_route_rows": 2697,
-  "distinct_api_paths": 2242,
+  "total_registered_routes": 2735,
+  "api_route_rows": 2700,
+  "distinct_api_paths": 2245,
   "route_source_fingerprint": {
-    "digest": "fd55d5a781139eb15b5316ad0b3b51020fb69b7fa464733ae80762a8ae0668a6",
+    "digest": "3f048997c5637c35240cf5f55be336d61b1a10b3cd70a92484944681a22301e5",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "a102f01fb839ea510345ac8803968ac94fe30c0adb30d1e2ddd111db728d3db0"
+        "sha256": "53dfcdd83e16e27408327a7645fc4bd0dc05df1c0537ba307efed8c59b14e7fa"
       },
       {
         "file": "routes/channels.php",
@@ -4130,6 +4130,9 @@
     "/api/v2/events/{id}/offline-checkin": [
       "GET"
     ],
+    "/api/v2/events/{id}/offline-checkin/batches/lookup": [
+      "GET"
+    ],
     "/api/v2/events/{id}/offline-checkin/batches/{batchId}": [
       "GET"
     ],
@@ -4247,6 +4250,9 @@
     "/api/v2/events/{id}/registration-product/guests/{guestId}/cancel": [
       "POST"
     ],
+    "/api/v2/events/{id}/registration-product/invitations": [
+      "GET"
+    ],
     "/api/v2/events/{id}/registration-product/invitations/accept": [
       "POST"
     ],
@@ -4261,6 +4267,9 @@
     ],
     "/api/v2/events/{id}/registration-product/registrations/{registrationId}/guests": [
       "POST"
+    ],
+    "/api/v2/events/{id}/registration-product/retention": [
+      "GET"
     ],
     "/api/v2/events/{id}/registration-product/retention/dry-run": [
       "POST"

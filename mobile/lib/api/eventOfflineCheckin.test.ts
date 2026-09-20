@@ -15,14 +15,17 @@ jest.mock('@/lib/constants', () => ({ API_V2: '/api/v2' }));
 jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn() }));
 
 import * as Sentry from '@sentry/react-native';
-import { api } from '@/lib/api/client';
+import { api, ApiResponseError } from '@/lib/api/client';
 import {
   EVENT_OFFLINE_CHECKIN_CONTRACT_VERSION,
   getMyEventCheckinCredential,
+  getOfflineCheckinBatch,
+  findOfflineCheckinBatch,
   getOfflineCheckinWorkspace,
   issueMyEventCheckinCredential,
   revokeMyEventCheckinCredential,
   rotateMyEventCheckinCredential,
+  rotateOfflineCheckinDevice,
   syncOfflineCheckinBatch,
 } from './eventOfflineCheckin';
 
@@ -60,6 +63,36 @@ const workspace = {
 beforeEach(() => jest.clearAllMocks());
 
 describe('mobile Event offline check-in API', () => {
+  it.each([true, false])('reauthorizes the same versioned device and preserves one-shot secret semantics (%s)', async (issued) => {
+    const device = { id: 22, version: 2, status: 'active', secret: issued ? 'nxd1_test-secret' : null, secret_one_shot: issued };
+    (api.post as jest.Mock).mockResolvedValue({ data: { contract_version: 1, event_id: 91, device, manifest_version: 3 } });
+    const response = await rotateOfflineCheckinDevice(91, 22, 1, 'stable-device-recovery');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/events/91/offline-checkin/devices/22/rotate',
+      { expected_version: 1 },
+      { headers: { ...options.headers, 'Idempotency-Key': 'stable-device-recovery' } },
+    );
+    expect(response.device.secret).toBe(device.secret);
+    expect(response.device.secret_one_shot).toBe(issued);
+  });
+
+  it('preserves a device-version refusal instead of retrying with a new operation', async () => {
+    const conflict = new ApiResponseError(409, 'Device version changed');
+    (api.post as jest.Mock).mockRejectedValueOnce(conflict);
+    await expect(rotateOfflineCheckinDevice(91, 22, 1, 'stable-device-recovery')).rejects.toBe(conflict);
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects malformed reauthorization without reporting the returned secret', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: {
+      contract_version: 1, event_id: 91,
+      device: { id: 22, version: 'unexpected', status: 'active', secret: 'nxd1_test-private-value' },
+    } });
+    await expect(rotateOfflineCheckinDevice(91, 22, 1, 'stable-device-recovery')).rejects
+      .toHaveProperty('code', 'EVENT_CHECKIN_CONTRACT_DRIFT');
+    expect(JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls)).not.toContain('nxd1_test-private-value');
+  });
+
   it('negotiates the private strict workspace contract', async () => {
     (api.get as jest.Mock).mockResolvedValue({ data: workspace });
 
@@ -175,8 +208,8 @@ describe('mobile Event offline check-in API', () => {
     );
   });
 
-  it('sends stable batch and nonce identifiers without a raw credential', async () => {
-    (api.post as jest.Mock).mockResolvedValue({
+  it.each(['valid', 'event', 'batch', 'count', 'missing', 'foreign', 'duplicate', 'operation'])('matches sync results to the submitted batch (%s)', async (scenario) => {
+    const response = {
       data: {
         contract_version: 1,
         event_id: 91,
@@ -206,9 +239,17 @@ describe('mobile Event offline check-in API', () => {
         }],
         privacy: { credential_redacted: true, attendee_identity_redacted: true },
       },
-    });
+    };
+    if (scenario === 'event') response.data.event_id = 92;
+    if (scenario === 'batch') response.data.batch.client_batch_id = 'another-batch';
+    if (scenario === 'count') response.data.batch.item_count = 2;
+    if (scenario === 'missing') response.data.items = [];
+    if (scenario === 'foreign') response.data.items[0].client_nonce = 'another-nonce';
+    if (scenario === 'duplicate') response.data.items.push({ ...response.data.items[0] });
+    if (scenario === 'operation') response.data.items[0].operation = 'check_out';
+    (api.post as jest.Mock).mockResolvedValue(response);
 
-    await syncOfflineCheckinBatch(91, {
+    const result = syncOfflineCheckinBatch(91, {
       deviceSecret: 'nxd1_device-secret',
       clientBatchId: 'mobile-batch-stable',
       manifestVersion: 2,
@@ -221,10 +262,37 @@ describe('mobile Event offline check-in API', () => {
         credential_hash_reference: 'a'.repeat(64),
       }],
     });
+    if (scenario === 'valid') await expect(result).resolves.toEqual(response.data);
+    else {
+      await expect(result).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+      expect(JSON.stringify((Sentry.captureMessage as jest.Mock).mock.calls)).not.toContain('nxd1_device-secret');
+    }
 
     const request = JSON.stringify((api.post as jest.Mock).mock.calls[0]);
     expect(request).toContain('mobile-batch-stable');
     expect(request).toContain('nonce-stable-123');
     expect(request).not.toContain('nqx2_');
+
+    (api.get as jest.Mock).mockResolvedValue(response);
+    const identity = {
+      clientBatchId: 'mobile-batch-stable',
+      items: [{ client_nonce: 'nonce-stable-123', operation: 'check_in' as const, expected_attendance_version: 0 }],
+    };
+    const read = getOfflineCheckinBatch(91, 7, identity);
+    if (scenario === 'valid') {
+      await expect(read).resolves.toEqual(response.data);
+      response.data.batch.id = 8;
+      await expect(getOfflineCheckinBatch(91, 7, identity)).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+    } else await expect(read).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/91/offline-checkin/batches/7', undefined, options);
+    expect(api.post).toHaveBeenCalledTimes(1);
+    response.data.batch.id = 7;
+    const lookup = findOfflineCheckinBatch(91, 22, identity);
+    if (scenario === 'valid') await expect(lookup).resolves.toEqual(response.data);
+    else await expect(lookup).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/91/offline-checkin/batches/lookup', {
+      device_id: '22', client_batch_id: 'mobile-batch-stable',
+    }, options);
+    expect(api.post).toHaveBeenCalledTimes(1);
   });
 });

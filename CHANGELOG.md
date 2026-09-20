@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added an authorized, read-only offline attendance batch lookup for recovering saved client requests after a lost response, including batches outside recent history.
+
 - Native knowledge articles now show structured content, related articles, video links, authenticated attachments, and saved helpfulness feedback with recovery for failed requests.
 
 - Shared native article rendering now supports HTML and Markdown structure, accessible headings and links, and literal plain text, with reproducible dependency patches that avoid unused imports.
@@ -99,6 +101,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Native offline check-in now restores encrypted pending device setup and validated offline rosters, preserves scan queues across concurrent scans, synchronization and roster refresh, and reuses durable batch identities for explicit recovery. Removed sessions and obsolete confirmations cannot recreate or delete changed attendance data.
+
+- Native offline attendance validates returned batch identities, retains unresolved or stopped work for review, and checks submitted results after roster expiry without resending attendance. Recovery controls include seven-language guidance and guarded camera permission handling.
 
 - Native event tickets persist unresolved requests for explicit recovery, preserve the original quantity and cancellation reason, and reject obsolete retries instead of creating another claim.
 

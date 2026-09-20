@@ -396,6 +396,8 @@ Route::middleware('feature:events')->group(function () {
         ->whereNumber('id')->middleware('throttle:nexus-route-30-per-1m');
     Route::post('/v2/events/{id}/offline-checkin/sync', [\App\Http\Controllers\Api\EventOfflineCheckinController::class, 'stage'])
         ->whereNumber('id')->middleware('throttle:nexus-route-120-per-1m');
+    Route::get('/v2/events/{id}/offline-checkin/batches/lookup', [\App\Http\Controllers\Api\EventOfflineCheckinController::class, 'lookupBatch'])
+        ->whereNumber('id')->middleware('throttle:nexus-route-120-per-1m');
     Route::get('/v2/events/{id}/offline-checkin/batches/{batchId}', [\App\Http\Controllers\Api\EventOfflineCheckinController::class, 'batch'])
         ->whereNumber('id')->whereNumber('batchId')->middleware('throttle:nexus-route-120-per-1m');
     Route::get('/v2/events/{id}/offline-checkin/conflicts', [\App\Http\Controllers\Api\EventOfflineCheckinController::class, 'conflicts'])

@@ -18,12 +18,14 @@ use App\Services\EventAttendanceService;
 use App\Services\EventCheckinCredentialService;
 use App\Services\EventCheckinDeviceService;
 use App\Services\EventOfflineCheckinProcessor;
+use App\Services\EventOfflineCheckinProjectionService;
 use App\Services\EventOfflineCheckinResolutionService;
 use App\Services\EventOfflineCheckinSyncService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 final class EventOfflineCheckinPhaseBTest extends TestCase
@@ -51,6 +53,70 @@ final class EventOfflineCheckinPhaseBTest extends TestCase
             $attendance,
             app(EventPolicy::class),
         );
+    }
+
+    public function test_saved_batch_lookup_recovers_beyond_recent_window_without_processing_attendance(): void
+    {
+        $fixture = $this->fixture('Lookup');
+        $projection = app(EventOfflineCheckinProjectionService::class);
+        $firstId = null;
+        for ($index = 0; $index < 51; $index++) {
+            $staged = $this->sync->stage(
+                $fixture['event_id'], $fixture['device_secret'], (int) $fixture['owner']->id,
+                "lookup-batch-{$index}", $fixture['manifest_version'],
+                [$this->item("lookup-nonce-{$index}", $fixture['credential_secret'], 'check_in', 0)],
+            );
+            $firstId ??= (int) $staged->batch->id;
+        }
+        $recent = $projection->workspace($fixture['event_id'], $fixture['owner'])['recent_batches'];
+        self::assertCount(50, $recent);
+        self::assertNotContains($firstId, array_column($recent, 'id'));
+        $result = $projection->batchByClientId($fixture['event_id'], $fixture['device_id'], 'lookup-batch-0', $fixture['owner']);
+        self::assertSame($firstId, $result['batch']['id']);
+        self::assertSame('pending', $result['items'][0]['state']);
+        self::assertSame(0, DB::table('event_attendance_activity')->where('event_id', $fixture['event_id'])->count());
+        $this->assertReason('event_offline_batch_not_found', fn () => $projection->batchByClientId(
+            $fixture['event_id'], $fixture['device_id'] + 100000, 'lookup-batch-0', $fixture['owner'],
+        ));
+        $this->assertReason('event_offline_batch_not_found', fn () => $projection->batchByClientId(
+            $fixture['event_id'], $fixture['device_id'], 'missing-client-batch', $fixture['owner'],
+        ));
+        $this->assertReason('event_checkin_authorization_denied', fn () => $projection->batchByClientId(
+            $fixture['event_id'], $fixture['device_id'], 'lookup-batch-0', $fixture['attendee'],
+        ));
+    }
+
+    public function test_saved_batch_lookup_http_validates_inputs_and_keeps_results_private(): void
+    {
+        $fixture = $this->fixture('HttpLookup');
+        $staged = $this->sync->stage(
+            $fixture['event_id'], $fixture['device_secret'], (int) $fixture['owner']->id,
+            'http-lookup-batch', $fixture['manifest_version'],
+            [$this->item('http-lookup-nonce', $fixture['credential_secret'], 'check_in', 0)],
+        );
+        $url = '/api/v2/events/' . $fixture['event_id'] . '/offline-checkin/batches/lookup';
+        $headers = ['X-Tenant-ID' => (string) $this->testTenantId, 'X-Events-Contract' => '2', 'X-Event-Checkin-Contract' => '1'];
+        Sanctum::actingAs($fixture['owner'], ['*']);
+        $response = $this->getJson($url . '?' . http_build_query([
+            'device_id' => $fixture['device_id'], 'client_batch_id' => 'http-lookup-batch',
+        ]), $headers);
+        $response->assertOk()->assertJsonPath('data.batch.id', (int) $staged->batch->id)
+            ->assertJsonPath('data.items.0.state', 'pending');
+        self::assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        self::assertStringNotContainsString($fixture['device_secret'], $response->getContent());
+        self::assertStringNotContainsString($fixture['credential_secret'], $response->getContent());
+        foreach ([[], ['device_id' => '0', 'client_batch_id' => 'http-lookup-batch'],
+            ['device_id' => $fixture['device_id'], 'client_batch_id' => str_repeat('a', 101)]] as $invalid) {
+            $this->getJson($url . '?' . http_build_query($invalid), $headers)->assertStatus(422);
+        }
+        $this->getJson($url . '?' . http_build_query([
+            'device_id' => $fixture['device_id'], 'client_batch_id' => 'not-found',
+        ]), $headers)->assertStatus(404);
+        Sanctum::actingAs($fixture['attendee'], ['*']);
+        $this->getJson($url . '?' . http_build_query([
+            'device_id' => $fixture['device_id'], 'client_batch_id' => 'http-lookup-batch',
+        ]), $headers)->assertStatus(403);
+        self::assertSame(0, DB::table('event_attendance_activity')->where('event_id', $fixture['event_id'])->count());
     }
 
     public function test_processor_applies_one_canonical_transition_and_replays_without_wallet_effects(): void

@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Einrichtung beenden",
+    "stopDescription": "Diese Einrichtung beenden? Bereits autorisierte Geräte bleiben autorisiert. Sie können die Autorisierung in der Geräteliste widerrufen. Gespeicherte Anwesenheitsdaten bleiben erhalten.",
+    "title": "Autorisierung dieses Geräts abschließen",
+    "description": "Eine frühere Autorisierung ist noch offen. Setzen Sie die gespeicherte Anfrage fort, bevor Sie eine neue starten.",
+    "resume": "Autorisierung fortsetzen",
+    "reauthorize": "Dieses Gerät erneut autorisieren",
+    "reauthorizeDescription": "Dieses Gerät wurde registriert, aber sein geheimer Schlüssel wurde nicht gespeichert. Autorisieren Sie es erneut, um den fehlenden Schlüssel zu ersetzen."
+  },
   "workspace": {
+    "cachedTitle": "Gespeicherte Offline-Daten werden verwendet",
+    "cachedDescription": "Der Server ist nicht erreichbar. Gespeicherte Liste und Warteschlange sind verfügbar, solange die Liste gültig ist. Stellen Sie die Verbindung wieder her, um Gerätezugriff und Konflikte zu prüfen.",
     "title": "Offline-QR-Check-in",
     "description": "Autorisieren Sie dieses Gerät und erfassen Sie die Anwesenheit auch bei unterbrochener Verbindung.",
     "privacyTitle": "Datenschutz von Anfang an",
@@ -56,6 +67,10 @@
     "transitionInvalid": "Diese Aktion passt nicht zum aktuellen Offline-Status der teilnehmenden Person."
   },
   "queue": {
+    "stoppedTitle": "Anwesenheit muss geprüft werden",
+    "stoppedDescription": "Der Server hat die Verarbeitung dieses Stapels beendet. Ausstehende Aktionen bleiben ungeklärt und auf diesem Gerät gespeichert. Bitten Sie eine organisierende Person, diese Aktionen vor Korrekturen mit der aktuellen Anwesenheit abzugleichen. Das Prüfen der Ergebnisse sendet die Aktionen nicht erneut.",
+    "checkResult": "Ergebnisse gesendeter Aktionen prüfen",
+    "processing": "Die Anwesenheitsdaten wurden empfangen und werden noch verarbeitet. Synchronisieren Sie erneut, um das Ergebnis zu prüfen.",
     "title": "Verschlüsselte Offline-Warteschlange",
     "pending": "{{count}} ausstehende Aktionen",
     "pending_one": "{{count}} ausstehende Aktion",

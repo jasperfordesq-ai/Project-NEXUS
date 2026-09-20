@@ -1,5 +1,16 @@
 {
+  "recovery": {
+    "stop": "Parar configuração",
+    "stopDescription": "Parar esta configuração? Os dispositivos já autorizados continuarão autorizados. Pode revogar a autorização na lista de dispositivos. As presenças guardadas serão mantidas.",
+    "title": "Concluir a autorização deste dispositivo",
+    "description": "Uma autorização anterior está por concluir. Retome o pedido guardado antes de iniciar outro.",
+    "resume": "Retomar autorização",
+    "reauthorize": "Autorizar novamente este dispositivo",
+    "reauthorizeDescription": "Este dispositivo foi registado, mas a sua chave secreta não foi guardada. Autorize-o novamente para substituir a chave em falta."
+  },
   "workspace": {
+    "cachedTitle": "A usar dados offline guardados",
+    "cachedDescription": "O servidor está indisponível. A lista e a fila guardadas estão disponíveis enquanto a lista for válida. Volte a ligar-se para atualizar o acesso do dispositivo e rever conflitos.",
     "title": "Check-in QR offline",
     "description": "Autorize este dispositivo e continue a registar presenças quando a ligação falhar.",
     "privacyTitle": "Privacidade desde a conceção",
@@ -56,6 +67,10 @@
     "transitionInvalid": "A ação não corresponde ao estado offline atual do participante."
   },
   "queue": {
+    "stoppedTitle": "A presença precisa de revisão",
+    "stoppedDescription": "O servidor parou de processar este lote. As ações pendentes continuam por resolver e guardadas neste dispositivo. Peça a quem organiza o evento que as compare com as presenças atuais antes de fazer correções. Consultar os resultados não volta a enviá-las.",
+    "checkResult": "Consultar resultados enviados",
+    "processing": "As presenças foram recebidas e ainda estão a ser processadas. Sincronize novamente para verificar o resultado.",
     "title": "Fila offline cifrada",
     "pending": "{{count}} ações pendentes",
     "pending_one": "{{count}} ação pendente",
