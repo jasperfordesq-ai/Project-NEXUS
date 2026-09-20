@@ -190,6 +190,6 @@ describe('the community picker rows are full width', () => {
     expect(row).toContain('<NativePressable');
     expect(row).not.toContain('<HeroButton');
     // The selected row must still announce itself, which HeroButton was providing.
-    expect(row).toContain('accessibilityState={{ selected: isActive }}');
+    expect(row).toMatch(/accessibilityState=\{\{[^}]*\bselected:\s*isActive\b[^}]*\}\}/);
   });
 });

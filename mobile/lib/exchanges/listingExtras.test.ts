@@ -13,7 +13,7 @@ jest.mock('@/lib/api/exchanges', () => ({
   deleteExchangeImage: (...args: unknown[]) => mockDeleteExchangeImage(...args),
 }));
 
-import { remainingListingExtras, saveListingExtras } from './listingExtras';
+import { hasListingExtras, remainingListingExtras, saveListingExtras } from './listingExtras';
 
 describe('saveListingExtras', () => {
   beforeEach(() => {
@@ -40,6 +40,20 @@ describe('saveListingExtras', () => {
     expect(mockSetExchangeTags).not.toHaveBeenCalled();
     expect(mockUploadExchangeImage).not.toHaveBeenCalled();
     expect(mockDeleteExchangeImage).not.toHaveBeenCalled();
+  });
+
+  it('clears all tags and retains that intent when the clear needs retrying', async () => {
+    const extras = { tags: [], imageUri: null, removeImage: false };
+    expect(hasListingExtras(extras)).toBe(true);
+    mockSetExchangeTags.mockRejectedValueOnce(new Error('offline'));
+    const failed = await saveListingExtras(7, extras);
+    expect(failed.tagsFailed).toBe(true);
+    expect(mockSetExchangeTags).toHaveBeenCalledWith(7, []);
+    const retry = remainingListingExtras(extras, failed);
+    expect(retry.tags).toEqual([]);
+    const recovered = await saveListingExtras(7, retry);
+    expect(recovered.tagsFailed).toBe(false);
+    expect(mockSetExchangeTags).toHaveBeenCalledTimes(2);
   });
 
   /**

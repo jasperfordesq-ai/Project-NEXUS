@@ -29,7 +29,7 @@ import {
 } from '@/lib/api/exchanges';
 
 export interface ListingExtras {
-  /** Tags to write, or null when there is nothing to write. */
+  /** Tags to write; [] removes all tags, null skips the tag write. */
   tags: string[] | null;
   /** A newly chosen photo to upload, or null. */
   imageUri: string | null;
@@ -48,7 +48,7 @@ export interface ListingExtrasResult {
 export const NO_LISTING_EXTRAS: ListingExtras = { tags: null, imageUri: null, removeImage: false };
 
 export function hasListingExtras(extras: ListingExtras): boolean {
-  return (extras.tags?.length ?? 0) > 0 || extras.imageUri !== null || extras.removeImage;
+  return extras.tags !== null || extras.imageUri !== null || extras.removeImage;
 }
 
 export function listingExtrasFailed(result: ListingExtrasResult): boolean {
@@ -62,9 +62,9 @@ export async function saveListingExtras(
 ): Promise<ListingExtrasResult> {
   const result: ListingExtrasResult = { tagsFailed: false, imageFailed: false };
 
-  if ((extras.tags?.length ?? 0) > 0) {
+  if (extras.tags !== null) {
     try {
-      await setExchangeTags(listingId, extras.tags as string[]);
+      await setExchangeTags(listingId, extras.tags);
     } catch (err) {
       result.tagsFailed = true;
       result.tagsError = err;

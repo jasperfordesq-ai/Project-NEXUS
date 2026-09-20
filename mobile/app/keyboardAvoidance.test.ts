@@ -7,9 +7,9 @@
  * Every screen with a text field either keeps that field above the iOS keyboard, or is
  * recorded here with a reason it does not need to.
  *
- * 🔴 Why a scan, and why iOS specifically. Android is covered for free: the generated
- * manifest sets `android:windowSoftInputMode="adjustResize"` on the single activity, so the
- * window shrinks and the focused field stays visible on every screen in the app. iOS has no
+ * This scan inventories explicit keyboard handling; it does not prove usable native layout.
+ * Android's generated manifest sets `android:windowSoftInputMode="adjustResize"`, but
+ * large-text Resources testing still found feedback obscured while typing. iOS has no
  * equivalent — the keyboard is drawn OVER the window and each scroll view has to make room
  * for it. About a dozen screens therefore worked perfectly on the test devices, which are
  * Android, and hid the field the member was typing into on an iPhone. The wallet's transfer
@@ -58,7 +58,6 @@ const NO_KEYBOARD_AVOIDANCE: Record<string, string> = {
   'group-detail': 'Its composers are inside a BottomSheet.',
   volunteering: 'Its fields are inside a BottomSheet.',
   'profile-collections': 'Its one field is inside a BottomSheet.',
-  resources: 'One search field at the top of the screen.',
   jobs: 'Search field at the top; the alert form carries automaticallyAdjustKeyboardInsets.',
   members: 'Re-export of the members tab.',
   groups: 'Re-export of the groups tab.',
