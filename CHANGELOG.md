@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Corrected the mobile translation check to recognize the French invitation-reference label as legitimately identical to English, without changing untranslated-phrase limits.
+
 - Listing edits now send an empty tag list to remove all skills and retain that instruction when a tag save needs retrying. Keyboard and narrow-screen regression inventories have been reconciled with the current UI.
 
 - Appreciations preserve reaction state across overlapping reads, reconcile uncertain writes before allowing another toggle, and recover failed list pages without losing loaded notes. Wall responses include the signed-in viewer's reaction; mobile links reject invalid member IDs. Recovery messages are available in all seven mobile locales.

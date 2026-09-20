@@ -12,6 +12,7 @@
       "event_templates.json:templates.mobile.optionalDatePlaceholder": "Literal machine-readable date-time format"
     },
     "fr": {
+      "eventRegistration.json:revocation.reference": "Invitation is the same word in French; the identifier placeholder is language-neutral",
       "eventOfflineCheckin.json:device.version": "Version is the same word in French",
       "event_communications.json:version": "Version is the same word in French",
       "event_recurrence_blueprints.json:history_version": "Version is the same word in French",
