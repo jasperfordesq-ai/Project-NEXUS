@@ -104,6 +104,61 @@ beforeEach(() => {
 });
 
 describe('SettingsTranslationScreen', () => {
+  it('does not replace a newer recovered preference with an older retry response', async () => {
+    mockGetUserPreferences.mockRejectedValueOnce(new Error('Unavailable'));
+    const screen = render(<SettingsTranslationScreen />);
+    await screen.findByTestId('translation-settings-error');
+    let resolveOlder!: (value: Awaited<ReturnType<typeof getUserPreferences>>) => void;
+    mockGetUserPreferences.mockImplementationOnce(() => new Promise(resolve => { resolveOlder = resolve; }))
+      .mockResolvedValueOnce({ translation: { auto_translate_ugc: true, auto_translate_target_locale: 'ga' } });
+    const retry = screen.getByText('common:buttons.retry');
+    act(() => { fireEvent.press(retry); fireEvent.press(retry); });
+    await screen.findByText('Save preferences');
+    await act(async () => resolveOlder({ translation: { auto_translate_ugc: false, auto_translate_target_locale: 'en' } }));
+    fireEvent.press(screen.getByText('Save preferences'));
+    await waitFor(() => expect(mockSaveUserPreferences).toHaveBeenCalledWith(expect.objectContaining({
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'ga' },
+    })));
+  });
+
+  it('blocks default-value saves after a failed load and recovers the saved target on retry', async () => {
+    mockGetUserPreferences.mockRejectedValueOnce(new Error('Unavailable'));
+    const screen = render(<SettingsTranslationScreen />);
+    await screen.findByTestId('translation-settings-error');
+    expect(screen.queryByText('Save preferences')).toBeNull();
+    expect(mockSaveUserPreferences).not.toHaveBeenCalled();
+    mockGetUserPreferences.mockResolvedValueOnce({
+      feed: { prefers_chronological: true },
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'ga' },
+    });
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await screen.findByText('Save preferences');
+    expect(screen.queryByTestId('translation-settings-error')).toBeNull();
+    fireEvent.press(screen.getByText('Save preferences'));
+    await waitFor(() => expect(mockSaveUserPreferences).toHaveBeenCalledWith({
+      feed: { prefers_chronological: true },
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'ga' },
+    }));
+  });
+
+  it('retains the chosen target after a failed save and retries the same preferences', async () => {
+    mockGetUserPreferences.mockResolvedValue({
+      feed: { prefers_chronological: false },
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'en' },
+    });
+    mockSaveUserPreferences.mockRejectedValueOnce(new Error('Unavailable')).mockResolvedValueOnce({});
+    const screen = render(<SettingsTranslationScreen />);
+    await screen.findByText('Save preferences');
+    fireEvent.press(screen.getByText('Irish'));
+    fireEvent.press(screen.getByText('Save preferences'));
+    await screen.findByText('Save preferences');
+    expect(mockSaveUserPreferences).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByText('Save preferences'));
+    await waitFor(() => expect(mockSaveUserPreferences).toHaveBeenCalledTimes(2));
+    expect(mockSaveUserPreferences.mock.calls[1][0]).toEqual(mockSaveUserPreferences.mock.calls[0][0]);
+    expect(mockSaveUserPreferences.mock.calls[1][0].translation?.auto_translate_target_locale).toBe('ga');
+  });
+
   it('renders saved translation preferences from the API', async () => {
     mockGetUserPreferences.mockResolvedValue({
       feed: { prefers_chronological: true },
@@ -116,6 +171,21 @@ describe('SettingsTranslationScreen', () => {
     expect(getByText('Automatic translation')).toBeTruthy();
     expect(getByText('Irish')).toBeTruthy();
     expect(getByText('Save preferences')).toBeTruthy();
+  });
+
+  it('ignores a retained save callback after leaving the screen', async () => {
+    mockGetUserPreferences.mockResolvedValue({
+      feed: { prefers_chronological: false },
+      translation: { auto_translate_ugc: true, auto_translate_target_locale: 'en' },
+    });
+    const screen = render(<SettingsTranslationScreen />);
+    let control = await screen.findByText('Save preferences');
+    while (typeof control.props.onPress !== 'function' && control.parent) control = control.parent;
+    const save = control.props.onPress;
+    expect(save).toEqual(expect.any(Function));
+    screen.unmount();
+    await act(async () => save());
+    expect(mockSaveUserPreferences).not.toHaveBeenCalled();
   });
 
   it('saves feed and translation preferences', async () => {

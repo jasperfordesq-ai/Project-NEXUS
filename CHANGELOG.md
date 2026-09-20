@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native translation settings preserve the latest recovered preferences when reads overlap, block saves before a successful load or after departure, and retain selected preferences for retry after a failed save.
+
 - Native data-export history ignores older read results after a newer refresh, so a delayed initial response cannot hide a completed export or replace current history with an obsolete error.
 
 - Native personal-data export cancels sharing when its screen is left, rejects departed request callbacks, and hides history counts until loading succeeds. Account deletion reports uncertain outcomes accurately and cleans up only the submitting session after confirmed deletion, including after departure.

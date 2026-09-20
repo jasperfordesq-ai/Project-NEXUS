@@ -55,17 +55,23 @@ function SettingsTranslationScreen() {
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const saveInFlight = useRef(false);
   const isMountedRef = useRef(true);
+  const loadVersionRef = useRef(0);
   const { confirm, confirmDialog } = useConfirm();
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; loadVersionRef.current += 1; };
+  }, []);
 
   const load = useCallback(async () => {
     if (!isMountedRef.current) return;
+    const version = ++loadVersionRef.current;
+    const isCurrent = () => isMountedRef.current && version === loadVersionRef.current;
     setIsLoading(true);
     setLoadError(null);
     try {
       const preferences = await getUserPreferences();
-      if (!isMountedRef.current) return;
+      if (!isCurrent()) return;
       setPrefersChronological(Boolean(preferences.feed?.prefers_chronological));
       setAutoTranslate(Boolean(preferences.translation?.auto_translate_ugc));
       setTargetLocale(normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale));
@@ -75,7 +81,7 @@ function SettingsTranslationScreen() {
         targetLocale: normalizeLocale(preferences.translation?.auto_translate_target_locale, initialLocale),
       }));
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isCurrent()) return;
       /*
         🔴 S3-16: the form used to render its DEFAULTS after a failed load with Save enabled,
         so one tap wrote `auto_translate: false` and the device's UI language over whatever
@@ -84,7 +90,7 @@ function SettingsTranslationScreen() {
       setLoadError(describeApiError(err, t('translation.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('translation.loadError')), variant: 'danger' });
     } finally {
-      if (isMountedRef.current) setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }, [initialLocale, t, showToast]);
 
@@ -113,7 +119,7 @@ function SettingsTranslationScreen() {
   });
 
   async function handleSave() {
-    if (saveInFlight.current) return;
+    if (!isMountedRef.current || saveInFlight.current || isLoading || loadError) return;
     saveInFlight.current = true;
     const submittedSnapshot = currentSnapshot;
     setIsSaving(true);
