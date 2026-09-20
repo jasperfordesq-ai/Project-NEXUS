@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateGroupExchange = jest.fn();
 const mockGetMembers = jest.fn();
@@ -144,6 +144,28 @@ beforeEach(() => {
 });
 
 describe('NewGroupExchangeRoute', () => {
+  it('serializes submit events before a rerender', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreateGroupExchange.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewGroupExchangeRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. Community garden workday'), 'Shared exchange');
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. 6'), '6');
+    act(() => { fireEvent.press(screen.getByText('Create exchange')); fireEvent.press(screen.getByText('Create exchange')); });
+    expect(mockCreateGroupExchange).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ data: { id: 55 } }); });
+  });
+  it('ignores a create response after departure', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreateGroupExchange.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewGroupExchangeRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. Community garden workday'), 'Shared exchange');
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. 6'), '6');
+    fireEvent.press(screen.getByText('Create exchange'));
+    screen.unmount();
+    await act(async () => { finish({ data: { id: 55 } }); await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+  });
+
   it('creates a draft group exchange and opens its detail route', async () => {
     const { getAllByPlaceholderText, getAllByText, getByPlaceholderText, getByText } = render(<NewGroupExchangeRoute />);
 

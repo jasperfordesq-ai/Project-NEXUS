@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateIdeationChallenge = jest.fn().mockResolvedValue({ id: 14 });
 const mockGetIdeationChallenge = jest.fn();
@@ -227,6 +227,28 @@ import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarne
 const DEVICE_ZONE = localEventTimeZone();
 
 describe('NewChallengeRoute', () => {
+  it('serializes submit events before a rerender', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreateIdeationChallenge.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewChallengeRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('What should the community solve?'), 'Shared challenge');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the problem, criteria, and useful context'), 'A useful shared challenge.');
+    act(() => { fireEvent.press(screen.getAllByText('Create challenge').at(-1)!); fireEvent.press(screen.getAllByText('Create challenge').at(-1)!); });
+    expect(mockCreateIdeationChallenge).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ id: 14 }); });
+  });
+  it('ignores a create response after departure', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreateIdeationChallenge.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewChallengeRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText('What should the community solve?'), 'Shared challenge');
+    fireEvent.changeText(screen.getByPlaceholderText('Describe the problem, criteria, and useful context'), 'A useful shared challenge.');
+    fireEvent.press(screen.getAllByText('Create challenge').at(-1)!);
+    screen.unmount();
+    await act(async () => { finish({ id: 14 }); await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockSearchParams = {};

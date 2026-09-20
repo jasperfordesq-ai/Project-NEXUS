@@ -5,7 +5,7 @@
 
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -52,6 +52,12 @@ function NewGroupExchangeRoute() {
 }
 
 function NewGroupExchangeScreen() {
+  const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const { t } = useTranslation(['exchanges', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -126,7 +132,7 @@ function NewGroupExchangeScreen() {
   }
 
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (!canSubmit || submittingRef.current || !mountedRef.current) return;
     /*
       🔴 An unparseable participant figure was silently sent as 0 hours or weight 1 (audit
       2026-09-07, C/F-14). Only the split types that use the field are checked.
@@ -146,6 +152,8 @@ function NewGroupExchangeScreen() {
       }
     }
 
+    submittingRef.current = true;
+    let accepted = false;
     try {
       setIsSubmitting(true);
       const payload: CreateGroupExchangePayload = {
@@ -163,6 +171,8 @@ function NewGroupExchangeScreen() {
           : undefined,
       };
       const response = await createGroupExchange(payload);
+      accepted = true;
+      if (!mountedRef.current) return;
       const id = response.data?.id;
       if (id) {
         setHasSubmitted(true);
@@ -172,9 +182,11 @@ function NewGroupExchangeScreen() {
       setHasSubmitted(true);
       router.replace('/(modals)/group-exchanges' as Href);
     } catch (err) {
+      if (!mountedRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('groupExchanges.create.error')), variant: 'danger' });
     } finally {
-      setIsSubmitting(false);
+      if (!accepted) submittingRef.current = false;
+      if (mountedRef.current) setIsSubmitting(false);
     }
   }
 

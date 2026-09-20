@@ -82,6 +82,7 @@ function NewChallengeScreen() {
   const [maxIdeasPerUser, setMaxIdeasPerUser] = useState('');
   const [status, setStatus] = useState<ChallengeCreateStatus>('open');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [hasSaved, setHasSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(isEdit);
   const [hasHydrated, setHasHydrated] = useState(!isEdit);
@@ -174,6 +175,7 @@ function NewChallengeScreen() {
   }
 
   async function submit() {
+    if (submittingRef.current || !isMountedRef.current) return;
     if (isEdit && !hasHydrated) return;
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
@@ -195,6 +197,7 @@ function NewChallengeScreen() {
       return;
     }
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     let successDestination: Parameters<typeof router.push>[0] | null = null;
     try {
@@ -210,23 +213,27 @@ function NewChallengeScreen() {
       const challenge = isEdit
         ? await updateIdeationChallenge(challengeId, payload)
         : await createIdeationChallenge({ ...payload, status });
+      if (!isMountedRef.current) return;
       setHasSaved(true);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+      if (!isMountedRef.current) return;
       if (challenge.id) {
         successDestination = { pathname: '/(modals)/ideation-detail', params: { id: String(challenge.id) } };
       } else {
         successDestination = '/(modals)/ideation' as Href;
       }
     } catch (error) {
+      if (!isMountedRef.current) return;
       showToast({ title: t('ideation:create.failedTitle'), description: error instanceof Error ? error.message : t('ideation:create.failedDescription'), variant: 'danger' });
     } finally {
-      setIsSubmitting(false);
+      if (!successDestination) submittingRef.current = false;
+      if (isMountedRef.current) setIsSubmitting(false);
     }
 
     // `replace`, not `push`: going "back" to a form whose contents have already been
     // posted is a duplicate-post trap, and push is a no-op from a deep-link root (S4-14).
     if (successDestination) {
-      setTimeout(() => router.replace(successDestination), 0);
+      setTimeout(() => { if (isMountedRef.current) router.replace(successDestination); }, 0);
     }
   }
 
