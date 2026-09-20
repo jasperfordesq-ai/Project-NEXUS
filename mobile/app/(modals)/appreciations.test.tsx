@@ -186,6 +186,25 @@ describe('AppreciationsScreen', () => {
     expect(screen.getByText('5')).toBeTruthy();
   });
 
+  it.each([401, 403, 404])('keeps refused notes cleared through the next refresh (%s)', async (status) => {
+    const initial = mockUseApi().data;
+    const retry = pendingPage();
+    mockGetAppreciations.mockResolvedValueOnce(initial)
+      .mockRejectedValueOnce(new ApiResponseError(status, 'Wall unavailable'))
+      .mockReturnValueOnce(retry.promise);
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Thank you for helping with the garden.');
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    await screen.findByText('Wall unavailable');
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+    act(() => { screen.UNSAFE_getByType(FlatList).props.refreshControl.props.onRefresh(); });
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+    await act(async () => { retry.resolve({ ...initial, data: [{ ...initial.data[0], message: 'Newly accepted note' }] }); });
+    expect(screen.getByText('Newly accepted note')).toBeTruthy();
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+  });
+
   it('renders public appreciations and posts reactions', async () => {
     const { findByText, getByText } = render(<AppreciationsScreen />);
 

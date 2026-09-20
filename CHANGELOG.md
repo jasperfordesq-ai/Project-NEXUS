@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Appreciations stay cleared after an access-refused response while a new refresh is pending, and only show notes again after a successful read.
+
 - Reduced the Android Hermes bundle by about 502 KB by disabling inline requires, bringing it below the existing bundle-size ceiling. Verified Android emulator navigation and iOS export; signed-release startup and physical-device acceptance remain separate checks.
 
 - Appreciations reload when the signed-in account or community changes and ignore reaction callbacks from the previous context.

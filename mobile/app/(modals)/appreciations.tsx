@@ -91,13 +91,17 @@ function AppreciationsScreenInner() {
       return { ...await getUserAppreciations(userId, page, 20), requestedPage: page, reactionVersions: versions };
     },
     [userId, page],
-    { enabled: userId.trim().length > 0 },
+    { enabled: userId.trim().length > 0, clearOnRefusal: true },
   );
   /* 🔴 A member whose profile is private, or who has left, answers 403/404 — a Retry
      there is a button that can never work. */
   const refused = isRefusalStatus(errorStatus);
 
   useEffect(() => {
+    if (refused) {
+      setItems([]);
+      return;
+    }
     if (!data?.data) return;
     for (const item of data.data) {
       if (!pendingReactions.current.has(item.id)
@@ -124,7 +128,7 @@ function AppreciationsScreenInner() {
       const seen = new Set(current.map((item) => item.id));
       return [...current, ...incoming.filter((item) => !seen.has(item.id))];
     });
-  }, [data]);
+  }, [data, refused]);
 
   const totalPages = useMemo(() => data?.meta?.last_page ?? data?.meta?.total_pages ?? 1, [data?.meta?.last_page, data?.meta?.total_pages]);
   const canLoadMore = page < totalPages;
