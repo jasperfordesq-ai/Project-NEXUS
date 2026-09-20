@@ -35,6 +35,8 @@ import {
   publishOrganizerRegistrationSettings,
   getOrganizerRegistrationForms,
   getOrganizerRegistrationSubmissions,
+  getOrganizerRegistrationGuests,
+  transitionOrganizerRegistrationGuest,
   reviewOrganizerRegistrationAnswers,
   prepareOrganizerRegistrationExport,
   getOwnRegistrationAnswers,
@@ -379,5 +381,82 @@ describe('explicit organizer export', () => {
     await expect(prepareOrganizerRegistrationExport(0, evidence, () => true)).rejects.toThrow();
     await expect(prepareOrganizerRegistrationExport(42, evidence, () => false)).rejects.toThrow('download_cancelled');
     expect(prepareAuditedCsv).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('organizer guest overview', () => {
+  const guest = { id: 9, registration_id: 7, guest_number: 1, revision: 2, status: 'captured',
+    display_name: 'Synthetic guest', email: 'guest@example.invalid', phone: '+15555550100', notification_consent: false,
+    retention_due_at: null, withdrawn_at: null, anonymised_at: null, attendance: null };
+  const pagination = { page: 1, per_page: 25, total: 1, last_page: 1, page_count: 1, from: 1, to: 1,
+    has_more: false, previous_page: null, next_page: null };
+  const overview = { data: { guests: [guest], pagination: { guests: pagination },
+    permissions: { view_roster: true, view_sensitive_answers: false, manage_attendance: true },
+    submissions: ['unrelated'], campaigns: ['unrelated'] } };
+  it('requests independent pagination and retains only guest workspace data', async () => {
+    jest.mocked(api.get).mockResolvedValue(overview);
+    const result = await getOrganizerRegistrationGuests(42, 2, 25);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/42/registration-product/manage',
+      { guests_page: '2', guests_per_page: '25', submissions_per_page: '1', campaigns_per_page: '1' }, options);
+    expect(result.data.pagination.guests).toEqual(pagination); // server can clamp a now-empty page
+    expect(result.data).not.toHaveProperty('submissions'); expect(result.data).not.toHaveProperty('campaigns');
+    expect(result.data.guests[0]).toMatchObject({ display_name: guest.display_name, attendance: null });
+    expect(result.data.guests[0]).not.toHaveProperty('email'); expect(result.data.guests[0]).not.toHaveProperty('phone');
+  });
+  it('honours separate roster and sensitive-contact permissions', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...overview.data,
+      permissions: { view_roster: false, view_sensitive_answers: true, manage_attendance: false } } });
+    const result = await getOrganizerRegistrationGuests(42);
+    expect(result.data.guests[0]).not.toHaveProperty('display_name');
+    expect(result.data.guests[0]).toMatchObject({ email: guest.email, phone: guest.phone });
+  });
+  it('parses attendance versions without retaining unknown guest fields', async () => {
+    const attendance = { id: 3, status: 'checked_in', version: 4, checked_in_at: '2026-09-20', checked_out_at: null, no_show_at: null };
+    jest.mocked(api.get).mockResolvedValue({ data: { ...overview.data, guests: [{ ...guest, attendance, secret: 'discard' }] } });
+    const result = await getOrganizerRegistrationGuests(42);
+    expect(result.data.guests[0].attendance).toEqual(attendance); expect(result.data.guests[0]).not.toHaveProperty('secret');
+  });
+  it('rejects unknown attendance states rather than treating them as absent', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...overview.data, guests: [{ ...guest, attendance: { id: 3, status: 'future', version: 1 } }] } });
+    await expect(getOrganizerRegistrationGuests(42)).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+  });
+  it.each([[0, 1, 25], [42, 0, 25], [42, 1, 101]])('rejects invalid IDs/pages before a request', async (event, page, size) => {
+    await expect(getOrganizerRegistrationGuests(event, page, size)).rejects.toThrow(); expect(api.get).not.toHaveBeenCalled();
+  });
+  it('propagates refusal without manufacturing an empty list', async () => {
+    const error = new Error('refused'); jest.mocked(api.get).mockRejectedValue(error);
+    await expect(getOrganizerRegistrationGuests(42)).rejects.toBe(error); expect(api.get).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+describe('organizer guest attendance writes', () => {
+  const intent = { guestId: 9, action: 'check_in' as const, expectedVersion: 0 };
+  const response = { data: { attendance: { id: 3, event_id: 42, guest_id: 9, attendance_status: 'checked_in', attendance_version: 1 },
+    changed: true, replayed: false, history_id: 7 } };
+  it('uses the caller-owned key and zero initial version exactly once', async () => {
+    jest.mocked(api.post).mockResolvedValue(response);
+    expect(await transitionOrganizerRegistrationGuest(42, intent, 'guest-action-1')).toEqual(response);
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/events/42/registration-product/guests/9/attendance/check_in',
+      { expected_version: 0, reason: null, idempotency_key: 'guest-action-1' },
+      { headers: { ...options.headers, 'Idempotency-Key': 'guest-action-1' } });
+  });
+  it('requires an undo reason before transport and preserves Unicode limits', async () => {
+    await expect(transitionOrganizerRegistrationGuest(42, { ...intent, action: 'undo', reason: ' ' }, 'undo-1')).rejects.toThrow();
+    expect(api.post).not.toHaveBeenCalled();
+    jest.mocked(api.post).mockResolvedValue(response);
+    await transitionOrganizerRegistrationGuest(42, { ...intent, action: 'undo', reason: '📝'.repeat(500) }, 'undo-1');
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+  it('rejects a response belonging to another guest', async () => {
+    jest.mocked(api.post).mockResolvedValue({ data: { ...response.data, attendance: { ...response.data.attendance, guest_id: 10 } } });
+    await expect(transitionOrganizerRegistrationGuest(42, intent, 'guest-action-1')).rejects.toMatchObject({ code: 'EVENT_REGISTRATION_PRODUCT_CONTRACT_DRIFT' });
+  });
+  it('does not retry an ambiguous write', async () => {
+    const error = new Error('connection lost'); jest.mocked(api.post).mockRejectedValue(error);
+    await expect(transitionOrganizerRegistrationGuest(42, intent, 'guest-action-1')).rejects.toBe(error);
+    expect(api.post).toHaveBeenCalledTimes(1);
   });
 });

@@ -338,6 +338,54 @@ export async function getOrganizerRegistrationSubmissions(eventId: number, page 
   return parse(endpoint, organizerSubmissionsSchema.refine(response => response.data.forms.every(form => form.event_id === eventId)), await api.get<unknown>(endpoint,
     { submissions_page: String(page), submissions_per_page: String(perPage), campaigns_per_page: '1', guests_per_page: '1' }, requestOptions()));
 }
+// Organiser guests include attendance; keep this separate from attendee mutations.
+const organizerGuestSchema = registrationGuestSchema.extend({
+  phone: z.string().nullable().optional(), retention_due_at: z.string().nullable(),
+  withdrawn_at: z.string().nullable(), anonymised_at: z.string().nullable(),
+  attendance: z.object({
+    id: safeId, status: z.enum(['not_checked_in', 'checked_in', 'checked_out', 'attended', 'no_show']),
+    version: revision, checked_in_at: z.string().nullable(), checked_out_at: z.string().nullable(), no_show_at: z.string().nullable(),
+  }).nullable(),
+}).strip();
+const organizerGuestsSchema = z.object({ data: z.object({
+  guests: z.array(organizerGuestSchema), pagination: z.object({ guests: registrationOverviewPageSchema }),
+  permissions: z.object({ view_roster: z.boolean(), view_sensitive_answers: z.boolean(), manage_attendance: z.boolean() }),
+}) }).transform(response => ({ data: { ...response.data, guests: response.data.guests.map(guest => {
+  const { display_name, email, phone, ...record } = guest;
+  return { ...record,
+    ...(response.data.permissions.view_roster ? { display_name } : {}),
+    ...(response.data.permissions.view_sensitive_answers ? { email, phone } : {}),
+  };
+}) } }));
+export type OrganizerRegistrationGuests = z.infer<typeof organizerGuestsSchema>['data'];
+export async function getOrganizerRegistrationGuests(eventId: number, page = 1, perPage = 25) {
+  safeId.parse(eventId); safeId.parse(page); z.number().int().min(1).max(100).parse(perPage);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/manage';
+  return parse(endpoint, organizerGuestsSchema, await api.get<unknown>(endpoint,
+    { guests_page: String(page), guests_per_page: String(perPage), submissions_per_page: '1', campaigns_per_page: '1' }, requestOptions()));
+}
+
+export const registrationGuestAttendanceIntentSchema = z.object({
+  guestId: safeId, action: z.enum(['check_in', 'check_out', 'no_show', 'undo']), expectedVersion: revision,
+  reason: z.string().trim().refine(value => Array.from(value).length <= 500).optional(),
+}).strict().refine(input => input.action !== 'undo' || Boolean(input.reason), { path: ['reason'], message: 'Reason required' });
+export type RegistrationGuestAttendanceIntent = z.infer<typeof registrationGuestAttendanceIntentSchema>;
+/** The caller owns the stable intent/key and must reconcile uncertain outcomes before another action. */
+export async function transitionOrganizerRegistrationGuest(eventId: number, intent: RegistrationGuestAttendanceIntent, idempotencyKey: string) {
+  safeId.parse(eventId);
+  const input = registrationGuestAttendanceIntentSchema.parse(intent);
+  const key = z.string().min(1).max(191).refine(value => value.trim() === value).parse(idempotencyKey);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/guests/' + input.guestId + '/attendance/' + input.action;
+  const schema = z.object({ data: z.object({
+    attendance: z.object({ id: safeId, event_id: z.literal(eventId), guest_id: z.literal(input.guestId),
+      attendance_status: z.enum(['not_checked_in', 'checked_in', 'checked_out', 'attended', 'no_show']), attendance_version: safeId }),
+    changed: z.boolean(), replayed: z.boolean(), history_id: safeId,
+  }) });
+  return parse(endpoint, schema, await api.post<unknown>(endpoint, {
+    expected_version: input.expectedVersion, reason: input.reason || null, idempotency_key: key,
+  }, requestOptions(key)));
+}
+
 const answerAccessSchema = z.object({
   purpose: z.string().trim().min(1).refine(value => Array.from(value).length <= 500),
   correlation_id: z.string().trim().min(1).refine(value => new TextEncoder().encode(value).length <= 512),
