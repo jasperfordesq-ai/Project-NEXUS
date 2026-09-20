@@ -432,5 +432,20 @@
     "condition_key": "Clave de preguntas anteriores (opcional)",
     "success": "Se completó la acción de registro.",
     "validation_error": "Verifique la información que ingresó y vuelva a intentarlo."
+  },
+  "revocation": {
+    "title": "Gestionar invitaciones",
+    "empty": "No se han emitido invitaciones.",
+    "reference": "Invitación {{id}}",
+    "campaign": "Campaña {{id}}",
+    "revoke": "Revocar invitación",
+    "warning": "La persona destinataria ya no podrá usar esta invitación. Esto no cancela una inscripción existente.",
+    "reason": "Motivo de revocación",
+    "reason_hint": "Introduzca un motivo (1–500 caracteres). Se guardará en el historial de auditoría.",
+    "review": "Revisar revocación",
+    "view": "Ver invitación",
+    "rejected": "Esta invitación ha cambiado. Su solicitud no se ha aplicado. Revise el estado actual antes de elegir otra acción.",
+    "review_current": "Revisar invitación actual",
+    "completed": "La invitación {{id}} se ha revocado."
   }
 }

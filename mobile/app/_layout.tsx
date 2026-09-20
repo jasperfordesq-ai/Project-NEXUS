@@ -693,6 +693,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('eventRegistration:retention.title') }}
       />
       <Stack.Screen
+        name="(modals)/event-invitation-recipients"
+        options={{ ...modalOptions, headerShown: false, title: t('eventRegistration:revocation.title') }}
+      />
+      <Stack.Screen
         name="(modals)/event-templates"
         options={{ ...modalOptions, headerShown: false, title: t('event_templates:templates.mobile.title') }}
       />

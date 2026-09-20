@@ -432,5 +432,20 @@
     "condition_key": "Früherer Frageschlüssel (optional)",
     "success": "Die Registrierungsaktion wurde abgeschlossen.",
     "validation_error": "Überprüfen Sie die eingegebenen Informationen und versuchen Sie es erneut."
+  },
+  "revocation": {
+    "title": "Einladungen verwalten",
+    "empty": "Es wurden noch keine Einladungen ausgestellt.",
+    "reference": "Einladung {{id}}",
+    "campaign": "Kampagne {{id}}",
+    "revoke": "Einladung widerrufen",
+    "warning": "Die eingeladene Person kann diese Einladung nicht mehr verwenden. Eine bestehende Anmeldung wird dadurch nicht storniert.",
+    "reason": "Grund für den Widerruf",
+    "reason_hint": "Geben Sie einen Grund ein (1–500 Zeichen). Er wird im Prüfprotokoll gespeichert.",
+    "review": "Widerruf prüfen",
+    "view": "Einladung anzeigen",
+    "rejected": "Diese Einladung wurde geändert. Ihre Anfrage wurde nicht ausgeführt. Prüfen Sie den aktuellen Status, bevor Sie eine weitere Aktion wählen.",
+    "review_current": "Aktuelle Einladung prüfen",
+    "completed": "Einladung {{id}} wurde widerrufen."
   }
 }

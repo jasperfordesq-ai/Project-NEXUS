@@ -432,5 +432,20 @@
     "condition_key": "Eochair cheist níos luaithe (roghnach)",
     "success": "Críochnaíodh an gníomh clárúcháin.",
     "validation_error": "Seiceáil an fhaisnéis a d'iontráil tú agus bain triail eile as."
+  },
+  "revocation": {
+    "title": "Bainistigh cuirí",
+    "empty": "Níor eisíodh aon chuirí.",
+    "reference": "Cuireadh {{id}}",
+    "campaign": "Feachtas {{id}}",
+    "revoke": "Cuir an cuireadh ar ceal",
+    "warning": "Ní bheidh an faighteoir in ann an cuireadh seo a úsáid a thuilleadh. Ní chuirtear clárúchán atá ann cheana ar ceal leis seo.",
+    "reason": "Cúis an chealaithe",
+    "reason_hint": "Cuir cúis isteach (1–500 carachtar). Déanfar í a thaifeadadh sa stair iniúchóireachta.",
+    "review": "Athbhreithnigh an cealú",
+    "view": "Féach ar an gcuireadh",
+    "rejected": "Tá an cuireadh seo athraithe. Níor cuireadh d’iarratas i bhfeidhm. Athbhreithnigh a staid reatha sula roghnaíonn tú gníomh eile.",
+    "review_current": "Athbhreithnigh an cuireadh reatha",
+    "completed": "Cuireadh an cuireadh {{id}} ar ceal."
   }
 }

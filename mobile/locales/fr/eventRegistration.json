@@ -432,5 +432,20 @@
     "condition_key": "Clé des questions précédentes (facultatif)",
     "success": "L'action d'enregistrement a été complétée.",
     "validation_error": "Vérifiez les informations que vous avez saisies et réessayez."
+  },
+  "revocation": {
+    "title": "Gérer les invitations",
+    "empty": "Aucune invitation n’a été émise.",
+    "reference": "Invitation {{id}}",
+    "campaign": "Campagne {{id}}",
+    "revoke": "Révoquer l’invitation",
+    "warning": "Le destinataire ne pourra plus utiliser cette invitation. Cela n’annule pas une inscription existante.",
+    "reason": "Motif de révocation",
+    "reason_hint": "Saisissez un motif (1 à 500 caractères). Il sera enregistré dans l’historique d’audit.",
+    "review": "Vérifier la révocation",
+    "view": "Voir l’invitation",
+    "rejected": "Cette invitation a changé. Votre demande n’a pas été appliquée. Vérifiez son état actuel avant de choisir une autre action.",
+    "review_current": "Vérifier l’invitation actuelle",
+    "completed": "L’invitation {{id}} a été révoquée."
   }
 }

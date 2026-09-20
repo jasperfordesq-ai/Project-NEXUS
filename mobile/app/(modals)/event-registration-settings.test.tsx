@@ -73,3 +73,8 @@ it('offers retention only with ownership-transfer authority and preserves the ev
  expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-registration-retention',params:{id:'42'}});
 });
 jest.mock('@/lib/observability/report', () => ({ reportSentryMessage: jest.fn() }));
+
+it('opens invitation management with the current event', () => {
+ const v=render(<Screen/>);fireEvent.press(v.getByText('eventRegistration:revocation.title'));
+ expect(mockPush).toHaveBeenCalledWith({pathname:'/(modals)/event-invitation-recipients',params:{id:'42'}});
+});

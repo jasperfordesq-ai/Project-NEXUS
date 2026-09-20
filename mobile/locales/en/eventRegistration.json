@@ -432,5 +432,20 @@
     "condition_key": "Earlier question key (optional)",
     "success": "The registration action was completed.",
     "validation_error": "Check the information you entered and try again."
+  },
+  "revocation": {
+    "title": "Manage invitations",
+    "empty": "No invitations have been issued.",
+    "reference": "Invitation {{id}}",
+    "campaign": "Campaign {{id}}",
+    "revoke": "Revoke invitation",
+    "warning": "The recipient will no longer be able to use this invitation. This does not cancel an existing registration.",
+    "reason": "Revocation reason",
+    "reason_hint": "Enter a reason (1–500 characters). It will be recorded in the audit history.",
+    "review": "Review revocation",
+    "view": "View invitation",
+    "rejected": "This invitation changed. Your request was not applied. Review its current state before choosing another action.",
+    "review_current": "Review current invitation",
+    "completed": "Invitation {{id}} was revoked."
   }
 }

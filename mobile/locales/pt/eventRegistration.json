@@ -432,5 +432,20 @@
     "condition_key": "Chave da pergunta anterior (opcional)",
     "success": "A ação de registro foi concluída.",
     "validation_error": "Verifique as informações inseridas e tente novamente."
+  },
+  "revocation": {
+    "title": "Gerir convites",
+    "empty": "Ainda não foram emitidos convites.",
+    "reference": "Convite {{id}}",
+    "campaign": "Campanha {{id}}",
+    "revoke": "Revogar convite",
+    "warning": "O destinatário deixará de poder usar este convite. Isto não cancela uma inscrição existente.",
+    "reason": "Motivo da revogação",
+    "reason_hint": "Introduza um motivo (1–500 caracteres). Será registado no histórico de auditoria.",
+    "review": "Rever revogação",
+    "view": "Ver convite",
+    "rejected": "Este convite foi alterado. O seu pedido não foi aplicado. Reveja o estado atual antes de escolher outra ação.",
+    "review_current": "Rever convite atual",
+    "completed": "O convite {{id}} foi revogado."
   }
 }

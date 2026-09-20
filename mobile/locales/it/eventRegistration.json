@@ -432,5 +432,20 @@
     "condition_key": "Chiave della domanda precedente (facoltativa)",
     "success": "L'azione di registrazione è stata completata.",
     "validation_error": "Controlla le informazioni che hai inserito e riprova."
+  },
+  "revocation": {
+    "title": "Gestisci inviti",
+    "empty": "Non sono stati emessi inviti.",
+    "reference": "Invito {{id}}",
+    "campaign": "Campagna {{id}}",
+    "revoke": "Revoca invito",
+    "warning": "Il destinatario non potrà più usare questo invito. Questa azione non annulla un’iscrizione esistente.",
+    "reason": "Motivo della revoca",
+    "reason_hint": "Inserisci un motivo (1–500 caratteri). Sarà registrato nella cronologia di controllo.",
+    "review": "Rivedi revoca",
+    "view": "Visualizza invito",
+    "rejected": "Questo invito è cambiato. La richiesta non è stata applicata. Controlla lo stato attuale prima di scegliere un’altra azione.",
+    "review_current": "Rivedi invito attuale",
+    "completed": "L’invito {{id}} è stato revocato."
   }
 }
