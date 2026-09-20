@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -89,6 +89,18 @@ beforeEach(() => {
 });
 
 describe('MembersScreen (tab)', () => {
+  it('retains loaded members and offers Retry when a later request fails', () => {
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
+      items: [{ id: 1, name: 'Alice Green', avatar_url: null }],
+      error: 'Connection interrupted', hasMore: true, refresh });
+    const screen = render(<MembersScreen />);
+    expect(screen.getByText('Alice Green')).toBeTruthy();
+    expect(screen.getByText('Connection interrupted')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<MembersScreen />);
     expect(toJSON()).toBeTruthy();

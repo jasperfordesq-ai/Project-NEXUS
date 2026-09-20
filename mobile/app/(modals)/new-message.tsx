@@ -46,21 +46,19 @@ function NewMessageRouteInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [search, setSearch] = useState('');
-  const [totalMembers, setTotalMembers] = useState<number | null>(null);
   const debouncedSearch = useDebounce(search, 350);
 
   const fetchMembers = useCallback(
     async (cursor: string | null) => {
       const offset = cursor ? Number(cursor) : 0;
-      const response = await getMembers(Number.isFinite(offset) ? offset : 0, debouncedSearch || undefined);
-      setTotalMembers(response.meta.total_items ?? null);
-      return response;
+      return getMembers(Number.isFinite(offset) ? offset : 0, debouncedSearch || undefined);
     },
     [debouncedSearch],
   );
 
-  const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
+  const { items, response, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
     usePaginatedApi<Member, MemberListResponse>(fetchMembers, extractMembersPage, [debouncedSearch]);
+  const totalMembers = response?.meta.total_items;
 
   const hasSearch = search.trim().length > 0;
 

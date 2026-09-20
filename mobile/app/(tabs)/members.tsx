@@ -22,6 +22,7 @@ import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import MemberCard from '@/components/MemberCard';
 import SearchInput from '@/components/ui/SearchInput';
+import ErrorState from '@/components/ui/ErrorState';
 import { SkeletonBox } from '@/components/ui/Skeleton';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -60,21 +61,19 @@ function MembersScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const [search, setSearch] = useState('');
-  const [totalMembers, setTotalMembers] = useState<number | null>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const fetchMembers = useCallback(
     async (cursor: string | null) => {
       const offset = cursor ? Number(cursor) : 0;
-      const response = await getMembers(Number.isFinite(offset) ? offset : 0, debouncedSearch || undefined);
-      setTotalMembers(response.meta.total_items ?? null);
-      return response;
+      return getMembers(Number.isFinite(offset) ? offset : 0, debouncedSearch || undefined);
     },
     [debouncedSearch],
   );
 
-  const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
+  const { items, response, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
     usePaginatedApi<Member, MemberListResponse>(fetchMembers, extractMembersPage, [debouncedSearch]);
+  const totalMembers = response?.meta.total_items;
 
   const hasSearch = search.trim().length > 0;
 
@@ -147,7 +146,9 @@ function MembersScreen() {
           )
         }
         ListFooterComponent={
-          isLoadingMore ? (
+          error && items.length > 0 ? (
+            <ErrorState subtitle={error} onRetry={refresh} isRetrying={isLoading || isLoadingMore} />
+          ) : isLoadingMore ? (
             <View className="py-4 items-center"><Spinner size="sm" /></View>
           ) : !hasMore && items.length > 0 && !isLoading ? (
             <View className="py-4 items-center">

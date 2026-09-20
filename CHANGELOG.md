@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep member-directory and message-recipient totals tied to the current search, and expose retry controls without hiding loaded directory results.
+
 - Added guarded pull-to-refresh to native invitation and retention lists, preserving active drafts and blocking refresh during requests; corrected singular retention confirmation wording across supported languages.
 
 - Keep native pagination metadata aligned with accepted rows, preserve it during recoverable refresh failures, and clear it with rows when access is withdrawn.

@@ -4,9 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockRouterReplace = jest.fn();
+// Keep native telemetry timers out of the screen test; pagination remains real.
+jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -89,6 +91,7 @@ jest.mock('@/components/ui/Skeleton', () => ({
 }));
 
 import NewMessageRoute from './new-message';
+import { getMembers } from '@/lib/api/members';
 
 const defaultPaginatedState = {
   items: [],
@@ -102,10 +105,28 @@ const defaultPaginatedState = {
 
 beforeEach(() => {
   mockRouterReplace.mockReset();
+  mockUsePaginatedApi.mockReset();
+  jest.mocked(getMembers).mockReset();
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
 });
 
 describe('NewMessageRoute', () => {
+  it('keeps the current search total when an older directory response arrives last', async () => {
+    let resolveOld!: (value: Awaited<ReturnType<typeof getMembers>>) => void;
+    jest.mocked(getMembers)
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockResolvedValueOnce({ data: [{ id: 10, name: 'Alice Green' }], meta: { offset: 0, per_page: 20, has_more: false, total_items: 1 } } as Awaited<ReturnType<typeof getMembers>>);
+    mockUsePaginatedApi.mockImplementation(jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi);
+    const screen = render(<NewMessageRoute />);
+    await waitFor(() => expect(getMembers).toHaveBeenCalledTimes(1));
+    fireEvent.changeText(screen.getByPlaceholderText('Search members'), 'Alice');
+    await waitFor(() => expect(screen.getByText('1 members shown')).toBeTruthy());
+    await act(async () => resolveOld({ data: [], meta: { offset: 0, per_page: 20, has_more: false, total_items: 90 } } as Awaited<ReturnType<typeof getMembers>>));
+    expect(screen.getByText('1 members shown')).toBeTruthy();
+    expect(screen.queryByText('90 members shown')).toBeNull();
+    expect(screen.getByText('Alice Green')).toBeTruthy();
+  });
+
   it('keeps members available and exposes a retry after a later-page failure', () => {
     const refresh = jest.fn();
     mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,
