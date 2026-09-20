@@ -175,6 +175,22 @@ describe('OrganisationDetailScreen', () => {
     expect(getOrganisation).not.toHaveBeenCalled();
   });
 
+  it.each(['Share', 'Visit Website'])('ignores a retained %s action after departure', async label => {
+    const share = jest.spyOn(ReactNative.Share, 'share').mockClear().mockResolvedValue({ action: 'sharedAction' });
+    const open = jest.spyOn(Linking, 'openURL').mockClear().mockResolvedValue(undefined);
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<OrganisationDetailScreen />);
+    let control = screen.getByText(label);
+    while (!control.props.onPress && control.parent) control = control.parent;
+    const invoke = control.props.onPress;
+    expect(invoke).toEqual(expect.any(Function));
+    screen.unmount();
+    await act(async () => invoke());
+    expect(share).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    share.mockRestore(); open.mockRestore();
+  });
+
   it('loads a single valid route id', async () => {
     mockRouteId = '3';
     mockRealRead = true;
@@ -182,6 +198,19 @@ describe('OrganisationDetailScreen', () => {
     const screen = render(<OrganisationDetailScreen />);
     await screen.findByText(mockOrg.name);
     expect(getOrganisation).toHaveBeenCalledWith(3);
+  });
+
+  it('does not show a website failure after departure', async () => {
+    let rejectOpen!: (error: Error) => void;
+    const open = jest.spyOn(Linking, 'openURL').mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectOpen = reject; }));
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+    jest.mocked(useAppToast().show).mockClear();
+    const screen = render(<OrganisationDetailScreen />);
+    fireEvent.press(screen.getByText('Visit Website'));
+    screen.unmount();
+    await act(async () => rejectOpen(new Error('No browser')));
+    expect(useAppToast().show).not.toHaveBeenCalled();
+    open.mockRestore();
   });
 
   it('does not restore the previous record when its late response arrives after changing routes', async () => {

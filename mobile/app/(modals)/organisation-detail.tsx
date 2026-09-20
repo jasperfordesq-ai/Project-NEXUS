@@ -194,7 +194,7 @@ function OrganisationDetailContent({ safeId }: { safeId: number }) {
   }
 
   async function handleShare() {
-    if (!organisation || sharing.current) return;
+    if (!mounted.current || !organisation || sharing.current) return;
     sharing.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
@@ -209,9 +209,10 @@ function OrganisationDetailContent({ safeId }: { safeId: number }) {
   }
 
   async function handleOpenWebsite() {
-    if (!organisation?.website) return;
+    if (!mounted.current || !organisation?.website) return;
     const url = normalizeWebsiteUrl(organisation.website);
     if (await openExternalUrl(url) === 'opened') return;
+    if (!mounted.current) return;
     showToast({
       title: t('detail.websiteFailedTitle'),
       description: t('detail.websiteFailedMessage', { url }),
