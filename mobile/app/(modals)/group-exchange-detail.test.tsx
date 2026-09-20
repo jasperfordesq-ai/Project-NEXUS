@@ -206,7 +206,7 @@ describe('GroupExchangeDetailScreen', () => {
     expect(mockGetGroupExchange).toHaveBeenCalledTimes(3);
   });
 
-  it.each(['confirm', 'complete', 'cancel'] as const)('keeps accepted %s read-only through actual hook retry and recovery', async action => {
+  it.each([['confirm', false], ['complete', false], ['cancel', false], ['confirm', true], ['complete', true], ['cancel', true]] as const)('keeps %s read-only through actual hook recovery (lost response=%s)', async (action, lostResponse) => {
     jest.useFakeTimers();
     const initial = action === 'complete'
       ? { ...baseExchange, participants: baseExchange.participants.map(p => ({ ...p, confirmed: true })) }
@@ -215,6 +215,7 @@ describe('GroupExchangeDetailScreen', () => {
       ? { ...initial, participants: initial.participants.map(p => ({ ...p, confirmed: true })) }
       : { ...initial, status: action === 'complete' ? 'completed' : 'cancelled' };
     const mutation = action === 'confirm' ? mockConfirmGroupExchange : action === 'complete' ? mockCompleteGroupExchange : mockCancelGroupExchange;
+    if (lostResponse) mutation.mockRejectedValueOnce(new ApiResponseError(0, 'Response lost'));
     const label = action === 'confirm' ? 'Confirm hours' : action === 'complete' ? 'Complete exchange' : 'Cancel exchange';
     let resolveRecovery!: (value: { data: typeof fresh }) => void;
     const recovery = new Promise<{ data: typeof fresh }>(resolve => { resolveRecovery = resolve; });

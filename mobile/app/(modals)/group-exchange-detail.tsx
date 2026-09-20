@@ -80,11 +80,11 @@ function GroupExchangeDetailScreenInner() {
   const { data, isLoading, error, errorStatus, refresh } = useApi(() => getGroupExchange(safeExchangeId), [safeExchangeId], { enabled: safeExchangeId > 0 });
   const exchange = data?.data ?? null;
   const [awaitingRead, setAwaitingRead] = useState(false);
-  const acceptedSnapshot = useRef<typeof exchange>(null);
+  const outcomeSnapshot = useRef<typeof exchange>(null);
   useEffect(() => {
-    if (acceptedSnapshot.current && exchange && exchange !== acceptedSnapshot.current
+    if (outcomeSnapshot.current && exchange && exchange !== outcomeSnapshot.current
       && !isLoading && !error && exchange.id === safeExchangeId) {
-      acceptedSnapshot.current = null;
+      outcomeSnapshot.current = null;
       setAwaitingRead(false);
     }
   }, [exchange, isLoading, error, safeExchangeId]);
@@ -95,7 +95,7 @@ function GroupExchangeDetailScreenInner() {
   }, [exchange, isLoading, error, dismiss]);
 
   async function runAction(action: 'confirm' | 'complete' | 'cancel') {
-    if (!exchange || !mountedRef.current || submittingRef.current || acceptedSnapshot.current) return;
+    if (!exchange || !mountedRef.current || submittingRef.current || outcomeSnapshot.current) return;
     const current = currentRead.current;
     if (current.exchange !== exchange || current.isLoading || current.error
       || current.safeExchangeId !== exchange.id) return;
@@ -110,13 +110,17 @@ function GroupExchangeDetailScreenInner() {
         await cancelGroupExchange(exchange.id);
       }
       if (mountedRef.current) {
-        acceptedSnapshot.current = currentRead.current.exchange;
+        outcomeSnapshot.current = currentRead.current.exchange;
         setAwaitingRead(true);
         refresh();
       }
     } catch (err) {
       if (!mountedRef.current) return;
-      if (action === 'confirm') refresh();
+      // A failed response does not prove the server rejected the action.
+      // Require fresh details before any further mutation, including dialog replays.
+      outcomeSnapshot.current = currentRead.current.exchange;
+      setAwaitingRead(true);
+      refresh();
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t(`groupExchanges.detail.actions.${action}Failed`)), variant: 'danger' });
     } finally {
       submittingRef.current = false;
