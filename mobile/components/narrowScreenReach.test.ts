@@ -163,7 +163,11 @@ describe('the shared form footer cannot clip its submit button', () => {
     // "Save changes" clipped there too — the title needs ~150dp and the buttons ~250dp,
     // which does not fit the 395dp a 411dp phone offers. A width threshold here would
     // have shipped the bug on the majority of phones while looking like a fix.
-    expect(read('components/ui/FormActionFooter.tsx')).not.toContain('useWindowDimensions');
+    const source = read('components/ui/FormActionFooter.tsx');
+    // Font-scale subscription remeasures text; it must not introduce width breakpoints.
+    expect(source).toMatch(/const \{ fontScale \} = useWindowDimensions\(\);/);
+    expect(source).not.toMatch(/\bwidth\s*(?:[<>]=?|===?|!==?)/);
+    expect(source).not.toMatch(/useWindowDimensions\(\)\.width/);
   });
 
   it('does not put flex-1 on the text block now that the container is a column', () => {
