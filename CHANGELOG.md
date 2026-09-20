@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Corrected the native group-exchange draft exit warning to use shared translated unsaved-change wording instead of calling the exchange a listing.
+
 - Native confirmation dialogs now dismiss when their screen loses focus, preventing stale actions from appearing over a newly opened deep link.
 
 - Native challenge and group-exchange creation now prevent duplicate submissions and ignore delayed mutation callbacks after leaving the form.

@@ -78,9 +78,9 @@ function NewGroupExchangeScreen() {
     isSaving: isSubmitting,
     hasSaved: hasSubmitted,
     confirm,
-    title: t('form.unsavedTitle'),
-    message: t('form.unsavedMessage'),
-    discardLabel: t('form.discard'),
+    title: t('common:unsavedChanges.title'),
+    message: t('common:unsavedChanges.message'),
+    discardLabel: t('common:unsavedChanges.discard'),
     cancelLabel: t('common:buttons.cancel'),
   });
 
