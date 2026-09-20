@@ -612,6 +612,22 @@ describe('MarketplaceToolsRoute', () => {
     expect(getMerchantCoupons).toHaveBeenCalledTimes(2);
   });
 
+  it('accepts only one camera event per scanner opening', () => {
+    const onScanned = jest.fn();
+    const screen = render(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={onScanned} />);
+    let camera = screen.getByText('Mock camera scanner');
+    while (!camera.props.onPress) camera = camera.parent!;
+    act(() => {
+      camera.props.onPress();
+      camera.props.onPress();
+    });
+    expect(onScanned).toHaveBeenCalledTimes(1);
+    screen.rerender(<QrScannerSheet visible={false} title="Scan" onClose={jest.fn()} onScanned={onScanned} />);
+    screen.rerender(<QrScannerSheet visible title="Scan" onClose={jest.fn()} onScanned={onScanned} />);
+    fireEvent.press(screen.getByText('Mock camera scanner'));
+    expect(onScanned).toHaveBeenCalledTimes(2);
+  });
+
   it('reads QR tokens from the device camera scanner sheet', async () => {
     const onScanned = jest.fn();
 

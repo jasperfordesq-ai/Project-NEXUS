@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -1585,9 +1585,11 @@ export function QrScannerSheet({
   const theme = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const scanClaimed = useRef(false);
 
   useEffect(() => {
     if (!visible) {
+      scanClaimed.current = false;
       setScanned(false);
       return;
     }
@@ -1606,7 +1608,8 @@ export function QrScannerSheet({
               barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
               onBarcodeScanned={scanned ? undefined : (event) => {
                 const token = event.data.trim();
-                if (!token) return;
+                if (!token || scanClaimed.current || !visible) return;
+                scanClaimed.current = true;
                 setScanned(true);
                 onScanned(token);
               }}
