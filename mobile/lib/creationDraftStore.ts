@@ -7,7 +7,7 @@ import { storage } from '@/lib/storage';
 import { Platform } from 'react-native';
 import { loadEncryptedDraftFile, saveEncryptedDraftFile } from './encryptedDraftFile';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings' | 'event-registration-form';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings' | 'event-registration-form' | 'event-guest-attendance';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
