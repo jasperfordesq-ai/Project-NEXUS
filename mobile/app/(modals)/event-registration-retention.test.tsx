@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import React from 'react';
+import Input from '@/components/ui/Input';
 import { AppState } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 let mockId: string | string[] | undefined = '42'; let mockFocused = true; let mockUser = 7;
@@ -77,4 +78,18 @@ it('removes retained data and action authority after a mutation refusal', () => 
   expect(view.queryByText('retention.preview')).toBeNull();
   expect(view.queryByText('retention.modes.dry_run · 9')).toBeNull();
   expect(mockUseOperation.mock.calls.at(-1)?.[1]).toBe(false);
+});
+
+it('clears a date refusal when the same date becomes valid', () => {
+  const clock = jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-01-02T11:59:00Z'));
+  try {
+    const view = render(<Screen />);
+    fireEvent.changeText(view.getByLabelText('retention.as_of'), '2026-01-02T12:00');
+    fireEvent.press(view.getByText('retention.preview'));
+    expect(mockOperation.submit).not.toHaveBeenCalled();
+    clock.mockReturnValue(Date.parse('2026-01-02T12:01:00Z'));
+    fireEvent.press(view.getByText('retention.preview'));
+    expect(mockOperation.submit).toHaveBeenCalledTimes(1);
+    expect(view.UNSAFE_getByType(Input).props.error).toBeUndefined();
+  } finally { clock.mockRestore(); }
 });

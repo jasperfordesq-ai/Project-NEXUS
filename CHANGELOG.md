@@ -88,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Retention previews clear stale date validation after a valid submission, and confirmation wording handles single-record previews correctly.
+
 - Corrected the refresh button translation in the native retention workspace.
 
 - Retention previews now report missing registration settings as a validation error instead of a server error, and remain retryable after settings are configured.

@@ -58,7 +58,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
     if (blocked) return;
     const instant = eventLocalInputToIso(asOf.trim().replace(' ', 'T'), 'UTC');
     if (!instant || !ended || Date.parse(instant) < Date.parse(data.schedule.end_at!) || Date.parse(instant) > Date.now()) { setInvalid(true); return; }
-    Keyboard.dismiss(); setConfirming(false); void operation.submit({ action: 'preview', asOf: instant });
+    Keyboard.dismiss(); setInvalid(false); setConfirming(false); void operation.submit({ action: 'preview', asOf: instant });
   }
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}><View className="gap-4">
