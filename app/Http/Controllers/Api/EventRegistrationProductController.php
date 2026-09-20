@@ -734,6 +734,10 @@ final class EventRegistrationProductController extends BaseApiController
             // A new request rejected before mutation differs from an uncertain replay conflict.
             return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_version', 409);
         }
+        if (in_array($reason, ['event_registration_guest_attendance_transition_invalid', 'event_registration_guest_attendance_undo_invalid'], true)) {
+            // These checks run after replay resolution, so this exact request did not apply.
+            return $this->respondWithError('EVENT_REGISTRATION_VALIDATION_FAILED', __('api.validation_failed'), 'attendance_action', 422);
+        }
         if ($reason === 'event_registration_guest_capacity_full') {
             // Same code/message as a full event on the registration path — from
             // the member's point of view it is the same fact, and the generic

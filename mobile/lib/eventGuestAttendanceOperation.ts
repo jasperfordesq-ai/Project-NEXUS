@@ -77,7 +77,10 @@ async function run(scope: GuestAttendanceScope, isCurrent: () => boolean, reserv
     try {
       response = await transitionOrganizerRegistrationGuest(scope.eventId, pending.intent, pending.key);
     } catch (error) {
-      if (error instanceof ApiResponseError && error.status === 409 && error.code === 'EVENT_REGISTRATION_CONFLICT' && error.field === 'expected_version') {
+      if (error instanceof ApiResponseError && (
+        (error.status === 409 && error.code === 'EVENT_REGISTRATION_CONFLICT' && error.field === 'expected_version')
+        || (error.status === 422 && error.code === 'EVENT_REGISTRATION_VALIDATION_FAILED' && error.field === 'attendance_action')
+      )) {
         await ordered(scope, async () => {
           const saved = await read(scope);
           if (saved?.status !== 'pending' || saved.key !== pending.key) throw new Error('Guest rejection mismatch');
@@ -102,7 +105,7 @@ export const executeGuestAttendanceOperation = (scope: GuestAttendanceScope, int
 export const recoverGuestAttendanceOperation = (scope: GuestAttendanceScope, current: () => boolean) =>
   run(scope, current, () => loadGuestAttendanceOperation(scope));
 
-/** Explicit read-only review of a definitively rejected version; no guest contact data is saved. */
+/** Explicit read-only review of a definitively rejected attendance request; no guest contact data is saved. */
 export async function reviewGuestAttendanceOperation(scope: GuestAttendanceScope, key: string, current: () => boolean) {
   scopeSchema.parse(scope);
   const seen = new Set<number>();

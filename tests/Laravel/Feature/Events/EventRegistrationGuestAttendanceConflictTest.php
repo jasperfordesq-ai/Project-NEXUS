@@ -49,5 +49,16 @@ final class EventRegistrationGuestAttendanceConflictTest extends TestCase
         $advanced->assertStatus(409);
         self::assertArrayNotHasKey('field', $advanced->json('errors.0'));
         self::assertSame(2, DB::table('event_registration_guest_attendance_history')->where('guest_id', $guestId)->count());
+        $this->apiPost($url . '/undo', ['expected_version' => 2, 'reason' => 'Incorrect checkout', 'idempotency_key' => 'guest-undo'])
+            ->assertOk()->assertJsonPath('data.attendance.attendance_version', 3);
+        $this->apiPost($url . '/undo', ['expected_version' => 3, 'reason' => 'Undo twice', 'idempotency_key' => 'guest-undo-again'])
+            ->assertStatus(422)->assertJsonPath('errors.0.code', 'EVENT_REGISTRATION_VALIDATION_FAILED')
+            ->assertJsonPath('errors.0.field', 'attendance_action');
+        $this->apiPost($url . '/check_in', ['expected_version' => 3, 'idempotency_key' => 'guest-invalid-checkin'])
+            ->assertStatus(422)->assertJsonPath('errors.0.field', 'attendance_action');
+        $this->apiPost($url . '/undo', ['expected_version' => 2, 'reason' => 'Incorrect checkout', 'idempotency_key' => 'guest-undo'])
+            ->assertOk()->assertJsonPath('data.replayed', true);
+        self::assertSame(3, DB::table('event_registration_guest_attendance_history')->where('guest_id', $guestId)->count());
+
     }
 }

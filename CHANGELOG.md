@@ -68,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Invalid guest-attendance transitions and repeated undo attempts now expose definitive rejection details, allowing native saved-action review instead of trapping organisers in an endless recovery retry. Unmarked failures remain uncertain.
+
 - Guest attendance conflicts now identify a definitively rejected attendance version separately from idempotency conflicts, allowing clients to review stale state without misclassifying uncertain retries.
 
 - Registration answer-review and export failures now scroll into view after layout, retain entered evidence and expose updated feedback through an accessibility live region. Submitting dismisses the keyboard, and departed-form callbacks cannot move a newly opened form.

@@ -127,3 +127,18 @@ it('ignores a review response arriving after departure', async () => {
   await expect(review(scope, saved.key, () => current)).rejects.toThrow('unavailable');
   expect(await load(scope)).toMatchObject({ status: 'rejected', key: saved.key });
 });
+
+it('allows explicit review after a definitive invalid-action rejection', async () => {
+  jest.mocked(mutate).mockRejectedValueOnce(new ApiResponseError(422, 'Invalid action', undefined, 'EVENT_REGISTRATION_VALIDATION_FAILED', 'attendance_action'));
+  await expect(execute(scope, intent, () => true)).rejects.toThrow('Invalid action');
+  const saved = await load(scope); expect(saved).toMatchObject({ status: 'rejected', intent });
+  jest.mocked(get).mockResolvedValueOnce(page(1, null, true));
+  await review(scope, saved!.key, () => true);
+  expect(await load(scope)).toMatchObject({ status: 'review', attendanceVersion: 2 });
+  expect(mutate).toHaveBeenCalledTimes(1);
+});
+it('keeps unmarked validation failures uncertain rather than discarding them', async () => {
+  jest.mocked(mutate).mockRejectedValueOnce(new ApiResponseError(422, 'Window closed', undefined, 'EVENT_REGISTRATION_VALIDATION_FAILED'));
+  await expect(execute(scope, intent, () => true)).rejects.toThrow();
+  expect(await load(scope)).toMatchObject({ status: 'pending' });
+});
