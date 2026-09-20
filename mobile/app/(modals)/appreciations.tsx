@@ -21,7 +21,7 @@ import {
 } from '@/lib/api/appreciations';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
@@ -51,10 +51,12 @@ function formatDate(value: string): string {
 }
 
 function AppreciationsScreen() {
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const params = useLocalSearchParams<{ userId?: string | string[]; id?: string | string[] }>();
   return (
     <ModalErrorBoundary>
-      <AppreciationsScreenInner key={JSON.stringify(params.userId ?? params.id ?? '')} />
+      <AppreciationsScreenInner key={JSON.stringify([tenant?.id ?? tenant?.slug, user?.id, params.userId ?? params.id ?? ''])} />
     </ModalErrorBoundary>
   );
 }

@@ -11,6 +11,8 @@ const mockUseApi = jest.fn();
 const mockReactToAppreciation = jest.fn();
 const mockGetAppreciations = jest.fn();
 let mockUserId: string | string[] = '7';
+let mockViewerId = 3;
+let mockTenantId = 2;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -23,11 +25,11 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => ({ isAuthenticated: true, user: { id: mockViewerId } }),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({ tenant: { id: mockTenantId, slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -120,6 +122,8 @@ describe('AppreciationsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUserId = '7';
+    mockViewerId = 3;
+    mockTenantId = 2;
     mockGetAppreciations.mockReset();
     mockReactToAppreciation.mockReset().mockResolvedValue({ data: { reacted: true, reaction_type: 'heart' } });
     mockUseApi.mockReturnValue({
@@ -152,6 +156,34 @@ describe('AppreciationsScreen', () => {
     const screen = render(<AppreciationsScreen />);
     expect(screen.getByText('common:errors.notAvailableTitle')).toBeTruthy();
     expect(mockGetAppreciations).not.toHaveBeenCalled();
+  });
+
+  it.each(['account', 'community'])('reloads viewer state and ignores old reaction callbacks after %s replacement', async (identity) => {
+    const initial = mockUseApi().data;
+    const replacement = pendingPage();
+    let finishOldReaction!: () => void;
+    mockGetAppreciations.mockResolvedValueOnce(initial).mockReturnValueOnce(replacement.promise);
+    mockReactToAppreciation.mockImplementationOnce(() => new Promise((resolve) => {
+      finishOldReaction = () => resolve({ data: { reaction_type: 'heart' } });
+    }));
+    mockUseApi.mockImplementation(jest.requireActual('@/lib/hooks/useApi').useApi);
+    const screen = render(<AppreciationsScreen />);
+    await screen.findByText('Heart');
+    let button = screen.getByLabelText('React with heart');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const oldPress = button.props.onPress;
+    fireEvent.press(screen.getByText('Heart'));
+    if (identity === 'account') mockViewerId = 8;
+    else mockTenantId = 4;
+    screen.rerender(<AppreciationsScreen />);
+    expect(screen.queryByText('Thank you for helping with the garden.')).toBeNull();
+    await waitFor(() => expect(mockGetAppreciations).toHaveBeenCalledTimes(2));
+    await act(async () => { replacement.resolve({ ...initial, data: [{ ...initial.data[0], message: 'Replacement context note', reactions_count: 5, my_reaction: 'star' }] }); });
+    await act(async () => { finishOldReaction(); });
+    await act(async () => { oldPress(); });
+    expect(mockReactToAppreciation).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Replacement context note')).toBeTruthy();
+    expect(screen.getByText('5')).toBeTruthy();
   });
 
   it('renders public appreciations and posts reactions', async () => {
