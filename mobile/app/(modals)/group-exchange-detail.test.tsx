@@ -11,7 +11,9 @@ const mockRefresh = jest.fn();
 const mockConfirmGroupExchange = jest.fn();
 const mockCompleteGroupExchange = jest.fn();
 const mockCancelGroupExchange = jest.fn();
-let mockParams: { id?: string } = { id: '42' };
+const mockDismiss = jest.fn();
+let mockParams: { id?: string | string[] } = { id: '42' };
+let mockHoldConfirmation = false;
 let mockUserId = 7;
 let mockTenantId = 2;
 
@@ -113,9 +115,10 @@ jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: (opts: { title?: string; message?: string; onConfirm: () => void | Promise<void> }) => {
       mockConfirmCalls.push(opts);
-      void opts.onConfirm();
+      if (!mockHoldConfirmation) void opts.onConfirm();
     },
     confirmDialog: null,
+    dismiss: mockDismiss,
   }),
 }));
 
@@ -154,6 +157,7 @@ const baseExchange = {
 };
 
 beforeEach(() => {
+  mockHoldConfirmation = false;
   mockUserId = 7;
   mockTenantId = 2;
   mockParams = { id: '42' };
@@ -164,6 +168,7 @@ beforeEach(() => {
     refresh: mockRefresh,
   });
   mockRefresh.mockReset();
+  mockDismiss.mockClear();
   mockConfirmGroupExchange.mockReset().mockResolvedValue({});
   mockCompleteGroupExchange.mockReset().mockResolvedValue({});
   mockConfirmCalls.length = 0;
@@ -171,6 +176,36 @@ beforeEach(() => {
 });
 
 describe('GroupExchangeDetailScreen', () => {
+  it.each(['1.5', '0x2a', '4.2e1', '9007199254740993', ['42'], ['42', '43']])('does not load malformed group exchange ID %j', id => {
+    mockParams = { id };
+    const screen = render(<GroupExchangeDetailScreen />);
+    expect(screen.getByText('Group exchange not available')).toBeTruthy();
+    expect(mockUseApi).toHaveBeenLastCalledWith(expect.any(Function), [0], { enabled: false });
+  });
+
+  it.each(['refreshing', 'refused', 'changed'])('does not accept an old confirmation after the displayed read is %s', async state => {
+    mockHoldConfirmation = true;
+    const screen = render(<GroupExchangeDetailScreen />);
+    fireEvent.press(screen.getByText('Confirm hours'));
+    const accept = mockConfirmCalls[0]!.onConfirm;
+    mockDismiss.mockClear();
+    mockUseApi.mockReturnValue({
+      data: { data: state === 'changed' ? { ...baseExchange, total_hours: 9 } : baseExchange },
+      isLoading: state === 'refreshing', error: state === 'refused' ? 'Unavailable' : null,
+      errorStatus: state === 'refused' ? 403 : null, refresh: mockRefresh,
+    });
+    screen.rerender(<GroupExchangeDetailScreen />);
+    expect(mockDismiss).toHaveBeenCalled();
+    act(() => { void accept(); });
+    expect(mockConfirmGroupExchange).not.toHaveBeenCalled();
+    if (state === 'changed') {
+      fireEvent.press(screen.getByText('Confirm hours'));
+      await act(async () => mockConfirmCalls[1]!.onConfirm());
+      expect(mockConfirmGroupExchange).toHaveBeenCalledTimes(1);
+      expect(mockRefresh).toHaveBeenCalledTimes(1);
+    }
+  });
+
   it.each(['route', 'account', 'tenant'])('ignores an earlier confirmation and response after %s replacement', async replacement => {
     let reject!: (error: Error) => void;
     mockConfirmGroupExchange.mockImplementationOnce(() => new Promise((_, decline) => { reject = decline; }));

@@ -49,7 +49,7 @@ function formatDate(value?: string | null) {
 }
 
 function GroupExchangeDetailScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const { user } = useAuth();
   const { tenant } = useTenant();
   return (
@@ -61,12 +61,12 @@ function GroupExchangeDetailScreen() {
 
 function GroupExchangeDetailScreenInner() {
   const { t } = useTranslation(['exchanges', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
-  const { confirm, confirmDialog } = useConfirm();
+  const { confirm, confirmDialog, dismiss } = useConfirm();
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -75,13 +75,21 @@ function GroupExchangeDetailScreenInner() {
     return () => { mountedRef.current = false; };
   }, []);
 
-  const exchangeId = Number(id);
-  const safeExchangeId = Number.isFinite(exchangeId) && exchangeId > 0 ? exchangeId : 0;
+  const exchangeId = typeof id === 'string' && /^\d+$/.test(id) ? Number(id) : NaN;
+  const safeExchangeId = Number.isSafeInteger(exchangeId) && exchangeId > 0 ? exchangeId : 0;
   const { data, isLoading, error, errorStatus, refresh } = useApi(() => getGroupExchange(safeExchangeId), [safeExchangeId], { enabled: safeExchangeId > 0 });
   const exchange = data?.data ?? null;
+  const currentRead = useRef({ exchange, isLoading, error, safeExchangeId });
+  currentRead.current = { exchange, isLoading, error, safeExchangeId };
+  useEffect(() => {
+    dismiss();
+  }, [exchange, isLoading, error, dismiss]);
 
   async function runAction(action: 'confirm' | 'complete' | 'cancel') {
     if (!exchange || !mountedRef.current || submittingRef.current) return;
+    const current = currentRead.current;
+    if (current.exchange !== exchange || current.isLoading || current.error
+      || current.safeExchangeId !== exchange.id) return;
     submittingRef.current = true;
     setSubmitting(true);
     try {
