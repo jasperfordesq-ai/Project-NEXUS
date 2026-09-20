@@ -543,7 +543,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
         ? { operation: await reviseMarketplaceCheckout(identity, revision, payload), recovered: false }
         : await reserveMarketplaceCheckout(identity, payload);
       if (!isMountedRef.current) return;
-      if (reserved.recovered && checkoutOperationRef.current?.key !== reserved.operation.key) {
+      if (reserved.recovered) {
         onUncertain();
         return;
       }

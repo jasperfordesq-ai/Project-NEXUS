@@ -646,6 +646,19 @@ describe('MarketplaceDetailRoute', () => {
     expect(createMarketplaceOrder).not.toHaveBeenCalled();
   });
 
+  it('requires recovery before reusing a saved purchase on the same screen', async () => {
+    (createMarketplaceOrder as jest.Mock).mockResolvedValue({ data: { id: 44, order_number: 'MKT-44', status: 'pending_payment' } });
+    (createMarketplacePaymentIntent as jest.Mock).mockResolvedValueOnce({ data: { client_secret: 'pi_secret', payment_intent_id: 'pi_44' } });
+    (presentMarketplacePayment as jest.Mock).mockResolvedValueOnce({ status: 'failed', message: 'Card unavailable' });
+    const screen = render(<MarketplaceDetailRoute />);
+    fireEvent.press(await screen.findByText(/^Buy for /));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Card unavailable' })));
+    fireEvent.press(screen.getByText(/^Buy for /));
+    await screen.findByTestId('marketplace-recover-purchase');
+    expect(createMarketplaceOrder).toHaveBeenCalledTimes(1);
+    expect(presentMarketplacePayment).toHaveBeenCalledTimes(1);
+  });
+
   it('lets a refused purchase be reviewed without rotating its retry key', async () => {
     (createMarketplaceOrder as jest.Mock).mockRejectedValueOnce(new ApiResponseError(422, 'Choose another delivery option'));
     const screen = render(<MarketplaceDetailRoute />);
