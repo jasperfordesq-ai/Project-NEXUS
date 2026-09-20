@@ -69,9 +69,10 @@ jest.mock('@/lib/hooks/useTheme', () => ({
   }),
 }));
 
+let mockRealRead = false;
 const mockUsePaginatedApi = jest.fn();
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUsePaginatedApi(...args),
 }));
 
 const mockConfirm = jest.fn();
@@ -112,6 +113,7 @@ import ConnectionsRoute from './connections';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRealRead = false;
   mockUsePaginatedApi.mockReturnValue(paginated({ items: [], isLoading: false, error: null }));
 });
 
@@ -158,6 +160,63 @@ function paginated(overrides: Partial<{
 }
 
 describe('ConnectionsRoute', () => {
+  it('retries the failed connection page while retaining earlier members', async () => {
+    mockRealRead = true;
+    const { getConnections } = require('@/lib/api/connections');
+    getConnections
+      .mockResolvedValueOnce({ data: [connection], meta: { cursor: 'page-two', has_more: true } })
+      .mockRejectedValueOnce(new Error('Temporary failure'))
+      .mockResolvedValueOnce({ data: [{ ...connection, id: 13, connection_id: 13, user: { ...connection.user, id: 273, name: 'Recovered member' } }], meta: { cursor: null, has_more: false } });
+    const screen = render(<ConnectionsRoute />);
+    await screen.findByText('Katherine');
+    await act(async () => fireEvent.press(screen.getByTestId('connections-load-more')));
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Recovered member');
+    expect(getConnections).toHaveBeenLastCalledWith('accepted', 'page-two');
+    expect(screen.getByText('Katherine')).toBeTruthy();
+  });
+
+  it('completes accepted requests under StrictMode effect replay', async () => {
+    const { acceptConnection } = require('@/lib/api/connections');
+    acceptConnection.mockResolvedValueOnce({ data: {} });
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [{ ...connection, status: 'pending' }] }));
+    const screen = render(<React.StrictMode><ConnectionsRoute /></React.StrictMode>);
+    fireEvent.press(screen.getByText('Received'));
+    await act(async () => { fireEvent.press(screen.getByText('Accept')); });
+    expect(acceptConnection).toHaveBeenCalledWith(12);
+    expect(screen.queryByText('Katherine')).toBeNull();
+  });
+  it('does not resurrect an accepted request when refresh starts or fails', async () => {
+    const { acceptConnection } = require('@/lib/api/connections');
+    acceptConnection.mockResolvedValueOnce({ data: {} });
+    const pending = { ...connection, connection_id: 77, id: 77, status: 'pending' };
+    const refresh = jest.fn();
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [pending], refresh }));
+    const screen = render(<ConnectionsRoute />);
+    fireEvent.press(screen.getByText('Received'));
+    await act(async () => { fireEvent.press(screen.getByText('Accept')); });
+    expect(screen.queryByText('Katherine')).toBeNull();
+    fireEvent(screen.UNSAFE_getByType(require('react-native').RefreshControl), 'refresh');
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Katherine')).toBeNull();
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [pending], refresh, error: 'Connections unavailable' }));
+    screen.rerender(<ConnectionsRoute />);
+    expect(screen.queryByText('Katherine')).toBeNull();
+    expect(screen.getByText('Connections unavailable')).toBeTruthy();
+  });
+
+  it.each([true, false])('retains loaded connections during refresh and failure (pending=%s)', pending => {
+    const retry = jest.fn();
+    mockUsePaginatedApi.mockReturnValue(paginated({ items: [connection], isLoading: pending, error: pending ? null : 'Connections unavailable', refresh: retry }));
+    const screen = render(<ConnectionsRoute />);
+    expect(screen.getByText('Katherine')).toBeTruthy();
+    if (!pending) {
+      expect(screen.getByText('Connections unavailable')).toBeTruthy();
+      fireEvent.press(screen.getByText('Retry'));
+      expect(retry).toHaveBeenCalledTimes(1);
+    }
+  });
+
   it('renders the accepted empty state with browse members action', () => {
     const { getByText } = render(<ConnectionsRoute />);
     expect(getByText('No connections yet')).toBeTruthy();
@@ -305,8 +364,10 @@ describe('ConnectionsRoute', () => {
 
   it('treats a lost accept response as success when readback is connected', async () => {
     const { acceptConnection, getConnectionStatus } = require('@/lib/api/connections');
-    acceptConnection.mockRejectedValueOnce(new Error('connection lost'));
-    getConnectionStatus.mockResolvedValueOnce({ data: { status: 'connected', connection_id: 79 } });
+    let rejectAccept!: (error: Error) => void;
+    let resolveReadback!: (value: unknown) => void;
+    acceptConnection.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectAccept = reject; }));
+    getConnectionStatus.mockImplementationOnce(() => new Promise((resolve) => { resolveReadback = resolve; }));
     mockUsePaginatedApi.mockReturnValue(paginated({ items: [{
       connection_id: 79,
       status: 'pending',
@@ -317,8 +378,15 @@ describe('ConnectionsRoute', () => {
     fireEvent.press(getByText('Received'));
     fireEvent.press(getByText('Accept'));
 
-    await waitFor(() => expect(queryByText('Ada Lovelace')).toBeNull());
+    expect(acceptConnection).toHaveBeenCalledWith(79);
+    expect(getConnectionStatus).not.toHaveBeenCalled();
+    expect(queryByText('Ada Lovelace')).not.toBeNull();
+    await act(async () => { rejectAccept(new Error('connection lost')); });
     expect(getConnectionStatus).toHaveBeenCalledWith(11);
+    expect(queryByText('Ada Lovelace')).not.toBeNull();
+    await act(async () => { resolveReadback({ data: { status: 'connected', connection_id: 79 } }); });
+    expect(queryByText('Ada Lovelace')).toBeNull();
+    expect(acceptConnection).toHaveBeenCalledTimes(1);
   });
 
   it('does not offer a next page when the server says there is none', () => {

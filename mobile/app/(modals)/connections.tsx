@@ -37,6 +37,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { describeApiError } from '@/lib/api/describeApiError';
@@ -77,6 +78,7 @@ function ConnectionsScreen() {
   const { t } = useTranslation(['members', 'common']);
   const { confirm, confirmDialog } = useConfirm();
   const [tab, setTab] = useState<ConnectionTab>('accepted');
+  const requestedCursor = useRef<string | null>(null);
   const currentTabRef = useRef(tab);
   currentTabRef.current = tab;
   const [actionId, setActionId] = useState<number | null>(null);
@@ -94,15 +96,18 @@ function ConnectionsScreen() {
    * declining and cancelling delete it — so dropping it locally is not an optimistic guess
    * about the server, it is the known outcome of a request that has already succeeded.
    *
-   * Cleared whenever the tab changes or the member pulls to refresh, so the list can never
-   * drift away from the server for longer than one view.
+   * Held until the tab changes: starting a refresh cannot undo a confirmed action,
+   * especially when the request fails and the hook retains the previous rows.
    */
   const [actedOnIds, setActedOnIds] = useState<Set<number>>(new Set());
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
   /*
     🔴 Paged, not a single call (audit 2026-09-06, F11). The API wrapper asks for 20 at
     a time and the endpoint returns a cursor and `has_more`; this screen called it once,
@@ -119,7 +124,10 @@ function ConnectionsScreen() {
     loadMore,
     refresh,
   } = usePaginatedApi<Connection, ConnectionListResponse>(
-    (cursor) => getConnections(tab, cursor),
+    (cursor) => {
+      requestedCursor.current = cursor;
+      return getConnections(tab, cursor);
+    },
     (response) => ({
       items: unwrapConnections(response),
       cursor: response?.meta?.cursor ?? null,
@@ -141,9 +149,13 @@ function ConnectionsScreen() {
   }, [tab]);
 
   const refreshFromServer = useCallback(() => {
-    setActedOnIds(new Set());
     refresh();
   }, [refresh]);
+
+  const retryFailedPage = useCallback(() => {
+    if (requestedCursor.current !== null) loadMore();
+    else refresh();
+  }, [loadMore, refresh]);
 
   function runAction(connection: Connection, action: 'accept' | 'remove') {
     const id = connectionId(connection);
@@ -265,9 +277,9 @@ function ConnectionsScreen() {
           </HeroCard.Body>
         </HeroCard>
 
-        {isLoading ? (
+        {isLoading && connections.length === 0 ? (
           <View className="items-center py-8"><Spinner size="lg" /></View>
-        ) : error ? (
+        ) : error && connections.length === 0 ? (
           <Surface
             variant="secondary"
             className="items-center gap-3 rounded-panel p-5"
@@ -275,7 +287,7 @@ function ConnectionsScreen() {
           >
             <Ionicons name="alert-circle-outline" size={28} color={theme.error} />
             <Text className="text-center text-sm" style={{ color: theme.text }}>{error}</Text>
-            <ActionPill label={t('common:buttons.retry')} primary={primary} onPress={refresh} />
+            <ActionPill label={t('common:buttons.retry')} primary={primary} onPress={retryFailedPage} />
           </Surface>
         ) : connections.length === 0 ? (
           <Surface
@@ -312,7 +324,9 @@ function ConnectionsScreen() {
                 />
               );
             })}
-            {hasMore ? (
+            {error ? (
+              <ErrorState subtitle={error} onRetry={retryFailedPage} isRetrying={isLoading || isLoadingMore} />
+            ) : hasMore ? (
               <HeroButton
                 testID="connections-load-more"
                 variant="secondary"
