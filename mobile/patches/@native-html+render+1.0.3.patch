@@ -1,0 +1,51 @@
+diff --git a/node_modules/@native-html/render/lib/commonjs/elements/extractImageStyleProps.js b/node_modules/@native-html/render/lib/commonjs/elements/extractImageStyleProps.js
+index 06de3d5..4d32602 100644
+--- a/node_modules/@native-html/render/lib/commonjs/elements/extractImageStyleProps.js
++++ b/node_modules/@native-html/render/lib/commonjs/elements/extractImageStyleProps.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = void 0;
+-var _ramda = require("ramda");
++var _ramda = { pick: require("ramda/src/pick") };
+ const keysToExtract = ['resizeMode', 'tintColor', 'overlayColor', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderTopLeftRadius', 'borderTopRightRadius'];
+ const extractProps = (0, _ramda.pick)(keysToExtract);
+ function mapObjectFit(objectFit) {
+diff --git a/node_modules/@native-html/render/lib/commonjs/helpers/splitBoxModelStyle.js b/node_modules/@native-html/render/lib/commonjs/helpers/splitBoxModelStyle.js
+index 8aa5573..f840d0e 100644
+--- a/node_modules/@native-html/render/lib/commonjs/helpers/splitBoxModelStyle.js
++++ b/node_modules/@native-html/render/lib/commonjs/helpers/splitBoxModelStyle.js
+@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.default = splitBoxModelStyle;
+-var _ramda = require("ramda");
++var _ramda = { pick: require("ramda/src/pick"), omit: require("ramda/src/omit") };
+ const borderBoxProps = ['backgroundColor', 'borderBottomColor', 'borderBottomLeftRadius', 'borderBottomRightRadius', 'borderBottomWidth', 'borderLeftColor', 'borderLeftWidth', 'borderRightColor', 'borderRightWidth', 'borderStyle', 'borderTopColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderTopWidth', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginTop'];
+ const pickBorderBox = (0, _ramda.pick)(borderBoxProps);
+ const omitBorderBox = (0, _ramda.omit)(borderBoxProps);
+diff --git a/node_modules/@native-html/render/src/elements/extractImageStyleProps.ts b/node_modules/@native-html/render/src/elements/extractImageStyleProps.ts
+index b43fbf8..6e226bf 100644
+--- a/node_modules/@native-html/render/src/elements/extractImageStyleProps.ts
++++ b/node_modules/@native-html/render/src/elements/extractImageStyleProps.ts
+@@ -1,5 +1,5 @@
+ import { WebBlockStyles } from '@native-html/transient-render-engine';
+-import { pick } from 'ramda';
++import pick from 'ramda/src/pick';
+ import { ImageStyle } from 'react-native';
+ 
+ const keysToExtract: (keyof ImageStyle)[] = [
+diff --git a/node_modules/@native-html/render/src/helpers/splitBoxModelStyle.ts b/node_modules/@native-html/render/src/helpers/splitBoxModelStyle.ts
+index 86a7692..df01a19 100644
+--- a/node_modules/@native-html/render/src/helpers/splitBoxModelStyle.ts
++++ b/node_modules/@native-html/render/src/helpers/splitBoxModelStyle.ts
+@@ -2,7 +2,8 @@ import {
+   NativeBlockStyles,
+   NativeTextStyles
+ } from '@native-html/transient-render-engine';
+-import { omit, pick } from 'ramda';
++import omit from 'ramda/src/omit';
++import pick from 'ramda/src/pick';
+ 
+ type NativeStyles = NativeBlockStyles | NativeTextStyles;
+ 

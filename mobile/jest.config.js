@@ -64,6 +64,7 @@ module.exports = {
       'react-native-gesture-handler|' +
       '@gorhom|' +
       'decode-uri-component|' +
+      '@native-html|@jsamr|marked|stringify-entities|character-entities-html4|character-entities-legacy|' +
       'heroui-native|' +
       'tailwind-variants|' +
       'nativewind|' +

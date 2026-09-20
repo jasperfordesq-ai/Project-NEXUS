@@ -1,0 +1,26 @@
+diff --git a/node_modules/dom-serializer/lib/esm/index.js b/node_modules/dom-serializer/lib/esm/index.js
+index 1ccc9d5..5768b95 100644
+--- a/node_modules/dom-serializer/lib/esm/index.js
++++ b/node_modules/dom-serializer/lib/esm/index.js
+@@ -2,7 +2,7 @@
+  * Module dependencies
+  */
+ import * as ElementType from "domelementtype";
+-import { encodeXML, escapeAttribute, escapeText } from "entities";
++import { encodeXML, escapeAttribute, escapeText } from "entities/lib/escape.js";
+ /**
+  * Mixed-case SVG and MathML tags & attributes
+  * recognized by the HTML parser.
+diff --git a/node_modules/dom-serializer/lib/index.js b/node_modules/dom-serializer/lib/index.js
+index af996ff..938af41 100644
+--- a/node_modules/dom-serializer/lib/index.js
++++ b/node_modules/dom-serializer/lib/index.js
+@@ -39,7 +39,7 @@ exports.render = void 0;
+  * Module dependencies
+  */
+ var ElementType = __importStar(require("domelementtype"));
+-var entities_1 = require("entities");
++var entities_1 = require("entities/lib/escape.js");
+ /**
+  * Mixed-case SVG and MathML tags & attributes
+  * recognized by the HTML parser.
