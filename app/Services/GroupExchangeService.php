@@ -811,6 +811,19 @@ class GroupExchangeService
     public function confirmParticipation(int $exchangeId, int $userId): bool
     {
         $this->lastContactRestriction = null;
+        return DB::transaction(function () use ($exchangeId, $userId): bool {
+            $exchange = DB::table('group_exchanges')->where('id', $exchangeId)
+                ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first(['status']);
+            if (! $exchange || $exchange->status !== 'pending_confirmation') {
+                return false;
+            }
+            return $this->confirmAwaitingParticipation($exchangeId, $userId);
+        });
+    }
+
+    private function confirmAwaitingParticipation(int $exchangeId, int $userId): bool
+    {
+        $this->lastContactRestriction = null;
         $tenantId = TenantContext::getId();
         $participantIds = DB::table('group_exchange_participants as gep')
             ->join('group_exchanges as ge', 'ge.id', '=', 'gep.group_exchange_id')

@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Accept group-exchange participant confirmation only while the exchange is awaiting confirmation, with the state check and write protected by a shared exchange lock.
+
 - Preserve participant records on completed or cancelled group exchanges, while retaining normal participant editing and repeat-safe removal on open exchanges.
 
 - Keep group-exchange starts from overwriting a concurrent cancellation or repeating participant notifications after another start has already succeeded.

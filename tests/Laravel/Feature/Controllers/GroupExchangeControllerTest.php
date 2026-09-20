@@ -315,6 +315,22 @@ class GroupExchangeControllerTest extends TestCase
         }
     }
 
+    public function test_confirmation_requires_an_exchange_awaiting_confirmation(): void
+    {
+        foreach (['draft', 'pending_participants', 'pending_broker', 'active', 'completed', 'cancelled', 'disputed'] as $status) {
+            $organizer = $this->authenticatedUser();
+            $provider = $this->makeUser();
+            $receiver = $this->makeUser(10);
+            $id = $this->createExchange($organizer, $provider, $receiver);
+            DB::table('group_exchanges')->where('id', $id)->update(['status' => $status]);
+            Sanctum::actingAs($provider, ['*']);
+            $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(400);
+            $participant = DB::table('group_exchange_participants')->where('group_exchange_id', $id)->where('user_id', $provider->id)->first();
+            $this->assertSame(0, (int) $participant->confirmed, $status);
+            $this->assertNull($participant->confirmed_at, $status);
+        }
+    }
+
     public function test_terminal_exchange_cannot_add_participants(): void
     {
         foreach (['completed', 'cancelled'] as $status) {
