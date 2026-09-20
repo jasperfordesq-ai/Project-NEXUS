@@ -321,7 +321,8 @@
     "settings_required": "Configura le impostazioni di iscrizione prima di creare un’anteprima di conservazione.",
     "time_hint": "Usa AAAA-MM-GG HH:mm in UTC, dopo la fine dell’evento e non oltre il momento attuale.",
     "preview_reference": "Anteprima {{id}}",
-    "confirm": "Record idonei: {{count}}. Applicare l’anteprima {{id}}? Questa azione non può essere annullata."
+    "confirm": "Record idonei: {{count}}. Applicare l’anteprima {{id}}? Questa azione non può essere annullata.",
+    "review": "Visualizza operazione"
   },
   "statuses": {
     "draft": "Bozza",

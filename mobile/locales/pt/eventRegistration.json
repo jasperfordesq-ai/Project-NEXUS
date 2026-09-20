@@ -321,7 +321,8 @@
     "settings_required": "Configure as definições de inscrição antes de criar uma pré-visualização de retenção.",
     "time_hint": "Use AAAA-MM-DD HH:mm em UTC, após o fim do evento e nunca depois do momento atual.",
     "preview_reference": "Pré-visualização {{id}}",
-    "confirm": "Registos elegíveis: {{count}}. Aplicar a pré-visualização {{id}}? Esta ação não pode ser anulada."
+    "confirm": "Registos elegíveis: {{count}}. Aplicar a pré-visualização {{id}}? Esta ação não pode ser anulada.",
+    "review": "Ver operação"
   },
   "statuses": {
     "draft": "Rascunho",

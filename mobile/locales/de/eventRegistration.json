@@ -321,7 +321,8 @@
     "settings_required": "Konfigurieren Sie die Registrierungseinstellungen, bevor Sie eine Vorschau erstellen.",
     "time_hint": "Verwenden Sie JJJJ-MM-TT HH:mm in UTC, nach Veranstaltungsende und nicht später als jetzt.",
     "preview_reference": "Vorschau {{id}}",
-    "confirm": "Geeignete Datensätze: {{count}}. Vorschau {{id}} anwenden? Dies kann nicht rückgängig gemacht werden."
+    "confirm": "Geeignete Datensätze: {{count}}. Vorschau {{id}} anwenden? Dies kann nicht rückgängig gemacht werden.",
+    "review": "Lauf anzeigen"
   },
   "statuses": {
     "draft": "Entwurf",

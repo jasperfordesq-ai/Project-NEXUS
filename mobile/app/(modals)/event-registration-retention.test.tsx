@@ -30,7 +30,7 @@ beforeEach(() => {
 });
 it('requires review then explicit confirmation before applying the chosen preview', () => {
   const view = render(<Screen />); expect(mockOperation.submit).not.toHaveBeenCalled();
-  fireEvent.press(view.getByText('events:registrationSettings.review'));
+  fireEvent.press(view.getByText('retention.review'));
   fireEvent.press(view.getByText('retention.apply')); expect(mockOperation.submit).not.toHaveBeenCalled();
   expect(view.getByText('retention.warning_description')).toBeTruthy();
   fireEvent.press(view.getByText('common:buttons.confirm'));
@@ -53,10 +53,10 @@ it('requires settings for new work but preserves explicit pending recovery', () 
   fireEvent.press(view.getByText('event_communications:recovery_button')); expect(mockOperation.recover).toHaveBeenCalledTimes(1);
 });
 it('clears confirmation after departure and account change', () => {
-  const view = render(<Screen />); fireEvent.press(view.getByText('events:registrationSettings.review')); fireEvent.press(view.getByText('retention.apply'));
+  const view = render(<Screen />); fireEvent.press(view.getByText('retention.review')); fireEvent.press(view.getByText('retention.apply'));
   act(() => jest.mocked(AppState.addEventListener).mock.calls.at(-1)?.[1]('background')); expect(view.queryByText('common:buttons.confirm')).toBeNull();
   act(() => jest.mocked(AppState.addEventListener).mock.calls.at(-1)?.[1]('active')); expect(view.queryByText('common:buttons.confirm')).toBeNull();
-  fireEvent.press(view.getByText('events:registrationSettings.review')); fireEvent.press(view.getByText('retention.apply'));
+  fireEvent.press(view.getByText('retention.review')); fireEvent.press(view.getByText('retention.apply'));
   mockUser = 8; view.rerender(<Screen />); expect(view.queryByText('common:buttons.confirm')).toBeNull();
 });
 it('shows a saved receipt from another page without applying on load', () => {

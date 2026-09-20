@@ -93,7 +93,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
                 <Button variant="secondary" isDisabled={operation.busy} onPress={() => setConfirming(false)}>{t('common:buttons.cancel')}</Button></>}
           </>}
           <Button variant="secondary" isDisabled={operation.busy} onPress={() => { setSelected(null); setConfirming(false); }}>{t('common:close')}</Button>
-        </> : <Button variant="secondary" isDisabled={operation.busy} onPress={() => { setSelected(run); setConfirming(false); }}>{t('events:registrationSettings.review')}</Button>}
+        </> : <Button variant="secondary" isDisabled={operation.busy} onPress={() => { setSelected(run); setConfirming(false); }}>{t('retention.review')}</Button>}
       </View>)}
       {!selected && pagination.last_page > 1 && <View className="gap-2">
         <Text className="text-muted-foreground">{t('events:attendance.pageSummary', { page: pagination.page, total: pagination.last_page })}</Text>

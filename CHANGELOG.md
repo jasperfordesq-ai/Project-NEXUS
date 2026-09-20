@@ -88,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Clarified that the native retention history control opens a saved run without reloading or applying it.
+
 - Retention previews clear stale date validation after a valid submission, and confirmation wording handles single-record previews correctly.
 
 - Corrected the refresh button translation in the native retention workspace.

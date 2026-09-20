@@ -321,7 +321,8 @@
     "settings_required": "Configurez les paramètres d’inscription avant de créer un aperçu de conservation.",
     "time_hint": "Utilisez AAAA-MM-JJ HH:mm en UTC, après la fin de l’événement et au plus tard maintenant.",
     "preview_reference": "Aperçu {{id}}",
-    "confirm": "Enregistrements admissibles : {{count}}. Appliquer l’aperçu {{id}} ? Cette action est irréversible."
+    "confirm": "Enregistrements admissibles : {{count}}. Appliquer l’aperçu {{id}} ? Cette action est irréversible.",
+    "review": "Voir l’opération"
   },
   "statuses": {
     "draft": "Brouillon",
