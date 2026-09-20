@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile event details reject array-valued, fractional and unsafe numeric route IDs before enabling event reads.
+
 - Mobile event details replace RSVP counts with newly refreshed event data and correctly apply RSVP updates after StrictMode lifecycle replay.
 
 - Mobile exchange actions prevent overlapping submissions, ignore departed-screen completions, and refresh status after uncertain network/server responses before allowing further actions.

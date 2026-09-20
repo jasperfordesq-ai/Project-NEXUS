@@ -11,6 +11,7 @@ import { Linking, ScrollView, StyleSheet } from 'react-native';
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
+let mockEventRouteId: string | string[] | undefined = '7';
 const mockRouterPush = jest.fn();
 const mockConfirm = jest.fn((opts: { onConfirm: () => void | Promise<void> }) => {
   void opts.onConfirm();
@@ -20,7 +21,7 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   useRouter: () => ({ push: mockRouterPush, replace: jest.fn(), back: jest.fn() }),
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({ id: '7' }),
+  useLocalSearchParams: () => ({ id: mockEventRouteId }),
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -377,6 +378,7 @@ import { ApiResponseError } from '@/lib/api/client';
 const defaultApiState = { data: null, isLoading: false, error: null, refresh: jest.fn() };
 
 beforeEach(() => {
+  mockEventRouteId = '7';
   jest.clearAllMocks();
   mockUseApi.mockReturnValue(defaultApiState);
   mockRouterPush.mockClear();
@@ -505,6 +507,15 @@ const reminderPreferencesState = {
 };
 
 describe('EventDetailScreen', () => {
+  it.each([{ routeId: ['7'] }, { routeId: ['7', '8'] }, { routeId: '7.5' }, { routeId: '9007199254740993' }, { routeId: undefined }, { routeId: '' }])('rejects an ambiguous or invalid event route $routeId', ({ routeId }) => {
+    mockEventRouteId = routeId;
+    const screen = render(<EventDetailScreen />);
+    expect(screen.getByText('Invalid event ID.')).toBeTruthy();
+    const eventRead = mockUseApi.mock.calls[0];
+    expect(eventRead[2]).toEqual(expect.objectContaining({ enabled: false }));
+    expect(screen.queryByTestId('event-going-action')).toBeNull();
+  });
+
   it('renders without crashing when data is loaded', () => {
     mockUseApi.mockReturnValue({ data: { data: mockEvent }, isLoading: false, error: null, refresh: jest.fn() });
 

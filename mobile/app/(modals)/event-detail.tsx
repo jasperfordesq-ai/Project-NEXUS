@@ -90,7 +90,7 @@ function eventMutationKey(action: 'accept-offer' | 'rsvp-going' | 'rsvp-interest
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 function EventDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const { user } = useAuth();
   const { tenant } = useTenant();
   return (
@@ -109,7 +109,7 @@ function EventDetailScreenInner() {
     'event_communications',
     'event_recurrence_blueprints',
   ]);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const { user } = useAuth();
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
@@ -119,8 +119,8 @@ function EventDetailScreenInner() {
   const openExternal = useOpenExternalUrl();
   const { confirm, confirmDialog } = useConfirm();
 
-  const eventId = Number(id);
-  const safeEventId = Number.isFinite(eventId) && eventId > 0 ? eventId : 0;
+  const eventId = typeof id === 'string' ? Number(id) : 0;
+  const safeEventId = Number.isSafeInteger(eventId) && eventId > 0 ? eventId : 0;
   const { data, isLoading, error, errorStatus, refresh } = useApi(() => getEvent(safeEventId), [safeEventId], { enabled: safeEventId > 0 });
   const remindersApi = useApi(() => getEventReminders(safeEventId), [safeEventId], { enabled: safeEventId > 0 && !!user });
   const event = data?.data ?? null;
