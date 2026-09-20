@@ -1876,9 +1876,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupExchangeService.php:712:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GroupExchangeService.php:730:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GroupExchangeService.php",
-            "line": 712,
+            "line": 730,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -1889,9 +1889,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupExchangeService.php:1062:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GroupExchangeService.php:1080:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GroupExchangeService.php",
-            "line": 1062,
+            "line": 1080,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

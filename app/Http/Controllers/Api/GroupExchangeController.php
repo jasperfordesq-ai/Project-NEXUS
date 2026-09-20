@@ -222,7 +222,9 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.organizer_only_update'), null, 403);
         }
 
-        $this->groupExchangeService->removeParticipant((int) $id, (int) $userId);
+        if (!$this->groupExchangeService->removeParticipant((int) $id, (int) $userId)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_update_completed_exchange'), null, 400);
+        }
 
         $updated = $this->groupExchangeService->get((int) $id);
 

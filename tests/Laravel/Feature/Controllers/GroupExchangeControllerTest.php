@@ -299,6 +299,52 @@ class GroupExchangeControllerTest extends TestCase
         $this->assertEqualsWithDelta(10, (float) DB::table('users')->where('id', $receiver->id)->value('balance'), 0.001);
     }
 
+    public function test_terminal_exchange_keeps_participants_when_removal_is_requested(): void
+    {
+        foreach (['completed', 'cancelled'] as $status) {
+            $organizer = $this->authenticatedUser();
+            $provider = $this->makeUser();
+            $receiver = $this->makeUser(10);
+            $id = $this->createExchange($organizer, $provider, $receiver);
+            DB::table('group_exchanges')->where('id', $id)->update(['status' => $status]);
+            $before = DB::table('group_exchange_participants')->where('group_exchange_id', $id)->orderBy('id')->get()->toArray();
+
+            $this->apiDelete("/v2/group-exchanges/{$id}/participants/{$provider->id}")->assertStatus(400);
+
+            $this->assertEquals($before, DB::table('group_exchange_participants')->where('group_exchange_id', $id)->orderBy('id')->get()->toArray());
+        }
+    }
+
+    public function test_terminal_exchange_cannot_add_participants(): void
+    {
+        foreach (['completed', 'cancelled'] as $status) {
+            $organizer = $this->authenticatedUser();
+            $provider = $this->makeUser();
+            $receiver = $this->makeUser(10);
+            $extra = $this->makeUser();
+            $id = $this->createExchange($organizer, $provider, $receiver);
+            DB::table('group_exchanges')->where('id', $id)->update(['status' => $status]);
+
+            $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(400);
+
+            $this->assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $id)->count());
+        }
+    }
+
+    public function test_open_exchange_can_add_and_remove_participants_and_repeat_removal(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser();
+        $receiver = $this->makeUser(10);
+        $extra = $this->makeUser();
+        $id = $this->createExchange($organizer, $provider, $receiver);
+        $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $extra->id, 'role' => 'provider'])->assertStatus(200);
+        $this->assertSame(3, DB::table('group_exchange_participants')->where('group_exchange_id', $id)->count());
+        $this->apiDelete("/v2/group-exchanges/{$id}/participants/{$extra->id}")->assertStatus(200);
+        $this->apiDelete("/v2/group-exchanges/{$id}/participants/{$extra->id}")->assertStatus(200);
+        $this->assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $id)->count());
+    }
+
     /**
      * Create an equal-split exchange as the organizer with one provider + one
      * receiver, returning its id.

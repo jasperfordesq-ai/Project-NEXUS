@@ -278,6 +278,19 @@ class GroupExchangeService
     public function addParticipant(int $exchangeId, int $userId, string $role, float $hours = 0, float $weight = 1.0): bool
     {
         $this->lastContactRestriction = null;
+        return DB::transaction(function () use ($exchangeId, $userId, $role, $hours, $weight): bool {
+            $exchange = DB::table('group_exchanges')->where('id', $exchangeId)
+                ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first(['status']);
+            if (! $exchange || in_array($exchange->status, ['completed', 'cancelled'], true)) {
+                return false;
+            }
+            return $this->addParticipantToMutableExchange($exchangeId, $userId, $role, $hours, $weight);
+        });
+    }
+
+    private function addParticipantToMutableExchange(int $exchangeId, int $userId, string $role, float $hours, float $weight): bool
+    {
+        $this->lastContactRestriction = null;
         $tenantId = TenantContext::getId();
         $exchange = DB::table('group_exchanges')
             ->where('id', $exchangeId)
@@ -357,12 +370,17 @@ class GroupExchangeService
      */
     public function removeParticipant(int $exchangeId, int $userId): bool
     {
-        $deleted = DB::table('group_exchange_participants')
-            ->where('group_exchange_id', $exchangeId)
-            ->where('user_id', $userId)
-            ->delete();
-
-        return $deleted > 0;
+        return DB::transaction(function () use ($exchangeId, $userId): bool {
+            $exchange = DB::table('group_exchanges')->where('id', $exchangeId)
+                ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first(['status']);
+            if (! $exchange || in_array($exchange->status, ['completed', 'cancelled'], true)) {
+                return false;
+            }
+            DB::table('group_exchange_participants')
+                ->where('group_exchange_id', $exchangeId)->where('user_id', $userId)->delete();
+            // Removing an already absent member is an accepted no-op on an open exchange.
+            return true;
+        });
     }
 
     /**
