@@ -5,7 +5,8 @@
 
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 const mockBack = jest.fn();
 const mockReplace = jest.fn();
@@ -169,6 +170,51 @@ import NewOrganisationScreen from './new-organisation';
 import { firePreventedRemoval, isGuardArmed } from '@/lib/test/unsavedGuardHarness';
 
 describe('NewOrganisationScreen', () => {
+  function fillForm(screen: ReturnType<typeof render>) {
+    fireEvent.changeText(screen.getByPlaceholderText('Community skills network'), 'Neighbourhood Skills Network');
+    fireEvent.changeText(screen.getByPlaceholderText('Tell members what your organisation does and how volunteers can help.'), 'We coordinate local volunteering opportunities for neighbours.');
+    fireEvent.changeText(screen.getByPlaceholderText('contact@example.org'), 'hello@example.org');
+    fireEvent.press(screen.getByText('I confirm I am authorised to register this organisation and the details are accurate.'));
+  }
+
+  it('does not create an organisation from a submit callback retained after departure', async () => {
+    const screen = render(<NewOrganisationScreen />);
+    fillForm(screen);
+    let button = screen.getByText('Submit for review');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const submit = button.props.onPress;
+    expect(submit).toEqual(expect.any(Function));
+    screen.unmount();
+    await act(async () => submit());
+    expect(mockCreateOrganisation).not.toHaveBeenCalled();
+  });
+
+  it.each(['https://?', 'https://example org', 'https://#fragment'])('rejects malformed website %s before submission', (website) => {
+    const screen = render(<NewOrganisationScreen />);
+    fillForm(screen);
+    fireEvent.changeText(screen.getByPlaceholderText('https://example.org'), website);
+    fireEvent.press(screen.getByText('Submit for review'));
+    expect(screen.getByText('Enter a full website URL starting with http:// or https://.')).toBeTruthy();
+    expect(mockCreateOrganisation).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    new ApiResponseError(422, 'Validation failed', { name: ['Choose a shorter name.'], contact_email: ['Use another contact email.'] }),
+    new ApiResponseError(409, 'Choose a shorter name.', undefined, 'ALREADY_EXISTS', 'name'),
+  ])('keeps server field feedback beside the editable draft', async (failure) => {
+    mockCreateOrganisation.mockRejectedValueOnce(failure);
+    const screen = render(<NewOrganisationScreen />);
+    fillForm(screen);
+    fireEvent.press(screen.getByText('Submit for review'));
+    await screen.findByText('Choose a shorter name.');
+    if (failure.errors) expect(screen.getByText('Use another contact email.')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Community skills network').props.value).toBe('Neighbourhood Skills Network');
+    expect(mockReplace).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByPlaceholderText('Community skills network'), 'New name');
+    expect(screen.queryByText('Choose a shorter name.')).toBeNull();
+    if (failure.errors) expect(screen.getByText('Use another contact email.')).toBeTruthy();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateOrganisation.mockResolvedValue({ data: { id: 44, name: 'Neighbourhood Skills Network' } });

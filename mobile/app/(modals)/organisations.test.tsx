@@ -4,8 +4,10 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as ReactNative from 'react-native';
+import { ApiResponseError } from '@/lib/api/client';
+import { getOrganisations } from '@/lib/api/organisations';
 
 const mockPush = jest.fn();
 
@@ -77,8 +79,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 const mockUsePaginatedApi = jest.fn();
+let mockRealRead = false;
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+  usePaginatedApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/usePaginatedApi').usePaginatedApi(...args) : mockUsePaginatedApi(...args),
 }));
 
 jest.mock('@expo/vector-icons', () => ({
@@ -211,6 +214,8 @@ const defaultPaginatedState = {
 };
 
 beforeEach(() => {
+  mockRealRead = false;
+  jest.mocked(getOrganisations).mockReset();
   mockPush.mockReset();
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
 });
@@ -252,6 +257,42 @@ const mockUnverifiedOrg = {
 };
 
 describe('OrganisationsScreen', () => {
+  it('retries a failed later page at its cursor while retaining already loaded organizations', async () => {
+    mockRealRead = true;
+    jest.mocked(getOrganisations)
+      .mockResolvedValueOnce({ data: [mockOrganisation], meta: { cursor: 'page-two', has_more: true } })
+      .mockResolvedValueOnce({ data: [mockUnverifiedOrg], meta: { cursor: 'page-three', has_more: true } })
+      .mockRejectedValueOnce(new ApiResponseError(503, 'Temporary failure'))
+      .mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
+    const screen = render(<OrganisationsScreen />);
+    await screen.findByText(mockOrganisation.name);
+    await act(async () => screen.UNSAFE_getByType(ReactNative.FlatList).props.onEndReached());
+    await screen.findByText(mockUnverifiedOrg.name);
+    await act(async () => screen.UNSAFE_getByType(ReactNative.FlatList).props.onEndReached());
+    await screen.findByText('Temporary failure');
+    await act(async () => screen.UNSAFE_getByType(ReactNative.FlatList).props.onEndReached());
+    expect(getOrganisations).toHaveBeenCalledTimes(3);
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(getOrganisations).toHaveBeenCalledTimes(4));
+    expect(getOrganisations).toHaveBeenLastCalledWith('page-three', undefined);
+    expect(screen.getByText(mockOrganisation.name)).toBeTruthy();
+    expect(screen.getByText(mockUnverifiedOrg.name)).toBeTruthy();
+  });
+
+  it.each([401, 403, 404])('clears loaded organizations after a refused refresh (%s)', async (status) => {
+    mockRealRead = true;
+    jest.mocked(getOrganisations)
+      .mockResolvedValueOnce({ data: [mockOrganisation], meta: { cursor: 'next-page', has_more: true } })
+      .mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
+    const screen = render(<OrganisationsScreen />);
+    await screen.findByText(mockOrganisation.name);
+    await act(async () => screen.UNSAFE_getByType(ReactNative.RefreshControl).props.onRefresh());
+    await screen.findByText('common:errors.notAvailableTitle');
+    expect(screen.queryByText(mockOrganisation.name)).toBeNull();
+    expect(screen.queryByPlaceholderText('Search organisations...')).toBeNull();
+    expect(jest.mocked(getOrganisations)).toHaveBeenCalledTimes(2);
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<OrganisationsScreen />);
     expect(toJSON()).toBeTruthy();

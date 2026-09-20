@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import * as Haptics from '@/lib/haptics';
 
 import { createOrganisation } from '@/lib/api/organisations';
+import { ApiResponseError } from '@/lib/api/client';
+import { isOpenableExternalUrl } from '@/lib/utils/openExternalUrl';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -52,7 +54,7 @@ function isEmail(value: string) {
 }
 
 function isValidWebsite(value: string) {
-  return value.trim() === '' || /^https?:\/\/.+/i.test(value.trim());
+  return value.trim() === '' || isOpenableExternalUrl(value);
 }
 
 function NewOrganisationScreen() {
@@ -76,6 +78,10 @@ function NewOrganisationInner() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
+  const fieldRefs = useRef<Partial<Record<FormField, View | null>>>({});
+  const [errorTarget, setErrorTarget] = useState<{ field: FormField } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitPending = useRef(false);
   const createAttempt = useRef<{ payload: string; key: string } | null>(null);
@@ -86,6 +92,27 @@ function NewOrganisationInner() {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+
+  useEffect(() => {
+    if (!errorTarget) return;
+    const frame = requestAnimationFrame(() => {
+      const content = contentRef.current;
+      if (!content) return;
+      fieldRefs.current[errorTarget.field]?.measureLayout(content, (_x, y) => {
+        if (mountedRef.current) scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: false });
+      }, () => undefined);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [errorTarget]);
+
+  function showFieldErrors(nextErrors: FormErrors) {
+    setErrors(nextErrors);
+    const field = (['name', 'description', 'contact_email', 'website', 'terms'] as const).find((key) => nextErrors[key]);
+    if (field) {
+      Keyboard.dismiss();
+      setErrorTarget({ field });
+    }
+  }
 
   // 🔴 Cancel and Back used to drop a half-written registration without a word (S4-04).
   const isDirty = form.name !== '' || form.description !== '' || form.contact_email !== '' || form.website !== '' || agreedTerms;
@@ -141,12 +168,12 @@ function NewOrganisationInner() {
       nextErrors.terms = t('register.errors.termsRequired');
     }
 
-    setErrors(nextErrors);
+    showFieldErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
 
   async function submit() {
-    if (submitPending.current) return;
+    if (!mountedRef.current || submitPending.current) return;
     if (!validate()) return;
 
     submitPending.current = true;
@@ -180,6 +207,19 @@ function NewOrganisationInner() {
     } catch (error) {
       if (!mountedRef.current) return;
       const message = describeApiError(error, t('register.saveFailedMessage'));
+      if (error instanceof ApiResponseError && [400, 409, 422].includes(error.status)) {
+        const fieldErrors: FormErrors = {};
+        for (const field of ['name', 'description', 'contact_email', 'website'] as const) {
+          const messages = error.errors?.[field];
+          const detail = Array.isArray(messages) ? messages.find((entry) => typeof entry === 'string' && entry.trim()) : undefined;
+          if (detail) {
+            fieldErrors[field] = describeApiError(new ApiResponseError(error.status, detail), message);
+          } else if (error.field === field) {
+            fieldErrors[field] = message;
+          }
+        }
+        showFieldErrors(fieldErrors);
+      }
       showToast({ title: t('register.saveFailedTitle'), description: message, variant: 'danger' });
     } finally {
       submitPending.current = false;
@@ -195,11 +235,13 @@ function NewOrganisationInner() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1, backgroundColor: theme.bg }}
         contentContainerStyle={{ flexGrow: 1, padding: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <View ref={contentRef} collapsable={false}>
         <HeroCard className="mb-4 overflow-hidden rounded-panel p-0">
           <View className="h-1.5" style={{ backgroundColor: primary }} />
           <HeroCard.Body className="gap-3 p-4">
@@ -219,6 +261,7 @@ function NewOrganisationInner() {
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-4 p-4">
             <FormInput
+              fieldRef={(view) => { fieldRefs.current.name = view; }}
               label={t('register.nameLabel')}
               value={form.name}
               onChangeText={(value) => updateField('name', value)}
@@ -230,6 +273,7 @@ function NewOrganisationInner() {
             />
 
             <FormInput
+              fieldRef={(view) => { fieldRefs.current.description = view; }}
               label={t('register.descriptionLabel')}
               value={form.description}
               onChangeText={(value) => updateField('description', value)}
@@ -242,6 +286,7 @@ function NewOrganisationInner() {
             />
 
             <FormInput
+              fieldRef={(view) => { fieldRefs.current.contact_email = view; }}
               label={t('register.emailLabel')}
               value={form.contact_email}
               onChangeText={(value) => updateField('contact_email', value)}
@@ -255,6 +300,7 @@ function NewOrganisationInner() {
             />
 
             <FormInput
+              fieldRef={(view) => { fieldRefs.current.website = view; }}
               label={t('register.websiteLabel')}
               value={form.website}
               onChangeText={(value) => updateField('website', value)}
@@ -267,6 +313,7 @@ function NewOrganisationInner() {
               editable={!isSubmitting}
             />
 
+            <View ref={(view) => { fieldRefs.current.terms = view; }} collapsable={false}>
             <TermsCard
               agreedTerms={agreedTerms}
               error={errors.terms}
@@ -279,6 +326,7 @@ function NewOrganisationInner() {
               }}
               disabled={isSubmitting}
             />
+            </View>
 
             <Surface variant="secondary" className="flex-row items-start gap-3 rounded-panel-inner p-4">
               <Ionicons name="time-outline" size={18} color="#f59e0b" />
@@ -298,6 +346,7 @@ function NewOrganisationInner() {
             </View>
           </HeroCard.Body>
         </HeroCard>
+        </View>
       </ScrollView>
       </KeyboardAvoidingView>
       {confirmDialog}
@@ -306,6 +355,7 @@ function NewOrganisationInner() {
 }
 
 function FormInput({
+  fieldRef,
   label,
   value,
   onChangeText,
@@ -319,6 +369,7 @@ function FormInput({
   autoCorrect,
   editable,
 }: {
+  fieldRef: (view: View | null) => void;
   label: string;
   value: string;
   onChangeText: (value: string) => void;
@@ -333,7 +384,7 @@ function FormInput({
   editable?: boolean;
 }) {
   return (
-    <View>
+    <View ref={fieldRef} collapsable={false}>
       <Input
         label={label}
         error={error}

@@ -53,6 +53,14 @@ export interface OpenExternalUrlOptions {
 
 const WEB_SCHEMES = ['http:', 'https:'];
 
+/** Website fields may omit HTTPS; preserve explicit schemes for the opener to validate. */
+export function normalizeWebsiteUrl(value: string): string {
+  const trimmed = value.trim();
+  const hostWithPort = /^[^/?#:\s]+:\d+(?:[/?#]|$)/.test(trimmed);
+  if (!trimmed || (!hostWithPort && /^[a-z][a-z\d+.-]*:/i.test(trimmed))) return trimmed;
+  return `https://${trimmed}`;
+}
+
 /** Whether this string is something we are willing to hand to the OS. */
 export function isOpenableExternalUrl(url: string | null | undefined, options: OpenExternalUrlOptions = {}): boolean {
   const trimmed = url?.trim();
@@ -89,10 +97,9 @@ export async function openExternalUrl(
   const target = url!.trim();
 
   /*
-    `canOpenURL` is asked first but is not trusted as the only answer. On Android it returns
-    false for a scheme missing from the manifest's queries list even when a handler exists,
-    and it can throw. So a false or a throw falls through to attempting the open anyway, and
-    the attempt itself is what decides.
+    Attempt the validated URL directly. Android handler discovery can return false or throw
+    when a scheme is missing from manifest queries even though a handler exists. The actual
+    open determines the outcome.
   */
   try {
     await Linking.openURL(target);

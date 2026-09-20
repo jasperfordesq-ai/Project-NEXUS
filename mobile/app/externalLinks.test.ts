@@ -43,8 +43,6 @@ const OWN_HANDLING: Record<string, string> = {
     'Same Stripe checkout recovery in continuePayment(). The tracking-link button does use the helper.',
   'app/(modals)/marketplace-stripe-onboarding.tsx':
     'Seller onboarding: reports the specific step that failed so the seller knows where they stopped.',
-  'app/(modals)/organisation-detail.tsx':
-    'Carries a documented message distinguishing "cannot open" from "no website", written up in the file.',
   'app/(modals)/verify-identity.tsx':
     'Stripe Identity: the failure is folded into the verification error and the status is refreshed.',
   'components/FeedItem.tsx':

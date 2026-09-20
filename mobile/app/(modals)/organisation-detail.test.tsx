@@ -4,16 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Linking } from 'react-native';
+import { Linking, RefreshControl } from 'react-native';
 import * as ReactNative from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 // --- Mocks ---
+let mockRouteId: string | string[] | undefined = '3';
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({ id: '3' }),
+  useLocalSearchParams: () => ({ id: mockRouteId }),
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -84,8 +86,9 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 }));
 
 const mockUseApi = jest.fn();
+let mockRealRead = false;
 jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: (...args: unknown[]) => mockUseApi(...args),
+  useApi: (...args: unknown[]) => mockRealRead ? jest.requireActual('@/lib/hooks/useApi').useApi(...args) : mockUseApi(...args),
 }));
 
 jest.mock('@/lib/api/organisations', () => ({
@@ -111,10 +114,12 @@ jest.mock('@/components/ui/AppToast', () => {
 // --- Tests ---
 
 import OrganisationDetailScreen from './organisation-detail';
+import { getOrganisation } from '@/lib/api/organisations';
 import { useAppToast } from '@/components/ui/AppToast';
 
 const mockOrg = {
   id: 3,
+  created_at: '2026-09-19T00:00:00Z',
   name: 'Dublin Community Hub',
   description: 'A vibrant hub for community services in Dublin.',
   logo: null,
@@ -126,10 +131,90 @@ const mockOrg = {
 };
 
 beforeEach(() => {
+  mockRouteId = '3';
+  mockRealRead = false;
+  jest.mocked(getOrganisation).mockReset();
   mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
 });
 
 describe('OrganisationDetailScreen', () => {
+  it('reports sharing failure and allows another attempt', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+    const share = jest.spyOn(ReactNative.Share, 'share').mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce({ action: ReactNative.Share.dismissedAction });
+    jest.mocked(useAppToast().show).mockClear();
+    const screen = render(<OrganisationDetailScreen />);
+    fireEvent.press(screen.getAllByLabelText('Share')[0]);
+    await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith({ title: 'common:errors.generic', variant: 'danger' }));
+    fireEvent.press(screen.getAllByLabelText('Share')[0]);
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(2));
+    expect(useAppToast().show).toHaveBeenCalledTimes(1);
+    share.mockRestore();
+  });
+
+  it('ignores repeated share presses and late errors after leaving the record', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockOrg }, isLoading: false, error: null, refresh: jest.fn() });
+    let rejectShare!: (reason: Error) => void;
+    const share = jest.spyOn(ReactNative.Share, 'share').mockImplementation(() => new Promise((_resolve, reject) => { rejectShare = reject; }));
+    jest.mocked(useAppToast().show).mockClear();
+    const screen = render(<OrganisationDetailScreen />);
+    fireEvent.press(screen.getAllByLabelText('Share')[0]);
+    fireEvent.press(screen.getAllByLabelText('Share')[1]);
+    expect(share).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => rejectShare(new Error('Late failure')));
+    expect(useAppToast().show).not.toHaveBeenCalled();
+    share.mockRestore();
+  });
+
+  it.each(['Infinity', '1.5', '1e2', '0x10', '9007199254740993', '-3', '0', '', undefined, ['3', '4'], ['3']].map(id => [id]))('rejects invalid route id %s without requesting a record', async (id) => {
+    mockRouteId = id;
+    mockRealRead = true;
+    const screen = render(<OrganisationDetailScreen />);
+    expect(screen.getByText('Invalid organisation ID.')).toBeTruthy();
+    expect(getOrganisation).not.toHaveBeenCalled();
+  });
+
+  it('loads a single valid route id', async () => {
+    mockRouteId = '3';
+    mockRealRead = true;
+    jest.mocked(getOrganisation).mockResolvedValue({ data: mockOrg });
+    const screen = render(<OrganisationDetailScreen />);
+    await screen.findByText(mockOrg.name);
+    expect(getOrganisation).toHaveBeenCalledWith(3);
+  });
+
+  it('does not restore the previous record when its late response arrives after changing routes', async () => {
+    mockRealRead = true;
+    let resolveOld!: (value: { data: typeof mockOrg }) => void;
+    jest.mocked(getOrganisation)
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+      .mockResolvedValueOnce({ data: { ...mockOrg, id: 4, name: 'New organisation' } });
+    const screen = render(<OrganisationDetailScreen />);
+    mockRouteId = '4';
+    screen.rerender(<OrganisationDetailScreen />);
+    await screen.findByText('New organisation');
+    await act(async () => resolveOld({ data: mockOrg }));
+    expect(screen.queryByText(mockOrg.name)).toBeNull();
+    expect(screen.getByText('New organisation')).toBeTruthy();
+  });
+
+  it.each([401, 403, 404])('removes previously loaded details and actions after refresh returns %s', async (status) => {
+    mockRealRead = true;
+    jest.mocked(getOrganisation)
+      .mockResolvedValueOnce({ data: mockOrg })
+      .mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
+    const screen = render(<OrganisationDetailScreen />);
+    await screen.findByText(mockOrg.name);
+    await act(async () => screen.UNSAFE_getByType(RefreshControl).props.onRefresh());
+    await screen.findByTestId('organisation-detail-refused');
+    expect(screen.queryByText(mockOrg.name)).toBeNull();
+    expect(screen.queryByText(mockOrg.description)).toBeNull();
+    expect(screen.queryByText('Visit Website')).toBeNull();
+    expect(screen.queryAllByLabelText('Share')).toHaveLength(0);
+    expect(getOrganisation).toHaveBeenCalledTimes(2);
+  });
+
   it('renders without crashing when data is loaded', () => {
     mockUseApi.mockReturnValue({
       data: { data: mockOrg },
@@ -318,16 +403,39 @@ describe('OrganisationDetailScreen', () => {
       await waitFor(() => expect(openURL).toHaveBeenCalledWith('https://dublincommunityhub.ie'));
     });
 
-    it('says so when the phone throws rather than leaving the member with nothing', async () => {
+    it('opens the website even when handler discovery throws', async () => {
       canOpenURL.mockRejectedValue(new Error('no query permission'));
+      openURL.mockResolvedValue(undefined);
 
       const { getByText } = render(<OrganisationDetailScreen />);
       fireEvent.press(getByText('Visit Website'));
 
-      await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({
-        title: 'This website could not be opened',
-        variant: 'danger',
-      })));
+      await waitFor(() => expect(openURL).toHaveBeenCalledWith(mockOrg.website));
+      expect(useAppToast().show).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['example.org/about', 'https://example.org/about'],
+      ['example.org:8443/about', 'https://example.org:8443/about'],
+      [' HTTPS://example.org/about ', 'HTTPS://example.org/about'],
+      ['http://example.org', 'http://example.org'],
+    ])('opens a valid website %s without relying on handler discovery', async (website, expected) => {
+      canOpenURL.mockResolvedValue(false);
+      openURL.mockResolvedValue(undefined);
+      mockUseApi.mockReturnValue({ data: { data: { ...mockOrg, website } }, isLoading: false, error: null, refresh: jest.fn() });
+      const screen = render(<OrganisationDetailScreen />);
+      fireEvent.press(screen.getByText('Visit Website'));
+      await waitFor(() => expect(openURL).toHaveBeenCalledWith(expected));
+      expect(useAppToast().show).not.toHaveBeenCalled();
+    });
+
+    it.each(['https://', 'javascript:alert(1)', 'mailto:contact@example.org', '   '])('reports an unusable website %s without handing it to the phone', async (website) => {
+      canOpenURL.mockResolvedValue(true);
+      openURL.mockResolvedValue(undefined);
+      mockUseApi.mockReturnValue({ data: { data: { ...mockOrg, website } }, isLoading: false, error: null, refresh: jest.fn() });
+      const screen = render(<OrganisationDetailScreen />);
+      fireEvent.press(screen.getByText('Visit Website'));
+      await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({ title: 'This website could not be opened' })));
       expect(openURL).not.toHaveBeenCalled();
     });
 

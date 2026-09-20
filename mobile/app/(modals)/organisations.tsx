@@ -30,11 +30,14 @@ import { formatDecimal } from '@/lib/utils/decimal';
 import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
 import SearchInput from '@/components/ui/SearchInput';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import { normalizeWebsiteUrl } from '@/lib/utils/openExternalUrl';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
+import { isRefusalStatus } from '@/lib/api/refusal';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -253,7 +256,7 @@ function OrganisationCard({
 
   async function openWebsite() {
     if (!item.website) return;
-    const url = item.website.startsWith('http') ? item.website : `https://${item.website}`;
+    const url = normalizeWebsiteUrl(item.website);
     await openExternal(url);
   }
 
@@ -370,14 +373,18 @@ function OrganisationsContent() {
   const isLargeText = fontScale > 1.3;
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 350);
+  const requestedCursor = useRef<string | null>(null);
 
   const fetchFn = useCallback(
-    (cursor: string | null) => getOrganisations(cursor, debouncedSearch || undefined),
+    (cursor: string | null) => {
+      requestedCursor.current = cursor;
+      return getOrganisations(cursor, debouncedSearch || undefined);
+    },
     [debouncedSearch],
   );
 
-  const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
-    usePaginatedApi<Organisation, OrganisationsResponse>(fetchFn, extractOrganisationPage, [debouncedSearch]);
+  const { items, isLoading, isLoadingMore, error, errorStatus, hasMore, loadMore, refresh } =
+    usePaginatedApi<Organisation, OrganisationsResponse>(fetchFn, extractOrganisationPage, [debouncedSearch], { clearOnRefusal: true });
   const refreshOnFocus = refresh;
   /*
     🔴 S4-09: an RSVP, a join, or something created on a child screen was invisible here
@@ -411,6 +418,15 @@ function OrganisationsContent() {
     router.push('/(modals)/new-organisation' as Href);
   }, []);
 
+  if (isRefusalStatus(errorStatus)) {
+    return (
+      <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
+        <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/home" />
+        <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
@@ -441,13 +457,13 @@ function OrganisationsContent() {
               colors={[primary]}
             />
           }
-          onEndReached={() => { if (hasMore) loadMore(); }}
+          onEndReached={() => { if (hasMore && !error) loadMore(); }}
           onEndReachedThreshold={0.3}
           ListHeaderComponent={
             <View className="gap-3 pb-3">
               <OrganisationsHero organisations={organisations} primary={primary} theme={theme} t={t} onRegister={openRegistration} largeText={isLargeText} />
 
-              <RefreshFailedNotice error={organisations.length > 0 ? error : null} onRetry={refresh} isRetrying={isLoading} />
+              <RefreshFailedNotice error={organisations.length > 0 && !requestedCursor.current ? error : null} onRetry={refresh} isRetrying={isLoading} />
 
               <Surface variant="secondary" className="gap-3 rounded-panel p-2">
                 <SearchInput
@@ -488,7 +504,9 @@ function OrganisationsContent() {
             )
           }
           ListFooterComponent={
-            isLoadingMore ? (
+            error && requestedCursor.current && organisations.length > 0 ? (
+              <ErrorState subtitle={error} onRetry={loadMore} isRetrying={isLoadingMore} />
+            ) : isLoadingMore ? (
               <View className="items-center py-4"><Spinner size="sm" /></View>
             ) : !hasMore && organisations.length > 0 && !isLoading ? (
               <View className="items-center py-4">

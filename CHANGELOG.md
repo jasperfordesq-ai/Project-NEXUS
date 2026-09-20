@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native organisation registration validates website URLs, preserves field-specific server feedback, scrolls to the first invalid field, and rejects departed submissions. Organisation browsing retries failed pages without losing loaded records and clears refused content; detail links reject ambiguous IDs and website links use the shared validated opener.
+
 - Native profile-load retries wait for active profile or photo updates, preventing recovery reads from racing with a save.
 
 - Native profile editing retries failed full-profile loads without losing drafts, saves only edited fields, keeps newer queued edits open after saving, and ignores photo selection results after departure.

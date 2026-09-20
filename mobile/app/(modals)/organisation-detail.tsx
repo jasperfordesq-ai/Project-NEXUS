@@ -3,8 +3,8 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { useEffect, useRef } from 'react';
 import {
-  Linking,
   RefreshControl,
   ScrollView,
   Share,
@@ -28,6 +28,7 @@ import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { buildWebUrl } from '@/lib/utils/webUrl';
+import { normalizeWebsiteUrl, openExternalUrl } from '@/lib/utils/openExternalUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -99,23 +100,25 @@ function ActionPill({
   );
 }
 
-function OrganisationDetailContent() {
+function OrganisationDetailContent({ safeId }: { safeId: number }) {
   const { t } = useTranslation(['organisations', 'common']);
-  const { id } = useLocalSearchParams<{ id: string }>();
   const { tenant } = useTenant();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
   const isLargeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
-
-  const orgId = Number(id);
-  const safeId = isNaN(orgId) || orgId <= 0 ? 0 : orgId;
+  const mounted = useRef(true);
+  const sharing = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => getOrganisation(safeId),
     [safeId],
-    { enabled: safeId > 0 },
+    { enabled: safeId > 0, clearOnRefusal: true },
   );
 
   const organisation = data?.data ?? null;
@@ -191,39 +194,24 @@ function OrganisationDetailContent() {
   }
 
   async function handleShare() {
-    if (!organisation) return;
+    if (!organisation || sharing.current) return;
+    sharing.current = true;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
         message: `${organisation.name} - ${buildWebUrl(tenant?.slug, `/organisations/${organisation.id}`)}`,
       });
     } catch {
-      // Share sheet dismissed.
+      if (mounted.current) showToast({ title: t('common:errors.generic'), variant: 'danger' });
+    } finally {
+      sharing.current = false;
     }
   }
 
-  /*
-    🔴 Neither `canOpenURL` nor `openURL` was wrapped. Both reject: `canOpenURL` throws on
-    Android when the scheme is not in the manifest's query list, and `openURL` rejects on a
-    malformed address or a device with no browser — an organisation's website is typed in by
-    that organisation, so a malformed one is ordinary, not exotic. The rejection went
-    nowhere, and the member saw nothing happen at all.
-
-    The old failure branch was little better: it showed the bare URL as the body of a red
-    toast with no sentence, which reads as an error message that happens to be a web
-    address.
-  */
   async function handleOpenWebsite() {
     if (!organisation?.website) return;
-    const url = organisation.website.startsWith('http') ? organisation.website : `https://${organisation.website}`;
-    try {
-      if (await Linking.canOpenURL(url)) {
-        await Linking.openURL(url);
-        return;
-      }
-    } catch {
-      // Fall through to the same message: from here, "cannot" and "would not" are the same.
-    }
+    const url = normalizeWebsiteUrl(organisation.website);
+    if (await openExternalUrl(url) === 'opened') return;
     showToast({
       title: t('detail.websiteFailedTitle'),
       description: t('detail.websiteFailedMessage', { url }),
@@ -348,10 +336,13 @@ function OrganisationDetailContent() {
 }
 
 function OrganisationDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<{ id: string | string[] }>();
+  const rawId = typeof id === 'string' ? id : undefined;
+  const parsedId = /^\d+$/.test(rawId ?? '') ? Number(rawId) : NaN;
+  const safeId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : 0;
   const { user } = useAuth();
   const { tenant } = useTenant();
-  return <OrganisationDetailContent key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${id}`} />;
+  return <OrganisationDetailContent safeId={safeId} key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${safeId}`} />;
 }
 
 function StatTile({
