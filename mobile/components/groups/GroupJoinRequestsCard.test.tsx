@@ -84,6 +84,71 @@ beforeEach(() => {
 });
 
 describe('GroupJoinRequestsCard', () => {
+  it('does not release a newer action when an older group request completes', async () => {
+    let finishOld!: (value: unknown) => void;
+    let finishNew!: (value: unknown) => void;
+    mockHandleRequest.mockReturnValueOnce(new Promise(resolve => { finishOld = resolve; }))
+      .mockReturnValueOnce(new Promise(resolve => { finishNew = resolve; }));
+    const onAccepted = jest.fn();
+    const screen = render(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);
+    fireEvent.press(screen.getByTestId('group-accept-21'));
+    screen.rerender(<GroupJoinRequestsCard groupId={2} canManage onAccepted={onAccepted} />);
+    let button = screen.getByTestId('group-accept-21');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const acceptNew = button.props.onPress;
+    act(() => { acceptNew(); });
+    expect(mockHandleRequest).toHaveBeenCalledTimes(2);
+    await act(async () => { finishOld({}); });
+    expect(onAccepted).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+    act(() => { acceptNew(); });
+    expect(mockHandleRequest).toHaveBeenCalledTimes(2);
+    await act(async () => { finishNew({}); });
+    expect(onAccepted).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['permission', 'group', 'refusal'])('does not revive an old confirmation after scope returns: %s', async (change) => {
+    const onAccepted = jest.fn();
+    const screen = render(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);
+    fireEvent.press(screen.getByTestId('group-decline-21'));
+    const oldConfirm = mockConfirm.mock.calls[0][0].onConfirm;
+    if (change === 'refusal') api({ errorStatus: 403 });
+    screen.rerender(<GroupJoinRequestsCard groupId={change === 'group' ? 2 : 1} canManage={change !== 'permission'} onAccepted={onAccepted} />);
+    api();
+    screen.rerender(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);
+    await act(async () => { await oldConfirm(); });
+    expect(mockHandleRequest).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByTestId('group-decline-21'));
+    await act(async () => { await mockConfirm.mock.calls[1][0].onConfirm(); });
+    expect(mockHandleRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['unmount', 'permission', 'group'])('ignores a decline confirmation after scope changes: %s', async (change) => {
+    const onAccepted = jest.fn();
+    const screen = render(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);
+    fireEvent.press(screen.getByTestId('group-decline-21'));
+    if (change === 'unmount') screen.unmount();
+    else screen.rerender(<GroupJoinRequestsCard groupId={change === 'group' ? 2 : 1} canManage={change !== 'permission'} onAccepted={onAccepted} />);
+    await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+    expect(mockHandleRequest).not.toHaveBeenCalled();
+  });
+
+  it('locks the same callback immediately and suppresses accepted feedback after departure', async () => {
+    let resolve!: (value: unknown) => void;
+    mockHandleRequest.mockReturnValue(new Promise((done) => { resolve = done; }));
+    const onAccepted = jest.fn();
+    const screen = render(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);
+    let button = screen.getByTestId('group-accept-21');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const accept = button.props.onPress;
+    act(() => { accept(); accept(); });
+    expect(mockHandleRequest).toHaveBeenCalledTimes(1);
+    screen.unmount();
+    await act(async () => { resolve({}); });
+    expect(onAccepted).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('shows who is waiting, and lets an admin let them in', async () => {
     const onAccepted = jest.fn();
     const screen = render(<GroupJoinRequestsCard groupId={1} canManage onAccepted={onAccepted} />);

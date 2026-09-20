@@ -20,7 +20,7 @@
  * costs a request on the one tab, for the one person, who can act on it.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Card as HeroCard, Spinner } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -68,6 +68,12 @@ export default function GroupJoinRequestsCard({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [busyUserId, setBusyUserId] = useState<number | null>(null);
+  const pendingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const requestsApi = useApi(
     () => getGroupJoinRequests(groupId),
@@ -75,12 +81,27 @@ export default function GroupJoinRequestsCard({
     { enabled: canManage && groupId > 0 },
   );
   const requests: GroupJoinRequest[] = requestsApi.data?.data ?? [];
+  const allowed = canManage && !isRefusalStatus(requestsApi.errorStatus);
+  const scopeRef = useRef({ groupId, allowed });
+  if (scopeRef.current.groupId !== groupId || scopeRef.current.allowed !== allowed) {
+    scopeRef.current = { groupId, allowed };
+  }
+  const scope = scopeRef.current;
+  useEffect(() => {
+    // A returned group/permission is a new interaction, not authority to reuse
+    // a confirmation or completion retained from an earlier visit.
+    pendingRef.current = false;
+    setBusyUserId(null);
+  }, [scope]);
 
   async function answer(request: GroupJoinRequest, action: 'accept' | 'reject') {
-    if (busyUserId !== null) return;
+    const isCurrent = () => mountedRef.current && scopeRef.current === scope && scope.allowed;
+    if (!isCurrent() || pendingRef.current) return;
+    pendingRef.current = true;
     setBusyUserId(request.user_id);
     try {
       await handleGroupJoinRequest(groupId, request.user_id, action);
+      if (!isCurrent()) return;
       showToast({
         title: action === 'accept' ? t('detail.manage.accepted') : t('detail.manage.declined'),
         variant: 'success',
@@ -88,6 +109,7 @@ export default function GroupJoinRequestsCard({
       requestsApi.refresh();
       if (action === 'accept') onAccepted();
     } catch (err) {
+      if (!isCurrent()) return;
       showToast({
         title: t('common:errors.alertTitle'),
         // The server's own words: a full group answers 409 and says so, and "please
@@ -96,7 +118,10 @@ export default function GroupJoinRequestsCard({
         variant: 'danger',
       });
     } finally {
-      setBusyUserId(null);
+      if (isCurrent()) {
+        pendingRef.current = false;
+        setBusyUserId(null);
+      }
     }
   }
 
