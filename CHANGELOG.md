@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile messaging prevents overlapping photo pickers, preserves drafts when native selection fails, ignores picker results after leaving a conversation, and removes newly retained attachments that finish copying after departure. Opening attachment options dismisses the keyboard.
+
 - Mobile search exposes all saved searches, preserves drafts on failed saves, retries failed result pages in place, and improves large-text layouts and loading/error feedback.
 
 - Mobile wallet recipient searches no longer overwrite newer choices; transfer drafts reset on account/community changes, and departed panels stop unsent operations while preserving confirmed-operation cleanup.

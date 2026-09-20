@@ -879,54 +879,71 @@ function ThreadScreenInner() {
     setOptionsMessage(message);
   }, []);
 
+  const pickingImagesRef = useRef(false);
   const handlePickImages = useCallback(async () => {
-    if (pendingAttachments.length >= MAX_ATTACHMENTS) return;
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showToast({ title: t('thread.attachments.permissionTitle'), description: t('thread.attachments.permissionMessage'), variant: 'warning' });
-      return;
-    }
+    if (pickingImagesRef.current || !recordingMountedRef.current || pendingAttachments.length >= MAX_ATTACHMENTS) return;
+    pickingImagesRef.current = true;
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!recordingMountedRef.current) return;
+      if (!permission.granted) {
+        showToast({ title: t('thread.attachments.permissionTitle'), description: t('thread.attachments.permissionMessage'), variant: 'warning' });
+        return;
+      }
 
-    const remaining = Math.max(1, MAX_ATTACHMENTS - pendingAttachments.length);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: remaining,
-      quality: 0.85,
-    });
-    if (result.canceled) return;
-
-    const preparedAssets = await Promise.all(
-      result.assets.slice(0, remaining).map(async (asset) => ({ ...asset, ...(await prepareImageForUpload(asset)) })),
-    );
-
-    let durableCopyFailed = false;
-    const nextAttachments = await Promise.all(preparedAssets.map(async (asset, index): Promise<PendingAttachment> => {
-      const name = asset.fileName ?? `message-image-${pendingAttachments.length + index + 1}.jpg`;
-      const retainedUri = await retainMessageDraftMedia(asset.uri, name);
-      if (!retainedUri) durableCopyFailed = true;
-      return {
-        id: `${Date.now()}-${index}`,
-        uri: retainedUri ?? asset.uri,
-        name,
-        mimeType: asset.mimeType ?? null,
-        width: asset.width,
-        height: asset.height,
-        size: asset.fileSize ?? null,
-      };
-    }));
-    draftChangedRef.current = true;
-    setPendingAttachments((current) => {
-      const next = [...current, ...nextAttachments].slice(0, MAX_ATTACHMENTS);
-      attachmentsRef.current = next;
-      return next;
-    });
-    if (durableCopyFailed) {
-      showToast({
-        title: t('thread.attachments.draftStorageTitle'),
-        description: t('thread.attachments.draftStorageWarning'),
-        variant: 'warning',
+      const remaining = Math.max(1, MAX_ATTACHMENTS - pendingAttachments.length);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+        quality: 0.85,
       });
+      if (!recordingMountedRef.current || result.canceled) return;
+
+      const preparedAssets = await Promise.all(
+        result.assets.slice(0, remaining).map(async (asset) => ({ ...asset, ...(await prepareImageForUpload(asset)) })),
+      );
+      if (!recordingMountedRef.current) return;
+
+      let durableCopyFailed = false;
+      const retainedUris: string[] = [];
+      const nextAttachments = await Promise.all(preparedAssets.map(async (asset, index): Promise<PendingAttachment> => {
+        const name = asset.fileName ?? `message-image-${pendingAttachments.length + index + 1}.jpg`;
+        const retainedUri = await retainMessageDraftMedia(asset.uri, name);
+        if (retainedUri) retainedUris.push(retainedUri);
+        if (!retainedUri) durableCopyFailed = true;
+        return {
+          id: `${Date.now()}-${index}`,
+          uri: retainedUri ?? asset.uri,
+          name,
+          mimeType: asset.mimeType ?? null,
+          width: asset.width,
+          height: asset.height,
+          size: asset.fileSize ?? null,
+        };
+      }));
+      if (!recordingMountedRef.current) {
+        await removeMessageDraftMediaBatch(retainedUris);
+        return;
+      }
+      draftChangedRef.current = true;
+      setPendingAttachments((current) => {
+        const next = [...current, ...nextAttachments].slice(0, MAX_ATTACHMENTS);
+        attachmentsRef.current = next;
+        return next;
+      });
+      if (durableCopyFailed) {
+        showToast({
+          title: t('thread.attachments.draftStorageTitle'),
+          description: t('thread.attachments.draftStorageWarning'),
+          variant: 'warning',
+        });
+      }
+    } catch (err) {
+      if (!recordingMountedRef.current) return;
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common:errors.generic')), variant: 'danger' });
+    } finally {
+      pickingImagesRef.current = false;
     }
   }, [pendingAttachments.length, showToast, t]);
 
@@ -1446,7 +1463,10 @@ function ThreadScreenInner() {
               isIconOnly
               size="lg"
               variant="secondary"
-              onPress={() => setAttachmentSheetVisible(true)}
+              onPress={() => {
+                Keyboard.dismiss();
+                setAttachmentSheetVisible(true);
+              }}
               isDisabled={Boolean(editingMessage) || Boolean(voiceUri) || isRecording || pendingAttachments.length >= MAX_ATTACHMENTS || messagingRestriction?.messaging_disabled}
               accessibilityLabel={t('thread.attachments.add')}
             >

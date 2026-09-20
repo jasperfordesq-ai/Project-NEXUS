@@ -862,6 +862,67 @@ describe('ThreadScreen', () => {
     expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
   });
 
+  it('does not open the photo library when permission completes after departure', async () => {
+    let finish!: (value: { granted: boolean }) => void;
+    mockRequestMediaLibraryPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    screen.unmount();
+    await act(async () => finish({ granted: true }));
+    expect(mockLaunchImageLibraryAsync).not.toHaveBeenCalled();
+  });
+
+  it('prevents overlapping photo permission requests', async () => {
+    let finish!: (value: { granted: boolean }) => void;
+    mockRequestMediaLibraryPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    const pick = screen.getByLabelText('Photo library');
+    act(() => { fireEvent.press(pick); fireEvent.press(pick); });
+    expect(mockRequestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ granted: false }));
+  });
+
+  it.each(['permission', 'picker'])('reports a photo %s failure and allows another attempt with the draft preserved', async (stage) => {
+    if (stage === 'permission') mockRequestMediaLibraryPermissionsAsync.mockRejectedValueOnce(new Error('Native permission unavailable'));
+    else mockLaunchImageLibraryAsync.mockRejectedValueOnce(new Error('Native picker unavailable'));
+    const screen = render(<ThreadScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Keep my caption');
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    await waitFor(() => expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    expect(screen.getByPlaceholderText('Type a message...').props.value).toBe('Keep my caption');
+    if (!screen.queryByLabelText('Photo library')) fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalledTimes(stage === 'picker' ? 2 : 1));
+  });
+
+  it('does not retain picked photos returned after departure', async () => {
+    let finish!: (value: unknown) => void;
+    mockLaunchImageLibraryAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalled());
+    screen.unmount();
+    await act(async () => finish({ canceled: false, assets: [{ uri: 'file:///tmp/late.jpg', fileName: 'late.jpg' }] }));
+    expect(mockRetainMessageDraftMedia).not.toHaveBeenCalled();
+  });
+
+  it('removes a managed photo copy that finishes after departure', async () => {
+    let finishCopy!: (value: string) => void;
+    mockLaunchImageLibraryAsync.mockResolvedValueOnce({ canceled: false, assets: [{ uri: 'file:///tmp/late.jpg', fileName: 'late.jpg', width: 800, height: 600 }] });
+    mockRetainMessageDraftMedia.mockReturnValueOnce(new Promise((resolve) => { finishCopy = resolve; }));
+    const screen = render(<ThreadScreen />);
+    fireEvent.press(screen.getByLabelText('Add attachment'));
+    fireEvent.press(screen.getByLabelText('Photo library'));
+    await waitFor(() => expect(mockRetainMessageDraftMedia).toHaveBeenCalled());
+    screen.unmount();
+    await act(async () => finishCopy('file:///documents/message-drafts-v1/late.jpg'));
+    expect(mockRemoveMessageDraftMediaBatch).toHaveBeenCalledWith(['file:///documents/message-drafts-v1/late.jpg']);
+  });
+
   /** Opens the thread, picks one photo from the library, and returns the screen. */
   async function attachAPhoto() {
     mockLaunchImageLibraryAsync.mockResolvedValue({
