@@ -39,6 +39,7 @@ import {
   getOrganizerInvitationCampaigns,
   getOrganizerRetentionHistory,
   mutateOrganizerRetention,
+  revokeOrganizerInvitation,
   mutateOrganizerInvitationCampaign,
   type InvitationCampaignIntent,
   transitionOrganizerRegistrationGuest,
@@ -545,5 +546,38 @@ describe('organiser retention contracts', () => {
     await expect(mutateOrganizerRetention(42, { action: 'apply', dryRunId: 0 }, 'key')).rejects.toThrow();
     await expect(getOrganizerRetentionHistory(42, 1, 101)).rejects.toThrow();
     expect(api.post).not.toHaveBeenCalled(); expect(api.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('organiser invitation revocation contract', () => {
+  const invitation = { id: 9, event_id: 42, campaign_id: 3, status: 'revoked', invitation_version: 2,
+    revoked_at: '2026-09-20T12:00:00Z' };
+  it.each([true, false])('preserves the original key and validates a changed=%s receipt', async changed => {
+    jest.mocked(api.post).mockResolvedValue({ data: { invitation: { ...invitation, token_hash: 'private', member_user_id: 8, email: 'private@example.test' }, changed, idempotent_replay: !changed } });
+    const result = await revokeOrganizerInvitation(42, { invitationId: 9, reason: '  Duplicate invitation  ' }, 'saved-revoke-key');
+    expect(result.data.invitation).toEqual(invitation);
+    expect(api.post).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/invitations/9/revoke',
+      { reason: 'Duplicate invitation', idempotency_key: 'saved-revoke-key' }, { headers: expect.objectContaining({ 'Idempotency-Key': 'saved-revoke-key', 'X-Event-Registration-Product-Contract': '1' }) });
+  });
+  it.each([{ id: 10 }, { event_id: 99 }, { status: 'issued' }, { invitation_version: 1 }, { revoked_at: null }])('rejects unrelated or incomplete receipt %j', async invalid => {
+    jest.mocked(api.post).mockResolvedValue({ data: { invitation: { ...invitation, ...invalid }, changed: true, idempotent_replay: false } });
+    await expect(revokeOrganizerInvitation(42, { invitationId: 9, reason: 'Duplicate' }, 'saved-key')).rejects.toThrow();
+  });
+  it('does not retry an uncertain response and rejects inconsistent receipt flags', async () => {
+    jest.mocked(api.post).mockClear(); const uncertain = new Error('Connection lost'); jest.mocked(api.post).mockRejectedValueOnce(uncertain);
+    await expect(revokeOrganizerInvitation(42, { invitationId: 9, reason: 'Duplicate' }, 'saved-key')).rejects.toBe(uncertain);
+    expect(api.post).toHaveBeenCalledTimes(1);
+    jest.mocked(api.post).mockResolvedValue({ data: { invitation, changed: true, idempotent_replay: true } });
+    await expect(revokeOrganizerInvitation(42, { invitationId: 9, reason: 'Duplicate' }, 'saved-key')).rejects.toThrow();
+  });
+  it('validates identifiers, key and Unicode reason length before transport', async () => {
+    jest.mocked(api.post).mockClear();
+    for (const [eventId, invitationId, reason, key] of [[0, 9, 'Reason', 'key'], [42, 0, 'Reason', 'key'], [42, 9, ' ', 'key'], [42, 9, '😀'.repeat(501), 'key'], [42, 9, 'Reason', ' key']] as const) {
+      await expect(revokeOrganizerInvitation(eventId, { invitationId, reason }, key)).rejects.toThrow();
+    }
+    expect(api.post).not.toHaveBeenCalled();
+    jest.mocked(api.post).mockResolvedValue({ data: { invitation, changed: true, idempotent_replay: false } });
+    await revokeOrganizerInvitation(42, { invitationId: 9, reason: '😀'.repeat(500) }, 'key');
+    expect(api.post).toHaveBeenCalledTimes(1);
   });
 });

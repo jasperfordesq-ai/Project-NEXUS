@@ -661,3 +661,26 @@ export async function mutateOrganizerRetention(eventId: number, intent: Retentio
     ...(input.action === 'preview' ? { as_of: input.asOf } : {}), idempotency_key: key,
   }, requestOptions(key)));
 }
+
+/** Minimal organiser receipt: recipient identities and invitation tokens stay out of saved recovery state. */
+export const revokedInvitationSchema = z.object({
+  id: safeId, event_id: safeId, campaign_id: safeId, status: z.literal('revoked'),
+  invitation_version: z.number().int().min(2).safe(), revoked_at: z.string().datetime({ offset: true }),
+}).strip();
+export const invitationRevocationIntentSchema = z.object({
+  invitationId: safeId,
+  reason: z.string().trim().min(1).refine(value => Array.from(value).length <= 500),
+}).strict();
+export type InvitationRevocationIntent = z.infer<typeof invitationRevocationIntentSchema>;
+export async function revokeOrganizerInvitation(eventId: number, intent: InvitationRevocationIntent, key: string) {
+  safeId.parse(eventId);
+  z.string().min(1).max(191).refine(value => value === value.trim()).parse(key);
+  const input = invitationRevocationIntentSchema.parse(intent);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/invitations/' + input.invitationId + '/revoke';
+  const schema = z.object({ data: z.object({
+    invitation: revokedInvitationSchema.refine(value => value.event_id === eventId && value.id === input.invitationId),
+    changed: z.boolean(), idempotent_replay: z.boolean(),
+  }).refine(value => value.changed !== value.idempotent_replay) });
+  return parse(endpoint, schema, await api.post<unknown>(endpoint,
+    { reason: input.reason, idempotency_key: key }, requestOptions(key)));
+}

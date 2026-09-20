@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added validated native invitation-revocation requests with preserved retry keys and minimal completion receipts; organiser screen integration is pending.
+
 - Added a native organiser retention workspace with paginated history, UTC preview validation, saved-action recovery, and a separate review and confirmation before anonymisation.
 
 - Added owner- and event-scoped saved retention actions that preserve original retry keys through uncertain outcomes and store validated completion receipts. Lifecycle controls prevent automatic replay, duplicate submissions and stale screen callbacks.
