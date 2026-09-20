@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native data-export history ignores older read results after a newer refresh, so a delayed initial response cannot hide a completed export or replace current history with an obsolete error.
+
 - Native personal-data export cancels sharing when its screen is left, rejects departed request callbacks, and hides history counts until loading succeeds. Account deletion reports uncertain outcomes accurately and cleans up only the submitting session after confirmed deletion, including after departure.
 
 - Native password changes finish only the submitting session after departure, and ignore departed submit callbacks. Blocked-user settings reject departed unblock actions, preserve failed unblocks for retry, and show counts only after a successful load.

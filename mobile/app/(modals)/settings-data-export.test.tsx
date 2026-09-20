@@ -102,6 +102,24 @@ beforeEach(() => {
 });
 
 describe('SettingsDataExportScreen', () => {
+  it.each(['success', 'failure'])('keeps post-export history when the initial read finishes late (%s)', async outcome => {
+    let resolveOld!: (rows: Awaited<ReturnType<typeof getDataExportHistory>>) => void;
+    let rejectOld!: (error: Error) => void;
+    mockGetDataExportHistory.mockImplementationOnce(() => new Promise((resolve, reject) => {
+      resolveOld = resolve; rejectOld = reject;
+    })).mockResolvedValueOnce([{ id: 7, format: 'json', requested_at: '2026-05-01T10:00:00Z', completed_at: null, file_size_bytes: null }]);
+    mockRequestDataExport.mockResolvedValueOnce(undefined);
+    const screen = render(<SettingsDataExportScreen />);
+    fireEvent.press(screen.getByText('Request export'));
+    await screen.findByText('1 exports');
+    await act(async () => {
+      if (outcome === 'success') resolveOld([]);
+      else rejectOld(new Error('Old request failed'));
+    });
+    expect(screen.getByText('1 exports')).toBeTruthy();
+    expect(screen.queryByTestId('data-export-history-error')).toBeNull();
+  });
+
   it('invalidates an in-flight export before sharing after departure', async () => {
     mockGetDataExportHistory.mockResolvedValue([]);
     let finish!: () => void;

@@ -62,28 +62,31 @@ function SettingsDataExportScreen() {
   const requestInFlight = useRef(false);
   const requestAttempt = useRef<{ format: DataExportFormat; key: string } | null>(null);
   const isMountedRef = useRef(true);
+  const historyVersionRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
-    return () => { isMountedRef.current = false; };
+    return () => { isMountedRef.current = false; historyVersionRef.current += 1; };
   }, []);
 
   const loadHistory = useCallback(async () => {
     if (!isMountedRef.current) return;
+    const version = ++historyVersionRef.current;
+    const isCurrent = () => isMountedRef.current && version === historyVersionRef.current;
     setIsLoading(true);
     setLoadError(null);
     try {
       const nextHistory = await getDataExportHistory();
-      if (!isMountedRef.current) return;
+      if (!isCurrent()) return;
       setHistory(nextHistory);
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isCurrent()) return;
       // 🔴 S3-15: once the toast faded the member was told "No exports yet", which is a
       // different and much more alarming statement than "we could not check".
       setLoadError(describeApiError(err, t('dataExport.loadError')));
       showToast({ title: t('common:errors.generic'), description: describeApiError(err, t('dataExport.loadError')), variant: 'danger' });
     } finally {
-      if (isMountedRef.current) setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }, [t, showToast]);
 
