@@ -265,7 +265,9 @@
     "undo": "Annulla l'ultima modifica",
     "cancel": "Cancella ospite",
     "cancel_reason": "Motivo per cancellare questo ospite",
-    "cancel_reason_default": "Annullato dal titolare della registrazione"
+    "cancel_reason_default": "Annullato dal titolare della registrazione",
+    "undo_reason": "Motivo per annullare questa modifica della presenza",
+    "manage_attendance": "Gestisci la presenza"
   },
   "attendance": {
     "not_checked_in": "Non effettuato il check-in",

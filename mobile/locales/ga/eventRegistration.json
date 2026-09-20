@@ -265,7 +265,9 @@
     "undo": "Cealaigh an t-athrú deiridh",
     "cancel": "Cealaigh aoi",
     "cancel_reason": "Cúis leis an aoi seo a chealú",
-    "cancel_reason_default": "Ar ceal ag an sealbhóir clárúcháin"
+    "cancel_reason_default": "Ar ceal ag an sealbhóir clárúcháin",
+    "undo_reason": "Cúis leis an athrú tinrimh seo a chealú",
+    "manage_attendance": "Bainistigh tinreamh"
   },
   "attendance": {
     "not_checked_in": "Gan seiceáil isteach",

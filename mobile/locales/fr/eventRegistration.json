@@ -265,7 +265,9 @@
     "undo": "Annuler la dernière modification",
     "cancel": "Annuler un invité",
     "cancel_reason": "Raison de l'annulation de cet invité",
-    "cancel_reason_default": "Annulé par le titulaire de l'inscription"
+    "cancel_reason_default": "Annulé par le titulaire de l'inscription",
+    "undo_reason": "Motif de l’annulation de ce changement de présence",
+    "manage_attendance": "Gérer la présence"
   },
   "attendance": {
     "not_checked_in": "Non enregistré",

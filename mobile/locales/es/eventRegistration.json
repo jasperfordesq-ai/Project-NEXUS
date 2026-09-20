@@ -265,7 +265,9 @@
     "undo": "Deshacer el último cambio",
     "cancel": "Cancelar invitado",
     "cancel_reason": "Razón para cancelar a este huésped",
-    "cancel_reason_default": "Cancelado por el titular del registro"
+    "cancel_reason_default": "Cancelado por el titular del registro",
+    "undo_reason": "Motivo para deshacer este cambio de asistencia",
+    "manage_attendance": "Gestionar asistencia"
   },
   "attendance": {
     "not_checked_in": "No registrado",

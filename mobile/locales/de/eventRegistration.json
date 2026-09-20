@@ -265,7 +265,9 @@
     "undo": "Letzte Änderung rückgängig machen",
     "cancel": "Gast stornieren",
     "cancel_reason": "Grund für die Stornierung dieses Gastes",
-    "cancel_reason_default": "Vom Registrierungsinhaber storniert"
+    "cancel_reason_default": "Vom Registrierungsinhaber storniert",
+    "undo_reason": "Grund für das Rückgängigmachen dieser Anwesenheitsänderung",
+    "manage_attendance": "Anwesenheit verwalten"
   },
   "attendance": {
     "not_checked_in": "Nicht eingecheckt",

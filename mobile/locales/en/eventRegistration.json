@@ -265,7 +265,9 @@
     "undo": "Undo last change",
     "cancel": "Cancel guest",
     "cancel_reason": "Reason for cancelling this guest",
-    "cancel_reason_default": "Cancelled by the registration holder"
+    "cancel_reason_default": "Cancelled by the registration holder",
+    "undo_reason": "Reason for undoing this attendance change",
+    "manage_attendance": "Manage attendance"
   },
   "attendance": {
     "not_checked_in": "Not checked in",

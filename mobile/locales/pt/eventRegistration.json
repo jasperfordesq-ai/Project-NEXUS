@@ -265,7 +265,9 @@
     "undo": "Desfazer a última alteração",
     "cancel": "Cancelar convidado",
     "cancel_reason": "Motivo do cancelamento deste hóspede",
-    "cancel_reason_default": "Cancelado pelo titular do registro"
+    "cancel_reason_default": "Cancelado pelo titular do registro",
+    "undo_reason": "Motivo para desfazer esta alteração de presença",
+    "manage_attendance": "Gerir presença"
   },
   "attendance": {
     "not_checked_in": "Não fez check-in",
