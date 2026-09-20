@@ -865,12 +865,24 @@ class GroupExchangeService
      */
     public function complete(int $exchangeId): array
     {
+        $result = DB::transaction(fn (): array => $this->completeLocked($exchangeId));
+        if ($result['success']) {
+            $this->notifyBalanceChanges($exchangeId, $result['title'], $result['balance_changes'], $result['tenant_id']);
+            unset($result['title'], $result['balance_changes'], $result['tenant_id']);
+        }
+        return $result;
+    }
+
+    /** Validate the settlement snapshot while participant mutations hold the same parent lock. */
+    private function completeLocked(int $exchangeId): array
+    {
         $this->lastContactRestriction = null;
         $tenantId = TenantContext::getId();
 
         $exchange = DB::table('group_exchanges')
             ->where('id', $exchangeId)
             ->where('tenant_id', $tenantId)
+            ->lockForUpdate()
             ->first();
 
         if (! $exchange) {
@@ -1016,15 +1028,12 @@ class GroupExchangeService
             return ['success' => false, 'error' => __('api.group_exchange_already_completed')];
         }
 
-        // SUCCESS PATH ONLY — the DB::transaction above committed. Bell each
-        // participant whose balance actually changed so the financial event is no
-        // longer silent. Wrapped in try/catch so a notification failure can never
-        // unwind or mask the already-committed credit/debit.
-        $this->notifyBalanceChanges($exchangeId, (string) $exchange->title, $balanceChanges, $tenantId);
-
         return [
             'success'         => true,
             'transaction_ids' => $transactionIds,
+            'title' => (string) $exchange->title,
+            'balance_changes' => $balanceChanges,
+            'tenant_id' => $tenantId,
         ];
     }
 
