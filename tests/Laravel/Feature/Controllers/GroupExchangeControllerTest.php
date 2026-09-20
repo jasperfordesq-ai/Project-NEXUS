@@ -29,6 +29,15 @@ class GroupExchangeControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Keep the real API/ledger journey, but isolate external notification delivery.
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        $this->mock(\App\Services\WebPushService::class, fn ($mock) => $mock->shouldReceive('sendToUser')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
+    }
+
     private function makeUser(float $balance = 0.0): User
     {
         return User::factory()->forTenant($this->testTenantId)->create([

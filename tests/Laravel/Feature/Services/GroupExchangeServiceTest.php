@@ -34,6 +34,10 @@ class GroupExchangeServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Exercise balances and in-app notifications without reaching delivery providers.
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        $this->mock(\App\Services\WebPushService::class, fn ($mock) => $mock->shouldReceive('sendToUser')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
         $this->service = app(GroupExchangeService::class);
         TenantContext::setById($this->testTenantId);
     }
@@ -44,7 +48,7 @@ class GroupExchangeServiceTest extends TestCase
             'tenant_id'  => $this->testTenantId,
             'first_name' => 'GX',
             'last_name'  => 'Member',
-            'email'      => 'gx.' . uniqid('', true) . '@example.com',
+            'email'      => 'gx.' . uniqid('', true) . '@example.test',
             'username'   => 'gx_' . substr(md5(uniqid('', true)), 0, 12),
             'password'   => password_hash('password', PASSWORD_BCRYPT),
             'balance'    => $balance,
