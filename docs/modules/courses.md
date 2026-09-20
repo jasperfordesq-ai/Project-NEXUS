@@ -38,6 +38,8 @@ Additional per-tenant settings (stored in `tenants.configuration` as JSON):
 
 ## Key code & data locations
 
+Curriculum reorder operations accept `expected_ids` and `ordered_ids` for all sections in a course, or all lessons in one section. They require course ownership or administrator access, save positions atomically, and return the confirmed `ordered_ids`. Invalid item sets return 422; a changed sibling order returns `COURSE_ORDER_CHANGED` (409). Repeating an already-applied target order succeeds without swapping again. Clients must reconcile ambiguous network failures with an authoritative read before allowing another move.
+
 Routes are defined in [`routes/api.php`](../../routes/api.php). All catalogue, detail, authoring, learning, and admin endpoints require authentication; group-linked routes additionally require the `groups` feature. Do not copy the full endpoint table here — read the route file for the live list. Primary entry points:
 
 | Concern | Route prefix | Controller |

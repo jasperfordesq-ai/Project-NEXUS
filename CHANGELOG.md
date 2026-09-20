@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added atomic course section and lesson reorder APIs with expected-order checks, owner authorization, replay-safe target ordering, and transactional position updates.
+
 - Added an authorized, read-only offline attendance batch lookup for recovering saved client requests after a lost response, including batches outside recent history.
 
 - Native knowledge articles now show structured content, related articles, video links, authenticated attachments, and saved helpfulness feedback with recovery for failed requests.

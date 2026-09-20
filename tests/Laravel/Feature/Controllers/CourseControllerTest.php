@@ -101,6 +101,84 @@ class CourseControllerTest extends TestCase
         return $course;
     }
 
+    public function test_curriculum_section_order_is_atomic_replayable_and_rejects_stale_or_invalid_sets(): void
+    {
+        $this->enableCourses();
+        $owner = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $owner]);
+        $ids = [];
+        foreach (['One', 'Two', 'Three'] as $position => $title) {
+            $ids[] = CourseSection::create(['course_id' => $course->id, 'title' => $title, 'position' => $position])->id;
+        }
+        $path = '/v2/courses/' . $course->id . '/sections/reorder';
+        $desired = [$ids[1], $ids[0], $ids[2]];
+        $payload = ['expected_ids' => $ids, 'ordered_ids' => $desired];
+        $this->apiPut($path, $payload)->assertOk()->assertJsonPath('data.ordered_ids', $desired);
+        $this->apiPut($path, $payload)->assertOk();
+        $this->apiPut($path, ['expected_ids' => $ids, 'ordered_ids' => array_reverse($ids)])->assertStatus(409);
+        $this->apiPut($path, ['expected_ids' => $desired, 'ordered_ids' => [$ids[0], $ids[0], $ids[2]]])->assertStatus(422);
+        $this->apiPut($path, ['expected_ids' => $desired, 'ordered_ids' => [$ids[0], $ids[2]]])->assertStatus(422);
+        $this->assertSame($desired, CourseSection::where('course_id', $course->id)->orderBy('position')->pluck('id')->all());
+        $this->authenticatedUser();
+        $this->apiPut($path, ['expected_ids' => $desired, 'ordered_ids' => $ids])->assertForbidden();
+    }
+
+    public function test_curriculum_lesson_order_cannot_include_another_sections_lesson(): void
+    {
+        $this->enableCourses();
+        $owner = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $owner]);
+        $section = CourseSection::create(['course_id' => $course->id, 'title' => 'One']);
+        $other = CourseSection::create(['course_id' => $course->id, 'title' => 'Other']);
+        $ids = [];
+        foreach ([0, 1] as $position) {
+            $ids[] = CourseLesson::create(['course_id' => $course->id, 'section_id' => $section->id, 'title' => 'Lesson', 'content_type' => 'text', 'position' => $position])->id;
+        }
+        $foreign = CourseLesson::create(['course_id' => $course->id, 'section_id' => $other->id, 'title' => 'Other', 'content_type' => 'text']);
+        $path = '/v2/courses/' . $course->id . '/sections/' . $section->id . '/lessons/reorder';
+        $this->apiPut($path, ['expected_ids' => $ids, 'ordered_ids' => [$ids[0], $foreign->id]])->assertStatus(422);
+        $this->apiPut($path, ['expected_ids' => $ids, 'ordered_ids' => array_reverse($ids)])->assertOk()->assertJsonPath('data.ordered_ids', array_reverse($ids));
+        $this->assertSame($other->id, $foreign->fresh()->section_id);
+    }
+
+    public function test_curriculum_order_normalises_legacy_tied_positions(): void
+    {
+        $this->enableCourses();
+        $owner = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $owner]);
+        $first = CourseSection::create(['course_id' => $course->id, 'title' => 'One', 'position' => 5]);
+        $second = CourseSection::create(['course_id' => $course->id, 'title' => 'Two', 'position' => 5]);
+        $ids = [$first->id, $second->id];
+        $this->apiPut('/v2/courses/' . $course->id . '/sections/reorder', ['expected_ids' => $ids, 'ordered_ids' => $ids])->assertOk();
+        $this->assertSame(0, $first->fresh()->position);
+        $this->assertSame(1, $second->fresh()->position);
+    }
+
+    public function test_curriculum_reorder_rolls_back_all_positions_if_a_write_fails(): void
+    {
+        $owner = $this->authenticatedUser();
+        $course = $this->publishedCourse(['author' => $owner]);
+        $first = CourseSection::create(['course_id' => $course->id, 'title' => 'One', 'position' => 0]);
+        $second = CourseSection::create(['course_id' => $course->id, 'title' => 'Two', 'position' => 1]);
+        $dispatcher = CourseSection::getEventDispatcher();
+        CourseSection::setEventDispatcher(clone $dispatcher);
+        CourseSection::updating(function ($section) use ($second) {
+            if ($section->id === $second->id) throw new \RuntimeException('Injected second-write failure');
+        });
+        try {
+            try {
+                \App\Services\CourseCurriculumOrderService::sections($course->id, [$first->id, $second->id], [$second->id, $first->id]);
+                $this->fail('The second write must fail');
+            } catch (\RuntimeException $error) {
+                $this->assertSame('Injected second-write failure', $error->getMessage());
+            }
+        } finally {
+            CourseSection::setEventDispatcher($dispatcher);
+        }
+        $this->assertSame(0, $first->fresh()->position);
+        $this->assertSame(1, $second->fresh()->position);
+    }
+
     public function test_enrolment_requires_the_confirmed_price_before_charging(): void
     {
         $this->enableCourses();

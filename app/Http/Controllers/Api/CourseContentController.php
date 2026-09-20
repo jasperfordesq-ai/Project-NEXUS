@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Concerns\InteractsWithCourseAuthoringCreationReceip
 use App\Models\CourseLesson;
 use App\Models\CourseSection;
 use App\Services\CourseLessonService;
+use App\Services\CourseCurriculumOrderService;
 use App\Services\CourseSectionService;
 use Illuminate\Http\JsonResponse;
 
@@ -105,6 +106,37 @@ class CourseContentController extends BaseApiController
         CourseLessonService::delete($lessonId);
 
         return $this->respondWithData(['deleted' => true]);
+    }
+
+    /** PUT /v2/courses/{courseId}/sections/reorder */
+    public function reorderSections(int $courseId): JsonResponse
+    {
+        $this->guardCourse($courseId);
+        return $this->reorderResponse(fn ($expected, $ordered) => CourseCurriculumOrderService::sections($courseId, $expected, $ordered));
+    }
+
+    /** PUT /v2/courses/{courseId}/sections/{sectionId}/lessons/reorder */
+    public function reorderLessons(int $courseId, int $sectionId): JsonResponse
+    {
+        $this->guardCourse($courseId);
+        $this->ensureSectionInCourse($sectionId, $courseId);
+        return $this->reorderResponse(fn ($expected, $ordered) => CourseCurriculumOrderService::lessons($courseId, $sectionId, $expected, $ordered));
+    }
+
+    private function reorderResponse(callable $apply): JsonResponse
+    {
+        $input = \Illuminate\Support\Facades\Validator::make($this->getAllInput(), [
+            'expected_ids' => ['required', 'array', 'list', 'min:1'],
+            'expected_ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+            'ordered_ids' => ['required', 'array', 'list', 'min:1'],
+            'ordered_ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+        ])->validate();
+        try {
+            $ids = $apply(array_map('intval', $input['expected_ids']), array_map('intval', $input['ordered_ids']));
+            return $this->respondWithData(['ordered_ids' => $ids]);
+        } catch (\DomainException $error) {
+            return $this->respondWithError('COURSE_ORDER_CHANGED', __('api_controllers_2.courses.order_changed'), null, 409);
+        }
     }
 
     // ----- Guards -----

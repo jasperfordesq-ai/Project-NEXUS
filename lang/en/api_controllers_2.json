@@ -1,4 +1,6 @@
 {
+  "courses.order_invalid": "The order must contain every item in this part of the course exactly once.",
+  "courses.order_changed": "The course order changed. Refresh the course before moving items again.",
   "courses.price_changed": "The course price changed. Refresh the course and confirm the current price before enrolling.",
   "courses.feature_disabled": "The courses feature is not enabled for this community.",
   "courses.not_found": "Course not found.",

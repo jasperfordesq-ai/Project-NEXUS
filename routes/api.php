@@ -1592,6 +1592,8 @@ Route::post('/v2/courses/{id}/publish', [\App\Http\Controllers\Api\CourseControl
 Route::post('/v2/courses/{id}/unpublish', [\App\Http\Controllers\Api\CourseController::class, 'unpublish'])->where('id', '[0-9]+');
 
 // Authoring — sections & lessons builder
+Route::put('/v2/courses/{courseId}/sections/reorder', [\App\Http\Controllers\Api\CourseContentController::class, 'reorderSections'])->where('courseId', '[0-9]+');
+Route::put('/v2/courses/{courseId}/sections/{sectionId}/lessons/reorder', [\App\Http\Controllers\Api\CourseContentController::class, 'reorderLessons'])->where(['courseId' => '[0-9]+', 'sectionId' => '[0-9]+']);
 Route::post('/v2/courses/{courseId}/sections', [\App\Http\Controllers\Api\CourseContentController::class, 'storeSection'])->where('courseId', '[0-9]+');
 Route::put('/v2/courses/{courseId}/sections/{sectionId}', [\App\Http\Controllers\Api\CourseContentController::class, 'updateSection'])->where(['courseId' => '[0-9]+', 'sectionId' => '[0-9]+']);
 Route::delete('/v2/courses/{courseId}/sections/{sectionId}', [\App\Http\Controllers\Api\CourseContentController::class, 'deleteSection'])->where(['courseId' => '[0-9]+', 'sectionId' => '[0-9]+']);
