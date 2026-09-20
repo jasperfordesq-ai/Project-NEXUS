@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "No se pudieron cargar algunas categorías o publicaciones destacadas del mercado. Inténtalo de nuevo.",
     "unable_to_load": "No se pudieron cargar listados de mercado.",
     "load_more_failed": "No se pudieron cargar más listados."
   }

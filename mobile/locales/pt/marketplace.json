@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Não foi possível carregar algumas categorias ou anúncios em destaque do mercado. Tente novamente.",
     "unable_to_load": "Não foi possível carregar listagens do marketplace.",
     "load_more_failed": "Não foi possível carregar mais listagens."
   }

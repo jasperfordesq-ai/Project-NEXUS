@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Non è stato possibile caricare alcune categorie o annunci in evidenza del mercato. Riprova.",
     "unable_to_load": "Impossibile caricare le inserzioni del marketplace.",
     "load_more_failed": "Impossibile caricare più elenchi."
   }

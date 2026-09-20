@@ -145,6 +145,36 @@ describe('MarketplaceRoute', () => {
     } as never);
   });
 
+  it('separates an initial load failure from an empty catalogue and recovers', async () => {
+    jest.mocked(getMarketplaceListings).mockRejectedValueOnce(new Error('Internal diagnostic'));
+    const screen = render(<MarketplaceRoute />);
+    await waitFor(() => expect(screen.getByText('hub.unable_to_load')).toBeTruthy());
+    expect(screen.queryByText('Internal diagnostic')).toBeNull();
+    expect(screen.queryByText('Try another search or post the first listing.')).toBeNull();
+    jest.mocked(getMarketplaceListings).mockResolvedValueOnce({ data: [{ id: 1, title: 'Recovered drill' }] } as never);
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.getByText('Recovered drill')).toBeTruthy());
+  });
+
+  it.each(['categories', 'featured'])('exposes and retries a failed %s read without removing the catalogue', async resource => {
+    const failedRead = resource === 'categories' ? getMarketplaceCategories : getFeaturedMarketplaceListings;
+    jest.mocked(failedRead).mockRejectedValueOnce(new Error('offline'));
+    jest.mocked(getMarketplaceListings).mockResolvedValueOnce({ data: [{ id: 1, title: 'Drill' }] } as never);
+    const screen = render(<MarketplaceRoute />);
+    await waitFor(() => expect(screen.getByText('hub.supporting_load_failed')).toBeTruthy());
+    expect(screen.getByText('Drill')).toBeTruthy();
+    await act(async () => {
+      const retry = screen.getByText('Retry');
+      fireEvent.press(retry);
+      fireEvent.press(retry);
+      await Promise.all([jest.mocked(getMarketplaceCategories).mock.results[1].value, jest.mocked(getFeaturedMarketplaceListings).mock.results[1].value]);
+    });
+    expect(failedRead).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.queryByText('hub.supporting_load_failed')).toBeNull());
+    expect(getMarketplaceListings).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Drill')).toBeTruthy();
+  });
+
   it('sends one save for repeated taps before the request settles', async () => {
     jest.mocked(getMarketplaceListings).mockResolvedValueOnce({ data: [{ id: 1, title: 'Drill', is_saved: false }] } as never);
     jest.mocked(saveMarketplaceListing).mockImplementation(() => new Promise(() => {}));
@@ -252,7 +282,7 @@ describe('MarketplaceRoute', () => {
     jest.mocked(getMarketplaceListings).mockRejectedValueOnce(new Error('Marketplace unavailable'));
     if (operation === 'refresh') fireEvent(screen.UNSAFE_getByType(RefreshControl), 'refresh');
     else fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
-    await waitFor(() => expect(screen.getByText('Marketplace unavailable')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('hub.unable_to_load')).toBeTruthy());
     expect(screen.getByText('Drill')).toBeTruthy();
     const callsBeforeRetry = jest.mocked(getMarketplaceListings).mock.calls.length;
     fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
@@ -260,7 +290,7 @@ describe('MarketplaceRoute', () => {
     jest.mocked(getMarketplaceListings).mockResolvedValueOnce({ data: [{ id: 2, title: 'Updated drill' }] } as never);
     fireEvent.press(screen.getByText('Retry'));
     await waitFor(() => expect(screen.getByText('Updated drill')).toBeTruthy());
-    expect(screen.queryByText('Marketplace unavailable')).toBeNull();
+    expect(screen.queryByText('hub.unable_to_load')).toBeNull();
     expect(getMarketplaceListings).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: operation === 'page' ? 'next' : null }));
     if (operation === 'page') expect(screen.getByText('Drill')).toBeTruthy();
   });

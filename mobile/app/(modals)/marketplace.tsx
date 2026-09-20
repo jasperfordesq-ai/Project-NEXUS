@@ -84,6 +84,10 @@ function MarketplaceScreen() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [failedPage, setFailedPage] = useState(false);
+  const [supportError, setSupportError] = useState(false);
+  const [supportLoading, setSupportLoading] = useState(false);
+  const supportVersion = useRef(0);
+  const supportPending = useRef(false);
   const requestVersion = useRef(0);
   const requestPending = useRef(false);
   const mounted = useRef(true);
@@ -102,21 +106,32 @@ function MarketplaceScreen() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  useEffect(() => {
-    if (!marketplaceEnabled) return;
-    let mounted = true;
-    Promise.all([
-      getMarketplaceCategories().then((response) => response.data).catch(() => []),
-      getFeaturedMarketplaceListings().then((response) => response.data).catch(() => []),
-    ]).then(([categoryData, featuredData]) => {
-      if (!mounted) return;
-      setCategories(categoryData);
-      setFeatured(featuredData);
-    });
-    return () => {
-      mounted = false;
-    };
+  const loadSupport = useCallback(async () => {
+    if (!marketplaceEnabled || !mounted.current || supportPending.current) return;
+    supportPending.current = true;
+    const version = ++supportVersion.current;
+    setSupportLoading(true);
+    try {
+      const [categoryResult, featuredResult] = await Promise.allSettled([
+        getMarketplaceCategories(),
+        getFeaturedMarketplaceListings(),
+      ]);
+      if (!mounted.current || version !== supportVersion.current) return;
+      if (categoryResult.status === 'fulfilled') setCategories(categoryResult.value.data);
+      if (featuredResult.status === 'fulfilled') setFeatured(featuredResult.value.data);
+      setSupportError(categoryResult.status === 'rejected' || featuredResult.status === 'rejected');
+    } finally {
+      if (mounted.current && version === supportVersion.current) {
+        supportPending.current = false;
+        setSupportLoading(false);
+      }
+    }
   }, [marketplaceEnabled]);
+
+  useEffect(() => {
+    void loadSupport();
+    return () => { supportVersion.current += 1; supportPending.current = false; };
+  }, [loadSupport]);
 
   const fetchListings = useCallback(async (append = false) => {
     if (!marketplaceEnabled || !mounted.current) return;
@@ -158,7 +173,7 @@ function MarketplaceScreen() {
     } catch (err) {
       if (!mounted.current || version !== requestVersion.current) return;
       setFailedPage(append);
-      setError(err instanceof Error ? err.message : t('hub.unable_to_load'));
+      setError(describeApiError(err, t('hub.unable_to_load')));
     } finally {
       if (mounted.current && version === requestVersion.current) {
         requestPending.current = false;
@@ -337,6 +352,10 @@ function MarketplaceScreen() {
                 />
             </Surface>
 
+            {supportError ? (
+              <ErrorState subtitle={t('hub.supporting_load_failed')} onRetry={() => void loadSupport()} isRetrying={supportLoading} />
+            ) : null}
+
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 12 }}>
               <HeroButton
                 size="sm"
@@ -410,13 +429,15 @@ function MarketplaceScreen() {
         ListEmptyComponent={
           isLoading ? (
             <ListSkeleton rows={4} testID="marketplace-skeleton" />
+          ) : error ? (
+            <ErrorState subtitle={error} onRetry={() => void fetchListings(false)} />
           ) : (
             <EmptyState
               icon="bag-handle-outline"
-              title={error ?? t('empty.title')}
+              title={t('empty.title')}
               subtitle={t('empty.subtitle')}
-              actionLabel={error ? t('common:buttons.retry') : t('actions.sell')}
-              onAction={error ? () => void fetchListings(false) : () => router.push('/(modals)/new-marketplace-listing' as Href)}
+              actionLabel={t('actions.sell')}
+              onAction={() => router.push('/(modals)/new-marketplace-listing' as Href)}
             />
           )
         }

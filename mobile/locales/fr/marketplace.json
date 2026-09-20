@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Certaines catégories ou annonces à la une de la place de marché n’ont pas pu être chargées. Réessayez.",
     "unable_to_load": "Impossible de charger les listes de places de marché.",
     "load_more_failed": "Impossible de charger davantage d'annonces."
   }

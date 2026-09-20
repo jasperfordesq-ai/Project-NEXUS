@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Níorbh fhéidir roinnt catagóirí ná liostaí faoi thrácht sa mhargadh a lódáil. Bain triail eile as.",
     "unable_to_load": "Níorbh fhéidir liostaí an mhargaidh a lódáil.",
     "load_more_failed": "Níorbh fhéidir tuilleadh liostaí a lódáil."
   }

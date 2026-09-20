@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Einige Marktplatzkategorien oder hervorgehobene Angebote konnten nicht geladen werden. Versuche es erneut.",
     "unable_to_load": "Marktplatzeinträge konnten nicht geladen werden.",
     "load_more_failed": "Es konnten keine weiteren Einträge geladen werden."
   }

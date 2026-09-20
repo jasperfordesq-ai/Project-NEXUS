@@ -1191,6 +1191,7 @@
     }
   },
   "hub": {
+    "supporting_load_failed": "Some marketplace categories or featured listings could not be loaded. Try again.",
     "unable_to_load": "Could not load marketplace listings.",
     "load_more_failed": "Could not load more listings."
   }
