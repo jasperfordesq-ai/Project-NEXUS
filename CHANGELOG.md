@@ -98,6 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native article text now refreshes when the system font size changes, preventing stale enlarged or undersized body text.
+
 - Native Resources keeps earlier results during page retries, reaches later knowledge-search pages, resolves saved files independently, and improves category recovery and keyboard layout.
 
 - Resource and knowledge-base pagination now follows displayed ordering, including tied rows; native API helpers support later search pages, exact saved-resource lookup, and confirmed feedback totals.

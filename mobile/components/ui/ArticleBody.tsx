@@ -17,7 +17,7 @@ const textProps = { selectable: true, allowFontScaling: true };
 export default function ArticleBody({ content, contentType, baseUrl }: { content: string; contentType?: string | null; baseUrl: string }) {
   const theme = useTheme();
   const openExternal = useOpenExternalUrl();
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
   const [measuredWidth, setMeasuredWidth] = useState<number | null>(null);
   const source = useMemo(() => ({
     html: contentType === 'markdown' ? marked.parse(content, { async: false }) : content,
@@ -37,7 +37,8 @@ export default function ArticleBody({ content, contentType, baseUrl }: { content
   if (contentType === 'plain') return <Text selectable style={baseStyle}>{content}</Text>;
   return (
     <View onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}>
-      <RenderHTML contentWidth={Math.max(1, measuredWidth ?? width - 64)} source={source}
+      {/* Recreate memoized native text when Android changes font scale in place. */}
+      <RenderHTML key={fontScale} contentWidth={Math.max(1, measuredWidth ?? width - 64)} source={source}
         baseStyle={baseStyle} tagsStyles={tagsStyles} defaultTextProps={textProps}
         enableCSSInlineProcessing={false} ignoredDomTags={ignoredTags} renderersProps={renderersProps} />
     </View>
