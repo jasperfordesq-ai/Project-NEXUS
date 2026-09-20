@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
+import { ApiResponseError } from '../api/client';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useInvitationCampaignOperations } from './useInvitationCampaignOperations';
 import { loadInvitationCampaignOperation as load, executeInvitationCampaignOperation as execute,
@@ -91,4 +92,18 @@ it('reviews a rejected request explicitly without replaying it', async () => {
   await act(async () => result.current.review());
   expect(review).toHaveBeenCalledWith(scope, 'rejected-key', expect.any(Function));
   expect(reviewed).toHaveBeenCalledWith(receipt.data.campaign);
+});
+
+it('uses the specific rejection message but still reports a failed review', async () => {
+  const error = new ApiResponseError(409, 'Conflict', undefined, 'EVENT_REGISTRATION_CONFLICT', 'expected_campaign_revision');
+  const rejected: SavedInvitationCampaignOperation = { ...scope, schemaVersion: 1, key: 'rejected', status: 'rejected',
+    intent: { action: 'cancel', campaignId: 12, expectedRevision: 1, reason: 'Synthetic' } };
+  jest.mocked(execute).mockImplementationOnce(async () => { jest.mocked(load).mockResolvedValue(rejected); throw error; });
+  const { result } = renderHook(() => useInvitationCampaignOperations(scope, true, true, jest.fn()));
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  await act(async () => result.current.submit(rejected.intent));
+  expect(result.current.saved?.status).toBe('rejected'); expect(result.current.operationFailed).toBe(false);
+  jest.mocked(review).mockRejectedValueOnce(error);
+  await act(async () => result.current.review());
+  expect(result.current.operationFailed).toBe(true);
 });

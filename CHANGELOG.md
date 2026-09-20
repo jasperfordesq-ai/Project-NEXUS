@@ -78,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native invitation conflicts now show their specific recovery explanation without a duplicate generic failure message; failures while reviewing the current campaign remain visible.
+
 - Native invitation management now preserves definitively rejected changes for explicit, read-only campaign review, rechecks organiser access, and prevents stale replacements while keeping uncertain requests on their original retry keys.
 
 - Invitation campaign conflicts now identify definitive revision refusals separately from uncertain retry-key collisions, enabling safe client review without treating a previously successful send as rejected.

@@ -61,7 +61,10 @@ export function useInvitationCampaignOperations(scope: InvitationCampaignScope, 
           : await recoverInvitationCampaignOperation(owner, isCurrent);
       if (isCurrent()) callback.current(receipt);
     } catch (error) {
-      if (isCurrent()) setState(previous => ({ ...previous, operationFailed: true, errorStatus: error instanceof ApiResponseError ? error.status : null }));
+      const attempted = kind === 'submit' ? intent : visible.saved?.status === 'pending' ? visible.saved.intent : undefined;
+      const explainedRejection = kind !== 'review' && attempted && attempted.action !== 'preview' && error instanceof ApiResponseError && error.status === 409
+        && error.code === 'EVENT_REGISTRATION_CONFLICT' && error.field === 'expected_campaign_revision';
+      if (isCurrent()) setState(previous => ({ ...previous, operationFailed: !explainedRejection, errorStatus: error instanceof ApiResponseError ? error.status : null }));
     } finally {
       await reload();
       if (isCurrent()) { current.current.locked = false; setState(previous => ({ ...previous, busy: false })); }
