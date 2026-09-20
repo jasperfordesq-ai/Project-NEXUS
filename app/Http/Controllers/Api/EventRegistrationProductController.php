@@ -730,6 +730,10 @@ final class EventRegistrationProductController extends BaseApiController
             // Idempotency conflicts must remain distinguishable for uncertain-write recovery.
             return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_revision', 409);
         }
+        if ($reason === 'event_registration_guest_attendance_version_conflict') {
+            // A new request rejected before mutation differs from an uncertain replay conflict.
+            return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_version', 409);
+        }
         if ($reason === 'event_registration_guest_capacity_full') {
             // Same code/message as a full event on the registration path — from
             // the member's point of view it is the same fact, and the generic

@@ -65,6 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Guest attendance conflicts now identify a definitively rejected attendance version separately from idempotency conflicts, allowing clients to review stale state without misclassifying uncertain retries.
+
 - Registration answer-review and export failures now scroll into view after layout, retain entered evidence and expose updated feedback through an accessibility live region. Submitting dismisses the keyboard, and departed-form callbacks cannot move a newly opened form.
 
 - Fixed native audited CSV exports failing after access-token expiry: a read-only session check now uses normal token renewal before the single export POST, while retaining the originating account and screen guards. The audited export itself is never automatically replayed.
