@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile group tools preserve selected wiki pages and questions through late responses, provide media/task/wiki recovery states, retain usable tasks when statistics fail, and ignore actions after departure.
+
 - Mobile group discussion links reject array-valued, fractional and unsafe group or discussion IDs before fetching a thread.
 
 - Mobile group discussions preserve replies and drafts through recovery, prevent duplicate sends, ignore outdated paging results, and keep the Android reply composer above the keyboard.

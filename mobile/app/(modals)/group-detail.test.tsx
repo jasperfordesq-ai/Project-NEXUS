@@ -1096,7 +1096,7 @@ describe('GroupDetailScreen', () => {
     expect(getByText('Download')).toBeTruthy();
   });
 
-  it('lets group admins delete files from the native files tab', async () => {
+  it.each([false, true])('handles file deletion confirmation with departed screen = %s', async (departed) => {
     const refreshFiles = jest.fn();
     const groupState = {
       data: {
@@ -1146,14 +1146,20 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByText } = render(<GroupDetailScreen />);
+    const { getByText, unmount } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Files'));
     fireEvent.press(getByText('Delete'));
 
-    // Asked, not done.
+    // Asked, not done. A stale confirmation must not submit after departure.
     expect(deleteGroupFile).not.toHaveBeenCalled();
+    if (departed) unmount();
     await act(async () => { await sayYesToTheDialog(); });
+    if (departed) {
+      expect(deleteGroupFile).not.toHaveBeenCalled();
+      expect(refreshFiles).not.toHaveBeenCalled();
+      return;
+    }
 
     await waitFor(() => {
       expect(deleteGroupFile).toHaveBeenCalledWith(1, 31);
@@ -1161,7 +1167,7 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('renders native group media and filters by type', async () => {
+  it.each([false, true])('renders media and recovers a failed filter read: %s', async (failFilter) => {
     jest.mocked(getGroupMedia).mockResolvedValue({
       data: {
         items: [{
@@ -1186,18 +1192,27 @@ describe('GroupDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { findByText, getByText } = render(<GroupDetailScreen />);
+    const { findByText, getByText, findByTestId, queryByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Media'));
 
     expect(await findByText('Spring garden')).toBeTruthy();
     expect(getByText('Photos')).toBeTruthy();
 
+    if (failFilter) jest.mocked(getGroupMedia).mockRejectedValueOnce(new Error('Filter unavailable'));
     fireEvent.press(getByText('Videos'));
 
     await waitFor(() => {
       expect(getGroupMedia).toHaveBeenCalledWith(1, { type: 'video', cursor: null });
     });
+    if (failFilter) {
+      await findByTestId('group-media-load-error');
+      expect(queryByText('Spring garden')).toBeNull();
+      const count = jest.mocked(getGroupMedia).mock.calls.length;
+      fireEvent.press(getByText('common:buttons.retry'));
+      await waitFor(() => expect(getGroupMedia).toHaveBeenCalledTimes(count + 1));
+      expect(getGroupMedia).toHaveBeenLastCalledWith(1, { type: 'video', cursor: null });
+    }
   });
 
   it('lets group admins delete native group media', async () => {
@@ -1361,7 +1376,8 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it.each([false, true])('posts an answer when subsequent readback fails: %s', async (failReadback) => {
+  it.each(['success', 'failed-read', 'changed-question'])('posts an answer with subsequent outcome: %s', async (outcome) => {
+    const failReadback = outcome === 'failed-read';
     const refreshQuestions = jest.fn();
     const question = {
       id: 41,
@@ -1417,7 +1433,7 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { findByText, getByLabelText, getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { findByText, getByLabelText, getByPlaceholderText, getByText, queryByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Q&A'));
     fireEvent.press(getByText('How do we compost safely?'));
@@ -1437,6 +1453,10 @@ describe('GroupDetailScreen', () => {
     await act(async () => {});
     refreshQuestions.mockClear();
     if (failReadback) jest.mocked(getGroupQuestion).mockRejectedValueOnce(new Error('Readback unavailable'));
+    let resolveRead!: (value: Awaited<ReturnType<typeof getGroupQuestion>>) => void;
+    if (outcome === 'changed-question') {
+      jest.mocked(getGroupQuestion).mockReturnValueOnce(new Promise((resolve) => { resolveRead = resolve; }));
+    }
     fireEvent.press(getByText('Post answer'));
     expect(getByPlaceholderText('Write an answer...').props.editable).toBe(false);
 
@@ -1446,6 +1466,19 @@ describe('GroupDetailScreen', () => {
       }, expect.any(String));
       expect(refreshQuestions).toHaveBeenCalled();
     });
+    if (outcome === 'changed-question') {
+      await waitFor(() => expect(resolveRead).toBeDefined());
+      // Collapse and reopen while the accepted answer's readback is still in flight.
+      fireEvent.press(getByText('How do we compost safely?'));
+      jest.mocked(getGroupQuestion).mockResolvedValueOnce({ data: { ...question, answers: [{
+        id: 51, question_id: 41, body: 'Newer accepted view', vote_count: 0, user_vote: 0,
+        is_accepted: false, author: { id: 11, name: 'Bob Builder', avatar: null }, created_at: '2026-06-03T00:00:00Z',
+      }] } });
+      fireEvent.press(getByText('How do we compost safely?'));
+      await findByText('Newer accepted view');
+      await act(async () => { resolveRead({ data: { ...question, answers: [] } }); });
+      expect(queryByText('Newer accepted view')).toBeTruthy();
+    }
     if (failReadback) {
       await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith({
         title: 'common:errors.refreshFailedTitle',
@@ -1459,7 +1492,10 @@ describe('GroupDetailScreen', () => {
     }
   });
 
-  it('lets group admins accept answers from the native Q&A tab', async () => {
+  it.each([
+    ['accept', 'success'], ['accept', 'failed-read'], ['accept', 'changed-selection'],
+    ['vote', 'failed-read'], ['vote', 'changed-selection'],
+  ])('handles group Q&A %s with %s', async (action, outcome) => {
     const question = {
       id: 41,
       title: 'How do we compost safely?',
@@ -1520,16 +1556,39 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { findByText, getByText } = render(<GroupDetailScreen />);
+    const { findByText, getByText, getByLabelText, queryByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Q&A'));
     fireEvent.press(getByText('How do we compost safely?'));
     expect(await findByText('Use a lidded bin.')).toBeTruthy();
-    fireEvent.press(getByText('Accept answer'));
-
+    let resolveMutation!: (value: never) => void;
+    if (outcome === 'changed-selection') {
+      const deferred = new Promise<never>((resolve) => { resolveMutation = resolve; });
+      if (action === 'accept') jest.mocked(acceptGroupAnswer).mockReturnValueOnce(deferred);
+      else jest.mocked(voteGroupQA).mockReturnValueOnce(deferred);
+    }
+    if (outcome === 'failed-read') jest.mocked(getGroupQuestion).mockRejectedValueOnce(new Error('Read failed after accepted write'));
+    fireEvent.press(action === 'accept' ? getByText('Accept answer') : getByLabelText('Upvote question'));
     await waitFor(() => {
-      expect(acceptGroupAnswer).toHaveBeenCalledWith(1, 50);
+      if (action === 'accept') expect(acceptGroupAnswer).toHaveBeenCalledWith(1, 50);
+      else expect(voteGroupQA).toHaveBeenCalledWith(1, { type: 'question', target_id: 41, vote: 'up' });
     });
+    if (outcome === 'failed-read') {
+      await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'common:errors.refreshFailedTitle', variant: 'warning',
+      })));
+      expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+    }
+    if (outcome === 'changed-selection') {
+      fireEvent.press(getByText('How do we compost safely?'));
+      jest.mocked(getGroupQuestion).mockResolvedValueOnce({ data: { ...question, answers: [] } });
+      fireEvent.press(getByText('How do we compost safely?'));
+      await waitFor(() => expect(queryByText('Use a lidded bin.')).toBeNull());
+      const readsBefore = jest.mocked(getGroupQuestion).mock.calls.length;
+      await act(async () => { resolveMutation({} as never); });
+      expect(getGroupQuestion).toHaveBeenCalledTimes(readsBefore);
+      expect(queryByText('Use a lidded bin.')).toBeNull();
+    }
   });
 
   it('lets the question asker accept answers from the native Q&A tab', async () => {
@@ -1606,7 +1665,24 @@ describe('GroupDetailScreen', () => {
     });
   });
 
-  it('renders native wiki pages and opens page content', async () => {
+  it('distinguishes a failed wiki load from an empty wiki and retries', async () => {
+    jest.mocked(getGroupWikiPages).mockRejectedValueOnce(new Error('Wiki unavailable'));
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    });
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Wiki'));
+    expect(await screen.findByText('Could not load wiki pages.')).toBeTruthy();
+    expect(screen.queryByText('No wiki pages yet.')).toBeNull();
+    jest.mocked(getGroupWikiPages).mockResolvedValueOnce({ data: [] });
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(await screen.findByText('No wiki pages yet.')).toBeTruthy();
+    expect(screen.queryByText('Could not load wiki pages.')).toBeNull();
+    expect(getGroupWikiPages).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['normal', 'late-success', 'late-failure'])('loads wiki revisions with %s', async (outcome) => {
     jest.mocked(getGroupWikiPages).mockResolvedValue({
       data: [{
         id: 61,
@@ -1648,7 +1724,7 @@ describe('GroupDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { findAllByText, findByText, getByText } = render(<GroupDetailScreen />);
+    const { findAllByText, findByText, getByText, getByLabelText, queryByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Wiki'));
 
@@ -1657,12 +1733,29 @@ describe('GroupDetailScreen', () => {
     expect(getGroupWikiPages).toHaveBeenCalledWith(1);
     expect(getGroupWikiPage).toHaveBeenCalledWith(1, 'compost-guide');
 
+    let resolveRevisions!: (value: Awaited<ReturnType<typeof getGroupWikiRevisions>>) => void;
+    let rejectRevisions!: (error: Error) => void;
+    if (outcome !== 'normal') jest.mocked(getGroupWikiRevisions).mockReturnValueOnce(new Promise((resolve, reject) => {
+      resolveRevisions = resolve; rejectRevisions = reject;
+    }));
     fireEvent.press(getByText('Revisions'));
+    if (outcome !== 'normal') {
+      fireEvent.press(getByLabelText('Compost guide'));
+      await findByText('Use a lidded bin.');
+      mockShowToast.mockClear();
+      await act(async () => {
+        if (outcome === 'late-failure') rejectRevisions(new Error('Old revision read failed'));
+        else resolveRevisions({ data: [{ id: 91, content: 'Old notes', change_summary: 'Stale history', created_at: '2026-05-30T00:00:00Z', editor: { id: 10, name: 'Alice Admin' } }] });
+      });
+      expect(queryByText('Stale history')).toBeNull();
+      expect(mockShowToast).not.toHaveBeenCalled();
+      fireEvent.press(getByText('Revisions'));
+    }
     expect(await findByText('Initial note')).toBeTruthy();
     expect(getGroupWikiRevisions).toHaveBeenCalledWith(1, 61);
   });
 
-  it('lets group admins delete native wiki pages', async () => {
+  it.each([false, true])('handles wiki deletion after changing selection: %s', async (changeSelection) => {
     jest.mocked(getGroupWikiPages).mockResolvedValue({
       data: [{
         id: 61,
@@ -1701,21 +1794,62 @@ describe('GroupDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { findAllByText, getByText } = render(<GroupDetailScreen />);
+    const { findAllByText, getByText, getByLabelText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Wiki'));
     await findAllByText('Compost guide');
     fireEvent.press(getByText('Delete'));
 
     expect(deleteGroupWikiPage).not.toHaveBeenCalled();
+    if (changeSelection) fireEvent.press(getByLabelText('Compost guide'));
     await act(async () => { await sayYesToTheDialog(); });
+    if (changeSelection) {
+      expect(deleteGroupWikiPage).not.toHaveBeenCalled();
+      return;
+    }
 
     await waitFor(() => {
       expect(deleteGroupWikiPage).toHaveBeenCalledWith(1, 61);
     });
   });
 
-  it('lets members create and edit native wiki pages', async () => {
+  it.each(['create', 'delete'])('preserves another wiki page while %s completes', async (action) => {
+    const first = { id: 61, title: 'Compost guide', slug: 'compost-guide', content: 'Use a lidded bin.', parent_id: null, sort_order: 0, is_published: true, author: { id: 10, name: 'Alice Admin' }, updated_at: '2026-06-01T00:00:00Z' };
+    const second = { ...first, id: 63, title: 'Watering guide', slug: 'watering-guide', content: 'Water in the evening.' };
+    jest.mocked(getGroupWikiPages).mockResolvedValue({ data: [first, second] });
+    jest.mocked(getGroupWikiPage).mockImplementation(async (_id, slug) => ({ data: slug === second.slug ? second : first }));
+    mockUseApi.mockReturnValue({ data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Wiki'));
+    await screen.findByText(first.content);
+    let resolveCreate!: (value: Awaited<ReturnType<typeof createGroupWikiPage>>) => void;
+    let resolveDelete!: (value: Awaited<ReturnType<typeof deleteGroupWikiPage>>) => void;
+    let confirmation: Promise<void> | void;
+    if (action === 'create') {
+      jest.mocked(createGroupWikiPage).mockReturnValueOnce(new Promise((resolve) => { resolveCreate = resolve; }));
+      fireEvent.press(screen.getByText('New page'));
+      fireEvent.changeText(screen.getByPlaceholderText('Page title'), 'Tool care');
+      fireEvent.changeText(screen.getByPlaceholderText('Write the page content...'), 'Clean tools.');
+      fireEvent.press(screen.getByText('Create page'));
+    } else {
+      jest.mocked(deleteGroupWikiPage).mockReturnValueOnce(new Promise((resolve) => { resolveDelete = resolve; }));
+      fireEvent.press(screen.getByText('Delete'));
+      act(() => { confirmation = mockConfirm.mock.calls[0][0].onConfirm(); });
+    }
+    fireEvent.press(screen.getByLabelText(second.title));
+    await screen.findByText(second.content);
+    await act(async () => {
+      if (action === 'create') resolveCreate({ data: { ...first, id: 62, title: 'Tool care', slug: 'tool-care', content: 'Clean tools.' } });
+      else {
+        jest.mocked(getGroupWikiPages).mockResolvedValue({ data: [second] });
+        resolveDelete({ data: { message: 'Deleted' } });
+        await confirmation;
+      }
+    });
+    expect(screen.getByText(second.content)).toBeTruthy();
+  });
+
+  it.each([false, true])('saves wiki edits with a changed page selection: %s', async (changeSelection) => {
     jest.mocked(getGroupWikiPages).mockResolvedValue({
       data: [{
         id: 61,
@@ -1748,7 +1882,7 @@ describe('GroupDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { findAllByText, getAllByPlaceholderText, getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { findAllByText, getAllByPlaceholderText, getByPlaceholderText, getByText, getByLabelText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Wiki'));
     await findAllByText('Compost guide');
@@ -1768,6 +1902,8 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Edit'));
     fireEvent.changeText(getAllByPlaceholderText('Write the page content...')[0], 'Keep it covered.');
     fireEvent.changeText(getByPlaceholderText('Change summary'), 'Clarified storage.');
+    let resolveSave!: (value: Awaited<ReturnType<typeof updateGroupWikiPage>>) => void;
+    if (changeSelection) jest.mocked(updateGroupWikiPage).mockReturnValueOnce(new Promise((resolve) => { resolveSave = resolve; }));
     fireEvent.press(getByText('Save page'));
 
     await waitFor(() => {
@@ -1778,9 +1914,65 @@ describe('GroupDetailScreen', () => {
         expected_updated_at: '2026-06-01T00:00:00Z',
       });
     });
+    if (changeSelection) {
+      fireEvent.press(getByLabelText('Compost guide'));
+      await waitFor(() => expect(getByText('Use a lidded bin.')).toBeTruthy());
+      await act(async () => { resolveSave({ data: {
+        id: 62, title: 'Tool care', slug: 'tool-care', content: 'Keep it covered.',
+        parent_id: null, sort_order: 0, is_published: true, author: { id: 10, name: 'Alice Admin' }, updated_at: '2026-06-02T00:00:00Z',
+      } }); });
+      expect(getByText('Use a lidded bin.')).toBeTruthy();
+    }
   });
 
-  it('renders native group tasks and cycles task status', async () => {
+  it.each(['media', 'tasks'])('uses each accepted cursor across multiple %s pages', async (tab) => {
+    mockUseApi.mockReturnValue({ data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() });
+    if (tab === 'media') {
+      jest.mocked(getGroupMedia)
+        .mockResolvedValueOnce({ data: { items: [], cursor: 'page-two', has_more: true } })
+        .mockResolvedValueOnce({ data: { items: [], cursor: 'page-three', has_more: true } })
+        .mockResolvedValueOnce({ data: { items: [], cursor: null, has_more: false } });
+    } else {
+      jest.mocked(getGroupTasks)
+        .mockResolvedValueOnce({ data: [], meta: { cursor: 'page-two', has_more: true } })
+        .mockResolvedValueOnce({ data: [], meta: { cursor: 'page-three', has_more: true } })
+        .mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
+    }
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText(tab === 'media' ? 'Media' : 'Tasks'));
+    const control = `group-${tab}-load-more`;
+    await screen.findByTestId(control);
+    const request = tab === 'media' ? getGroupMedia : getGroupTasks;
+    fireEvent.press(screen.getByTestId(control));
+    await waitFor(() => expect(request).toHaveBeenLastCalledWith(1, expect.objectContaining({ cursor: 'page-two' })));
+    await act(async () => {});
+    fireEvent.press(screen.getByTestId(control));
+    await waitFor(() => expect(request).toHaveBeenLastCalledWith(1, expect.objectContaining({ cursor: 'page-three' })));
+    await waitFor(() => expect(screen.queryByTestId(control)).toBeNull());
+  });
+
+  it('offers a retry for a failed task filter without relabelling old tasks', async () => {
+    const task = { id: 70, group_id: 1, title: 'Pending garden task', description: null, status: 'todo' as const, priority: 'medium' as const, assigned_to: null, due_date: null, created_at: '2026-06-01T00:00:00Z' };
+    jest.mocked(getGroupTasks).mockResolvedValue({ data: [task], meta: { has_more: false, cursor: null } });
+    jest.mocked(getGroupTaskStats).mockResolvedValue({ data: { total: 1, todo: 1, in_progress: 0, done: 0, overdue: 0 } });
+    mockUseApi.mockReturnValue({ data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() });
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await screen.findByText(task.title);
+    expect(screen.getByText('1 total')).toBeTruthy();
+    jest.mocked(getGroupTasks).mockRejectedValueOnce(new Error('Task filter failed'));
+    jest.mocked(getGroupTaskStats).mockRejectedValueOnce(new Error('Statistics failed too'));
+    fireEvent.press(screen.getByText('Done'));
+    await screen.findByTestId('group-tasks-load-error');
+    expect(screen.queryByText(task.title)).toBeNull();
+    expect(screen.queryByText('1 total')).toBeNull();
+    jest.mocked(getGroupTasks).mockResolvedValueOnce({ data: [], meta: { has_more: false, cursor: null } });
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await waitFor(() => expect(screen.queryByTestId('group-tasks-load-error')).toBeNull());
+    expect(getGroupTasks).toHaveBeenLastCalledWith(1, { status: 'done', cursor: null });
+  });
+
+  it.each([false, true])('renders usable group tasks when statistics fail: %s', async (statsFail) => {
     jest.mocked(getGroupTasks).mockResolvedValue({
       data: [{
         id: 70,
@@ -1798,6 +1990,7 @@ describe('GroupDetailScreen', () => {
     jest.mocked(getGroupTaskStats).mockResolvedValue({
       data: { total: 1, todo: 1, in_progress: 0, done: 0, overdue: 0 },
     });
+    if (statsFail) jest.mocked(getGroupTaskStats).mockRejectedValueOnce(new Error('Statistics unavailable'));
     mockUseApi.mockReturnValue({
       data: { data: { ...mockGroupDetail, is_member: true } },
       isLoading: false,
@@ -1810,8 +2003,11 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Tasks'));
 
     expect(await findByText('Water seedlings')).toBeTruthy();
+    if (statsFail) expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', title: 'common:errors.refreshFailedTitle' }));
     expect(getByText('Use the small greenhouse cans.')).toBeTruthy();
     expect(getByText('High')).toBeTruthy();
+    let resolveUpdate!: (value: Awaited<ReturnType<typeof updateGroupTask>>) => void;
+    jest.mocked(updateGroupTask).mockReturnValueOnce(new Promise((resolve) => { resolveUpdate = resolve; }));
     act(() => {
       fireEvent.press(getByLabelText('To do'));
       fireEvent.press(getByLabelText('To do'));
@@ -1821,6 +2017,13 @@ describe('GroupDetailScreen', () => {
       expect(updateGroupTask).toHaveBeenCalledWith(70, { status: 'in_progress' });
       expect(updateGroupTask).toHaveBeenCalledTimes(1);
     });
+    fireEvent.press(getByText('Done'));
+    await waitFor(() => expect(getGroupTasks).toHaveBeenLastCalledWith(1, { status: 'done', cursor: null }));
+    const readCount = jest.mocked(getGroupTasks).mock.calls.length;
+    const task = (await jest.mocked(getGroupTasks).mock.results[0].value).data[0];
+    await act(async () => { resolveUpdate({ data: { ...task, status: 'in_progress' } }); });
+    expect(getGroupTasks).toHaveBeenCalledTimes(readCount + 1);
+    expect(getGroupTasks).toHaveBeenLastCalledWith(1, { status: 'done', cursor: null });
   });
 
   it('lets group admins update native task priority inline', async () => {
@@ -2167,6 +2370,15 @@ describe('GroupDetailScreen', () => {
 
     await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
     expect(removeGroupMember).toHaveBeenCalledWith(1, 21);
+  });
+
+  it('ignores a member removal confirmation after leaving the group screen', async () => {
+    const { removeGroupMember } = require('@/lib/api/groups');
+    const { screen } = renderMembersTabAsAdmin([otherMember]);
+    fireEvent.press(screen.getByTestId('group-member-remove-21'));
+    screen.unmount();
+    await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
+    expect(removeGroupMember).not.toHaveBeenCalled();
   });
 
   it('offers no member actions against the owner or against yourself', () => {

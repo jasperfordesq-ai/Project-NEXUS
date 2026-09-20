@@ -8,6 +8,8 @@ import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   RefreshControl,
   ScrollView,
   Share,
@@ -121,6 +123,7 @@ import BottomSheet from '@/components/ui/BottomSheet';
 import Input from '@/components/ui/Input';
 import TextArea from '@/components/ui/TextArea';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import MarketplaceListingCard from '@/components/marketplace/MarketplaceListingCard';
@@ -170,7 +173,7 @@ function useAsyncMutationBoundary() {
   }, []);
 
   function beginMutation() {
-    if (mutationPendingRef.current) return false;
+    if (!isMountedRef.current || mutationPendingRef.current) return false;
     mutationPendingRef.current = true;
     return true;
   }
@@ -397,12 +400,13 @@ function GroupDetailScreenInner() {
   const actionPendingRef = useRef(false);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
   }, []);
 
   function beginAction(): boolean {
-    if (actionPendingRef.current) return false;
+    if (!isMountedRef.current || actionPendingRef.current) return false;
     actionPendingRef.current = true;
     return true;
   }
@@ -904,8 +908,10 @@ function GroupDetailScreenInner() {
         }}
       />
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         testID="group-detail-scroll"
+        keyboardShouldPersistTaps="handled"
         className="flex-1"
         style={{ flex: 1, backgroundColor: theme.bg }}
         contentContainerStyle={{ flexGrow: 1, gap: 16, paddingHorizontal: 16, paddingBottom: 40, backgroundColor: theme.bg }}
@@ -1098,7 +1104,7 @@ function GroupDetailScreenInner() {
                         <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
                           {t('detail.startDiscussion')}
                         </Text>
-                        <Text className="mt-1 text-xs" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                        <Text className="mt-1 text-xs" style={{ color: theme.textSecondary }}>
                           {t('detail.startDiscussionHint')}
                         </Text>
                       </View>
@@ -1450,6 +1456,7 @@ function GroupDetailScreenInner() {
           <GroupMarketplacePanel groupId={loadedGroup.id} canView={userCanSeeMemberContent} />
         ) : null}
       </ScrollView>
+      </KeyboardAvoidingView>
       <BottomSheet
         visible={showDiscussionComposer}
         scrollable
@@ -1823,39 +1830,46 @@ function GroupMediaPanel({
   const loadVersionRef = useRef(0);
   const loadMorePendingRef = useRef(false);
   const uploadAttemptRef = useRef<MutationAttempt | null>(null);
+  const [mediaLoadError, setMediaLoadError] = useState<string | null>(null);
+  const mediaPageRef = useRef({ cursor, hasMore, filter, isLoading });
+  mediaPageRef.current = { cursor, hasMore, filter, isLoading };
 
   const loadMedia = useCallback(async (append = false) => {
     if (!canView) return;
-    if (append && loadMorePendingRef.current) return;
+    if (append && (loadMorePendingRef.current || mediaPageRef.current.isLoading || !mediaPageRef.current.hasMore || !mediaPageRef.current.cursor)) return;
+    if (!append) { loadMorePendingRef.current = false; setIsLoadingMore(false); setMediaLoadError(null); }
     const requestVersion = append ? loadVersionRef.current : ++loadVersionRef.current;
     if (append) loadMorePendingRef.current = true;
     if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
-      const response = await getGroupMedia(groupId, { type: filter, cursor: append ? cursor : null });
+      const response = await getGroupMedia(groupId, { type: mediaPageRef.current.filter, cursor: append ? mediaPageRef.current.cursor : null });
       if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
       const page = response.data.items ?? [];
-      setItems((previous) => (append ? [...previous, ...page] : page));
+      setItems((previous) => (append ? Array.from(new Map([...previous, ...page].map((item) => [item.id, item])).values()) : page));
       setCursor(response.data.cursor ?? null);
       setHasMore(Boolean(response.data.has_more));
     } catch (err) {
       if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
+      if (!append) setMediaLoadError(describeApiError(err, t('detail.media.loadError')));
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, append ? t('detail.media.loadMoreError') : t('detail.media.loadError')),
         variant: 'danger',
       });
     } finally {
-      if (append) loadMorePendingRef.current = false;
+      if (append && requestVersion === loadVersionRef.current) loadMorePendingRef.current = false;
       if (isMountedRef.current && requestVersion === loadVersionRef.current) {
         if (append) setIsLoadingMore(false); else setIsLoading(false);
       }
     }
-    // `cursor` is deliberately absent: including it would restart the list from page one
-    // every time a page arrived. Appending reads it through the closure at call time.
+    // Pagination and delayed mutation refreshes read current inputs through the ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, groupId, filter]);
 
   useEffect(() => {
+    setItems([]);
+    setCursor(null);
+    setHasMore(false);
     void loadMedia();
   }, [loadMedia]);
 
@@ -1996,6 +2010,8 @@ function GroupMediaPanel({
             <Spinner size="md" />
           </HeroCard.Body>
         </HeroCard>
+      ) : mediaLoadError ? (
+        <ErrorState title={t('detail.media.loadError')} subtitle={mediaLoadError} onRetry={() => void loadMedia()} testID="group-media-load-error" />
       ) : items.length === 0 ? (
         <EmptyCard icon="images-outline" message={t('detail.media.empty')} />
       ) : (
@@ -2106,6 +2122,7 @@ function GroupQAPanel({
     const requestVersion = ++detailRequestVersionRef.current;
     setExpandedId(questionId);
     setDetail(null);
+    setAnswerBody('');
     setLoadingDetail(true);
     try {
       const response = await getGroupQuestion(groupId, questionId);
@@ -2129,6 +2146,8 @@ function GroupQAPanel({
 
     if (!beginMutation()) return;
     const questionId = expandedId;
+    const selectionVersion = detailRequestVersionRef.current;
+    const isCurrentQuestion = () => isMountedRef.current && selectionVersion === detailRequestVersionRef.current;
     const fingerprint = JSON.stringify({ groupId, questionId, body: content });
     answerAttemptRef.current = mutationAttemptFor(answerAttemptRef.current, fingerprint, 'group-answer');
     setAnswering(true);
@@ -2136,15 +2155,15 @@ function GroupQAPanel({
       await answerGroupQuestion(groupId, questionId, { body: content }, answerAttemptRef.current.key);
       if (!isMountedRef.current) return;
       answerAttemptRef.current = null;
-      setAnswerBody('');
+      if (isCurrentQuestion()) setAnswerBody('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       try {
         const response = await getGroupQuestion(groupId, questionId);
-        if (!isMountedRef.current) return;
+        if (!isCurrentQuestion()) return;
         setDetail(response.data);
       } catch {
-        if (!isMountedRef.current) return;
+        if (!isCurrentQuestion()) return;
         // The answer was accepted. A failed read must not invite another post.
         showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
       }
@@ -2156,8 +2175,10 @@ function GroupQAPanel({
           const accepted = latest.answers.some((answer) => answer.author.id === currentUserId && answer.body.trim() === content);
           if (accepted) {
             answerAttemptRef.current = null;
-            setAnswerBody('');
-            setDetail(latest);
+            if (isCurrentQuestion()) {
+              setAnswerBody('');
+              setDetail(latest);
+            }
             onRefresh();
             return;
           }
@@ -2174,24 +2195,29 @@ function GroupQAPanel({
     }
   }
 
-  async function refreshExpandedQuestion() {
-    if (!expandedId) return;
+  async function refreshExpandedQuestion(selectionVersion: number) {
+    if (!expandedId || !isMountedRef.current || selectionVersion !== detailRequestVersionRef.current) return;
     const questionId = expandedId;
-    const requestVersion = ++detailRequestVersionRef.current;
-    const response = await getGroupQuestion(groupId, questionId);
-    if (!isMountedRef.current || requestVersion !== detailRequestVersionRef.current) return;
-    setDetail(response.data);
+    try {
+      const response = await getGroupQuestion(groupId, questionId);
+      if (!isMountedRef.current || selectionVersion !== detailRequestVersionRef.current) return;
+      setDetail(response.data);
+    } catch {
+      if (!isMountedRef.current || selectionVersion !== detailRequestVersionRef.current) return;
+      showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
+    }
   }
 
   async function voteTarget(type: 'question' | 'answer', targetId: number, vote: 'up' | 'down') {
     if (!beginMutation()) return;
+    const selectionVersion = detailRequestVersionRef.current;
     const targetKey = `${type}:${targetId}:${vote}`;
     setVotingTarget(targetKey);
     try {
       await voteGroupQA(groupId, { type, target_id: targetId, vote });
       if (!isMountedRef.current) return;
       onRefresh();
-      if (expandedId) await refreshExpandedQuestion();
+      if (expandedId) await refreshExpandedQuestion(selectionVersion);
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
@@ -2201,7 +2227,7 @@ function GroupQAPanel({
           if (!isMountedRef.current) return;
           const target = type === 'question' ? latest : latest.answers.find((answer) => answer.id === targetId);
           if (target?.user_vote === (vote === 'up' ? 1 : -1)) {
-            setDetail(latest);
+            if (selectionVersion === detailRequestVersionRef.current) setDetail(latest);
             onRefresh();
             return;
           }
@@ -2220,12 +2246,13 @@ function GroupQAPanel({
 
   async function acceptAnswer(answerId: number) {
     if (!beginMutation()) return;
+    const selectionVersion = detailRequestVersionRef.current;
     setAcceptingAnswerId(answerId);
     try {
       await acceptGroupAnswer(groupId, answerId);
       if (!isMountedRef.current) return;
       onRefresh();
-      await refreshExpandedQuestion();
+      await refreshExpandedQuestion(selectionVersion);
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
@@ -2234,7 +2261,7 @@ function GroupQAPanel({
           const latest = (await getGroupQuestion(groupId, expandedId)).data;
           if (!isMountedRef.current) return;
           if (latest.answers.some((answer) => answer.id === answerId && answer.is_accepted)) {
-            setDetail(latest);
+            if (selectionVersion === detailRequestVersionRef.current) setDetail(latest);
             onRefresh();
             return;
           }
@@ -2480,7 +2507,10 @@ function GroupWikiPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [pages, setPages] = useState<GroupWikiPage[]>([]);
+  const [pagesError, setPagesError] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState<GroupWikiPageDetail | null>(null);
+  const selectedPageRef = useRef(selectedPage);
+  selectedPageRef.current = selectedPage;
   const [isLoading, setIsLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(false);
   const [showComposer, setShowComposer] = useState(false);
@@ -2506,6 +2536,7 @@ function GroupWikiPanel({
     setEditing(false);
     setShowRevisions(false);
     setRevisions([]);
+    setRevisionsLoading(false);
     try {
       const response = await getGroupWikiPage(groupId, slug);
       if (!isMountedRef.current || requestVersion !== pageRequestVersionRef.current) return;
@@ -2522,20 +2553,23 @@ function GroupWikiPanel({
 
   async function loadPages(openFirst = false) {
     const requestVersion = ++pagesRequestVersionRef.current;
+    const selectionVersion = pageRequestVersionRef.current;
     setIsLoading(true);
+    setPagesError(null);
     try {
       const response = await getGroupWikiPages(groupId);
       if (!isMountedRef.current || requestVersion !== pagesRequestVersionRef.current) return;
       const items = Array.isArray(response.data) ? response.data : [];
       setPages(items);
+      if (selectionVersion !== pageRequestVersionRef.current) return;
       if (openFirst && items.length > 0) {
         await loadPage(items[0].slug);
-      } else if (selectedPage && !items.some((page) => page.id === selectedPage.id)) {
+      } else if (selectedPageRef.current && !items.some((page) => page.id === selectedPageRef.current?.id)) {
         setSelectedPage(null);
       }
     } catch (err) {
       if (!isMountedRef.current || requestVersion !== pagesRequestVersionRef.current) return;
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.loadError')), variant: 'danger' });
+      setPagesError(describeApiError(err, t('detail.wiki.loadError')));
     } finally {
       if (isMountedRef.current && requestVersion === pagesRequestVersionRef.current) setIsLoading(false);
     }
@@ -2557,6 +2591,7 @@ function GroupWikiPanel({
     if (!beginMutation()) return;
     const fingerprint = JSON.stringify({ groupId, title, content });
     createAttemptRef.current = mutationAttemptFor(createAttemptRef.current, fingerprint, 'group-wiki-page');
+    const selectionVersion = pageRequestVersionRef.current;
     setCreating(true);
     try {
       const response = await createGroupWikiPage(groupId, { title, content }, createAttemptRef.current.key);
@@ -2565,7 +2600,15 @@ function GroupWikiPanel({
       setNewTitle('');
       setNewContent('');
       setShowComposer(false);
-      setSelectedPage(response.data);
+      if (selectionVersion === pageRequestVersionRef.current) {
+        pageRequestVersionRef.current += 1;
+        setSelectedPage(response.data);
+        setPageLoading(false);
+        setEditing(false);
+        setRevisions([]);
+        setShowRevisions(false);
+        setRevisionsLoading(false);
+      }
       await loadPages(false);
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -2588,6 +2631,7 @@ function GroupWikiPanel({
     if (!beginMutation()) return;
     const page = selectedPage;
     const content = editContent.trim();
+    const selectionVersion = pageRequestVersionRef.current;
     setSaving(true);
     try {
       const response = await updateGroupWikiPage(groupId, page.id, {
@@ -2597,9 +2641,11 @@ function GroupWikiPanel({
         expected_updated_at: page.updated_at,
       });
       if (!isMountedRef.current) return;
-      setSelectedPage(response.data);
-      setEditing(false);
-      setChangeSummary('');
+      if (selectionVersion === pageRequestVersionRef.current) {
+        setSelectedPage(response.data);
+        setEditing(false);
+        setChangeSummary('');
+      }
       await loadPages(false);
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -2609,9 +2655,11 @@ function GroupWikiPanel({
           const latest = (await getGroupWikiPage(groupId, page.slug)).data;
           if (!isMountedRef.current) return;
           if (latest.content.trim() === content && latest.title === page.title) {
-            setSelectedPage(latest);
-            setEditing(false);
-            setChangeSummary('');
+            if (selectionVersion === pageRequestVersionRef.current) {
+              setSelectedPage(latest);
+              setEditing(false);
+              setChangeSummary('');
+            }
             await loadPages(false);
             return;
           }
@@ -2639,15 +2687,16 @@ function GroupWikiPanel({
       setRevisions(response.data ?? []);
       setShowRevisions(true);
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || pageVersion !== pageRequestVersionRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.revisionsError')), variant: 'danger' });
     } finally {
-      if (isMountedRef.current) setRevisionsLoading(false);
+      if (isMountedRef.current && pageVersion === pageRequestVersionRef.current) setRevisionsLoading(false);
     }
   }
 
   function confirmDeletePage() {
     if (!selectedPage) return;
+    const selectionVersion = pageRequestVersionRef.current;
     confirm({
       title: t('detail.wiki.deleteTitle'),
       message: t('detail.wiki.deleteMessage', { title: selectedPage.title }),
@@ -2655,15 +2704,17 @@ function GroupWikiPanel({
       cancelLabel: t('common:buttons.cancel'),
       variant: 'danger',
       onConfirm: async () => {
-        if (!selectedPage || !beginMutation()) return;
+        if (!selectedPage || selectionVersion !== pageRequestVersionRef.current || !beginMutation()) return;
         const page = selectedPage;
         setDeletingPage(true);
         try {
           await deleteGroupWikiPage(groupId, page.id);
           if (!isMountedRef.current) return;
-          setSelectedPage(null);
-          setRevisions([]);
-          setShowRevisions(false);
+          if (selectionVersion === pageRequestVersionRef.current) {
+            setSelectedPage(null);
+            setRevisions([]);
+            setShowRevisions(false);
+          }
           await loadPages(false);
           if (!isMountedRef.current) return;
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -2673,10 +2724,12 @@ function GroupWikiPanel({
               const pagesAfterDelete = (await getGroupWikiPages(groupId)).data;
               if (!isMountedRef.current) return;
               if (!pagesAfterDelete.some((candidate) => candidate.id === page.id)) {
-                setSelectedPage(null);
+                if (selectionVersion === pageRequestVersionRef.current) {
+                  setSelectedPage(null);
+                  setRevisions([]);
+                  setShowRevisions(false);
+                }
                 setPages(pagesAfterDelete);
-                setRevisions([]);
-                setShowRevisions(false);
                 return;
               }
             } catch {
@@ -2749,6 +2802,7 @@ function GroupWikiPanel({
         </HeroCard.Body>
       </HeroCard>
 
+      {pagesError ? <ErrorState subtitle={pagesError} onRetry={() => void loadPages(!selectedPageRef.current)} /> : null}
       {isLoading && pages.length === 0 ? (
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="min-h-[140px] items-center justify-center">
@@ -2756,7 +2810,7 @@ function GroupWikiPanel({
           </HeroCard.Body>
         </HeroCard>
       ) : pages.length === 0 ? (
-        <EmptyCard icon="book-outline" message={t('detail.wiki.empty')} />
+        pagesError ? null : <EmptyCard icon="book-outline" message={t('detail.wiki.empty')} />
       ) : (
         <View className="gap-2">
           {pages.map((page) => (
@@ -2798,8 +2852,8 @@ function GroupWikiPanel({
       ) : selectedPage ? (
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="min-w-0 flex-1">
+            <View className="gap-3">
+              <View className="min-w-0">
                 <Text className="text-lg font-semibold" style={{ color: theme.text }}>
                   {selectedPage.title}
                 </Text>
@@ -2928,32 +2982,43 @@ function GroupTasksPanel({
   const loadMorePendingRef = useRef(false);
   const createAttemptRef = useRef<MutationAttempt | null>(null);
 
+  const taskPageRef = useRef({ cursor, hasMore, statusFilter, isLoading });
+  const [taskLoadError, setTaskLoadError] = useState<string | null>(null);
+  taskPageRef.current = { cursor, hasMore, statusFilter, isLoading };
+
   const loadTasks = useCallback(async (append = false) => {
     if (!canView) return;
-    if (append && loadMorePendingRef.current) return;
+    if (append && (loadMorePendingRef.current || taskPageRef.current.isLoading || !taskPageRef.current.hasMore || !taskPageRef.current.cursor)) return;
+    if (!append) { loadMorePendingRef.current = false; setIsLoadingMore(false); setTaskLoadError(null); }
     const requestVersion = append ? loadVersionRef.current : ++loadVersionRef.current;
     if (append) loadMorePendingRef.current = true;
     if (append) setIsLoadingMore(true); else setIsLoading(true);
     try {
-      const [taskResponse, statsResponse] = await Promise.all([
-        getGroupTasks(groupId, { status: statusFilter, cursor: append ? cursor : null }),
+      const [taskResult, statsResult] = await Promise.allSettled([
+        getGroupTasks(groupId, { status: taskPageRef.current.statusFilter, cursor: append ? taskPageRef.current.cursor : null }),
         getGroupTaskStats(groupId),
       ]);
       if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
+      setStats(statsResult.status === 'fulfilled' ? statsResult.value.data : null);
+      if (taskResult.status === 'rejected') throw taskResult.reason;
+      const taskResponse = taskResult.value;
       const page = taskResponse.data ?? [];
-      setTasks((previous) => (append ? [...previous, ...page] : page));
+      setTasks((previous) => (append ? Array.from(new Map([...previous, ...page].map((item) => [item.id, item])).values()) : page));
       setCursor(taskResponse.meta?.cursor ?? null);
       setHasMore(Boolean(taskResponse.meta?.has_more));
-      setStats(statsResponse.data);
+      if (statsResult.status === 'rejected') {
+        showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
+      }
     } catch (err) {
       if (!isMountedRef.current || requestVersion !== loadVersionRef.current) return;
+      if (!append) setTaskLoadError(describeApiError(err, t('detail.tasks.loadError')));
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, append ? t('detail.tasks.loadMoreError') : t('detail.tasks.loadError')),
         variant: 'danger',
       });
     } finally {
-      if (append) loadMorePendingRef.current = false;
+      if (append && requestVersion === loadVersionRef.current) loadMorePendingRef.current = false;
       if (isMountedRef.current && requestVersion === loadVersionRef.current) {
         if (append) setIsLoadingMore(false); else setIsLoading(false);
       }
@@ -2963,6 +3028,9 @@ function GroupTasksPanel({
   }, [canView, groupId, statusFilter]);
 
   useEffect(() => {
+    setTasks([]);
+    setCursor(null);
+    setHasMore(false);
     void loadTasks();
   }, [loadTasks]);
 
@@ -3240,6 +3308,8 @@ function GroupTasksPanel({
             <Spinner size="md" />
           </HeroCard.Body>
         </HeroCard>
+      ) : taskLoadError ? (
+        <ErrorState title={t('detail.tasks.loadError')} subtitle={taskLoadError} onRetry={() => void loadTasks()} testID="group-tasks-load-error" />
       ) : tasks.length === 0 ? (
         <EmptyCard icon="checkbox-outline" message={t('detail.tasks.empty')} />
       ) : (
