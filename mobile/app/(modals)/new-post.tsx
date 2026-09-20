@@ -26,7 +26,7 @@
 
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
@@ -69,6 +69,12 @@ function NewPostScreen() {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasPosted, setHasPosted] = useState(false);
+  const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const { confirm, confirmDialog } = useConfirm();
 
   const trimmed = content.trim();
@@ -97,18 +103,22 @@ function NewPostScreen() {
   const feedEnabled = hasModule('feed');
 
   async function submit() {
+    if (submittingRef.current || !mountedRef.current || !feedEnabled) return;
     if (!trimmed) {
       showToast({ title: t('home:newPost.empty'), variant: 'warning' });
       return;
     }
     if (isTooLong) return;
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     let destination: Parameters<typeof router.push>[0] | null = null;
     try {
       const created = await createPost({ content: trimmed });
+      if (!mountedRef.current) return;
       const id = created?.data?.id;
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+      if (!mountedRef.current) return;
       // The feed reader is holding a list that no longer has everything in it.
       markFeedStale();
       showToast({ title: t('home:newPost.created'), variant: 'success' });
@@ -116,19 +126,24 @@ function NewPostScreen() {
         ? { pathname: '/(modals)/feed-item-detail', params: { id: String(id), type: 'post' } }
         : ('/(tabs)/home' as Href);
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({
         title: t('home:newPost.failed'),
         description: error instanceof Error ? error.message : undefined,
         variant: 'danger',
       });
     } finally {
-      setIsSubmitting(false);
+      // Once accepted, keep synchronous protection until navigation unmounts us.
+      // The state update and deferred navigation leave a short repeat-tap window.
+      if (!destination) submittingRef.current = false;
+      if (mountedRef.current) setIsSubmitting(false);
     }
 
     if (destination) {
       // The post is away: the unsaved-changes guard must not stop the screen leaving.
       setHasPosted(true);
       setTimeout(() => {
+        if (!mountedRef.current) return;
         if (typeof router.replace === 'function') router.replace(destination);
         else router.push(destination);
       }, 0);

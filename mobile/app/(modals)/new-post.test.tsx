@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockRouterReplace = jest.fn();
 const mockRouterBack = jest.fn();
@@ -134,6 +134,30 @@ beforeEach(() => {
 });
 
 describe('NewPostRoute', () => {
+  it('sends only one post when submit events arrive before a rerender', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreatePost.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewPostRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText("What's on your mind?"), 'One community post');
+    act(() => {
+      fireEvent.press(screen.getByText('Post'));
+      fireEvent.press(screen.getByText('Post'));
+    });
+    expect(mockCreatePost).toHaveBeenCalledTimes(1);
+    await act(async () => { finish(created201); });
+  });
+
+  it('does not navigate or announce success after the composer has departed', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreatePost.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<NewPostRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText("What's on your mind?"), 'A pending community post');
+    fireEvent.press(screen.getByText('Post'));
+    screen.unmount();
+    await act(async () => { finish(created201); await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
   it('offers the composer with the community wording', () => {
     const { getAllByText, getByPlaceholderText } = render(<NewPostRoute />);
 

@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native post creation now blocks rapid duplicate submissions and ignores success or failure callbacks after the composer closes.
+
 - Native marketplace checkout now retains purchase identity across reopening and offers explicit recovery with the original choices, including sold-out listings, without automatically restarting card payment.
 
 - Fixed the mobile bundle-budget export on Windows by reusing the bounded Node shutdown-crash retry wrapper. Ordinary export errors still fail; the size ceiling is unchanged.
