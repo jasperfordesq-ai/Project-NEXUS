@@ -88,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Corrected the refresh button translation in the native retention workspace.
+
 - Retention previews now report missing registration settings as a validation error instead of a server error, and remain retryable after settings are configured.
 
 - Retention preview retries now return their saved snapshot after its records change or are anonymised, without creating another run; changed dates and reused apply keys still conflict. Cancelled and issued native invitation campaigns no longer display a future-send snapshot notice.

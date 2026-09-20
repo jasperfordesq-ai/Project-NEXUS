@@ -75,7 +75,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
         autoCapitalize="none" autoCorrect={false} helper={t('retention.time_hint')}
         error={invalid ? t('retention.time_hint') : undefined} />
       <Button isDisabled={blocked} onPress={preview}>{t('retention.preview')}</Button>
-      <Button variant="secondary" isDisabled={operation.busy} onPress={() => { setSelected(null); setAccepted(null); setConfirming(false); state.refresh(); }}>{t('actions.refresh')}</Button>
+      <Button variant="secondary" isDisabled={operation.busy} onPress={() => { setSelected(null); setAccepted(null); setConfirming(false); state.refresh(); }}>{t('eventRegistration:common.refresh')}</Button>
       <Text accessibilityRole="header" className="font-semibold text-foreground">{t('tabs.retention')}</Text>
       {!runs.length && <Text className="text-muted-foreground">{t('retention.empty')}</Text>}
       {(selected ? [selected] : runs).map(run => <View key={run.id} className="gap-3 rounded-xl border border-separator p-4">
