@@ -322,7 +322,9 @@
     "time_hint": "Use AAAA-MM-DD HH:mm en UTC, después de finalizar el evento y no después del momento actual.",
     "preview_reference": "Vista previa {{id}}",
     "confirm": "Registros elegibles: {{count}}. ¿Aplicar la vista previa {{id}}? Esta acción no se puede deshacer.",
-    "review": "Ver ejecución"
+    "review": "Ver ejecución",
+    "confirm_one": "Registro elegible: {{count}}. ¿Aplicar la vista previa {{id}}? Esta acción no se puede deshacer.",
+    "confirm_other": "Registros elegibles: {{count}}. ¿Aplicar la vista previa {{id}}? Esta acción no se puede deshacer."
   },
   "statuses": {
     "draft": "Borrador",

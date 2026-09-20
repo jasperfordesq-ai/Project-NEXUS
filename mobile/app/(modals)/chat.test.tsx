@@ -207,6 +207,7 @@ import { sendChatMessage, submitChatFeedback, type ChatResponse } from '@/lib/ap
 describe('ChatScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(submitChatFeedback).mockReset().mockResolvedValue({ data: { recorded: true, feedback: 'up' } });
     mockUserId = 1;
     mockTenantId = 2;
     mockFirstName = 'Jasper';
@@ -307,7 +308,11 @@ describe('ChatScreen', () => {
     expect(screen.getByPlaceholderText('Tell us what was missing or wrong').props.value).toBe('Keep this note');
     await waitFor(() => expect(screen.UNSAFE_getAllByType(require('@/components/ui/NativeButton').Button)
       .find(node => node.props.accessibilityLabel === 'Send note')!.props.isDisabled).toBe(false));
+    let finishRetry!: (value: Awaited<ReturnType<typeof submitChatFeedback>>) => void;
+    jest.mocked(submitChatFeedback).mockImplementationOnce(() => new Promise(resolve => { finishRetry = resolve; }));
     fireEvent.press(screen.getByLabelText('Send note'));
+    await waitFor(() => expect(submitChatFeedback).toHaveBeenCalledTimes(3));
+    await act(async () => finishRetry({ data: { recorded: true, feedback: 'down' } }));
     await waitFor(() => expect(screen.queryByText('What went wrong?')).toBeNull());
     expect(submitChatFeedback).toHaveBeenLastCalledWith(expect.objectContaining({ note: 'Keep this note' }));
   });

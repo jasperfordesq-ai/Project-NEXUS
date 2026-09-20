@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { useEffect, useState } from 'react';
-import { AppState, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { AppState, Keyboard, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams, type Href } from 'expo-router';
@@ -45,7 +45,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   useEffect(() => { if (isRefusalStatus(operation.errorStatus)) setRefused(true); }, [operation.errorStatus]);
   useEffect(() => { if (!permitted) { setSelected(null); setAccepted(null); setConfirming(false); setAsOf(''); setInvalid(false); } }, [permitted]);
   if (!active) return null;
-  if (state.isLoading) return <LoadingSpinner />;
+  if (state.isLoading && !state.data) return <LoadingSpinner />;
   if (refused || isRefusalStatus(operation.errorStatus) || isRefusalStatus(state.errorStatus) || (state.data && !state.data.permitted)) return <EmptyState icon="lock-closed-outline" title={t('events:manage.access_denied_title')} />;
   if (state.error || !state.data) return <View className="gap-3 p-4"><Text accessibilityRole="alert" className="text-danger">{t('load_error.title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></View>;
   const data = state.data; const pagination = data.pagination;
@@ -60,8 +60,10 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
     if (!instant || !ended || Date.parse(instant) < Date.parse(data.schedule.end_at!) || Date.parse(instant) > Date.now()) { setInvalid(true); return; }
     Keyboard.dismiss(); setInvalid(false); setConfirming(false); void operation.submit({ action: 'preview', asOf: instant });
   }
+  const canPullRefresh = permitted && !operation.busy && !selected && !asOf.trim();
+  const pullRefresh = () => { if (canPullRefresh) state.refresh(); };
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}><View className="gap-4">
+    <ScrollView keyboardShouldPersistTaps="handled" refreshControl={<RefreshControl refreshing={state.isLoading} enabled={canPullRefresh} onRefresh={pullRefresh} />} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}><View className="gap-4">
       <Text className="text-foreground">{t('retention.description')}</Text>
       {(operation.storageFailed || operation.saved?.status === 'pending') && <View className="gap-3">
         <Text className="text-foreground">{t('event_communications:' + (operation.storageFailed ? 'recovery_storage_description' : 'recovery_description'))}</Text>

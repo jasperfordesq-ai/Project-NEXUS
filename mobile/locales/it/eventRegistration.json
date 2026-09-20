@@ -322,7 +322,9 @@
     "time_hint": "Usa AAAA-MM-GG HH:mm in UTC, dopo la fine dell’evento e non oltre il momento attuale.",
     "preview_reference": "Anteprima {{id}}",
     "confirm": "Record idonei: {{count}}. Applicare l’anteprima {{id}}? Questa azione non può essere annullata.",
-    "review": "Visualizza operazione"
+    "review": "Visualizza operazione",
+    "confirm_one": "Record idoneo: {{count}}. Applicare l’anteprima {{id}}? Questa azione non può essere annullata.",
+    "confirm_other": "Record idonei: {{count}}. Applicare l’anteprima {{id}}? Questa azione non può essere annullata."
   },
   "statuses": {
     "draft": "Bozza",

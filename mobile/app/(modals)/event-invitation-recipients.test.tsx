@@ -102,3 +102,21 @@ it('prefers a newer server version over a previously reviewed state', () => {
   expect(view.getByText('statuses.expired')).toBeTruthy();
   expect(view.queryByText('statuses.accepted')).toBeNull();
 });
+
+it('refreshes the list but refuses a pull during an active operation', () => {
+  const view = render(<Screen />);
+  const refreshControl = () => view.UNSAFE_getByType(require('react-native').RefreshControl);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+  mockOperation.busy = true; view.rerender(<Screen />);
+  expect(refreshControl().props.enabled).toBe(false);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+});
+
+it('does not refresh away an active draft', () => {
+ const view=render(<Screen />); openEditor(view); fireEvent.changeText(view.getByLabelText('revocation.reason'), 'Keep my reason');
+ const control=view.UNSAFE_getByType(require('react-native').RefreshControl);
+ expect(control.props.enabled).toBe(false); act(() => control.props.onRefresh());
+ expect(mockState.refresh).not.toHaveBeenCalled();
+});

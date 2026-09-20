@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Added guarded pull-to-refresh to native invitation and retention lists, preserving active drafts and blocking refresh during requests; corrected singular retention confirmation wording across supported languages.
+
 - Keep native pagination metadata aligned with accepted rows, preserve it during recoverable refresh failures, and clear it with rows when access is withdrawn.
 
 - Keep reviewed invitation states current when returning to the native organiser list, preventing obsolete revocation actions from reappearing after concurrent acceptance.

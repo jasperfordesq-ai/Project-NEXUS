@@ -322,7 +322,9 @@
     "time_hint": "Utilisez AAAA-MM-JJ HH:mm en UTC, après la fin de l’événement et au plus tard maintenant.",
     "preview_reference": "Aperçu {{id}}",
     "confirm": "Enregistrements admissibles : {{count}}. Appliquer l’aperçu {{id}} ? Cette action est irréversible.",
-    "review": "Voir l’opération"
+    "review": "Voir l’opération",
+    "confirm_one": "Enregistrement admissible : {{count}}. Appliquer l’aperçu {{id}} ? Cette action est irréversible.",
+    "confirm_other": "Enregistrements admissibles : {{count}}. Appliquer l’aperçu {{id}} ? Cette action est irréversible."
   },
   "statuses": {
     "draft": "Brouillon",

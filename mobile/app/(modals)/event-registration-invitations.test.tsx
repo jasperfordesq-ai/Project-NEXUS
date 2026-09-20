@@ -82,3 +82,21 @@ it('offers current campaign review for a definitive rejection without retrying t
 });
 
 jest.mock('@/lib/observability/report', () => ({ reportSentryMessage: jest.fn() }));
+
+it('refreshes the list but refuses a pull during an active operation', () => {
+  const view = render(<Screen />);
+  const refreshControl = () => view.UNSAFE_getByType(require('react-native').RefreshControl);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+  mockOperation.busy = true; view.rerender(<Screen />);
+  expect(refreshControl().props.enabled).toBe(false);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+});
+
+it('does not refresh away an active draft', () => {
+ const view=render(<Screen />); fireEvent.press(view.getByText('invitations.builder_title'));
+ const control=view.UNSAFE_getByType(require('react-native').RefreshControl);
+ expect(control.props.enabled).toBe(false); act(() => control.props.onRefresh());
+ expect(mockState.refresh).not.toHaveBeenCalled();
+});

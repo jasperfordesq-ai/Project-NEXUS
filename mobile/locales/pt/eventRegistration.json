@@ -322,7 +322,9 @@
     "time_hint": "Use AAAA-MM-DD HH:mm em UTC, após o fim do evento e nunca depois do momento atual.",
     "preview_reference": "Pré-visualização {{id}}",
     "confirm": "Registos elegíveis: {{count}}. Aplicar a pré-visualização {{id}}? Esta ação não pode ser anulada.",
-    "review": "Ver operação"
+    "review": "Ver operação",
+    "confirm_one": "Registo elegível: {{count}}. Aplicar a pré-visualização {{id}}? Esta ação não pode ser anulada.",
+    "confirm_other": "Registos elegíveis: {{count}}. Aplicar a pré-visualização {{id}}? Esta ação não pode ser anulada."
   },
   "statuses": {
     "draft": "Rascunho",

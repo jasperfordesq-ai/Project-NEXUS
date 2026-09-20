@@ -322,7 +322,9 @@
     "time_hint": "Use YYYY-MM-DD HH:mm in UTC, after the event ends and no later than now.",
     "preview_reference": "Preview {{id}}",
     "confirm": "Eligible records: {{count}}. Apply preview {{id}}? This cannot be undone.",
-    "review": "View run"
+    "review": "View run",
+    "confirm_one": "Eligible record: {{count}}. Apply preview {{id}}? This cannot be undone.",
+    "confirm_other": "Eligible records: {{count}}. Apply preview {{id}}? This cannot be undone."
   },
   "statuses": {
     "draft": "Draft",

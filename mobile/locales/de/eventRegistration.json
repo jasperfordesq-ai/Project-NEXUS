@@ -322,7 +322,9 @@
     "time_hint": "Verwenden Sie JJJJ-MM-TT HH:mm in UTC, nach Veranstaltungsende und nicht später als jetzt.",
     "preview_reference": "Vorschau {{id}}",
     "confirm": "Geeignete Datensätze: {{count}}. Vorschau {{id}} anwenden? Dies kann nicht rückgängig gemacht werden.",
-    "review": "Lauf anzeigen"
+    "review": "Lauf anzeigen",
+    "confirm_one": "Geeigneter Datensatz: {{count}}. Vorschau {{id}} anwenden? Dies kann nicht rückgängig gemacht werden.",
+    "confirm_other": "Geeignete Datensätze: {{count}}. Vorschau {{id}} anwenden? Dies kann nicht rückgängig gemacht werden."
   },
   "statuses": {
     "draft": "Entwurf",

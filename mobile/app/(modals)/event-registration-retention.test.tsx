@@ -93,3 +93,21 @@ it('clears a date refusal when the same date becomes valid', () => {
     expect(view.UNSAFE_getByType(Input).props.error).toBeUndefined();
   } finally { clock.mockRestore(); }
 });
+
+it('refreshes the list but refuses a pull during an active operation', () => {
+  const view = render(<Screen />);
+  const refreshControl = () => view.UNSAFE_getByType(require('react-native').RefreshControl);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+  mockOperation.busy = true; view.rerender(<Screen />);
+  expect(refreshControl().props.enabled).toBe(false);
+  act(() => refreshControl().props.onRefresh());
+  expect(mockState.refresh).toHaveBeenCalledTimes(1);
+});
+
+it('does not refresh away an active draft', () => {
+ const view=render(<Screen />); fireEvent.changeText(view.getByLabelText('retention.as_of'), '2026-09-20 05:00');
+ const control=view.UNSAFE_getByType(require('react-native').RefreshControl);
+ expect(control.props.enabled).toBe(false); act(() => control.props.onRefresh());
+ expect(mockState.refresh).not.toHaveBeenCalled();
+});
