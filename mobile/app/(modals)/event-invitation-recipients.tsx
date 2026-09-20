@@ -29,6 +29,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   useEffect(() => { const listener = AppState.addEventListener('change', setAppState); return () => listener.remove(); }, []);
   const active = focused && appState === 'active';
   const [page, setPage] = useState(1); const [selected, setSelected] = useState<OrganizerInvitation | null>(null);
+  const [reviewedStates, setReviewedStates] = useState<Record<number, Pick<OrganizerInvitation, 'status' | 'invitation_version' | 'accepted_at' | 'revoked_at' | 'expired_at'>>>({});
   const [reason, setReason] = useState(''); const [editing, setEditing] = useState(false); const [confirming, setConfirming] = useState(false);
   const [invalid, setInvalid] = useState(false); const [refused, setRefused] = useState(false);
   const state = useApi(async () => (await getOrganizerInvitations(eventId, page)).data, [eventId, page], { enabled: active, clearOnRefusal: true });
@@ -36,7 +37,11 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   function clearEditor() { setReason(''); setEditing(false); setConfirming(false); setInvalid(false); }
   const operation = useInvitationRevocationOperations({ eventId, tenantId, userId }, permitted, active, receipt => {
     setSelected(previous => previous?.id === receipt.data.invitation.id ? { ...previous, ...receipt.data.invitation } : null); clearEditor();
-  }, invitation => { setSelected(invitation); clearEditor(); });
+  }, invitation => {
+    const { status, invitation_version, accepted_at, revoked_at, expired_at } = invitation;
+    setReviewedStates(previous => ({ ...previous, [invitation.id]: { status, invitation_version, accepted_at, revoked_at, expired_at } }));
+    setSelected(invitation); clearEditor();
+  });
   useEffect(() => { if (isRefusalStatus(operation.errorStatus)) setRefused(true); }, [operation.errorStatus]);
   useEffect(() => { if (!permitted) { setSelected(null); clearEditor(); } }, [permitted]);
   if (!active) return null;
@@ -45,7 +50,10 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   if (state.error || !state.data) return <View className="gap-3 p-4"><Text accessibilityRole="alert" className="text-danger">{t('load_error.title')}</Text><Button onPress={state.refresh}>{t('common:buttons.retry')}</Button></View>;
   const data = state.data; const pagination = data.pagination; const blocked = !permitted || operation.blocked;
   const receipt = operation.saved?.status === 'acknowledged' ? operation.saved.invitation : null;
-  const invitations = data.invitations.map(item => receipt?.id === item.id && receipt.invitation_version >= item.invitation_version ? { ...item, ...receipt } : item);
+  const invitations = data.invitations.map(item => {
+    const reviewed = reviewedStates[item.id];
+    return reviewed && reviewed.invitation_version >= item.invitation_version ? { ...item, ...reviewed } : item;
+  }).map(item => receipt?.id === item.id && receipt.invitation_version >= item.invitation_version ? { ...item, ...receipt } : item);
   const effectiveSelected = selected && receipt?.id === selected.id && receipt.invitation_version >= selected.invitation_version ? { ...selected, ...receipt } : selected;
   const showName = data.permissions.view_roster; const showEmail = data.permissions.view_recipient_email;
   function review() {

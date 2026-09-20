@@ -83,3 +83,22 @@ it('applies a late saved receipt to a selection already open', () => {
   mockOperation.saved = { status: 'acknowledged', invitation: { id: 9, event_id: 42, campaign_id: 3, status: 'revoked', invitation_version: 2, revoked_at: '2026-09-20T12:00:00Z' } };
   view.rerender(<Screen />); expect(view.getByText('statuses.revoked')).toBeTruthy(); expect(view.queryByText('revocation.revoke')).toBeNull();
 });
+
+it('keeps fresh reviewed state when closing and reopening an invitation', () => {
+  const view = render(<Screen />);
+  act(() => mockUseOperation.mock.calls.at(-1)?.[4]({ ...invitation, status: 'accepted', invitation_version: 2 }));
+  fireEvent.press(view.getByText('common:close'));
+  expect(view.getByText('statuses.accepted')).toBeTruthy();
+  fireEvent.press(view.getByText('revocation.view'));
+  expect(view.queryByText('revocation.revoke')).toBeNull();
+});
+
+it('prefers a newer server version over a previously reviewed state', () => {
+  const view = render(<Screen />);
+  act(() => mockUseOperation.mock.calls.at(-1)?.[4]({ ...invitation, status: 'accepted', invitation_version: 2 }));
+  fireEvent.press(view.getByText('common:close'));
+  mockState.data.invitations = [{ ...invitation, status: 'expired', invitation_version: 3 }];
+  view.rerender(<Screen />);
+  expect(view.getByText('statuses.expired')).toBeTruthy();
+  expect(view.queryByText('statuses.accepted')).toBeNull();
+});

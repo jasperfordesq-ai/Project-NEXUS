@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep reviewed invitation states current when returning to the native organiser list, preventing obsolete revocation actions from reappearing after concurrent acceptance.
+
 - Distinguished rejected invitation revocations from uncertain requests, allowing explicit current-state review while preserving original retry keys for unknown outcomes.
 
 - Clarified that the native retention history control opens a saved run without reloading or applying it.
