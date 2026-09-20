@@ -5,6 +5,7 @@
 import React from 'react';
 import { AppState, RefreshControl } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
+import Export from '@/components/events/EventRegistrationExport';
 import Review from '@/components/events/EventRegistrationAnswerReview';
 let mockId: string | string[] | undefined = '42'; let mockFocused = true; let mockUser = 7;
 let mockState: any; const mockUseApi = jest.fn();
@@ -13,6 +14,7 @@ jest.mock('@react-navigation/native', () => ({ useIsFocused: () => mockFocused }
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: mockUser } }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: 2 } }) }));
 jest.mock('@/lib/hooks/useApi', () => ({ useApi: (...args: unknown[]) => { mockUseApi(...args); return mockState; } }));
+jest.mock('@/components/events/EventRegistrationExport', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/events/EventRegistrationAnswerReview', () => ({ __esModule: true, default: () => null }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
@@ -75,4 +77,19 @@ it.each(['0', '1.5', ['42', '43'], undefined])('does not load invalid route IDs 
 it('hides redundant pagination on a single-page result', () => {
  mockState.data.pagination.submissions = { page: 1, last_page: 1, previous_page: null, next_page: null };
  const view = render(<Screen />); expect(view.queryByText('events:attendance.previous')).toBeNull(); expect(view.queryByText('events:attendance.next')).toBeNull();
+});
+
+it('only offers export with its separate permission and keeps refresh away from its evidence form', () => {
+  const view = render(<Screen />); expect(view.queryByText('submissions.export')).toBeNull();
+  mockState.data.permissions.export_answers = true; view.rerender(<Screen />); fireEvent.press(view.getByText('submissions.export'));
+  expect(view.UNSAFE_getByType(Export).props).toMatchObject({ permitted: true, sensitive: false, eventId: 42, userId: 7, tenantId: 2 });
+  expect(view.UNSAFE_queryByType(RefreshControl)).toBeNull();
+  mockState.data.permissions.export_answers = false; view.rerender(<Screen />); expect(view.UNSAFE_queryByType(Export)).toBeNull();
+});
+it('removes the export form on background and returns to the roster', () => {
+  mockState.data.permissions.export_answers = true; const view = render(<Screen />); fireEvent.press(view.getByText('submissions.export'));
+  act(() => { jest.mocked(AppState.addEventListener).mock.calls.at(-1)?.[1]('background'); });
+  expect(view.UNSAFE_queryByType(Export)).toBeNull();
+  act(() => { jest.mocked(AppState.addEventListener).mock.calls.at(-1)?.[1]('active'); });
+  expect(view.UNSAFE_queryByType(Export)).toBeNull(); expect(view.getByText('Synthetic member')).toBeTruthy();
 });

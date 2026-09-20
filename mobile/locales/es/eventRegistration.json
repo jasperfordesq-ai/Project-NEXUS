@@ -175,10 +175,13 @@
     "open_answers": "respuestas abiertas",
     "purged": "Eliminado según la política de retención",
     "export_title": "Exportar respuestas de registro",
-    "export_description": "La exportación es limitada, segura para fórmulas y registrada en la auditoría de acceso a respuestas inmutable.",
+    "export_description": "Exporta los envíos actuales, incluidos los retirados. Indica por qué necesitas las respuestas y elige dónde guardar o compartir el archivo. Las respuestas sensibles solo se incluyen si las seleccionas.",
     "download_csv": "Descargar CSV",
     "amend": "Modificar respuestas",
-    "save_draft": "Guardar borrador"
+    "save_draft": "Guardar borrador",
+    "export_action": "Guardar o compartir CSV",
+    "sharing_unavailable": "No se puede compartir en este dispositivo.",
+    "export_error": "No se pudo compartir la exportación. Es posible que el acceso ya se haya registrado. Comprueba la conexión antes de volver a intentarlo."
   },
   "invitations": {
     "builder_title": "Campaña de invitación",

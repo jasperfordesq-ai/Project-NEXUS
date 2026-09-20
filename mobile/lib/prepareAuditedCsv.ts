@@ -3,14 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 import { fetch } from 'expo/fetch';
-import { Directory, File, Paths, type FileHandle } from 'expo-file-system';
-import { randomUUID } from 'expo-crypto';
+import { File, type FileHandle } from 'expo-file-system';
+import { createAuditedExportDirectory } from './auditedExportCache';
 import i18n from 'i18next';
 import { ApiResponseError, authenticatedApiIdentity } from '@/lib/api/client';
 import { API_BASE_URL, APP_VERSION } from '@/lib/constants';
 
-/** A prepared file is private until the caller explicitly shares it, then disposes it. */
-export interface PreparedAuditedCsv { uri: string; assertCurrent: () => Promise<void>; dispose: () => void }
+/** Dispose unshared files immediately; release shared files to the foreground cache cleanup. */
+export interface PreparedAuditedCsv { uri: string; assertCurrent: () => Promise<void>; dispose: () => void; releaseAfterSharing: () => void }
 /** Streams a single audited POST to disk without buffering the entire export or retrying it. */
 export async function prepareAuditedCsv(path: string, filename: string, body: unknown,
   headers: Record<string, string>, isActive: () => boolean): Promise<PreparedAuditedCsv> {
@@ -25,9 +25,9 @@ export async function prepareAuditedCsv(path: string, filename: string, body: un
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   const cancellation = setInterval(() => { if (!isActive()) controller.abort(); }, 250);
-  let directory: Directory | undefined; let handle: FileHandle | undefined;
+  let lease: ReturnType<typeof createAuditedExportDirectory> | undefined; let handle: FileHandle | undefined;
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-  const dispose = () => { if (directory?.exists) directory.delete(); };
+  const dispose = () => { lease?.dispose(); };
   try {
     const trustedHeaders = { ...headers };
     for (const key of Object.keys(trustedHeaders)) {
@@ -41,8 +41,8 @@ export async function prepareAuditedCsv(path: string, filename: string, body: un
     if (!response.ok) throw new ApiResponseError(response.status, i18n.t('common:errors.requestFailedWithStatus', { status: response.status }));
     if (response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'text/csv' || !response.body) throw new Error('invalid_export_response');
     await assertCurrent();
-    directory = new Directory(Paths.cache, 'nexus-audited-export-' + randomUUID()); directory.create();
-    const file = new File(directory, filename); file.create(); handle = file.open();
+    lease = createAuditedExportDirectory();
+    const file = new File(lease.directory, filename); file.create(); handle = file.open();
     reader = response.body.getReader(); let bytes = 0;
     while (true) {
       assertActive();
@@ -54,7 +54,7 @@ export async function prepareAuditedCsv(path: string, filename: string, body: un
     if (bytes === 0) throw new Error('empty_export_response');
     handle.close(); handle = undefined;
     await assertCurrent();
-    return { uri: file.uri, assertCurrent, dispose };
+    return { uri: file.uri, assertCurrent, dispose, releaseAfterSharing: lease.release };
   } catch (error) {
     controller.abort();
     try { handle?.close(); } catch { /* Preserve the transfer error. */ }

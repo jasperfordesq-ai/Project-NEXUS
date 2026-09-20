@@ -356,6 +356,17 @@ export async function reviewOrganizerRegistrationAnswers(eventId: number, submis
     .map(([key, answer]) => [key, { ...answer, value: answer.purged ? null : answer.value }])) } };
 }
 
+/** Explicit audited export; the caller owns the returned private file until disposal. */
+export async function prepareOrganizerRegistrationExport(eventId: number, input: RegistrationAnswerAccess, isActive: () => boolean) {
+  safeId.parse(eventId); const evidence = answerAccessSchema.parse(input);
+  if (!isActive()) throw new Error('download_cancelled');
+  // Load native streaming support only for an explicit export, not ordinary registration reads.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { prepareAuditedCsv } = require('@/lib/prepareAuditedCsv') as typeof import('@/lib/prepareAuditedCsv');
+  return prepareAuditedCsv(`${API_V2}/events/${eventId}/registration-product/submissions/export`,
+    `event-registration-${eventId}.csv`, evidence, requestOptions().headers ?? {}, isActive);
+}
+
 function requestOptions(idempotencyKey?: string): RequestOptions {
   return {
     headers: {

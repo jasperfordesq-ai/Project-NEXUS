@@ -15,9 +15,12 @@ jest.mock('@/lib/api/client', () => ({
     }
   },
 }));
+jest.mock('@/lib/prepareAuditedCsv', () => ({ prepareAuditedCsv: jest.fn() }));
+
 jest.mock('@/lib/constants', () => ({ API_V2: '/api/v2' }));
 jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn() }));
 
+import { prepareAuditedCsv } from '@/lib/prepareAuditedCsv';
 import * as Sentry from '@sentry/react-native';
 import { api } from '@/lib/api/client';
 import {
@@ -33,6 +36,7 @@ import {
   getOrganizerRegistrationForms,
   getOrganizerRegistrationSubmissions,
   reviewOrganizerRegistrationAnswers,
+  prepareOrganizerRegistrationExport,
   getOwnRegistrationAnswers,
   mutateOrganizerRegistrationForm,
   type RegistrationFormIntent,
@@ -349,5 +353,31 @@ describe('organiser submission review', () => {
     const refused = new Error('refused'); jest.mocked(api.post).mockRejectedValue(refused);
     await expect(reviewOrganizerRegistrationAnswers(42, 7, evidence)).rejects.toBe(refused);
     expect(api.post).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('explicit organizer export', () => {
+  const evidence = { purpose: ' Synthetic review ', correlation_id: ' case-1 ', include_sensitive: false };
+  it('uses the audited streaming POST adapter with the registration contract and current action guard', async () => {
+    const active = () => true; const file = { uri: 'file:///private/export.csv' };
+    jest.mocked(prepareAuditedCsv).mockResolvedValue(file as never);
+    expect(await prepareOrganizerRegistrationExport(42, evidence, active)).toBe(file);
+    expect(prepareAuditedCsv).toHaveBeenCalledWith('/api/v2/events/42/registration-product/submissions/export', 'event-registration-42.csv',
+      { purpose: 'Synthetic review', correlation_id: 'case-1', include_sensitive: false }, expect.objectContaining({ 'X-Events-Contract': '2',
+        [EVENT_REGISTRATION_PRODUCT_CONTRACT_HEADER]: String(EVENT_REGISTRATION_PRODUCT_CONTRACT_VERSION) }), active);
+    expect(api.post).not.toHaveBeenCalled();
+  });
+  it.each([{ purpose: '' }, { purpose: '📝'.repeat(501) }, { correlation_id: 'é'.repeat(257) }])('refuses invalid evidence before downloading %j', async patch => {
+    await expect(prepareOrganizerRegistrationExport(42, { ...evidence, ...patch }, () => true)).rejects.toThrow();
+    expect(prepareAuditedCsv).not.toHaveBeenCalled();
+  });
+  it('accepts the full Unicode purpose and UTF-8 reference boundaries', async () => {
+    await prepareOrganizerRegistrationExport(42, { purpose: '📝'.repeat(500), correlation_id: 'é'.repeat(256), include_sensitive: true }, () => true);
+    expect(prepareAuditedCsv).toHaveBeenCalledTimes(1);
+  });
+  it('refuses invalid event IDs and departed actions without transport', async () => {
+    await expect(prepareOrganizerRegistrationExport(0, evidence, () => true)).rejects.toThrow();
+    await expect(prepareOrganizerRegistrationExport(42, evidence, () => false)).rejects.toThrow('download_cancelled');
+    expect(prepareAuditedCsv).not.toHaveBeenCalled();
   });
 });

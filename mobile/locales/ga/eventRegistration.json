@@ -175,10 +175,13 @@
     "open_answers": "Freagraí oscailte",
     "purged": "Glanadh faoin bpolasaí coinneála",
     "export_title": "Freagraí clárúcháin a onnmhairiú",
-    "export_description": "Tá an t-onnmhairiú teoranta, sábháilte ó thaobh foirmle agus taifeadtar é san iniúchadh ar rochtain ar fhreagraí do-aistrithe.",
+    "export_description": "Easpórtáil na haighneachtaí reatha, lena n-áirítear aighneachtaí a tarraingíodh siar. Taifead cén fáth a bhfuil na freagraí de dhíth ort, ansin roghnaigh cá háit leis an gcomhad a shábháil nó a roinnt. Ní chuirtear freagraí íogaire san áireamh mura roghnaíonn tú iad.",
     "download_csv": "Íoslódáil bileog eolais CSV",
     "amend": "Leasaigh freagraí",
-    "save_draft": "Sábháil dréacht"
+    "save_draft": "Sábháil dréacht",
+    "export_action": "Sábháil nó roinn CSV",
+    "sharing_unavailable": "Níl comhroinnt ar fáil ar an ngléas seo.",
+    "export_error": "Níorbh fhéidir an t-easpórtáil a roinnt. Seans go bhfuil an rochtain taifeadta cheana féin. Seiceáil do cheangal sula ndéanann tú iarracht eile."
   },
   "invitations": {
     "builder_title": "Feachtas cuireadh",

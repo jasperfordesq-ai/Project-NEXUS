@@ -175,10 +175,13 @@
     "open_answers": "Offene Antworten",
     "purged": "Gemäß der Aufbewahrungsrichtlinie gelöscht",
     "export_title": "Registrierungsantworten exportieren",
-    "export_description": "Der Export ist begrenzt, formelsicher und wird im unveränderlichen Antwortzugriffsaudit aufgezeichnet.",
+    "export_description": "Exportieren Sie aktuelle Einreichungen, einschließlich zurückgezogener Einreichungen. Geben Sie an, warum Sie die Antworten benötigen, und wählen Sie, wo Sie die Datei speichern oder teilen möchten. Sensible Antworten werden nur auf Wunsch einbezogen.",
     "download_csv": "CSV herunterladen",
     "amend": "Antworten ändern",
-    "save_draft": "Entwurf speichern"
+    "save_draft": "Entwurf speichern",
+    "export_action": "CSV speichern oder teilen",
+    "sharing_unavailable": "Teilen ist auf diesem Gerät nicht verfügbar.",
+    "export_error": "Der Export konnte nicht geteilt werden. Der Zugriff wurde möglicherweise bereits protokolliert. Prüfen Sie vor einem erneuten Versuch Ihre Verbindung."
   },
   "invitations": {
     "builder_title": "Einladungsaktion",

@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaInsetsContext, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
 import { markAppReady } from '@/lib/startupTiming';
+import { observeAuditedExportCleanup } from '@/lib/auditedExportCache';
 import { registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback } from '@/lib/api/client';
 import { flushPendingPaidCampaignOpen, observeNotificationResponses } from '@/lib/notifications';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
@@ -199,6 +200,7 @@ function StartupTimingProbe() {
 }
 
 function RootLayout() {
+  useEffect(observeAuditedExportCleanup, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>

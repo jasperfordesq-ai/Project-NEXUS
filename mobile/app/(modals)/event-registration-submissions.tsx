@@ -14,6 +14,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { Button } from '@/components/ui/NativeButton';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { withRouteGate } from '@/components/withRouteGate';
+import EventRegistrationExport from '@/components/events/EventRegistrationExport';
 import EventRegistrationAnswerReview from '@/components/events/EventRegistrationAnswerReview';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTenant } from '@/lib/hooks/useTenant';
@@ -27,6 +28,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const focused = useIsFocused(); const [appState, setAppState] = useState(AppState.currentState);
   useEffect(() => { const listener = AppState.addEventListener('change', setAppState); return () => listener.remove(); }, []);
   const active = focused && appState === 'active';
+  const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(1); const [selection, setSelection] = useState<number | null>(null);
   const state = useApi(async () => {
     const [event, result] = await Promise.all([getEvent(eventId), getOrganizerRegistrationSubmissions(eventId, page)]);
@@ -34,6 +36,7 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   }, [eventId, page], { enabled: active, clearOnRefusal: true });
   const permitted = active && !state.isLoading && !state.error && Boolean(state.data?.permitted);
   useEffect(() => { if (!permitted) setSelection(null); }, [permitted]);
+  useEffect(() => { if (!permitted || !state.data?.permissions.export_answers) setExporting(false); }, [permitted, state.data?.permissions.export_answers]);
   if (!active) return null;
   if (state.isLoading) return <LoadingSpinner />;
   if (isRefusalStatus(state.errorStatus) || (state.data && !state.data.permitted)) return <EmptyState icon="lock-closed-outline" title={t('events:manage.access_denied_title')} />;
@@ -44,14 +47,17 @@ function Workspace({ eventId, tenantId, userId }: { eventId: number; tenantId: n
   const move = (next: number | null) => { if (permitted && next) { setSelection(null); setPage(next); } };
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
-      refreshControl={selected ? undefined : <RefreshControl refreshing={state.isLoading} onRefresh={() => { setSelection(null); state.refresh(); }} />}>
-      {selected ? <View className="gap-4"><Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{data.permissions.view_roster && selected.member_name ? selected.member_name : t('submissions.member_hidden')}</Text>
+      refreshControl={selected || exporting ? undefined : <RefreshControl refreshing={state.isLoading} onRefresh={() => { setSelection(null); state.refresh(); }} />}>
+      {exporting ? <EventRegistrationExport tenantId={tenantId} userId={userId} eventId={eventId}
+        permitted={permitted && data.permissions.export_answers} sensitive={data.permissions.view_sensitive_answers} active={active} onClose={() => setExporting(false)} />
+        : selected ? <View className="gap-4"><Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{data.permissions.view_roster && selected.member_name ? selected.member_name : t('submissions.member_hidden')}</Text>
         <Text className="text-muted-foreground">{t('submissions.attempt', { attempt: selected.attempt_number })}</Text>
         <EventRegistrationAnswerReview key={selected.id + ':' + selected.revision} tenantId={tenantId} userId={userId} eventId={eventId}
         submissionId={selected.id} revision={selected.revision} form={data.forms.find(form => form.id === selected.form_version_id)}
         permitted={permitted} sensitive={data.permissions.view_sensitive_answers} active={active} onClose={() => setSelection(null)} /></View>
         : <View className="gap-4">
           <Text className="text-muted-foreground">{t('submissions.description')}</Text>
+          {data.permissions.export_answers && <Button variant="secondary" onPress={() => { if (permitted) setExporting(true); }}>{t('submissions.export')}</Button>}
           {data.submissions.length === 0 && <Text className="text-muted-foreground">{t('submissions.empty')}</Text>}
           {data.submissions.map(item => <View key={item.id} className="gap-2 rounded-xl border border-separator p-4">
             <Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{data.permissions.view_roster && item.member_name ? item.member_name : t('submissions.member_hidden')}</Text>

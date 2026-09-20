@@ -175,10 +175,13 @@
     "open_answers": "Open answers",
     "purged": "Purged under the retention policy",
     "export_title": "Export registration answers",
-    "export_description": "The export is limited, formula-safe and recorded in the immutable answer-access audit.",
+    "export_description": "Export current submissions, including withdrawn submissions. Record why you need the answers, then choose where to save or share the file. Sensitive answers are excluded unless you select them.",
     "download_csv": "Download CSV",
     "amend": "Amend answers",
-    "save_draft": "Save draft"
+    "save_draft": "Save draft",
+    "export_action": "Save or share CSV",
+    "sharing_unavailable": "Sharing is unavailable on this device.",
+    "export_error": "The export could not be shared. Access may already have been recorded. Check your connection before trying again."
   },
   "invitations": {
     "builder_title": "Invitation campaign",
