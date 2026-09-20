@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native curriculum editing now ignores departed confirmations and stops new section, lesson, quiz, and question requests after leaving, while retaining acknowledgements for creations already accepted by the server.
+
 - Native course authoring rejects malformed edit links, resets drafts when the course, account, or community changes, and prevents departed saves and publishing results from affecting another editor.
 
 - Native course editing now shows a retry state after an unsuccessful initial load and prevents saving, publishing, or adding cohorts until the existing course is loaded successfully.

@@ -23,6 +23,8 @@ const mockDeleteCourseLesson = jest.fn();
 const mockCreateCourseQuiz = jest.fn();
 const mockCreateQuizQuestion = jest.fn();
 const mockShowToast = jest.fn();
+let mockHeldConfirm: (() => void) | null = null;
+let mockHoldConfirm = false;
 const mockReserveCourseAuthoringCreationOperation = jest.fn();
 const mockCompleteCourseAuthoringCreationOperation = jest.fn();
 
@@ -63,7 +65,7 @@ jest.mock('@/components/ui/AppToast', () => {
 // The destructive confirmations are inert here; each delete test asserts the API call.
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (options: { onConfirm: () => void }) => options.onConfirm(),
+    confirm: (options: { onConfirm: () => void }) => { if (mockHoldConfirm) mockHeldConfirm = options.onConfirm; else options.onConfirm(); },
     confirmDialog: null,
   }),
 }));
@@ -148,12 +150,89 @@ describe('CourseBuilder', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockShowToast.mockClear();
+    mockHoldConfirm = false;
+    mockHeldConfirm = null;
     mockUpdateCourseSection.mockResolvedValue({ id: 1 });
     mockUpdateCourseLesson.mockResolvedValue({ id: 90 });
     mockReserveCourseAuthoringCreationOperation.mockImplementation(async (resource: string) => ({
       storageKey: `stored-${resource}`, key: `${resource}-key`, createdAt: 1,
     }));
     mockCompleteCourseAuthoringCreationOperation.mockResolvedValue(undefined);
+  });
+
+  it.each(['section', 'lesson', 'quiz', 'question'])('does not start %s creation after leaving during operation storage', async (resource) => {
+    let resolveOperation!: (value: object) => void;
+    mockReserveCourseAuthoringCreationOperation.mockImplementationOnce(() => new Promise(resolve => { resolveOperation = resolve; }));
+    const lesson = {
+      id: 90, course_id: 42, section_id: 5, title: 'Intro', position: 0, is_preview: false,
+      content_type: 'quiz' as const,
+      ...(resource === 'question' ? { quiz: { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } } : {}),
+    };
+    mockUpdateCourseLesson.mockResolvedValue(lesson);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', [lesson])]} />);
+    if (resource === 'section') fireEvent.press(screen.getByText('Add section'));
+    if (resource === 'lesson') fireEvent.press(screen.getByText('Add lesson'));
+    if (resource === 'quiz' || resource === 'question') {
+      fireEvent.press(screen.getByLabelText('Intro'));
+      if (resource === 'quiz') fireEvent.press(screen.getByText('Save lesson'));
+      else {
+        fireEvent.changeText(screen.getByLabelText('Question'), 'How many?');
+        fireEvent.changeText(screen.getByLabelText('Answer options, separated by commas'), 'One, Two');
+        fireEvent.press(screen.getByText('Add question'));
+      }
+    }
+    await waitFor(() => expect(mockReserveCourseAuthoringCreationOperation).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => resolveOperation({ storageKey: 'departed', key: 'old-key', createdAt: 1 }));
+    for (const api of [mockCreateCourseSection, mockCreateCourseLesson, mockCreateCourseQuiz, mockCreateQuizQuestion]) expect(api).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it.each(['section', 'lesson'])('ignores a retained delete-%s confirmation after leaving', async (resource) => {
+    mockHoldConfirm = true;
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', [{
+      id: 90, course_id: 42, section_id: 5, title: 'Intro', content_type: 'text', position: 0, is_preview: false,
+    }])]} />);
+    fireEvent.press(screen.getByLabelText(resource === 'section' ? 'Delete section' : 'Delete lesson'));
+    expect(mockHeldConfirm).not.toBeNull();
+    screen.unmount();
+    await act(async () => mockHeldConfirm!());
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    expect(mockDeleteCourseLesson).not.toHaveBeenCalled();
+  });
+
+  it('does not begin quiz provisioning after leaving during a lesson save', async () => {
+    let resolveSave!: (value: object) => void;
+    mockUpdateCourseLesson.mockImplementationOnce(() => new Promise(resolve => { resolveSave = resolve; }));
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Intro', content_type: 'quiz' as const, position: 0, is_preview: false };
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Week one', [lesson])]} />);
+    fireEvent.press(screen.getByLabelText('Intro'));
+    fireEvent.press(screen.getByText('Save lesson'));
+    screen.unmount();
+    await act(async () => resolveSave(lesson));
+    expect(mockReserveCourseAuthoringCreationOperation).not.toHaveBeenCalled();
+    expect(mockCreateCourseQuiz).not.toHaveBeenCalled();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it('shows only the replacement course curriculum when the course changes', async () => {
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Old course section')]} />);
+    screen.rerender(<CourseBuilder courseId={43} initialSections={[{ ...section(6, 'Current section'), course_id: 43 }]} />);
+    expect(screen.queryByDisplayValue('Old course section')).toBeNull();
+    expect(screen.getByDisplayValue('Current section')).toBeTruthy();
+  });
+
+  it.each([true, false])('contains a section response after departure (accepted=%s)', async (accepted) => {
+    let resolveCreate!: (value: object) => void;
+    let rejectCreate!: (reason: Error) => void;
+    mockCreateCourseSection.mockImplementationOnce(() => new Promise((resolve, reject) => { resolveCreate = resolve; rejectCreate = reject; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[]} />);
+    fireEvent.press(screen.getByText('Add section'));
+    await waitFor(() => expect(mockCreateCourseSection).toHaveBeenCalledTimes(1));
+    screen.unmount();
+    await act(async () => { if (accepted) resolveCreate(section(5, 'Saved')); else rejectCreate(new Error('Offline')); });
+    expect(mockCompleteCourseAuthoringCreationOperation).toHaveBeenCalledTimes(accepted ? 1 : 0);
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   it('moves lesson controls below an unclamped lesson title at large text', () => {

@@ -19,7 +19,7 @@
  * restored and a toast explains it rather than leaving the screen lying about what is saved.
  */
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useWindowDimensions, View } from 'react-native';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -63,7 +63,11 @@ interface CourseBuilderProps {
   initialSections: CourseSection[];
 }
 
-export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps) {
+export function CourseBuilder(props: CourseBuilderProps) {
+  return <CourseBuilderBody key={props.courseId} {...props} />;
+}
+
+function CourseBuilderBody({ courseId, initialSections }: CourseBuilderProps) {
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { t } = useTranslation(['courses', 'common']);
@@ -74,15 +78,21 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   const [sections, setSections] = useState<CourseSection[]>(
     () => (initialSections ?? []).map((section) => ({ ...section, lessons: section.lessons ?? [] })),
   );
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
 
   function reportFailure() {
+    if (!mountedRef.current) return;
     showToast({ title: t('builder.save_error'), variant: 'danger' });
   }
 
   async function addSection() {
-    if (addSectionInFlight.current) return;
+    if (!mountedRef.current || addSectionInFlight.current) return;
     addSectionInFlight.current = true;
     try {
       const payload = {
@@ -90,8 +100,10 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
         position: sections.length,
       };
       const operation = await reserveCourseAuthoringCreationOperation('section', courseId, payload);
+      if (!mountedRef.current) return;
       const created = await createCourseSection(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
+      if (!mountedRef.current) return;
       setSections((prev) => [...prev, { ...created, lessons: [] }]);
     } catch {
       reportFailure();
@@ -101,19 +113,23 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   async function renameSection(sectionId: number, title: string) {
+    if (!mountedRef.current) return;
     const previous = sections;
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, title } : s)));
     try {
       await updateCourseSection(courseId, sectionId, { title });
     } catch {
+      if (!mountedRef.current) return;
       setSections(previous);
       reportFailure();
     }
   }
 
   async function removeSection(sectionId: number) {
+    if (!mountedRef.current) return;
     try {
       await deleteCourseSection(courseId, sectionId);
+      if (!mountedRef.current) return;
       setSections((prev) => prev.filter((s) => s.id !== sectionId));
     } catch {
       reportFailure();
@@ -121,6 +137,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   function confirmRemoveSection(section: CourseSection) {
+    if (!mountedRef.current) return;
     confirm({
       title: t('builder.delete_section'),
       message: section.title,
@@ -132,6 +149,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   async function moveSection(index: number, direction: -1 | 1) {
+    if (!mountedRef.current) return;
     const target = index + direction;
     if (target < 0 || target >= sections.length) return;
     const previous = sections;
@@ -146,13 +164,14 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
         updateCourseSection(courseId, next[target]!.id, { position: target }),
       ]);
     } catch {
+      if (!mountedRef.current) return;
       setSections(previous);
       reportFailure();
     }
   }
 
   async function addLesson(sectionId: number) {
-    if (addLessonInFlight.current.has(sectionId)) return;
+    if (!mountedRef.current || addLessonInFlight.current.has(sectionId)) return;
     addLessonInFlight.current.add(sectionId);
     const section = sections.find((s) => s.id === sectionId);
     try {
@@ -163,8 +182,10 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
         position: section?.lessons?.length ?? 0,
       };
       const operation = await reserveCourseAuthoringCreationOperation('lesson', courseId, payload);
+      if (!mountedRef.current) return;
       const created = await createCourseLesson(courseId, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
+      if (!mountedRef.current) return;
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: [...(s.lessons ?? []), created] } : s
       )));
@@ -176,6 +197,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   function updateLessonLocal(sectionId: number, lesson: CourseLesson) {
+    if (!mountedRef.current) return;
     setSections((prev) => prev.map((s) => (
       s.id === sectionId
         ? { ...s, lessons: (s.lessons ?? []).map((l) => (l.id === lesson.id ? lesson : l)) }
@@ -184,8 +206,10 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   async function removeLesson(sectionId: number, lessonId: number) {
+    if (!mountedRef.current) return;
     try {
       await deleteCourseLesson(courseId, lessonId);
+      if (!mountedRef.current) return;
       setSections((prev) => prev.map((s) => (
         s.id === sectionId ? { ...s, lessons: (s.lessons ?? []).filter((l) => l.id !== lessonId) } : s
       )));
@@ -195,6 +219,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   function confirmRemoveLesson(sectionId: number, lesson: CourseLesson) {
+    if (!mountedRef.current) return;
     confirm({
       title: t('builder.delete_lesson'),
       message: lesson.title || t('builder.untitled_lesson'),
@@ -206,6 +231,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   }
 
   async function moveLesson(sectionId: number, index: number, direction: -1 | 1) {
+    if (!mountedRef.current) return;
     const section = sections.find((s) => s.id === sectionId);
     if (!section) return;
     const lessons = [...(section.lessons ?? [])];
@@ -222,6 +248,7 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
         updateCourseLesson(courseId, lessons[target]!.id, { position: target }),
       ]);
     } catch {
+      if (!mountedRef.current) return;
       setSections(previous);
       reportFailure();
     }
@@ -370,6 +397,11 @@ function LessonRow({
   const [questionPrompt, setQuestionPrompt] = useState('');
   const [questionOptions, setQuestionOptions] = useState('');
   const [questionCorrect, setQuestionCorrect] = useState('');
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const saveInFlight = useRef(false);
   const questionInFlight = useRef(false);
 
@@ -378,7 +410,7 @@ function LessonRow({
   }
 
   async function save() {
-    if (saveInFlight.current) return;
+    if (!mountedRef.current || saveInFlight.current) return;
     saveInFlight.current = true;
     setIsSaving(true);
     try {
@@ -396,6 +428,7 @@ function LessonRow({
         drip_date: draft.drip_date,
         is_preview: draft.is_preview,
       });
+      if (!mountedRef.current) return;
       let next: CourseLesson = { ...draft, ...(saved ?? {}) };
       /*
         A quiz lesson is useless until a quiz row exists to hang questions off, and the
@@ -410,24 +443,27 @@ function LessonRow({
           max_attempts: 0,
         };
         const operation = await reserveCourseAuthoringCreationOperation('quiz', courseId, payload);
+        if (!mountedRef.current) return;
         const quiz = await createCourseQuiz(courseId, payload, operation.key);
         await completeCourseAuthoringCreationOperation(operation);
+        if (!mountedRef.current) return;
         next = { ...next, quiz: { ...quiz, questions: quiz.questions ?? [] } };
       }
       setDraft(next);
       onChange(next);
       showToast({ title: t('builder.lesson_saved'), variant: 'success' });
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       saveInFlight.current = false;
-      setIsSaving(false);
+      if (mountedRef.current) setIsSaving(false);
     }
   }
 
   async function addQuestion() {
     const quiz = draft.quiz;
-    if (questionInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
+    if (!mountedRef.current || questionInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
     questionInFlight.current = true;
     const labels = questionOptions.split(',').map((value) => value.trim()).filter(Boolean);
     const options = labels.map((label, index) => ({ id: String.fromCharCode(97 + index), label }));
@@ -442,8 +478,10 @@ function LessonRow({
         position: (quiz.questions ?? []).length + 1,
       } as const;
       const operation = await reserveCourseAuthoringCreationOperation('question', courseId, { quizId: quiz.id, ...payload });
+      if (!mountedRef.current) return;
       const question = await createQuizQuestion(courseId, quiz.id, payload, operation.key);
       await completeCourseAuthoringCreationOperation(operation);
+      if (!mountedRef.current) return;
       const next: CourseLesson = {
         ...draft,
         quiz: { ...quiz, questions: [...(quiz.questions ?? []), question] },
@@ -455,6 +493,7 @@ function LessonRow({
       setQuestionCorrect('');
       showToast({ title: t('builder.question_added'), variant: 'success' });
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('builder.save_error'), description: describeApiError(error, '') || undefined, variant: 'danger' });
     } finally {
       questionInFlight.current = false;
