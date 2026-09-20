@@ -123,7 +123,8 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   const recoveryScope = useRef<{ sectionId: number | null } | null>(null);
   const [ordering, setOrdering] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
-  const movesDisabled = ordering || assigning || orderError !== null;
+  const [deletingSectionIds, setDeletingSectionIds] = useState<number[]>([]);
+  const movesDisabled = ordering || assigning || deletingSectionIds.length > 0 || orderError !== null;
   const sectionRenames = useRef(new Map<number, Promise<void>>());
   const addSectionInFlight = useRef(false);
   const addLessonInFlight = useRef(new Set<number>());
@@ -183,6 +184,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
       || !sectionsRef.current.some(section => section.id === sectionId)) return;
     if (sectionHasUnfinishedEdits(sectionId)) return;
     deletingSections.current.add(sectionId);
+    setDeletingSectionIds(current => [...current, sectionId]);
     try {
       await deleteCourseSection(courseId, sectionId);
       if (!mountedRef.current) return;
@@ -197,6 +199,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
       reportFailure();
     } finally {
       deletingSections.current.delete(sectionId);
+      if (mountedRef.current) setDeletingSectionIds(current => current.filter(id => id !== sectionId));
     }
   }
 
@@ -431,8 +434,12 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
         sections.map((section, sectionIndex) => (
           <HeroCard key={section.id} className="rounded-panel">
             <HeroCard.Body className="gap-3 p-4">
+              {deletingSectionIds.includes(section.id) ? (
+                <Text accessibilityLiveRegion="polite">{t('builder.deleting_section')}</Text>
+              ) : null}
               <SectionHeader
                 section={section}
+                disabled={deletingSectionIds.includes(section.id)}
                 reportDraft={reportDraft}
                 movesDisabled={movesDisabled}
                 isFirst={sectionIndex === 0}
@@ -448,6 +455,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
                     key={lesson.id}
                     courseId={courseId}
                     lesson={lesson}
+                    disabled={deletingSectionIds.includes(section.id)}
                     reportDraft={reportDraft}
                     movesDisabled={movesDisabled}
                     isFirst={lessonIndex === 0}
@@ -459,7 +467,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
                     onMove={(direction) => void moveLesson(section.id, lessonIndex, direction)}
                   />
                 ))}
-                <HeroButton size="sm" variant="secondary" onPress={() => void addLesson(section.id)}>
+                <HeroButton size="sm" variant="secondary" isDisabled={deletingSectionIds.includes(section.id)} onPress={() => void addLesson(section.id)}>
                   <HeroButton.Label>{t('builder.add_lesson')}</HeroButton.Label>
                 </HeroButton>
               </View>
@@ -490,6 +498,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
 
 function SectionHeader({
   section,
+  disabled,
   reportDraft,
   isFirst,
   isLast,
@@ -499,6 +508,7 @@ function SectionHeader({
   onDelete,
 }: {
   section: CourseSection;
+  disabled: boolean;
   reportDraft: ReportDraft;
   isFirst: boolean;
   isLast: boolean;
@@ -518,11 +528,13 @@ function SectionHeader({
   return (
     <View className="gap-2">
       <Input
+        editable={!disabled}
         label={t('builder.section_name')}
         accessibilityLabel={t('builder.section_name')}
         value={title}
-        onChangeText={setTitle}
+        onChangeText={value => { if (!disabled) setTitle(value); }}
         onBlur={() => {
+          if (disabled) return;
           const trimmed = title.trim();
           if (trimmed && trimmed !== section.title) {
             setTitle(trimmed);
@@ -550,6 +562,7 @@ function SectionHeader({
           icon="trash-outline"
           label={t('builder.delete_section')}
           tone="danger"
+          disabled={disabled}
           onPress={onDelete}
         />
       </View>
@@ -559,6 +572,7 @@ function SectionHeader({
 
 function LessonRow({
   courseId,
+  disabled,
   reportDraft,
   lesson,
   isFirst,
@@ -571,6 +585,7 @@ function LessonRow({
   onMove,
 }: {
   courseId: number;
+  disabled: boolean;
   lesson: CourseLesson;
   reportDraft: ReportDraft;
   isFirst: boolean;
@@ -610,12 +625,13 @@ function LessonRow({
   const questionRevision = useRef(0);
 
   function set(patch: Partial<CourseLesson>) {
+    if (disabled) return;
     draftRevision.current += 1;
     setDraft((current) => ({ ...current, ...patch }));
   }
 
   async function save() {
-    if (!mountedRef.current || saveInFlight.current || questionInFlight.current) return;
+    if (disabled || !mountedRef.current || saveInFlight.current || questionInFlight.current) return;
     const submittedRevision = draftRevision.current;
     saveInFlight.current = true;
     setIsSaving(true);
@@ -670,7 +686,7 @@ function LessonRow({
 
   async function addQuestion() {
     const quiz = draft.quiz;
-    if (!mountedRef.current || questionInFlight.current || saveInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
+    if (disabled || !mountedRef.current || questionInFlight.current || saveInFlight.current || !quiz?.id || !questionPrompt.trim()) return;
     const submittedRevision = questionRevision.current;
     questionInFlight.current = true;
     setAddingQuestion(true);
@@ -738,13 +754,14 @@ function LessonRow({
         <View className="flex-row items-center gap-2">
           <IconAction icon="chevron-up" label={t('builder.move_up')} disabled={isFirst || movesDisabled} onPress={() => onMove(-1)} />
           <IconAction icon="chevron-down" label={t('builder.move_down')} disabled={isLast || movesDisabled} onPress={() => onMove(1)} />
-          <IconAction icon="trash-outline" label={t('builder.delete_lesson')} tone="danger" onPress={onDelete} />
+          <IconAction icon="trash-outline" label={t('builder.delete_lesson')} disabled={disabled} tone="danger" onPress={onDelete} />
         </View>
       </View>
 
       {isOpen ? (
         <View className="gap-3 border-t pt-3" style={{ borderColor: theme.border }}>
           <Input
+            editable={!disabled}
             label={t('builder.lesson_name')}
             accessibilityLabel={t('builder.lesson_name')}
             value={draft.title}
@@ -754,6 +771,7 @@ function LessonRow({
           />
 
           <ChoiceGroup
+            disabled={disabled}
             label={t('builder.content_type')}
             values={CONTENT_TYPES}
             selected={draft.content_type}
@@ -763,6 +781,7 @@ function LessonRow({
 
           {draft.content_type === 'text' ? (
             <TextArea
+              editable={!disabled}
               label={t('builder.body')}
               accessibilityLabel={t('builder.body')}
               value={draft.body ?? ''}
@@ -774,6 +793,7 @@ function LessonRow({
 
           {draft.content_type === 'video' ? (
             <Input
+              editable={!disabled}
               label={t('builder.video_url')}
               accessibilityLabel={t('builder.video_url')}
               placeholder={t('builder.url_placeholder')}
@@ -790,6 +810,7 @@ function LessonRow({
           {draft.content_type === 'video' || draft.content_type === 'embed' ? (
             <View className="gap-1">
               <TextArea
+                editable={!disabled}
                 label={t('builder.transcript')}
                 accessibilityLabel={t('builder.transcript')}
                 value={draft.transcript ?? ''}
@@ -805,6 +826,7 @@ function LessonRow({
 
           {draft.content_type === 'embed' ? (
             <Input
+              editable={!disabled}
               label={t('builder.embed_url')}
               accessibilityLabel={t('builder.embed_url')}
               placeholder={t('builder.url_placeholder')}
@@ -820,6 +842,7 @@ function LessonRow({
 
           {draft.content_type === 'pdf' ? (
             <Input
+              editable={!disabled}
               label={t('builder.attachment_url')}
               accessibilityLabel={t('builder.attachment_url')}
               placeholder={t('builder.url_placeholder')}
@@ -850,26 +873,29 @@ function LessonRow({
                 </Text>
               )}
               <Input
+                editable={!disabled}
                 label={t('builder.question_prompt')}
                 accessibilityLabel={t('builder.question_prompt')}
                 value={questionPrompt}
-                onChangeText={value => { questionRevision.current += 1; setQuestionPrompt(value); }}
+                onChangeText={value => { if (disabled) return; questionRevision.current += 1; setQuestionPrompt(value); }}
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
               />
               <Input
+                editable={!disabled}
                 label={t('builder.question_options')}
                 accessibilityLabel={t('builder.question_options')}
                 value={questionOptions}
-                onChangeText={value => { questionRevision.current += 1; setQuestionOptions(value); }}
+                onChangeText={value => { if (disabled) return; questionRevision.current += 1; setQuestionOptions(value); }}
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
               />
               <Input
+                editable={!disabled}
                 label={t('builder.question_correct')}
                 accessibilityLabel={t('builder.question_correct')}
                 value={questionCorrect}
-                onChangeText={value => { questionRevision.current += 1; setQuestionCorrect(value); }}
+                onChangeText={value => { if (disabled) return; questionRevision.current += 1; setQuestionCorrect(value); }}
                 autoCapitalize="none"
                 style={{ color: theme.text }}
                 containerClassName="mb-0"
@@ -877,7 +903,7 @@ function LessonRow({
               <HeroButton
                 size="sm"
                 variant="secondary"
-                isDisabled={isSaving || addingQuestion || !draft.quiz?.id || !questionPrompt.trim()}
+                isDisabled={disabled || isSaving || addingQuestion || !draft.quiz?.id || !questionPrompt.trim()}
                 onPress={() => void addQuestion()}
               >
                 <HeroButton.Label>{t('builder.add_question')}</HeroButton.Label>
@@ -886,6 +912,7 @@ function LessonRow({
           ) : null}
 
           <ChoiceGroup
+            disabled={disabled}
             label={t('builder.drip_type')}
             values={DRIP_TYPES}
             selected={draft.drip_type ?? 'none'}
@@ -895,6 +922,7 @@ function LessonRow({
 
           {(draft.drip_type ?? 'none') === 'days_after_enroll' ? (
             <Input
+              editable={!disabled}
               label={t('builder.drip_offset_days')}
               accessibilityLabel={t('builder.drip_offset_days')}
               value={draft.drip_offset_days != null ? String(draft.drip_offset_days) : ''}
@@ -907,6 +935,7 @@ function LessonRow({
 
           {(draft.drip_type ?? 'none') === 'fixed_date' ? (
             <Input
+              editable={!disabled}
               label={t('builder.drip_date')}
               accessibilityLabel={t('builder.drip_date')}
               placeholder="YYYY-MM-DD"
@@ -920,12 +949,13 @@ function LessonRow({
           ) : null}
 
           <Checkbox
+            disabled={disabled}
             checked={Boolean(draft.is_preview)}
             onPress={() => set({ is_preview: !draft.is_preview })}
             label={t('builder.free_preview')}
           />
 
-          <HeroButton size="sm" isDisabled={isSaving || addingQuestion} onPress={() => void save()}>
+          <HeroButton size="sm" isDisabled={disabled || isSaving || addingQuestion} onPress={() => void save()}>
             <HeroButton.Label>{t('builder.save_lesson')}</HeroButton.Label>
           </HeroButton>
         </View>
@@ -972,6 +1002,7 @@ function IconAction({
  * `TagGroup`, the same idiom `app/(modals)/new-job.tsx` uses for job type and commitment.
  */
 export function ChoiceGroup<T extends string>({
+  disabled = false,
   label,
   values,
   selected,
@@ -979,6 +1010,7 @@ export function ChoiceGroup<T extends string>({
   labelFor,
 }: {
   label: string;
+  disabled?: boolean;
   values: readonly T[];
   selected: T | '';
   onSelect: (value: T) => void;
@@ -987,9 +1019,9 @@ export function ChoiceGroup<T extends string>({
   return (
     <ChoiceChips
       label={label}
-      options={toOptions(values, labelFor)}
+      options={toOptions(values, labelFor).map(option => ({ ...option, disabled }))}
       selected={selected}
-      onSelect={(value) => { if (value) onSelect(value); }}
+      onSelect={(value) => { if (value && !disabled) onSelect(value); }}
     />
   );
 }

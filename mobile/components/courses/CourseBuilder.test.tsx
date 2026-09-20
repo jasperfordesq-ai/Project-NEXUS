@@ -130,8 +130,8 @@ jest.mock('heroui-native', () => {
     Spinner: () => null,
     TextField: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
     Label: ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>,
-    Input: ReactLib.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => <TextInput ref={ref} {...props} />),
-    TextArea: ReactLib.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => <TextInput ref={ref} {...props} />),
+    Input: ReactLib.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => <TextInput ref={ref} {...props} editable={!props.isDisabled} />),
+    TextArea: ReactLib.forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => <TextInput ref={ref} {...props} editable={!props.isDisabled} />),
     FieldError: ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>,
     Checkbox: ({ isSelected, onSelectedChange, accessibilityLabel }: {
       isSelected?: boolean;
@@ -285,6 +285,31 @@ describe('CourseBuilder', () => {
     fireEvent.changeText(screen.getByLabelText('Section title'), 'Original');
     await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
     expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 5);
+  });
+
+  it.each([false, true])('locks section editing during deletion and restores it on failure (quiz=%s)', async quiz => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: quiz ? 'quiz' as const : 'text' as const, position: 0, is_preview: false,
+      quiz: quiz ? { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } : undefined };
+    let reject!: (error: Error) => void;
+    mockDeleteCourseSection.mockImplementationOnce(() => new Promise((_, rejectPromise) => { reject = rejectPromise; }));
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson]), section(6, 'Other')]} />);
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.press(screen.getAllByLabelText('Delete section')[0]!);
+    expect(screen.getByLabelText('Lesson title').props.editable).toBe(false);
+    expect(screen.getAllByLabelText('Section title')[0]!.props.editable).toBe(false);
+    expect(screen.getAllByLabelText('Section title')[1]!.props.editable).not.toBe(false);
+    if (quiz) expect(screen.getByLabelText('Question').props.editable).toBe(false);
+    expect(screen.getByText('Deleting section…')).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Too late');
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Original');
+    fireEvent.press(screen.getByText('Save lesson'));
+    expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
+    await act(async () => reject(new Error('Offline')));
+    expect(screen.queryByText('Deleting section…')).toBeNull();
+    expect(screen.getByLabelText('Lesson title').props.editable).not.toBe(false);
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Recovered draft');
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Recovered draft');
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
   });
 
   it('preserves newer lesson text when an earlier save finishes', async () => {

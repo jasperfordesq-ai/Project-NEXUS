@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile course sections now show deletion progress and temporarily lock their editors and actions until the request finishes, restoring editing after a failed deletion.
+
 - Mobile course authoring now keeps sections intact while their section, lesson or quiz-question edits are unfinished or saving, including when an earlier delete confirmation is accepted.
 
 - **Native course editor:** Clarify that leaving discards unsaved changes rather than deleting the course, and explain that course details and individual lessons are saved separately.

@@ -298,6 +298,7 @@
     "lesson_saved": "Leçon enregistrée",
     "save_error": "Impossible d'enregistrer. Veuillez réessayer.",
     "delete_section": "Supprimer la rubrique",
+    "deleting_section": "Suppression de la section…",
     "finish_section_edits": "Enregistrez ou effacez les modifications en cours dans cette section avant de la supprimer. Attendez la fin des enregistrements.",
     "delete_lesson": "Supprimer la leçon",
     "move_up": "Monter",

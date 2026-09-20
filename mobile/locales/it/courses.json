@@ -298,6 +298,7 @@
     "lesson_saved": "Lezione salvata",
     "save_error": "Impossibile salvare. Per favore riprova.",
     "delete_section": "Elimina sezione",
+    "deleting_section": "Eliminazione della sezione…",
     "finish_section_edits": "Salva o cancella le modifiche incompiute in questa sezione prima di eliminarla. Attendi il completamento dei salvataggi.",
     "delete_lesson": "Elimina lezione",
     "move_up": "Vai su",
