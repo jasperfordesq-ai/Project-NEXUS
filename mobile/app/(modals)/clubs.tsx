@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card as HeroCard } from 'heroui-native';
@@ -16,13 +16,19 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
 import SearchInput from '@/components/ui/SearchInput';
-import { getClubs, type Club } from '@/lib/api/clubs';
-import { useApi } from '@/lib/hooks/useApi';
+import { getClubs, type Club, type ClubsPage } from '@/lib/api/clubs';
+import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
+import ErrorState from '@/components/ui/ErrorState';
+import { isRefusalStatus } from '@/lib/api/refusal';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
+
+function extractClubsPage(response: ClubsPage) {
+  return { items: response.items, cursor: response.hasMore ? String(response.page + 1) : null, hasMore: response.hasMore };
+}
 
 function ClubsScreen() {
   const { t } = useTranslation(['clubs', 'common']);
@@ -30,20 +36,25 @@ function ClubsScreen() {
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
-  const clubs = useApi(() => getClubs({ search: query || undefined }), [query]);
+  const requestedCursor = useRef<string | null>(null);
+  const fetchClubs = useCallback((cursor: string | null) => {
+    requestedCursor.current = cursor;
+    return getClubs({ search: query || undefined, page: cursor ? Number(cursor) : 1 });
+  }, [query]);
+  const clubs = usePaginatedApi<Club, ClubsPage>(fetchClubs, extractClubsPage, [query], { clearOnRefusal: true });
 
   return (
     <ModalErrorBoundary>
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
         <AppTopBar title={t('title')} backLabel={t('common:back')} fallbackHref="/(tabs)/profile" />
         <FlatList
-          data={clubs.data?.items ?? []}
+          data={clubs.items}
           keyExtractor={(club) => String(club.id)}
           contentContainerStyle={{ padding: 16, paddingBottom: 40, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={clubs.isLoading && Boolean(clubs.data)} onRefresh={clubs.refresh} tintColor={primary} colors={[primary]} />}
+          refreshControl={<RefreshControl refreshing={clubs.isLoading && clubs.items.length > 0} onRefresh={clubs.refresh} tintColor={primary} colors={[primary]} />}
           ListHeaderComponent={(
             <View className="mb-4 gap-4">
-              <RefreshFailedNotice error={clubs.data ? clubs.error : null} onRetry={clubs.refresh} />
+              <RefreshFailedNotice error={clubs.items.length > 0 && !requestedCursor.current ? clubs.error : null} onRetry={clubs.refresh} />
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
               <SearchInput
                 value={search}
@@ -57,7 +68,14 @@ function ClubsScreen() {
             </View>
           )}
           renderItem={({ item }) => <ClubCard club={item} />}
-          ListEmptyComponent={clubs.isLoading ? <LoadingSpinner /> : (
+          onEndReached={() => { if (clubs.hasMore && !clubs.error) clubs.loadMore(); }}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={clubs.isLoadingMore ? <LoadingSpinner /> : clubs.items.length > 0 && clubs.error && requestedCursor.current ? (
+            <ErrorState subtitle={clubs.error} onRetry={clubs.loadMore} />
+          ) : null}
+          ListEmptyComponent={clubs.isLoading ? <LoadingSpinner /> : isRefusalStatus(clubs.errorStatus) ? (
+            <EmptyState icon="lock-closed-outline" title={t('common:errors.notAvailableTitle')} subtitle={t('common:errors.notAvailableHint')} />
+          ) : (
             <EmptyState
               icon={clubs.error ? 'warning-outline' : 'people-outline'}
               title={clubs.error ?? t('empty.title')}
@@ -92,7 +110,7 @@ function ClubCard({ club }: { club: Club }) {
             <Text className="text-xs" style={{ color: theme.textMuted }}>{t('member_count', { count: club.member_count })}</Text>
           </View>
         </View>
-        {club.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={4}>{club.description}</Text> : null}
+        {club.description ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{club.description}</Text> : null}
         {club.meeting_schedule ? <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('meeting_schedule', { schedule: club.meeting_schedule })}</Text> : null}
         {club.website ? <Text className="text-sm font-semibold text-primary">{t('view')}</Text> : null}
       </HeroCard.Body>

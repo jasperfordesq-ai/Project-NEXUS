@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { Linking, RefreshControl } from 'react-native';
+import { FlatList, Linking, RefreshControl } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
@@ -79,6 +79,74 @@ describe('ClubsScreen', () => {
     ]) as never);
   });
 
+
+  it('loads the next page, preserves earlier clubs on failure, and retries the same page', async () => {
+    jest.mocked(getClubs).mockResolvedValueOnce({ items: [{ id: 1, name: 'First club', member_count: 1 }], page: 1, total: 21, hasMore: true });
+    const screen = render(<ClubsScreen />);
+    await waitFor(() => expect(screen.getByText('First club')).toBeTruthy());
+    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(422, 'Later page failed'));
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    await waitFor(() => expect(screen.getByText('Later page failed')).toBeTruthy());
+    expect(screen.getByText('First club')).toBeTruthy();
+    expect(getClubs).toHaveBeenLastCalledWith({ search: undefined, page: 2 });
+    const calls = jest.mocked(getClubs).mock.calls.length;
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    expect(getClubs).toHaveBeenCalledTimes(calls);
+    jest.mocked(getClubs).mockResolvedValue({ items: [{ id: 21, name: 'Last club', member_count: 2 }], page: 2, total: 21, hasMore: false });
+    fireEvent.press(screen.getByText('Retry'));
+    await waitFor(() => expect(screen.getByText('Last club')).toBeTruthy());
+    expect(screen.getByText('First club')).toBeTruthy();
+    expect(getClubs).toHaveBeenLastCalledWith({ search: undefined, page: 2 });
+  });
+
+
+  it('replaces paged results on search and ignores an older pending page', async () => {
+    jest.mocked(getClubs).mockResolvedValueOnce({ items: [{ id: 1, name: 'Old club', member_count: 1 }], page: 1, total: 21, hasMore: true });
+    const screen = render(<ClubsScreen />);
+    await waitFor(() => expect(screen.getByText('Old club')).toBeTruthy());
+    let completePage!: (value: Awaited<ReturnType<typeof getClubs>>) => void;
+    jest.mocked(getClubs).mockImplementationOnce(() => new Promise(resolve => { completePage = resolve; }));
+    fireEvent(screen.UNSAFE_getByType(FlatList), 'endReached');
+    await waitFor(() => expect(getClubs).toHaveBeenLastCalledWith({ search: undefined, page: 2 }));
+    jest.mocked(getClubs).mockResolvedValueOnce({ items: [{ id: 3, name: 'Matching club', member_count: 1 }], page: 1, total: 1, hasMore: false });
+    fireEvent.changeText(screen.getByPlaceholderText('Search clubs…'), 'matching');
+    fireEvent(screen.getByPlaceholderText('Search clubs…'), 'submitEditing');
+    await waitFor(() => expect(screen.getByText('Matching club')).toBeTruthy());
+    await act(async () => completePage({ items: [{ id: 2, name: 'Stale club', member_count: 1 }], page: 2, total: 21, hasMore: false }));
+    expect(screen.queryByText('Stale club')).toBeNull();
+    expect(screen.queryByText('Old club')).toBeNull();
+    expect(screen.getByText('Matching club')).toBeTruthy();
+  });
+
+
+  it.each([401, 403, 404])('clears loaded clubs and removes retry after refresh refusal %s', async (status) => {
+    const screen = render(<ClubsScreen />);
+    await waitFor(() => expect(screen.getByText('Repair Café')).toBeTruthy());
+    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(status, 'Directory unavailable'));
+    act(() => screen.UNSAFE_getByType(RefreshControl).props.onRefresh());
+    await waitFor(() => expect(screen.getByText('common:errors.notAvailableTitle')).toBeTruthy());
+    expect(screen.queryByText('Repair Café')).toBeNull();
+    expect(screen.queryByLabelText('Visit website: Repair Café')).toBeNull();
+    expect(screen.queryByText('Retry')).toBeNull();
+  });
+
+  it.each([401, 403, 404])('shows unavailable without retry after initial refusal %s', async (status) => {
+    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(status, 'Directory unavailable'));
+    const screen = render(<ClubsScreen />);
+    await waitFor(() => expect(screen.getByText('common:errors.notAvailableTitle')).toBeTruthy());
+    expect(screen.queryByText('Retry')).toBeNull();
+    expect(screen.queryByText('No clubs yet.')).toBeNull();
+  });
+
+
+  it('preserves the full description when a club has no detail route or website', async () => {
+    const description = 'A long club description. '.repeat(40);
+    jest.mocked(getClubs).mockResolvedValue({ items: [{ id: 9, name: 'Community Club', member_count: 1, description }], page: 1, total: 1, hasMore: false });
+    const screen = render(<ClubsScreen />);
+    const text = await screen.findByText(description);
+    expect(text.props.numberOfLines).toBeUndefined();
+  });
+
   it('lists the clubs with their membership and meeting detail', async () => {
     const { getByText } = render(<ClubsScreen />);
     await waitFor(() => expect(getByText('Repair Café')).toBeTruthy());
@@ -100,9 +168,9 @@ describe('ClubsScreen', () => {
     const field = getByPlaceholderText('Search clubs…');
     fireEvent.changeText(field, 'repair');
     fireEvent(field, 'submitEditing');
-    await waitFor(() => expect(getClubs).toHaveBeenCalledWith({ search: 'repair' }));
+    await waitFor(() => expect(getClubs).toHaveBeenCalledWith({ search: 'repair', page: 1 }));
     fireEvent.changeText(field, '');
-    await waitFor(() => expect(getClubs).toHaveBeenLastCalledWith({ search: undefined }));
+    await waitFor(() => expect(getClubs).toHaveBeenLastCalledWith({ search: undefined, page: 1 }));
   });
 
   it('offers a retry when the list cannot be loaded', async () => {
@@ -113,10 +181,25 @@ describe('ClubsScreen', () => {
     await waitFor(() => expect(jest.mocked(getClubs).mock.calls.length).toBeGreaterThan(1));
   });
 
+  it('recovers a failed refresh from page one and replaces the stale list', async () => {
+    const screen = render(<ClubsScreen />);
+    await screen.findByText('Repair Café');
+    jest.mocked(getClubs).mockRejectedValueOnce(new ApiResponseError(422, 'Refresh unavailable'));
+    await act(async () => screen.UNSAFE_getByType(RefreshControl).props.onRefresh());
+    expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
+    expect(screen.getByText('Repair Café')).toBeTruthy();
+    jest.mocked(getClubs).mockResolvedValueOnce({ items: [{ id: 5, name: 'Updated club', member_count: 3 }], page: 1, total: 1, hasMore: false });
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByText('Updated club');
+    expect(getClubs).toHaveBeenLastCalledWith({ search: undefined, page: 1 });
+    expect(screen.queryByText('Repair Café')).toBeNull();
+    expect(screen.queryByTestId('refresh-failed-notice')).toBeNull();
+  });
+
   it('keeps loaded clubs visible and reports a failed refresh', async () => {
     const rendered = render(<ClubsScreen />);
     await waitFor(() => expect(rendered.getByText('Repair Café')).toBeTruthy());
-    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(403, 'Could not refresh clubs'));
+    jest.mocked(getClubs).mockRejectedValue(new ApiResponseError(422, 'Could not refresh clubs'));
     act(() => rendered.UNSAFE_getByType(RefreshControl).props.onRefresh());
 
     await waitFor(() => expect(rendered.getByTestId('refresh-failed-notice')).toBeTruthy());
