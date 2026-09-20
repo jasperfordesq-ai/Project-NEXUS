@@ -6,9 +6,11 @@
 
 namespace App\Services;
 
+use App\Models\Course;
 use App\Models\CourseLesson;
 use App\Models\CourseSection;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * CourseLessonService — tenant-scoped lesson CRUD for the course builder.
@@ -26,22 +28,25 @@ class CourseLessonService
 
     public static function create(int $courseId, array $data): CourseLesson
     {
-        $payload = [
-            'course_id' => $courseId,
-            'title' => trim((string) ($data['title'] ?? '')),
-            'content_type' => $data['content_type'] ?? 'text',
-            'position' => (int) ($data['position'] ?? self::nextPosition($courseId)),
-        ];
+        return DB::transaction(function () use ($courseId, $data) {
+            Course::whereKey($courseId)->lockForUpdate()->firstOrFail();
+            $payload = [
+                'course_id' => $courseId,
+                'title' => trim((string) ($data['title'] ?? '')),
+                'content_type' => $data['content_type'] ?? 'text',
+                'position' => (int) ($data['position'] ?? self::nextPosition($courseId)),
+            ];
 
-        foreach (self::FIELDS as $field) {
-            if ($field !== 'title' && array_key_exists($field, $data)) {
-                $payload[$field] = self::normaliseField($field, $data[$field]);
+            foreach (self::FIELDS as $field) {
+                if ($field !== 'title' && array_key_exists($field, $data)) {
+                    $payload[$field] = self::normaliseField($field, $data[$field]);
+                }
             }
-        }
 
-        $payload['section_id'] = self::sectionIdInCourse($payload['section_id'] ?? null, $courseId);
+            $payload['section_id'] = self::sectionIdInCourse($payload['section_id'] ?? null, $courseId);
 
-        return CourseLesson::create($payload);
+            return CourseLesson::create($payload);
+        });
     }
 
     public static function update(int $id, array $data): ?CourseLesson
@@ -51,20 +56,28 @@ class CourseLessonService
             return null;
         }
 
-        if (array_key_exists('title', $data)) {
-            $lesson->title = trim((string) $data['title']);
-        }
-        foreach (self::FIELDS as $field) {
-            if ($field !== 'title' && array_key_exists($field, $data)) {
-                $value = self::normaliseField($field, $data[$field]);
-                $lesson->{$field} = $field === 'section_id'
-                    ? self::sectionIdInCourse($value, (int) $lesson->course_id)
-                    : $value;
+        return DB::transaction(function () use ($lesson, $id, $data) {
+            Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
+            $lesson = CourseLesson::whereKey($id)->lockForUpdate()->first();
+            if (!$lesson) {
+                return null;
             }
-        }
-        $lesson->save();
 
-        return $lesson;
+            if (array_key_exists('title', $data)) {
+                $lesson->title = trim((string) $data['title']);
+            }
+            foreach (self::FIELDS as $field) {
+                if ($field !== 'title' && array_key_exists($field, $data)) {
+                    $value = self::normaliseField($field, $data[$field]);
+                    $lesson->{$field} = $field === 'section_id'
+                        ? self::sectionIdInCourse($value, (int) $lesson->course_id)
+                        : $value;
+                }
+            }
+            $lesson->save();
+
+            return $lesson;
+        });
     }
 
     public static function delete(int $id): bool
@@ -74,7 +87,11 @@ class CourseLessonService
             return false;
         }
 
-        return (bool) $lesson->delete();
+        return DB::transaction(function () use ($lesson, $id) {
+            Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
+            $current = CourseLesson::whereKey($id)->lockForUpdate()->first();
+            return $current ? (bool) $current->delete() : false;
+        });
     }
 
     /**
@@ -171,7 +188,7 @@ class CourseLessonService
             return null;
         }
 
-        return CourseSection::where('id', $id)->where('course_id', $courseId)->exists()
+        return CourseSection::where('id', $id)->where('course_id', $courseId)->lockForUpdate()->first(['id'])
             ? $id
             : null;
     }

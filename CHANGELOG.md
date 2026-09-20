@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Courses:** Serialize lesson creation, updates and deletion with curriculum changes, preventing concurrent lesson writes from referring to a section that has been deleted.
+
 - **Courses:** Make section deletion and preservation of its lessons atomic, keeping the curriculum unchanged when deletion fails or is vetoed.
 
 - **Native course builder:** Preserve accepted lessons when their section is deleted during creation, prevent creation against removed sections, and ignore stale lesson-deletion confirmations after section removal.
