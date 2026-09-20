@@ -298,6 +298,7 @@
     "lesson_saved": "Lição salva",
     "save_error": "Não foi possível salvar. Por favor, tente novamente.",
     "delete_section": "Excluir seção",
+    "finish_section_edits": "Guarde ou limpe as alterações pendentes nesta secção antes de a eliminar. Aguarde a conclusão das gravações.",
     "delete_lesson": "Excluir lição",
     "move_up": "Subir",
     "move_down": "Mover para baixo",

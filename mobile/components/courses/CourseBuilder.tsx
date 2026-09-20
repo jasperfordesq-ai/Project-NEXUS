@@ -97,6 +97,8 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   const assignmentInFlight = useRef(false);
   const [assigning, setAssigning] = useState(false);
   const [draftStates, setDraftStates] = useState<Record<string, CurriculumChangeState>>({});
+  const draftStatesRef = useRef(draftStates);
+  draftStatesRef.current = draftStates;
   const reportDraft = useCallback<ReportDraft>((key, state) => {
     setDraftStates(current => {
       if (!state && !current[key]) return current;
@@ -179,6 +181,7 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
   async function removeSection(sectionId: number) {
     if (!mountedRef.current || deletingSections.current.has(sectionId)
       || !sectionsRef.current.some(section => section.id === sectionId)) return;
+    if (sectionHasUnfinishedEdits(sectionId)) return;
     deletingSections.current.add(sectionId);
     try {
       await deleteCourseSection(courseId, sectionId);
@@ -197,8 +200,17 @@ function CourseBuilderBody({ courseId, initialSections, initialUnassignedLessons
     }
   }
 
+  function sectionHasUnfinishedEdits(sectionId: number) {
+    const section = sectionsRef.current.find(item => item.id === sectionId);
+    const keys = ['section-' + sectionId, ...(section?.lessons ?? []).map(lesson => 'lesson-' + lesson.id)];
+    if (!keys.some(key => draftStatesRef.current[key]?.isDirty || draftStatesRef.current[key]?.isSaving)) return false;
+    showToast({ title: t('builder.finish_section_edits'), variant: 'warning' });
+    return true;
+  }
+
   function confirmRemoveSection(section: CourseSection) {
     if (!mountedRef.current) return;
+    if (sectionHasUnfinishedEdits(section.id)) return;
     confirm({
       title: t('builder.delete_section'),
       message: section.title,

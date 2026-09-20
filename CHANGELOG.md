@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile course authoring now keeps sections intact while their section, lesson or quiz-question edits are unfinished or saving, including when an earlier delete confirmation is accepted.
+
 - **Native course editor:** Clarify that leaving discards unsaved changes rather than deleting the course, and explain that course details and individual lessons are saved separately.
 
 - **Native course authoring:** Preserve newer lesson text and quiz-question drafts when an earlier save finishes, keeping unsaved-work protection active for those newer edits.

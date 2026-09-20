@@ -294,6 +294,7 @@
     "lesson_saved": "Lektion gespeichert",
     "save_error": "Konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "delete_section": "Abschnitt löschen",
+    "finish_section_edits": "Speichere oder entferne unvollständige Änderungen in diesem Abschnitt, bevor du ihn löschst. Warte, bis alle Speichervorgänge abgeschlossen sind.",
     "delete_lesson": "Lektion löschen",
     "move_up": "Bewegen Sie sich nach oben",
     "move_down": "Bewegen Sie sich nach unten",

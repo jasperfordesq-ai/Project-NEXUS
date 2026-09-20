@@ -294,6 +294,7 @@
     "lesson_saved": "Lesson saved",
     "save_error": "Could not save. Please try again.",
     "delete_section": "Delete section",
+    "finish_section_edits": "Save or clear unfinished edits in this section before deleting it. Wait for any saves to finish.",
     "delete_lesson": "Delete lesson",
     "move_up": "Move up",
     "move_down": "Move down",

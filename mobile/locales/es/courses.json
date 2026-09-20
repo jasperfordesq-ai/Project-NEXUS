@@ -298,6 +298,7 @@
     "lesson_saved": "Lección guardada",
     "save_error": "No se pudo guardar. Por favor inténtalo de nuevo.",
     "delete_section": "Eliminar sección",
+    "finish_section_edits": "Guarda o borra los cambios pendientes de esta sección antes de eliminarla. Espera a que terminen de guardarse.",
     "delete_lesson": "Eliminar lección",
     "move_up": "Subir",
     "move_down": "Bajar",

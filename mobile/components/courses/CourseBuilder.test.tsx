@@ -223,6 +223,70 @@ describe('CourseBuilder', () => {
     expect(screen.getByText('Preserved')).toBeTruthy();
   });
 
+  it('keeps unsaved lesson edits when deleting their section is requested', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} />);
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsaved work');
+    await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Unsaved work');
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning' }));
+  });
+
+  it('rechecks lesson drafts when an earlier section deletion confirmation is accepted', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
+    mockHoldConfirm = true;
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} />);
+    fireEvent.press(screen.getByLabelText('Delete section'));
+    const accept = mockHeldConfirm!;
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.changeText(screen.getByLabelText('Lesson title'), 'Unsaved work');
+    await act(async () => accept());
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Lesson title').props.value).toBe('Unsaved work');
+  });
+
+  it('waits for a lesson save before allowing section deletion', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
+    let accept!: (value: object) => void;
+    mockUpdateCourseLesson.mockImplementationOnce(() => new Promise(resolve => { accept = resolve; }));
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Section', [lesson])]} />);
+    fireEvent.press(screen.getByLabelText('Original'));
+    fireEvent.press(screen.getByText('Save lesson'));
+    await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    await act(async () => accept(lesson));
+    await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
+    expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 5);
+    expect(screen.getByText('Lessons without a section')).toBeTruthy();
+  });
+
+  it('protects unfinished questions without preventing deletion of another section', async () => {
+    const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Quiz', content_type: 'quiz' as const, position: 0, is_preview: false, quiz: { id: 11, course_id: 42, lesson_id: 90, title: 'Quiz', questions: [] } };
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Keep', [lesson]), section(6, 'Remove')]} />);
+    fireEvent.press(screen.getByLabelText('Quiz'));
+    fireEvent.changeText(screen.getByLabelText('Question'), 'Unfinished question');
+    await act(async () => fireEvent.press(screen.getAllByLabelText('Delete section')[0]!));
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    await act(async () => fireEvent.press(screen.getAllByLabelText('Delete section')[1]!));
+    expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 6);
+    expect(screen.getByLabelText('Question').props.value).toBe('Unfinished question');
+  });
+
+  it('protects an unsaved section title until its original value is restored', async () => {
+    mockDeleteCourseSection.mockResolvedValue(undefined);
+    const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original')]} />);
+    fireEvent.changeText(screen.getByLabelText('Section title'), 'Unsaved section');
+    await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
+    expect(mockDeleteCourseSection).not.toHaveBeenCalled();
+    fireEvent.changeText(screen.getByLabelText('Section title'), 'Original');
+    await act(async () => fireEvent.press(screen.getByLabelText('Delete section')));
+    expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 5);
+  });
+
   it('preserves newer lesson text when an earlier save finishes', async () => {
     const lesson = { id: 90, course_id: 42, section_id: 5, title: 'Original', content_type: 'text' as const, position: 0, is_preview: false };
     const changed = jest.fn();
