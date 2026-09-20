@@ -52,6 +52,21 @@ describe('ResetPasswordScreen', () => {
     expect(await findByText('Password updated')).toBeTruthy();
   });
 
+  it('submits a reset credential only once for simultaneous actions', async () => {
+    let finish!: (value: { success: true }) => void;
+    mockResetPassword.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ResetPasswordScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+    await act(async () => {
+      fireEvent.press(screen.getByText('Reset password'));
+      fireEvent.press(screen.getByText('Reset password'));
+    });
+    const calls = mockResetPassword.mock.calls.length;
+    await act(async () => { finish({ success: true }); });
+    expect(calls).toBe(1);
+  });
+
   it('shows a validation error when passwords do not match', async () => {
     const { getByPlaceholderText, getByText, findByText } = render(<ResetPasswordScreen />);
 
@@ -88,9 +103,9 @@ describe('ResetPasswordScreen', () => {
   });
 
   it('keeps a correctable password refusal on the form', async () => {
-    mockResetPassword.mockRejectedValue(
+    mockResetPassword.mockRejectedValueOnce(
       new ApiResponseError(422, 'Choose a password you have not used before.', undefined, 'VALIDATION_ERROR', 'password'),
-    );
+    ).mockResolvedValueOnce({ success: true });
     const screen = render(<ResetPasswordScreen />);
 
     fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
@@ -100,6 +115,11 @@ describe('ResetPasswordScreen', () => {
     expect(await screen.findByText('Choose a password you have not used before.')).toBeTruthy();
     expect(screen.getByText('Reset password')).toBeTruthy();
     expect(screen.queryByText('Invalid reset link')).toBeNull();
+    fireEvent.changeText(screen.getByPlaceholderText('New password'), 'AnotherNewPassw0rd!');
+    fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'AnotherNewPassw0rd!');
+    fireEvent.press(screen.getByText('Reset password'));
+    expect(await screen.findByText('Password updated')).toBeTruthy();
+    expect(mockResetPassword).toHaveBeenCalledTimes(2);
   });
 
   it('clears the first link state when the route receives a different token', async () => {
@@ -135,5 +155,32 @@ describe('ResetPasswordScreen', () => {
 
     expect(screen.queryByText('Password updated')).toBeNull();
     expect(screen.getByText('Set a new password')).toBeTruthy();
+  });
+
+  it('keeps the replacement request pending when an older token finishes', async () => {
+    let finishOld!: (value: { success: true }) => void;
+    let finishNew!: (value: { success: true }) => void;
+    mockResetPassword
+      .mockReturnValueOnce(new Promise(resolve => { finishOld = resolve; }))
+      .mockReturnValueOnce(new Promise(resolve => { finishNew = resolve; }));
+    const screen = render(<ResetPasswordScreen />);
+    const submit = async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('New password'), 'NewPassw0rd!');
+      fireEvent.changeText(screen.getByPlaceholderText('Confirm password'), 'NewPassw0rd!');
+      await act(async () => { fireEvent.press(screen.getByText('Reset password')); });
+    };
+    await submit();
+    mockParams = { token: 'replacement-token' };
+    screen.rerender(<ResetPasswordScreen />);
+    await submit();
+    await act(async () => { finishOld({ success: true }); });
+    expect(screen.queryByText('Password updated')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Reset password' }).props.accessibilityState)
+      .toMatchObject({ busy: true, disabled: true });
+    await act(async () => { fireEvent.press(screen.getByText('Reset password')); });
+    expect(mockResetPassword).toHaveBeenCalledTimes(2);
+    expect(mockResetPassword.mock.calls[1][0].token).toBe('replacement-token');
+    await act(async () => { finishNew({ success: true }); });
+    expect(screen.getByText('Password updated')).toBeTruthy();
   });
 });

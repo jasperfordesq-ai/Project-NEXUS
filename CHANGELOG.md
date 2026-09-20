@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native password recovery and verification resend prevent duplicate submissions, retain retryable forms after failure, ignore departed-screen results, and keep replacement reset links independent. Recovery actions retain explicit accessible names while busy.
+
 - Native bundles share the Zod and Sentry core implementations across import styles while preserving native browser-replay exclusions; bundle-export failures now include their exit status.
 
 - Article attachment and feedback controls retain meaningful accessible names during loading and clear stale busy descriptions after completion or cancellation.

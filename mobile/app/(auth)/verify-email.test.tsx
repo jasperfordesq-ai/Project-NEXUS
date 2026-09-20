@@ -5,7 +5,7 @@
 
 import { ApiResponseError } from '@/lib/api/client';
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockVerifyEmail = jest.fn();
 const mockReplace = jest.fn();
@@ -104,6 +104,34 @@ describe('VerifyEmailScreen', () => {
     fireEvent.press(screen.getByTestId('verify-email-resend'));
 
     expect(mockResendVerification).not.toHaveBeenCalled();
+  });
+
+  it('resends only once for same-frame taps', async () => {
+    mockParams = {};
+    let finish!: () => void;
+    mockResendVerification.mockReturnValue(new Promise<void>(resolve => { finish = resolve; }));
+    const screen = render(<VerifyEmailScreen />);
+    fireEvent.changeText(screen.getByTestId('verify-email-resend-input'), 'member@example.com');
+    act(() => {
+      fireEvent.press(screen.getByTestId('verify-email-resend'));
+      fireEvent.press(screen.getByTestId('verify-email-resend'));
+    });
+    const calls = mockResendVerification.mock.calls.length;
+    expect(screen.getByTestId('verify-email-resend').props.accessibilityState).toMatchObject({ busy: true, disabled: true });
+    await act(async () => { finish(); });
+    expect(calls).toBe(1);
+  });
+
+  it('allows resend retry after a network failure without losing the address', async () => {
+    mockParams = {};
+    mockResendVerification.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({});
+    const screen = render(<VerifyEmailScreen />);
+    fireEvent.changeText(screen.getByTestId('verify-email-resend-input'), 'member@example.com');
+    await act(async () => { fireEvent.press(screen.getByTestId('verify-email-resend')); });
+    expect(screen.getByTestId('verify-email-resend-input').props.value).toBe('member@example.com');
+    fireEvent.press(screen.getByTestId('verify-email-resend'));
+    expect(await screen.findByText(/If that address can be verified/)).toBeTruthy();
+    expect(mockResendVerification).toHaveBeenCalledTimes(2);
   });
 
   it('explains an invalid resend address before making a request', async () => {

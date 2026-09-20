@@ -51,6 +51,12 @@ export default function ResetPasswordScreen() {
   const schema = useMemo(() => makeResetPasswordSchema(t), [t]);
   const routeTokenRef = useRef(token);
   routeTokenRef.current = token;
+  const pending = useRef<object | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; pending.current = null; };
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isTokenInvalid, setIsTokenInvalid] = useState(false);
@@ -71,6 +77,7 @@ export default function ResetPasswordScreen() {
     // Expo Router can replace the query on the existing screen instance. A second
     // recovery credential must never inherit the first credential's secret fields,
     // success state or refusal state.
+    pending.current = null;
     resetForm({ password: '', passwordConfirmation: '' });
     setIsLoading(false);
     setIsSubmitted(false);
@@ -80,8 +87,11 @@ export default function ResetPasswordScreen() {
   }, [resetForm, token]);
 
   async function onSubmit(data: ResetPasswordFormValues) {
-    if (!token) return;
+    if (!token || pending.current || !mounted.current) return;
     const submittedToken = token;
+    const operation = {};
+    pending.current = operation;
+    const isCurrent = () => mounted.current && pending.current === operation && routeTokenRef.current === submittedToken;
     setIsLoading(true);
     setSubmitError(null);
     try {
@@ -90,7 +100,7 @@ export default function ResetPasswordScreen() {
         password: data.password,
         password_confirmation: data.passwordConfirmation,
       });
-      if (routeTokenRef.current !== submittedToken) return;
+      if (!isCurrent()) return;
       if (response.success === false) {
         if (response.code === 'AUTH_TOKEN_INVALID') {
           setIsTokenInvalid(true);
@@ -101,14 +111,17 @@ export default function ResetPasswordScreen() {
       }
       setIsSubmitted(true);
     } catch (err) {
-      if (routeTokenRef.current !== submittedToken) return;
+      if (!isCurrent()) return;
       if (err instanceof ApiResponseError && err.code === 'AUTH_TOKEN_INVALID') {
         setIsTokenInvalid(true);
         return;
       }
       setSubmitError(err instanceof ApiResponseError ? err.message : t('resetPassword.genericError'));
     } finally {
-      if (routeTokenRef.current === submittedToken) setIsLoading(false);
+      if (isCurrent()) {
+        pending.current = null;
+        setIsLoading(false);
+      }
     }
   }
 
@@ -236,7 +249,7 @@ export default function ResetPasswordScreen() {
                   />
 
                   <View className="mt-6 gap-3">
-                    <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} fullWidth>
+                    <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} accessibilityLabel={t('resetPassword.submit')} fullWidth>
                       {t('resetPassword.submit')}
                     </Button>
                     <Button variant="ghost" fullWidth onPress={() => router.replace('/login')}>

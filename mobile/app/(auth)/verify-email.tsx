@@ -52,26 +52,34 @@ export default function VerifyEmailScreen() {
   const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [resendError, setResendError] = useState<string | null>(null);
   const [resendValidationError, setResendValidationError] = useState<string | null>(null);
+  const resendPending = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   async function resend() {
     const address = resendEmail.trim().toLowerCase();
-    if (isResending || !address) return;
+    if (resendPending.current || !mounted.current || !address) return;
     if (!z.string().email().safeParse(address).success) {
       setResendValidationError(t('errors.validEmail'));
       requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
       return;
     }
+    resendPending.current = true;
     setIsResending(true);
     setResendValidationError(null);
     setResendError(null);
     setResendNotice(null);
     try {
       await resendVerificationByEmail(address);
-      setResendNotice(t('verifyEmail.resendSent'));
+      if (mounted.current) setResendNotice(t('verifyEmail.resendSent'));
     } catch (err) {
-      setResendError(describeApiError(err, t('verifyEmail.resendFailed')));
+      if (mounted.current) setResendError(describeApiError(err, t('verifyEmail.resendFailed')));
     } finally {
-      setIsResending(false);
+      resendPending.current = false;
+      if (mounted.current) setIsResending(false);
     }
   }
 
@@ -202,6 +210,7 @@ export default function VerifyEmailScreen() {
                   <Button
                     fullWidth
                     disabled={isResending || resendEmail.trim().length === 0}
+                    isLoading={isResending}
                     onPress={() => void resend()}
                     accessibilityLabel={t('verifyEmail.resendAction')}
                     testID="verify-email-resend"

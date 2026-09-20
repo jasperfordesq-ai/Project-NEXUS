@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockForgotPassword = jest.fn();
 const mockReplace = jest.fn();
@@ -72,5 +72,32 @@ describe('ForgotPasswordScreen', () => {
     fireEvent.press(getByText('Back to sign in'));
 
     expect(mockReplace).toHaveBeenCalledWith('/login');
+  });
+
+  it('requests only one email for simultaneous submit actions', async () => {
+    let finish!: (value: { success: true }) => void;
+    mockForgotPassword.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const screen = render(<ForgotPasswordScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('you@example.com'), 'user@example.com');
+    await act(async () => {
+      fireEvent.press(screen.getByText('Send reset link'));
+      fireEvent.press(screen.getByText('Send reset link'));
+    });
+    const calls = mockForgotPassword.mock.calls.length;
+    await act(async () => { finish({ success: true }); });
+    expect(calls).toBe(1);
+  });
+
+  it('keeps the email and allows retry after a failed request', async () => {
+    mockForgotPassword.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce({ success: true });
+    const screen = render(<ForgotPasswordScreen />);
+    fireEvent.changeText(screen.getByPlaceholderText('you@example.com'), 'user@example.com');
+    await act(async () => { fireEvent.press(screen.getByText('Send reset link')); });
+    expect(screen.getByPlaceholderText('you@example.com').props.value).toBe('user@example.com');
+    expect(screen.getByRole('button', { name: 'Send reset link' }).props.accessibilityState)
+      .toMatchObject({ busy: false, disabled: false });
+    fireEvent.press(screen.getByText('Send reset link'));
+    expect(await screen.findByText('Check your email')).toBeTruthy();
+    expect(mockForgotPassword).toHaveBeenCalledTimes(2);
   });
 });

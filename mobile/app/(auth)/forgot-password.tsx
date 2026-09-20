@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { contrastText } from '@/lib/utils/color';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,6 +40,12 @@ export default function ForgotPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const submitting = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const {
     control,
@@ -51,19 +57,24 @@ export default function ForgotPasswordScreen() {
   });
 
   async function onSubmit(data: ForgotPasswordFormValues) {
+    if (submitting.current || !mounted.current) return;
+    submitting.current = true;
     setIsLoading(true);
     setSubmitError(null);
     try {
       const response = await forgotPassword(data.email.trim().toLowerCase());
+      if (!mounted.current) return;
       if (response.success === false) {
         setSubmitError(response.code === 'RATE_LIMIT_EXCEEDED' ? t('forgotPassword.rateLimited') : response.error ?? t('forgotPassword.genericError'));
         return;
       }
       setIsSubmitted(true);
     } catch (err) {
+      if (!mounted.current) return;
       setSubmitError(err instanceof ApiResponseError ? err.message : t('forgotPassword.genericError'));
     } finally {
-      setIsLoading(false);
+      submitting.current = false;
+      if (mounted.current) setIsLoading(false);
     }
   }
 
@@ -152,7 +163,7 @@ export default function ForgotPasswordScreen() {
                   />
 
                   <View className="mt-6 gap-3">
-                    <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} fullWidth>
+                    <Button onPress={handleSubmit(onSubmit)} isLoading={isLoading} accessibilityLabel={t('forgotPassword.submit')} fullWidth>
                       {t('forgotPassword.submit')}
                     </Button>
                     <Button variant="ghost" fullWidth onPress={() => router.replace('/login')}>
