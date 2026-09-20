@@ -78,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Invitation campaign conflicts now identify definitive revision refusals separately from uncertain retry-key collisions, enabling safe client review without treating a previously successful send as rejected.
+
 - Improved native event organiser chevron contrast in dark mode and corrected the invitation CSV data label in all seven mobile languages.
 
 - Hide native invitation sending and scheduling controls when an event has already started or has no valid start time, while keeping campaign cancellation available.

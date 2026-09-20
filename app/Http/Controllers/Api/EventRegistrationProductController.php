@@ -734,6 +734,11 @@ final class EventRegistrationProductController extends BaseApiController
             // A new request rejected before mutation differs from an uncertain replay conflict.
             return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_version', 409);
         }
+        if ($reason === 'event_invitation_campaign_revision_conflict') {
+            // Replay resolution precedes this refusal; transaction failures roll back.
+            // Do not attach this marker to an uncertain idempotency-key conflict.
+            return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'expected_campaign_revision', 409);
+        }
         if (in_array($reason, ['event_registration_guest_attendance_transition_invalid', 'event_registration_guest_attendance_undo_invalid'], true)) {
             // These checks run after replay resolution, so this exact request did not apply.
             return $this->respondWithError('EVENT_REGISTRATION_VALIDATION_FAILED', __('api.validation_failed'), 'attendance_action', 422);
