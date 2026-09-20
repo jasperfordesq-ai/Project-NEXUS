@@ -48,7 +48,10 @@ function SettingsBlockedUsersScreen() {
   const unblockInFlight = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const load = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -86,7 +89,7 @@ function SettingsBlockedUsersScreen() {
   }
 
   async function handleUnblock(user: BlockedUser) {
-    if (unblockInFlight.current !== null) return;
+    if (!isMountedRef.current || unblockInFlight.current !== null) return;
     unblockInFlight.current = user.user_id;
     setUnblockingId(user.user_id);
     try {
@@ -123,10 +126,10 @@ function SettingsBlockedUsersScreen() {
                   <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('blockedUsers.subtitle')}</Text>
                 </View>
               </View>
-              <Surface variant="secondary" className="rounded-panel-inner px-3 py-3">
+              {!isLoading && !loadError ? <Surface variant="secondary" className="rounded-panel-inner px-3 py-3">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textMuted }}>{t('blockedUsers.summaryLabel')}</Text>
                 <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('blockedUsers.count', { count: users.length })}</Text>
-              </Surface>
+              </Surface> : null}
             </HeroCard.Body>
           </HeroCard>
 

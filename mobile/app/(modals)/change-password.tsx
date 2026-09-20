@@ -36,7 +36,7 @@ function ChangePasswordScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
-  const { endSessionLocally } = useAuth();
+  const { endSessionLocally, captureSessionGuard } = useAuth();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -50,10 +50,13 @@ function ChangePasswordScreenInner() {
     confirmPassword?: string;
   }>({});
 
-  useEffect(() => () => { isMountedRef.current = false; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   async function handleSubmit() {
-    if (submitInFlightRef.current) return;
+    if (!isMountedRef.current || submitInFlightRef.current) return;
     const errors: typeof fieldErrors = {};
     if (!currentPassword.trim()) {
       errors.currentPassword = t('password.validation.currentRequired');
@@ -71,6 +74,7 @@ function ChangePasswordScreenInner() {
       return;
     }
     submitInFlightRef.current = true;
+    const isCurrentSession = captureSessionGuard();
     setFieldErrors({});
 
     setIsLoading(true);
@@ -80,7 +84,7 @@ function ChangePasswordScreenInner() {
         new_password: newPassword,
         new_password_confirmation: confirmPassword,
       });
-      if (!isMountedRef.current) return;
+      if (!isCurrentSession()) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await endSessionLocally({
         title: t('password.success'),
@@ -88,7 +92,7 @@ function ChangePasswordScreenInner() {
         variant: 'success',
       });
     } catch (err: unknown) {
-      if (!isMountedRef.current) return;
+      if (!isCurrentSession()) return;
       if (err instanceof ApiResponseError && err.status === 0) {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         await endSessionLocally({
@@ -98,6 +102,7 @@ function ChangePasswordScreenInner() {
         });
         return;
       }
+      if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const message =
         describeApiError(err, t('password.changeError'));

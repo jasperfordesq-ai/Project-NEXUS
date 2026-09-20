@@ -7,6 +7,7 @@ import React from 'react';
 import { act, render, fireEvent, waitFor } from '@testing-library/react-native';
 
 const mockEndSessionLocally = jest.fn().mockResolvedValue(undefined);
+const mockSessionIsCurrent = jest.fn(() => true);
 
 jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 
@@ -60,7 +61,7 @@ jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true }),
 }));
 jest.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 1 }, endSessionLocally: mockEndSessionLocally }),
+  useAuth: () => ({ user: { id: 1 }, endSessionLocally: mockEndSessionLocally, captureSessionGuard: () => mockSessionIsCurrent }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -116,11 +117,55 @@ const mockUpdatePassword = updatePassword as jest.MockedFunction<typeof updatePa
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSessionIsCurrent.mockReturnValue(true);
   mockUpdatePassword.mockResolvedValue(undefined);
   mockEndSessionLocally.mockResolvedValue(undefined);
 });
 
 describe('ChangePasswordScreen', () => {
+  it.each([false, true])('handles a lost password response after departure only for its session (replaced=%s)', async (replaced) => {
+    let reject!: (error: Error) => void;
+    mockUpdatePassword.mockImplementationOnce(() => new Promise((_, rejectRequest) => { reject = rejectRequest; }));
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+    fireEvent.press(screen.getByText('Save Password'));
+    screen.unmount();
+    mockSessionIsCurrent.mockReturnValue(!replaced);
+    await act(async () => reject(new ApiResponseError(0, 'Network request failed')));
+    expect(mockEndSessionLocally).toHaveBeenCalledTimes(replaced ? 0 : 1);
+    if (!replaced) expect(mockEndSessionLocally).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning' }));
+  });
+
+  it.each([false, true])('finishes only the submitting session after departure (replaced=%s)', async (replaced) => {
+    let finish!: () => void;
+    mockUpdatePassword.mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve(undefined); }));
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+    fireEvent.press(screen.getByText('Save Password'));
+    screen.unmount();
+    mockSessionIsCurrent.mockReturnValue(!replaced);
+    await act(async () => finish());
+    expect(mockEndSessionLocally).toHaveBeenCalledTimes(replaced ? 0 : 1);
+  });
+
+  it('does not change a password from a retained callback after departure', async () => {
+    const screen = render(<ChangePasswordScreen />);
+    fireEvent.changeText(screen.getByLabelText('Current Password'), 'old-password');
+    fireEvent.changeText(screen.getByLabelText('New Password'), 'new-password-123');
+    fireEvent.changeText(screen.getByLabelText('Confirm New Password'), 'new-password-123');
+    let button = screen.getByText('Save Password');
+    while (!button.props.onPress && button.parent) button = button.parent;
+    const onPress = button.props.onPress;
+    expect(onPress).toEqual(expect.any(Function));
+    screen.unmount();
+    await act(async () => { onPress(); });
+    expect(mockUpdatePassword).not.toHaveBeenCalled();
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<ChangePasswordScreen />);
     expect(toJSON()).toBeTruthy();

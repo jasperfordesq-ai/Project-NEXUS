@@ -88,13 +88,12 @@ jest.mock('@/components/ui/AppToast', () => {
   return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
 });
 
+const mockConfirmUnblock = jest.fn();
 // Auto-confirm: pressing the destructive button runs the action immediately,
 // mirroring the old Alert.alert button-press simulation.
 jest.mock('@/components/ui/useConfirm', () => ({
   useConfirm: () => ({
-    confirm: (opts: { onConfirm: () => void | Promise<void> }) => {
-      void opts.onConfirm();
-    },
+    confirm: mockConfirmUnblock,
     confirmDialog: null,
   }),
 }));
@@ -104,9 +103,56 @@ const mockUnblockUser = unblockUser as jest.MockedFunction<typeof unblockUser>;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockConfirmUnblock.mockImplementation((opts: { onConfirm: () => void | Promise<void> }) => { void opts.onConfirm(); });
 });
 
 describe('SettingsBlockedUsersScreen', () => {
+  it('does not unblock when a retained confirmation resolves after departure', async () => {
+    mockGetBlockedUsers.mockResolvedValue([{
+      block_id: 1, user_id: 42, name: 'Sam Carter', first_name: 'Sam', last_name: 'Carter',
+      avatar_url: null, reason: null, blocked_at: '2026-05-01T10:00:00Z',
+    }]);
+    mockConfirmUnblock.mockImplementation(() => {});
+    const screen = render(<SettingsBlockedUsersScreen />);
+    fireEvent.press(await screen.findByText('Unblock'));
+    const confirmation = mockConfirmUnblock.mock.calls[0][0];
+    screen.unmount();
+    await act(async () => confirmation.onConfirm());
+    expect(mockUnblockUser).not.toHaveBeenCalled();
+  });
+
+  it('keeps the blocked member after a failed unblock and allows retry', async () => {
+    mockGetBlockedUsers.mockResolvedValue([{
+      block_id: 1, user_id: 42, name: 'Sam Carter', first_name: 'Sam', last_name: 'Carter',
+      avatar_url: null, reason: null, blocked_at: '2026-05-01T10:00:00Z',
+    }]);
+    mockUnblockUser.mockRejectedValueOnce(new Error('Unavailable')).mockResolvedValueOnce({});
+    const screen = render(<SettingsBlockedUsersScreen />);
+    fireEvent.press(await screen.findByText('Unblock'));
+    await screen.findByText('Unblock');
+    expect(screen.getByText('Sam Carter')).toBeTruthy();
+    expect(screen.getByText('1 blocked')).toBeTruthy();
+    fireEvent.press(screen.getByText('Unblock'));
+    await screen.findByText('No blocked users');
+    expect(mockUnblockUser).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('0 blocked')).toBeTruthy();
+  });
+
+  it('does not report zero blocked members while loading or after a failed read', async () => {
+    let rejectLoad!: (reason: Error) => void;
+    mockGetBlockedUsers.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectLoad = reject; }));
+    const screen = render(<SettingsBlockedUsersScreen />);
+    expect(screen.queryByText('0 blocked')).toBeNull();
+    await act(async () => rejectLoad(new Error('Unavailable')));
+    await screen.findByTestId('blocked-users-error');
+    expect(screen.queryByText('0 blocked')).toBeNull();
+    expect(screen.queryByText('No blocked users')).toBeNull();
+    mockGetBlockedUsers.mockResolvedValueOnce([]);
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    await screen.findByText('No blocked users');
+    expect(screen.getByText('0 blocked')).toBeTruthy();
+  });
+
   it('renders blocked users from the API', async () => {
     mockGetBlockedUsers.mockResolvedValue([
       {
