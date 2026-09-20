@@ -98,7 +98,7 @@ describe('native app configuration', () => {
     expect(metroConfig).toContain('react-native-gesture-handler');
     expect(metroConfig).toContain('react-native-worklets');
     expect(metroConfig).toContain('uniwind');
-    expect(metroConfig).toContain('inlineRequires: true');
+    expect(metroConfig).toContain('inlineRequires: false');
   });
 
   it('loads Tailwind v4, Uniwind, and HeroUI Native styles from global CSS', () => {

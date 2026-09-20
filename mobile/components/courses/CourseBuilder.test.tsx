@@ -193,12 +193,17 @@ describe('CourseBuilder', () => {
 
   it('does not create a lesson after its section disappears during operation storage', async () => {
     let reserve!: (value: object) => void;
+    let remove!: () => void;
     mockReserveCourseAuthoringCreationOperation.mockImplementationOnce(() => new Promise(resolve => { reserve = resolve; }));
-    mockDeleteCourseSection.mockResolvedValue(undefined);
+    mockDeleteCourseSection.mockImplementationOnce(() => new Promise<void>(resolve => { remove = resolve; }));
     const screen = render(<CourseBuilder courseId={42} initialSections={[section(5, 'Original')]} />);
     fireEvent.press(screen.getByText('Add lesson'));
+    expect(mockReserveCourseAuthoringCreationOperation).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText('Delete section'));
-    await waitFor(() => expect(screen.queryByDisplayValue('Original')).toBeNull());
+    expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 5);
+    expect(screen.getByDisplayValue('Original')).toBeTruthy();
+    await act(async () => remove());
+    expect(screen.queryByDisplayValue('Original')).toBeNull();
     await act(async () => reserve({ key: 'held', storageKey: 'held', createdAt: 1 }));
     expect(mockCreateCourseLesson).not.toHaveBeenCalled();
   });
