@@ -581,6 +581,16 @@ final class EventRegistrationProductController extends BaseApiController
         }, 201);
     }
 
+    public function invitationHistory(int $id): JsonResponse
+    {
+        $page = $this->positiveInteger(request()->query('page', 1));
+        $perPage = $this->positiveInteger(request()->query('per_page', 25));
+        if ($page === null || $perPage === null) {
+            return $this->validation('pagination');
+        }
+        return $this->execute(fn (): array => $this->queries->invitationHistory($id, $this->actor(), $page, $perPage));
+    }
+
     public function retentionHistory(int $id): JsonResponse
     {
         $page = $this->positiveInteger(request()->query('page', 1));

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added paginated organiser invitation history with permission-controlled recipient details and a validated native client contract.
+
 - Added validated native invitation-revocation requests with preserved retry keys and minimal completion receipts; organiser screen integration is pending.
 
 - Added a native organiser retention workspace with paginated history, UTC preview validation, saved-action recovery, and a separate review and confirmation before anonymisation.

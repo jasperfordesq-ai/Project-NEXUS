@@ -454,6 +454,8 @@ Route::middleware('feature:events')->group(function () {
         ->whereNumber('id')->whereNumber('campaignId')->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/events/{id}/registration-product/campaigns/{campaignId}/cancel', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'cancelCampaign'])
         ->whereNumber('id')->whereNumber('campaignId')->middleware('throttle:nexus-route-20-per-1m');
+    Route::get('/v2/events/{id}/registration-product/invitations', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'invitationHistory'])
+        ->whereNumber('id')->middleware('throttle:nexus-route-120-per-1m');
     Route::post('/v2/events/{id}/registration-product/invitations/{invitationId}/revoke', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'revokeInvitation'])
         ->whereNumber('id')->whereNumber('invitationId')->middleware('throttle:nexus-route-20-per-1m');
     Route::post('/v2/events/{id}/registration-product/invitations/accept', [\App\Http\Controllers\Api\EventRegistrationProductController::class, 'acceptInvitation'])

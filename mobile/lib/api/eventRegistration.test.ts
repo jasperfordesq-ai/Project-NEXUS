@@ -38,6 +38,7 @@ import {
   getOrganizerRegistrationGuests,
   getOrganizerInvitationCampaigns,
   getOrganizerRetentionHistory,
+  getOrganizerInvitations,
   mutateOrganizerRetention,
   revokeOrganizerInvitation,
   mutateOrganizerInvitationCampaign,
@@ -579,5 +580,32 @@ describe('organiser invitation revocation contract', () => {
     jest.mocked(api.post).mockResolvedValue({ data: { invitation, changed: true, idempotent_replay: false } });
     await revokeOrganizerInvitation(42, { invitationId: 9, reason: '😀'.repeat(500) }, 'key');
     expect(api.post).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('organiser invitation list contract', () => {
+  const invitation = { id: 9, event_id: 42, campaign_id: 3, target_type: 'member', status: 'issued', invitation_version: 1,
+    token_expires_at: '2027-01-01T12:00:00Z', accepted_at: null, revoked_at: null, expired_at: null,
+    member_name: 'Synthetic member', recipient_email: null };
+  const response = { data: { event_id: 42, invitations: [invitation],
+    permissions: { manage_invitations: true, view_roster: true, view_recipient_email: true },
+    pagination: { page: 1, per_page: 25, total: 1, last_page: 1, page_count: 1, from: 1, to: 1, has_more: false, previous_page: null, next_page: null } } };
+  it('reads a paginated minimal projection and strips private fields', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...response.data, invitations: [{ ...invitation, token_hash: 'private', email_ciphertext: 'private' }] } });
+    const result = await getOrganizerInvitations(42);
+    expect(result.data.invitations).toEqual([invitation]);
+    expect(api.get).toHaveBeenLastCalledWith('/api/v2/events/42/registration-product/invitations', { page: '1', per_page: '25' }, expect.anything());
+  });
+  it('removes recipient fields when the server declares no corresponding authority', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...response.data, permissions: { manage_invitations: true, view_roster: false, view_recipient_email: false } } });
+    const result = await getOrganizerInvitations(42);
+    expect(result.data.invitations[0]).not.toHaveProperty('member_name');
+    expect(result.data.invitations[0]).not.toHaveProperty('recipient_email');
+  });
+  it('rejects cross-event records and invalid pagination', async () => {
+    jest.mocked(api.get).mockResolvedValue({ data: { ...response.data, invitations: [{ ...invitation, event_id: 99 }] } });
+    await expect(getOrganizerInvitations(42)).rejects.toThrow();
+    jest.mocked(api.get).mockClear(); await expect(getOrganizerInvitations(42, 0)).rejects.toThrow();
+    await expect(getOrganizerInvitations(42, 1, 101)).rejects.toThrow(); expect(api.get).not.toHaveBeenCalled();
   });
 });

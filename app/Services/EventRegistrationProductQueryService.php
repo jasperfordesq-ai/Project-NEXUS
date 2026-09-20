@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Models\EventInvitationCampaign;
+use App\Models\EventInvitation;
 use App\Models\EventRegistrationFormVersion;
 use App\Models\EventRegistrationSettings;
 use App\Models\EventRegistrationRetentionRun;
@@ -32,6 +33,49 @@ final class EventRegistrationProductQueryService
         private readonly EventPolicy $eventPolicy = new EventPolicy(),
         private readonly EventRegistrationPolicy $registrationPolicy = new EventRegistrationPolicy(),
     ) {
+    }
+
+    /** @return array<string,mixed> */
+    public function invitationHistory(int $eventId, User|int $actor, int $page = 1, int $perPage = 25): array
+    {
+        $this->assertSchema();
+        $tenantId = $this->support->tenantId();
+        $event = $this->support->concreteEvent($tenantId, $eventId, false);
+        $persistedActor = $this->support->actor($tenantId, $actor, false);
+        if (! $this->registrationPolicy->manageInvitations($persistedActor, $event)) {
+            throw new EventRegistrationFoundationException('event_invitation_management_denied');
+        }
+        $canViewRoster = $this->eventPolicy->viewRoster($persistedActor, $event);
+        $canViewEmail = $this->registrationPolicy->viewSensitiveAnswers($persistedActor, $event);
+        $perPage = max(1, min(self::MAX_OVERVIEW_PAGE_SIZE, $perPage));
+        $query = EventInvitation::withoutGlobalScopes()
+            ->leftJoin('users as member', function ($join): void {
+                $join->on('member.id', '=', 'event_invitations.member_user_id')
+                    ->on('member.tenant_id', '=', 'event_invitations.tenant_id');
+            })
+            ->where('event_invitations.tenant_id', $tenantId)->where('event_invitations.event_id', $eventId);
+        $total = (clone $query)->count('event_invitations.id');
+        $page = $this->clampPage(max(1, $page), $perPage, $total);
+        $invitations = $query->orderByDesc('event_invitations.id')->forPage($page, $perPage)->get([
+            'event_invitations.id', 'event_invitations.event_id', 'event_invitations.campaign_id',
+            'event_invitations.target_type', 'event_invitations.status', 'event_invitations.invitation_version',
+            'event_invitations.token_expires_at', 'event_invitations.accepted_at', 'event_invitations.revoked_at',
+            'event_invitations.expired_at', 'event_invitations.email_ciphertext', 'member.name as member_name',
+        ])->map(function (EventInvitation $invitation) use ($canViewRoster, $canViewEmail): array {
+            $row = $invitation->only(['id', 'event_id', 'campaign_id', 'target_type', 'status', 'invitation_version',
+                'token_expires_at', 'accepted_at', 'revoked_at', 'expired_at']);
+            if ($canViewRoster) {
+                $row['member_name'] = $invitation->member_name;
+            }
+            if ($canViewEmail) {
+                $row['recipient_email'] = is_string($invitation->email_ciphertext)
+                    ? $this->support->decrypt($invitation->email_ciphertext) : null;
+            }
+            return $row;
+        });
+        return ['event_id' => $eventId, 'invitations' => $invitations,
+            'pagination' => $this->pageMetadata($page, $perPage, $total, $invitations->count()),
+            'permissions' => ['manage_invitations' => true, 'view_roster' => $canViewRoster, 'view_recipient_email' => $canViewEmail]];
     }
 
     /** @return array<string,mixed> */

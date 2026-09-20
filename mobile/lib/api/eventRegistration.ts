@@ -684,3 +684,29 @@ export async function revokeOrganizerInvitation(eventId: number, intent: Invitat
   return parse(endpoint, schema, await api.post<unknown>(endpoint,
     { reason: input.reason, idempotency_key: key }, requestOptions(key)));
 }
+
+export const organizerInvitationSchema = z.object({
+  id: safeId, event_id: safeId, campaign_id: safeId, target_type: z.enum(['member', 'email']),
+  status: z.enum(['issued', 'accepted', 'revoked', 'expired']), invitation_version: safeId,
+  token_expires_at: z.string().datetime({ offset: true }),
+  accepted_at: z.string().datetime({ offset: true }).nullable(),
+  revoked_at: z.string().datetime({ offset: true }).nullable(),
+  expired_at: z.string().datetime({ offset: true }).nullable(),
+  member_name: z.string().nullable().optional(), recipient_email: z.string().nullable().optional(),
+}).strip();
+export type OrganizerInvitation = z.infer<typeof organizerInvitationSchema>;
+export async function getOrganizerInvitations(eventId: number, page = 1, perPage = 25) {
+  safeId.parse(eventId); safeId.parse(page); z.number().int().min(1).max(100).parse(perPage);
+  const endpoint = API_V2 + '/events/' + eventId + '/registration-product/invitations';
+  const schema = z.object({ data: z.object({ event_id: z.literal(eventId),
+    invitations: z.array(organizerInvitationSchema.refine(value => value.event_id === eventId)),
+    pagination: registrationOverviewPageSchema,
+    permissions: z.object({ manage_invitations: z.boolean(), view_roster: z.boolean(), view_recipient_email: z.boolean() }),
+  }).transform(data => ({ ...data, invitations: data.invitations.map(invitation => {
+    const value = { ...invitation };
+    if (!data.permissions.view_roster) delete value.member_name;
+    if (!data.permissions.view_recipient_email) delete value.recipient_email;
+    return value;
+  }) })) });
+  return parse(endpoint, schema, await api.get<unknown>(endpoint, { page: String(page), per_page: String(perPage) }, requestOptions()));
+}
