@@ -104,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed native onboarding retaining the previous account after a delayed response: account/community changes now reset the screen, and stale media, profile-save and completion callbacks cannot publish state or navigation after departure.
+
 - Fixed native group-exchange actions after lost responses: confirmation, completion and cancellation now require fresh server details before another mutation, preserving read-only recovery through offline retries.
 
 - Fixed native image viewing with cross-platform gesture zoom, a canvas measured below the safe-area toolbar, and translated labels for untitled images.

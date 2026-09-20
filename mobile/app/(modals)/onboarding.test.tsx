@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockReplace = jest.fn();
 const mockRefreshUser = jest.fn();
@@ -55,6 +55,7 @@ jest.mock('@/lib/api/onboarding', () => ({
 }));
 
 import OnboardingScreen from './onboarding';
+import { storage } from '@/lib/storage';
 import { getMe } from '@/lib/api/auth';
 import {
   completeOnboarding,
@@ -101,6 +102,34 @@ describe('OnboardingScreen', () => {
     }]);
     jest.mocked(saveSafeguardingPreferences).mockResolvedValue({ message: 'Saved', preferences_count: 1 });
     jest.mocked(completeOnboarding).mockResolvedValue({ message: 'Complete', listings_created: 0, listing_ids: [] });
+  });
+
+  it('does not navigate the replacement account when an earlier profile write finishes', async () => {
+    let finishWrite!: () => void;
+    const write = jest.spyOn(storage, 'setJson').mockImplementationOnce(() => new Promise(resolve => { finishWrite = resolve; }));
+    jest.mocked(getOnboardingStatus).mockResolvedValueOnce({ onboarding_completed: true, has_avatar: true, has_bio: true, interests: [] });
+    const screen = render(<OnboardingScreen />);
+    await waitFor(() => expect(write).toHaveBeenCalled());
+    mockUser = { ...mockUser, id: 8 };
+    jest.mocked(getMe).mockResolvedValue({ data: mockUser as never });
+    screen.rerender(<OnboardingScreen />);
+    await act(async () => finishWrite());
+    expect(mockReplace).not.toHaveBeenCalled();
+    write.mockRestore();
+  });
+
+  it('ignores a completed profile response from a replaced account', async () => {
+    const oldUser = { ...mockUser };
+    let resolveOld!: (value: { data: never }) => void;
+    jest.mocked(getMe).mockReturnValueOnce(new Promise(resolve => { resolveOld = resolve; }));
+    jest.mocked(getOnboardingStatus).mockResolvedValueOnce({ onboarding_completed: true, has_avatar: true, has_bio: true, interests: [] });
+    const screen = render(<OnboardingScreen />);
+    mockUser = { ...oldUser, id: 8, first_name: 'Replacement' };
+    jest.mocked(getMe).mockResolvedValue({ data: mockUser as never });
+    screen.rerender(<OnboardingScreen />);
+    await act(async () => resolveOld({ data: oldUser as never }));
+    expect(mockRefreshUser).not.toHaveBeenCalledWith(expect.objectContaining({ id: 7 }));
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('records an explicit adult safeguarding response before completing onboarding', async () => {

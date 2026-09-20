@@ -135,6 +135,7 @@ function OnboardingScreenInner() {
         const completedUser = { ...fullProfile.data, onboarding_completed: true };
         refreshUser(completedUser);
         await storage.setJson(STORAGE_KEYS.USER_DATA, completedUser);
+        if (!mountedRef.current) return;
         router.replace('/(tabs)/home');
         return;
       }
@@ -189,6 +190,7 @@ function OnboardingScreenInner() {
     if (busy) return;
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!mountedRef.current) return;
       if (!permission.granted) {
         showToast({ title: t('toast_upload_failed'), description: t('profile:permissionMessage'), variant: 'warning' });
         return;
@@ -198,18 +200,22 @@ function OnboardingScreenInner() {
         quality: 0.85,
         allowsMultipleSelection: false,
       });
+      if (!mountedRef.current) return;
       const asset = result.canceled ? null : result.assets?.[0];
       if (!asset?.uri) return;
       setBusy(true);
       const prepared = await prepareImageForUpload(asset);
+      if (!mountedRef.current) return;
       const response = await updateAvatar(prepared.uri);
       if (!mountedRef.current) return;
       const nextProfile = { ...profile, avatar_url: response.data.avatar_url };
       setProfile(nextProfile);
       refreshUser(nextProfile as User);
       await storage.setJson(STORAGE_KEYS.USER_DATA, nextProfile);
+      if (!mountedRef.current) return;
       showToast({ title: t('toast_photo_uploaded'), description: t('toast_photo_uploaded_desc'), variant: 'success' });
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('toast_upload_failed'), description: describeApiError(error, t('toast_upload_failed_desc')), variant: 'danger' });
     } finally {
       if (mountedRef.current) setBusy(false);
@@ -238,8 +244,10 @@ function OnboardingScreenInner() {
       setProfile(response.data);
       refreshUser(response.data);
       await storage.setJson(STORAGE_KEYS.USER_DATA, response.data);
+      if (!mountedRef.current) return;
       goNext();
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('toast_save_failed'), description: describeApiError(error, t('toast_save_failed_desc')), variant: 'danger' });
     } finally {
       if (mountedRef.current) setBusy(false);
@@ -299,6 +307,7 @@ function OnboardingScreenInner() {
       showToast({ title: t('safeguarding.confirmation.title'), description: t('safeguarding.confirmation.who_can_see_body'), variant: 'success' });
       goNext();
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('safeguarding.save_failed'), description: describeApiError(error, t('safeguarding.try_again')), variant: 'danger' });
     } finally {
       if (mountedRef.current) setBusy(false);
@@ -309,11 +318,13 @@ function OnboardingScreenInner() {
     setBusy(true);
     try {
       const result = await completeOnboarding({ interests, offers, needs });
+      if (!mountedRef.current) return;
       const response = await getMe();
       if (!mountedRef.current) return;
       const completedUser = { ...response.data, onboarding_completed: true };
       refreshUser(completedUser);
       await storage.setJson(STORAGE_KEYS.USER_DATA, completedUser);
+      if (!mountedRef.current) return;
       showToast({
         title: t('toast_welcome_aboard'),
         description: result.listings_created > 0
@@ -323,6 +334,7 @@ function OnboardingScreenInner() {
       });
       router.replace('/(tabs)/home');
     } catch (error) {
+      if (!mountedRef.current) return;
       showToast({ title: t('toast_setup_failed'), description: describeApiError(error, t('toast_something_went_wrong')), variant: 'danger' });
     } finally {
       if (mountedRef.current) setBusy(false);
@@ -540,5 +552,7 @@ function Summary({ title, values, categories, empty }: { title: string; values: 
 }
 
 export default function OnboardingScreen() {
-  return <ModalErrorBoundary><OnboardingScreenInner /></ModalErrorBoundary>;
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  return <ModalErrorBoundary><OnboardingScreenInner key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}`} /></ModalErrorBoundary>;
 }
