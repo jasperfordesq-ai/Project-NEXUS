@@ -22,6 +22,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import AppTopBar from '@/components/ui/AppTopBar';
 import EmptyState from '@/components/ui/EmptyState';
+import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { dateLocale } from '@/lib/utils/dateLocale';
@@ -134,18 +135,18 @@ export default function ActivityScreen() {
                       </Text>
                     </View>
                   </View>
-                  <Surface variant="secondary" className="self-start flex-row items-center gap-1 rounded-full px-3 py-1.5">
+                  {data ? <Surface variant="secondary" className="self-start flex-row items-center gap-1 rounded-full px-3 py-1.5">
                     <Ionicons name="analytics-outline" size={12} color={primary} />
                     <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>
                       {t('activity.netBalance', { count: dashboard.hours_summary.net_balance })}
                     </Text>
-                  </Surface>
+                  </Surface> : null}
                 </HeroCard.Body>
               </HeroCard>
 
               {isLoading && !data ? (
                 <View className="items-center py-6"><Spinner size="sm" /></View>
-              ) : (
+              ) : data ? (
               <View className="mx-4 flex-row flex-wrap gap-3">
                 <StatTile icon="arrow-up-outline" label={t('activity.hoursGiven')} value={dashboard.hours_summary.hours_given} tone="#22c55e" />
                 <StatTile icon="arrow-down-outline" label={t('activity.hoursReceived')} value={dashboard.hours_summary.hours_received} tone="#6366f1" />
@@ -154,7 +155,9 @@ export default function ActivityScreen() {
                 <StatTile icon="chatbox-ellipses-outline" label={t('activity.posts')} value={dashboard.engagement.posts_count} tone="#f43f5e" />
                 <StatTile icon="construct-outline" label={t('activity.skills')} value={dashboard.skills_breakdown.skills.length} tone="#8b5cf6" />
               </View>
-              )}
+              ) : null}
+
+              {data ? <RefreshFailedNotice error={error} onRetry={refresh} isRetrying={isLoading} /> : null}
 
               {hasMonthlyHours ? (
                 <MonthlyHoursChart
@@ -189,18 +192,18 @@ export default function ActivityScreen() {
             </View>
           }
           ListEmptyComponent={
-            isLoading ? (
+            isLoading && !data ? (
               <View className="items-center justify-center py-14">
                 <LoadingSpinner />
               </View>
             ) : (
               <View className="px-4 py-8">
                 <EmptyState
-                  icon={error ? 'warning-outline' : 'pulse-outline'}
-                  title={error ? t('common:errors.generic') : t('activity.emptyTitle')}
-                  subtitle={error ? String(error) : t('activity.emptySubtitle')}
-                  actionLabel={error ? t('common:buttons.retry') : undefined}
-                  onAction={error ? () => void refresh() : undefined}
+                  icon={error && !data ? 'warning-outline' : 'pulse-outline'}
+                  title={error && !data ? t('common:errors.generic') : t('activity.emptyTitle')}
+                  subtitle={error && !data ? String(error) : t('activity.emptySubtitle')}
+                  actionLabel={error && !data ? t('common:buttons.retry') : undefined}
+                  onAction={error && !data ? () => void refresh() : undefined}
                 />
               </View>
             )

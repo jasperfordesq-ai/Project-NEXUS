@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 
@@ -134,5 +134,55 @@ describe('ActivityScreen', () => {
     expect(getByText('Received')).toBeTruthy();
     expect(getByText('Gardening')).toBeTruthy();
     expect(getByText('Posted an update')).toBeTruthy();
+  });
+
+  it.each([true, false])('does not invent zero totals before a successful load (loading=%s)', (isLoading) => {
+    mockUseApi.mockReturnValue({ data: null, isLoading, error: isLoading ? null : 'Unavailable', refresh: jest.fn() });
+    const screen = render(<ActivityScreen />);
+    expect(screen.queryByText('0h net')).toBeNull();
+    expect(screen.queryByText('Hours given')).toBeNull();
+    expect(screen.queryByText('No activity yet')).toBeNull();
+    if (!isLoading) expect(screen.getByText('Unavailable')).toBeTruthy();
+  });
+
+  it('keeps loaded activity visible and offers retry when refresh fails', () => {
+    const state = mockUseApi();
+    mockUseApi.mockReturnValue({ ...state, error: 'Unavailable' });
+    const screen = render(<ActivityScreen />);
+    expect(screen.getByText('Posted an update')).toBeTruthy();
+    expect(screen.getByTestId('refresh-failed-notice')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('common:buttons.retry'));
+    expect(state.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries an initial failure without presenting invented totals', () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: null, isLoading: false, error: 'Unavailable', refresh });
+    const screen = render(<ActivityScreen />);
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('0h net')).toBeNull();
+  });
+
+  it('keeps loaded history and totals visible while refresh is pending', () => {
+    const state = mockUseApi();
+    const screen = render(<ActivityScreen />);
+    mockUseApi.mockReturnValue({ ...state, isLoading: true });
+    screen.rerender(<ActivityScreen />);
+    expect(screen.getByText('Posted an update')).toBeTruthy();
+    expect(screen.getByText('1h net')).toBeTruthy();
+    expect(screen.queryByText('No activity yet')).toBeNull();
+  });
+
+  it.each([null, 'Unavailable'])('shows genuine loaded zero totals with an empty timeline (error=%s)', (error) => {
+    const state = mockUseApi();
+    const dashboard = state.data.data;
+    mockUseApi.mockReturnValue({ ...state, error, data: { data: {
+      ...dashboard, timeline: [], hours_summary: { ...dashboard.hours_summary, net_balance: 0 },
+    } } });
+    const screen = render(<ActivityScreen />);
+    expect(screen.getByText('0h net')).toBeTruthy();
+    expect(screen.getByText('No activity yet')).toBeTruthy();
+    expect(screen.queryByTestId('refresh-failed-notice') !== null).toBe(error !== null);
   });
 });

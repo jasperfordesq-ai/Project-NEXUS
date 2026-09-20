@@ -102,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile activity history keeps loaded totals and timeline visible during refresh recovery, offers retry after failure, and waits for successful loading before displaying totals.
+
 - Native articles reject ambiguous route values without crashing, reset comment state between articles, preserve loaded content through transient refresh failures, and handle sharing errors without affecting departed screens. Refused access hides the article.
 
 - Native blog browsing preserves loaded articles and retries the failed pagination cursor, with explicit recovery instead of automatic repeated requests after an error.
