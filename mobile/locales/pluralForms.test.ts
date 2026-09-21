@@ -198,13 +198,17 @@ describe('mobile plural forms', () => {
     expect(gaps).toEqual([]);
   });
 
-  it('a singular never loses the {{count}} placeholder', () => {
+  it('a singular preserves the interpolation placeholders of its plural', () => {
     const broken: string[] = [];
     for (const locale of LOCALES) {
       const catalogues = loadCatalogues(locale);
       for (const [ns, catalogue] of Object.entries(catalogues)) {
         for (const [key, value] of Object.entries(catalogue)) {
-          if (key.endsWith('_one') && !value.includes('{{count}}')) {
+          if (!key.endsWith('_one')) continue;
+          const plural = catalogue[key.replace(/_one$/, '_other')] ?? catalogue[key.replace(/_one$/, '')];
+          const placeholders = (text: string) => [...text.matchAll(/{{\s*([^}]+?)\s*}}/g)]
+            .map(match => match[1]).sort();
+          if (typeof plural !== 'string' || JSON.stringify(placeholders(value)) !== JSON.stringify(placeholders(plural))) {
             broken.push(`${locale}/${ns}:${key} = ${value}`);
           }
         }

@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native listing creation now rechecks account and community identity for every caller sharing a pending retry reservation, preserving the original retry record on identity changes.
+
 - Android now refreshes native layout and JavaScript font-scale metrics after application configuration updates, remeasuring shared text without losing open drafts when text size changes.
 
 - Exchange API confirmation and creation timestamps now include UTC timezone information, matching history dates across Android, iOS and web clients.
