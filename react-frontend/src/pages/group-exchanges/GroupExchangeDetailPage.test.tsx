@@ -120,16 +120,16 @@ const mockGroupExchange = {
 describe('GroupExchangeDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    api.get.mockResolvedValue({ success: true, data: mockGroupExchange });
-    api.post.mockResolvedValue({ success: true });
-    api.put.mockResolvedValue({ success: true });
-    api.delete.mockResolvedValue({ success: true });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockGroupExchange });
+    vi.mocked(api.post).mockResolvedValue({ success: true });
+    vi.mocked(api.put).mockResolvedValue({ success: true });
+    vi.mocked(api.delete).mockResolvedValue({ success: true });
   });
 
   it('sends the displayed terms and reloads a refusal without retrying consent', async () => {
-    api.get.mockResolvedValueOnce({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', terms_token: 'seen' } });
-    api.get.mockResolvedValue({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', total_hours: 8, terms_token: 'fresh' } });
-    api.post.mockResolvedValueOnce({ success: false, error: 'Terms changed' } as never);
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', terms_token: 'seen' } });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockGroupExchange, status: 'pending_confirmation', total_hours: 8, terms_token: 'fresh' } });
+    vi.mocked(api.post).mockResolvedValueOnce({ success: false, error: 'Terms changed' } as never);
     render(<GroupExchangeDetailPage />);
     fireEvent.click(await screen.findByRole('button', { name: /confirm my hours/i }));
     await waitFor(() => expect(api.post).toHaveBeenCalledWith('/v2/group-exchanges/1/confirm', { terms_token: 'seen' }));
@@ -143,7 +143,7 @@ describe('GroupExchangeDetailPage', () => {
     // then unconditionally showed a success toast and reloaded/navigated. Since
     // api.X resolves { success: false } on a 4xx without throwing, a failed action
     // reported a fake success. Here we exercise the "Start Exchange" path.
-    api.post.mockResolvedValue({ success: false, error: 'Not allowed' } as never);
+    vi.mocked(api.post).mockResolvedValue({ success: false, error: 'Not allowed' } as never);
 
     render(<GroupExchangeDetailPage />);
     const startBtn = await screen.findByRole('button', { name: /start/i });
@@ -170,7 +170,7 @@ describe('GroupExchangeDetailPage', () => {
   it('renders the hour-split breakdown from a flat calculated_split list', async () => {
     // Regression F5: the page expected a nested provider→receiver map, but the
     // backend returns a flat per-participant list — the old code rendered garbage.
-    api.get.mockResolvedValue({
+    vi.mocked(api.get).mockResolvedValue({
       success: true,
       data: {
         ...mockGroupExchange,
@@ -189,7 +189,7 @@ describe('GroupExchangeDetailPage', () => {
   });
 
   it('shows loading screen initially', () => {
-    api.get.mockImplementation(() => new Promise(() => {}));
+    vi.mocked(api.get).mockImplementation(() => new Promise(() => {}));
     render(<GroupExchangeDetailPage />);
     expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
@@ -216,7 +216,7 @@ describe('GroupExchangeDetailPage', () => {
   });
 
   it('shows empty state on API error', async () => {
-    api.get.mockRejectedValue(new Error('Not found'));
+    vi.mocked(api.get).mockRejectedValue(new Error('Not found'));
     render(<GroupExchangeDetailPage />);
     await waitFor(() => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();

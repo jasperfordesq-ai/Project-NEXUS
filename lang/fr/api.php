@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'L\'échange est déjà terminé',
     'group_exchange_unconfirmed_remaining' => ':count participant(s) doivent encore confirmer',
     'group_exchange_no_participants' => 'L\'échange n\'a aucun participant',
+    'group_exchange_terms_changed' => 'Les conditions de l\'échange ont changé. Vérifiez les derniers détails avant de confirmer à nouveau.',
+    'group_exchange_not_ready_to_complete' => 'Seuls les échanges en attente de confirmation des participants peuvent être terminés.',
     'group_exchange_transaction_description' => 'Échange de groupe : :title',
     'vol_dlp_assign_failed' => 'Impossible d\'attribuer le DLP pour cette organisation',
     'volunteer_organization_required' => 'Une organisation est nécessaire',

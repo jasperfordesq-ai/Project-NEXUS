@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => '交換はすでに完了しています',
     'group_exchange_unconfirmed_remaining' => ':count の参加者はまだ確認する必要があります',
     'group_exchange_no_participants' => 'Exchange には参加者がいません',
+    'group_exchange_terms_changed' => '交換条件が変更されました。もう一度確認する前に最新の詳細をご確認ください。',
+    'group_exchange_not_ready_to_complete' => '参加者の確認を待っている交換のみ完了できます。',
     'group_exchange_transaction_description' => 'グループ交換: :title',
     'vol_dlp_assign_failed' => 'この組織に DLP を割り当てることができません',
     'volunteer_organization_required' => '組織化が必要です',

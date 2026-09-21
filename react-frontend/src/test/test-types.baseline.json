@@ -1507,7 +1507,6 @@
       "TS2339": 2
     },
     "src/pages/group-exchanges/GroupExchangeDetailPage.test.tsx": {
-      "TS2339": 8,
       "TS2532": 1
     },
     "src/pages/group-exchanges/GroupExchangesPage.test.tsx": {
@@ -1948,6 +1947,6 @@
   },
   "totals": {
     "fileCount": 575,
-    "errorCount": 1763
+    "errorCount": 1755
   }
 }

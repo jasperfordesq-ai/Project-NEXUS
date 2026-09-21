@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'El intercambio ya está completo.',
     'group_exchange_unconfirmed_remaining' => ':count los participantes aún deben confirmar',
     'group_exchange_no_participants' => 'El intercambio no tiene participantes.',
+    'group_exchange_terms_changed' => 'Las condiciones del intercambio han cambiado. Revisa los últimos detalles antes de volver a confirmar.',
+    'group_exchange_not_ready_to_complete' => 'Solo se pueden completar los intercambios que esperan la confirmación de los participantes.',
     'group_exchange_transaction_description' => 'Intercambio grupal: :title',
     'vol_dlp_assign_failed' => 'No se puede asignar el DLP para esta organización',
     'volunteer_organization_required' => 'Se requiere organización',

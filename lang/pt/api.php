@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'A troca já foi concluída',
     'group_exchange_unconfirmed_remaining' => ':count participante(s) ainda precisa(m) confirmar',
     'group_exchange_no_participants' => 'Exchange não tem participantes',
+    'group_exchange_terms_changed' => 'Os termos da troca foram alterados. Reveja os detalhes mais recentes antes de confirmar novamente.',
+    'group_exchange_not_ready_to_complete' => 'Apenas as trocas que aguardam confirmação dos participantes podem ser concluídas.',
     'group_exchange_transaction_description' => 'Troca de grupo: :title',
     'vol_dlp_assign_failed' => 'Não foi possível atribuir a DLP para esta organização',
     'volunteer_organization_required' => 'É necessária organização',

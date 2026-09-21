@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'Tá malartú críochnaithe cheana féin',
     'group_exchange_unconfirmed_remaining' => 'Ní mór :count rannpháirtí(í) a dhearbhú fós',
     'group_exchange_no_participants' => 'Níl aon rannpháirtithe ag Malartú',
+    'group_exchange_terms_changed' => 'Tá téarmaí an mhalartaithe athraithe. Déan athbhreithniú ar na sonraí is déanaí sula ndearbhaíonn tú arís.',
+    'group_exchange_not_ready_to_complete' => 'Ní féidir ach malartuithe atá ag fanacht le dearbhú rannpháirtithe a chríochnú.',
     'group_exchange_transaction_description' => 'Malartú grúpa: :title',
     'vol_dlp_assign_failed' => 'Ní féidir an DCA a shannadh don eagraíocht seo',
     'volunteer_organization_required' => 'Tá gá le heagrú',

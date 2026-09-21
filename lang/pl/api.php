@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'Wymiana została już zakończona',
     'group_exchange_unconfirmed_remaining' => 'Uczestnicy :count nadal muszą potwierdzić',
     'group_exchange_no_participants' => 'Wymiana nie ma uczestników',
+    'group_exchange_terms_changed' => 'Warunki wymiany uległy zmianie. Sprawdź najnowsze szczegóły przed ponownym potwierdzeniem.',
+    'group_exchange_not_ready_to_complete' => 'Ukończyć można tylko wymiany oczekujące na potwierdzenie uczestników.',
     'group_exchange_transaction_description' => 'Wymiana grupowa: :title',
     'vol_dlp_assign_failed' => 'Nie można przypisać DLP dla tej organizacji',
     'volunteer_organization_required' => 'Wymagana jest organizacja',

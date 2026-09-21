@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'اكتمل التبادل بالفعل',
     'group_exchange_unconfirmed_remaining' => ':count لا يزال المشاركون بحاجة إلى التأكيد',
     'group_exchange_no_participants' => 'التبادل ليس لديه مشاركين',
+    'group_exchange_terms_changed' => 'لقد تغيرت شروط التبادل. راجع أحدث التفاصيل قبل التأكيد مرة أخرى.',
+    'group_exchange_not_ready_to_complete' => 'لا يمكن إكمال سوى التبادلات التي تنتظر تأكيد المشاركين.',
     'group_exchange_transaction_description' => 'تبادل المجموعة: :title',
     'vol_dlp_assign_failed' => 'غير قادر على تعيين DLP لهذه المؤسسة',
     'volunteer_organization_required' => 'التنظيم مطلوب',

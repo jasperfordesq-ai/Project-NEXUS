@@ -1817,6 +1817,8 @@ return [
     'group_exchange_already_completed' => 'De uitwisseling is al voltooid',
     'group_exchange_unconfirmed_remaining' => ':count deelnemer(s) moeten nog bevestigen',
     'group_exchange_no_participants' => 'Exchange heeft geen deelnemers',
+    'group_exchange_terms_changed' => 'De ruilvoorwaarden zijn gewijzigd. Bekijk de nieuwste gegevens voordat u opnieuw bevestigt.',
+    'group_exchange_not_ready_to_complete' => 'Alleen ruilen die wachten op bevestiging door deelnemers kunnen worden voltooid.',
     'group_exchange_transaction_description' => 'Groepsuitwisseling: :title',
     'vol_dlp_assign_failed' => 'Kan de DLP voor deze organisatie niet toewijzen',
     'volunteer_organization_required' => 'Organisatie is vereist',
