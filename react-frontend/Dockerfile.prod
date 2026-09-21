@@ -31,6 +31,11 @@ ARG VITE_PUSHER_CLUSTER=eu
 ARG VITE_GIPHY_API_KEY=
 ARG VITE_STRIPE_PUBLISHABLE_KEY=
 ARG VITE_TURNSTILE_SITE_KEY=
+# The "Accessible version" link in the navbar / mobile drawer. src/lib/accessible-frontend.ts
+# reads this and falls back to the PRODUCTION host, so a containerised build that cannot
+# pass it points every community's accessible link at the live site. The default keeps
+# production byte-identical; non-production deployments MUST set it.
+ARG VITE_ACCESSIBLE_FRONTEND_BASE_URL=https://accessible.project-nexus.ie
 ARG BUILD_COMMIT=unknown
 
 # Set environment variables for build
@@ -45,6 +50,7 @@ ENV VITE_PUSHER_CLUSTER=$VITE_PUSHER_CLUSTER
 ENV VITE_GIPHY_API_KEY=$VITE_GIPHY_API_KEY
 ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
+ENV VITE_ACCESSIBLE_FRONTEND_BASE_URL=$VITE_ACCESSIBLE_FRONTEND_BASE_URL
 ENV BUILD_COMMIT=$BUILD_COMMIT
 
 # Install dependencies first (better layer caching)
