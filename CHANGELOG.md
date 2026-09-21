@@ -66,6 +66,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Quiz submissions accept optional retry identities that replay the saved result without consuming another attempt, including concurrent retries at the limit. Changed answers under one identity are rejected. Learner reads expose the caller's latest grade summary and remaining attempts. Apply the quiz-attempt replay migration before enabling keyed clients; rolling it back removes saved retry identities.
 
+- Native Knowledge articles support helpfulness voting with saved selections, server-confirmed counts, duplicate-tap protection, retry feedback, and refusal recovery.
+
+- Native Knowledge articles expose their video links with a translated action and a clear notice that playback opens in the device's video app or browser.
+
+- Native Knowledge articles expose related-article navigation and authenticated attachment downloads, with duplicate-tap protection, retryable failure feedback, and unavailable-file handling.
+
 - **The accessible frontend now publishes the account-deletion and child-safety-standards
   pages, so both footers offer the same pages.** They were the last two links in the React
   footer with no accessible equivalent — both 404ed. Verified by comparing the two footers'
@@ -105,6 +111,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Queued work no longer stops silently outside production and local. `config/horizon.php` defined worker supervisors for `production` and `local` only, so under any other `APP_ENV` Horizon started its master supervisor, logged "Horizon started successfully" and spawned **zero** workers — queued jobs, including password-reset and notification mail, never ran, and the container healthcheck failed with nothing in the logs to explain it. Added `staging` and `testing` supervisors, with `HorizonEnvironmentCoverageTest` pinning every deployed environment, asserting each supervisor can run at least one process, and requiring staging to mirror production's supervisor shape.
+
+- The browser no longer blocks the app from reaching its own API outside production. The canonical SPA `Content-Security-Policy` hardcoded `https://api.project-nexus.ie` in `connect-src` with no substitution, while `${NEXUS_API_UPSTREAM}` a few lines below it was substituted — so any deployment on a different API hostname was refused permission by the browser. It failed silently in every place an operator would check: the page loaded, assets returned 200, DNS and TLS were valid, CORS preflight returned 204 with the correct `Access-Control-Allow-Origin`, `curl` to the API worked and navigating straight to the API returned JSON, while the app showed "Unable to connect" because CSP blocks the request before one is made. Added a `${NEXUS_CSP_EXTRA_ORIGINS}` placeholder to **`img-src`, `connect-src` and `frame-src`** — every directive that lists the API as a source — empty by default so production behaviour is byte-identical, declared as an `ENV` in both frontend images (envsubst only replaces defined variables) and passed through by `compose.bluegreen.yml`. `report-uri` is deliberately excluded because it takes a single URI rather than a source list. Patching `connect-src` alone was an incomplete first fix: the app could then load its data, but `img-src` still refused images served from the API origin, so default avatars failed with nothing but a bare "Failed to fetch". `SpaContentSecurityPolicyApiOriginTest` pins the whole chain — the placeholder in all three source directives and absent from `report-uri`, both configs holding an identical policy, both installed as nginx templates, both images declaring the variable, and compose passing it — because the fix is inert if any link is missing.
 
 - Made the course-builder stale-confirmation regression explicitly await section deletion, retaining checks that pending content remains visible and a late lesson confirmation cannot delete it.
 
@@ -276,11 +286,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native organisation registration validates website URLs, preserves field-specific server feedback, scrolls to the first invalid field, and rejects departed submissions. Organisation browsing retries failed pages without losing loaded records and clears refused content; detail links reject ambiguous IDs and website links use the shared validated opener.
 
+
 - Native profile-load retries wait for active profile or photo updates, preventing recovery reads from racing with a save.
 
 - Native profile editing retries failed full-profile loads without losing drafts, saves only edited fields, keeps newer queued edits open after saving, and ignores photo selection results after departure.
-
-- Native linked-account actions stop at screen departure, including delayed removal confirmations; failed requests retain the email for retry.
 
 - Native translation settings preserve the latest recovered preferences when reads overlap, block saves before a successful load or after departure, and retain selected preferences for retry after a failed save.
 
@@ -293,6 +302,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native offline check-in now restores encrypted pending device setup and validated offline rosters, preserves scan queues across concurrent scans, synchronization and roster refresh, and reuses durable batch identities for explicit recovery. Removed sessions and obsolete confirmations cannot recreate or delete changed attendance data.
 
 - Native offline attendance validates returned batch identities, retains unresolved or stopped work for review, and checks submitted results after roster expiry without resending attendance. Recovery controls include seven-language guidance and guarded camera permission handling.
+
+
+
+
+
+
+
 
 - Native event tickets persist unresolved requests for explicit recovery, preserve the original quantity and cancellation reason, and reject obsolete retries instead of creating another claim.
 
@@ -402,9 +418,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native registration policy confirmations and retry actions now use the existing translated Cancel and Retry labels.
 
-- Registration settings revision conflicts now identify the rejected version field while retaining the existing conflict code, allowing clients to distinguish them from uncertain retry-key conflicts without discarding saved changes.
-
 - Explicit UTC registration-setting dates now work for events in other timezones; legacy local-time fields retain event-offset validation.
+
+- Registration settings revision conflicts now identify the rejected version field while retaining the existing conflict code, allowing clients to distinguish them from uncertain retry-key conflicts without discarding saved changes.
 
 - Registration settings now honour explicit date removal for registration windows and cancellation cutoffs, while preserving omitted dates and idempotent retries.
 
@@ -422,13 +438,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native event attendance ignores delayed no-show confirmations after the screen unmounts, preventing departed confirmations from submitting changes.
 
-- Native event attendance rejects malformed, fractional, unsafe and repeated-array event links before loading the roster or offline device tools.
-
 - Native organiser People explains per-member registration failures for changed records, full capacity, withdrawn access and unavailable members in all seven app languages. A read-only Refresh action helps review current records without replaying successful changes; unknown failures retain a translated fallback.
 
 - Native organiser People reloads its roster and permissions after returning to the screen or foregrounding the app, discards departed confirmations and ignores late background reads while preserving pending actions for explicit recovery.
 
 - Native organiser People keeps its invitation form collapsed until requested, making member states and History reachable in the first Android viewport.
+
+- Native authenticated file downloads retain Unicode filenames, isolate temporary files, clean up interrupted transfers and check account/community and screen identity before sharing.
 
 - Native event management resets stale data and permissions when the account, community or event changes, ignores previous requests, and rejects malformed event links without a dead retry action.
 
@@ -436,25 +452,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native event management removes retained event details and actions after access is refused, keeping them hidden during retry while preserving the workspace through temporary server failures.
 
-- Native authenticated file downloads retain Unicode filenames, isolate temporary files, clean up interrupted transfers and check account/community and screen identity before sharing.
-
-- **The prerender worker reported two very different tenant faults in identical words.**
-  `assertExpectedTenant()` threw `tenant identity mismatch` both when the page resolved *no*
-  tenant and when it resolved a *different* one. Those are not the same event. The first is a
-  transport failure — the tenant bootstrap did not complete during the render, so
-  `TenantContext` never wrote `nexus_tenant_id`/`nexus_tenant_slug`; the snapshot is discarded,
-  the previous one is kept, and the next sweep re-renders it. The second would mean one
-  community's content had been rendered under another community's host. Measured over 30 hours
-  of production renders: **14 of 22,228 pages failed (0.06%), of which 8 were the harmless
-  fault (`got -#-`) and 0 were the dangerous one** — so the only version of this message anyone
-  had ever seen was the one safe to ignore, and a real cross-tenant leak would have arrived
-  wearing it. Now `tenant identity unresolved …` and `tenant identity MISMATCH: …`
-  respectively, each carrying a `tenantIdentityFault` marker (`unresolved` / `mismatch`) for
-  alerting. A partially resolved identity is deliberately reported as a MISMATCH: the page did
-  resolve something, and under-reporting a real leak is worse than one spurious alarm. No
-  behaviour change — both faults still discard the snapshot. Regression tests in
-  `scripts/test/prerender-worker.test.mjs` pin the two apart, including the partial case and
-  the unchanged happy path.
+- Native event attendance rejects malformed, fractional, unsafe and repeated-array event links before loading the roster or offline device tools.
 
 - Corrected native offline check-in guidance: enabled time-credit rewards are processed by the server after attendance synchronization; attendance does not universally exclude rewards.
 
@@ -544,23 +542,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native instructor publishing dismisses confirmations when leaving the screen and suppresses delayed messages from an earlier visit. Returning refreshes course status, including writes that finish after the return refresh.
 
-- **Whole-tenant prerender jobs could never be processed, and every attempt orphaned the job.**
-  `scripts/prerender-job-processor.sh` validated the claimed job's routes with
-  `printf '%s' "$value" | grep -Eq '^[...]*$'`. A whole-tenant job carries `routes IS NULL`,
-  exported as `JOB_ROUTES=''`: printf then writes zero bytes, grep reads zero lines, and grep
-  that matches nothing exits 1 — so the `*` permitting an empty value was unreachable. The
-  processor logged `FATAL: unsafe routes in claim output` and exited 1 **after** the claim
-  transaction had already marked the row `running`, leaving it orphaned with no worker behind
-  it; an active job excludes its tenant from both freshness sweeps, reproducing the exact freeze
-  `e085e25dc` had just fixed, by a different route. Latent until 2026-09-19 because the only
-  rows with NULL routes were the priority-5 jobs that queue starvation had made unclaimable, so
-  the branch was never reached — observed on production at 12:46, 12:47 and 12:48 UTC, one
-  orphan per tick, minutes after the starvation fix went live. Empty is now excluded before the
-  pipeline; Step 2 already handled it correctly by omitting `--routes`. Regression test
-  `scripts/test/test-prerender-processor-empty-routes.sh` reproduces the production message
-  against the unfixed script and adds two controls, so the guard cannot pass by having been
-  deleted.
-
 - Native instructor dashboards show recoverable refresh failures without discarding courses, keep the refresh indicator accurate, clear refused content, and dismiss stale publish confirmations. Shared confirmations reject dismissed callbacks and preserve replacement dialogs when an older action finishes.
 
 - Native instructor publishing prevents duplicate submissions, ignores stale confirmations after a course disappears or changes status, and suppresses late publish results after leaving the screen.
@@ -573,9 +554,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native data reads can discard retained content after access is refused, keeping it hidden during recovery while preserving content after temporary failures; the course player uses this policy.
 
+- Quiz recovery storage preserves pending submission identities and confirmed receipts separately for each account, community and quiz; it serializes writes, refuses conflicting unresolved answers, and reserves space for the result receipt.
+
 - Native quizzes show the learner’s server-saved grade when no local receipt exists, preserve newly edited answers during refresh, and remove answer prompts and editing controls when attempts are exhausted.
 
 - Native quizzes use the learner’s remaining-attempt count to disable exhausted submissions before another request, while allowing a saved unresolved attempt to recover with its original identity. A fresh server allowance also clears an older saved limit refusal when an instructor grants more attempts.
+
+- Native grading clears obsolete unsaved-work warnings when a refreshed queue removes an assessment or instructor access is revoked, while preserving editable feedback through temporary refresh failures.
+
+- Native instructor grading stops response-loss retries and late result notices after leaving or replacing the grading screen, while retaining exact retries for the active grading session.
 
 - Native quiz grade checks refresh the matching submitted result after instructor review without spending another attempt or replacing the learner’s answers.
 
@@ -584,6 +571,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native quizzes explain when answers exceed device recovery storage, preserve editable answers without submitting, and reserve space for the result receipt.
 
 - Native quizzes save attempts before sending, restore unresolved answers and retry identities when reopened, and retain confirmed results or definite rejections in encrypted storage scoped to the account and community. Failed recovery reads or saves prevent a new submission.
+
+- Encrypted draft storage supports required reads that distinguish missing drafts from unavailable storage, corrupt manifests, and missing committed chunks, for durable retry recovery.
 
 - Native quizzes retain retry identities until the result is resolved and create a fresh identity for a deliberate new attempt.
 
@@ -603,13 +592,189 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native course players no longer show a delayed progress-save error after the member leaves while the follow-up progress check is pending.
 
-- Quiz recovery storage preserves pending submission identities and confirmed receipts separately for each account, community and quiz; it serializes writes, refuses conflicting unresolved answers, and reserves space for the result receipt.
+- Native course enrolment discards confirmations when displayed price or availability changes; dismissed confirmation callbacks cannot submit, and older actions cannot close replacement dialogs.
 
-- Encrypted draft storage supports required reads that distinguish missing drafts from unavailable storage, corrupt manifests, and missing committed chunks, for durable retry recovery.
+- Native course enrolment ignores an old confirmation after a refresh removes the course, and hides the obsolete confirmation dialog.
 
-- Native grading clears obsolete unsaved-work warnings when a refreshed queue removes an assessment or instructor access is revoked, while preserving editable feedback through temporary refresh failures.
+- Native course details clear unavailable content after refused refreshes and prevent departed enrolment confirmations or delayed readback errors from affecting the member.
 
-- Native instructor grading stops response-loss retries and late result notices after leaving or replacing the grading screen, while retaining exact retries for the active grading session.
+- Native bundling shares one Sentry core implementation across import styles, removing duplicate code and restoring the Android bundle to its existing size budget.
+
+- Native Clubs shows complete descriptions instead of cutting off information with no way to read the remainder.
+
+- Native Clubs clears stale directory entries when access is refused or the directory is unavailable, with an explicit unavailable state instead of a retry loop.
+
+- Native Clubs loads directory pages beyond the first 20 entries and preserves loaded clubs while retrying a failed later page.
+
+- Native search stacks result details and saved-search controls at larger text sizes, keeping full result titles and saved queries readable.
+
+- Native search resets local state when the account or community changes, prevents stale delete confirmations from executing after unmount, and ignores late saved-search completions.
+
+- Native search retries failed later pages at the same cursor, retains earlier results, stops automatic retry loops, and removes results when refreshed access is unavailable.
+
+- Native saved-search lists expose all returned entries, distinguish loading failures from empty lists, retain entries during refresh, and clear them when access becomes unavailable.
+
+- Native saved searches capture the visible query, prevent duplicate keyboard submissions, preserve failed-save drafts, and no longer record an unrelated previous search's result count.
+
+
+
+
+
+
+
+- Failed authenticated mobile downloads remove their partial cached files while preserving the original transfer error if cleanup also fails.
+
+- Authenticated mobile downloads preserve readable filenames, including spaces and accented characters, instead of exposing internal cache timestamps in the share sheet.
+
+- Native Knowledge attachment downloads no longer open a share sheet after the article closes or loses navigation focus; returning does not revive an old pending share, and abandoned downloaded copies are removed from the cache.
+
+- Native HTML serialization imports its existing escaping functions directly, avoiding unused entity-decoding tables in the Android bundle while preserving Unicode and attribute escaping.
+
+- Native Knowledge feedback API handling reads the saved choice and current totals after submission, and propagates write or confirmation failures instead of inferring counts from a receipt.
+
+- Native Knowledge attachments recover after a successful article refresh; late download failures cannot hide files from the refreshed response.
+
+- Native article rendering imports only the Ramda utilities it uses, reducing Android bundle overhead while preserving reader behaviour.
+
+- Native Knowledge article bodies preserve HTML and Markdown structure, decoded entities, and link destinations through a shared native renderer; plain-text articles retain literal content and line breaks.
+
+- Native Knowledge article reads clear unavailable content and titles after access refusal, keep them hidden during recovery, reject malformed article links, and isolate reads when moving between articles.
+
+- Native Resources now reserves space for the keyboard so search feedback remains reachable by scrolling, including at large text sizes.
+
+- Native Knowledge search now offers Load More beyond the first 20 matches, preserves results when a page fails, retries that page, and discards late results after the search term changes.
+
+- Knowledge search supports cursor-paginated results while preserving the legacy array response, title-match priority, and popularity ordering. Tied results have a deterministic order, and cursors are scoped to the search term.
+
+- Knowledge article pagination now follows manual ordering and timestamp ties without repeating or skipping unchanged articles; existing numeric cursors remain supported while their anchor exists. Resource and Knowledge cursors reject impossible dates and times.
+
+- Native Resources and Knowledge discard retained results after access is refused, including while refreshing again, and show an unavailable state. Knowledge empty-state guidance now matches browsing or searching without suggesting a category control that is absent.
+
+- Refreshing native resources also rechecks the opened saved file, removing stale details when it is no longer available.
+
+- Native saved resources open by their exact ID regardless of browse page, with retry for failed loads and a clear unavailable state for removed files.
+
+- Native resource pagination retries the failed page without discarding already loaded files.
+
+- Native Files and knowledge-base browsing can load additional pages instead of stopping at the first page.
+
+- Resource pagination follows manual ordering and creation time consistently, avoiding skipped or repeated files and preserving continuation when the last file on a page is deleted.
+
+- Native resources show category-loading failures with a dedicated retry while keeping loaded files available.
+
+- Native knowledge-base refresh follows the current search or browse mode after entering or clearing a search term.
+
+- Native comment reloads preserve newer reaction changes when requests overlap while still accepting fresh comment text and later reaction counts.
+
+- Native connection actions remain responsive after React development lifecycle checks replay the screen's effects.
+
+- Native comment reactions block duplicate pending toggles and actions after closing the sheet, expose per-comment busy state, and suppress failure messages after departure.
+
+- Native comment reactions replace the member's previous reaction correctly and reconcile counts and selection with the server response.
+
+- Native blog navigation resets article-specific comment visibility and expires share actions from the previous article while preserving comment deep links.
+
+- Native blog articles handle share-dialog failures with translated feedback, keep dismissal silent, and suppress late errors after leaving the article.
+
+- Native comment sheets show a persistent retry notice when reloading existing comments fails; retrying reloads the list without resending the comment.
+
+- Native comment delete confirmations expire when the sheet closes or changes target, and cannot submit a deletion more than once.
+
+- Native comment sends reject duplicate or departed callbacks, preserve newer composer text during pending sends, and suppress completion effects after departure.
+
+- Native comment sheets isolate state by article or item and ignore reads completed after departure, allowing a new target to load immediately.
+
+- Native comment sheets stop automatically repeating failed initial loads and show a persistent error with an explicit retry.
+
+- Native blog refreshes preserve the article and open comment sheet, show recoverable refresh errors, and stop displaying retained articles when access is refused.
+
+- After an uncertain native appreciation reaction, the app reloads server state before allowing another toggle and provides a translated read-retry message if recovery fails.
+
+- A refused native appreciation reaction now preserves note content received by a concurrent refresh.
+
+- Native appreciation refreshes no longer overwrite reaction changes made while the read was in flight; later fresh reads still update counts.
+
+- Appreciation lists now return the current viewer’s selected reaction, preserving native reaction state after refresh while filtering reaction metadata by viewer and community.
+
+- Native appreciation walls preserve accumulated notes during refresh, retry failed pages without skipping them, reset when changing members, and prevent rapid load-more taps from skipping a page.
+
+- Native appreciation reactions prevent duplicate taps and submissions after leaving the screen, and keep each pending reaction independently disabled.
+
+- Native Activity waits for loaded totals and shows a persistent retry notice when refreshing existing activity fails.
+
+
+
+
+
+- Mobile bundle-budget failure reports include the export process status and signal to distinguish native tool crashes from bundling errors.
+
+- Native bundles share one Zod validation core between forms and API schemas, removing duplicate library code without dropping features or translations.
+
+
+- Native authenticated downloads recheck the session and community before opening the share sheet, discarding stale files after an account or community change.
+
+
+- Native linked-account actions stop at screen departure, including delayed removal confirmations; failed requests retain the email for retry.
+
+
+
+
+
+
+
+
+- Native wiki loading failures show a persistent retry state instead of incorrectly reporting that no pages exist.
+
+- Native wiki pages place editing actions below the heading so large text cannot collapse the title or push page content into a blank scrolling area.
+
+- Native form feedback appears at the top while the keyboard is open, preventing validation and error messages from being hidden behind it.
+
+- Native group forms keep focused fields above the on-screen keyboard and allow form actions to respond while it is open.
+
+- Native Android discussion replies keep the composer above the keyboard; group discussion guidance wraps fully at large text sizes.
+
+- Native group task counts no longer remain visible as current when both task and statistics refreshes fail.
+
+- Native group media and task filters clear previous results when changing filters and offer explicit retry states when loading fails.
+
+- Native group tasks remain available when their statistics request fails, with unavailable counts hidden and refresh feedback shown.
+
+- Native group media and task pagination now follows current cursors, avoids duplicate rows, and uses current filters when delayed actions refresh the list.
+
+- Native wiki creation respects page navigation while saving and clears obsolete page history when opening the newly created page.
+
+- Native wiki deletion confirmations expire when the page selection changes, and completed deletions preserve a newer page view.
+
+- Native wiki saves preserve a newer page selection, and stale revision requests no longer change its loading state or report errors for the previous page.
+
+- Native group votes and accepted answers distinguish saved actions from failed refreshes and cannot overwrite a newer question selection.
+
+- Native group Q&A ignores stale answer readbacks after changing the expanded question, preserving the newer view.
+
+- Native group actions now ignore stale confirmation callbacks after leaving the screen, covering membership and collaboration mutations.
+
+- Native group discussion replies now prevent repeated submission before rendering, preserve text edited while a reply is sending, and suppress delayed send feedback after leaving the screen.
+- Native discussions retain accepted replies on failed refresh, ignore superseded older-page requests, clear state when changing discussions, and hide retained content when refreshed access is refused.
+
+
+
+- Native offline status banners reserve physical space above screens, preventing overlap with Back controls on Android at large text sizes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 - **Shared test animation mock no longer remounts the tree it wraps.** The
   `framerMotionMock` Proxy built a new component on every property access, so
@@ -620,6 +785,136 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   recently `GroupDetailPage`, which blocked a production deploy. Components are
   now cached per tag, matching the real `@/lib/motion` shim. Test-harness only;
   no runtime behaviour changes.
+
+- Native attendance ignores delayed no-show confirmations after leaving the attendance screen.
+
+- Native ticket catalogues now distinguish unsupported-event refusals from retryable load errors and use the shared accessible retry layout for genuine failures.
+
+- Native ticket requests with an unknown outcome now have a translated recovery card that restores the original request, prevents changed-quantity duplicate claims, and remains reachable when ticket availability changes.
+
+- Native ticket requests now save account- and community-scoped retry keys before sending and retain them across screen departures or app restarts; failed storage prevents an unprotected submission.
+
+- Native ticket loading now ignores obsolete retry responses so older data or errors cannot replace the latest catalogue.
+
+- Native ticket claims and cancellations retain their request key when retrying the same request after a failed or lost response while the screen remains open.
+
+- Native event tickets now reset catalogue and cancellation state when the event, account or community changes, ignoring delayed results from the previous screen.
+
+- Native free-ticket claims and cancellations now prevent overlapping submissions and suppress late screen feedback after departure.
+
+- Native event details now replace local RSVP counts and participation state with the latest refreshed event snapshot.
+
+- **Native wallet forms stop pending preparation when closed.** Transfers and
+  donations cannot start from a departed form; responses to already-sent requests
+  finish their retry-record cleanup without showing stale success or refreshing
+  the departed wallet. Changing account or community resets the wallet view and
+  its transfer draft.
+
+- **Native wallet recipient search ignores outdated responses.** Changing the
+  search clears old matches, and late results cannot replace the current query's
+  recipients or interrupt its progress. A delayed recipient lookup from a wallet
+  link no longer overwrites a recipient selected manually.
+
+- **Native message attachments remain reachable when the keyboard is open.**
+  Opening the attachment menu dismisses the keyboard so it cannot cover the photo
+  action, including at enlarged text sizes.
+
+- **Native message photo selection stops when its conversation closes.** Late
+  permission and picker responses cannot open or attach media to a departed screen;
+  managed copies completed after departure are cleaned up. Overlapping picker
+  actions are blocked, and native errors preserve the draft and allow retry.
+
+- **Native exchange actions prevent duplicate or competing submissions.** Actions
+  remain retryable after failure, and responses received after leaving the exchange
+  or changing account, community or exchange cannot show stale notifications or
+  navigate away from the current screen. Lost action responses trigger a fresh read
+  of the exchange without automatically repeating the write. Actions pause while
+  that read is pending or has failed, including confirmation sheets already open.
+
+- **Native listing edits preserve text entered while a generated description is
+  loading.** A late suggestion no longer overwrites the member's newer draft.
+
+- **Native hashtag discovery keeps loaded topics available after a failed refresh.**
+  Retry remains available, and older refresh responses cannot replace newer topics
+  or surface obsolete errors after feed access changes.
+
+- **Native biometric unlock prevents overlapping prompts and respects pending
+  sign-out.** An obsolete prompt cannot uncover the account while sign-out is
+  running. Controls announce progress, and a failed sign-out remains recoverable.
+
+- **Native sign-in and verification-email resend prevent duplicate actions.**
+  Resend controls show accessible progress, remain retryable after failure, and
+  avoid updating departed screens.
+
+- **Native MFA and password recovery handle keyboard, duplicate-tap and departure
+  cases consistently.** Incomplete MFA codes cannot be submitted from the keyboard,
+  and verification received after departure cannot start sign-in. Password recovery
+  prevents overlapping submissions while preserving retry after correctable failures.
+
+- **Native registration prevents duplicate submissions and ignores responses
+  received after the form closes.** Refused submissions remain retryable with the
+  entered details preserved. Session completion uses the shared sign-in provider,
+  preventing an older registration from undoing sign-out or replacing a newer
+  account while credentials are being saved.
+
+- **Native sign-out completes when offline file cleanup fails.** Encryption-key
+  and index cleanup still run after a file-deletion error, which is reported for
+  diagnosis. The session recovery screen prevents duplicate actions, shows
+  sign-out progress, and keeps failed actions retryable.
+
+- **Native session restoration preserves a replacement sign-in during old cleanup.**
+  Finishing cleanup for a rejected startup session no longer clears an account
+  that signed in while that cleanup was pending.
+
+- **Native community settings ignore obsolete refresh responses after a switch.**
+  A delayed response from the previous community can no longer replace the new
+  community's settings or clear its remembered selection. Startup and departure
+  checks also prevent stale loading and recovery work from changing current state.
+  Overlapping switches roll back to the last working community when the latest
+  choice fails, and loading stays active until that rollback finishes.
+
+- **Native community selection prevents overlapping choices and shows progress.**
+  Closing the picker prevents a late response from redirecting or consuming a
+  recovery link. Failed switches no longer claim the session is intact once sign-out
+  has started.
+
+- **Native Marketplace keeps the current catalogue during overlapping requests:**
+  stale filter/page responses are ignored, duplicate page requests and rows are
+  prevented, and failed refreshes/paging retain listings with Retry. Repeated Save
+  taps are guarded with an accessible busy indicator; older reads cannot undo a
+  confirmed save, and a failed save no longer restores outdated listing details.
+
+- **Native Connections, exchange requests and Jobs retain loaded rows when refresh
+  or paging fails, with a visible retry action.** Starting a Connections refresh no
+  longer restores requests that the member has already accepted or removed.
+
+- **Native course, podcast, blog and poll lists explain failed refreshes and paging
+  without hiding loaded content.** Members can retry from the list; course and
+  podcast pull-to-refresh indicators now reflect the pending request.
+
+- **Native listing recovery preserves the intended edits:** removing every skill tag
+  now clears the saved tags, including after a failed clear is retried. Partial-save
+  retries ignore repeated taps and show a busy state while Continue is disabled.
+  Leaving a pending creation prevents late results from starting follow-up writes
+  or navigating back to the listing.
+
+- **Native listing saves ignore repeated taps while a request is pending:** create
+  and edit forms synchronously guard submission before the disabled button rerenders,
+  while allowing a new attempt after failure.
+
+- **Native list recovery and hashtag navigation:** Home, Messages, Groups, Listings
+  and the member directory now expose retryable errors without hiding loaded rows.
+  Hashtag routes no longer decode parameters twice, and discovery ignores stale
+  search responses and clears old failures when returning to trending topics.
+
+- **Native member counts now follow the current search:** a slower directory response
+  can no longer overwrite the result count after a newer member or message-recipient
+  search has completed. Pagination exposes only its accepted response metadata,
+  preserves it on failed refresh, and clears it when the query is replaced or disabled.
+- **Native hashtag feeds retain the correct posts during navigation and recovery:**
+  late responses cannot replace a newer hashtag, and failed pagination or refresh
+  keeps loaded posts visible with Retry. Hashtag feeds now use the shared guarded
+  pagination path, including duplicate-row and overlapping-request protection.
 
 - **Native Android/iOS search, refresh and shared-control reliability:** mixed search
   results retain members and listings with the same numeric ID; refreshing during
@@ -806,6 +1101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **BREAKING:** Group-exchange confirmation now requires the reviewed `terms_token` from the detail response and rejects missing or stale terms with HTTP 409. Native, React and accessible clients submit the displayed token; members must review changed terms before confirming again.
+
 
 - **BREAKING:** Quiz lessons now require the learner to have a passing, fully graded attempt before lesson completion or certificate issuance/access through the course API. Failed or pending-review attempts cannot satisfy completion. Progress reads present historical unpassed quiz completions as unfinished without deleting stored history. Clients must handle `QUIZ_PASS_REQUIRED` (HTTP 422) and may use lesson `completion_allowed` to disable completion until eligible.
 

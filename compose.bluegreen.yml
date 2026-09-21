@@ -90,6 +90,13 @@ services:
     environment:
       - NEXUS_API_UPSTREAM=nexus-${NEXUS_COLOR:-green}-php-app
       - PRERENDER_PHP_UID=${PRERENDER_PHP_UID:-33}
+      # Extra origins the browser may contact, appended to connect-src in the
+      # canonical SPA Content-Security-Policy. EMPTY on production, where the API
+      # is already listed literally as https://api.project-nexus.ie — so production
+      # behaviour is unchanged. A non-production deployment MUST set this to its own
+      # API origin, or the browser blocks the app from reaching its API and the app
+      # reports "Unable to connect" while every server-side check passes.
+      - NEXUS_CSP_EXTRA_ORIGINS=${NEXUS_CSP_EXTRA_ORIGINS:-}
     volumes:
       - nexus-php-prerendered:/usr/share/nginx/html/prerendered
     networks:

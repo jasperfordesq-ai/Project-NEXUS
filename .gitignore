@@ -448,3 +448,18 @@ DPO_Confidentiality_Agreement_*.docx
 # to be shared, publish the finished mp4 somewhere built for binaries and keep
 # the composition source in its own repo.
 /videos/
+
+# ─── Azure staging-server ARM template + parameters — machine-local ─────────
+# `nexus-staging-mirror.parameters.json` carries the management source CIDR
+# (an owner home/office IP), the admin username and the SSH public key for the
+# staging VM. This repository is PUBLIC, so committing it would publish the
+# exact firewall exception and account name for the staging box. The template
+# itself is ignored alongside it to keep the pair together and to avoid the
+# parameters file being reconstructed from it.
+#
+# Added 2026-09-21, when both files were found untracked but NOT ignored — one
+# `git add -A` away from being published. If this infrastructure ever needs to
+# be version-controlled, parameterise the IP and key out to `.secrets.local/`
+# first and commit only the sanitised template.
+/nexus-staging-mirror.json
+/nexus-staging-mirror.parameters.json

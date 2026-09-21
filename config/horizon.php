@@ -56,6 +56,17 @@ return [
             'nice' => 0,
         ],
     ],
+    // 🔴 Every environment the platform is ever deployed under needs an entry here.
+    // Horizon looks up environments[app()->environment()]; when the running APP_ENV has
+    // no entry it starts the master supervisor, logs "Horizon started successfully", and
+    // spawns ZERO workers. Queued work — password-reset and notification mail included —
+    // then silently never runs, and the container's healthcheck (which requires both an
+    // `artisan horizon` and a `horizon:work` process) fails with no useful error.
+    //
+    // That is exactly what happened on the first staging deployment, 21 September 2026:
+    // `staging` was missing, so the queue container sat unhealthy while claiming success.
+    // `HorizonEnvironmentCoverageTest` now pins this list against config/app.php's
+    // supported environments so the same gap cannot reappear.
     'environments' => [
         'production' => [
             'supervisor-1' => [
@@ -64,9 +75,26 @@ return [
                 'balanceCooldown' => 3,
             ],
         ],
+        // Mirrors production's shape at a lower process count: a staging box exists to
+        // rehearse production, so the queue topology should behave the same way.
+        'staging' => [
+            'supervisor-1' => [
+                'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+        ],
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 2,
+            ],
+        ],
+        // `testing` runs jobs synchronously (phpunit.xml sets QUEUE_CONNECTION=sync), so
+        // no worker is required — but an entry is kept so `horizon:status` and the
+        // coverage test below behave consistently rather than special-casing it.
+        'testing' => [
+            'supervisor-1' => [
+                'maxProcesses' => 1,
             ],
         ],
     ],
