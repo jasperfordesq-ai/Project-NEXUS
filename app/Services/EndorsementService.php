@@ -199,7 +199,11 @@ class EndorsementService
             ->select(
                 'se.id', 'se.skill_name', 'se.comment', 'se.created_at', 'se.endorser_id',
                 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url',
-                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as legacy_name"),
+                // An organisation endorser is identified by organization_name, never by
+                // the contact person in first_name/last_name. Raw concatenation here
+                // named the contact instead of the organisation; the same query builds
+                // `name` correctly a few methods below.
+                DB::raw(UserDisplayName::sql('u', 'legacy_name')),
                 // Let the database apply the same collation as the former GROUP BY;
                 // PHP string keys would split equivalent case/accent spellings.
                 DB::raw('DENSE_RANK() OVER (ORDER BY se.skill_name) as skill_group')

@@ -7,9 +7,19 @@
   ],
   "bundle": {
     "howMeasured": "node scripts/check-startup-budget.mjs — runs node node_modules/expo/bin/cli export --platform android and takes the size in bytes of the single .hbc under _expo/static/js/android",
-    "measuredBytes": 15590798,
-    "measuredOn": "2026-08-30",
-    "ceilingBytes": 17148793,
+    "measuredBytes": 17176620,
+    "measuredOn": "2026-09-21",
+    "$measuredNote": [
+      "Measured by the same script, in CI rather than locally: the Android Native Release",
+      "Gate of ci.yml run 35651400195, artefact index-e9137b88d2a87cc4bd6f0395a5cf712e.hbc.",
+      "🔴 The bundle grew 1,585,822 bytes — 10.2% — between 2026-08-30 and 2026-09-21, which",
+      "consumed the ENTIRE 10% headroom and put the build 27,827 bytes over the old ceiling.",
+      "That is three weeks of mobile feature work, not a single regression, and no attempt was",
+      "made to take weight out before raising the number. If the next three weeks do the same,",
+      "raising the ceiling again is the wrong answer and the bundle needs actual attention.",
+      "Previous: 15,590,798 bytes measured 2026-08-30, ceiling 17,148,793."
+    ],
+    "ceilingBytes": 18894282,
     "$ceilingNote": "measured + 10%. The gate fails above this and warns within 5% of it.",
     "shippedApkComparison": {
       "$comment": [

@@ -23756,6 +23756,53 @@
         ]
       }
     },
+    "/api/v2/events/{id}/registration-product/invitations": {
+      "get": {
+        "summary": "GET /api/v2/events/{id}/registration-product/invitations",
+        "description": "Maintained Events operation served by EventRegistrationProductController@invitationHistory.",
+        "operationId": "EventRegistrationProduct_invitationHistory",
+        "tags": [
+          "Event Registration"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventRegistrationProductController@invitationHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
     "/api/v2/events/{id}/registration-product/invitations/accept": {
       "post": {
         "summary": "POST /api/v2/events/{id}/registration-product/invitations/accept",
@@ -23961,6 +24008,53 @@
           },
           {
             "name": "dryRunId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/events/{id}/registration-product/retention": {
+      "get": {
+        "summary": "GET /api/v2/events/{id}/registration-product/retention",
+        "description": "Maintained Events operation served by EventRegistrationProductController@retentionHistory.",
+        "operationId": "EventRegistrationProduct_retentionHistory",
+        "tags": [
+          "Event Registration"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventRegistrationProductController@retentionHistory",
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {

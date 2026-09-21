@@ -126,6 +126,10 @@ class KnowledgeBaseServiceTest extends TestCase
         DB::shouldReceive('orderByDesc')->andReturnSelf();
         DB::shouldReceive('limit')->andReturnSelf();
         DB::shouldReceive('select')->andReturnSelf();
+        // search() adds the relevance rank with selectRaw() as well as select().
+        // Without this the mock throws BadMethodCallException rather than failing
+        // an assertion, so the error looks unrelated to the query being built.
+        DB::shouldReceive('selectRaw')->andReturnSelf();
         DB::shouldReceive('get')->andReturn(collect([]));
 
         $result = $this->service->search('test');
