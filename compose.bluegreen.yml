@@ -74,6 +74,10 @@ services:
         VITE_GIPHY_API_KEY: ${GIPHY_API_KEY:-}
         VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
         VITE_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+        # The "Accessible version" link. Defaults to the production host so this file is
+        # unchanged in effect; a non-production deployment MUST set
+        # ACCESSIBLE_FRONTEND_BASE_URL, or the link points members at the live site.
+        VITE_ACCESSIBLE_FRONTEND_BASE_URL: ${ACCESSIBLE_FRONTEND_BASE_URL:-https://accessible.project-nexus.ie}
         BUILD_COMMIT: ${BUILD_COMMIT:-candidate}
     image: nexus-react-prod:${BUILD_COMMIT:-candidate}
     container_name: nexus-${NEXUS_COLOR:-green}-react

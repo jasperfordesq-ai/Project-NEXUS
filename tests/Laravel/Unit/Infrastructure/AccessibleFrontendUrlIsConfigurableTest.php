@@ -101,6 +101,23 @@ class AccessibleFrontendUrlIsConfigurableTest extends TestCase
     }
 
     /**
+     * compose must hand the value to the build, sourced from the environment. Without this
+     * a new environment has to edit compose itself to change the destination, which is the
+     * same trap one level up: the value is configurable in principle and not in practice.
+     */
+    public function test_compose_passes_the_variable_from_the_environment(): void
+    {
+        self::assertStringContainsString(
+            'VITE_ACCESSIBLE_FRONTEND_BASE_URL: ${ACCESSIBLE_FRONTEND_BASE_URL:-https://accessible.project-nexus.ie}',
+            $this->read('compose.bluegreen.yml'),
+            'compose.bluegreen.yml must pass ' . self::VAR . ' as a build argument, defaulting '
+            . 'to the production host so production is unaffected. Sourcing it from '
+            . 'ACCESSIBLE_FRONTEND_BASE_URL lets a deployment set it in its environment file '
+            . 'instead of editing this file.',
+        );
+    }
+
+    /**
      * The source must keep reading the variable. If someone removes the lookup, the build
      * argument above becomes decoration and the destination is hardcoded again.
      */
