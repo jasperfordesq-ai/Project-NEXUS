@@ -10,7 +10,7 @@ below is something that cost real time, not a hypothetical. Two of them were gen
 platform bugs and are now fixed with regression tests; the rest are traps to know about.
 
 If you are standing up a new environment, read [§1](#1-the-one-rule-that-matters-most)
-and then work through the checklist in [§10](#10-checklist-for-a-new-environment).
+and then work through the checklist in [§11](#11-checklist-for-a-new-environment).
 
 ---
 
