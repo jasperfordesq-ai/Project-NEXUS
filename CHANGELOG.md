@@ -106,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native marketplace, course authoring, goal, poll, podcast, hiring and volunteering retry reservations now validate account and community identity for every caller sharing a pending operation.
+
 - Native message retry reservations now recheck account and community identity for every concurrent caller before sending, while preserving the original retry key.
 
 - Native listing creation now rechecks account and community identity for every caller sharing a pending retry reservation, preserving the original retry record on identity changes.

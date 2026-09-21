@@ -32,10 +32,22 @@ export async function reserveMarketplaceListingOperation(intent: string): Promis
   ]);
   if (!user?.id || !tenant) throw new Error('Marketplace listing identity unavailable');
 
+  const forOriginalIdentity = async (pending: Promise<MarketplaceListingOperation>): Promise<MarketplaceListingOperation> => {
+    const operation = await pending;
+    const [currentUser, currentTenant] = await Promise.all([
+      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
+      storage.get(STORAGE_KEYS.TENANT_SLUG),
+    ]);
+    if (currentUser?.id !== user.id || currentTenant !== tenant) {
+      throw new Error('Marketplace listing identity changed before save');
+    }
+    return operation;
+  };
+
   const hash = await digestStringAsync(CryptoDigestAlgorithm.SHA256, JSON.stringify([tenant, user.id, intent]));
   const storageKey = `nexus_marketplace_listing_operation_${hash}`;
   const pending = reservations.get(storageKey);
-  if (pending) return pending;
+  if (pending) return forOriginalIdentity(pending);
 
   const reservation = withStorage(storageKey, async () => {
     const raw = await SecureStore.getItemAsync(storageKey);
@@ -51,15 +63,7 @@ export async function reserveMarketplaceListingOperation(intent: string): Promis
   });
   reservations.set(storageKey, reservation);
   try {
-    const operation = await reservation;
-    const [currentUser, currentTenant] = await Promise.all([
-      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
-      storage.get(STORAGE_KEYS.TENANT_SLUG),
-    ]);
-    if (currentUser?.id !== user.id || currentTenant !== tenant) {
-      throw new Error('Marketplace listing identity changed before save');
-    }
-    return operation;
+    return await forOriginalIdentity(reservation);
   } finally {
     reservations.delete(storageKey);
   }

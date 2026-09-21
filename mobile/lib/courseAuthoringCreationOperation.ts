@@ -37,11 +37,23 @@ export async function reserveCourseAuthoringCreationOperation(
     throw new Error('Course authoring identity unavailable');
   }
 
+  const forOriginalIdentity = async (pending: Promise<CourseAuthoringCreationOperation>): Promise<CourseAuthoringCreationOperation> => {
+    const operation = await pending;
+    const [currentUser, currentTenant] = await Promise.all([
+      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
+      storage.get(STORAGE_KEYS.TENANT_SLUG),
+    ]);
+    if (currentUser?.id !== user.id || currentTenant !== tenant) {
+      throw new Error('Course authoring identity changed before save');
+    }
+    return operation;
+  };
+
   const fingerprint = JSON.stringify([tenant, user.id, courseId, resource, intent]);
   const hash = await digestStringAsync(CryptoDigestAlgorithm.SHA256, fingerprint);
   const storageKey = `nexus_course_authoring_${hash}`;
   const pending = reservations.get(storageKey);
-  if (pending) return pending;
+  if (pending) return forOriginalIdentity(pending);
 
   const reservation = withStorage(storageKey, async () => {
     const raw = await SecureStore.getItemAsync(storageKey);
@@ -61,15 +73,7 @@ export async function reserveCourseAuthoringCreationOperation(
   });
   reservations.set(storageKey, reservation);
   try {
-    const operation = await reservation;
-    const [currentUser, currentTenant] = await Promise.all([
-      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
-      storage.get(STORAGE_KEYS.TENANT_SLUG),
-    ]);
-    if (currentUser?.id !== user.id || currentTenant !== tenant) {
-      throw new Error('Course authoring identity changed before save');
-    }
-    return operation;
+    return await forOriginalIdentity(reservation);
   } finally {
     reservations.delete(storageKey);
   }

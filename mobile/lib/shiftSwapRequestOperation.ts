@@ -32,10 +32,20 @@ export async function reserveShiftSwapRequestOperation(intent: string): Promise<
   ]);
   if (!user?.id || !tenant) throw new Error('Shift swap identity unavailable');
 
+  const forOriginalIdentity = async (pending: Promise<ShiftSwapRequestOperation>): Promise<ShiftSwapRequestOperation> => {
+    const operation = await pending;
+    const [currentUser, currentTenant] = await Promise.all([
+      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
+      storage.get(STORAGE_KEYS.TENANT_SLUG),
+    ]);
+    if (currentUser?.id !== user.id || currentTenant !== tenant) throw new Error('Shift swap identity changed before save');
+    return operation;
+  };
+
   const hash = await digestStringAsync(CryptoDigestAlgorithm.SHA256, JSON.stringify([tenant, user.id, intent]));
   const storageKey = `nexus_shift_swap_request_${hash}`;
   const pending = reservations.get(storageKey);
-  if (pending) return pending;
+  if (pending) return forOriginalIdentity(pending);
 
   const reservation = withStorage(storageKey, async () => {
     const raw = await SecureStore.getItemAsync(storageKey);
@@ -52,13 +62,7 @@ export async function reserveShiftSwapRequestOperation(intent: string): Promise<
   });
   reservations.set(storageKey, reservation);
   try {
-    const operation = await reservation;
-    const [currentUser, currentTenant] = await Promise.all([
-      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
-      storage.get(STORAGE_KEYS.TENANT_SLUG),
-    ]);
-    if (currentUser?.id !== user.id || currentTenant !== tenant) throw new Error('Shift swap identity changed before save');
-    return operation;
+    return await forOriginalIdentity(reservation);
   } finally {
     reservations.delete(storageKey);
   }

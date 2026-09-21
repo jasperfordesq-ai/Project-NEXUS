@@ -27,10 +27,19 @@ export async function reserveGoalCreationOperation(intent: string): Promise<Goal
     storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA), storage.get(STORAGE_KEYS.TENANT_SLUG),
   ]);
   if (!user?.id || !tenant) throw new Error('Goal creation identity unavailable');
+  const forOriginalIdentity = async (pending: Promise<GoalCreationOperation>): Promise<GoalCreationOperation> => {
+    const operation = await pending;
+    const [currentUser, currentTenant] = await Promise.all([
+      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA), storage.get(STORAGE_KEYS.TENANT_SLUG),
+    ]);
+    if (currentUser?.id !== user.id || currentTenant !== tenant) throw new Error('Goal creation identity changed before save');
+    return operation;
+  };
+
   const hash = await digestStringAsync(CryptoDigestAlgorithm.SHA256, JSON.stringify([tenant, user.id, intent]));
   const storageKey = `nexus_goal_creation_${hash}`;
   const pending = reservations.get(storageKey);
-  if (pending) return pending;
+  if (pending) return forOriginalIdentity(pending);
   const reservation = withStorage(storageKey, async () => {
     const raw = await SecureStore.getItemAsync(storageKey);
     if (raw) {
@@ -45,12 +54,7 @@ export async function reserveGoalCreationOperation(intent: string): Promise<Goal
   });
   reservations.set(storageKey, reservation);
   try {
-    const operation = await reservation;
-    const [currentUser, currentTenant] = await Promise.all([
-      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA), storage.get(STORAGE_KEYS.TENANT_SLUG),
-    ]);
-    if (currentUser?.id !== user.id || currentTenant !== tenant) throw new Error('Goal creation identity changed before save');
-    return operation;
+    return await forOriginalIdentity(reservation);
   } finally { reservations.delete(storageKey); }
 }
 
