@@ -33,11 +33,23 @@ export async function reserveMessageOperation(intent: string): Promise<MessageOp
   ]);
   if (!user?.id || !tenant) throw new Error('Message identity unavailable');
 
+  const forOriginalIdentity = async (pending: Promise<MessageOperation>): Promise<MessageOperation> => {
+    const operation = await pending;
+    const [currentUser, currentTenant] = await Promise.all([
+      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
+      storage.get(STORAGE_KEYS.TENANT_SLUG),
+    ]);
+    if (currentUser?.id !== user.id || currentTenant !== tenant) {
+      throw new Error('Message identity changed before send');
+    }
+    return operation;
+  };
+
   const identity = JSON.stringify([tenant, user.id, intent]);
   const hash = await digestStringAsync(CryptoDigestAlgorithm.SHA256, identity);
   const storageKey = `nexus_message_operation_${hash}`;
   const existing = reservations.get(storageKey);
-  if (existing) return existing;
+  if (existing) return forOriginalIdentity(existing);
 
   const reservation = withStorage(storageKey, async () => {
     const raw = await SecureStore.getItemAsync(storageKey);
@@ -59,15 +71,7 @@ export async function reserveMessageOperation(intent: string): Promise<MessageOp
   });
   reservations.set(storageKey, reservation);
   try {
-    const operation = await reservation;
-    const [currentUser, currentTenant] = await Promise.all([
-      storage.getJson<{ id: number }>(STORAGE_KEYS.USER_DATA),
-      storage.get(STORAGE_KEYS.TENANT_SLUG),
-    ]);
-    if (currentUser?.id !== user.id || currentTenant !== tenant) {
-      throw new Error('Message identity changed before send');
-    }
-    return operation;
+    return await forOriginalIdentity(reservation);
   } finally {
     reservations.delete(storageKey);
   }

@@ -57,3 +57,21 @@ it('writes a completion tombstone when deletion fails', async () => {
   await expect(completeMessageOperation(operation)).resolves.toBeUndefined();
   expect([...persisted.values()].some(value => value.includes('"completed":true'))).toBe(true);
 });
+it.each(['account', 'community'])('rejects every pending caller after %s replacement while preserving retry identity', async (replacement) => {
+  let release!: (value: string | null) => void;
+  jest.mocked(SecureStore.getItemAsync).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  const first = reserveMessageOperation(`pending ${replacement}`);
+  const second = reserveMessageOperation(`pending ${replacement}`);
+  const outcomes = Promise.allSettled([first, second]);
+  for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+  expect(SecureStore.getItemAsync).toHaveBeenCalledTimes(1);
+  if (replacement === 'account') jest.mocked(storage.getJson).mockResolvedValue({ id: 99 });
+  else jest.mocked(storage.get).mockResolvedValue('another-community');
+  release(null);
+  expect((await outcomes).map(result => result.status)).toEqual(['rejected', 'rejected']);
+  expect(persisted.size).toBe(1);
+  jest.mocked(storage.getJson).mockResolvedValue({ id: 41 });
+  jest.mocked(storage.get).mockResolvedValue('hour-timebank');
+  const retry = await reserveMessageOperation(`pending ${replacement}`);
+  expect(retry.key).toBe('mobile-message-1');
+});
