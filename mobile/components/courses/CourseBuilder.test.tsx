@@ -215,9 +215,13 @@ describe('CourseBuilder', () => {
     fireEvent.press(screen.getByLabelText('Delete lesson'));
     const oldConfirmation = mockHeldConfirm!;
     mockHoldConfirm = false;
-    mockDeleteCourseSection.mockResolvedValue(undefined);
+    let remove!: () => void;
+    mockDeleteCourseSection.mockImplementationOnce(() => new Promise<void>(resolve => { remove = resolve; }));
     fireEvent.press(screen.getByLabelText('Delete section'));
-    await waitFor(() => expect(screen.queryByDisplayValue('Original')).toBeNull());
+    expect(mockDeleteCourseSection).toHaveBeenCalledWith(42, 5);
+    expect(screen.getByDisplayValue('Original')).toBeTruthy();
+    await act(async () => remove());
+    expect(screen.queryByDisplayValue('Original')).toBeNull();
     await act(async () => oldConfirmation());
     expect(mockDeleteCourseLesson).not.toHaveBeenCalled();
     expect(screen.getByText('Preserved')).toBeTruthy();
