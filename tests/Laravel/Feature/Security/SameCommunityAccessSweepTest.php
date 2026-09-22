@@ -499,11 +499,13 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
                 $results[] = $e + ['kind' => 'child', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => $e['skip'], 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
                 continue;
             }
-            if (! $this->recordsStillExist($e['keys'], $this->victimIds)) {
+            // Ownership, not just existence — see recordsBelongTo(). An id that
+            // outlives its owner makes this sweep probe the caller's own record.
+            if (! $this->recordsBelongTo($e['keys'], $this->victimIds, $victim)) {
                 $this->victimIds = $this->seedRecords($this->testTenantId, $victim);
                 $this->pinPublicVisibility($this->victimIds);
             }
-            if (! $this->recordsStillExist($e['keys'], $this->controlIds)) {
+            if (! $this->recordsBelongTo($e['keys'], $this->controlIds, $actor)) {
                 $this->controlIds = $this->seedRecords($this->testTenantId, $actor);
                 $this->pinPublicVisibility($this->controlIds);
             }
@@ -511,6 +513,15 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
             $controlSlots = array_map(fn (string $k) => $this->controlIds[$k] ?? null, $e['keys']);
             if (in_array(null, $victimSlots, true) || in_array(null, $controlSlots, true)) {
                 $results[] = $e + ['kind' => 'child', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => 'a fixture could not be created', 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
+                continue;
+            }
+            // Asserted, not assumed: if re-seeding could not give the two members
+            // a DISTINCT record each, report the endpoint unexercised rather than
+            // return a verdict that depends on what ran before it.
+            if (! $this->recordsBelongTo($e['keys'], $this->victimIds, $victim)
+                || ! $this->recordsBelongTo($e['keys'], $this->controlIds, $actor)
+                || array_map('strval', $victimSlots) === array_map('strval', $controlSlots)) {
+                $results[] = $e + ['kind' => 'child', 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'INCONCLUSIVE', 'note' => 'harness: could not establish a distinct record owned by each member — not exercised', 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
                 continue;
             }
             [$probeUri] = $this->fillFromIds($e['uri'], $victimSlots);
@@ -606,6 +617,38 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
      *
      * @param array<string,int> $ids fixture key => id
      */
+    /**
+     * Re-seed one side and RE-PIN it.
+     *
+     * 🔴 prepareActors() pins visibility after seeding; the re-seed inside
+     * probeWrite() did not, so every record created after a destructive
+     * endpoint came back with the factory's randomised visibility — a private
+     * goal, a draft job, a scheduled post. Later endpoints then behaved
+     * differently depending on whether an earlier one had consumed a record,
+     * which is precisely the flap the pinPublicVisibility() comment was written
+     * to prevent. Seeding and pinning now happen together, so they cannot drift
+     * apart again.
+     */
+    private function reseedVictim(): void
+    {
+        if ($this->victim === null) {
+            return;
+        }
+
+        $this->victimIds = $this->seedRecords($this->testTenantId, $this->victim);
+        $this->pinPublicVisibility($this->victimIds);
+    }
+
+    private function reseedActor(): void
+    {
+        if ($this->actor === null) {
+            return;
+        }
+
+        $this->controlIds = $this->seedRecords($this->testTenantId, $this->actor);
+        $this->pinPublicVisibility($this->controlIds);
+    }
+
     private function pinPublicVisibility(array $ids): void
     {
         $pins = [
@@ -712,19 +755,47 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         $key = $endpoint['fixture'];
         $table = $this->fixtureTable($key);
 
-        // A control request is a real request: re-seed whichever side an earlier
-        // endpoint consumed, so this endpoint is exercised against a live row.
-        if (! $this->recordsStillExist([$key], $this->victimIds) && $this->victim !== null) {
-            $this->victimIds = $this->seedRecords($this->testTenantId, $this->victim);
+        // A control request is a real request, and these sweeps mutate the very
+        // rows they test. Re-seed whichever side an earlier endpoint consumed —
+        // and check OWNERSHIP, not just existence, because an id that survives
+        // while belonging to the wrong person makes the sweep probe the caller's
+        // own record while believing it is probing someone else's. See
+        // recordsBelongTo().
+        if (! $this->recordsBelongTo([$key], $this->victimIds, $this->victim)) {
+            $this->reseedVictim();
         }
-        if (! $this->recordsStillExist([$key], $this->controlIds) && $this->actor !== null) {
-            $this->controlIds = $this->seedRecords($this->testTenantId, $this->actor);
+        if (! $this->recordsBelongTo([$key], $this->controlIds, $this->actor)) {
+            $this->reseedActor();
         }
 
         $victimId = $this->victimIds[$key] ?? null;
         $controlId = $this->controlIds[$key] ?? null;
         if ($victimId === null || $controlId === null || $table === null) {
             $this->writes[] = array_merge($base, ['note' => "fixture '{$key}' could not be created"]);
+
+            return;
+        }
+
+        // 🔴 Preconditions, asserted rather than assumed. A verdict is only
+        // meaningful when the probe really is aimed at somebody else's record.
+        // If re-seeding could not restore that, the endpoint is reported
+        // unexercised — an honest gap — instead of producing a verdict that
+        // depends on what ran before it.
+        if ((string) $victimId === (string) $controlId) {
+            $this->writes[] = array_merge($base, [
+                'verdict' => 'INCONCLUSIVE',
+                'note' => "harness: victim and control resolved to the same {$key} — not exercised",
+            ]);
+
+            return;
+        }
+
+        if (! $this->recordsBelongTo([$key], $this->victimIds, $this->victim)
+            || ! $this->recordsBelongTo([$key], $this->controlIds, $this->actor)) {
+            $this->writes[] = array_merge($base, [
+                'verdict' => 'INCONCLUSIVE',
+                'note' => "harness: could not establish a {$key} owned by each of the two members — not exercised",
+            ]);
 
             return;
         }

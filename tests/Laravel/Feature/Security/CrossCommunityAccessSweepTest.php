@@ -1073,7 +1073,11 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
                 // So: if a record this endpoint needs has been consumed, seed a
                 // fresh set. Cheap, because it only happens after a destructive
                 // control, and it makes the sweep order-independent.
-                if (! $this->recordsStillExist($e['keys'] ?? [], $ownIds)) {
+                // Ownership, not just existence: the acting user's own records are
+                // the CONTROL, and a control that no longer belongs to the caller
+                // fails for a mundane reason and reports the endpoint
+                // inconclusive. See recordsBelongTo().
+                if (! $this->recordsBelongTo($e['keys'] ?? [], $ownIds, $actor)) {
                     $ownIds = $this->seedRecords($this->testTenantId, $actor);
                 }
 

@@ -221,6 +221,7 @@ abstract class AccessSweepTestCase extends TestCase
         'group_data_export' => ['table' => 'group_data_exports', 'uuid_pk' => true, 'needs' => ['group_id' => 'group'], 'owner' => 'requested_by', 'columns' => ['expires_at' => '{tomorrow}']],
         'message_attachment' => ['table' => 'message_attachments', 'needs' => ['message_id' => 'message'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt']],
         'listing_image' => ['table' => 'listing_images', 'needs' => ['listing_id' => 'listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
+        'story_highlight' => ['table' => 'story_highlights', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep highlight']],
         'marketplace_collection' => ['table' => 'marketplace_collections', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep collection']],
         // E-022 batch 3.
         'marketplace_image' => ['table' => 'marketplace_images', 'needs' => ['marketplace_listing_id' => 'marketplace_listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
@@ -315,6 +316,10 @@ abstract class AccessSweepTestCase extends TestCase
         'messages/attachments' => 'message_attachment',
         'listings/images' => 'listing_image',
         'marketplace/collections' => 'marketplace_collection',
+        'stories/highlights' => 'story_highlight',
+        // The deepest parameter of `stories/highlights/{id}/items/{storyId}`
+        // names a STORY, not a join row.
+        'stories/highlights/items' => 'story',
         // The deepest parameter of `marketplace/collections/{id}/items/{listingId}`
         // is a LISTING, not a collection-item row — the endpoint removes a
         // listing from a collection by the listing's own id.
@@ -342,20 +347,28 @@ abstract class AccessSweepTestCase extends TestCase
         // ::test_remove_collection_item_refuses_a_collection_the_caller_does_not_own (404).
         'DELETE api/v2/marketplace/collections/{id}/items/{listingId}',
         //
-        // 🔴 `DELETE api/v2/stories/highlights/{id}/items/{storyId}` WAS pinned here
-        // and has been removed along with the `story_highlight` fixture that made it
-        // reachable. Adding that fixture also made `DELETE stories/highlights/{id}`
-        // reachable in the SAME-community write sweep, where CI reported it 2xx
-        // against another member's highlight (run 35769131661) while two local runs
-        // of the same code passed — the order-dependent behaviour O-039 already
-        // records for that gate.
+        // StoryService::removeFromHighlight() proves the HIGHLIGHT is
+        // `id = ? AND user_id = ? AND tenant_id = ?` before deleting from
+        // story_highlight_items by (highlight_id, story_id), so a foreign story
+        // matches nothing and $storyId never shapes the response.
         //
-        // The platform is NOT at fault, and that was established directly rather
-        // than assumed: StoryControllerTest::test_cannot_delete_highlight_belonging_to_another_member
-        // shows a member is refused and the victim's row survives. The fixture is
-        // withdrawn because a BLOCKING gate must not be intermittent, not because
-        // anything was found. Restoring it belongs with a fix for the harness's
-        // re-seed/id selection, not with more fixtures.
+        // 🔴 PROVED before pinning. See
+        // StoryControllerTest::test_remove_highlight_item_answers_identically_for_a_foreign_story_and_a_nonexistent_one
+        // and ::test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own.
+        //
+        // 🔴 History worth keeping: this entry and its fixture were WITHDRAWN once,
+        // because making the endpoint reachable also made
+        // `DELETE stories/highlights/{id}` reachable in the SAME-community write
+        // sweep, where CI reported 2xx against another member's highlight
+        // (run 35769131661) while two local runs of identical code passed. The
+        // platform was never at fault —
+        // StoryControllerTest::test_cannot_delete_highlight_belonging_to_another_member
+        // shows a member is refused and the victim's row survives. The harness was:
+        // it re-seeded ids without re-checking who owned them, so the sweep probed
+        // the caller's OWN record while believing it was someone else's. That is
+        // fixed in recordsBelongTo(), and the fixture is restored on top of the fix
+        // rather than in place of it.
+        'DELETE api/v2/stories/highlights/{id}/items/{storyId}',
     ];
 
     /**
@@ -536,6 +549,96 @@ abstract class AccessSweepTestCase extends TestCase
      * @param  list<string>  $keys
      * @param  array<string,int>  $ids
      */
+    /**
+     * Which column on a fixture's table records the person who owns the row.
+     *
+     * Table fixtures declare it as 'owner'. Model fixtures get it from
+     * ownerAttributesFor(), which fills whichever of user_id / created_by /
+     * owner_id / author_id the table actually has — so the first of those that
+     * exists is the one that was set.
+     */
+    protected function ownerColumnFor(string $key): ?string
+    {
+        $spec = self::FIXTURES[$key] ?? null;
+        if ($spec === null) {
+            return null;
+        }
+
+        if (isset($spec['owner'])) {
+            return $spec['owner'];
+        }
+
+        $table = $this->fixtureTable($key);
+        if ($table === null) {
+            return null;
+        }
+
+        foreach (['user_id', 'created_by', 'owner_id', 'author_id'] as $column) {
+            if (Schema::hasColumn($table, $column)) {
+                return $column;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Does every named record still exist AND still belong to the person the
+     * sweep believes owns it?
+     *
+     * 🔴 This is the fix for the order dependency recorded as O-039, and it is
+     * deliberately stricter than recordsStillExist().
+     *
+     * These sweeps mutate the very rows they test. When a destructive endpoint
+     * consumes a record the harness re-seeds the WHOLE id map, so ids move
+     * underneath later endpoints. Checking only that "a row with this id
+     * exists" is not enough: an id can survive while no longer belonging to the
+     * person whose access is being tested, and the sweep then probes the
+     * CALLER'S OWN record while believing it is probing someone else's. The
+     * endpoint answers 2xx — correctly, because the caller does own it — and
+     * the gate reports a breach that is not one.
+     *
+     * That is exactly what happened on CI run 35769131661:
+     * `DELETE stories/highlights/{id}` answered 200, while
+     * StoryService::deleteHighlight() demonstrably scopes by
+     * `id AND user_id AND tenant_id` and throws when nothing matched. Two local
+     * runs of identical code passed, because the ids had not drifted there.
+     *
+     * A fixture with no owner column (a join row, a platform-global record) is
+     * checked for existence only — there is nothing to attribute.
+     *
+     * @param  list<string>  $keys
+     * @param  array<string, int|string>  $ids
+     */
+    protected function recordsBelongTo(array $keys, array $ids, ?User $owner): bool
+    {
+        if ($owner === null) {
+            return false;
+        }
+
+        foreach ($keys as $key) {
+            $id = $ids[$key] ?? null;
+            $table = $this->fixtureTable($key);
+
+            if ($id === null || $table === null) {
+                return false;
+            }
+
+            $query = DB::table($table)->where('id', $id);
+
+            $ownerColumn = $this->ownerColumnFor($key);
+            if ($ownerColumn !== null && Schema::hasColumn($table, $ownerColumn)) {
+                $query->where($ownerColumn, $owner->id);
+            }
+
+            if (! $query->exists()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected function recordsStillExist(array $keys, array $ids): bool
     {
         foreach ($keys as $key) {
