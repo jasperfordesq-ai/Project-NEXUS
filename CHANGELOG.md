@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event check-in queues now recover the latest conflict decisions after organiser resolution and reopening, including older saved queues, without resubmitting attendance or discarding pending scans.
+
 - Plain native message drafts now follow the member across inbox and deep-link entry. Existing drafts are recovered without copying or deleting them; distinct legacy drafts and listing-specific drafts remain preserved.
 
 - Native messaging now refreshes unread counts after realtime resubscription and reloads missed messages when the conversation is visible, deferring read-affecting recovery while it is covered or backgrounded.

@@ -73,6 +73,17 @@ final class EventOfflineCheckinPhaseBTest extends TestCase
         self::assertNotContains($firstId, array_column($recent, 'id'));
         $result = $projection->batchByClientId($fixture['event_id'], $fixture['device_id'], 'lookup-batch-0', $fixture['owner']);
         self::assertSame($firstId, $result['batch']['id']);
+        $byNonce = $projection->batchByNonce($fixture['event_id'], $fixture['device_id'], 'lookup-nonce-0', $fixture['owner']);
+        self::assertSame($result, $byNonce);
+        $this->assertReason('event_offline_batch_not_found', fn () => $projection->batchByNonce(
+            $fixture['event_id'], $fixture['device_id'] + 100000, 'lookup-nonce-0', $fixture['owner'],
+        ));
+        $this->assertReason('event_offline_batch_not_found', fn () => $projection->batchByNonce(
+            $fixture['event_id'], $fixture['device_id'], 'missing-nonce', $fixture['owner'],
+        ));
+        $this->assertReason('event_checkin_authorization_denied', fn () => $projection->batchByNonce(
+            $fixture['event_id'], $fixture['device_id'], 'lookup-nonce-0', $fixture['attendee'],
+        ));
         self::assertSame('pending', $result['items'][0]['state']);
         self::assertSame(0, DB::table('event_attendance_activity')->where('event_id', $fixture['event_id'])->count());
         $this->assertReason('event_offline_batch_not_found', fn () => $projection->batchByClientId(
@@ -101,6 +112,10 @@ final class EventOfflineCheckinPhaseBTest extends TestCase
             'device_id' => $fixture['device_id'], 'client_batch_id' => 'http-lookup-batch',
         ]), $headers);
         $response->assertOk()->assertJsonPath('data.batch.id', (int) $staged->batch->id)
+            ->assertJsonPath('data.items.0.state', 'pending');
+        $this->getJson($url . '?' . http_build_query([
+            'device_id' => $fixture['device_id'], 'client_nonce' => 'http-lookup-nonce',
+        ]), $headers)->assertOk()->assertJsonPath('data.batch.id', (int) $staged->batch->id)
             ->assertJsonPath('data.items.0.state', 'pending');
         self::assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
         self::assertStringNotContainsString($fixture['device_secret'], $response->getContent());
@@ -261,6 +276,11 @@ final class EventOfflineCheckinPhaseBTest extends TestCase
         self::assertSame($resolved->decision->id, $replay->decision->id);
         self::assertSame(2, (int) $resolved->decision->decision_version);
         self::assertSame('Desk lead confirmed the departure', $resolved->decision->decision_reason);
+        $latest = app(EventOfflineCheckinProjectionService::class)->batchByNonce(
+            $fixture['event_id'], $fixture['device_id'], (string) $stale->items[0]->client_nonce, $fixture['owner'],
+        );
+        self::assertSame('synced', $latest['items'][0]['state']);
+        self::assertSame(2, $latest['items'][0]['decision_version']);
         self::assertSame('checked_out', DB::table('event_attendance')
             ->where('event_id', $fixture['event_id'])
             ->value('attendance_status'));

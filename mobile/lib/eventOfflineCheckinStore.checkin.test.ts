@@ -51,6 +51,7 @@ function mockSha256Hex(value: string): string {
 const mockStorageMap = new Map<string, string>();
 const mockFiles = new Map<string, string>();
 const mockSyncBatch = jest.fn();
+const mockReadDecision = jest.fn();
 let mockUuidCounter = 0;
 
 jest.mock('expo-file-system/legacy', () => ({
@@ -82,6 +83,7 @@ jest.mock('expo-crypto', () => ({
 
 jest.mock('@/lib/api/eventOfflineCheckin', () => ({
   syncOfflineCheckinBatch: (...args: unknown[]) => mockSyncBatch(...args),
+  findOfflineCheckinBatchByNonce: (...args: unknown[]) => mockReadDecision(...args),
 }));
 
 jest.mock('@/lib/storage', () => ({
@@ -114,6 +116,7 @@ import {
   refreshMobileOfflineManifest,
   sealMobileOfflinePayload,
   syncMobileOfflineSession,
+  reconcileMobileOfflineConflicts,
   verifyMobileOfflineCredential,
   type MobileOfflineSession,
 } from '@/lib/eventOfflineCheckinStore';
@@ -270,6 +273,7 @@ beforeEach(() => {
   mockStorageMap.clear();
   mockFiles.clear();
   mockSyncBatch.mockReset();
+  mockReadDecision.mockReset();
   mockUuidCounter = 0;
 });
 
@@ -924,5 +928,77 @@ describe('starting and refreshing a device session', () => {
 
     await expect(refreshMobileOfflineManifest(active, wrongEvent, workspace()))
       .rejects.toThrow('device_rotated');
+  });
+});
+
+describe('reconciling resolved offline conflicts', () => {
+  it.each(['synced', 'rejected'] as const)('persists the authoritative %s decision for a legacy queue without resending attendance', async state => {
+    const issued = issueCredential();
+    const queued = await enqueueMobileOfflineCredential(session({ manifest: manifest([registration({ credential: issued })]) }), issued.credential, 'check_in', null);
+    const active = session({ ...queued, queue: queued.queue.map(item => ({ ...item, state: 'conflict', decisionVersion: 1 })) });
+    mockReadDecision.mockResolvedValue({ event_id: EVENT_ID, batch: { id: 73 }, items: [{
+      client_nonce: active.queue[0].clientNonce, operation: 'check_in', expected_attendance_version: 0,
+      state, decision_version: 2, code: 'organizer_resolved',
+    }] });
+    const reconciled = await reconcileMobileOfflineConflicts(active);
+    expect(reconciled.queue[0]).toMatchObject({ state, decisionVersion: 2 });
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue[0]).toMatchObject({ state, decisionVersion: 2 });
+    expect(mockSyncBatch).not.toHaveBeenCalled();
+    expect(mockReadDecision).toHaveBeenCalledWith(EVENT_ID, DEVICE_ID, expect.objectContaining({ client_nonce: active.queue[0].clientNonce }));
+  });
+});
+
+
+
+describe('conflict decision recovery isolation', () => {
+  async function conflicted() {
+    const issued = issueCredential();
+    const queued = await enqueueMobileOfflineCredential(session({ manifest: manifest([registration({ credential: issued })]) }), issued.credential, 'check_in', null);
+    return session({ ...queued, queue: queued.queue.map(item => ({ ...item, state: 'conflict', decisionVersion: 1 })) });
+  }
+  function result(active: MobileOfflineSession) {
+    return { items: active.queue.map(item => ({ client_nonce: item.clientNonce, operation: item.operation,
+      expected_attendance_version: item.expectedAttendanceVersion, state: 'rejected', decision_version: 2, code: 'kept_current' })) };
+  }
+  it('keeps the saved conflict on a failed read', async () => {
+    const active = await conflicted();
+    mockReadDecision.mockRejectedValue(new Error('offline'));
+    await expect(reconcileMobileOfflineConflicts(active)).rejects.toThrow('offline');
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue[0].state).toBe('conflict');
+    expect(mockSyncBatch).not.toHaveBeenCalled();
+  });
+  it.each(['stale', 'wrong-operation', 'wrong-version', 'pending'])('does not apply a %s decision', async scenario => {
+    const active = await conflicted();
+    const response = result(active);
+    if (scenario === 'stale') response.items[0].decision_version = 1;
+    if (scenario === 'wrong-operation') response.items[0].operation = 'check_out';
+    if (scenario === 'wrong-version') response.items[0].expected_attendance_version = 9;
+    if (scenario === 'pending') response.items[0].state = 'pending';
+    mockReadDecision.mockResolvedValue(response);
+    expect((await reconcileMobileOfflineConflicts(active)).queue[0].state).toBe('conflict');
+  });
+  it('preserves a concurrent pending scan when the decision arrives', async () => {
+    const active = await conflicted();
+    mockReadDecision.mockImplementation(async () => {
+      seedStoredSession({ ...active, queue: [...active.queue, { ...active.queue[0], clientNonce: 'new-pending', state: 'pending', decisionVersion: null }] });
+      return result(active);
+    });
+    expect((await reconcileMobileOfflineConflicts(active)).queue.map(item => item.state)).toEqual(['rejected', 'pending']);
+  });
+  it('cannot recreate data purged during a decision read', async () => {
+    const active = await conflicted();
+    mockReadDecision.mockImplementation(async () => { await purgeMobileOfflineSession(EVENT_ID, DEVICE_ID); return result(active); });
+    await expect(reconcileMobileOfflineConflicts(active)).rejects.toThrow('offline_session_ended');
+    expect(await loadMobileOfflineSession(EVENT_ID, DEVICE_ID)).toBeNull();
+  });
+  it('updates decisions after roster expiry without renewing scanning authority', async () => {
+    const active = await conflicted();
+    active.manifest.expires_at = '2000-01-01T00:00:00Z';
+    seedStoredSession(active);
+    mockReadDecision.mockResolvedValue(result(active));
+    await reconcileMobileOfflineConflicts(active);
+    const review = await loadMobileOfflineSessionForReview(EVENT_ID, DEVICE_ID);
+    expect(review.inactive).toBe('manifest_expired');
+    expect(review.session?.queue[0].state).toBe('rejected');
   });
 });

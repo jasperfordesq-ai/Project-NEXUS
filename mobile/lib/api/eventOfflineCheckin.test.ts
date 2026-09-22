@@ -21,6 +21,7 @@ import {
   getMyEventCheckinCredential,
   getOfflineCheckinBatch,
   findOfflineCheckinBatch,
+  findOfflineCheckinBatchByNonce,
   getOfflineCheckinWorkspace,
   issueMyEventCheckinCredential,
   revokeMyEventCheckinCredential,
@@ -292,6 +293,13 @@ describe('mobile Event offline check-in API', () => {
     else await expect(lookup).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
     expect(api.get).toHaveBeenCalledWith('/api/v2/events/91/offline-checkin/batches/lookup', {
       device_id: '22', client_batch_id: 'mobile-batch-stable',
+    }, options);
+    expect(api.post).toHaveBeenCalledTimes(1);
+    const nonceLookup = findOfflineCheckinBatchByNonce(91, 22, identity.items[0]);
+    if (scenario === 'valid' || scenario === 'batch') await expect(nonceLookup).resolves.toEqual(response.data);
+    else await expect(nonceLookup).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/91/offline-checkin/batches/lookup', {
+      device_id: '22', client_nonce: 'nonce-stable-123',
     }, options);
     expect(api.post).toHaveBeenCalledTimes(1);
   });

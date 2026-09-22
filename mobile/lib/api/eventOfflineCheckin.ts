@@ -380,6 +380,25 @@ export async function findOfflineCheckinBatch(
   }, options()));
 }
 
+/** Recover saved conflict decisions even when an older client discarded its batch ID. */
+export async function findOfflineCheckinBatchByNonce(
+  eventId: number,
+  deviceId: number,
+  expected: { client_nonce: string; operation: OfflineAttendanceOperation; expected_attendance_version: number },
+): Promise<MobileOfflineBatch> {
+  const endpoint = `${API_V2}/events/${eventId}/offline-checkin/batches/lookup`;
+  const schema = batchSchema.refine(value => value.event_id === eventId
+    && value.items.length === value.batch.item_count
+    && new Set(value.items.map(item => item.client_nonce)).size === value.items.length
+    && value.items.some(item => item.client_nonce === expected.client_nonce
+      && item.operation === expected.operation
+      && item.expected_attendance_version === expected.expected_attendance_version),
+  { message: 'Offline batch does not contain the saved action' });
+  return parse(endpoint, schema, await api.get<unknown>(endpoint, {
+    device_id: String(deviceId), client_nonce: expected.client_nonce,
+  }, options()));
+}
+
 export async function syncOfflineCheckinBatch(eventId: number, input: {
   deviceSecret: string;
   clientBatchId: string;

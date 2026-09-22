@@ -43,6 +43,7 @@ import {
   purgeRevokedOrExpiredMobileSessions,
   refreshMobileOfflineManifest,
   syncMobileOfflineSession,
+  reconcileMobileOfflineConflicts,
   type MobileOfflineInactiveReason,
   type MobileOfflineSession,
 } from '@/lib/eventOfflineCheckinStore';
@@ -169,7 +170,15 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         restored = await refreshMobileOfflineManifest(restored, manifest, nextWorkspace);
       }
       if (!isCurrent()) return;
-      if (restored) restored = await cacheMobileOfflineWorkspace(restored, nextWorkspace);
+      if (restored) {
+        restored = await cacheMobileOfflineWorkspace(restored, nextWorkspace);
+        try {
+          restored = await reconcileMobileOfflineConflicts(restored);
+        } catch {
+          // Keep saved evidence visible; a failed read is not a resolved decision.
+          if (isCurrent()) showToastRef.current({ title: tRef.current('conflicts.error'), variant: 'warning' });
+        }
+      }
       if (!isCurrent()) return;
       setWorkspace(nextWorkspace);
       setSession(restored);
@@ -428,6 +437,11 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       if (!mountedRef.current) return;
       setConflicts(next);
       setResolutionReasons((current) => ({ ...current, [item.item_id]: '' }));
+      if (session) {
+        const reconciled = await reconcileMobileOfflineConflicts(session);
+        if (!mountedRef.current) return;
+        setSession(reconciled);
+      }
       showToast({ title: t('conflicts.resolved'), variant: 'success' });
     } catch (error) {
       if (!mountedRef.current) return;

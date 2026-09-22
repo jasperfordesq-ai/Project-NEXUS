@@ -24,6 +24,7 @@ const mockCompleteRegistration = jest.fn();
 const mockCacheWorkspace = jest.fn();
 const mockCachedWorkspace = jest.fn();
 const mockInvalidateCache = jest.fn();
+const mockReconcileConflicts = jest.fn();
 jest.mock('@/lib/offlineRegistrationRecovery', () => ({ recoverOfflineRegistration: (...args: unknown[]) => mockRecoverRegistration(...args) }));
 
 jest.mock('@/lib/api/eventOfflineCheckin', () => ({
@@ -49,6 +50,7 @@ jest.mock('@/lib/eventOfflineCheckinStore', () => ({
   purgeRevokedOrExpiredMobileSessions: (...args: unknown[]) => mockPurgeExpired(...args),
   refreshMobileOfflineManifest: jest.fn(),
   syncMobileOfflineSession: jest.fn(),
+  reconcileMobileOfflineConflicts: (...args: unknown[]) => mockReconcileConflicts(...args),
 }));
 
 jest.mock('expo-camera', () => ({
@@ -97,6 +99,7 @@ describe('EventOfflineCheckinCard', () => {
     mockGetCameraPermission.mockResolvedValue({ granted: true });
     mockPermissionState = { granted: false, canAskAgain: true };
     mockCacheWorkspace.mockImplementation(async session => session);
+    mockReconcileConflicts.mockImplementation(async session => session);
     mockCachedWorkspace.mockResolvedValue({ session: null, workspace: null, inactive: null });
     mockInvalidateCache.mockResolvedValue(undefined);
     mockGetWorkspace.mockResolvedValue(emptyWorkspace);
@@ -555,5 +558,37 @@ describe('EventOfflineCheckinCard', () => {
     expect(getByText('queue.readOnlyRevoked')).toBeTruthy();
     expect(getByText('Ada')).toBeTruthy();
     expect(mockPurgeSession).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('resolved conflict queue presentation', () => {
+  it.each(['reopen', 'resolve'])('reconciles a saved conflict on %s without resending attendance', async scenario => {
+    jest.resetAllMocks();
+    jest.spyOn(AppState, 'addEventListener').mockReturnValue({ remove: jest.fn() });
+    const saved = { eventId: 77, deviceId: 5, manifest: { manifest_version: 3 }, queue: [
+      { clientNonce: 'saved-conflict', displayName: 'Ada', operation: 'undo', state: 'conflict' },
+    ] };
+    mockGetWorkspace.mockResolvedValue({ ...emptyWorkspace, devices: [{ id: 5, status: 'active' }] });
+    mockPendingRegistration.mockResolvedValue(null);
+    mockLoadSessionForReview.mockResolvedValue({ session: saved, inactive: null });
+    mockCacheWorkspace.mockImplementation(async value => value);
+    mockReconcileConflicts.mockResolvedValue({ ...saved, queue: [{ ...saved.queue[0], state: 'rejected' }] });
+    mockGetConflicts.mockResolvedValue({ items: [] });
+    if (scenario === 'resolve') {
+      mockReconcileConflicts.mockResolvedValueOnce(saved);
+      mockGetConflicts.mockResolvedValue({ items: [{ item_id: 8, member: { display_name: 'Ada' }, current_attendance: { state: 'checked_in', version: 3 }, conflict: { decision_version: 1 } }] });
+      require('@/lib/api/eventOfflineCheckin').resolveOfflineCheckinConflict.mockResolvedValue({ items: [] });
+    }
+    const screen = render(<EventOfflineCheckinCard eventId={77} />);
+    if (scenario === 'resolve') {
+      await screen.findByText('conflicts.reject');
+      fireEvent.changeText(screen.getByLabelText('conflicts.reason'), 'Keep the verified record');
+      fireEvent.press(screen.getByText('conflicts.reject'));
+    }
+    expect(await screen.findByText('queue.states.rejected')).toBeTruthy();
+    expect(screen.queryByText('queue.states.conflict')).toBeNull();
+    expect(mockReconcileConflicts).toHaveBeenCalledWith(saved);
+    expect(require('@/lib/eventOfflineCheckinStore').syncMobileOfflineSession).not.toHaveBeenCalled();
   });
 });

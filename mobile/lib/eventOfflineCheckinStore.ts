@@ -12,6 +12,7 @@ import { STORAGE_KEYS } from '@/lib/constants';
 import {
   getOfflineCheckinBatch,
   findOfflineCheckinBatch,
+  findOfflineCheckinBatchByNonce,
   parseOfflineWorkspaceCache,
   syncOfflineCheckinBatch,
   type MobileOfflineBatch,
@@ -820,6 +821,38 @@ function applyBatchDecisions(session: MobileOfflineSession, batch: MobileOffline
     }),
     updatedAt: new Date().toISOString(),
   };
+}
+
+/** Read decisions only: resolving a conflict must never resubmit an attendance action. */
+export async function reconcileMobileOfflineConflicts(session: MobileOfflineSession): Promise<MobileOfflineSession> {
+  const generation = generationFor(session.eventId, session.deviceId);
+  const decisions = new Map<string, MobileOfflineBatch['items'][number]>();
+  for (const item of session.queue) {
+    if (item.state !== 'conflict' || decisions.has(item.clientNonce)) continue;
+    assertStoreGeneration(generation);
+    const batch = await findOfflineCheckinBatchByNonce(session.eventId, session.deviceId, {
+      client_nonce: item.clientNonce, operation: item.operation,
+      expected_attendance_version: item.expectedAttendanceVersion,
+    });
+    for (const decision of batch.items) decisions.set(decision.client_nonce, decision);
+  }
+  if (!decisions.size) return session;
+  return inStoreOrder(async () => {
+    assertStoreGeneration(generation);
+    const { session: current } = await readSessionForReview(session.eventId, session.deviceId, generation);
+    if (!current || current.deviceVersion !== session.deviceVersion || current.deviceSecret !== session.deviceSecret) {
+      throw new Error('offline_session_ended');
+    }
+    const next = { ...current, updatedAt: new Date().toISOString(), queue: current.queue.map(item => {
+      const decision = decisions.get(item.clientNonce);
+      if (item.state !== 'conflict' || !decision || decision.state === 'pending'
+        || decision.operation !== item.operation || decision.expected_attendance_version !== item.expectedAttendanceVersion
+        || (decision.decision_version ?? 0) <= (item.decisionVersion ?? 0)) return item;
+      return { ...item, state: decision.state, code: decision.code, decisionVersion: decision.decision_version };
+    }) };
+    await writeSession(next, generation, true);
+    return next;
+  });
 }
 
 export async function purgeMobileOfflineSession(eventId: number, deviceId: number): Promise<void> {

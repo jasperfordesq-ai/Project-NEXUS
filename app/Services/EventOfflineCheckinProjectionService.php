@@ -168,6 +168,26 @@ final class EventOfflineCheckinProjectionService
     }
 
     /** @return array<string,mixed> */
+    public function batchByNonce(int $eventId, int $deviceId, string $nonce, User $actor): array
+    {
+        [$tenantId] = $this->authorize($eventId, $actor);
+        $batchId = DB::table('event_offline_sync_items as item')
+            ->join('event_offline_sync_batches as batch', 'batch.id', '=', 'item.batch_id')
+            ->where('item.tenant_id', $tenantId)
+            ->where('item.event_id', $eventId)
+            ->where('batch.tenant_id', $tenantId)
+            ->where('batch.event_id', $eventId)
+            ->where('batch.device_id', $deviceId)
+            ->where('item.client_nonce', $nonce)
+            ->value('batch.id');
+        if ($batchId === null) {
+            throw new EventOfflineCheckinException('event_offline_batch_not_found');
+        }
+
+        return $this->batch($eventId, (int) $batchId, $actor);
+    }
+
+    /** @return array<string,mixed> */
     public function batch(int $eventId, int $batchId, User $actor): array
     {
         [$tenantId] = $this->authorize($eventId, $actor);
