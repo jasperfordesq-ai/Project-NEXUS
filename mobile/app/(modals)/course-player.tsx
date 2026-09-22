@@ -53,6 +53,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
+import { shareCourseCertificate } from '@/lib/shareCourseCertificate';
 
 function CoursePlayerScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -75,6 +76,8 @@ function CoursePlayerScreenInner() {
   const theme = useTheme();
   const { show } = useAppToast();
   const [saving, setSaving] = useState(false);
+  const [sharingCertificate, setSharingCertificate] = useState(false);
+  const sharingCertificateRef = useRef(false);
   const savingRef = useRef(false);
   const isMountedRef = useRef(true);
   const [completedIds, setCompletedIds] = useState<Set<number>>(new Set());
@@ -100,6 +103,23 @@ function CoursePlayerScreenInner() {
   );
   const canSaveRef = useRef(false);
   canSaveRef.current = Boolean(courseState.data && progressState.data && !refused);
+  const shareCertificate = async () => {
+    if (sharingCertificateRef.current || !canSaveRef.current || progressPercent < 100) return;
+    sharingCertificateRef.current = true;
+    setSharingCertificate(true);
+    try {
+      await shareCourseCertificate(courseId, () => isMountedRef.current && canSaveRef.current);
+    } catch (error) {
+      if (isMountedRef.current && canSaveRef.current) show({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(error, t('common:errors.generic')),
+        variant: 'danger',
+      });
+    } finally {
+      sharingCertificateRef.current = false;
+      if (isMountedRef.current) setSharingCertificate(false);
+    }
+  };
   const lessons = useMemo(
     () => [
       ...(courseState.data?.sections?.flatMap((section) => section.lessons ?? []) ?? []),
@@ -308,6 +328,11 @@ function CoursePlayerScreenInner() {
                     }}
                   />
                 </View>
+                {progressPercent >= 100 ? (
+                  <HeroButton testID="course-certificate" className="mb-5" variant="secondary" isDisabled={sharingCertificate} onPress={() => void shareCertificate()}>
+                    <HeroButton.Label>{t(sharingCertificate ? 'player.preparing_certificate' : 'player.share_certificate')}</HeroButton.Label>
+                  </HeroButton>
+                ) : null}
               </>
             )}
 

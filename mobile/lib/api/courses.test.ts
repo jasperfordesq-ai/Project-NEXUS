@@ -17,6 +17,7 @@ import {
   enrollInCourse,
   getAuthoredCourses,
   getCourse,
+  getCourseCertificate,
   getCourseCategories,
   getCourseAnalytics,
   getCourseCohorts,
@@ -46,6 +47,13 @@ jest.mock('@/lib/api/client', () => ({
 
 describe('courses API', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('retrieves certificate metadata and HTML through the authenticated course API', async () => {
+    const certificate = { certificate: { id: 2, course_id: 15, user_id: 675, serial: 'CRS-TEST', issued_at: '2026-09-22' }, html: '<html>Certificate</html>' };
+    jest.mocked(api.get).mockResolvedValue({ data: certificate });
+    expect(await getCourseCertificate(15)).toEqual(certificate);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/courses/15/certificate');
+  });
 
   it('sends the expected and desired order in a single scoped request', async () => {
     jest.mocked(api.put).mockResolvedValue({ data: { ordered_ids: [6, 5] } });

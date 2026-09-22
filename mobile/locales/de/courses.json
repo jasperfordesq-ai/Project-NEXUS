@@ -44,6 +44,8 @@
     "your_course": "Das ist Ihr Kurs."
   },
   "player": {
+    "share_certificate": "Zertifikat teilen",
+    "preparing_certificate": "Zertifikat wird vorbereitet…",
     "check_quiz_grade": "Bewertungsstatus prüfen",
     "quiz_pass_required": "Bestehen Sie dieses Quiz und warten Sie auf die Bewertung durch die Lehrkraft, bevor Sie die Lektion abschließen.",
     "mark_complete": "Als abgeschlossen markieren",

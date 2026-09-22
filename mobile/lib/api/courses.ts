@@ -534,3 +534,12 @@ export async function gradeCourseAttempt(
 export async function getCourseAnalytics(courseId: number): Promise<CourseAnalytics> {
   return unwrap(await api.get<DataEnvelope<CourseAnalytics>>(`${API_V2}/courses/${courseId}/analytics`));
 }
+
+export interface CourseCertificateResponse {
+  certificate: { id: number; course_id: number; user_id: number; serial: string; issued_at: string };
+  html: string;
+}
+
+export async function getCourseCertificate(courseId: number): Promise<CourseCertificateResponse> {
+  return unwrap(await api.get<DataEnvelope<CourseCertificateResponse>>(`${API_V2}/courses/${courseId}/certificate`));
+}

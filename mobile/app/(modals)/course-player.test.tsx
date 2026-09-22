@@ -8,6 +8,8 @@ import * as ReactNative from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockShow = jest.fn();
+jest.mock('@/lib/shareCourseCertificate', () => ({ shareCourseCertificate: jest.fn() }));
+import { shareCourseCertificate } from '@/lib/shareCourseCertificate';
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(), useLocalSearchParams: () => ({ id: '7' }) }));
@@ -27,6 +29,22 @@ jest.mock('@/lib/api/courses', () => ({ getCourse: jest.fn(), getCourseProgress:
 import CoursePlayerScreen from './course-player';
 import { completeCourseLesson, getCourse, getCourseProgress } from '@/lib/api/courses';
 import { ApiResponseError } from '@/lib/api/client';
+
+it('offers certificate sharing only after completion and permits retry after failure', async () => {
+  jest.mocked(getCourse).mockResolvedValue({ id: 7, title: 'Course', sections: [{ id: 2, lessons: [{ id: 12, course_id: 7, content_type: 'text', title: 'Lesson', body: 'Body' }] }] } as never);
+  jest.mocked(getCourseProgress).mockResolvedValue({ enrollment: { id: 3, course_id: 7, status: 'active', progress_percent: 0 }, lessons: [], availability: [] });
+  jest.mocked(completeCourseLesson).mockResolvedValue({ progress_percent: 100, course_completed: true });
+  jest.mocked(shareCourseCertificate).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce();
+  const screen = render(<CoursePlayerScreen />);
+  await screen.findByText('Mark as complete');
+  expect(screen.queryByTestId('course-certificate')).toBeNull();
+  fireEvent.press(screen.getByText('Mark as complete'));
+  await screen.findByTestId('course-certificate');
+  fireEvent.press(screen.getByTestId('course-certificate'));
+  await waitFor(() => expect(mockShow).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+  fireEvent.press(screen.getByTestId('course-certificate'));
+  await waitFor(() => expect(shareCourseCertificate).toHaveBeenCalledTimes(2));
+});
 
 describe('CoursePlayerScreen', () => {
   beforeEach(() => {

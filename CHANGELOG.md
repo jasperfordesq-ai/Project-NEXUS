@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Native course learners can share their completion certificate from the course player, with authenticated retrieval, account-change protection and retry after a failed export.
+
 ### Fixed
 
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.

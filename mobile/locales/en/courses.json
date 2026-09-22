@@ -44,6 +44,8 @@
     "your_course": "This is your course."
   },
   "player": {
+    "share_certificate": "Share certificate",
+    "preparing_certificate": "Preparing certificate…",
     "check_quiz_grade": "Check grading status",
     "quiz_pass_required": "Pass this quiz and wait for any instructor grading before marking the lesson complete.",
     "mark_complete": "Mark as complete",

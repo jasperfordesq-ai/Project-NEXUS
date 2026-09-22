@@ -46,6 +46,8 @@
     "your_course": "Este es tu curso."
   },
   "player": {
+    "share_certificate": "Compartir certificado",
+    "preparing_certificate": "Preparando certificado…",
     "check_quiz_grade": "Consultar la evaluación",
     "quiz_pass_required": "Aprueba este cuestionario y espera la evaluación del instructor antes de marcar la lección como completada.",
     "mark_complete": "Marcar como completo",

@@ -50,6 +50,8 @@
     "your_course": "Seo é do chúrsa."
   },
   "player": {
+    "share_certificate": "Comhroinn an teastas",
+    "preparing_certificate": "An teastas á ullmhú…",
     "check_quiz_grade": "Seiceáil stádas an mheasúnaithe",
     "quiz_pass_required": "Éirigh leat sa tráth na gceist seo agus fan ar mheasúnú an teagascóra sula marcálann tú an ceacht críochnaithe.",
     "mark_complete": "Marcáil mar iomlán",
