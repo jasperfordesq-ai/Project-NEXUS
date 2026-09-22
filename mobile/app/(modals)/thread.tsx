@@ -405,15 +405,28 @@ function ThreadScreenInner() {
     one no longer move it.
   */
   const isNearBottomRef = useRef(true);
+  const readerHasScrolledRef = useRef(false);
+  const [preserveHistoryPosition, setPreserveHistoryPosition] = useState(false);
+  const messageContentHeightRef = useRef(0);
+  const followMessageLayout = useCallback(() => {
+    if (isNearBottomRef.current) {
+      // Use measured content rather than FlatList's estimated last-item offset;
+      // native scrolling clamps this to the bottom of the viewport.
+      flatListRef.current?.scrollToOffset({ offset: messageContentHeightRef.current, animated: false });
+    }
+  }, []);
   const lastMessage = messages[messages.length - 1];
   useEffect(() => {
     if (messages.length === 0) return;
     if (!isNearBottomRef.current && !lastMessage?.is_own) return;
+    isNearBottomRef.current = true;
+    readerHasScrolledRef.current = false;
+    setPreserveHistoryPosition(false);
     const timer = setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
+      followMessageLayout();
     }, 80);
     return () => clearTimeout(timer);
-  }, [messages.length, lastMessage?.id, lastMessage?.is_own]);
+  }, [messages.length, lastMessage?.id, lastMessage?.is_own, followMessageLayout]);
 
   /*
     🔴 RECEIVING and ACKNOWLEDGING are separate things, and were not (audit 2026-09-06,
@@ -1267,8 +1280,21 @@ function ThreadScreenInner() {
           ref={flatListRef}
           data={visibleMessages}
           keyExtractor={(item) => String(item.id)}
-          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          maintainVisibleContentPosition={preserveHistoryPosition ? { minIndexForVisible: 0 } : undefined}
+          onLayout={followMessageLayout}
+          onContentSizeChange={(_width, height) => {
+            messageContentHeightRef.current = height;
+            followMessageLayout();
+          }}
+          onScrollBeginDrag={() => {
+            readerHasScrolledRef.current = true;
+            isNearBottomRef.current = false;
+            setPreserveHistoryPosition(true);
+          }}
           onScroll={({ nativeEvent }) => {
+            // Initial native measurements can report y=0 before the last bubbles
+            // are laid out. Only a reader gesture should cancel following them.
+            if (!readerHasScrolledRef.current) return;
             const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
             isNearBottomRef.current = contentSize.height - layoutMeasurement.height - contentOffset.y < 120;
           }}

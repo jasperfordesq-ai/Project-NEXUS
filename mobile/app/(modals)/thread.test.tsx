@@ -444,6 +444,28 @@ beforeEach(() => {
 describe('ThreadScreen', () => {
   const originalPlatformOS = Platform.OS;
 
+  it('follows late message layout until the reader deliberately scrolls into history', async () => {
+    const scrollToEnd = jest.spyOn(FlatList.prototype, 'scrollToOffset').mockImplementation(() => {});
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh: jest.fn() });
+    const view = render(<ThreadScreen />);
+    await act(async () => {});
+    const list = view.UNSAFE_getByType(FlatList);
+    // Native measurement can report the initial top position before all bubbles lay out.
+    const atTop = { nativeEvent: { contentOffset: { y: 0 }, contentSize: { height: 2000 }, layoutMeasurement: { height: 600 } } };
+    act(() => list.props.onScroll(atTop));
+    scrollToEnd.mockClear();
+    act(() => list.props.onContentSizeChange(400, 2400));
+    expect(scrollToEnd).toHaveBeenCalledWith({ offset: 2400, animated: false });
+
+    // Deliberate history reading must survive later image/content measurements.
+    act(() => list.props.onScrollBeginDrag());
+    act(() => list.props.onScroll(atTop));
+    scrollToEnd.mockClear();
+    act(() => list.props.onContentSizeChange(400, 2800));
+    expect(scrollToEnd).not.toHaveBeenCalled();
+    view.unmount();
+  });
+
   afterEach(() => {
     Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalPlatformOS });
   });
