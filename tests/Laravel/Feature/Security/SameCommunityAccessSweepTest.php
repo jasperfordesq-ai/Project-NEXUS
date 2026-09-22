@@ -142,6 +142,12 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'DELETE api/v2/events/{id}/waitlist' => 'removes the caller from the waitlist (idempotent)',
         'POST api/v2/events/{id}/registration/confirm' => 'registers the caller for a community event',
         'POST api/v2/events/{id}/registration/withdraw' => 'withdraws the caller\'s own registration',
+        // Verified 2026-09-22 (E-021/O-039) before allowlisting, because allowlisting is
+        // editing a control so a hit disappears: GroupService::join() writes ONLY to
+        // group_members, every branch scoped by tenant_id + group_id + user_id = the CALLER.
+        // It never writes to the groups row, which is why the sweep classified this as
+        // ACCEPTED (2xx, target row unchanged) rather than MUTATED.
+        'POST api/v2/groups/{id}/join' => 'the caller joins an open group; creates/reactivates the CALLER\'s own group_members row and leaves the group untouched',
         'DELETE api/v2/courses/{id}/enroll' => 'drops the caller\'s own enrolment; answers dropped:false when there was none',
         'DELETE api/v2/goals/{id}/reminder' => 'deletes the CALLER\'s reminder row for that goal (GoalReminderService scopes by user_id)',
         'DELETE api/v2/stories/close-friends/{friendId}' => 'removes a member from the caller\'s own close-friends list (idempotent)',
