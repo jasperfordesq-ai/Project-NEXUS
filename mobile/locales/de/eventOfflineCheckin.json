@@ -103,7 +103,7 @@
     "pendingKept_one": "{{count}} nicht synchronisierter Check-in ist noch auf diesem Gerät gespeichert.",
     "purgePendingWarning": "{{count}} nicht synchronisierte Check-ins gehen endgültig verloren.",
     "purgePendingWarning_one": "{{count}} nicht synchronisierter Check-in geht endgültig verloren.",
-    "readOnlyRevoked": "Dieses Gerät darf keine Personen mehr einchecken. Alles, was hier gescannt wurde, bleibt schreibgeschützt erhalten, bis du es entfernst."
+    "readOnlyRevoked": "Dieses Gerät darf keine Personen mehr einchecken. Nicht synchronisierte Aktionen bleiben auf diesem Gerät schreibgeschützt zur Prüfung gespeichert."
   },
   "conflicts": {
     "title": "Check-in-Konflikte",
@@ -154,7 +154,7 @@
     "privacy": "Der QR-Inhalt enthält keine personenbezogenen Daten. Das Veranstaltungspersonal ordnet ihn über die verschlüsselte Teilnehmerliste Ihrer Registrierung zu."
   },
   "errors": {
-    "revoked": "Dieses Gerät darf keine Personen mehr einchecken. Alles, was hier gescannt wurde, bleibt schreibgeschützt erhalten, bis du es entfernst.",
+    "revoked": "Dieses Gerät darf keine Personen mehr einchecken. Nicht synchronisierte Aktionen bleiben auf diesem Gerät schreibgeschützt zur Prüfung gespeichert.",
     "generic": "Diese Offline-Check-in-Aktion konnte nicht abgeschlossen werden."
   }
 }

@@ -103,7 +103,7 @@
     "pendingKept_one": "{{count}} enregistrement non synchronisé est encore stocké sur cet appareil.",
     "purgePendingWarning": "{{count}} enregistrements non synchronisés seront définitivement perdus.",
     "purgePendingWarning_one": "{{count}} enregistrement non synchronisé sera définitivement perdu.",
-    "readOnlyRevoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Tout ce qui a été scanné ici est conservé en lecture seule jusqu’à ce que vous le supprimiez."
+    "readOnlyRevoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Les actions non synchronisées restent enregistrées sur cet appareil, en lecture seule, pour vérification."
   },
   "conflicts": {
     "title": "Conflits d’enregistrement",
@@ -154,7 +154,7 @@
     "privacy": "Le contenu QR ne comporte aucune donnée personnelle. Le personnel de l’événement utilise sa liste chiffrée pour l’associer à votre inscription."
   },
   "errors": {
-    "revoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Tout ce qui a été scanné ici est conservé en lecture seule jusqu’à ce que vous le supprimiez.",
+    "revoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Les actions non synchronisées restent enregistrées sur cet appareil, en lecture seule, pour vérification.",
     "generic": "Cette action d’enregistrement hors ligne n’a pas pu être effectuée."
   }
 }

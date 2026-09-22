@@ -103,7 +103,7 @@
     "pendingKept_one": "{{count}} unsynced check-in is still stored on this device.",
     "purgePendingWarning": "{{count}} unsynced check-ins will be lost for good.",
     "purgePendingWarning_one": "{{count}} unsynced check-in will be lost for good.",
-    "readOnlyRevoked": "This device is no longer allowed to check people in. Anything scanned here is kept, read-only, until you remove it."
+    "readOnlyRevoked": "This device is no longer allowed to check people in. Unsynced actions are still saved on this device, read-only, for review."
   },
   "conflicts": {
     "title": "Check-in conflicts",
@@ -154,7 +154,7 @@
     "privacy": "The QR payload is PII-free. Event staff use their encrypted roster to match it to your registration."
   },
   "errors": {
-    "revoked": "This device is no longer allowed to check people in. Anything scanned here is kept, read-only, until you remove it.",
+    "revoked": "This device is no longer allowed to check people in. Unsynced actions are still saved on this device, read-only, for review.",
     "generic": "That offline check-in action could not be completed."
   }
 }

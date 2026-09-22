@@ -103,7 +103,7 @@
     "pendingKept_one": "{{count}} check-in non sincronizzato è ancora salvato su questo dispositivo.",
     "purgePendingWarning": "{{count}} check-in non sincronizzati andranno perduti definitivamente.",
     "purgePendingWarning_one": "{{count}} check-in non sincronizzato andrà perduto definitivamente.",
-    "readOnlyRevoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Tutto ciò che è stato scansionato qui resta conservato in sola lettura finché non lo rimuovi."
+    "readOnlyRevoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Le azioni non sincronizzate restano salvate su questo dispositivo, in sola lettura, per la verifica."
   },
   "conflicts": {
     "title": "Conflitti di check-in",
@@ -154,7 +154,7 @@
     "privacy": "Il contenuto QR è privo di dati personali. Lo staff dell’evento utilizza l’elenco crittografato per associarlo alla tua registrazione."
   },
   "errors": {
-    "revoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Tutto ciò che è stato scansionato qui resta conservato in sola lettura finché non lo rimuovi.",
+    "revoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Le azioni non sincronizzate restano salvate su questo dispositivo, in sola lettura, per la verifica.",
     "generic": "Non è stato possibile completare l’azione di check-in offline."
   }
 }

@@ -103,7 +103,7 @@
     "pendingKept_one": "{{count}} registro sin sincronizar sigue guardado en este dispositivo.",
     "purgePendingWarning": "{{count}} registros sin sincronizar se perderán definitivamente.",
     "purgePendingWarning_one": "{{count}} registro sin sincronizar se perderá definitivamente.",
-    "readOnlyRevoked": "Este dispositivo ya no puede registrar la entrada de personas. Todo lo escaneado aquí se conserva en modo de solo lectura hasta que lo elimines."
+    "readOnlyRevoked": "Este dispositivo ya no puede registrar la entrada de personas. Las acciones sin sincronizar siguen guardadas en este dispositivo, en modo de solo lectura, para su revisión."
   },
   "conflicts": {
     "title": "Conflictos de registro",
@@ -154,7 +154,7 @@
     "privacy": "El contenido QR no incluye datos personales. El personal del evento usa su lista cifrada para asociarlo con tu inscripción."
   },
   "errors": {
-    "revoked": "Este dispositivo ya no puede registrar la entrada de personas. Todo lo escaneado aquí se conserva en modo de solo lectura hasta que lo elimines.",
+    "revoked": "Este dispositivo ya no puede registrar la entrada de personas. Las acciones sin sincronizar siguen guardadas en este dispositivo, en modo de solo lectura, para su revisión.",
     "generic": "No se pudo completar la acción de registro sin conexión."
   }
 }

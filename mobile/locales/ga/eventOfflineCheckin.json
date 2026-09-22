@@ -103,7 +103,7 @@
     "pendingKept_one": "Tá {{count}} seiceáil isteach neamhshioncronaithe stóráilte ar an ngléas seo fós.",
     "purgePendingWarning": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan.",
     "purgePendingWarning_one": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan.",
-    "readOnlyRevoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Coinnítear gach rud a scanadh anseo, inléite amháin, go dtí go mbainfidh tú é."
+    "readOnlyRevoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Tá gníomhartha nár sioncronaíodh fós sábháilte ar an ngléas seo, inléite amháin, lena n-athbhreithniú."
   },
   "conflicts": {
     "title": "Coinbhleachtaí seiceáil isteach",
@@ -154,7 +154,7 @@
     "privacy": "Níl sonraí pearsanta san ábhar QR. Úsáideann foireann an imeachta a liosta criptithe chun é a mheaitseáil le do chlárú."
   },
   "errors": {
-    "revoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Coinnítear gach rud a scanadh anseo, inléite amháin, go dtí go mbainfidh tú é.",
+    "revoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Tá gníomhartha nár sioncronaíodh fós sábháilte ar an ngléas seo, inléite amháin, lena n-athbhreithniú.",
     "generic": "Níorbh fhéidir an gníomh seiceáil isteach as líne seo a chur i gcrích."
   }
 }
