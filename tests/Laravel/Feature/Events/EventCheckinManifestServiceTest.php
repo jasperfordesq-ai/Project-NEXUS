@@ -312,6 +312,42 @@ final class EventCheckinManifestServiceTest extends TestCase
         self::assertSame(2, (int) $expired->device_version);
     }
 
+    public function test_opt_in_manifest_tracks_canonical_undo_without_changing_legacy_payload(): void
+    {
+        config(['events.attendance_credit_mode' => 'off']);
+        $owner = $this->user('Undo Owner');
+        $attendee = $this->user('Undo Attendee');
+        $eventId = $this->event((int) $owner->id);
+        DB::table('events')->where('id', $eventId)->update(['start_time' => now()->subHour(), 'end_time' => now()->addHours(3)]);
+        $registrationId = $this->registration($eventId, (int) $attendee->id);
+        $this->credentials->issue($eventId, $registrationId, (int) $owner->id, 'undo-credential');
+        $device = $this->devices->register($eventId, (int) $owner->id, 'Undo tablet', 'undo-device');
+        $snapshot = fn () => $this->manifests->generate($eventId, $device->secret, (int) $owner->id, null, 3)->toArray();
+        self::assertSame(3, $snapshot()['schema_version']);
+        self::assertNull($snapshot()['registrations'][0]['undo_state']);
+        $attendance = app(\App\Services\EventAttendanceService::class);
+        $attendance->transition($eventId, (int) $attendee->id, \App\Enums\EventAttendanceAction::CheckIn, $owner, 0, null, 'undo-checkin');
+        self::assertSame('not_checked_in', $snapshot()['registrations'][0]['undo_state']);
+        $attendance->transition($eventId, (int) $attendee->id, \App\Enums\EventAttendanceAction::CheckOut, $owner, 1, null, 'undo-checkout');
+        self::assertSame('checked_in', $snapshot()['registrations'][0]['undo_state']);
+        \Laravel\Sanctum\Sanctum::actingAs($owner, ['*']);
+        $headers = ['X-Tenant-ID' => (string) $this->testTenantId, 'X-Events-Contract' => '2', 'X-Event-Checkin-Contract' => '1'];
+        $url = '/api/v2/events/' . $eventId . '/offline-checkin/manifest';
+        $this->postJson($url, ['device_secret' => $device->secret, 'schema_version' => 3], $headers)
+            ->assertOk()->assertJsonPath('data.schema_version', 3)
+            ->assertJsonPath('data.registrations.0.undo_state', 'checked_in');
+        $this->postJson($url, ['device_secret' => $device->secret], $headers)
+            ->assertOk()->assertJsonPath('data.schema_version', 2)
+            ->assertJsonMissingPath('data.registrations.0.undo_state');
+        $legacy = $this->manifests->generate($eventId, $device->secret, (int) $owner->id)->toArray();
+        self::assertSame(2, $legacy['schema_version']);
+        self::assertArrayNotHasKey('undo_state', $legacy['registrations'][0]);
+        $attendance->transition($eventId, (int) $attendee->id, \App\Enums\EventAttendanceAction::Undo, $owner, 2, 'Wrong departure', 'undo-correction');
+        self::assertSame('checked_in', $snapshot()['registrations'][0]['attendance_status']);
+        self::assertSame(3, $snapshot()['registrations'][0]['attendance_version']);
+        self::assertNull($snapshot()['registrations'][0]['undo_state']);
+    }
+
     private function user(string $name, array $overrides = []): User
     {
         // Split into the NAME PARTS. UserObserver::saving() recomputes the stored

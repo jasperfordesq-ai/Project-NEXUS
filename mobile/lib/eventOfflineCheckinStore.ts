@@ -425,6 +425,10 @@ export async function refreshMobileOfflineManifest(
       throw new Error('offline_session_ended');
     }
     if (manifest.manifest_version < current.manifest.manifest_version) throw new Error('manifest_stale');
+    const previousVersions = new Map(current.manifest.registrations.map(item => [item.registration_id, item.attendance_version]));
+    if (manifest.registrations.some(item => item.attendance_version < (previousVersions.get(item.registration_id) ?? 0))) {
+      throw new Error('manifest_stale');
+    }
     const next: MobileOfflineSession = {
       ...current,
       manifest,
@@ -632,11 +636,14 @@ export async function verifyMobileOfflineCredential(
   return { claims, hash, fingerprint: hash.slice(0, 16) };
 }
 
-function transition(state: string, operation: OfflineAttendanceOperation): string {
+function transition(state: string, operation: OfflineAttendanceOperation, undoState?: string | null): string {
   if (operation === 'check_in' && state === 'not_checked_in') return 'checked_in';
   if (operation === 'check_out' && state === 'checked_in') return 'checked_out';
   if (operation === 'no_show' && state === 'not_checked_in') return 'no_show';
-  if (operation === 'undo' && state !== 'not_checked_in') return 'not_checked_in';
+  if (operation === 'undo') {
+    if (undoState === undefined) throw new Error('attendance_history_required');
+    if (undoState !== null) return undoState;
+  }
   throw new Error('transition_invalid');
 }
 
@@ -667,16 +674,25 @@ export async function enqueueMobileOfflineCredential(
       && item.credential_version === verified.claims.ver
     ));
     if (!registration) throw new Error('credential_revoked_or_rotated');
-    if (session.queue.some((item) => item.credentialHashReference === verified.hash
-      && item.operation === operation && item.state === 'pending')) throw new Error('credential_copied');
     const subjectQueue = session.queue.filter((item) => item.registrationId === registration.registration_id);
     let state = registration.attendance_status ?? 'not_checked_in';
-    subjectQueue.forEach((item) => {
-      if (item.state !== 'conflict' && item.state !== 'rejected') state = transition(state, item.operation);
-    });
-    transition(state, operation);
-    const expectedAttendanceVersion = registration.attendance_version
-      + subjectQueue.filter((item) => item.state === 'pending' || item.state === 'synced').length;
+    let undoState: string | null | undefined = registration.undo_state;
+    let expectedAttendanceVersion = registration.attendance_version;
+    let latest: MobileOfflineQueueItem | undefined;
+    for (const item of subjectQueue) {
+      if (item.state === 'conflict' || item.state === 'rejected') continue;
+      // Synced history already represented by this roster must not be replayed.
+      if (item.state === 'synced' && item.expectedAttendanceVersion < registration.attendance_version) continue;
+      if (item.expectedAttendanceVersion !== expectedAttendanceVersion) throw new Error('attendance_reconciliation_required');
+      const nextState = transition(state, item.operation, undoState);
+      undoState = item.operation === 'undo' ? null : state;
+      state = nextState;
+      expectedAttendanceVersion += 1;
+      latest = item;
+    }
+    if (latest?.state === 'pending' && latest.operation === operation
+      && latest.credentialHashReference === verified.hash) throw new Error('credential_copied');
+    transition(state, operation, undoState);
     const next: MobileOfflineSession = {
       ...session,
       queue: [...session.queue, {

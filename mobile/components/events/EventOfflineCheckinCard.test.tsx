@@ -86,6 +86,7 @@ jest.mock('react-i18next', () => ({
 
 import EventOfflineCheckinCard from './EventOfflineCheckinCard';
 import { ApiResponseError } from '@/lib/api/client';
+import type { MobileOfflineSession } from '@/lib/eventOfflineCheckinStore';
 
 const emptyWorkspace = {
   event_id: 77,
@@ -101,6 +102,11 @@ describe('EventOfflineCheckinCard', () => {
     mockPermissionState = { granted: false, canAskAgain: true };
     mockCacheWorkspace.mockImplementation(async session => session);
     mockReconcileConflicts.mockImplementation(async session => session);
+    require('@/lib/api/eventOfflineCheckin').downloadOfflineCheckinManifest.mockImplementation(async () => {
+      const last = mockLoadSessionForReview.mock.results.at(-1);
+      return (await last?.value)?.session?.manifest;
+    });
+    require('@/lib/eventOfflineCheckinStore').refreshMobileOfflineManifest.mockImplementation(async (session: MobileOfflineSession, manifest: MobileOfflineSession['manifest']) => ({ ...session, manifest }));
     mockCachedWorkspace.mockResolvedValue({ session: null, workspace: null, inactive: null });
     mockInvalidateCache.mockResolvedValue(undefined);
     mockGetWorkspace.mockResolvedValue(emptyWorkspace);
@@ -573,6 +579,8 @@ describe('resolved conflict queue presentation', () => {
     mockGetWorkspace.mockResolvedValue({ ...emptyWorkspace, devices: [{ id: 5, status: 'active' }] });
     mockPendingRegistration.mockResolvedValue(null);
     mockLoadSessionForReview.mockResolvedValue({ session: saved, inactive: null });
+    require('@/lib/api/eventOfflineCheckin').downloadOfflineCheckinManifest.mockResolvedValue(saved.manifest);
+    require('@/lib/eventOfflineCheckinStore').refreshMobileOfflineManifest.mockImplementation(async (session: MobileOfflineSession) => session);
     mockCacheWorkspace.mockImplementation(async value => value);
     mockReconcileConflicts.mockResolvedValue({ ...saved, queue: [{ ...saved.queue[0], state: 'rejected' }] });
     mockGetConflicts.mockResolvedValue({ items: [] });

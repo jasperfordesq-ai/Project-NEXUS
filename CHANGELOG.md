@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native offline attendance now restores the previous state when undoing an action, permits a valid later scan of the same badge, and avoids counting synced actions again after refreshing the roster. An opt-in history snapshot preserves compatibility with existing clients; uncertain pending actions remain saved for reconciliation.
+
 - Native event check-in now translates conflict attendance states and scanner refusal messages in all seven app languages, and correctly explains that refused-device queues remain saved for review until explicitly removed.
 
 - Native event check-in queues now recover the latest conflict decisions after organiser resolution and reopening, including older saved queues, without resubmitting attendance or discarding pending scans.

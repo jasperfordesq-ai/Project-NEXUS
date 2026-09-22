@@ -164,7 +164,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         }
         if (!isCurrent()) return;
       }
-      if (restored && !inactive && restored.manifest.manifest_version !== nextWorkspace.manifest_version) {
+      if (restored && !inactive) {
         const manifest = await downloadOfflineCheckinManifest(eventId, restored.deviceSecret);
         if (!isCurrent()) return;
         restored = await refreshMobileOfflineManifest(restored, manifest, nextWorkspace);
@@ -374,6 +374,8 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         credential_revoked_or_rotated: 'scan.revoked',
         credential_signing_key_unknown: 'scan.signingKeyUnknown',
         queue_full: 'scan.queueFull',
+        attendance_history_required: 'scan.historyRequired',
+        attendance_reconciliation_required: 'scan.reconciliationRequired',
       };
       showToast({
         title: t(SCAN_MESSAGES[code] ?? 'scan.invalid'),
@@ -390,6 +392,12 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       const result = await syncMobileOfflineSession(session);
       if (!mountedRef.current) return;
       setSession(result.session);
+      if (workspace && !sessionInactive && !result.session.activeBatchId) {
+        const manifest = await downloadOfflineCheckinManifest(eventId, result.session.deviceSecret);
+        const refreshed = await refreshMobileOfflineManifest(result.session, manifest, workspace);
+        if (!mountedRef.current) return;
+        setSession(refreshed);
+      }
       const stopped = result.session.activeBatchStatus === 'dead_letter';
       showToast({ title: stopped ? t('queue.stoppedTitle') : result.session.activeBatchId ? t('queue.processing') : result.batch ? t('queue.synced') : t('queue.emptyPending'), variant: stopped ? 'warning' : 'success' });
       await loadConflicts();
@@ -438,7 +446,11 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
       setConflicts(next);
       setResolutionReasons((current) => ({ ...current, [item.item_id]: '' }));
       if (session) {
-        const reconciled = await reconcileMobileOfflineConflicts(session);
+        let reconciled = await reconcileMobileOfflineConflicts(session);
+        if (workspace && !sessionInactive) {
+          const manifest = await downloadOfflineCheckinManifest(eventId, reconciled.deviceSecret);
+          reconciled = await refreshMobileOfflineManifest(reconciled, manifest, workspace);
+        }
         if (!mountedRef.current) return;
         setSession(reconciled);
       }

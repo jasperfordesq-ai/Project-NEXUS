@@ -18,6 +18,7 @@ import * as Sentry from '@sentry/react-native';
 import { api, ApiResponseError } from '@/lib/api/client';
 import {
   EVENT_OFFLINE_CHECKIN_CONTRACT_VERSION,
+  downloadOfflineCheckinManifest,
   getMyEventCheckinCredential,
   getOfflineCheckinBatch,
   findOfflineCheckinBatch,
@@ -303,4 +304,19 @@ describe('mobile Event offline check-in API', () => {
     }, options);
     expect(api.post).toHaveBeenCalledTimes(1);
   });
+});
+
+it.each([2, 3, 'missing-history', 'invalid-history'])('negotiates strict offline history without breaking schema2 (%s)', async version => {
+  const registration: Record<string, unknown> = { registration_id: 1, user_id: 2, display_name: 'Test', credential_version: 1,
+    credential_fingerprint: 'a'.repeat(16), credential_verifier: 'a'.repeat(64), attendance_status: 'checked_out', attendance_version: 2 };
+  if (version !== 2 && version !== 'missing-history') registration.undo_state = version === 'invalid-history' ? 'made_up' : 'checked_in';
+  const data = { schema_version: version === 2 ? 2 : 3, tenant_id: 7, event_id: 91, occurrence_key: 'event91', manifest_version: 3,
+    device: { id: 22, version: 1 }, generated_at: '2026-09-22', expires_at: '2026-09-23',
+    credential_verification: { format: 'nqx2', algorithm: 'Ed25519', keys: [{ kid: 'a'.repeat(16), alg: 'Ed25519', public_key: 'a'.repeat(44) }] },
+    registrations: [registration], privacy: { credential_contains_pii: false, encrypted_at_rest_required: true } };
+  (api.post as jest.Mock).mockResolvedValue({ data });
+  const result = downloadOfflineCheckinManifest(91, 'nxd1_secret');
+  if (typeof version === 'number') await expect(result).resolves.toEqual(data);
+  else await expect(result).rejects.toMatchObject({ code: 'EVENT_CHECKIN_CONTRACT_DRIFT' });
+  expect(api.post).toHaveBeenLastCalledWith('/api/v2/events/91/offline-checkin/manifest', { device_secret: 'nxd1_secret', schema_version: 3 }, options);
 });

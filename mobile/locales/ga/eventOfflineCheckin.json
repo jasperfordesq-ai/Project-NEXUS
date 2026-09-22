@@ -70,7 +70,9 @@
     "wrongEvent": "Baineann an suaitheantas seo le himeacht eile.",
     "revoked": "Cúlghaireadh nó athsholáthraíodh an suaitheantas seo.",
     "signingKeyUnknown": "Eisíodh an suaitheantas seo tar éis an tsioncrónaithe is déanaí ar an ngléas seo. Sioncrónaigh, ansin scan arís.",
-    "queueFull": "Tá an scuaine as líne lán. Sioncrónaigh sula scanann tú tuilleadh."
+    "queueFull": "Tá an scuaine as líne lán. Sioncrónaigh sula scanann tú tuilleadh.",
+    "historyRequired": "Oscail an scáileán seiceála isteach seo arís agus tú ar líne chun an stair tinrimh a athnuachan sula n-úsáideann tú Cealaigh.",
+    "reconciliationRequired": "Sioncronaigh an scuaine shábháilte agus oscail an scáileán seo arís ar líne sula dtaifeadann tú gníomh eile."
   },
   "queue": {
     "stoppedTitle": "Ní mór an tinreamh a athbhreithniú",

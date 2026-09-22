@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Enums\EventAttendanceState;
 use App\Exceptions\EventOfflineCheckinException;
 use App\Support\Events\EventCheckinManifest;
 use Carbon\CarbonImmutable;
@@ -28,7 +29,11 @@ final class EventCheckinManifestService
         string $deviceSecret,
         int $actorUserId,
         ?int $ttlMinutes = null,
+        int $schemaVersion = 2,
     ): EventCheckinManifest {
+        if (!in_array($schemaVersion, [2, 3], true)) {
+            throw new EventOfflineCheckinException('event_checkin_manifest_schema_invalid');
+        }
         $tenantId = TenantContext::currentId();
         if ($tenantId === null || $tenantId <= 0) {
             throw new EventOfflineCheckinException('event_checkin_tenant_context_missing');
@@ -40,6 +45,7 @@ final class EventCheckinManifestService
             $deviceSecret,
             $actorUserId,
             $ttlMinutes,
+            $schemaVersion,
         ): EventCheckinManifest {
             // Nested transactions retain the event/device row locks until this snapshot commits.
             $device = $this->devices->verify($eventId, $deviceSecret, $actorUserId);
@@ -90,6 +96,13 @@ final class EventCheckinManifestService
                         ->on('attendance.event_id', '=', 'credentials.event_id')
                         ->on('attendance.user_id', '=', 'credentials.user_id');
                 })
+                ->leftJoin('event_attendance_activity as activity', static function ($join): void {
+                    $join->on('activity.tenant_id', '=', 'attendance.tenant_id')
+                        ->on('activity.event_id', '=', 'attendance.event_id')
+                        ->on('activity.attendance_id', '=', 'attendance.id')
+                        ->on('activity.user_id', '=', 'attendance.user_id')
+                        ->on('activity.attendance_version', '=', 'attendance.attendance_version');
+                })
                 ->where('credentials.tenant_id', $tenantId)
                 ->where('credentials.event_id', $eventId)
                 ->where('credentials.status', 'active')
@@ -108,6 +121,9 @@ final class EventCheckinManifestService
                     'credentials.token_hash as credential_verifier',
                     'attendance.attendance_status',
                     'attendance.attendance_version',
+                    'activity.action as latest_action',
+                    'activity.from_status as undo_from_status',
+                    'activity.to_status as undo_to_status',
                 ])
                 ->map(static fn (object $row): array => [
                     'registration_id' => (int) $row->registration_id,
@@ -120,6 +136,10 @@ final class EventCheckinManifestService
                         ? (string) $row->attendance_status
                         : null,
                     'attendance_version' => max(0, (int) ($row->attendance_version ?? 0)),
+                    ...($schemaVersion === 3 ? ['undo_state' => $row->latest_action !== null
+                        && $row->latest_action !== 'undo' && $row->undo_to_status === $row->attendance_status
+                        ? (EventAttendanceState::tryFrom(strtolower(trim((string) $row->undo_from_status)))
+                            ?? EventAttendanceState::NotCheckedIn)->value : null] : []),
                 ])
                 ->values()
                 ->all();
@@ -135,6 +155,7 @@ final class EventCheckinManifestService
                 $expiresAt,
                 $registrations,
                 ($this->signer ?? new EventCheckinCredentialSigner())->publicKeySet(),
+                $schemaVersion,
             );
         }, 3);
     }

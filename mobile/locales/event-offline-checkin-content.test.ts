@@ -12,7 +12,7 @@ it.each(locales)('%s renders check-in refusal messages from the screen namespace
   const i18n = i18next.createInstance();
   await i18n.init({ lng: locale, fallbackLng: false, defaultNS: 'eventOfflineCheckin',
     resources: { [locale]: { eventOfflineCheckin: resource, events } }, interpolation: { escapeValue: false } });
-  for (const key of ['queue.readOnlyRevoked', 'scan.alreadyQueued', 'scan.expired', 'scan.wrongEvent', 'scan.revoked', 'scan.signingKeyUnknown', 'scan.queueFull']) {
+  for (const key of ['queue.readOnlyRevoked', 'scan.alreadyQueued', 'scan.expired', 'scan.wrongEvent', 'scan.revoked', 'scan.signingKeyUnknown', 'scan.queueFull', 'scan.historyRequired', 'scan.reconciliationRequired']) {
     expect(i18n.exists(key)).toBe(true);
     expect(i18n.t(key)).not.toBe(key);
   }

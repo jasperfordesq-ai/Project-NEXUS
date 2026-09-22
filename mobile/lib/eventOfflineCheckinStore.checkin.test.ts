@@ -185,6 +185,7 @@ interface RegistrationSeed {
   credentialVersion?: number;
   attendanceStatus?: string | null;
   attendanceVersion?: number;
+  undoState?: MobileOfflineManifest['registrations'][number]['undo_state'];
   credential: { hash: string; fingerprint: string };
 }
 
@@ -198,6 +199,7 @@ function registration(seed: RegistrationSeed) {
     credential_verifier: seed.credential.hash,
     attendance_status: seed.attendanceStatus ?? 'not_checked_in',
     attendance_version: seed.attendanceVersion ?? 0,
+    undo_state: seed.undoState,
   };
 }
 
@@ -480,7 +482,7 @@ describe('queueing an attendance change while offline', () => {
     // demands an explanation, and whitespace is not one.
     const issued = issueCredential();
     const active = session({
-      manifest: manifest([registration({ credential: issued, attendanceStatus: 'checked_in' })]),
+      manifest: manifest([registration({ credential: issued, attendanceStatus: 'checked_in', undoState: 'not_checked_in' })]),
     });
 
     await expect(enqueueMobileOfflineCredential(active, issued.credential, 'undo', '   '))
@@ -1000,5 +1002,75 @@ describe('conflict decision recovery isolation', () => {
     const review = await loadMobileOfflineSessionForReview(EVENT_ID, DEVICE_ID);
     expect(review.inactive).toBe('manifest_expired');
     expect(review.session?.queue[0].state).toBe('rejected');
+  });
+});
+
+describe('offline attendance prediction across undo and refresh', () => {
+  function ready(state = 'not_checked_in', version = 0) {
+    const issued = issueCredential();
+    const roster = manifest([registration({ credential: issued, attendanceStatus: state, attendanceVersion: version })]);
+    return { issued, active: session({ manifest: roster }) };
+  }
+  it('allows checkout again after undoing a locally queued checkout', async () => {
+    const { issued, active } = ready();
+    const checkedIn = await enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null);
+    const checkedOut = await enqueueMobileOfflineCredential(checkedIn, issued.credential, 'check_out', null);
+    const undone = await enqueueMobileOfflineCredential(checkedOut, issued.credential, 'undo', 'Wrong departure');
+    const next = await enqueueMobileOfflineCredential(undone, issued.credential, 'check_out', null);
+    expect(next.queue.map(item => item.expectedAttendanceVersion)).toEqual([0, 1, 2, 3]);
+  });
+  it('does not replay a synced check-in already included in a newer roster', async () => {
+    const { issued, active } = ready();
+    const queued = await enqueueMobileOfflineCredential(active, issued.credential, 'check_in', null);
+    const current = session({ ...queued, queue: queued.queue.map(item => ({ ...item, state: 'synced' })) });
+    current.manifest.registrations[0].attendance_status = 'checked_in';
+    current.manifest.registrations[0].attendance_version = 1;
+    seedStoredSession(current);
+    const next = await enqueueMobileOfflineCredential(current, issued.credential, 'check_out', null);
+    expect(next.queue[1].expectedAttendanceVersion).toBe(1);
+  });
+});
+
+describe('authoritative offline history', () => {
+  function ready(state: string, undoState: MobileOfflineManifest['registrations'][number]['undo_state']) {
+    const issued = issueCredential();
+    const active = session({ manifest: { ...manifest([registration({ credential: issued, attendanceStatus: state, attendanceVersion: 2, undoState })]), schema_version: 3 } });
+    return { issued, active };
+  }
+  it('undoes a roster checkout to checked in and permits the next checkout', async () => {
+    const { issued, active } = ready('checked_out', 'checked_in');
+    const undone = await enqueueMobileOfflineCredential(active, issued.credential, 'undo', 'Correct departure');
+    const next = await enqueueMobileOfflineCredential(undone, issued.credential, 'check_out', null);
+    expect(next.queue.map(item => item.expectedAttendanceVersion)).toEqual([2, 3]);
+  });
+  it('undoes no-show to not checked in and permits arrival', async () => {
+    const { issued, active } = ready('no_show', 'not_checked_in');
+    const undone = await enqueueMobileOfflineCredential(active, issued.credential, 'undo', 'Member arrived');
+    expect((await enqueueMobileOfflineCredential(undone, issued.credential, 'check_in', null)).queue[1].expectedAttendanceVersion).toBe(3);
+  });
+  it('refuses another undo when the latest authoritative action was already undone', async () => {
+    const { issued, active } = ready('checked_in', null);
+    await expect(enqueueMobileOfflineCredential(active, issued.credential, 'undo', 'Again')).rejects.toThrow('transition_invalid');
+  });
+  it('does not guess historical state for a legacy cached roster', async () => {
+    const { issued, active } = ready('checked_out', undefined);
+    active.manifest.schema_version = 2;
+    seedStoredSession(active);
+    await expect(enqueueMobileOfflineCredential(active, issued.credential, 'undo', 'Unknown')).rejects.toThrow('attendance_history_required');
+  });
+  it('keeps an uncertain older pending intent and requires reconciliation before new scans', async () => {
+    const { issued, active } = ready('checked_in', 'not_checked_in');
+    const queued = await enqueueMobileOfflineCredential(active, issued.credential, 'check_out', null);
+    queued.manifest.registrations[0].attendance_version = 3;
+    queued.manifest.registrations[0].attendance_status = 'checked_out';
+    seedStoredSession(queued);
+    await expect(enqueueMobileOfflineCredential(queued, issued.credential, 'undo', 'Wait for result')).rejects.toThrow('attendance_reconciliation_required');
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.queue[0].state).toBe('pending');
+  });
+  it('refuses a late roster that would roll attendance back at the same manifest version', async () => {
+    const { active } = ready('checked_out', 'checked_in');
+    const older = { ...active.manifest, registrations: active.manifest.registrations.map(item => ({ ...item, attendance_version: 1 })) };
+    await expect(refreshMobileOfflineManifest(active, older, { event_id: EVENT_ID } as Parameters<typeof refreshMobileOfflineManifest>[2])).rejects.toThrow('manifest_stale');
+    expect((await loadMobileOfflineSession(EVENT_ID, DEVICE_ID))?.manifest.registrations[0].attendance_version).toBe(2);
   });
 });

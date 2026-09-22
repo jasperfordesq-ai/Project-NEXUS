@@ -70,7 +70,9 @@
     "wrongEvent": "Dieser Ausweis gehört zu einer anderen Veranstaltung.",
     "revoked": "Dieser Ausweis wurde widerrufen oder ersetzt.",
     "signingKeyUnknown": "Dieser Ausweis wurde ausgestellt, nachdem dieses Gerät zuletzt synchronisiert hat. Synchronisiere und scanne erneut.",
-    "queueFull": "Die Offline-Warteschlange ist voll. Synchronisiere, bevor du weiter scannst."
+    "queueFull": "Die Offline-Warteschlange ist voll. Synchronisiere, bevor du weiter scannst.",
+    "historyRequired": "Öffne diesen Check-in-Bildschirm online erneut, um vor dem Rückgängigmachen den Anwesenheitsverlauf zu aktualisieren.",
+    "reconciliationRequired": "Synchronisiere die gespeicherte Warteschlange und öffne diesen Bildschirm online erneut, bevor du eine weitere Aktion erfasst."
   },
   "queue": {
     "stoppedTitle": "Anwesenheit muss geprüft werden",

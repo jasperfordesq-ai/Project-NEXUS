@@ -77,7 +77,7 @@ const workspaceSchema = z.object({
 }).strict();
 
 const manifestSchema = z.object({
-  schema_version: z.literal(2),
+  schema_version: z.union([z.literal(2), z.literal(3)]),
   tenant_id: z.number().int().positive(),
   event_id: z.number().int().positive(),
   occurrence_key: z.string().min(1),
@@ -103,12 +103,14 @@ const manifestSchema = z.object({
     credential_verifier: z.string().regex(/^[0-9a-f]{64}$/),
     attendance_status: z.string().nullable(),
     attendance_version: z.number().int().nonnegative(),
+    undo_state: z.enum(['not_checked_in', 'checked_in', 'checked_out', 'attended', 'no_show']).nullable().optional(),
   }).strict()),
   privacy: z.object({
     credential_contains_pii: z.literal(false),
     encrypted_at_rest_required: z.literal(true),
   }).strict(),
-}).strict();
+}).strict().refine(value => value.schema_version !== 3
+  || value.registrations.every(item => item.undo_state !== undefined), { message: 'Missing attendance undo snapshot' });
 
 const batchSchema = z.object({
   contract_version: z.literal(EVENT_OFFLINE_CHECKIN_CONTRACT_VERSION),
@@ -328,7 +330,7 @@ export async function downloadOfflineCheckinManifest(
   const endpoint = `${API_V2}/events/${eventId}/offline-checkin/manifest`;
   return parse(endpoint, manifestSchema, await api.post<unknown>(
     endpoint,
-    { device_secret: deviceSecret },
+    { device_secret: deviceSecret, schema_version: 3 },
     options(),
   ));
 }

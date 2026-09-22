@@ -289,6 +289,7 @@ final class EventOfflineCheckinController extends BaseApiController
                 $this->requiredSecret(request()->input('device_secret'), 'nxd1_'),
                 (int) $actor->id,
                 $this->optionalPositiveInteger(request()->input('ttl_minutes')),
+                $this->optionalPositiveInteger(request()->input('schema_version')) ?? 2,
             );
 
             return $this->privateData($manifest->toArray());

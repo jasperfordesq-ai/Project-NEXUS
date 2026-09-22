@@ -70,7 +70,9 @@
     "wrongEvent": "Ce badge appartient à un autre événement.",
     "revoked": "Ce badge a été révoqué ou remplacé.",
     "signingKeyUnknown": "Ce badge a été émis après la dernière synchronisation de cet appareil. Synchronisez, puis scannez de nouveau.",
-    "queueFull": "La file hors ligne est pleine. Synchronisez avant de continuer."
+    "queueFull": "La file hors ligne est pleine. Synchronisez avant de continuer.",
+    "historyRequired": "Rouvrez cet écran de pointage en ligne pour actualiser l’historique de présence avant d’annuler une action.",
+    "reconciliationRequired": "Synchronisez la file enregistrée et rouvrez cet écran en ligne avant d’enregistrer une autre action."
   },
   "queue": {
     "stoppedTitle": "La présence doit être vérifiée",

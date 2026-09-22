@@ -22,7 +22,8 @@ final readonly class EventCheckinManifest
      *   credential_fingerprint:string,
      *   credential_verifier:string,
      *   attendance_status:?string,
-     *   attendance_version:int
+     *   attendance_version:int,
+     *   undo_state?:?string
      * }> $registrations
      * @param list<array{kid:string,alg:string,public_key:string}> $verificationKeys
      */
@@ -37,6 +38,7 @@ final readonly class EventCheckinManifest
         public CarbonImmutable $expiresAt,
         public array $registrations,
         public array $verificationKeys,
+        public int $schemaVersion = 2,
     ) {
     }
 
@@ -44,7 +46,7 @@ final readonly class EventCheckinManifest
     public function toArray(): array
     {
         return [
-            'schema_version' => 2,
+            'schema_version' => $this->schemaVersion,
             'tenant_id' => $this->tenantId,
             'event_id' => $this->eventId,
             'occurrence_key' => $this->occurrenceKey,

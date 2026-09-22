@@ -70,7 +70,9 @@
     "wrongEvent": "Questo badge appartiene a un altro evento.",
     "revoked": "Questo badge è stato revocato o sostituito.",
     "signingKeyUnknown": "Questo badge è stato emesso dopo l’ultima sincronizzazione di questo dispositivo. Sincronizza e riprova.",
-    "queueFull": "La coda offline è piena. Sincronizza prima di continuare."
+    "queueFull": "La coda offline è piena. Sincronizza prima di continuare.",
+    "historyRequired": "Riapri questa schermata di registrazione online per aggiornare la cronologia delle presenze prima di annullare un’azione.",
+    "reconciliationRequired": "Sincronizza la coda salvata e riapri questa schermata online prima di registrare un’altra azione."
   },
   "queue": {
     "stoppedTitle": "Le presenze richiedono una verifica",

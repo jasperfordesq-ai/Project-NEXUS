@@ -70,7 +70,9 @@
     "wrongEvent": "Este cartão pertence a outro evento.",
     "revoked": "Este cartão foi revogado ou substituído.",
     "signingKeyUnknown": "Este cartão foi emitido depois da última sincronização deste dispositivo. Sincronize e digitalize novamente.",
-    "queueFull": "A fila offline está cheia. Sincronize antes de digitalizar mais."
+    "queueFull": "A fila offline está cheia. Sincronize antes de digitalizar mais.",
+    "historyRequired": "Volte a abrir este ecrã de registo com ligação à Internet para atualizar o histórico de presenças antes de anular.",
+    "reconciliationRequired": "Sincronize a fila guardada e volte a abrir este ecrã com ligação à Internet antes de registar outra ação."
   },
   "queue": {
     "stoppedTitle": "A presença precisa de revisão",
