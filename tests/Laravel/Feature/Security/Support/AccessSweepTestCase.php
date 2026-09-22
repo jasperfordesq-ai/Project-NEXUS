@@ -208,6 +208,19 @@ abstract class AccessSweepTestCase extends TestCase
         'group_invite' => ['table' => 'group_invites', 'needs' => ['group_id' => 'group'], 'owner' => 'invited_by', 'columns' => ['token' => 'sweep-invite-{n}']],
         'group_challenge' => ['table' => 'group_challenges', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep challenge', 'metric' => 'posts', 'target_value' => '10', 'ends_at' => '{tomorrow}']],
         'group_scheduled_post' => ['table' => 'group_scheduled_posts', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['content' => 'Sweep scheduled post', 'scheduled_at' => '{tomorrow}']],
+        // E-022 batch 1. Each closes routes the child sweep could only SKIP,
+        // because the deepest parameter had no fixture and fell back to its
+        // parent's type — so the request would have used one row as both parent
+        // and child, which is not a test.
+        'group_wiki_page' => ['table' => 'group_wiki_pages', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep wiki page', 'slug' => 'sweep-wiki-{n}']],
+        'group_webhook' => ['table' => 'group_webhooks', 'needs' => ['group_id' => 'group'], 'columns' => ['url' => 'https://example.invalid/sweep-{n}', 'events' => '[]']],
+        'event_staff_assignment' => ['table' => 'event_staff_assignments', 'needs' => ['event_id' => 'event'], 'owner' => 'user_id', 'columns' => ['role' => 'steward', 'granted_at' => '{now}', 'granted_by' => '{owner}']],
+        // E-022 batch 2.
+        'group_data_export' => ['table' => 'group_data_exports', 'uuid_pk' => true, 'needs' => ['group_id' => 'group'], 'owner' => 'requested_by', 'columns' => ['expires_at' => '{tomorrow}']],
+        'message_attachment' => ['table' => 'message_attachments', 'needs' => ['message_id' => 'message'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt']],
+        'listing_image' => ['table' => 'listing_images', 'needs' => ['listing_id' => 'listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
+        'marketplace_collection' => ['table' => 'marketplace_collections', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep collection']],
+        'story_highlight' => ['table' => 'story_highlights', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep highlight']],
         'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3']],
         // `unique_tenant_document` is (tenant_id, document_type) and every
         // seeded tenant already has a 'terms' row, so the sweep takes a type
@@ -246,7 +259,28 @@ abstract class AccessSweepTestCase extends TestCase
         'groups/invites' => 'group_invite',
         'groups/challenges' => 'group_challenge',
         'groups/scheduled-posts' => 'group_scheduled_post',
+        // 🔴 The real path is `podcasts/{showId}/episodes/{episodeId}`, whose
+        // local prefix strips to `podcasts/episodes` — NOT `podcasts/shows/episodes`.
+        // The key below therefore never matched anything, so all five episode
+        // routes were reported SKIPPED while a perfectly good `podcast_episode`
+        // fixture already existed. Found 2026-09-22 (E-022). The old key is kept:
+        // it costs nothing and records the mistake.
+        'podcasts/episodes' => 'podcast_episode',
         'podcasts/shows/episodes' => 'podcast_episode',
+        'groups/wiki' => 'group_wiki_page',
+        'groups/webhooks' => 'group_webhook',
+        'groups/exports' => 'group_data_export',
+        'events/staff' => 'event_staff_assignment',
+        'messages/attachments' => 'message_attachment',
+        'listings/images' => 'listing_image',
+        'marketplace/collections' => 'marketplace_collection',
+        // The deepest parameter of `marketplace/collections/{id}/items/{listingId}`
+        // is a LISTING, not a collection-item row — the endpoint removes a
+        // listing from a collection by the listing's own id.
+        'marketplace/collections/items' => 'marketplace_listing',
+        'stories/highlights' => 'story_highlight',
+        // Likewise `stories/highlights/{id}/items/{storyId}` names a STORY.
+        'stories/highlights/items' => 'story',
         'admin/legal-documents' => 'legal_document',
         'admin/legal-documents/versions' => 'legal_document_version',
     ];
@@ -256,6 +290,24 @@ abstract class AccessSweepTestCase extends TestCase
      * provably changing nothing. Shrink-only in both directions.
      */
     protected const KNOWN_CHILD_ACCEPTED_NO_CHANGE = [
+        // E-022. Surfaced only once the story-highlight fixtures existed, so it
+        // had never been exercised before. StoryService::removeFromHighlight()
+        // first proves the HIGHLIGHT is `id = ? AND user_id = ? AND tenant_id = ?`
+        // — the caller's own, in the caller's own community — and only then
+        // deletes from story_highlight_items by (highlight_id, story_id). A
+        // foreign story id therefore matches no row, and $storyId never reaches
+        // a branch that shapes the response, so the 200 is idempotent rather
+        // than permissive.
+        //
+        // 🔴 PROVED, not read off the source, because an allow-list entry is an
+        // edit to a security control that makes a hit disappear. See
+        // StoryControllerTest::test_remove_highlight_item_answers_identically_for_a_foreign_story_and_a_nonexistent_one
+        // (byte-identical body and status for another community's story and for
+        // an id that exists nowhere — so no existence oracle — and the foreign
+        // story row survives) and
+        // ::test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own
+        // (403, and the join row is untouched).
+        'DELETE api/v2/stories/highlights/{id}/items/{storyId}',
     ];
 
     /**
@@ -711,7 +763,17 @@ abstract class AccessSweepTestCase extends TestCase
     /**
      * @param  array<string,int>  $seeded  fixture key => id, for 'needs' linkage
      */
-    protected function insertRow(array $spec, int $tenantId, User $owner, array $seeded = []): int
+    /**
+     * Insert one fixture row and return its primary key.
+     *
+     * 🔴 Returns int|string, not int. Almost every table here has an
+     * auto-increment integer key, but `group_data_exports` has a `char(36)`
+     * UUID — and because this method was typed `: int`, that fixture could not
+     * be created at all and its two routes were reported SKIPPED. A key is only
+     * ever substituted into a URL or compared with `where('id', ...)`, so a
+     * string works everywhere an int did. Found 2026-09-22 (E-022).
+     */
+    protected function insertRow(array $spec, int $tenantId, User $owner, array $seeded = []): int|string
     {
         $row = [];
         $n = Str::lower(Str::random(8));
@@ -744,6 +806,11 @@ abstract class AccessSweepTestCase extends TestCase
             $row[$column] = match ($value) {
                 '{tomorrow}' => now()->addDay(),
                 '{today}' => now()->toDateString(),
+                '{now}' => now(),
+                // Some child tables record the acting person in more than one
+                // column (`event_staff_assignments` has both `user_id` and a
+                // NOT NULL `granted_by`). 'owner' fills one; this fills the rest.
+                '{owner}' => $owner->id,
                 default => str_replace('{n}', $n, (string) $value),
             };
         }
@@ -752,6 +819,16 @@ abstract class AccessSweepTestCase extends TestCase
             if (Schema::hasColumn($spec['table'], $ts)) {
                 $row[$ts] = now();
             }
+        }
+
+        // A non-auto-increment primary key must be supplied by us. Declared by
+        // the fixture with 'uuid_pk' => true rather than sniffed, so a table
+        // that gains an odd key type fails loudly instead of silently.
+        if (! empty($spec['uuid_pk'])) {
+            $row['id'] = (string) Str::uuid();
+            DB::table($spec['table'])->insert($row);
+
+            return $row['id'];
         }
 
         // A fixture whose table has a per-tenant uniqueness rule cannot simply

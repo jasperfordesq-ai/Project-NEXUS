@@ -670,4 +670,90 @@ class StoryControllerTest extends TestCase
         $data = $response->json('data');
         $this->assertEmpty($data);
     }
+
+    // -----------------------------------------------------------------
+    //  REMOVE HIGHLIGHT ITEM — DELETE /api/v2/stories/highlights/{id}/items/{storyId}
+    //
+    //  E-022. The cross-community child sweep flagged this endpoint as
+    //  ACCEPTED_NO_CHANGE: handed another community's story id it answers 200
+    //  `removed: true` instead of refusing. Before that could be recorded as a
+    //  deliberate no-op in KNOWN_CHILD_ACCEPTED_NO_CHANGE, the claim underneath
+    //  it had to be PROVED rather than read off the source, because adding an
+    //  allow-list entry is editing a security control so that a hit disappears.
+    //
+    //  The claim has two halves and both are tested here:
+    //    1. nothing of anyone else's is touched, and
+    //    2. the answer does not reveal whether the story exists.
+    // -----------------------------------------------------------------
+
+    private function createHighlight(int $userId): int
+    {
+        return (int) DB::table('story_highlights')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $userId,
+            'title' => 'Sweep highlight',
+            'created_at' => now(),
+        ]);
+    }
+
+    public function test_remove_highlight_item_answers_identically_for_a_foreign_story_and_a_nonexistent_one(): void
+    {
+        $owner = $this->authenticatedUser();
+        $highlight = $this->createHighlight($owner->id);
+
+        // A story belonging to a different community entirely.
+        // 999 is the foreign-community id the security sweeps already use.
+        $foreignTenantId = 999;
+        $stranger = User::factory()->forTenant($foreignTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $foreignStoryId = $this->createStoryRecord($stranger->id, [
+            'tenant_id' => $foreignTenantId,
+        ]);
+
+        $foreign = $this->apiDelete("/v2/stories/highlights/{$highlight}/items/{$foreignStoryId}");
+        $absent  = $this->apiDelete("/v2/stories/highlights/{$highlight}/items/999999999");
+
+        // (2) No existence disclosure: byte-identical answers.
+        $this->assertSame($absent->getStatusCode(), $foreign->getStatusCode());
+        $this->assertSame(
+            $absent->getContent(),
+            $foreign->getContent(),
+            'The answer for another community\'s story must not differ from the answer for an id '
+            . 'that exists nowhere, or the endpoint becomes an existence oracle.'
+        );
+
+        // (1) Nothing of theirs was touched — the story itself survives intact.
+        $this->assertDatabaseHas('stories', [
+            'id' => $foreignStoryId,
+            'tenant_id' => $foreignTenantId,
+            'user_id' => $stranger->id,
+        ]);
+    }
+
+    public function test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own(): void
+    {
+        $stranger = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $theirHighlight = $this->createHighlight($stranger->id);
+        $theirStory = $this->createStoryRecord($stranger->id);
+        DB::table('story_highlight_items')->insert([
+            'highlight_id' => $theirHighlight,
+            'story_id' => $theirStory,
+        ]);
+
+        // Now act as somebody else entirely.
+        $this->authenticatedUser();
+
+        $response = $this->apiDelete("/v2/stories/highlights/{$theirHighlight}/items/{$theirStory}");
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertDatabaseHas('story_highlight_items', [
+            'highlight_id' => $theirHighlight,
+            'story_id' => $theirStory,
+        ]);
+    }
 }
