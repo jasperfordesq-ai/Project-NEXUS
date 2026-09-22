@@ -1131,10 +1131,12 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
 
                 [$uri] = $this->fillFromIds($e['uri'], $probeIds);
 
+                // An EMPTY body was rejected by validation before scoping could be
+                // observed on nine of these routes, which is not a pass — the same
+                // hole the valid-body write sweep exists to close. Build a body the
+                // endpoint accepts, then judge the answer.
                 try {
-                    $response = $this->json($e['method'], '/' . ltrim($uri, '/'), [], $this->withTenantHeader());
-                    $status = $response->getStatusCode();
-                    $body = mb_substr((string) $response->getContent(), 0, 300);
+                    [$status, $body] = $this->requestSynthesisingBody($e['method'], '/' . ltrim($uri, '/'));
                 } catch (\Throwable $ex) {
                     $results[] = array_merge($row, [
                         'verdict' => 'INCONCLUSIVE',
@@ -1151,8 +1153,9 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
                 $controlStatus = null;
 
                 try {
-                    $controlStatus = $this->json($e['method'], '/' . ltrim($controlUri, '/'), [], $this->withTenantHeader())
-                        ->getStatusCode();
+                    // The control gets the same treatment, or it fails validation
+                    // where the probe did not and every route reads INCONCLUSIVE.
+                    [$controlStatus] = $this->requestSynthesisingBody($e['method'], '/' . ltrim($controlUri, '/'));
                 } catch (\Throwable) {
                     $controlStatus = null;
                 }
@@ -1330,6 +1333,50 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
     }
 
     /** Does the body visibly reference the victim record or its owner? For human review only. */
+    /**
+     * Fire a request, and when validation rejects it, fill in the field it
+     * named and try again — up to eight rounds, the same budget and the same
+     * firstFailingField()/synthesiseValue() pair the valid-body write sweep
+     * uses. Returns [status, first 300 chars of the body].
+     *
+     * 🔴 This deliberately sends a body an endpoint will ACCEPT at a foreign
+     * child record. That is the point: an empty body that bounces off
+     * validation proves nothing about community scoping. The caller snapshots
+     * the child row before and after and classifies MUTATED before it looks at
+     * the status, so a write that succeeds is caught rather than scored as a
+     * pass. The known limit, shared with the write sweep: only the CHILD row is
+     * snapshotted, so a write that changes some OTHER row would not be seen.
+     *
+     * @return array{0:int,1:string}
+     */
+    private function requestSynthesisingBody(string $method, string $uri): array
+    {
+        $body = [];
+        $tried = [];
+        $status = 0;
+        $raw = '';
+
+        for ($attempt = 0; $attempt < 8; $attempt++) {
+            $response = $this->json($method, $uri, $body, $this->withTenantHeader());
+            $status = $response->getStatusCode();
+            $raw = (string) $response->getContent();
+
+            if (! in_array($status, [400, 422], true)) {
+                break;
+            }
+
+            [$field, $message] = $this->firstFailingField($raw);
+            if ($field === null || isset($tried[$field])) {
+                break;
+            }
+
+            $tried[$field] = true;
+            $body[$field] = $this->synthesiseValue($field, $message);
+        }
+
+        return [$status, mb_substr($raw, 0, 300)];
+    }
+
     private function bodyMentionsVictim(string $body, int $victimId): bool
     {
         if ($this->victimOwner === null) {

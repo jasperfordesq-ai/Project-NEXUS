@@ -205,7 +205,9 @@ abstract class AccessSweepTestCase extends TestCase
         'group_answer' => ['table' => 'group_answers', 'needs' => ['question_id' => 'group_question'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep answer']],
         'group_file' => ['table' => 'group_files', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by', 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_type' => 'text/plain']],
         'group_media' => ['table' => 'group_media', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by'],
-        'group_invite' => ['table' => 'group_invites', 'needs' => ['group_id' => 'group'], 'owner' => 'invited_by', 'columns' => ['token' => 'sweep-invite-{n}']],
+        // 'Invite not found or already used' — the lookup wants a live invite, so it
+        // needs an explicit pending status and a future expiry, not column defaults.
+        'group_invite' => ['table' => 'group_invites', 'needs' => ['group_id' => 'group'], 'owner' => 'invited_by', 'columns' => ['token' => 'sweep-invite-{n}', 'status' => 'pending', 'expires_at' => '{tomorrow}']],
         'group_challenge' => ['table' => 'group_challenges', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep challenge', 'metric' => 'posts', 'target_value' => '10', 'ends_at' => '{tomorrow}']],
         'group_scheduled_post' => ['table' => 'group_scheduled_posts', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['content' => 'Sweep scheduled post', 'scheduled_at' => '{tomorrow}']],
         // E-022 batch 1. Each closes routes the child sweep could only SKIP,
@@ -227,7 +229,26 @@ abstract class AccessSweepTestCase extends TestCase
         'verein_event_share' => ['table' => 'verein_event_shares', 'needs' => ['source_organization_id' => 'organization', 'target_organization_id' => 'organization', 'event_id' => 'event']],
         'verein_member_due' => ['table' => 'verein_member_dues', 'needs' => ['organization_id' => 'organization'], 'owner' => 'user_id', 'columns' => ['membership_year' => '2026', 'amount_cents' => '1000', 'due_date' => '{today}']],
         'ideation_challenge' => ['table' => 'ideation_challenges', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep challenge', 'description' => 'Sweep challenge description']],
-        'user_badge' => ['table' => 'user_badges', 'owner' => 'user_id', 'columns' => ['badge_key' => 'sweep_badge_{n}']],
+        // AdminUsersController::removeBadge() looks the badge up by
+        // (id, user_id, tenant_id), where user_id is the {id} in the PATH — so the
+        // badge must belong to the 'user' fixture, not to the acting administrator.
+        'user_badge' => ['table' => 'user_badges', 'needs' => ['user_id' => 'user'], 'columns' => ['badge_key' => 'sweep_badge_{n}']],
+        // E-022 batch 4. Membership and enrolment: several group and course
+        // endpoints refuse a NON-MEMBER before they ever consider community
+        // scoping, so the control failed and the endpoint went untested. These
+        // make the acting user a real participant.
+        'group_member' => ['table' => 'group_members', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['status' => 'active', 'role' => 'admin']],
+        'course_enrollment' => ['table' => 'course_enrollments', 'needs' => ['course_id' => 'course'], 'owner' => 'user_id'],
+        // E-022 batch 5.
+        'event_session' => ['table' => 'event_sessions', 'needs' => ['event_id' => 'event'], 'columns' => ['title' => 'Sweep session', 'starts_at_utc' => '{now}', 'ends_at_utc' => '{tomorrow}', 'timezone' => 'UTC', 'created_by' => '{owner}', 'updated_by' => '{owner}']],
+        // The knowledge base is its OWN table. PREFIX_FIXTURES maps 'kb' to
+        // help_article, which is a different module; knowledge_base_attachments
+        // has a foreign key to knowledge_base_articles, so the child sweep needs
+        // the real one. Added to the child map only — PREFIX_FIXTURES is shared
+        // with the read and write sweeps whose figures are published, and this
+        // pass must not move them.
+        'kb_article' => ['table' => 'knowledge_base_articles', 'columns' => ['title' => 'Sweep article', 'slug' => 'sweep-article-{n}']],
+        'kb_attachment' => ['table' => 'knowledge_base_attachments', 'needs' => ['article_id' => 'kb_article'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain']],
         'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3']],
         // `unique_tenant_document` is (tenant_id, document_type) and every
         // seeded tenant already has a 'terms' row, so the sweep takes a type
@@ -278,6 +299,9 @@ abstract class AccessSweepTestCase extends TestCase
         'groups/webhooks' => 'group_webhook',
         'groups/exports' => 'group_data_export',
         'events/staff' => 'event_staff_assignment',
+        'events/agenda/sessions' => 'event_session',
+        'kb' => 'kb_article',
+        'kb/attachments' => 'kb_attachment',
         // All three serve one episode's media, keyed by {tenantId}/{episodeId};
         // the deepest parameter is the episode, which already has a fixture.
         'podcasts/chapters' => 'podcast_episode',
