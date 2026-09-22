@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The platform-wide API request-rate ceiling can no longer be multiplied by changing a request header. Its bucket was keyed partly on the `X-Tenant-ID` / `X-Tenant-Slug` headers the caller supplies, so sending a different community value on each request minted a fresh allowance every time and the ceiling never engaged. It is now keyed on the community the platform actually resolved, so an unrecognised value no longer creates a new allowance. Ordinary use is unaffected, and each community keeps its own separate allowance as before.
+
 - Member search results now honour the member's own "show my profile in member search results" setting everywhere it is offered. Global search, search autocomplete and the AI assistant's member lookups previously ignored it and returned members who had switched it off, together with their name, avatar, location, skills and profile link; the member directory, Explore and member ranking always honoured it. The rule now lives in one place (`App\Support\Members\MemberDirectoryVisibility`) so a new discovery surface cannot miss it, and it covers the tenant's own directory listing requirements as well. Search-engine results are revalidated against the database, so a member who changes the setting takes effect immediately rather than at the next index sync.
 
 ## [2.1.0] - 2026-09-22

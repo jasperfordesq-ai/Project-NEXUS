@@ -89,8 +89,21 @@ class RouteServiceProvider extends ServiceProvider
         // nothing. It was the enabler for a 500 raised inside the exception
         // handler, not the thing that raised it.
 
+        // `throttle:api` is applied to the whole `api` middleware group, so for
+        // the majority of routes — every one that does not also name a
+        // `nexus-route-*` tier — this is the ONLY request-rate ceiling.
+        //
+        // 🔴 The tenant half of the key is read from TenantContext, NOT from the
+        // X-Tenant-ID / X-Tenant-Slug request headers it used to read. Those
+        // headers are client-supplied and an unrecognised slug is served rather
+        // than refused, so keying on them meant a caller minted a fresh 300/min
+        // budget per header value: measured on 2026-09-22, 420 concurrent
+        // requests from one IP carrying one slug produced 119 × 429, and the
+        // same burst carrying a different slug each time produced 420 × 200 and
+        // no 429 at all. Reading the resolved id also bounds the cache-key space
+        // an unauthenticated caller can create, which the raw header did not.
         RateLimiter::for('api', function (Request $request) {
-            $tenant = (string) ($request->header('X-Tenant-ID') ?: $request->header('X-Tenant-Slug') ?: 'unresolved');
+            $tenant = (string) (TenantContext::currentId() ?? 'unresolved');
             $identity = $request->user()?->id;
             if (! $identity && $request->bearerToken()) {
                 $identity = 'token:' . hash('sha256', $request->bearerToken());
@@ -102,6 +115,25 @@ class RouteServiceProvider extends ServiceProvider
                 Limit::perMinutes(10, 2000)->by('sustained|' . $key),
             ];
         });
+
+        // 🔴 There is deliberately NO flat per-IP envelope here, unlike
+        // routeRateLimits() below, and the reason must be read before one is
+        // added "for consistency". `web-uk`, the accessible frontend, is a
+        // server-side application: it calls this API itself and does NOT forward
+        // the visitor's address (it sends only X-Tenant-Slug and Authorization).
+        // Every accessible-frontend request for all eleven communities and all
+        // three live hostnames therefore reaches Laravel from ONE address, so a
+        // per-IP ceiling across the whole `api` group would throttle the entire
+        // accessible frontend rather than an attacker. routeRateLimits() can
+        // afford its IP-wide ceiling because it applies per endpoint tier, not
+        // across every route at once.
+        //
+        // The multiplication F-036 described is closed by keying on the resolved
+        // community above: an unrecognised slug no longer mints a bucket, so the
+        // ceiling can be multiplied at most by the number of communities that
+        // actually exist, instead of without limit. Tightening that residual
+        // needs a measured figure for legitimate aggregate traffic from the
+        // web-uk address, which is a production measurement, not a guess.
 
         // NOTE (2026-08-10): there is deliberately no 'auth' or 'uploads' named
         // limiter here. Both existed but no route ever referenced either name in
