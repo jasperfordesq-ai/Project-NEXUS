@@ -447,6 +447,32 @@ beforeEach(() => {
 describe('ThreadScreen', () => {
   const originalPlatformOS = Platform.OS;
 
+  it('clears a recovered legacy draft at its original key after successful send', async () => {
+    const legacyContext = 'recipient:5:listing:0:context:none:0';
+    mockLoadCreationDraft.mockImplementation(async (scope: { contextId: string }) => (
+      scope.contextId === legacyContext ? { text: 'Legacy inbox draft' } : null
+    ));
+    mockUseApi.mockReturnValue({ data: { data: mockMessages, meta: { conversation: { other_user: { id: 5 } } } }, isLoading: false, error: null, refresh: jest.fn() });
+    const view = render(<ThreadScreen />);
+    await waitFor(() => expect(view.getByPlaceholderText('Type a message...').props.value).toBe('Legacy inbox draft'));
+    fireEvent.press(view.getByLabelText('Send'));
+    await waitFor(() => expect(mockClearCreationDraft).toHaveBeenCalledWith(expect.objectContaining({ contextId: legacyContext })));
+    expect(mockSaveCreationDraft).toHaveBeenCalledWith(expect.objectContaining({ contextId: legacyContext }), expect.objectContaining({ text: 'Legacy inbox draft' }));
+    view.unmount();
+  });
+
+  it('uses the same new plain draft scope from inbox and deep-link entry', async () => {
+    mockThreadSearchParams = { recipientId: '5', name: 'Alice' };
+    const view = render(<ThreadScreen />);
+    await act(async () => {});
+    fireEvent.changeText(view.getByPlaceholderText('Type a message...'), 'Shared entry draft');
+    await waitFor(() => expect(mockSaveCreationDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ contextId: 'conversation:5' }),
+      expect.objectContaining({ text: 'Shared entry draft' }),
+    ));
+    view.unmount();
+  });
+
   it('defers recovery reads while the app is backgrounded', async () => {
     Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'background' });
     let onState: ((state: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => void) | undefined;

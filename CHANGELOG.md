@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Plain native message drafts now follow the member across inbox and deep-link entry. Existing drafts are recovered without copying or deleting them; distinct legacy drafts and listing-specific drafts remain preserved.
+
 - Native messaging now refreshes unread counts after realtime resubscription and reloads missed messages when the conversation is visible, deferring read-affecting recovery while it is covered or backgrounded.
 
 - Native message threads now follow delayed message layout when opening a conversation, while preserving the position of members who deliberately scroll into older history.

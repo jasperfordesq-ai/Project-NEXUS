@@ -60,10 +60,10 @@ import { withRouteGate } from '@/components/withRouteGate';
 import { completeMessageOperation, reserveMessageOperation } from '@/lib/messageOperation';
 import {
   clearCreationDraft,
-  loadCreationDraft,
   saveCreationDraft,
   type CreationDraftScope,
 } from '@/lib/creationDraftStore';
+import { resolveMessageDraftScope } from '@/lib/messageDraftScope';
 import {
   existingMessageDraftMedia,
   isManagedMessageDraftMedia,
@@ -141,7 +141,7 @@ function ThreadScreenInner() {
   const messageDraftScope = useMemo<CreationDraftScope | null>(() => {
     const tenantIdentity = tenant?.id ?? tenant?.slug;
     if (!tenantIdentity || !authUser?.id || !isValidId) return null;
-    const routeContext = isNewConversation
+    const routeContext = isNewConversation && (listingId || contextType || contextId)
       ? `recipient:${safeThreadLookupId}:listing:${listingId ?? 0}:context:${contextType ?? 'none'}:${contextId ?? 0}`
       : `conversation:${safeThreadLookupId}`;
     return {
@@ -153,6 +153,12 @@ function ThreadScreenInner() {
   }, [authUser?.id, contextId, contextType, isNewConversation, isValidId, listingId, safeThreadLookupId, tenant?.id, tenant?.slug]);
   const messageDraftScopeRef = useRef(messageDraftScope);
   messageDraftScopeRef.current = messageDraftScope;
+  const legacyMessageDraftScope = useMemo<CreationDraftScope | null>(() => (
+    messageDraftScope && !listingId && !contextType && !contextId
+      ? { ...messageDraftScope, contextId: `recipient:${safeThreadLookupId}:listing:0:context:none:0` }
+      : null
+  ), [messageDraftScope, listingId, contextType, contextId, safeThreadLookupId]);
+  const draftScopeResolutionRef = useRef<Promise<{ scope: CreationDraftScope; draft: PersistedMessageDraft | null }> | null>(null);
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => (isNewConversation ? getOrCreateThread(safeThreadLookupId) : getThread(safeThreadLookupId)),
@@ -227,6 +233,7 @@ function ThreadScreenInner() {
 
   const writeCurrentMessageDraft = useCallback(async (force = false): Promise<boolean> => {
     if (!messageDraftScope || draftDiscardedRef.current || (!draftHydratedRef.current && !force)) return true;
+    const resolvedScope = (await draftScopeResolutionRef.current)?.scope ?? messageDraftScope;
     const text = inputTextRef.current;
     const attachments = attachmentsRef.current.filter((item) => isManagedMessageDraftMedia(item.uri));
     const retainedFailedDrafts = failedDraftsRef.current
@@ -239,7 +246,7 @@ function ThreadScreenInner() {
       ? { uri: voiceUriRef.current, durationSeconds: recordingSecondsRef.current }
       : null;
     if (text.length > 0 || attachments.length > 0 || retainedFailedDrafts.length > 0 || voice) {
-      const saved = await saveCreationDraft<PersistedMessageDraft>(messageDraftScope, {
+      const saved = await saveCreationDraft<PersistedMessageDraft>(resolvedScope, {
         text,
         attachments,
         failedDrafts: retainedFailedDrafts,
@@ -249,7 +256,7 @@ function ThreadScreenInner() {
       return saved;
     }
     if (!hadPersistedDraftRef.current) return true;
-    const cleared = await clearCreationDraft(messageDraftScope);
+    const cleared = await clearCreationDraft(resolvedScope);
     if (cleared) hadPersistedDraftRef.current = false;
     return cleared;
   }, [messageDraftScope]);
@@ -265,7 +272,8 @@ function ThreadScreenInner() {
   const discardPersistedMessageDraft = useCallback(async (): Promise<boolean> => {
     draftDiscardedRef.current = true;
     if (!messageDraftScope) return true;
-    const cleared = await clearCreationDraft(messageDraftScope);
+    const resolvedScope = (await draftScopeResolutionRef.current)?.scope ?? messageDraftScope;
+    const cleared = await clearCreationDraft(resolvedScope);
     if (cleared) {
       hadPersistedDraftRef.current = false;
       const ownedUris = [
@@ -461,8 +469,10 @@ function ThreadScreenInner() {
       return () => { active = false; };
     }
 
-    void loadCreationDraft<PersistedMessageDraft>(messageDraftScope)
-      .then(async (draft) => {
+    const resolution = resolveMessageDraftScope<PersistedMessageDraft>(messageDraftScope, legacyMessageDraftScope, isNewConversation);
+    draftScopeResolutionRef.current = resolution;
+    void resolution
+      .then(async ({ draft }) => {
         if (!active) return;
         const savedText = typeof draft?.text === 'string' ? draft.text : '';
         const restoreExisting = async (items: PendingAttachment[] | undefined) => {
@@ -506,7 +516,7 @@ function ThreadScreenInner() {
       });
 
     return () => { active = false; };
-  }, [messageDraftScope, persistMessageDraft, writeCurrentMessageDraft]);
+  }, [messageDraftScope, legacyMessageDraftScope, isNewConversation, persistMessageDraft, writeCurrentMessageDraft]);
 
   useEffect(() => {
     if (!draftHydratedRef.current || editingMessage || !isFocused || !appActiveRef.current || isSending) return undefined;
