@@ -84,6 +84,40 @@ describe('LessonQuiz', () => {
     });
   });
 
+  it('starts an editable retry without spending an attempt on unchanged failed answers', async () => {
+    jest.mocked(getCourseQuiz).mockResolvedValue({ ...QUIZ, questions: [QUIZ.questions[0]], attempts_remaining: 3 } as never);
+    jest.mocked(submitCourseQuizAttempt).mockResolvedValueOnce({ score_percent: 0, passed: false, needs_review: false, attempt_id: 5, attempts_remaining: 2 });
+    const screen = render(<LessonQuiz quizId={44} />);
+    await screen.findByText('A discount');
+    fireEvent.press(screen.getByText('A discount'));
+    fireEvent.press(screen.getByTestId('quiz-submit'));
+    await screen.findByTestId('quiz-result');
+    await screen.findByText('quiz.retry');
+    fireEvent.press(screen.getByTestId('quiz-submit'));
+    expect(submitCourseQuizAttempt).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('quiz-result')).toBeNull();
+    expect(screen.getByText('quiz.submit')).toBeTruthy();
+    fireEvent.press(screen.getByText('An hour of help'));
+    fireEvent.press(screen.getByTestId('quiz-submit'));
+    await waitFor(() => expect(submitCourseQuizAttempt).toHaveBeenCalledTimes(2));
+    expect(jest.mocked(submitCourseQuizAttempt).mock.calls[1][1]).toEqual({ '1': 'a' });
+    expect(jest.mocked(submitCourseQuizAttempt).mock.calls[1][2]).not.toBe(jest.mocked(submitCourseQuizAttempt).mock.calls[0][2]);
+  });
+
+  it('opens an empty editable retry from a server result without restoring the old score', async () => {
+    jest.mocked(getCourseQuiz).mockResolvedValue({ ...QUIZ, attempts_remaining: 2, latest_attempt: { attempt_id: 90, score_percent: 0, passed: false, needs_review: false } } as never);
+    const screen = render(<LessonQuiz quizId={44} gradeRevision={0} />);
+    await screen.findByTestId('quiz-result');
+    fireEvent.press(screen.getByTestId('quiz-submit'));
+    expect(screen.queryByTestId('quiz-result')).toBeNull();
+    expect(screen.getByTestId('quiz-nothing-answered')).toBeTruthy();
+    screen.rerender(<LessonQuiz quizId={44} gradeRevision={1} />);
+    await waitFor(() => expect(getCourseQuiz).toHaveBeenCalledTimes(2));
+    await screen.findByText('An hour of help');
+    expect(screen.queryByTestId('quiz-result')).toBeNull();
+    expect(submitCourseQuizAttempt).not.toHaveBeenCalled();
+  });
+
   it('shows the learner the questions instead of a bare completion button', async () => {
     const { getByText } = render(<LessonQuiz quizId={44} />);
 
@@ -208,6 +242,9 @@ describe('LessonQuiz', () => {
     await screen.findByTestId('quiz-result');
     expect(jest.mocked(submitCourseQuizAttempt).mock.calls[1][2]).toBe(firstKey);
     fireEvent.press(screen.getByTestId('quiz-submit'));
+    expect(submitCourseQuizAttempt).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('quiz.submit')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('quiz-submit'));
     await waitFor(() => expect(submitCourseQuizAttempt).toHaveBeenCalledTimes(3));
     expect(jest.mocked(submitCourseQuizAttempt).mock.calls[2][2]).not.toBe(firstKey);
   });
@@ -331,6 +368,8 @@ describe('LessonQuiz', () => {
     expect(screen.getByTestId('quiz-result')).toBeTruthy();
     let fail!: (reason: Error) => void;
     jest.mocked(submitCourseQuizAttempt).mockImplementationOnce(() => new Promise((_, reject) => { fail = reject; }));
+    fireEvent.press(screen.getByTestId('quiz-submit'));
+    expect(screen.queryByTestId('quiz-result')).toBeNull();
     fireEvent.press(screen.getByTestId('quiz-submit'));
     act(() => { mockConfirm.mock.calls[1][0].onConfirm(); });
     expect(screen.queryByTestId('quiz-result')).toBeNull();

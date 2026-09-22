@@ -240,6 +240,13 @@ function LessonQuizBody({ quizId, tenantId, userId, onAttemptResolved, gradeRevi
   const requestSubmit = useCallback(() => {
     if (submitting || attemptsExhaustedRef.current || (!pendingRef.current && attemptsRemainingRef.current === 0)) return;
     if (pendingRef.current) { void submit(); return; }
+    if (result) {
+      // Starting another attempt must not spend it before the learner reviews answers.
+      editedAnswersRef.current = true;
+      setResult(null);
+      setSubmitError(null);
+      return;
+    }
     if (answeredCount === 0) return;
 
     if (answeredCount < questions.length) {
@@ -262,7 +269,7 @@ function LessonQuizBody({ quizId, tenantId, userId, onAttemptResolved, gradeRevi
     }
 
     void submit();
-  }, [answeredCount, confirm, questions.length, quiz?.max_attempts, submit, submitting, t]);
+  }, [answeredCount, confirm, questions.length, quiz?.max_attempts, result, submit, submitting, t]);
 
   if (quizState.isLoading || restoring) {
     return <View className="items-center py-8"><LoadingSpinner /></View>;
@@ -420,7 +427,7 @@ function LessonQuizBody({ quizId, tenantId, userId, onAttemptResolved, gradeRevi
       ) : null}
 
       <HeroButton
-        isDisabled={submitting || limitReached || (!pending && (questions.length === 0 || answeredCount === 0))}
+        isDisabled={submitting || limitReached || (!pending && !result && (questions.length === 0 || answeredCount === 0))}
         testID="quiz-submit"
         onPress={requestSubmit}
       >
