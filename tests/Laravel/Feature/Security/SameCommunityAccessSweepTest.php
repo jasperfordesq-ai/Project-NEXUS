@@ -86,6 +86,11 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'GET api/v2/listings/{id}' => 'the marketplace of offers and requests is visible to every member',
         'GET api/v2/events/{id}' => 'community calendar entry',
         'GET api/v2/events/{id}/agenda' => 'public agenda of a community event',
+        // E-022/O-045: reachable for the first time now that {seriesId} resolves to an
+        // event_series rather than an event. A series is the recurrence grouping for the
+        // same community calendar entries that GET events/{id} already publishes above,
+        // and showSeries() requires auth and stays inside the community.
+        'GET api/v2/events/series/{seriesId}' => 'community calendar series — the recurrence grouping of events already public above',
         'GET api/v2/events/{id}/calendar-actions' => 'add-to-calendar links for a public event',
         'GET api/v2/events/{id}/calendar.ics' => 'iCalendar export of a public event',
         'GET api/v2/groups/{id}' => 'community group page (fixture is a public group)',
@@ -134,6 +139,15 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
     protected const ACCEPTED_BY_DESIGN = [
         // The actor's OWN relationship to someone else's record: create or remove
         // a row that belongs to the actor, leave the target untouched.
+        // 🔴 E-022/O-045. Reachable for the first time now that {id} resolves to a USER.
+        // It is not a record id at all: MessagesController::archiveConversation() passes
+        // it to MessageService::archiveConversation(int $otherUserId, int $userId), so the
+        // path names the COUNTERPARTY and the action archives the CALLER's own inbox view.
+        // A 2xx is the correct answer to "archive my conversation with that person".
+        // PROVED before registering, per the rule that an allow-list entry edits a control
+        // so a hit disappears — see
+        // MessagesControllerTest::test_archiving_a_conversation_does_not_touch_the_other_members_view.
+        'DELETE api/v2/messages/conversations/{id}' => 'the path names the other member; archives the caller\'s own inbox view (scope=self)',
         'POST api/v2/jobs/{id}/save' => 'saves someone else\'s job posting to the caller\'s list',
         'DELETE api/v2/jobs/{id}/save' => 'removes it from the caller\'s list (idempotent)',
         'DELETE api/v2/listings/{id}/save' => 'removes a listing from the caller\'s saved list (idempotent)',

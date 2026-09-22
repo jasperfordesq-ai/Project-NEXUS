@@ -51,6 +51,10 @@ abstract class AccessSweepTestCase extends TestCase
         // local run had failed to seed that fixture and skipped the endpoint
         // instead. Naming it here makes the result the same in both places.
         'day',
+        // {email} is an ADDRESS, not a record id: the newsletter
+        // suppression-list routes suppress or release an address. Resolving it
+        // by path prefix fed those routes a `newsletter` row id.
+        'email',
     ];
 
     /** Parameter names that identify the record type on their own. */
@@ -121,6 +125,45 @@ abstract class AccessSweepTestCase extends TestCase
         // 🔴 54 routes across 28 prefixes still resolve this way — see the
         // E-022 note in the register. This fixes the one that was firing.
         'stories/highlights' => 'story_highlight',
+
+        // ---------------------------------------------------------------
+        // E-022 / O-045. Each of these paths previously matched only an
+        // ANCESTOR, so the route was handed an id from the ancestor's table.
+        // Longest-prefix wins, so an entry here takes precedence.
+        // ---------------------------------------------------------------
+        'admin/events/attendance-claims' => 'event_attendance_claim',
+        'users/me/support-actions' => 'support_pending_action',
+        'admin/groups/types' => 'group_type',
+        'admin/groups/approvals' => 'group_approval_request',
+        'admin/jobs/applications' => 'job_application',
+        'admin/jobs/templates' => 'job_template',
+        'admin/newsletters/subscribers' => 'newsletter_subscriber',
+        'admin/reports/municipal-impact/templates' => 'municipal_report_template',
+        'admin/reports/municipal-impact/verification' => 'municipal_verification',
+        'courses/attempts' => 'course_quiz_attempt',
+        'courses/discussions' => 'course_discussion',
+        'courses/quizzes' => 'course_quiz',
+        'events/calendar/feed-tokens' => 'event_calendar_feed_token',
+        'events/series' => 'event_series',
+        'goals/from-template' => 'goal_template',
+        'jobs/interview-slots' => 'job_interview_slot',
+        'jobs/interviews' => 'job_interview',
+        'jobs/offers' => 'job_offer',
+        // Both template paths read the same job_templates table;
+        // deleteOfferTemplate() additionally filters template_type='offer_letter',
+        // which the fixture sets.
+        'jobs/offer-templates' => 'job_template',
+        'jobs/templates' => 'job_template',
+        'jobs/pipeline-rules' => 'job_pipeline_rule',
+        // 🔴 Not a job and not a message. talentProfile() passes {id} to
+        // getCandidateProfile(), and archiveConversation() resolves {id} as the
+        // OTHER MEMBER's user id (MessageService::getConversation selects
+        // receiver_id as partner_id). Both are USER ids.
+        'jobs/talent-search' => 'user',
+        'messages/conversations' => 'user',
+        'podcasts/episodes' => 'podcast_episode',
+        'posts/media' => 'post_media',
+        'users/me/parent-accounts' => 'account_relationship',
         'podcasts' => 'podcast_show',
 
         // PASS 2 — administration, requested as a community admin
@@ -259,6 +302,32 @@ abstract class AccessSweepTestCase extends TestCase
         // pass must not move them.
         'kb_article' => ['table' => 'knowledge_base_articles', 'columns' => ['title' => 'Sweep article', 'slug' => 'sweep-article-{n}']],
         'kb_attachment' => ['table' => 'knowledge_base_attachments', 'needs' => ['article_id' => 'kb_article'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain']],
+        // ---------------------------------------------------------------
+        // E-022 / O-045. One fixture per RECORD TYPE for the single-parameter
+        // routes that were resolving their id through an ancestor prefix and
+        // therefore being probed with an id from the wrong table. Declared
+        // after their parents: seeding is ordered.
+        // ---------------------------------------------------------------
+        // attendance_id carries an index but no foreign key, so the claim can
+        // reference a synthetic attendance row without one being seeded.
+        'event_attendance_claim' => ['table' => 'event_attendance_credit_claims', 'needs' => ['event_id' => 'event'], 'owner' => 'user_id', 'columns' => ['attendance_id' => '1', 'claim_type' => 'attendance', 'idempotency_key' => 'sweep-claim-{n}', 'funding_source_type' => 'tenant', 'amount' => '1.00', 'metadata' => '{}']],
+        'support_pending_action' => ['table' => 'support_pending_actions', 'needs' => ['relationship_id' => 'account_relationship'], 'owner' => 'supporter_user_id', 'columns' => ['supported_user_id' => '{owner}', 'action_type' => 'sweep_action', 'payload' => '{}', 'token_hash' => '{hash64}', 'expires_at' => '{tomorrow}']],
+        'group_type' => ['table' => 'group_types', 'columns' => ['name' => 'Sweep type', 'slug' => 'sweep-type-{n}']],
+        'group_approval_request' => ['table' => 'group_approval_requests', 'needs' => ['group_id' => 'group'], 'owner' => 'submitted_by'],
+        'job_template' => ['table' => 'job_templates', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep template', 'template_type' => 'offer_letter']],
+        'job_offer' => ['table' => 'job_offers', 'needs' => ['vacancy_id' => 'job', 'application_id' => 'job_application']],
+        'job_interview' => ['table' => 'job_interviews', 'needs' => ['vacancy_id' => 'job', 'application_id' => 'job_application'], 'owner' => 'proposed_by', 'columns' => ['scheduled_at' => '{tomorrow}']],
+        'job_interview_slot' => ['table' => 'job_interview_slots', 'needs' => ['job_id' => 'job'], 'owner' => 'employer_user_id', 'columns' => ['slot_start' => '{now}', 'slot_end' => '{tomorrow}']],
+        'job_pipeline_rule' => ['table' => 'job_pipeline_rules', 'needs' => ['vacancy_id' => 'job'], 'columns' => ['name' => 'Sweep rule', 'trigger_stage' => 'applied']],
+        'newsletter_subscriber' => ['table' => 'newsletter_subscribers', 'columns' => ['email' => 'sweep-{n}@example.invalid', 'unsubscribe_token' => 'sweep-unsub-{n}']],
+        'municipal_report_template' => ['table' => 'municipal_report_templates', 'columns' => ['name' => 'Sweep municipal template']],
+        'municipal_verification' => ['table' => 'municipal_verifications', 'columns' => ['domain' => 'sweep-{n}.example.invalid']],
+        'course_discussion' => ['table' => 'course_discussions', 'needs' => ['course_id' => 'course'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep discussion body']],
+        'course_quiz_attempt' => ['table' => 'course_quiz_attempts', 'needs' => ['quiz_id' => 'course_quiz'], 'owner' => 'user_id'],
+        'event_series' => ['table' => 'event_series', 'owner' => 'created_by', 'columns' => ['title' => 'Sweep series']],
+        'event_calendar_feed_token' => ['table' => 'event_calendar_feed_tokens', 'owner' => 'user_id', 'columns' => ['token_hash' => '{hash64}', 'token_prefix' => 'sweep{n}']],
+        'goal_template' => ['table' => 'goal_templates', 'columns' => ['title' => 'Sweep goal template']],
+        'post_media' => ['table' => 'post_media', 'needs' => ['post_id' => 'post'], 'columns' => ['file_url' => 'https://example.invalid/sweep-{n}.png']],
         'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3', 'status' => 'published', 'visibility' => 'public']],
         // `unique_tenant_document` is (tenant_id, document_type) and every
         // seeded tenant already has a 'terms' row, so the sweep takes a type
@@ -1005,6 +1074,9 @@ abstract class AccessSweepTestCase extends TestCase
                 '{tomorrow}' => now()->addDay(),
                 '{today}' => now()->toDateString(),
                 '{now}' => now(),
+                // A char(64) token hash column: any 64 hex characters will do,
+                // the sweep never presents the plaintext.
+                '{hash64}' => hash('sha256', 'sweep-' . $n),
                 // Some child tables record the acting person in more than one
                 // column (`event_staff_assignments` has both `user_id` and a
                 // NOT NULL `granted_by`). 'owner' fills one; this fills the rest.

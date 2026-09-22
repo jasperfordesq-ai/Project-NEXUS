@@ -1509,4 +1509,64 @@ class MessagesControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonPath('data.translated_text', 'Good morning!');
     }
+
+    /**
+     * E-022 / O-045. `DELETE /v2/messages/conversations/{id}` answers 200 for
+     * another member, which the same-community write gate flags. It is a
+     * designed interaction, not a defect: the path names the COUNTERPARTY, not
+     * a record owned by them — archiveConversation() passes {id} straight to
+     * MessageService::archiveConversation(int $otherUserId, int $userId).
+     *
+     * Registered in ACCEPTED_BY_DESIGN only after proving the half that
+     * actually matters: the default scope must archive the CALLER's side and
+     * leave the other member's view intact.
+     */
+    public function test_archiving_a_conversation_does_not_touch_the_other_members_view(): void
+    {
+        if (! Schema::hasColumn('messages', 'archived_by_sender')) {
+            $this->markTestSkipped('This installation hard-deletes instead of archiving.');
+        }
+
+        $caller = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+
+        // One message each way, so both archive columns are in play.
+        $fromCaller = (int) DB::table('messages')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'sender_id' => $caller->id,
+            'receiver_id' => $other->id,
+            'body' => 'Sweep outbound',
+            'created_at' => now(),
+        ]);
+        $fromOther = (int) DB::table('messages')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'sender_id' => $other->id,
+            'receiver_id' => $caller->id,
+            'body' => 'Sweep inbound',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->apiDelete("/v2/messages/conversations/{$other->id}");
+        $this->assertSame(200, $response->getStatusCode());
+
+        $out = DB::table('messages')->where('id', $fromCaller)->first();
+        $in = DB::table('messages')->where('id', $fromOther)->first();
+
+        // The caller's own side is archived — the point of the endpoint.
+        $this->assertNotNull($out->archived_by_sender, 'the caller\'s sent message should be archived for the caller');
+        $this->assertNotNull($in->archived_by_receiver, 'the caller\'s received message should be archived for the caller');
+
+        // 🔴 The other member's view is untouched. If either of these were set,
+        // one member could clear another member's inbox and the allow-list entry
+        // would be wrong.
+        $this->assertNull($out->archived_by_receiver, 'the OTHER member must still see the message they received');
+        $this->assertNull($in->archived_by_sender, 'the OTHER member must still see the message they sent');
+
+        // And nothing was deleted.
+        $this->assertDatabaseHas('messages', ['id' => $fromCaller]);
+        $this->assertDatabaseHas('messages', ['id' => $fromOther]);
+    }
 }
