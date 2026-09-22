@@ -58,7 +58,7 @@ function mutationKey(prefix: string): string {
 }
 
 export default function EventOfflineCheckinCard({ eventId }: { eventId: number }) {
-  const { t } = useTranslation(['eventOfflineCheckin', 'notifications']);
+  const { t } = useTranslation(['eventOfflineCheckin', 'notifications', 'events', 'common']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
@@ -695,7 +695,10 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
           ) : conflicts.items.map((item) => (
             <Surface key={item.item_id} variant="tertiary" className="gap-2 rounded-panel-inner p-3">
               <Text className="text-sm font-semibold" style={{ color: theme.text }}>{item.member.display_name}</Text>
-              <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('conflicts.current', { state: item.current_attendance.state, version: item.current_attendance.version })}</Text>
+              <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('conflicts.current', {
+                state: t(`events:attendance.states.${item.current_attendance.state}`, { defaultValue: t('common:unknown') }),
+                version: item.current_attendance.version,
+              })}</Text>
               <TextArea label={t('conflicts.reason')} value={resolutionReasons[item.item_id] ?? ''} onChangeText={(value) => setResolutionReasons((current) => ({ ...current, [item.item_id]: value }))} editable={!busy} />
               <View className="flex-row gap-2">
                 <Button className="flex-1" size="sm" variant="primary" style={{ backgroundColor: primary }} isDisabled={busy} onPress={() => void resolve(item, 'apply')}><Button.Label>{t('conflicts.apply')}</Button.Label></Button>

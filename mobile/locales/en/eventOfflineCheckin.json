@@ -64,7 +64,13 @@
     "queued": "The attendance action was added to the encrypted queue.",
     "invalid": "This code is invalid, copied, rotated, revoked, expired or belongs to another event.",
     "reasonRequired": "Enter a reason before queuing an undo.",
-    "transitionInvalid": "That action does not follow the attendee's current offline state."
+    "transitionInvalid": "That action does not follow the attendee's current offline state.",
+    "alreadyQueued": "This badge is already in the queue for that action.",
+    "expired": "This badge has expired. Ask the member to refresh it.",
+    "wrongEvent": "This badge belongs to a different event.",
+    "revoked": "This badge has been revoked or replaced.",
+    "signingKeyUnknown": "This badge was issued after this device last synced. Sync, then scan again.",
+    "queueFull": "The offline queue is full. Sync before scanning more."
   },
   "queue": {
     "stoppedTitle": "Attendance needs review",
@@ -94,7 +100,8 @@
     "pendingKept": "{{count}} unsynced check-ins are still stored on this device.",
     "pendingKept_one": "{{count}} unsynced check-in is still stored on this device.",
     "purgePendingWarning": "{{count}} unsynced check-ins will be lost for good.",
-    "purgePendingWarning_one": "{{count}} unsynced check-in will be lost for good."
+    "purgePendingWarning_one": "{{count}} unsynced check-in will be lost for good.",
+    "readOnlyRevoked": "This device is no longer allowed to check people in. Anything scanned here is kept, read-only, until you remove it."
   },
   "conflicts": {
     "title": "Check-in conflicts",
@@ -145,7 +152,7 @@
     "privacy": "The QR payload is PII-free. Event staff use their encrypted roster to match it to your registration."
   },
   "errors": {
-    "revoked": "This device was revoked. Its offline data was removed.",
+    "revoked": "This device is no longer allowed to check people in. Anything scanned here is kept, read-only, until you remove it.",
     "generic": "That offline check-in action could not be completed."
   }
 }

@@ -64,7 +64,13 @@
     "queued": "L’azione di presenza è stata aggiunta alla coda cifrata.",
     "invalid": "Questo codice non è valido, è copiato, sostituito, revocato, scaduto o appartiene a un altro evento.",
     "reasonRequired": "Inserisci un motivo prima di accodare un annullamento.",
-    "transitionInvalid": "L’azione non è coerente con lo stato offline attuale del partecipante."
+    "transitionInvalid": "L’azione non è coerente con lo stato offline attuale del partecipante.",
+    "alreadyQueued": "Questo badge è già in coda per quell’azione.",
+    "expired": "Questo badge è scaduto. Chiedi al membro di aggiornarlo.",
+    "wrongEvent": "Questo badge appartiene a un altro evento.",
+    "revoked": "Questo badge è stato revocato o sostituito.",
+    "signingKeyUnknown": "Questo badge è stato emesso dopo l’ultima sincronizzazione di questo dispositivo. Sincronizza e riprova.",
+    "queueFull": "La coda offline è piena. Sincronizza prima di continuare."
   },
   "queue": {
     "stoppedTitle": "Le presenze richiedono una verifica",
@@ -94,7 +100,8 @@
     "pendingKept": "{{count}} check-in non sincronizzati sono ancora salvati su questo dispositivo.",
     "pendingKept_one": "{{count}} check-in non sincronizzato è ancora salvato su questo dispositivo.",
     "purgePendingWarning": "{{count}} check-in non sincronizzati andranno perduti definitivamente.",
-    "purgePendingWarning_one": "{{count}} check-in non sincronizzato andrà perduto definitivamente."
+    "purgePendingWarning_one": "{{count}} check-in non sincronizzato andrà perduto definitivamente.",
+    "readOnlyRevoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Tutto ciò che è stato scansionato qui resta conservato in sola lettura finché non lo rimuovi."
   },
   "conflicts": {
     "title": "Conflitti di check-in",
@@ -145,7 +152,7 @@
     "privacy": "Il contenuto QR è privo di dati personali. Lo staff dell’evento utilizza l’elenco crittografato per associarlo alla tua registrazione."
   },
   "errors": {
-    "revoked": "Questo dispositivo è stato revocato. I dati offline sono stati rimossi.",
+    "revoked": "Questo dispositivo non è più autorizzato a registrare le presenze. Tutto ciò che è stato scansionato qui resta conservato in sola lettura finché non lo rimuovi.",
     "generic": "Non è stato possibile completare l’azione di check-in offline."
   }
 }

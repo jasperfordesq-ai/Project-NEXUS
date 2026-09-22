@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event check-in now translates conflict attendance states and scanner refusal messages in all seven app languages, and correctly explains that refused-device queues remain saved for review until explicitly removed.
+
 - Native event check-in queues now recover the latest conflict decisions after organiser resolution and reopening, including older saved queues, without resubmitting attendance or discarding pending scans.
 
 - Plain native message drafts now follow the member across inbox and deep-link entry. Existing drafts are recovered without copying or deleting them; distinct legacy drafts and listing-specific drafts remain preserved.

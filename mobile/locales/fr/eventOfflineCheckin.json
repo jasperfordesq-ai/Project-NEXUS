@@ -64,7 +64,13 @@
     "queued": "L’action de présence a été ajoutée à la file chiffrée.",
     "invalid": "Ce code est invalide, copié, remplacé, révoqué, expiré ou associé à un autre événement.",
     "reasonRequired": "Saisissez un motif avant de mettre une annulation en file.",
-    "transitionInvalid": "Cette action ne correspond pas à l’état hors ligne actuel du participant."
+    "transitionInvalid": "Cette action ne correspond pas à l’état hors ligne actuel du participant.",
+    "alreadyQueued": "Ce badge est déjà dans la file pour cette action.",
+    "expired": "Ce badge a expiré. Demandez au membre de l’actualiser.",
+    "wrongEvent": "Ce badge appartient à un autre événement.",
+    "revoked": "Ce badge a été révoqué ou remplacé.",
+    "signingKeyUnknown": "Ce badge a été émis après la dernière synchronisation de cet appareil. Synchronisez, puis scannez de nouveau.",
+    "queueFull": "La file hors ligne est pleine. Synchronisez avant de continuer."
   },
   "queue": {
     "stoppedTitle": "La présence doit être vérifiée",
@@ -94,7 +100,8 @@
     "pendingKept": "{{count}} enregistrements non synchronisés sont encore stockés sur cet appareil.",
     "pendingKept_one": "{{count}} enregistrement non synchronisé est encore stocké sur cet appareil.",
     "purgePendingWarning": "{{count}} enregistrements non synchronisés seront définitivement perdus.",
-    "purgePendingWarning_one": "{{count}} enregistrement non synchronisé sera définitivement perdu."
+    "purgePendingWarning_one": "{{count}} enregistrement non synchronisé sera définitivement perdu.",
+    "readOnlyRevoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Tout ce qui a été scanné ici est conservé en lecture seule jusqu’à ce que vous le supprimiez."
   },
   "conflicts": {
     "title": "Conflits d’enregistrement",
@@ -145,7 +152,7 @@
     "privacy": "Le contenu QR ne comporte aucune donnée personnelle. Le personnel de l’événement utilise sa liste chiffrée pour l’associer à votre inscription."
   },
   "errors": {
-    "revoked": "Cet appareil a été révoqué. Ses données hors ligne ont été supprimées.",
+    "revoked": "Cet appareil n’est plus autorisé à enregistrer les arrivées. Tout ce qui a été scanné ici est conservé en lecture seule jusqu’à ce que vous le supprimiez.",
     "generic": "Cette action d’enregistrement hors ligne n’a pas pu être effectuée."
   }
 }

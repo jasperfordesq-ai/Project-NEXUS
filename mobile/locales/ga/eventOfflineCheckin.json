@@ -64,7 +64,13 @@
     "queued": "Cuireadh an gníomh tinrimh leis an scuaine chriptithe.",
     "invalid": "Tá an cód seo neamhbhailí, cóipeáilte, athsholáthartha, cúlghairthe, imithe in éag nó baineann sé le himeacht eile.",
     "reasonRequired": "Cuir cúis isteach sula gcuirtear cealú sa scuaine.",
-    "transitionInvalid": "Ní leanann an gníomh sin staid reatha as líne an fhreastalaí."
+    "transitionInvalid": "Ní leanann an gníomh sin staid reatha as líne an fhreastalaí.",
+    "alreadyQueued": "Tá an suaitheantas seo sa scuaine don ghníomh sin cheana.",
+    "expired": "Tá an suaitheantas seo imithe in éag. Iarr ar an gcomhalta é a athnuachan.",
+    "wrongEvent": "Baineann an suaitheantas seo le himeacht eile.",
+    "revoked": "Cúlghaireadh nó athsholáthraíodh an suaitheantas seo.",
+    "signingKeyUnknown": "Eisíodh an suaitheantas seo tar éis an tsioncrónaithe is déanaí ar an ngléas seo. Sioncrónaigh, ansin scan arís.",
+    "queueFull": "Tá an scuaine as líne lán. Sioncrónaigh sula scanann tú tuilleadh."
   },
   "queue": {
     "stoppedTitle": "Ní mór an tinreamh a athbhreithniú",
@@ -94,7 +100,8 @@
     "pendingKept": "Tá {{count}} seiceáil isteach neamhshioncronaithe stóráilte ar an ngléas seo fós.",
     "pendingKept_one": "Tá {{count}} seiceáil isteach neamhshioncronaithe stóráilte ar an ngléas seo fós.",
     "purgePendingWarning": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan.",
-    "purgePendingWarning_one": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan."
+    "purgePendingWarning_one": "Caillfear {{count}} seiceáil isteach neamhshioncronaithe go buan.",
+    "readOnlyRevoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Coinnítear gach rud a scanadh anseo, inléite amháin, go dtí go mbainfidh tú é."
   },
   "conflicts": {
     "title": "Coinbhleachtaí seiceáil isteach",
@@ -145,7 +152,7 @@
     "privacy": "Níl sonraí pearsanta san ábhar QR. Úsáideann foireann an imeachta a liosta criptithe chun é a mheaitseáil le do chlárú."
   },
   "errors": {
-    "revoked": "Cúlghaireadh an gléas seo. Baineadh a shonraí as líne.",
+    "revoked": "Ní cheadaítear don ghléas seo daoine a sheiceáil isteach a thuilleadh. Coinnítear gach rud a scanadh anseo, inléite amháin, go dtí go mbainfidh tú é.",
     "generic": "Níorbh fhéidir an gníomh seiceáil isteach as líne seo a chur i gcrích."
   }
 }

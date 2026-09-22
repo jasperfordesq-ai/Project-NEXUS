@@ -78,7 +78,8 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (
-      options && 'count' in options ? `${key}:${String(options.count)}` : key
+      options && 'count' in options ? `${key}:${String(options.count)}`
+        : options && 'state' in options ? `${key}:${String(options.state)}` : key
     ),
   }),
 }));
@@ -583,6 +584,7 @@ describe('resolved conflict queue presentation', () => {
     const screen = render(<EventOfflineCheckinCard eventId={77} />);
     if (scenario === 'resolve') {
       await screen.findByText('conflicts.reject');
+      expect(screen.getByText('conflicts.current:events:attendance.states.checked_in')).toBeTruthy();
       fireEvent.changeText(screen.getByLabelText('conflicts.reason'), 'Keep the verified record');
       fireEvent.press(screen.getByText('conflicts.reject'));
     }

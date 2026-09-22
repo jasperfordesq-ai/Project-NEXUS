@@ -64,7 +64,13 @@
     "queued": "Die Anwesenheitsaktion wurde zur verschlüsselten Warteschlange hinzugefügt.",
     "invalid": "Dieser Code ist ungültig, kopiert, ersetzt, widerrufen, abgelaufen oder gehört zu einer anderen Veranstaltung.",
     "reasonRequired": "Geben Sie einen Grund ein, bevor Sie eine Rücknahme vormerken.",
-    "transitionInvalid": "Diese Aktion passt nicht zum aktuellen Offline-Status der teilnehmenden Person."
+    "transitionInvalid": "Diese Aktion passt nicht zum aktuellen Offline-Status der teilnehmenden Person.",
+    "alreadyQueued": "Dieser Ausweis steht für diese Aktion bereits in der Warteschlange.",
+    "expired": "Dieser Ausweis ist abgelaufen. Bitte das Mitglied, ihn zu erneuern.",
+    "wrongEvent": "Dieser Ausweis gehört zu einer anderen Veranstaltung.",
+    "revoked": "Dieser Ausweis wurde widerrufen oder ersetzt.",
+    "signingKeyUnknown": "Dieser Ausweis wurde ausgestellt, nachdem dieses Gerät zuletzt synchronisiert hat. Synchronisiere und scanne erneut.",
+    "queueFull": "Die Offline-Warteschlange ist voll. Synchronisiere, bevor du weiter scannst."
   },
   "queue": {
     "stoppedTitle": "Anwesenheit muss geprüft werden",
@@ -94,7 +100,8 @@
     "pendingKept": "{{count}} nicht synchronisierte Check-ins sind noch auf diesem Gerät gespeichert.",
     "pendingKept_one": "{{count}} nicht synchronisierter Check-in ist noch auf diesem Gerät gespeichert.",
     "purgePendingWarning": "{{count}} nicht synchronisierte Check-ins gehen endgültig verloren.",
-    "purgePendingWarning_one": "{{count}} nicht synchronisierter Check-in geht endgültig verloren."
+    "purgePendingWarning_one": "{{count}} nicht synchronisierter Check-in geht endgültig verloren.",
+    "readOnlyRevoked": "Dieses Gerät darf keine Personen mehr einchecken. Alles, was hier gescannt wurde, bleibt schreibgeschützt erhalten, bis du es entfernst."
   },
   "conflicts": {
     "title": "Check-in-Konflikte",
@@ -145,7 +152,7 @@
     "privacy": "Der QR-Inhalt enthält keine personenbezogenen Daten. Das Veranstaltungspersonal ordnet ihn über die verschlüsselte Teilnehmerliste Ihrer Registrierung zu."
   },
   "errors": {
-    "revoked": "Dieses Gerät wurde widerrufen. Seine Offline-Daten wurden entfernt.",
+    "revoked": "Dieses Gerät darf keine Personen mehr einchecken. Alles, was hier gescannt wurde, bleibt schreibgeschützt erhalten, bis du es entfernst.",
     "generic": "Diese Offline-Check-in-Aktion konnte nicht abgeschlossen werden."
   }
 }
