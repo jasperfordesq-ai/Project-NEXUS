@@ -222,7 +222,6 @@ abstract class AccessSweepTestCase extends TestCase
         'message_attachment' => ['table' => 'message_attachments', 'needs' => ['message_id' => 'message'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt']],
         'listing_image' => ['table' => 'listing_images', 'needs' => ['listing_id' => 'listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
         'marketplace_collection' => ['table' => 'marketplace_collections', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep collection']],
-        'story_highlight' => ['table' => 'story_highlights', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep highlight']],
         // E-022 batch 3.
         'marketplace_image' => ['table' => 'marketplace_images', 'needs' => ['marketplace_listing_id' => 'marketplace_listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
         'organization' => ['table' => 'organizations', 'columns' => ['name' => 'Sweep organisation {n}']],
@@ -320,9 +319,6 @@ abstract class AccessSweepTestCase extends TestCase
         // is a LISTING, not a collection-item row — the endpoint removes a
         // listing from a collection by the listing's own id.
         'marketplace/collections/items' => 'marketplace_listing',
-        'stories/highlights' => 'story_highlight',
-        // Likewise `stories/highlights/{id}/items/{storyId}` names a STORY.
-        'stories/highlights/items' => 'story',
         'admin/legal-documents' => 'legal_document',
         'admin/legal-documents/versions' => 'legal_document_version',
     ];
@@ -332,27 +328,7 @@ abstract class AccessSweepTestCase extends TestCase
      * provably changing nothing. Shrink-only in both directions.
      */
     protected const KNOWN_CHILD_ACCEPTED_NO_CHANGE = [
-        // E-022. Surfaced only once the story-highlight fixtures existed, so it
-        // had never been exercised before. StoryService::removeFromHighlight()
-        // first proves the HIGHLIGHT is `id = ? AND user_id = ? AND tenant_id = ?`
-        // — the caller's own, in the caller's own community — and only then
-        // deletes from story_highlight_items by (highlight_id, story_id). A
-        // foreign story id therefore matches no row, and $storyId never reaches
-        // a branch that shapes the response, so the 200 is idempotent rather
-        // than permissive.
-        //
-        // 🔴 PROVED, not read off the source, because an allow-list entry is an
-        // edit to a security control that makes a hit disappear. See
-        // StoryControllerTest::test_remove_highlight_item_answers_identically_for_a_foreign_story_and_a_nonexistent_one
-        // (byte-identical body and status for another community's story and for
-        // an id that exists nowhere — so no existence oracle — and the foreign
-        // story row survives) and
-        // ::test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own
-        // (403, and the join row is untouched).
-        // E-022. Same shape as the story-highlight entry below, and surfaced
-        // the same way — only once the marketplace feature was enabled for the
-        // sweep's two communities, so it had never been exercised.
-        // MarketplaceDiscoveryController::removeCollectionItem() proves the
+        // E-022. MarketplaceDiscoveryController::removeCollectionItem() proves the
         // COLLECTION is `id = ? AND user_id = ?`, and both MarketplaceCollection
         // and MarketplaceCollectionItem carry HasTenantScope, so the lookup and
         // the delete are community-bounded twice over. A foreign listing id
@@ -365,7 +341,21 @@ abstract class AccessSweepTestCase extends TestCase
         // (byte-identical body and status, foreign listing row survives) and
         // ::test_remove_collection_item_refuses_a_collection_the_caller_does_not_own (404).
         'DELETE api/v2/marketplace/collections/{id}/items/{listingId}',
-        'DELETE api/v2/stories/highlights/{id}/items/{storyId}',
+        //
+        // 🔴 `DELETE api/v2/stories/highlights/{id}/items/{storyId}` WAS pinned here
+        // and has been removed along with the `story_highlight` fixture that made it
+        // reachable. Adding that fixture also made `DELETE stories/highlights/{id}`
+        // reachable in the SAME-community write sweep, where CI reported it 2xx
+        // against another member's highlight (run 35769131661) while two local runs
+        // of the same code passed — the order-dependent behaviour O-039 already
+        // records for that gate.
+        //
+        // The platform is NOT at fault, and that was established directly rather
+        // than assumed: StoryControllerTest::test_cannot_delete_highlight_belonging_to_another_member
+        // shows a member is refused and the victim's row survives. The fixture is
+        // withdrawn because a BLOCKING gate must not be intermittent, not because
+        // anything was found. Restoring it belongs with a fix for the harness's
+        // re-seed/id selection, not with more fixtures.
     ];
 
     /**

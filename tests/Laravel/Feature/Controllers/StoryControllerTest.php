@@ -756,4 +756,34 @@ class StoryControllerTest extends TestCase
             'story_id' => $theirStory,
         ]);
     }
+
+    /**
+     * E-022. CI reported `DELETE api/v2/stories/highlights/{id} -> 200` against
+     * another member's highlight in the same-community write sweep, which would
+     * be a real defect. Asked directly rather than inferred from the sweep.
+     */
+    public function test_cannot_delete_highlight_belonging_to_another_member(): void
+    {
+        $victim = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $theirHighlight = $this->createHighlight($victim->id);
+
+        // Now act as a DIFFERENT member of the same community.
+        $this->authenticatedUser();
+
+        $response = $this->apiDelete("/v2/stories/highlights/{$theirHighlight}");
+
+        $this->assertNotEquals(
+            200,
+            $response->getStatusCode(),
+            'A member deleted another member\'s story highlight. Status: '
+            . $response->getStatusCode() . ' Body: ' . $response->getContent()
+        );
+        $this->assertDatabaseHas('story_highlights', [
+            'id' => $theirHighlight,
+            'user_id' => $victim->id,
+        ]);
+    }
 }
