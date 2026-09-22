@@ -249,7 +249,7 @@ abstract class AccessSweepTestCase extends TestCase
         // pass must not move them.
         'kb_article' => ['table' => 'knowledge_base_articles', 'columns' => ['title' => 'Sweep article', 'slug' => 'sweep-article-{n}']],
         'kb_attachment' => ['table' => 'knowledge_base_attachments', 'needs' => ['article_id' => 'kb_article'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain']],
-        'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3']],
+        'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3', 'status' => 'published', 'visibility' => 'public']],
         // `unique_tenant_document` is (tenant_id, document_type) and every
         // seeded tenant already has a 'terms' row, so the sweep takes a type
         // nothing else claims rather than colliding with real data.
@@ -810,7 +810,10 @@ abstract class AccessSweepTestCase extends TestCase
      */
     protected function seedRecords(int $tenantId, User $owner): array
     {
-        $ids = [];
+        // Not a record: the community's OWN id, so a route that carries
+        // {tenantId} in its path can be filled without colliding with the child
+        // fixture beside it. See resolveChildParam().
+        $ids = ['tenant_self' => $tenantId];
 
         foreach (self::FIXTURES as $key => $spec) {
             try {
@@ -1138,6 +1141,17 @@ abstract class AccessSweepTestCase extends TestCase
     {
         if (in_array($param, ['action', 'state'], true)) {
             return [null, "parameter {{$param}} names an operation, not a record"];
+        }
+
+        // {tenantId} names a COMMUNITY, not a record, and must be resolved by
+        // parameter name rather than by prefix: in
+        // `podcasts/chapters/{tenantId}/{episodeId}.json` both parameters sit
+        // under the same local prefix, so a prefix map gives them the same
+        // fixture and the sweep skips the route as having no distinct child.
+        // Filling it with our OWN community id is also the right probe — the
+        // question is whether our community id plus THEIR episode is served.
+        if ($param === 'tenantId') {
+            return ['tenant_self', null];
         }
 
         $before = substr($path, 0, (int) strpos($path, '{' . $param . '}'));
