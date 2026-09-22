@@ -119,7 +119,7 @@ function ThreadScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
-  const { subscribeToMessages, refreshCounts } = useRealtimeContext();
+  const { subscribeToMessages, refreshCounts, recoveryVersion = 0 } = useRealtimeContext();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const unknownMemberLabel = t('unknownMember');
@@ -194,6 +194,8 @@ function ThreadScreenInner() {
   const [isFocused, setIsFocused] = useState(true);
   const isFocusedRef = useRef(true);
   const appActiveRef = useRef(AppState.currentState === 'active');
+  const [isAppActive, setIsAppActive] = useState(appActiveRef.current);
+  const recoveredVersionRef = useRef(recoveryVersion);
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
   /*
     🔴 Which message shows the 👍 ❤️ 😂 ⋯ quick-react row. It used to be EVERY message: the
@@ -526,6 +528,15 @@ function ThreadScreenInner() {
   );
 
   useEffect(() => {
+    // GET thread also marks it read: defer recovery while covered/backgrounded
+    // and while a local send is still resolving its optimistic message.
+    if (!isFocused || !isAppActive || !isValidId || isSending
+      || recoveredVersionRef.current === recoveryVersion) return;
+    recoveredVersionRef.current = recoveryVersion;
+    refresh();
+  }, [isFocused, isAppActive, isValidId, isSending, recoveryVersion, refresh]);
+
+  useEffect(() => {
     const subscription = AppState.addEventListener('change', (next) => {
       if (appActiveRef.current && next !== 'active' && isFocusedRef.current) {
         // Finalize into the managed draft directory before Android/iOS can suspend or
@@ -536,6 +547,7 @@ function ThreadScreenInner() {
         })();
       }
       appActiveRef.current = next === 'active';
+      setIsAppActive(next === 'active');
     });
     return () => subscription.remove();
   }, [persistMessageDraft]);

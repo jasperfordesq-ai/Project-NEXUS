@@ -83,6 +83,28 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('RealtimeContext', () => {
+  it('reconciles counts and publishes recovery after each successful subscription', async () => {
+    let subscribed: (() => void) | undefined;
+    const channel = { name: 'private-user.1', unbind_all: jest.fn(), bind: jest.fn((event, handler) => {
+      if (event === 'pusher:subscription_succeeded') subscribed = handler;
+    }) };
+    mockInitRealtime.mockReturnValue({ subscribe: () => channel });
+    const originalGet = mockApiGet.getMockImplementation()!;
+    mockApiGet.mockImplementation((url: string) => url.includes('/pusher/config')
+      ? Promise.resolve({ enabled: true, key: 'test', channels: { user: channel.name } }) : originalGet(url));
+    const view = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(subscribed).toBeDefined());
+    mockApiGet.mockClear();
+    act(() => subscribed!());
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith('/api/v2/messages/unread-count'));
+    expect(view.result.current.recoveryVersion).toBe(1);
+    act(() => subscribed!());
+    expect(view.result.current.recoveryVersion).toBe(2);
+    view.unmount();
+    mockApiGet.mockClear();
+    act(() => subscribed!());
+    expect(mockApiGet).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockAppStateHandler = undefined;

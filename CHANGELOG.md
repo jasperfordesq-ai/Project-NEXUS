@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native messaging now refreshes unread counts after realtime resubscription and reloads missed messages when the conversation is visible, deferring read-affecting recovery while it is covered or backgrounded.
+
 - Native message threads now follow delayed message layout when opening a conversation, while preserving the position of members who deliberately scroll into older history.
 
 - Message attachment persistence failures now roll back the complete send instead of reporting success with missing files. Retrying can save the full message, and failed sends clean up staged uploads.

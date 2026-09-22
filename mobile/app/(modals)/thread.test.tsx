@@ -195,9 +195,11 @@ jest.mock('@/lib/hooks/useApi', () => ({
 }));
 
 const mockRefreshCounts = jest.fn();
+let mockRecoveryVersion = 0;
 
 jest.mock('@/lib/context/RealtimeContext', () => ({
   useRealtimeContext: () => ({
+    recoveryVersion: mockRecoveryVersion,
     subscribeToMessages: jest.fn((_threadId: number, callback: (message: MockThreadMessage) => boolean | void) => {
       mockRealtimeCallback = callback;
       return jest.fn();
@@ -376,6 +378,7 @@ const mockMessages = [
 ];
 
 beforeEach(() => {
+  mockRecoveryVersion = 0;
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
   mockThreadSearchParams = { id: '5', name: 'Alice' };
   mockRouterPush.mockClear();
@@ -443,6 +446,44 @@ beforeEach(() => {
 
 describe('ThreadScreen', () => {
   const originalPlatformOS = Platform.OS;
+
+  it('defers recovery reads while the app is backgrounded', async () => {
+    Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'background' });
+    let onState: ((state: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => void) | undefined;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, handler) => {
+      onState = handler;
+      return { remove: jest.fn() };
+    });
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh });
+    const view = render(<ThreadScreen />);
+    mockRecoveryVersion = 1;
+    view.rerender(<ThreadScreen />);
+    expect(refresh).not.toHaveBeenCalled();
+    act(() => onState?.('active'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    await act(async () => {});
+    view.unmount();
+  });
+
+  it('refetches missed messages on recovery but defers a covered conversation until focus returns', async () => {
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh });
+    const view = render(<ThreadScreen />);
+    let blur: (() => void) | void;
+    act(() => { blur = mockFocusCallback.current?.(); });
+    mockRecoveryVersion = 1;
+    view.rerender(<ThreadScreen />);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    act(() => blur?.());
+    mockRecoveryVersion = 2;
+    view.rerender(<ThreadScreen />);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    act(() => { mockFocusCallback.current?.(); });
+    expect(refresh).toHaveBeenCalledTimes(2);
+    await act(async () => {});
+    view.unmount();
+  });
 
   it('follows late message layout until the reader deliberately scrolls into history', async () => {
     const scrollToEnd = jest.spyOn(FlatList.prototype, 'scrollToOffset').mockImplementation(() => {});

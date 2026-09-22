@@ -36,6 +36,8 @@ import type { NotificationCounts } from '@/lib/api/notifications';
 type MessageHandler = (msg: Message) => boolean | void;
 
 interface RealtimeContextValue {
+  /** Changes after subscription succeeds so views can fetch events missed offline. */
+  recoveryVersion: number;
   /** Current unread message count (seeded from API, bumped by Pusher). */
   unreadMessages: number;
   /** Total unread notification count (all categories). Single source of truth. */
@@ -54,6 +56,7 @@ interface RealtimeContextValue {
 }
 
 const RealtimeContext = createContext<RealtimeContextValue>({
+  recoveryVersion: 0,
   unreadMessages: 0,
   unreadNotifications: 0,
   refreshCounts: () => undefined,
@@ -76,6 +79,7 @@ const REFRESH_THROTTLE_MS = 30_000;
 const PUSH_REGISTRATION_REFRESH_MS = 30 * 60_000;
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
+  const [recoveryVersion, setRecoveryVersion] = useState(0);
   const { isAuthenticated, user } = useAuthContext();
   const sessionIdentity = isAuthenticated && user ? user.id : null;
   const activeSessionIdentityRef = useRef(sessionIdentity);
@@ -196,6 +200,13 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         const ch = client.subscribe(channelName);
         channelRef.current = ch;
 
+        // Re-subscribing restores future events, not messages missed offline.
+        ch.bind('pusher:subscription_succeeded', () => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          refreshCounts(true);
+          setRecoveryVersion((version) => version + 1);
+        });
+
         // Bump the unread badge and notify any open thread screens
         ch.bind('new-message', (rawPayload: unknown) => {
           if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
@@ -245,7 +256,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       }
       disconnectRealtime();
     };
-  }, [connectionAttempt, sessionIdentity]);
+  }, [connectionAttempt, refreshCounts, sessionIdentity]);
 
   // Clear Pusher config cache on logout so next login gets fresh config
   useEffect(() => {
@@ -326,7 +337,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <RealtimeContext.Provider
-      value={{ unreadMessages, unreadNotifications, refreshCounts, subscribeToMessages }}
+      value={{ unreadMessages, unreadNotifications, refreshCounts, subscribeToMessages, recoveryVersion }}
     >
       {children}
     </RealtimeContext.Provider>
