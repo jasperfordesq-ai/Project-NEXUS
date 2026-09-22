@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Message attachment persistence failures now roll back the complete send instead of reporting success with missing files. Retrying can save the full message, and failed sends clean up staged uploads.
+
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.
 
 ### Security

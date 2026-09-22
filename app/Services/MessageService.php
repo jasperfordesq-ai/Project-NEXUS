@@ -728,22 +728,20 @@ class MessageService
             // Persist file/image attachment rows (tenant_id auto-filled by HasTenantScope).
             if ($hasAttachments) {
                 foreach ($attachments as $att) {
-                    try {
-                        \App\Models\MessageAttachment::create([
-                            'message_id' => $message->id,
-                            'file_url'   => $att['url'],
-                            // file_path is NOT NULL in the message_attachments table
-                            // (created by the 2026_02_07 legacy migration) — must be set.
-                            'file_path'  => $att['path'] ?? $att['url'],
-                            'file_name'  => $att['name'],
-                            'file_type'  => $att['type'] ?? 'file',
-                            'file_size'  => $att['size'],
-                            'mime_type'  => $att['mime'],
-                            'created_at' => now(),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::warning('Message attachment persist failed', ['error' => $e->getMessage(), 'message_id' => $message->id]);
-                    }
+                    // Every attachment belongs to the same accepted send. Let a
+                    // failed row roll back the message and its replay receipt.
+                    \App\Models\MessageAttachment::create([
+                        'message_id' => $message->id,
+                        'file_url'   => $att['url'],
+                        // file_path is NOT NULL in the message_attachments table
+                        // (created by the 2026_02_07 legacy migration) — must be set.
+                        'file_path'  => $att['path'] ?? $att['url'],
+                        'file_name'  => $att['name'],
+                        'file_type'  => $att['type'] ?? 'file',
+                        'file_size'  => $att['size'],
+                        'mime_type'  => $att['mime'],
+                        'created_at' => now(),
+                    ]);
                 }
             }
 

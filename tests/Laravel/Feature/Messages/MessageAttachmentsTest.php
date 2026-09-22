@@ -26,6 +26,47 @@ class MessageAttachmentsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function test_attachment_failure_rolls_back_message_and_receipt_and_allows_retry(): void
+    {
+        [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
+        \Illuminate\Support\Facades\Event::fake([\App\Events\MessageSent::class]);
+        $failAttachment = true;
+        \Illuminate\Support\Facades\Event::listen(
+            'eloquent.creating: ' . \App\Models\MessageAttachment::class,
+            function ($attachment) use (&$failAttachment): void {
+                if ($failAttachment && $attachment->file_name === 'atomic-second.png') {
+                    throw new \RuntimeException('synthetic attachment persistence failure');
+                }
+            },
+        );
+        $payload = [
+            'body' => 'atomic attachment regression',
+            'idempotency_key' => 'atomic-attachment-regression',
+            'idempotency_request_hash' => hash('sha256', 'atomic attachment regression'),
+            'attachments' => array_map(fn ($name) => [
+                'url' => '/uploads/' . $tenantId . '/message_attachments/' . $name,
+                'name' => $name, 'size' => 10, 'mime' => 'image/png',
+            ], ['atomic-first.png', 'atomic-second.png']),
+        ];
+        try {
+            $failure = null;
+            try { MessageService::send($sender, $receiver, $payload); }
+            catch (\RuntimeException $error) { $failure = $error; }
+            $this->assertNotNull($failure, 'A partial attachment send must not report success');
+            $this->assertSame('synthetic attachment persistence failure', $failure->getMessage());
+            $this->assertDatabaseMissing('messages', ['tenant_id' => $tenantId, 'sender_id' => $sender, 'body' => $payload['body']]);
+            $this->assertDatabaseMissing('message_attachments', ['tenant_id' => $tenantId, 'file_name' => 'atomic-first.png']);
+            $this->assertDatabaseMissing('message_send_receipts', ['tenant_id' => $tenantId, 'sender_id' => $sender, 'idempotency_key_hash' => hash('sha256', $payload['idempotency_key'])]);
+            \Illuminate\Support\Facades\Event::assertNotDispatched(\App\Events\MessageSent::class);
+            $failAttachment = false;
+            $result = MessageService::send($sender, $receiver, $payload);
+            $this->assertCount(2, $result['attachments']);
+            $replay = MessageService::send($sender, $receiver, $payload);
+            $this->assertSame($result['id'], $replay['id']);
+            $this->assertSame(1, DB::table('messages')->where('tenant_id', $tenantId)->where('sender_id', $sender)->where('body', $payload['body'])->count());
+        } finally { $failAttachment = false; TenantContext::reset(); }
+    }
+
     /** @return array{0:int,1:int,2:int} [tenantId, senderId, receiverId] */
     private function tenantAndTwoUsers(): array
     {

@@ -210,7 +210,12 @@ class MessagesController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_body_required'), 'body', 422);
         }
 
-        $message = $this->messageService->send($userId, $data);
+        try {
+            $message = $this->messageService->send($userId, $data);
+        } catch (\Throwable $error) {
+            $this->deleteStagedAttachments($attachments);
+            throw $error;
+        }
 
         if (!$message) {
             $this->deleteStagedAttachments($attachments);
