@@ -111,6 +111,16 @@ abstract class AccessSweepTestCase extends TestCase
         'courses' => 'course',
         'marketplace/listings' => 'marketplace_listing',
         'stories' => 'story',
+        // 🔴 stories/highlights/{id} is a HIGHLIGHT, not a story. Without this
+        // line resolve() fell back to the 'stories' ancestor and handed the
+        // route a story id — a different table with its own auto-increment
+        // sequence. When a story id happened to collide with a highlight id the
+        // CALLER owned, DELETE succeeded and the same-community gate reported a
+        // breach that had not happened (CI runs 35769131661, 35777594091, both
+        // green locally where the id ranges did not overlap).
+        // 🔴 54 routes across 28 prefixes still resolve this way — see the
+        // E-022 note in the register. This fixes the one that was firing.
+        'stories/highlights' => 'story_highlight',
         'podcasts' => 'podcast_show',
 
         // PASS 2 — administration, requested as a community admin
