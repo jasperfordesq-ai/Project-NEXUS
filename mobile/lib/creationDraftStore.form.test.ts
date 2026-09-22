@@ -24,6 +24,15 @@ beforeEach(() => {
   });
   jest.mocked(FileSystem.deleteAsync).mockImplementation(async path => { files.delete(path); });
 });
+it('persists a large organiser agenda encrypted beyond the small chunk limit', async () => {
+  const agendaScope = { ...scope, kind: 'event-agenda' as const };
+  const pending = { key: 'same-retry-key', payload: { description: 'Synthetic private agenda 🌱 '.repeat(2000) } };
+  expect(await save(agendaScope, pending)).toBe(true);
+  expect(await load(agendaScope, { required: true })).toEqual(pending);
+  expect([...files.values()][0]).not.toContain('Synthetic private agenda');
+  expect(await clear(agendaScope)).toBe(true);
+  expect(await load(agendaScope, { required: true })).toBeNull();
+});
 function legacy(value: unknown) {
   const characters = Array.from(JSON.stringify(value));
   const chunks = Math.ceil(characters.length / 350);
