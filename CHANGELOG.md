@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-22
+
 ### Security
 
 - Aligned event registration retention operations with their declared permissions.
@@ -9057,7 +9059,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.8.0...v2.0.0
 [1.8.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.6.2...v1.7.0

@@ -85,7 +85,7 @@ class LoggerService
         }
 
         $envVersion = getenv('APP_VERSION');
-        return is_string($envVersion) && $envVersion !== '' ? $envVersion : '2.0.0';
+        return is_string($envVersion) && $envVersion !== '' ? $envVersion : '2.1.0';
     }
 
     /**
