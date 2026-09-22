@@ -44,3 +44,14 @@ it('does not permit public streams or blank external speaker names', () => {
   draft.resources = []; draft.speakers = [{ name: ' ', role: '' }];
   expect(agendaPayload(draft, event)).toBeNull();
 });
+it('keeps exact event boundary seconds when the default minute fields are unchanged', () => {
+  const precise = { ...event, schedule: { ...event.schedule, start_at: '2030-05-01T08:00:37Z', end_at: '2030-05-01T17:00:42Z' } };
+  const draft = { ...agendaDraft(precise), title: 'Session' };
+  expect(agendaPayload(draft, precise)).toMatchObject({ start_at: '2030-05-01T08:00:37Z', end_at: '2030-05-01T17:00:42Z' });
+});
+it('preserves an edited session timestamp while converting a deliberately changed field', () => {
+  const precise = { ...session, start_at: '2030-05-01T09:30:37Z', end_at: '2030-05-01T10:15:42Z' };
+  const draft = agendaDraft(event, precise);
+  draft.end = '2030-05-01T12:00';
+  expect(agendaPayload(draft, event, precise)).toMatchObject({ start_at: precise.start_at, end_at: '2030-05-01T11:00:00.000Z' });
+});

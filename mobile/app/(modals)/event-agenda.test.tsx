@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn() }));
 import React from 'react';
-import { AppState } from 'react-native';
+import { AppState, ScrollView } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import Editor from '@/components/events/EventAgendaEditor';
 let mockId: string | string[] | undefined = '101';
@@ -79,4 +79,18 @@ it('requires a cancellation reason and submits the observed version', async () =
   fireEvent.changeText(v.getByLabelText('manage.agenda.cancel_reason'), 'Unavailable');
   await act(async () => fireEvent.press(v.getByText('manage.agenda.confirm_cancel')));
   expect(mockOperation.submit).toHaveBeenCalledWith({ action: 'cancel', sessionId: session.id, expectedVersion: session.version, reason: 'Unavailable' });
+});
+it('brings the recovery notice into view after a save fails below the fold', () => {
+  const scroll = jest.spyOn(ScrollView.prototype, 'scrollTo');
+  const v = render(<Screen />);
+  fireEvent.press(v.getByText('manage.agenda.add_session'));
+  mockOperation.saved = { status: 'pending' }; mockOperation.blocked = true; mockOperation.operationFailed = true;
+  v.rerender(<Screen />);
+  expect(scroll).toHaveBeenCalledWith({ y: 0, animated: true });
+  scroll.mockRestore();
+});
+it('shows the end date as well as the start date for a session spanning calendar days', () => {
+  mockState.data.agenda.sessions = [{ ...session, end_at: '2031-01-02T12:00:00Z' }];
+  const v = render(<Screen />);
+  expect(v.getByText(/2031/)).toBeTruthy();
 });

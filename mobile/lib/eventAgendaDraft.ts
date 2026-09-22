@@ -31,9 +31,15 @@ export function agendaDraft(event: CanonicalEvent, session?: EventAgendaSession,
     })) ?? [],
   };
 }
-export function agendaPayload(draft: AgendaDraft, event: CanonicalEvent): AgendaSessionPayload | null {
-  const start = eventLocalInputToIso(draft.start, event.schedule.timezone);
-  const end = eventLocalInputToIso(draft.end, event.schedule.timezone);
+export function agendaPayload(draft: AgendaDraft, event: CanonicalEvent,
+  original: { start_at: string | null; end_at: string | null } = event.schedule): AgendaSessionPayload | null {
+  // The form displays minutes. Preserve an unchanged authoritative instant, including
+  // seconds and a known DST offset, rather than silently moving it outside the event.
+  const instant = (value: string, previous: string | null) => previous
+    && value === eventIsoToLocalInput(previous, event.schedule.timezone)
+    ? previous : eventLocalInputToIso(value, event.schedule.timezone);
+  const start = instant(draft.start, original.start_at);
+  const end = instant(draft.end, original.end_at);
   if (!start || !end || Date.parse(end) <= Date.parse(start)
     || (event.schedule.start_at && Date.parse(start) < Date.parse(event.schedule.start_at))
     || (event.schedule.end_at && Date.parse(end) > Date.parse(event.schedule.end_at))) return null;

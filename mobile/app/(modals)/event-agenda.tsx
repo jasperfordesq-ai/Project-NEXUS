@@ -54,6 +54,7 @@ function CancelSession({ session, blocked, initialReason = '', onCancel, onClose
 }
 export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number; tenantId: number; userId: number }) {
   const { t } = useTranslation(['events', 'common', 'event_communications']);
+  const scroll = useRef<ScrollView>(null);
   const focused = useIsFocused();
   const [appState, setAppState] = useState(AppState.currentState);
   useEffect(() => { const listener = AppState.addEventListener('change', setAppState); return () => listener.remove(); }, []);
@@ -73,6 +74,11 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
     setEditor(null); setCancel(null); setMinimumVersion(response.data.agenda_version); state.refresh();
   });
   const review = operation.saved?.status === 'review' ? operation.saved : null;
+  const needsAttention = operation.storageFailed || operation.operationFailed
+    || operation.saved?.status === 'pending' || operation.saved?.status === 'rejected';
+  useEffect(() => {
+    if (needsAttention) scroll.current?.scrollTo({ y: 0, animated: true });
+  }, [needsAttention]);
   const reviewed = useRef<string | null>(null);
   useEffect(() => {
     if (!review || reviewed.current === review.key) return;
@@ -102,7 +108,7 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
     void operation.submit({ action: 'reorder', orderedSessionIds: ids, expectedAgendaVersion: agenda.agenda_version }).catch(() => undefined);
   };
   return <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
+    <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
       refreshControl={<RefreshControl refreshing={state.isLoading} enabled={!operation.busy}
         onRefresh={() => { if (!operation.busy) state.refresh(); }} />}>
       <View className="gap-4">
@@ -140,7 +146,8 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
               const formatted = formatEventSchedule({ start_at: session.start_at, end_at: session.end_at, timezone: session.timezone, all_day: false });
               return <View key={session.id} className="gap-3 rounded-panel border border-border p-4">
                 <Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{session.title}</Text>
-                <Text className="text-muted-foreground">{formatted.dateLabel} {formatted.timeLabel} – {formatted.endTimeLabel}</Text>
+                <Text className="text-muted-foreground">{t('agenda.starts')}: {formatted.startDateLabel} {formatted.timeLabel}</Text>
+                <Text className="text-muted-foreground">{t('agenda.ends')}: {formatted.endDateLabel} {formatted.endTimeLabel}</Text>
                 <Text className="text-muted-foreground">{t(`manage.agenda.types.${session.type}`)} · {t(`manage.agenda.visibilities.${session.visibility}`)}</Text>
                 <Button variant="secondary" isDisabled={frozen || !!review || awaiting} onPress={() => setEditor({ session, key: `edit:${session.id}:${session.version}` })}>{t('manage.agenda.edit_session', { title: session.title })}</Button>
                 <Button variant="secondary" isDisabled={frozen || !!review || awaiting} onPress={() => setCancel({ session })}>{t('manage.agenda.cancel_session', { title: session.title })}</Button>

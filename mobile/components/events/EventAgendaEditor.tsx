@@ -41,7 +41,7 @@ export default function EventAgendaEditor({ event, session, recoveredInput, bloc
   }
   async function save() {
     if (!mounted.current || current.current.blocked || lock.current) return;
-    const payload = agendaPayload(current.current.draft, event);
+    const payload = agendaPayload(current.current.draft, event, recoveredInput ?? session ?? event.schedule);
     if (!payload) { setInvalid(true); return; }
     lock.current = true; setBusy(true);
     try { await onSave(payload); } catch { /* Parent retains the saved operation and renders recovery. */ }
