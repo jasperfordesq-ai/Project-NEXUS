@@ -1105,10 +1105,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **BREAKING:** Group-exchange confirmation now requires the reviewed `terms_token` from the detail response and rejects missing or stale terms with HTTP 409. Native, React and accessible clients submit the displayed token; members must review changed terms before confirming again.
+- **Group-exchange confirmation checks the terms the member actually reviewed.** The detail
+  response carries a `terms_token`; if a client submits one that no longer matches the current
+  terms, confirmation is refused with HTTP 409 `TERMS_CHANGED` so the member reviews the change
+  before confirming again. Native, React and accessible clients submit the displayed token. A
+  client that submits **no** token — including the Play Store build live since 15 September —
+  confirms exactly as before and is unaffected, so this is not a breaking change. Regression
+  tests: `GroupExchangeControllerTest::test_confirmation_without_a_terms_token_is_accepted_from_an_older_client`,
+  `::test_confirmation_with_a_blank_terms_token_is_treated_as_an_older_client`,
+  `::test_confirmation_with_a_wrong_terms_token_is_still_refused`,
+  `::test_confirmation_requires_the_terms_that_were_reviewed`.
 
 
-- **BREAKING:** Quiz lessons now require the learner to have a passing, fully graded attempt before lesson completion or certificate issuance/access through the course API. Failed or pending-review attempts cannot satisfy completion. Progress reads present historical unpassed quiz completions as unfinished without deleting stored history. Clients must handle `QUIZ_PASS_REQUIRED` (HTTP 422) and may use lesson `completion_allowed` to disable completion until eligible.
+- **Quiz lessons now require the learner to have a passing, fully graded attempt before lesson completion or certificate issuance/access through the course API. Failed or pending-review attempts cannot satisfy completion. Progress reads present historical unpassed quiz completions as unfinished without deleting stored history. Clients must handle `QUIZ_PASS_REQUIRED` (HTTP 422) and may use lesson `completion_allowed` (a new field) to disable completion until eligible. Not marked breaking: no field, endpoint or caller permission is removed, renamed or retyped, and `QUIZ_PASS_REQUIRED` reuses the HTTP 422 coded-error shape these endpoints already return for `COURSE_NOT_AVAILABLE`, `PREREQUISITES_NOT_MET` and `INSUFFICIENT_CREDITS`, so a conforming client needs no change.
 
 - **The footer's "Powered by Project NEXUS" badge links to project-nexus.net.** The marketing
   site moved from `project-nexus.ie` to `project-nexus.net`; the badge's destination is not a

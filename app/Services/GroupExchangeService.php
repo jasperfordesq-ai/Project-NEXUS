@@ -859,7 +859,10 @@ class GroupExchangeService
                 return false;
             }
             $snapshot = $this->getLockedSnapshot($exchangeId);
-            if ($termsToken === null || ! hash_equals($snapshot['terms_token'], $termsToken)) {
+            // A client that supplies no token predates terms tokens (the Play Store build
+            // live since 15 September sends none) and must still be able to confirm. The
+            // stale-terms protection is in refusing a MISMATCHED token, not a missing one.
+            if ($termsToken !== null && $termsToken !== '' && ! hash_equals($snapshot['terms_token'], $termsToken)) {
                 $this->lastTermsMismatch = true;
                 return false;
             }

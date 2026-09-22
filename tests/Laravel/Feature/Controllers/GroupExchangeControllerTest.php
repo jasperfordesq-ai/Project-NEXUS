@@ -480,7 +480,6 @@ class GroupExchangeControllerTest extends TestCase
             $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
             Sanctum::actingAs($receiver, ['*']);
             $seen = $this->apiGet("/v2/group-exchanges/{$id}")->assertStatus(200)->json('data.terms_token');
-            $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(409);
             Sanctum::actingAs($organizer, ['*']);
             $this->apiPut("/v2/group-exchanges/{$id}", $change)->assertStatus(200);
             Sanctum::actingAs($receiver, ['*']);
@@ -490,5 +489,54 @@ class GroupExchangeControllerTest extends TestCase
             $this->assertNotSame($seen, $fresh);
             $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => $fresh])->assertStatus(200);
         }
+    }
+
+    public function test_confirmation_without_a_terms_token_is_accepted_from_an_older_client(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser(0);
+        $receiver = $this->makeUser(10);
+        $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+        $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+
+        // The live Play Store app (build 12 / 1.6.0) sends no terms_token at all.
+        // A client that cannot send one must still be able to confirm; the stale-terms
+        // protection lives in rejecting a MISMATCHED token, not a missing one.
+        Sanctum::actingAs($receiver, ['*']);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm")->assertStatus(200);
+
+        $this->assertSame(1, (int) DB::table('group_exchange_participants')
+            ->where('group_exchange_id', $id)->where('user_id', $receiver->id)->value('confirmed'));
+    }
+
+    public function test_confirmation_with_a_blank_terms_token_is_treated_as_an_older_client(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser(0);
+        $receiver = $this->makeUser(10);
+        $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+        $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+
+        Sanctum::actingAs($receiver, ['*']);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => ''])->assertStatus(200);
+
+        $this->assertSame(1, (int) DB::table('group_exchange_participants')
+            ->where('group_exchange_id', $id)->where('user_id', $receiver->id)->value('confirmed'));
+    }
+
+    public function test_confirmation_with_a_wrong_terms_token_is_still_refused(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser(0);
+        $receiver = $this->makeUser(10);
+        $id = $this->createExchange($organizer, $provider, $receiver, totalHours: 6);
+        $this->apiPost("/v2/group-exchanges/{$id}/start")->assertStatus(200);
+
+        Sanctum::actingAs($receiver, ['*']);
+        $this->apiPost("/v2/group-exchanges/{$id}/confirm", ['terms_token' => str_repeat('a', 64)])
+            ->assertStatus(409)->assertJsonPath('errors.0.code', 'TERMS_CHANGED');
+
+        $this->assertSame(0, (int) DB::table('group_exchange_participants')
+            ->where('group_exchange_id', $id)->where('user_id', $receiver->id)->value('confirmed'));
     }
 }
