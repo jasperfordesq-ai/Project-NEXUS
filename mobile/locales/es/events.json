@@ -891,7 +891,32 @@
         "registered": "Asistentes confirmados",
         "staff": "Solo el personal del evento"
       },
-      "event_cancelled_notice": "Este evento ha sido cancelado. La agenda a continuación se mantiene como registro; ninguna de estas sesiones continúa."
+      "event_cancelled_notice": "Este evento ha sido cancelado. La agenda a continuación se mantiene como registro; ninguna de estas sesiones continúa.",
+      "resources": {
+        "capacity_label": "Capacidad de la sesión",
+        "capacity_hint": "Déjalo en blanco para no limitar plazas. Las plazas de sesión no cambian la inscripción al evento ni las entradas.",
+        "resources_title": "Recursos de la sesión",
+        "resources_hint": "Añade enlaces HTTPS en el orden de presentación. Las emisiones y grabaciones deben limitarse a personas inscritas o al personal.",
+        "resource_number": "Recurso {{number}}",
+        "resource_type": "Tipo de recurso",
+        "resource_visibility": "Quién puede acceder",
+        "resource_title": "Título del recurso",
+        "resource_url": "URL HTTPS segura",
+        "resource_types": {
+          "link": "Enlace",
+          "document": "Documento",
+          "slides": "Diapositivas",
+          "download": "Descarga",
+          "stream": "Emisión en directo",
+          "recording": "Grabación"
+        },
+        "add_resource": "Añadir recurso",
+        "remove_resource": "Eliminar {{title}}"
+      },
+      "input_format": "Usa AAAA-MM-DDTHH:mm, por ejemplo 2030-06-15T14:30.",
+      "invalid_fields": "Revisa el título, los horarios dentro del evento, el aforo, los ponentes y los enlaces seguros.",
+      "review": "Revisar cambio guardado",
+      "review_hint": "El cambio no se aplicó. Revisa la agenda actual antes de corregirlo y enviarlo de nuevo."
     },
     "team": {
       "title": "Equipo delegado",

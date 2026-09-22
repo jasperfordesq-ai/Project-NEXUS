@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-09-15
+Last reviewed: 2026-09-22
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -18,13 +18,13 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 257 |
-| Mobile routes (Expo Router screens) | 173 |
+| Mobile routes (Expo Router screens) | 182 |
 | Covered natively | 170 |
 | Deliberately out of scope | 87 |
 | **Known gaps** | **0** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 32 |
+| Mobile routes not claimed by a React route | 41 |
 | Broken declarations | 0 |
 
 ## Full matrix
@@ -299,10 +299,19 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `edit-profile`
 - `edit-volunteering`
 - `endorsements`
+- `event-agenda`
 - `event-attendance`
 - `event-communications`
+- `event-invitation-recipients`
 - `event-lifecycle-history`
+- `event-people`
 - `event-recurrence-blueprints`
+- `event-registration-forms`
+- `event-registration-guests`
+- `event-registration-invitations`
+- `event-registration-retention`
+- `event-registration-settings`
+- `event-registration-submissions`
 - `event-templates`
 - `event-tickets`
 - `exchange-request-detail`

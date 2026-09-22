@@ -891,7 +891,32 @@
         "registered": "Partecipanti confermati",
         "staff": "Solo lo staff dell’evento"
       },
-      "event_cancelled_notice": "Questo evento è stato cancellato. L'ordine del giorno riportato di seguito viene conservato come registro: nessuna di queste sessioni avrà luogo."
+      "event_cancelled_notice": "Questo evento è stato cancellato. L'ordine del giorno riportato di seguito viene conservato come registro: nessuna di queste sessioni avrà luogo.",
+      "resources": {
+        "capacity_label": "Capienza della sessione",
+        "capacity_hint": "Lascia vuoto per non imporre limiti. I posti della sessione non modificano l’iscrizione all’evento né i biglietti.",
+        "resources_title": "Risorse della sessione",
+        "resources_hint": "Aggiungi link HTTPS nell’ordine di visualizzazione. Streaming e registrazioni devono essere riservati agli iscritti o allo staff.",
+        "resource_number": "Risorsa {{number}}",
+        "resource_type": "Tipo di risorsa",
+        "resource_visibility": "Chi può accedere",
+        "resource_title": "Titolo della risorsa",
+        "resource_url": "URL HTTPS sicuro",
+        "resource_types": {
+          "link": "Link",
+          "document": "Documento",
+          "slides": "Diapositive",
+          "download": "Download",
+          "stream": "Diretta streaming",
+          "recording": "Registrazione"
+        },
+        "add_resource": "Aggiungi risorsa",
+        "remove_resource": "Rimuovi {{title}}"
+      },
+      "input_format": "Usa AAAA-MM-GGTHH:mm, ad esempio 2030-06-15T14:30.",
+      "invalid_fields": "Controlla titolo, orari entro i limiti dell’evento, capienza, relatori e collegamenti sicuri.",
+      "review": "Rivedi la modifica salvata",
+      "review_hint": "La modifica non è stata applicata. Controlla il programma attuale prima di correggerla e inviarla di nuovo."
     },
     "team": {
       "title": "Squadra delegata",

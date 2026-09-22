@@ -15,7 +15,7 @@ describe('eventManagementRoute', () => {
   });
 
   it('routes embedded management sections to the canonical event workspace', () => {
-    expect(eventManagementRoute(42, 'agenda')).toEqual({ pathname: '/(modals)/event-detail', params: { id: '42' } });
+    expect(eventManagementRoute(42, 'agenda')).toEqual({ pathname: '/(modals)/event-agenda', params: { id: '42' } });
     expect(eventManagementRoute(42, 'registration')).toEqual({ pathname: '/(modals)/event-registration-settings', params: { id: '42' } });
     expect(eventManagementRoute(42, 'overview')).toBeNull();
   });

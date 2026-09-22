@@ -891,7 +891,32 @@
         "registered": "Participantes confirmados",
         "staff": "Somente a equipe do evento"
       },
-      "event_cancelled_notice": "Este evento foi cancelado. A agenda abaixo é mantida como um registro – nenhuma dessas sessões será realizada."
+      "event_cancelled_notice": "Este evento foi cancelado. A agenda abaixo é mantida como um registro – nenhuma dessas sessões será realizada.",
+      "resources": {
+        "capacity_label": "Capacidade da sessão",
+        "capacity_hint": "Deixe em branco para não limitar lugares. Os lugares da sessão não alteram a inscrição no evento nem os bilhetes.",
+        "resources_title": "Recursos da sessão",
+        "resources_hint": "Adicione ligações HTTPS pela ordem de apresentação. Transmissões e gravações devem ficar limitadas a pessoas inscritas ou à equipa.",
+        "resource_number": "Recurso {{number}}",
+        "resource_type": "Tipo de recurso",
+        "resource_visibility": "Quem pode aceder",
+        "resource_title": "Título do recurso",
+        "resource_url": "URL HTTPS seguro",
+        "resource_types": {
+          "link": "Ligação",
+          "document": "Documento",
+          "slides": "Diapositivos",
+          "download": "Transferência",
+          "stream": "Transmissão em direto",
+          "recording": "Gravação"
+        },
+        "add_resource": "Adicionar recurso",
+        "remove_resource": "Remover {{title}}"
+      },
+      "input_format": "Use AAAA-MM-DDTHH:mm, por exemplo 2030-06-15T14:30.",
+      "invalid_fields": "Verifique o título, os horários dentro do evento, a lotação, os oradores e as ligações seguras.",
+      "review": "Rever alteração guardada",
+      "review_hint": "A alteração não foi aplicada. Reveja a agenda atual antes de a corrigir e voltar a enviar."
     },
     "team": {
       "title": "Equipe delegada",

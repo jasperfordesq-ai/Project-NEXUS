@@ -891,7 +891,32 @@
         "registered": "Participants confirmés",
         "staff": "Équipe de l’événement uniquement"
       },
-      "event_cancelled_notice": "Cet événement a été annulé. L’ordre du jour ci-dessous est conservé à titre de dossier – aucune de ces sessions n’aura lieu."
+      "event_cancelled_notice": "Cet événement a été annulé. L’ordre du jour ci-dessous est conservé à titre de dossier – aucune de ces sessions n’aura lieu.",
+      "resources": {
+        "capacity_label": "Capacité de la séance",
+        "capacity_hint": "Laissez vide pour un nombre de places illimité. Les places de séance ne modifient ni l’inscription à l’événement ni les billets.",
+        "resources_title": "Ressources de la séance",
+        "resources_hint": "Ajoutez les liens HTTPS dans l’ordre d’affichage. Les diffusions et enregistrements doivent être réservés aux personnes inscrites ou au personnel.",
+        "resource_number": "Ressource {{number}}",
+        "resource_type": "Type de ressource",
+        "resource_visibility": "Personnes autorisées",
+        "resource_title": "Titre de la ressource",
+        "resource_url": "URL HTTPS sécurisée",
+        "resource_types": {
+          "link": "Lien",
+          "document": "Document",
+          "slides": "Diapositives",
+          "download": "Téléchargement",
+          "stream": "Diffusion en direct",
+          "recording": "Enregistrement"
+        },
+        "add_resource": "Ajouter une ressource",
+        "remove_resource": "Supprimer {{title}}"
+      },
+      "input_format": "Utilisez AAAA-MM-JJTHH:mm, par exemple 2030-06-15T14:30.",
+      "invalid_fields": "Vérifiez le titre, les horaires dans les limites de l’événement, la capacité, les intervenants et les liens sécurisés.",
+      "review": "Examiner la modification enregistrée",
+      "review_hint": "Votre modification n’a pas été appliquée. Consultez le programme actuel avant de la corriger et de la renvoyer."
     },
     "team": {
       "title": "Équipe déléguée",

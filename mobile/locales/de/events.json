@@ -891,7 +891,32 @@
         "registered": "Bestätigte Teilnehmende",
         "staff": "Nur Veranstaltungsteam"
       },
-      "event_cancelled_notice": "Diese Veranstaltung wurde abgesagt. Die nachstehende Tagesordnung wird als Protokoll aufbewahrt – keine dieser Sitzungen findet statt."
+      "event_cancelled_notice": "Diese Veranstaltung wurde abgesagt. Die nachstehende Tagesordnung wird als Protokoll aufbewahrt – keine dieser Sitzungen findet statt.",
+      "resources": {
+        "capacity_label": "Kapazität der Sitzung",
+        "capacity_hint": "Leer lassen für unbegrenzte Plätze. Sitzungsplätze ändern weder die Veranstaltungsanmeldung noch Tickets.",
+        "resources_title": "Sitzungsressourcen",
+        "resources_hint": "HTTPS-Links in Anzeigereihenfolge hinzufügen. Streams und Aufzeichnungen müssen auf Angemeldete oder Mitarbeitende beschränkt sein.",
+        "resource_number": "Ressource {{number}}",
+        "resource_type": "Ressourcentyp",
+        "resource_visibility": "Zugriffsberechtigte",
+        "resource_title": "Titel der Ressource",
+        "resource_url": "Sichere HTTPS-URL",
+        "resource_types": {
+          "link": "Link",
+          "document": "Dokument",
+          "slides": "Folien",
+          "download": "Download",
+          "stream": "Livestream",
+          "recording": "Aufzeichnung"
+        },
+        "add_resource": "Ressource hinzufügen",
+        "remove_resource": "{{title}} entfernen"
+      },
+      "input_format": "Format: JJJJ-MM-TTTHH:mm, zum Beispiel 2030-06-15T14:30.",
+      "invalid_fields": "Prüfen Sie Titel, Zeiten innerhalb der Veranstaltung, Kapazität, Vortragende und sichere Ressourcenlinks.",
+      "review": "Gespeicherte Änderung prüfen",
+      "review_hint": "Ihre Änderung wurde nicht übernommen. Prüfen Sie die aktuelle Agenda, bevor Sie die Änderung korrigieren und erneut senden."
     },
     "team": {
       "title": "Delegiertes Team",

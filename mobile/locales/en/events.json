@@ -891,7 +891,32 @@
         "registered": "Confirmed attendees",
         "staff": "Event staff only"
       },
-      "event_cancelled_notice": "This event has been cancelled. The agenda below is kept as a record — none of these sessions are going ahead."
+      "event_cancelled_notice": "This event has been cancelled. The agenda below is kept as a record — none of these sessions are going ahead.",
+      "resources": {
+        "capacity_label": "Session capacity",
+        "capacity_hint": "Leave blank for no limit. Session places do not change event registration or tickets.",
+        "resources_title": "Session resources",
+        "resources_hint": "Add HTTPS links in display order. Streams and recordings must be limited to registered attendees or staff.",
+        "resource_number": "Resource {{number}}",
+        "resource_type": "Resource type",
+        "resource_visibility": "Who can access it",
+        "resource_title": "Resource title",
+        "resource_url": "Secure HTTPS URL",
+        "resource_types": {
+          "link": "Link",
+          "document": "Document",
+          "slides": "Slides",
+          "download": "Download",
+          "stream": "Live stream",
+          "recording": "Recording"
+        },
+        "add_resource": "Add resource",
+        "remove_resource": "Remove {{title}}"
+      },
+      "input_format": "Use YYYY-MM-DDTHH:mm, for example 2030-06-15T14:30.",
+      "invalid_fields": "Check the title, times within the event, capacity, speakers and secure resource links.",
+      "review": "Review saved change",
+      "review_hint": "Your change was not applied. Review the current agenda before correcting and resubmitting it."
     },
     "team": {
       "title": "Delegated team",

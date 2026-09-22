@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Native agenda API support for organiser session creation, editing, cancellation and ordering, with version checks and caller-supplied retry identities. The organiser editor is still under development.
-- Native organiser agenda operations now save encrypted requests before sending, retain their original identity after interruption, and preserve rejected input for explicit review against current session versions. This recovery layer will support the forthcoming organiser editor.
+- Native event organisers can now create and edit agenda sessions, manage speakers and secure resources, cancel sessions with reasons, and reorder the programme from a dedicated screen. Requests are saved encrypted before sending; interrupted requests retain their retry identity, and rejected edits retain their input for review against current versions.
+
 
 ### Added
 

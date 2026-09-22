@@ -38,7 +38,7 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
     case 'registration': return { pathname: '/(modals)/event-registration-settings', params } as unknown as Href;
     case 'templates': return '/(modals)/event-templates' as Href;
     case 'series-definitions': return { pathname: '/(modals)/event-recurrence-blueprints', params } as unknown as Href;
-    case 'agenda':
+    case 'agenda': return { pathname: '/(modals)/event-agenda', params } as Href;
     case 'safety':
     case 'analytics':
     case 'team':

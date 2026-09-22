@@ -891,7 +891,32 @@
         "registered": "Lucht freastail deimhnithe",
         "staff": "Foireann an imeachta amháin"
       },
-      "event_cancelled_notice": "Cuireadh an imeacht seo ar ceal. Coimeádtar an clár oibre thíos mar thaifead — níl aon cheann de na seisiúin seo ag dul ar aghaidh."
+      "event_cancelled_notice": "Cuireadh an imeacht seo ar ceal. Coimeádtar an clár oibre thíos mar thaifead — níl aon cheann de na seisiúin seo ag dul ar aghaidh.",
+      "resources": {
+        "capacity_label": "Toilleadh an tseisiúin",
+        "capacity_hint": "Fág bán é mura bhfuil teorainn ann. Ní athraíonn áit seisiúin clárú an imeachta ná ticéid.",
+        "resources_title": "Acmhainní an tseisiúin",
+        "resources_hint": "Cuir naisc HTTPS leis san ord taispeána. Ní mór sruthanna agus taifeadtaí a theorannú do dhaoine cláraithe nó don fhoireann.",
+        "resource_number": "Acmhainn {{number}}",
+        "resource_type": "Cineál acmhainne",
+        "resource_visibility": "Cé atá in ann rochtain a fháil",
+        "resource_title": "Teideal na hacmhainne",
+        "resource_url": "URL slán HTTPS",
+        "resource_types": {
+          "link": "Nasc",
+          "document": "Doiciméad",
+          "slides": "Sleamhnáin",
+          "download": "Íoslódáil",
+          "stream": "Sruth beo",
+          "recording": "Taifeadadh"
+        },
+        "add_resource": "Cuir acmhainn leis",
+        "remove_resource": "Bain {{title}}"
+      },
+      "input_format": "Úsáid BBBB-MM-LLTHH:mm, mar shampla 2030-06-15T14:30.",
+      "invalid_fields": "Seiceáil an teideal, na hamanna laistigh den imeacht, an acmhainn, na cainteoirí agus na naisc shlána.",
+      "review": "Athbhreithnigh an t-athrú sábháilte",
+      "review_hint": "Níor cuireadh d’athrú i bhfeidhm. Athbhreithnigh an clár reatha sula gceartaíonn tú é agus sula seolann tú arís é."
     },
     "team": {
       "title": "Foireann tarmligthe",
