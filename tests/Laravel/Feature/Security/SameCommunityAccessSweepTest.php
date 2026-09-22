@@ -386,7 +386,11 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         $this->assertNotEmpty($refs, 'No person-shaped foreign keys found — the mutation detector would be blind.');
 
         $results = [];
-        $probe = function (array $e, string $kind, string $probeUri, string $controlUri, ?string $table, ?int $targetId) use (&$results, $refs, $personId): void {
+        // $targetId is int|string|null, not ?int: a fixture primary key may be a
+        // UUID. group_data_exports has a char(36) id, and typing this ?int made
+        // the whole sweep die with a TypeError the moment that fixture existed.
+        // It is only ever put in a URL or compared with where('id', ...).
+        $probe = function (array $e, string $kind, string $probeUri, string $controlUri, ?string $table, int|string|null $targetId) use (&$results, $refs, $personId): void {
             $row = $e + ['kind' => $kind, 'actor' => 'member', 'status' => null, 'control_status' => null, 'verdict' => 'SKIPPED', 'note' => '', 'moved' => [], 'changed_columns' => [], 'body_excerpt' => '', 'victim_email_in_body' => false];
             $before = $this->personReferenceFingerprints($refs, $personId)['fingerprints'];
             $beforeRow = ($table !== null && $targetId !== null) ? DB::table($table)->where('id', $targetId)->first() : null;
@@ -786,7 +790,10 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
      *
      * @return array{status:?int,body:string,error:string,rounds:int,request_body:array,changed_columns:array,deleted:bool}
      */
-    private function attemptWrite(string $method, string $routeUri, int $id, ?string $table): array
+    // $id is int|string for the same reason $targetId is: a fixture primary key
+    // may be a UUID (group_data_exports is char(36)). It is only interpolated
+    // into a URL and compared with where('id', ...).
+    private function attemptWrite(string $method, string $routeUri, int|string $id, ?string $table): array
     {
         $uri = '/' . ltrim(preg_replace('#^api/#', '', preg_replace('/\{[^}]+\}/', (string) $id, $routeUri)), '/');
         $before = $table ? DB::table($table)->where('id', $id)->first() : null;
