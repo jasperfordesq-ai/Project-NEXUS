@@ -200,4 +200,48 @@ class SemanticSearchToolTest extends TestCase
             DB::table('users')->where('id', $owner->id)->delete();
         }
     }
+
+    /**
+     * The `user` arm of SemanticSearchTool::applyVisibilityFilters() is the
+     * second AI path that returns members. It filtered only on `status` and
+     * "not the caller", so a member who switched off `privacy_search` was
+     * still hydrated into a member card — name, tagline, location and a direct
+     * profile link — for anyone who asked the assistant. Every other arm of
+     * that switch carries the real visibility rule for its type; this one now
+     * does too.
+     */
+    public function test_semantic_search_excludes_members_who_opted_out_of_member_search(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $listed = User::factory()->forTenant($this->testTenantId)->create(['privacy_search' => 1]);
+        $optedOut = User::factory()->forTenant($this->testTenantId)->create(['privacy_search' => 0]);
+
+        try {
+            $service = new class((int) $optedOut->id, (int) $listed->id) extends EmbeddingService {
+                public function __construct(private readonly int $optedOutId, private readonly int $listedId) {}
+
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000): array
+                {
+                    return [
+                        ['content_type' => 'user', 'content_id' => $this->optedOutId, 'score' => 0.99],
+                        ['content_type' => 'user', 'content_id' => $this->listedId, 'score' => 0.9],
+                    ];
+                }
+            };
+
+            $result = (new SemanticSearchTool($service))->execute([
+                'query' => 'who can help with gardening',
+                'types' => ['user'],
+            ], 424242);
+
+            $this->assertTrue($result['ok']);
+            $this->assertSame(
+                [(int) $listed->id],
+                array_column($result['results'], 'id'),
+                'A member with privacy_search = 0 must not be hydrated into a semantic-search member card.'
+            );
+        } finally {
+            DB::table('users')->whereIn('id', [$listed->id, $optedOut->id])->delete();
+        }
+    }
 }

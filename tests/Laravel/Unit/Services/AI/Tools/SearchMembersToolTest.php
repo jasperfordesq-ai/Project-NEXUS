@@ -284,4 +284,90 @@ class SearchMembersToolTest extends TestCase
         $row = array_values(array_filter($result['results'], fn ($r) => $r['id'] === $id))[0];
         $this->assertStringContainsString($token, $row['name']);
     }
+
+    // ─── Execute: member-directory visibility ────────────────────────────────
+
+    /**
+     * `users.privacy_search` is the member's own "do not list me in member
+     * search" switch. Every other member-discovery path on the platform
+     * honours it — UsersController's directory listing and its counts,
+     * ExploreService, MemberRankingService, SearchService and UserService all
+     * carry `(privacy_search = 1 OR privacy_search IS NULL)`. The AI
+     * assistant's member search is a member-discovery path too, so a member
+     * who has opted out must not be returned through it either.
+     */
+    public function test_execute_excludes_members_who_opted_out_of_member_search(): void
+    {
+        $token = 'OPTOUT' . uniqid();
+        $listed   = $this->insertUser(['skills' => $token, 'privacy_search' => 1]);
+        $optedOut = $this->insertUser(['skills' => $token, 'privacy_search' => 0]);
+
+        $result = $this->tool->execute(['query' => $token], 999);
+
+        $this->assertTrue($result['ok']);
+        $ids = array_column($result['results'], 'id');
+        $this->assertContains($listed, $ids, 'A listed member must still be returned.');
+        $this->assertNotContains(
+            $optedOut,
+            $ids,
+            'A member with privacy_search = 0 opted out of member search and must not be returned by the AI tool.'
+        );
+    }
+
+    /**
+     * A NULL `privacy_search` predates the column and means "listed", exactly
+     * as the directory query treats it. Pinned so the fix cannot be written as
+     * a bare `where('privacy_search', 1)`, which would silently hide every
+     * legacy member.
+     */
+    public function test_execute_still_returns_members_with_a_null_privacy_search(): void
+    {
+        $token = 'NULLPRIV' . uniqid();
+        $legacy = $this->insertUser(['skills' => $token, 'privacy_search' => null]);
+
+        $result = $this->tool->execute(['query' => $token], 999);
+
+        $this->assertTrue($result['ok']);
+        $this->assertContains($legacy, array_column($result['results'], 'id'));
+    }
+
+    /**
+     * The tenant's admin-configurable directory gating
+     * (`OnboardingConfigService::getVisibilitySqlConditions`) is applied to the
+     * directory listing and to its counts "in the same order". The AI tool is
+     * the third reader of the same rule and must apply it too, or a community
+     * that requires a completed profile before a member is listed still has
+     * those members surfaced by the assistant.
+     */
+    public function test_execute_applies_the_tenants_directory_visibility_gating(): void
+    {
+        $token = 'ONBGATE' . uniqid();
+        $withAvatar = $this->insertUser(['skills' => $token, 'avatar_url' => '/uploads/a.png']);
+        $noAvatar   = $this->insertUser(['skills' => $token, 'avatar_url' => null]);
+
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => self::TENANT_ID, 'setting_key' => 'onboarding.require_avatar_for_visibility'],
+            ['setting_value' => '1']
+        );
+        \App\Services\OnboardingConfigService::clearConfigCache(self::TENANT_ID);
+
+        try {
+            $result = $this->tool->execute(['query' => $token], 999);
+
+            $this->assertTrue($result['ok']);
+            $ids = array_column($result['results'], 'id');
+            $this->assertContains($withAvatar, $ids);
+            $this->assertNotContains(
+                $noAvatar,
+                $ids,
+                'The tenant requires an avatar before a member is listed; the AI tool must honour that.'
+            );
+        } finally {
+            DB::table('tenant_settings')
+                ->where('tenant_id', self::TENANT_ID)
+                ->where('setting_key', 'onboarding.require_avatar_for_visibility')
+                ->delete();
+            \App\Services\OnboardingConfigService::clearConfigCache(self::TENANT_ID);
+        }
+    }
 }

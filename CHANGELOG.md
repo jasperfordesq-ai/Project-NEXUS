@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Member search results now honour the member's own "show my profile in member search results" setting everywhere it is offered. Global search, search autocomplete and the AI assistant's member lookups previously ignored it and returned members who had switched it off, together with their name, avatar, location, skills and profile link; the member directory, Explore and member ranking always honoured it. The rule now lives in one place (`App\Support\Members\MemberDirectoryVisibility`) so a new discovery surface cannot miss it, and it covers the tenant's own directory listing requirements as well. Search-engine results are revalidated against the database, so a member who changes the setting takes effect immediately rather than at the next index sync.
+
 ## [2.1.0] - 2026-09-22
 
 ### Security

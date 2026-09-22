@@ -8,12 +8,18 @@ namespace App\Services\AI\Tools;
 
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
+use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\UserDisplayName;
 
 /**
  * Search active members by skill, location, or free-text bio match.
  *
- * Privacy: returns public profile fields only — never email or phone.
+ * Privacy: returns public profile fields only — never email or phone — and
+ * only members the community's own directory would list. This is a member
+ * DISCOVERY surface, so it goes through MemberDirectoryVisibility exactly as
+ * the member directory, Explore, search and member ranking all do; without it
+ * a member who switched off "list me in member search" was still returned
+ * here, with their tagline, location, skills and a direct profile link.
  */
 class SearchMembersTool extends AbstractTool
 {
@@ -74,6 +80,8 @@ class SearchMembersTool extends AbstractTool
                   ->orWhere('last_name', 'LIKE', $like)
                   ->orWhere('organization_name', 'LIKE', $like);
             });
+
+        MemberDirectoryVisibility::applyToQuery($q, $tenantId);
 
         if ($location !== '') {
             $locLike = '%' . str_replace(['%', '_'], ['\%', '\_'], $location) . '%';

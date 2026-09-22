@@ -9,6 +9,7 @@ namespace App\Services\AI\Tools;
 use App\Core\TenantContext;
 use App\Services\EmbeddingService;
 use App\Support\Events\EventSearchVisibility;
+use App\Support\Members\MemberDirectoryVisibility;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
@@ -167,8 +168,13 @@ class SemanticSearchTool extends AbstractTool
                 break;
 
             case 'user':
+                // Member discovery, so the directory's own visibility rules
+                // apply here too — `privacy_search` plus the community's
+                // configurable listing requirements. Without them an opted-out
+                // member was still hydrated into a member card.
                 $query->where('status', 'active')
                     ->where('id', '!=', $userId);
+                MemberDirectoryVisibility::applyToQuery($query, $tenantId);
                 break;
 
             case 'event':

@@ -16,6 +16,7 @@ use App\Models\PodcastEpisode;
 use App\Models\PodcastShow;
 use App\Models\User;
 use App\Support\Events\EventSearchVisibility;
+use App\Support\Members\MemberDirectoryVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -861,6 +862,37 @@ class SearchService
         return $this->searchViaSQL($term, $type, $limit);
     }
 
+    /**
+     * Drop Meilisearch user hits the member directory would not list.
+     *
+     * The `users` index has no `privacy_search` filterable attribute, so this
+     * cannot be done in the engine without a schema change and a full reindex —
+     * and filtering on an attribute the live documents do not carry would return
+     * nothing at all until that reindex completed. Revalidating the hit ids
+     * against the database is what the event and group branches already do, and
+     * it also means a member who changes the setting is honoured immediately
+     * rather than at the next index sync.
+     *
+     * @param  array<int, array<string, mixed>> $hits
+     * @return array<int, array<string, mixed>>
+     */
+    private function visibleUserHits(array $hits, int $tenantId): array
+    {
+        if ($hits === []) {
+            return [];
+        }
+
+        $visible = array_flip(MemberDirectoryVisibility::visibleIds(
+            array_column($hits, 'id'),
+            $tenantId,
+        ));
+
+        return array_values(array_filter(
+            $hits,
+            static fn (array $hit): bool => isset($visible[(int) ($hit['id'] ?? 0)]),
+        ));
+    }
+
     private function searchViaMeilisearch(string $term, ?string $type, int $limit): array
     {
         $client   = static::client();
@@ -873,6 +905,12 @@ class SearchService
                 'limit'                => $limit,
                 'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio'],
             ])->getHits();
+
+            // The users index carries no `privacy_search` attribute, so the
+            // member's search opt-out cannot be applied in the engine. Drop the
+            // hits the directory would not list, the same way the event and
+            // group branches revalidate theirs. Relevance order is preserved.
+            $hits = $this->visibleUserHits($hits, (int) $tenantId);
 
             $results['users'] = array_map(function (array $h) {
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
@@ -962,14 +1000,17 @@ class SearchService
         $results = [];
 
         if ($type === null || $type === 'users') {
-            $results['users'] = $this->user->newQuery()
+            $userQuery = $this->user->newQuery()
                 ->where(function (Builder $q) use ($like) {
                     $q->where('first_name', 'LIKE', $like)
                       ->orWhere('last_name', 'LIKE', $like)
                       ->orWhere('organization_name', 'LIKE', $like)
                       ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
                 })
-                ->whereNotIn('status', ['banned', 'suspended'])
+                ->whereNotIn('status', ['banned', 'suspended']);
+            MemberDirectoryVisibility::applyToEloquent($userQuery, (int) TenantContext::getId());
+
+            $results['users'] = $userQuery
                 ->select('id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio')
                 ->limit($limit)
                 ->get()
@@ -1129,6 +1170,7 @@ class SearchService
                 'limit'                => $limit,
                 'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio', 'created_at'],
             ])->getHits();
+            $hits = $this->visibleUserHits($hits, (int) $tenantId);
             foreach ($hits as $h) {
                 $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                     ? $h['organization_name']
@@ -1252,8 +1294,9 @@ class SearchService
                       ->orWhere('organization_name', 'LIKE', $like)
                       ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
                 })
-                ->whereNotIn('status', ['banned', 'suspended'])
-                ->select('id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio', 'created_at');
+                ->whereNotIn('status', ['banned', 'suspended']);
+            MemberDirectoryVisibility::applyToEloquent($uq, (int) TenantContext::getId());
+            $uq->select('id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio', 'created_at');
 
             $this->applySortOrder($uq, $sort);
             foreach ($uq->limit($limit)->get() as $u) {
@@ -1452,6 +1495,7 @@ class SearchService
             'limit'                => $limit,
             'attributesToRetrieve' => ['id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type'],
         ])->getHits();
+        $userHits = $this->visibleUserHits($userHits, (int) $tenantId);
         $users = array_map(function (array $h) {
             $name = ($h['profile_type'] ?? '') === 'organisation' && !empty($h['organization_name'])
                 ? $h['organization_name']
@@ -1506,13 +1550,16 @@ class SearchService
             ->get()
             ->toArray();
 
-        $users = $this->user->newQuery()
+        $userQuery = $this->user->newQuery()
             ->where(function (Builder $q) use ($like) {
                 $q->where('first_name', 'LIKE', $like)
                   ->orWhere('last_name', 'LIKE', $like)
                   ->orWhere('organization_name', 'LIKE', $like);
             })
-            ->whereNotIn('status', ['banned', 'suspended'])
+            ->whereNotIn('status', ['banned', 'suspended']);
+        MemberDirectoryVisibility::applyToEloquent($userQuery, (int) TenantContext::getId());
+
+        $users = $userQuery
             ->select('id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type')
             ->limit($limit)
             ->get()
@@ -1597,7 +1644,16 @@ class SearchService
         // so an empty/broken index doesn't silently hide all members.
         $meiliResult = static::searchUserIds($query, $tenantId, $limit);
         if ($meiliResult !== null && !empty($meiliResult['ids'])) {
-            return $meiliResult['ids'];
+            // The index cannot express the member's search opt-out, so narrow
+            // the ids here. Both current callers filter again when they hydrate,
+            // but a helper that returns ids must be correct on its own — the
+            // next caller will not know to re-filter.
+            $visible = array_flip(MemberDirectoryVisibility::visibleIds($meiliResult['ids'], $tenantId));
+
+            return array_values(array_filter(
+                $meiliResult['ids'],
+                static fn ($id): bool => isset($visible[(int) $id]),
+            ));
         }
 
         // Fall back to SQL LIKE (also runs when Meili is available but empty).
