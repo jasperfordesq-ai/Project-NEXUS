@@ -1035,7 +1035,17 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
         // the control — an unexercised endpoint, not a pass. A feature gate
         // firing first tells us nothing about community scoping, which is what
         // this test is for, so the module is enabled for both communities here.
-        $this->enableTenantFeatures(['courses', 'podcasts'], $this->testTenantId, self::VICTIM_TENANT_ID);
+        $this->enableTenantFeatures(
+            // E-022: marketplace and caring_community added for the same reason
+            // courses and podcasts already were. Six routes answered 403
+            // FEATURE_DISABLED to the probe AND to the control, which is an
+            // unexercised endpoint rather than a pass — a feature gate firing
+            // first says nothing about community scoping, which is what this
+            // test is for. caring_community is the gate on the vereine routes.
+            ['courses', 'podcasts', 'marketplace', 'caring_community'],
+            $this->testTenantId,
+            self::VICTIM_TENANT_ID,
+        );
 
         $this->victimOwner = User::factory()->forTenant(self::VICTIM_TENANT_ID)->create([
             'status' => 'active',

@@ -221,6 +221,13 @@ abstract class AccessSweepTestCase extends TestCase
         'listing_image' => ['table' => 'listing_images', 'needs' => ['listing_id' => 'listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
         'marketplace_collection' => ['table' => 'marketplace_collections', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep collection']],
         'story_highlight' => ['table' => 'story_highlights', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep highlight']],
+        // E-022 batch 3.
+        'marketplace_image' => ['table' => 'marketplace_images', 'needs' => ['marketplace_listing_id' => 'marketplace_listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
+        'organization' => ['table' => 'organizations', 'columns' => ['name' => 'Sweep organisation {n}']],
+        'verein_event_share' => ['table' => 'verein_event_shares', 'needs' => ['source_organization_id' => 'organization', 'target_organization_id' => 'organization', 'event_id' => 'event']],
+        'verein_member_due' => ['table' => 'verein_member_dues', 'needs' => ['organization_id' => 'organization'], 'owner' => 'user_id', 'columns' => ['membership_year' => '2026', 'amount_cents' => '1000', 'due_date' => '{today}']],
+        'ideation_challenge' => ['table' => 'ideation_challenges', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep challenge', 'description' => 'Sweep challenge description']],
+        'user_badge' => ['table' => 'user_badges', 'owner' => 'user_id', 'columns' => ['badge_key' => 'sweep_badge_{n}']],
         'podcast_episode' => ['table' => 'podcast_episodes', 'needs' => ['show_id' => 'podcast_show'], 'owner' => 'author_user_id', 'columns' => ['title' => 'Sweep episode', 'slug' => 'sweep-episode-{n}', 'audio_url' => 'https://example.invalid/sweep.mp3']],
         // `unique_tenant_document` is (tenant_id, document_type) and every
         // seeded tenant already has a 'terms' row, so the sweep takes a type
@@ -271,6 +278,17 @@ abstract class AccessSweepTestCase extends TestCase
         'groups/webhooks' => 'group_webhook',
         'groups/exports' => 'group_data_export',
         'events/staff' => 'event_staff_assignment',
+        // All three serve one episode's media, keyed by {tenantId}/{episodeId};
+        // the deepest parameter is the episode, which already has a fixture.
+        'podcasts/chapters' => 'podcast_episode',
+        'podcasts/media' => 'podcast_episode',
+        'podcasts/transcripts' => 'podcast_episode',
+        'marketplace/listings/images' => 'marketplace_image',
+        'vereine' => 'organization',
+        'vereine/event-shares' => 'verein_event_share',
+        'vereine/dues' => 'verein_member_due',
+        'ideation-campaigns/challenges' => 'ideation_challenge',
+        'admin/users/badges' => 'user_badge',
         'messages/attachments' => 'message_attachment',
         'listings/images' => 'listing_image',
         'marketplace/collections' => 'marketplace_collection',
@@ -307,6 +325,22 @@ abstract class AccessSweepTestCase extends TestCase
         // story row survives) and
         // ::test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own
         // (403, and the join row is untouched).
+        // E-022. Same shape as the story-highlight entry below, and surfaced
+        // the same way — only once the marketplace feature was enabled for the
+        // sweep's two communities, so it had never been exercised.
+        // MarketplaceDiscoveryController::removeCollectionItem() proves the
+        // COLLECTION is `id = ? AND user_id = ?`, and both MarketplaceCollection
+        // and MarketplaceCollectionItem carry HasTenantScope, so the lookup and
+        // the delete are community-bounded twice over. A foreign listing id
+        // matches no row; item_count is only decremented when something was
+        // actually deleted; and $listingId never reaches a branch that shapes
+        // the response.
+        //
+        // 🔴 PROVED before pinning. See
+        // MarketplaceDiscoveryControllerTest::test_remove_collection_item_answers_identically_for_a_foreign_listing_and_a_nonexistent_one
+        // (byte-identical body and status, foreign listing row survives) and
+        // ::test_remove_collection_item_refuses_a_collection_the_caller_does_not_own (404).
+        'DELETE api/v2/marketplace/collections/{id}/items/{listingId}',
         'DELETE api/v2/stories/highlights/{id}/items/{storyId}',
     ];
 
@@ -515,10 +549,44 @@ abstract class AccessSweepTestCase extends TestCase
      * is what lets the endpoint be exercised at all — it does not weaken the
      * test, because the probe and the control are treated identically.
      */
+    /**
+     * Features a test switched on, so they can be switched back.
+     *
+     * 🔴 These sweeps are NOT transactional — a row written here survives the
+     * test, the file and the run. Enabling a feature therefore changes the
+     * shared test tenant permanently, and the NEXT sweep in the same file
+     * measures a different platform. Observed 2026-09-22 (E-022): enabling
+     * marketplace and caring_community for the child sweep moved the
+     * valid-body write sweep from 290 refused to 287 and the single-parameter
+     * read sweep from 94/61 to 99/54, purely as a side effect. Published
+     * coverage figures cannot depend on which test ran first, so every
+     * enableTenantFeatures() is now undone in tearDown().
+     *
+     * @var array<int, string|null>
+     */
+    private array $featuresToRestore = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->featuresToRestore as $tenantId => $original) {
+            DB::table('tenants')->where('id', $tenantId)->update(['features' => $original]);
+        }
+        $this->featuresToRestore = [];
+
+        parent::tearDown();
+    }
+
     protected function enableTenantFeatures(array $features, int ...$tenantIds): void
     {
         foreach ($tenantIds as $tenantId) {
             $current = DB::table('tenants')->where('id', $tenantId)->value('features');
+
+            // Remember the FIRST value we saw for this tenant, so repeated
+            // calls in one test still restore the state the test started with.
+            if (! array_key_exists($tenantId, $this->featuresToRestore)) {
+                $this->featuresToRestore[$tenantId] = $current;
+            }
+
             $decoded = is_string($current) ? json_decode($current, true) : $current;
             $decoded = is_array($decoded) ? $decoded : [];
 

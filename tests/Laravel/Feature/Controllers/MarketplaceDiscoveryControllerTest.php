@@ -345,4 +345,87 @@ class MarketplaceDiscoveryControllerTest extends TestCase
         $this->assertContains($otherPublicId, $ids);
         $this->assertNotContains($otherPendingId, $ids);
     }
+
+    // -----------------------------------------------------------------
+    //  REMOVE COLLECTION ITEM — DELETE /v2/marketplace/collections/{id}/items/{listingId}
+    //
+    //  E-022. The cross-community child sweep flagged this as
+    //  ACCEPTED_NO_CHANGE once the marketplace feature was enabled for the
+    //  sweep's communities: handed another community's listing id it answers
+    //  200 `removed: true` rather than refusing. Before pinning that in
+    //  KNOWN_CHILD_ACCEPTED_NO_CHANGE the claim had to be proved, because an
+    //  allow-list entry is an edit to a security control that makes a hit
+    //  disappear.
+    //
+    //  Both halves are tested: nothing of anyone else's is touched, and the
+    //  answer does not reveal whether the listing exists.
+    // -----------------------------------------------------------------
+
+    public function test_remove_collection_item_answers_identically_for_a_foreign_listing_and_a_nonexistent_one(): void
+    {
+        $this->enableMarketplaceFeature();
+        $owner = $this->authenticatedUser();
+
+        $collectionId = (int) DB::table('marketplace_collections')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $owner->id,
+            'name' => 'Sweep collection',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 999 is the foreign-community id the security sweeps already use.
+        $foreignTenantId = 999;
+        $stranger = User::factory()->forTenant($foreignTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $foreignListingId = (int) DB::table('marketplace_listings')->insertGetId([
+            'tenant_id' => $foreignTenantId,
+            'user_id' => $stranger->id,
+            'title' => 'Another community listing',
+            'description' => 'Should be untouchable from here',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $foreign = $this->apiDelete("/v2/marketplace/collections/{$collectionId}/items/{$foreignListingId}");
+        $absent  = $this->apiDelete("/v2/marketplace/collections/{$collectionId}/items/999999999");
+
+        $this->assertSame($absent->getStatusCode(), $foreign->getStatusCode());
+        $this->assertSame(
+            $absent->getContent(),
+            $foreign->getContent(),
+            'The answer for another community\'s listing must not differ from the answer for an id '
+            . 'that exists nowhere, or the endpoint becomes an existence oracle.'
+        );
+
+        $this->assertDatabaseHas('marketplace_listings', [
+            'id' => $foreignListingId,
+            'tenant_id' => $foreignTenantId,
+        ]);
+    }
+
+    public function test_remove_collection_item_refuses_a_collection_the_caller_does_not_own(): void
+    {
+        $this->enableMarketplaceFeature();
+
+        $stranger = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $theirCollectionId = (int) DB::table('marketplace_collections')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $stranger->id,
+            'name' => 'Their collection',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->authenticatedUser();
+
+        $response = $this->apiDelete("/v2/marketplace/collections/{$theirCollectionId}/items/1");
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
 }
