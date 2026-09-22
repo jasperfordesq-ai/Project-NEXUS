@@ -161,6 +161,11 @@ describe('Events v2 shared contract fixtures', () => {
 });
 
 describe('read-only Event agenda contract', () => {
+  it('explicitly requests cancelled sessions for the organiser history without changing attendee reads', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: eventAgendaFixture, meta: { base_url: 'https://test.api' } });
+    await getEventAgenda(101, true);
+    expect(api.get).toHaveBeenCalledWith('/api/v2/events/101/agenda', { include_cancelled: 'true' }, contractOptions);
+  });
   it('strictly parses agenda v1 and negotiates the canonical Events header', async () => {
     (api.get as jest.Mock).mockResolvedValue({
       data: eventAgendaFixture,

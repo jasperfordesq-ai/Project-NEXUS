@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Native agenda API support for organiser session creation, editing, cancellation and ordering, with version checks and caller-supplied retry identities. The organiser editor is still under development.
+
+### Added
+
 - Native course learners can share their completion certificate from the course player, with authenticated retrieval, account-change protection and retry after a failed export.
 
 ### Fixed

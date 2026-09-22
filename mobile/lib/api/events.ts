@@ -1276,9 +1276,9 @@ export async function getEvent(eventId: number): Promise<{ data: CanonicalEvent 
   return parseContract(endpoint, eventEnvelopeSchema, response);
 }
 
-export async function getEventAgenda(eventId: number): Promise<{ data: EventAgenda; meta: { base_url: string } }> {
+export async function getEventAgenda(eventId: number, includeCancelled = false): Promise<{ data: EventAgenda; meta: { base_url: string } }> {
   const endpoint = `${API_V2}/events/${eventId}/agenda`;
-  const response = await api.get<unknown>(endpoint, undefined, eventRequestOptions);
+  const response = await api.get<unknown>(endpoint, includeCancelled ? { include_cancelled: 'true' } : undefined, eventRequestOptions);
   return parseContract(
     endpoint,
     eventAgendaEnvelopeSchema,

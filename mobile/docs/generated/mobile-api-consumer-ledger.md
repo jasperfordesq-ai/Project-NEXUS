@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-09-20
+Last reviewed: 2026-09-22
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -21,13 +21,13 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2248 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 60 |
-| Call sites | 676 |
-| Distinct method + endpoint pairs | 532 |
-| Verified against openapi.json | 532 |
+| API modules read | 61 |
+| Call sites | 682 |
+| Distinct method + endpoint pairs | 537 |
+| Verified against openapi.json | 537 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
-| Dynamic, not verifiable | 101 |
+| Dynamic, not verifiable | 102 |
 | Inline `fetch()` bypassing the client | 0 |
 
 ## Not verifiable (endpoint assembled at runtime)
@@ -45,20 +45,21 @@ and the places a contract test earns the most.
 | eventCommunications.ts:218 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventCommunications.ts:232 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventCommunications.ts:245 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:238 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:245 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:253 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:267 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:279 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:291 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:305 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:318 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:329 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:369 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:378 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:398 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| eventOfflineCheckin.ts:408 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:240 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:247 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:255 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:269 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:281 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:293 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:307 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:320 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:331 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:371 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:380 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:399 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventOfflineCheckin.ts:419 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:429 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| eventOfflineCheckin.ts:440 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventRegistration.ts:212 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventRegistration.ts:220 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
 | eventRegistration.ts:230 | POST | variable "endpoint" is assigned more than one endpoint in this module |
@@ -188,6 +189,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/courses/{param}` | courses.ts:259 |
 | PUT | `/api/v2/courses/{param}` | courses.ts:358 |
 | GET | `/api/v2/courses/{param}/analytics` | courses.ts:535 |
+| GET | `/api/v2/courses/{param}/certificate` | courses.ts:544 |
 | GET | `/api/v2/courses/{param}/cohorts` | courses.ts:463 |
 | POST | `/api/v2/courses/{param}/cohorts` | courses.ts:467, courses.ts:468 |
 | POST | `/api/v2/courses/{param}/enroll` | courses.ts:271 |
@@ -212,6 +214,10 @@ and the places a contract test earns the most.
 | GET | `/api/v2/courses/quizzes/{param}` | courses.ts:311 |
 | POST | `/api/v2/courses/quizzes/{param}/attempt` | courses.ts:328 |
 | GET | `/api/v2/donations/{param}/receipt` | donations.ts:50 |
+| PUT | `/api/v2/events/{param}/agenda/order` | eventAgendaManagement.ts:79 |
+| POST | `/api/v2/events/{param}/agenda/sessions` | eventAgendaManagement.ts:52 |
+| PUT | `/api/v2/events/{param}/agenda/sessions/{param}` | eventAgendaManagement.ts:59 |
+| POST | `/api/v2/events/{param}/agenda/sessions/{param}/cancel` | eventAgendaManagement.ts:69 |
 | GET | `/api/v2/events/{param}/analytics` | eventAnalytics.ts:120 |
 | GET | `/api/v2/events/{param}/lifecycle-history` | eventLifecycleHistory.ts:62 |
 | GET | `/api/v2/events/{param}/people` | eventPeople.ts:116 |

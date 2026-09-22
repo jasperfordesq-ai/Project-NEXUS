@@ -4,14 +4,14 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 60,
-    "call_sites": 676,
-    "distinct_endpoints": 532,
-    "verified": 532,
+    "api_modules": 61,
+    "call_sites": 682,
+    "distinct_endpoints": 537,
+    "verified": 537,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
-    "dynamic_unverifiable": 101,
+    "dynamic_unverifiable": 102,
     "inline_fetch_offenders": 0
   },
   "missing_from_routes": [],
@@ -58,72 +58,77 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:238",
+      "at": "eventOfflineCheckin.ts:240",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:245",
+      "at": "eventOfflineCheckin.ts:247",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:253",
+      "at": "eventOfflineCheckin.ts:255",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:267",
+      "at": "eventOfflineCheckin.ts:269",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:279",
+      "at": "eventOfflineCheckin.ts:281",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:291",
+      "at": "eventOfflineCheckin.ts:293",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:305",
+      "at": "eventOfflineCheckin.ts:307",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:318",
+      "at": "eventOfflineCheckin.ts:320",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:329",
+      "at": "eventOfflineCheckin.ts:331",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:369",
+      "at": "eventOfflineCheckin.ts:371",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:378",
+      "at": "eventOfflineCheckin.ts:380",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "eventOfflineCheckin.ts:398",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "eventOfflineCheckin.ts:408",
+      "at": "eventOfflineCheckin.ts:399",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "eventOfflineCheckin.ts:419",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:429",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventOfflineCheckin.ts:440",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
@@ -935,6 +940,15 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/courses/{param}/certificate",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "courses.ts:544"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/courses/{param}/cohorts",
       "status": "verified",
       "matched_via": "exact",
@@ -1152,6 +1166,42 @@
       "matched_via": "exact",
       "sites": [
         "donations.ts:50"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/events/{param}/agenda/order",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventAgendaManagement.ts:79"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/events/{param}/agenda/sessions",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventAgendaManagement.ts:52"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/events/{param}/agenda/sessions/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventAgendaManagement.ts:59"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/events/{param}/agenda/sessions/{param}/cancel",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventAgendaManagement.ts:69"
       ]
     },
     {
