@@ -37,6 +37,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\SearchService;
+use App\Support\UserDisplayName;
 
 // ============================================================
 // Parse arguments
@@ -186,7 +187,7 @@ function syncListings(int $tenantId, bool $dryRun): array
         "SELECT l.id, l.tenant_id, l.user_id, l.category_id, l.type,
                 l.title, l.description, l.location, l.status,
                 UNIX_TIMESTAMP(l.created_at) as created_at,
-                CONCAT(u.first_name, ' ', u.last_name) as author_name,
+                " . UserDisplayName::sql('u', 'author_name') . ",
                 COALESCE(c.name, '') as category_name,
                 GROUP_CONCAT(lst.tag ORDER BY lst.tag SEPARATOR ',') as skill_tags_csv
          FROM listings l
@@ -249,7 +250,7 @@ function syncEvents(int $tenantId, bool $dryRun): array
                 e.allow_remote_attendance as is_online,
                 UNIX_TIMESTAMP(COALESCE(e.start_time, e.start_date)) as start_time,
                 UNIX_TIMESTAMP(e.created_at) as created_at,
-                CONCAT(u.first_name, ' ', u.last_name) as organizer_name
+                " . UserDisplayName::sql('u', 'organizer_name') . "
          FROM events e
          LEFT JOIN users u ON e.user_id = u.id AND e.tenant_id = u.tenant_id
          WHERE e.tenant_id = ?
