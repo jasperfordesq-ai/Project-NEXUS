@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Creating or editing a time-bank listing in the mobile app: pressing Post with something missing now scrolls to the first problem, such as "Please choose a category". Before, the message appeared off-screen and the button seemed to do nothing.
+
 - Marketplace in the mobile app: changing a filter or searching somewhere else while results are loading no longer shows the older results; opening one collection and then another quickly shows the right items; and collections now load past their first 50 items with a Load more button.
 
 - The legal document screen in the mobile app no longer shows the previous document's text when a link opens a different document.

@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, type TextInput, View } from 'react-native';
+import { useScrollToFirstError } from '@/lib/hooks/useScrollToFirstError';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router } from 'expo-router';
@@ -98,6 +99,8 @@ function NewExchangeModalInner() {
   const descriptionRef = useRef<TextInput>(null);
   const hoursRef = useRef<TextInput>(null);
   const isMountedRef = useRef(true);
+  const scrollRef = useRef<ScrollView>(null);
+  const errorScroll = useScrollToFirstError<keyof FieldErrors>(scrollRef);
   useEffect(() => {
     isMountedRef.current = true;
     return () => { isMountedRef.current = false; };
@@ -249,6 +252,7 @@ function NewExchangeModalInner() {
 
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors);
+      errorScroll.reveal(['title', 'description', 'category', 'hours'], nextErrors);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -256,6 +260,7 @@ function NewExchangeModalInner() {
     const selectedCategoryId = categoryId;
     if (selectedCategoryId === null) {
       setFieldErrors({ category: t('validation.categoryRequired') });
+      errorScroll.reveal(['category'], { category: true });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -393,6 +398,7 @@ function NewExchangeModalInner() {
       <AppTopBar title={t('newExchange')} backLabel={t('common:back')} fallbackHref="/(tabs)/exchanges" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
+          ref={scrollRef}
           testID="new-exchange-scroll"
           style={{ flex: 1, backgroundColor: theme.bg }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }}
@@ -441,6 +447,7 @@ function NewExchangeModalInner() {
               ))}
             </View>
 
+            <View ref={errorScroll.anchor('title')} collapsable={false} />
             <FieldLabel label={t('titleLabel')} theme={theme} />
             <Input
               testID="new-exchange-title"
@@ -464,6 +471,7 @@ function NewExchangeModalInner() {
               </Text>
             ) : null}
 
+            <View ref={errorScroll.anchor('description')} collapsable={false} />
             <FieldLabel label={t('description')} theme={theme} />
             <Input
               testID="new-exchange-description"
@@ -591,6 +599,7 @@ function NewExchangeModalInner() {
           </FormSection>
 
           <FormSection title={t('form.organiseTitle')} icon="albums-outline" primary={primary} theme={theme}>
+            <View ref={errorScroll.anchor('category')} collapsable={false} />
             <FieldLabel label={t('category')} theme={theme} />
             {/*
               Four states, each said out loud: loading, loaded, failed (with a retry that
@@ -638,6 +647,7 @@ function NewExchangeModalInner() {
             )}
             {fieldErrors.category ? <ErrorText message={fieldErrors.category} theme={theme} /> : null}
 
+            <View ref={errorScroll.anchor('hours')} collapsable={false} />
             <FieldLabel label={t('timeCredits')} theme={theme} />
             <Input
               testID="new-exchange-hours"

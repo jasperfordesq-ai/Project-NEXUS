@@ -6,6 +6,7 @@
 import ErrorState from '@/components/ui/ErrorState';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { useScrollToFirstError } from '@/lib/hooks/useScrollToFirstError';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -134,6 +135,8 @@ function EditExchangeModalInner() {
   const [retryingExtras, setRetryingExtras] = useState(false);
   const retryingExtrasRef = useRef(false);
   const isMountedRef = useRef(true);
+  const scrollRef = useRef<ScrollView>(null);
+  const errorScroll = useScrollToFirstError<keyof FieldErrors>(scrollRef);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -284,6 +287,7 @@ function EditExchangeModalInner() {
 
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors);
+      errorScroll.reveal(['title', 'description', 'category', 'hours'], nextErrors);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -424,7 +428,7 @@ function EditExchangeModalInner() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar title={t('editTitle')} backLabel={t('common:back')} fallbackHref={{ pathname: '/(modals)/exchange-detail', params: { id: String(safeListingId) } }} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }} keyboardShouldPersistTaps="handled">
+        <ScrollView ref={scrollRef} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 14 }} keyboardShouldPersistTaps="handled">
           <HeroCard variant="default" className="overflow-hidden">
             <View style={{ height: 4, backgroundColor: primary }} />
             <HeroCard.Body className="gap-3 p-4">
@@ -464,6 +468,7 @@ function EditExchangeModalInner() {
                 ))}
               </View>
 
+              <View ref={errorScroll.anchor('title')} collapsable={false} />
               <FieldLabel label={t('titleLabel')} theme={theme} />
               <Input
                 value={title}
@@ -482,6 +487,7 @@ function EditExchangeModalInner() {
                 </Text>
               ) : null}
 
+              <View ref={errorScroll.anchor('description')} collapsable={false} />
               <FieldLabel label={t('description')} theme={theme} />
               <Input
                 value={description}
@@ -631,6 +637,7 @@ function EditExchangeModalInner() {
               ) : null}
               {categories.length > 0 ? (
                 <>
+                  <View ref={errorScroll.anchor('category')} collapsable={false} />
                   <FieldLabel label={t('category')} theme={theme} />
                   <View className="flex-row flex-wrap gap-2">
                     {categories.map((category) => {
@@ -655,6 +662,7 @@ function EditExchangeModalInner() {
                 </>
               ) : null}
 
+              <View ref={errorScroll.anchor('hours')} collapsable={false} />
               <FieldLabel label={t('timeCredits')} theme={theme} />
               <Input
                 value={hours}
