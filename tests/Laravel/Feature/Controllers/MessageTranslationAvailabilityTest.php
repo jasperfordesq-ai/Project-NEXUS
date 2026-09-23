@@ -151,4 +151,49 @@ class MessageTranslationAvailabilityTest extends TestCase
         // Availability must not leak ahead of authorisation.
         $response->assertStatus(404);
     }
+
+    public function test_deleted_for_everyone_voice_transcript_is_not_translatable(): void
+    {
+        config(['services.openai.api_key' => null]);
+
+        $me = $this->member();
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $id = $this->messageBetween($other, $me);
+        DB::table('messages')->where('id', $id)->update([
+            'is_deleted' => 1,
+            'deleted_at' => now(),
+            'body' => '[Message deleted]',
+            'is_voice' => 1,
+            'transcript' => 'private spoken words',
+        ]);
+
+        $response = $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'de']);
+
+        $response->assertStatus(404);
+        $this->assertSame('NOT_FOUND', $response->json('errors.0.code'));
+    }
+
+    public function test_delete_for_self_hides_transcript_from_deleter_but_not_other_participant(): void
+    {
+        config(['services.openai.api_key' => null]);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $this->app->instance('tenant.id', $this->testTenantId);
+
+        $deleter = $this->member();
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $id = $this->messageBetween($deleter, $other);
+        DB::table('messages')->where('id', $id)->update([
+            'is_voice' => 1,
+            'transcript' => 'private spoken words',
+        ]);
+        self::assertTrue(\App\Services\MessageService::deleteMessage($id, (int) $deleter->id, 'self'));
+
+        $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'de'])
+            ->assertStatus(404);
+
+        Sanctum::actingAs($other, ['*']);
+        $this->apiPost("/v2/messages/{$id}/translate", ['target_language' => 'de'])
+            ->assertStatus(503)
+            ->assertJsonPath('errors.0.code', 'TRANSLATION_UNAVAILABLE');
+    }
 }

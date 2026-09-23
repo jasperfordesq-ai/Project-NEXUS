@@ -113,6 +113,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Exported wallet statements and downloaded message attachments are removed from the phone on sign-out, and a failed or out-of-session attachment download is no longer offered as the file (F-121).
 
+- Hidden or deleted messages no longer expose retained attachments, voice recordings or transcripts to the affected participant; delete-for-everyone tombstones also omit private media metadata (F-046).
+
 - Link previews now reject credential-bearing URLs, isolate non-default ports and fragments in cache identity, quarantine unsafe legacy rows across direct, post, message and feed reads, and migrate the global cache without breaking valid associations (F-052).
 
 - Brokers and coordinators must now use two-factor authentication, like administrators (F-057).

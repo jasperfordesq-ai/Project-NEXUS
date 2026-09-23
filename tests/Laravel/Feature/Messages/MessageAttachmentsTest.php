@@ -239,4 +239,86 @@ class MessageAttachmentsTest extends TestCase
             TenantContext::reset();
         }
     }
+
+    public function test_deleted_for_everyone_message_refuses_attachment_and_voice_delivery(): void
+    {
+        $tenantId = $this->testTenantId;
+        TenantContext::setById($tenantId);
+        $this->app->instance('tenant.id', $tenantId);
+        $sender = User::factory()->forTenant($tenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $receiver = User::factory()->forTenant($tenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $message = MessageService::send((int) $sender->id, (int) $receiver->id, ['body' => 'private media']);
+
+        $attachmentRelative = "message-media/{$tenantId}/attachments/deleted-private.pdf";
+        $attachmentPath = storage_path('app/private/' . $attachmentRelative);
+        $voiceRelative = "message-media/{$tenantId}/voice/voice_deleted_private.webm";
+        $voicePath = storage_path('app/private/' . $voiceRelative);
+        File::ensureDirectoryExists(dirname($attachmentPath), 0700, true);
+        File::ensureDirectoryExists(dirname($voicePath), 0700, true);
+        File::put($attachmentPath, "%PDF-1.4\nprivate\n");
+        File::put($voicePath, 'synthetic voice bytes');
+
+        try {
+            $attachmentId = DB::table('message_attachments')->insertGetId([
+                'tenant_id' => $tenantId,
+                'message_id' => (int) $message['id'],
+                'file_url' => $attachmentRelative,
+                'file_path' => $attachmentRelative,
+                'file_name' => 'deleted-private.pdf',
+                'file_type' => 'file',
+                'file_size' => filesize($attachmentPath),
+                'mime_type' => 'application/pdf',
+                'created_at' => now(),
+            ]);
+            DB::table('messages')->where('id', (int) $message['id'])->update([
+                'is_voice' => true,
+                'audio_url' => $voiceRelative,
+                'audio_duration' => 1,
+                'transcript' => 'private spoken words',
+            ]);
+
+            Sanctum::actingAs($sender, ['*']);
+            $attachmentUrl = "/v2/messages/{$message['id']}/attachments/{$attachmentId}";
+            $voiceUrl = "/v2/messages/{$message['id']}/voice";
+            $this->apiGet($attachmentUrl)->assertOk();
+            $this->apiGet($voiceUrl)->assertOk();
+
+            Sanctum::actingAs($receiver, ['*']);
+            $this->apiGet($attachmentUrl)->assertOk();
+            $this->apiGet($voiceUrl)->assertOk();
+
+            self::assertTrue(MessageService::deleteMessage((int) $message['id'], (int) $sender->id, 'self'));
+            self::assertFalse((bool) DB::table('messages')->where('id', (int) $message['id'])->value('is_deleted'));
+            Sanctum::actingAs($sender, ['*']);
+            $this->apiGet($attachmentUrl)->assertNotFound();
+            $this->apiGet($voiceUrl)->assertNotFound();
+            // A per-user hide is not delete-for-everyone and must not revoke the
+            // other participant's private media route.
+            Sanctum::actingAs($receiver, ['*']);
+            $this->apiGet($attachmentUrl)->assertOk();
+            $this->apiGet($voiceUrl)->assertOk();
+
+            self::assertTrue(MessageService::deleteMessage((int) $message['id'], (int) $receiver->id, 'everyone'));
+            self::assertTrue((bool) DB::table('messages')->where('id', (int) $message['id'])->value('is_deleted'));
+
+            Sanctum::actingAs($sender, ['*']);
+            $this->apiGet($attachmentUrl)->assertNotFound();
+            $this->apiGet($voiceUrl)->assertNotFound();
+            Sanctum::actingAs($receiver, ['*']);
+            $this->apiGet($attachmentUrl)->assertNotFound();
+            $this->apiGet($voiceUrl)->assertNotFound();
+
+            $thread = $this->apiGet("/v2/messages/{$sender->id}")->assertOk()->json('data');
+            $deleted = collect($thread)->firstWhere('id', (int) $message['id']);
+            self::assertNotNull($deleted);
+            self::assertNull($deleted['transcript'] ?? null);
+            self::assertNull($deleted['transcript_language'] ?? null);
+            self::assertNull($deleted['audio_url'] ?? null);
+            self::assertSame([], $deleted['attachments'] ?? null);
+        } finally {
+            @unlink($attachmentPath);
+            @unlink($voicePath);
+            TenantContext::reset();
+        }
+    }
 }

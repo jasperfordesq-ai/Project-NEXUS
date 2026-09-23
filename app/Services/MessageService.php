@@ -354,6 +354,17 @@ class MessageService
         $reactionCounts = self::publicReactionCountsForMessages($messages, $userId);
         $items = $messages->map(function (Message $msg) use ($reactionCounts): array {
             $data = $msg->toArray();
+            if ((bool) $msg->is_deleted) {
+                // Keep the tombstone needed to render conversation history, but
+                // do not return retained private content or fresh media routes.
+                // The underlying rows/files may remain for moderation and GDPR
+                // workflows after delete-for-everyone.
+                $data['transcript'] = null;
+                $data['transcript_language'] = null;
+                $data['audio_url'] = null;
+                $data['audio_duration'] = null;
+                $data['attachments'] = [];
+            }
             $data['reactions'] = $reactionCounts[(int) $msg->id] ?? [];
 
             return $data;

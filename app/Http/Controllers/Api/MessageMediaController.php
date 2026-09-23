@@ -52,6 +52,14 @@ class MessageMediaController extends BaseApiController
         /** @var Message|null $message */
         $message = Message::query()->find($messageId);
         abort_if($message === null, 404);
+        // Delete-for-everyone revokes renewed server delivery of every private
+        // media representation. Retention may keep the underlying file for
+        // moderation/erasure workflows, but participants must no longer fetch it.
+        // Per-user delete flags are deliberately separate and do not revoke the
+        // other participant's access.
+        $deletedForViewer = ((int) $message->sender_id === $userId && (bool) $message->is_deleted_sender)
+            || ((int) $message->receiver_id === $userId && (bool) $message->is_deleted_receiver);
+        abort_if((bool) $message->is_deleted || $deletedForViewer, 404);
 
         $isParticipant = (int) $message->sender_id === $userId || (int) $message->receiver_id === $userId;
         if (! $isParticipant && $message->conversation_id) {

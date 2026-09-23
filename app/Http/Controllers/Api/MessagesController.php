@@ -939,6 +939,11 @@ class MessagesController extends BaseApiController
         $message = DB::table('messages')
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
+            ->where(function ($query) {
+                $query->where('is_deleted', false)->orWhereNull('is_deleted');
+            })
+            ->whereRaw('NOT (sender_id = ? AND is_deleted_sender = 1)', [$userId])
+            ->whereRaw('NOT (receiver_id = ? AND is_deleted_receiver = 1)', [$userId])
             ->where(function ($q) use ($userId) {
                 $q->where('sender_id', $userId)
                   ->orWhere('receiver_id', $userId);
