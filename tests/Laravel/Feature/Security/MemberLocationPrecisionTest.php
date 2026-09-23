@@ -39,9 +39,14 @@ class MemberLocationPrecisionTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        // Open ocean, nudged per run; five decimals so rounding is observable.
-        $this->lat = round(-46.0 + (mt_rand(1000, 90000) / 100000) + 0.00347, 5);
-        $this->lon = round(-110.0 + (mt_rand(1000, 90000) / 100000) + 0.00368, 5);
+        // Open ocean, nudged per run. The random part moves only in whole
+        // hundredths, so the digits past the second decimal are always the
+        // fixed offset: rounding to 2 decimals always moves the point by
+        // ~0.0035°. A random part at five decimals could cancel the offset
+        // (-110 + 0.09633 + 0.00368 = -109.89999), leaving the exact and
+        // rounded values 0.00001 apart and the test failing at random.
+        $this->lat = round(-46.0 + (mt_rand(10, 900) / 100) + 0.00347, 5);
+        $this->lon = round(-110.0 + (mt_rand(10, 900) / 100) + 0.00368, 5);
     }
 
     // ------------------------------------------------------------------
@@ -193,11 +198,23 @@ class MemberLocationPrecisionTest extends TestCase
         return 6371 * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
-    private function categoryId(): ?int
+    private function categoryId(): int
     {
-        $id = DB::table('categories')->where('tenant_id', $this->testTenantId)->where('type', 'listing')->value('id');
+        $id = DB::table('categories')->where('tenant_id', $this->testTenantId)->where('type', 'listing')
+            ->where('is_active', 1)->value('id');
+        if ($id !== null) {
+            return (int) $id;
+        }
 
-        return $id !== null ? (int) $id : null;
+        // A fresh CI database has no listing categories for the test tenant,
+        // and listing creation requires one.
+        return (int) DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'name' => 'Location fixture ' . uniqid(),
+            'slug' => 'location-fixture-' . uniqid(),
+            'type' => 'listing',
+            'is_active' => 1,
+        ]);
     }
 
     private function memberAtHome(): User
