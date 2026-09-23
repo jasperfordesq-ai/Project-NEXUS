@@ -31,6 +31,7 @@ import { validateResponseIfPresent } from '@/lib/api-validation';
 import { loginResponseSchema, userSchema } from '@/lib/api-schemas';
 import { queueSentryAuthEvent, queueSentryUser } from '@/lib/telemetryQueue';
 import { purgeAllOfflineCheckinData } from '@/lib/event-offline-checkin-store';
+import { unsubscribeBrowserPushOnLogout } from '@/hooks/useWebPush';
 import type {
   User,
   LoginRequest,
@@ -722,6 +723,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const refreshToken = tokenManager.getRefreshToken();
 
     try {
+      // F-108: drop this browser's push subscription while the session is still
+      // valid (the server unsubscribe is authenticated). Otherwise the signed-out
+      // account keeps receiving notifications here, and the next person to enable
+      // push on this browser receives both accounts'. Best-effort and time-boxed:
+      // it never throws and never holds sign-out up.
+      await unsubscribeBrowserPushOnLogout();
+
       // Call logout endpoint to invalidate tokens server-side
       // We verify the response but still proceed with local logout regardless
       try {

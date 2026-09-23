@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const fs = require('node:fs');
 const { formidable } = require('formidable');
 
 function isMultipart(req) {
@@ -26,8 +27,35 @@ function flattenFiles(files, keepArrays = false) {
   );
 }
 
+function collectFilepaths(files) {
+  const paths = [];
+  for (const value of Object.values(files || {})) {
+    for (const file of Array.isArray(value) ? value : [value]) {
+      if (file && typeof file.filepath === 'string' && file.filepath !== '') {
+        paths.push(file.filepath);
+      }
+    }
+  }
+  return paths;
+}
+
+// Upload parsing is mounted ahead of the CSRF, sign-in and route-level checks,
+// so a refused request (419, sign-in redirect, early return) never reaches the
+// handler that would delete its temp file. Remove every parsed temp file once
+// the response has closed; handlers that already unlinked theirs are unaffected
+// (ENOENT is ignored).
+function removeTempFilesOnClose(res, files) {
+  const paths = collectFilepaths(files);
+  if (paths.length === 0 || typeof res.once !== 'function') return;
+  res.once('close', () => {
+    for (const filepath of paths) {
+      fs.unlink(filepath, () => {});
+    }
+  });
+}
+
 function parseMultipartForm(options = {}) {
-  return (req, _res, next) => {
+  return (req, res, next) => {
     if (req.files || !isMultipart(req)) {
       return next();
     }
@@ -62,6 +90,7 @@ function parseMultipartForm(options = {}) {
         ...(req.files || {}),
         ...flattenFiles(files, options.multiples === true)
       };
+      removeTempFilesOnClose(res, files);
       if (req.body._csrf && !req.headers['x-csrf-token']) {
         req.headers['x-csrf-token'] = req.body._csrf;
       }

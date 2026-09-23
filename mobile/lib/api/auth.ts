@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { API_V2, TIMEOUTS } from '@/lib/constants';
+import { API_V2, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
+import { storage } from '@/lib/storage';
 import i18n from 'i18next';
 
 /**
@@ -284,9 +285,30 @@ export function getRegistrationInfo(): Promise<{ data: RegistrationInfo }> {
   });
 }
 
-/** POST /api/auth/logout */
-export function logout(): Promise<void> {
-  return api.post<void>('/api/auth/logout');
+/**
+ * POST /api/auth/logout
+ *
+ * 🔴 Sends the stored refresh token (F-116). The server revokes the refresh-token
+ * family only when it is presented, and this used to post no body — so "Sign out"
+ * left a refresh token that stayed usable for up to 30 days by anyone holding a
+ * copy. React and web-uk already send it.
+ *
+ * `skipAuthRefresh`: the endpoint needs no valid access token to revoke the family,
+ * and a silent refresh here would rotate the very token this body carries.
+ * Reading the token is best-effort: a storage failure still signs out.
+ */
+export async function logout(): Promise<void> {
+  let refreshToken: string | null = null;
+  try {
+    refreshToken = await storage.get(STORAGE_KEYS.REFRESH_TOKEN);
+  } catch {
+    refreshToken = null;
+  }
+  return api.post<void>(
+    '/api/auth/logout',
+    refreshToken ? { refresh_token: refreshToken } : undefined,
+    { skipAuthRefresh: true },
+  );
 }
 
 /** GET /api/v2/users/me — full profile with balance, validates token */

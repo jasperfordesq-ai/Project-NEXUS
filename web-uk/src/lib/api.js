@@ -8,6 +8,7 @@ const ACCESSIBLE_TENANT_SLUG = process.env.ACCESSIBLE_TENANT_SLUG || '';
 const { cache, userCacheId } = require('./cache');
 const { getApiBaseUrl } = require('./backend-contract');
 const { getRequestLocale } = require('./request-locale-context');
+const { getRequestClientIp } = require('./request-client-context');
 const { getRequestTenantSlug, normalizeTenantSlug } = require('./request-tenant-context');
 
 const API_BASE_URL = getApiBaseUrl();
@@ -143,14 +144,28 @@ function addRequestLocaleHeader(headers) {
   return headers;
 }
 
+// F-110: tell Laravel which visitor this call is for. Only web-uk sets this
+// header; the value always comes from the request context (never from a
+// caller), and Laravel must trust it only from web-uk's own network.
+const CLIENT_IP_HEADER = 'X-Nexus-Client-IP';
+
+function addRequestClientIpHeader(headers) {
+  for (const name of Object.keys(headers)) {
+    if (name.toLowerCase() === CLIENT_IP_HEADER.toLowerCase()) delete headers[name];
+  }
+  const clientIp = getRequestClientIp();
+  if (clientIp) headers[CLIENT_IP_HEADER] = clientIp;
+  return headers;
+}
+
 async function request(endpoint, options = {}, captureTrustedDevice = false) {
   const url = `${API_BASE_URL}${endpoint}`;
   const isFormData = typeof globalThis.FormData !== 'undefined' && options.body instanceof globalThis.FormData;
 
-  const headers = addRequestTenantHeader(addRequestLocaleHeader({
+  const headers = addRequestClientIpHeader(addRequestTenantHeader(addRequestLocaleHeader({
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers
-  }));
+  })));
 
   const timedRequest = withRequestTimeout(options, headers);
 
@@ -196,9 +211,9 @@ async function request(endpoint, options = {}, captureTrustedDevice = false) {
 async function downloadRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const headers = addRequestTenantHeader(addRequestLocaleHeader({
+  const headers = addRequestClientIpHeader(addRequestTenantHeader(addRequestLocaleHeader({
     ...options.headers
-  }));
+  })));
 
   const timedRequest = withRequestTimeout(options, headers);
 

@@ -108,6 +108,7 @@ const { legalGate } = require('./middleware/legal-gate');
 const { recordCookieConsent } = require('./lib/api');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
+const { requestClientContext } = require('./middleware/request-client-context');
 const { isValidEmail } = require('./lib/inputValidator');
 const { validateReturnUrl } = require('./lib/urlValidator');
 const { refreshAuthSession, requireAuth } = require('./middleware/auth');
@@ -320,6 +321,12 @@ app.set('view engine', 'njk');
 
 // Trust proxy for rate limiting behind reverse proxy
 app.set('trust proxy', 1);
+
+// Every Laravel API call made while serving this request carries the visitor's
+// address (X-Nexus-Client-IP), so Laravel's per-address limits apply per visitor
+// rather than to web-uk's single container address (F-110). Mounted before
+// tenantRouting so the tenant-bootstrap call is covered too.
+app.use(requestClientContext);
 
 // 🔴 BEFORE tenantRouting, and that is the whole point. tenantRouting ends in
 // `.catch(next)` and re-throws anything that is not a 404/offline (e.g. the tenant

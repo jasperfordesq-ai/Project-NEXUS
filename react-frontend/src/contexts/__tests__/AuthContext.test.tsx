@@ -504,6 +504,72 @@ describe('AuthContext', () => {
       expect(result.current.user).toBeNull();
       expect(mockTokenManager.clearTokens).toHaveBeenCalled();
     });
+
+    describe('browser push subscription (F-108)', () => {
+      function installPush(getSubscription: () => Promise<unknown>) {
+        Object.defineProperty(window, 'PushManager', { configurable: true, writable: true, value: class {} });
+        Object.defineProperty(navigator, 'serviceWorker', {
+          configurable: true,
+          value: { getRegistration: vi.fn().mockResolvedValue({ pushManager: { getSubscription: vi.fn(getSubscription) } }) },
+        });
+      }
+
+      afterEach(() => {
+        try { delete (window as unknown as Record<string, unknown>).PushManager; } catch { /* noop */ }
+        Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: undefined });
+      });
+
+      it('unsubscribes this browser from push before the server logout invalidates the session', async () => {
+        const calls: string[] = [];
+        const pushSub = {
+          endpoint: 'https://push.example/browser-1',
+          unsubscribe: vi.fn(async () => { calls.push('local-unsubscribe'); return true; }),
+        };
+        installPush(async () => pushSub);
+        mockTokenManager.hasAccessToken.mockReturnValue(true);
+        mockApiGet.mockResolvedValue({ success: true, data: mockUser });
+        mockApiPost.mockImplementation(async (url: string) => {
+          calls.push(`post:${url}`);
+          return { success: true };
+        });
+        mockApiLogoutSession.mockImplementation(async () => {
+          calls.push('logout-session');
+          return { success: true };
+        });
+
+        const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
+        await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+        await act(async () => {
+          await result.current.logout();
+        });
+
+        expect(pushSub.unsubscribe).toHaveBeenCalledTimes(1);
+        expect(mockApiPost).toHaveBeenCalledWith('/push/unsubscribe', { endpoint: 'https://push.example/browser-1' });
+        expect(calls.indexOf('post:/push/unsubscribe')).toBeGreaterThan(-1);
+        expect(calls.indexOf('post:/push/unsubscribe')).toBeLessThan(calls.indexOf('logout-session'));
+        expect(result.current.isAuthenticated).toBe(false);
+        expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+      });
+
+      it('still signs out when push cleanup fails', async () => {
+        installPush(async () => { throw new Error('push manager broken'); });
+        mockTokenManager.hasAccessToken.mockReturnValue(true);
+        mockApiGet.mockResolvedValue({ success: true, data: mockUser });
+        mockApiLogoutSession.mockResolvedValue({ success: true });
+
+        const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
+        await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+        await act(async () => {
+          await result.current.logout();
+        });
+
+        expect(mockApiLogoutSession).toHaveBeenCalled();
+        expect(result.current.isAuthenticated).toBe(false);
+        expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+      });
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

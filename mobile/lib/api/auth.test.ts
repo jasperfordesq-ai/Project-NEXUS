@@ -27,9 +27,15 @@ jest.mock('@/lib/constants', () => ({
   DEFAULT_TENANT: 'test-tenant',
 }));
 
+jest.mock('@/lib/storage', () => ({
+  storage: { get: jest.fn(), set: jest.fn(), remove: jest.fn() },
+}));
+
 import { api } from '@/lib/api/client';
+import { storage } from '@/lib/storage';
 import {
   buildDisplayName,
+  logout,
   extractToken,
   getRegistrationResult,
   register,
@@ -205,5 +211,38 @@ describe('verifyEmail', () => {
     await verifyEmail('verify-token');
 
     expect(api.post).toHaveBeenCalledWith('/api/auth/verify-email', { token: 'verify-token' });
+  });
+});
+
+describe('logout (F-116)', () => {
+  it('sends the stored refresh token so the server revokes its family', async () => {
+    jest.mocked(storage.get).mockResolvedValueOnce('stored-refresh-token');
+    jest.mocked(api.post).mockResolvedValueOnce(undefined);
+
+    await logout();
+
+    expect(storage.get).toHaveBeenCalledWith('refresh_token');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/auth/logout',
+      { refresh_token: 'stored-refresh-token' },
+      { skipAuthRefresh: true },
+    );
+  });
+
+  it('still calls the server when no refresh token is stored', async () => {
+    jest.mocked(storage.get).mockResolvedValueOnce(null);
+    jest.mocked(api.post).mockResolvedValueOnce(undefined);
+
+    await logout();
+
+    expect(api.post).toHaveBeenCalledWith('/api/auth/logout', undefined, { skipAuthRefresh: true });
+  });
+
+  it('stays best-effort when reading the refresh token fails', async () => {
+    jest.mocked(storage.get).mockRejectedValueOnce(new Error('keychain unavailable'));
+    jest.mocked(api.post).mockResolvedValueOnce(undefined);
+
+    await expect(logout()).resolves.toBeUndefined();
+    expect(api.post).toHaveBeenCalledWith('/api/auth/logout', undefined, { skipAuthRefresh: true });
   });
 });

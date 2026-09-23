@@ -69,6 +69,58 @@ function readPermission(): WebPushPermission {
   return Notification.permission as WebPushPermission;
 }
 
+/** Upper bound on how long sign-out waits for push cleanup. */
+const LOGOUT_PUSH_CLEANUP_TIMEOUT_MS = 3000;
+
+/**
+ * Drop this browser's push subscription as part of signing out (F-108).
+ *
+ * Subscriptions are stored per user + endpoint, and the endpoint belongs to the
+ * BROWSER, not the member. Signing out used to leave it in place, so the old
+ * account kept receiving notifications on this browser — and once the next person
+ * enabled push here, both accounts' notifications arrived.
+ *
+ * Call it BEFORE the server logout: `/push/unsubscribe` needs the member's
+ * still-valid session. The local `unsubscribe()` runs first, so even if the server
+ * call fails the endpoint is dead and the push service answers 410 to any send.
+ *
+ * Best-effort by contract: never throws, and never holds sign-out up for longer
+ * than `timeoutMs`. Uses `getRegistration()` rather than `ready`, because `ready`
+ * never settles on a page with no service worker.
+ */
+export async function unsubscribeBrowserPushOnLogout(
+  timeoutMs: number = LOGOUT_PUSH_CLEANUP_TIMEOUT_MS,
+): Promise<void> {
+  if (
+    typeof window === 'undefined'
+    || typeof navigator === 'undefined'
+    || !navigator.serviceWorker
+    || typeof navigator.serviceWorker.getRegistration !== 'function'
+    || !('PushManager' in window)
+  ) {
+    return;
+  }
+
+  const cleanup = (async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const pushSub = await reg?.pushManager.getSubscription();
+    if (!pushSub) return;
+    const endpoint = pushSub.endpoint;
+    try { await pushSub.unsubscribe(); } catch { /* keep going — server cleanup still useful */ }
+    if (endpoint) {
+      await api.post('/push/unsubscribe', { endpoint });
+    }
+  })().catch(() => undefined);
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<void>((resolve) => { timer = setTimeout(resolve, timeoutMs); });
+  try {
+    await Promise.race([cleanup, timeout]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export function useWebPush() {
   const { t } = useTranslation('settings');
   const [state, setState] = useState<WebPushState>(() => ({

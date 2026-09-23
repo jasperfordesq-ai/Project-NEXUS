@@ -95,6 +95,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Files uploaded to the accessible frontend are now deleted even when the request is refused before it reaches the page, so anonymous uploads can no longer fill the server's disk (F-111).
+
+- The accessible frontend now tells members honestly when a password-reset or verification email was refused for too many attempts, instead of saying it was sent, and passes each visitor's address to the API so per-visitor limits can apply (F-110, accessible-frontend half).
+
+- Signing out of the mobile app now revokes its refresh token on the server, so a copied token stops working immediately (F-116).
+
+- Signing out of the web app now removes that browser's push subscription, so the next person to use the browser no longer receives the previous member's notifications (F-108).
+
 - Blocking a member now also stops them commenting on or reacting to your content, replying to your comments, @mentioning you, finding you in mention search, reviewing you, endorsing your skills or sending you appreciations, in either direction (F-070).
 
 - Story highlights can now only contain your own stories, and a highlight shows each story only to people its audience allows, so close-friends and connections-only stories can no longer be read through someone else's highlight (F-067).

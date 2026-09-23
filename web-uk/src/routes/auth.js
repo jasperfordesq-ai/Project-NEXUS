@@ -30,6 +30,9 @@ const LOGIN_ERROR_STATUS_KEYS = Object.freeze({
   'two-factor-required': 'auth.two_factor_required',
   'two-factor-expired': 'auth.two_factor_expired',
   'rate-limited': 'auth.rate_limited',
+  // F-110: reuses the existing, already-translated generic "Too many attempts"
+  // copy rather than adding an untranslated key.
+  'verification-rate-limited': 'auth.reset_rate_limited',
   'email-not-verified': 'auth.email_not_verified',
   'pending-verification': 'auth.pending_verification',
   'account-suspended': 'auth.account_suspended'
@@ -145,6 +148,11 @@ function errorCode(error) {
   const data = error?.data;
   const firstError = Array.isArray(data?.errors) ? data.errors[0] : null;
   return String(firstError?.code || data?.code || '').trim().toUpperCase();
+}
+
+function isRateLimitError(error) {
+  return error instanceof ApiError
+    && (error.status === 429 || ['RATE_LIMIT_EXCEEDED', 'RATE_LIMITED'].includes(errorCode(error)));
 }
 
 function registrationErrorKey(error) {
@@ -502,6 +510,12 @@ router.post('/login/resend-verification', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiOfflineError) {
       return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
+    }
+    // F-110: a refused (429) resend sends no email, so do not say it was sent.
+    // Laravel's resend limiter is per client address, not per account, so this
+    // reveals nothing about whether the address is registered.
+    if (isRateLimitError(error)) {
+      return redirectTo(res, '/login?status=verification-rate-limited');
     }
   }
 
@@ -906,6 +920,12 @@ async function handleForgotPasswordPost(req, res) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
       return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
+    }
+    // F-110: a refused (429) request sends no email, so do not say it was sent.
+    // Laravel rate-limits this per client address and per submitted email
+    // regardless of whether an account exists, so this is enumeration-safe.
+    if (isRateLimitError(error)) {
+      return redirectTo(res, '/login/forgot-password?status=forgot-rate-limited');
     }
     // For other errors, fall through to show success message (security: don't reveal if email exists)
   }
