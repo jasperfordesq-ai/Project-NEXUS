@@ -43,7 +43,12 @@ class HourEstateService
             ];
         }
 
-        return $this->formatEstate($row);
+        // F-136: coordinator notes are the coordinators' working record of the
+        // deceased-member process; the member view never carries them.
+        $formatted = $this->formatEstate($row);
+        unset($formatted['coordinator_notes']);
+
+        return $formatted;
     }
 
     public function nominate(int $tenantId, int $memberId, array $input): array
@@ -78,21 +83,48 @@ class HourEstateService
         }
 
         $now = now();
-        DB::table(self::TABLE)->updateOrInsert(
-            ['tenant_id' => $tenantId, 'member_user_id' => $memberId],
-            [
-                'beneficiary_user_id' => $beneficiaryId,
-                'policy_action' => $action,
-                'status' => 'nominated',
-                'policy_document_reference' => isset($input['policy_document_reference'])
-                    ? mb_substr((string) $input['policy_document_reference'], 0, 255)
-                    : null,
-                'member_notes' => isset($input['member_notes']) ? mb_substr((string) $input['member_notes'], 0, 2000) : null,
-                'nominated_at' => $now,
-                'updated_at' => $now,
-                'created_at' => $now,
-            ]
-        );
+        $values = [
+            'beneficiary_user_id' => $beneficiaryId,
+            'policy_action' => $action,
+            'status' => 'nominated',
+            'policy_document_reference' => isset($input['policy_document_reference'])
+                ? mb_substr((string) $input['policy_document_reference'], 0, 255)
+                : null,
+            'member_notes' => isset($input['member_notes']) ? mb_substr((string) $input['member_notes'], 0, 2000) : null,
+            'nominated_at' => $now,
+            'updated_at' => $now,
+        ];
+
+        DB::transaction(function () use ($tenantId, $memberId, $values, $now): void {
+            // Same row lock reportDeceased()/settle() take, so a member's
+            // nomination cannot interleave with a coordinator's report.
+            $existing = DB::table(self::TABLE)
+                ->where('tenant_id', $tenantId)
+                ->where('member_user_id', $memberId)
+                ->lockForUpdate()
+                ->first(['id', 'status']);
+
+            if ($existing === null) {
+                DB::table(self::TABLE)->insert($values + [
+                    'tenant_id' => $tenantId,
+                    'member_user_id' => $memberId,
+                    'created_at' => $now,
+                ]);
+                return;
+            }
+
+            // F-136: once a coordinator has reported the estate (or settled
+            // it), the member's wishes are frozen. Re-nominating used to reset
+            // it to 'nominated' and could swap the beneficiary mid-settlement.
+            if ((string) $existing->status !== 'nominated') {
+                throw new RuntimeException(__('api.caring_hour_estate_locked'));
+            }
+
+            DB::table(self::TABLE)
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $existing->id)
+                ->update($values);
+        });
 
         return $this->myEstate($tenantId, $memberId);
     }
@@ -203,6 +235,7 @@ class HourEstateService
                     ->where('id', (int) $member->id)
                     ->decrement('balance', $hours);
 
+                $receiverId = null;
                 if ((string) $estate->policy_action === 'transfer_to_beneficiary') {
                     $beneficiaryId = (int) ($estate->beneficiary_user_id ?? 0);
                     if ($beneficiaryId <= 0) {
@@ -214,7 +247,25 @@ class HourEstateService
                         ->where('id', $beneficiaryId)
                         ->lockForUpdate()
                         ->increment('balance', $hours);
+                    $receiverId = $beneficiaryId;
                 }
+
+                // F-140: every balance move needs its ledger row, or wallet
+                // history and audits drift from users.balance. A donated or
+                // expired estate goes to the community (receiver NULL), the
+                // same shape WalletService::reclaimFromMember() writes.
+                DB::table('transactions')->insert([
+                    'tenant_id' => $tenantId,
+                    'sender_id' => (int) $member->id,
+                    'receiver_id' => $receiverId,
+                    'acting_user_id' => $actorId > 0 ? $actorId : null,
+                    'amount' => $hours,
+                    'description' => '[caring_hour_estate:' . $estateId . '] ' . (string) $estate->policy_action,
+                    'transaction_type' => 'caring_hour_estate',
+                    'status' => 'completed',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
 
             DB::table(self::TABLE)

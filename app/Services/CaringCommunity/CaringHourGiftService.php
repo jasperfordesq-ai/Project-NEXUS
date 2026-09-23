@@ -37,6 +37,9 @@ class CaringHourGiftService
 
     private const MAX_MESSAGE_LEN = 500;
 
+    /** transactions.transaction_type for hour gifts (F-140). */
+    public const LEDGER_TYPE = 'caring_hour_gift';
+
     /**
      * @return array{gift_id:int,status:string}
      */
@@ -112,6 +115,22 @@ class CaringHourGiftService
                 'updated_at'        => now(),
             ]);
 
+            // F-140: the held hours are a pending transfer in the ledger, the
+            // shape WalletService already reports as pending_outgoing /
+            // pending_incoming. accept() completes it; decline()/revert()
+            // cancel it.
+            DB::table('transactions')->insert([
+                'tenant_id'        => $tenantId,
+                'sender_id'        => $senderId,
+                'receiver_id'      => $recipientId,
+                'amount'           => round($hours, 2),
+                'description'      => $this->ledgerDescription($giftId, $message),
+                'transaction_type' => self::LEDGER_TYPE,
+                'status'           => 'pending',
+                'created_at'       => now(),
+                'updated_at'       => now(),
+            ]);
+
             return ['gift_id' => $giftId, 'status' => self::STATUS_PENDING];
         });
     }
@@ -140,6 +159,8 @@ class CaringHourGiftService
                 ->where('id', $recipientId)
                 ->where('tenant_id', $tenantId)
                 ->increment('balance', (float) $gift->hours);
+
+            $this->settleLedgerRow($tenantId, $gift, 'completed');
 
             DB::table('caring_hour_gifts')
                 ->where('id', $giftId)
@@ -185,6 +206,8 @@ class CaringHourGiftService
                 ->where('tenant_id', $tenantId)
                 ->increment('balance', (float) $gift->hours);
 
+            $this->settleLedgerRow($tenantId, $gift, 'cancelled');
+
             DB::table('caring_hour_gifts')
                 ->where('id', $giftId)
                 ->update([
@@ -222,6 +245,8 @@ class CaringHourGiftService
                 ->where('tenant_id', $tenantId)
                 ->increment('balance', (float) $gift->hours);
 
+            $this->settleLedgerRow($tenantId, $gift, 'cancelled');
+
             DB::table('caring_hour_gifts')
                 ->where('id', $giftId)
                 ->update([
@@ -230,6 +255,51 @@ class CaringHourGiftService
                     'updated_at'  => now(),
                 ]);
         });
+    }
+
+    /**
+     * F-140: move a gift's pending ledger row to its final status. The caller
+     * already holds the gift row lock, so exactly one settlement can run.
+     *
+     * A gift sent before gifts were ledgered has no pending row. Accepting one
+     * still moves hours from sender to recipient, so it gets a completed row
+     * now; declining or withdrawing one nets to zero and needs none.
+     */
+    private function settleLedgerRow(int $tenantId, object $gift, string $finalStatus): void
+    {
+        $updated = DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('transaction_type', self::LEDGER_TYPE)
+            ->where('sender_id', (int) $gift->sender_user_id)
+            ->where('receiver_id', (int) $gift->recipient_user_id)
+            ->where('status', 'pending')
+            ->where('description', 'like', $this->ledgerTag((int) $gift->id) . '%')
+            ->update(['status' => $finalStatus, 'updated_at' => now()]);
+
+        if ($updated === 0 && $finalStatus === 'completed') {
+            DB::table('transactions')->insert([
+                'tenant_id'        => $tenantId,
+                'sender_id'        => (int) $gift->sender_user_id,
+                'receiver_id'      => (int) $gift->recipient_user_id,
+                'amount'           => round((float) $gift->hours, 2),
+                'description'      => $this->ledgerDescription((int) $gift->id, $gift->message !== null ? (string) $gift->message : null),
+                'transaction_type' => self::LEDGER_TYPE,
+                'status'           => 'completed',
+                'created_at'       => now(),
+                'updated_at'       => now(),
+            ]);
+        }
+    }
+
+    /** Stable prefix linking a ledger row to its gift; the closing bracket keeps gift 1 from matching gift 12. */
+    private function ledgerTag(int $giftId): string
+    {
+        return '[caring_hour_gift:' . $giftId . ']';
+    }
+
+    private function ledgerDescription(int $giftId, ?string $message): string
+    {
+        return $this->ledgerTag($giftId) . ($message !== null && $message !== '' ? ' ' . $message : '');
     }
 
     /**

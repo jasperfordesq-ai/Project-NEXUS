@@ -9,8 +9,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
+use App\Exceptions\AiBudgetExceededException;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
+use App\Models\AiUserLimit;
+use App\Services\AI\AIServiceFactory;
 use App\Services\CaringCommunity\CaringHourGiftService;
 use App\Services\CaringCommunity\CaringHourTransferService;
 use App\Services\CaringCommunity\CaringRegionalPointService;
@@ -654,6 +657,28 @@ class CaringCommunityApiController extends BaseApiController
             return $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500);
         }
 
+        // F-138: both steps below are paid provider calls (Whisper, then an
+        // LLM). Honour the administrator's AI master switch and the member's
+        // AI budget exactly as member chat does (F-048 / F-044). Each provider
+        // call reserves one slot of the member's budget before it is made.
+        if (!AIServiceFactory::isEnabled()) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
+        }
+
+        $tenantId = (int) TenantContext::getId();
+        $admitProviderCall = static function () use ($userId, $tenantId): void {
+            $limits = AiUserLimit::admitRequest((int) $userId, $tenantId);
+            if (!$limits['allowed']) {
+                throw new AiBudgetExceededException($limits);
+            }
+        };
+
+        try {
+            $admitProviderCall();
+        } catch (AiBudgetExceededException) {
+            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        }
+
         try {
             $transcript = TranscriptionService::transcribe($tmpPath);
         } catch (\Throwable $e) {
@@ -670,7 +695,18 @@ class CaringCommunityApiController extends BaseApiController
         }
 
         $detectedLocale = (string) ($transcript['language'] ?? $locale);
-        $extracted = CaringHelpRequestNlpService::extract($transcript['text'], $detectedLocale);
+        try {
+            $extracted = CaringHelpRequestNlpService::extract($transcript['text'], $detectedLocale, $admitProviderCall);
+        } catch (AiBudgetExceededException) {
+            // The transcript is already paid for; hand it back so the member
+            // can finish the form by hand instead of losing their recording.
+            $extracted = [
+                'category'           => null,
+                'when'               => null,
+                'contact_preference' => null,
+                'raw_text'           => $transcript['text'],
+            ];
+        }
 
         return $this->respondWithData([
             'transcript'                  => $transcript['text'],
@@ -917,6 +953,10 @@ class CaringCommunityApiController extends BaseApiController
         $items = [];
 
         // ── Time-credit listings ────────────────────────────────────────────
+        // F-137: the WHERE clauses below mirror ListingService's public
+        // visibility rule — status active (or legacy NULL) AND moderation
+        // approved (or legacy NULL) — so listings awaiting or refused
+        // moderation never reach the Markt feed.
         if (in_array($type, ['all', 'listings'], true)) {
             $limit = $type === 'all' ? $sourceLimit : $perPage;
 
@@ -944,7 +984,8 @@ class CaringCommunityApiController extends BaseApiController
                      LEFT JOIN categories c
                             ON c.id = l.category_id
                      WHERE l.tenant_id = ?
-                       AND l.status = 'active'
+                       AND (l.status IS NULL OR l.status = 'active')
+                       AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
                        AND (l.deleted_at IS NULL OR l.deleted_at > NOW())
                        AND l.latitude IS NOT NULL
                        AND l.longitude IS NOT NULL
@@ -976,7 +1017,8 @@ class CaringCommunityApiController extends BaseApiController
                      LEFT JOIN categories c
                             ON c.id = l.category_id
                      WHERE l.tenant_id = ?
-                       AND l.status = 'active'
+                       AND (l.status IS NULL OR l.status = 'active')
+                       AND (l.moderation_status IS NULL OR l.moderation_status = 'approved')
                        AND (l.deleted_at IS NULL OR l.deleted_at > NOW())
                      ORDER BY l.created_at DESC
                      LIMIT ?",

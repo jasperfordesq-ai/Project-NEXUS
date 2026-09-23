@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'Legacy-Stundenbestandsdatensatz nicht gefunden.',
     'caring_hour_estate_not_reportable' => 'Dieser alte Stundenbestand kann in seinem aktuellen Status nicht gemeldet werden.',
     'caring_hour_estate_not_settleable' => 'Dieser Nachlass muss gemeldet werden, bevor er beglichen werden kann.',
+    'caring_hour_estate_locked' => 'Dieser Plan für Altstunden wird bereits von einer Koordinationsperson bearbeitet und kann nicht mehr geändert werden.',
     'caring_kiss_treffen_unavailable' => 'Für diese Community sind keine Sitzungsaufzeichnungen zum Caring Community Treffen verfügbar.',
     'caring_kiss_treffen_not_found' => 'Caring Community Treffen-Treffendatensatz nicht gefunden.',
     'caring_kiss_treffen_type_invalid' => 'Der Typ „Caring Community Treffen“ muss einer von „monthly_stamm“, „annual_general_assembly“, „governance_circle“, „cooperative_workshop“ oder „other“ sein.',

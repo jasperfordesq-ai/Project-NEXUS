@@ -139,7 +139,11 @@ export default function MunicipalityFeedbackAdminPage() {
   }, [t]);
   const adminSubmitterLabel = useCallback((row: FeedbackRow) => {
     if (row.is_anonymous) {
-      return t('admin.feedback.submitter.anonymous_admin', { id: row.submitter_user_id ?? '?' });
+      // The API no longer returns the submitter of anonymous feedback (F-139).
+      if (row.submitter_user_id == null) {
+        return t('admin.feedback.submitter.anonymous');
+      }
+      return t('admin.feedback.submitter.anonymous_admin', { id: row.submitter_user_id });
     }
     return t('admin.feedback.submitter.user', { id: row.submitter_user_id ?? '?' });
   }, [t]);

@@ -95,6 +95,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Members no longer see draft or unpublished KISS meetings, or the notes coordinators write about them (F-134).
+
+- Cover-care suggestions now respect members' "don't list me" and connections-only privacy settings, and no longer show their location or verification status (F-135).
+
+- Once a coordinator has reported or settled a member's hour estate, the member can no longer change it or its beneficiary, and members no longer see coordinator notes on their estate (F-136).
+
+- The caring Marktplatz no longer shows listings that are still awaiting or have failed moderation (F-137).
+
+- Voice help requests now respect the community's AI on/off switch and each member's AI usage allowance (F-138).
+
+- Anonymous municipality feedback now stays anonymous in the admin triage list and detail view, matching the CSV export (F-139).
+
+- Hour gifts and legacy-hour estate settlements now appear in wallet history, so balances and the transaction ledger agree (F-140).
+
 - The global API rate limit now treats a bearer credential as a member identity only after validating the current signed access token. Rotating malformed, expired or revoked bearer strings can no longer create fresh anonymous request budgets, while verified members behind one shared address retain separate per-account allowances (F-036 residual).
 
 - Mobile EAS build uploads now exclude the local signing-credentials file, so keystore passwords are no longer sent to Expo build workers with the project (F-125).

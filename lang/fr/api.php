@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'L\'enregistrement de la succession d\'heures héritées est introuvable.',
     'caring_hour_estate_not_reportable' => 'Ce domaine d\'heures hérité ne peut pas être signalé dans son statut actuel.',
     'caring_hour_estate_not_settleable' => 'Cette succession d\'heures héritées doit être déclarée avant de pouvoir être réglée.',
+    'caring_hour_estate_locked' => 'Ce plan d\'heures héritées est déjà pris en charge par un coordinateur et ne peut plus être modifié.',
     'caring_kiss_treffen_unavailable' => 'Les enregistrements des réunions de Caring Community Treffen ne sont pas disponibles pour cette communauté.',
     'caring_kiss_treffen_not_found' => 'Compte rendu de la réunion Treffen de la communauté bienveillante introuvable.',
     'caring_kiss_treffen_type_invalid' => 'Le type de Treffen de la communauté bienveillante doit être l\'un des suivants : mensuel_stamm, annual_general_assembly, gouvernance_circle, coopérative_atelier, autre.',

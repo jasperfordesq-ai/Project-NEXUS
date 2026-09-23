@@ -50,9 +50,7 @@ interface Candidate {
   id: number;
   name: string;
   avatar_url: string | null;
-  location: string | null;
   trust_tier: number;
-  verification_status: string;
   skills: string[];
   skill_matches: number;
 }
@@ -369,7 +367,6 @@ export default function CoverCarePage() {
                           <Avatar src={candidate.avatar_url ?? undefined} name={candidate.name} size="sm" />
                           <div>
                             <p className="font-medium text-theme-primary">{candidate.name}</p>
-                            <p className="text-xs text-theme-muted">{candidate.location ?? t('cover.location_unknown')}</p>
                           </div>
                         </div>
                         <Chip size="sm" variant="flat" color="success">

@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'No se encontró el registro de patrimonio de horas heredado.',
     'caring_hour_estate_not_reportable' => 'Este patrimonio de horas heredado no se puede informar en su estado actual.',
     'caring_hour_estate_not_settleable' => 'Este patrimonio de horas heredadas debe informarse antes de que pueda liquidarse.',
+    'caring_hour_estate_locked' => 'Un coordinador ya está gestionando este plan de horas heredadas y ya no se puede modificar.',
     'caring_kiss_treffen_unavailable' => 'Los registros de las reuniones de Caring Community Treffen no están disponibles para esta comunidad.',
     'caring_kiss_treffen_not_found' => 'No se encontró el registro de la reunión de Caring Community Treffen.',
     'caring_kiss_treffen_type_invalid' => 'El tipo de Treffen de Caring Community debe ser uno de: mensual_stamm, asamblea_general_anual, círculo_de_gobernancia, taller_cooperativo, otro.',

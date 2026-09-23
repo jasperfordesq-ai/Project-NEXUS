@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'Nie znaleziono starszego zapisu dotyczącego godzin pracy.',
     'caring_hour_estate_not_reportable' => 'Nie można zgłosić tej starszej nieruchomości godzinowej w jej obecnym stanie.',
     'caring_hour_estate_not_settleable' => 'Przed rozliczeniem należy zgłosić tę zaległą nieruchomość godzinową.',
+    'caring_hour_estate_locked' => 'Tym planem godzin spadkowych zajmuje się już koordynator i nie można go już zmienić.',
     'caring_kiss_treffen_unavailable' => 'Zapisy ze spotkań Caring Community Treffen nie są dostępne dla tej społeczności.',
     'caring_kiss_treffen_not_found' => 'Nie znaleziono zapisu spotkania Wspólnoty Opiekuńczej w Treffen.',
     'caring_kiss_treffen_type_invalid' => 'Typ Treffen społeczności troskliwej musi należeć do jednego z następujących typów: miesięczny_stamm, roczny_generalny_zespół, krąg_zarządzania, warsztat_spółdzielczy, inny.',

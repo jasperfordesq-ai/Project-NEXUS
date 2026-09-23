@@ -51,6 +51,11 @@ class CaringHelpRequestNlpService
      * @param string $transcript The free-text transcript (in any supported language).
      * @param string $locale     Member locale (ISO 639-1, e.g. 'en', 'de'). Used as
      *                           a hint when parsing relative date phrases.
+     * @param (callable(): void)|null $beforeProviderCall Invoked immediately before
+     *                           the paid provider request (never on a cache hit or
+     *                           when no key is configured). The member AI budget
+     *                           hook: it may throw AiBudgetExceededException, which
+     *                           propagates to the caller (F-138).
      * @return array{
      *     category: ?string,
      *     when: ?string,
@@ -58,7 +63,7 @@ class CaringHelpRequestNlpService
      *     raw_text: string
      * }
      */
-    public static function extract(string $transcript, string $locale = 'en'): array
+    public static function extract(string $transcript, string $locale = 'en', ?callable $beforeProviderCall = null): array
     {
         $transcript = trim($transcript);
 
@@ -94,6 +99,12 @@ class CaringHelpRequestNlpService
             . "if a concrete time is implied; otherwise leave it null.\n"
             . "Detect any contact preference (phone / message / either) if mentioned; otherwise leave it null.\n"
             . "Always call the function `extract_help_request_intent`.";
+
+        // Outside the try below on purpose: a budget refusal must reach the
+        // caller, not be swallowed into the silent fallback.
+        if ($beforeProviderCall !== null) {
+            $beforeProviderCall();
+        }
 
         try {
             $response = Http::withToken($apiKey)

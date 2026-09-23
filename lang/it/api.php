@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'Record del patrimonio orario preesistente non trovato.',
     'caring_hour_estate_not_reportable' => 'Questo patrimonio orario preesistente non può essere riportato nel suo stato attuale.',
     'caring_hour_estate_not_settleable' => 'Questo patrimonio orario legacy deve essere segnalato prima che possa essere liquidato.',
+    'caring_hour_estate_locked' => 'Questo piano di ore ereditate è già gestito da un coordinatore e non può più essere modificato.',
     'caring_kiss_treffen_unavailable' => 'I registri delle riunioni del Caring Community Treffen non sono disponibili per questa comunità.',
     'caring_kiss_treffen_not_found' => 'Registrazione della riunione del Caring Community Treffen non trovata.',
     'caring_kiss_treffen_type_invalid' => 'Il tipo di Caring Community Treffen deve essere uno tra: mensile_stamm, annuale_general_assembly, governance_circle, cooperative_workshop, altro.',

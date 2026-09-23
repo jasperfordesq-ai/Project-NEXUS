@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'Verouderd uurrecord niet gevonden.',
     'caring_hour_estate_not_reportable' => 'Deze oude urenstatus kan niet in de huidige status worden gerapporteerd.',
     'caring_hour_estate_not_settleable' => 'Deze erfenis-urenboedel moet worden gemeld voordat deze kan worden verrekend.',
+    'caring_hour_estate_locked' => 'Dit plan voor nalatenschapsuren wordt al door een coördinator afgehandeld en kan niet meer worden gewijzigd.',
     'caring_kiss_treffen_unavailable' => 'Vergaderverslagen van Caring Community Treffen zijn niet beschikbaar voor deze community.',
     'caring_kiss_treffen_not_found' => 'Caring Community Treffen-vergaderingsrecord niet gevonden.',
     'caring_kiss_treffen_type_invalid' => 'Het type Caring Community Treffen moet een van de volgende zijn: maandelijkse_stamm, jaarlijkse_algemene_vergadering, governance_circle, coöperatieve_workshop, anders.',

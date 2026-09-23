@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'Níor aimsíodh taifead eastáit uair an chloig leagáide.',
     'caring_hour_estate_not_reportable' => 'Ní féidir an eastát uaire oidhreachta seo a thuairisciú ina stádas reatha.',
     'caring_hour_estate_not_settleable' => 'Ní mór an t-eastát uaireanta leagáide seo a thuairisciú sular féidir é a shocrú.',
+    'caring_hour_estate_locked' => 'Tá comhordaitheoir ag láimhseáil an phlean uaireanta oidhreachta seo cheana féin agus ní féidir é a athrú a thuilleadh.',
     'caring_kiss_treffen_unavailable' => 'Caring Community Níl taifid chruinnithe Treffen ar fáil don phobal seo.',
     'caring_kiss_treffen_not_found' => 'Níor aimsíodh taifead cruinnithe Treffen ag Caring Community.',
     'caring_kiss_treffen_type_invalid' => 'Pobal Cúramach Ní mór go mbeadh an cineál Treffen mar cheann de: monthly_stamm, annual_general_assembly, Governance_circle, cooperative_workshop, eile.',

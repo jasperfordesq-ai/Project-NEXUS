@@ -2682,6 +2682,7 @@ return [
     'caring_hour_estate_not_found'             => 'Legacy hour estate record not found.',
     'caring_hour_estate_not_reportable'        => 'This legacy hour estate cannot be reported in its current status.',
     'caring_hour_estate_not_settleable'        => 'This legacy hour estate must be reported before it can be settled.',
+    'caring_hour_estate_locked' => 'This legacy hour plan is already being handled by a coordinator and can no longer be changed.',
     'caring_kiss_treffen_unavailable'          => 'Caring Community Treffen meeting records are not available for this community.',
     'caring_kiss_treffen_not_found'            => 'Caring Community Treffen meeting record not found.',
     'caring_kiss_treffen_type_invalid'         => 'Caring Community Treffen type must be one of: monthly_stamm, annual_general_assembly, governance_circle, cooperative_workshop, other.',

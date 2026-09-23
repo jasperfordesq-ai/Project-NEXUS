@@ -22,8 +22,9 @@ use Illuminate\Support\Facades\Schema;
  * Status lifecycle: new -> triaging -> in_progress -> resolved | closed
  *
  * Privacy: when is_anonymous is true, the submitter_user_id is still
- * stored for abuse prevention but is redacted out of every member-context
- * payload. Admin-context responses include it.
+ * stored for abuse prevention but is redacted from every response except
+ * the submitter's own list — including admin triage responses and the
+ * CSV export (F-139).
  */
 class MunicipalityFeedbackService
 {
@@ -114,7 +115,7 @@ class MunicipalityFeedbackService
             ->where('id', $id)
             ->first();
 
-        return ['feedback' => $row ? $this->formatRow((array) $row, false) : ['id' => $id]];
+        return ['feedback' => $row ? $this->formatRow((array) $row) : ['id' => $id]];
     }
 
     /**
@@ -137,7 +138,7 @@ class MunicipalityFeedbackService
             ->limit($limit)
             ->get();
 
-        return $rows->map(fn ($r) => $this->formatRow((array) $r, false, true))->all();
+        return $rows->map(fn ($r) => $this->formatRow((array) $r, true))->all();
     }
 
     /**
@@ -180,7 +181,7 @@ class MunicipalityFeedbackService
             ->limit($perPage)
             ->get();
 
-        $items = $rows->map(fn ($r) => $this->formatRow((array) $r, true))->all();
+        $items = $rows->map(fn ($r) => $this->formatRow((array) $r))->all();
 
         return [
             'items'    => $items,
@@ -192,6 +193,10 @@ class MunicipalityFeedbackService
 
     /**
      * Show a single feedback row.
+     *
+     * $adminContext no longer widens what is returned: an anonymous row's
+     * submitter is redacted for admins too (F-139). It is kept so existing
+     * callers keep compiling.
      *
      * @return array<string, mixed>|null
      */
@@ -210,7 +215,7 @@ class MunicipalityFeedbackService
             return null;
         }
 
-        return $this->formatRow((array) $row, $adminContext);
+        return $this->formatRow((array) $row);
     }
 
     /**
@@ -277,7 +282,7 @@ class MunicipalityFeedbackService
             ->where('id', $id)
             ->first();
 
-        return ['feedback' => $row ? $this->formatRow((array) $row, true) : null];
+        return ['feedback' => $row ? $this->formatRow((array) $row) : null];
     }
 
     /**
@@ -318,7 +323,7 @@ class MunicipalityFeedbackService
             ->where('id', $id)
             ->first();
 
-        return ['feedback' => $row ? $this->formatRow((array) $row, true) : null];
+        return ['feedback' => $row ? $this->formatRow((array) $row) : null];
     }
 
     /**
@@ -353,7 +358,7 @@ class MunicipalityFeedbackService
             ->where('id', $id)
             ->first();
 
-        return ['feedback' => $row ? $this->formatRow((array) $row, true) : null];
+        return ['feedback' => $row ? $this->formatRow((array) $row) : null];
     }
 
     /**
@@ -493,17 +498,20 @@ class MunicipalityFeedbackService
      * Format a single DB row for response.
      *
      * @param array<string, mixed> $row
-     * @param bool $adminContext  When true, include submitter_user_id even on anonymous rows
      * @param bool $memberOwnView When true, the requester is the submitter — show their own anonymous IDs
      * @return array<string, mixed>
      */
-    private function formatRow(array $row, bool $adminContext, bool $memberOwnView = false): array
+    private function formatRow(array $row, bool $memberOwnView = false): array
     {
         $isAnonymous = (bool) ($row['is_anonymous'] ?? false);
         $submitterId = $row['submitter_user_id'] !== null ? (int) $row['submitter_user_id'] : null;
 
-        // Privacy: redact submitter_user_id in non-admin, non-self contexts when anonymous.
-        $exposeSubmitter = $adminContext || $memberOwnView || !$isAnonymous;
+        // Privacy: an anonymous submission's author is shown only to the
+        // author. F-139: that includes the admin triage list and detail —
+        // members are told their name is hidden from the triage team, and
+        // the CSV export already printed "(anonymous)". The id stays stored
+        // for abuse prevention.
+        $exposeSubmitter = $memberOwnView || !$isAnonymous;
 
         return [
             'id'                => (int) ($row['id'] ?? 0),

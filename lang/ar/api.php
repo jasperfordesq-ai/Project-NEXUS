@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'لم يتم العثور على سجل العقارات القديم.',
     'caring_hour_estate_not_reportable' => 'لا يمكن الإبلاغ عن خاصية الساعة القديمة هذه في حالتها الحالية.',
     'caring_hour_estate_not_settleable' => 'يجب الإبلاغ عن ملكية الساعة القديمة هذه قبل أن تتم تسويتها.',
+    'caring_hour_estate_locked' => 'يتولّى أحد المنسقين خطة الساعات القديمة هذه بالفعل، ولم يعد من الممكن تغييرها.',
     'caring_kiss_treffen_unavailable' => 'سجلات اجتماعات Caring Community Treffen غير متاحة لهذا المجتمع.',
     'caring_kiss_treffen_not_found' => 'لم يتم العثور على سجل اجتماع مجتمع الرعاية في Treffen.',
     'caring_kiss_treffen_type_invalid' => 'يجب أن يكون نوع رعاية مجتمع الرعاية واحدًا من: Monthly_stamm، Annual_general_assembly،Government_circle،coolable_workshop،other.',

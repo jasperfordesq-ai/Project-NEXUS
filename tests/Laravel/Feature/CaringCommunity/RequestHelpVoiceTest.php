@@ -127,6 +127,12 @@ class RequestHelpVoiceTest extends TestCase
         $this->assertNotNull($userModel);
         Sanctum::actingAs($userModel);
 
+        // F-138: voice help honours the administrator's AI master switch.
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => self::TENANT_ID, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => '1', 'updated_at' => now()]
+        );
+
         // Mock TranscriptionService::transcribe — it's a static method on a real class.
         // We swap the class with a Mockery alias; if the class is already loaded the
         // alias mock will still intercept the static call for the duration of the test.

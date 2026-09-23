@@ -2082,6 +2082,7 @@ return [
     'caring_hour_estate_not_found' => 'レガシー時間資産レコードが見つかりません。',
     'caring_hour_estate_not_reportable' => 'この従来の時間資産は、現在の状態では報告できません。',
     'caring_hour_estate_not_settleable' => 'この従来の時間資産は、解決する前に報告する必要があります。',
+    'caring_hour_estate_locked' => 'このレガシー時間プランはすでにコーディネーターが対応中のため、変更できません。',
     'caring_kiss_treffen_unavailable' => 'Caring Community Treffen 会議記録は、このコミュニティでは利用できません。',
     'caring_kiss_treffen_not_found' => '思いやりのあるコミュニティ Treffen の会議記録が見つかりません。',
     'caring_kiss_treffen_type_invalid' => 'Caring Community Treffen のタイプは、monthly_stamm、annual_general_assembly、governance_circle、cooperative_workshop、other のいずれかである必要があります。',

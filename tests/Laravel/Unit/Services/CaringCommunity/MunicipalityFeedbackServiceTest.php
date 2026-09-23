@@ -331,8 +331,8 @@ class MunicipalityFeedbackServiceTest extends TestCase
         $result = $this->svc->show(self::TENANT_ID, $id, true);
 
         $this->assertNotNull($result);
-        // Admin context: submitter_user_id exposed even for anonymous
-        $this->assertSame($userId, $result['submitter_user_id']);
+        // F-139: anonymous stays anonymous in the admin triage view too
+        $this->assertNull($result['submitter_user_id']);
         $this->assertTrue($result['is_anonymous']);
         $this->assertArrayHasKey('triage_notes', $result);
         $this->assertArrayHasKey('resolution_notes', $result);

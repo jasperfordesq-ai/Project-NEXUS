@@ -12,6 +12,7 @@ use App\I18n\LocaleContext;
 use App\Services\BlockUserService;
 use App\Services\NotificationDispatcher;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Members\MemberDirectoryVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
@@ -870,18 +871,48 @@ class CaregiverService
             ->map(fn (mixed $id): int => (int) $id)
             ->all();
 
-        return DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->where('is_approved', 1)
-            ->where('id', '!=', (int) $request->caregiver_id)
-            ->where('id', '!=', (int) $request->cared_for_id)
-            ->where('trust_tier', '>=', (int) $request->minimum_trust_tier)
-            ->when($busySupporters !== [], fn ($query) => $query->whereNotIn('id', $busySupporters))
-            ->select(['id', 'name', 'avatar_url', 'location', 'trust_tier', 'verification_status', 'skills'])
-            ->orderByDesc('trust_tier')
-            ->orderByDesc('is_verified')
-            ->orderBy('name')
+        $caregiverId = (int) $request->caregiver_id;
+
+        $query = DB::table('users')
+            ->where('users.tenant_id', $tenantId)
+            ->where('users.status', 'active')
+            ->where('users.is_approved', 1)
+            ->where('users.id', '!=', $caregiverId)
+            ->where('users.id', '!=', (int) $request->cared_for_id)
+            ->where('users.trust_tier', '>=', (int) $request->minimum_trust_tier)
+            ->when($busySupporters !== [], fn ($query) => $query->whereNotIn('users.id', $busySupporters));
+
+        // F-135: this is member discovery — the caregiver did not name these
+        // people. Apply the canonical directory rule (privacy_search opt-out
+        // and the community's listing requirements), and do not surface a
+        // connections-only profile to a caregiver who is not connected to it.
+        MemberDirectoryVisibility::applyToQuery($query, $tenantId, 'users');
+        $query->where(function ($visible) use ($tenantId, $caregiverId) {
+            $visible->whereNull('users.privacy_profile')
+                ->orWhereIn('users.privacy_profile', ['public', 'members'])
+                ->orWhereExists(function ($connected) use ($tenantId, $caregiverId) {
+                    $connected->selectRaw('1')
+                        ->from('connections as cc')
+                        ->where('cc.tenant_id', $tenantId)
+                        ->where('cc.status', 'accepted')
+                        ->where(function ($pair) use ($caregiverId) {
+                            $pair->where(function ($a) use ($caregiverId) {
+                                $a->where('cc.requester_id', $caregiverId)->whereColumn('cc.receiver_id', 'users.id');
+                            })->orWhere(function ($b) use ($caregiverId) {
+                                $b->where('cc.receiver_id', $caregiverId)->whereColumn('cc.requester_id', 'users.id');
+                            });
+                        });
+                });
+        });
+
+        // F-135: location and verification status are not part of the
+        // suggestion payload. Trust tier stays: it is the threshold the
+        // caregiver chose and the UI shows it on each card.
+        return $query
+            ->select(['users.id', 'users.name', 'users.avatar_url', 'users.trust_tier', 'users.skills'])
+            ->orderByDesc('users.trust_tier')
+            ->orderByDesc('users.is_verified')
+            ->orderBy('users.name')
             ->limit(12)
             ->get()
             ->map(function (object $row) use ($requiredSkills): array {
@@ -893,12 +924,10 @@ class CaregiverService
                     'id' => (int) $row->id,
                     'name' => (string) $row->name,
                     'avatar_url' => $row->avatar_url !== null ? (string) $row->avatar_url : null,
-                    'location' => $row->location !== null ? (string) $row->location : null,
                     'trust_tier' => (int) $row->trust_tier,
-                    'verification_status' => (string) $row->verification_status,
                     'skills' => $skills,
                     'skill_matches' => $skillMatches,
-                    'match_score' => ((int) $row->trust_tier * 10) + ($skillMatches * 5) + ($row->verification_status === 'passed' ? 5 : 0),
+                    'match_score' => ((int) $row->trust_tier * 10) + ($skillMatches * 5),
                 ];
             })
             ->sortByDesc('match_score')
