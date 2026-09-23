@@ -124,7 +124,7 @@ class GroupAnalyticsServiceTest extends TestCase
 
     public function test_exportMembers_returns_array(): void
     {
-        DB::shouldReceive('table->join->join->where->where->select->orderBy->get')
+        DB::shouldReceive('table->join->join->where->where->whereIn->select->orderBy->get')
             ->once()
             ->andReturn(collect([
                 (object) ['name' => 'Alice', 'email' => 'alice@example.com', 'role' => 'owner', 'status' => 'active', 'joined_at' => '2025-01-01'],

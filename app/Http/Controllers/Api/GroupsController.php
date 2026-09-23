@@ -128,6 +128,9 @@ class GroupsController extends BaseApiController
         $this->rateLimit('groups_create', 10, 60);
 
         $data = $this->getAllInput();
+        // Image paths only ever come from files this request uploads; a client
+        // supplied path could point at another group's file (F-094).
+        unset($data['image_url'], $data['cover_image_url']);
         $stagedImages = [];
         foreach (['avatar' => 'image_url', 'cover' => 'cover_image_url'] as $input => $field) {
             $file = request()->file($input);
@@ -201,6 +204,8 @@ class GroupsController extends BaseApiController
         }
 
         $data = $this->getAllInput();
+        // Image paths only ever come from the staged uploads below (F-094).
+        unset($data['image_url'], $data['cover_image_url']);
         $operations = [
             'avatar' => (string) ($data['avatar_action'] ?? 'keep'),
             'cover' => (string) ($data['cover_action'] ?? 'keep'),
@@ -257,7 +262,7 @@ class GroupsController extends BaseApiController
                 ? ($existing['image_url'] ?? null)
                 : ($existing['cover_image_url'] ?? null);
             if (is_string($oldUrl) && $oldUrl !== '' && ! in_array($oldUrl, $stagedImages, true)
-                && ! \App\Core\ImageUploader::deleteTenantUpload($oldUrl, 'groups')) {
+                && ! $this->deleteReplacedGroupImage($oldUrl)) {
                 \Log::warning('Group settings committed but previous image cleanup was not possible', [
                     'group_id' => $id,
                     'type' => $type,
@@ -1011,7 +1016,7 @@ class GroupsController extends BaseApiController
 
             $previousUrl = $replacement['previous_url'];
             if ($previousUrl !== null && $previousUrl !== $imageUrl
-                && ! \App\Core\ImageUploader::deleteTenantUpload($previousUrl, 'groups')) {
+                && ! $this->deleteReplacedGroupImage($previousUrl)) {
                 \Log::warning('Group image replacement committed but legacy file cleanup was not possible', [
                     'group_id' => $id,
                     'type' => $imageType,
@@ -1047,7 +1052,7 @@ class GroupsController extends BaseApiController
         }
 
         $previousUrl = $replacement['previous_url'];
-        if ($previousUrl !== null && ! \App\Core\ImageUploader::deleteTenantUpload($previousUrl, 'groups')) {
+        if ($previousUrl !== null && ! $this->deleteReplacedGroupImage($previousUrl)) {
             \Log::warning('Group image removal committed but legacy file cleanup was not possible', [
                 'group_id' => $id,
                 'type' => $imageType,
@@ -1111,6 +1116,26 @@ class GroupsController extends BaseApiController
     }
 
     /** @param list<string> $urls */
+    /**
+     * Delete a group image that a committed change replaced or removed, unless
+     * another group row (or the other slot of this group) still references the
+     * same path. Legacy rows may share a path that was once client-supplied,
+     * so unlinking it blindly would delete another group's picture (F-094).
+     */
+    private function deleteReplacedGroupImage(string $url): bool
+    {
+        $stillReferenced = \App\Models\Group::query()
+            ->where(static function ($query) use ($url): void {
+                $query->where('image_url', $url)->orWhere('cover_image_url', $url);
+            })
+            ->exists();
+        if ($stillReferenced) {
+            return true;
+        }
+
+        return \App\Core\ImageUploader::deleteTenantUpload($url, 'groups');
+    }
+
     private function cleanupStagedGroupImages(array $urls): void
     {
         foreach ($urls as $url) {

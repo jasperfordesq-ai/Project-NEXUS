@@ -129,7 +129,7 @@ class GroupDataExportService
             ],
             'export_date' => now()->toIso8601String(),
             'group' => (array) $group,
-            'members' => self::exportMembers($groupId, $tenantId),
+            'members' => self::exportMembers($groupId, $tenantId, GroupAccessService::isTenantAdmin($actorUserId)),
             'feed_posts' => self::exportRowsForGroup('feed_posts', $groupId, $tenantId),
             'discussions' => $discussions,
             'announcements' => self::exportAnnouncements($groupId, $tenantId),
@@ -189,13 +189,24 @@ class GroupDataExportService
         ];
     }
 
-    private static function exportMembers(int $groupId, int $tenantId): array
+    /**
+     * Group owners/admins get the active roster without contact details (the
+     * same fields the member list shows); tenant admins get every row + email.
+     */
+    private static function exportMembers(int $groupId, int $tenantId, bool $includeContactDetails): array
     {
-        return DB::table('group_members as gm')
+        $query = DB::table('group_members as gm')
             ->join('users as u', 'gm.user_id', '=', 'u.id')
             ->where('gm.group_id', $groupId)
-            ->where('u.tenant_id', $tenantId)
-            ->select('u.id', 'u.name', 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at')
+            ->where('u.tenant_id', $tenantId);
+        if (! $includeContactDetails) {
+            $query->where('gm.status', 'active');
+        }
+
+        return $query
+            ->select($includeContactDetails
+                ? ['u.id', 'u.name', 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at']
+                : ['u.id', 'u.name', 'gm.role', 'gm.status', 'gm.created_at as joined_at'])
             ->get()
             ->map(fn ($row) => (array) $row)
             ->toArray();

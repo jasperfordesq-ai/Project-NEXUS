@@ -39,6 +39,16 @@ final class GroupChallengeService
     /** @var list<int> Server-defined reward choices; arbitrary XP is rejected. */
     public const REWARD_BANDS = [0, 25, 50, 100];
 
+    /** Live (active, not yet ended) challenges one group may run at once. */
+    public const MAX_ACTIVE_CHALLENGES = 10;
+
+    /**
+     * Most group-challenge XP one member can receive per calendar day, across
+     * all groups. Group owners choose targets, so without a ceiling a target
+     * of 1 turns challenge creation into an XP mint.
+     */
+    public const DAILY_REWARD_XP_CAP_PER_MEMBER = 300;
+
     public const ERROR_REQUIRED = 'required';
     public const ERROR_TITLE_LENGTH = 'title_length';
     public const ERROR_DESCRIPTION_LENGTH = 'description_length';
@@ -47,6 +57,7 @@ final class GroupChallengeService
     public const ERROR_REWARD = 'reward';
     public const ERROR_DATES = 'dates';
     public const ERROR_IMMUTABLE = 'CHALLENGE_IMMUTABLE';
+    public const ERROR_ACTIVE_LIMIT = 'CHALLENGE_LIMIT_REACHED';
 
     /** @return list<array<string, mixed>> */
     public static function getActive(int $groupId): array
@@ -115,6 +126,18 @@ final class GroupChallengeService
         );
 
         $challenge = DB::transaction(static function () use ($tenantId, $groupId, $createdBy, $normalized): GroupChallenge {
+            // Serialise creations per group so concurrent requests cannot
+            // both pass the live-challenge ceiling.
+            Group::query()->whereKey($groupId)->lockForUpdate()->first();
+            $live = GroupChallenge::query()
+                ->where('group_id', $groupId)
+                ->where('status', 'active')
+                ->where('ends_at', '>', now())
+                ->count();
+            if ($live >= self::MAX_ACTIVE_CHALLENGES) {
+                throw new DomainException(self::ERROR_ACTIVE_LIMIT);
+            }
+
             $challenge = GroupChallenge::query()->create([
                 'tenant_id' => $tenantId,
                 'group_id' => $groupId,
@@ -389,9 +412,23 @@ final class GroupChallengeService
 
         $members = User::query()
             ->whereIn('id', $memberIds)
+            ->orderBy('id')
             ->get(['id', 'preferred_language']);
+        $dayStart = now()->startOfDay();
 
         foreach ($members as $member) {
+            // Lock the member row (as awardXP does) so concurrent completions
+            // in other groups cannot both pass the daily ceiling.
+            DB::table('users')->where('id', (int) $member->id)->lockForUpdate()->first();
+            $awardedToday = (int) DB::table('group_challenge_rewards')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', (int) $member->id)
+                ->where('awarded_at', '>=', $dayStart)
+                ->sum('reward_xp');
+            if ($awardedToday + $rewardXp > self::DAILY_REWARD_XP_CAP_PER_MEMBER) {
+                continue;
+            }
+
             $inserted = DB::table('group_challenge_rewards')->insertOrIgnore([
                 'tenant_id' => $tenantId,
                 'challenge_id' => (int) $challenge->id,

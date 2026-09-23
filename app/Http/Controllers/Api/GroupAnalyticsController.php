@@ -117,7 +117,7 @@ class GroupAnalyticsController extends BaseApiController
         $authCheck = $this->requireGroupAdmin($id, $userId);
         if ($authCheck) return $authCheck;
 
-        $members = GroupAnalyticsService::exportMembers($id);
+        $members = GroupAnalyticsService::exportMembers($id, GroupAccessService::isTenantAdmin($userId));
 
         return response()->streamDownload(function () use ($members) {
             $output = fopen('php://output', 'w');

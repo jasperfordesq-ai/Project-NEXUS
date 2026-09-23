@@ -95,6 +95,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Group owners and admins can no longer download members' email addresses or the names of pending and banned members from group exports; tenant admins still get the full export (F-093).
+
+- Group owners can no longer point their group at, or delete, another group's picture: image paths now come only from uploads, and a shared file is kept while any group still uses it (F-094).
+
+- Group challenges are now limited to 10 live at a time per group, and each member can earn at most 300 challenge XP per day (F-095).
+
 - Message send responses now restrict embedded sender and recipient objects to public identity fields. Text, attachment, voice, story-reply, and idempotent replay paths no longer return contact details, date of birth, precise location, login/account metadata, privacy settings, or payment-provider identifiers from the users table (F-085).
 
 - Timebank job offers can no longer create time credits from nothing: the employer must have enough credits to pay when an offer is accepted, and job credit amounts are limited to the same cap and precision as wallet transfers (F-100).

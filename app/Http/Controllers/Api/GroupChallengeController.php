@@ -85,6 +85,17 @@ final class GroupChallengeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.group_admin_required'), null, 403);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        } catch (DomainException $e) {
+            if ($e->getMessage() !== GroupChallengeService::ERROR_ACTIVE_LIMIT) {
+                throw $e;
+            }
+
+            return $this->respondWithError(
+                GroupChallengeService::ERROR_ACTIVE_LIMIT,
+                __('api.group_challenge_active_limit', ['max' => GroupChallengeService::MAX_ACTIVE_CHALLENGES]),
+                null,
+                422,
+            );
         }
 
         return $this->successResponse($challenge, 201);

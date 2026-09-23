@@ -477,17 +477,29 @@ class GroupAnalyticsService
 
     /**
      * Export group data as associative arrays for CSV generation.
+     *
+     * Any member can create a group, so a group owner/admin receives only the
+     * active roster without contact details — the same data the member list
+     * shows. Email and pending/banned rows are reserved for tenant admins.
      */
-    public static function exportMembers(int $groupId): array
+    public static function exportMembers(int $groupId, bool $includeContactDetails = false): array
     {
         $tenantId = TenantContext::getId();
+
+        $columns = $includeContactDetails
+            ? ['u.name', 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at']
+            : ['u.name', 'gm.role', 'gm.status', 'gm.created_at as joined_at'];
+        $statuses = $includeContactDetails
+            ? ['active', 'pending', 'invited', 'banned']
+            : ['active'];
 
         return DB::table('group_members as gm')
             ->join('users as u', 'gm.user_id', '=', 'u.id')
             ->join('groups as g', 'gm.group_id', '=', 'g.id')
             ->where('gm.group_id', $groupId)
             ->where('g.tenant_id', $tenantId)
-            ->select('u.name', 'u.email', 'gm.role', 'gm.status', 'gm.created_at as joined_at')
+            ->whereIn('gm.status', $statuses)
+            ->select($columns)
             ->orderBy('gm.created_at')
             ->get()
             ->map(fn ($row) => (array) $row)
