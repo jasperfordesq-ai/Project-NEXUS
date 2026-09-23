@@ -87,7 +87,7 @@ class SemanticSearchToolTest extends TestCase
             $service = new class($hiddenId, $visibleId) extends EmbeddingService {
                 public function __construct(private readonly int $hiddenId, private readonly int $visibleId) {}
 
-                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000): array
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000, ?callable $beforeProviderCall = null): array
                 {
                     return [
                         ['content_type' => 'listing', 'content_id' => $this->hiddenId, 'score' => 0.99],
@@ -171,7 +171,7 @@ class SemanticSearchToolTest extends TestCase
                     $this->ids = $ids;
                 }
 
-                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000): array
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000, ?callable $beforeProviderCall = null): array
                 {
                     return array_map(
                         static fn (int $id, int $rank): array => [
@@ -220,7 +220,7 @@ class SemanticSearchToolTest extends TestCase
             $service = new class((int) $optedOut->id, (int) $listed->id) extends EmbeddingService {
                 public function __construct(private readonly int $optedOutId, private readonly int $listedId) {}
 
-                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000): array
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000, ?callable $beforeProviderCall = null): array
                 {
                     return [
                         ['content_type' => 'user', 'content_id' => $this->optedOutId, 'score' => 0.99],

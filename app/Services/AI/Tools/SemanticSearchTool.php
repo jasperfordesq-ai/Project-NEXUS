@@ -71,6 +71,20 @@ class SemanticSearchTool extends AbstractTool
 
     public function execute(array $arguments, int $userId): array
     {
+        return $this->executeInternal($arguments, $userId);
+    }
+
+    public function executeWithAdmission(array $arguments, int $userId, callable $beforeAiProviderCall): array
+    {
+        return $this->executeInternal($arguments, $userId, $beforeAiProviderCall);
+    }
+
+    private function executeInternal(
+        array $arguments,
+        int $userId,
+        ?callable $beforeAiProviderCall = null,
+    ): array
+    {
         $tenantId = $this->tenantId();
         $query = $this->stringArg($arguments, 'query');
         $types = array_values(array_intersect(array_keys(self::TYPE_MAP), $this->arrayArg($arguments, 'types')));
@@ -81,7 +95,7 @@ class SemanticSearchTool extends AbstractTool
         }
 
         $service = $this->embeddings ?? app(EmbeddingService::class);
-        $hits = $service->semanticSearch($query, $tenantId, $types, $limit);
+        $hits = $service->semanticSearch($query, $tenantId, $types, $limit, 2000, $beforeAiProviderCall);
 
         if ($hits === []) {
             return $this->ok('No semantic matches found for "' . $query . '".', [], 'generic');

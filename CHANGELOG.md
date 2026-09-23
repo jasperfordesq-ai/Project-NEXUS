@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Connecting a Google or Facebook login to your account now needs a fresh confirmation (silently after a recent strong sign-in, otherwise your password, authenticator code or backup code), so a stolen session can't add a permanent way in (F-056).
+
+- The admin settings and system configuration screens now lock email verification and member approval for anyone but a platform super-admin and leave those settings out of their saves, so ordinary admins no longer get an error when saving other settings (F-054).
+
 - Municipal survey answers are now checked against the question's options, each member can respond once per survey, and anonymous responses can no longer be linked back to members (F-127).
 
 - The public lead sign-up form can no longer wipe or push out existing leads, and it no longer reveals whether an email is already on the list (F-131).
@@ -132,6 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Volunteer hours can now only be logged for the last 90 days, and no single day can hold more than 24 hours in total across all organisations, so hours can no longer be backdated for years to create credits (F-101, F-141).
 
 - Tenant administrator AI master and chat switches now stop both the general member assistant and job-specific AI chat before conversation persistence, context/tool preparation, or primary/fallback provider dispatch. Retained provider keys and malformed legacy switch values can no longer keep chat active after an administrator disables it (F-048).
+
+- Member AI chat now enforces each person's tenant-configured daily and monthly budget atomically across general chat, job chat, provider fallbacks, tool-loop calls and paid semantic-search embeddings. Concurrent requests cannot both consume the final slot, and a mid-conversation limit produces a visible localized assistant response instead of leaving an incomplete thread (F-044).
 
 - Becoming a buddy for another member's public goal now returns only the goal owner's and buddy's public identity fields, instead of serializing their complete account rows with contact, birth, location, login, privacy, role, and payment-provider metadata (F-097).
 

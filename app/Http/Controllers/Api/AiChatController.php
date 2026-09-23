@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
+use App\Exceptions\AiBudgetExceededException;
 use App\Models\AiConversation;
 use App\Models\AiMessage;
 use App\Models\AiUsage;
@@ -69,10 +70,21 @@ class AiChatController extends BaseApiController
                 403
             );
         }
+
+        $latestLimits = [];
+        $providerAttempts = 0;
+        $admitProviderAttempt = function () use (&$latestLimits, &$providerAttempts, $userId, $tenantId): void {
+            $latestLimits = AiUserLimit::admitRequest((int) $userId, (int) $tenantId);
+            if (!$latestLimits['allowed']) {
+                throw new AiBudgetExceededException($latestLimits);
+            }
+            $providerAttempts++;
+        };
         $this->rateLimit('ai_chat', 30, 60);
 
         $message = $this->requireInput('message');
         $conversationId = $this->input('conversation_id');
+        $createdConversation = false;
 
         // Create or find conversation
         if ($conversationId) {
@@ -91,6 +103,7 @@ class AiChatController extends BaseApiController
                 [$tenantId, $userId, mb_substr($message, 0, 100)]
             );
             $conversationId = (int) DB::getPdo()->lastInsertId();
+            $createdConversation = true;
         }
 
         // Save user message
@@ -98,6 +111,7 @@ class AiChatController extends BaseApiController
             'INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?, ?, ?, NOW())',
             [$conversationId, 'user', $message]
         );
+        $userMessageId = (int) DB::getPdo()->lastInsertId();
 
         $supportContext = $this->supportContextService->build($userId, $message);
 
@@ -143,6 +157,7 @@ TXT;
         $model = null;
         $provider = null;
         $traceError = null;
+        $budgetExhaustedMidTurn = false;
         $startedAt = microtime(true);
 
         try {
@@ -153,7 +168,7 @@ TXT;
                     'max_tokens' => 1200,
                     'tools' => $tools,
                     'tool_choice' => 'auto',
-                ]);
+                ], null, $admitProviderAttempt);
 
                 $tokensUsed += (int) ($response['tokens_used'] ?? 0);
                 $tokensIn += (int) ($response['tokens_input'] ?? 0);
@@ -177,7 +192,8 @@ TXT;
                     $result = $this->toolRegistry->execute(
                         (string) $call['name'],
                         is_array($call['arguments'] ?? null) ? $call['arguments'] : [],
-                        (int) $userId
+                        (int) $userId,
+                        $admitProviderAttempt,
                     );
                     $toolInvocations[] = [
                         'name' => $call['name'] ?? '',
@@ -205,7 +221,7 @@ TXT;
                 $response = AIServiceFactory::chatWithFallback($chatMessages, [
                     'temperature' => 0.2,
                     'max_tokens' => 1200,
-                ]);
+                ], null, $admitProviderAttempt);
                 $content = $response['content'] ?? '';
                 $tokensUsed += (int) ($response['tokens_used'] ?? 0);
                 $tokensIn += (int) ($response['tokens_input'] ?? 0);
@@ -213,6 +229,25 @@ TXT;
                 $model = $response['model'] ?? $model;
                 $provider = $response['provider'] ?? $provider;
             }
+        } catch (AiBudgetExceededException $e) {
+            if ($providerAttempts === 0) {
+                DB::table('ai_messages')->where('id', $userMessageId)->delete();
+                if ($createdConversation) {
+                    DB::table('ai_conversations')
+                        ->where('id', $conversationId)
+                        ->where('tenant_id', $tenantId)
+                        ->where('user_id', $userId)
+                        ->delete();
+                }
+                return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+            }
+
+            // A prior provider attempt may already have returned tool calls. Save
+            // a coherent assistant turn so the persisted conversation never ends
+            // with an invisible, orphaned user message.
+            $content = __('api.ai_rate_limit');
+            $traceError = (string) ($e->limits['reason'] ?? 'ai_budget_exhausted');
+            $budgetExhaustedMidTurn = true;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('AI chat provider failed', [
                 'error' => $e->getMessage(),
@@ -251,8 +286,8 @@ TXT;
             'error' => $traceError,
         ]);
 
-        return $this->respondWithData([
-            'success' => true,
+        $responseData = [
+            'success' => !$budgetExhaustedMidTurn,
             'conversation_id' => $conversationId,
             'message' => [
                 'id' => $messageId,
@@ -266,7 +301,12 @@ TXT;
             'sources' => $supportContext['sources'],
             'source_count' => $supportContext['source_count'],
             'tool_invocations' => $toolInvocations,
-        ]);
+        ];
+        if ($latestLimits !== []) {
+            $responseData['limits'] = $latestLimits;
+        }
+
+        return $this->respondWithData($responseData);
     }
 
     /** GET /api/v2/ai/chat/starters — tenant-tailored empty-state prompts */

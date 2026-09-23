@@ -75,7 +75,12 @@ class ToolRegistry
      * caught and returned as a structured `err` envelope so the model can
      * recover gracefully.
      */
-    public function execute(string $name, array $arguments, int $userId): array
+    public function execute(
+        string $name,
+        array $arguments,
+        int $userId,
+        ?callable $beforeAiProviderCall = null,
+    ): array
     {
         $tool = $this->tools[$name] ?? null;
         if (!$tool) {
@@ -97,7 +102,12 @@ class ToolRegistry
             ];
         }
         try {
+            if ($tool instanceof SemanticSearchTool && $beforeAiProviderCall !== null) {
+                return $tool->executeWithAdmission($arguments, $userId, $beforeAiProviderCall);
+            }
             return $tool->execute($arguments, $userId);
+        } catch (\App\Exceptions\AiBudgetExceededException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             Log::warning('AI tool execution failed', [
                 'tool' => $name,

@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\AiBudgetExceededException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -160,7 +161,8 @@ class EmbeddingService
         int $tenantId,
         array $contentTypes = [],
         int $limit = 10,
-        int $candidateCap = 2000
+        int $candidateCap = 2000,
+        ?callable $beforeProviderCall = null,
     ): array {
         $query = trim($query);
         if ($query === '') {
@@ -176,6 +178,9 @@ class EmbeddingService
                 return [];
             }
 
+            if ($beforeProviderCall !== null) {
+                $beforeProviderCall('openai_embeddings');
+            }
             $queryVec = $this->callOpenAiEmbedding($apiKey, $query);
             if (!is_array($queryVec) || $queryVec === []) {
                 return [];
@@ -210,6 +215,8 @@ class EmbeddingService
 
             usort($scored, fn ($a, $b) => $b['score'] <=> $a['score']);
             return array_slice($scored, 0, $limit);
+        } catch (AiBudgetExceededException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             Log::warning('EmbeddingService::semanticSearch failed: ' . $e->getMessage());
             return [];

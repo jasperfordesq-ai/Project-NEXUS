@@ -117,7 +117,12 @@ class AIServiceFactory
      * If the primary provider fails, automatically tries fallback providers.
      * Returns the response along with info about which provider was used.
      */
-    public static function chatWithFallback(array $messages, array $options = [], ?string $preferredProvider = null): array
+    public static function chatWithFallback(
+        array $messages,
+        array $options = [],
+        ?string $preferredProvider = null,
+        ?callable $beforeProviderCall = null,
+    ): array
     {
         $fallbackOrder = self::getFallbackOrder($preferredProvider ?? self::getDefaultProvider());
         $lastError = null;
@@ -129,11 +134,20 @@ class AIServiceFactory
                     continue;
                 }
 
+                // Member-chat budgets are opt-in at this shared dispatcher.
+                // Keep admission outside the provider-error catch so a quota
+                // refusal cannot be swallowed and retried against a fallback.
+                if ($beforeProviderCall !== null) {
+                    $beforeProviderCall($providerId);
+                }
+
                 $response = $provider->chat($messages, $options);
                 $response['provider'] = $providerId;
                 $response['used_fallback'] = ($providerId !== ($preferredProvider ?? self::getDefaultProvider()));
 
                 return $response;
+            } catch (\App\Exceptions\AiBudgetExceededException $e) {
+                throw $e;
             } catch (\Exception $e) {
                 $lastError = $e;
                 \Illuminate\Support\Facades\Log::warning("AI Provider $providerId failed: " . $e->getMessage());

@@ -3105,16 +3105,28 @@ class JobVacanciesController extends BaseApiController
         }
         $messages[] = ['role' => 'user', 'content' => $userMessage];
 
+        $latestLimits = [];
+        $admitProviderAttempt = function () use (&$latestLimits, $userId, $tenantId): void {
+            $latestLimits = \App\Models\AiUserLimit::admitRequest((int) $userId, (int) $tenantId);
+            if (!$latestLimits['allowed']) {
+                throw new \App\Exceptions\AiBudgetExceededException($latestLimits);
+            }
+        };
+
         try {
             $response = \App\Services\AI\AIServiceFactory::chatWithFallback(
                 $messages,
-                ['temperature' => 0.7, 'max_tokens' => 800]
+                ['temperature' => 0.7, 'max_tokens' => 800],
+                null,
+                $admitProviderAttempt,
             );
 
             return $this->respondWithData([
                 'reply' => $response['content'] ?? $response['message'] ?? '',
                 'provider' => $response['provider'] ?? 'unknown',
             ]);
+        } catch (\App\Exceptions\AiBudgetExceededException $e) {
+            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('aiJobChat failed', ['error' => $e->getMessage()]);
             return $this->respondWithError('AI_ERROR', __('api_controllers_2.job_vacancies.ai_chat_failed'), null, 500);

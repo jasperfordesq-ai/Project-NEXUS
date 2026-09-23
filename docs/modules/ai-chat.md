@@ -2,7 +2,7 @@
 
 Audience: maintainers and contributors working on the in-platform AI assistant, its provider abstraction, tool/function-calling layer, content generation, or the privacy boundary with external AI providers.
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-09-23
 
 ## Purpose
 
@@ -134,6 +134,8 @@ This is the sensitive boundary; treat changes here with care.
 ## Rate limiting & quotas
 
 - Per-endpoint throttles in the controller via `$this->rateLimit(...)`: chat `30/60s`, feedback `60/60s`, stream `20/60s` (per the controller).
+- Member chat budgets are enforced atomically for the general assistant and job-specific chat. Each actual configured provider attempt consumes one slot, including primary/fallback attempts, tool-loop and forced-final completions, and a paid semantic-search embedding dispatch. Empty semantic queries and tenants without an embedding key do not consume an embedding slot. New member rows inherit the tenant's daily/monthly defaults; reset, admission, and both counter increments happen under a row lock so concurrent requests cannot both consume the final slot.
+- A request refused before its first provider call returns `429 RATE_LIMIT` without keeping a new conversation or message. If the budget is exhausted after an earlier provider/tool attempt, the general assistant persists a localized quota assistant turn and returns `success: false`, keeping the stored thread consistent with what the member sees.
 - Content-generation endpoints additionally enforce per-user daily/monthly quotas via `AiUserLimit::canMakeRequest()` / `incrementUsage()` (limits configurable per tenant through `AIServiceFactory::getLimitsConfig()`), returning `429 RATE_LIMIT` when exceeded. Usage is logged to `AiUsage`.
 
 ## Content generation endpoints

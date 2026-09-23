@@ -138,6 +138,89 @@ class AiUserLimit extends Model
     }
 
     /**
+     * Atomically reserve one provider attempt for a member.
+     *
+     * The unique tenant/user row is created before it is locked. Resets,
+     * admission and both counter increments then happen under one row lock so
+     * concurrent requests cannot both consume the final available slot.
+     *
+     * @return array{allowed: bool, reason: string|null, daily_used: int, daily_limit: int, daily_remaining: int, monthly_used: int, monthly_limit: int, monthly_remaining: int}
+     */
+    public static function admitRequest(int $userId, int $tenantId): array
+    {
+        return DB::transaction(function () use ($userId, $tenantId): array {
+            $today = now()->toDateString();
+            $dailyDefault = max(0, (int) (AiSettings::get($tenantId, 'default_daily_limit', '50') ?? 50));
+            $monthlyDefault = max(0, (int) (AiSettings::get($tenantId, 'default_monthly_limit', '1000') ?? 1000));
+
+            DB::table('ai_user_limits')->insertOrIgnore([
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'daily_limit' => $dailyDefault,
+                'monthly_limit' => $monthlyDefault,
+                'daily_used' => 0,
+                'monthly_used' => 0,
+                'last_reset_daily' => $today,
+                'last_reset_monthly' => $today,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $row = (array) DB::table('ai_user_limits')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            $dailyUsed = (int) ($row['daily_used'] ?? 0);
+            $monthlyUsed = (int) ($row['monthly_used'] ?? 0);
+            $dailyLimit = max(0, (int) ($row['daily_limit'] ?? $dailyDefault));
+            $monthlyLimit = max(0, (int) ($row['monthly_limit'] ?? $monthlyDefault));
+            $updates = [];
+
+            if ((string) ($row['last_reset_daily'] ?? '') !== $today) {
+                $dailyUsed = 0;
+                $updates['last_reset_daily'] = $today;
+            }
+            if (substr((string) ($row['last_reset_monthly'] ?? ''), 0, 7) !== substr($today, 0, 7)) {
+                $monthlyUsed = 0;
+                $updates['last_reset_monthly'] = $today;
+            }
+
+            $reason = null;
+            if ($dailyUsed >= $dailyLimit) {
+                $reason = 'daily_limit_reached';
+            } elseif ($monthlyUsed >= $monthlyLimit) {
+                $reason = 'monthly_limit_reached';
+            }
+
+            if ($reason === null) {
+                $dailyUsed++;
+                $monthlyUsed++;
+            }
+
+            $updates['daily_used'] = $dailyUsed;
+            $updates['monthly_used'] = $monthlyUsed;
+            $updates['updated_at'] = now();
+            DB::table('ai_user_limits')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->update($updates);
+
+            return [
+                'allowed' => $reason === null,
+                'reason' => $reason,
+                'daily_used' => $dailyUsed,
+                'daily_limit' => $dailyLimit,
+                'daily_remaining' => max(0, $dailyLimit - $dailyUsed),
+                'monthly_used' => $monthlyUsed,
+                'monthly_limit' => $monthlyLimit,
+                'monthly_remaining' => max(0, $monthlyLimit - $monthlyUsed),
+            ];
+        }, 3);
+    }
+
+    /**
      * Increment usage counters for a user.
      */
     public static function incrementUsage(int $userId, int $tenantId): void
