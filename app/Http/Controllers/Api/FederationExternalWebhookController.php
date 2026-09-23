@@ -1435,17 +1435,24 @@ class FederationExternalWebhookController extends BaseApiController
             'tenant_id' => $tenantId,
         ]);
 
-        // If we have a record of this transaction, mark it as cancelled and reverse the credit
+        // If we have a record of this transaction, mark it as cancelled and reverse the credit.
+        // The state check must happen under the row lock: two valid partner deliveries may use
+        // different nonces, so webhook replay protection alone cannot serialize this business
+        // transition.
         if ($externalTxId) {
-            $tx = DB::table('federation_transactions')
-                ->where('external_transaction_id', $externalTxId)
-                ->where('external_partner_id', $partner->id)
-                ->where('receiver_tenant_id', $tenantId)
-                ->first();
+            try {
+                return DB::transaction(function () use ($externalTxId, $partner, $tenantId, $reason): array {
+                    $tx = DB::table('federation_transactions')
+                        ->where('external_transaction_id', $externalTxId)
+                        ->where('external_partner_id', $partner->id)
+                        ->where('receiver_tenant_id', $tenantId)
+                        ->lockForUpdate()
+                        ->first();
 
-            if ($tx && $tx->status === 'completed') {
-                DB::beginTransaction();
-                try {
+                    if (!$tx || $tx->status !== 'completed') {
+                        return ['status' => 'acknowledged'];
+                    }
+
                     // Reverse the credit — include tenant_id from the original transaction record
                     // AND balance >= amount guard ensures we only succeed if the user still has
                     // the credits. If 0 rows are affected the user has already spent them.
@@ -1456,16 +1463,19 @@ class FederationExternalWebhookController extends BaseApiController
 
                     if ($rowsAffected === 0) {
                         // User has already spent the credits — mark as disputed instead
-                        DB::table('federation_transactions')
+                        $transitioned = DB::table('federation_transactions')
                             ->where('id', $tx->id)
                             ->where('receiver_tenant_id', (int) $tx->receiver_tenant_id)
+                            ->where('status', 'completed')
                             ->update([
                                 'status'              => 'disputed',
                                 'cancellation_reason' => 'reversal_failed: insufficient_balance',
                                 'cancelled_at'        => now(),
                             ]);
 
-                        DB::commit();
+                        if ($transitioned !== 1) {
+                            throw new \RuntimeException('Federation transaction changed during cancellation reversal');
+                        }
 
                         Log::warning('[FederationExternalWebhook] Transaction cancellation reversal failed — user balance insufficient, flagged as disputed', [
                             'transaction_id'   => $tx->id,
@@ -1477,25 +1487,30 @@ class FederationExternalWebhookController extends BaseApiController
                         return ['status' => 'reversal_failed', 'reason' => 'User balance insufficient — transaction flagged as disputed'];
                     }
 
-                    DB::table('federation_transactions')
+                    $transitioned = DB::table('federation_transactions')
                         ->where('id', $tx->id)
                         ->where('receiver_tenant_id', (int) $tx->receiver_tenant_id)
+                        ->where('status', 'completed')
                         ->update([
                             'status'              => 'cancelled',
                             'cancelled_at'        => now(),
                             'cancellation_reason' => $reason,
                         ]);
 
-                    DB::commit();
+                    if ($transitioned !== 1) {
+                        throw new \RuntimeException('Federation transaction changed during cancellation reversal');
+                    }
+
                     return ['status' => 'cancelled'];
-                } catch (\Throwable $e) {
-                    DB::rollBack();
-                    Log::error('[FederationExternalWebhook] Failed to cancel transaction', [
-                        'error' => $e->getMessage(),
-                        'transaction_id' => $tx->id,
-                    ]);
-                    return ['status' => 'error', 'reason' => 'Failed to cancel transaction'];
-                }
+                }, 3);
+            } catch (\Throwable $e) {
+                Log::error('[FederationExternalWebhook] Failed to cancel transaction', [
+                    'error' => $e->getMessage(),
+                    'external_transaction_id' => $externalTxId,
+                    'external_partner_id' => $partner->id,
+                    'receiver_tenant_id' => $tenantId,
+                ]);
+                return ['status' => 'error', 'reason' => 'Failed to cancel transaction'];
             }
         }
 
