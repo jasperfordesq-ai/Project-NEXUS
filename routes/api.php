@@ -3477,10 +3477,11 @@ Route::post('/social/create-post', [\App\Http\Controllers\Api\SocialController::
 // high-frequency small-file uploads. Canonical path is /v2/upload (matches the
 // controller's $isV2Api contract and every frontend caller, e.g. the newsletter
 // builder's asset manager). /upload is kept as a legacy alias.
-Route::middleware('throttle:nexus-route-30-per-1m')->post('/v2/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);
-Route::middleware('throttle:nexus-route-30-per-1m')->post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);
+// Admin-only (F-091): every caller is an admin builder tool.
+Route::middleware(['throttle:nexus-route-30-per-1m', 'admin'])->post('/v2/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);
+Route::middleware(['throttle:nexus-route-30-per-1m', 'admin'])->post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);
 // Asset library — list the tenant's previously-uploaded images (newsletter builder).
-Route::middleware('throttle:nexus-route-60-per-1m')->get('/v2/upload/list', [\App\Http\Controllers\Api\UploadController::class, 'index']);
+Route::middleware(['throttle:nexus-route-60-per-1m', 'admin'])->get('/v2/upload/list', [\App\Http\Controllers\Api\UploadController::class, 'index']);
 Route::post('/push/subscribe', [\App\Http\Controllers\Api\PushController::class, 'subscribe']);
 Route::post('/push/unsubscribe', [\App\Http\Controllers\Api\PushController::class, 'unsubscribe']);
 Route::post('/push/send', [\App\Http\Controllers\Api\PushController::class, 'send']);
@@ -3673,8 +3674,10 @@ Route::get('/v2/wallet/community-fund', [\App\Http\Controllers\Api\WalletFeature
 Route::get('/v2/wallet/community-fund/transactions', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'communityFundTransactions']);
 Route::post('/v2/wallet/community-fund/deposit', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'communityFundDeposit']);
 Route::post('/v2/wallet/community-fund/withdraw', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'communityFundWithdraw']);
-Route::post('/v2/wallet/community-fund/donate', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'communityFundDonate']);
-Route::post('/v2/wallet/donate', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'donate']);
+// Donations move credits exactly like /v2/wallet/transfer, so they carry the same
+// onboarding and legal-acceptance gates (F-105).
+Route::post('/v2/wallet/community-fund/donate', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'communityFundDonate'])->middleware('onboarding-required')->middleware('legal-acceptance');
+Route::post('/v2/wallet/donate', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'donate'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::get('/v2/wallet/donations', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'donationHistory']);
 Route::get('/v2/wallet/starting-balance', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'getStartingBalance']);
 Route::put('/v2/wallet/starting-balance', [\App\Http\Controllers\Api\WalletFeaturesController::class, 'setStartingBalance']);
@@ -3914,7 +3917,8 @@ Route::get('/nexus-score', [\App\Http\Controllers\Api\GamificationController::cl
 Route::post('/nexus-score/recalculate', [\App\Http\Controllers\Api\GamificationController::class, 'apiRecalculateScores'])->middleware('feature:gamification');
 Route::get('/wallet/transactions', [\App\Http\Controllers\Api\WalletController::class, 'transactions']);
 Route::get('/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
-Route::post('/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer']);
+// Legacy alias of /v2/wallet/transfer — same gates as the canonical route (F-105).
+Route::post('/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required')->middleware('legal-acceptance');
 // Legacy route removed: /wallet/delete — use V2 DELETE /v2/wallet/transactions/{id} instead
 Route::post('/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 });

@@ -171,7 +171,7 @@ class OptionalIdentityVerificationController extends BaseApiController
             'has_id_verified_badge' => $hasIdBadge,
             'user_has_dob' => $hasDob,
             'fee_cents' => $feeCents,
-            'fee_currency' => 'eur',
+            'fee_currency' => TenantContext::getCurrency(),
             'payment_completed' => $paymentCompleted,
             'verification_status' => $latestSession ? $latestSession['status'] : null,
             'latest_session' => $latestSession ? [
@@ -282,7 +282,7 @@ class OptionalIdentityVerificationController extends BaseApiController
                 'client_secret' => $result['client_secret'],
                 'publishable_key' => (string) config('services.stripe.publishable', env('STRIPE_PUBLISHABLE_KEY', '')),
                 'fee_cents' => $feeCents,
-                'fee_currency' => 'eur',
+                'fee_currency' => TenantContext::getCurrency(),
             ]);
         } catch (\Throwable $e) {
             Log::error('Failed to create verification payment', ['user' => $userId, 'error' => $e->getMessage()]);

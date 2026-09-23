@@ -118,26 +118,31 @@ class JobFeedController extends BaseApiController
         $xml .= '  <publisherurl>' . htmlspecialchars($baseUrl) . '</publisherurl>' . "\n";
         $xml .= '  <lastBuildDate>' . now()->toRfc2822String() . '</lastBuildDate>' . "\n";
 
+        // Every value is XML-escaped rather than CDATA-wrapped: a job's own title,
+        // description, location or category containing `]]>` would otherwise end
+        // the CDATA section and inject forged <job> entries into the feed (F-076).
+        $e = fn (mixed $value): string => $this->feedService->xmlEscape((string) $value);
+
         foreach ($jobs as $job) {
             $xml .= '  <job>' . "\n";
-            $xml .= '    <title><![CDATA[' . ($job->title ?? '') . ']]></title>' . "\n";
-            $xml .= '    <date><![CDATA[' . ($job->created_at ? $job->created_at->format('D, d M Y H:i:s O') : '') . ']]></date>' . "\n";
-            $xml .= '    <referencenumber>' . $job->id . '</referencenumber>' . "\n";
-            $xml .= '    <url><![CDATA[' . $baseUrl . '/jobs/' . $job->id . ']]></url>' . "\n";
-            $xml .= '    <company><![CDATA[' . ($job->organization_name ?? 'Project NEXUS') . ']]></company>' . "\n";
-            $xml .= '    <city><![CDATA[' . ($job->location ?? '') . ']]></city>' . "\n";
-            $xml .= '    <description><![CDATA[' . substr($job->description ?? '', 0, 5000) . ']]></description>' . "\n";
+            $xml .= '    <title>' . $e($job->title ?? '') . '</title>' . "\n";
+            $xml .= '    <date>' . $e($job->created_at ? $job->created_at->format('D, d M Y H:i:s O') : '') . '</date>' . "\n";
+            $xml .= '    <referencenumber>' . (int) $job->id . '</referencenumber>' . "\n";
+            $xml .= '    <url>' . $e($baseUrl . '/jobs/' . $job->id) . '</url>' . "\n";
+            $xml .= '    <company>' . $e($job->organization_name ?? 'Project NEXUS') . '</company>' . "\n";
+            $xml .= '    <city>' . $e($job->location ?? '') . '</city>' . "\n";
+            $xml .= '    <description>' . $e(mb_substr((string) ($job->description ?? ''), 0, 5000)) . '</description>' . "\n";
 
             if ($job->salary_min) {
-                $xml .= '    <salary><![CDATA[' . number_format($job->salary_min, 0) . ' - ' . number_format($job->salary_max ?? $job->salary_min, 0) . ']]></salary>' . "\n";
+                $xml .= '    <salary>' . $e(number_format($job->salary_min, 0) . ' - ' . number_format($job->salary_max ?? $job->salary_min, 0)) . '</salary>' . "\n";
             }
 
             $typeMap = ['full_time' => 'fulltime', 'part_time' => 'parttime', 'one_off' => 'contract', 'flexible' => 'parttime'];
-            $xml .= '    <jobtype><![CDATA[' . ($typeMap[$job->commitment] ?? 'other') . ']]></jobtype>' . "\n";
-            $xml .= '    <category><![CDATA[' . ($job->category ?? 'General') . ']]></category>' . "\n";
+            $xml .= '    <jobtype>' . $e($typeMap[$job->commitment] ?? 'other') . '</jobtype>' . "\n";
+            $xml .= '    <category>' . $e($job->category ?? 'General') . '</category>' . "\n";
 
             if ($job->deadline) {
-                $xml .= '    <expirationdate><![CDATA[' . $job->deadline->format('D, d M Y') . ']]></expirationdate>' . "\n";
+                $xml .= '    <expirationdate>' . $e($job->deadline->format('D, d M Y')) . '</expirationdate>' . "\n";
             }
 
             $xml .= '  </job>' . "\n";

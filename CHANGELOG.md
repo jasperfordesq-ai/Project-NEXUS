@@ -95,6 +95,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Ratings left on an exchange can now only be seen by the people in that exchange, its assigned broker and community admins (F-103).
+
+- Members viewing the community fund no longer see who received a grant or the reason an admin gave (F-104).
+
+- Time-credit donations can no longer be sent to suspended or banned accounts, and every way of sending credits now needs the same completed setup and accepted terms (F-105).
+
+- An admin grant from the community fund to a member who doesn't exist or can't receive credits is now refused and the fund is left untouched (F-106).
+
+- A delayed 'payment failed' notice can no longer cancel an identity-check fee that was already paid, and the fee is shown in the community's own currency (F-107).
+
+- Public job feeds can no longer be altered by text inside a job post (F-076).
+
+- The image thumbnail service can no longer be used to view files from the protected vetting-documents folder (F-090).
+
+- Only community admins can upload to or browse the admin image library (F-091).
+
 - Regional super-panel administrators can no longer revoke, move, or move-and-promote peer and higher-tier accounts in their tenant subtree. These mutations now recheck both account hierarchy and regional access under database locks; bulk moves reject protected targets individually while continuing eligible lower-tier moves (F-142).
 
 - The AI assistant's event search and semantic search no longer show events from private or secret groups to members who are not in them (F-079).

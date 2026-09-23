@@ -19,9 +19,11 @@ class UploadControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    // The upload endpoint and image library are admin tools (F-091); member
+    // refusal is covered by Security\PublicSurfaceLowFindingsTest.
     private function authenticatedUser(): User
     {
-        $user = User::factory()->forTenant($this->testTenantId)->create([
+        $user = User::factory()->forTenant($this->testTenantId)->admin()->create([
             'status' => 'active',
             'is_approved' => true,
         ]);

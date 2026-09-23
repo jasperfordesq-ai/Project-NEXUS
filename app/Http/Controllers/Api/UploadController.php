@@ -28,7 +28,10 @@ class UploadController extends BaseApiController
      */
     public function store(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        // Admin-only (F-091): every caller is an admin tool (newsletter builder,
+        // page builder, blog featured image). Members upload through their own
+        // feature-specific endpoints, which validate and scope what they store.
+        $this->requireAdmin();
         $this->rateLimit('upload', 20, 60);
 
         // Validate file upload. SVG is intentionally excluded (XSS vector).
@@ -74,7 +77,8 @@ class UploadController extends BaseApiController
      */
     public function index(): JsonResponse
     {
-        $this->requireAuth();
+        // Admin-only (F-091): the library lists every image the tenant uploaded.
+        $this->requireAdmin();
         $this->rateLimit('upload_list', 60, 60);
 
         return $this->respondWithData(['images' => $this->uploadService->listImages()]);

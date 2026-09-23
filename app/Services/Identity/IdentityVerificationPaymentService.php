@@ -203,7 +203,12 @@ class IdentityVerificationPaymentService
             return;
         }
 
-        IdentityVerificationSessionService::updatePaymentStatus((int) $session['id'], 'failed');
+        // F-107: `completed` is terminal. A late failure event for an intent that
+        // already succeeded is ignored — no status change, no "payment failed" email.
+        if (!IdentityVerificationSessionService::markPaymentFailedUnlessCompleted((int) $session['id'])) {
+            Log::info("Ignoring payment_failed for already-completed verification session {$session['id']}");
+            return;
+        }
         Log::warning("Verification payment failed for session {$session['id']}");
 
         // Notify user so they can retry

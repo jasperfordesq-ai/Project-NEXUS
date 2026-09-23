@@ -84,7 +84,8 @@ class WalletFeaturesController extends BaseApiController
         $limit = $this->queryInt('limit', 20, 1, 100);
         $offset = $this->queryInt('offset', 0, 0);
 
-        $result = $this->communityFundService->getTransactions($limit, $offset);
+        // F-104: members see totals and movements; only admins see who and why.
+        $result = $this->communityFundService->getTransactions($limit, $offset, !$this->callerIsAdminTier());
 
         return $this->respondWithData($result['items'], ['total' => $result['total']]);
     }
@@ -315,7 +316,16 @@ class WalletFeaturesController extends BaseApiController
     /** GET /api/v2/wallet/exchanges/{eid}/ratings */
     public function exchangeRatings(int $eid): JsonResponse
     {
-        $this->requireAuth();
+        $userId = $this->requireAuth();
+
+        // F-103: ratings name the rater and carry their comment — parties only.
+        $canView = $this->exchangeRatingService->canViewRatings($eid, $userId, $this->callerIsAdminTier());
+        if ($canView === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.exchange_not_found'), null, 404);
+        }
+        if (!$canView) {
+            return $this->respondWithError('FORBIDDEN', __('api.access_denied'), null, 403);
+        }
 
         $ratings = $this->exchangeRatingService->getRatingsForExchange($eid);
         $hasRated = $this->exchangeRatingService->hasRated($eid, $this->getUserId());

@@ -29,6 +29,23 @@ class WalletService
      */
     private const PLATFORM_MAX_TRANSFER = 1000;
 
+    /**
+     * Account statuses that may not receive time credits. Shared by every path
+     * that moves credits to a member (transfer, member donation, community-fund
+     * grant) so the rule cannot drift between them (F-105/F-106).
+     *
+     * @var list<string>
+     */
+    public const NON_RECEIVING_STATUSES = ['banned', 'suspended', 'inactive', 'deactivated'];
+
+    /**
+     * Whether an account in $status may receive time credits.
+     */
+    public static function canReceiveCredits(?string $status): bool
+    {
+        return !in_array((string) $status, self::NON_RECEIVING_STATUSES, true);
+    }
+
     public function __construct(
         private readonly Transaction $transaction,
         private readonly User $user,
@@ -655,7 +672,7 @@ class WalletService
         }
 
         // Reject transfers to banned, suspended, or inactive accounts
-        if (in_array($receiver->status, ['banned', 'suspended', 'inactive', 'deactivated'], true)) {
+        if (!self::canReceiveCredits($receiver->status)) {
             throw new \RuntimeException(__('api.wallet_transfer_recipient_inactive'));
         }
 

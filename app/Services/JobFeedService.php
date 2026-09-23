@@ -61,7 +61,9 @@ class JobFeedService
             $xml .= '    <item>' . "\n";
             $xml .= '      <title>' . $this->xmlEscape($job->title) . '</title>' . "\n";
             $xml .= '      <link>' . $this->xmlEscape($jobUrl) . '</link>' . "\n";
-            $xml .= '      <description><![CDATA[' . ($job->description ?? '') . ']]></description>' . "\n";
+            // Escaped, not CDATA-wrapped: a `]]>` in the description would close
+            // the CDATA section and let a job post inject its own items (F-076).
+            $xml .= '      <description>' . $this->xmlEscape((string) ($job->description ?? '')) . '</description>' . "\n";
             $xml .= '      <pubDate>' . $pubDate . '</pubDate>' . "\n";
             $xml .= '      <guid isPermaLink="true">' . $this->xmlEscape($jobUrl) . '</guid>' . "\n";
 
@@ -227,9 +229,12 @@ class JobFeedService
     }
 
     /**
-     * Escape a string for XML output.
+     * Escape a string for XML text or attribute content.
+     *
+     * Use this for every member-supplied value in a feed. Do not wrap such
+     * values in CDATA: CDATA is not escaping, and `]]>` ends it (F-076).
      */
-    private function xmlEscape(string $value): string
+    public function xmlEscape(string $value): string
     {
         return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
     }

@@ -53,26 +53,49 @@ final class MediaThumbnailService
         }
 
         $path = '/' . ltrim(rawurldecode($path), '/');
-        if (str_contains($path, "\0") || str_contains($path, '..')) {
+        if (str_contains($path, "\0") || str_contains($path, '..') || str_contains($path, '\\')) {
             return null;
         }
 
-        if (str_starts_with($path, '/uploads/')) {
-            return $this->realPathInside(base_path('httpdocs/uploads'), base_path('httpdocs') . $path);
+        if ($this->isPrivateUploadPath($path)) {
+            return null;
         }
 
-        if (str_starts_with($path, '/storage/')) {
+        $resolved = null;
+        if (str_starts_with($path, '/uploads/')) {
+            $resolved = $this->realPathInside(base_path('httpdocs/uploads'), base_path('httpdocs') . $path);
+        } elseif (str_starts_with($path, '/storage/')) {
             $relative = ltrim(substr($path, strlen('/storage/')), '/');
             $storagePath = base_path('storage/app/public/' . $relative);
-            $resolved = $this->realPathInside(base_path('storage/app/public'), $storagePath);
-            if ($resolved !== null) {
-                return $resolved;
-            }
-
-            return $this->realPathInside(base_path('httpdocs/storage'), base_path('httpdocs') . $path);
+            $resolved = $this->realPathInside(base_path('storage/app/public'), $storagePath)
+                ?? $this->realPathInside(base_path('httpdocs/storage'), base_path('httpdocs') . $path);
         }
 
-        return null;
+        // Re-check the resolved file too, so a symlink or a case-insensitive
+        // filesystem cannot reach the private folder under another spelling.
+        if ($resolved === null || $this->isPrivateUploadPath(str_replace('\\', '/', $resolved))) {
+            return null;
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Folders Apache refuses to serve directly must not be reachable through
+     * the thumbnail renderer either (F-090). Criminal-record certificate
+     * evidence lives under `uploads/[tenants/{slug}/]vetting/documents`, and
+     * `httpdocs/.htaccess` denies it case-insensitively; this mirrors that for
+     * any `vetting` path segment, wherever it appears.
+     */
+    private function isPrivateUploadPath(string $path): bool
+    {
+        foreach (explode('/', $path) as $segment) {
+            if (strcasecmp($segment, 'vetting') === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function thumbnailPath(string $sourcePath, int $width, int $height, string $fit, ?string $format = null): string

@@ -375,6 +375,26 @@ class IdentityVerificationSessionService
     }
 
     /**
+     * Mark a fee payment failed unless it has already completed (F-107).
+     *
+     * Stripe does not guarantee webhook order, so a late or replayed
+     * `payment_intent.payment_failed` can arrive after `succeeded`. `completed`
+     * is terminal: the conditional UPDATE makes the transition atomic, so a
+     * failure event can never un-pay a member who has paid.
+     *
+     * @return bool true when the row moved to `failed`
+     */
+    public static function markPaymentFailedUnlessCompleted(int $sessionId): bool
+    {
+        return DB::update(
+            "UPDATE identity_verification_sessions
+             SET payment_status = 'failed', updated_at = NOW()
+             WHERE id = ? AND payment_status <> 'completed'",
+            [$sessionId]
+        ) > 0;
+    }
+
+    /**
      * Find a session by its Stripe PaymentIntent ID.
      */
     public static function findByPaymentIntentId(string $paymentIntentId): ?array

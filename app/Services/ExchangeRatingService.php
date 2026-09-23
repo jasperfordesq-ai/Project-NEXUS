@@ -124,6 +124,34 @@ class ExchangeRatingService
     }
 
     /**
+     * Who may read an exchange's ratings (F-103).
+     *
+     * Ratings carry the rater's full name and free-text comment, so they are
+     * visible only to the two parties, the broker assigned to the exchange, and
+     * tenant admins — not to every member who can guess an exchange id.
+     *
+     * @return bool|null null when the exchange does not exist in this tenant
+     */
+    public function canViewRatings(int $exchangeId, int $userId, bool $isAdmin): ?bool
+    {
+        $exchange = DB::selectOne(
+            "SELECT requester_id, provider_id, broker_id
+             FROM exchange_requests
+             WHERE id = ? AND tenant_id = ?",
+            [$exchangeId, TenantContext::getId()]
+        );
+
+        if (!$exchange) {
+            return null;
+        }
+
+        return $isAdmin
+            || $userId === (int) $exchange->requester_id
+            || $userId === (int) $exchange->provider_id
+            || ($exchange->broker_id !== null && $userId === (int) $exchange->broker_id);
+    }
+
+    /**
      * Get all ratings for a specific exchange.
      *
      * @return array<int, array>

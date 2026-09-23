@@ -163,6 +163,25 @@ class CommunityFundService
                 return ['success' => false, 'error' => __('api.insufficient_community_fund_balance')];
             }
 
+            // F-106: validate the recipient BEFORE the fund is debited, under the
+            // same transaction. The credit below is tenant-scoped, so a missing or
+            // foreign-tenant id used to credit nobody while the fund still paid out.
+            $recipient = DB::table('users')
+                ->where('id', $recipientId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first(['id', 'status']);
+
+            if (!$recipient) {
+                DB::rollBack();
+                return ['success' => false, 'error' => __('api.user_not_found')];
+            }
+
+            if (!WalletService::canReceiveCredits($recipient->status)) {
+                DB::rollBack();
+                return ['success' => false, 'error' => __('api.wallet_transfer_recipient_inactive')];
+            }
+
             $newBalance = (float) $lockedFund->balance - $amount;
 
             // Deduct from fund
@@ -172,10 +191,15 @@ class CommunityFundService
             );
 
             // Credit the recipient user
-            DB::table('users')
+            $credited = DB::table('users')
                 ->where('id', $recipientId)
                 ->where('tenant_id', $tenantId)
                 ->increment('balance', $amount);
+
+            if ($credited !== 1) {
+                DB::rollBack();
+                return ['success' => false, 'error' => __('api.withdrawal_failed')];
+            }
 
             // Log fund transaction
             DB::table('community_fund_transactions')->insert([
@@ -218,9 +242,12 @@ class CommunityFundService
      *
      * @param int $limit Max records to return
      * @param int $offset Offset for pagination
+     * @param bool $redactIdentities True for a non-admin viewer (F-104): the
+     *        ledger still shows what moved and when, but not WHO received a grant,
+     *        which admin made it, or the free-text reason (often a hardship note).
      * @return array{items: array, total: int}
      */
-    public function getTransactions(int $limit = 20, int $offset = 0): array
+    public function getTransactions(int $limit = 20, int $offset = 0, bool $redactIdentities = false): array
     {
         $tenantId = TenantContext::getId();
         $fund = self::getOrCreateFund();
@@ -253,7 +280,23 @@ class CommunityFundService
             )
             ->get();
 
-        $items = $rows->map(function ($row) {
+        $items = $rows->map(function ($row) use ($redactIdentities) {
+            if ($redactIdentities) {
+                return [
+                    'id' => (int) $row->id,
+                    'type' => $row->type,
+                    'amount' => round((float) $row->amount, 2),
+                    'balance_after' => round((float) $row->balance_after, 2),
+                    'description' => '',
+                    'user_id' => null,
+                    'user_name' => '',
+                    'user_avatar' => '',
+                    'admin_id' => null,
+                    'admin_name' => '',
+                    'created_at' => $row->created_at,
+                ];
+            }
+
             return [
                 'id' => (int) $row->id,
                 'type' => $row->type,

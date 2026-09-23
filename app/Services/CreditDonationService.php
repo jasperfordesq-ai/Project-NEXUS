@@ -51,6 +51,12 @@ class CreditDonationService
             return false;
         }
 
+        // F-105: same recipient rule as WalletService::transfer — a banned,
+        // suspended or deactivated account cannot receive credits by donation.
+        if (!WalletService::canReceiveCredits($recipient->status)) {
+            return false;
+        }
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $fromUserId,
             $toUserId,
