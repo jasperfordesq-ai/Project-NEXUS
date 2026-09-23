@@ -56,7 +56,7 @@ class AppreciationReceived
                         ->title(__('emails.appreciation.title'))
                         ->previewText(__('emails.appreciation.preview', ['sender' => $senderName]))
                         ->greeting($name !== '' ? $name : __('emails.common.fallback_name'))
-                        ->paragraph(__('emails.appreciation.body', ['sender' => $senderName]))
+                        ->paragraph(__('emails.appreciation.body', ['sender' => htmlspecialchars($senderName, ENT_QUOTES, 'UTF-8')]))
                         ->infoCard([
                             __('emails.appreciation.message_label') => $message,
                         ])

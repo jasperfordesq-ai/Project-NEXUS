@@ -81,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The profile update endpoint (`PUT /api/v2/users/me`) no longer changes a member's email address. It accepted a new address with no password, sent no confirmation to that address, and left the account marked as verified, so anyone holding a signed-in session could move the account to another mailbox and then reset its password, and a member could claim somebody else's address in a way that Google sign-in trusted. A request carrying a different address is now refused with `EMAIL_CHANGE_NOT_AVAILABLE` and nothing is saved; sending back the current address, as clients that post the whole profile do, still works. No app offered email changes through this route, so nothing members use has changed.
 
+- Text a member chooses can no longer put a working link into an email the platform sends to someone else. Display names were placed into several emails as raw HTML — the "liked your post", "commented", "replied", "shared", thank-you, declined-connection, donation and ideas emails among them — so a member who put a link in their own name could have it delivered, clickable, from the platform's own address to anyone whose post they liked. The email builder now keeps only simple formatting (bold, italics, line breaks, styled text, and links back to the community's own site) in paragraph, highlight and list text and shows any other markup as plain text, which protects every email built with it rather than only the ones already reviewed; the names in the emails above are also escaped where they are inserted.
+
 ## [2.1.0] - 2026-09-22
 
 ### Security

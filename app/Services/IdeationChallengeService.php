@@ -1576,8 +1576,8 @@ class IdeationChallengeService
                             ->title(__('emails_ideation.new_idea.title'))
                             ->previewText(__('emails_ideation.new_idea.preview', ['submitter' => $submitterName, 'challenge' => $challengeTitle]))
                             ->greeting($firstName)
-                            ->paragraph(__('emails_ideation.new_idea.body', ['submitter' => $submitterName, 'challenge' => $challengeTitle]))
-                            ->highlight($ideaTitle)
+                            ->paragraph(__('emails_ideation.new_idea.body', ['submitter' => htmlspecialchars($submitterName, ENT_QUOTES, 'UTF-8'), 'challenge' => htmlspecialchars($challengeTitle, ENT_QUOTES, 'UTF-8')]))
+                            ->highlight(htmlspecialchars($ideaTitle, ENT_QUOTES, 'UTF-8'))
                             ->button(__('emails_ideation.new_idea.cta'), $ideaUrl)
                             ->render();
 
@@ -1730,8 +1730,8 @@ class IdeationChallengeService
                             ->title(__('emails_ideation.idea_commented.title'))
                             ->previewText(__('emails_ideation.idea_commented.preview', ['commenter' => $commenterName]))
                             ->greeting($firstName)
-                            ->paragraph(__('emails_ideation.idea_commented.body', ['commenter' => $commenterName, 'title' => $ideaTitle]))
-                            ->highlight($shortComment)
+                            ->paragraph(__('emails_ideation.idea_commented.body', ['commenter' => htmlspecialchars($commenterName, ENT_QUOTES, 'UTF-8'), 'title' => htmlspecialchars($ideaTitle, ENT_QUOTES, 'UTF-8')]))
+                            ->highlight(htmlspecialchars($shortComment, ENT_QUOTES, 'UTF-8'))
                             ->button(__('emails_ideation.idea_commented.cta'), $commentUrl)
                             ->render();
 

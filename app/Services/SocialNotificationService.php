@@ -419,7 +419,7 @@ class SocialNotificationService
             $contentLabel = self::getContentLabel($contentType);
 
             $title = __('notifications.email_new_like_title', ['content_type' => ucfirst($contentLabel)]);
-            $subtitle = __('notifications.email_liked_subtitle', ['name' => $likerName, 'content_type' => $contentLabel]);
+            $subtitle = __('notifications.email_liked_subtitle', ['name' => htmlspecialchars($likerName, ENT_QUOTES, 'UTF-8'), 'content_type' => $contentLabel]);
             $body = $contentPreview ? "\"" . htmlspecialchars($contentPreview) . "\"" : __('notifications.content_getting_attention', ['content_type' => $contentLabel]);
 
             $html = \App\Core\EmailTemplateBuilder::make()
@@ -458,7 +458,7 @@ class SocialNotificationService
             $contentLabel = self::getContentLabel($contentType);
 
             $title = __('notifications.email_new_comment_title', ['content_type' => ucfirst($contentLabel)]);
-            $subtitle = __('notifications.email_commented_subtitle', ['name' => $commenterName, 'content_type' => $contentLabel]);
+            $subtitle = __('notifications.email_commented_subtitle', ['name' => htmlspecialchars($commenterName, ENT_QUOTES, 'UTF-8'), 'content_type' => $contentLabel]);
             $body = "\"" . htmlspecialchars($commentText) . "\"";
 
             $html = \App\Core\EmailTemplateBuilder::make()
@@ -498,7 +498,7 @@ class SocialNotificationService
 
             $title = __('notifications.email_new_comment_reply_title');
             $subject = __('notifications.email_new_comment_reply_subject', ['title' => $title, 'community' => $tenantName]);
-            $subtitle = __('notifications.email_replied_to_comment_subtitle', ['name' => $replierName, 'content_type' => $contentLabel]);
+            $subtitle = __('notifications.email_replied_to_comment_subtitle', ['name' => htmlspecialchars($replierName, ENT_QUOTES, 'UTF-8'), 'content_type' => $contentLabel]);
             $body = "\"" . htmlspecialchars($replyText) . "\"";
 
             $html = \App\Core\EmailTemplateBuilder::make()
@@ -535,7 +535,7 @@ class SocialNotificationService
             $contentLabel = self::getContentLabel($contentType);
 
             $title = __('notifications.email_shared_title', ['content_type' => ucfirst($contentLabel)]);
-            $subtitle = __('notifications.email_shared_subtitle', ['name' => $sharerName, 'content_type' => $contentLabel]);
+            $subtitle = __('notifications.email_shared_subtitle', ['name' => htmlspecialchars($sharerName, ENT_QUOTES, 'UTF-8'), 'content_type' => $contentLabel]);
             $body = __('notifications.content_reaching_more');
 
             $html = \App\Core\EmailTemplateBuilder::make()

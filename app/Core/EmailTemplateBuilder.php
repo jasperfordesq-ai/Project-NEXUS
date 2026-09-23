@@ -141,7 +141,11 @@ class EmailTemplateBuilder
         return $this;
     }
 
-    /** Add a paragraph of text (HTML allowed in $text) */
+    /**
+     * Add a paragraph of text. Simple formatting markup is kept (bold, italics,
+     * line breaks, styled spans, links back to the community's own site);
+     * anything else is shown as text — see sanitizeFormattedText().
+     */
     public function paragraph(string $text): self
     {
         $this->blocks[] = ['type' => 'paragraph', 'text' => $text];
@@ -171,7 +175,7 @@ class EmailTemplateBuilder
 
     /**
      * Add a bulleted list.
-     * @param string[] $items  List items (HTML allowed per item)
+     * @param string[] $items  List items (formatting markup only — see sanitizeFormattedText())
      * @param string|null $heading  Optional heading above the list
      */
     public function bulletList(array $items, ?string $heading = null): self
@@ -187,7 +191,7 @@ class EmailTemplateBuilder
         return $this;
     }
 
-    /** Add a highlighted callout box (info/warning/tip) */
+    /** Add a highlighted callout box (info/warning/tip); formatting markup only */
     public function highlight(string $text, string $icon = ''): self
     {
         $this->blocks[] = ['type' => 'highlight', 'text' => $text, 'icon' => $icon];
@@ -301,7 +305,7 @@ HTML;
 
     private function renderParagraph(array $block): string
     {
-        $text = $block['text']; // HTML allowed — caller is responsible for escaping user data
+        $text = self::sanitizeFormattedText($block['text']);
         return <<<HTML
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
@@ -413,7 +417,7 @@ HTML;
 
         $listHtml = '';
         foreach ($items as $item) {
-            $safeItem = $item; // HTML allowed — caller escapes user data
+            $safeItem = self::sanitizeFormattedText((string) $item);
             $listHtml .= <<<LI
                                                 <tr>
                                                     <td style="padding: 4px 0; vertical-align: top; width: 24px;">
@@ -465,8 +469,8 @@ HTML;
 
     private function renderHighlight(array $block, array $theme): string
     {
-        $text = $block['text']; // HTML allowed
-        $icon = $block['icon'] ?? '';
+        $text = self::sanitizeFormattedText($block['text']);
+        $icon = self::sanitizeFormattedText((string) ($block['icon'] ?? ''));
         $iconHtml = $icon ? '<span style="font-size: 20px; margin-right: 8px; vertical-align: middle;">' . $icon . '</span>' : '';
 
         return <<<HTML
@@ -705,6 +709,132 @@ HTML;
     private static function esc(string $text): string
     {
         return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+
+    /** Tags kept in paragraph, highlight and bullet-list text. */
+    private const FORMATTING_TAGS = ['strong', 'b', 'em', 'i', 'u', 'br', 'p', 'span', 'small', 'code', 'a'];
+
+    /** One well-formed start or end tag, anchored at the offset being examined. */
+    private const TAG_PATTERN = '/\G<(\/?)([a-zA-Z][a-zA-Z0-9]*)((?:\s+[a-zA-Z_:][-a-zA-Z0-9_:.]*(?:\s*=\s*(?:"[^"<>]*"|\'[^\'<>]*\'|[^\s"\'=<>`]+))?)*)\s*\/?>/';
+
+    /**
+     * Keep simple formatting markup and turn everything else into text.
+     *
+     * F-038 (E-024): paragraph(), highlight() and bulletList() used to emit
+     * their text verbatim and left escaping to each caller. Several callers
+     * passed member-chosen text — display names above all — straight in, so any
+     * member could put a working link to any site into an email the platform
+     * itself sent to another member (a like was enough). Rather than trust
+     * 275+ call sites, the builder now enforces the rule itself:
+     *
+     *  - only FORMATTING_TAGS survive, rebuilt with no attributes except a
+     *    parenthesis-free `style` and, on <a>, an href that points back to the
+     *    community's own site (the one link our own copy uses);
+     *  - every other `<` becomes `&lt;`, so a rejected tag shows as harmless
+     *    text and no markup can appear that this method did not write;
+     *  - text between tags is passed through, so callers that already escape
+     *    user data are unaffected (entities are never double-encoded).
+     *
+     * EmailTemplateBuilderFormattingTest pins both directions.
+     */
+    private static function sanitizeFormattedText(string $html): string
+    {
+        if (strpos($html, '<') === false) {
+            return $html;
+        }
+
+        $out = '';
+        $pos = 0;
+        $openLinks = 0;
+        while (($lt = strpos($html, '<', $pos)) !== false) {
+            $out .= substr($html, $pos, $lt - $pos);
+            $rebuilt = null;
+            if (preg_match(self::TAG_PATTERN, $html, $m, 0, $lt) === 1) {
+                $rebuilt = self::rebuildFormattingTag(strtolower($m[2]), $m[1] === '/', $m[3], $openLinks);
+            }
+            if ($rebuilt === null) {
+                $out .= '&lt;';
+                $pos = $lt + 1;
+                continue;
+            }
+            $out .= $rebuilt;
+            $pos = $lt + strlen($m[0]);
+        }
+
+        return $out . substr($html, $pos);
+    }
+
+    /** Rebuild an allowed tag from scratch, or return null to show it as text. */
+    private static function rebuildFormattingTag(string $tag, bool $closing, string $attributes, int &$openLinks): ?string
+    {
+        if (!in_array($tag, self::FORMATTING_TAGS, true)) {
+            return null;
+        }
+        if ($closing) {
+            if ($tag === 'br') {
+                return null;
+            }
+            if ($tag === 'a') {
+                if ($openLinks === 0) {
+                    return null;
+                }
+                $openLinks--;
+            }
+            return '</' . $tag . '>';
+        }
+        if ($tag === 'br') {
+            return '<br>';
+        }
+
+        $kept = [];
+        preg_match_all('/([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s"\'=<>`]+)))?/', $attributes, $pairs, PREG_SET_ORDER);
+        foreach ($pairs as $pair) {
+            $name = strtolower($pair[1]);
+            $value = html_entity_decode(($pair[2] ?? '') . ($pair[3] ?? '') . ($pair[4] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($name === 'style' && self::isPlainInlineStyle($value)) {
+                $kept['style'] = $value;
+            } elseif ($name === 'href' && $tag === 'a' && self::isOwnCommunityUrl($value)) {
+                $kept['href'] = $value;
+            }
+        }
+
+        if ($tag === 'a') {
+            if (!isset($kept['href'])) {
+                return null;
+            }
+            $openLinks++;
+        }
+
+        $html = '<' . $tag;
+        foreach ($kept as $name => $value) {
+            $html .= ' ' . $name . '="' . self::esc($value) . '"';
+        }
+        return $html . '>';
+    }
+
+    /** `prop: value; prop: value` with no parentheses, so no url() or expression(). */
+    private static function isPlainInlineStyle(string $style): bool
+    {
+        return (bool) preg_match('/^\s*[a-zA-Z-]+\s*:\s*[#a-zA-Z0-9 .,%\-]+(?:\s*;\s*[a-zA-Z-]+\s*:\s*[#a-zA-Z0-9 .,%\-]+)*\s*;?\s*$/', $style);
+    }
+
+    /** True for an absolute http(s) link into the current community's own site. */
+    private static function isOwnCommunityUrl(string $url): bool
+    {
+        try {
+            $base = rtrim((string) TenantContext::getFrontendUrl(), '/');
+        } catch (\Throwable $e) {
+            return false;
+        }
+        if ($base === '' || !preg_match('#^https?://[^/?\#]+$#i', $base)) {
+            return false;
+        }
+        $url = trim($url);
+        if (strcasecmp($url, $base) === 0) {
+            return true;
+        }
+        return strncasecmp($url, $base, strlen($base)) === 0
+            && in_array(substr($url, strlen($base), 1), ['/', '?', '#'], true);
     }
 
     /**

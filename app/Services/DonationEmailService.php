@@ -63,7 +63,7 @@ class DonationEmailService
                             ->previewText(__('emails.donation.sent_preview', ['amount' => $amount, 'recipient' => $recipientFullName]))
                             ->greeting($donorName)
                             ->paragraph(__('emails.donation.sent_greeting'))
-                            ->paragraph(__('emails.donation.sent_body', ['amount' => $amount, 'recipient' => $recipientFullName]))
+                            ->paragraph(__('emails.donation.sent_body', ['amount' => $amount, 'recipient' => htmlspecialchars($recipientFullName, ENT_QUOTES, 'UTF-8')]))
                             ->infoCard([
                                 __('emails.donation.sent_message_label') => $messageText,
                             ])
@@ -110,7 +110,7 @@ class DonationEmailService
                             ->previewText(__('emails.donation.received_preview', ['donor' => $donorFullName, 'amount' => $amount]))
                             ->greeting($recipientName)
                             ->paragraph(__('emails.donation.received_greeting'))
-                            ->paragraph(__('emails.donation.received_body', ['donor' => $donorFullName, 'amount' => $amount]))
+                            ->paragraph(__('emails.donation.received_body', ['donor' => htmlspecialchars($donorFullName, ENT_QUOTES, 'UTF-8'), 'amount' => $amount]))
                             ->infoCard([
                                 __('emails.donation.received_message_label') => $messageText,
                             ])
