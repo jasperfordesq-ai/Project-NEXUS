@@ -7,6 +7,8 @@
 namespace Tests\Laravel\Feature\Security;
 
 use App\Core\TenantContext;
+use App\Models\User;
+use App\Services\TokenService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -40,7 +42,11 @@ class ApiThrottleBucketKeyTest extends TestCase
     /**
      * @return array<int, Limit>
      */
-    private function limitsFor(?string $slug, string $ip = '203.0.113.10'): array
+    private function limitsFor(
+        ?string $slug,
+        string $ip = '203.0.113.10',
+        ?string $bearer = null,
+    ): array
     {
         $limiter = RateLimiter::limiter('api');
         self::assertIsCallable($limiter, 'The `api` rate limiter must be registered.');
@@ -48,6 +54,9 @@ class ApiThrottleBucketKeyTest extends TestCase
         $server = ['REMOTE_ADDR' => $ip];
         if ($slug !== null) {
             $server['HTTP_X_TENANT_SLUG'] = $slug;
+        }
+        if ($bearer !== null) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $bearer;
         }
 
         $request = Request::create('/api/v2/blog/categories', 'GET', [], [], [], $server);
@@ -133,5 +142,63 @@ class ApiThrottleBucketKeyTest extends TestCase
             array_intersect($one, $two),
             'Two different IPs share a bucket; one caller can then exhaust the ceiling for everybody.'
         );
+    }
+
+    public function test_rotating_unverified_bearer_values_cannot_mint_fresh_budgets(): void
+    {
+        $one = $this->keys($this->limitsFor(null, bearer: 'invalid-token-one'));
+        $two = $this->keys($this->limitsFor(null, bearer: 'invalid-token-two'));
+
+        self::assertSame(
+            $one,
+            $two,
+            'Unverified bearer text moves the anonymous caller to a fresh rate-limit bucket.'
+        );
+    }
+
+    public function test_verified_principal_identity_still_separates_authenticated_members(): void
+    {
+        $first = User::factory()->forTenant($this->testTenantId)->create();
+        $second = User::factory()->forTenant($this->testTenantId)->create();
+        $tokens = app(TokenService::class);
+        $firstToken = $tokens->generateToken((int) $first->id, $this->testTenantId);
+        $secondToken = $tokens->generateToken((int) $second->id, $this->testTenantId);
+
+        // The global throttle executes before auth:sanctum, so these requests
+        // deliberately have no synthetic user resolver. The limiter must verify
+        // the access token itself before using a member identity.
+        $one = $this->keys($this->limitsFor(null, bearer: $firstToken));
+        $sameUserElsewhere = $this->keys($this->limitsFor(null, ip: '198.51.100.20', bearer: $firstToken));
+        $otherUser = $this->keys($this->limitsFor(null, bearer: $secondToken));
+
+        self::assertSame($one, $sameUserElsewhere, 'A verified member bucket unexpectedly follows the IP.');
+        self::assertEmpty(array_intersect($one, $otherUser), 'Two verified members share one limiter bucket.');
+    }
+
+    public function test_malformed_expired_and_revoked_bearers_use_the_anonymous_ip_bucket(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        $tokens = app(TokenService::class);
+        $revoked = $tokens->generateToken((int) $user->id, $this->testTenantId);
+        self::assertTrue($tokens->revokeAccessToken($revoked, (int) $user->id));
+        $createToken = new \ReflectionMethod(TokenService::class, 'createToken');
+        $createToken->setAccessible(true);
+        $expired = $createToken->invoke($tokens, [
+            'user_id' => (int) $user->id,
+            'tenant_id' => $this->testTenantId,
+            'type' => 'access',
+            'access_version' => 2,
+            'jti' => bin2hex(random_bytes(16)),
+        ], -60);
+        self::assertIsString($expired);
+
+        $anonymous = $this->keys($this->limitsFor(null));
+        $malformed = $this->keys($this->limitsFor(null, bearer: 'not-a-jwt'));
+        $expiredKeys = $this->keys($this->limitsFor(null, bearer: $expired));
+        $revokedKeys = $this->keys($this->limitsFor(null, bearer: $revoked));
+
+        self::assertSame($anonymous, $malformed);
+        self::assertSame($anonymous, $expiredKeys);
+        self::assertSame($anonymous, $revokedKeys);
     }
 }

@@ -192,7 +192,7 @@ class Authenticate
     {
         try {
             $tokenService = app(TokenService::class);
-            $payload = $tokenService->validateToken($token);
+            $payload = $tokenService->validateRequestAccessToken($request, $token);
 
             if (!$payload) {
                 \Illuminate\Support\Facades\Log::debug('[Auth] Legacy token validation returned null');

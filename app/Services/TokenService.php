@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Schema;
  */
 class TokenService
 {
+    private const REQUEST_ACCESS_TOKEN_CACHE = 'verified_access_token_cache';
+
     // Uniform session policy. Caller-controlled platform headers must never
     // grant a longer-lived credential.
     private const ACCESS_TOKEN_EXPIRY = 900;                // 15 minutes
@@ -254,6 +257,35 @@ class TokenService
                 return null;
             }
         }
+
+        return $payload;
+    }
+
+    /**
+     * Validate one access token at most once for a request.
+     *
+     * The global API throttle runs before route authentication, but both need
+     * the same verified JWT decision. Cache only in server-owned request
+     * attributes and bind the cached result to the presented token fingerprint.
+     */
+    public function validateRequestAccessToken(Request $request, string $token): ?array
+    {
+        $fingerprint = hash('sha256', $token);
+        $cached = $request->attributes->get(self::REQUEST_ACCESS_TOKEN_CACHE);
+        if (
+            is_array($cached)
+            && is_string($cached['fingerprint'] ?? null)
+            && hash_equals($cached['fingerprint'], $fingerprint)
+            && array_key_exists('payload', $cached)
+        ) {
+            return is_array($cached['payload']) ? $cached['payload'] : null;
+        }
+
+        $payload = $this->validateToken($token);
+        $request->attributes->set(self::REQUEST_ACCESS_TOKEN_CACHE, [
+            'fingerprint' => $fingerprint,
+            'payload' => $payload,
+        ]);
 
         return $payload;
     }

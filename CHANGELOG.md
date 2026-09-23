@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The global API rate limit now treats a bearer credential as a member identity only after validating the current signed access token. Rotating malformed, expired or revoked bearer strings can no longer create fresh anonymous request budgets, while verified members behind one shared address retain separate per-account allowances (F-036 residual).
+
 - Mobile EAS build uploads now exclude the local signing-credentials file, so keystore passwords are no longer sent to Expo build workers with the project (F-125).
 
 - The local development stack now exposes its keyless search engine and root-login phpMyAdmin on this machine only, not the local network (F-124).

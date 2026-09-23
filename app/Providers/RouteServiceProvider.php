@@ -7,6 +7,7 @@
 namespace App\Providers;
 
 use App\Core\TenantContext;
+use App\Services\TokenService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -105,8 +106,17 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             $tenant = (string) (TenantContext::currentId() ?? 'unresolved');
             $identity = $request->user()?->id;
-            if (! $identity && $request->bearerToken()) {
-                $identity = 'token:' . hash('sha256', $request->bearerToken());
+            $bearer = $request->bearerToken();
+            if (! $identity && is_string($bearer) && $bearer !== '') {
+                try {
+                    $claims = app(TokenService::class)->validateRequestAccessToken($request, $bearer);
+                    $verifiedUserId = (int) ($claims['user_id'] ?? $claims['sub'] ?? 0);
+                    $identity = $verifiedUserId > 0 ? $verifiedUserId : null;
+                } catch (\Throwable) {
+                    // Limiting must fail closed to the anonymous bucket rather
+                    // than turning a malformed credential into a server error.
+                    $identity = null;
+                }
             }
             $key = $tenant . '|' . ($identity ?: 'ip:' . $request->ip());
 
@@ -118,15 +128,14 @@ class RouteServiceProvider extends ServiceProvider
 
         // 🔴 There is deliberately NO flat per-IP envelope here, unlike
         // routeRateLimits() below, and the reason must be read before one is
-        // added "for consistency". `web-uk`, the accessible frontend, is a
-        // server-side application: it calls this API itself and does NOT forward
-        // the visitor's address (it sends only X-Tenant-Slug and Authorization).
-        // Every accessible-frontend request for all eleven communities and all
-        // three live hostnames therefore reaches Laravel from ONE address, so a
-        // per-IP ceiling across the whole `api` group would throttle the entire
-        // accessible frontend rather than an attacker. routeRateLimits() can
-        // afford its IP-wide ceiling because it applies per endpoint tier, not
-        // across every route at once.
+        // added "for consistency". `web-uk` now forwards the visitor address in
+        // a header trusted only from its production proxy path (F-110), but other
+        // legitimate clients can still share a NAT or reverse-proxy address. A
+        // flat per-IP ceiling across the whole `api` group would let one member
+        // consume every route's allowance for those neighbours. Verified JWTs
+        // therefore retain per-account buckets; unverified bearer text never
+        // becomes an identity. routeRateLimits() can afford its IP-wide ceiling
+        // because it applies per endpoint tier, not across every route at once.
         //
         // The multiplication F-036 described is closed by keying on the resolved
         // community above: an unrecognised slug no longer mints a bucket, so the
