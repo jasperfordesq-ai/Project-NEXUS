@@ -70,31 +70,26 @@ class CoreControllerTest extends TestCase
     //  GET /members (auth required)
     // ------------------------------------------------------------------
 
-    public function test_members_requires_auth(): void
-    {
-        $response = $this->apiGet('/members');
+    // Retired (F-145): GET /members, /listings and /groups bypassed the
+    // directory, listing and group visibility rules. See
+    // tests/Laravel/Feature/Security/LegacyCoreListRoutesTest.php.
 
-        $response->assertStatus(401);
-    }
-
-    public function test_members_returns_data(): void
+    public function test_legacy_members_route_is_retired(): void
     {
         $this->authenticatedUser();
 
         $response = $this->apiGet('/members');
 
-        $response->assertStatus(200);
+        $response->assertStatus(404);
     }
 
-    // ------------------------------------------------------------------
-    //  GET /listings (auth required)
-    // ------------------------------------------------------------------
-
-    public function test_listings_requires_auth(): void
+    public function test_legacy_listings_route_is_retired(): void
     {
+        $this->authenticatedUser();
+
         $response = $this->apiGet('/listings');
 
-        $response->assertStatus(401);
+        $response->assertStatus(404);
     }
 
     // ------------------------------------------------------------------

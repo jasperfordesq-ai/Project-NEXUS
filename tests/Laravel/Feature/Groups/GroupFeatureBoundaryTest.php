@@ -44,7 +44,8 @@ final class GroupFeatureBoundaryTest extends TestCase
             fn (LaravelRoute $route): bool => $this->isEndUserGroupsSurface($route),
         ));
 
-        self::assertCount(144, $routes, 'The end-user Groups API route inventory changed.');
+        // 143 since the legacy GET /api/groups directory was retired (F-145).
+        self::assertCount(143, $routes, 'The end-user Groups API route inventory changed.');
         foreach ($routes as $route) {
             self::assertContains(
                 'feature:groups',
@@ -111,7 +112,6 @@ final class GroupFeatureBoundaryTest extends TestCase
         yield 'challenge' => ['/v2/groups/999999999/challenges'];
         yield 'chatroom child route' => ['/v2/group-chatrooms/999999999/messages'];
         yield 'course linkage' => ['/v2/groups/999999999/courses'];
-        yield 'legacy authenticated directory' => ['/groups'];
         yield 'group marketplace' => ['/v2/marketplace/groups/999999999/listings'];
     }
 
@@ -206,10 +206,6 @@ final class GroupFeatureBoundaryTest extends TestCase
     private function isEndUserGroupsSurface(LaravelRoute $route): bool
     {
         $uri = $route->uri();
-        if ($uri === 'api/groups') {
-            return true;
-        }
-
         $prefixes = [
             'api/v2/groups',
             'api/v2/group-tags',

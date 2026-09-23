@@ -6,7 +6,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\GroupStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
@@ -88,97 +87,9 @@ class CoreController extends BaseApiController
     }
 
     // ──────────────────────────────────────────────
-    // Members, Listings, Groups — converted to DB facade
+    // Notifications — converted to DB facade
+    // (legacy GET /api/members, /api/listings, /api/groups retired: F-145)
     // ──────────────────────────────────────────────
-
-    /** GET /api/members */
-    public function members(): JsonResponse
-    {
-        $this->requireAuth();
-        $this->rateLimit('members', 60, 60);
-
-        $tenantId = $this->getTenantId();
-        $searchQuery = trim($this->query('q', ''));
-        $activeOnly = $this->query('active') === 'true';
-        $limit = $this->queryInt('limit', 100, 1, 500);
-        $offset = $this->queryInt('offset', 0, 0);
-
-        $builder = DB::table('users')
-            ->select('id', 'name', 'email', 'avatar_url as avatar', 'role', 'bio', 'location', 'last_active_at')
-            ->where('tenant_id', $tenantId)
-            ->whereNotNull('avatar_url')
-            ->whereRaw('LENGTH(avatar_url) > 0');
-
-        if (!empty($searchQuery) && strlen($searchQuery) >= 2) {
-            $term = "%{$searchQuery}%";
-            $builder->where(function ($q) use ($term) {
-                $q->where('name', 'like', $term)
-                  ->orWhere('email', 'like', $term)
-                  ->orWhere('bio', 'like', $term)
-                  ->orWhere('location', 'like', $term);
-            });
-        }
-
-        if ($activeOnly) {
-            $builder->whereRaw('last_active_at > DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
-        }
-
-        $totalCount = $builder->count();
-
-        $members = $builder
-            ->orderByDesc('last_active_at')
-            ->limit($limit)
-            ->offset($offset)
-            ->get()
-            ->map(fn ($m) => (array) $m)
-            ->all();
-
-        $page = ($offset / max($limit, 1)) + 1;
-
-        return $this->respondWithPaginatedCollection($members, $totalCount, (int) $page, $limit);
-    }
-
-    /** GET /api/listings */
-    public function listings(): JsonResponse
-    {
-        $this->requireAuth();
-        $this->rateLimit('listings', 60, 60);
-
-        $listings = DB::table('listings')
-            ->select('id', 'title', 'description', 'price', 'type', 'created_at', 'image_url as image', 'user_id')
-            ->where('tenant_id', $this->getTenantId())
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(fn ($l) => (array) $l)
-            ->all();
-
-        return $this->respondWithData($listings);
-    }
-
-    /** GET /api/groups */
-    public function groups(): JsonResponse
-    {
-        $this->requireAuth();
-        $this->rateLimit('groups', 60, 60);
-
-        $groups = DB::table('groups')
-            ->select('id', 'name', 'description', 'image_url as image')
-            ->where('tenant_id', $this->getTenantId())
-            ->where('status', GroupStatus::Active->value)
-            ->get()
-            ->map(fn ($g) => (array) $g)
-            ->all();
-
-        foreach ($groups as &$g) {
-            $g['members'] = (int) DB::table('group_members')
-                ->where('group_id', $g['id'])
-                ->where('tenant_id', $this->getTenantId())
-                ->where('status', 'active')
-                ->count();
-        }
-
-        return $this->respondWithData($groups);
-    }
 
     /** GET /api/notifications */
     public function notifications(): JsonResponse

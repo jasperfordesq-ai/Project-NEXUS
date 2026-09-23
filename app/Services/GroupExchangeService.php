@@ -139,12 +139,13 @@ class GroupExchangeService
                 'u.first_name',
                 'u.last_name', 'u.profile_type', 'u.organization_name',
                 'u.avatar_url',
-                'u.email',
             ])
             ->get();
 
-        // The React detail page reads user_name / user_avatar / user_email. Keep the
-        // legacy name / avatar_url keys too so any other consumer is unaffected.
+        // The React detail page reads user_name / user_avatar. Keep the legacy
+        // name / avatar_url keys too so any other consumer is unaffected.
+        // F-146: participants' email addresses are never part of the snapshot —
+        // it is returned to the organiser and to every other participant.
         $participantList = $participants->map(function ($p) {
             $fullName = UserDisplayName::resolve($p);
 
@@ -156,7 +157,6 @@ class GroupExchangeService
                 'user_name'         => $fullName,
                 'avatar_url'        => $p->avatar_url,
                 'user_avatar'       => $p->avatar_url,
-                'user_email'        => $p->email,
                 'role'              => $p->role,
                 'hours'             => (float) $p->hours,
                 'weight'            => (float) $p->weight,

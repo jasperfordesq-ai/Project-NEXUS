@@ -23,26 +23,26 @@ This guide covers two related areas:
 
 ## Member directory
 
-The directory is a tenant-scoped member list. It is not a separate service —
-the listing lives in `CoreController` and proximity search in `UsersController`.
+The directory is a tenant-scoped member list served by `UsersController`.
 
 | Surface | Route | Handler |
 |---------|-------|---------|
-| Member list (search, paginate) | `GET /api/members` | `CoreController::members` |
+| Member directory (search, paginate) | `GET /api/v2/users` | `UsersController::index` |
 | Members near me | `GET /api/v2/members/nearby` | `UsersController::nearby` |
 | Suggested members (feed sidebar) | `GET /api/v2/members/suggested` | `FeedSidebarController::suggestedMembers` |
 | Endorsements | `GET/POST/DELETE /api/v2/members/{id}/endorse…` | `EndorsementController` |
 
-Key behaviour of `CoreController::members` (verified in
-`app/Http/Controllers/Api/CoreController.php`):
+Every member-listing surface applies the same visibility rules: the member's
+"show me in member search" choice (`MemberDirectoryVisibility`), their profile
+visibility (`MemberProfileVisibility` — connections-only profiles are listed
+only to connections and administrators), blocks in either direction, and the
+surname rule (non-administrators see a first name; organisations keep their
+name). Other members' coordinates are rounded to about 1 km.
 
-- Requires authentication and is rate limited (`members`, 60/60s).
-- Always filtered by `tenant_id` from `getTenantId()`.
-- Only returns members **with a non-empty `avatar_url`** (avatar-gated to keep
-  the directory visually populated).
-- Free-text `q` (≥ 2 chars) matches `name`, `email`, `bio`, `location`.
-- `active=true` restricts to members active in the last 5 minutes.
-- Paginated via `limit` (1–500, default 100) and `offset`.
+The legacy `GET /api/members` route (`CoreController::members`) was retired
+in September 2026 because it bypassed all of those rules and returned member
+email addresses. Its siblings `GET /api/listings` and `GET /api/groups` were
+retired at the same time; use `/api/v2/listings` and `/api/v2/groups`.
 
 The `users` Meilisearch index also powers member discovery via the search
 module; see [search.md](search.md). That index excludes `banned`/`suspended`

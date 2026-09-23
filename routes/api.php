@@ -3924,9 +3924,9 @@ Route::post('/wallet/transfer', [\App\Http\Controllers\Api\WalletController::cla
 // Legacy route removed: /wallet/delete — use V2 DELETE /v2/wallet/transactions/{id} instead
 Route::post('/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 });
-Route::get('/members', [\App\Http\Controllers\Api\CoreController::class, 'members']);
-Route::get('/listings', [\App\Http\Controllers\Api\CoreController::class, 'listings']);
-Route::get('/groups', [\App\Http\Controllers\Api\CoreController::class, 'groups'])->middleware('feature:groups');
+// Legacy GET /members, /listings and /groups removed (F-145): they bypassed the
+// directory, listing and group visibility rules (member emails, unmoderated
+// listings, private groups). Use /v2/users, /v2/listings and /v2/groups.
 // Legacy GET /messages removed — all clients use /v2/messages (MessagesController)
 Route::middleware('module:notifications')->group(function () {
 Route::get('/notifications', [\App\Http\Controllers\Api\CoreController::class, 'notifications']);
