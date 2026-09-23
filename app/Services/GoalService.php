@@ -519,35 +519,37 @@ class GoalService
      */
     public function offerBuddy(int $goalId, int $userId): ?Goal
     {
-        $goal = $this->goal->newQuery()->find($goalId);
+        return DB::transaction(function () use ($goalId, $userId): ?Goal {
+            $goal = $this->goal->newQuery()->lockForUpdate()->find($goalId);
 
-        if (! $goal || ! $goal->is_public || $goal->mentor_id !== null) {
-            return null;
-        }
+            if (! $goal || ! $goal->is_public || $goal->mentor_id !== null) {
+                return null;
+            }
 
-        if ((int) $goal->user_id === $userId) {
-            return null;
-        }
+            if ((int) $goal->user_id === $userId) {
+                return null;
+            }
 
-        app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
-            $userId,
-            (int) $goal->user_id,
-            (int) $goal->tenant_id,
-            'goal_buddy',
-        );
+            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $userId,
+                (int) $goal->user_id,
+                (int) $goal->tenant_id,
+                'goal_buddy',
+            );
 
-        $goal->mentor_id = $userId;
-        $goal->save();
-        $this->recordHistory($goal, 'buddy_joined', __('api_controllers_3.goals.history_buddy_joined'), [
-            'buddy_id' => $userId,
-        ], $userId);
+            $goal->mentor_id = $userId;
+            $goal->save();
+            $this->recordHistory($goal, 'buddy_joined', __('api_controllers_3.goals.history_buddy_joined'), [
+                'buddy_id' => $userId,
+            ], $userId);
 
-        $publicIdentity = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
+            $publicIdentity = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
 
-        return $goal->fresh([
-            "user:{$publicIdentity}",
-            "mentor:{$publicIdentity}",
-        ]);
+            return $goal->fresh([
+                "user:{$publicIdentity}",
+                "mentor:{$publicIdentity}",
+            ]);
+        });
     }
 
     /**
