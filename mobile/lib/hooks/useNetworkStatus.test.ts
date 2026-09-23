@@ -16,6 +16,7 @@ jest.mock('@react-native-community/netinfo', () => ({
 
 import NetInfo from '@react-native-community/netinfo';
 import { useNetworkStatus } from './useNetworkStatus';
+import { onReconnect } from '@/lib/network/reconnectSignal';
 
 describe('useNetworkStatus', () => {
   beforeEach(() => {
@@ -48,6 +49,21 @@ describe('useNetworkStatus', () => {
     });
 
     expect(result.current.isOnline).toBe(true);
+  });
+
+  it('announces the return from offline to online exactly once', async () => {
+    const heard = jest.fn();
+    const stop = onReconnect(heard);
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network error')) as jest.Mock;
+    const { result } = renderHook(() => useNetworkStatus());
+    await waitFor(() => expect(result.current.isOnline).toBe(false));
+    expect(heard).not.toHaveBeenCalled();
+    act(() => { netInfoListener?.({ isConnected: true, isInternetReachable: true }); });
+    await waitFor(() => expect(result.current.isOnline).toBe(true));
+    expect(heard).toHaveBeenCalledTimes(1);
+    act(() => { netInfoListener?.({ isConnected: true, isInternetReachable: true }); });
+    expect(heard).toHaveBeenCalledTimes(1);
+    stop();
   });
 
   it('marks the app offline when backend reachability fails', async () => {

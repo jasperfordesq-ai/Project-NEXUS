@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
+import { onReconnect } from '@/lib/network/reconnectSignal';
 
 import i18n from 'i18next';
 /** HTTP status codes worth retrying (transient server/network errors). */
@@ -172,6 +173,14 @@ export function useApi<T>(
   }, [...deps, refreshToken, enabled]);
 
   const refresh = useCallback(() => setRefreshToken((n) => n + 1), []);
+
+  // When connectivity returns, retry a load that failed with nothing to show. A screen that
+  // still has data keeps it (its own refresh notice offers a retry); refusals are not retried.
+  const reconnectStateRef = useRef({ enabled, failedEmpty: false });
+  reconnectStateRef.current = { enabled, failedEmpty: Boolean(error) && data === null && !isLoading && !isRefusalStatus(errorStatus) };
+  useEffect(() => onReconnect(() => {
+    if (reconnectStateRef.current.enabled && reconnectStateRef.current.failedEmpty) refresh();
+  }), [refresh]);
 
   return { data, isLoading, error, errorStatus, errorCode, refresh };
 }

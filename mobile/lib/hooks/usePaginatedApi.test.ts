@@ -19,6 +19,7 @@ jest.mock('@/lib/api/client', () => ({
 }));
 
 import { renderHook, waitFor, act } from '@testing-library/react-native';
+import { emitReconnect } from '@/lib/network/reconnectSignal';
 import { usePaginatedApi } from './usePaginatedApi';
 import { ApiResponseError } from '@/lib/api/client';
 
@@ -511,4 +512,13 @@ it.each([401, 403, 404])('clears retained rows and metadata on opted-in refusal 
   expect(result.current.hasMore).toBe(false);
   act(() => result.current.loadMore());
   expect(fetchFn).toHaveBeenCalledTimes(2);
+});
+
+it('retries a failed empty first page once connectivity returns', async () => {
+  const fetchFn = jest.fn().mockRejectedValueOnce(new ApiResponseError(422, 'Offline'))
+    .mockResolvedValue(makeResponse(['back'], null, false));
+  const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+  await waitFor(() => expect(result.current.error).toBe('Offline'));
+  await act(async () => { emitReconnect(); });
+  await waitFor(() => expect(result.current.items).toEqual(['back']));
 });

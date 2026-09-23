@@ -445,4 +445,14 @@ describe('ExchangesScreen', () => {
 
     expect(mockExchangesPush).toHaveBeenCalledWith('/(modals)/exchange-requests');
   });
+
+  it('does not claim 0 results when the first load failed', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [], isLoading: false, error: 'Network error. Please check your connection.' });
+    const failed = render(<ExchangesScreen />);
+    expect(failed.queryByText('resultsCount')).toBeNull();
+    failed.unmount();
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [], isLoading: false, error: null });
+    const empty = render(<ExchangesScreen />);
+    expect(empty.getByText('resultsCount')).toBeTruthy();
+  });
 });

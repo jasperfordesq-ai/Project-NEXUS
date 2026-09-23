@@ -389,10 +389,13 @@ function ExchangesScreen() {
           </Text>
         </View>
         <View className="flex-row items-center gap-2">
-          <Chip size="sm" variant="soft" color="success">
-            <Ionicons name="swap-horizontal-outline" size={12} color="#10B981" />
-            <Chip.Label>{isLoading ? t('resultsLoading') : t('resultsCount', { count: visibleItems.length })}</Chip.Label>
-          </Chip>
+          {/* A failed load with nothing shown has no count: "0 results" would be untrue. */}
+          {error && visibleItems.length === 0 && !isLoading ? null : (
+            <Chip size="sm" variant="soft" color="success">
+              <Ionicons name="swap-horizontal-outline" size={12} color="#10B981" />
+              <Chip.Label>{isLoading ? t('resultsLoading') : t('resultsCount', { count: visibleItems.length })}</Chip.Label>
+            </Chip>
+          )}
           {/*
             🔴 The only in-app door to the member's own exchanges. `exchange-requests`
             — the list of what you are giving and receiving, and the ONLY route to

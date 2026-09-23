@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- When the phone loses its connection and gets it back, screens in the mobile app that could not load now load again by themselves instead of waiting for you to press Retry. While a list cannot load, the Listings, Events and Search pages no longer show a false "0 results".
+
 - The Organisations page in the mobile app no longer shows "0 partners, 0 volunteers" while the list is still loading or has failed to load.
 
 - An open conversation in the mobile app now catches up when you come back to the app, so messages sent while it was in the background appear straight away instead of waiting for a pull to refresh.

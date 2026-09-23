@@ -95,7 +95,7 @@ function EventsScreen() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       {error && items.length === 0 ? (
         <View className="flex-1">
-          <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={items.length} isLoading={isLoading} />
+          <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
           <HeroCard variant="secondary" className="mx-4 my-8">
             <HeroCard.Body className="items-center gap-4">
               <Ionicons name="warning-outline" size={30} color={primary} />
@@ -133,7 +133,7 @@ function EventsScreen() {
           onEndReached={() => { if (hasMore) void loadMore(); }}
           onEndReachedThreshold={0.4}
           ListHeaderComponent={
-            <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={items.length} isLoading={isLoading} />
+            <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
           }
           ListEmptyComponent={
             isLoading ? (
@@ -198,7 +198,7 @@ function EventsHeader({
   onTabChange: (tab: EventTab) => void;
   stepFree: StepFreeSelection;
   onStepFreeChange: (value: StepFreeSelection) => void;
-  count: number;
+  count: number | null;
   isLoading: boolean;
 }) {
   return (
@@ -249,10 +249,13 @@ function EventsHeader({
               {t('filtersIntro')}
             </Text>
           </View>
-          <Chip size="sm" variant="soft" color="warning">
-            <Ionicons name="calendar-outline" size={12} color="#F59E0B" />
-            <Chip.Label>{isLoading ? t('resultsLoading') : t('resultsCount', { count })}</Chip.Label>
-          </Chip>
+          {/* null = the load failed with nothing shown; "0 results" would be untrue. */}
+          {count === null && !isLoading ? null : (
+            <Chip size="sm" variant="soft" color="warning">
+              <Ionicons name="calendar-outline" size={12} color="#F59E0B" />
+              <Chip.Label>{isLoading ? t('resultsLoading') : t('resultsCount', { count: count ?? 0 })}</Chip.Label>
+            </Chip>
+          )}
         </View>
 
         <Tabs value={when} onValueChange={(value) => onTabChange(value as EventTab)} variant="secondary">

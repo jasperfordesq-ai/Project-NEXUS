@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
+import { onReconnect } from '@/lib/network/reconnectSignal';
 import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import i18n from 'i18next';
@@ -366,6 +367,14 @@ export function usePaginatedApi<TItem, TResponse>(
     }
     void fetchPage(null, true);
   }, [enabled, fetchPage]);
+
+  // When connectivity returns, retry a first page that failed with nothing to show. Loaded
+  // rows stay as they are (their refresh notice offers a retry); refusals are not retried.
+  const reconnectStateRef = useRef({ failedEmpty: false });
+  reconnectStateRef.current = { failedEmpty: enabled && Boolean(error) && items.length === 0 && !isLoading && !isRefusalStatus(errorStatus) };
+  useEffect(() => onReconnect(() => {
+    if (reconnectStateRef.current.failedEmpty) refresh();
+  }), [refresh]);
 
   return { items, response, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh };
 }

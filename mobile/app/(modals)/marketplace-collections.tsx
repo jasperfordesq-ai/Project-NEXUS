@@ -162,9 +162,9 @@ function MarketplaceCollectionsScreen() {
         return [...current, ...response.data.filter((entry) => !seen.has(entry.listing.id))];
       });
       setItemsCursor(marketplaceHasMore(response) ? marketplaceNextCursor(response) : null);
-    } catch {
+    } catch (err) {
       if (generation !== itemsGenerationRef.current) return;
-      showToast({ title: t('common:errors.alertTitle'), description: t('collections.itemsLoadFailed'), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.itemsLoadFailed')), variant: 'danger' });
     } finally {
       if (generation === itemsGenerationRef.current) setIsLoadingMoreItems(false);
     }

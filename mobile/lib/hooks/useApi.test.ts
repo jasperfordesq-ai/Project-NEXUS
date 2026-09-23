@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { renderHook, waitFor, act } from '@testing-library/react-native';
+import { emitReconnect } from '@/lib/network/reconnectSignal';
 import { useApi } from './useApi';
 import { ApiResponseError } from '@/lib/api/client';
 
@@ -187,6 +188,24 @@ describe('useApi', () => {
     rerender({});
 
     await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(2));
+  });
+  it('retries a failed empty load once connectivity returns, but not a refusal or a loaded screen', async () => {
+    // 422 is not auto-retried by the hook itself, so the reconnect is the only trigger here.
+    const fetchFn = jest.fn().mockRejectedValueOnce(new ApiResponseError(422, 'Offline')).mockResolvedValue('fresh');
+    const { result } = renderHook(() => useApi(fetchFn, []));
+    await waitFor(() => expect(result.current.error).toBe('Offline'));
+    await act(async () => { emitReconnect(); });
+    await waitFor(() => expect(result.current.data).toBe('fresh'));
+    const calls = fetchFn.mock.calls.length;
+    await act(async () => { emitReconnect(); });
+    expect(fetchFn).toHaveBeenCalledTimes(calls);
+
+    const refused = jest.fn().mockRejectedValue(new ApiResponseError(403, 'No'));
+    const blocked = renderHook(() => useApi(refused, []));
+    await waitFor(() => expect(blocked.result.current.error).toBe('No'));
+    const refusedCalls = refused.mock.calls.length;
+    await act(async () => { emitReconnect(); });
+    expect(refused).toHaveBeenCalledTimes(refusedCalls);
   });
 });
 

@@ -377,7 +377,7 @@ function SearchContent() {
             setActiveFilter={setActiveFilter}
             filters={filters}
             filterLabel={filterLabel}
-            resultCount={results.length}
+            resultCount={error && results.length === 0 ? null : results.length}
             hasQuery={debouncedQuery.trim().length > 0}
             primary={primary}
             theme={theme}
@@ -450,7 +450,7 @@ function SearchHeader({
   setActiveFilter: (value: FilterOption) => void;
   filters: FilterOption[];
   filterLabel: (filter: FilterOption) => string;
-  resultCount: number;
+  resultCount: number | null;
   hasQuery: boolean;
   primary: string;
   theme: Theme;
@@ -486,10 +486,11 @@ function SearchHeader({
               <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>{t('subtitle')}</Text>
             </View>
           </View>
-          {hasQuery ? (
+          {/* null = the search failed with nothing shown; "0 results" would be untrue. */}
+          {hasQuery && (isLoading || resultCount !== null) ? (
             <Chip size="sm" variant="soft" color="success" className="self-start">
               <Ionicons name="sparkles-outline" size={12} color="#10B981" />
-              <Chip.Label>{isLoading ? t('searching') : t('resultsCount', { count: resultCount })}</Chip.Label>
+              <Chip.Label>{isLoading ? t('searching') : t('resultsCount', { count: resultCount ?? 0 })}</Chip.Label>
             </Chip>
           ) : null}
         </HeroCard.Body>

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { API_BASE_URL } from '@/lib/constants';
+import { emitReconnect } from '@/lib/network/reconnectSignal';
 
 /** How long to wait for the health-check ping before treating as offline (ms). */
 const PING_TIMEOUT_MS = 10_000;
@@ -140,6 +141,13 @@ export function useNetworkStatus(): NetworkStatus {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
   }, [checkConnectivity]);
+
+  // Announce offline -> online once, so screens that failed with nothing to show retry.
+  const wasOfflineRef = useRef(false);
+  useEffect(() => {
+    if (isOnline && wasOfflineRef.current) emitReconnect();
+    wasOfflineRef.current = !isOnline;
+  }, [isOnline]);
 
   return { isOnline, isChecking };
 }
