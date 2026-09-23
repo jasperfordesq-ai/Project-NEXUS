@@ -13,10 +13,12 @@ const config = getDefaultConfig(__dirname);
 // Both resolution paths must prefer ESM, or Metro includes a second core/locales.
 // Sentry core also exposes two entry points; share its ESM implementation so
 // imports and requires do not bundle duplicate instrumentation and scope code.
+// Form resolvers require react-hook-form while screens import it. Share the
+// same form implementation and context instead of embedding its CJS copy too.
 const upstreamResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   const resolve = upstreamResolveRequest ?? context.resolveRequest;
-  if (moduleName === 'zod' || moduleName.startsWith('zod/') || moduleName === '@sentry/core') {
+  if (moduleName === 'zod' || moduleName.startsWith('zod/') || moduleName === '@sentry/core' || moduleName === 'react-hook-form') {
     return resolve({
       ...context,
       isESMImport: true,

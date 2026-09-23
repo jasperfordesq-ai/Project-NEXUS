@@ -27,7 +27,7 @@ describe('Metro native build exclusions', () => {
     expect(resolveRequest).toHaveBeenCalledWith(context, '@sentry/replay', 'web');
   });
 
-  it.each(['zod', 'zod/v4/core', '@sentry/core'])('deduplicates exports and legacy entry points for %s', (name) => {
+  it.each(['zod', 'zod/v4/core', '@sentry/core', 'react-hook-form'])('deduplicates exports and legacy entry points for %s', (name) => {
     const resolveRequest = jest.fn(() => ({ type: 'sourceFile', filePath: 'index.js' }));
     const context = { resolveRequest, isESMImport: false, mainFields: ['react-native', 'main', 'module'] };
     config.resolver.resolveRequest(context, name, 'android');
