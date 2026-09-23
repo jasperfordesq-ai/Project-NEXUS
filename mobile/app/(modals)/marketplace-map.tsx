@@ -5,7 +5,7 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { type ReactNode, useRef, useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
@@ -64,6 +64,7 @@ function MarketplaceMapScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locationBlocked, setLocationBlocked] = useState(false);
   const [place, setPlace] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   // Coordinates, current location and place search all write the same results and
@@ -73,6 +74,7 @@ function MarketplaceMapScreen() {
     const generation = ++searchGenerationRef.current;
     // A superseded place search never reaches its own finally, so clear its flag here.
     setIsLocating(false);
+    setLocationBlocked(false);
     return () => generation === searchGenerationRef.current;
   }
 
@@ -120,6 +122,8 @@ function MarketplaceMapScreen() {
       if (permission.status !== 'granted') {
         setItems([]);
         setError(t('map.locationPermissionDenied'));
+        // No second system prompt after a permanent refusal (always so on iOS).
+        setLocationBlocked(permission.canAskAgain === false);
         return;
       }
 
@@ -357,7 +361,7 @@ function MarketplaceMapScreen() {
           isLoading ? (
             <View className="py-16"><LoadingSpinner /></View>
           ) : hasSearched ? (
-            <EmptyState icon="map-outline" title={error ?? t('map.emptyTitle')} subtitle={t('map.emptySubtitle')} actionLabel={t('common:buttons.retry')} onAction={() => void search()} />
+            <EmptyState icon="map-outline" title={error ?? t('map.emptyTitle')} subtitle={t('map.emptySubtitle')} actionLabel={locationBlocked ? t('notifications:permissionCard.openSettings') : t('common:buttons.retry')} onAction={() => { if (locationBlocked) void Linking.openSettings().catch(() => undefined); else void search(); }} />
           ) : (
             <EmptyState icon="location-outline" title={t('map.startTitle')} subtitle={t('map.startSubtitle')} />
           )

@@ -12,6 +12,17 @@ const mockUseFocusEffect = jest.fn();
 // --- Mocks ---
 
 const mockExchangesPush = jest.fn();
+// The distance slider's gesture layer cannot render under jest.
+jest.mock('heroui-native', () => {
+  const actual = jest.requireActual('heroui-native');
+  const { View } = require('react-native');
+  const Slider = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
+  Slider.Track = ({ children }: { children: React.ReactNode }) => <View>{children}</View>;
+  Slider.Fill = () => <View />;
+  Slider.Thumb = () => <View />;
+  return { ...actual, Slider };
+});
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useSegments: () => ['(tabs)'],
@@ -291,6 +302,24 @@ describe('ExchangesScreen', () => {
       near_lng: '-6.2603',
       radius_km: '25',
     }));
+  });
+
+  it.each([
+    [false, true],
+    [true, false],
+  ])('offers phone settings after a location refusal only when the phone will not ask again (canAskAgain %s)', async (canAskAgain, offersSettings) => {
+    const openSettings = jest.spyOn(require('react-native').Linking, 'openSettings').mockResolvedValue(undefined);
+    jest.mocked(Location.requestForegroundPermissionsAsync).mockResolvedValueOnce({ status: 'denied', canAskAgain } as never);
+    const { getByText, findByText, queryByText } = render(<ExchangesScreen />);
+    fireEvent.press(getByText('nearMe'));
+    await findByText('locationPermissionDenied');
+    if (offersSettings) {
+      fireEvent.press(getByText('notifications:permissionCard.openSettings'));
+      expect(openSettings).toHaveBeenCalledTimes(1);
+    } else {
+      expect(queryByText('notifications:permissionCard.openSettings')).toBeNull();
+    }
+    openSettings.mockRestore();
   });
 
   /**

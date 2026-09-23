@@ -295,4 +295,16 @@ describe('MarketplaceMapRoute', () => {
 
     unmount();
   });
+
+  it('offers phone settings when location was refused and the phone will not ask again', async () => {
+    const openSettings = jest.spyOn(require('react-native').Linking, 'openSettings').mockResolvedValue(undefined);
+    jest.mocked(Location.requestForegroundPermissionsAsync).mockResolvedValueOnce({ status: 'denied', canAskAgain: false } as never);
+    const { getByText, findByText, unmount } = render(<MarketplaceMapRoute />);
+    fireEvent.press(getByText('Use current location'));
+    await findByText('map.locationPermissionDenied');
+    fireEvent.press(getByText('notifications:permissionCard.openSettings'));
+    expect(openSettings).toHaveBeenCalledTimes(1);
+    openSettings.mockRestore();
+    unmount();
+  });
 });

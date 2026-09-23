@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- In the mobile app, if location access has been refused for good (always the case on an iPhone after one refusal), the Listings "Near me" filter and the nearby marketplace map now offer an "Open settings" button, so the member can turn location back on. Before, they only saw a message with no way forward.
+
 - On an iPhone, the event Team screen (access expiry) and the event Safety screen (review end date) now keep the date shown on the picker when the organiser taps Done without scrolling it. Before, nothing was saved in that case, although a date was on screen.
 
 - In the mobile app, adding a photo (profile picture, group media, marketplace listings and shop profile, onboarding, podcasts and message attachments) now opens the phone's photo picker straight away. The app used to ask for access to the whole photo library first; on an iPhone, anyone who once said no could never add a photo again, because the question is never asked a second time.

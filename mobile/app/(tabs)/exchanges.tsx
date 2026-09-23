@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { FlatList, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { FlatList, Linking, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -127,6 +127,9 @@ function ExchangesScreen() {
   const [radiusDraftKm, setRadiusDraftKm] = useState(DEFAULT_RADIUS_KM);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  // The phone will not ask again after a permanent refusal (always so on iOS), so
+  // the only way back is the app's page in the phone settings.
+  const [locationBlocked, setLocationBlocked] = useState(false);
   const [savedOverrides, setSavedOverrides] = useState<Record<number, boolean>>({});
   const debouncedSearch = useDebounce(search, 400);
 
@@ -279,15 +282,18 @@ function ExchangesScreen() {
     if (nearMeCoordinates) {
       setNearMeCoordinates(null);
       setLocationError(null);
+      setLocationBlocked(false);
       return;
     }
 
     setIsLocating(true);
     setLocationError(null);
+    setLocationBlocked(false);
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
       if (permission.status !== 'granted') {
         setLocationError(t('locationPermissionDenied'));
+        setLocationBlocked(permission.canAskAgain === false);
         return;
       }
 
@@ -483,6 +489,7 @@ function ExchangesScreen() {
           radiusKm={radiusDraftKm}
           appliedRadiusKm={radiusKm}
           locationError={locationError}
+          onOpenSettings={locationBlocked ? () => { void Linking.openSettings().catch(() => undefined); } : undefined}
           onRadiusPreviewChange={handleRadiusPreviewChange}
           onRadiusCommitChange={handleRadiusCommitChange}
           onPresetPress={handleRadiusPresetPress}
@@ -730,6 +737,7 @@ function NearMeFilter({
   radiusKm,
   appliedRadiusKm,
   locationError,
+  onOpenSettings,
   onRadiusPreviewChange,
   onRadiusCommitChange,
   onPresetPress,
@@ -740,6 +748,7 @@ function NearMeFilter({
   radiusKm: number;
   appliedRadiusKm: number;
   locationError: string | null;
+  onOpenSettings?: () => void;
   onRadiusPreviewChange: (value: number | number[]) => void;
   onRadiusCommitChange: (value: number | number[]) => void;
   onPresetPress: (value: number) => void;
@@ -799,6 +808,11 @@ function NearMeFilter({
         <Text className="text-xs font-medium leading-4 text-danger">
           {locationError}
         </Text>
+      ) : null}
+      {locationError && onOpenSettings ? (
+        <HeroButton size="sm" variant="secondary" onPress={onOpenSettings}>
+          <HeroButton.Label>{t('notifications:permissionCard.openSettings')}</HeroButton.Label>
+        </HeroButton>
       ) : null}
     </Surface>
   );
