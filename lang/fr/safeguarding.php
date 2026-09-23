@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Nous ne pouvions pas révoquer cette préférence. Il se peut qu\'il ait déjà été révoqué.',
         'policy_unavailable' => 'Nous ne pouvons pas confirmer la politique de sauvegarde de la communauté pour le moment. Aucun message n\'a été envoyé. Veuillez réessayer sous peu.',
         'interaction_not_allowed' => 'La politique de sauvegarde de la communauté du destinataire ne permet pas cette interaction directe. Demandez de l’aide à un coordinateur.',
+        'blocked_interaction' => 'Vous ne pouvez pas interagir avec ce membre.',
         'policy_unavailable_title' => 'Chèque de sauvegarde temporairement indisponible',
         'policy_unavailable_detail' => 'Le projet NEXUS n\'a pas pu évaluer en toute sécurité la politique de contact, cette interaction a donc été suspendue.',
         'policy_unavailable_action' => 'Revérifier',

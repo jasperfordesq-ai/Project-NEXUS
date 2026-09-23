@@ -419,6 +419,9 @@ class ReviewService
             }
         }
 
+        // F-070: a block in either direction stops reviews between the pair.
+        BlockUserService::assertNoBlockBetween($reviewerId, $receiverId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $reviewerId,
             $receiverId,

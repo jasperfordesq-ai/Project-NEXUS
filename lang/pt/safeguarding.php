@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Não poderíamos revogar essa preferência. Pode já ter sido revogado.',
         'policy_unavailable' => 'Não podemos confirmar a política de salvaguarda da comunidade neste momento. Nenhuma mensagem foi enviada. Por favor, tente novamente em breve.',
         'interaction_not_allowed' => 'A política de salvaguarda da comunidade do destinatário não permite esta interação direta. Peça ajuda a um coordenador.',
+        'blocked_interaction' => 'Não pode interagir com este membro.',
         'policy_unavailable_title' => 'Verificação de proteção temporariamente indisponível',
         'policy_unavailable_detail' => 'O Projeto NEXUS não conseguiu avaliar com segurança a política de contato, portanto esta interação foi pausada.',
         'policy_unavailable_action' => 'Verifique novamente',

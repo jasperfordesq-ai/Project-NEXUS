@@ -103,6 +103,13 @@ class MentionService
     ): void {
         $tenantId = TenantContext::getId();
 
+        // F-070: silently drop mentions of members who have a block with the
+        // mentioner (either direction). The content itself is still saved.
+        $mentionedUserIds = array_values(BlockUserService::withoutBlockedPairs($mentionerId, $mentionedUserIds));
+        if ($mentionedUserIds === []) {
+            return;
+        }
+
         // Get mentioner's name for notification message
         $mentioner = DB::table('users')
             ->where('id', $mentionerId)
@@ -312,6 +319,13 @@ class MentionService
         if ($currentUserId > 0) {
             $sql .= " AND u.id != ?";
             $bindings[] = $currentUserId;
+
+            // F-070: exclude members who have a block with the searcher, in
+            // either direction, as this docblock has always promised. Same
+            // tenant-scoped two-way rule as BlockUserService::getBlockedPairIds.
+            $sql .= " AND u.id NOT IN (SELECT ub.blocked_user_id FROM user_blocks ub WHERE ub.tenant_id = ? AND ub.user_id = ?)
+                  AND u.id NOT IN (SELECT ub2.user_id FROM user_blocks ub2 WHERE ub2.tenant_id = ? AND ub2.blocked_user_id = ?)";
+            array_push($bindings, $tenantId, $currentUserId, $tenantId, $currentUserId);
         }
 
         // Order: connections first, then alphabetical

@@ -58,6 +58,9 @@ class EndorsementService
             return null;
         }
 
+        // F-070: a block in either direction stops skill endorsements.
+        BlockUserService::assertNoBlockBetween($endorserId, $endorsedId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $endorserId,
             $endorsedId,

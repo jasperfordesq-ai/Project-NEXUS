@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Wir konnten diese Präferenz nicht widerrufen. Möglicherweise wurde es bereits widerrufen.',
         'policy_unavailable' => 'Wir können die Community-Schutzrichtlinie derzeit nicht bestätigen. Es wurde keine Nachricht gesendet. Bitte versuchen Sie es in Kürze noch einmal.',
         'interaction_not_allowed' => 'Die Community-Schutzrichtlinie des Empfängers lässt diese direkte Interaktion nicht zu. Bitten Sie einen Koordinator um Hilfe.',
+        'blocked_interaction' => 'Sie können mit diesem Mitglied nicht interagieren.',
         'policy_unavailable_title' => 'Sicherungsscheck vorübergehend nicht verfügbar',
         'policy_unavailable_detail' => 'Project NEXUS konnte die Kontaktrichtlinie nicht sicher bewerten, daher wurde diese Interaktion pausiert.',
         'policy_unavailable_action' => 'Überprüfen Sie es noch einmal',

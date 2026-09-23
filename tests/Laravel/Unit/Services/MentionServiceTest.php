@@ -8,6 +8,7 @@ namespace Tests\Laravel\Unit\Services;
 
 use App\Services\MentionService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Mockery;
 use Tests\Laravel\TestCase;
 
@@ -285,6 +286,10 @@ class MentionServiceTest extends TestCase
 
     public function test_processText_returns_count_of_created_mentions(): void
     {
+        // createMentions runs a two-way block lookup (F-070). Mock Schema before
+        // DB so resolving the Schema facade still sees the real connection.
+        Schema::shouldReceive('hasColumn')->with('user_blocks', 'tenant_id')->twice()->andReturn(true);
+
         // resolveMentions: returns two matched users
         DB::shouldReceive('table->where->where->whereNull->where->select->get')
             ->once()
@@ -292,6 +297,13 @@ class MentionServiceTest extends TestCase
                 (object) ['id' => 10, 'username' => 'alice', 'first_name' => 'Alice', 'name' => 'Alice', 'last_name' => 'Smith'],
                 (object) ['id' => 20, 'username' => 'bob', 'first_name' => 'Bob', 'name' => 'Bob', 'last_name' => 'Jones'],
             ]));
+
+        // createMentions: two-way block lookup (blocked-by-me, blocked-me) — no blocks.
+        // Mockery shares demeter nodes, so the where(tenant)->where(user) calls
+        // resolve onto this chain.
+        DB::shouldReceive('table->where->pluck->all')
+            ->twice()
+            ->andReturn([]);
 
         // createMentions: lookup mentioner name
         DB::shouldReceive('table->where->where->select->first')

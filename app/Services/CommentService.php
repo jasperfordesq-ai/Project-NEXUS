@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\Comment;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\BlockUserService;
 use App\Services\MentionService;
 use App\Support\FeedItemTables;
 use Illuminate\Support\Facades\DB;
@@ -668,18 +669,27 @@ class CommentService
 
     /**
      * Search users for @mention autocomplete.
+     *
+     * When $currentUserId is given, members who have a block with the
+     * searcher (either direction) are excluded (F-070).
      */
-    public static function searchUsersForMention(string $query, int $tenantId, int $limit = 10): array
+    public static function searchUsersForMention(string $query, int $tenantId, int $limit = 10, int $currentUserId = 0): array
     {
         $searchTerm = '%' . $query . '%';
+        $blockedIds = $currentUserId > 0 ? BlockUserService::getBlockedPairIds($currentUserId) : [];
 
-        return DB::table('users')
+        $query = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', $searchTerm)
                   ->orWhere('first_name', 'LIKE', $searchTerm)
                   ->orWhere('username', 'LIKE', $searchTerm);
-            })
+            });
+        if ($blockedIds !== []) {
+            $query->whereNotIn('id', $blockedIds);
+        }
+
+        return $query
             ->select(['id', 'name', 'first_name', 'username', 'avatar_url'])
             ->limit($limit)
             ->get()
@@ -787,11 +797,16 @@ class CommentService
             self::throwPolicyUnavailable($tenantId, $channel, 'tenant_context_mismatch');
         }
 
+        $directRecipientIds = [];
         try {
-            $recipientIds = $mentionedUserIds;
+            // F-070: a mention of a member who has a block with the author is
+            // silently dropped (see MentionService::createMentions/saveMentions),
+            // so it is not directed contact and must not refuse the comment.
+            $recipientIds = array_values(BlockUserService::withoutBlockedPairs($senderId, $mentionedUserIds));
             $ownerId = self::resolveContentOwnerId($targetType, $targetId, $tenantId);
             if ($ownerId !== null) {
                 $recipientIds[] = $ownerId;
+                $directRecipientIds[] = (int) $ownerId;
             }
 
             if ($parentId !== null) {
@@ -801,10 +816,18 @@ class CommentService
                     ->value('user_id');
                 if ($parentAuthorId !== null) {
                     $recipientIds[] = (int) $parentAuthorId;
+                    $directRecipientIds[] = (int) $parentAuthorId;
                 }
             }
         } catch (\Throwable $e) {
             self::throwPolicyUnavailable($tenantId, $channel, 'comment_recipient_lookup_failed', $e);
+        }
+
+        // F-070: a block in either direction stops commenting on, or replying
+        // to, the other member's content. Checked before the safeguarding
+        // policy so a blocked member learns nothing about its settings.
+        foreach (array_unique($directRecipientIds) as $directRecipientId) {
+            BlockUserService::assertNoBlockBetween($senderId, $directRecipientId);
         }
 
         $recipientIds = array_values(array_unique(array_filter(
@@ -895,6 +918,9 @@ class CommentService
         if ((int) $ownerId === $senderId) {
             return;
         }
+
+        // F-070: no reacting to the comment of a member you have a block with.
+        BlockUserService::assertNoBlockBetween($senderId, (int) $ownerId);
 
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,
@@ -1049,6 +1075,8 @@ class CommentService
             ->first();
 
         $resolvedUsers ??= self::resolveLegacyMentionUsers($usernames, $tenantId);
+        // F-070: silently drop mentions of members who have a block with the author.
+        $resolvedUsers = BlockUserService::withoutBlockedPairs($mentioningUserId, $resolvedUsers);
         foreach (array_values(array_unique($resolvedUsers)) as $mentionedUserId) {
             $mentionedUserId = (int) $mentionedUserId;
             // Strict-only matching to prevent a privacy/spam regression where

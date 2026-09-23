@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'その優先順位を取り消すことはできませんでした。すでに取り消されている可能性があります。',
         'policy_unavailable' => '現時点ではコミュニティ保護ポリシーを確認できません。メッセージは送信されていません。しばらくしてからもう一度お試しください。',
         'interaction_not_allowed' => '受信者のコミュニティ保護ポリシーでは、このような直接的なやり取りは許可されていません。コーディネーターに助けを求めてください。',
+        'blocked_interaction' => 'このメンバーとはやり取りできません。',
         'policy_unavailable_title' => '保護チェックは一時的に利用できません',
         'policy_unavailable_detail' => 'Project NEXUS は連絡ポリシーを安全に評価できなかったため、このやり取りは一時停止されました。',
         'policy_unavailable_action' => 'もう一度確認してください',

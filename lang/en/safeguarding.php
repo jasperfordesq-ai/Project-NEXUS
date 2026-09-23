@@ -18,6 +18,7 @@ return [
         'coordination_request_failed' => 'We could not send your request to the coordinator just now. Please try again shortly.',
         'vetting_check_failed' => 'We could not verify your vetting status just now. Please try again shortly.',
         'policy_unavailable' => 'We cannot confirm the community safeguarding policy right now. No message has been sent. Please try again shortly.',
+        'blocked_interaction' => 'You cannot interact with this member.',
         'interaction_not_allowed' => 'The recipient’s community safeguarding policy does not allow this direct interaction. Ask a coordinator for help.',
         'policy_unavailable_title' => 'Safeguarding check temporarily unavailable',
         'policy_unavailable_detail' => 'Project NEXUS could not safely evaluate the contact policy, so this interaction has been paused.',

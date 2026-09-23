@@ -164,6 +164,9 @@ class ReactionService
             return;
         }
 
+        // F-070: no reacting to the content of a member you have a block with.
+        BlockUserService::assertNoBlockBetween($senderId, $ownerId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,
             $ownerId,

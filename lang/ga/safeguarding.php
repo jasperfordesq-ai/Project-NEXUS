@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Níorbh fhéidir an rogha sin a chúlghairm. B’fhéidir go raibh sí cúlghairthe cheana.',
         'policy_unavailable' => 'Ní féidir linn an polasaí cosanta pobail a dhearbhú faoi láthair. Níor seoladh aon teachtaireacht. Bain triail eile as gan mhoill.',
         'interaction_not_allowed' => 'Ní cheadaíonn beartas cosanta pobail an fhaighteora an t-idirghníomhú díreach seo. Iarr cabhair ar chomhordaitheoir.',
+        'blocked_interaction' => 'Ní féidir leat idirghníomhú leis an mball seo.',
         'policy_unavailable_title' => 'Níl seiceáil cosanta ar fáil go sealadach',
         'policy_unavailable_detail' => 'Níorbh fhéidir le Tionscadal NEXUS an beartas teagmhála a mheas go sábháilte, mar sin cuireadh an t-idirghníomhú seo ar sos.',
         'policy_unavailable_action' => 'Seiceáil arís',

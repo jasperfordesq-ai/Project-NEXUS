@@ -11,6 +11,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Models\Social\Appreciation;
 use App\Models\Social\AppreciationReaction;
+use App\Services\BlockUserService;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,9 @@ class AppreciationService
         if ($receiverTenantId === null || (int) $receiverTenantId !== $tenantId) {
             throw new \DomainException('receiver_not_found');
         }
+
+        // F-070: a block in either direction stops appreciations (thank-yous).
+        BlockUserService::assertNoBlockBetween($senderId, $receiverId);
 
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,

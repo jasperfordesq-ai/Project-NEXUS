@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Blocking a member now also stops them commenting on or reacting to your content, replying to your comments, @mentioning you, finding you in mention search, reviewing you, endorsing your skills or sending you appreciations, in either direction (F-070).
+
 - Story highlights can now only contain your own stories, and a highlight shows each story only to people its audience allows, so close-friends and connections-only stories can no longer be read through someone else's highlight (F-067).
 
 - Volunteer hours can now only be logged for the last 90 days, and no single day can hold more than 24 hours in total across all organisations, so hours can no longer be backdated for years to create credits (F-101, F-141).

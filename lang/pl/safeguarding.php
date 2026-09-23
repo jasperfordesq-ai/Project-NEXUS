@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Nie mogliśmy odwołać tej preferencji. Być może zostało już cofnięte.',
         'policy_unavailable' => 'Nie możemy teraz potwierdzić polityki ochrony społeczności. Żadna wiadomość nie została wysłana. Spróbuj ponownie wkrótce.',
         'interaction_not_allowed' => 'Polityka ochrony społeczności odbiorcy nie pozwala na tę bezpośrednią interakcję. Poproś koordynatora o pomoc.',
+        'blocked_interaction' => 'Nie możesz wchodzić w interakcje z tym członkiem.',
         'policy_unavailable_title' => 'Kontrola zabezpieczająca chwilowo niedostępna',
         'policy_unavailable_detail' => 'Projekt NEXUS nie mógł bezpiecznie ocenić zasad kontaktu, więc ta interakcja została wstrzymana.',
         'policy_unavailable_action' => 'Sprawdź ponownie',

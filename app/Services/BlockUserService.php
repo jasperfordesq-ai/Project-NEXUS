@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Exceptions\SafeguardingPolicyException;
 use App\Models\BlockedUser;
 use App\Models\Connection;
 use Illuminate\Database\Eloquent\Builder;
@@ -116,6 +117,54 @@ class BlockUserService
                 });
             })
             ->exists();
+    }
+
+    /**
+     * Refuse a member-to-member interaction (a comment on their content, a
+     * reply, a reaction, a review, an endorsement, an appreciation) when
+     * either member has blocked the other.
+     *
+     * The error is deliberately direction-neutral, like messaging's BLOCKED
+     * response, so the actor cannot tell whether they were blocked or are the
+     * blocker. Callers run this BEFORE the safeguarding contact policy so a
+     * blocked member cannot probe the other member's safeguarding settings.
+     *
+     * @throws SafeguardingPolicyException with reason code BLOCKED
+     */
+    public static function assertNoBlockBetween(int $actorId, int $otherUserId): void
+    {
+        if ($actorId <= 0 || $otherUserId <= 0 || $actorId === $otherUserId) {
+            return;
+        }
+
+        if (self::isBlockedEither($actorId, $otherUserId)) {
+            throw new SafeguardingPolicyException('BLOCKED', __('safeguarding.errors.blocked_interaction'));
+        }
+    }
+
+    /**
+     * Drop every user that has a block (either direction) with $userId.
+     * Keys are preserved so username => id maps survive the filter.
+     *
+     * @template TKey of array-key
+     * @param array<TKey, int|string> $userIds
+     * @return array<TKey, int|string>
+     */
+    public static function withoutBlockedPairs(int $userId, array $userIds): array
+    {
+        if ($userId <= 0 || $userIds === []) {
+            return $userIds;
+        }
+
+        $blocked = array_map('intval', self::getBlockedPairIds($userId));
+        if ($blocked === []) {
+            return $userIds;
+        }
+
+        return array_filter(
+            $userIds,
+            static fn (int|string $id): bool => ! in_array((int) $id, $blocked, true),
+        );
     }
 
     /**

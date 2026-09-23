@@ -27,6 +27,7 @@ return [
         'revoke_failed' => 'Wij konden die voorkeur niet intrekken. Mogelijk is deze al ingetrokken.',
         'policy_unavailable' => 'We kunnen het gemeenschapsbeschermingsbeleid op dit moment niet bevestigen. Er is geen bericht verzonden. Probeer het binnenkort opnieuw.',
         'interaction_not_allowed' => 'Het gemeenschapsbeschermingsbeleid van de ontvanger staat deze directe interactie niet toe. Vraag een coördinator om hulp.',
+        'blocked_interaction' => 'Je kunt geen interactie hebben met dit lid.',
         'policy_unavailable_title' => 'Waarborgcheque tijdelijk niet beschikbaar',
         'policy_unavailable_detail' => 'Project NEXUS kon het contactbeleid niet veilig evalueren, daarom is deze interactie onderbroken.',
         'policy_unavailable_action' => 'Controleer opnieuw',
