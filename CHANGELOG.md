@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Link previews now reject credential-bearing URLs, isolate non-default ports and fragments in cache identity, quarantine unsafe legacy rows across direct, post, message and feed reads, and migrate the global cache without breaking valid associations (F-052).
+
 - Brokers and coordinators must now use two-factor authentication, like administrators (F-057).
 
 - Brokers can no longer edit administrators' or other brokers' profiles, or change the name of an ID-verified member (F-058).

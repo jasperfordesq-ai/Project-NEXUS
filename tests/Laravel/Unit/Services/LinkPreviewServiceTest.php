@@ -154,6 +154,84 @@ class LinkPreviewServiceTest extends TestCase
         $this->assertNull($result);
     }
 
+    public function test_fetchPreview_rejects_url_credentials_before_cache_or_network_access(): void
+    {
+        DB::shouldReceive('table')->never();
+        Http::fake();
+
+        $result = $this->service->fetchPreview('https://member:secret@93.184.216.34/private');
+
+        $this->assertNull($result);
+        Http::assertNothingSent();
+    }
+
+    public function test_cache_identity_preserves_non_default_ports_and_fragments(): void
+    {
+        $method = new \ReflectionMethod(LinkPreviewService::class, 'normalizeUrl');
+
+        $this->assertSame(
+            'https://example.com:8443/path?q=1#member-token',
+            $method->invoke($this->service, 'HTTPS://EXAMPLE.COM:8443/path?q=1#member-token')
+        );
+        $this->assertSame(
+            'https://example.com/path',
+            $method->invoke($this->service, 'https://example.com:443/path')
+        );
+        $this->assertNotSame(
+            $method->invoke($this->service, 'https://example.com/path'),
+            $method->invoke($this->service, 'https://example.com:8443/path')
+        );
+        $this->assertNotSame(
+            $method->invoke($this->service, 'https://example.com/path'),
+            $method->invoke($this->service, 'https://example.com/path#member-token')
+        );
+    }
+
+    public function test_relative_preview_assets_preserve_the_base_non_default_port(): void
+    {
+        $resolve = new \ReflectionMethod(LinkPreviewService::class, 'resolveUrl');
+        $favicon = new \ReflectionMethod(LinkPreviewService::class, 'extractFavicon');
+        $document = new \DOMDocument();
+        $document->loadHTML('<html><head></head><body></body></html>');
+
+        $this->assertSame(
+            'https://example.com:8443/images/card.png',
+            $resolve->invoke($this->service, '/images/card.png', 'https://example.com:8443/article')
+        );
+        $this->assertSame(
+            'https://example.com:8443/favicon.ico',
+            $favicon->invoke($this->service, $document, 'https://example.com:8443/article')
+        );
+    }
+
+    public function test_cached_preview_quarantines_credentials_and_legacy_identity_collisions(): void
+    {
+        $method = new \ReflectionMethod(LinkPreviewService::class, 'getCachedPreview');
+        $clean = 'https://93.184.216.34/private';
+        $hash = hash('sha256', $clean);
+
+        $credentialRow = (object) [
+            'url' => 'https://member:secret@93.184.216.34/private',
+            'title' => 'Private title',
+            'description' => null,
+            'image_url' => null,
+            'site_name' => null,
+            'favicon_url' => null,
+            'domain' => '93.184.216.34',
+            'content_type' => 'website',
+            'embed_html' => null,
+        ];
+        $legacyPortCollision = (object) array_merge((array) $credentialRow, [
+            'url' => 'https://93.184.216.34:8443/private',
+        ]);
+
+        DB::shouldReceive('table->where->where->first')->twice()
+            ->andReturn($credentialRow, $legacyPortCollision);
+
+        $this->assertNull($method->invoke($this->service, $hash, $clean));
+        $this->assertNull($method->invoke($this->service, $hash, $clean));
+    }
+
     /**
      * 🔴 This asserted caching but silently depended on LIVE DNS, so it passed
      * in CI and failed on any machine without outbound resolution — including
@@ -243,6 +321,22 @@ class LinkPreviewServiceTest extends TestCase
         $this->assertEquals('https://example.com', $result[0]['url']);
     }
 
+    public function test_getPreviewsForPost_quarantines_credential_bearing_cached_rows(): void
+    {
+        $rows = collect([
+            (object) ['url' => 'https://member:secret@example.com/private'],
+            (object) ['url' => 'https://example.com/public'],
+        ]);
+
+        DB::shouldReceive('table->join->where->orderBy->select->get')
+            ->once()
+            ->andReturn($rows);
+
+        $result = $this->service->getPreviewsForPost(1);
+
+        $this->assertSame(['https://example.com/public'], array_column($result, 'url'));
+    }
+
     // ------------------------------------------------------------------
     //  getPreviewsForMessage()
     // ------------------------------------------------------------------
@@ -271,6 +365,22 @@ class LinkPreviewServiceTest extends TestCase
         $result = $this->service->getPreviewsForMessage(42);
         $this->assertCount(1, $result);
         $this->assertEquals('Example', $result[0]['title']);
+    }
+
+    public function test_getPreviewsForMessage_quarantines_credential_bearing_cached_rows(): void
+    {
+        $rows = collect([
+            (object) ['url' => 'https://member:secret@example.com/private'],
+            (object) ['url' => 'https://example.com/public'],
+        ]);
+
+        DB::shouldReceive('table->join->where->select->get')
+            ->once()
+            ->andReturn($rows);
+
+        $result = $this->service->getPreviewsForMessage(1);
+
+        $this->assertSame(['https://example.com/public'], array_column($result, 'url'));
     }
 
     // ------------------------------------------------------------------
@@ -359,6 +469,22 @@ class LinkPreviewServiceTest extends TestCase
         $this->assertArrayHasKey(20, $result);
         $this->assertCount(1, $result[10]);
         $this->assertEquals('A', $result[10][0]['title']);
+    }
+
+    public function test_batchLoadPostPreviews_quarantines_credential_bearing_cached_rows(): void
+    {
+        $rows = collect([
+            (object) ['post_id' => 10, 'url' => 'https://member:secret@example.com/private'],
+            (object) ['post_id' => 10, 'url' => 'https://example.com/public'],
+        ]);
+
+        DB::shouldReceive('table->join->whereIn->orderBy->select->get')
+            ->once()
+            ->andReturn($rows);
+
+        $result = $this->service->batchLoadPostPreviews([10]);
+
+        $this->assertSame(['https://example.com/public'], array_column($result[10], 'url'));
     }
 
     // ------------------------------------------------------------------

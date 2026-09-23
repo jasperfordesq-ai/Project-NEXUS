@@ -68,6 +68,14 @@ class LinkPreviewService
     {
         $url = trim($url);
 
+        // Never fetch, cache or log URLs containing authority credentials.
+        // Their metadata can be credential-conditioned, so stripping only the
+        // returned URL would still leak private titles, descriptions or images
+        // through this global cache.
+        if ($this->hasUrlCredentials($url)) {
+            return null;
+        }
+
         if (! OutboundUrlGuard::isSafeHttpUrl($url)) {
             return null;
         }
@@ -77,7 +85,7 @@ class LinkPreviewService
         $urlHash = hash('sha256', $normalizedUrl);
 
         // Check cache
-        $cached = $this->getCachedPreview($urlHash);
+        $cached = $this->getCachedPreview($urlHash, $normalizedUrl);
         if ($cached !== null) {
             return $cached;
         }
@@ -244,7 +252,9 @@ class LinkPreviewService
                 'lp.embed_html',
             ])
             ->get()
+            ->filter(fn ($row) => $this->isSafeStoredPreviewUrl((string) $row->url))
             ->map(fn ($row) => (array) $row)
+            ->values()
             ->all();
     }
 
@@ -271,7 +281,9 @@ class LinkPreviewService
                 'lp.embed_html',
             ])
             ->get()
+            ->filter(fn ($row) => $this->isSafeStoredPreviewUrl((string) $row->url))
             ->map(fn ($row) => (array) $row)
+            ->values()
             ->all();
     }
 
@@ -359,6 +371,9 @@ class LinkPreviewService
 
         $result = [];
         foreach ($rows as $row) {
+            if (! $this->isSafeStoredPreviewUrl((string) $row->url)) {
+                continue;
+            }
             $postId = (int) $row->post_id;
             $preview = (array) $row;
             unset($preview['post_id']);
@@ -449,16 +464,24 @@ class LinkPreviewService
 
         $scheme = strtolower($parsed['scheme'] ?? 'https');
         $host = strtolower($parsed['host'] ?? '');
+        $port = isset($parsed['port']) ? (int) $parsed['port'] : null;
+        $isDefaultPort = ($scheme === 'http' && $port === 80)
+            || ($scheme === 'https' && $port === 443);
+        $authorityPort = $port !== null && ! $isDefaultPort ? ':' . $port : '';
         $path = $parsed['path'] ?? '/';
         $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+        // Fragments are not sent over HTTP, but this service returns the URL as
+        // a browser navigation target. Keep them in cache identity so one
+        // member's token/client state cannot be returned to another caller.
+        $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
 
-        return $scheme . '://' . $host . $path . $query;
+        return $scheme . '://' . $host . $authorityPort . $path . $query . $fragment;
     }
 
     /**
      * Check cache for a preview by URL hash.
      */
-    private function getCachedPreview(string $urlHash): ?array
+    private function getCachedPreview(string $urlHash, string $normalizedUrl): ?array
     {
         $row = DB::table('link_previews')
             ->where('url_hash', $urlHash)
@@ -472,7 +495,42 @@ class LinkPreviewService
             return null;
         }
 
+        $storedUrl = (string) ($row->url ?? '');
+        if (! $this->isSafeStoredPreviewUrl($storedUrl)
+            || $this->normalizeUrl($storedUrl) !== $normalizedUrl) {
+            return null;
+        }
+
         return $this->formatPreviewResponse((array) $row);
+    }
+
+    /**
+     * URL userinfo is confidential input and must never enter the global cache.
+     */
+    private function hasUrlCredentials(string $url): bool
+    {
+        $parsed = parse_url(trim($url));
+
+        return is_array($parsed)
+            && (array_key_exists('user', $parsed) || array_key_exists('pass', $parsed));
+    }
+
+    /**
+     * Fail closed when reading legacy/global cache rows. Input validation alone
+     * cannot protect rows created before the validation existed, and attached
+     * post/message reads do not pass through fetchPreview().
+     */
+    private function isSafeStoredPreviewUrl(string $url): bool
+    {
+        $parsed = parse_url(trim($url));
+        if (! is_array($parsed)
+            || array_key_exists('user', $parsed)
+            || array_key_exists('pass', $parsed)) {
+            return false;
+        }
+
+        return in_array(strtolower((string) ($parsed['scheme'] ?? '')), ['http', 'https'], true)
+            && (string) ($parsed['host'] ?? '') !== '';
     }
 
     /**
@@ -635,7 +693,8 @@ class LinkPreviewService
         // Fallback: /favicon.ico
         $parsed = parse_url($baseUrl);
         if ($parsed && isset($parsed['scheme'], $parsed['host'])) {
-            return $parsed['scheme'] . '://' . $parsed['host'] . '/favicon.ico';
+            $port = isset($parsed['port']) ? ':' . (int) $parsed['port'] : '';
+            return $parsed['scheme'] . '://' . $parsed['host'] . $port . '/favicon.ico';
         }
 
         return null;
@@ -659,7 +718,8 @@ class LinkPreviewService
 
         // Absolute path
         $parsed = parse_url($base);
-        $origin = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '');
+        $port = isset($parsed['port']) ? ':' . (int) $parsed['port'] : '';
+        $origin = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? '') . $port;
 
         if (str_starts_with($relative, '/')) {
             return $origin . $relative;
