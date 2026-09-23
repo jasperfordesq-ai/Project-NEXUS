@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-09-18T11:29:48.407Z
-Laravel commit SHA: `7efbf42dc0f4fb2552ffb64b10ba53825e4f25b3`
-Web UK repository commit SHA: `7efbf42dc0f4fb2552ffb64b10ba53825e4f25b3`
+Generated: 2026-09-23T21:17:03.450Z
+Laravel commit SHA: `daa0bd76f0b6c4c565d62a0f81ce80d09f135795`
+Web UK repository commit SHA: `daa0bd76f0b6c4c565d62a0f81ce80d09f135795`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 746 |
+| web-uk routes | 747 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 36 |
+| Extra web-uk routes | 37 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -82,7 +82,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
-| profile | 23 | 0 | 2 | 0 |
+| profile | 23 | 0 | 3 | 0 |
 | register | 2 | 0 | 0 | 0 |
 | report-a-problem | 2 | 0 | 0 | 0 |
 | resources | 12 | 0 | 0 | 0 |
@@ -147,6 +147,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
 | POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
+| POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 
