@@ -42,3 +42,7 @@ firebase-service-account*.json
 *-service-account*.json
 *.keystore
 *.jks
+# Local signing credentials (keystore passwords). EAS builds use EAS-managed
+# credentials; this file must never be uploaded with the project (F-125).
+credentials.json
+credentials/
