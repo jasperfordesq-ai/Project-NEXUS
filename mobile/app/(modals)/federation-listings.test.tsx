@@ -247,14 +247,17 @@ describe('FederationListingsScreen', () => {
     fireEvent.press(getByText('View profile'));
     expect(router.push).toHaveBeenCalledWith({
       pathname: '/(modals)/federation-member',
-      params: { id: 'ext-7-123', tenant_id: 'ext-7', name: 'External Sam' },
+      params: { id: 'ext-7-123', tenant_id: 'ext-7' },
     });
+    // F-118: the name travels through the app's own record of the server data, not the route.
+    expect(require('@/lib/federation/appResolvedMembers').appResolvedMember('ext-7-123', 'ext-7'))
+      .toEqual({ name: 'External Sam', community: 'Remote partner' });
 
     router.push.mockClear();
     fireEvent.press(getByText('Message author'));
     expect(router.push).toHaveBeenCalledWith({
       pathname: '/(modals)/federation-messages',
-      params: { compose: 'true', to_user: '123', to_tenant: 'ext-7', name: 'External Sam', community: 'Remote partner' },
+      params: { compose: 'true', to_user: '123', to_tenant: 'ext-7' },
     });
   });
 });

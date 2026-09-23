@@ -1085,7 +1085,7 @@ router.get('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) => 
   }
 
   const [listingResult, profileResult, walletBalance] = await Promise.all([
-    callListing(token, 'GET', `/${listingId}`),
+    callListing(token, 'GET', `/${encodeURIComponent(listingId)}`),
     getRequestProfile(req, token).catch(() => null),
     walletBalanceForExchange(token)
   ]);
@@ -1126,8 +1126,8 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
 
   try {
     [listingResult, analyticsResult] = await Promise.all([
-      callListing(token, 'GET', `/${id}`),
-      callListing(token, 'GET', `/${id}/analytics?days=${days}`)
+      callListing(token, 'GET', `/${encodeURIComponent(id)}`),
+      callListing(token, 'GET', `/${encodeURIComponent(id)}/analytics?days=${days}`)
     ]);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1164,7 +1164,7 @@ router.get('/:id(\\d+)/comments', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = Number(req.params.id);
-  const listingResult = await callListing(token, 'GET', `/${id}`);
+  const listingResult = await callListing(token, 'GET', `/${encodeURIComponent(id)}`);
   let commentsResult = { data: { comments: [], count: 0 } };
 
   try {
@@ -1200,7 +1200,7 @@ router.post('/:id(\\d+)/report', asyncRoute(async (req, res) => {
 
   let status = 'listing-reported';
   try {
-    await callListing(token, 'POST', `/${id}/report`, payload);
+    await callListing(token, 'POST', `/${encodeURIComponent(id)}/report`, payload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = error instanceof ApiError && error.status === 409
@@ -1217,7 +1217,7 @@ router.get('/:id(\\d+)/report', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const [listingResult, profileResult] = await Promise.all([
-    callListing(token, 'GET', `/${id}`),
+    callListing(token, 'GET', `/${encodeURIComponent(id)}`),
     getRequestProfile(req, token).catch(() => null)
   ]);
 

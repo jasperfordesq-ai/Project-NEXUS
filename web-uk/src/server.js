@@ -20,7 +20,7 @@ const session = require('express-session');
 const flash = require('express-flash');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const { doubleCsrf } = require('csrf-csrf');
+const { createCsrfProtection } = require('./lib/csrf');
 const path = require('path');
 const { URL } = require('url');
 const { getPublicAssetBaseUrl } = require('./lib/backend-contract');
@@ -546,27 +546,18 @@ app.use(flash());
 app.use(localization);
 app.use(refreshAuthSession);
 
-// CSRF protection
+// CSRF protection. F-114: tokens are bound to the session and production uses a
+// `__Host-` cookie — see src/lib/csrf.js.
 const {
-  generateToken,
+  attachCsrfToken,
   doubleCsrfProtection
-} = doubleCsrf({
-  getSecret: () => COOKIE_SECRET,
-  cookieName: 'nexus.csrf',
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: NODE_ENV === 'production',
-    signed: true
-  },
-  getTokenFromRequest: (req) => req.body._csrf || req.headers['x-csrf-token']
+} = createCsrfProtection({
+  nodeEnv: NODE_ENV,
+  getSecret: () => COOKIE_SECRET
 });
 
 // Make CSRF token available to all views
-app.use((req, res, next) => {
-  req.csrfToken = () => generateToken(req, res);
-  next();
-});
+app.use(attachCsrfToken);
 
 // Add common variables to all views
 app.use(async (req, res, next) => {

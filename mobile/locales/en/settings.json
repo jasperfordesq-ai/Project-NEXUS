@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Unlock with fingerprint or face",
-    "hint": "Locks your saved session when the app starts. Anyone whose biometrics are enrolled on this device can unlock it. The device PIN may also be accepted.",
+    "hint": "Locks your saved session when the app starts, and again when you come back after more than five minutes away. Anyone whose biometrics are enrolled on this device can unlock it. The device PIN may also be accepted.",
     "prompt": "Unlock your account",
     "lockedTitle": "Locked",
     "lockedSubtitle": "Unlock to get back to your community.",

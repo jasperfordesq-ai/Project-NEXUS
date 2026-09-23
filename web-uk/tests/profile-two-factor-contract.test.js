@@ -37,9 +37,13 @@ const profileRouter = require('../src/routes/profile');
 
 function createApp({ tc, urlFor = (pathname) => pathname } = {}) {
   const app = express();
+  // One server-side session for the app's lifetime, like a browser keeping its
+  // session cookie between requests.
+  const session = {};
 
   app.use(express.urlencoded({ extended: false }));
   app.use((req, res, next) => {
+    req.session = session;
     req.signedCookies = { token: 'test-token' };
     req.token = 'test-token';
     if (tc) req.tc = tc;
@@ -73,6 +77,8 @@ describe('Laravel two-factor enrolment contract', () => {
   });
   beforeEach(() => {
     jest.clearAllMocks();
+    // Queued one-off answers must not leak from one test into the next.
+    api.callProfileApi.mockReset();
   });
 
   it.each([429, 503])('does not show a false disabled state when status fails with %s', async (status) => {
@@ -83,31 +89,87 @@ describe('Laravel two-factor enrolment contract', () => {
     expect(api.callProfileApi).toHaveBeenCalledTimes(1);
   });
 
-  it('reads status before initializing disabled enrolment with POST setup', async () => {
+  // F-115: opening the page (or following a link to it) must never regenerate
+  // the setup secret, so an in-progress enrolment cannot be reset by a GET.
+  it('opens the enrolment page with a start button and never initializes setup on GET', async () => {
+    api.callProfileApi.mockResolvedValueOnce({
+      data: { enabled: false, setup_required: false, backup_codes_remaining: 0 }
+    });
+
+    const response = await request(createApp()).get('/profile/two-factor');
+
+    expect(response.status).toBe(200);
+    expect(api.callProfileApi).toHaveBeenCalledTimes(1);
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'GET', '/auth/2fa/status');
+    expect(response.body.locals.enabled).toBe(false);
+    expect(response.body.locals.setup).toBeNull();
+    expect(response.body.locals.canStartSetup).toBe(true);
+    expect(response.body.locals.titleKey).toBe('security_2fa.title');
+  });
+
+  it('starts setup on POST and shows the same pending setup on every later GET', async () => {
     api.callProfileApi
-      .mockResolvedValueOnce({
-        data: { enabled: false, setup_required: false, backup_codes_remaining: 0 }
-      })
       .mockResolvedValueOnce({
         data: {
           qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+',
           secret: 'ABCD EFGH IJKL',
           backup_codes: []
         }
+      })
+      .mockResolvedValueOnce({
+        data: { enabled: false, setup_required: false, backup_codes_remaining: 0 }
+      })
+      .mockResolvedValueOnce({
+        data: { enabled: false, setup_required: false, backup_codes_remaining: 0 }
       });
+    const app = createApp();
 
-    const response = await request(createApp()).get('/profile/two-factor');
+    const started = await request(app).post('/profile/two-factor/setup');
+
+    expect(started.status).toBe(302);
+    expect(started.headers.location).toBe('/profile/two-factor');
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
+
+    for (let visit = 0; visit < 2; visit += 1) {
+      const page = await request(app).get('/profile/two-factor');
+      expect(page.status).toBe(200);
+      expect(page.body.locals.setup).toEqual({
+        qr_data_uri: 'data:image/svg+xml;base64,PHN2Zy8+',
+        secret: 'ABCD EFGH IJKL'
+      });
+      expect(page.body.locals.canStartSetup).toBe(false);
+    }
+    expect(api.callProfileApi.mock.calls.filter((call) => call[2] === '/auth/2fa/setup')).toHaveLength(1);
+  });
+
+  it('forgets the pending setup once verification turns two-step verification on', async () => {
+    api.callProfileApi
+      .mockResolvedValueOnce({ data: { qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+', secret: 'PENDING' } })
+      .mockResolvedValueOnce({ data: { backup_codes: ['otter-amber'] } })
+      .mockResolvedValueOnce({ data: { enabled: false, setup_required: false, backup_codes_remaining: 0 } });
+    const app = createApp();
+
+    await request(app).post('/profile/two-factor/setup');
+    await request(app).post('/profile/two-factor/verify').type('form').send({ code: '123456' });
+    const page = await request(app).get('/profile/two-factor');
+
+    expect(page.body.locals.setup).toBeNull();
+    expect(page.body.locals.canStartSetup).toBe(true);
+  });
+
+  it('says setup could not start, and offers it again, when the API refuses', async () => {
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Failed to initialize 2FA setup', 500));
+
+    const response = await request(createApp()).post('/profile/two-factor/setup');
 
     expect(response.status).toBe(200);
-    expect(api.callProfileApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/auth/2fa/status');
-    expect(api.callProfileApi).toHaveBeenNthCalledWith(2, 'test-token', 'POST', '/auth/2fa/setup');
-    expect(response.body.locals.enabled).toBe(false);
-    expect(response.body.locals.setup).toEqual({
-      qr_data_uri: 'data:image/svg+xml;base64,PHN2Zy8+',
-      secret: 'ABCD EFGH IJKL'
-    });
-    expect(response.body.locals.backupCodes).toEqual([]);
-    expect(response.body.locals.titleKey).toBe('security_2fa.title');
+    expect(response.body.locals.setupUnavailable).toBe(true);
+    expect(response.body.locals.canStartSetup).toBe(true);
+  });
+
+  it('only starts setup through a POST form', () => {
+    const template = fs.readFileSync(path.join(__dirname, '..', 'src', 'views', 'profile', 'two-factor.njk'), 'utf8');
+    expect(template).toMatch(/<form[^>]*method="post"[^>]*action="\{\{ urlFor\('\/profile\/two-factor\/setup'\) \}\}"/);
   });
 
   it('preserves enabled status without reinitializing setup', async () => {

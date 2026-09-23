@@ -7,6 +7,7 @@ import { parseDecimalInput , formatDecimal } from '@/lib/utils/decimal';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, RefreshControl, ScrollView, Share, View } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
+import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -50,6 +51,9 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import WalletReconciliationNotice from '@/components/wallet/WalletReconciliationNotice';
+import { csvCell } from '@/lib/csvCell';
+import { createAuditedExportDirectory } from '@/lib/auditedExportCache';
+import { authenticatedApiIdentity } from '@/lib/api/client';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
@@ -147,11 +151,6 @@ function getStatusLabel(transaction: TransactionItem, t: (key: string, opts?: Re
 function normaliseAmount(value: string): number {
   // The shared parser: "1 000", "1.000,5" and "1,5" all resolve the way the member meant.
   return parseDecimalInput(value) ?? Number.NaN;
-}
-
-function csvCell(value: string | number | null | undefined): string {
-  const text = String(value ?? '');
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 function WalletModal() {
@@ -389,6 +388,8 @@ function WalletModalInner() {
 
     setIsExporting(true);
     try {
+      // F-121: the member this export is for. Checked again before the file is handed on.
+      const identity = await authenticatedApiIdentity();
       const { rows: exported, complete } = await collectAllTransactions();
 
       const rows = [
@@ -422,18 +423,36 @@ function WalletModalInner() {
           directory and shared with the CSV mime type so the sheet offers Files, Drive and
           a spreadsheet app.
         */
-        const target = `${FileSystem.cacheDirectory}${filename}`;
-        await FileSystem.writeAsStringAsync(target, csv, { encoding: FileSystem.EncodingType.UTF8 });
-        if (!(await Sharing.isAvailableAsync())) {
-          // Nothing on this device can receive a file. Falling back to the old text share is
-          // better than telling the member the export failed when the data is ready.
-          await Share.share({ message: csv });
-        } else {
-          await Sharing.shareAsync(target, {
-            mimeType: 'text/csv',
-            UTI: 'public.comma-separated-values-text',
-            dialogTitle: t('export'),
-          });
+        /*
+          🔴 F-121: written to a session-owned export directory, not the bare cache root.
+          The statement used to stay in the cache after sign-out; this directory is swept
+          an hour after sharing (the receiving app may still be reading it) and at once on
+          sign-out (lib/sessionFileCache.ts). It is only handed on if the member who asked
+          is still the one signed in.
+        */
+        const lease = createAuditedExportDirectory();
+        try {
+          const target = new File(lease.directory, filename).uri;
+          await FileSystem.writeAsStringAsync(target, csv, { encoding: FileSystem.EncodingType.UTF8 });
+          await identity.assertCurrent();
+          if (!(await Sharing.isAvailableAsync())) {
+            // Nothing on this device can receive a file. Falling back to the old text share is
+            // better than telling the member the export failed when the data is ready.
+            lease.dispose();
+            await identity.assertCurrent();
+            await Share.share({ message: csv });
+          } else {
+            await identity.assertCurrent();
+            await Sharing.shareAsync(target, {
+              mimeType: 'text/csv',
+              UTI: 'public.comma-separated-values-text',
+              dialogTitle: t('export'),
+            });
+            lease.release();
+          }
+        } catch (error) {
+          try { lease.dispose(); } catch { /* The hourly and sign-out sweeps retry. */ }
+          throw error;
         }
       }
 

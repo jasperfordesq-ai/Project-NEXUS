@@ -564,8 +564,11 @@ describe('FederationMessagesScreen', () => {
     expect(queryByText("We couldn't search for members just now.")).toBeNull();
   });
 
-  it('uses compose deep-link community metadata when recipient lookup is skipped', () => {
-    mockSearchParams = { compose: 'true', to_user: 'ext-7-123', to_tenant: 'ext-7', name: 'External Sam', community: 'Remote partner' };
+  // F-118: the compose link's `name` and `community` are the link author's claim. When
+  // the recipient cannot be looked up (an external partner member), the card shows the
+  // neutral fallback unless the app itself read the member from the server.
+  it('does not name the recipient from compose deep-link metadata when lookup is skipped', () => {
+    mockSearchParams = { compose: 'true', to_user: 'ext-7-123', to_tenant: 'ext-7', name: 'Community Coordinator', community: 'Council Safeguarding' };
     mockUseApi.mockImplementation((_fetcher: unknown, deps?: unknown[]) => {
       if (Array.isArray(deps) && deps.length === 0) {
         return {
@@ -583,10 +586,30 @@ describe('FederationMessagesScreen', () => {
       };
     });
 
-    const { getByText } = render(<FederationMessagesScreen />);
+    const { getByText, queryByText } = render(<FederationMessagesScreen />);
+
+    expect(queryByText('Community Coordinator')).toBeNull();
+    expect(queryByText('Council Safeguarding')).toBeNull();
+    expect(getByText('Federated member')).toBeTruthy();
+    expect(mockUseApi).toHaveBeenCalledWith(expect.any(Function), ['ext-7-123', 'ext-7'], { enabled: false });
+  });
+
+  it('names an external recipient the app itself read from the directory', () => {
+    const { rememberAppResolvedMember, clearAppResolvedMembers } = require('@/lib/federation/appResolvedMembers');
+    rememberAppResolvedMember('ext-7-123', 'ext-7', { name: 'External Sam', community: 'Remote partner' });
+    mockSearchParams = { compose: 'true', to_user: 'ext-7-123', to_tenant: 'ext-7', name: 'Community Coordinator' };
+    mockUseApi.mockImplementation((_fetcher: unknown, deps?: unknown[]) => {
+      if (Array.isArray(deps) && deps.length === 0) {
+        return { data: { data: partnerFilters }, isLoading: false, error: null, refresh: jest.fn() };
+      }
+      return { data: { data: [] }, isLoading: false, error: null, refresh: mockRefresh };
+    });
+
+    const { getByText, queryByText } = render(<FederationMessagesScreen />);
 
     expect(getByText('External Sam')).toBeTruthy();
     expect(getByText('Remote partner')).toBeTruthy();
-    expect(mockUseApi).toHaveBeenCalledWith(expect.any(Function), ['ext-7-123', 'ext-7'], { enabled: false });
+    expect(queryByText('Community Coordinator')).toBeNull();
+    clearAppResolvedMembers();
   });
 });

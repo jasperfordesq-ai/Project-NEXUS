@@ -136,6 +136,24 @@ describe('EventTab', () => {
     expect(screen.getByRole('textbox', { name: 'Event Title' })).toBeInTheDocument();
   });
 
+  it('does not restore a draft saved by another member or community (F-109)', () => {
+    localStorage.setItem('compose-draft-event', JSON.stringify({ title: 'Unscoped draft', description: '' }));
+    localStorage.setItem('compose-draft-event:t2:u7', JSON.stringify({ title: 'Other member', description: '' }));
+    localStorage.setItem('compose-draft-event:t3:u1', JSON.stringify({ title: 'Other community', description: '' }));
+
+    renderEventComponent(<EventTab {...defaultProps} />);
+
+    expect(screen.getByRole('textbox', { name: 'Event Title' })).toHaveValue('');
+  });
+
+  it("restores this member's own draft in this community (F-109)", () => {
+    localStorage.setItem('compose-draft-event:t2:u1', JSON.stringify({ title: 'My own draft', description: '' }));
+
+    renderEventComponent(<EventTab {...defaultProps} />);
+
+    expect(screen.getByRole('textbox', { name: 'Event Title' })).toHaveValue('My own draft');
+  });
+
   it('renders an accessible description textarea', () => {
     renderEventComponent(<EventTab {...defaultProps} />);
 

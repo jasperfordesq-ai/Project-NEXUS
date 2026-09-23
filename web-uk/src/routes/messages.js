@@ -513,7 +513,7 @@ async function renderDirectConversation(req, res, userId) {
       if (isAuthError(error)) throw error;
       return { data: {} };
     }),
-    listingId === null ? Promise.resolve(null) : callListingApi(req.token, 'GET', `/${listingId}`).catch((error) => {
+    listingId === null ? Promise.resolve(null) : callListingApi(req.token, 'GET', `/${encodeURIComponent(listingId)}`).catch((error) => {
       if (isAuthError(error)) throw error;
       return null;
     })
@@ -644,7 +644,7 @@ router.post('/:id(\\d+)/archive', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'conversation-archived';
   try {
-    await callMessage(token, 'DELETE', `/conversations/${id}`, { scope: 'self' });
+    await callMessage(token, 'DELETE', `/conversations/${encodeURIComponent(id)}`, { scope: 'self' });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = 'conversation-archive-failed';
@@ -660,7 +660,7 @@ router.post('/:id(\\d+)/restore', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'conversation-restored';
   try {
-    await callMessage(token, 'POST', `/conversations/${id}/restore`);
+    await callMessage(token, 'POST', `/conversations/${encodeURIComponent(id)}/restore`);
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = 'conversation-restore-failed';
@@ -682,7 +682,7 @@ router.post('/:userId(\\d+)/m/:messageId(\\d+)/edit', asyncRoute(async (req, res
 
   let status = 'message-edited';
   try {
-    await callMessage(token, 'PUT', `/${messageId}`, { body });
+    await callMessage(token, 'PUT', `/${encodeURIComponent(messageId)}`, { body });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = editFailureStatus(error);
@@ -700,7 +700,7 @@ router.post('/:userId(\\d+)/m/:messageId(\\d+)/delete', asyncRoute(async (req, r
   const scope = ['self', 'everyone'].includes(req.body.scope) ? req.body.scope : 'self';
   let status = 'message-deleted';
   try {
-    await callMessage(token, 'DELETE', `/${messageId}`, { scope });
+    await callMessage(token, 'DELETE', `/${encodeURIComponent(messageId)}`, { scope });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = 'message-delete-failed';
@@ -725,7 +725,7 @@ router.post('/:userId(\\d+)/m/:messageId(\\d+)/translate', asyncRoute(async (req
     : 'en';
   let status = 'translate-done';
   try {
-    const result = await callMessage(token, 'POST', `/${messageId}/translate`, {
+    const result = await callMessage(token, 'POST', `/${encodeURIComponent(messageId)}/translate`, {
       target_language: targetLanguage
     });
     const translated = dataFrom(result) || {};
@@ -827,7 +827,7 @@ router.post('/groups/:conversationId(\\d+)', asyncRoute(async (req, res) => {
 
   let status = 'group-message-sent';
   try {
-    await callConversation(token, 'POST', `/${conversationId}/messages`, { body });
+    await callConversation(token, 'POST', `/${encodeURIComponent(conversationId)}/messages`, { body });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = groupSafeguardingFailureStatus(error)
@@ -847,7 +847,7 @@ router.post('/groups/:conversationId(\\d+)/members', asyncRoute(async (req, res)
 
   let status = 'group-member-added';
   try {
-    await callConversation(token, 'POST', `/${conversationId}/participants`, { user_id: userId });
+    await callConversation(token, 'POST', `/${encodeURIComponent(conversationId)}/participants`, { user_id: userId });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = groupSafeguardingFailureStatus(error) || groupMemberFailureStatus(error);
@@ -865,7 +865,7 @@ router.post('/groups/:conversationId(\\d+)/members/:targetUserId(\\d+)/remove', 
   const selfLeave = checked(req.body.self_leave);
   let status = selfLeave ? 'group-left' : 'group-member-removed';
   try {
-    await callConversation(token, 'DELETE', `/${conversationId}/participants/${targetUserId}`);
+    await callConversation(token, 'DELETE', `/${encodeURIComponent(conversationId)}/participants/${encodeURIComponent(targetUserId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
     status = selfLeave ? 'group-leave-failed' : groupMemberFailureStatus(error);
@@ -887,7 +887,7 @@ router.post('/groups/:conversationId(\\d+)/m/:messageId(\\d+)/react', asyncRoute
 
   let status = 'reaction-added';
   try {
-    const result = await callMessage(token, 'POST', `/${messageId}/reactions`, { emoji });
+    const result = await callMessage(token, 'POST', `/${encodeURIComponent(messageId)}/reactions`, { emoji });
     const data = dataFrom(result);
     status = data && data.action === 'removed' ? 'reaction-removed' : 'reaction-added';
   } catch (error) {
@@ -986,8 +986,8 @@ router.get('/groups/new', requireConnectionsFeature, requireAuth, asyncRoute(asy
 router.get('/groups/:conversationId(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const conversationId = Number(req.params.conversationId);
   const [messagesResult, participantsResult, profileResult, restriction] = await Promise.all([
-    callConversation(req.token, 'GET', `/${conversationId}/messages?${conversationQuery(req.query)}`),
-    callConversation(req.token, 'GET', `/${conversationId}/participants`),
+    callConversation(req.token, 'GET', `/${encodeURIComponent(conversationId)}/messages?${conversationQuery(req.query)}`),
+    callConversation(req.token, 'GET', `/${encodeURIComponent(conversationId)}/participants`),
     getRequestProfile(req, req.token).catch(() => null),
     messageRestriction(req)
   ]);

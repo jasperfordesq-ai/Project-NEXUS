@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Díghlasáil le méarlorg nó aghaidh",
-    "hint": "Cuireann sé glas ar do sheisiún stóráilte nuair a thosaíonn an aip. Is féidir le haon duine a bhfuil méarlorg nó aghaidh cláraithe acu ar an ngléas seo é a dhíghlasáil. Seans go nglacfar le PIN an ghléis freisin.",
+    "hint": "Cuireann sé glas ar do sheisiún stóráilte nuair a thosaíonn an aip, agus arís nuair a fhilleann tú tar éis níos mó ná cúig nóiméad. Is féidir le haon duine a bhfuil méarlorg nó aghaidh cláraithe acu ar an ngléas seo é a dhíghlasáil. Seans go nglacfar le PIN an ghléis freisin.",
     "prompt": "Díghlasáil do chuntas",
     "lockedTitle": "Faoi ghlas",
     "lockedSubtitle": "Díghlasáil chun filleadh ar do phobal.",

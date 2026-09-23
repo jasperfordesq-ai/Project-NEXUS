@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Desbloquear con huella o rostro",
-    "hint": "Bloquea tu sesión guardada al iniciar la aplicación. Cualquier persona con datos biométricos registrados en este dispositivo puede desbloquearla. También puede aceptarse el PIN del dispositivo.",
+    "hint": "Bloquea tu sesión guardada al iniciar la aplicación y de nuevo cuando vuelves tras más de cinco minutos fuera. Cualquier persona con datos biométricos registrados en este dispositivo puede desbloquearla. También puede aceptarse el PIN del dispositivo.",
     "prompt": "Desbloquea tu cuenta",
     "lockedTitle": "Bloqueado",
     "lockedSubtitle": "Desbloquea para volver a tu comunidad.",

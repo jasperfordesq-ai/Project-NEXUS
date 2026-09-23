@@ -365,7 +365,7 @@ router.get('/legal/:type/versions/compare', asyncRoute(async (req, res) => {
   });
 }, { notFoundTitle: 'Legal document not found' }));
 
-router.get('/legal/:type/versions/:versionId', asyncRoute(async (req, res) => {
+router.get('/legal/:type/versions/:versionId(\\d+)', asyncRoute(async (req, res) => {
   const type = slugType(req);
   const versionId = trimmed(req.params.versionId);
   if (!type || type === 'accessibility' || !/^\d+$/.test(versionId)) {

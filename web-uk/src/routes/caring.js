@@ -348,7 +348,7 @@ router.post('/caregiver/link', asyncRoute(async (req, res) => {
 // Member — ask for help on behalf of someone (ACTIVE links only)
 // ---------------------------------------------------------------------------
 
-router.get('/caregiver/on-behalf/:caredForId', asyncRoute(async (req, res) => {
+router.get('/caregiver/on-behalf/:caredForId(\\d+)', asyncRoute(async (req, res) => {
   const caredForId = positiveInt(req.params.caredForId);
   const locale = res.locals.locale || 'en';
 
@@ -374,7 +374,7 @@ router.get('/caregiver/on-behalf/:caredForId', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/caregiver/on-behalf/:caredForId', asyncRoute(async (req, res) => {
+router.post('/caregiver/on-behalf/:caredForId(\\d+)', asyncRoute(async (req, res) => {
   const caredForId = positiveInt(req.params.caredForId);
   const title = trimmed(req.body?.title);
   const description = trimmed(req.body?.description);
@@ -478,7 +478,7 @@ router.get('/reviews', asyncRoute(async (req, res) => {
  * proper error summary. Laravel refuses on the same grounds regardless; this is
  * the courtesy layer, not the control.
  */
-router.post('/reviews/:id/decide', asyncRoute(async (req, res) => {
+router.post('/reviews/:id(\\d+)/decide', asyncRoute(async (req, res) => {
   const linkId = positiveInt(req.params.id);
   const action = String(req.body?.action ?? '');
   const evidence = trimmed(req.body?.consent_evidence);

@@ -171,9 +171,10 @@ describe('navigateToLink', () => {
       pathname: '/(modals)/thread',
       params: { recipientId: '260', listing: '90624' },
     });
+    // F-118: the link's `name` is the author's claim; the thread names the member from the server.
     expect(mockPush).toHaveBeenNthCalledWith(2, {
       pathname: '/(modals)/thread',
-      params: { recipientId: '272', context_type: 'job', context_id: '44', name: 'Alice' },
+      params: { recipientId: '272', context_type: 'job', context_id: '44' },
     });
   });
 

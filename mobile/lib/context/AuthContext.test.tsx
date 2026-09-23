@@ -46,6 +46,12 @@ jest.mock('@/lib/eventOfflineCheckinStore', () => ({
   purgeAllMobileOfflineCheckinData: () => mockPurgeOfflineCheckin(),
 }));
 
+// F-121: exported statements and downloaded attachments leave with the session.
+const mockPurgeSessionFileCaches = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/lib/sessionFileCache', () => ({
+  purgeSessionFileCaches: () => mockPurgeSessionFileCaches(),
+}));
+
 jest.mock('@/lib/api/auth', () => ({
   login: (...args: unknown[]) => mockApiLogin(...args),
   logout: (...args: unknown[]) => mockApiLogout(...args),
@@ -330,6 +336,19 @@ describe('AuthContext', () => {
     expect(result.current.token).toBeNull();
     expect(mockStorageRemove).toHaveBeenCalled();
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+    expect(mockPurgeSessionFileCaches).toHaveBeenCalledTimes(1);
+  });
+
+  it('finishes sign-out even if the file-cache purge rejects (F-121)', async () => {
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => result.current.setSession('current-token', mockUser as never));
+    mockPurgeSessionFileCaches.mockRejectedValueOnce(new Error('cache unavailable'));
+
+    await act(async () => { await expect(result.current.logout()).resolves.toBeUndefined(); });
+
+    expect(result.current.token).toBeNull();
+    expect(router.replace).toHaveBeenCalledWith('/(auth)/login');
   });
 
   /**
@@ -570,6 +589,7 @@ describe('AuthContext', () => {
     expect(mockStorageRemove).toHaveBeenCalledWith('refresh_token');
     expect(mockStorageRemove).toHaveBeenCalledWith('user_data');
     expect(mockPurgeOfflineCheckin).toHaveBeenCalledTimes(1);
+    expect(mockPurgeSessionFileCaches).toHaveBeenCalledTimes(1);
     expect(sessionNoticeStore.getSnapshot()).toMatchObject({
       title: 'Password changed',
       description: 'Sign in again.',

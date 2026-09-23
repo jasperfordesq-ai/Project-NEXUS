@@ -601,6 +601,50 @@ describe('AuthContext', () => {
       expect(api.logoutSession).toHaveBeenCalledTimes(1);
     });
 
+    it('removes compose drafts and recent searches so the next member on this browser cannot see them (F-109)', async () => {
+      const user = userEvent.setup();
+
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+      });
+      vi.mocked(api.logoutSession).mockResolvedValueOnce({ success: true });
+
+      localStorage.setItem('compose-draft-event', '{"title":"legacy unscoped"}');
+      localStorage.setItem('compose-draft-post:t1:u1', '{"plainText":"private"}');
+      localStorage.setItem('compose-edit-9:t1:u1', '{"plainText":"edit"}');
+      localStorage.setItem('marketplace-listing-draft:t1:u1', '{"title":"bike"}');
+      localStorage.setItem('nexus:recent-searches:listings:t1:u1', '["gardening"]');
+      localStorage.setItem('nexus_recent_searches', '["counselling"]');
+      localStorage.setItem('nexus_theme', 'dark');
+
+      render(
+        <AuthProvider>
+          <TestAuthActions />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Logout' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('idle');
+      });
+
+      expect(localStorage.getItem('compose-draft-event')).toBeNull();
+      expect(localStorage.getItem('compose-draft-post:t1:u1')).toBeNull();
+      expect(localStorage.getItem('compose-edit-9:t1:u1')).toBeNull();
+      expect(localStorage.getItem('marketplace-listing-draft:t1:u1')).toBeNull();
+      expect(localStorage.getItem('nexus:recent-searches:listings:t1:u1')).toBeNull();
+      expect(localStorage.getItem('nexus_recent_searches')).toBeNull();
+      // Unrelated device preferences survive sign-out.
+      expect(localStorage.getItem('nexus_theme')).toBe('dark');
+    });
+
     it('proceeds with local logout even if server logout fails', async () => {
       const user = userEvent.setup();
 

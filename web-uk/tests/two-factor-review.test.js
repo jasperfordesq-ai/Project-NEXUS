@@ -38,12 +38,14 @@ const profileRouter = require('../src/routes/profile');
 
 function createApp() {
   const app = express();
+  // One session for the app's lifetime, like a browser keeping its session cookie.
+  const session = { destroy: (cb) => cb && cb() };
   app.use(express.urlencoded({ extended: false }));
   app.use((req, res, next) => {
     req.signedCookies = { token: 'test-token' };
     req.token = 'test-token';
     req.secret = 'test-cookie-secret'; // cookie-parser sets this in the real app; signed clearCookie needs it
-    req.session = { destroy: (cb) => cb && cb() };
+    req.session = session;
     res.locals.urlFor = (pathname) => pathname;
     res.render = (view, locals = {}) => res.json({ view, locals });
     next();
@@ -57,16 +59,22 @@ function createApp() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Queued one-off answers must not leak from one test into the next.
+  api.callProfileApi.mockReset();
 });
 
 describe('P11 — enrolment secrets and one-time recovery codes are never cacheable', () => {
   it('sends no-store with the enrolment page that shows the QR code and setup key', async () => {
+    // F-115: setup starts on POST only; the enrolment page then shows it on GET.
     api.callProfileApi
-      .mockResolvedValueOnce({ data: { enabled: false, backup_codes_remaining: 0 } })
-      .mockResolvedValueOnce({ data: { secret: 'SETUPKEY', qr_code_url: 'data:image/svg+xml;base64,abc' } });
+      .mockResolvedValueOnce({ data: { secret: 'SETUPKEY', qr_code_url: 'data:image/svg+xml;base64,abc' } })
+      .mockResolvedValueOnce({ data: { enabled: false, backup_codes_remaining: 0 } });
 
-    const response = await request(createApp()).get('/profile/two-factor').expect(200);
+    const app = createApp();
+    await request(app).post('/profile/two-factor/setup').expect(302);
+    const response = await request(app).get('/profile/two-factor').expect(200);
     expect(response.headers['cache-control']).toContain('no-store');
+    expect(JSON.stringify(response.body)).toContain('SETUPKEY');
   });
 
   it('sends no-store with the page that shows freshly issued recovery codes', async () => {

@@ -118,6 +118,16 @@
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("security_2fa.verify_button") }}</button>
         </form>
+      {% elif canStartSetup %}
+        {% if setupUnavailable %}
+          <div class="govuk-inset-text" role="status">{{ t("security_2fa.setup_unavailable") }}</div>
+        {% endif %}
+        <p class="govuk-body-l">{{ t("security_2fa.setup_intro") }}</p>
+        {# F-115: setup generates a new secret, so it starts from a POST, never a GET. #}
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/setup') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button" data-module="govuk-button">{{ t("mandatory_2fa.title") }}</button>
+        </form>
       {% else %}
         <div class="govuk-inset-text">{{ t("security_2fa.setup_unavailable") }}</div>
       {% endif %}

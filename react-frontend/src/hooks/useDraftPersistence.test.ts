@@ -146,4 +146,38 @@ describe('useDraftPersistence', () => {
     });
     expect(localStorage.getItem('test-key')).toBe(JSON.stringify('value3'));
   });
+
+  // F-109: the key names the member, so when the member changes the hook must
+  // show that member's draft and must never write the previous member's text
+  // under the new member's key.
+  it('reloads the draft when the key changes to another member', () => {
+    localStorage.setItem('draft:t1:u2', JSON.stringify('second member draft'));
+    const { result, rerender } = renderHook(({ k }) => useDraftPersistence(k, ''), {
+      initialProps: { k: 'draft:t1:u1' },
+    });
+    act(() => {
+      result.current[1]('first member text');
+    });
+
+    rerender({ k: 'draft:t1:u2' });
+
+    expect(result.current[0]).toBe('second member draft');
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(localStorage.getItem('draft:t1:u2')).toBe(JSON.stringify('second member draft'));
+  });
+
+  it('falls back to the initial value when the new key has no draft', () => {
+    const { result, rerender } = renderHook(({ k }) => useDraftPersistence(k, ''), {
+      initialProps: { k: 'draft:t1:u1' },
+    });
+    act(() => {
+      result.current[1]('first member text');
+    });
+
+    rerender({ k: 'draft:t1:u2' });
+
+    expect(result.current[0]).toBe('');
+  });
 });

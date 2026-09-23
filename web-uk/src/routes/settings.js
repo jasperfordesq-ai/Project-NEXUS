@@ -797,7 +797,7 @@ router.post('/linked-accounts/approve', asyncRoute(async (req, res) => {
     if (relationshipId === null) {
       status = 'link-failed';
     } else {
-      await callSettings(token, 'PUT', `/sub-accounts/${relationshipId}/approve`);
+      await callSettings(token, 'PUT', `/sub-accounts/${encodeURIComponent(relationshipId)}/approve`);
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -818,7 +818,7 @@ router.post('/linked-accounts/permissions', asyncRoute(async (req, res) => {
 
   let status = 'link-permissions-saved';
   try {
-    await callSettings(token, 'PUT', `/sub-accounts/${relationshipId}/permissions`, {
+    await callSettings(token, 'PUT', `/sub-accounts/${encodeURIComponent(relationshipId)}/permissions`, {
       permissions: permissionPayload(req.body)
     });
   } catch (error) {
@@ -839,7 +839,7 @@ router.post('/linked-accounts/revoke', asyncRoute(async (req, res) => {
     if (relationshipId === null) {
       status = 'link-failed';
     } else {
-      await callSettings(token, 'DELETE', `/sub-accounts/${relationshipId}`);
+      await callSettings(token, 'DELETE', `/sub-accounts/${encodeURIComponent(relationshipId)}`);
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;

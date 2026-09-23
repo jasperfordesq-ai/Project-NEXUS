@@ -26,7 +26,7 @@ const {
  */
 const router = express.Router();
 
-router.get('/:childId', asyncRoute(async (req, res) => {
+router.get('/:childId(\\d+)', asyncRoute(async (req, res) => {
   const childUserId = positiveInt(req.params.childId);
   if (childUserId <= 0) return linkedAccountsRedirect(res, 'activity-denied');
 

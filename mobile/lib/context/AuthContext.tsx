@@ -34,6 +34,7 @@ import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
 import { adoptSignInTenant, classifyCrossCommunityAdmin } from '@/lib/tenancy/signInTenant';
 import { sessionNoticeStore } from '@/lib/notices/sessionNoticeStore';
 import { purgeAllMobileOfflineCheckinData } from '@/lib/eventOfflineCheckinStore';
+import { purgeSessionFileCaches } from '@/lib/sessionFileCache';
 import { clearApiSession, installApiSession, registerUnauthorizedCallback } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
@@ -165,6 +166,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
+      // F-121: exported statements and downloaded attachments leave with the session.
+      purgeSessionFileCaches(),
     ]);
 
     if (!isMountedRef.current || sessionVersionRef.current !== version) return;
@@ -311,6 +314,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
+      // F-121: exported statements and downloaded attachments leave with the session.
+      purgeSessionFileCaches(),
     ]);
     // Cleanup may outlive a new sign-in; only the rejected session owns this reset.
     if (!isCurrent()) return;
@@ -523,6 +528,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       storage.remove(STORAGE_KEYS.USER_DATA),
       purgeAllMobileOfflineCheckinData(),
+      // F-121: exported statements and downloaded attachments leave with the session.
+      purgeSessionFileCaches(),
     ]);
     if (!isCurrent()) return;
 

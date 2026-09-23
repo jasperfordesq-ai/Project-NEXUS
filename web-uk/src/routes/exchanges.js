@@ -273,7 +273,7 @@ router.get('/', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/:id', asyncRoute(async (req, res) => {
+router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const [exchangePayload, profilePayload, ratingsPayload] = await Promise.all([
     getExchange(req.token, id),
@@ -296,7 +296,7 @@ router.get('/:id', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/:id', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const action = String(req.body.action || '').trim();
   const hours = action === 'confirm' ? confirmationHours(req.body.hours) : null;
@@ -325,13 +325,13 @@ router.post('/:id', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError || error instanceof ApiOfflineError) {
       if (handleApiError(error, req, res, { redirectOn401: '/login' })) return undefined;
-      return redirectTo(res, `/exchanges/${id}?status=exchange-action-failed`);
+      return redirectTo(res, `/exchanges/${encodeURIComponent(id)}?status=exchange-action-failed`);
     }
     throw error;
   }
 }));
 
-router.post('/:id/rate', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/rate', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const rating = parseInt(req.body.rating, 10);
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
@@ -347,7 +347,7 @@ router.post('/:id/rate', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError || error instanceof ApiOfflineError) {
       if (handleApiError(error, req, res, { redirectOn401: '/login' })) return undefined;
-      return redirectTo(res, `/exchanges/${id}?status=rating-failed#rating`);
+      return redirectTo(res, `/exchanges/${encodeURIComponent(id)}?status=rating-failed#rating`);
     }
     throw error;
   }

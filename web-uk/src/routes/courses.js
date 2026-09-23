@@ -592,10 +592,10 @@ async function courseCategories(token) {
 
 async function courseDetailPayload(token, id) {
   const [courseResult, prerequisitesResult, reviewsResult, progressResult] = await Promise.all([
-    callCourse(token, 'GET', `/${id}`),
-    callCourse(token, 'GET', `/${id}/prerequisites`).catch(() => ({ data: [] })),
-    callCourse(token, 'GET', `/${id}/reviews`).catch(() => ({ data: [] })),
-    callCourse(token, 'GET', `/${id}/progress`).catch((error) => {
+    callCourse(token, 'GET', `/${encodeURIComponent(id)}`),
+    callCourse(token, 'GET', `/${encodeURIComponent(id)}/prerequisites`).catch(() => ({ data: [] })),
+    callCourse(token, 'GET', `/${encodeURIComponent(id)}/reviews`).catch(() => ({ data: [] })),
+    callCourse(token, 'GET', `/${encodeURIComponent(id)}/progress`).catch((error) => {
       if (error instanceof ApiError || error instanceof ApiOfflineError) return { data: {} };
       throw error;
     })
@@ -816,7 +816,7 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
+router.get('/instructor/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
@@ -858,12 +858,12 @@ router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/instructor/:id/analytics', asyncRoute(async (req, res) => {
+router.get('/instructor/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
   try {
-    const payload = normalizeAnalytics(await callCourse(token, 'GET', `/${req.params.id}/analytics`), res.locals.t);
+    const payload = normalizeAnalytics(await callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}/analytics`), res.locals.t);
     return res.render('courses/analytics', {
       title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.analytics.title') : 'Course analytics'),
       activeNav: 'explore',
@@ -878,14 +878,14 @@ router.get('/instructor/:id/analytics', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/instructor/:id/grading', asyncRoute(async (req, res) => {
+router.get('/instructor/:id(\\d+)/grading', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
   try {
     const [courseResult, attemptsResult] = await Promise.all([
-      callCourse(token, 'GET', `/${req.params.id}`),
-      callCourse(token, 'GET', `/${req.params.id}/grading`)
+      callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}`),
+      callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}/grading`)
     ]);
     const course = normalizeCourse(objectFrom(courseResult));
 
@@ -906,12 +906,12 @@ router.get('/instructor/:id/grading', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/:id/certificate', asyncRoute(async (req, res) => {
+router.get('/:id(\\d+)/certificate', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
   try {
-    const result = await callCourse(token, 'GET', `/${req.params.id}/certificate`);
+    const result = await callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}/certificate`);
     const data = objectFrom(result);
     const html = typeof data.html === 'string' ? data.html : '';
     if (!html) {
@@ -928,7 +928,7 @@ router.get('/:id/certificate', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/:id/learn', asyncRoute(async (req, res) => {
+router.get('/:id(\\d+)/learn', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
@@ -943,7 +943,7 @@ router.get('/:id/learn', asyncRoute(async (req, res) => {
 
     if (currentLesson && currentLesson.contentType === 'quiz' && currentLesson.quizId !== null) {
       try {
-        currentLesson.quiz = objectFrom(await callCourse(token, 'GET', `/quizzes/${currentLesson.quizId}`));
+        currentLesson.quiz = objectFrom(await callCourse(token, 'GET', `/quizzes/${encodeURIComponent(currentLesson.quizId)}`));
       } catch (error) {
         if (!(error instanceof ApiError && [403, 404].includes(error.status))) {
           throw error;
@@ -968,7 +968,7 @@ router.get('/:id/learn', asyncRoute(async (req, res) => {
   }
 }));
 
-router.get('/:id', asyncRoute(async (req, res) => {
+router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
@@ -1115,16 +1115,16 @@ function quizStatus(result) {
   return 'quiz-failed';
 }
 
-router.post('/:id/enrol', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/enrol', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, (error) => courseRedirect(req.params.id, enrolFailureStatus(error)), async (token) => {
-    await callCourse(token, 'POST', `/${req.params.id}/enroll`);
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/enroll`);
     return redirectTo(res, courseRedirect(req.params.id, 'enrolled'));
   });
 }));
 
-router.post('/:id/lessons/:lessonId/complete', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/complete', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, learnRedirect(req.params.id, 'lesson-completed'), async (token) => {
-    const result = await callCourse(token, 'POST', `/${req.params.id}/lessons/${req.params.lessonId}/complete`, completionPayload(req.body));
+    const result = await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}/complete`, completionPayload(req.body));
     const data = dataFrom(result);
     const status = data && typeof data === 'object' && data.course_completed
       ? 'course-completed'
@@ -1133,7 +1133,7 @@ router.post('/:id/lessons/:lessonId/complete', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/:id/lessons/:lessonId/quiz', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/quiz', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, learnRedirect(req.params.id, 'quiz-error', req.params.lessonId), async (token) => {
     const quizId = positiveInteger(req.body.quiz_id || req.body.quizId);
     if (quizId === null) {
@@ -1141,7 +1141,7 @@ router.post('/:id/lessons/:lessonId/quiz', asyncRoute(async (req, res) => {
     }
 
     try {
-      const result = await callCourse(token, 'POST', `/quizzes/${quizId}/attempt`, {
+      const result = await callCourse(token, 'POST', `/quizzes/${encodeURIComponent(quizId)}/attempt`, {
         answers: quizAnswers(req.body)
       });
       return redirectTo(res, learnRedirect(req.params.id, quizStatus(result), req.params.lessonId));
@@ -1153,14 +1153,14 @@ router.post('/:id/lessons/:lessonId/quiz', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/:id/reviews', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/reviews', asyncRoute(async (req, res) => {
   const payload = reviewPayload(req.body);
   if (payload === null) {
     return redirectTo(res, courseRedirect(req.params.id, 'review-invalid', '#reviews'));
   }
 
   return requireCourseAction(req, res, (error) => courseRedirect(req.params.id, reviewFailureStatus(error), '#reviews'), async (token) => {
-    await callCourse(token, 'POST', `/${req.params.id}/reviews`, payload);
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/reviews`, payload);
     return redirectTo(res, courseRedirect(req.params.id, 'review-saved', '#reviews'));
   });
 }));
@@ -1186,7 +1186,7 @@ router.post('/instructor/new', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/instructor/:id/update', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/update', asyncRoute(async (req, res) => {
   const payload = coursePayload(req.body);
   if (payload === null) {
     storeCourseForm(req, req.params.id);
@@ -1197,14 +1197,14 @@ router.post('/instructor/:id/update', asyncRoute(async (req, res) => {
     storeCourseForm(req, req.params.id);
     return instructorEditRedirect(req.params.id, 'save-failed');
   }, async (token) => {
-    await callCourse(token, 'PUT', `/${req.params.id}`, payload);
+    await callCourse(token, 'PUT', `/${encodeURIComponent(req.params.id)}`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'saved'));
   });
 }));
 
-router.post('/instructor/:id/publish', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/publish', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'publish-failed'), async (token) => {
-    const result = await callCourse(token, 'POST', `/${req.params.id}/publish`);
+    const result = await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/publish`);
     const data = dataFrom(result);
     const status = data && typeof data === 'object' && data.moderation_status === 'approved'
       ? 'published'
@@ -1213,85 +1213,85 @@ router.post('/instructor/:id/publish', asyncRoute(async (req, res) => {
   });
 }));
 
-router.post('/instructor/:id/unpublish', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/unpublish', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'unpublish-failed'), async (token) => {
-    await callCourse(token, 'POST', `/${req.params.id}/unpublish`);
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/unpublish`);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'unpublished'));
   });
 }));
 
-router.post('/instructor/:id/delete', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorRedirect('delete-failed'), async (token) => {
-    await callCourse(token, 'DELETE', `/${req.params.id}`);
+    await callCourse(token, 'DELETE', `/${encodeURIComponent(req.params.id)}`);
     return redirectTo(res, instructorRedirect('deleted'));
   });
 }));
 
-router.post('/instructor/:id/grading/:attemptId', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/grading/:attemptId(\\d+)', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorGradingRedirect(req.params.id, 'grade-failed'), async (token) => {
-    await callCourse(token, 'POST', `/attempts/${req.params.attemptId}/grade`, gradePayload(req.body));
+    await callCourse(token, 'POST', `/attempts/${encodeURIComponent(req.params.attemptId)}/grade`, gradePayload(req.body));
     return redirectTo(res, instructorGradingRedirect(req.params.id, 'graded'));
   });
 }));
 
-router.post('/instructor/:id/sections', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/sections', asyncRoute(async (req, res) => {
   const payload = sectionPayload(req.body);
   if (payload === null) {
     return redirectTo(res, instructorEditRedirect(req.params.id, 'section-title-missing'));
   }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'section-failed'), async (token) => {
-    await callCourse(token, 'POST', `/${req.params.id}/sections`, payload);
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/sections`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'section-added'));
   });
 }));
 
-router.post('/instructor/:id/sections/:sectionId/update', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/sections/:sectionId(\\d+)/update', asyncRoute(async (req, res) => {
   const payload = sectionPayload(req.body);
   if (payload === null) {
     return redirectTo(res, instructorEditRedirect(req.params.id, 'section-title-missing'));
   }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'section-failed'), async (token) => {
-    await callCourse(token, 'PUT', `/${req.params.id}/sections/${req.params.sectionId}`, payload);
+    await callCourse(token, 'PUT', `/${encodeURIComponent(req.params.id)}/sections/${encodeURIComponent(req.params.sectionId)}`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'section-saved'));
   });
 }));
 
-router.post('/instructor/:id/sections/:sectionId/delete', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/sections/:sectionId(\\d+)/delete', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'section-failed'), async (token) => {
-    await callCourse(token, 'DELETE', `/${req.params.id}/sections/${req.params.sectionId}`);
+    await callCourse(token, 'DELETE', `/${encodeURIComponent(req.params.id)}/sections/${encodeURIComponent(req.params.sectionId)}`);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'section-deleted'));
   });
 }));
 
-router.post('/instructor/:id/lessons', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/lessons', asyncRoute(async (req, res) => {
   const payload = lessonPayload(req.body);
   if (payload === null) {
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-title-missing'));
   }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'lesson-failed'), async (token) => {
-    await callCourse(token, 'POST', `/${req.params.id}/lessons`, payload);
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/lessons`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-added'));
   });
 }));
 
-router.post('/instructor/:id/lessons/:lessonId/update', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/update', asyncRoute(async (req, res) => {
   const payload = lessonPayload(req.body);
   if (payload === null) {
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-title-missing'));
   }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'lesson-failed'), async (token) => {
-    await callCourse(token, 'PUT', `/${req.params.id}/lessons/${req.params.lessonId}`, payload);
+    await callCourse(token, 'PUT', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-saved'));
   });
 }));
 
-router.post('/instructor/:id/lessons/:lessonId/delete', asyncRoute(async (req, res) => {
+router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/delete', asyncRoute(async (req, res) => {
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'lesson-failed'), async (token) => {
-    await callCourse(token, 'DELETE', `/${req.params.id}/lessons/${req.params.lessonId}`);
+    await callCourse(token, 'DELETE', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}`);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-deleted'));
   });
 }));

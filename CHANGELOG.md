@@ -95,6 +95,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Compose drafts and recent searches now belong to one member of one community and are cleared on sign-out, so the next person on a shared browser can't see or publish them (F-109).
+
+- Opening a link to another community on the shared accessible site no longer signs the member out; the session is refreshed with the community it was issued for (F-112).
+
+- Every numeric id in the accessible site's routes is now digits-only and every value placed into an API path is encoded, so a crafted link can't point a member's authenticated request at another endpoint (F-113).
+
+- The accessible site's CSRF token is now tied to the session and uses a `__Host-` cookie in production (F-114).
+
+- Opening the two-step verification page on the accessible site no longer generates a new setup secret; setup starts only from its button (F-115).
+
+- A link's `name` can no longer set the title of a message thread, profile or federated message in the app; only the name the server gives is shown (F-118).
+
+- The app's fingerprint or face lock now locks again when the app returns after more than five minutes in the background (F-119).
+
+- Wallet CSV exports from the app now neutralise cells that spreadsheet apps would run as formulas (F-120).
+
+- Exported wallet statements and downloaded message attachments are removed from the phone on sign-out, and a failed or out-of-session attachment download is no longer offered as the file (F-121).
+
 - Link previews now reject credential-bearing URLs, isolate non-default ports and fragments in cache identity, quarantine unsafe legacy rows across direct, post, message and feed reads, and migrate the global cache without breaking valid associations (F-052).
 
 - Brokers and coordinators must now use two-factor authentication, like administrators (F-057).

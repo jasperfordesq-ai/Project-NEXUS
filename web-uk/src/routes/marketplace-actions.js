@@ -531,7 +531,7 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callApi(token, 'PUT', `/listings/${id}`, payload);
+    await callApi(token, 'PUT', `/listings/${encodeURIComponent(id)}`, payload);
     return redirectTo(res, listingRedirect(id, 'listing-saved'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -645,7 +645,7 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   let shippingOptions = [];
   let pickupSlots = [];
   try {
-    const listingResult = await callApi(token, 'GET', `/listings/${id}`);
+    const listingResult = await callApi(token, 'GET', `/listings/${encodeURIComponent(id)}`);
     listing = dataFrom(listingResult) || {};
     const listingPriceType = trimmed(listing.price_type);
     const listingMoney = decimalNumber(listing.price);
@@ -659,9 +659,9 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
     const deliveryMethod = trimmed(listing.delivery_method) || 'pickup';
     const [shippingResult, slotsResult] = await Promise.all([
       sellerId && ['shipping', 'both'].includes(deliveryMethod)
-        ? callApi(token, 'GET', `/sellers/${sellerId}/shipping-options`).catch(() => ({ data: [] }))
+        ? callApi(token, 'GET', `/sellers/${encodeURIComponent(sellerId)}/shipping-options`).catch(() => ({ data: [] }))
         : Promise.resolve({ data: [] }),
-      callApi(token, 'GET', `/listings/${id}/pickup-slots`).catch(() => ({ data: [] }))
+      callApi(token, 'GET', `/listings/${encodeURIComponent(id)}/pickup-slots`).catch(() => ({ data: [] }))
     ]);
     shippingOptions = Array.isArray(dataFrom(shippingResult)) ? dataFrom(shippingResult) : [];
     const hasCashCheckout = listingPriceType === 'fixed' && listingMoney > 0;
@@ -773,15 +773,15 @@ router.post('/offers/:id(\\d+)/buy', asyncRoute(async (req, res) => {
     if (!offer) return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
     const authoritativeListingId = positiveInteger(offer.marketplace_listing_id || offer.listing_id || (offer.listing && offer.listing.id));
     if (!authoritativeListingId) return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
-    const listingResult = await callApi(token, 'GET', `/listings/${authoritativeListingId}?offer_id=${id}`);
+    const listingResult = await callApi(token, 'GET', `/listings/${encodeURIComponent(authoritativeListingId)}?offer_id=${id}`);
     listing = dataFrom(listingResult) || {};
     listing.id = authoritativeListingId;
     const sellerId = positiveInteger(listing.user && listing.user.id) || positiveInteger(listing.user_id);
     const [shippingResult, slotsResult] = await Promise.all([
       sellerId && ['shipping', 'both'].includes(trimmed(listing.delivery_method) || 'pickup')
-        ? callApi(token, 'GET', `/sellers/${sellerId}/shipping-options`).catch(() => ({ data: [] }))
+        ? callApi(token, 'GET', `/sellers/${encodeURIComponent(sellerId)}/shipping-options`).catch(() => ({ data: [] }))
         : Promise.resolve({ data: [] }),
-      callApi(token, 'GET', `/listings/${authoritativeListingId}/pickup-slots?offer_id=${id}`).catch(() => ({ data: [] }))
+      callApi(token, 'GET', `/listings/${encodeURIComponent(authoritativeListingId)}/pickup-slots?offer_id=${id}`).catch(() => ({ data: [] }))
     ]);
     shippingOptions = Array.isArray(dataFrom(shippingResult)) ? dataFrom(shippingResult) : [];
     pickupSlots = Array.isArray(dataFrom(slotsResult)) ? dataFrom(slotsResult) : [];
@@ -842,7 +842,7 @@ router.post('/:id(\\d+)/offer', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callApi(token, 'POST', `/listings/${id}/offers`, payload);
+    await callApi(token, 'POST', `/listings/${encodeURIComponent(id)}/offers`, payload);
     delete req.session[offerFormSessionKey(id)];
     return redirectTo(res, '/marketplace/offers?status=offer-sent');
   } catch (error) {
@@ -870,7 +870,7 @@ router.post('/:id(\\d+)/report', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callMarketplaceApi(token, 'POST', `/listings/${id}/report`, {
+    await callMarketplaceApi(token, 'POST', `/listings/${encodeURIComponent(id)}/report`, {
       reason: values.reason,
       description: trimmed(values.description, 5000)
     });
@@ -1019,7 +1019,7 @@ router.post('/orders/:id(\\d+)/rate', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callApi(token, 'POST', `/orders/${id}/rate`, {
+    await callApi(token, 'POST', `/orders/${encodeURIComponent(id)}/rate`, {
       rating,
       comment: trimmed(req.body.comment, 1000),
       is_anonymous: checked(req.body.is_anonymous)
@@ -1162,7 +1162,7 @@ router.post('/coupons/:id(\\d+)/update', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callApi(token, 'PUT', `/seller/coupons/${id}`, payload);
+    await callApi(token, 'PUT', `/seller/coupons/${encodeURIComponent(id)}`, payload);
     delete req.session[couponFormSessionKey(req, `edit:${id}`)];
     return redirectTo(res, `/marketplace/coupons/${id}/edit?status=coupon-saved`);
   } catch (error) {

@@ -244,7 +244,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const id = positiveInteger(req.params.id);
   const [profileResult, exchangeResult] = await Promise.all([
     getRequestProfile(req, token),
-    callGroupExchangeApi(token, 'GET', `/${id}`)
+    callGroupExchangeApi(token, 'GET', `/${encodeURIComponent(id)}`)
   ]);
   const viewerId = profileId(profileResult);
   const exchange = normalizeExchange({ id, ...itemFrom(exchangeResult) }, res.locals.t);

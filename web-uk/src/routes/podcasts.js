@@ -549,7 +549,7 @@ router.get('/:showId(\\d+)/episodes/:id(\\d+)', asyncRoute(async (req, res) => {
   const showId = positiveInteger(req.params.showId);
   const episodeId = positiveInteger(req.params.id);
   try {
-    const result = await callPodcast(token, 'GET', `/${showId}/${episodeId}`);
+    const result = await callPodcast(token, 'GET', `/${encodeURIComponent(showId)}/${encodeURIComponent(episodeId)}`);
     const episodeData = objectFrom(result);
     if (!episodeData) {
       res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
@@ -575,7 +575,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   const showId = positiveInteger(req.params.id);
   try {
-    const result = await callPodcast(token, 'GET', `/${showId}`);
+    const result = await callPodcast(token, 'GET', `/${encodeURIComponent(showId)}`);
     const showData = objectFrom(result);
     if (!showData) {
       res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });

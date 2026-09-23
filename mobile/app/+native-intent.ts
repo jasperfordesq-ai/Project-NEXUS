@@ -814,6 +814,9 @@ function mapMessagePath(segments: string[], queryParams: Record<string, string>)
     params.context_type = params.context;
   }
   delete params.context;
+  // F-118: a display name in the link is the link author's claim, not the member's
+  // identity. The thread shows only the server-resolved name, so do not carry it.
+  delete params.name;
 
   const queryRecipientId = params.user ?? params.to ?? params.to_user;
   delete params.user;

@@ -69,7 +69,7 @@ function renderPurposeForm(res, { childUserId, childName, partnerId }) {
  * Capture WHY, before anything is fetched. Stored in the session and never in
  * the query string.
  */
-router.post('/:childId/purpose', asyncRoute(async (req, res) => {
+router.post('/:childId(\\d+)/purpose', asyncRoute(async (req, res) => {
   const childUserId = positiveInt(req.params.childId);
   if (childUserId <= 0) return linkedAccountsRedirect(res, 'message-view-denied');
 
@@ -152,11 +152,11 @@ async function renderViewer(req, res, childUserId, partnerUserId) {
   });
 }
 
-router.get('/:childId', asyncRoute(async (req, res) => (
+router.get('/:childId(\\d+)', asyncRoute(async (req, res) => (
   renderViewer(req, res, positiveInt(req.params.childId), null)
 )));
 
-router.get('/:childId/:partnerId', asyncRoute(async (req, res) => (
+router.get('/:childId(\\d+)/:partnerId(\\d+)', asyncRoute(async (req, res) => (
   renderViewer(req, res, positiveInt(req.params.childId), positiveInt(req.params.partnerId))
 )));
 

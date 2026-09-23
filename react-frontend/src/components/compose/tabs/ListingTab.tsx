@@ -14,7 +14,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth, useTenant } from '@/contexts';
 import { useDraftPersistence } from '@/hooks';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { ListingForm } from '@/components/listings/ListingForm';
 import type { ListingFormSubmitState, ListingFormValues } from '@/components/listings/ListingForm';
@@ -29,11 +31,14 @@ interface ListingDraft {
 
 export function ListingTab({ onSuccess, onClose, templateData, onContentChange }: TabSubmitProps) {
   const { t } = useTranslation('feed');
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const { register, unregister } = useComposeSubmit();
   const isMobile = useMediaQuery('(max-width: 639px)');
 
   const [draft, setDraft, clearDraft] = useDraftPersistence<ListingDraft>(
-    'compose-draft-listing',
+    // F-109: drafts belong to one member of one community.
+    userScopedStorageKey('compose-draft-listing', tenant?.id, user?.id),
     { title: '', description: '', type: 'offer' },
   );
   // The restored draft seeds the form once on mount; afterwards the form owns

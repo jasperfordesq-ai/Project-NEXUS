@@ -2259,7 +2259,7 @@ router.get('/organisations/:id(\\d+)/dashboard', asyncRoute(async (req, res) => 
   let dashboard = normalizeOrgStats({});
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${id}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load the organisation dashboard. Check that you manage this organisation and try again.';
@@ -2286,12 +2286,12 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
   let hours = [];
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${id}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
     applications = collectionFrom(
-      await callApi(token, 'GET', `/organisations/${id}/applications?status=pending&per_page=20`)
+      await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/applications?status=pending&per_page=20`)
     ).map((application) => normalizeOrgApplication(application, res.locals.t)).filter((application) => application.id);
     hours = collectionFrom(
-      await callApi(token, 'GET', `/organisations/${id}/hours/pending?per_page=20`)
+      await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/hours/pending?per_page=20`)
     ).map((log) => normalizeOrgPendingHour(log, res.locals.t)).filter((log) => log.id);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2321,7 +2321,7 @@ router.get('/organisations/:id(\\d+)/settings', asyncRoute(async (req, res) => {
   let organization = normalizeOrgDetail({});
   let loadError = null;
   try {
-    organization = normalizeOrgDetail(await callApi(token, 'GET', `/organisations/${id}`));
+    organization = normalizeOrgDetail(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load the organisation settings. Check that you manage this organisation and try again.';
@@ -2354,8 +2354,8 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
   let nextHref = '';
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${id}/stats`));
-    const result = await callApi(token, 'GET', `/organisations/${id}/volunteers?${params.toString()}`);
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    const result = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/volunteers?${params.toString()}`);
     volunteers = collectionFrom(result)
       .map((volunteer) => normalizeOrgVolunteer(volunteer, res.locals.t))
       .filter((volunteer) => volunteer.id);
@@ -2388,10 +2388,10 @@ router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
   let transactions = [];
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${id}/stats`));
-    summary = normalizeOrgWalletSummary(await callApi(token, 'GET', `/organisations/${id}/wallet`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    summary = normalizeOrgWalletSummary(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/wallet`));
     transactions = collectionFrom(
-      await callApi(token, 'GET', `/organisations/${id}/wallet/transactions?per_page=20`)
+      await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/wallet/transactions?per_page=20`)
     ).map(normalizeOrgWalletTransaction).filter((transaction) => transaction.id);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2919,7 +2919,7 @@ router.post('/swaps/:id(\\d+)/respond', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   try {
-    await callApi(token, 'PUT', `/swaps/${id}`, { action });
+    await callApi(token, 'PUT', `/swaps/${encodeURIComponent(id)}`, { action });
     return redirectTo(res, `/volunteering/swaps?status=${status}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2955,7 +2955,7 @@ router.post('/emergency-alerts/:id(\\d+)/respond', asyncRoute(async (req, res) =
   if (!token) return redirectTo(res, loginRedirect());
 
   try {
-    await callApi(token, 'PUT', `/emergency-alerts/${id}`, { response });
+    await callApi(token, 'PUT', `/emergency-alerts/${encodeURIComponent(id)}`, { response });
     return redirectTo(res, `/volunteering/emergency-alerts?status=${status}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -3097,7 +3097,7 @@ router.post('/group-signups/:id(\\d+)/members', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   try {
-    await callApi(token, 'POST', `/group-reservations/${id}/members`, { user_id: userId });
+    await callApi(token, 'POST', `/group-reservations/${encodeURIComponent(id)}/members`, { user_id: userId });
     return redirectTo(res, '/volunteering/group-signups?status=member-added');
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -3278,7 +3278,7 @@ router.post('/organisations/:id(\\d+)/applications/:appId(\\d+)', asyncRoute(asy
   }
 
   try {
-    await callApi(token, 'PUT', `/applications/${appId}`, {
+    await callApi(token, 'PUT', `/applications/${encodeURIComponent(appId)}`, {
       action,
       org_note: trimmed(req.body.org_note)
     });
@@ -3377,7 +3377,7 @@ router.post('/organisations/:id(\\d+)/wallet/auto-pay', asyncRoute(async (req, r
     return redirectTo(res, loginRedirect());
   }
 
-  await callApi(token, 'GET', `/organisations/${id}/stats`);
+  await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`);
   return redirectTo(res, orgWalletRedirect(id, 'auto-credit-always-on'));
 }));
 

@@ -74,6 +74,7 @@ import {
   type GamificationProfile,
 } from '@/lib/api/gamification';
 import { withRouteGate } from '@/components/withRouteGate';
+import { appResolvedMember } from '@/lib/federation/appResolvedMembers';
 
 interface MemberProfile {
   id: number | string;
@@ -145,7 +146,7 @@ function MemberProfileScreen() {
 
 function MemberProfileScreenInner() {
   const { t } = useTranslation(['members', 'federation', 'common']);
-  const { id, tenant_id: tenantIdParam, name: nameParam } = useLocalSearchParams<{ id?: string; tenant_id?: string; name?: string }>();
+  const { id, tenant_id: tenantIdParam } = useLocalSearchParams<{ id?: string; tenant_id?: string }>();
   const primary = usePrimaryColor();
   const { hasFeature, hasModule, tenant } = useTenant();
   const theme = useTheme();
@@ -471,7 +472,8 @@ function MemberProfileScreenInner() {
       <ExternalFederatedMemberState
         memberId={rawMemberId}
         tenantId={externalTenantIdFromMemberId(rawMemberId) ?? tenantIdParam ?? ''}
-        displayName={typeof nameParam === 'string' && nameParam.trim() ? nameParam.trim() : t('profile.externalFederatedMember')}
+        // F-118: never the link's `?name=` — only what the app's directory read from the server.
+        displayName={appResolvedMember(rawMemberId, externalTenantIdFromMemberId(rawMemberId) ?? tenantIdParam)?.name || t('profile.externalFederatedMember')}
         primary={primary}
         theme={theme}
         t={t}
@@ -1077,7 +1079,6 @@ function ExternalFederatedMemberState({
         compose: 'true',
         to_user: memberId,
         to_tenant: tenantId,
-        name: displayName,
       },
     } as unknown as Href);
   }

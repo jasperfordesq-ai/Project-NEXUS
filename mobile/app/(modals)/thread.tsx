@@ -106,10 +106,9 @@ function ThreadScreen() {
 
 function ThreadScreenInner() {
   const { t } = useTranslation(['messages', 'common']);
-  const { id, recipientId, name, listing, context_type, context_id } = useLocalSearchParams<{
+  const { id, recipientId, listing, context_type, context_id } = useLocalSearchParams<{
     id?: string | string[];
     recipientId?: string | string[];
-    name?: string | string[];
     listing?: string | string[];
     context_type?: string | string[];
     context_id?: string | string[];
@@ -132,9 +131,15 @@ function ThreadScreenInner() {
   const threadLookupId = isNewConversation ? directRecipientId : conversationId;
   const isValidId = Number.isFinite(threadLookupId) && threadLookupId > 0;
   const safeThreadLookupId = isValidId ? threadLookupId : 0;
-  const recipientName = firstParam(name);
+  /*
+    🔴 F-118: a deep link (nexus://messages/new/42?name=…) used to title the conversation
+    with its `?name=` — whatever the link's author typed, so a stranger's thread could be
+    headed "Community Coordinator". Only the server's description of the other member
+    names the thread; until it answers, the title is the generic placeholder. The URL's
+    name is deliberately not read at all (the same rule as the wallet recipient, B/F-02).
+  */
   const [resolvedTitle, setResolvedTitle] = useState<string | null>(null);
-  const threadTitle = recipientName?.trim() ? recipientName.trim() : (resolvedTitle || t('threadTitle'));
+  const threadTitle = resolvedTitle || t('threadTitle');
   const listingId = parsePositiveInt(firstParam(listing));
   const contextType = firstParam(context_type);
   const contextId = parsePositiveInt(firstParam(context_id));

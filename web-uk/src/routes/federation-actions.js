@@ -243,7 +243,7 @@ router.post('/connections/:id(\\d+)/accept', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'connection-accepted';
   try {
-    await callFederation(token, 'POST', `/connections/${id}/accept`);
+    await callFederation(token, 'POST', `/connections/${encodeURIComponent(id)}/accept`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'connection-action-failed';
@@ -259,7 +259,7 @@ router.post('/connections/:id(\\d+)/reject', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'connection-rejected';
   try {
-    await callFederation(token, 'POST', `/connections/${id}/reject`);
+    await callFederation(token, 'POST', `/connections/${encodeURIComponent(id)}/reject`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'connection-action-failed';
@@ -275,7 +275,7 @@ router.post('/connections/:id(\\d+)/remove', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'connection-removed';
   try {
-    await callFederation(token, 'DELETE', `/connections/${id}`);
+    await callFederation(token, 'DELETE', `/connections/${encodeURIComponent(id)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'connection-action-failed';
@@ -303,7 +303,7 @@ router.post('/messages/translate/:id(\\d+)', asyncRoute(async (req, res) => {
   const targetLanguage = trimmed(req.body.target_language || req.body.target_locale || 'en', 10) || 'en';
   let status = 'translate-done';
   try {
-    const result = await callFederation(token, 'POST', `/messages/${id}/translate`, {
+    const result = await callFederation(token, 'POST', `/messages/${encodeURIComponent(id)}/translate`, {
       target_language: targetLanguage
     });
     const translatedText = trimmed((result && result.data && result.data.translated_text) || (result && result.translated_text), 10000);

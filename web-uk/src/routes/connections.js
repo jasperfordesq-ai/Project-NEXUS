@@ -294,7 +294,7 @@ router.get('/', asyncRoute(async (req, res) => {
 }, { redirectOn401: '/login?status=auth-required' }));
 
 // Accept connection request
-router.post('/:id/accept', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/accept', asyncRoute(async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -310,7 +310,7 @@ router.post('/:id/accept', asyncRoute(async (req, res) => {
 }));
 
 // Decline connection request
-router.post('/:id/decline', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/decline', asyncRoute(async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -326,7 +326,7 @@ router.post('/:id/decline', asyncRoute(async (req, res) => {
 }));
 
 // Remove connection or cancel pending request
-router.post('/:id/remove', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/remove', asyncRoute(async (req, res) => {
   const { id } = req.params;
 
   try {

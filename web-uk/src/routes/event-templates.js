@@ -58,7 +58,7 @@ function materializationInput(body) {
 }
 
 async function renderMaterialization(req, res, values = null, preview = null) {
-  const templateId = Number(req.params.templateId); const template = dataFrom(await callEventTemplateApi(tokenFrom(req), 'GET', `/${templateId}`)) || {}; const configuration = template.version?.configuration || {};
+  const templateId = Number(req.params.templateId); const template = dataFrom(await callEventTemplateApi(tokenFrom(req), 'GET', `/${encodeURIComponent(templateId)}`)) || {}; const configuration = template.version?.configuration || {};
   const defaults = values || { template_version: template.current_version, start_time: '', end_time: '', overrides: { title: configuration.title || '', location: configuration.location || '', max_attendees: configuration.max_attendees || '', timezone: configuration.timezone || 'UTC', all_day: configuration.all_day === true } };
   res.set('Cache-Control', 'private, no-store');
   return res.render('events/template-materialize', { title: res.locals.t('event_templates.materialize_title'), activeNav: 'events', template, values: defaults, preview, status: trimmed(req.query.status), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
@@ -67,7 +67,7 @@ async function renderMaterialization(req, res, values = null, preview = null) {
 router.get('/:templateId(\\d+)/history', requireAuth, asyncRoute(async (req, res) => {
   const templateId = Number(req.params.templateId); const cursor = trimmed(req.query.cursor, 4096); const query = new URLSearchParams({ per_page: '20' }); if (cursor) query.set('cursor', cursor);
   const filter = selectedFilter(req.query.filter); const libraryCursor = trimmed(req.query.library_cursor, 4096);
-  const [templateResult, historyResult] = await Promise.all([callEventTemplateApi(tokenFrom(req), 'GET', `/${templateId}`), callEventTemplateApi(tokenFrom(req), 'GET', `/${templateId}/history?${query}`)]);
+  const [templateResult, historyResult] = await Promise.all([callEventTemplateApi(tokenFrom(req), 'GET', `/${encodeURIComponent(templateId)}`), callEventTemplateApi(tokenFrom(req), 'GET', `/${encodeURIComponent(templateId)}/history?${query}`)]);
   res.set('Cache-Control', 'private, no-store');
   const formatDate = typeof res.locals.formatLocaleDate === 'function'
     ? res.locals.formatLocaleDate
@@ -79,12 +79,12 @@ router.get('/:templateId(\\d+)/history', requireAuth, asyncRoute(async (req, res
 router.get('/:templateId(\\d+)/materialize', requireAuth, asyncRoute(async (req, res) => renderMaterialization(req, res), { notFoundTitle: 'Template not found' }));
 router.post('/:templateId(\\d+)/materialize/preview', requireAuth, asyncRoute(async (req, res) => {
   const input = materializationInput(req.body); if (!input) return redirectTo(res, `/event-templates/${req.params.templateId}/materialize?status=invalid`);
-  try { const preview = dataFrom(await callEventTemplateApi(tokenFrom(req), 'POST', `/${req.params.templateId}/materialization-preview`, input)) || {}; return renderMaterialization(req, res, input, preview); }
+  try { const preview = dataFrom(await callEventTemplateApi(tokenFrom(req), 'POST', `/${encodeURIComponent(req.params.templateId)}/materialization-preview`, input)) || {}; return renderMaterialization(req, res, input, preview); }
   catch (error) { if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required'); if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, `/event-templates/${req.params.templateId}/materialize?status=failed`); throw error; }
 }));
 router.post('/:templateId(\\d+)/materialize', requireAuth, asyncRoute(async (req, res) => {
   const input = materializationInput(req.body); const key = trimmed(req.body.idempotency_key, 191); if (!input || !key) return redirectTo(res, `/event-templates/${req.params.templateId}/materialize?status=invalid`);
-  try { const result = dataFrom(await callEventTemplateApi(tokenFrom(req), 'POST', `/${req.params.templateId}/materializations`, input, { headers: { 'Idempotency-Key': key } })) || {}; const eventId = positiveInteger(result.event?.id || result.event_id || result.id); return redirectTo(res, eventId ? `/events/${eventId}/edit` : '/events/templates?status=materialized'); }
+  try { const result = dataFrom(await callEventTemplateApi(tokenFrom(req), 'POST', `/${encodeURIComponent(req.params.templateId)}/materializations`, input, { headers: { 'Idempotency-Key': key } })) || {}; const eventId = positiveInteger(result.event?.id || result.event_id || result.id); return redirectTo(res, eventId ? `/events/${eventId}/edit` : '/events/templates?status=materialized'); }
   catch (error) { if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required'); if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, `/event-templates/${req.params.templateId}/materialize?status=failed`); throw error; }
 }));
 

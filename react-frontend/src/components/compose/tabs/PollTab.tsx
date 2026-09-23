@@ -15,7 +15,8 @@ import { today, getLocalTimeZone } from '@internationalized/date';
 import Plus from 'lucide-react/icons/plus';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { useDraftPersistence } from '@/hooks';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { api } from '@/lib/api';
@@ -37,13 +38,15 @@ interface PollDraft {
 export function PollTab({ onSuccess, onClose, groupId, templateData }: TabSubmitProps) {
   const { t } = useTranslation('feed');
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const toast = useToast();
   const { register, unregister } = useComposeSubmit();
   const isMobile = useMediaQuery('(max-width: 639px)');
   const submitRef = useRef<() => void>(() => {});
 
   const [draft, setDraft, clearDraft] = useDraftPersistence<PollDraft>(
-    'compose-draft-poll',
+    // F-109: drafts belong to one member of one community.
+    userScopedStorageKey('compose-draft-poll', tenant?.id, user?.id),
     { question: '', options: ['', ''] },
   );
 

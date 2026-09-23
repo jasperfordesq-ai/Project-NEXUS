@@ -13,7 +13,8 @@ import type { DateInputValue } from '@/components/ui';
 import { DatePicker } from '@/components/ui';
 import { today, getLocalTimeZone } from '@internationalized/date';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { useDraftPersistence } from '@/hooks';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TimeInput, type TimeInputValue, Button, Input, Textarea } from '@/components/ui';
@@ -52,13 +53,16 @@ interface EventDraft {
 export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmitProps) {
   const { t } = useTranslation('feed');
   const toast = useToast();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const { register, unregister } = useComposeSubmit();
   const isMobile = useMediaQuery('(max-width: 639px)');
   const submitRef = useRef<() => void>(() => {});
   const geocodedAddressRef = useRef<string | null>(null);
 
   const [draft, setDraft, clearDraft] = useDraftPersistence<EventDraft>(
-    'compose-draft-event',
+    // F-109: drafts belong to one member of one community.
+    userScopedStorageKey('compose-draft-event', tenant?.id, user?.id),
     { title: '', description: '' },
   );
 

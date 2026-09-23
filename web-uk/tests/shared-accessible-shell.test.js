@@ -2712,31 +2712,63 @@ describe('shared accessible frontend shell', () => {
     const api = require('../src/lib/api');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
 
-    api.callProfileApi.mockResolvedValueOnce({
+    const disabledStatus = {
       data: {
         enabled: false,
         setup_required: false,
         backup_codes_remaining: 0
       }
-    }).mockResolvedValueOnce({
+    };
+    api.callProfileApi.mockResolvedValueOnce(disabledStatus);
+
+    const unsigned = await request(app).get('/profile/two-factor');
+    // F-115: opening the page never starts setup — it offers a start button (a POST form).
+    const start = await request(app)
+      .get('/profile/two-factor')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(unsigned.status).toBe(302);
+    expect(unsigned.headers.location).toBe('/login?status=auth-required');
+
+    expect(start.status).toBe(200);
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'GET', '/auth/2fa/status');
+    expect(api.callProfileApi).not.toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
+    expect(start.text).toContain('action="/profile/two-factor/setup"');
+    expect(start.text).toContain('Set up two-factor authentication');
+    expect(start.text).not.toContain('QR code for setting up two-step verification');
+
+    // Starting setup is a CSRF-protected POST in the same session.
+    const startCookies = (start.headers['set-cookie'] || []).map((cookie) => cookie.split(';')[0]);
+    const lastCookie = (name) => startCookies.filter((cookie) => cookie.startsWith(`${name}=`)).pop();
+    const sessionCookies = [
+      `token=${encodeURIComponent(signedToken)}`,
+      lastCookie('nexus.sid'),
+      lastCookie('nexus.csrf')
+    ].filter(Boolean).join('; ');
+    const csrfToken = start.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    api.callProfileApi.mockResolvedValueOnce({
       data: {
         qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+',
         secret: 'ABCD EFGH IJKL',
         backup_codes: []
       }
     });
+    const started = await request(app)
+      .post('/profile/two-factor/setup')
+      .set('Cookie', sessionCookies)
+      .type('form')
+      .send({ _csrf: csrfToken });
+    expect(started.status).toBe(302);
+    expect(started.headers.location).toBe('/profile/two-factor');
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
 
-    const unsigned = await request(app).get('/profile/two-factor');
+    api.callProfileApi.mockResolvedValueOnce(disabledStatus);
     const setup = await request(app)
       .get('/profile/two-factor?status=2fa-code-invalid')
-      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
-
-    expect(unsigned.status).toBe(302);
-    expect(unsigned.headers.location).toBe('/login?status=auth-required');
+      .set('Cookie', sessionCookies);
 
     expect(setup.status).toBe(200);
-    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'GET', '/auth/2fa/status');
-    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
+    expect(api.callProfileApi.mock.calls.filter((call) => call[2] === '/auth/2fa/setup')).toHaveLength(1);
     expect(setup.text).toContain('Back to settings');
     expect(setup.text).toContain('There is a problem');
     expect(setup.text).toContain('That code was not correct or has expired. Try the current code from your app.');
@@ -32292,12 +32324,20 @@ describe('shared accessible frontend shell', () => {
     const first = await agent
       .get('/contact')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
-    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+    let csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
     const post = (pathName, body = {}) => agent
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
       .send({ _csrf: csrfMatch[1], ...body });
+    // F-114: steps that end the session (password change, passkey removal, turning off
+    // two-step verification) invalidate the CSRF token, which is bound to the session.
+    const refreshCsrf = async () => {
+      const page = await agent
+        .get('/contact')
+        .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+      csrfMatch = page.text.match(/name="_csrf" value="([^"]+)"/);
+    };
 
     const settingsResponse = await post('/profile/settings', {
       first_name: ' Ada ',
@@ -32358,6 +32398,9 @@ describe('shared accessible frontend shell', () => {
       current_password: 'current-password',
       new_password: 'correct horse battery staple'
     });
+    // F-114: a password change ends the session, and a CSRF token is only valid in the
+    // session it was issued to — so the next form carries a freshly issued token.
+    await refreshCsrf();
 
     const languageResponse = await post('/profile/language', {
       language: 'ga'
@@ -32429,6 +32472,7 @@ describe('shared accessible frontend shell', () => {
       current_password: 'current-password'
     });
     expect(removePasskeyResponse.headers.location).toBe('/login?status=passkey-removed');
+    await refreshCsrf();
     expect(api.callWebAuthnApi).toHaveBeenLastCalledWith('test-token', 'POST', '/remove', {
       credential_id: 'cred-1',
       security_confirmation_token: 'confirm-remove'
@@ -32534,6 +32578,7 @@ describe('shared accessible frontend shell', () => {
       code: '654321'
     });
     expect(disable2faResponse.headers.location).toBe('/login?status=2fa-disabled');
+    await refreshCsrf();
     expect(api.callProfileApi).toHaveBeenLastCalledWith('test-token', 'POST', '/auth/2fa/disable', {
       password: 'current-password',
       code: '654321'

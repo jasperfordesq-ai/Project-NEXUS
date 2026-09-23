@@ -93,6 +93,103 @@ describe('BiometricLockGate', () => {
     }
   });
 
+  /*
+    F-119: the lock used to run only at a cold start, so a phone handed over (or picked up)
+    with the app merely backgrounded opened straight into the account. It re-locks when the
+    app returns after more than RELOCK_AFTER_BACKGROUND_MS in the background.
+  */
+  describe('re-locking after time in the background (F-119)', () => {
+    const { AppState } = require('react-native');
+    let appStateHandler: ((state: string) => void) | undefined;
+    let now = 1_000_000;
+    let addListener: jest.SpyInstance;
+    let clock: jest.SpyInstance;
+
+    beforeEach(() => {
+      appStateHandler = undefined;
+      now = 1_000_000;
+      addListener = jest.spyOn(AppState, 'addEventListener').mockImplementation((...args: unknown[]) => {
+        const [type, handler] = args as [string, (state: string) => void];
+        if (type === 'change') appStateHandler = handler;
+        return { remove: jest.fn() };
+      });
+      clock = jest.spyOn(Date, 'now').mockImplementation(() => now);
+    });
+
+    afterEach(() => {
+      addListener.mockRestore();
+      clock.mockRestore();
+    });
+
+    async function unlockedGate() {
+      const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+      await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
+      return view;
+    }
+
+    it('locks again, and prompts, when the app returns after a long absence', async () => {
+      const { RELOCK_AFTER_BACKGROUND_MS } = require('./BiometricLockGate');
+      mockAuthenticate.mockResolvedValueOnce({ ok: true }).mockReturnValueOnce(new Promise(() => undefined));
+      const view = await unlockedGate();
+
+      act(() => { appStateHandler?.('background'); });
+      now += RELOCK_AFTER_BACKGROUND_MS + 1;
+      act(() => { appStateHandler?.('active'); });
+
+      // Covered at once — the account must not show while the preference is re-read.
+      expect(view.queryByText('Private account')).toBeNull();
+      expect(await view.findByTestId('biometric-lock-gate', {}, SLOW_CI)).toBeTruthy();
+      await waitFor(() => expect(mockAuthenticate).toHaveBeenCalledTimes(2), SLOW_CI);
+    });
+
+    it('does not re-lock after a short trip away from the app', async () => {
+      const { RELOCK_AFTER_BACKGROUND_MS } = require('./BiometricLockGate');
+      const view = await unlockedGate();
+
+      act(() => { appStateHandler?.('background'); });
+      now += RELOCK_AFTER_BACKGROUND_MS - 1_000;
+      act(() => { appStateHandler?.('active'); });
+
+      expect(view.queryByTestId('biometric-lock-gate')).toBeNull();
+      expect(view.getByText('Private account')).toBeTruthy();
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
+    });
+
+    it('stays open after a long absence when the member has turned the lock off', async () => {
+      const { RELOCK_AFTER_BACKGROUND_MS } = require('./BiometricLockGate');
+      const view = await unlockedGate();
+      mockEnabled.mockResolvedValue(false);
+
+      act(() => { appStateHandler?.('background'); });
+      now += RELOCK_AFTER_BACKGROUND_MS + 1;
+      act(() => { appStateHandler?.('active'); });
+
+      await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
+      expect(mockAuthenticate).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the iOS lock in its full-window overlay when it re-locks (F-040)', async () => {
+      const { Platform } = require('react-native');
+      const original = Platform.OS;
+      Platform.OS = 'ios';
+      try {
+        const { RELOCK_AFTER_BACKGROUND_MS } = require('./BiometricLockGate');
+        mockAuthenticate.mockResolvedValueOnce({ ok: true }).mockReturnValueOnce(new Promise(() => undefined));
+        const view = await unlockedGate();
+
+        act(() => { appStateHandler?.('background'); });
+        now += RELOCK_AFTER_BACKGROUND_MS + 1;
+        act(() => { appStateHandler?.('active'); });
+
+        await view.findByTestId('biometric-lock-gate', {}, SLOW_CI);
+        expect(within(view.getByTestId('full-window-overlay')).queryByTestId('biometric-lock-gate')).not.toBeNull();
+      } finally {
+        Platform.OS = original;
+      }
+    });
+  });
+
   it('starts one prompt for rapid unlock taps', async () => {
     let finish!: (value: { ok: boolean; reason?: string }) => void;
     mockAuthenticate.mockResolvedValueOnce({ ok: false, reason: 'cancelled' })

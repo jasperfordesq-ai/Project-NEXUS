@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { SearchField } from '@/components/ui/SearchField';
 import { logError } from '@/lib/logger';
+import { useAuth, useTenant } from '@/contexts';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 
 const MAX_RECENT = 8;
 
@@ -74,9 +76,14 @@ export function MobileSearchOverlay({
   onValueChange,
   onSubmit,
   placeholder,
-  recentKey,
+  recentKey: pageRecentKey,
 }: MobileSearchOverlayProps) {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+  // F-109: search history is private to one member of one community; the key
+  // names both, and sign-out clears every `nexus:recent-searches:` entry.
+  const recentKey = userScopedStorageKey(pageRecentKey, tenant?.id, user?.id);
   const [recents, setRecents] = useState<string[]>([]);
 
   useEffect(() => {

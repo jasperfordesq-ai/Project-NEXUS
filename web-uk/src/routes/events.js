@@ -834,9 +834,9 @@ function agendaDateLabel(value, timezone, formatDate) {
 async function renderOfflineCredential(req, res, id, options = {}) {
   const token = tokenFrom(req);
   const [eventResult, credentialResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
     options.credentialResult === undefined
-      ? callApi(token, 'GET', `/${id}/offline-checkin/credentials/me`)
+      ? callApi(token, 'GET', `/${encodeURIComponent(id)}/offline-checkin/credentials/me`)
       : Promise.resolve(options.credentialResult)
   ]);
   const event = eventFrom(eventResult);
@@ -954,7 +954,7 @@ router.get('/moderation', requireAuth, asyncRoute(async (req, res) => {
 async function renderModerationDecision(req, res, decision, error = '', reason = '', status = 200) {
   moderationPrivate(res);
   try {
-    const result = await callAdminEventApi(req.token, 'GET', `/${req.params.id}`);
+    const result = await callAdminEventApi(req.token, 'GET', `/${encodeURIComponent(req.params.id)}`);
     const event = moderationEvent(dataFrom(result), res.locals.t);
     if (!event.id || trimmed(event.publication_state) !== 'pending_review') {
       return res.status(404).render('errors/404', { title: 'Event not found' });
@@ -984,7 +984,7 @@ router.get('/moderation/:id(\\d+)/reject', requireAuth, asyncRoute(async (req, r
 router.post('/moderation/:id(\\d+)/approve', requireAuth, asyncRoute(async (req, res) => {
   if (req.body.confirmation !== 'approve') return renderModerationDecision(req, res, 'approve', 'confirmation_required', '', 422);
   try {
-    await callAdminEventApi(req.token, 'POST', `/${req.params.id}/approve`);
+    await callAdminEventApi(req.token, 'POST', `/${encodeURIComponent(req.params.id)}/approve`);
     return redirectTo(res, '/events/moderation?status=approved');
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1000,7 +1000,7 @@ router.post('/moderation/:id(\\d+)/reject', requireAuth, asyncRoute(async (req, 
     : (reason.length > 2000 ? 'reason_too_long' : (req.body.confirmation !== 'reject' ? 'confirmation_required' : ''));
   if (error) return renderModerationDecision(req, res, 'reject', error, reason.slice(0, 2000), 422);
   try {
-    await callAdminEventApi(req.token, 'POST', `/${req.params.id}/reject`, { reason });
+    await callAdminEventApi(req.token, 'POST', `/${encodeURIComponent(req.params.id)}/reject`, { reason });
     return redirectTo(res, '/events/moderation?status=rejected');
   } catch (apiError) {
     if (redirectOnAuthError(apiError, res)) return undefined;
@@ -1027,7 +1027,7 @@ router.get('/browse', asyncRoute(async (req, res) => {
 
 router.get('/:id(\\d+)/map', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  const result = await callApi(tokenFrom(req), 'GET', `/${id}`);
+  const result = await callApi(tokenFrom(req), 'GET', `/${encodeURIComponent(id)}`);
   const map = eventMapState(eventFrom(result), res.locals.t);
 
   res.render('events/map', {
@@ -1043,8 +1043,8 @@ router.get('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
   const query = eventPeopleQuery(req.query);
   const parameters = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
   const [eventResult, peopleResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/people?${parameters.toString()}`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/people?${parameters.toString()}`)
   ]);
   const event = eventFrom(eventResult);
   const meta = peopleResult?.meta && typeof peopleResult.meta === 'object' ? peopleResult.meta : {};
@@ -1087,8 +1087,8 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
   };
   const parameters = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
   const [eventResult, peopleResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/people?${parameters.toString()}`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/people?${parameters.toString()}`)
   ]);
   const event = eventFrom(eventResult);
   const meta = peopleResult?.meta && typeof peopleResult.meta === 'object' ? peopleResult.meta : {};
@@ -1130,7 +1130,7 @@ router.get('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const [eventResult, currentUser] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
     getRequestProfile(req, token)
   ]);
   const event = eventFrom(eventResult);
@@ -1213,7 +1213,7 @@ router.get('/:id(\\d+)/polls', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const [eventResult, pollsResult, currentUser] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
     getPolls(token, { mine: true, limit: 100 }),
     getRequestProfile(req, token)
   ]);
@@ -1246,7 +1246,7 @@ router.get('/:id(\\d+)/translate', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = Number(req.params.id);
-  const event = eventFrom(await callApi(token, 'GET', `/${id}`));
+  const event = eventFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}`));
   const sourceText = trimmed(event.description, 8000);
   const translation = req.session && req.session.eventTranslation && req.session.eventTranslation.eventId === id
     ? req.session.eventTranslation
@@ -1433,7 +1433,7 @@ router.post('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
   }));
 
   try {
-    const result = dataFrom(await callApi(tokenFrom(req), 'POST', `/${id}/people/bulk`, { operations })) || {};
+    const result = dataFrom(await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/people/bulk`, { operations })) || {};
     const updated = Math.max(0, Number.parseInt(result.succeeded, 10) || 0);
     const failed = Math.max(0, Number.parseInt(result.failed, 10) || 0);
     const status = failed > 0 ? 'people-partial' : 'people-updated';
@@ -1486,7 +1486,7 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
   }
 
   try {
-    await callApi(tokenFrom(req), 'POST', `/${id}/attendance/code`, {
+    await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/attendance/code`, {
       action,
       credential,
       confirmation: '1',
@@ -1535,7 +1535,7 @@ router.post('/:id(\\d+)/check-in/:userId(\\d+)', requireAuth, asyncRoute(async (
   }
 
   try {
-    await callApi(tokenFrom(req), 'POST', `/${id}/people/${userId}/attendance`, {
+    await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/people/${encodeURIComponent(userId)}/attendance`, {
       action,
       expected_version: expectedVersion,
       reason: reason || null,
@@ -1559,7 +1559,7 @@ router.post('/:id(\\d+)/waitlist', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   try {
-    await callEventMutation(token, 'POST', `/${id}/registration/waitlist`, undefined, randomUUID());
+    await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/registration/waitlist`, undefined, randomUUID());
     return redirectTo(res, eventRedirect(id, 'waitlist-joined'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1578,7 +1578,7 @@ router.post('/:id(\\d+)/waitlist/leave', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   try {
-    await callEventMutation(token, 'POST', `/${id}/registration/waitlist/leave`, undefined, randomUUID());
+    await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/registration/waitlist/leave`, undefined, randomUUID());
     return redirectTo(res, eventRedirect(id, 'waitlist-left'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1644,11 +1644,11 @@ function recurrenceBlueprintSections(body, allowed) {
 
 async function recurrenceBlueprintState(token, id, beforeVersion = null) {
   const suffix = beforeVersion ? `?limit=10&before_version=${beforeVersion}` : '?limit=10';
-  const eventResult = await callApi(token, 'GET', `/${id}`);
+  const eventResult = await callApi(token, 'GET', `/${encodeURIComponent(id)}`);
   let history = { items: [], next_before_version: null };
   let historyError = false;
   try {
-    const historyResult = await callApi(token, 'GET', `/${id}/recurrence-definition-blueprints${suffix}`);
+    const historyResult = await callApi(token, 'GET', `/${encodeURIComponent(id)}/recurrence-definition-blueprints${suffix}`);
     history = dataFrom(historyResult) || history;
   } catch (error) {
     if (error instanceof ApiError && [401, 403, 404].includes(error.status)) throw error;
@@ -1700,7 +1700,7 @@ router.post('/:id(\\d+)/recurrence-definition-blueprints/preview', requireAuth, 
     const state = await recurrenceBlueprintState(token, id);
     const sections = recurrenceBlueprintSections(req.body, state.allowedSections);
     if (!sections || !/^\d{8}T\d{6}Z$/.test(state.recurrenceId)) return redirectTo(res, eventPath(id, '/recurrence-definition-blueprints?status=invalid'));
-    const result = dataFrom(await callApi(token, 'POST', `/${id}/recurrence-definition-blueprints/preview`, { effective_from_recurrence_id: state.recurrenceId, sections })) || {};
+    const result = dataFrom(await callApi(token, 'POST', `/${encodeURIComponent(id)}/recurrence-definition-blueprints/preview`, { effective_from_recurrence_id: state.recurrenceId, sections })) || {};
     return renderRecurrenceBlueprints(req, res, state, { preview: result, selectedSections: sections, status: null });
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1712,9 +1712,9 @@ router.post('/:id(\\d+)/recurrence-definition-blueprints/preview', requireAuth, 
 router.post('/:id(\\d+)/recurrence-definition-blueprints/commit', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const token = tokenFrom(req); const key = trimmed(req.body.idempotency_key, 191); const previewToken = trimmed(req.body.preview_token, 8192);
   try {
-    const eventResult = await callApi(token, 'GET', `/${id}`); const context = recurrenceBlueprintContext(eventResult); const sections = recurrenceBlueprintSections(req.body, context.allowedSections);
+    const eventResult = await callApi(token, 'GET', `/${encodeURIComponent(id)}`); const context = recurrenceBlueprintContext(eventResult); const sections = recurrenceBlueprintSections(req.body, context.allowedSections);
     if (!checked(req.body.confirm_definition_version) || !key || !previewToken || !sections || !/^\d{8}T\d{6}Z$/.test(context.recurrenceId)) return redirectTo(res, eventPath(id, '/recurrence-definition-blueprints?status=invalid'));
-    const result = dataFrom(await callEventMutation(token, 'POST', `/${id}/recurrence-definition-blueprints/commit`, { effective_from_recurrence_id: context.recurrenceId, sections, preview_token: previewToken }, key)) || {};
+    const result = dataFrom(await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/recurrence-definition-blueprints/commit`, { effective_from_recurrence_id: context.recurrenceId, sections, preview_token: previewToken }, key)) || {};
     const status = result.idempotent_replay ? 'replayed' : 'created'; const version = positiveInteger(result.blueprint_version);
     return redirectTo(res, eventPath(id, `/recurrence-definition-blueprints?status=${status}${version ? `&version=${version}` : ''}`));
   } catch (error) {
@@ -1728,9 +1728,9 @@ async function transitionEventPublication(req, res, action) {
   const id = Number(req.params.id);
   try {
     if (action === 'submit') {
-      await callApi(tokenFrom(req), 'POST', `/${id}/submit`);
+      await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/submit`);
     } else {
-      await callApi(tokenFrom(req), 'POST', `/${id}/publish`);
+      await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/publish`);
     }
     return redirectTo(res, eventPath(id, `?status=${action === 'submit' ? 'event-submitted' : 'event-published'}`));
   } catch (error) {
@@ -1753,7 +1753,7 @@ router.get('/templates', requireAuth, asyncRoute(async (req, res) => {
 
 router.get('/:id(\\d+)/template-preview', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const templateId = positiveInteger(req.query.template_id); const token = tokenFrom(req);
-  const [eventResult, previewResult, templateResult] = await Promise.all([callApi(token, 'GET', `/${id}`), callApi(token, 'POST', `/${id}/template-preview`), templateId ? callEventTemplateApi(token, 'GET', `/${templateId}`) : Promise.resolve(null)]);
+  const [eventResult, previewResult, templateResult] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), callApi(token, 'POST', `/${encodeURIComponent(id)}/template-preview`), templateId ? callEventTemplateApi(token, 'GET', `/${encodeURIComponent(templateId)}`) : Promise.resolve(null)]);
   res.set('Cache-Control', 'private, no-store');
   return res.render('events/template-capture-preview', { title: res.locals.t('event_templates.capture_preview_title'), activeNav: 'events', event: eventFrom(eventResult), preview: dataFrom(previewResult) || {}, template: dataFrom(templateResult), status: trimmed(req.query.status), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
 }, { notFoundTitle: 'Event not found' }));
@@ -1762,8 +1762,8 @@ router.post('/:id(\\d+)/templates', requireAuth, asyncRoute(async (req, res) => 
   const id = Number(req.params.id); const templateId = positiveInteger(req.body.template_id); const expectedVersion = positiveInteger(req.body.expected_version); const key = trimmed(req.body.idempotency_key, 191);
   if (!key || (templateId && !expectedVersion)) return redirectTo(res, eventPath(id, `/template-preview${templateId ? `?template_id=${templateId}&status=invalid` : '?status=invalid'}`));
   try {
-    if (templateId) await callEventTemplateApi(tokenFrom(req), 'POST', `/${templateId}/revisions`, { expected_version: expectedVersion }, { headers: { 'Idempotency-Key': key } });
-    else await callEventMutation(tokenFrom(req), 'POST', `/${id}/templates`, {}, key);
+    if (templateId) await callEventTemplateApi(tokenFrom(req), 'POST', `/${encodeURIComponent(templateId)}/revisions`, { expected_version: expectedVersion }, { headers: { 'Idempotency-Key': key } });
+    else await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/templates`, {}, key);
     return redirectTo(res, `/events/templates?status=${templateId ? 'revised' : 'captured'}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1783,7 +1783,7 @@ router.post('/:id(\\d+)/check-in/credential/issue', requireAuth, asyncRoute(asyn
     return redirectTo(res, eventPath(id, '/check-in/credential?status=invalid'));
   }
   try {
-    const result = await callApi(tokenFrom(req), 'POST', `/${id}/offline-checkin/credentials`, {
+    const result = await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/offline-checkin/credentials`, {
       idempotency_key: idempotencyKey
     });
     const credential = offlineCredentialFrom(result);
@@ -1804,8 +1804,8 @@ router.get('/:id(\\d+)/safety', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
   const [eventResult, safetyResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/safety`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/safety`)
   ]);
   const event = eventFrom(eventResult);
   const safety = dataFrom(safetyResult) || {};
@@ -1815,8 +1815,8 @@ router.get('/:id(\\d+)/safety', requireAuth, asyncRoute(async (req, res) => {
   if (canReview) {
     const page = boundedPositiveInteger(req.query.page, 1);
     const [reviewsResult, peopleResult] = await Promise.all([
-      callApi(token, 'GET', `/${id}/safety/reviews?page=${page}&per_page=25`),
-      callApi(token, 'GET', `/${id}/people?page=1&per_page=100&sort=name&direction=asc`)
+      callApi(token, 'GET', `/${encodeURIComponent(id)}/safety/reviews?page=${page}&per_page=25`),
+      callApi(token, 'GET', `/${encodeURIComponent(id)}/people?page=1&per_page=100&sort=name&direction=asc`)
     ]);
     reviews = dataFrom(reviewsResult) || reviews;
     people = (Array.isArray(peopleResult?.data) ? peopleResult.data : [])
@@ -1919,31 +1919,31 @@ router.post('/:id(\\d+)/safety', requireAuth, asyncRoute(async (req, res) => {
     const token = tokenFrom(req);
     switch (action) {
       case 'save_requirements':
-        await callEventMutation(token, 'PUT', `/${id}/safety/requirements`, payload, idempotencyKey);
+        await callEventMutation(token, 'PUT', `/${encodeURIComponent(id)}/safety/requirements`, payload, idempotencyKey);
         break;
       case 'publish_requirements':
-        await callEventMutation(token, 'POST', `/${id}/safety/requirements/publish`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/safety/requirements/publish`, payload, idempotencyKey);
         break;
       case 'archive_requirements':
-        await callEventMutation(token, 'POST', `/${id}/safety/requirements/archive`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/safety/requirements/archive`, payload, idempotencyKey);
         break;
       case 'acknowledge_code':
-        await callEventMutation(token, 'POST', `/${id}/safety/code-of-conduct/acknowledgements`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/safety/code-of-conduct/acknowledgements`, payload, idempotencyKey);
         break;
       case 'withdraw_code':
-        await callEventMutation(token, 'DELETE', `/${id}/safety/code-of-conduct/acknowledgements/${safetySubjectId}`, payload, idempotencyKey);
+        await callEventMutation(token, 'DELETE', `/${encodeURIComponent(id)}/safety/code-of-conduct/acknowledgements/${encodeURIComponent(safetySubjectId)}`, payload, idempotencyKey);
         break;
       case 'request_guardian_consent':
-        await callEventMutation(token, 'POST', `/${id}/safety/guardian-consents`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/safety/guardian-consents`, payload, idempotencyKey);
         break;
       case 'withdraw_guardian_consent':
-        await callEventMutation(token, 'DELETE', `/${id}/safety/guardian-consents/${safetySubjectId}`, payload, idempotencyKey);
+        await callEventMutation(token, 'DELETE', `/${encodeURIComponent(id)}/safety/guardian-consents/${encodeURIComponent(safetySubjectId)}`, payload, idempotencyKey);
         break;
       case 'record_review':
-        await callEventMutation(token, 'POST', `/${id}/safety/reviews`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/safety/reviews`, payload, idempotencyKey);
         break;
       case 'withdraw_review':
-        await callEventMutation(token, 'DELETE', `/${id}/safety/reviews/${safetySubjectId}`, payload, idempotencyKey);
+        await callEventMutation(token, 'DELETE', `/${encodeURIComponent(id)}/safety/reviews/${encodeURIComponent(safetySubjectId)}`, payload, idempotencyKey);
         break;
       default:
         return redirectTo(res, eventPath(id, '/safety?status=safety-failed'));
@@ -1962,8 +1962,8 @@ router.get('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
   const [eventResult, agendaResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/agenda?include_cancelled=true`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/agenda?include_cancelled=true`)
   ]);
   const event = eventFrom(eventResult);
   const agenda = dataFrom(agendaResult) || {};
@@ -2069,23 +2069,23 @@ router.post('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
     const token = tokenFrom(req);
     switch (action) {
       case 'create':
-        await callEventMutation(token, 'POST', `/${id}/agenda/sessions`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/agenda/sessions`, payload, idempotencyKey);
         break;
       case 'update':
-        await callEventMutation(token, 'PUT', `/${id}/agenda/sessions/${sessionId}`, payload, idempotencyKey);
+        await callEventMutation(token, 'PUT', `/${encodeURIComponent(id)}/agenda/sessions/${encodeURIComponent(sessionId)}`, payload, idempotencyKey);
         break;
       case 'cancel':
-        await callEventMutation(token, 'POST', `/${id}/agenda/sessions/${sessionId}/cancel`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/agenda/sessions/${encodeURIComponent(sessionId)}/cancel`, payload, idempotencyKey);
         break;
       case 'register':
-        await callEventMutation(token, 'POST', `/${id}/agenda/sessions/${sessionId}/registration`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/agenda/sessions/${encodeURIComponent(sessionId)}/registration`, payload, idempotencyKey);
         break;
       case 'withdraw':
-        await callEventMutation(token, 'POST', `/${id}/agenda/sessions/${sessionId}/registration/withdraw`, payload, idempotencyKey);
+        await callEventMutation(token, 'POST', `/${encodeURIComponent(id)}/agenda/sessions/${encodeURIComponent(sessionId)}/registration/withdraw`, payload, idempotencyKey);
         break;
       case 'move_up':
       case 'move_down':
-        await callEventMutation(token, 'PUT', `/${id}/agenda/order`, payload, idempotencyKey);
+        await callEventMutation(token, 'PUT', `/${encodeURIComponent(id)}/agenda/order`, payload, idempotencyKey);
         break;
       default:
         return redirectTo(res, eventPath(id, '/agenda?status=agenda-failed'));
@@ -2108,8 +2108,8 @@ router.get('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
   const [eventResult, preferencesResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/reminders`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/reminders`)
   ]);
   const event = eventFrom(eventResult);
   const preferences = dataFrom(preferencesResult) || {};
@@ -2150,7 +2150,7 @@ router.post('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => 
     return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
   }
   try {
-    await callApi(tokenFrom(req), 'PUT', `/${id}/reminders`, {
+    await callApi(tokenFrom(req), 'PUT', `/${encodeURIComponent(id)}/reminders`, {
       overrides: {
         reminders_enabled: enabled,
         cadence: enabled ? 'instant' : 'off',
@@ -2177,7 +2177,7 @@ router.post('/:id(\\d+)/reminders/reset', requireAuth, asyncRoute(async (req, re
   const expectedRevision = Number.parseInt(req.body.expected_revision, 10);
   if (!Number.isInteger(expectedRevision) || expectedRevision < 0) return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
   try {
-    await callApi(tokenFrom(req), 'DELETE', `/${id}/reminders`, { expected_revision: expectedRevision });
+    await callApi(tokenFrom(req), 'DELETE', `/${encodeURIComponent(id)}/reminders`, { expected_revision: expectedRevision });
     return redirectTo(res, eventPath(id, '/reminders?status=reset'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2207,9 +2207,9 @@ async function renderCommunications(req, res, options = {}) {
   const historyPage = boundedPositiveInteger(req.query.history_page, 1);
   const broadcastId = positiveInteger(req.query.broadcast_id);
   const [eventResult, listResult, detailResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`),
-    callApi(token, 'GET', `/${id}/broadcasts?page=${page}&per_page=20`),
-    broadcastId ? callEventBroadcastApi(token, 'GET', `/${broadcastId}?history_page=${historyPage}&history_per_page=50`) : null
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`),
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/broadcasts?page=${page}&per_page=20`),
+    broadcastId ? callEventBroadcastApi(token, 'GET', `/${encodeURIComponent(broadcastId)}?history_page=${historyPage}&history_per_page=50`) : null
   ]);
   const event = eventFrom(eventResult);
   const formatDate = typeof res.locals.formatLocaleDate === 'function'
@@ -2316,7 +2316,7 @@ router.post('/:id(\\d+)/communications', requireAuth, asyncRoute(async (req, res
   const key = trimmed(req.body.idempotency_key, 191);
   if (!draft || !checked(req.body.preview_confirmed) || !key) return redirectTo(res, eventPath(id, '/communications?status=invalid'));
   try {
-    await callEventMutation(tokenFrom(req), 'POST', `/${id}/broadcasts`, draft, key);
+    await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/broadcasts`, draft, key);
     return redirectTo(res, eventPath(id, '/communications?status=created'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2345,9 +2345,9 @@ async function mutateCommunication(req, res, action) {
   }
   try {
     const options = { headers: { 'Idempotency-Key': key } };
-    if (action === 'schedule') await callEventBroadcastApi(tokenFrom(req), 'POST', `/${broadcastId}/schedule`, payload, options);
-    else if (action === 'cancel') await callEventBroadcastApi(tokenFrom(req), 'POST', `/${broadcastId}/cancel`, payload, options);
-    else await callEventBroadcastApi(tokenFrom(req), 'POST', `/${broadcastId}/retry`, payload, options);
+    if (action === 'schedule') await callEventBroadcastApi(tokenFrom(req), 'POST', `/${encodeURIComponent(broadcastId)}/schedule`, payload, options);
+    else if (action === 'cancel') await callEventBroadcastApi(tokenFrom(req), 'POST', `/${encodeURIComponent(broadcastId)}/cancel`, payload, options);
+    else await callEventBroadcastApi(tokenFrom(req), 'POST', `/${encodeURIComponent(broadcastId)}/retry`, payload, options);
     const success = { schedule: 'scheduled', cancel: 'cancelled', retry: 'retried' }[action];
     return redirectTo(res, eventPath(id, `/communications?status=${success}`));
   } catch (error) {
@@ -2362,7 +2362,7 @@ router.post('/:id(\\d+)/communications/:broadcastId(\\d+)/cancel', requireAuth, 
 router.post('/:id(\\d+)/communications/:broadcastId(\\d+)/retry', requireAuth, asyncRoute(async (req, res) => mutateCommunication(req, res, 'retry')));
 
 async function ticketCatalogue(token, eventId) {
-  const result = await callApi(token, 'GET', `/${eventId}/tickets`);
+  const result = await callApi(token, 'GET', `/${encodeURIComponent(eventId)}/tickets`);
   const data = dataFrom(result) || {};
   return data.catalogue || data;
 }
@@ -2370,7 +2370,7 @@ async function ticketCatalogue(token, eventId) {
 router.get('/:id(\\d+)/tickets', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
-  const [eventResult, catalogue] = await Promise.all([callApi(token, 'GET', `/${id}`), ticketCatalogue(token, id)]);
+  const [eventResult, catalogue] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), ticketCatalogue(token, id)]);
   const event = eventFrom(eventResult);
   res.set('Cache-Control', 'private, no-store');
   res.set('Pragma', 'no-cache');
@@ -2388,7 +2388,7 @@ router.post('/:id(\\d+)/tickets/:ticketTypeId(\\d+)/allocate', requireAuth, asyn
   const key = trimmed(req.body.idempotency_key, 512);
   if (!ticketTypeId || !units || units > 1000 || !key) return redirectTo(res, eventPath(id, '/tickets?status=invalid'));
   try {
-    await callEventMutation(tokenFrom(req), 'POST', `/${id}/tickets/${ticketTypeId}/allocate`, { units }, key);
+    await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/tickets/${encodeURIComponent(ticketTypeId)}/allocate`, { units }, key);
     return redirectTo(res, eventPath(id, '/tickets?status=allocated'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2420,7 +2420,7 @@ router.post('/:id(\\d+)/tickets/entitlements/:entitlementId(\\d+)/cancel', requi
   const reason = trimmed(req.body.reason, 501);
   if (!entitlementId || !expectedVersion || !key || !reason || reason.length > 500) return redirectTo(res, eventPath(id, `/tickets/entitlements/${entitlementId || 0}/cancel?status=invalid`));
   try {
-    await callEventMutation(tokenFrom(req), 'POST', `/${id}/ticket-entitlements/${entitlementId}/cancel`, { expected_version: expectedVersion, reason }, key);
+    await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/ticket-entitlements/${encodeURIComponent(entitlementId)}/cancel`, { expected_version: expectedVersion, reason }, key);
     return redirectTo(res, eventPath(id, '/tickets?status=cancelled'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2431,7 +2431,7 @@ router.post('/:id(\\d+)/tickets/entitlements/:entitlementId(\\d+)/cancel', requi
 
 router.get('/:id(\\d+)/analytics', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  const result = await callApi(tokenFrom(req), 'GET', `/${id}/analytics`);
+  const result = await callApi(tokenFrom(req), 'GET', `/${encodeURIComponent(id)}/analytics`);
   const summary = dataFrom(result) || {};
   const formatNumber = typeof res.locals.formatLocaleNumber === 'function'
     ? res.locals.formatLocaleNumber
@@ -2478,7 +2478,7 @@ router.get('/:id(\\d+)/analytics', requireAuth, asyncRoute(async (req, res) => {
 
 router.get('/:id(\\d+)/analytics/export.csv', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  const download = await downloadEventApi(tokenFrom(req), `/${id}/analytics/export.csv`);
+  const download = await downloadEventApi(tokenFrom(req), `/${encodeURIComponent(id)}/analytics/export.csv`);
   res.status(download.status || 200);
   res.set('Content-Type', download.headers['content-type'] || 'text/csv; charset=UTF-8');
   res.set('Content-Disposition', download.headers['content-disposition'] || `attachment; filename="event-${id}-analytics.csv"`);
@@ -2498,7 +2498,7 @@ function calendarSensitive(res) {
 router.get('/:id(\\d+)/calendar', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
-  const [eventResult, actionsResult] = await Promise.all([callApi(token, 'GET', `/${id}`), callApi(token, 'GET', `/${id}/calendar-actions`)]);
+  const [eventResult, actionsResult] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), callApi(token, 'GET', `/${encodeURIComponent(id)}/calendar-actions`)]);
   return res.render('events/calendar', {
     title: res.locals.t('govuk_alpha.events.calendar_actions_title'), activeNav: 'events',
     event: { id, title: trimmed(eventFrom(eventResult).title) }, actions: dataFrom(actionsResult) || {}
@@ -2564,7 +2564,7 @@ router.post('/calendar-subscriptions/:tokenId(\\d+)/revoke', requireAuth, asyncR
   const tokenId = positiveInteger(req.params.tokenId);
   if (!tokenId || req.body.confirm_revoke !== 'yes') return redirectTo(res, `/events/calendar-subscriptions/${tokenId || 0}/revoke?status=invalid`);
   try {
-    await callApi(tokenFrom(req), 'DELETE', `/calendar/feed-tokens/${tokenId}`);
+    await callApi(tokenFrom(req), 'DELETE', `/calendar/feed-tokens/${encodeURIComponent(tokenId)}`);
     calendarSensitive(res);
     return redirectTo(res, '/events/calendar-subscriptions?status=revoked');
   } catch (error) {
@@ -2582,7 +2582,7 @@ router.get('/:id(\\d+)/lifecycle-history', requireAuth, asyncRoute(async (req, r
   if (cursor) query.set('cursor', cursor);
   const token = tokenFrom(req);
   const [eventResult, historyResult] = await Promise.all([
-    callApi(token, 'GET', `/${id}`), callApi(token, 'GET', `/${id}/lifecycle-history?${query.toString()}`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}`), callApi(token, 'GET', `/${encodeURIComponent(id)}/lifecycle-history?${query.toString()}`)
   ]);
   const event = eventFrom(eventResult);
   const formatDate = typeof res.locals.formatLocaleDate === 'function'
@@ -2624,9 +2624,9 @@ router.get('/:id(\\d+)/lifecycle-history', requireAuth, asyncRoute(async (req, r
 }, { notFoundTitle: 'Event not found' }));
 
 async function registrationProductState(token, id, query = '') {
-  const attendee = dataFrom(await callApi(token, 'GET', `/${id}/registration-product`)) || {};
+  const attendee = dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}/registration-product`)) || {};
   let organizer = null;
-  try { organizer = dataFrom(await callApi(token, 'GET', `/${id}/registration-product/manage${query}`)) || {}; }
+  try { organizer = dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}/registration-product/manage${query}`)) || {}; }
   catch (error) { if (!(error instanceof ApiError) || error.status !== 403) throw error; }
   return { attendee, organizer };
 }
@@ -2784,7 +2784,7 @@ function consumeRegistrationForm(req, eventId, formId) {
 router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const token = tokenFrom(req); const query = new URLSearchParams();
   for (const collection of ['submissions', 'campaigns', 'guests']) for (const suffix of ['page', 'per_page']) { const key = `${collection}_${suffix}`; if (positiveInteger(req.query[key])) query.set(key, String(positiveInteger(req.query[key]))); }
-  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${id}`), registrationProductState(token, id, query.size ? `?${query}` : '')]);
+  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id, query.size ? `?${query}` : '')]);
   const activeRegistration = arrayValues(state.attendee?.registrations).find((registration) => ['invited', 'confirmed', 'pending'].includes(trimmed(registration?.registration_state)));
   const replay = consumeRegistrationAnswers(req, id, positiveInteger(state.attendee?.form?.id));
   const settings = state.organizer?.settings;
@@ -2817,14 +2817,14 @@ router.post('/:id(\\d+)/registration/settings', requireAuth, asyncRoute(async (r
   if (!key || !Number.isInteger(expectedRevision) || expectedRevision < 0 || !approvalMode || !perMemberLimit || !guestRetentionDays || maxGuests === null
     || opensAt.error || closesAt.error || cutoffAt.error) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   const payload = { approval_mode: approvalMode, opens_at: opensAt.value || null, closes_at: closesAt.value || null, cancellation_cutoff_at: cutoffAt.value || null, per_member_limit: perMemberLimit, guests_enabled: guestsEnabled, max_guests_per_registration: maxGuests, guest_retention_days: guestRetentionDays, expected_revision: expectedRevision };
-  try { await callEventMutation(tokenFrom(req), 'PUT', `/${id}/registration-product/settings`, payload, key); return redirectTo(res, eventPath(id, '/registration?status=settings-saved')); }
+  try { await callEventMutation(tokenFrom(req), 'PUT', `/${encodeURIComponent(id)}/registration-product/settings`, payload, key); return redirectTo(res, eventPath(id, '/registration?status=settings-saved')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/settings/publish', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const revision = positiveInteger(req.body.expected_revision); const key = trimmed(req.body.idempotency_key, 191);
   if (!revision || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/settings/publish`, { expected_revision: revision }, key); return redirectTo(res, eventPath(id, '/registration?status=settings-published')); }
+  try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/settings/publish`, { expected_revision: revision }, key); return redirectTo(res, eventPath(id, '/registration?status=settings-published')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
@@ -2901,8 +2901,8 @@ async function saveRegistrationForm(req, res) {
   }
   const payload = { name, description, questions, expected_settings_revision: settingsRevision, ...(formId ? { expected_form_revision: formRevision } : {}) };
   try {
-    if (formId) await callEventMutation(tokenFrom(req), 'PUT', `/${id}/registration-product/forms/${formId}`, payload, key);
-    else await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/forms`, payload, key);
+    if (formId) await callEventMutation(tokenFrom(req), 'PUT', `/${encodeURIComponent(id)}/registration-product/forms/${encodeURIComponent(formId)}`, payload, key);
+    else await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/forms`, payload, key);
     return redirectTo(res, eventPath(id, '/registration?status=form-saved'));
   }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberRegistrationForm(req, id, formId, replay, { pageFailure: true }); return redirectTo(res, eventPath(id, formId ? `/registration/forms/${formId}?status=failed` : '/registration/forms/new?status=failed')); } throw error; }
@@ -2915,8 +2915,8 @@ async function transitionRegistrationForm(req, res, action) {
   if (!formId || !key || !settingsRevision || (action === 'publish' && !formRevision)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   const payload = { expected_settings_revision: settingsRevision, ...(action === 'publish' ? { expected_form_revision: formRevision } : {}) };
   try {
-    if (action === 'publish') await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/forms/${formId}/publish`, payload, key);
-    else await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/forms/${formId}/fork`, payload, key);
+    if (action === 'publish') await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/forms/${encodeURIComponent(formId)}/publish`, payload, key);
+    else await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/forms/${encodeURIComponent(formId)}/fork`, payload, key);
     return redirectTo(res, eventPath(id, `/registration?status=form-${action === 'fork' ? 'forked' : 'published'}`));
   }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
@@ -2930,7 +2930,7 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/forms/:
   let answers = req.body.answers && typeof req.body.answers === 'object' ? { ...req.body.answers } : {};
   const expectedRevision = req.body.expected_submission_revision === '' || req.body.expected_submission_revision === undefined ? null : Math.max(0, Number.parseInt(req.body.expected_submission_revision, 10));
   try {
-    const attendee = dataFrom(await callApi(tokenFrom(req), 'GET', `/${id}/registration-product`)) || {};
+    const attendee = dataFrom(await callApi(tokenFrom(req), 'GET', `/${encodeURIComponent(id)}/registration-product`)) || {};
     const registration = arrayValues(attendee.registrations).find((item) => positiveInteger(item?.id) === registrationId);
     if (!registration || positiveInteger(attendee.form?.id) !== formId) throw new ApiError('Registration form identity mismatch', 409);
     const questions = arrayValues(attendee.form?.questions);
@@ -2940,10 +2940,10 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/forms/:
       rememberRegistrationAnswers(req, id, formId, answers, errors);
       return redirectTo(res, eventPath(id, '/registration?status=invalid#registration-answers'));
     }
-    const saved = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/submissions`, { registration_id: registrationId, form_version_id: formId, answers, expected_revision: expectedRevision }, `${key}:draft`)) || {};
+    const saved = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/submissions`, { registration_id: registrationId, form_version_id: formId, answers, expected_revision: expectedRevision }, `${key}:draft`)) || {};
     const submission = saved.submission || saved; const submissionId = positiveInteger(submission.id); const revision = positiveInteger(submission.revision);
     if (!submissionId || !revision) throw new ApiError('Registration submission response was incomplete', 502);
-    await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/submissions/${submissionId}/submit`, { expected_revision: revision }, `${key}:submit`);
+    await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/submissions/${encodeURIComponent(submissionId)}/submit`, { expected_revision: revision }, `${key}:submit`);
     return redirectTo(res, eventPath(id, '/registration?status=answers-submitted'));
   } catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberRegistrationAnswers(req, id, formId, answers); return redirectTo(res, eventPath(id, '/registration?status=failed#registration-answers')); } throw error; }
 }));
@@ -2952,7 +2952,7 @@ router.post('/:id(\\d+)/registration/submissions/:submissionId(\\d+)/review', re
   const id = Number(req.params.id); const submissionId = positiveInteger(req.params.submissionId); const purpose = trimmed(req.body.purpose, 500); const correlation = trimmed(req.body.correlation_id, 191);
   if (!submissionId || !purpose || !correlation) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   const token = tokenFrom(req);
-  const [answerResult, state] = await Promise.all([callApi(token, 'POST', `/${id}/registration-product/submissions/${submissionId}/answers`, { purpose, correlation_id: correlation, include_sensitive: checked(req.body.include_sensitive) }), registrationProductState(token, id)]);
+  const [answerResult, state] = await Promise.all([callApi(token, 'POST', `/${encodeURIComponent(id)}/registration-product/submissions/${encodeURIComponent(submissionId)}/answers`, { purpose, correlation_id: correlation, include_sensitive: checked(req.body.include_sensitive) }), registrationProductState(token, id)]);
   const questions = {};
   for (const form of arrayValues(state.organizer?.forms)) for (const question of arrayValues(form.questions)) questions[question.id] = question.prompt;
   res.set('Cache-Control', 'private, no-store');
@@ -2969,7 +2969,7 @@ router.post('/:id(\\d+)/registration/submissions/export', requireAuth, asyncRout
 router.post('/:id(\\d+)/registration/invitations/:invitationId(\\d+)/accept', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const invitationId = positiveInteger(req.params.invitationId); const key = trimmed(req.body.idempotency_key, 191);
   if (!invitationId || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/invitations/${invitationId}/accept`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=invitation-accepted')); }
+  try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/invitations/${encodeURIComponent(invitationId)}/accept`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=invitation-accepted')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
@@ -2978,21 +2978,21 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/guests'
   if (!registrationId || !version || !displayName || !checked(req.body.consent_accepted)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   const notificationConsent = checked(req.body.notification_consent);
   const payload = { expected_registration_version: version, display_name: displayName, email: trimmed(req.body.email, 320) || null, phone: trimmed(req.body.phone, 50) || null, consent_accepted: true, consent_text: res.locals.t('event_registration.accessible.privacy_consent_text'), consent_text_version: '2026-07-12', preferred_locale: res.locals.locale || 'en', notification_consent: notificationConsent, notification_consent_text: notificationConsent ? res.locals.t('event_registration.accessible.notification_consent_text') : null, notification_consent_version: notificationConsent ? '2026-07-12' : null, ticket_entitlement_id: positiveInteger(req.body.ticket_entitlement_id) };
-  try { await callApi(tokenFrom(req), 'POST', `/${id}/registration-product/registrations/${registrationId}/guests`, payload); return redirectTo(res, eventPath(id, '/registration?status=guest-added')); }
+  try { await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/registrations/${encodeURIComponent(registrationId)}/guests`, payload); return redirectTo(res, eventPath(id, '/registration?status=guest-added')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/guests/:guestId(\\d+)/cancel', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const guestId = positiveInteger(req.params.guestId); const revision = positiveInteger(req.body.expected_revision); const reason = trimmed(req.body.reason, 500);
   if (!guestId || !revision || !reason || !checked(req.body.confirm_destructive)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { await callApi(tokenFrom(req), 'POST', `/${id}/registration-product/guests/${guestId}/cancel`, { expected_revision: revision, reason }); return redirectTo(res, eventPath(id, '/registration?status=guest-cancelled')); }
+  try { await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/guests/${encodeURIComponent(guestId)}/cancel`, { expected_revision: revision, reason }); return redirectTo(res, eventPath(id, '/registration?status=guest-cancelled')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/guests/:guestId(\\d+)/attendance/:action(check_in|check_out|no_show|undo)', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const guestId = positiveInteger(req.params.guestId); const version = Number.parseInt(req.body.expected_version, 10); const key = trimmed(req.body.idempotency_key, 191);
   if (!guestId || !Number.isInteger(version) || version < 0 || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/guests/${guestId}/attendance/${req.params.action}`, { expected_version: version, reason: trimmed(req.body.reason, 500) || null }, key); return redirectTo(res, eventPath(id, '/registration?status=attendance-updated')); }
+  try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/guests/${encodeURIComponent(guestId)}/attendance/${encodeURIComponent(req.params.action)}`, { expected_version: version, reason: trimmed(req.body.reason, 500) || null }, key); return redirectTo(res, eventPath(id, '/registration?status=attendance-updated')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
@@ -3008,7 +3008,7 @@ function registrationCampaignSource(type, raw) {
 
 async function renderRegistrationResult(req, res, extras = {}) {
   const id = Number(req.params.id); const token = tokenFrom(req);
-  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${id}`), registrationProductState(token, id)]);
+  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id)]);
   res.set('Cache-Control', 'private, no-store');
   return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, status: null, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '', ...extras });
 }
@@ -3016,7 +3016,7 @@ async function renderRegistrationResult(req, res, extras = {}) {
 router.post('/:id(\\d+)/registration/campaigns/preview', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const type = selectedValue(req.body.campaign_type, ['member', 'email', 'group', 'audience', 'csv']); const source = registrationCampaignSource(type, req.body.source);
   if (!key || !type || !source) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/campaigns/preview`, { campaign_type: type, source, default_locale: selectedValue(req.body.default_locale, ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'], 'en') }, key)) || {}; return renderRegistrationResult(req, res, { campaignPreview: result.campaign || result }); }
+  try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/campaigns/preview`, { campaign_type: type, source, default_locale: selectedValue(req.body.default_locale, ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'], 'en') }, key)) || {}; return renderRegistrationResult(req, res, { campaignPreview: result.campaign || result }); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
@@ -3030,9 +3030,9 @@ async function mutateRegistrationCampaign(req, res, action) {
   if (action === 'cancel') payload.reason = trimmed(req.body.reason, 2000);
   if (!campaignId || !revision || !key || (action === 'issue' && !payload.expires_at) || (action === 'schedule' && !payload.scheduled_for) || (action === 'cancel' && !payload.reason)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try {
-    if (action === 'issue') await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/campaigns/${campaignId}/issue`, payload, key);
-    else if (action === 'schedule') await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/campaigns/${campaignId}/schedule`, payload, key);
-    else await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/campaigns/${campaignId}/cancel`, payload, key);
+    if (action === 'issue') await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/campaigns/${encodeURIComponent(campaignId)}/issue`, payload, key);
+    else if (action === 'schedule') await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/campaigns/${encodeURIComponent(campaignId)}/schedule`, payload, key);
+    else await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/campaigns/${encodeURIComponent(campaignId)}/cancel`, payload, key);
     const status = { issue: 'campaign-issued', schedule: 'campaign-scheduled', cancel: 'campaign-cancelled' }[action];
     return redirectTo(res, eventPath(id, `/registration?status=${status}`));
   }
@@ -3045,14 +3045,14 @@ router.post('/:id(\\d+)/registration/campaigns/:campaignId(\\d+)/cancel', requir
 router.post('/:id(\\d+)/registration/retention/preview', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const asOf = readDate(req.body, 'as_of').value || '';
   if (!key || !/^\d{4}-\d{2}-\d{2}$/.test(asOf)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/retention/dry-run`, { as_of: asOf }, key)) || {}; return renderRegistrationResult(req, res, { retentionRun: result.run || result }); }
+  try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/retention/dry-run`, { as_of: asOf }, key)) || {}; return renderRegistrationResult(req, res, { retentionRun: result.run || result }); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/retention/:runId(\\d+)/apply', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const runId = positiveInteger(req.params.runId); const key = trimmed(req.body.idempotency_key, 191);
   if (!runId || !key || !checked(req.body.confirm_destructive)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  try { await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/retention/${runId}/apply`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=retention-applied')); }
+  try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/retention/${encodeURIComponent(runId)}/apply`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=retention-applied')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
 }));
 
@@ -3065,7 +3065,7 @@ router.post('/:id(\\d+)/check-in/credential/rotate', requireAuth, asyncRoute(asy
     return redirectTo(res, eventPath(id, '/check-in/credential?status=invalid'));
   }
   try {
-    const result = await callApi(tokenFrom(req), 'POST', `/${id}/offline-checkin/credentials/${credentialId}/rotate`, {
+    const result = await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/offline-checkin/credentials/${encodeURIComponent(credentialId)}/rotate`, {
       expected_version: expectedVersion,
       idempotency_key: idempotencyKey
     });
@@ -3092,7 +3092,7 @@ router.post('/:id(\\d+)/check-in/credential/revoke', requireAuth, asyncRoute(asy
     return redirectTo(res, eventPath(id, '/check-in/credential?status=invalid'));
   }
   try {
-    await callApi(tokenFrom(req), 'POST', `/${id}/offline-checkin/credentials/${credentialId}/revoke`, {
+    await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/offline-checkin/credentials/${encodeURIComponent(credentialId)}/revoke`, {
       expected_version: expectedVersion,
       reason
     });
@@ -3186,7 +3186,7 @@ router.post('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
     if (!token) return redirectTo(res, loginRedirect());
     try {
       const [eventResult, capabilitiesResult] = await Promise.all([
-        callApi(token, 'GET', `/${id}`),
+        callApi(token, 'GET', `/${encodeURIComponent(id)}`),
         callApi(token, 'GET', '/recurrence-capabilities')
       ]);
       if (!supportsEffectiveRevisions(capabilitiesResult)) return redirectTo(res, eventPath(id, '/recurring-edit?status=unavailable'));
@@ -3199,7 +3199,7 @@ router.post('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
         || !trimmed(req.body.description) || !Object.keys(patch).length) {
         return redirectTo(res, eventPath(id, `/recurring-edit?status=${patch && !Object.keys(patch).length ? 'no-changes' : 'invalid'}`));
       }
-      const preview = dataFrom(await callApi(token, 'POST', `/${id}/recurrence-revisions/preview`, { patch })) || {};
+      const preview = dataFrom(await callApi(token, 'POST', `/${encodeURIComponent(id)}/recurrence-revisions/preview`, { patch })) || {};
       res.set('Cache-Control', 'private, no-store'); res.set('Pragma', 'no-cache'); res.set('Referrer-Policy', 'no-referrer');
       return res.render('events/recurring-preview', { title: res.locals.t('govuk_alpha_events.recurring_edit.confirm_title'), activeNav: 'events', event: { id, title: patch.title || trimmed(event.title) }, patch, preview, patchJson: JSON.stringify(patch), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
     } catch (error) {
@@ -3211,7 +3211,7 @@ router.post('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
   try {
-    await callApi(token, 'PUT', `/${id}/recurring`, {
+    await callApi(token, 'PUT', `/${encodeURIComponent(id)}/recurring`, {
       ...eventScopedPayload(req.body),
       scope
     });
@@ -3231,7 +3231,7 @@ router.post('/:id(\\d+)/recurring-edit/commit', requireAuth, asyncRoute(async (r
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const token = trimmed(req.body.preview_token, 8192); let patch = null;
   try { patch = JSON.parse(trimmed(req.body.patch_json, 20000)); } catch { patch = null; }
   if (!key || !token || !patch || Array.isArray(patch) || !Object.keys(patch).length || Object.keys(patch).some((field) => !RECURRING_REVISION_FIELDS.includes(field))) return redirectTo(res, eventPath(id, '/recurring-edit?status=preview-invalid'));
-  try { await callEventMutation(tokenFrom(req), 'POST', `/${id}/recurrence-revisions/commit`, { patch, preview_token: token }, key); return redirectTo(res, eventPath(id, '?status=event-updated')); }
+  try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/recurrence-revisions/commit`, { patch, preview_token: token }, key); return redirectTo(res, eventPath(id, '?status=event-updated')); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 413, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/recurring-edit?status=commit-failed')); throw error; }
 }));
 
@@ -3581,7 +3581,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       if (isAuthError(error)) throw error;
       return null;
     }) : Promise.resolve(null),
-    token ? callApi(token, 'GET', `/${id}/relationship`).catch((error) => {
+    token ? callApi(token, 'GET', `/${encodeURIComponent(id)}/relationship`).catch((error) => {
       if (isAuthError(error)) throw error;
       return null;
     }) : Promise.resolve(null),
@@ -3885,9 +3885,9 @@ router.post('/:id(\\d+)/rsvp', requireAuth, audit.eventRsvp(), asyncRoute(async 
 
   try {
     await (status === 'going'
-      ? callEventMutation(req.token, 'POST', `/${id}/registration/confirm`, undefined, randomUUID())
+      ? callEventMutation(req.token, 'POST', `/${encodeURIComponent(id)}/registration/confirm`, undefined, randomUUID())
       : (status === 'not_going'
-        ? callEventMutation(req.token, 'POST', `/${id}/registration/withdraw`, undefined, randomUUID())
+        ? callEventMutation(req.token, 'POST', `/${encodeURIComponent(id)}/registration/withdraw`, undefined, randomUUID())
         : rsvpToEvent(req.token, id, status)));
   } catch (error) {
     if (isOnboardingRequired(error)) {

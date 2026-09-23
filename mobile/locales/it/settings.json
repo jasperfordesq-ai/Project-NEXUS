@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Sblocca con impronta o volto",
-    "hint": "Blocca la sessione salvata all’avvio dell’app. Chiunque abbia dati biometrici registrati su questo dispositivo può sbloccarla. Può essere accettato anche il PIN del dispositivo.",
+    "hint": "Blocca la sessione salvata all’avvio dell’app e di nuovo quando torni dopo più di cinque minuti. Chiunque abbia dati biometrici registrati su questo dispositivo può sbloccarla. Può essere accettato anche il PIN del dispositivo.",
     "prompt": "Sblocca il tuo account",
     "lockedTitle": "Bloccato",
     "lockedSubtitle": "Sblocca per tornare alla tua community.",

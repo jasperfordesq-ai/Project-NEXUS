@@ -133,7 +133,7 @@ router.get('/', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/:id', asyncRoute(async (req, res) => {
+router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   if (!whatsOnEnabled(req)) return notFound(res);
 
   // Blade constrains the segment with whereNumber, so a non-numeric id is a

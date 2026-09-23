@@ -71,8 +71,9 @@ describe('native intent route rewriting', () => {
   it('maps messages and ideation links without going through unmatched routes', () => {
     expect(mapSystemPathToNativeRoute('nexus:///messages/new')).toBe('/(modals)/new-message');
     expect(mapSystemPathToNativeRoute('/messages/new/260?listing=90877')).toBe('/(modals)/thread?listing=90877&recipientId=260');
+    // F-118: a link's `name` is the author's claim and is not carried to the thread.
     expect(mapSystemPathToNativeRoute('/messages?user=25717&context=event&context_id=12&name=E2E%20Admin')).toBe(
-      '/(modals)/thread?context_id=12&name=E2E+Admin&context_type=event&recipientId=25717',
+      '/(modals)/thread?context_id=12&context_type=event&recipientId=25717',
     );
     expect(mapSystemPathToNativeRoute('/ideation/23')).toBe('/(modals)/ideation-detail?id=23');
   });

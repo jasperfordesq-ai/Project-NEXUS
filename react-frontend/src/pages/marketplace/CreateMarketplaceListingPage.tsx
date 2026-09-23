@@ -49,6 +49,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { usePageTitle, useDraftPersistence } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
@@ -122,14 +123,15 @@ export function CreateMarketplaceListingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('marketplace');
   usePageTitle(t('create.page_title'));
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { tenant, tenantPath } = useTenant();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state — persisted draft
   const [draft, setDraft, clearDraft] = useDraftPersistence<MarketplaceListingDraft>(
-    'marketplace-listing-draft',
+    // F-109: drafts belong to one member of one community.
+    userScopedStorageKey('marketplace-listing-draft', tenant?.id, user?.id),
     { title: '', description: '', categoryId: '', condition: 'good', priceType: 'fixed', price: '' },
   );
   const title = draft.title;

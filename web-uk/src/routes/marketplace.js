@@ -819,9 +819,9 @@ async function directBuyCheckout(token, id) {
   if (!item.canBuy) throw new ApiError('Listing is not available to buy', 404);
   const [shippingResult, slotsResult] = await Promise.all([
     item.sellerId && ['shipping', 'both'].includes(item.deliveryMethod)
-      ? callMarketplace(token, 'GET', `/sellers/${item.sellerId}/shipping-options`).catch(() => ({ data: [] }))
+      ? callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(item.sellerId)}/shipping-options`).catch(() => ({ data: [] }))
       : Promise.resolve({ data: [] }),
-    callMarketplace(token, 'GET', `/listings/${id}/pickup-slots`).catch(() => ({ data: [] }))
+    callMarketplace(token, 'GET', `/listings/${encodeURIComponent(id)}/pickup-slots`).catch(() => ({ data: [] }))
   ]);
   return {
     item,
@@ -843,7 +843,7 @@ async function acceptedOfferCheckout(token, id) {
 
   const listingId = positiveInteger(offer.marketplace_listing_id || offer.listing_id || offer.listing?.id);
   if (!listingId) throw new ApiError('Accepted offer listing not found', 404);
-  const listingResult = await callMarketplace(token, 'GET', `/listings/${listingId}?offer_id=${id}`);
+  const listingResult = await callMarketplace(token, 'GET', `/listings/${encodeURIComponent(listingId)}?offer_id=${id}`);
   const listingRow = objectFrom(listingResult);
   if (!listingRow) throw new ApiError('Accepted offer listing not found', 404);
   const item = decorateListing({
@@ -855,9 +855,9 @@ async function acceptedOfferCheckout(token, id) {
   });
   const [shippingResult, slotsResult] = await Promise.all([
     item.sellerId
-      ? callMarketplace(token, 'GET', `/sellers/${item.sellerId}/shipping-options`).catch(() => ({ data: [] }))
+      ? callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(item.sellerId)}/shipping-options`).catch(() => ({ data: [] }))
       : Promise.resolve({ data: [] }),
-    callMarketplace(token, 'GET', `/listings/${listingId}/pickup-slots?offer_id=${id}`).catch(() => ({ data: [] }))
+    callMarketplace(token, 'GET', `/listings/${encodeURIComponent(listingId)}/pickup-slots?offer_id=${id}`).catch(() => ({ data: [] }))
   ]);
   return {
     offer,
@@ -1271,7 +1271,7 @@ async function loadCategories(token) {
 }
 
 async function loadListing(token, id) {
-  const result = await callMarketplace(token, 'GET', `/listings/${id}`);
+  const result = await callMarketplace(token, 'GET', `/listings/${encodeURIComponent(id)}`);
   const listing = objectFrom(result);
   if (!listing) {
     throw new ApiError('Listing not found', 404);
@@ -1773,8 +1773,8 @@ router.get('/seller/:sellerId(\\d+)', asyncRoute(async (req, res) => {
 
   try {
     const [sellerResult, listingResult] = await Promise.all([
-      callMarketplace(token, 'GET', `/sellers/${req.params.sellerId}`),
-      callMarketplace(token, 'GET', `/sellers/${req.params.sellerId}/listings?per_page=50`)
+      callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(req.params.sellerId)}`),
+      callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(req.params.sellerId)}/listings?per_page=50`)
     ]);
     const translate = typeof res.locals.t === 'function' ? res.locals.t : fallbackTranslator;
     const seller = decorateSeller(objectFrom(sellerResult), translate);

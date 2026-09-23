@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Desbloquear com impressão digital ou rosto",
-    "hint": "Bloqueia a sessão guardada ao iniciar a aplicação. Qualquer pessoa com dados biométricos registados neste dispositivo pode desbloqueá-la. O PIN do dispositivo também pode ser aceite.",
+    "hint": "Bloqueia a sessão guardada ao iniciar a aplicação e novamente quando regressa após mais de cinco minutos fora. Qualquer pessoa com dados biométricos registados neste dispositivo pode desbloqueá-la. O PIN do dispositivo também pode ser aceite.",
     "prompt": "Desbloqueie a sua conta",
     "lockedTitle": "Bloqueado",
     "lockedSubtitle": "Desbloqueie para voltar à sua comunidade.",

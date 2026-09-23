@@ -620,7 +620,7 @@ router.get('/campaigns/:id(\\d+)', asyncRoute(async (req, res) => {
 
   const id = positiveInteger(req.params.id);
   const [result, profileResult] = await Promise.all([
-    callIdeationApi(token, 'GET', `/ideation-campaigns/${id}`),
+    callIdeationApi(token, 'GET', `/ideation-campaigns/${encodeURIComponent(id)}`),
     getRequestProfile(req, token)
   ]);
   const campaign = normalizeCampaignDetail({ id, ...itemFrom(result) });
@@ -714,7 +714,7 @@ router.get('/:id(\\d+)/manage', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
   const campaignsResult = await callIdeationApi(token, 'GET', '/ideation-campaigns?per_page=100');
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const campaigns = collectionFrom(campaignsResult)
@@ -740,9 +740,9 @@ router.get('/:id(\\d+)/outcome', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
-  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}/ideas?limit=100&sort=votes`);
-  const outcomeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}/outcome`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
+  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?limit=100&sort=votes`);
+  const outcomeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/outcome`);
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const ideas = collectionFrom(ideasResult)
     .map(normalizeIdea)
@@ -767,8 +767,8 @@ router.get('/:id(\\d+)/drafts', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
-  const draftsResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}/ideas/drafts`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
+  const draftsResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas/drafts`);
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const drafts = collectionFrom(draftsResult)
     .map(normalizeDraft)
@@ -796,15 +796,15 @@ router.get('/:id(\\d+)/ideas/:ideaId(\\d+)', asyncRoute(async (req, res) => {
 
   const id = positiveInteger(req.params.id);
   const ideaId = positiveInteger(req.params.ideaId);
-  const ideaResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${ideaId}`);
+  const ideaResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${encodeURIComponent(ideaId)}`);
   const ideaData = itemFrom(ideaResult);
   if (positiveInteger(ideaData.challenge_id ?? ideaData.challengeId) !== id) {
     return res.status(404).render('errors/404', { title: 'Ideation idea not found' });
   }
 
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
-  const commentsResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${ideaId}/comments?per_page=30`);
-  const mediaResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${ideaId}/media`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
+  const commentsResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${encodeURIComponent(ideaId)}/comments?per_page=30`);
+  const mediaResult = await callIdeationApi(token, 'GET', `/ideation-ideas/${encodeURIComponent(ideaId)}/media`);
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const idea = normalizeIdeaDetail({ id: ideaId, ...ideaData }, challenge);
   const comments = collectionFrom(commentsResult)
@@ -838,7 +838,7 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
   const categoriesResult = await callIdeationApi(token, 'GET', '/ideation-categories');
   const challenge = normalizeChallengeForm({ id, ...itemFrom(challengeResult) });
   const categories = compact(collectionFrom(categoriesResult).map(normalizeCategory));
@@ -881,8 +881,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}`);
-  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${id}/ideas?limit=30&sort=votes`);
+  const challengeResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}`);
+  const ideasResult = await callIdeationApi(token, 'GET', `/ideation-challenges/${encodeURIComponent(id)}/ideas?limit=30&sort=votes`);
   const challenge = normalizeChallenge({ id, ...itemFrom(challengeResult) });
   const ideas = collectionFrom(ideasResult)
     .map(normalizeIdea)

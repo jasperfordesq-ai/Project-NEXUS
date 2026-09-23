@@ -1134,7 +1134,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     }),
-    callGroup(req.token, 'GET', `/${id}/announcements`).catch((error) => {
+    callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     }),
@@ -1237,7 +1237,7 @@ router.get('/:id(\\d+)/invite', requireAuth, asyncRoute(async (req, res) => {
     return renderForbidden(res);
   }
 
-  const invitesResult = await callGroup(req.token, 'GET', `/${id}/invites`).catch((error) => {
+  const invitesResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/invites`).catch((error) => {
     if (isAuthError(error)) throw error;
     return { data: { items: [] } };
   });
@@ -1262,7 +1262,7 @@ router.get('/:id(\\d+)/notifications', requireAuth, asyncRoute(async (req, res) 
     return renderForbidden(res);
   }
 
-  const prefsResult = await callGroup(req.token, 'GET', `/${id}/notification-prefs`).catch((error) => {
+  const prefsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/notification-prefs`).catch((error) => {
     if (isAuthError(error)) throw error;
     return {
       data: {
@@ -1304,7 +1304,7 @@ router.get('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res) 
     return renderForbidden(res);
   }
 
-  const announcementsResult = await callGroup(req.token, 'GET', `/${id}/announcements`).catch((error) => {
+  const announcementsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements`).catch((error) => {
     if (isAuthError(error)) throw error;
     return { data: { items: [] } };
   });
@@ -1330,7 +1330,7 @@ router.get('/:id(\\d+)/announcements/:annId(\\d+)/edit', requireAuth, asyncRoute
     return renderForbidden(res);
   }
 
-  const announcementsResult = await callGroup(req.token, 'GET', `/${id}/announcements`);
+  const announcementsResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/announcements`);
   const announcementData = collectionFrom(announcementsResult)
     .find((announcement) => String(positiveInteger(announcement?.id)) === String(annId));
   if (!announcementData) {
@@ -1355,7 +1355,7 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const isMember = isActiveGroupMember(group);
   const discussionsResult = isMember
-    ? await callGroup(req.token, 'GET', `/${id}/discussions`).catch((error) => {
+    ? await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: { items: [] } };
     })
@@ -1405,7 +1405,7 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
   const { id, discussionId } = req.params;
   const [groupResult, discussionResult] = await Promise.all([
     getGroup(req.token, id),
-    callGroup(req.token, 'GET', `/${id}/discussions/${discussionId}`)
+    callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}`)
   ]);
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const data = dataFrom(discussionResult) || {};
@@ -1469,7 +1469,7 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
 
   let filesResult;
   try {
-    filesResult = await callGroup(req.token, 'GET', `/${id}/files?per_page=50`);
+    filesResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/files?per_page=50`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return renderForbidden(res);
@@ -1512,7 +1512,7 @@ router.get('/:id(\\d+)/manage', requireAuth, asyncRoute(async (req, res) => {
 
   const [membersResult, requestsResult] = await Promise.all([
     getGroupMembers(req.token, id, { per_page: 100 }),
-    callGroup(req.token, 'GET', `/${id}/requests`).catch((error) => {
+    callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/requests`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     })
@@ -1706,7 +1706,7 @@ router.post('/:id(\\d+)/invite/link', requireAuth, asyncRoute(async (req, res) =
   };
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'invite', 'invite-link-failed'), async (token) => {
-    await callGroup(token, 'POST', `/${id}/invites/link`, payload);
+    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/invites/link`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'invite', 'invite-link-created'));
   });
 }));
@@ -1729,7 +1729,7 @@ router.post('/:id(\\d+)/invite/email', requireAuth, asyncRoute(async (req, res) 
   };
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'invite', 'invite-email-failed'), async (token) => {
-    await callGroup(token, 'POST', `/${id}/invites/email`, payload);
+    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/invites/email`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'invite', 'invite-emails-sent'));
   });
 }));
@@ -1739,7 +1739,7 @@ router.post('/:id(\\d+)/invite/:inviteId(\\d+)/revoke', requireAuth, asyncRoute(
   const inviteId = Number(req.params.inviteId);
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'invite', 'invite-revoke-failed'), async (token) => {
-    await callGroup(token, 'DELETE', `/${id}/invites/${inviteId}`);
+    await callGroup(token, 'DELETE', `/${encodeURIComponent(id)}/invites/${encodeURIComponent(inviteId)}`);
     return res.redirect(groupSubpageRedirect(res, id, 'invite', 'invite-revoked'));
   });
 }));
@@ -1753,7 +1753,7 @@ router.post('/:id(\\d+)/notifications', requireAuth, asyncRoute(async (req, res)
   };
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'notifications', 'prefs-failed'), async (token) => {
-    await callGroup(token, 'PUT', `/${id}/notification-prefs`, payload);
+    await callGroup(token, 'PUT', `/${encodeURIComponent(id)}/notification-prefs`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'notifications', 'prefs-saved'));
   });
 }));
@@ -1870,7 +1870,7 @@ router.post('/:id(\\d+)/files/:fileId(\\d+)/delete', requireAuth, asyncRoute(asy
         : 'file-delete-failed';
     return groupSubpageRedirect(res, id, 'files', status);
   }, async (token) => {
-    await callGroup(token, 'DELETE', `/${id}/files/${fileId}`);
+    await callGroup(token, 'DELETE', `/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`);
     return res.redirect(groupSubpageRedirect(res, id, 'files', 'file-deleted'));
   });
 }));
@@ -1888,7 +1888,7 @@ router.post('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res)
     rememberAnnouncementForm(req, announcementFormKey(id), req.body);
     return groupSubpageRedirect(res, id, 'announcements', 'ann-create-failed');
   }, async (token) => {
-    await callGroup(token, 'POST', `/${id}/announcements`, payload);
+    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/announcements`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', 'ann-created'));
   });
 }));
@@ -1907,7 +1907,7 @@ router.post('/:id(\\d+)/announcements/:annId(\\d+)/edit', requireAuth, asyncRout
     rememberAnnouncementForm(req, announcementFormKey(id, annId), req.body);
     return announcementEditRedirect(res, id, annId, 'ann-update-failed');
   }, async (token) => {
-    await callGroup(token, 'PUT', `/${id}/announcements/${annId}`, payload);
+    await callGroup(token, 'PUT', `/${encodeURIComponent(id)}/announcements/${encodeURIComponent(annId)}`, payload);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', 'ann-updated'));
   });
 }));
@@ -1917,7 +1917,7 @@ router.post('/:id(\\d+)/announcements/:annId(\\d+)/delete', requireAuth, asyncRo
   const annId = Number(req.params.annId);
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'announcements', 'ann-delete-failed'), async (token) => {
-    await callGroup(token, 'DELETE', `/${id}/announcements/${annId}`);
+    await callGroup(token, 'DELETE', `/${encodeURIComponent(id)}/announcements/${encodeURIComponent(annId)}`);
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', 'ann-deleted'));
   });
 }));
@@ -1928,7 +1928,7 @@ router.post('/:id(\\d+)/announcements/:annId(\\d+)/pin', requireAuth, asyncRoute
   const isPinned = checked(req.body.is_pinned);
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'announcements', 'ann-pin-failed'), async (token) => {
-    await callGroup(token, 'PUT', `/${id}/announcements/${annId}`, { is_pinned: isPinned });
+    await callGroup(token, 'PUT', `/${encodeURIComponent(id)}/announcements/${encodeURIComponent(annId)}`, { is_pinned: isPinned });
     return res.redirect(groupSubpageRedirect(res, id, 'announcements', isPinned ? 'ann-pinned' : 'ann-unpinned'));
   });
 }));
@@ -1950,7 +1950,7 @@ router.post('/:id(\\d+)/discussions/new', requireAuth, asyncRoute(async (req, re
     rememberDiscussionForm(req, id, null, values);
     return groupSubpageRedirect(res, id, 'discussions/new', 'discussion-failed');
   }, async (token) => {
-    const result = await callGroup(token, 'POST', `/${id}/discussions`, payload);
+    const result = await callGroup(token, 'POST', `/${encodeURIComponent(id)}/discussions`, payload);
     const discussionId = resultId(result);
     const target = discussionId
       ? discussionRedirect(res, id, discussionId, 'discussion-created')
@@ -1976,7 +1976,7 @@ router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/reply', requireAuth, asy
     rememberDiscussionForm(req, id, discussionId, values);
     return discussionRedirect(res, id, discussionId, 'reply-failed', '#discussion-replies');
   }, async (token) => {
-    await callGroup(token, 'POST', `/${id}/discussions/${discussionId}/messages`, { content });
+    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}/messages`, { content });
     return res.redirect(discussionRedirect(res, id, discussionId, 'reply-posted', '#discussion-replies'));
   });
 }));
@@ -2026,12 +2026,12 @@ router.post('/:id(\\d+)/members/:memberId(\\d+)', requireAuth, asyncRoute(async 
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'manage', 'member-failed'), async (token) => {
     if (action === 'remove') {
-      await callGroup(token, 'DELETE', `/${id}/members/${memberId}`);
+      await callGroup(token, 'DELETE', `/${encodeURIComponent(id)}/members/${encodeURIComponent(memberId)}`);
       return res.redirect(groupSubpageRedirect(res, id, 'manage', 'member-removed'));
     }
 
     const role = action === 'promote' ? 'admin' : 'member';
-    await callGroup(token, 'PUT', `/${id}/members/${memberId}`, { role });
+    await callGroup(token, 'PUT', `/${encodeURIComponent(id)}/members/${encodeURIComponent(memberId)}`, { role });
     return res.redirect(groupSubpageRedirect(res, id, 'manage', action === 'promote' ? 'member-promoted' : 'member-demoted'));
   });
 }));
@@ -2044,7 +2044,7 @@ router.post('/:id(\\d+)/requests/:requesterId(\\d+)', requireAuth, asyncRoute(as
   return requireGroupAction(req, res, (error) => (
     groupSubpageRedirect(res, id, 'manage', groupRequestFailureStatus(error))
   ), async (token) => {
-    await callGroup(token, 'POST', `/${id}/requests/${requesterId}`, { action });
+    await callGroup(token, 'POST', `/${encodeURIComponent(id)}/requests/${encodeURIComponent(requesterId)}`, { action });
     return res.redirect(groupSubpageRedirect(res, id, 'manage', action === 'reject' ? 'request-rejected' : 'request-approved'));
   });
 }));

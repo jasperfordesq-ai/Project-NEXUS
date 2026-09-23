@@ -255,7 +255,7 @@ async function updateEpisodeFromStudio(req, res, token, showId, episodeId) {
         file: await bufferedUpload(file, 'podcast-audio')
       });
     } else {
-      await callPodcast(token, 'PUT', `/${showId}/episodes/${episodeId}`, payload);
+      await callPodcast(token, 'PUT', `/${encodeURIComponent(showId)}/episodes/${encodeURIComponent(episodeId)}`, payload);
     }
     if (cover) {
       await uploadPodcastEpisodeCover(
@@ -282,7 +282,7 @@ router.post('/:id(\\d+)/subscribe', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'subscribe-failed';
   try {
-    const result = await callPodcast(token, 'POST', `/${id}/subscribe`);
+    const result = await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/subscribe`);
     const data = dataFrom(result);
     status = data && data.subscribed === false ? 'unsubscribed' : 'subscribed';
   } catch (error) {
@@ -362,7 +362,7 @@ router.post('/studio/:id(\\d+)/update', asyncRoute(async (req, res) => {
 
   let status = 'show-saved';
   try {
-    await callPodcast(token, 'PUT', `/${id}`, payload);
+    await callPodcast(token, 'PUT', `/${encodeURIComponent(id)}`, payload);
     if (artwork) {
       const buffer = await fs.readFile(artwork.filepath);
       await uploadPodcastArtwork(token, id, {
@@ -388,7 +388,7 @@ router.post('/studio/:id(\\d+)/publish', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'show-publish-failed';
   try {
-    const result = await callPodcast(token, 'POST', `/${id}/publish`);
+    const result = await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/publish`);
     const data = dataFrom(result);
     status = data && data.moderation_status && data.moderation_status !== 'approved'
       ? 'show-pending-review'
@@ -407,7 +407,7 @@ router.post('/studio/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'show-deleted';
   try {
-    await callPodcast(token, 'DELETE', `/${id}`);
+    await callPodcast(token, 'DELETE', `/${encodeURIComponent(id)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'show-delete-failed';
@@ -463,7 +463,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
           file: await bufferedUpload(file, 'podcast-audio')
         });
       } else {
-        result = await callPodcast(token, 'POST', `/${id}/episodes`, payload);
+        result = await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/episodes`, payload);
       }
       const data = dataFrom(result);
       episodeId = positiveInteger(data && (data.id || data.episode_id));
@@ -496,7 +496,7 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/publish', asyncRoute(as
   const episodeId = Number(req.params.episodeId);
   let status = 'episode-published';
   try {
-    await callPodcast(token, 'POST', `/${id}/episodes/${episodeId}/publish`);
+    await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/episodes/${encodeURIComponent(episodeId)}/publish`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'episode-publish-failed';
@@ -533,7 +533,7 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/delete', asyncRoute(asy
   const episodeId = Number(req.params.episodeId);
   let status = 'episode-deleted';
   try {
-    await callPodcast(token, 'DELETE', `/${id}/episodes/${episodeId}`);
+    await callPodcast(token, 'DELETE', `/${encodeURIComponent(id)}/episodes/${encodeURIComponent(episodeId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'episode-delete-failed';

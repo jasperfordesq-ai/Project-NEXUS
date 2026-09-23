@@ -298,7 +298,7 @@
   },
   "biometricLock": {
     "title": "Déverrouiller avec l'empreinte ou le visage",
-    "hint": "Verrouille votre session enregistrée au démarrage de l’application. Toute personne dont les données biométriques sont enregistrées sur cet appareil peut la déverrouiller. Le code PIN de l’appareil peut aussi être accepté.",
+    "hint": "Verrouille votre session enregistrée au démarrage de l’application, puis à nouveau lorsque vous revenez après plus de cinq minutes d’absence. Toute personne dont les données biométriques sont enregistrées sur cet appareil peut la déverrouiller. Le code PIN de l’appareil peut aussi être accepté.",
     "prompt": "Déverrouillez votre compte",
     "lockedTitle": "Verrouillé",
     "lockedSubtitle": "Déverrouillez pour retrouver votre communauté.",

@@ -171,7 +171,7 @@ router.post('/group/read', asyncRoute(async (req, res) => {
 }));
 
 // Mark single notification as read
-router.post('/:id/read', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/read', asyncRoute(async (req, res) => {
   const { id } = req.params;
   // 🔴 The destination is resolved from the notification's OWN record, never from
   // the request. This route used to accept a `redirect` path in the body — a
@@ -254,7 +254,7 @@ router.post('/delete-all', asyncRoute(async (req, res) => {
 }));
 
 // Delete notification
-router.post('/:id/delete', asyncRoute(async (req, res) => {
+router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   const { id } = req.params;
 
   try {

@@ -1818,7 +1818,7 @@ router.get('/applications/:appId(\\d+)/history', asyncRoute(async (req, res) => 
   let applicationsResult = null;
 
   try {
-    result = await callJob(token, 'GET', `/applications/${appId}/history`);
+    result = await callJob(token, 'GET', `/applications/${encodeURIComponent(appId)}/history`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
@@ -1854,7 +1854,7 @@ router.get('/applications/:appId(\\d+)/cv', asyncRoute(async (req, res) => {
   let download;
 
   try {
-    download = await callJobDownload(token, `/applications/${appId}/cv`);
+    download = await callJobDownload(token, `/applications/${encodeURIComponent(appId)}/cv`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2047,7 +2047,7 @@ router.get('/employers/:employerId(\\d+)', asyncRoute(async (req, res) => {
   }
 
   try {
-    reviewsResult = await callJob(token, 'GET', `/employer-reviews/${employerId}`);
+    reviewsResult = await callJob(token, 'GET', `/employer-reviews/${encodeURIComponent(employerId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = true;
@@ -2154,7 +2154,7 @@ router.get('/talent-search/:candidateId(\\d+)', asyncRoute(async (req, res) => {
   let result;
 
   try {
-    result = await callJob(token, 'GET', `/talent-search/${candidateId}`);
+    result = await callJob(token, 'GET', `/talent-search/${encodeURIComponent(candidateId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2191,7 +2191,7 @@ router.get('/:id(\\d+)/applications/export.csv', asyncRoute(async (req, res) => 
   let csv;
 
   try {
-    csv = await callJob(token, 'GET', `/${id}/applications/export-csv`);
+    csv = await callJob(token, 'GET', `/${encodeURIComponent(id)}/applications/export-csv`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, statusRedirect(`/jobs/${id}/applications`, 'export-failed'));
@@ -2236,7 +2236,7 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   }
 
   try {
-    analyticsResult = await callJob(token, 'GET', `/${id}/analytics`);
+    analyticsResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/analytics`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2253,7 +2253,7 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   }
 
   try {
-    predictionsResult = await callJob(token, 'GET', `/${id}/predictions`);
+    predictionsResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/predictions`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
   }
@@ -2339,7 +2339,7 @@ router.get('/:id(\\d+)/pipeline', asyncRoute(async (req, res) => {
   }
 
   try {
-    applicationsResult = await callJob(token, 'GET', `/${id}/applications`);
+    applicationsResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/applications`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2406,7 +2406,7 @@ router.get('/:id(\\d+)/applications', asyncRoute(async (req, res) => {
   }
 
   try {
-    applicationsResult = await callJob(token, 'GET', `/${id}/applications`);
+    applicationsResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/applications`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2419,7 +2419,7 @@ router.get('/:id(\\d+)/applications', asyncRoute(async (req, res) => {
   }
 
   try {
-    analyticsResult = await callJob(token, 'GET', `/${id}/analytics`);
+    analyticsResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/analytics`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
   }
@@ -2456,7 +2456,7 @@ router.get('/:id(\\d+)/qualified', asyncRoute(async (req, res) => {
   let qualificationResult;
 
   try {
-    qualificationResult = await callJob(token, 'GET', `/${id}/qualified`);
+    qualificationResult = await callJob(token, 'GET', `/${encodeURIComponent(id)}/qualified`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
@@ -2520,7 +2520,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   if (skillsFrom(job).length > 0) {
     try {
-      matchResult = await callJob(token, 'GET', `/${job.id}/match`);
+      matchResult = await callJob(token, 'GET', `/${encodeURIComponent(job.id)}/match`);
     } catch {
       // Skills matching is optional and may be disabled for the tenant.
     }
@@ -2589,7 +2589,7 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callJob(token, 'PUT', `/${id}`, payload);
+    await callJob(token, 'PUT', `/${encodeURIComponent(id)}`, payload);
     return redirectTo(res, jobRedirect(id, 'updated'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2605,7 +2605,7 @@ router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callJob(token, 'DELETE', `/${id}`);
+    await callJob(token, 'DELETE', `/${encodeURIComponent(id)}`);
     return redirectTo(res, statusRedirect('/jobs/mine', 'deleted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2619,7 +2619,7 @@ router.post('/:id(\\d+)/renew', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callJob(token, 'POST', `/${id}/renew`, { days: 30 });
+    await callJob(token, 'POST', `/${encodeURIComponent(id)}/renew`, { days: 30 });
     return redirectTo(res, jobRedirect(id, 'renewed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2655,7 +2655,7 @@ router.post('/:id(\\d+)/apply', asyncRoute(async (req, res) => {
         }
       });
     } else {
-      await callJob(token, 'POST', `/${id}/apply`, payload);
+      await callJob(token, 'POST', `/${encodeURIComponent(id)}/apply`, payload);
     }
     return redirectTo(res, jobRedirect(id, 'applied'));
   } catch (error) {
@@ -2673,7 +2673,7 @@ router.post('/:id(\\d+)/save', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callJob(token, 'POST', `/${id}/save`);
+    await callJob(token, 'POST', `/${encodeURIComponent(id)}/save`);
     return redirectTo(res, bookmarkRedirect(id, req.body.from, 'saved'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2687,7 +2687,7 @@ router.post('/:id(\\d+)/unsave', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callJob(token, 'DELETE', `/${id}/save`);
+    await callJob(token, 'DELETE', `/${encodeURIComponent(id)}/save`);
     return redirectTo(res, bookmarkRedirect(id, req.body.from, 'unsaved'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2702,7 +2702,7 @@ router.post('/:id(\\d+)/applications/:appId(\\d+)/status', asyncRoute(async (req
   const id = Number(req.params.id);
   const appId = Number(req.params.appId);
   try {
-    await callJob(token, 'PUT', `/applications/${appId}`, applicationStatusPayload(req.body));
+    await callJob(token, 'PUT', `/applications/${encodeURIComponent(appId)}`, applicationStatusPayload(req.body));
     return redirectTo(res, statusRedirect(`/jobs/${id}/applications`, 'status-updated'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2716,7 +2716,7 @@ router.post('/applications/:appId(\\d+)/withdraw', asyncRoute(async (req, res) =
 
   const appId = Number(req.params.appId);
   try {
-    await callJob(token, 'PUT', `/applications/${appId}`, { status: 'withdrawn' });
+    await callJob(token, 'PUT', `/applications/${encodeURIComponent(appId)}`, { status: 'withdrawn' });
     return redirectTo(res, statusRedirect('/jobs/applications', 'withdrawn'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2743,7 +2743,7 @@ router.post('/alerts/:alertId(\\d+)/pause', asyncRoute(async (req, res) => {
 
   const alertId = Number(req.params.alertId);
   try {
-    await callJob(token, 'PUT', `/alerts/${alertId}/unsubscribe`);
+    await callJob(token, 'PUT', `/alerts/${encodeURIComponent(alertId)}/unsubscribe`);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-paused'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2757,7 +2757,7 @@ router.post('/alerts/:alertId(\\d+)/resume', asyncRoute(async (req, res) => {
 
   const alertId = Number(req.params.alertId);
   try {
-    await callJob(token, 'PUT', `/alerts/${alertId}/resubscribe`);
+    await callJob(token, 'PUT', `/alerts/${encodeURIComponent(alertId)}/resubscribe`);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-resumed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2771,7 +2771,7 @@ router.post('/alerts/:alertId(\\d+)/delete', asyncRoute(async (req, res) => {
 
   const alertId = Number(req.params.alertId);
   try {
-    await callJob(token, 'DELETE', `/alerts/${alertId}`);
+    await callJob(token, 'DELETE', `/alerts/${encodeURIComponent(alertId)}`);
     return redirectTo(res, statusRedirect('/jobs/alerts', 'alert-deleted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2785,7 +2785,7 @@ router.post('/interviews/:interviewId(\\d+)/accept', asyncRoute(async (req, res)
 
   const interviewId = Number(req.params.interviewId);
   try {
-    await callJob(token, 'PUT', `/interviews/${interviewId}/accept`, notePayload(req.body));
+    await callJob(token, 'PUT', `/interviews/${encodeURIComponent(interviewId)}/accept`, notePayload(req.body));
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-accepted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2799,7 +2799,7 @@ router.post('/interviews/:interviewId(\\d+)/decline', asyncRoute(async (req, res
 
   const interviewId = Number(req.params.interviewId);
   try {
-    await callJob(token, 'PUT', `/interviews/${interviewId}/decline`, notePayload(req.body));
+    await callJob(token, 'PUT', `/interviews/${encodeURIComponent(interviewId)}/decline`, notePayload(req.body));
     return redirectTo(res, statusRedirect('/jobs/responses', 'interview-declined'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2813,7 +2813,7 @@ router.post('/offers/:offerId(\\d+)/accept', asyncRoute(async (req, res) => {
 
   const offerId = Number(req.params.offerId);
   try {
-    await callJob(token, 'PUT', `/offers/${offerId}/accept`);
+    await callJob(token, 'PUT', `/offers/${encodeURIComponent(offerId)}/accept`);
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-accepted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -2827,7 +2827,7 @@ router.post('/offers/:offerId(\\d+)/reject', asyncRoute(async (req, res) => {
 
   const offerId = Number(req.params.offerId);
   try {
-    await callJob(token, 'PUT', `/offers/${offerId}/reject`);
+    await callJob(token, 'PUT', `/offers/${encodeURIComponent(offerId)}/reject`);
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-rejected'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;

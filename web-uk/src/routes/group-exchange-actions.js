@@ -174,7 +174,7 @@ router.post('/:id(\\d+)/participants', asyncRoute(async (req, res) => {
 
   let splitType = 'equal';
   try {
-    splitType = splitTypeOf(await callApi(token, 'GET', `/${id}`));
+    splitType = splitTypeOf(await callApi(token, 'GET', `/${encodeURIComponent(id)}`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, exchangeRedirect(id, 'add-failed'));

@@ -24,10 +24,12 @@
  * navigates immediately, gate and all. The bisect that pointed here was noise, because
  * whether the banner was up varied between runs.
  *
- * 🔴 It locks on a cold start, not on every return from the background. That is a
- * deliberate scope line for a first version rather than an oversight: "fingerprint
- * sign-in" is about getting in, and re-prompting on every app switch is the fastest way
- * to make a member turn the feature off. Recorded in the ledger as the next step.
+ * 🔴 It locks on a cold start AND when the app comes back after more than
+ * `RELOCK_AFTER_BACKGROUND_MS` in the background (F-119). The first version locked on a
+ * cold start only, so a phone handed over — or picked up — with the app merely
+ * backgrounded opened straight into the account. A short app switch (checking a text,
+ * answering the fingerprint prompt itself) does not re-lock: re-prompting on every switch
+ * is the fastest way to make a member turn the feature off.
  *
  * The escape hatch matters as much as the lock. If the phone's biometrics stop working —
  * a new fingerprint enrolled, a sensor that will not read, a lockout — the member can
@@ -36,7 +38,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Spinner, Text } from 'heroui-native';
@@ -56,6 +58,9 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 
 type GateState = 'checking' | 'locked' | 'open';
+
+/** F-119: how long the app may sit in the background before it locks again. */
+export const RELOCK_AFTER_BACKGROUND_MS = 5 * 60 * 1000;
 
 export default function BiometricLockGate({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation(['settings', 'common']);
@@ -78,6 +83,10 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
   }, []);
   /** One decision per app start. Re-deciding on every auth change would re-lock a member. */
   const decided = useRef(false);
+  const stateRef = useRef<GateState>('checking');
+  stateRef.current = state;
+  /** When the OPEN app last went to the background; null while it is in the foreground. */
+  const backgroundedAt = useRef<number | null>(null);
 
   const unlock = useCallback(async () => {
     if (!mounted.current || prompting.current || signingOut.current) return;
@@ -171,6 +180,57 @@ export default function BiometricLockGate({ children }: { children: React.ReactN
     return () => {
       cancelled = true;
     };
+  }, [isAuthenticated, isLoading, unlock]);
+
+  /*
+    F-119: re-lock on return from a long absence. The timestamp is taken only while the gate
+    is OPEN, so the system unlock prompt (which can itself background the app) never re-arms
+    the lock it is answering. On return the content is covered at once, before the stored
+    preference is re-read, so the account never flashes up while that check runs.
+  */
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) {
+      backgroundedAt.current = null;
+      return undefined;
+    }
+    const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
+      if (next === 'background') {
+        if (stateRef.current === 'open' && decided.current && backgroundedAt.current === null) {
+          backgroundedAt.current = Date.now();
+        }
+        return;
+      }
+      if (next !== 'active') return;
+      const since = backgroundedAt.current;
+      backgroundedAt.current = null;
+      if (since === null || stateRef.current !== 'open' || signingOut.current) return;
+      if (Date.now() - since < RELOCK_AFTER_BACKGROUND_MS) return;
+
+      const version = ++promptVersion.current;
+      prompting.current = false;
+      setIsPrompting(false);
+      setFailure(null);
+      setState('checking');
+      void (async () => {
+        let enabled: boolean;
+        try {
+          enabled = await isBiometricLockEnabled();
+        } catch {
+          if (!mounted.current || version !== promptVersion.current) return;
+          setFailure('unavailable');
+          setState('locked');
+          return;
+        }
+        if (!mounted.current || version !== promptVersion.current) return;
+        if (!enabled) {
+          setState('open');
+          return;
+        }
+        setState('locked');
+        void unlock();
+      })();
+    });
+    return () => subscription?.remove?.();
   }, [isAuthenticated, isLoading, unlock]);
 
   const covered = state !== 'open' || (isAuthenticated && !decided.current);

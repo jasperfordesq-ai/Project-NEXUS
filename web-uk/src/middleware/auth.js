@@ -81,8 +81,31 @@ function redirectTo(res, pathname) {
   return res.redirect(urlFor(pathname));
 }
 
+// F-112: a session belongs to the community its token was issued for, which the
+// signed `tenant_slug` cookie records. The address's community is only a
+// fallback for a session that predates that cookie. Refreshing with the
+// address's community instead made Laravel refuse the refresh token (it is
+// tenant-bound), and web-uk then cleared the cookies — so opening a link to
+// another community on the shared host signed the member out.
+function sessionTenantSlug(req) {
+  return String(req.signedCookies?.tenant_slug || '').trim();
+}
+
 function tenantSlugForRequest(req) {
-  return String(req.accessibleRouting?.tenantSlug || req.signedCookies?.tenant_slug || '').trim();
+  return sessionTenantSlug(req) || String(req.accessibleRouting?.tenantSlug || '').trim();
+}
+
+// True when the address names a different community from the signed session's.
+// A refresh refused on such a request says nothing reliable about the member's
+// own session, so it must never clear their cookies.
+function isForeignCommunityRequest(req) {
+  const routed = String(req.accessibleRouting?.tenantSlug || '').trim().toLowerCase();
+  const session = sessionTenantSlug(req).toLowerCase();
+  return Boolean(routed && session && routed !== session);
+}
+
+function refreshFailureClearsSession(req, error) {
+  return !transientRefreshFailure(error) && !isForeignCommunityRequest(req);
 }
 
 function jwtExpiresSoon(token, now = Date.now()) {
@@ -132,7 +155,7 @@ async function rotateSession(req, res, refreshTokenValue) {
   setAuthCookies(res, envelope.accessToken, envelope.refreshToken, {
     expiresIn: envelope.expiresIn,
     refreshExpiresIn: envelope.refreshExpiresIn,
-    tenantSlug: tenantSlugForRequest(req)
+    tenantSlug
   });
   req.signedCookies.token = envelope.accessToken;
   req.signedCookies.refresh_token = envelope.refreshToken;
@@ -159,7 +182,7 @@ async function ensureAuthSession(req, res) {
     // authoritative credential failures expire the complete local pair.
     delete req.signedCookies.token;
     delete req.token;
-    if (!transientRefreshFailure(error)) {
+    if (refreshFailureClearsSession(req, error)) {
       delete req.signedCookies.refresh_token;
       clearAuthCookies(res);
     }
@@ -275,7 +298,7 @@ function withTokenRefresh(handler) {
           } catch (refreshError) {
             delete req.token;
             delete req.signedCookies.token;
-            if (!transientRefreshFailure(refreshError)) {
+            if (refreshFailureClearsSession(req, refreshError)) {
               delete req.signedCookies.refresh_token;
               clearAuthCookies(res);
             }
@@ -283,8 +306,9 @@ function withTokenRefresh(handler) {
           }
         }
 
-        // No refresh token - redirect to login
-        clearAuthCookies(res);
+        // No refresh token - redirect to login. On another community's mount
+        // the 401 is about that community, not this member's session (F-112).
+        if (!isForeignCommunityRequest(req)) clearAuthCookies(res);
         return redirectTo(res, AUTH_REQUIRED_LOGIN_PATH);
       }
 

@@ -427,7 +427,7 @@ router.get('/:id(\\d+)/comments', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = req.token || tokenFrom(req);
   const [reviewResult, commentsResult, reactionsResult] = await Promise.all([
-    callReviewApi(token, 'GET', `/${id}`),
+    callReviewApi(token, 'GET', `/${encodeURIComponent(id)}`),
     getComments(token, { target_type: 'review', target_id: id }),
     getReactionSummary(token, 'review', id)
   ]);

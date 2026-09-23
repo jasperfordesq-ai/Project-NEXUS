@@ -688,6 +688,32 @@ describe('ThreadScreen', () => {
     expect(getByLabelText('Community member avatar')).toBeTruthy();
   });
 
+  // F-118: a deep link's `?name=` is whatever the link's author typed. It must never
+  // title a conversation — only the server's description of the other member may.
+  it('titles the thread with the server-resolved member, never the name in the link', () => {
+    mockThreadSearchParams = { recipientId: '42', name: 'Community Coordinator' };
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Mallory' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<ThreadScreen />);
+
+    expect(screen.queryByText('Community Coordinator')).toBeNull();
+    expect(screen.getAllByText('Mallory').length).toBeGreaterThan(0);
+  });
+
+  it('shows a placeholder, not the link name, while the member is still loading', () => {
+    mockThreadSearchParams = { recipientId: '42', name: 'Community Coordinator' };
+    mockUseApi.mockReturnValue({ data: null, isLoading: true, error: null, refresh: jest.fn() });
+
+    const screen = render(<ThreadScreen />);
+
+    expect(screen.queryByText('Community Coordinator')).toBeNull();
+  });
+
   it('renders loading state without crashing', () => {
     mockUseApi.mockReturnValue({ data: null, isLoading: true, error: null, refresh: jest.fn() });
 

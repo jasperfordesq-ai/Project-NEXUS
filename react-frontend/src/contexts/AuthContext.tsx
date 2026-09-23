@@ -32,6 +32,7 @@ import { loginResponseSchema, userSchema } from '@/lib/api-schemas';
 import { queueSentryAuthEvent, queueSentryUser } from '@/lib/telemetryQueue';
 import { purgeAllOfflineCheckinData } from '@/lib/event-offline-checkin-store';
 import { unsubscribeBrowserPushOnLogout } from '@/hooks/useWebPush';
+import { clearUserScopedStorage } from '@/lib/userScopedStorage';
 import type {
   User,
   LoginRequest,
@@ -762,6 +763,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       tokenManager.clearTokens();
       localStorage.removeItem('nexus_tenant_id');
       localStorage.removeItem('nexus_tenant_slug');
+      // F-109: compose drafts and recent searches are private to the member who
+      // typed them. On a shared browser the next person to sign in must not see
+      // (or publish) them.
+      clearUserScopedStorage();
 
       // Clear Sentry user context and capture logout event
       captureTelemetryAuthEvent('logout', userId);

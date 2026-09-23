@@ -1122,7 +1122,7 @@ router.get('/listings', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/listings/:tenantId/:id', asyncRoute(async (req, res) => {
+router.get('/listings/:tenantId(\\d+)/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
@@ -1270,7 +1270,7 @@ router.get('/partners', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/partners/:id', asyncRoute(async (req, res) => {
+router.get('/partners/:id(\\d+|ext-\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
@@ -1283,7 +1283,7 @@ router.get('/partners/:id', asyncRoute(async (req, res) => {
 
   let partnerResult;
   try {
-    partnerResult = await callFederationApi(token, 'GET', `/partners/${id}`);
+    partnerResult = await callFederationApi(token, 'GET', `/partners/${encodeURIComponent(id)}`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
@@ -1517,7 +1517,7 @@ router.get('/messages', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/messages/conversation/:partnerId', asyncRoute(async (req, res) => {
+router.get('/messages/conversation/:partnerId(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
@@ -1580,7 +1580,7 @@ router.get('/messages/conversation/:partnerId', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
+router.get('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
@@ -1598,7 +1598,7 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
   let settingsResult;
   let balanceResult;
   try {
-    memberResult = await callFederationApi(token, 'GET', `/members/${id}${tenantQuery}`);
+    memberResult = await callFederationApi(token, 'GET', `/members/${encodeURIComponent(id)}${tenantQuery}`);
     settingsResult = await callFederationApi(token, 'GET', '/settings');
     balanceResult = await getBalance(token);
   } catch (error) {
@@ -1637,7 +1637,7 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/members/:id', asyncRoute(async (req, res) => {
+router.get('/members/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
@@ -1654,7 +1654,7 @@ router.get('/members/:id', asyncRoute(async (req, res) => {
   let memberResult;
   let settingsResult;
   try {
-    memberResult = await callFederationApi(token, 'GET', `/members/${id}${tenantQuery}`);
+    memberResult = await callFederationApi(token, 'GET', `/members/${encodeURIComponent(id)}${tenantQuery}`);
     settingsResult = await callFederationApi(token, 'GET', '/settings');
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
@@ -1675,7 +1675,7 @@ router.get('/members/:id', asyncRoute(async (req, res) => {
 
   if (member.showReviews) {
     try {
-      const reviewsResult = await callFederationApi(token, 'GET', `/members/${id}/reviews${tenantQuery}`);
+      const reviewsResult = await callFederationApi(token, 'GET', `/members/${encodeURIComponent(id)}/reviews${tenantQuery}`);
       reviews = asList(dataFrom(reviewsResult)).map((review) => normalizeReview(review, {
         t: res.locals.t,
         formatDate: res.locals.formatLocaleDate

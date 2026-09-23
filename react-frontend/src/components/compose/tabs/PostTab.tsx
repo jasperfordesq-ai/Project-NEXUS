@@ -18,6 +18,7 @@ import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { useDraftPersistence } from '@/hooks';
+import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TimeInput, type TimeInputValue, Button, Spinner, Avatar } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -73,8 +74,13 @@ export function PostTab({ onSuccess, onClose, isOpen, groupId, templateData, onC
 
   const isEditing = !!editItem;
 
-  // H10: Tenant-scoped draft key prevents cross-tenant draft leakage
-  const draftKey = isEditing ? `compose-edit-${editItem?.id}` : `compose-draft-post-${tenant?.slug ?? 'default'}`;
+  // H10 + F-109: drafts belong to one member of one community, so the key names
+  // both — a shared browser must never show (or publish) another member's draft.
+  const draftKey = userScopedStorageKey(
+    isEditing ? `compose-edit-${editItem?.id}` : 'compose-draft-post',
+    tenant?.id,
+    user?.id,
+  );
   const [draft, setDraft, clearDraft] = useDraftPersistence<PostDraft>(
     draftKey,
     { htmlContent: editItem?.content ?? '', plainText: editItem?.content ?? '' },

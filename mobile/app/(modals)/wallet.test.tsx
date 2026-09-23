@@ -162,6 +162,30 @@ jest.mock('expo-sharing', () => ({
   isAvailableAsync: (...args: unknown[]) => mockIsSharingAvailable(...args),
   shareAsync: (...args: unknown[]) => mockShareAsync(...args),
 }));
+/*
+  F-121: the export is written to a session-owned cache directory (swept hourly, and on
+  sign-out) and is only shared if the member who asked is still the one signed in.
+*/
+const mockExportRelease = jest.fn();
+const mockExportDispose = jest.fn();
+jest.mock('@/lib/auditedExportCache', () => ({
+  createAuditedExportDirectory: () => ({
+    directory: { uri: 'file:///cache/nexus-audited-export-1790000000000-11111111-1111-4111-8111-111111111111/' },
+    release: () => mockExportRelease(),
+    dispose: () => mockExportDispose(),
+  }),
+}));
+jest.mock('expo-file-system', () => ({
+  File: class {
+    uri: string;
+    constructor(directory: { uri: string }, name: string) { this.uri = `${directory.uri}${name}`; }
+  },
+}));
+const mockExportAssertCurrent = jest.fn();
+jest.mock('@/lib/api/client', () => ({
+  ...jest.requireActual('@/lib/api/client'),
+  authenticatedApiIdentity: jest.fn(async () => ({ token: 'token', tenantSlug: 'hour-timebank', assertCurrent: () => mockExportAssertCurrent() })),
+}));
 
 jest.mock('@/lib/api/wallet', () => ({
   getCommunityFundBalance: jest.fn(),
@@ -365,6 +389,65 @@ describe('WalletModal', () => {
     // The row that was never on screen is in the file.
     expect(csv).toContain('Older credit');
     expect(csv).toContain('Gardening');
+  });
+
+  // F-120: a description or member name is typed by another member. A cell that starts
+  // with = + - @ (or a tab / carriage return) is run as a formula by spreadsheet apps.
+  it('neutralises spreadsheet formulas in exported cells (F-120)', async () => {
+    mockWriteAsStringAsync.mockClear(); mockShareAsync.mockClear(); mockExportRelease.mockClear(); mockExportDispose.mockClear();
+    stubWallet([
+      { ...debitRow, id: 7, description: '=HYPERLINK("https://evil.example","Refund")' },
+      { ...debitRow, id: 8, description: '+cmd|/c calc!A1' },
+      { ...debitRow, id: 9, description: '@SUM(1+1)' },
+      { ...debitRow, id: 10, description: '-2+3' },
+      { ...debitRow, id: 11, description: '\tTabbed' },
+      { ...debitRow, id: 12, description: '\rReturn' },
+    ], { cursor: null, has_more: false });
+
+    const { getByText } = render(<WalletModal />);
+    fireEvent.press(getByText('Export'));
+
+    await waitFor(() => expect(mockWriteAsStringAsync).toHaveBeenCalled());
+    const [, csv] = mockWriteAsStringAsync.mock.calls[0] as unknown as [string, string];
+    expect(csv).toContain(`"'=HYPERLINK(""https://evil.example"",""Refund"")"`);
+    expect(csv).toContain("'+cmd|/c calc!A1");
+    expect(csv).toContain("'@SUM(1+1)");
+    expect(csv).toContain("'-2+3");
+    expect(csv).toContain("'\tTabbed");
+    expect(csv).toContain(`"'\rReturn"`);
+    // Every cell that begins a CSV field is safe.
+    for (const line of csv.split('\n')) {
+      for (const cell of line.split(',')) expect(cell).not.toMatch(/^"?[=+@\t\r]/);
+    }
+    // A plain negative amount is still a number, not text.
+    expect(csv).toMatch(/,-2(\.0)?,/);
+  });
+
+  it('writes the export to a session-owned cache directory and releases it after sharing (F-121)', async () => {
+    mockWriteAsStringAsync.mockClear(); mockShareAsync.mockClear(); mockExportRelease.mockClear(); mockExportDispose.mockClear();
+    stubWallet([debitRow], { cursor: null, has_more: false });
+
+    const { getByText } = render(<WalletModal />);
+    fireEvent.press(getByText('Export'));
+
+    await waitFor(() => expect(mockShareAsync).toHaveBeenCalled());
+    const [target] = mockWriteAsStringAsync.mock.calls[0] as unknown as [string, string];
+    expect(target).toMatch(/^file:\/\/\/cache\/nexus-audited-export-[^/]+\/wallet-transactions-\d{4}-\d{2}-\d{2}\.csv$/);
+    expect(mockShareAsync.mock.calls[0][0]).toBe(target);
+    expect(mockExportRelease).toHaveBeenCalledTimes(1);
+    expect(mockExportDispose).not.toHaveBeenCalled();
+  });
+
+  it('does not share, and deletes, an export finished after the member signed out (F-121)', async () => {
+    mockWriteAsStringAsync.mockClear(); mockShareAsync.mockClear(); mockExportRelease.mockClear(); mockExportDispose.mockClear();
+    stubWallet([debitRow], { cursor: null, has_more: false });
+    mockExportAssertCurrent.mockRejectedValueOnce(Object.assign(new Error('unauthorized'), { status: 401 }));
+
+    const { getByText } = render(<WalletModal />);
+    fireEvent.press(getByText('Export'));
+
+    await waitFor(() => expect(mockExportDispose).toHaveBeenCalledTimes(1));
+    expect(mockShareAsync).not.toHaveBeenCalled();
   });
 
   it('shares the export as a .csv file rather than as a message', async () => {

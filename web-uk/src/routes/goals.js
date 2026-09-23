@@ -797,7 +797,7 @@ router.post('/templates/:templateId(\\d+)', asyncRoute(async (req, res) => {
 
   let result;
   try {
-    result = await callGoal(token, 'POST', `/from-template/${templateId}`, payload);
+    result = await callGoal(token, 'POST', `/from-template/${encodeURIComponent(templateId)}`, payload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, goalsSubpageStatusRedirect('templates', 'goal-failed'));
@@ -936,7 +936,7 @@ router.get('/:id(\\d+)/checkin', asyncRoute(async (req, res) => {
   const id = req.params.id;
   const [goalResult, checkinResult] = await Promise.all([
     getGoal(token, id),
-    callGoal(token, 'GET', `/${id}/checkins?limit=20`).catch((error) => {
+    callGoal(token, 'GET', `/${encodeURIComponent(id)}/checkins?limit=20`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     })
@@ -968,7 +968,7 @@ router.get('/:id(\\d+)/reminder', asyncRoute(async (req, res) => {
   const id = req.params.id;
   const [goalResult, reminderResult] = await Promise.all([
     getGoal(token, id),
-    callGoal(token, 'GET', `/${id}/reminder`).catch((error) => {
+    callGoal(token, 'GET', `/${encodeURIComponent(id)}/reminder`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: null };
     })
@@ -1020,7 +1020,7 @@ router.get('/:id(\\d+)/insights', asyncRoute(async (req, res) => {
   const id = req.params.id;
   const [goalResult, insightsResult] = await Promise.all([
     getGoal(token, id),
-    callGoal(token, 'GET', `/${id}/insights`).catch((error) => {
+    callGoal(token, 'GET', `/${encodeURIComponent(id)}/insights`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: {} };
     })
@@ -1050,7 +1050,7 @@ router.get('/:id(\\d+)/history', asyncRoute(async (req, res) => {
 
   const [goalResult, historyResult] = await Promise.all([
     getGoal(token, id),
-    callGoal(token, 'GET', `/${id}/history?${params.toString()}`).catch((error) => {
+    callGoal(token, 'GET', `/${encodeURIComponent(id)}/history?${params.toString()}`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: { items: [], has_more: false } };
     })
@@ -1149,7 +1149,7 @@ router.post('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   payload.checkin_frequency = allowedValue(req.body.checkin_frequency, GOAL_CHECKIN_FREQUENCIES, 'none');
 
   try {
-    await callGoal(token, 'PUT', `/${id}`, payload);
+    await callGoal(token, 'PUT', `/${encodeURIComponent(id)}`, payload);
     return redirectTo(res, goalRedirect(id, 'goal-edited'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1163,7 +1163,7 @@ router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callGoal(token, 'DELETE', `/${id}`);
+    await callGoal(token, 'DELETE', `/${encodeURIComponent(id)}`);
     return redirectTo(res, goalsRedirect('goal-deleted'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1177,7 +1177,7 @@ router.post('/:id(\\d+)/buddy', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callGoal(token, 'POST', `/${id}/buddy`);
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy`);
     return redirectTo(res, goalRedirect(id, 'buddy-joined'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1191,7 +1191,7 @@ router.post('/:id(\\d+)/buddy-nudge', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callGoal(token, 'POST', `/${id}/buddy/nudge`, { type: 'nudge' });
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy/nudge`, { type: 'nudge' });
     return redirectTo(res, goalsSubpageStatusRedirect('buddying', 'buddy-nudge-sent'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1210,7 +1210,7 @@ router.post('/:id(\\d+)/progress', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callGoal(token, 'POST', `/${id}/progress`, { increment });
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/progress`, { increment });
     return redirectTo(res, goalRedirect(id, 'goal-updated'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1224,7 +1224,7 @@ router.post('/:id(\\d+)/complete', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callGoal(token, 'POST', `/${id}/complete`);
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/complete`);
     return redirectTo(res, goalRedirect(id, 'goal-completed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1248,7 +1248,7 @@ router.post('/:id(\\d+)/checkin', asyncRoute(async (req, res) => {
   };
 
   try {
-    await callGoal(token, 'POST', `/${id}/checkins`, payload);
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/checkins`, payload);
     return redirectTo(res, goalSubpageRedirect(id, 'checkin', 'checkin-recorded'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1267,7 +1267,7 @@ router.post('/:id(\\d+)/reminder', asyncRoute(async (req, res) => {
   };
 
   try {
-    await callGoal(token, 'PUT', `/${id}/reminder`, payload);
+    await callGoal(token, 'PUT', `/${encodeURIComponent(id)}/reminder`, payload);
     return redirectTo(res, goalSubpageRedirect(id, 'reminder', 'reminder-saved'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1281,7 +1281,7 @@ router.post('/:id(\\d+)/reminder/delete', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
-    await callGoal(token, 'DELETE', `/${id}/reminder`);
+    await callGoal(token, 'DELETE', `/${encodeURIComponent(id)}/reminder`);
     return redirectTo(res, goalSubpageRedirect(id, 'reminder', 'reminder-removed'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1302,7 +1302,7 @@ router.post('/:id(\\d+)/buddy-actions', asyncRoute(async (req, res) => {
   }
 
   try {
-    await callGoal(token, 'POST', `/${id}/buddy/nudge`, payload);
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy/nudge`, payload);
     return redirectTo(res, goalSubpageRedirect(id, 'buddy-actions', 'buddy-action-sent'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1411,8 +1411,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const goalResult = await getGoal(token, id);
   const [historyResult, insightsResult] = await Promise.all([
-    optionalGoalRead(callGoal(token, 'GET', `/${id}/history?per_page=30`), { data: [] }),
-    optionalGoalRead(callGoal(token, 'GET', `/${id}/insights`), { data: {} })
+    optionalGoalRead(callGoal(token, 'GET', `/${encodeURIComponent(id)}/history?per_page=30`), { data: [] }),
+    optionalGoalRead(callGoal(token, 'GET', `/${encodeURIComponent(id)}/insights`), { data: {} })
   ]);
   const goal = normalizeGoal(normalizeResponse(dataFrom(goalResult)), res.locals.t);
   const rawInsights = dataFrom(insightsResult) || {};

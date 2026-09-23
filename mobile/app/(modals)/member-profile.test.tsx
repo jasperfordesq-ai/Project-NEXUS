@@ -705,6 +705,32 @@ describe('MemberProfileScreen', () => {
     });
   });
 
+  // F-118: `?name=` in a deep link is the link author's claim. An external federated
+  // member cannot be looked up again, so the profile names them only from what the
+  // app's own directory read from the server.
+  it('does not head an external federated profile with the name from the link', () => {
+    mockParams = { id: 'ext-7-123', tenant_id: 'ext-7', name: 'Community Coordinator' };
+    mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { queryByText, getAllByText } = render(<MemberProfileScreen />);
+
+    expect(queryByText('Community Coordinator')).toBeNull();
+    expect(getAllByText('External federated member').length).toBeGreaterThan(0);
+  });
+
+  it('names an external federated member the app itself read from the directory', () => {
+    const { rememberAppResolvedMember, clearAppResolvedMembers } = require('@/lib/federation/appResolvedMembers');
+    rememberAppResolvedMember('ext-7-123', 'ext-7', { name: 'Sam Partner' });
+    mockParams = { id: 'ext-7-123', tenant_id: 'ext-7', name: 'Community Coordinator' };
+    mockUseApi.mockReturnValue({ data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { queryByText, getByText } = render(<MemberProfileScreen />);
+
+    expect(getByText('Sam Partner')).toBeTruthy();
+    expect(queryByText('Community Coordinator')).toBeNull();
+    clearAppResolvedMembers();
+  });
+
   it('declines incoming federated connection requests through the federation API', async () => {
     mockParams = { id: '272', tenant_id: '5' };
     mockUseApi.mockReturnValue({
@@ -875,9 +901,10 @@ describe('MemberProfileScreen', () => {
     mockUseApi.mockReturnValue({ data: null, isLoading: false, error: null, refresh: jest.fn() });
 
     const { router } = require('expo-router');
-    const { getAllByText, getByText } = render(<MemberProfileScreen />);
+    const { getAllByText, getByText, queryByText } = render(<MemberProfileScreen />);
 
-    expect(getByText('External Sam')).toBeTruthy();
+    // F-118: the link's `name` is not shown; the app has no server record of this member.
+    expect(queryByText('External Sam')).toBeNull();
     expect(getAllByText('External federated member').length).toBeGreaterThan(0);
 
     fireEvent.press(getByText('Send Message'));
@@ -888,7 +915,6 @@ describe('MemberProfileScreen', () => {
         compose: 'true',
         to_user: 'ext-7-123',
         to_tenant: 'ext-7',
-        name: 'External Sam',
       },
     });
   });

@@ -120,7 +120,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = positiveInteger(req.params.id);
-  const result = await callCouponApi(token, 'GET', `/${id}`);
+  const result = await callCouponApi(token, 'GET', `/${encodeURIComponent(id)}`);
   const coupon = normalizeCoupon(itemFrom(result), res.locals.t);
 
   return res.render('coupons/detail', {

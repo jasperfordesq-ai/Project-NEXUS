@@ -1139,7 +1139,7 @@ async function uploadMarketplaceListingImages(token, listingId, data) {
     form.append('image', blob, file.filename || 'marketplace-image');
   }
 
-  return request(`/api/v2/marketplace/listings/${listingId}/images`, {
+  return request(`/api/v2/marketplace/listings/${encodeURIComponent(listingId)}/images`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: form
@@ -1156,7 +1156,7 @@ async function uploadEventImage(token, eventId, data) {
     form.append('image', blob, file.filename || 'event-image');
   }
 
-  return request(`/api/v2/events/${eventId}/image`, {
+  return request(`/api/v2/events/${encodeURIComponent(eventId)}/image`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: form
@@ -3137,7 +3137,7 @@ async function createCaregiverLink(token, payload) {
 
 /** The care recipient's own decision. Confirming does NOT grant authority. */
 async function confirmIncomingCaregiverLink(token, linkId) {
-  return request(`/api/v2/caring-community/caregiver/incoming-links/${linkId}/confirm`, {
+  return request(`/api/v2/caring-community/caregiver/incoming-links/${encodeURIComponent(linkId)}/confirm`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({})
@@ -3145,7 +3145,7 @@ async function confirmIncomingCaregiverLink(token, linkId) {
 }
 
 async function rejectIncomingCaregiverLink(token, linkId, reason) {
-  return request(`/api/v2/caring-community/caregiver/incoming-links/${linkId}/reject`, {
+  return request(`/api/v2/caring-community/caregiver/incoming-links/${encodeURIComponent(linkId)}/reject`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ reason: reason || '' })
@@ -3166,7 +3166,7 @@ async function getCaregiverLinksForReview(token, status = 'pending') {
  * on those refusals rather than reimplementing them.
  */
 async function approveCaregiverLink(token, linkId, evidence) {
-  return request(`/api/v2/admin/caring-community/caregiver-links/${linkId}/approve`, {
+  return request(`/api/v2/admin/caring-community/caregiver-links/${encodeURIComponent(linkId)}/approve`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ consent_verified: true, consent_evidence: evidence })
@@ -3174,7 +3174,7 @@ async function approveCaregiverLink(token, linkId, evidence) {
 }
 
 async function rejectCaregiverLink(token, linkId, reason) {
-  return request(`/api/v2/admin/caring-community/caregiver-links/${linkId}/reject`, {
+  return request(`/api/v2/admin/caring-community/caregiver-links/${encodeURIComponent(linkId)}/reject`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({ reason })

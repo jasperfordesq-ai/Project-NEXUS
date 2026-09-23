@@ -1086,7 +1086,38 @@ function normalizeTwoFactorPayload(payload) {
   };
 }
 
-function renderTwoFactor(req, res, twoFactor, status = '') {
+// F-115: starting setup makes Laravel generate a NEW authenticator secret, so it
+// must never happen on a GET — a link or prefetch to /profile/two-factor would
+// silently invalidate the QR code a member had just scanned. Setup starts only
+// from the POST form; the pending setup it returns is kept in the server-side
+// session so that re-opening the page (for example after mistyping the code)
+// shows the SAME secret instead of generating another.
+const PENDING_TWO_FACTOR_SETUP_TTL_MS = 30 * 60 * 1000;
+
+function pendingTwoFactorSetup(req) {
+  const pending = req.session?.pendingTwoFactorSetup;
+  if (!pending || typeof pending !== 'object') return null;
+  const startedAt = Number(pending.startedAt);
+  const secret = String(pending.secret || '');
+  const qrDataUri = String(pending.qr_data_uri || '');
+  if (!Number.isFinite(startedAt) || Date.now() - startedAt > PENDING_TWO_FACTOR_SETUP_TTL_MS || (!secret && !qrDataUri)) {
+    delete req.session.pendingTwoFactorSetup;
+    return null;
+  }
+  return { qr_data_uri: qrDataUri, secret };
+}
+
+function rememberPendingTwoFactorSetup(req, setup) {
+  if (!req.session || !setup) return false;
+  req.session.pendingTwoFactorSetup = { ...setup, startedAt: Date.now() };
+  return true;
+}
+
+function forgetPendingTwoFactorSetup(req) {
+  if (req.session && req.session.pendingTwoFactorSetup) delete req.session.pendingTwoFactorSetup;
+}
+
+function renderTwoFactor(req, res, twoFactor, status = '', options = {}) {
   const statusConfig = twoFactorStatusConfig(req, status);
 
   // The page can carry the pending setup key, the QR code and one-time recovery
@@ -1106,6 +1137,8 @@ function renderTwoFactor(req, res, twoFactor, status = '') {
     enforcementRequired: twoFactor.enforcementRequired,
     devicesRevoked: req.query.devices_revoked === '1',
     setup: twoFactor.setup,
+    canStartSetup: !twoFactor.enabled && !twoFactor.setup,
+    setupUnavailable: options.setupUnavailable === true,
     backupCodes: twoFactor.backupCodes,
     backupCodesRemaining: twoFactor.backupCodesRemaining,
     backupCodesRemainingLabel: backupCodesRemainingLabel(req, twoFactor.backupCodesRemaining),
@@ -1603,7 +1636,7 @@ router.post('/skills/remove', asyncRoute(async (req, res) => {
 
   let status = 'skill-removed';
   try {
-    await callUserSettings(token, 'DELETE', `/skills/${skillId}`);
+    await callUserSettings(token, 'DELETE', `/skills/${encodeURIComponent(skillId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'skill-failed';
@@ -1777,9 +1810,13 @@ router.get('/two-factor', asyncRoute(async (req, res) => {
     const statusPayload = payloadFrom(await callProfile(token, 'GET', '/auth/2fa/status'));
     twoFactor = normalizeTwoFactorPayload(statusPayload);
 
-    if (!twoFactor.enabled) {
-      const setupPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/setup'));
-      twoFactor = normalizeTwoFactorPayload({ ...statusPayload, setup: setupPayload });
+    // F-115: a GET only READS. It shows the setup this member already started
+    // (if any) and otherwise offers the start button; it never calls setup.
+    if (twoFactor.enabled) {
+      forgetPendingTwoFactorSetup(req);
+    } else {
+      const pending = pendingTwoFactorSetup(req);
+      if (pending) twoFactor = { ...twoFactor, setup: pending };
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1788,6 +1825,40 @@ router.get('/two-factor', asyncRoute(async (req, res) => {
 
   const status = typeof req.query.status === 'string' ? req.query.status : '';
   return renderTwoFactor(req, res, twoFactor, status);
+}));
+
+router.post('/two-factor/setup', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let twoFactor;
+  try {
+    const setupPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/setup'));
+    twoFactor = normalizeTwoFactorPayload({ enabled: false, setup: setupPayload });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // Already turned on (for example in another tab): show the enabled state.
+    if (error instanceof ApiError && error.status === 409) return redirectTo(res, '/profile/two-factor');
+    if (error instanceof ApiError && error.status === 429) {
+      return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
+    }
+    if (error instanceof ApiError) {
+      forgetPendingTwoFactorSetup(req);
+      return renderTwoFactor(req, res, normalizeTwoFactorPayload({}), '', { setupUnavailable: true });
+    }
+    throw error;
+  }
+
+  if (!twoFactor.setup) {
+    forgetPendingTwoFactorSetup(req);
+    return renderTwoFactor(req, res, twoFactor, '', { setupUnavailable: true });
+  }
+  // Post/Redirect/Get: a refresh of the next page re-reads the pending setup
+  // rather than re-submitting this form and generating yet another secret.
+  if (rememberPendingTwoFactorSetup(req, twoFactor.setup)) {
+    return redirectTo(res, '/profile/two-factor');
+  }
+  return renderTwoFactor(req, res, twoFactor);
 }));
 
 router.get('/blocked', asyncRoute(async (req, res) => {
@@ -1829,6 +1900,7 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
 
   try {
     const verifiedPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/verify', { code }));
+    forgetPendingTwoFactorSetup(req);
     const twoFactor = normalizeTwoFactorPayload({
       ...verifiedPayload,
       enabled: true,

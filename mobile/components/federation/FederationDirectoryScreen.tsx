@@ -59,6 +59,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
+import { appResolvedMember, rememberAppResolvedMember } from '@/lib/federation/appResolvedMembers';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -609,12 +610,15 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
               variant="primary"
           style={responsiveActionStyle(width, fontScale)}
               testID="federation-member-view-profile"
-              onPress={() => router.push({
-                pathname: '/(modals)/federation-member',
-                params: member.is_external
-                  ? { id: String(member.id), tenant_id: String(tenantId), name }
-                : { id: String(member.id), tenant_id: String(tenantId) },
-              } as unknown as Href)}
+              onPress={() => {
+                // F-118: the next screen names an external member only from what the
+                // app read here from the server, never from route params.
+                rememberAppResolvedMember(member.id, tenantId, { name: displayMemberName(member, ''), community: member.timebank?.name ?? member.tenant_name });
+                router.push({
+                  pathname: '/(modals)/federation-member',
+                  params: { id: String(member.id), tenant_id: String(tenantId) },
+                } as unknown as Href);
+              }}
             >
               <AccentIcon name="person-outline" size={14} />
               <HeroButton.Label numberOfLines={2}>{t('directory.members.viewProfile')}</HeroButton.Label>
@@ -626,7 +630,10 @@ function MemberCard({ member, t, theme, primary }: { member: FederatedMember; t:
               variant="secondary"
           style={responsiveActionStyle(width, fontScale)}
               testID="federation-member-message"
-              onPress={() => router.push({ pathname: '/(modals)/federation-messages', params: { compose: 'true', to_user: String(member.id), to_tenant: String(tenantId), name, community: communityName } } as unknown as Href)}
+              onPress={() => {
+                rememberAppResolvedMember(member.id, tenantId, { name: displayMemberName(member, ''), community: member.timebank?.name ?? member.tenant_name });
+                router.push({ pathname: '/(modals)/federation-messages', params: { compose: 'true', to_user: String(member.id), to_tenant: String(tenantId) } } as unknown as Href);
+              }}
             >
               <Ionicons name="chatbubble-ellipses-outline" size={14} color={primary} />
               <HeroButton.Label numberOfLines={2}>{t('directory.members.message')}</HeroButton.Label>
@@ -780,11 +787,10 @@ function ListingDetailView({
 
   function openAuthorProfile() {
     if (!authorProfileId || !tenantId) return;
+    rememberAppResolvedMember(authorProfileId, tenantId, { name: listing.author?.name, community: listing.timebank?.name });
     router.push({
       pathname: '/(modals)/federation-member',
-      params: listing.is_external
-        ? { id: String(authorProfileId), tenant_id: String(tenantId), name: authorName }
-        : { id: String(authorProfileId), tenant_id: String(tenantId) },
+      params: { id: String(authorProfileId), tenant_id: String(tenantId) },
     } as unknown as Href);
   }
 
@@ -792,7 +798,7 @@ function ListingDetailView({
     if (!listing.author?.id || !tenantId) return;
     router.push({
       pathname: '/(modals)/federation-messages',
-      params: { compose: 'true', to_user: String(listing.author.id), to_tenant: String(tenantId), name: authorName, community: listingCommunityName(listing, t) },
+      params: { compose: 'true', to_user: String(listing.author.id), to_tenant: String(tenantId) },
     } as unknown as Href);
   }
 
@@ -1533,8 +1539,6 @@ function MessageThreadView({
 function FederationComposeCard({
   toUser,
   toTenant,
-  initialName,
-  initialCommunity,
   theme,
   primary,
   t,
@@ -1542,8 +1546,6 @@ function FederationComposeCard({
 }: {
   toUser?: string;
   toTenant?: string;
-  initialName?: string;
-  initialCommunity?: string;
   theme: ReturnType<typeof useTheme>;
   primary: string;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -1571,8 +1573,17 @@ function FederationComposeCard({
     { enabled: shouldLookupRecipient },
   );
   const recipient = selectedRecipient ?? (shouldLookupRecipient ? recipientData?.data as FederatedMember | undefined : undefined);
-  const recipientName = displayMemberName(recipient ?? { id: toUser ?? '', name: initialName }, t('directory.messages.recipientFallback'));
-  const recipientCommunity = (recipient?.timebank?.name ?? recipient?.tenant_name ?? initialCommunity?.trim()) || t('directory.unknownCommunity');
+  /*
+    🔴 F-118: the compose link's `name` and `community` params are whatever the link's
+    author typed, so they are not read. The recipient is named by the server lookup, or —
+    for an external partner member that cannot be looked up — by what the app itself
+    read from the directory; otherwise by the neutral fallback.
+  */
+  const appResolved = !recipient && !shouldLookupRecipient ? appResolvedMember(toUser, toTenant) : null;
+  const recipientName = recipient
+    ? displayMemberName(recipient, t('directory.messages.recipientFallback'))
+    : appResolved?.name || t('directory.messages.recipientFallback');
+  const recipientCommunity = (recipient?.timebank?.name ?? recipient?.tenant_name ?? appResolved?.community) || t('directory.unknownCommunity');
   const canSend = hasTarget && body.trim().length > 0 && !isSending;
 
   useEffect(() => {
@@ -2170,8 +2181,6 @@ export default function FederationDirectoryScreen({ mode }: { mode: DirectoryMod
             <FederationComposeCard
               toUser={params.to_user ? String(params.to_user) : undefined}
               toTenant={params.to_tenant ? String(params.to_tenant) : undefined}
-              initialName={params.name ? String(params.name) : undefined}
-              initialCommunity={params.community ? String(params.community) : undefined}
               theme={theme}
               primary={primary}
               t={t}
