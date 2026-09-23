@@ -2188,7 +2188,8 @@
     "cannot_disconnect_last": "Não é possível desligar o seu único método de início de sessão",
     "connected_accounts": {
       "title": "Contas ligadas",
-      "subtitle": "Inicie sessão mais rapidamente ligando a sua conta Google, Apple ou Facebook."
+      "subtitle": "Inicie sessão mais rapidamente ligando a sua conta Google, Apple ou Facebook.",
+      "security_confirm_description": "Confirme a sua identidade antes de ligar um novo método de início de sessão."
     },
     "connect_modal": {
       "confirm": "Este é o seu único método de início de sessão restante. Se o desligar, ficará bloqueado a menos que defina primeiro uma palavra-passe ou adicione uma passkey. Continuar?"

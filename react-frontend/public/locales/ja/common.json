@@ -2176,7 +2176,8 @@
     "cannot_disconnect_last": "唯一のサインイン方法は切断できません",
     "connected_accounts": {
       "title": "接続済みアカウント",
-      "subtitle": "Google、Apple、Facebookのアカウントを接続するとサインインが速くなります。"
+      "subtitle": "Google、Apple、Facebookのアカウントを接続するとサインインが速くなります。",
+      "security_confirm_description": "新しいサインイン方法を接続する前に、本人確認を行ってください。"
     },
     "connect_modal": {
       "confirm": "これは残された唯一のサインイン方法です。切断するとロックアウトされます。先にパスワードを設定するかパスキーを追加してください。続行しますか？"

@@ -19,6 +19,7 @@ import { resolveAssetUrl } from '@/lib/helpers';
 import type { AdminSettingsResponse } from '../../api/types';
 import SystemConfig from '../enterprise/SystemConfig';
 import { logError } from '@/lib/logger';
+import { isPlatformSuperAdminUser } from '@/lib/access';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -152,10 +153,9 @@ export function AdminSettings() {
   const { tenant, tenantPath, refreshTenant, branding } = useTenant();
   const { user } = useAuth();
   const userRecord = user as Record<string, unknown> | null;
-  const isGod =
-    (user?.role as string) === 'god' ||
-    (user?.role as string) === 'super_admin' ||
-    userRecord?.is_super_admin === true;
+  // Email verification and member approval are platform-super-admin-only on the
+  // server (F-054); this mirrors BaseApiController::isPlatformSuperAdmin().
+  const isGod = isPlatformSuperAdminUser(user);
   const isPlatformGod = userRecord?.is_god === true;
 
   const [form, setForm] = useState<SettingsForm>(DEFAULT_SETTINGS);
@@ -267,8 +267,10 @@ export function AdminSettings() {
       if (form.contact_email !== originalForm.contact_email) changes.contact_email = form.contact_email;
       if (form.contact_phone !== originalForm.contact_phone) changes.contact_phone = form.contact_phone;
       if (form.registration_mode !== originalForm.registration_mode) changes.registration_mode = form.registration_mode;
-      if (form.email_verification !== originalForm.email_verification) changes.email_verification = String(form.email_verification);
-      if (form.admin_approval !== originalForm.admin_approval) changes.admin_approval = String(form.admin_approval);
+      // Never sent by anyone who cannot change them — the server answers 403 for
+      // the whole save otherwise (F-054). maintenance_mode is CLI-only.
+      if (isGod && form.email_verification !== originalForm.email_verification) changes.email_verification = String(form.email_verification);
+      if (isGod && form.admin_approval !== originalForm.admin_approval) changes.admin_approval = String(form.admin_approval);
       if (form.footer_text !== originalForm.footer_text) changes.footer_text = form.footer_text;
       if (form.partner_logo_url !== originalForm.partner_logo_url) changes.partner_logo_url = form.partner_logo_url;
       if (form.partner_logo_label !== originalForm.partner_logo_label) changes.partner_logo_label = form.partner_logo_label;

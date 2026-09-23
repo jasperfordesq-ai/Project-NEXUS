@@ -2188,7 +2188,8 @@
     "cannot_disconnect_last": "Non puoi disconnettere l'unico metodo di accesso",
     "connected_accounts": {
       "title": "Account collegati",
-      "subtitle": "Accedi più velocemente collegando il tuo account Google, Apple o Facebook."
+      "subtitle": "Accedi più velocemente collegando il tuo account Google, Apple o Facebook.",
+      "security_confirm_description": "Conferma la tua identità prima di collegare un nuovo metodo di accesso."
     },
     "connect_modal": {
       "confirm": "Questo è il tuo unico metodo di accesso rimasto. Se lo disconnetti, non potrai più entrare a meno che tu non imposti prima una password o aggiunga una passkey. Continuare?"

@@ -2176,7 +2176,8 @@
     "cannot_disconnect_last": "Cannot disconnect your only sign-in method",
     "connected_accounts": {
       "title": "Connected accounts",
-      "subtitle": "Sign in faster by connecting your Google, Apple, or Facebook account."
+      "subtitle": "Sign in faster by connecting your Google, Apple, or Facebook account.",
+      "security_confirm_description": "Confirm your identity before connecting a new sign-in method."
     },
     "connect_modal": {
       "confirm": "This is your only remaining sign-in method. Disconnecting it will lock you out unless you set a password or add a passkey first. Continue?"

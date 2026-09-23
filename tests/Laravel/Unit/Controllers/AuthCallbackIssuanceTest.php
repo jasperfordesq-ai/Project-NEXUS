@@ -149,8 +149,11 @@ class AuthCallbackIssuanceTest extends TestCase
                 'state' => 'signed-link-state',
             ]);
 
+        // F-056: link initiation needs a fresh security confirmation.
         $request = Request::create('/api/v2/auth/oauth/google/link', 'POST', [
             'browser_challenge' => self::BROWSER_CHALLENGE,
+            'security_confirmation_token' => app(\App\Services\TokenService::class)
+                ->generateSecurityConfirmationToken(905, $this->testTenantId, 'password'),
         ]);
         $request->setUserResolver(static fn () => $user);
 

@@ -2188,7 +2188,8 @@
     "cannot_disconnect_last": "Impossible de déconnecter votre seule méthode de connexion",
     "connected_accounts": {
       "title": "Comptes connectés",
-      "subtitle": "Connectez-vous plus rapidement en associant votre compte Google, Apple ou Facebook."
+      "subtitle": "Connectez-vous plus rapidement en associant votre compte Google, Apple ou Facebook.",
+      "security_confirm_description": "Confirmez votre identité avant d'associer une nouvelle méthode de connexion."
     },
     "connect_modal": {
       "confirm": "C’est votre seule méthode de connexion restante. La déconnecter vous empêchera de vous reconnecter, sauf si vous définissez d’abord un mot de passe ou ajoutez une passkey. Continuer ?"

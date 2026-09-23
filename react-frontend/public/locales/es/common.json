@@ -2188,7 +2188,8 @@
     "cannot_disconnect_last": "No puedes desconectar tu único método de inicio de sesión",
     "connected_accounts": {
       "title": "Cuentas conectadas",
-      "subtitle": "Inicia sesión más rápido conectando tu cuenta de Google, Apple o Facebook."
+      "subtitle": "Inicia sesión más rápido conectando tu cuenta de Google, Apple o Facebook.",
+      "security_confirm_description": "Confirma tu identidad antes de conectar un nuevo método de inicio de sesión."
     },
     "connect_modal": {
       "confirm": "Este es tu único método de inicio de sesión restante. Si lo desconectas, perderás el acceso a menos que primero establezcas una contraseña o añadas una clave de acceso. ¿Continuar?"

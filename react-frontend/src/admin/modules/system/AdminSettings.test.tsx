@@ -34,6 +34,11 @@ const mockToast = vi.hoisted(() => ({
 
 const mockRefreshTenant = vi.hoisted(() => vi.fn());
 
+const DEFAULT_TEST_USER = { id: 1, name: 'Admin', role: 'god', is_super_admin: true, is_god: false };
+const mockAuthState = vi.hoisted(() => ({
+  user: null as Record<string, unknown> | null,
+}));
+
 // ── Module mocks ─────────────────────────────────────────────────────────────
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -47,7 +52,7 @@ vi.mock('@/contexts', () =>
       branding: { logo: null, logoDark: null },
     }),
     useAuth: () => ({
-      user: { id: 1, name: 'Admin', role: 'god', is_super_admin: true, is_god: false },
+      user: mockAuthState.user,
       isAuthenticated: true,
     }),
   })
@@ -161,6 +166,7 @@ const makeSettingsData = (overrides: Record<string, unknown> = {}) => ({
 describe('AdminSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuthState.user = { ...DEFAULT_TEST_USER };
     mockAdminSettings.get.mockResolvedValue(makeSettingsData());
     mockAdminSettings.update.mockResolvedValue({ success: true });
     mockAdminSettings.saveHeaderColors.mockResolvedValue({ success: true });
@@ -321,5 +327,71 @@ describe('AdminSettings', () => {
       b.textContent?.includes('Save settings')
     );
     expect(saveBtn).toBeDefined();
+  });
+  // F-054: email verification and member approval are platform-super-admin-only
+  // on the server; a plain admin's save must not carry them or it 403s.
+  describe('platform-super-admin-only registration settings (F-054)', () => {
+    const findSwitch = (label: string) =>
+      screen.getAllByRole('switch').find((el) => el.getAttribute('aria-label') === label);
+
+    it('locks email verification and admin approval for a plain admin', async () => {
+      mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
+      const { AdminSettings } = await import('./AdminSettings');
+      render(<AdminSettings />);
+
+      await waitFor(() => screen.getByText('Admin Settings'));
+      expect(findSwitch('Email Verification')).toBeDisabled();
+      expect(findSwitch('Admin Approval')).toBeDisabled();
+      expect(screen.getAllByText('Super admin only').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('locks them for a tenant super-admin too (platform tier only)', async () => {
+      mockAuthState.user = { id: 6, name: 'Tenant Super', role: 'tenant_admin', is_tenant_super_admin: true };
+      const { AdminSettings } = await import('./AdminSettings');
+      render(<AdminSettings />);
+
+      await waitFor(() => screen.getByText('Admin Settings'));
+      expect(findSwitch('Email Verification')).toBeDisabled();
+      expect(findSwitch('Admin Approval')).toBeDisabled();
+    });
+
+    it('omits the reserved keys when a plain admin saves other fields', async () => {
+      mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
+      mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
+      const { AdminSettings } = await import('./AdminSettings');
+      render(<AdminSettings />);
+
+      const labelInput = await screen.findByDisplayValue('Sponsor');
+      await userEvent.clear(labelInput);
+      await userEvent.type(labelInput, 'Partner');
+      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Save settings'));
+      await userEvent.click(saveBtn!);
+
+      await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledTimes(1));
+      const payload = mockAdminSettings.update.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload).toEqual({ partner_logo_label: 'Partner' });
+      expect(payload).not.toHaveProperty('email_verification');
+      expect(payload).not.toHaveProperty('admin_approval');
+      expect(payload).not.toHaveProperty('maintenance_mode');
+    });
+
+    it('lets a platform super-admin change email verification', async () => {
+      mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
+      const { AdminSettings } = await import('./AdminSettings');
+      render(<AdminSettings />);
+
+      await waitFor(() => screen.getByText('Admin Settings'));
+      const emailSwitch = findSwitch('Email Verification')!;
+      expect(emailSwitch).not.toBeDisabled();
+      expect(findSwitch('Admin Approval')).not.toBeDisabled();
+      await userEvent.click(emailSwitch);
+
+      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Save settings'));
+      await userEvent.click(saveBtn!);
+
+      await waitFor(() => {
+        expect(mockAdminSettings.update).toHaveBeenCalledWith({ email_verification: 'false' });
+      });
+    });
   });
 });

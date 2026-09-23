@@ -18,6 +18,9 @@ const { mockAdminEnterprise, mockToast } = vi.hoisted(() => ({
   },
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
+const mockAuthState = vi.hoisted(() => ({
+  user: null as Record<string, unknown> | null,
+}));
 
 // ─── Module mocks ────────────────────────────────────────────────────────────
 vi.mock('@/admin/api/adminApi', () => ({
@@ -33,6 +36,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({ user: mockAuthState.user, isAuthenticated: mockAuthState.user !== null }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
@@ -122,6 +126,7 @@ const makeConfig = (overrides = {}) => ({
 describe('SystemConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockAuthState.user = null;
     mockAdminEnterprise.getConfig.mockResolvedValue({ success: true, data: makeConfig() });
     mockAdminEnterprise.updateConfig.mockResolvedValue({ success: true });
     mockAdminEnterprise.resetConfig.mockResolvedValue({ success: true });
@@ -312,5 +317,69 @@ describe('SystemConfig', () => {
     if (saveBtn) fireEvent.click(saveBtn);
 
     await waitFor(() => expect(onAfterChange).toHaveBeenCalled());
+  });
+  // F-054: the server refuses email-verification and member-approval changes
+  // from anyone but a platform super-admin, and maintenance mode is CLI-only.
+  describe('tier-reserved settings (F-054)', () => {
+    const findSwitch = (label: string) =>
+      screen.getAllByRole('checkbox').find((el) => el.getAttribute('aria-label') === label);
+
+    it('locks approval and email verification for a plain admin, with a hint', async () => {
+      mockAuthState.user = { id: 5, role: 'admin', is_admin: true };
+      const { SystemConfig } = await import('./SystemConfig');
+      render(<SystemConfig />);
+      await waitFor(() => expect(findSwitch('Require email verification')).toBeDefined());
+
+      expect(findSwitch('Require email verification')).toBeDisabled();
+      expect(findSwitch('Admin approval required')).toBeDisabled();
+      expect(findSwitch('Maintenance mode')).toBeDisabled();
+      expect(screen.getAllByText('Only platform super-admins may change this setting')).toHaveLength(2);
+    });
+
+    it('locks them for a tenant super-admin too', async () => {
+      mockAuthState.user = { id: 6, role: 'tenant_admin', is_tenant_super_admin: true };
+      const { SystemConfig } = await import('./SystemConfig');
+      render(<SystemConfig />);
+      await waitFor(() => expect(findSwitch('Require email verification')).toBeDefined());
+
+      expect(findSwitch('Require email verification')).toBeDisabled();
+      expect(findSwitch('Admin approval required')).toBeDisabled();
+    });
+
+    it('never sends reserved keys when a plain admin saves', async () => {
+      mockAuthState.user = { id: 5, role: 'admin', is_admin: true };
+      const { SystemConfig } = await import('./SystemConfig');
+      render(<SystemConfig />);
+      const siteNameInput = await screen.findByDisplayValue('My Timebank');
+      await userEvent.clear(siteNameInput);
+      await userEvent.type(siteNameInput, 'Renamed');
+
+      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save'));
+      fireEvent.click(saveBtn!);
+
+      await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledTimes(1));
+      const payload = mockAdminEnterprise.updateConfig.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload).toEqual({ site_name: 'Renamed' });
+    });
+
+    it('lets a platform super-admin change email verification', async () => {
+      mockAuthState.user = { id: 1, role: 'super_admin', is_super_admin: true };
+      const { SystemConfig } = await import('./SystemConfig');
+      render(<SystemConfig />);
+      await waitFor(() => expect(findSwitch('Require email verification')).toBeDefined());
+
+      const emailSwitch = findSwitch('Require email verification')!;
+      expect(emailSwitch).not.toBeDisabled();
+      expect(findSwitch('Maintenance mode')).toBeDisabled();
+      expect(screen.queryByText('Only platform super-admins may change this setting')).toBeNull();
+      fireEvent.click(emailSwitch);
+
+      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save'));
+      fireEvent.click(saveBtn!);
+
+      await waitFor(() => {
+        expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ require_email_verification: false });
+      });
+    });
   });
 });

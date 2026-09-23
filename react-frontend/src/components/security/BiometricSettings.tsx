@@ -33,12 +33,16 @@ import {
   type DevicePlatform,
   type AuthenticatorAttachment,
   type WebAuthnCredential,
-  type WebAuthnSecurityConfirmationInput,
 } from '@/lib/webauthn';
 import { logError } from '@/lib/logger';
+import {
+  SecurityConfirmationModal,
+  buildSecurityConfirmationInput,
+  defaultSecurityConfirmationMethod,
+  type SecurityConfirmationMethod,
+} from './SecurityConfirmationModal';
 
 type Credential = WebAuthnCredential;
-type SecurityConfirmationMethod = 'password' | 'totp' | 'backup';
 type PendingSecurityAction =
   | { kind: 'register'; attachment?: AuthenticatorAttachment }
   | { kind: 'remove'; credentialId: string }
@@ -192,7 +196,7 @@ export function BiometricSettings() {
           totp: methods.totp === true,
         };
         setConfirmationMethods(available);
-        setConfirmationMethod(available.password ? 'password' : available.totp ? 'totp' : 'backup');
+        setConfirmationMethod(defaultSecurityConfirmationMethod(available));
       }
     } catch {
       setLoadError(true);
@@ -244,7 +248,7 @@ export function BiometricSettings() {
     setPendingSecurityAction(action);
     setConfirmationValue('');
     setConfirmationError(error ?? null);
-    setConfirmationMethod(confirmationMethods.password ? 'password' : confirmationMethods.totp ? 'totp' : 'backup');
+    setConfirmationMethod(defaultSecurityConfirmationMethod(confirmationMethods));
     securityConfirm.onOpen();
   };
 
@@ -446,12 +450,7 @@ export function BiometricSettings() {
     setConfirmingSecurity(true);
     setConfirmationError(null);
     try {
-      const value = confirmationValue.trim();
-      const input: WebAuthnSecurityConfirmationInput = confirmationMethod === 'password'
-        ? { current_password: confirmationValue }
-        : confirmationMethod === 'totp'
-          ? { totp_code: value.replace(/\s+/g, '') }
-          : { backup_code: value };
+      const input = buildSecurityConfirmationInput(confirmationMethod, confirmationValue);
       const result = await confirmWebAuthnSecurity(input);
       if (!result.success || !result.securityConfirmationToken || !result.expiresIn) {
         setConfirmationError(t('passkey_security_confirm_failed'));
@@ -837,7 +836,7 @@ export function BiometricSettings() {
       </Modal>
 
       {/* Re-authentication for sensitive authenticator changes */}
-      <Modal
+      <SecurityConfirmationModal
         isOpen={securityConfirm.isOpen}
         onOpenChange={(isOpen) => {
           securityConfirm.onOpenChange(isOpen);
@@ -847,119 +846,21 @@ export function BiometricSettings() {
             setConfirmationError(null);
           }
         }}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                {t('passkey_security_confirm_title')}
-              </ModalHeader>
-              <ModalBody className="space-y-4">
-                <p className="text-sm text-theme-subtle">
-                  {t('passkey_security_confirm_description')}
-                </p>
-
-                {!confirmationMethods.password && !confirmationMethods.totp ? (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-theme-subtle" role="alert">
-                    {t('passkey_security_confirm_no_method')}
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label={t('passkey_security_confirm_method_label')}>
-                      {confirmationMethods.password && (
-                        <Button
-                          size="sm"
-                          variant={confirmationMethod === 'password' ? 'primary' : 'secondary'}
-                          aria-pressed={confirmationMethod === 'password'}
-                          onPress={() => {
-                            setConfirmationMethod('password');
-                            setConfirmationValue('');
-                            setConfirmationError(null);
-                          }}
-                        >
-                          {t('passkey_security_confirm_password')}
-                        </Button>
-                      )}
-                      {confirmationMethods.totp && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant={confirmationMethod === 'totp' ? 'primary' : 'secondary'}
-                            aria-pressed={confirmationMethod === 'totp'}
-                            onPress={() => {
-                              setConfirmationMethod('totp');
-                              setConfirmationValue('');
-                              setConfirmationError(null);
-                            }}
-                          >
-                            {t('passkey_security_confirm_totp')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={confirmationMethod === 'backup' ? 'primary' : 'secondary'}
-                            aria-pressed={confirmationMethod === 'backup'}
-                            onPress={() => {
-                              setConfirmationMethod('backup');
-                              setConfirmationValue('');
-                              setConfirmationError(null);
-                            }}
-                          >
-                            {t('passkey_security_confirm_backup')}
-                          </Button>
-                        </>
-                      )}
-                    </div>
-
-                    <Input
-                      autoFocus
-                      type={confirmationMethod === 'password' ? 'password' : 'text'}
-                      inputMode={confirmationMethod === 'totp' ? 'numeric' : 'text'}
-                      autoComplete={confirmationMethod === 'password' ? 'current-password' : 'one-time-code'}
-                      label={confirmationMethod === 'password'
-                        ? t('passkey_security_confirm_password')
-                        : confirmationMethod === 'totp'
-                          ? t('passkey_security_confirm_totp')
-                          : t('passkey_security_confirm_backup')}
-                      value={confirmationValue}
-                      onValueChange={setConfirmationValue}
-                      isInvalid={confirmationError !== null}
-                      errorMessage={confirmationError ?? undefined}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          void submitSecurityConfirmation();
-                        }
-                      }}
-                    />
-                  </>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  variant="light"
-                  onPress={() => {
-                    setPendingSecurityAction(null);
-                    onClose();
-                  }}
-                  isDisabled={confirmingSecurity}
-                >
-                  {t('cancel')}
-                </Button>
-                {(confirmationMethods.password || confirmationMethods.totp) && (
-                  <Button
-                    color="primary"
-                    onPress={() => { void submitSecurityConfirmation(); }}
-                    isLoading={confirmingSecurity}
-                    isDisabled={!confirmationValue.trim() || securityActionBusy}
-                  >
-                    {t('passkey_security_confirm_action')}
-                  </Button>
-                )}
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+        methods={confirmationMethods}
+        method={confirmationMethod}
+        onMethodChange={(method) => {
+          setConfirmationMethod(method);
+          setConfirmationValue('');
+          setConfirmationError(null);
+        }}
+        value={confirmationValue}
+        onValueChange={setConfirmationValue}
+        error={confirmationError}
+        isConfirming={confirmingSecurity}
+        isSubmitDisabled={!confirmationValue.trim() || securityActionBusy}
+        onSubmit={() => { void submitSecurityConfirmation(); }}
+        onCancel={() => setPendingSecurityAction(null)}
+      />
     </div>
   );
 }

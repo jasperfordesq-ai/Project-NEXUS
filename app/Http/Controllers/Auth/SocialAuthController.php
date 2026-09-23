@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Auth;
 
 use Illuminate\Routing\Controller;
 use App\Services\Auth\SocialAuthService;
+use App\Services\TokenService;
 use App\Core\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Log;
  * Endpoints:
  *  GET    /api/v2/auth/oauth/{provider}/redirect   public — returns redirect URL
  *  GET    /api/v2/auth/oauth/{provider}/callback   public — OAuth callback
- *  POST   /api/v2/auth/oauth/{provider}/link       auth — initiate link flow for current user
+ *  POST   /api/v2/auth/oauth/{provider}/link       auth — initiate link flow for current user (needs a fresh security_confirmation_token)
  *  DELETE /api/v2/auth/oauth/{provider}/unlink     auth — remove a linked provider
  *  GET    /api/v2/auth/oauth/me/identities         auth — list current user's identities
  */
@@ -218,8 +219,33 @@ class SocialAuthController extends Controller
         if (! $user) {
             return response()->json(['success' => false, 'error' => 'unauthenticated'], 401);
         }
+        $tenantId = (int) $user->tenant_id;
+
+        // F-056: linking a provider adds a permanent sign-in method, so it needs
+        // the same fresh security confirmation as passkey registration
+        // (POST /api/webauthn/security-confirm → security_confirmation_token,
+        // sent in the body or the X-Security-Confirmation header).
+        $confirmation = $request->input('security_confirmation_token')
+            ?? $request->headers->get('X-Security-Confirmation');
+        if (
+            ! is_string($confirmation)
+            || $confirmation === ''
+            || app(TokenService::class)->validateSecurityConfirmationToken($confirmation, (int) $user->id, $tenantId) === null
+        ) {
+            return response()->json([
+                'success' => false,
+                'error' => 'SECURITY_CONFIRMATION_REQUIRED',
+                'code' => 'SECURITY_CONFIRMATION_REQUIRED',
+                'message' => __('api.validation_failed'),
+                'errors' => [[
+                    'code' => 'SECURITY_CONFIRMATION_REQUIRED',
+                    'message' => __('api.validation_failed'),
+                    'field' => 'security_confirmation',
+                ]],
+            ], 403)->header('Cache-Control', 'no-store, private');
+        }
+
         try {
-            $tenantId = (int) $user->tenant_id;
             $browserChallenge = $request->input('browser_challenge');
             $redirect = $this->social->redirectUrl(
                 $provider,

@@ -2176,7 +2176,8 @@
     "cannot_disconnect_last": "Ihre einzige Anmeldemethode kann nicht getrennt werden",
     "connected_accounts": {
       "title": "Verbundene Konten",
-      "subtitle": "Melden Sie sich schneller an, indem Sie Ihr Google-, Apple- oder Facebook-Konto verbinden."
+      "subtitle": "Melden Sie sich schneller an, indem Sie Ihr Google-, Apple- oder Facebook-Konto verbinden.",
+      "security_confirm_description": "Bestätigen Sie Ihre Identität, bevor Sie eine neue Anmeldemethode verbinden."
     },
     "connect_modal": {
       "confirm": "Dies ist Ihre einzig verbleibende Anmeldemethode. Wenn Sie sie trennen, werden Sie ausgesperrt, sofern Sie nicht zuerst ein Passwort festlegen oder einen Passkey hinzufügen. Fortfahren?"

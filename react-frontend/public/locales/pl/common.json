@@ -2200,7 +2200,8 @@
     "cannot_disconnect_last": "Nie można odłączyć jedynej metody logowania",
     "connected_accounts": {
       "title": "Połączone konta",
-      "subtitle": "Loguj się szybciej, łącząc konto Google, Apple lub Facebook."
+      "subtitle": "Loguj się szybciej, łącząc konto Google, Apple lub Facebook.",
+      "security_confirm_description": "Potwierdź swoją tożsamość przed połączeniem nowej metody logowania."
     },
     "connect_modal": {
       "confirm": "To jedyna pozostała metoda logowania. Odłączenie jej spowoduje zablokowanie dostępu, chyba że najpierw ustawisz hasło lub dodasz passkey. Kontynuować?"

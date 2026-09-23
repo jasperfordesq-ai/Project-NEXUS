@@ -2212,7 +2212,8 @@
     "cannot_disconnect_last": "Ní féidir an t-aon mhodh síniú isteach atá agat a dhícheangal",
     "connected_accounts": {
       "title": "Cuntais cheangailte",
-      "subtitle": "Sínigh isteach níos tapúla trí do chuntas Google, Apple, nó Facebook a cheangal."
+      "subtitle": "Sínigh isteach níos tapúla trí do chuntas Google, Apple, nó Facebook a cheangal.",
+      "security_confirm_description": "Deimhnigh d'aitheantas sula gceanglaíonn tú modh nua sínithe isteach."
     },
     "connect_modal": {
       "confirm": "Is é seo an t-aon mhodh sínithe isteach atá fágtha agat. Má dhícheanglaíonn tú é, cuirfear glas ar do chuntas mura socraíonn tú pasfhocal nó mura gcuireann tú paseochair leis ar dtús. Lean ar aghaidh?"

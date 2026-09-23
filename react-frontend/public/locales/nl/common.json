@@ -2176,7 +2176,8 @@
     "cannot_disconnect_last": "U kunt uw enige aanmeldmethode niet ontkoppelen",
     "connected_accounts": {
       "title": "Gekoppelde accounts",
-      "subtitle": "Meld u sneller aan door uw Google-, Apple- of Facebookaccount te koppelen."
+      "subtitle": "Meld u sneller aan door uw Google-, Apple- of Facebookaccount te koppelen.",
+      "security_confirm_description": "Bevestig uw identiteit voordat u een nieuwe aanmeldmethode koppelt."
     },
     "connect_modal": {
       "confirm": "Dit is uw enige resterende aanmeldmethode. Als u deze ontkoppelt, kunt u niet meer inloggen tenzij u eerst een wachtwoord instelt of een passkey toevoegt. Doorgaan?"

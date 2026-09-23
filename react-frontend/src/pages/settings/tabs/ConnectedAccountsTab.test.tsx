@@ -3,18 +3,27 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const {
   mockCreateOAuthBrowserBinding,
   mockClearOAuthBrowserVerifier,
+  mockConfirmWebAuthnSecurity,
+  mockGetWebAuthnStatus,
 } = vi.hoisted(() => ({
   mockCreateOAuthBrowserBinding: vi.fn().mockResolvedValue({
     challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
   }),
   mockClearOAuthBrowserVerifier: vi.fn(),
+  mockConfirmWebAuthnSecurity: vi.fn(),
+  mockGetWebAuthnStatus: vi.fn(),
+}));
+
+vi.mock('@/lib/webauthn', () => ({
+  confirmWebAuthnSecurity: mockConfirmWebAuthnSecurity,
+  getWebAuthnStatus: mockGetWebAuthnStatus,
 }));
 
 vi.mock('@/lib/api', () => ({
@@ -44,8 +53,11 @@ vi.mock('@/contexts', () =>
   })
 );
 
+import userEvent from '@testing-library/user-event';
 import { api } from '@/lib/api';
 import { ConnectedAccountsTab } from './ConnectedAccountsTab';
+
+const CHALLENGE = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
 
 const makeIdentitiesResponse = (overrides: Partial<{
   identities: object[];
@@ -70,6 +82,18 @@ const makeIdentity = (provider = 'google', overrides = {}) => ({
 describe('ConnectedAccountsTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateOAuthBrowserBinding.mockResolvedValue({ challenge: CHALLENGE });
+    // Default: the session is recent enough for a silent confirmation.
+    mockConfirmWebAuthnSecurity.mockResolvedValue({
+      success: true,
+      securityConfirmationToken: 'silent-token',
+      expiresIn: 300,
+    });
+    mockGetWebAuthnStatus.mockResolvedValue({
+      registered: false,
+      count: 0,
+      confirmation_methods: { password: true, passkey: false, totp: false },
+    });
   });
 
   it('shows provider list while loading', () => {
@@ -234,9 +258,15 @@ describe('ConnectedAccountsTab', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
         expect.stringContaining('/v2/auth/oauth/'),
-        { browser_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM' },
+        {
+          browser_challenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+          security_confirmation_token: 'silent-token',
+        },
       );
     });
+    // The silent attempt carries no credentials.
+    expect(mockConfirmWebAuthnSecurity).toHaveBeenCalledWith();
+    expect(screen.queryByText('Confirm it is you')).not.toBeInTheDocument();
 
     // Restore
     Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
@@ -310,5 +340,149 @@ describe('ConnectedAccountsTab', () => {
       return /cannot.disconnect|oauth\.cannot_disconnect/i.test(txt);
     });
     expect(disconnectBtn).toBeTruthy();
+  });
+  // F-056: linking a provider needs a fresh security confirmation.
+  describe('security confirmation before linking (F-056)', () => {
+    const renderWithNoLinks = async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: makeIdentitiesResponse({ identities: [], supported_providers: ['google'] }),
+      });
+      render(<ConnectedAccountsTab />);
+      const connect = await screen.findByRole('button', { name: 'Connect' });
+      await waitFor(() => expect(connect).not.toBeDisabled());
+      return connect;
+    };
+
+    let originalLocation: Location;
+    beforeEach(() => {
+      originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { ...originalLocation, href: '' },
+      });
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    });
+
+    it('asks for a confirmation when the silent attempt fails, then sends the token', async () => {
+      mockConfirmWebAuthnSecurity
+        .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_REQUIRED' })
+        .mockResolvedValueOnce({ success: true, securityConfirmationToken: 'typed-token', expiresIn: 300 });
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: true,
+        data: { redirect_url: 'https://accounts.google.com/o/oauth2/auth?x=1' },
+      });
+      const user = userEvent.setup();
+      const connect = await renderWithNoLinks();
+
+      await user.click(connect);
+
+      expect(await screen.findByText('Confirm it is you')).toBeInTheDocument();
+      expect(screen.getByText('Confirm your identity before connecting a new sign-in method.')).toBeInTheDocument();
+      // Nothing is linked (and no browser binding is minted) until confirmed.
+      expect(api.post).not.toHaveBeenCalled();
+      expect(mockCreateOAuthBrowserBinding).not.toHaveBeenCalled();
+
+      await user.type(screen.getByLabelText('Current password'), 'correct horse');
+      await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/v2/auth/oauth/google/link', {
+          browser_challenge: CHALLENGE,
+          security_confirmation_token: 'typed-token',
+        });
+      });
+      expect(mockConfirmWebAuthnSecurity).toHaveBeenLastCalledWith({ current_password: 'correct horse' });
+      expect(window.location.href).toBe('https://accounts.google.com/o/oauth2/auth?x=1');
+    });
+
+    it('keeps the modal open with an error when the confirmation is rejected', async () => {
+      mockConfirmWebAuthnSecurity
+        .mockResolvedValueOnce({ success: false })
+        .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_FAILED' });
+      const user = userEvent.setup();
+      const connect = await renderWithNoLinks();
+
+      await user.click(connect);
+      await user.type(await screen.findByLabelText('Current password'), 'wrong');
+      await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      expect(await screen.findByText('We could not confirm your identity. Check your details and try again.')).toBeInTheDocument();
+      expect(screen.getByText('Confirm it is you')).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalled();
+    });
+
+    it('cancel closes the modal and leaves nothing pending', async () => {
+      mockConfirmWebAuthnSecurity.mockResolvedValueOnce({ success: false });
+      const user = userEvent.setup();
+      const connect = await renderWithNoLinks();
+
+      await user.click(connect);
+      await user.type(await screen.findByLabelText('Current password'), 'half-typed');
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() => expect(screen.queryByText('Confirm it is you')).not.toBeInTheDocument());
+      expect(api.post).not.toHaveBeenCalled();
+      expect(mockCreateOAuthBrowserBinding).not.toHaveBeenCalled();
+      expect(mockToast.error).not.toHaveBeenCalled();
+      const connectAgain = screen.getByRole('button', { name: 'Connect' });
+      expect(connectAgain).not.toBeDisabled();
+
+      // Re-opening starts from a clean form (the silent attempt is not repeated).
+      await user.click(connectAgain);
+      expect(await screen.findByLabelText('Current password')).toHaveValue('');
+      expect(mockConfirmWebAuthnSecurity).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-prompts when the server refuses the token as stale', async () => {
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: false,
+        code: 'SECURITY_CONFIRMATION_REQUIRED',
+        error: 'SECURITY_CONFIRMATION_REQUIRED',
+      });
+      const user = userEvent.setup();
+      const connect = await renderWithNoLinks();
+
+      await user.click(connect);
+
+      expect(await screen.findByText('Confirm it is you')).toBeInTheDocument();
+      expect(screen.getByText('We could not confirm your identity. Check your details and try again.')).toBeInTheDocument();
+      expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledWith(CHALLENGE);
+      expect(mockToast.error).not.toHaveBeenCalled();
+    });
+
+    it('offers authenticator and backup codes when the account has TOTP', async () => {
+      mockConfirmWebAuthnSecurity
+        .mockResolvedValueOnce({ success: false })
+        .mockResolvedValueOnce({ success: true, securityConfirmationToken: 'totp-token', expiresIn: 300 });
+      mockGetWebAuthnStatus.mockResolvedValue({
+        registered: false,
+        count: 0,
+        confirmation_methods: { password: false, passkey: false, totp: true },
+      });
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: true,
+        data: { redirect_url: 'https://accounts.google.com/o/oauth2/auth?x=2' },
+      });
+      const user = userEvent.setup();
+      const connect = await renderWithNoLinks();
+
+      await user.click(connect);
+      expect(await screen.findByRole('button', { name: 'Backup code' })).toBeInTheDocument();
+      await user.type(screen.getByLabelText('Authenticator code'), '123 456');
+      await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(mockConfirmWebAuthnSecurity).toHaveBeenLastCalledWith({ totp_code: '123456' });
+      });
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/v2/auth/oauth/google/link', {
+          browser_challenge: CHALLENGE,
+          security_confirmation_token: 'totp-token',
+        });
+      });
+    });
   });
 });

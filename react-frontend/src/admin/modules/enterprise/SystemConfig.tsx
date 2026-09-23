@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react
 import { Link } from 'react-router-dom';
 
 import ArrowRight from 'lucide-react/icons/arrow-right';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { isPlatformSuperAdminUser } from '@/lib/access';
 import Save from 'lucide-react/icons/save';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
@@ -204,6 +205,17 @@ const STATIC_SETTINGS: StaticSettingDef[] = [
 const SCHEMA_KEYS = new Set(STATIC_SETTINGS.map((s) => s.key));
 
 /**
+ * Keys only a platform super-admin may change (F-054). They land on
+ * general.email_verification / general.admin_approval, which the server
+ * refuses from anyone else with 403, so they are locked in the UI and never
+ * sent for other admins. maintenance_mode is CLI-only and never sent at all.
+ */
+const PLATFORM_SUPER_ADMIN_CONFIG_KEYS: ReadonlySet<string> = new Set([
+  'require_approval',
+  'require_email_verification',
+]);
+
+/**
  * Curated list of related admin pages. Always visible — these are peer
  * configuration pages that admins commonly reach for from the Settings page.
  */
@@ -385,9 +397,13 @@ interface SystemConfigProps {
  * route was retired and its sidebar entries removed).
  */
 export function SystemConfig({ excludeKeys, onAfterChange }: SystemConfigProps = {}) {
-  const { t } = useTranslation('admin_enterprise');
+  const { t } = useTranslation(['admin_enterprise', 'admin_system']);
   const { tenantPath } = useTenant();
   const toast = useToast();
+  const { user } = useAuth();
+  const canChangePlatformKeys = isPlatformSuperAdminUser(user);
+  const isTierLocked = (key: string) =>
+    PLATFORM_SUPER_ADMIN_CONFIG_KEYS.has(key) && !canChangePlatformKeys;
 
   const excludeSet = useMemo(() => new Set(excludeKeys ?? []), [excludeKeys]);
 
@@ -499,10 +515,12 @@ export function SystemConfig({ excludeKeys, onAfterChange }: SystemConfigProps =
     try {
       // Only send fields the user actually changed — prevents clobbering values
       // set on other pages or in previous sessions. maintenance_mode is always
-      // excluded because it requires the .maintenance file layer (CLI only).
+      // excluded because it requires the .maintenance file layer (CLI only);
+      // platform-super-admin-only keys are left out for everyone else (F-054).
       const payload: Record<string, unknown> = {};
       for (const key of SCHEMA_KEYS) {
         if (key === 'maintenance_mode') continue;
+        if (isTierLocked(key)) continue;
         if (key in edited && JSON.stringify(edited[key]) !== JSON.stringify(config[key])) {
           payload[key] = edited[key];
         }
@@ -558,7 +576,8 @@ export function SystemConfig({ excludeKeys, onAfterChange }: SystemConfigProps =
       case 'boolean': {
         // Some settings are managed by dedicated pages and must not be toggled here
         const READ_ONLY_KEYS = new Set(['maintenance_mode']);
-        const isReadOnly = READ_ONLY_KEYS.has(def.key);
+        const tierLocked = isTierLocked(def.key);
+        const isReadOnly = READ_ONLY_KEYS.has(def.key) || tierLocked;
         return (
           <div key={def.key} className="flex items-center justify-between gap-4 py-2">
             <div className="flex-1 min-w-0">
@@ -569,6 +588,9 @@ export function SystemConfig({ excludeKeys, onAfterChange }: SystemConfigProps =
                 </Tooltip>
               </div>
               <p className="text-xs text-muted mt-0.5">{def.description}</p>
+              {tierLocked && (
+                <p className="text-xs text-warning mt-0.5">{t('admin_system:system.super_admin_only_tooltip')}</p>
+              )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {def.manage && (
