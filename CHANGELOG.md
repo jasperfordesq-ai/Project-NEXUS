@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The deploy-drift watchdog workflow no longer pastes the latest commit subject or production response values into a shell script, closing a CI command-injection route to its alert-bot token (F-122).
+
 - Search no longer shows events from private groups to people who aren't in the group, never includes an event's online meeting or video link, and no longer lists private groups or listings still awaiting moderation when the search engine is unavailable (F-078).
 
 - Signing out everywhere, a password reset, an administrator password or two-factor reset, and suspending or banning a member now also remove that member's registered phone and browser push destinations, so a lost or stolen device stops receiving their notifications (F-117).

@@ -137,15 +137,21 @@ jobs:
 
       - name: Compare and decide
         id: decide
+        # F-122 (E-027): every value below reaches the script through env:,
+        # never through ${{ }} interpolation inside run:. The commit subject is
+        # PR-author text and the prod_* values come from an HTTP response, so
+        # interpolating them into the script body was shell injection with the
+        # next step's Telegram token in reach.
+        env:
+          PROD_STATUS: ${{ steps.prod.outputs.status }}
+          PROD: ${{ steps.prod.outputs.prod_commit }}
+          PROD_SHORT: ${{ steps.prod.outputs.prod_commit_short }}
+          MAIN: ${{ steps.main.outputs.main_commit }}
+          MAIN_SHORT: ${{ steps.main.outputs.main_commit_short }}
+          MAIN_TS: ${{ steps.main.outputs.main_timestamp }}
+          MAIN_SUBJECT: ${{ steps.main.outputs.main_subject }}
+          HTTP_CODE: ${{ steps.prod.outputs.http_code }}
         run: |
-          PROD_STATUS="${{ steps.prod.outputs.status }}"
-          PROD="${{ steps.prod.outputs.prod_commit }}"
-          PROD_SHORT="${{ steps.prod.outputs.prod_commit_short }}"
-          MAIN="${{ steps.main.outputs.main_commit }}"
-          MAIN_SHORT="${{ steps.main.outputs.main_commit_short }}"
-          MAIN_TS="${{ steps.main.outputs.main_timestamp }}"
-          MAIN_SUBJECT="${{ steps.main.outputs.main_subject }}"
-          HTTP_CODE="${{ steps.prod.outputs.http_code }}"
 
           NOW=$(date -u +%s)
           AGE_MIN=$(( (NOW - MAIN_TS) / 60 ))
