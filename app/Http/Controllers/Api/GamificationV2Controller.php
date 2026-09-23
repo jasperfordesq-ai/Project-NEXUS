@@ -20,6 +20,7 @@ use App\Services\GamificationService;
 use App\Services\LeaderboardSeasonService;
 use App\Services\NexusScoreCacheService;
 use App\Services\XPShopService;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -264,6 +265,7 @@ class GamificationV2Controller extends BaseApiController
                     'is_current_user' => ((int) $row['user_id'] === (int) $userId),
                 ];
             }
+            $leaderboard = $this->withoutLeaderboardSurnames($leaderboard, (int) $tenantId, $userId);
 
             $currentUserPosition = null;
             foreach ($leaderboard as $entry) {
@@ -324,6 +326,7 @@ class GamificationV2Controller extends BaseApiController
                 'is_current_user' => ((int) $entry['user_id'] === (int) $userId),
             ];
         }
+        $leaderboard = $this->withoutLeaderboardSurnames($leaderboard, (int) $tenantId, $userId);
 
         $currentUserPosition = null;
         foreach ($leaderboard as $entry) {
@@ -357,6 +360,38 @@ class GamificationV2Controller extends BaseApiController
             'total_entries' => $totalMembers,
             'has_more' => $hasMore,
         ]);
+    }
+
+    /**
+     * F-084 (E-027): surnames are private to administrators on the profile and
+     * directory, so the leaderboard shows other members by first name (an
+     * organisation by its trading name). The viewer's own row is unchanged.
+     * Done here rather than in LeaderboardService because that payload is
+     * cached per community and shared by every viewer.
+     *
+     * @param  list<array<string, mixed>> $leaderboard
+     * @return list<array<string, mixed>>
+     */
+    private function withoutLeaderboardSurnames(array $leaderboard, int $tenantId, int $viewerId): array
+    {
+        if ($leaderboard === [] || MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+            return $leaderboard;
+        }
+
+        $names = MemberProfileVisibility::publicNames(
+            array_map(static fn (array $entry): int => (int) $entry['user']['id'], $leaderboard),
+            $tenantId,
+        );
+
+        foreach ($leaderboard as &$entry) {
+            $id = (int) $entry['user']['id'];
+            if ($id !== $viewerId && isset($names[$id])) {
+                $entry['user']['name'] = $names[$id];
+            }
+        }
+        unset($entry);
+
+        return $leaderboard;
     }
 
     // =====================================================================

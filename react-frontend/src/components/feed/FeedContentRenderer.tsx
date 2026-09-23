@@ -10,7 +10,7 @@
  */
 
 import { Fragment } from 'react';
-import { sanitizeRichText } from '@/lib/sanitize';
+import { sanitizeMemberRichText } from '@/lib/sanitize';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
@@ -42,7 +42,7 @@ const HTML_TAG_REGEX = /<[a-z][\s\S]*>/i;
  * on every anchor and blocks unsafe URI schemes.
  */
 function sanitizeHtml(html: string): string {
-  return sanitizeRichText(html);
+  return sanitizeMemberRichText(html);
 }
 
 /* ───────────────────────── Hashtag & Mention Helper ───────────────────────── */

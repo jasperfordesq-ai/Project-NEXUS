@@ -2539,9 +2539,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/ReviewService.php:540:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/ReviewService.php:652:NotificationDispatcher::fanOutPush",
             "file": "app/Services/ReviewService.php",
-            "line": 540,
+            "line": 652,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverId",

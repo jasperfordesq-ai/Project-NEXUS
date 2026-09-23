@@ -65,6 +65,17 @@ const RICH_TEXT_ALLOWED_ATTR = [
   'target', 'rel',
 ];
 
+/**
+ * Member-authored rich text (posts, comments, bios, listing / event / group
+ * descriptions) gets no `class` or `id`. F-075 (E-027): with `class` kept, a
+ * member could borrow the app's own Tailwind classes (`fixed inset-0 z-50 …`)
+ * to draw a full-screen fake "sign in again" panel over the real page, and
+ * `id` lets content collide with the app's own element ids.
+ */
+const MEMBER_RICH_TEXT_ALLOWED_ATTR = RICH_TEXT_ALLOWED_ATTR.filter(
+  (attr) => attr !== 'class' && attr !== 'id',
+);
+
 const INLINE_ALLOWED_TAGS = [
   'br', 'strong', 'em', 'b', 'i', 'u', 's', 'small', 'mark', 'span', 'a',
 ];
@@ -173,6 +184,25 @@ export function sanitizeRichText(html: string | null | undefined): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: RICH_TEXT_ALLOWED_TAGS,
     ALLOWED_ATTR: RICH_TEXT_ALLOWED_ATTR,
+    ALLOW_DATA_ATTR: false,
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    KEEP_CONTENT: true,
+  });
+}
+
+/**
+ * Sanitize MEMBER-authored rich HTML: the rich-text profile without `class`
+ * or `id` (see MEMBER_RICH_TEXT_ALLOWED_ATTR). Use for anything a member
+ * wrote — feed posts, comments, bios, listing / event / group descriptions.
+ * Administrator-authored content (blog, KB, legal, custom pages) keeps
+ * `sanitizeRichText`.
+ */
+export function sanitizeMemberRichText(html: string | null | undefined): string {
+  if (!html) return '';
+  installHooksOnce();
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: RICH_TEXT_ALLOWED_TAGS,
+    ALLOWED_ATTR: MEMBER_RICH_TEXT_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
     ALLOW_UNKNOWN_PROTOCOLS: false,
     KEEP_CONTENT: true,

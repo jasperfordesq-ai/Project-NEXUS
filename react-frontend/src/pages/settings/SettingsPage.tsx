@@ -32,7 +32,7 @@ import Users from 'lucide-react/icons/users';
 import Info from 'lucide-react/icons/info';
 import Languages from 'lucide-react/icons/languages';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import { sanitizeRichText } from '@/lib/sanitize';
+import { sanitizeMemberRichText } from '@/lib/sanitize';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -591,7 +591,7 @@ export function SettingsPage() {
     try {
       setIsSaving(true);
       // Sanitize bio with the unified rich-text profile (XSS guard).
-      const sanitizedBio = sanitizeRichText(profileData.bio);
+      const sanitizedBio = sanitizeMemberRichText(profileData.bio);
       const payload: Record<string, unknown> = {
         first_name: profileData.first_name,
         last_name: profileData.last_name,

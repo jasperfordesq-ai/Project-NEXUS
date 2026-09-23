@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { __testing, htmlToPlainText, sanitizeCustomPageHtml, sanitizeInline, sanitizeRichText, stripHtmlToText } from './sanitize';
+import { __testing, htmlToPlainText, sanitizeCustomPageHtml, sanitizeInline, sanitizeMemberRichText, sanitizeRichText, stripHtmlToText } from './sanitize';
 
 const { isSafeUrl } = __testing;
 
@@ -365,5 +365,29 @@ describe('htmlToPlainText', () => {
 
   it('leaves plain text alone', () => {
     expect(htmlToPlainText('just words')).toBe('just words');
+  });
+});
+
+describe('sanitizeMemberRichText (F-075)', () => {
+  const overlay =
+    '<div class="fixed inset-0 z-50 bg-white" id="root" style="position:fixed">'
+    + '<p class="text-2xl">Session expired. <a class="btn" href="https://evil.example/login">Sign in again</a></p></div>';
+
+  it('drops class, id and style from member content but keeps the text and safe links', () => {
+    const out = sanitizeMemberRichText(overlay);
+    expect(out).not.toContain('class=');
+    expect(out).not.toContain('id=');
+    expect(out).not.toContain('style=');
+    expect(out).toContain('Session expired.');
+    expect(out).toContain('href="https://evil.example/login"');
+  });
+
+  it('keeps ordinary formatting', () => {
+    const out = sanitizeMemberRichText('<p><strong>Bold</strong> <em>it</em></p><ul><li>x</li></ul>');
+    expect(out).toBe('<p><strong>Bold</strong> <em>it</em></p><ul><li>x</li></ul>');
+  });
+
+  it('leaves the admin rich-text profile able to keep class', () => {
+    expect(sanitizeRichText('<p class="legal-note">Clause</p>')).toContain('class="legal-note"');
   });
 });

@@ -94,7 +94,10 @@ class ReviewsControllerTest extends TestCase
     public function test_show_returns_review(): void
     {
         $this->authenticatedUser();
-        $review = Review::factory()->forTenant($this->testTenantId)->create();
+        // F-073: show() returns published reviews only to non-parties. The
+        // factory's default status ('published') is not a value of the
+        // reviews.status enum, so state a real published status explicitly.
+        $review = Review::factory()->forTenant($this->testTenantId)->create(['status' => 'approved']);
 
         $response = $this->apiGet("/v2/reviews/{$review->id}");
 

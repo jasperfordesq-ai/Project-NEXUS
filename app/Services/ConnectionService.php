@@ -11,6 +11,7 @@ use App\Events\ConnectionRequested;
 use App\Core\TenantContext;
 use App\Models\Connection;
 use App\Models\User;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -40,8 +41,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,last_active_at,location,bio',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,last_active_at,location,bio',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
             ])
             ->where('status', $status);
 
@@ -67,17 +68,10 @@ class ConnectionService
             $items->pop();
         }
 
-        // Map to include the partner user info
-        $result = $items->map(function (Connection $conn) use ($userId) {
-            $data = $conn->toArray();
-            $partner = $conn->requester_id === $userId
-                ? $conn->receiver?->toArray()
-                : $conn->requester?->toArray();
-            $data['partner'] = $partner;
-            $data['user'] = $partner;               // Alias: frontend expects 'user'
-            $data['connection_id'] = $conn->id;      // Alias: frontend expects 'connection_id'
-            return $data;
-        })->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
+        // Map to include the partner user info (shaped for the viewer — F-083/F-084)
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin))
+            ->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
 
         return [
             'items'    => array_values($result),
@@ -459,8 +453,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,last_active_at,location,bio',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,last_active_at,location,bio',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
             ]);
 
         if ($status === 'pending_sent') {
@@ -492,22 +486,70 @@ class ConnectionService
             $items->pop();
         }
 
-        $result = $items->map(function (Connection $conn) use ($userId) {
-            $data = $conn->toArray();
-            $partner = $conn->requester_id === $userId
-                ? $conn->receiver?->toArray()
-                : $conn->requester?->toArray();
-            $data['partner'] = $partner;
-            $data['user'] = $partner;
-            $data['connection_id'] = $conn->id;
-            return $data;
-        })->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $result = $items->map(fn (Connection $conn) => self::formatConnectionRow($conn, $userId, $viewerIsAdmin))
+            ->filter(fn ($d) => $d['user'] !== null)->values()->all(); // drop deleted-account partners (frontend contract: user is non-null)
 
         return [
             'items'    => array_values($result),
             'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    /**
+     * One connection row as the viewing member may see it.
+     *
+     * F-083 (E-027): the raw models were serialised, so a member who merely
+     * SENT a request got the recipient's surname, bio, location and
+     * last-active time whatever the recipient's privacy setting. Now:
+     *   - the other member's bio and location follow their privacy_profile
+     *     (an accepted connection satisfies "connections only"; a pending
+     *     request does not);
+     *   - surnames are for administrators only (F-084 — the rule the profile
+     *     and directory already apply);
+     *   - last-active time is not returned (no client reads it here).
+     * The nested requester/receiver objects are dropped; clients read the
+     * `user` / `partner` alias, and the ids stay on the row.
+     *
+     * @return array<string, mixed>
+     */
+    private static function formatConnectionRow(Connection $conn, int $viewerId, bool $viewerIsAdmin): array
+    {
+        $data = $conn->toArray();
+        unset($data['requester'], $data['receiver']);
+
+        /** @var User|null $partner */
+        $partner = (int) $conn->requester_id === $viewerId ? $conn->receiver : $conn->requester;
+        $shaped = null;
+
+        if ($partner !== null) {
+            $shaped = $partner->toArray();
+            unset($shaped['last_active_at'], $shaped['privacy_profile']);
+
+            // Same rule as MemberProfileVisibility::canView() for a signed-in
+            // viewer, read from the loaded row: "public" and "members" are
+            // open; "connections" needs this connection to be accepted.
+            $privacy = (string) ($partner->privacy_profile ?? 'public');
+            $mayViewProfile = $viewerIsAdmin
+                || $privacy !== 'connections'
+                || $conn->status === 'accepted';
+            if (! $mayViewProfile) {
+                $shaped['bio'] = null;
+                $shaped['tagline'] = null; // the accessor falls back to a bio excerpt
+                $shaped['location'] = null;
+            }
+
+            if (! $viewerIsAdmin) {
+                $shaped = MemberProfileVisibility::withoutSurname($shaped);
+            }
+        }
+
+        $data['partner'] = $shaped;
+        $data['user'] = $shaped;               // Alias: frontend expects 'user'
+        $data['connection_id'] = $conn->id;    // Alias: frontend expects 'connection_id'
+
+        return $data;
     }
 
     /**

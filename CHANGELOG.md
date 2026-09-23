@@ -95,6 +95,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Removed or rejected reviews can no longer be opened by other members, and a single review no longer shows members' surnames or an anonymous reviewer's name (F-073).
+
+- The feed sidebar no longer advertises draft events or events from private groups you are not in (F-074).
+
+- Posts, comments and profiles can no longer borrow the app's own styling to draw fake "sign in again" screens (F-075).
+
+- Sending a connection request no longer shows you the other member's surname, private bio, location or when they were last online (F-083).
+
+- The connections list, group member lists and the leaderboard now show first names only to non-admins, as profiles already did (F-084).
+
+- Members can no longer look up which groups another member belongs to (F-096).
+
+- Private group chatrooms are now actually private: only their creator, the group's admins and community admins can open them (F-098).
+
+- "Hide my presence" now also applies to suggested members and friends in the feed sidebar, which no longer return members' last-active time (F-088).
+
 - Group chats now respect blocks and "messaging disabled" restrictions, need the same completed setup and accepted terms as one-to-one messages, and copy monitored members' messages for broker review (F-086).
 
 - Deleting a conversation through the older app route now hides it only for you, instead of erasing the other person's messages and the broker's safeguarding copies (F-087).

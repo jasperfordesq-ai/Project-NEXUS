@@ -24,6 +24,7 @@ use App\Models\ActivityLog;
 use App\Models\Notification;
 use App\Models\User;
 use App\Support\CursorSigner;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -113,6 +114,15 @@ class GroupService
         if (! empty($filters['user_id'])) {
             // Direct subquery on group_members avoids a JOIN to users + withCount-triggered N+1
             $uid = (int) $filters['user_id'];
+
+            // F-096 (E-027): which groups a member belongs to is not shown to
+            // other members anywhere else (a support group can say a lot), so
+            // "groups of member X" is answered only for the viewer's own id or
+            // for an administrator. Anyone else gets an empty list.
+            if ($uid !== (int) $viewerUserId && ! ($viewerUserId && self::isPlatformAdmin($viewerUserId))) {
+                $query->whereRaw('1 = 0');
+            }
+
             $query->whereIn('id', function ($sub) use ($uid) {
                 $sub->select('group_id')
                     ->from('group_members')
@@ -1725,8 +1735,14 @@ class GroupService
                 DB::raw("FIELD(group_members.role, 'owner', 'admin', 'member') as role_rank"),
                 'users.first_name',
                 'users.last_name',
+                'users.profile_type',
+                'users.organization_name',
                 'users.avatar_url',
             ]);
+
+        // F-084: surnames are for platform administrators only, as on the
+        // profile and member directory (group owners are not exempt).
+        $viewerIsPlatformAdmin = MemberProfileVisibility::viewerIsAdmin($viewerUserId);
 
         if ($role) {
             $query->where('group_members.role', $role);
@@ -1785,7 +1801,7 @@ class GroupService
             $members->pop();
         }
 
-        $items = $members->map(function ($m) use ($group, $viewerUserId, $viewerCanManageMembers, $viewerCanManageAdmins): array {
+        $items = $members->map(function ($m) use ($group, $viewerUserId, $viewerCanManageMembers, $viewerCanManageAdmins, $viewerIsPlatformAdmin): array {
             $targetUserId = (int) $m->user_id;
             $targetRole = in_array((string) $m->role, ['member', 'admin', 'owner'], true)
                 ? (string) $m->role
@@ -1797,7 +1813,9 @@ class GroupService
 
             return [
                 'id' => $targetUserId,
-                'name' => UserDisplayName::resolve($m),
+                'name' => ($viewerIsPlatformAdmin || $isSelf)
+                    ? UserDisplayName::resolve($m)
+                    : (string) MemberProfileVisibility::withoutSurname((array) $m)['name'],
                 'avatar_url' => $m->avatar_url,
                 'role' => $targetRole,
                 'joined_at' => $m->joined_at,

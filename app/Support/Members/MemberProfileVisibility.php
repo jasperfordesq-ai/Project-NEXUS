@@ -193,6 +193,34 @@ final class MemberProfileVisibility
         return $row;
     }
 
+    /**
+     * The names a non-admin member may see for a set of members, keyed by id:
+     * the first name, or an organisation's trading name (the same rule as
+     * {@see withoutSurname()}). For lists whose rows carry only a stored
+     * `name` (F-084). Ids not found in the community are omitted.
+     *
+     * @param  list<int> $userIds
+     * @return array<int, string>
+     */
+    public static function publicNames(array $userIds, int $tenantId): array
+    {
+        $userIds = array_values(array_unique(array_filter(array_map('intval', $userIds), static fn (int $id): bool => $id > 0)));
+        if ($userIds === []) {
+            return [];
+        }
+
+        $names = [];
+        $rows = DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $userIds)
+            ->get(['id', 'first_name', 'profile_type', 'organization_name']);
+        foreach ($rows as $row) {
+            $names[(int) $row->id] = (string) self::withoutSurname((array) $row)['name'];
+        }
+
+        return $names;
+    }
+
     /** Round one coordinate to the precision shown to other members. */
     public static function publicCoordinate(mixed $value): ?float
     {

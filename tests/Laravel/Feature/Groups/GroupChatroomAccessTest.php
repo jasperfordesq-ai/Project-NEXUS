@@ -109,7 +109,7 @@ final class GroupChatroomAccessTest extends TestCase
             $this->assertSame('FORBIDDEN', $service->getErrors()[0]['code']);
         }
 
-        foreach ([$this->member, $this->groupAdmin, $this->tenantAdmin] as $actor) {
+        foreach ([$this->groupAdmin, $this->tenantAdmin] as $actor) {
             $chatrooms = $service->getChatrooms($this->activeGroupId, null, (int) $actor->id);
             $this->assertNotNull($chatrooms);
             $this->assertEqualsCanonicalizing(
@@ -117,6 +117,12 @@ final class GroupChatroomAccessTest extends TestCase
                 array_column($chatrooms, 'id'),
             );
         }
+
+        // F-098: a private chatroom (created here by the owner) is not listed
+        // to an ordinary member; see PrivateChatroomAccessTest.
+        $chatrooms = $service->getChatrooms($this->activeGroupId, null, (int) $this->member->id);
+        $this->assertNotNull($chatrooms);
+        $this->assertSame([$this->publicChatroomId], array_column($chatrooms, 'id'));
 
         $this->assertNull($service->getChatrooms($this->foreignGroupId, null, (int) $this->member->id));
         $this->assertSame('NOT_FOUND', $service->getErrors()[0]['code']);
@@ -129,17 +135,19 @@ final class GroupChatroomAccessTest extends TestCase
 
     public function test_http_chatroom_privacy_is_never_weaker_than_the_parent_group(): void
     {
+        // F-098: the private chatroom is additionally closed to an ordinary
+        // member (third column); group admins and tenant admins keep it.
         foreach ([
-            [$this->nonMember, 403],
-            [$this->pendingMember, 403],
-            [$this->member, 200],
-            [$this->groupAdmin, 200],
-            [$this->tenantAdmin, 200],
-        ] as [$actor, $status]) {
+            [$this->nonMember, 403, 403],
+            [$this->pendingMember, 403, 403],
+            [$this->member, 200, 403],
+            [$this->groupAdmin, 200, 200],
+            [$this->tenantAdmin, 200, 200],
+        ] as [$actor, $status, $privateStatus]) {
             $this->authenticateAs($actor);
             $this->apiGet("/v2/groups/{$this->activeGroupId}/chatrooms")->assertStatus($status);
             $this->apiGet("/v2/group-chatrooms/{$this->publicChatroomId}/messages")->assertStatus($status);
-            $this->apiGet("/v2/group-chatrooms/{$this->privateChatroomId}/messages")->assertStatus($status);
+            $this->apiGet("/v2/group-chatrooms/{$this->privateChatroomId}/messages")->assertStatus($privateStatus);
         }
 
         $this->authenticateAs($this->member);

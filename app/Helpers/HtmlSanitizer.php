@@ -56,11 +56,18 @@ class HtmlSanitizer
     /**
      * Sanitize HTML content
      *
+     * `class` is dropped unless `$allowClass` is true. F-075 (E-027): member
+     * content (posts, comments, group discussions) kept `class`, so a member
+     * could borrow the app's own Tailwind classes to draw a full-screen fake
+     * "sign in again" panel over the page. Only administrator-authored content
+     * (legal documents, help-centre answers) opts back in.
+     *
      * @param string $html The HTML content to sanitize
      * @param bool $allowImages Whether to allow img tags
+     * @param bool $allowClass Keep `class` attributes (administrator-authored content only)
      * @return string Sanitized HTML
      */
-    public static function sanitize(string $html, bool $allowImages = true): string
+    public static function sanitize(string $html, bool $allowImages = true, bool $allowClass = false): string
     {
         if (empty($html)) {
             return '';
@@ -80,7 +87,7 @@ class HtmlSanitizer
         $html = strip_tags($html, $tagString);
 
         // Second pass: sanitize attributes using DOMDocument
-        $html = self::sanitizeAttributes($html, $allowImages);
+        $html = self::sanitizeAttributes($html, $allowImages, $allowClass);
 
         return $html;
     }
@@ -88,7 +95,7 @@ class HtmlSanitizer
     /**
      * Sanitize attributes in HTML content
      */
-    private static function sanitizeAttributes(string $html, bool $allowImages): string
+    private static function sanitizeAttributes(string $html, bool $allowImages, bool $allowClass = false): string
     {
         libxml_use_internal_errors(true);
 
@@ -127,8 +134,15 @@ class HtmlSanitizer
                     continue;
                 }
 
+                if ($attrName === 'class') {
+                    if (!$allowClass) {
+                        $attributesToRemove[] = $attr->name;
+                    }
+                    continue;
+                }
+
                 $allowedAttrs = self::$allowedAttributes[$tagName] ?? [];
-                if (!in_array($attrName, $allowedAttrs) && $attrName !== 'class') {
+                if (!in_array($attrName, $allowedAttrs)) {
                     $attributesToRemove[] = $attr->name;
                     continue;
                 }

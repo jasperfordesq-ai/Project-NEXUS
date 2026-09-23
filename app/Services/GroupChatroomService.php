@@ -64,7 +64,11 @@ class GroupChatroomService
             $query->where('category', $category);
         }
 
-        $chatrooms = $query->get();
+        // F-098: a private chatroom is listed only to those who may open it.
+        $viewerCanManage = GroupAccessService::canManage($groupId, $userId);
+        $chatrooms = $query->get()->filter(
+            fn ($c) => $this->maySeePrivateChatroom($c, $userId, $viewerCanManage)
+        );
 
         return $chatrooms->map(fn ($c) => [
             'id'          => (int) $c->id,
@@ -405,7 +409,13 @@ class GroupChatroomService
             'created_at'  => now(),
         ]);
 
-        // Broadcast via Pusher
+        // Broadcast via Pusher. The realtime channel is the whole GROUP's
+        // channel, so a private chatroom's messages are not broadcast on it
+        // (F-098); its members see new messages when the room is next loaded.
+        if ((bool) ($chatroom->is_private ?? false)) {
+            return (int) $id;
+        }
+
         try {
             event(new \App\Events\GroupChatroomMessagePosted(
                 $tenantId,
@@ -672,6 +682,11 @@ class GroupChatroomService
             return null;
         }
 
+        if (!$this->maySeePrivateChatroom($chatroom, $userId)) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.group_chatroom_private_channel')];
+            return null;
+        }
+
         $pinned = DB::table('group_chatroom_pinned_messages as p')
             ->join('group_chatroom_messages as m', function ($join) {
                 $join->on('p.message_id', '=', 'm.id')
@@ -775,6 +790,32 @@ class GroupChatroomService
             return null;
         }
 
+        if (!$this->maySeePrivateChatroom($chatroom, $userId)) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.group_chatroom_private_channel')];
+            return null;
+        }
+
         return $chatroom;
+    }
+
+    /**
+     * F-098 (E-027): `is_private` was stored and shown (lock icon, "Private"
+     * label) but never checked, so every group member could list, read and
+     * post in a private chatroom. There is no per-chatroom member list, so a
+     * private chatroom is open to the member who created it, the group's owner
+     * and admins, and community administrators (GroupAccessService::canManage).
+     * Group membership is still required first (authorizeParent()).
+     */
+    private function maySeePrivateChatroom(object $chatroom, int $userId, ?bool $viewerCanManage = null): bool
+    {
+        if (!(bool) ($chatroom->is_private ?? false)) {
+            return true;
+        }
+
+        if ((int) ($chatroom->created_by ?? 0) === $userId) {
+            return true;
+        }
+
+        return $viewerCanManage ?? GroupAccessService::canManage((int) $chatroom->group_id, $userId);
     }
 }

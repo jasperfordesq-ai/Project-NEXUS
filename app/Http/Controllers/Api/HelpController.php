@@ -114,7 +114,8 @@ class HelpController extends BaseApiController
         }
 
         // Sanitize HTML in answer to prevent stored XSS
-        $answer = \App\Helpers\HtmlSanitizer::sanitize($answer);
+        // Admin-authored, so it keeps `class` (member content does not — F-075).
+        $answer = \App\Helpers\HtmlSanitizer::sanitize($answer, true, true);
 
         $newId = DB::table('help_faqs')->insertGetId([
             'tenant_id'    => $tenantId,
@@ -161,7 +162,7 @@ class HelpController extends BaseApiController
 
         // Sanitize HTML in answer to prevent stored XSS
         if (isset($updates['answer'])) {
-            $updates['answer'] = \App\Helpers\HtmlSanitizer::sanitize($updates['answer']);
+            $updates['answer'] = \App\Helpers\HtmlSanitizer::sanitize((string) $updates['answer'], true, true); // admin-authored (F-075)
         }
 
         if (empty($updates)) {

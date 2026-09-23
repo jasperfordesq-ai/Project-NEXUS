@@ -229,7 +229,7 @@ class LegalDocumentService
             throw new \InvalidArgumentException('Document not found for this tenant');
         }
 
-        $content = HtmlSanitizer::sanitize((string) ($data['content'] ?? ''), false);
+        $content = HtmlSanitizer::sanitize((string) ($data['content'] ?? ''), false, true); // admin-authored: keeps class (F-075)
         $plainText = $content !== '' ? strip_tags($content) : null;
 
         return DB::table('legal_document_versions')->insertGetId([
@@ -263,7 +263,7 @@ class LegalDocumentService
 
         // Update plain text if content changed
         if (array_key_exists('content', $data)) {
-            $content = HtmlSanitizer::sanitize((string) $data['content'], false);
+            $content = HtmlSanitizer::sanitize((string) $data['content'], false, true); // admin-authored (F-075)
             $updates['content'] = $content;
             $updates['content_plain'] = strip_tags($content);
         }

@@ -150,13 +150,20 @@ class ReviewsController extends BaseApiController
     {
         $this->rateLimit('reviews_show', 120, 60);
 
-        $review = $this->reviewService->getById($id);
+        // F-073: unpublished reviews are for their parties and admins only,
+        // the receiver's profile privacy applies, and members are shaped as on
+        // the list endpoints (see ReviewService::getForViewer()).
+        $result = $this->reviewService->getForViewer($id, $this->getOptionalUserId());
 
-        if ($review === null) {
+        if ($result['reason'] === 'profile_private') {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        if ($result['review'] === null) {
             return $this->respondWithError('NOT_FOUND', __('api.review_not_found'), null, 404);
         }
 
-        return $this->respondWithData($review);
+        return $this->respondWithData($result['review']);
     }
 
     // -----------------------------------------------------------------

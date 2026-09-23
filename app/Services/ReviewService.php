@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -368,6 +369,117 @@ class ReviewService
         }
 
         return $review->toArray();
+    }
+
+    /**
+     * A single review as another member may see it (`GET /v2/reviews/{id}`).
+     *
+     * F-073 (E-027): the endpoint used to return {@see getById()}'s raw model —
+     * rejected, pending and author-deleted reviews included, with both members'
+     * surnames and the delivery bookkeeping columns. The list endpoints only
+     * ever show published reviews and a shaped member object, so this applies
+     * the same rules:
+     *   - a published review is visible to anyone who may see the receiver's
+     *     profile (the same privacy_profile rule as the "reviews of member"
+     *     list, F-081); the two parties always see it;
+     *   - a pending or moderator-rejected review is visible only to its two
+     *     parties and administrators;
+     *   - a review its author deleted is visible only to its author and
+     *     administrators;
+     *   - non-admin viewers see first names only, and an anonymous review does
+     *     not name its author to anyone but the author and administrators.
+     *
+     * @return array{review: array<string, mixed>|null, reason: 'not_found'|'profile_private'|null}
+     */
+    public function getForViewer(int $reviewId, ?int $viewerId): array
+    {
+        /** @var Review|null $review */
+        $review = $this->review->newQuery()
+            ->withFederated()
+            ->with([
+                'reviewer:id,first_name,last_name,avatar_url,organization_name,profile_type',
+                'receiver:id,first_name,last_name,avatar_url,organization_name,profile_type',
+            ])
+            ->find($reviewId);
+
+        if (! $review) {
+            return ['review' => null, 'reason' => 'not_found'];
+        }
+
+        $viewerId = ($viewerId !== null && $viewerId > 0) ? $viewerId : null;
+        $isReviewer = $viewerId !== null && (int) $review->reviewer_id === $viewerId;
+        $isReceiver = $viewerId !== null && (int) $review->receiver_id === $viewerId;
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+
+        $published = $review->status === null || in_array($review->status, ['active', 'approved'], true);
+        if (! $published && ! $viewerIsAdmin) {
+            $allowed = $review->deleted_by_author_at !== null
+                ? $isReviewer
+                : ($isReviewer || $isReceiver);
+            if (! $allowed) {
+                return ['review' => null, 'reason' => 'not_found'];
+            }
+        }
+
+        if (! $isReviewer && ! $isReceiver && ! $viewerIsAdmin
+            && ! MemberProfileVisibility::canView((int) $review->receiver_id, $viewerId)) {
+            return ['review' => null, 'reason' => 'profile_private'];
+        }
+
+        $anonymous = (bool) ($review->is_anonymous ?? false);
+        $revealReviewer = ! $anonymous || $isReviewer || $viewerIsAdmin;
+
+        $reviewer = $revealReviewer ? $this->shapeMember($review->reviewer, $viewerIsAdmin) : [
+            'id'         => null,
+            'name'       => 'Anonymous',
+            'first_name' => null,
+            'avatar'     => null,
+            'avatar_url' => null,
+        ];
+
+        return [
+            'review' => [
+                'id'             => $review->id,
+                'rating'         => $review->rating,
+                'comment'        => $review->comment,
+                'review_type'    => $review->review_type ?? 'local',
+                'dimensions'     => $review->dimensions,
+                'status'         => $review->status,
+                'is_anonymous'   => $anonymous,
+                'transaction_id' => ($isReviewer || $isReceiver || $viewerIsAdmin) ? $review->transaction_id : null,
+                'reviewer'       => $reviewer,
+                'receiver'       => $this->shapeMember($review->receiver, $viewerIsAdmin),
+                'created_at'     => $review->created_at?->toIso8601String(),
+            ],
+            'reason' => null,
+        ];
+    }
+
+    /**
+     * The member object a review shows: display name, first name, avatar.
+     * Surnames are for administrators only, as on the member directory.
+     *
+     * @return array<string, mixed>
+     */
+    private function shapeMember(?\App\Models\User $user, bool $viewerIsAdmin): array
+    {
+        $row = [
+            'id'                => $user?->id,
+            'name'              => UserDisplayName::resolve($user),
+            'first_name'        => $user?->first_name,
+            'last_name'         => $user?->last_name,
+            'profile_type'      => $user?->profile_type,
+            'organization_name' => $user?->organization_name,
+            'avatar'            => $user?->avatar_url,
+            'avatar_url'        => $user?->avatar_url,
+        ];
+
+        if (! $viewerIsAdmin) {
+            $row = MemberProfileVisibility::withoutSurname($row);
+        }
+        unset($row['profile_type'], $row['organization_name']);
+
+        return $row;
     }
 
     /**

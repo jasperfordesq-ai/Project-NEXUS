@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\BlockUserService;
+use App\Services\PresenceService;
+use App\Support\Events\EventSearchVisibility;
 use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
@@ -108,8 +110,11 @@ class FeedSidebarController extends BaseApiController
 
             $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
             $now = now();
-            $filtered = $members->map(function ($m) use ($now, $viewerIsAdmin) {
-                $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
+            $hiddenPresence = array_flip(PresenceService::hiddenUserIds($members->pluck('id')->all()));
+            $filtered = $members->map(function ($m) use ($now, $viewerIsAdmin, $hiddenPresence) {
+                // F-088: "hide my presence" suppresses online / recently-active.
+                $lastActive = ($m->last_active_at && !isset($hiddenPresence[(int) $m->id]))
+                    ? \Carbon\Carbon::parse($m->last_active_at) : null;
                 $row = [
                     'id'                => (int) $m->id,
                     // Emit the resolved display name: without it a client has to
@@ -194,9 +199,14 @@ class FeedSidebarController extends BaseApiController
         }
 
         // 3. Upcoming events
+        // F-074: only published, scheduled occurrences, and group events only
+        // when the viewer is in the group's audience -- the same rule as the
+        // events page and search (EventSearchVisibility).
         try {
-            $data['upcoming_events'] = DB::table('events')
-                ->where('tenant_id', $tenantId)
+            $upcoming = DB::table('events');
+            EventSearchVisibility::applyToQuery($upcoming, $tenantId);
+            EventSearchVisibility::applyAudienceToQuery($upcoming, $tenantId, $userId);
+            $data['upcoming_events'] = $upcoming
                 ->where('start_time', '>=', now())
                 ->orderBy('start_time')
                 ->limit(3)
@@ -271,7 +281,7 @@ class FeedSidebarController extends BaseApiController
 
             // 6. Friends (connections)
             try {
-                $data['friends'] = DB::table('connections as c')
+                $friends = DB::table('connections as c')
                     ->join('users as u', function ($join) use ($userId) {
                         $join->whereRaw("u.id = CASE WHEN c.requester_id = ? THEN c.receiver_id ELSE c.requester_id END", [$userId]);
                     })
@@ -284,10 +294,15 @@ class FeedSidebarController extends BaseApiController
                     ->orderByDesc('u.last_active_at')
                     ->limit(8)
                     ->select('u.id', 'u.first_name', 'u.last_name', 'u.organization_name', 'u.profile_type', 'u.avatar_url', 'u.location', 'u.last_active_at')
-                    ->get()
-                    ->map(function ($f) use ($now) {
+                    ->get();
+                $hiddenPresence = array_flip(PresenceService::hiddenUserIds($friends->pluck('id')->all()));
+                $data['friends'] = $friends
+                    ->map(function ($f) use ($now, $hiddenPresence) {
                         $arr = (array) $f;
-                        $lastActive = $f->last_active_at ? \Carbon\Carbon::parse($f->last_active_at) : null;
+                        // F-088: honour "hide my presence"; never return the raw timestamp.
+                        $lastActive = ($f->last_active_at && !isset($hiddenPresence[(int) $f->id]))
+                            ? \Carbon\Carbon::parse($f->last_active_at) : null;
+                        unset($arr['last_active_at']);
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());
                         return $arr;
@@ -327,14 +342,19 @@ class FeedSidebarController extends BaseApiController
                 } catch (\Exception $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
 
                 $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
-                $data['suggested_members'] = $this->suggestedMembersQuery($tenantId, $userId, $connectedIds)
+                $suggested = $this->suggestedMembersQuery($tenantId, $userId, $connectedIds)
                     ->limit(5)
                     ->select('id', 'first_name', 'last_name', 'organization_name', 'profile_type', 'avatar_url', 'location', 'last_active_at')
-                    ->get()
-                    ->map(function ($m) use ($now, $viewerIsAdmin) {
+                    ->get();
+                $hiddenPresence = array_flip(PresenceService::hiddenUserIds($suggested->pluck('id')->all()));
+                $data['suggested_members'] = $suggested
+                    ->map(function ($m) use ($now, $viewerIsAdmin, $hiddenPresence) {
                         $arr = (array) $m;
                         $arr['name'] = UserDisplayName::resolve($m);
-                        $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
+                        // F-088: honour "hide my presence"; never return the raw timestamp.
+                        $lastActive = ($m->last_active_at && !isset($hiddenPresence[(int) $m->id]))
+                            ? \Carbon\Carbon::parse($m->last_active_at) : null;
+                        unset($arr['last_active_at']);
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());
                         return $viewerIsAdmin ? $arr : MemberProfileVisibility::withoutSurname($arr);
