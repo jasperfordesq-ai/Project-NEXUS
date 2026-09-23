@@ -280,7 +280,7 @@ class StoryServiceTest extends TestCase
     {
         DB::shouldReceive('selectOne')
             ->once()
-            ->andReturn((object) ['id' => 1, 'user_id' => 10]);
+            ->andReturn((object) ['id' => 1, 'user_id' => 999999990]);
 
         DB::shouldReceive('select')
             ->once()
@@ -288,11 +288,13 @@ class StoryServiceTest extends TestCase
                 (object) ['id' => 5, 'first_name' => 'Alice', 'last_name' => 'Smith', 'avatar_url' => null, 'viewed_at' => '2026-03-23 12:00:00'],
             ]);
 
-        $viewers = $this->service->getViewers(1, 10);
+        // An owner id with no users row: an ordinary (non-admin) owner.
+        $viewers = $this->service->getViewers(1, 999999990);
 
         $this->assertCount(1, $viewers);
         $this->assertEquals(5, $viewers[0]['id']);
-        $this->assertEquals('Alice Smith', $viewers[0]['name']);
+        // F-084: the owner sees viewers by first name; surnames are for admins.
+        $this->assertEquals('Alice', $viewers[0]['name']);
     }
 
     // ------------------------------------------------------------------
@@ -636,6 +638,9 @@ class StoryServiceTest extends TestCase
             ->once()
             ->andReturn((object) ['id' => 1]);
 
+        // F-067: the story must belong to the highlight owner.
+        $this->expectStoryOwnership(true);
+
         DB::shouldReceive('selectOne')
             ->once()
             ->andReturn((object) ['max_order' => 3]);
@@ -646,6 +651,28 @@ class StoryServiceTest extends TestCase
 
         $this->service->addToHighlight(1, 10, 5);
         $this->assertTrue(true);
+    }
+
+    public function test_addToHighlight_refuses_a_story_the_owner_did_not_post(): void
+    {
+        DB::shouldReceive('selectOne')
+            ->once()
+            ->andReturn((object) ['id' => 1]);
+
+        $this->expectStoryOwnership(false);
+
+        DB::shouldReceive('insert')->never();
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->addToHighlight(1, 10, 5);
+    }
+
+    private function expectStoryOwnership(bool $owns): void
+    {
+        $builder = \Mockery::mock(\Illuminate\Database\Query\Builder::class);
+        $builder->shouldReceive('where')->andReturnSelf();
+        $builder->shouldReceive('exists')->once()->andReturn($owns);
+        DB::shouldReceive('table')->with('stories')->once()->andReturn($builder);
     }
 
     // ------------------------------------------------------------------

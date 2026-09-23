@@ -237,7 +237,7 @@ class ReactionController extends BaseApiController
         $perPage = $this->queryInt('per_page', 20, 1, 50);
 
         try {
-            $result = $this->reactionService->getReactors($id, $targetType, $reactionType, $page, $perPage);
+            $result = $this->reactionService->getReactors($id, $targetType, $reactionType, $page, $perPage, $userId);
             return $this->respondWithPaginatedCollection(
                 $result['users'],
                 $result['total'],

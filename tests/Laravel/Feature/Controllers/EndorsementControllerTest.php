@@ -96,7 +96,9 @@ class EndorsementControllerTest extends TestCase
         $this->assertArrayHasKey('endorsed_by_names', $group);
         $this->assertArrayHasKey('endorsements', $group);
         $byMember = collect($group['endorsements'])->keyBy('endorser_id');
-        $this->assertSame('Alex, Jr. Smith', $byMember[$first->id]['endorser_name']);
+        // F-084: a non-admin viewer sees the endorser's first name only; the
+        // comma inside it must still survive intact.
+        $this->assertSame('Alex, Jr.', $byMember[$first->id]['endorser_name']);
         $this->assertNull($byMember[$first->id]['endorser_avatar']);
         $this->assertSame('/uploads/sam.png', $byMember[$second->id]['endorser_avatar']);
         $this->assertEquals($records[0]->id, $byMember[$first->id]['id']);

@@ -111,7 +111,7 @@ class EndorsementController extends BaseApiController
 
         if ($skillName) {
             // Detailed endorsements for one skill
-            $endorsements = $this->endorsementService->getSkillEndorsements($id, $skillName);
+            $endorsements = $this->endorsementService->getSkillEndorsements($id, $skillName, $viewerId);
             $data = [
                 'skill_name' => $skillName,
                 'endorsements' => $endorsements,
@@ -126,7 +126,7 @@ class EndorsementController extends BaseApiController
         }
 
         // All endorsements grouped by skill
-        $endorsements = $this->endorsementService->getEndorsementsForUser($id);
+        $endorsements = $this->endorsementService->getEndorsementsForUser($id, $viewerId);
         $stats = $this->endorsementService->getStats($id);
 
         return $this->respondWithData([
@@ -146,7 +146,7 @@ class EndorsementController extends BaseApiController
         $this->rateLimit('top_endorsed', 10, 60);
 
         $limit = $this->queryInt('limit', 10, 1, 50);
-        $members = $this->endorsementService->getTopEndorsedMembers($limit);
+        $members = $this->endorsementService->getTopEndorsedMembers($limit, $this->getOptionalUserId());
 
         return $this->respondWithData($members);
     }

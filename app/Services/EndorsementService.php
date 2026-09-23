@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\SkillEndorsement;
 use App\Models\User;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
 
@@ -164,9 +165,9 @@ class EndorsementService
     /**
      * Get detailed endorsements for a specific skill.
      */
-    public static function getSkillEndorsements(int $userId, string $skillName): array
+    public static function getSkillEndorsements(int $userId, string $skillName, ?int $viewerId = null): array
     {
-        return SkillEndorsement::query()
+        $rows = SkillEndorsement::query()
             ->with(['endorser:id,first_name,last_name,profile_type,organization_name,avatar_url'])
             ->where('endorsed_id', $userId)
             ->where('skill_name', $skillName)
@@ -181,12 +182,21 @@ class EndorsementService
                 'endorser_avatar' => $se->endorser->avatar_url ?? null,
             ])
             ->all();
+
+        $names = self::publicNamesFor(array_column($rows, 'endorser_id'), $viewerId);
+        foreach ($rows as $i => $row) {
+            if ($names !== null && $row['endorser_name'] !== null && isset($names[(int) $row['endorser_id']])) {
+                $rows[$i]['endorser_name'] = $names[(int) $row['endorser_id']];
+            }
+        }
+
+        return $rows;
     }
 
     /**
      * Get endorsements received by a user, grouped by skill (with endorser details).
      */
-    public static function getEndorsementsForUser(int $userId): array
+    public static function getEndorsementsForUser(int $userId, ?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
 
@@ -213,7 +223,20 @@ class EndorsementService
             )
             ->orderByDesc('se.created_at')
             ->orderByDesc('se.id')
-            ->get()
+            ->get();
+
+        // F-084: endorsers by first name for non-admin viewers.
+        $names = self::publicNamesFor($rows->pluck('endorser_id')->all(), $viewerId);
+        if ($names !== null) {
+            foreach ($rows as $row) {
+                if (isset($names[(int) $row->endorser_id])) {
+                    $row->legacy_name = $names[(int) $row->endorser_id];
+                    $row->public_name = $names[(int) $row->endorser_id];
+                }
+            }
+        }
+
+        $rows = $rows
             ->groupBy('skill_group')
             ->map(function ($group) {
                 $legacyNames = $group->pluck('legacy_name')->filter(fn ($name) => $name !== null);
@@ -233,7 +256,7 @@ class EndorsementService
                         'comment' => $row->comment,
                         'created_at' => $row->created_at,
                         'endorser_id' => (int) $row->endorser_id,
-                        'endorser_name' => UserDisplayName::resolve($row),
+                        'endorser_name' => $row->public_name ?? UserDisplayName::resolve($row),
                         'endorser_avatar' => $row->avatar_url,
                     ])->values()->all(),
                 ];
@@ -273,11 +296,11 @@ class EndorsementService
     /**
      * Get top endorsed members across the tenant.
      */
-    public static function getTopEndorsedMembers(int $limit = 10): array
+    public static function getTopEndorsedMembers(int $limit = 10, ?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
 
-        return DB::table('skill_endorsements as se')
+        $members = DB::table('skill_endorsements as se')
             ->join('users as u', 'se.endorsed_id', '=', 'u.id')
             ->where('se.tenant_id', $tenantId)
             ->select(
@@ -293,5 +316,37 @@ class EndorsementService
             ->get()
             ->map(fn ($row) => (array) $row)
             ->all();
+
+        $names = self::publicNamesFor(array_column($members, 'user_id'), $viewerId);
+        foreach ($members as $i => $member) {
+            if ($names !== null && isset($names[(int) $member['user_id']])) {
+                $members[$i]['name'] = $names[(int) $member['user_id']];
+            }
+        }
+
+        return $members;
+    }
+
+    /**
+     * F-084 (E-027): the first names a non-admin viewer may see for these
+     * members (an organisation's trading name), keyed by id, the rule the
+     * member profile and directory apply. Null when the viewer is an
+     * administrator. The viewer's own id is left out.
+     *
+     * @param  array<int, mixed> $userIds
+     * @return array<int, string>|null
+     */
+    private static function publicNamesFor(array $userIds, ?int $viewerId): ?array
+    {
+        if (MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+            return null;
+        }
+
+        $ids = array_values(array_filter(
+            array_map('intval', $userIds),
+            static fn (int $id): bool => $id !== (int) $viewerId,
+        ));
+
+        return MemberProfileVisibility::publicNames($ids, (int) TenantContext::getId());
     }
 }

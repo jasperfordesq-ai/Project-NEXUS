@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -638,7 +639,7 @@ class IdeationChallengeService
         }
 
         return [
-            'items'    => $items->map(function ($i) {
+            'items'    => $this->withoutPersonSurnames($items->map(function ($i) {
                 $item = (array) $i;
                 $item['creator'] = [
                     'id'         => (int) ($item['user_id'] ?? 0),
@@ -647,7 +648,7 @@ class IdeationChallengeService
                 ];
                 unset($item['first_name'], $item['last_name'], $item['avatar_url']);
                 return $item;
-            })->values()->all(),
+            })->values()->all(), 'creator', $viewerId),
             'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
             'has_more' => $hasMore,
         ];
@@ -715,7 +716,7 @@ class IdeationChallengeService
             $data['challenge_owner_id']
         );
 
-        return $data;
+        return $this->withoutPersonSurnames([$data], 'creator', $userId)[0];
     }
 
     /**
@@ -1158,10 +1159,43 @@ class IdeationChallengeService
         })->all();
 
         return [
-            'items'    => $formatted,
+            'items'    => $this->withoutPersonSurnames($formatted, 'author', $viewerId),
             'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    /**
+     * F-084 (E-027): idea and comment authors are shown by first name (an
+     * organisation by its trading name) to non-admin viewers, the rule the
+     * member profile and directory apply. The viewer's own name is unchanged.
+     *
+     * @param  list<array<string, mixed>> $rows rows carrying `$key` => {id, name, ...}
+     * @return list<array<string, mixed>>
+     */
+    private function withoutPersonSurnames(array $rows, string $key, int $viewerId): array
+    {
+        if ($rows === [] || MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+            return $rows;
+        }
+
+        $ids = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row[$key]['id'] ?? 0);
+            if ($id > 0 && $id !== $viewerId) {
+                $ids[] = $id;
+            }
+        }
+        $names = MemberProfileVisibility::publicNames($ids, (int) TenantContext::getId());
+
+        foreach ($rows as $i => $row) {
+            $id = (int) ($row[$key]['id'] ?? 0);
+            if ($id !== $viewerId && isset($names[$id])) {
+                $rows[$i][$key]['name'] = $names[$id];
+            }
+        }
+
+        return $rows;
     }
 
     /** Return the exact comment created by a mutation receipt. */

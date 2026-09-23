@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use App\Services\ExchangeService;
 use App\Services\BrokerControlConfigService;
 use App\Services\ExchangeWorkflowService;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * ExchangesController -- Time credit exchange lifecycle (create, accept, decline, confirm).
@@ -19,6 +20,11 @@ use App\Services\ExchangeWorkflowService;
 class ExchangesController extends BaseApiController
 {
     protected bool $isV2Api = true;
+
+    /** @var array<int, string> First names already looked up this request (F-084). */
+    private array $publicPartyNames = [];
+
+    private ?bool $viewerIsAdmin = null;
 
     public function __construct(
         private readonly ExchangeService $exchangeService,
@@ -106,6 +112,7 @@ class ExchangesController extends BaseApiController
 
         $result = $this->exchangeService->getAll($userId, $filters);
 
+        $this->primePublicPartyNames($result['items'], $userId);
         $formatted = array_map(fn ($item) => $this->formatExchange($item), $result['items']);
 
         return $this->respondWithCollection(
@@ -456,12 +463,12 @@ class ExchangesController extends BaseApiController
             ],
             'requester'     => [
                 'id'     => (int) $exchange['requester_id'],
-                'name'   => $exchange['requester_name'] ?? null,
+                'name'   => $this->partyName((int) $exchange['requester_id'], $exchange['requester_name'] ?? null),
                 'avatar' => $exchange['requester_avatar'] ?? null,
             ],
             'provider'      => [
                 'id'     => (int) $exchange['provider_id'],
-                'name'   => $exchange['provider_name'] ?? null,
+                'name'   => $this->partyName((int) $exchange['provider_id'], $exchange['provider_name'] ?? null),
                 'avatar' => $exchange['provider_avatar'] ?? null,
             ],
             'proposed_hours'           => (float) $exchange['proposed_hours'],
@@ -477,6 +484,52 @@ class ExchangesController extends BaseApiController
             'broker_notes'             => $exchange['broker_notes'] ?? null,
             'created_at'               => $this->exchangeTimestamp($exchange['created_at']),
         ];
+    }
+
+    /**
+     * F-084 (E-027): the other party is shown by first name (an organisation
+     * by its trading name) unless the viewer is an administrator, the rule
+     * the member profile and directory apply. The viewer's own name is
+     * unchanged.
+     */
+    private function partyName(int $partyId, ?string $storedName): ?string
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($storedName === null || $partyId === (int) $viewerId) {
+            return $storedName;
+        }
+        $this->viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
+        if ($this->viewerIsAdmin) {
+            return $storedName;
+        }
+        if (! array_key_exists($partyId, $this->publicPartyNames)) {
+            $this->publicPartyNames += MemberProfileVisibility::publicNames([$partyId], $this->getTenantId());
+        }
+
+        return $this->publicPartyNames[$partyId] ?? $storedName;
+    }
+
+    /**
+     * One name lookup for a page of exchanges.
+     *
+     * @param list<array<string, mixed>> $items
+     */
+    private function primePublicPartyNames(array $items, int $viewerId): void
+    {
+        $this->viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
+        if ($this->viewerIsAdmin || $items === []) {
+            return;
+        }
+        $ids = [];
+        foreach ($items as $item) {
+            foreach (['requester_id', 'provider_id'] as $key) {
+                $id = (int) ($item[$key] ?? 0);
+                if ($id > 0 && $id !== $viewerId) {
+                    $ids[] = $id;
+                }
+            }
+        }
+        $this->publicPartyNames += MemberProfileVisibility::publicNames($ids, $this->getTenantId());
     }
 
     private function exchangeTimestamp(?string $value): ?string

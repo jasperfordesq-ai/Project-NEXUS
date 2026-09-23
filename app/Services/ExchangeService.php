@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Services\NotificationDispatcher;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -150,7 +151,15 @@ class ExchangeService
                 'prov.name as provider_name', 'prov.avatar_url as provider_avatar',
             ]);
 
-        return $rows->map(function ($r) use ($userId) {
+        // F-084: the counterparty by first name unless the viewer is an admin.
+        $publicNames = MemberProfileVisibility::viewerIsAdmin($userId)
+            ? null
+            : MemberProfileVisibility::publicNames(
+                $rows->map(fn ($r) => (int) $r->requester_id === $userId ? (int) $r->provider_id : (int) $r->requester_id)->all(),
+                $tenantId,
+            );
+
+        return $rows->map(function ($r) use ($userId, $publicNames) {
             $isRequester = (int) $r->requester_id === $userId;
             $isProvider  = (int) $r->provider_id === $userId;
 
@@ -170,7 +179,8 @@ class ExchangeService
                 'status'              => (string) $r->status,
                 'action'              => $action,
                 'listing_title'       => $r->listing_title !== null ? (string) $r->listing_title : null,
-                'counterparty_name'   => $isRequester ? ($r->provider_name ?? '') : ($r->requester_name ?? ''),
+                'counterparty_name'   => $publicNames[$isRequester ? (int) $r->provider_id : (int) $r->requester_id]
+                    ?? ($isRequester ? ($r->provider_name ?? '') : ($r->requester_name ?? '')),
                 'counterparty_avatar' => $isRequester ? ($r->provider_avatar ?? null) : ($r->requester_avatar ?? null),
             ];
         })->all();

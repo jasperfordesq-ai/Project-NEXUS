@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Support\FeedItemTables;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
 
@@ -243,7 +244,7 @@ class ReactionService
             'counts' => $counts,
             'total' => $total,
             'user_reaction' => $userReaction,
-            'top_reactors' => $topReactors,
+            'top_reactors' => $this->withoutReactorSurnames($topReactors, $userId),
         ];
     }
 
@@ -252,8 +253,14 @@ class ReactionService
      *
      * @return array{users: array, total: int, has_more: bool}
      */
-    public function getReactors(int $entityId, string $entityType, string $reactionType, int $page = 1, int $perPage = 20): array
-    {
+    public function getReactors(
+        int $entityId,
+        string $entityType,
+        string $reactionType,
+        int $page = 1,
+        int $perPage = 20,
+        ?int $viewerId = null,
+    ): array {
         $tenantId = TenantContext::getId();
 
         if (!in_array($entityType, self::VALID_TARGET_TYPES, true)) {
@@ -292,7 +299,7 @@ class ReactionService
             ->all();
 
         return [
-            'users' => $users,
+            'users' => $this->withoutReactorSurnames($users, $viewerId),
             'total' => $total,
             'has_more' => ($page * $perPage) < $total,
         ];
@@ -416,6 +423,72 @@ class ReactionService
             }
         }
 
+        // One name lookup for the whole page of items (F-084).
+        $reactors = [];
+        foreach ($result as $entry) {
+            foreach ($entry['top_reactors'] as $reactor) {
+                $reactors[] = $reactor;
+            }
+        }
+        if ($reactors !== []) {
+            $names = $this->publicReactorNames($reactors, $userId);
+            if ($names !== null) {
+                foreach ($result as $key => $entry) {
+                    foreach ($entry['top_reactors'] as $i => $reactor) {
+                        if (isset($names[$reactor['id']])) {
+                            $result[$key]['top_reactors'][$i]['name'] = $names[$reactor['id']];
+                        }
+                    }
+                }
+            }
+        }
+
         return $result;
+    }
+
+    /**
+     * F-084 (E-027): who reacted is a member list, so non-admin viewers see
+     * other members by first name (an organisation by its trading name), the
+     * rule the member profile and directory apply. The viewer's own row is
+     * unchanged.
+     *
+     * @param  list<array<string, mixed>> $rows rows with `id` and `name`
+     * @return list<array<string, mixed>>
+     */
+    private function withoutReactorSurnames(array $rows, ?int $viewerId): array
+    {
+        $names = $rows === [] ? null : $this->publicReactorNames($rows, $viewerId);
+        if ($names === null) {
+            return $rows;
+        }
+
+        foreach ($rows as $i => $row) {
+            if (isset($names[(int) $row['id']])) {
+                $rows[$i]['name'] = $names[(int) $row['id']];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * The first-name map for these reactors, or null when the viewer is an
+     * administrator and sees full names. The viewer's own id is left out.
+     *
+     * @param  list<array<string, mixed>> $rows
+     * @return array<int, string>|null
+     */
+    private function publicReactorNames(array $rows, ?int $viewerId): ?array
+    {
+        if (MemberProfileVisibility::viewerIsAdmin($viewerId)) {
+            return null;
+        }
+
+        $ids = array_values(array_filter(
+            array_map(static fn (array $row): int => (int) $row['id'], $rows),
+            static fn (int $id): bool => $id !== (int) $viewerId,
+        ));
+
+        return MemberProfileVisibility::publicNames($ids, (int) TenantContext::getId());
     }
 }

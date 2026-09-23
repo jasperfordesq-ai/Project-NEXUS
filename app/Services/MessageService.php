@@ -13,6 +13,7 @@ use App\Events\SafeguardingCoordinationRequested;
 use App\Models\Message;
 use App\Models\User;
 use App\Support\EmojiConstants;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -175,7 +176,11 @@ class MessageService
         if ($message === null) {
             throw new \RuntimeException('Stored message send receipt has no canonical message.');
         }
-        $response = $message->toArray();
+        $response = self::withoutParticipantSurnames(
+            $message->toArray(),
+            $senderId,
+            MemberProfileVisibility::viewerIsAdmin($senderId),
+        );
         $response['_idempotent_replay'] = true;
 
         return $response;
@@ -278,15 +283,16 @@ class MessageService
         // "Hide my presence" applies here too (F-088): is_online is derived
         // from last_active_at, which the setting does not touch.
         $hiddenPartnerIds = PresenceService::hiddenUserIds($partnerIds);
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
 
-        $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds) {
-            $data = $msg->toArray();
+        $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds, $viewerIsAdmin) {
+            $data = self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin);
             $data['reactions'] = $reactionCounts[(int) $msg->id] ?? [];
             $partnerId = $msg->sender_id === $userId ? $msg->receiver_id : $msg->sender_id;
             $partner = $msg->sender_id === $userId ? $msg->receiver : $msg->sender;
             $data['partner_id'] = $partnerId;
             $data['unread_count'] = $unreadCounts[$partnerId] ?? 0;
-            $data['other_user'] = $partner ? [
+            $data['other_user'] = $partner ? self::withoutOtherUserSurname([
                 'id'         => $partner->id,
                 'name'       => $partner->name,
                 'first_name' => $partner->first_name,
@@ -294,7 +300,7 @@ class MessageService
                 'avatar_url' => $partner->avatar_url,
                 'is_online'  => ! in_array((int) $partner->id, $hiddenPartnerIds, true)
                     && ($partner->last_active_at && $partner->last_active_at->gt(now()->subMinutes(5))),
-            ] : null;
+            ], $partner, $viewerIsAdmin) : null;
             $data['last_message'] = [
                 'id'         => $msg->id,
                 'body'       => $msg->body,
@@ -376,8 +382,9 @@ class MessageService
         // Note: markAsRead is called by the controller, not here, to avoid double-calling.
 
         $reactionCounts = self::publicReactionCountsForMessages($messages, $userId);
-        $items = $messages->map(function (Message $msg) use ($reactionCounts): array {
-            $data = $msg->toArray();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $items = $messages->map(function (Message $msg) use ($reactionCounts, $userId, $viewerIsAdmin): array {
+            $data = self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin);
             if ((bool) $msg->is_deleted) {
                 // Keep the tombstone needed to render conversation history, but
                 // do not return retained private content or fresh media routes.
@@ -837,9 +844,11 @@ class MessageService
                 }
             }
 
-            $persisted = $message
-                ->fresh(self::messageResponseRelations())
-                ->toArray();
+            $persisted = self::withoutParticipantSurnames(
+                $message->fresh(self::messageResponseRelations())->toArray(),
+                $senderId,
+                MemberProfileVisibility::viewerIsAdmin($senderId),
+            );
             if ($idempotencyKey !== '') {
                 DB::table('message_send_receipts')->insert([
                     'tenant_id' => (int) $tenantId,
@@ -890,6 +899,51 @@ class MessageService
             "receiver:{$participantColumns}",
             'attachments',
         ];
+    }
+
+    /**
+     * F-084 (E-027): the other member in a conversation is shown by first
+     * name (an organisation by its trading name) unless the viewer is an
+     * administrator, the rule the member profile and directory apply. The
+     * viewer's own participant object is unchanged.
+     *
+     * @param  array<string, mixed> $message a serialised message with sender/receiver
+     * @return array<string, mixed>
+     */
+    private static function withoutParticipantSurnames(array $message, int $viewerId, bool $viewerIsAdmin): array
+    {
+        if ($viewerIsAdmin) {
+            return $message;
+        }
+
+        foreach (['sender', 'receiver'] as $key) {
+            if (is_array($message[$key] ?? null) && (int) ($message[$key]['id'] ?? 0) !== $viewerId) {
+                $message[$key] = MemberProfileVisibility::withoutSurname($message[$key]);
+            }
+        }
+
+        return $message;
+    }
+
+    /**
+     * The `other_user` summary under the same rule (F-084).
+     *
+     * @param  array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private static function withoutOtherUserSurname(array $row, User $user, bool $viewerIsAdmin): array
+    {
+        if ($viewerIsAdmin) {
+            return $row;
+        }
+
+        $shaped = MemberProfileVisibility::withoutSurname($row + [
+            'profile_type' => $user->profile_type,
+            'organization_name' => $user->organization_name,
+        ]);
+        unset($shaped['profile_type'], $shaped['organization_name']);
+
+        return $shaped;
     }
 
     /**
@@ -1295,7 +1349,7 @@ class MessageService
 
         return [
             'id' => $otherUserId,
-            'other_user' => [
+            'other_user' => self::withoutOtherUserSurname([
                 'id'         => $otherUser->id,
                 'name'       => $otherUser->name ?? UserDisplayName::resolve($otherUser),
                 'first_name' => $otherUser->first_name,
@@ -1303,7 +1357,7 @@ class MessageService
                 'avatar_url' => $otherUser->avatar_url,
                 'is_online'  => PresenceService::hiddenUserIds([(int) $otherUser->id]) === []
                     && ($otherUser->last_active_at && $otherUser->last_active_at->gt(now()->subMinutes(5))),
-            ],
+            ], $otherUser, MemberProfileVisibility::viewerIsAdmin($userId)),
             'unread_count'  => $unreadCount,
             'message_count' => $messageCount,
             'safeguarding'  => $safeguarding,

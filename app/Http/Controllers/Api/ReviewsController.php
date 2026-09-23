@@ -113,7 +113,7 @@ class ReviewsController extends BaseApiController
             $filters['cursor'] = $this->query('cursor');
         }
 
-        $result = $this->reviewService->getForUser($userId, $filters);
+        $result = $this->reviewService->getForUser($userId, $filters, $this->getOptionalUserId());
 
         return $this->respondWithCollection(
             $result['items'],

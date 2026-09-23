@@ -51,6 +51,27 @@ class ReactionServiceTest extends TestCase
     }
 
     /**
+     * Mock the first-name lookup reactor lists now make for non-admin viewers
+     * (F-084: MemberProfileVisibility::publicNames()).
+     *
+     * @param array<int, string> $firstNames id => first name
+     */
+    private function mockPublicNames(array $firstNames): void
+    {
+        DB::shouldReceive('table->where->whereIn->get')
+            ->andReturn(collect(array_map(
+                static fn (int $id, string $first) => (object) [
+                    'id' => $id,
+                    'first_name' => $first,
+                    'profile_type' => 'individual',
+                    'organization_name' => null,
+                ],
+                array_keys($firstNames),
+                array_values($firstNames),
+            )));
+    }
+
+    /**
      * Create a real, active user under the test tenant and return its id.
      * The feed_posts / reactions FK constraints require a genuine users row.
      * Re-pins the tenant context afterwards in case a model observer reset it.
@@ -223,7 +244,9 @@ class ReactionServiceTest extends TestCase
 
     public function test_getReactions_returns_counts_and_user_reaction(): void
     {
+        $viewerId = $this->seedUser();
         $this->mockDbRaw();
+        $this->mockPublicNames([1 => 'User', 2 => 'User']);
         DB::shouldReceive('table->where->where->where->select->groupBy->get')
             ->once()
             ->andReturn(collect([
@@ -242,12 +265,13 @@ class ReactionServiceTest extends TestCase
                 ['id' => 2, 'name' => 'User Two', 'avatar_url' => null],
             ]);
 
-        $result = $this->service->getReactions(1, 'post', 5);
+        $result = $this->service->getReactions(1, 'post', $viewerId);
 
         $this->assertEquals(['love' => 3, 'laugh' => 1], $result['counts']);
         $this->assertEquals(4, $result['total']);
         $this->assertEquals('love', $result['user_reaction']);
         $this->assertCount(2, $result['top_reactors']);
+        $this->assertSame('User', $result['top_reactors'][0]['name'], 'Non-admin viewers see first names (F-084).');
     }
 
     public function test_getReactions_returns_null_user_reaction_when_no_user(): void
@@ -307,6 +331,7 @@ class ReactionServiceTest extends TestCase
     public function test_getReactors_returns_paginated_users(): void
     {
         $this->mockDbRaw();
+        $this->mockPublicNames([1 => 'User', 2 => 'User']);
         // count() — 5 where calls: join + 4 where
         DB::shouldReceive('table->join->where->where->where->where->count')
             ->once()
@@ -330,6 +355,7 @@ class ReactionServiceTest extends TestCase
     public function test_getReactors_returns_no_more_when_last_page(): void
     {
         $this->mockDbRaw();
+        $this->mockPublicNames([1 => 'User', 2 => 'User']);
         DB::shouldReceive('table->join->where->where->where->where->count')
             ->once()
             ->andReturn(2);
@@ -385,6 +411,9 @@ class ReactionServiceTest extends TestCase
 
     public function test_getReactionsForPosts_returns_grouped_counts(): void
     {
+        $viewerId = $this->seedUser();
+        $this->mockPublicNames([7 => 'Anna']);
+
         // Counts query
         DB::shouldReceive('select')
             ->once()
@@ -408,13 +437,14 @@ class ReactionServiceTest extends TestCase
                 (object) ['target_id' => 1, 'user_id' => 7, 'name' => 'Anna Murphy', 'avatar_url' => null],
             ]);
 
-        $result = $this->service->getReactionsForPosts([1, 2, 3], 5);
+        $result = $this->service->getReactionsForPosts([1, 2, 3], $viewerId);
 
         $this->assertEquals(['love' => 3, 'laugh' => 1], $result[1]['counts']);
         $this->assertEquals(4, $result[1]['total']);
         $this->assertEquals('love', $result[1]['user_reaction']);
+        // F-084: a non-admin viewer sees the reactor's first name only.
         $this->assertEquals(
-            [['id' => 7, 'name' => 'Anna Murphy', 'avatar_url' => null]],
+            [['id' => 7, 'name' => 'Anna', 'avatar_url' => null]],
             $result[1]['top_reactors']
         );
 

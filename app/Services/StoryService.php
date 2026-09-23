@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Services\MessageService;
 use App\Services\NotificationDispatcher;
 use App\Services\RealtimeService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -351,7 +352,7 @@ class StoryService
 
         // Fix 12: scope the users JOIN to the current tenant to prevent cross-tenant user leakage
         $viewers = DB::select(
-            'SELECT u.id, u.first_name, u.last_name, u.avatar_url, sv.viewed_at
+            'SELECT u.id, u.first_name, u.last_name, u.profile_type, u.organization_name, u.avatar_url, sv.viewed_at
              FROM story_views sv
              JOIN users u ON u.id = sv.viewer_id AND u.tenant_id = ?
              WHERE sv.story_id = ?
@@ -359,9 +360,15 @@ class StoryService
             [$tenantId, $storyId]
         );
 
+        // F-084 (E-027): viewers by first name (an organisation by its trading
+        // name) unless the owner is an administrator, as on the directory.
+        $ownerIsAdmin = MemberProfileVisibility::viewerIsAdmin($ownerId);
+
         return array_map(fn($v) => [
             'id' => (int) $v->id,
-            'name' => UserDisplayName::resolve($v),
+            'name' => $ownerIsAdmin
+                ? UserDisplayName::resolve($v)
+                : (string) MemberProfileVisibility::withoutSurname((array) $v)['name'],
             'avatar_url' => $v->avatar_url,
             'viewed_at' => $v->viewed_at,
         ], $viewers);

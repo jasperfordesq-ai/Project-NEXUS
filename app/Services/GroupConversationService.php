@@ -11,6 +11,7 @@ use App\Jobs\CopyGroupMessageForBrokerReview;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\User;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\SafeguardingInteractionDecision;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -149,7 +150,7 @@ class GroupConversationService
                 ]);
             }
 
-            return self::formatConversation($conversation->fresh());
+            return self::formatConversation($conversation->fresh(), $creatorId);
         });
     }
 
@@ -253,7 +254,7 @@ class GroupConversationService
             ]);
         }
 
-        return self::formatConversation($conversation->fresh());
+        return self::formatConversation($conversation->fresh(), $addedByUserId);
     }
 
     /**
@@ -356,7 +357,7 @@ class GroupConversationService
 
         $conversation->save();
 
-        return self::formatConversation($conversation->fresh());
+        return self::formatConversation($conversation->fresh(), $userId);
     }
 
     /**
@@ -408,12 +409,14 @@ class GroupConversationService
             [$userId],
         )));
 
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+
         return $participants
-            ->map(function ($p) use ($hiddenIds) {
+            ->map(function ($p) use ($hiddenIds, $userId, $viewerIsAdmin) {
                 $name = ($p->profile_type === 'organisation' && !empty($p->organization_name))
                     ? $p->organization_name
                     : UserDisplayName::resolve($p);
-                return [
+                return self::withoutMemberSurname([
                     'id' => $p->user_id,
                     'name' => $name,
                     'first_name' => $p->first_name,
@@ -423,7 +426,7 @@ class GroupConversationService
                     'joined_at' => $p->joined_at,
                     'is_online' => ! in_array((int) $p->user_id, $hiddenIds, true)
                         && $p->last_active_at && \Carbon\Carbon::parse($p->last_active_at)->gt(now()->subMinutes(5)),
-                ];
+                ], $p, $userId, $viewerIsAdmin);
             });
     }
 
@@ -444,9 +447,10 @@ class GroupConversationService
             ->get();
 
         $hiddenSenderIds = self::hiddenGroupSenderIds($userId);
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
 
-        return $conversations->map(function ($conv) use ($userId, $hiddenSenderIds) {
-            $data = self::formatConversation($conv);
+        return $conversations->map(function ($conv) use ($userId, $hiddenSenderIds, $viewerIsAdmin) {
+            $data = self::formatConversation($conv, $userId, $viewerIsAdmin);
 
             // Get last message
             $lastMessage = DB::table('messages')
@@ -560,7 +564,8 @@ class GroupConversationService
                 ->keyBy('id');
         }
 
-        $items = $messages->map(function ($msg) use ($senders) {
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $items = $messages->map(function ($msg) use ($senders, $userId, $viewerIsAdmin) {
             $sender = $senders[$msg->sender_id] ?? null;
             return [
                 'id' => $msg->id,
@@ -575,13 +580,13 @@ class GroupConversationService
                 'audio_duration' => $msg->audio_duration ?? null,
                 'transcript' => $msg->transcript ?? null,
                 'created_at' => $msg->created_at,
-                'sender' => $sender ? [
+                'sender' => $sender ? self::withoutMemberSurname([
                     'id' => $sender->id,
                     'first_name' => $sender->first_name,
                     'last_name' => $sender->last_name,
                     'name' => UserDisplayName::resolve($sender),
                     'avatar_url' => $sender->avatar_url,
-                ] : null,
+                ], $sender, $userId, $viewerIsAdmin) : null,
             ];
         })->all();
 
@@ -608,7 +613,7 @@ class GroupConversationService
             'items' => array_values($items),
             'cursor' => $hasMore && $messages->isNotEmpty() ? base64_encode((string) $messages->last()->id) : null,
             'has_more' => $hasMore,
-            'conversation' => self::formatConversation($conversation),
+            'conversation' => self::formatConversation($conversation, $userId, $viewerIsAdmin),
             'safeguarding' => $safeguarding,
         ];
     }
@@ -803,10 +808,42 @@ class GroupConversationService
     }
 
     /**
+     * F-084 (E-027): other participants are shown by first name (an
+     * organisation by its trading name) unless the viewer is an
+     * administrator, the rule the member profile and directory apply. The
+     * viewer's own row is unchanged.
+     *
+     * @param  array<string, mixed> $row    the response row (`id` is the member)
+     * @param  object               $member the loaded row with first_name/profile_type/organization_name
+     * @return array<string, mixed>
+     */
+    private static function withoutMemberSurname(array $row, object $member, int $viewerId, bool $viewerIsAdmin): array
+    {
+        if ($viewerIsAdmin || (int) ($row['id'] ?? 0) === $viewerId) {
+            return $row;
+        }
+
+        $hadFirstName = array_key_exists('first_name', $row);
+        $shaped = MemberProfileVisibility::withoutSurname($row + [
+            'first_name' => $member->first_name ?? null,
+            'profile_type' => $member->profile_type ?? null,
+            'organization_name' => $member->organization_name ?? null,
+        ]);
+        unset($shaped['profile_type'], $shaped['organization_name']);
+        if (! $hadFirstName) {
+            unset($shaped['first_name']);
+        }
+
+        return $shaped;
+    }
+
+    /**
      * Format a conversation model for API response.
      */
-    private static function formatConversation(Conversation $conversation): array
+    private static function formatConversation(Conversation $conversation, int $viewerId, ?bool $viewerIsAdmin = null): array
     {
+        $viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
+
         $participants = ConversationParticipant::where('conversation_id', $conversation->id)
             ->whereNull('left_at')
             ->join('users', 'conversation_participants.user_id', '=', 'users.id')
@@ -818,13 +855,13 @@ class GroupConversationService
                 'users.avatar_url',
             ])
             ->get()
-            ->map(function ($p) {
-                return [
+            ->map(function ($p) use ($viewerId, $viewerIsAdmin) {
+                return self::withoutMemberSurname([
                     'id' => $p->user_id,
                     'name' => UserDisplayName::resolve($p),
                     'avatar_url' => $p->avatar_url,
                     'role' => $p->role,
-                ];
+                ], $p, $viewerId, $viewerIsAdmin);
             })
             ->all();
 

@@ -30,6 +30,7 @@ use App\Support\Events\EventLifecycleTransitionGuard;
 use App\Support\Events\EventLifecycleTransitionResult;
 use App\Support\Events\EventRegistrationAvailability;
 use App\Support\Events\EventRegistrationCompatibility;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -3192,6 +3193,7 @@ class EventService
         $rows = DB::select(
             "SELECT r.id as rsvp_id, r.user_id, r.status, r.created_at as rsvp_at,
                    u.name, u.first_name, u.last_name, u.avatar_url,
+                   u.profile_type, u.organization_name,
                    a.checked_in_at, a.checked_out_at
             FROM event_rsvps r
              JOIN users u ON r.user_id = u.id AND u.tenant_id = r.tenant_id AND u.status = 'active'
@@ -3212,10 +3214,11 @@ class EventService
 
         $items = [];
         $lastId = null;
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
 
         foreach ($attendees as $att) {
             $lastId = $att['rsvp_id'];
-            $items[] = [
+            $items[] = self::withoutRosterSurname([
                 'id' => (int) $att['user_id'],
                 'name' => $att['name'] ?? UserDisplayName::resolve($att),
                 'first_name' => $att['first_name'] ?? null,
@@ -3227,7 +3230,7 @@ class EventService
                 'rsvp_at' => $att['rsvp_at'],
                 'checked_in_at' => $att['checked_in_at'] ?? null,
                 'checked_out_at' => $att['checked_out_at'] ?? null,
-            ];
+            ], $att, $viewerId, $viewerIsAdmin);
         }
 
         return [
@@ -4333,7 +4336,8 @@ class EventService
 
         $rows = DB::select(
             "SELECT w.id, w.user_id, w.position, w.status, w.created_at,
-                   u.name, u.first_name, u.last_name, u.avatar_url
+                   u.name, u.first_name, u.last_name, u.avatar_url,
+                   u.profile_type, u.organization_name
             FROM event_waitlist w
             JOIN users u ON w.user_id = u.id
             WHERE w.event_id = ? AND w.tenant_id = ? AND w.status = 'waiting'
@@ -4349,8 +4353,9 @@ class EventService
         }
 
         $formatted = [];
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
         foreach ($items as $item) {
-            $formatted[] = [
+            $formatted[] = self::withoutRosterSurname([
                 'id' => (int) $item['user_id'],
                 'name' => $item['name'] ?? UserDisplayName::resolve($item),
                 'first_name' => $item['first_name'] ?? null,
@@ -4358,7 +4363,7 @@ class EventService
                 'avatar_url' => $item['avatar_url'],
                 'position' => (int) $item['position'],
                 'joined_at' => $item['created_at'],
-            ];
+            ], $item, $viewerId, $viewerIsAdmin);
         }
 
         return ['items' => $formatted, 'has_more' => $hasMore];
@@ -4634,6 +4639,37 @@ class EventService
     }
 
     /**
+     * F-084 (E-027): surnames are for administrators only, as on the member
+     * profile and directory. Organisers and event staff are ordinary members,
+     * so the roster, waitlist and attendance lists show other members by
+     * first name (an organisation by its trading name), as the group member
+     * list does. The viewer's own row is unchanged.
+     *
+     * @param  array<string, mixed> $item   the response row
+     * @param  array<string, mixed> $source the query row (profile_type, organization_name)
+     * @return array<string, mixed>
+     */
+    private static function withoutRosterSurname(
+        array $item,
+        array $source,
+        ?int $viewerId,
+        bool $viewerIsAdmin,
+        string $idKey = 'id',
+    ): array {
+        if ($viewerIsAdmin || ($viewerId !== null && (int) ($item[$idKey] ?? 0) === $viewerId)) {
+            return $item;
+        }
+
+        $shaped = MemberProfileVisibility::withoutSurname($item + [
+            'profile_type' => $source['profile_type'] ?? null,
+            'organization_name' => $source['organization_name'] ?? null,
+        ]);
+        unset($shaped['profile_type'], $shaped['organization_name']);
+
+        return $shaped;
+    }
+
+    /**
      * Get attendance records for an event.
      */
     public static function getAttendanceRecords(int $eventId, ?int $viewerId = null): ?array
@@ -4648,7 +4684,10 @@ class EventService
         try {
             $rows = DB::select(
                 "SELECT a.*, u.name, u.first_name, u.last_name, u.avatar_url,
-                        cb.name as checked_in_by_name
+                        u.profile_type, u.organization_name,
+                        cb.name as checked_in_by_name, cb.first_name as checked_in_by_first_name,
+                        cb.profile_type as checked_in_by_profile_type,
+                        cb.organization_name as checked_in_by_organization_name
                  FROM event_attendance a
                  JOIN users u ON a.user_id = u.id
                  LEFT JOIN users cb ON a.checked_in_by = cb.id
@@ -4658,18 +4697,27 @@ class EventService
             );
 
             $items = [];
+            $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
             foreach ($rows as $r) {
-                $items[] = [
+                $checkedInBy = $r->checked_in_by_name ?? null;
+                if ($checkedInBy !== null && ! $viewerIsAdmin && (int) ($r->checked_in_by ?? 0) !== (int) $viewerId) {
+                    $checkedInBy = (string) MemberProfileVisibility::withoutSurname([
+                        'first_name' => $r->checked_in_by_first_name ?? null,
+                        'profile_type' => $r->checked_in_by_profile_type ?? null,
+                        'organization_name' => $r->checked_in_by_organization_name ?? null,
+                    ])['name'];
+                }
+                $items[] = self::withoutRosterSurname([
                     'user_id'        => (int) $r->user_id,
                     'name'           => $r->name ?? UserDisplayName::resolve($r),
                     'first_name'     => $r->first_name ?? null,
                     'last_name'      => $r->last_name ?? null,
                     'avatar_url'     => $r->avatar_url,
                     'checked_in_at'  => $r->checked_in_at,
-                    'checked_in_by'  => $r->checked_in_by_name ?? null,
+                    'checked_in_by'  => $checkedInBy,
                     'hours_credited' => $r->hours_credited ? (float) $r->hours_credited : null,
                     'notes'          => $r->notes,
-                ];
+                ], (array) $r, $viewerId, $viewerIsAdmin, 'user_id');
             }
 
             return $items;

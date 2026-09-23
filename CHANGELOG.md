@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Members now see other members by first name only (organisations by their name) in event attendee lists, message and group-chat lists, review lists, reaction lists, exchanges, endorsements, ideation, a group's recent members and story viewers; anonymous reviews no longer reveal who wrote them in review lists. Administrators still see full names (F-084).
+
 - Removed or rejected reviews can no longer be opened by other members, and a single review no longer shows members' surnames or an anonymous reviewer's name (F-073).
 
 - The feed sidebar no longer advertises draft events or events from private groups you are not in (F-074).

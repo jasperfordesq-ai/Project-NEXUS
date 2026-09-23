@@ -33,11 +33,16 @@ class ReviewService
     /**
      * Get reviews for a specific user (as receiver) with cursor pagination.
      *
-     * @param int   $userId  The user whose reviews to fetch
-     * @param array $filters Optional: limit, cursor
+     * Non-admin viewers see reviewers by first name, and an anonymous review
+     * names its author only to the author and administrators — the rules
+     * {@see getForViewer()} applies to a single review (F-084, E-027).
+     *
+     * @param int      $userId   The user whose reviews to fetch
+     * @param array    $filters  Optional: limit, cursor
+     * @param int|null $viewerId The signed-in viewer, if any
      * @return array{items: array, cursor: string|null, has_more: bool, average_rating: float|null, total: int}
      */
-    public function getForUser(int $userId, array $filters = []): array
+    public function getForUser(int $userId, array $filters = [], ?int $viewerId = null): array
     {
         $limit = min((int) ($filters['limit'] ?? 20), 100);
         $cursor = $filters['cursor'] ?? null;
@@ -70,26 +75,46 @@ class ReviewService
             : null;
 
         // Format reviews to match the React contract
-        $formatted = $items->map(function (Review $r) {
+        $viewerId = ($viewerId !== null && $viewerId > 0) ? $viewerId : null;
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $formatted = $items->map(function (Review $r) use ($viewerId, $viewerIsAdmin) {
             $reviewer = $r->reviewer;
-            $reviewerName = ($reviewer && $reviewer->profile_type === 'organisation' && $reviewer->organization_name)
-                ? $reviewer->organization_name
-                : UserDisplayName::resolve($reviewer);
+            $anonymous = (bool) ($r->is_anonymous ?? false);
+            $isReviewer = $viewerId !== null && (int) $r->reviewer_id === $viewerId;
+
+            if ($anonymous && ! $isReviewer && ! $viewerIsAdmin) {
+                // Not even the id: it leads straight to the author's profile.
+                $reviewerRow = [
+                    'id'         => null,
+                    'name'       => 'Anonymous',
+                    'first_name' => null,
+                    'last_name'  => null,
+                    'avatar'     => null,
+                    'avatar_url' => null,
+                ];
+            } else {
+                $reviewerRow = [
+                    'id'         => $reviewer?->id,
+                    'name'       => ($reviewer && $reviewer->profile_type === 'organisation' && $reviewer->organization_name)
+                        ? $reviewer->organization_name
+                        : UserDisplayName::resolve($reviewer),
+                    'first_name' => $reviewer?->first_name,
+                    'last_name'  => $reviewer?->last_name,
+                    'avatar'     => $reviewer?->avatar_url,
+                    'avatar_url' => $reviewer?->avatar_url,
+                ];
+                if (! $viewerIsAdmin && ! $isReviewer) {
+                    $reviewerRow = self::withoutMemberSurname($reviewerRow, $reviewer);
+                }
+            }
 
             return [
                 'id'           => $r->id,
                 'rating'       => $r->rating,
                 'comment'      => $r->comment,
                 'review_type'  => $r->review_type ?? 'local',
-                'is_anonymous' => (bool) ($r->is_anonymous ?? false),
-                'reviewer'     => [
-                    'id'         => $reviewer?->id,
-                    'name'       => ($r->is_anonymous ?? false) ? 'Anonymous' : $reviewerName,
-                    'first_name' => ($r->is_anonymous ?? false) ? null : $reviewer?->first_name,
-                    'last_name'  => ($r->is_anonymous ?? false) ? null : $reviewer?->last_name,
-                    'avatar'     => ($r->is_anonymous ?? false) ? null : $reviewer?->avatar_url,
-                    'avatar_url' => ($r->is_anonymous ?? false) ? null : $reviewer?->avatar_url,
-                ],
+                'is_anonymous' => $anonymous,
+                'reviewer'     => $reviewerRow,
                 'created_at' => $r->created_at?->toIso8601String(),
             ];
         })->all();
@@ -160,12 +185,23 @@ class ReviewService
             : null;
 
         // Format reviews to match the React contract — the `receiver` block
-        // describes the member the review is ABOUT.
-        $formatted = $items->map(function (Review $r) {
+        // describes the member the review is ABOUT. First names only unless
+        // the author is an administrator (F-084).
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+        $formatted = $items->map(function (Review $r) use ($viewerIsAdmin) {
             $receiver = $r->receiver;
             $receiverName = ($receiver && $receiver->profile_type === 'organisation' && $receiver->organization_name)
                 ? $receiver->organization_name
                 : UserDisplayName::resolve($receiver);
+
+            $receiverRow = [
+                'id'         => $receiver?->id,
+                'name'       => $receiverName,
+                'first_name' => $receiver?->first_name,
+                'last_name'  => $receiver?->last_name,
+                'avatar'     => $receiver?->avatar_url,
+                'avatar_url' => $receiver?->avatar_url,
+            ];
 
             return [
                 'id'          => $r->id,
@@ -173,14 +209,7 @@ class ReviewService
                 'comment'     => $r->comment,
                 'review_type' => $r->review_type ?? 'local',
                 'status'      => $r->status,
-                'receiver'    => [
-                    'id'         => $receiver?->id,
-                    'name'       => $receiverName,
-                    'first_name' => $receiver?->first_name,
-                    'last_name'  => $receiver?->last_name,
-                    'avatar'     => $receiver?->avatar_url,
-                    'avatar_url' => $receiver?->avatar_url,
-                ],
+                'receiver'    => $viewerIsAdmin ? $receiverRow : self::withoutMemberSurname($receiverRow, $receiver),
                 'created_at' => $r->created_at?->toIso8601String(),
             ];
         })->all();
@@ -477,6 +506,28 @@ class ReviewService
         if (! $viewerIsAdmin) {
             $row = MemberProfileVisibility::withoutSurname($row);
         }
+        unset($row['profile_type'], $row['organization_name']);
+
+        return $row;
+    }
+
+    /**
+     * A list row's member object with the surname rule applied (F-084): the
+     * first name, or an organisation's trading name.
+     *
+     * @param  array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private static function withoutMemberSurname(array $row, ?\App\Models\User $user): array
+    {
+        if ($user === null) {
+            return $row;
+        }
+
+        $row =MemberProfileVisibility::withoutSurname($row + [
+            'profile_type'      => $user?->profile_type,
+            'organization_name' => $user?->organization_name,
+        ]);
         unset($row['profile_type'], $row['organization_name']);
 
         return $row;

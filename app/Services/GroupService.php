@@ -352,14 +352,29 @@ class GroupService
                     ->select(['users.id', 'users.first_name', 'users.last_name', 'users.profile_type', 'users.organization_name', 'users.avatar_url'])
                     ->get();
 
-                $data['recent_members'] = $recentMembers->map(fn($m) => [
-                    'id'         => (int) $m->id,
-                    'first_name' => $m->first_name,
-                    'last_name'  => $m->last_name,
-                    'name'       => UserDisplayName::resolve($m),
-                    'avatar_url' => $m->avatar_url,
-                    'avatar'     => $m->avatar_url,
-                ])->all();
+                // F-084: surnames for platform administrators only, as on the
+                // group member list; the viewer's own row is unchanged.
+                $viewerIsPlatformAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId);
+                $data['recent_members'] = $recentMembers->map(function ($m) use ($currentUserId, $viewerIsPlatformAdmin): array {
+                    $row = [
+                        'id'         => (int) $m->id,
+                        'first_name' => $m->first_name,
+                        'last_name'  => $m->last_name,
+                        'name'       => UserDisplayName::resolve($m),
+                        'avatar_url' => $m->avatar_url,
+                        'avatar'     => $m->avatar_url,
+                    ];
+                    if ($viewerIsPlatformAdmin || (int) $m->id === (int) $currentUserId) {
+                        return $row;
+                    }
+                    $row = MemberProfileVisibility::withoutSurname($row + [
+                        'profile_type'      => $m->profile_type,
+                        'organization_name' => $m->organization_name,
+                    ]);
+                    unset($row['profile_type'], $row['organization_name']);
+
+                    return $row;
+                })->all();
             }
         }
 
