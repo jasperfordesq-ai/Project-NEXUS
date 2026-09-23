@@ -56,6 +56,19 @@ class AiChatController extends BaseApiController
     {
         $userId = $this->requireAuth();
         $tenantId = $this->getTenantId();
+
+        // The route-level tenant feature is separate from the administrator's
+        // AI master and member-chat switches. Enforce both before persisting a
+        // conversation, gathering context, executing tools or calling any
+        // primary/fallback provider.
+        if (!AIServiceFactory::isFeatureEnabled('chat')) {
+            return $this->respondWithError(
+                'FEATURE_DISABLED',
+                __('api_controllers_1.ai_chat.not_available'),
+                null,
+                403
+            );
+        }
         $this->rateLimit('ai_chat', 30, 60);
 
         $message = $this->requireInput('message');

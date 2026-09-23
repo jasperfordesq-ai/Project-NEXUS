@@ -62,6 +62,16 @@ class AiSettings extends Model
     }
 
     /**
+     * Parse a persisted administrator switch using recognized boolean values.
+     * Unknown non-empty strings fail closed instead of inheriting PHP's
+     * surprising `(bool) "false" === true` behaviour.
+     */
+    public static function parseBoolean(mixed $value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true;
+    }
+
+    /**
      * Get a masked version of a setting (for display).
      */
     public static function getMasked(int $tenantId, string $key): ?string

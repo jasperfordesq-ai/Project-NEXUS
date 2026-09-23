@@ -25,6 +25,7 @@ Defaults live in `app/Services/TenantFeatureConfig.php`.
 Beyond the feature flag, two layers of enablement apply at request time (see `AIServiceFactory`):
 
 - `AIServiceFactory::isEnabled()` — per-tenant `ai_enabled` DB setting (falls back to config).
+- `AIServiceFactory::isFeatureEnabled('chat')` — combines that master switch with the tenant administrator's `ai_chat_enabled` switch. Both the general assistant and the job-specific member chat enforce it before saving conversation data, gathering context, running tools, or selecting a primary/fallback provider. Retained provider credentials never override a disabled switch. Persisted boolean settings are parsed fail-closed, so malformed strings do not enable AI.
 - `AIServiceFactory::isFeatureEnabled('content_generation')` — gates the `/ai/generate/*` endpoints; returns 403 `FEATURE_DISABLED` when off.
 
 Every query in this module is scoped to `TenantContext::getId()`. Conversations and messages are additionally scoped to the calling `user_id`. Tools throw if invoked without tenant context (`AbstractTool::tenantId()`).
@@ -79,6 +80,8 @@ There is no working SSE stream today. `POST /ai/chat/stream` returns `501 NOT_IM
 **Configuration precedence:** database settings (`AiSettings::getAllForTenant`) are the real source of configuration. A tenant admin sets the provider, model, and API key in Admin → AI Settings. `AIServiceFactory::getConfig()` probes an optional **`app/Config/ai.php`** (not Laravel's `config/ai.php`) — `$configPath = dirname(__DIR__, 2) . '/Config/ai.php'`. That file is not tracked (`app/Config/` holds only `ApiDeprecation.php`), so the factory falls back to a hardcoded default array (`enabled => false`, default provider `gemini`). The default provider is `AiSettings::get($tenantId, 'ai_provider')` if set, else that hardcoded `gemini` default. Cloud providers without an API key throw a clear "not configured" error (Ollama is exempt).
 
 **Automatic fallback:** `chatWithFallback()` tries the preferred provider, then other *configured* providers (free-tier ones prioritised), retrying on **any** provider error — rate-limit/quota (`429`), auth (`401`/`403`), and server (`5xx`) errors are handled explicitly, and all other exceptions also fall through to the next configured provider. The response carries `provider` and `used_fallback`.
+
+**Disable boundary:** fallback is a provider-availability mechanism, not an enablement decision. Member chat controllers must call `isFeatureEnabled('chat')` before entering the fallback dispatcher. Do not implement a disabled-state exception inside a provider or inside the fallback loop: that loop deliberately catches provider failures and continues to the next configured provider.
 
 **Adding a provider:** implement `AIProviderInterface`, add a class under `Providers/`, and add a `match` arm in `AIServiceFactory::createProvider()` + a config entry. Anthropic's wire translation (`translateMessagesForAnthropic`) shows how to map the provider-neutral message/tool format onto a provider that doesn't speak OpenAI's schema natively.
 

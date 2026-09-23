@@ -1579,7 +1579,7 @@ class AdminConfigController extends BaseApiController
         $settings = \App\Models\AiSettings::getAllForTenant($tenantId);
 
         return $this->respondWithData([
-            'ai_enabled' => (bool) ($settings['ai_enabled'] ?? false),
+            'ai_enabled' => \App\Models\AiSettings::parseBoolean($settings['ai_enabled'] ?? false),
             'ai_provider' => $settings['ai_provider'] ?? 'gemini',
             'models' => [
                 'gemini' => $settings['gemini_model'] ?? 'gemini-pro',
@@ -1598,11 +1598,11 @@ class AdminConfigController extends BaseApiController
                 'anthropic' => \App\Models\AiSettings::has($tenantId, 'anthropic_api_key'),
             ],
             'features' => [
-                'chat' => (bool) ($settings['ai_chat_enabled'] ?? false),
-                'content_generation' => (bool) ($settings['ai_content_gen_enabled'] ?? false),
-                'recommendations' => (bool) ($settings['ai_recommendations_enabled'] ?? false),
-                'analytics' => (bool) ($settings['ai_analytics_enabled'] ?? false),
-                'moderation' => (bool) ($settings['ai_moderation_enabled'] ?? false),
+                'chat' => \App\Models\AiSettings::parseBoolean($settings['ai_chat_enabled'] ?? false),
+                'content_generation' => \App\Models\AiSettings::parseBoolean($settings['ai_content_gen_enabled'] ?? false),
+                'recommendations' => \App\Models\AiSettings::parseBoolean($settings['ai_recommendations_enabled'] ?? false),
+                'analytics' => \App\Models\AiSettings::parseBoolean($settings['ai_analytics_enabled'] ?? false),
+                'moderation' => \App\Models\AiSettings::parseBoolean($settings['ai_moderation_enabled'] ?? false),
             ],
             'limits' => [
                 'default_daily' => (int) ($settings['default_daily_limit'] ?? 50),

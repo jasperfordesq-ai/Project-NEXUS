@@ -3048,15 +3048,15 @@ class JobVacanciesController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
+        if (!\App\Services\AI\AIServiceFactory::isFeatureEnabled('chat')) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api_controllers_2.job_vacancies.ai_not_configured'), null, 403);
+        }
+
         $vacancy = \App\Models\JobVacancy::where('tenant_id', $tenantId)->find($id);
         if (!$vacancy) return $this->respondWithError('NOT_FOUND', __('api_controllers_2.job_vacancies.job_not_found'), null, 404);
 
         // Throttle paid LLM calls — any authenticated member can use the advisor.
         $this->rateLimit('jobs_ai_chat', 15, 60);
-
-        if (!\App\Services\AI\AIServiceFactory::isEnabled()) {
-            return $this->respondWithError('AI_DISABLED', __('api_controllers_2.job_vacancies.ai_not_configured'), null, 503);
-        }
 
         $data = $this->getAllInput();
         $userMessage = trim($data['message'] ?? '');

@@ -301,7 +301,7 @@ class AIServiceFactory
         if ($tenantId) {
             $enabled = AiSettings::get($tenantId, 'ai_enabled');
             if ($enabled !== null) {
-                return (bool) $enabled;
+                return AiSettings::parseBoolean($enabled);
             }
         }
 
@@ -322,7 +322,7 @@ class AIServiceFactory
         if ($tenantId) {
             $enabled = AiSettings::get($tenantId, "ai_{$feature}_enabled");
             if ($enabled !== null) {
-                return (bool) $enabled;
+                return AiSettings::parseBoolean($enabled);
             }
         }
 

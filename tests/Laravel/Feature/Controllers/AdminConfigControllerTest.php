@@ -828,6 +828,25 @@ class AdminConfigControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_get_ai_config_reports_legacy_false_and_malformed_switches_as_disabled(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        foreach (['ai_enabled' => 'false', 'ai_chat_enabled' => 'unexpected-value'] as $key => $value) {
+            DB::table('ai_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => $value, 'updated_at' => now()]
+            );
+        }
+
+        $this->apiGet('/v2/admin/config/ai')
+            ->assertOk()
+            ->assertJsonPath('data.ai_enabled', false)
+            ->assertJsonPath('data.features.chat', false);
+    }
+
     // ================================================================
     // FEED ALGORITHM — GET /v2/admin/config/feed-algorithm
     // ================================================================

@@ -97,6 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Volunteer hours can now only be logged for the last 90 days, and no single day can hold more than 24 hours in total across all organisations, so hours can no longer be backdated for years to create credits (F-101, F-141).
 
+- Tenant administrator AI master and chat switches now stop both the general member assistant and job-specific AI chat before conversation persistence, context/tool preparation, or primary/fallback provider dispatch. Retained provider keys and malformed legacy switch values can no longer keep chat active after an administrator disables it (F-048).
+
 - Becoming a buddy for another member's public goal now returns only the goal owner's and buddy's public identity fields, instead of serializing their complete account rows with contact, birth, location, login, privacy, role, and payment-provider metadata (F-097).
 
 - Group owners and admins can no longer download members' email addresses or the names of pending and banned members from group exports; tenant admins still get the full export (F-093).

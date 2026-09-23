@@ -129,4 +129,14 @@ class AiSettingsTest extends \Tests\Laravel\TestCase
         $result = AiSettings::getMasked(99999, 'nonexistent_key_xyz');
         $this->assertNull($result);
     }
+
+    public function testParseBooleanRecognizesExplicitValuesAndFailsClosed(): void
+    {
+        foreach (['1', 'true', 'on', 'yes', true, 1] as $value) {
+            $this->assertTrue(AiSettings::parseBoolean($value));
+        }
+        foreach (['0', 'false', 'off', 'no', '', 'unexpected-value', false, 0, null] as $value) {
+            $this->assertFalse(AiSettings::parseBoolean($value));
+        }
+    }
 }

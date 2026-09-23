@@ -88,6 +88,12 @@ class AiChatControllerTest extends TestCase
     public function test_chat_requires_message_field(): void
     {
         $this->authenticatedUser();
+        foreach (['ai_enabled', 'ai_chat_enabled'] as $key) {
+            DB::table('ai_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => '1', 'updated_at' => now()]
+            );
+        }
 
         $response = $this->apiPost('/ai/chat', []);
 
