@@ -5,7 +5,7 @@
 
 import { contrastText , withAlpha } from '@/lib/utils/color';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -73,6 +73,8 @@ const FILTER_OPTIONS: { key: FeedFilter; icon: keyof typeof Ionicons.glyphMap }[
 const LISTING_SUBFILTERS = ['offer', 'request'] as const;
 
 export default function HomeScreen() {
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
   const { t } = useTranslation(['home', 'common', 'exchanges']);
   const { displayName } = useAuth();
   const { hasModule, tenant } = useTenant();
@@ -254,7 +256,8 @@ export default function HomeScreen() {
                       <View className="h-7 w-7 items-center justify-center rounded-2xl" style={{ backgroundColor: withAlpha(primary, 0.14) }}>
                         <Ionicons name="albums-outline" size={15} color={primary} />
                       </View>
-                      <Text accessibilityRole="header" className="min-w-0 flex-1 text-lg font-bold leading-6" style={{ color: theme.text }} numberOfLines={1}>
+                      {/* At large text a one-line cap cut this to "Community F…"; let it wrap. */}
+                      <Text accessibilityRole="header" className={`min-w-0 flex-1 text-lg font-bold ${largeText ? '' : 'leading-6'}`} style={{ color: theme.text }} numberOfLines={largeText ? undefined : 1}>
                         {t('feed.title')}
                       </Text>
                     </View>
@@ -263,7 +266,7 @@ export default function HomeScreen() {
                     {t('feed.greeting', { name: (displayName || '').split(' ')[0] || t('common:labels.friend') })}
                   </Text>
                   {!feedUnavailable ? (
-                    <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} numberOfLines={1}>
+                    <Text className={`text-xs ${largeText ? '' : 'leading-4'}`} style={{ color: theme.textSecondary }} numberOfLines={largeText ? undefined : 1}>
                       {t('feed.subtitle')}
                     </Text>
                   ) : null}

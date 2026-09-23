@@ -455,4 +455,16 @@ describe('ExchangesScreen', () => {
     const empty = render(<ExchangesScreen />);
     expect(empty.getByText('resultsCount')).toBeTruthy();
   });
+
+  it('stacks the header at large text so the title does not break mid-word', () => {
+    const RN = require('react-native');
+    const spy = jest.spyOn(RN, 'useWindowDimensions').mockReturnValue({ width: 411, height: 914, scale: 2.6, fontScale: 2 });
+    const large = render(<ExchangesScreen />);
+    expect(large.getByTestId('exchanges-header-row').props.className).not.toContain('flex-row');
+    large.unmount();
+    spy.mockReturnValue({ width: 411, height: 914, scale: 2.6, fontScale: 1 });
+    const normal = render(<ExchangesScreen />);
+    expect(normal.getByTestId('exchanges-header-row').props.className).toContain('flex-row');
+    spy.mockRestore();
+  });
 });

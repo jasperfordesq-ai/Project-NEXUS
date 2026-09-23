@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -107,6 +107,8 @@ function ExchangesScreen() {
   const { t } = useTranslation(['exchanges', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stackHeader = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | ExchangeType>('all');
@@ -382,7 +384,9 @@ function ExchangesScreen() {
 
   const controls = (
     <Surface variant="default" className="gap-3 rounded-panel-inner p-3">
-      <View className="flex-row items-center justify-between gap-3">
+      {/* At large text the title, count and two buttons cannot share a row: the title broke
+          mid-word ("Listin / gs"). Stack them instead. */}
+      <View testID="exchanges-header-row" className={stackHeader ? 'gap-3' : 'flex-row items-center justify-between gap-3'}>
         <View className="min-w-0 flex-1">
           <Text className="text-xl font-bold" style={{ color: theme.text }}>
             {t('title')}
