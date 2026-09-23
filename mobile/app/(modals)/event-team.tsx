@@ -57,7 +57,13 @@ export function TeamWorkspace({ eventId, tenantId, userId }: { eventId: number; 
     return { event: event.data, assignments: staff.data };
   }, [eventId, tenantId, userId], { enabled: valid && active, clearOnRefusal: true });
   const label = (key: string, values?: Record<string, string | number>) => t(`manage.team.${key}`, values);
-  const name = (member: EventInviteMember) => member.name?.trim() || [member.first_name, member.last_name].filter(Boolean).join(' ').trim() || label('member_fallback', { id: member.id });
+  const name = (member: EventInviteMember) => {
+    const display = member.name?.trim() || [member.first_name, member.last_name].filter(Boolean).join(' ').trim();
+    const identifier = label('member_fallback', { id: member.id });
+    // Directory privacy can return identical first names. Preserve that privacy
+    // while making the target verifiable in results, selection and confirmation.
+    return display ? `${display} · ${identifier}` : identifier;
+  };
   const timestamp = (value: string | null) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(locale) : label('not_recorded');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<EventInviteMember | null>(null);

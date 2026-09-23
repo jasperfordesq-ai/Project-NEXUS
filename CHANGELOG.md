@@ -158,6 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event Team search and confirmations distinguish members with identical privacy-limited names using their public member number, without revealing hidden surnames or contact details.
+
 - Retrying an accepted event staff grant after its expiry now returns its original receipt without renewing access or creating another history entry. New grants with expired dates remain rejected.
 - Native event federation diagnostics now reflow after live text-size changes, format dates for the community, and explain permission failures without incorrectly claiming the organiser has no management tools.
 - Search results named an organisation by its contact person. `scripts/sync_search_index.php` built `author_name` (listings) and `organizer_name` (events) with a raw `CONCAT(first_name, last_name)`, so an organisation account appeared under the person held in those fields rather than its `organization_name`. Both now use `UserDisplayName::sql()`. 🔴 The display-name gate scans only `app/` and `react-frontend/src/`, so it could not see these: 31 further raw concatenations sit outside its scan paths (19 in `web-uk/src`, 6 in `scripts/`, 6 in `mobile/`), measured but not changed here.

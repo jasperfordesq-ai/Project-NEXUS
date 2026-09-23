@@ -45,10 +45,10 @@ beforeEach(() => {
   jest.mocked(execute).mockReset().mockResolvedValue({ data: { assignment } } as never);
   jest.mocked(recover).mockReset().mockResolvedValue({ data: { assignment } } as never);
 });
-async function ready() { const view = render(<Screen />); await view.findByText('Team member'); await waitFor(() => expect(load).toHaveBeenCalled()); return view; }
+async function ready() { const view = render(<Screen />); await view.findByText('Team member · Member #9'); await waitFor(() => expect(load).toHaveBeenCalled()); return view; }
 async function select(view: ReturnType<typeof render>) {
   fireEvent.changeText(view.getByLabelText('Member'), 'New');
-  fireEvent.press(await view.findByLabelText('Select New member'));
+  fireEvent.press(await view.findByLabelText('Select New member · Member #10'));
 }
 it.each([undefined, '0', '1e2', ['7']])('rejects invalid links %j without requests', id => {
   mockParams = { id }; const view = render(<Screen />);
@@ -64,7 +64,7 @@ it('offers all five roles to the owner authority', async () => {
   const view = await ready(); expect(view.getAllByRole('radio')).toHaveLength(5);
 });
 it('excludes the event owner and confirms the selected member before granting', async () => {
-  const view = await ready(); await select(view); expect(view.queryByLabelText('Select Owner')).toBeNull();
+  const view = await ready(); await select(view); expect(view.queryByLabelText('Select Owner · Member #3')).toBeNull();
   fireEvent.press(view.getByText('Assign role')); expect(execute).not.toHaveBeenCalled();
   await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
   expect(execute).toHaveBeenCalledWith({ eventId: 7, tenantId: 2, userId: 3 }, { action: 'grant', payload: { user_id: 10, role: 'registration_manager', expires_at: null } }, expect.any(Function));
@@ -79,7 +79,7 @@ it('requires confirmation for revocation and retains the assignment history', as
 it.each([401, 403, 404])('clears private assignments on refresh refusal %s', async status => {
   const view = await ready(); jest.mocked(getEventStaff).mockRejectedValue(new ApiResponseError(status, 'Unavailable'));
   await act(async () => view.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
-  expect(view.queryByText('Team member')).toBeNull(); expect(view.getByText('You may not have permission to manage the team for this event.')).toBeTruthy();
+  expect(view.queryByText('Team member · Member #9')).toBeNull(); expect(view.getByText('You may not have permission to manage the team for this event.')).toBeTruthy();
 });
 it('ignores an old confirmation after permission is withdrawn', async () => {
   const view = await ready(); fireEvent.press(view.getByText('Revoke access')); const confirmation = mockConfirm.mock.calls[0][0];
@@ -132,15 +132,25 @@ it('ignores member search results arriving for an obsolete query', async () => {
   const view = await ready(); let finish!: (value: unknown) => void;
   jest.mocked(search).mockImplementationOnce(() => new Promise(resolve => { finish = resolve as (value: unknown) => void; }));
   fireEvent.changeText(view.getByLabelText('Member'), 'Old'); await waitFor(() => expect(search).toHaveBeenCalledWith('Old'));
-  fireEvent.changeText(view.getByLabelText('Member'), 'New'); await view.findByLabelText('Select New member');
+  fireEvent.changeText(view.getByLabelText('Member'), 'New'); await view.findByLabelText('Select New member · Member #10');
   await act(async () => finish([{ id: 11, name: 'Obsolete member' }]));
-  expect(view.queryByLabelText('Select Obsolete member')).toBeNull(); expect(view.getByLabelText('Select New member')).toBeTruthy();
+  expect(view.queryByLabelText('Select Obsolete member · Member #11')).toBeNull(); expect(view.getByLabelText('Select New member · Member #10')).toBeTruthy();
+});
+it('distinguishes privacy-limited duplicate names in selection and confirmation', async () => {
+  jest.mocked(search).mockResolvedValue([{ id: 10, name: 'Same' }, { id: 11, name: 'Same' }] as never);
+  const view = await ready(); fireEvent.changeText(view.getByLabelText('Member'), 'Same');
+  await view.findByLabelText('Select Same · Member #10');
+  fireEvent.press(view.getByLabelText('Select Same · Member #11'));
+  fireEvent.press(view.getByText('Assign role'));
+  expect(mockConfirm.mock.calls[0][0].message).toContain('Same · Member #11');
+  await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  expect(execute).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ payload: expect.objectContaining({ user_id: 11 }) }), expect.any(Function));
 });
 it('keeps assignments visible but prevents changes after a failed refresh', async () => {
   const view = await ready(); jest.mocked(getEventStaff).mockRejectedValue(new ApiResponseError(503, 'Unavailable'));
   await act(async () => view.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
   await view.findByTestId('refresh-failed-notice', {}, { timeout: 10000 });
-  expect(view.getByText('Team member')).toBeTruthy(); fireEvent.press(view.getByText('Revoke access'));
+  expect(view.getByText('Team member · Member #9')).toBeTruthy(); fireEvent.press(view.getByText('Revoke access'));
   expect(mockConfirm).not.toHaveBeenCalled();
 });
 it('blocks changes if saved actions cannot be read and offers storage retry', async () => {
