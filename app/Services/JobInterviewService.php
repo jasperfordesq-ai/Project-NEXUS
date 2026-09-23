@@ -380,12 +380,39 @@ class JobInterviewService
         $tenantId = TenantContext::getId();
 
         try {
-            return JobInterview::with(['application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url'])
+            $interviews = JobInterview::with(['application.applicant:id,first_name,last_name,profile_type,organization_name,avatar_url'])
                 ->where('tenant_id', $tenantId)
                 ->where('vacancy_id', $vacancyId)
                 ->orderByDesc('scheduled_at')
                 ->get()
                 ->toArray();
+
+            // F-102: honour blind hiring here too — the same "Candidate #N"
+            // label and anonymous applicant shape as the applications list.
+            $isBlindHiring = (bool) DB::table('job_vacancies')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $vacancyId)
+                ->value('blind_hiring');
+            if (!$isBlindHiring) {
+                return $interviews;
+            }
+
+            $labels = JobVacancyService::blindCandidateLabels((int) $tenantId, $vacancyId);
+            foreach ($interviews as &$interview) {
+                if (!is_array($interview['application'] ?? null)) {
+                    continue;
+                }
+                $applicationId = (int) ($interview['application']['id'] ?? 0);
+                foreach (JobVacancyService::BLIND_HIRING_HIDDEN_APPLICATION_FIELDS as $hiddenField) {
+                    unset($interview['application'][$hiddenField]);
+                }
+                $interview['application']['applicant'] = JobVacancyService::blindApplicantPlaceholder(
+                    $labels[$applicationId] ?? __('api.job_audit_unknown_candidate')
+                );
+            }
+            unset($interview);
+
+            return $interviews;
         } catch (\Throwable $e) {
             Log::error('JobInterviewService::getForVacancy failed', ['error' => $e->getMessage()]);
             return [];

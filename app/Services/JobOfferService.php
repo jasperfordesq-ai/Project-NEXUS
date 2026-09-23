@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Exceptions\JobOfferCreditException;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Models\JobApplication;
 use App\Models\JobApplicationHistory;
@@ -180,6 +181,7 @@ class JobOfferService
      * @param int $offerId         The offer ID.
      * @param int $candidateUserId The candidate's user ID.
      * @return bool
+     * @throws JobOfferCreditException When the employer cannot cover a timebank offer's credits.
      */
     public static function accept(int $offerId, int $candidateUserId): bool
     {
@@ -282,6 +284,33 @@ class JobOfferService
                     return false;
                 }
 
+                // F-100: a timebank hire moves `time_credits` from the employer to
+                // the candidate, so it must be backed by the employer's balance —
+                // exactly like WalletService::transfer. The amount is read from the
+                // vacancy row locked above (job_offers has no frozen-amount column),
+                // and both wallets are locked in ascending ID order to match the
+                // wallet transfer lock order and avoid deadlocks.
+                if ($vacancy->type === 'timebank' && (float) $vacancy->time_credits > 0) {
+                    $employerId = (int) $vacancy->user_id;
+                    $walletIds = array_values(array_unique([$employerId, (int) $application->user_id]));
+                    sort($walletIds);
+                    foreach ($walletIds as $walletId) {
+                        DB::table('users')
+                            ->where('tenant_id', $tenantId)
+                            ->where('id', $walletId)
+                            ->lockForUpdate()
+                            ->first(['id']);
+                    }
+
+                    $employerBalance = DB::table('users')
+                        ->where('tenant_id', $tenantId)
+                        ->where('id', $employerId)
+                        ->value('balance');
+                    if ($employerBalance === null || (float) $employerBalance < (float) $vacancy->time_credits) {
+                        throw new JobOfferCreditException(__('api.job_offer_employer_insufficient_balance'));
+                    }
+                }
+
                 $lockedOffer->update([
                     'status'       => 'accepted',
                     'responded_at' => now(),  // column added via 2026_03_27_000000 migration
@@ -348,9 +377,9 @@ class JobOfferService
                     // `time_credits` out of nothing on every accept — and posting a
                     // high-credit timebank job then self-/sock-puppet-accepting it
                     // minted arbitrary credits, breaking the timebanking
-                    // conservation invariant. The employer balance may go negative,
-                    // matching the volunteer org-wallet reconciliation semantics
-                    // (the candidate is always paid the offered credits).
+                    // conservation invariant. The employer's balance was checked
+                    // under a row lock above (F-100), so this debit can never take
+                    // the employer negative.
                     DB::table('users')
                         ->where('id', (int) $vacancy->user_id)
                         ->where('tenant_id', $tenantId)
@@ -394,6 +423,8 @@ class JobOfferService
 
             return true;
         } catch (SafeguardingPolicyException $e) {
+            throw $e;
+        } catch (JobOfferCreditException $e) {
             throw $e;
         } catch (\Throwable $e) {
             Log::error('JobOfferService::accept failed', ['error' => $e->getMessage()]);

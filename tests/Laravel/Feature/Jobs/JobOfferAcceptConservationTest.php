@@ -24,8 +24,9 @@ use Tests\Laravel\TestCase;
  * escrow either, so every timebank hire created `time_credits` out of thin air —
  * and posting a high-credit timebank job then self-/sock-puppet-accepting it
  * minted arbitrary credits, breaking the timebanking conservation invariant. The
- * employer is now debited symmetrically (may go negative, matching the volunteer
- * org-wallet reconciliation semantics), so sum(balances) is unchanged.
+ * employer is now debited symmetrically, so sum(balances) is unchanged. Since
+ * F-100 the employer must also hold the credits: an accept the employer cannot
+ * cover is refused (see Security/JobOfferCreditIntegrityTest).
  */
 class JobOfferAcceptConservationTest extends TestCase
 {
@@ -137,7 +138,9 @@ class JobOfferAcceptConservationTest extends TestCase
         // person accepts it. With conservation it must net to zero, not mint.
         $tid    = $this->testTenantId;
         $person = $this->user(50.0);
-        $credits = 1000.0;
+        // F-100: the poster must be able to cover the credits, so the fixture
+        // stays within the wallet balance; the invariant under test is netting.
+        $credits = 40.0;
 
         $vacancyId = (int) DB::table('job_vacancies')->insertGetId([
             'tenant_id'    => $tid,
@@ -173,7 +176,7 @@ class JobOfferAcceptConservationTest extends TestCase
         $ok = TenantContext::runForTenant($tid, fn () => JobOfferService::accept($offerId, (int) $person->id));
         $this->assertTrue($ok);
 
-        // +1000 credit then -1000 debit on the same wallet → unchanged.
+        // +40 credit then -40 debit on the same wallet → unchanged.
         $balanceAfter = (float) DB::table('users')->where('id', $person->id)->value('balance');
         $this->assertEqualsWithDelta(50.0, $balanceAfter, 0.0001, 'self-accepting a timebank job must not mint credits');
     }

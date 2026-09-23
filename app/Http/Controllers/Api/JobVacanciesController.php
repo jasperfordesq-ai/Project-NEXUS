@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\JobOfferCreditException;
 use App\Exceptions\SafeguardingPolicyException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1413,6 +1414,8 @@ class JobVacanciesController extends BaseApiController
             $success = JobOfferService::accept($offerId, $userId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        } catch (JobOfferCreditException $e) {
+            return $this->respondWithError('INSUFFICIENT_BALANCE', $e->getMessage(), null, 422);
         }
 
         if (!$success) {
@@ -2394,6 +2397,12 @@ class JobVacanciesController extends BaseApiController
             return $this->respondWithData(['rankings' => [], 'message' => __('api_controllers_2.job_vacancies.no_active_applications')]);
         }
 
+        // F-102: under blind hiring the AI provider (and the response) only ever
+        // sees the "Candidate #N" label — no name, and none of the free text
+        // (cover message, bio) that the applications list also withholds.
+        $isBlindHiring = (bool) ($vacancy->blind_hiring ?? false);
+        $blindLabels = $isBlindHiring ? JobVacancyService::blindCandidateLabels($tenantId, $id) : [];
+
         // Enrich each applicant with community trust signals
         $candidateProfiles = [];
         foreach ($applications as $app) {
@@ -2424,15 +2433,17 @@ class JobVacanciesController extends BaseApiController
 
             $candidateProfiles[] = [
                 'application_id' => $app->id,
-                'name' => UserDisplayName::resolve($applicant),
-                'bio' => $applicant->bio ?? '',
+                'name' => $isBlindHiring
+                    ? ($blindLabels[(int) $app->id] ?? __('api.job_audit_unknown_candidate'))
+                    : UserDisplayName::resolve($applicant),
+                'bio' => $isBlindHiring ? '' : ($applicant->bio ?? ''),
                 'skills' => $applicant->skills ?? '',
                 'xp' => (int) ($applicant->xp ?? 0),
                 'level' => (int) ($applicant->level ?? 1),
                 'completed_exchanges' => $txCount,
                 'avg_review_rating' => $avgRating ? round((float) $avgRating, 1) : null,
                 'badges_earned' => $badgeCount,
-                'cover_message' => $app->message ?? '',
+                'cover_message' => $isBlindHiring ? '' : ($app->message ?? ''),
                 'match_percentage' => $app->match_percentage ?? null,
             ];
         }
@@ -2932,6 +2943,17 @@ class JobVacanciesController extends BaseApiController
         $page = $this->queryInt('page', 1, 1);
         $limit = $this->queryInt('limit', 50, 1, 200);
 
+        // F-102: under blind hiring every candidate is shown by the same
+        // "Candidate #N" label used on the applications list.
+        $isBlindHiring = (bool) ($vacancy->blind_hiring ?? false);
+        $blindLabels = $isBlindHiring ? JobVacancyService::blindCandidateLabels($tenantId, $id) : [];
+        $candidateLabel = function ($application) use ($isBlindHiring, $blindLabels): string {
+            if ($isBlindHiring) {
+                return $application ? ($blindLabels[(int) $application->id] ?? __('api.job_audit_unknown_candidate')) : __('api.job_audit_unknown_candidate');
+            }
+            return ($application && $application->applicant) ? UserDisplayName::resolve($application->applicant) : __('api.job_audit_unknown_candidate');
+        };
+
         // Combine multiple data sources into a unified timeline
         $events = collect();
 
@@ -2944,7 +2966,11 @@ class JobVacanciesController extends BaseApiController
 
         foreach ($appHistory as $h) {
             $actorName = $h->changer ? UserDisplayName::resolve($h->changer) : __('api.job_audit_actor_system');
-            $candidateName = ($h->application && $h->application->applicant) ? UserDisplayName::resolve($h->application->applicant) : __('api.job_audit_unknown_candidate');
+            $candidateName = $candidateLabel($h->application);
+            // A candidate's own action (withdraw, accept) would otherwise name them as the actor.
+            if ($isBlindHiring && $h->application && (int) $h->changed_by === (int) $h->application->user_id) {
+                $actorName = $candidateName;
+            }
             $events->push([
                 'type' => 'status_change',
                 'timestamp' => $h->changed_at,
@@ -2966,7 +2992,7 @@ class JobVacanciesController extends BaseApiController
             ->get();
 
         foreach ($interviews as $iv) {
-            $candidateName = ($iv->application && $iv->application->applicant) ? UserDisplayName::resolve($iv->application->applicant) : __('api.job_audit_unknown_candidate');
+            $candidateName = $candidateLabel($iv->application);
             $events->push([
                 'type' => 'interview',
                 'timestamp' => $iv->created_at,
@@ -2992,7 +3018,7 @@ class JobVacanciesController extends BaseApiController
             ->get();
 
         foreach ($offers as $offer) {
-            $candidateName = ($offer->application && $offer->application->applicant) ? UserDisplayName::resolve($offer->application->applicant) : __('api.job_audit_unknown_candidate');
+            $candidateName = $candidateLabel($offer->application);
             $salary = $offer->salary_offered ? '$' . number_format($offer->salary_offered, 0) : '';
             $events->push([
                 'type' => 'offer',

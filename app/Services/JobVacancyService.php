@@ -45,6 +45,41 @@ class JobVacancyService
         return $this->errors;
     }
 
+    /**
+     * F-100: validate a timebank vacancy's credit amount with the same rules a
+     * wallet transfer uses (positive, at most 2 decimal places, not above the
+     * tenant/platform transfer cap). Accepting the offer moves this amount from
+     * the employer to the candidate, so an unbounded value was a minting lever.
+     *
+     * Returns the normalised amount (null when no credits are set), or false
+     * after recording a validation error.
+     */
+    private function validateTimebankCredits(mixed $value, int $tenantId): float|null|false
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            $this->errors[] = ['code' => 'VALIDATION_INVALID_VALUE', 'message' => __('api.job_time_credits_invalid'), 'field' => 'time_credits'];
+            return false;
+        }
+
+        $amount = (float) $value;
+        if ($amount <= 0 || round($amount, 2) != $amount) {
+            $this->errors[] = ['code' => 'VALIDATION_INVALID_VALUE', 'message' => __('api.job_time_credits_invalid'), 'field' => 'time_credits'];
+            return false;
+        }
+
+        $max = app(WalletService::class)->maxTransferAmount($tenantId);
+        if ($amount > $max) {
+            $this->errors[] = ['code' => 'VALIDATION_INVALID_VALUE', 'message' => __('api.job_time_credits_max', ['max' => (int) $max]), 'field' => 'time_credits'];
+            return false;
+        }
+
+        return $amount;
+    }
+
     private function normalizeJsonList(mixed $value): ?array
     {
         if ($value === null || $value === '') {
@@ -735,6 +770,10 @@ class JobVacancyService
             return 0;
         }
 
+        if ($type === 'timebank' && $this->validateTimebankCredits($data['time_credits'] ?? null, (int) $tenantId) === false) {
+            return 0;
+        }
+
         $maxPostings = (int) JobConfigurationService::get(JobConfigurationService::CONFIG_MAX_POSTINGS_PER_USER, 20);
         if ($maxPostings > 0) {
             $activePostings = $this->vacancy->newQuery()
@@ -1008,6 +1047,16 @@ class JobVacancyService
         }
         if (array_key_exists('salary_currency', $updates) && trim((string) $updates['salary_currency']) === '') {
             $updates['salary_currency'] = JobConfigurationService::get(JobConfigurationService::CONFIG_DEFAULT_CURRENCY, 'EUR');
+        }
+        // F-100: re-validate credits whenever the amount or the type changes and
+        // the job is (or becomes) a timebank job — switching a volunteer job with
+        // a huge stored time_credits value to timebank must not bypass the cap.
+        if ((array_key_exists('time_credits', $updates) || array_key_exists('type', $updates))
+            && ($updates['type'] ?? $vacancy->type) === 'timebank') {
+            $credits = array_key_exists('time_credits', $updates) ? $updates['time_credits'] : $vacancy->time_credits;
+            if ($this->validateTimebankCredits($credits, (int) $vacancy->tenant_id) === false) {
+                return false;
+            }
         }
         foreach (['salary_min', 'salary_max', 'hours_per_week', 'time_credits'] as $numericField) {
             if (array_key_exists($numericField, $updates)) {
@@ -1397,6 +1446,53 @@ class JobVacancyService
     }
 
     /**
+     * Application fields that identify the candidate and are withheld from the
+     * employer while a vacancy uses blind hiring.
+     */
+    public const BLIND_HIRING_HIDDEN_APPLICATION_FIELDS = ['user_id', 'message', 'cv_path', 'cv_filename', 'cv_size'];
+
+    /**
+     * Blind-hiring "Candidate #N" labels for every application on a vacancy,
+     * keyed by application ID. This is the single numbering used by every
+     * employer-facing path (applications list, CSV export, audit trail,
+     * interview list, AI ranking) so the same candidate carries the same
+     * label everywhere: newest application first, ID as the tie-breaker.
+     *
+     * @return array<int, string>
+     */
+    public static function blindCandidateLabels(int $tenantId, int $vacancyId): array
+    {
+        $ids = JobApplication::where('tenant_id', $tenantId)
+            ->where('vacancy_id', $vacancyId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->pluck('id');
+
+        $labels = [];
+        $number = 0;
+        foreach ($ids as $id) {
+            $labels[(int) $id] = __('api.job_candidate_label', ['number' => ++$number]);
+        }
+
+        return $labels;
+    }
+
+    /**
+     * The anonymous applicant shape exposed under blind hiring.
+     *
+     * @return array{id: int, name: string, avatar_url: null, email: null}
+     */
+    public static function blindApplicantPlaceholder(string $label): array
+    {
+        return [
+            'id' => 0,
+            'name' => $label,
+            'avatar_url' => null,
+            'email' => null,
+        ];
+    }
+
+    /**
      * Get applications for a vacancy (owner/admin only).
      */
     public function getApplications(int $jobId, int $adminId): ?array
@@ -1421,7 +1517,9 @@ class JobVacancyService
             ->where('tenant_id', TenantContext::getId())
             ->where('vacancy_id', $jobId)
             ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->get();
+        $blindLabels = $isBlindHiring ? self::blindCandidateLabels((int) TenantContext::getId(), $jobId) : [];
 
         $applicationIds = $applications->pluck('id')->map(fn ($id) => (int) $id)->all();
         $interviewsByApplication = empty($applicationIds) ? collect() : DB::table('job_interviews')
@@ -1447,7 +1545,7 @@ class JobVacancyService
         $candidateNumber = 0;
 
         return $applications
-            ->map(function ($app) use ($isBlindHiring, &$candidateNumber, $interviewsByApplication, $offersByApplication) {
+            ->map(function ($app) use ($isBlindHiring, &$candidateNumber, $blindLabels, $interviewsByApplication, $offersByApplication) {
                 $data = $app->toArray();
                 $candidateNumber++;
 
@@ -1464,13 +1562,12 @@ class JobVacancyService
                 }
 
                 if ($isBlindHiring) {
-                    unset($data['user_id'], $data['message'], $data['cv_path'], $data['cv_filename'], $data['cv_size']);
-                    $data['applicant'] = [
-                        'id' => 0,
-                        'name' => __('api.job_candidate_label', ['number' => $candidateNumber]),
-                        'avatar_url' => null,
-                        'email' => null,
-                    ];
+                    foreach (self::BLIND_HIRING_HIDDEN_APPLICATION_FIELDS as $hiddenField) {
+                        unset($data[$hiddenField]);
+                    }
+                    $data['applicant'] = self::blindApplicantPlaceholder(
+                        $blindLabels[(int) $app->id] ?? __('api.job_candidate_label', ['number' => $candidateNumber])
+                    );
                 } else {
                     $data['applicant'] = [
                         'id' => (int) $app->user_id,
@@ -2798,6 +2895,11 @@ class JobVacancyService
             ->orderBy('created_at')
             ->get();
 
+        // F-102: blind hiring must hold on the export too — same "Candidate #N"
+        // label as the applications list, and no email.
+        $isBlindHiring = (bool) ($vacancy['blind_hiring'] ?? false);
+        $blindLabels = $isBlindHiring ? self::blindCandidateLabels((int) $tenantId, $jobId) : [];
+
         // CSV injection prevention helper
         $sanitize = function (mixed $v): mixed {
             return is_string($v) && preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
@@ -2807,8 +2909,8 @@ class JobVacancyService
         foreach ($apps as $app) {
             $rows[] = array_map($sanitize, [
                 $app->id,
-                UserDisplayName::resolve($app->applicant),
-                $app->applicant->email ?? '',
+                $isBlindHiring ? ($blindLabels[(int) $app->id] ?? '') : UserDisplayName::resolve($app->applicant),
+                $isBlindHiring ? '' : ($app->applicant->email ?? ''),
                 $app->status,
                 $app->stage ?? $app->status,
                 $app->created_at?->toDateTimeString() ?? '',

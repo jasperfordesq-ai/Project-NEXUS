@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Timebank job offers can no longer create time credits from nothing: the employer must have enough credits to pay when an offer is accepted, and job credit amounts are limited to the same cap and precision as wallet transfers (F-100).
+
+- Blind hiring now also hides candidates' names and emails in the applications CSV export, the job's activity history, the interview list and AI candidate ranking (F-102).
+
 - The old social feed endpoint now follows the same privacy rules as the main feed, so it no longer shows private or secret group posts to non-members, other members' private goals, draft or cancelled events, or hidden, draft or deleted posts (F-065).
 
 - The old like and "who liked this" endpoints now refuse items you are not allowed to see, such as posts in a private group you are not in (F-072).
