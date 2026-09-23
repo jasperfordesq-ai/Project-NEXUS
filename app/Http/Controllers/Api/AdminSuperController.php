@@ -231,6 +231,88 @@ class AdminSuperController extends BaseApiController
         ));
     }
 
+    /**
+     * Lock the destination tenant before user rows, matching hierarchy and
+     * passkey mutation lock order, then recheck every move boundary from fresh
+     * rows inside the transaction that performs the move.
+     *
+     * @return array{target?:array<string,mixed>,destination?:array<string,mixed>,error?:string}
+     */
+    private static function lockUserMoveBoundary(
+        int $actorId,
+        int $targetId,
+        int $expectedSourceTenantId,
+        int $destinationTenantId,
+        bool $requireHub
+    ): array {
+        $destination = DB::table('tenants')
+            ->where('id', $destinationTenantId)
+            ->lockForUpdate()
+            ->first();
+        if ($destination === null) {
+            return ['error' => 'destination_not_found'];
+        }
+
+        $security = self::lockManageableSecurityTarget($actorId, $targetId, $expectedSourceTenantId);
+        if (isset($security['error'])) {
+            return ['error' => $security['error']];
+        }
+
+        SuperPanelAccess::reset();
+        $freshAccess = SuperPanelAccess::getAccess($actorId);
+        if (empty($freshAccess['granted']) || !SuperPanelAccess::canAccessTenant($destinationTenantId)) {
+            return ['error' => 'destination_access_denied'];
+        }
+        if (empty($destination->is_active)) {
+            return ['error' => 'destination_inactive'];
+        }
+        if ($requireHub && empty($destination->allows_subtenants)) {
+            return ['error' => 'destination_not_hub'];
+        }
+
+        return [
+            'target' => $security['target'],
+            'destination' => (array) $destination,
+        ];
+    }
+
+    /** @return array{target:array<string,mixed>,destination:array<string,mixed>} */
+    private function requireLockedUserMoveBoundary(
+        int $actorId,
+        int $targetId,
+        int $expectedSourceTenantId,
+        int $destinationTenantId,
+        bool $requireHub,
+        string $destinationAccessMessage,
+        string $hubMessage
+    ): array {
+        $result = self::lockUserMoveBoundary(
+            $actorId,
+            $targetId,
+            $expectedSourceTenantId,
+            $destinationTenantId,
+            $requireHub
+        );
+        if (isset($result['target'], $result['destination'])) {
+            return [
+                'target' => $result['target'],
+                'destination' => $result['destination'],
+            ];
+        }
+
+        $error = $result['error'] ?? 'access_denied';
+        [$code, $message, $status] = match ($error) {
+            'destination_not_found' => [ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.target_tenant_not_found'), 404],
+            'destination_access_denied' => [ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, $destinationAccessMessage, 403],
+            'destination_inactive' => [ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 422],
+            'destination_not_hub' => [ApiErrorCodes::VALIDATION_ERROR, $hubMessage, 422],
+            'authority_denied' => [ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS, __('api.insufficient_permissions'), 403],
+            default => [ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_user_tenant'), 403],
+        };
+
+        throw new HttpResponseException($this->respondWithError($code, $message, null, $status));
+    }
+
     /** @param array{success:bool,moved:int,failed:array<string>,pinned?:array<string,int>,details?:array<string,mixed>} $moveResult */
     private function respondWithUserMoveFailure(array $moveResult): JsonResponse
     {
@@ -1405,12 +1487,18 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'new_tenant_id', 422);
         }
 
-        return DB::transaction(function () use ($userId, $id, $user, $newTenantId, $newTenant): JsonResponse {
-            $lockedUser = $this->requireLockedManageableSecurityTarget(
+        return DB::transaction(function () use ($userId, $id, $user, $newTenantId): JsonResponse {
+            $boundary = $this->requireLockedUserMoveBoundary(
                 $userId,
                 $id,
-                (int) $user['tenant_id']
+                (int) $user['tenant_id'],
+                $newTenantId,
+                false,
+                __('api.super_no_access_destination'),
+                __('api.target_must_be_hub')
             );
+            $lockedUser = $boundary['target'];
+            $lockedNewTenant = $boundary['destination'];
             $oldTenantId = (int) $lockedUser['tenant_id'];
 
             $moveResult = User::moveTenant($id, $newTenantId);
@@ -1419,7 +1507,7 @@ class AdminSuperController extends BaseApiController
             }
 
             // Revoke super admin if moving to a tenant without sub-tenant capability
-            if (!$newTenant['allows_subtenants']) {
+            if (!$lockedNewTenant['allows_subtenants']) {
                 DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$id]);
             }
 
@@ -1431,7 +1519,7 @@ class AdminSuperController extends BaseApiController
                 $userName,
                 ['tenant_id' => $oldTenantId],
                 ['tenant_id' => $newTenantId],
-                "Moved '{$userName}' to tenant '{$newTenant['name']}'"
+                "Moved '{$userName}' to tenant '{$lockedNewTenant['name']}'"
             );
 
             return $this->respondWithData([
@@ -1509,14 +1597,19 @@ class AdminSuperController extends BaseApiController
             $userId,
             $id,
             $user,
-            $targetTenantId,
-            $targetTenant
+            $targetTenantId
         ): JsonResponse {
-            $lockedUser = $this->requireLockedManageableSecurityTarget(
+            $boundary = $this->requireLockedUserMoveBoundary(
                 $userId,
                 $id,
-                (int) $user['tenant_id']
+                (int) $user['tenant_id'],
+                $targetTenantId,
+                true,
+                __('api.super_no_access_target'),
+                __('api.target_must_be_hub')
             );
+            $lockedUser = $boundary['target'];
+            $lockedTargetTenant = $boundary['destination'];
             $oldTenantId = (int) $lockedUser['tenant_id'];
 
             $moveResult = User::moveTenant($id, $targetTenantId);
@@ -1537,7 +1630,7 @@ class AdminSuperController extends BaseApiController
                 $userName,
                 ['tenant_id' => $oldTenantId, 'is_tenant_super_admin' => $lockedUser['is_tenant_super_admin'] ?? 0],
                 ['tenant_id' => $targetTenantId, 'is_tenant_super_admin' => 1],
-                "Moved '{$userName}' to '{$targetTenant['name']}' and granted Super Admin privileges"
+                "Moved '{$userName}' to '{$lockedTargetTenant['name']}' and granted Super Admin privileges"
             );
 
             return $this->respondWithData([
@@ -1645,17 +1738,19 @@ class AdminSuperController extends BaseApiController
                     $uid,
                     $validatedUser,
                     $targetTenantId,
-                    $targetTenant,
                     $grantSuperAdmin
                 ): array {
-                    $security = self::lockManageableSecurityTarget(
+                    $security = self::lockUserMoveBoundary(
                         $userId,
                         $uid,
-                        $validatedUser['tenant_id']
+                        $validatedUser['tenant_id'],
+                        $targetTenantId,
+                        $grantSuperAdmin
                     );
                     if (isset($security['error'])) {
                         return ['security_error' => $security['error']];
                     }
+                    $lockedDestination = $security['destination'];
 
                     $moveResult = User::moveTenant($uid, $targetTenantId);
                     if (!$moveResult['success']) {
@@ -1667,7 +1762,7 @@ class AdminSuperController extends BaseApiController
                             "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
                             [$uid]
                         );
-                    } elseif (!$targetTenant['allows_subtenants']) {
+                    } elseif (!$lockedDestination['allows_subtenants']) {
                         DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$uid]);
                     }
 
@@ -1675,10 +1770,16 @@ class AdminSuperController extends BaseApiController
                 });
 
                 if (isset($outcome['security_error'])) {
+                    $securityCode = match ($outcome['security_error']) {
+                        'authority_denied' => 'USER_AUTHORITY_DENIED',
+                        'destination_not_found' => 'TARGET_TENANT_NOT_FOUND',
+                        'destination_access_denied' => 'TARGET_TENANT_ACCESS_DENIED',
+                        'destination_inactive' => 'TARGET_TENANT_INACTIVE',
+                        'destination_not_hub' => 'TARGET_TENANT_NOT_HUB',
+                        default => 'USER_TENANT_ACCESS_DENIED',
+                    };
                     $errors[] = [
-                        'code' => $outcome['security_error'] === 'authority_denied'
-                            ? 'USER_AUTHORITY_DENIED'
-                            : 'USER_TENANT_ACCESS_DENIED',
+                        'code' => $securityCode,
                         'params' => ['user_id' => $uid],
                     ];
                     continue;

@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Super-panel user moves now lock and recheck the destination community before changing an account. A simultaneous hierarchy, active-state, or hub-capability change can no longer make a previously valid destination stale; hierarchy moves use the same tenant-before-user lock order (F-144).
+
 - The message inbox no longer returns other members' last-active time (F-088).
 
 - **BREAKING:** The old `GET /api/members`, `GET /api/listings` and `GET /api/groups` endpoints have been removed. They ignored member privacy settings and returned other members' email addresses, unapproved listings and private groups. No Project NEXUS app used them; use `/api/v2/users`, `/api/v2/listings` and `/api/v2/groups` (F-145).

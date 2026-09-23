@@ -933,7 +933,6 @@ class TenantHierarchyService
                     ->orderBy('id')
                     ->lockForUpdate()
                     ->get(['id']);
-                self::lockPasskeyRoutingBoundary($tenantId);
 
                 $lockedTenant = DB::table('tenants')->where('id', $tenantId)->first();
                 $lockedNewParent = DB::table('tenants')->where('id', $newParentId)->first();
@@ -950,13 +949,26 @@ class TenantHierarchyService
                     return ['success' => false, 'error' => __('api.super_move_into_descendant')];
                 }
 
+                // Lock every path-affected tenant before lockPasskeyRoutingBoundary()
+                // acquires user rows. A custom-domain descendant can sit outside
+                // the RP-inheritance subtree; locking it afterwards would invert
+                // the tenant -> user order used by passkey and user-move flows.
+                $oldPath = (string) $lockedTenant->path;
+                $descendants = DB::table('tenants')
+                    ->where('path', 'LIKE', $oldPath . '%')
+                    ->where('id', '!=', $tenantId)
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
+
+                self::lockPasskeyRoutingBoundary($tenantId);
+
                 $passkeyFailure = self::passkeyMoveBoundaryFailure($lockedTenant, $newParentId);
                 if ($passkeyFailure !== null) {
                     return $passkeyFailure;
                 }
 
                 $oldParentId = $lockedTenant->parent_id;
-                $oldPath = (string) $lockedTenant->path;
                 $newDepth = ((int) ($lockedNewParent->depth ?? 0)) + 1;
                 $newPath = (string) $lockedNewParent->path . $tenantId . '/';
 
@@ -968,13 +980,6 @@ class TenantHierarchyService
                 ]);
 
                 // Update materialized paths and depth for all descendants.
-                $descendants = DB::table('tenants')
-                    ->where('path', 'LIKE', $oldPath . '%')
-                    ->where('id', '!=', $tenantId)
-                    ->orderBy('id')
-                    ->lockForUpdate()
-                    ->get();
-
                 foreach ($descendants as $desc) {
                     $updatedPath = str_replace($oldPath, $newPath, (string) $desc->path);
                     $updatedDepth = substr_count(trim($updatedPath, '/'), '/');
