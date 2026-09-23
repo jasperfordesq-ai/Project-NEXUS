@@ -67,7 +67,8 @@
         "delivering": "Sending to partners",
         "degraded": "Deliveries failing",
         "withdrawn": "Withdrawn from partners"
-      }
+      },
+      "access_unavailable_hint": "You may not have permission to view federation status for this event."
     }
   }
 }

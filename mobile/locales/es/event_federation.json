@@ -67,7 +67,8 @@
         "delivering": "Envío a socios",
         "degraded": "Entregas fallidas",
         "withdrawn": "Retirado de socios"
-      }
+      },
+      "access_unavailable_hint": "Es posible que no tengas permiso para ver el estado de federación de este evento."
     }
   }
 }

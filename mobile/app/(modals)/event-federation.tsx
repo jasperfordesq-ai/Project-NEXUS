@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, type Href } from 'expo-router';
 import { Card } from 'heroui-native';
@@ -20,6 +20,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 function EventFederationScreen() {
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
@@ -30,25 +31,28 @@ function EventFederationScreen() {
 }
 
 function FederationWorkspace({ eventId }: { eventId: number }) {
-  const { t, i18n } = useTranslation(['event_federation', 'events', 'common']);
+  const { t } = useTranslation(['event_federation', 'events', 'common']);
+  const { fontScale } = useWindowDimensions();
+  const locale = dateLocale();
   const theme = useTheme();
   const primary = usePrimaryColor();
   const state = useApi(() => getEventFederationStatus(eventId), [eventId], { enabled: eventId > 0, clearOnRefusal: true });
   const summary = state.data?.data;
   const label = (key: string, values?: Record<string, string | number>) => t(`manage.federation.${key}`, values);
-  const number = (value: number) => value.toLocaleString(i18n.language);
+  const number = (value: number) => value.toLocaleString(locale);
   const date = (value: string | null) => {
     const parsed = value ? new Date(value) : null;
-    return parsed && Number.isFinite(parsed.getTime()) ? parsed.toLocaleString(i18n.language) : label('not_available');
+    return parsed && Number.isFinite(parsed.getTime()) ? parsed.toLocaleString(locale) : label('not_available');
   };
   const field = (name: string, value: string) => <View key={name} className="gap-1">
     <Text className="text-sm text-muted-foreground">{name}</Text><Text className="text-base text-foreground">{value}</Text>
   </View>;
   return <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
     <AppTopBar title={label('title')} backLabel={t('common:back')} fallbackHref={eventId > 0 ? { pathname: '/(modals)/event-manage', params: { id: String(eventId) } } as Href : '/(tabs)/events'} />
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }} refreshControl={eventId > 0 ? <RefreshControl refreshing={state.isLoading && Boolean(summary)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
+    {/* Remount text layout after a live font-scale change; keep request/data state above it. */}
+    <ScrollView key={fontScale} contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }} refreshControl={eventId > 0 ? <RefreshControl refreshing={state.isLoading && Boolean(summary)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
       {eventId <= 0 ? <EmptyState icon="warning-outline" title={t('events:detail.invalidId')} />
-        : isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={label('load_error_title')} subtitle={t('events:manage.access_denied_desc')} />
+        : isRefusalStatus(state.errorStatus) ? <EmptyState icon="lock-closed-outline" title={label('load_error_title')} subtitle={label('access_unavailable_hint')} />
           : !summary ? state.isLoading ? <LoadingSpinner /> : <EmptyState icon="warning-outline" title={label('load_error_title')} subtitle={label('load_error_description')} actionLabel={label('try_again')} onAction={state.refresh} />
             : <>
               <RefreshFailedNotice error={state.error} onRetry={state.refresh} isRetrying={state.isLoading} />

@@ -67,7 +67,8 @@
         "delivering": "Envio para parceiros",
         "degraded": "Falha nas entregas",
         "withdrawn": "Retirado dos parceiros"
-      }
+      },
+      "access_unavailable_hint": "Pode não ter permissão para ver o estado de federação deste evento."
     }
   }
 }

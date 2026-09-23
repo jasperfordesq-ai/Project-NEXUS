@@ -17,6 +17,7 @@ jest.mock('@/lib/api/eventFederation', () => ({ ...jest.requireActual('@/lib/api
 import Screen from './event-federation';
 import { getEventFederationStatus } from '@/lib/api/eventFederation';
 import { ApiResponseError } from '@/lib/api/client';
+import { setRegion } from '@/lib/utils/regionStore';
 const summary = {
   contract_version: 1, event_id: 7, federation_version: 1, visibility: 'none',
   configured_partners: 0, recipient_partners: 0, health: 'not_configured',
@@ -26,6 +27,29 @@ const summary = {
 beforeEach(() => {
   jest.clearAllMocks(); mockParams = { id: '7' }; mockUserId = 3; mockTenantId = 2;
   jest.mocked(getEventFederationStatus).mockReset().mockResolvedValue({ data: summary } as never);
+});
+afterEach(() => { jest.restoreAllMocks(); setRegion('IE'); });
+it('remeasures both directions of live text scaling without losing diagnostics or refetching', async () => {
+  const dimensions = jest.spyOn(require('react-native'), 'useWindowDimensions');
+  dimensions.mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 1 });
+  const view = render(<Screen />); await view.findByText('No partners set up');
+  const original = view.getByText('No partners set up');
+  dimensions.mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 2 });
+  view.rerender(<Screen />);
+  const enlarged = view.getByText('No partners set up');
+  expect(enlarged).not.toBe(original);
+  expect(getEventFederationStatus).toHaveBeenCalledTimes(1);
+  dimensions.mockReturnValue({ width: 360, height: 800, scale: 1, fontScale: 1 });
+  view.rerender(<Screen />);
+  expect(view.getByText('No partners set up')).not.toBe(enlarged);
+  expect(getEventFederationStatus).toHaveBeenCalledTimes(1);
+});
+it('formats the update date for the active community region', async () => {
+  setRegion('GB');
+  const stamp = '2026-09-23T02:02:00+00:00';
+  jest.mocked(getEventFederationStatus).mockResolvedValue({ data: { ...summary, generated_at: stamp } } as never);
+  const view = render(<Screen />);
+  await view.findByText(`Updated ${new Date(stamp).toLocaleString('en-GB')}`);
 });
 it.each([undefined, '0', '1e2', '-1', '9007199254740992', ['7']])('does not read invalid link %j', id => {
   mockParams = { id }; const view = render(<Screen />);
@@ -44,6 +68,8 @@ it.each([401, 403, 404])('removes retained delivery data on refusal %s', async s
   await act(async () => view.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
   expect(view.queryByText('No partners set up')).toBeNull();
   expect(view.getByText('Unable to load federation status')).toBeTruthy();
+  expect(view.getByText('You may not have permission to view federation status for this event.')).toBeTruthy();
+  expect(view.queryByText('Your current event role does not include access to any implemented management tools.')).toBeNull();
 });
 it('keeps the previous diagnostics with a visible stale notice during a transient failure', async () => {
   const view = render(<Screen />); await view.findByText('No partners set up');

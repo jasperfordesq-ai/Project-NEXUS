@@ -67,7 +67,8 @@
         "delivering": "A sheoladh chuig comhpháirtithe",
         "degraded": "Seachadtaí ag teip",
         "withdrawn": "Tarraingthe siar ó chomhpháirtithe"
-      }
+      },
+      "access_unavailable_hint": "Seans nach bhfuil cead agat stádas cónaidhme an imeachta seo a fheiceáil."
     }
   }
 }

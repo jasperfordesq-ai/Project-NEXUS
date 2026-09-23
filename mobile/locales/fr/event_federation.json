@@ -67,7 +67,8 @@
         "delivering": "Envoi aux partenaires",
         "degraded": "Livraisons échouées",
         "withdrawn": "Retiré des partenaires"
-      }
+      },
+      "access_unavailable_hint": "Vous ne disposez peut-être pas des autorisations nécessaires pour consulter le statut de fédération de cet événement."
     }
   }
 }

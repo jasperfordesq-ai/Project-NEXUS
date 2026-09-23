@@ -67,7 +67,8 @@
         "delivering": "Versand an Partner",
         "degraded": "Lieferungen scheitern",
         "withdrawn": "Von Partnern zurückgezogen"
-      }
+      },
+      "access_unavailable_hint": "Möglicherweise hast du keine Berechtigung, den Föderationsstatus dieser Veranstaltung anzuzeigen."
     }
   }
 }
