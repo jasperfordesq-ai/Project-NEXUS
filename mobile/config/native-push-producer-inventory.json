@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 231,
+    "producer_count": 230,
     "producers": [
         {
             "id": "app/Console/Commands/ProcessSavedSearchAlerts.php:186:NotificationDispatcher::fanOutPush",
@@ -2838,22 +2838,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/UserService.php:502:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/UserService.php:651:NotificationDispatcher::fanOutPush",
             "file": "app/Services/UserService.php",
-            "line": 502,
-            "transport": "NotificationDispatcher::fanOutPush",
-            "role": "producer",
-            "recipient_expression": "(int) $userId",
-            "title_expression": null,
-            "body_expression": "__('svc_notifications.user_security.email_changed')",
-            "type_expression": "email_changed",
-            "link_expression": "/settings/security",
-            "data_expression": null
-        },
-        {
-            "id": "app/Services/UserService.php:681:NotificationDispatcher::fanOutPush",
-            "file": "app/Services/UserService.php",
-            "line": 681,
+            "line": 651,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user->id",

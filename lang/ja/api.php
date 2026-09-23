@@ -103,6 +103,7 @@ return [
     'valid_email_required' => '有効な電子メールが必要です',
     'invalid_email' => '無効な電子メール',
     'email_already_exists' => 'このメールアドレスを持つユーザーはすでに存在します',
+    'email_change_not_available' => 'このフォームからメールアドレスを変更することはできません。メールアドレスは変更されていません。',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'パスワードには少なくとも 1 つの大文字が含まれている必要があります',
     'password_lowercase' => 'パスワードには少なくとも 1 つの小文字が含まれている必要があります',

@@ -103,6 +103,7 @@ return [
     'valid_email_required' => 'E-mail válido é obrigatório',
     'invalid_email' => 'E-mail inválido',
     'email_already_exists' => 'Já existe um usuário com este e-mail',
+    'email_change_not_available' => 'O endereço de e-mail não pode ser alterado neste formulário. O seu e-mail não foi alterado.',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'A senha deve conter pelo menos uma letra maiúscula',
     'password_lowercase' => 'A senha deve conter pelo menos uma letra minúscula',

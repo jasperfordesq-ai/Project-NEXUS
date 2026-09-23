@@ -103,6 +103,7 @@ return [
     'valid_email_required' => 'Een geldig e-mailadres is vereist',
     'invalid_email' => 'Ongeldig e-mailadres',
     'email_already_exists' => 'Er bestaat al een gebruiker met dit e-mailadres',
+    'email_change_not_available' => 'Het e-mailadres kan niet via dit formulier worden gewijzigd. Uw e-mailadres is niet gewijzigd.',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'Het wachtwoord moet minimaal één hoofdletter bevatten',
     'password_lowercase' => 'Het wachtwoord moet minimaal één kleine letter bevatten',

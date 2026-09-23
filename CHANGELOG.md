@@ -79,6 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Member search results now honour the member's own "show my profile in member search results" setting everywhere it is offered. Global search, search autocomplete and the AI assistant's member lookups previously ignored it and returned members who had switched it off, together with their name, avatar, location, skills and profile link; the member directory, Explore and member ranking always honoured it. The rule now lives in one place (`App\Support\Members\MemberDirectoryVisibility`) so a new discovery surface cannot miss it, and it covers the tenant's own directory listing requirements as well. Search-engine results are revalidated against the database, so a member who changes the setting takes effect immediately rather than at the next index sync.
 
+- The profile update endpoint (`PUT /api/v2/users/me`) no longer changes a member's email address. It accepted a new address with no password, sent no confirmation to that address, and left the account marked as verified, so anyone holding a signed-in session could move the account to another mailbox and then reset its password, and a member could claim somebody else's address in a way that Google sign-in trusted. A request carrying a different address is now refused with `EMAIL_CHANGE_NOT_AVAILABLE` and nothing is saved; sending back the current address, as clients that post the whole profile do, still works. No app offered email changes through this route, so nothing members use has changed.
+
 ## [2.1.0] - 2026-09-22
 
 ### Security

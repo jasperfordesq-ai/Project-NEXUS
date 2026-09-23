@@ -103,6 +103,7 @@ return [
     'valid_email_required' => 'مطلوب بريد إلكتروني صالح',
     'invalid_email' => 'بريد إلكتروني غير صالح',
     'email_already_exists' => 'يوجد مستخدم لديه هذا البريد الإلكتروني بالفعل',
+    'email_change_not_available' => 'لا يمكن تغيير عنوان البريد الإلكتروني من هذا النموذج. لم يتم تغيير بريدك الإلكتروني.',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل',
     'password_lowercase' => 'يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل',

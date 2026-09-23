@@ -222,7 +222,7 @@ class UserService
         $user = User::withoutGlobalScope(TenantScope::class)->findOrFail($id);
 
         $allowed = [
-            'first_name', 'last_name', 'email', 'bio', 'tagline', 'location', 'latitude', 'longitude',
+            'first_name', 'last_name', 'bio', 'tagline', 'location', 'latitude', 'longitude',
             'phone', 'avatar_url', 'organization_name', 'profile_type', 'date_of_birth',
         ];
 
@@ -379,7 +379,7 @@ class UserService
      * Update a user profile (alias for update()).
      *
      * Validates data first via validateProfileUpdate(), then applies changes.
-     * If the email address is changed, sends a security notification to the OLD email.
+     * The account's email address is never changed here — see the F-037 note below.
      *
      * @return bool True on success, false on failure (check getErrors()).
      */
@@ -400,25 +400,36 @@ class UserService
             }
         }
 
-        if (!empty($data) && !self::validateProfileUpdate($data)) {
-            return false;
+        // F-037 (E-024): this endpoint never changes the account's email address.
+        // It used to, with no password, no confirmation sent to the new address
+        // and no reset of email_verified_at — so a borrowed session could move
+        // the account to another mailbox and finish the takeover with a normal
+        // password reset, and a member could claim someone else's address while
+        // staying "verified" (which OAuth auto-link trusts). No first-party client
+        // sends a new address here. Echoing the CURRENT address back is allowed,
+        // because clients that post the whole profile do exactly that. A real
+        // change needs its own flow: re-authentication plus a link confirmed from
+        // the new mailbox. SelfServiceEmailChangeTest pins this.
+        if (array_key_exists('email', $data)) {
+            $requested = is_string($data['email']) ? mb_strtolower(trim($data['email'])) : '';
+            unset($data['email']);
+            if ($requested !== '') {
+                $current = (string) User::withoutGlobalScope(TenantScope::class)
+                    ->whereKey($userId)
+                    ->value('email');
+                if ($requested !== mb_strtolower(trim($current))) {
+                    self::$errors = [[
+                        'code' => 'EMAIL_CHANGE_NOT_AVAILABLE',
+                        'message' => __('api.email_change_not_available'),
+                        'field' => 'email',
+                    ]];
+                    return false;
+                }
+            }
         }
 
-        // Capture old email + preferred language BEFORE the update for security notification
-        $oldEmail = null;
-        $userLocale = null;
-        $userTenantId = null;
-        if (isset($data['email']) && $data['email'] !== '') {
-            try {
-                $currentUser = User::query()->find($userId);
-                if ($currentUser) {
-                    $oldEmail   = $currentUser->email;
-                    $userLocale = $currentUser->preferred_language ?? null;
-                    $userTenantId = (int) ($currentUser->tenant_id ?? TenantContext::getId());
-                }
-            } catch (\Throwable $e) {
-                Log::warning('Failed to fetch old email for change notification', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            }
+        if (!empty($data) && !self::validateProfileUpdate($data)) {
+            return false;
         }
 
         // Snapshot BEFORE so we can diff to the set of actually-changed fields.
@@ -483,47 +494,6 @@ class UserService
                     'error'   => $e->getMessage(),
                 ]);
             }
-        }
-
-        // Security notification: bell + email to OLD address when email is changed
-        if ($oldEmail && isset($data['email']) && $oldEmail !== $data['email']) {
-            $notificationTenantId = (int) ($userTenantId ?? $updated->tenant_id ?? TenantContext::getId());
-            TenantContext::runForTenant($notificationTenantId, function () use ($userId, $oldEmail, $updated, $userLocale, $notificationTenantId): void {
-                LocaleContext::withLocale($userLocale, function () use ($userId, $oldEmail, $updated, $notificationTenantId) {
-                try {
-                    Notification::createNotification(
-                        $userId,
-                        __('svc_notifications.user_security.email_changed'),
-                        '/settings/security',
-                        'email_changed',
-                        false,
-                        $notificationTenantId
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'email_changed', __('svc_notifications.user_security.email_changed'), '/settings/security');
-                } catch (\Throwable $e) {
-                    Log::warning('Failed to create email change notification', ['user_id' => $userId, 'error' => $e->getMessage()]);
-                }
-
-                try {
-                    $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
-
-                    $html = EmailTemplateBuilder::make()
-                        ->theme('warning')
-                        ->title(__('emails.security.email_changed_title'))
-                        ->previewText(__('emails.security.email_changed_preview'))
-                        ->paragraph(__('emails.security.email_changed_body', ['community' => htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8')]))
-                        ->highlight(__('emails.security.email_changed_warning'))
-                        ->render();
-
-                    $subject = __('emails.security.email_changed_subject', ['community' => $tenantName]);
-                    if (!EmailDispatchService::sendRaw($oldEmail, $subject, $html, null, null, null, 'security_alert', ['tenant_id' => $notificationTenantId])) {
-                        Log::warning('Email change notification send returned false', ['user_id' => $userId]);
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning('Failed to send email change notification to old address', ['user_id' => $userId, 'error' => $e->getMessage()]);
-                }
-                });
-            });
         }
 
         return true;

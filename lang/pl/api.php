@@ -103,6 +103,7 @@ return [
     'valid_email_required' => 'Wymagany jest prawidłowy adres e-mail',
     'invalid_email' => 'Nieprawidłowy adres e-mail',
     'email_already_exists' => 'Użytkownik z tym adresem e-mail już istnieje',
+    'email_change_not_available' => 'Adresu e-mail nie można zmienić za pomocą tego formularza. Twój adres e-mail nie został zmieniony.',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'Hasło musi zawierać co najmniej jedną wielką literę',
     'password_lowercase' => 'Hasło musi zawierać przynajmniej jedną małą literę',

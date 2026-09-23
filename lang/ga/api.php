@@ -103,6 +103,7 @@ return [
     'valid_email_required' => 'Tá ríomhphost bailí ag teastáil',
     'invalid_email' => 'Ríomhphost neamhbhailí',
     'email_already_exists' => 'Tá úsáideoir leis an ríomhphost seo ann cheana',
+    'email_change_not_available' => 'Ní féidir an seoladh ríomhphoist a athrú ón bhfoirm seo. Níor athraíodh do sheoladh ríomhphoist.',
     'password_min_length' => 'Password must be at least 8 characters',
     'password_uppercase' => 'Ní mór litir chás uachtair amháin ar a laghad a bheith sa phasfhocal',
     'password_lowercase' => 'Ní mór litir bheag amháin ar a laghad a bheith sa phasfhocal',

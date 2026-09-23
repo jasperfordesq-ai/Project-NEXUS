@@ -149,6 +149,7 @@ return [
     'valid_email_required'         => 'Valid email is required',
     'invalid_email'                => 'Invalid email',
     'email_already_exists'         => 'A user with this email already exists',
+    'email_change_not_available' => 'Email address changes are not available from this form. Your email address was not changed.',
     'password_min_length'          => 'Password must be at least 12 characters',
     'password_uppercase'           => 'Password must contain at least one uppercase letter',
     'password_lowercase'           => 'Password must contain at least one lowercase letter',
