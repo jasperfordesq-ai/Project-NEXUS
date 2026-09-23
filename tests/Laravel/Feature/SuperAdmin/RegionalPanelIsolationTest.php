@@ -247,6 +247,273 @@ class RegionalPanelIsolationTest extends TestCase
         );
     }
 
+    public function test_a_regional_admin_cannot_create_a_platform_super_admin_in_its_branch(): void
+    {
+        $email = 'regional-platform-' . uniqid('', false) . '@example.test';
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/users', [
+            'tenant_id' => $this->childId,
+            'email' => $email,
+            'first_name' => 'Platform',
+            'last_name' => 'Escalation',
+            'password' => 'TestPassword123!',
+            'role' => 'super_admin',
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('users', ['email' => $email]);
+        $this->assertDatabaseMissing('super_admin_audit_log', [
+            'action_type' => 'user_created',
+            'target_name' => 'Platform Escalation',
+        ]);
+    }
+
+    public function test_a_regional_admin_can_still_create_a_tenant_admin_in_its_branch(): void
+    {
+        $email = 'regional-tenant-admin-' . uniqid('', false) . '@example.test';
+        $this->actAsRegional();
+
+        $response = $this->apiPost('/v2/admin/super/users', [
+            'tenant_id' => $this->childId,
+            'email' => $email,
+            'first_name' => 'Tenant',
+            'last_name' => 'Administrator',
+            'password' => 'TestPassword123!',
+            'role' => 'admin',
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $response->json('data.user_id'),
+            'tenant_id' => $this->childId,
+            'email' => $email,
+            'role' => 'admin',
+            'is_super_admin' => 0,
+        ]);
+    }
+
+    public function test_a_regional_admin_cannot_promote_itself_through_generic_user_update(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$this->regionalAdmin->id}", [
+            'role' => 'super_admin',
+        ])->assertStatus(422);
+
+        $this->assertSame(
+            'admin',
+            DB::table('users')->where('id', $this->regionalAdmin->id)->value('role')
+        );
+
+        SuperPanelAccess::reset();
+        $this->apiPost('/v2/admin/super/users/1/grant-global-super-admin', [])
+            ->assertStatus(403);
+    }
+
+    public function test_a_regional_admin_cannot_promote_another_branch_user_to_platform_super_admin(): void
+    {
+        $member = User::factory()->forTenant($this->childId)->create([
+            'role' => 'member',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$member->id}", [
+            'role' => 'super_admin',
+        ])->assertStatus(422);
+
+        $this->assertSame(
+            'member',
+            DB::table('users')->where('id', $member->id)->value('role')
+        );
+    }
+
+    public function test_a_regional_admin_cannot_change_a_platform_admin_email(): void
+    {
+        $platformAdmin = User::factory()->forTenant($this->childId)->admin()->create([
+            'email' => 'platform-original-' . uniqid('', false) . '@example.test',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $platformAdmin->id)->update(['is_super_admin' => 1]);
+        $originalEmail = (string) DB::table('users')->where('id', $platformAdmin->id)->value('email');
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$platformAdmin->id}", [
+            'email' => 'attacker-controlled-' . uniqid('', false) . '@example.test',
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            $originalEmail,
+            DB::table('users')->where('id', $platformAdmin->id)->value('email')
+        );
+    }
+
+    public function test_a_regional_admin_cannot_edit_a_higher_tier_profile(): void
+    {
+        $platformAdmin = User::factory()->forTenant($this->childId)->admin()->create([
+            'first_name' => 'Protected',
+            'last_name' => 'Platform',
+            'location' => 'Original location',
+            'phone' => '+1 555 123 4567',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $platformAdmin->id)->update(['is_super_admin' => 1]);
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$platformAdmin->id}", [
+            'first_name' => 'Altered',
+            'location' => 'Attacker supplied',
+            'phone' => '+1 555 999 9999',
+        ])->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $platformAdmin->id,
+            'first_name' => 'Protected',
+            'location' => 'Original location',
+            'phone' => '+1 555 123 4567',
+        ]);
+    }
+
+    public function test_a_regional_admin_cannot_change_security_fields_for_any_platform_authority_encoding(): void
+    {
+        $targets = [
+            ['role' => 'super_admin'],
+            ['role' => 'admin', 'is_super_admin' => 1],
+            ['role' => 'god'],
+            ['role' => 'admin', 'is_god' => 1],
+        ];
+        $users = [];
+        foreach ($targets as $index => $authority) {
+            $user = User::factory()->forTenant($this->childId)->admin()->create([
+                'email' => "platform-encoding-{$index}-" . uniqid('', false) . '@example.test',
+                'status' => 'active',
+                'is_approved' => true,
+            ]);
+            DB::table('users')->where('id', $user->id)->update($authority);
+            $users[] = $user->id;
+        }
+        $this->actAsRegional();
+
+        foreach ($users as $index => $userId) {
+            $originalEmail = (string) DB::table('users')->where('id', $userId)->value('email');
+            $this->apiPut("/v2/admin/super/users/{$userId}", [
+                'email' => "blocked-encoding-{$index}-" . uniqid('', false) . '@example.test',
+            ])->assertStatus(403);
+
+            $this->assertSame(
+                $originalEmail,
+                DB::table('users')->where('id', $userId)->value('email')
+            );
+        }
+    }
+
+    public function test_a_regional_admin_cannot_change_its_own_role_even_to_an_assignable_role(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$this->regionalAdmin->id}", [
+            'role' => 'member',
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            'admin',
+            DB::table('users')->where('id', $this->regionalAdmin->id)->value('role')
+        );
+    }
+
+    public function test_even_a_god_must_use_the_dedicated_platform_grant_endpoint(): void
+    {
+        $god = User::factory()->forTenant($this->hubId)->admin()->create([
+            'role' => 'god',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $god->id)->update(['is_god' => 1]);
+        $god->refresh();
+        SuperPanelAccess::reset();
+        $this->withTenant($this->hubId);
+        Sanctum::actingAs($god);
+        $email = 'god-generic-platform-' . uniqid('', false) . '@example.test';
+
+        $this->apiPost('/v2/admin/super/users', [
+            'tenant_id' => $this->childId,
+            'email' => $email,
+            'first_name' => 'Generic',
+            'last_name' => 'Platform',
+            'password' => 'TestPassword123!',
+            'role' => 'super_admin',
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('users', ['email' => $email]);
+    }
+
+    public function test_a_god_can_update_a_lower_platform_target_when_its_role_is_unchanged(): void
+    {
+        $god = User::factory()->forTenant($this->hubId)->admin()->create([
+            'role' => 'god',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $god->id)->update(['is_god' => 1]);
+        $god->refresh();
+        $target = User::factory()->forTenant($this->childId)->admin()->create([
+            'role' => 'super_admin',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $newEmail = 'god-updated-platform-' . uniqid('', false) . '@example.test';
+        SuperPanelAccess::reset();
+        $this->withTenant($this->hubId);
+        Sanctum::actingAs($god);
+
+        $this->apiPut("/v2/admin/super/users/{$target->id}", [
+            'email' => $newEmail,
+            'role' => 'super_admin',
+        ])->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $target->id,
+            'email' => $newEmail,
+            'role' => 'super_admin',
+        ]);
+    }
+
+    public function test_a_regional_admin_can_update_a_lower_tier_user_and_the_change_is_audited(): void
+    {
+        $member = User::factory()->forTenant($this->childId)->create([
+            'first_name' => 'Lower',
+            'last_name' => 'Member',
+            'role' => 'member',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $newEmail = 'lower-updated-' . uniqid('', false) . '@example.test';
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$member->id}", [
+            'email' => $newEmail,
+            'role' => 'admin',
+        ])->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $member->id,
+            'email' => $newEmail,
+            'role' => 'admin',
+        ]);
+
+        $audit = DB::table('super_admin_audit_log')
+            ->where('action_type', 'user_updated')
+            ->where('target_id', $member->id)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($audit);
+        $this->assertSame($newEmail, json_decode((string) $audit->new_values, true)['email'] ?? null);
+        $this->assertSame('admin', json_decode((string) $audit->new_values, true)['role'] ?? null);
+    }
+
     public function test_a_bulk_update_rejects_a_sibling_id_mixed_in_with_its_own(): void
     {
         // 🔴 The interesting case: a valid id alongside one from another branch.

@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
 use App\Core\Validator;
@@ -112,6 +113,57 @@ class AdminSuperController extends BaseApiController
                 )
             );
         }
+    }
+
+    /**
+     * Platform roles are assigned only through the dedicated god-only grant
+     * endpoint. Generic user editing may still assign tenant-level roles.
+     *
+     * @return array<int,string>
+     */
+    private static function assignableUserRoles(): array
+    {
+        return ['member', 'admin', 'broker'];
+    }
+
+    /**
+     * A caller may change another account's identity/security fields only when
+     * the caller has a strictly higher security tier. God-level callers retain
+     * the existing ability to manage other god-level accounts.
+     *
+     * @param array<string,mixed> $actor
+     * @param array<string,mixed> $target
+     */
+    private static function canManageSecurityTarget(array $actor, array $target): bool
+    {
+        $actorTier = self::securityTier($actor);
+        $targetTier = self::securityTier($target);
+
+        return $actorTier >= 4 || $actorTier > $targetTier;
+    }
+
+    /** @param array<string,mixed> $user */
+    private static function securityTier(array $user): int
+    {
+        $role = (string) ($user['role'] ?? 'member');
+        if ($role === 'god' || !empty($user['is_god'])) {
+            return 4;
+        }
+        if ($role === 'super_admin' || !empty($user['is_super_admin'])) {
+            return 3;
+        }
+        if (
+            in_array($role, ['admin', 'tenant_admin'], true)
+            || !empty($user['is_admin'])
+            || !empty($user['is_tenant_super_admin'])
+        ) {
+            return 2;
+        }
+        if (in_array($role, ['broker', 'coordinator'], true)) {
+            return 1;
+        }
+
+        return 0;
     }
 
     /** @param array{success:bool,moved:int,failed:array<string>,pinned?:array<string,int>,details?:array<string,mixed>} $moveResult */
@@ -781,7 +833,7 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_user_create_required_fields'), null, 422);
         }
 
-        $allowedRoles = ['member', 'admin', 'broker', 'super_admin'];
+        $allowedRoles = self::assignableUserRoles();
         if (!in_array($role, $allowedRoles, true)) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.invalid_role_allowed', ['roles' => implode(', ', $allowedRoles)]), 'role', 422);
         }
@@ -818,7 +870,12 @@ class AdminSuperController extends BaseApiController
                 $newUserId,
                 "{$firstName} {$lastName}",
                 null,
-                ['tenant_id' => $tenantId, 'email' => $email, 'role' => $role],
+                [
+                    'tenant_id' => $tenantId,
+                    'email' => $email,
+                    'role' => $role,
+                    'is_tenant_super_admin' => $options['is_tenant_super_admin'],
+                ],
                 "Created user '{$firstName} {$lastName}' in tenant ID {$tenantId}"
             );
 
@@ -831,7 +888,7 @@ class AdminSuperController extends BaseApiController
     /** PUT /api/v2/super-admin/users/{id} */
     public function userUpdate(int $id): JsonResponse
     {
-        $this->requireSuperAdmin();
+        $actorId = $this->requireSuperAdmin();
 
         // Super-admin: cross-tenant by design — tenant scope enforced via SuperPanelAccess::canAccessTenant() below
         $user = User::findById($id, false);
@@ -857,9 +914,33 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_user_edit_required_fields'), null, 422);
         }
 
-        $allowedRoles = ['member', 'admin', 'broker', 'super_admin'];
-        if (!in_array($role, $allowedRoles, true)) {
+        $allowedRoles = self::assignableUserRoles();
+        $roleChanged = (string) $role !== (string) $user['role'];
+        if ($roleChanged && !in_array($role, $allowedRoles, true)) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.invalid_role_allowed', ['roles' => implode(', ', $allowedRoles)]), 'role', 422);
+        }
+
+        if ($roleChanged && $id === $actorId) {
+            return $this->respondWithError(
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                __('api.insufficient_permissions'),
+                'role',
+                403
+            );
+        }
+
+        $emailChanged = $email !== (string) $user['email'];
+        $profileChanged = $firstName !== (string) $user['first_name']
+            || $lastName !== (string) ($user['last_name'] ?? '')
+            || ($location ?: null) !== ($user['location'] ?? null)
+            || ($phone ?: null) !== ($user['phone'] ?? null);
+        if (($emailChanged || $roleChanged || $profileChanged) && !self::canManageSecurityTarget(User::findById($actorId, true) ?? [], $user)) {
+            return $this->respondWithError(
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                __('api.insufficient_permissions'),
+                null,
+                403
+            );
         }
 
         // Check email uniqueness if changed
@@ -870,10 +951,120 @@ class AdminSuperController extends BaseApiController
             }
         }
 
-        DB::update(
-            "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, location = ?, phone = ?, updated_at = NOW() WHERE id = ?",
-            [$firstName, $lastName, $email, $role, $location ?: null, $phone ?: null, $id]
-        );
+        DB::transaction(function () use (
+            $actorId,
+            $id,
+            $user,
+            $firstName,
+            $lastName,
+            $email,
+            $role,
+            $location,
+            $phone
+        ): void {
+            $ids = array_values(array_unique([$actorId, $id]));
+            sort($ids, SORT_NUMERIC);
+
+            /** @var array<int,array<string,mixed>> $locked */
+            $locked = DB::table('users')
+                ->whereIn('id', $ids)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->mapWithKeys(static fn ($row): array => [(int) $row->id => (array) $row])
+                ->all();
+
+            $actor = $locked[$actorId] ?? null;
+            $target = $locked[$id] ?? null;
+            SuperPanelAccess::reset();
+            $freshAccess = SuperPanelAccess::getAccess($actorId);
+            if (
+                !is_array($actor)
+                || !is_array($target)
+                || (int) ($target['tenant_id'] ?? 0) !== (int) $user['tenant_id']
+                || empty($freshAccess['granted'])
+                || !SuperPanelAccess::canAccessTenant((int) $target['tenant_id'])
+            ) {
+                throw new HttpResponseException($this->respondWithError(
+                    ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED,
+                    __('api.super_no_access_user_tenant'),
+                    null,
+                    403
+                ));
+            }
+
+            $lockedEmailChanged = $email !== (string) $target['email'];
+            $lockedRoleChanged = (string) $role !== (string) $target['role'];
+            $newValues = [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email,
+                'role' => $role,
+                'location' => $location ?: null,
+                'phone' => $phone ?: null,
+            ];
+            $oldValues = [];
+            $changedValues = [];
+            foreach ($newValues as $field => $newValue) {
+                $oldValue = $target[$field] ?? null;
+                if ($oldValue !== $newValue) {
+                    $oldValues[$field] = $oldValue;
+                    $changedValues[$field] = $newValue;
+                }
+            }
+            if ($lockedRoleChanged && $id === $actorId) {
+                throw new HttpResponseException($this->respondWithError(
+                    ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                    __('api.insufficient_permissions'),
+                    'role',
+                    403
+                ));
+            }
+            if (!empty($changedValues) && !self::canManageSecurityTarget($actor, $target)) {
+                throw new HttpResponseException($this->respondWithError(
+                    ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                    __('api.insufficient_permissions'),
+                    null,
+                    403
+                ));
+            }
+
+            if ($lockedEmailChanged) {
+                $emailInUse = DB::table('users')
+                    ->where('email', $email)
+                    ->where('id', '<>', $id)
+                    ->exists();
+                if ($emailInUse) {
+                    throw new HttpResponseException($this->respondWithError(
+                        ApiErrorCodes::VALIDATION_ERROR,
+                        __('api.email_already_exists'),
+                        'email',
+                        422
+                    ));
+                }
+            }
+
+            if (empty($changedValues)) {
+                return;
+            }
+
+            DB::update(
+                "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, location = ?, phone = ?, updated_at = NOW() WHERE id = ?",
+                [$firstName, $lastName, $email, $role, $location ?: null, $phone ?: null, $id]
+            );
+
+            if (!$this->superAdminAuditService->log(
+                'user_updated',
+                'user',
+                $id,
+                UserDisplayName::resolve($target),
+                $oldValues ?: null,
+                $changedValues ?: null,
+                "Updated user #{$id}"
+            )) {
+                throw new \RuntimeException("Failed to audit super-panel user update #{$id}");
+            }
+        });
 
         return $this->respondWithData(['updated' => true, 'user_id' => $id]);
     }

@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Regional network administrators can no longer turn themselves or another branch account into a platform administrator through the generic user create/edit API, or alter accounts at their own or a higher security tier. Platform authority remains available only through the dedicated god-only grant route. User changes are re-authorized under database locks and now write an atomic old/new audit record (F-053).
+
 - Bookmarks and saved collections no longer reveal an item the viewer is not allowed to see. Saving or bookmarking now requires that the member can see the item (private-group posts, draft or unapproved listings and jobs, unpublished pages and events outside their audience are refused), and bookmark titles and collection previews are withheld for anything the viewer cannot see — including items in another member's public collection (F-066).
 
 - Membership badges no longer disclose another member's dues amounts, currencies, due dates, payment dates or prior-year history. The member and authorized club administrators retain full dues detail, while other signed-in members receive only the current status needed to render the badge (F-050).
