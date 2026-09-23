@@ -55,6 +55,58 @@ class CaringHourTransferServiceTest extends TestCase
         // Instantiate with a null FederationPeerService stub so no peers are
         // returned — all tests use same-platform (local tenant) delivery by default.
         $this->svc = $this->makeService(peers: null);
+
+        $this->makeDestinationAPartner();
+    }
+
+    /**
+     * Same-platform transfers require the destination to have Caring
+     * Community enabled and an active partnership with transactions allowed
+     * (F-132). Rolled back with the test transaction.
+     */
+    private function makeDestinationAPartner(): void
+    {
+        $tenant = DB::table('tenants')->where('id', self::DST_TENANT_ID)->first();
+        if ($tenant === null) {
+            DB::table('tenants')->insert([
+                'id'         => self::DST_TENANT_ID,
+                'name'       => 'Transfer Destination 999',
+                'slug'       => self::DST_TENANT_SLUG,
+                'features'   => json_encode(['caring_community' => true]),
+                'is_active'  => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
+            $decoded = is_string($tenant->features) ? json_decode($tenant->features, true) : null;
+            $features = is_array($decoded) ? $decoded : [];
+            $features['caring_community'] = true;
+            DB::table('tenants')->where('id', self::DST_TENANT_ID)->update([
+                'features'  => json_encode($features),
+                'is_active' => 1,
+            ]);
+        }
+
+        DB::table('federation_partnerships')
+            ->where(function ($q) {
+                $q->where('tenant_id', self::TENANT_ID)->where('partner_tenant_id', self::DST_TENANT_ID);
+            })
+            ->orWhere(function ($q) {
+                $q->where('tenant_id', self::DST_TENANT_ID)->where('partner_tenant_id', self::TENANT_ID);
+            })
+            ->delete();
+
+        DB::table('federation_partnerships')->insert([
+            'tenant_id'            => self::TENANT_ID,
+            'partner_tenant_id'    => self::DST_TENANT_ID,
+            'canonical_pair'       => min(self::TENANT_ID, self::DST_TENANT_ID) . '-' . max(self::TENANT_ID, self::DST_TENANT_ID),
+            'status'               => 'active',
+            'federation_level'     => 2,
+            'transactions_enabled' => 1,
+            'requested_at'         => now(),
+            'approved_at'          => now(),
+            'created_at'           => now(),
+        ]);
     }
 
     // ── helpers ────────────────────────────────────────────────────────────────
@@ -214,7 +266,7 @@ class CaringHourTransferServiceTest extends TestCase
         $sourceId = $this->insertUser(10.0, 'src');
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Destination cooperative not found');
+        $this->expectExceptionMessage(__('api.caring_hour_transfer_destination_unavailable'));
 
         $this->svc->initiate($sourceId, 'no-such-slug-' . uniqid(), 1.00, '');
     }
@@ -242,7 +294,7 @@ class CaringHourTransferServiceTest extends TestCase
         // Do NOT insert matching user in DST_TENANT_ID
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('No matching member at destination cooperative');
+        $this->expectExceptionMessage(__('api.caring_hour_transfer_destination_unavailable'));
 
         $this->svc->initiate($sourceId, self::DST_TENANT_SLUG, 1.00, 'no dest member');
     }

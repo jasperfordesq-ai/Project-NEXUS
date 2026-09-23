@@ -95,6 +95,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Municipal survey answers are now checked against the question's options, each member can respond once per survey, and anonymous responses can no longer be linked back to members (F-127).
+
+- The public lead sign-up form can no longer wipe or push out existing leads, and it no longer reveals whether an email is already on the list (F-131).
+
+- Caring hours can now only be sent to a partner cooperative that has Caring Community turned on, and error messages no longer reveal which cooperatives or member emails exist (F-132).
+
 - Community admins can no longer switch off email verification or member approval, turn on maintenance mode, or disable passkeys and two-factor sign-in through the enterprise config screen, and resetting that screen no longer wipes other settings (F-054).
 
 - Brokers can no longer lift a messaging restriction placed on themselves, and nobody can restrict or release a member of equal or higher rank (F-055).

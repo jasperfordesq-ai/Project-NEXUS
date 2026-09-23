@@ -456,11 +456,13 @@ class CaringCommunityApiController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         } catch (\RuntimeException $e) {
             $msg = $e->getMessage();
-            $code = match (true) {
-                str_contains($msg, 'Insufficient')          => 'INSUFFICIENT_HOURS',
-                str_contains($msg, 'No matching member')    => 'NO_MATCHING_EMAIL',
-                str_contains($msg, 'Destination cooperative') => 'DESTINATION_NOT_FOUND',
-                default                                       => 'TRANSFER_FAILED',
+            // Compare against the translated messages (locale-safe). Unknown
+            // slug, missing partnership and missing account share ONE code so
+            // the response reveals nothing about other cooperatives (F-132).
+            $code = match ($msg) {
+                __('api.caring_hour_transfer_insufficient_hours')          => 'INSUFFICIENT_HOURS',
+                __('api.caring_hour_transfer_destination_unavailable')     => 'DESTINATION_UNAVAILABLE',
+                default                                                    => 'TRANSFER_FAILED',
             };
             return $this->respondWithError($code, $msg, null, 422);
         }

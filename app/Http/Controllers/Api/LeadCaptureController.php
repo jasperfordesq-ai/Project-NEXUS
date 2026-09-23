@@ -21,6 +21,8 @@ class LeadCaptureController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    private const TENANT_CAPTURES_PER_HOUR = 120;
+
     public function __construct(
         private readonly LeadNurtureService $service,
     ) {}
@@ -31,10 +33,17 @@ class LeadCaptureController extends BaseApiController
             return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
         }
 
+        $tenantId = (int) TenantContext::getId();
+
+        // Tenant-wide ceiling on top of the per-IP route throttle, so a flood
+        // spread over many addresses cannot fill the lead list (F-131). The
+        // tenant id comes from the resolved TenantContext, not the request.
+        $this->rateLimit('caring_lead_capture', self::TENANT_CAPTURES_PER_HOUR, 3600, 'tenant:' . $tenantId);
+
         $payload = (array) request()->all();
         $sourceIp = (string) request()->ip();
 
-        $result = $this->service->capture(TenantContext::getId(), $payload, $sourceIp);
+        $result = $this->service->capture($tenantId, $payload, $sourceIp);
 
         if (isset($result['errors']) && $result['errors'] !== []) {
             return $this->respondWithErrors(array_map(
@@ -43,12 +52,13 @@ class LeadCaptureController extends BaseApiController
             ), 422);
         }
 
-        return $this->respondWithData([
-            'contact_id' => $result['contact']['id']    ?? null,
-            'duplicate'  => $result['duplicate']         ?? false,
-            'segment'    => $result['contact']['segment'] ?? null,
-            'stage'      => $result['contact']['stage']   ?? null,
-        ]);
+        if (!empty($result['unavailable'])) {
+            return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.caring_lead_capture_unavailable'), null, 503);
+        }
+
+        // Identical answer for new and already-listed emails: never reveal
+        // whether an address is on the list, or its segment/stage/id.
+        return $this->respondWithData(['received' => true]);
     }
 }
 

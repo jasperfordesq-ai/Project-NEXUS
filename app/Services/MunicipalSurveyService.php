@@ -22,8 +22,9 @@ use RuntimeException;
  *   draft → active → closed
  *
  * Anonymous-response option: when is_anonymous = 1, user_id is NOT stored;
- * a session_token (sha256 of user_id + survey_id + date) is stored instead
- * for dedup purposes only.
+ * a session_token (HMAC of user_id + survey_id, keyed with the app key) is
+ * stored instead for dedup purposes only. Legacy daily sha256 tokens are
+ * still recognised when checking for an earlier response (F-127).
  */
 class MunicipalSurveyService
 {
@@ -290,13 +291,43 @@ class MunicipalSurveyService
             return true;
         }
 
-        // Also check by session_token for anonymous surveys
-        $token = self::makeSessionToken($userId, $surveyId);
+        // Also check by session_token for anonymous surveys: the current keyed
+        // token, plus the legacy daily token for every day on which a response
+        // with a token was stored, so members who answered under the old
+        // scheme stay de-duplicated.
+        $tokens = [self::makeSessionToken($userId, $surveyId)];
+
+        $legacyDays = DB::table(self::TABLE_RESPONSES)
+            ->where('survey_id', $surveyId)
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('session_token')
+            ->selectRaw('DISTINCT DATE(submitted_at) AS day')
+            ->pluck('day');
+
+        foreach ($legacyDays as $day) {
+            if ($day !== null && $day !== '') {
+                $tokens[] = self::legacyDailySessionToken($userId, $surveyId, (string) $day);
+            }
+        }
+
         return DB::table(self::TABLE_RESPONSES)
             ->where('survey_id', $surveyId)
             ->where('tenant_id', $tenantId)
-            ->where('session_token', $token)
+            ->whereIn('session_token', array_values(array_unique($tokens)))
             ->exists();
+    }
+
+    /**
+     * Keyed hash of a respondent IP address. Stored instead of the raw IP (or
+     * a plain sha256 of it, which is trivially reversible over the IPv4 space).
+     */
+    public static function hashIp(string $ip): ?string
+    {
+        if ($ip === '') {
+            return null;
+        }
+
+        return hash_hmac('sha256', 'municipal-survey-ip|' . $ip, self::hmacKey());
     }
 
     /**
@@ -341,21 +372,31 @@ class MunicipalSurveyService
                 ->get()
                 ->keyBy('id');
 
+            // Every answer must belong to a question of this survey and match
+            // that question's type and options. Empty answers count as omitted.
+            $normAnswers = [];
+            foreach ($answers as $qId => $val) {
+                $key = (string) $qId;
+                if (! ctype_digit($key) || ! $questions->has((int) $key)) {
+                    throw new InvalidArgumentException(
+                        __('api.municipal_survey_unknown_question', ['id' => mb_substr($key, 0, 20)])
+                    );
+                }
+                if ($val === null || $val === '' || $val === []) {
+                    continue;
+                }
+                $normAnswers[$key] = self::normaliseAnswer($questions->get((int) $key), $val);
+            }
+
             foreach ($questions as $question) {
                 if (! $question->is_required) {
                     continue;
                 }
-                $qId = (string) $question->id;
-                if (! array_key_exists($qId, $answers) && ! array_key_exists($question->id, $answers)) {
+                if (! array_key_exists((string) $question->id, $normAnswers)) {
                     throw new InvalidArgumentException(
                         __('caring_community.survey.errors.required_question', ['id' => $question->id])
                     );
                 }
-            }
-
-            $normAnswers = [];
-            foreach ($answers as $qId => $val) {
-                $normAnswers[(string) $qId] = $val;
             }
 
             $isAnonymous = (bool) $survey->is_anonymous;
@@ -451,13 +492,7 @@ class MunicipalSurveyService
             }
 
             // Tally for choice / likert / yes_no
-            $rawOptions = $question['options'] ?? null;
-            $options = [];
-            if (is_string($rawOptions)) {
-                $options = json_decode($rawOptions, true) ?? [];
-            } elseif (is_array($rawOptions)) {
-                $options = $rawOptions;
-            }
+            $options = self::decodeOptions($question['options'] ?? null);
 
             // For yes_no without explicit options use Yes/No defaults
             if ($qType === 'yes_no' && empty($options)) {
@@ -470,27 +505,43 @@ class MunicipalSurveyService
             }
             $answeredCount = 0;
 
+            // Only values allowed for the question are counted, and each
+            // response counts at most once per option — this also neutralises
+            // any stuffed rows stored before answers were validated.
+            $allowed = self::allowedValues((string) $qType, self::decodeOptions($question['options'] ?? null));
+
             foreach ($responses as $resp) {
                 $answersDecoded = json_decode((string) $resp->answers, true) ?? [];
                 $val = $answersDecoded[$qId] ?? null;
                 if ($val === null) {
                     continue;
                 }
-                $answeredCount++;
-                if ($qType === 'multi_choice' && is_array($val)) {
-                    foreach ($val as $selected) {
-                        $key = (string) $selected;
-                        if (! isset($tallies[$key])) {
-                            $tallies[$key] = 0;
-                        }
-                        $tallies[$key]++;
+
+                $selectedValues = ($qType === 'multi_choice')
+                    ? (is_array($val) ? $val : [])
+                    : (is_scalar($val) ? [$val] : []);
+
+                $counted = [];
+                foreach ($selectedValues as $selected) {
+                    if (! is_scalar($selected) || is_bool($selected)) {
+                        continue;
                     }
-                } else {
-                    $key = (string) $val;
+                    $key = self::matchAllowed((string) $qType, (string) $selected, array_map('strval', array_keys($tallies)));
+                    if ($key === null) {
+                        $key = self::matchAllowed((string) $qType, (string) $selected, $allowed);
+                    }
+                    if ($key === null || isset($counted[$key])) {
+                        continue;
+                    }
+                    $counted[$key] = true;
                     if (! isset($tallies[$key])) {
                         $tallies[$key] = 0;
                     }
                     $tallies[$key]++;
+                }
+
+                if ($counted !== []) {
+                    $answeredCount++;
                 }
             }
 
@@ -613,13 +664,169 @@ class MunicipalSurveyService
     }
 
     /**
-     * Deterministic session token for dedup on anonymous surveys.
-     * Format: sha256(user_id . '|' . survey_id . '|' . YYYY-MM-DD)
+     * Deterministic, per-survey session token for dedup on anonymous surveys.
+     *
+     * Keyed with the application key so the token cannot be recomputed from
+     * public values to link an anonymous response back to a member, and
+     * date-free so a member cannot answer again on another day.
      */
     private static function makeSessionToken(int $userId, int $surveyId): string
     {
-        $date = Carbon::today()->toDateString();
+        return hash_hmac('sha256', "municipal-survey-dedup|{$userId}|{$surveyId}", self::hmacKey());
+    }
+
+    /**
+     * The token format written before F-127: sha256(user|survey|Y-m-d).
+     * Only used to recognise existing respondents; never written any more.
+     */
+    private static function legacyDailySessionToken(int $userId, int $surveyId, string $date): string
+    {
         return hash('sha256', "{$userId}|{$surveyId}|{$date}");
+    }
+
+    private static function hmacKey(): string
+    {
+        $key = (string) config('app.key');
+        if ($key === '') {
+            throw new RuntimeException(__('api.service_unavailable'));
+        }
+
+        return $key;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function decodeOptions(mixed $rawOptions): array
+    {
+        $options = [];
+        if (is_string($rawOptions)) {
+            $options = json_decode($rawOptions, true) ?? [];
+        } elseif (is_array($rawOptions)) {
+            $options = $rawOptions;
+        }
+        if (! is_array($options)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($options as $opt) {
+            if (is_scalar($opt) && ! is_bool($opt)) {
+                $out[] = (string) $opt;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * The answer values a question accepts, or null for free text.
+     *
+     * Likert and yes/no questions are rendered with fixed values by the
+     * member UI ('1'..'5' and 'yes'/'no'), so those are always accepted in
+     * addition to any configured options.
+     *
+     * @param  list<string>  $options
+     * @return list<string>|null
+     */
+    private static function allowedValues(string $type, array $options): ?array
+    {
+        return match ($type) {
+            'single_choice', 'multi_choice' => $options,
+            'likert' => array_values(array_unique(array_merge(['1', '2', '3', '4', '5'], $options))),
+            'yes_no' => array_values(array_unique(array_merge(['yes', 'no'], $options))),
+            default => null,
+        };
+    }
+
+    /**
+     * Return the canonical allowed value matching $value, or null.
+     * Yes/no answers match case-insensitively; everything else exactly.
+     *
+     * @param  list<string>|null  $allowed
+     */
+    private static function matchAllowed(string $type, string $value, ?array $allowed): ?string
+    {
+        if ($allowed === null) {
+            return null;
+        }
+        $value = trim($value);
+        if (in_array($value, $allowed, true)) {
+            return $value;
+        }
+        if ($type === 'yes_no') {
+            foreach ($allowed as $candidate) {
+                if (mb_strtolower($candidate) === mb_strtolower($value)) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate one answer against its question and return the value to store.
+     *
+     * @throws InvalidArgumentException when the value is not acceptable
+     */
+    private static function normaliseAnswer(object $question, mixed $value): string|array
+    {
+        $type = (string) $question->question_type;
+        $invalid = fn (): InvalidArgumentException => new InvalidArgumentException(
+            __('api.municipal_survey_answer_invalid', ['id' => $question->id])
+        );
+
+        if ($type === 'open_text') {
+            if (! is_scalar($value) || is_bool($value)) {
+                throw $invalid();
+            }
+            return mb_substr(trim((string) $value), 0, 5000);
+        }
+
+        $allowed = self::allowedValues($type, self::decodeOptions($question->options ?? null));
+        if ($allowed === null || $allowed === []) {
+            throw $invalid();
+        }
+
+        if ($type === 'multi_choice') {
+            if (! is_array($value)) {
+                throw $invalid();
+            }
+            $picked = [];
+            foreach ($value as $item) {
+                if (! is_scalar($item) || is_bool($item)) {
+                    throw $invalid();
+                }
+                $match = self::matchAllowed($type, (string) $item, $allowed);
+                if ($match === null) {
+                    throw $invalid();
+                }
+                if (! in_array($match, $picked, true)) {
+                    $picked[] = $match;
+                }
+            }
+            // A de-duplicated subset of the options can never exceed them.
+            return array_slice($picked, 0, count($allowed));
+        }
+
+        if (! is_scalar($value) || is_bool($value)) {
+            throw $invalid();
+        }
+        if ($type === 'yes_no') {
+            // Keep the submitted spelling (the member UI sends 'yes'/'no').
+            if (self::matchAllowed($type, (string) $value, $allowed) === null) {
+                throw $invalid();
+            }
+            return trim((string) $value);
+        }
+
+        $match = self::matchAllowed($type, (string) $value, $allowed);
+        if ($match === null) {
+            throw $invalid();
+        }
+
+        return $match;
     }
 
     /**

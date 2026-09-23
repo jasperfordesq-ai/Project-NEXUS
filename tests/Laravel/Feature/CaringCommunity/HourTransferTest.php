@@ -50,6 +50,20 @@ class HourTransferTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Same-platform transfers require an active federation partnership
+        // with transactions allowed between the two cooperatives (F-132).
+        DB::table('federation_partnerships')->insert([
+            'tenant_id'            => self::SOURCE_TENANT_ID,
+            'partner_tenant_id'    => $this->destinationTenantId,
+            'canonical_pair'       => min(self::SOURCE_TENANT_ID, $this->destinationTenantId) . '-' . max(self::SOURCE_TENANT_ID, $this->destinationTenantId),
+            'status'               => 'active',
+            'federation_level'     => 2,
+            'transactions_enabled' => 1,
+            'requested_at'         => now(),
+            'approved_at'          => now(),
+            'created_at'           => now(),
+        ]);
     }
 
     private function setCaringCommunityFeature(int $tenantId, bool $enabled): void
@@ -121,7 +135,8 @@ class HourTransferTest extends TestCase
 
         $service = app(CaringHourTransferService::class);
 
-        $this->expectExceptionMessage('No matching member');
+        // F-132: one generic message, so it does not reveal whether the email exists there.
+        $this->expectExceptionMessage(__('api.caring_hour_transfer_destination_unavailable'));
         $service->initiate($sourceUser, $this->destinationSlug, 5.0, 'moving');
     }
 

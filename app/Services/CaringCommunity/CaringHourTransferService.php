@@ -13,6 +13,7 @@ use App\Events\TransactionCompleted;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\FederationFeatureService;
+use App\Services\FederationPartnershipService;
 use App\Support\OutboundUrlGuard;
 use App\Support\SecurityBounds;
 use Illuminate\Support\Facades\DB;
@@ -125,41 +126,33 @@ class CaringHourTransferService
             throw new RuntimeException(__('api.caring_hour_transfer_insufficient_hours'));
         }
 
-        // Cross-platform federation: when no local tenant matches the slug but
-        // a remote federation peer is registered with that slug, accept the
-        // initiation without resolving a local destination user. The remote
-        // install will look up the matching email at delivery time.
-        $remotePeer = $this->peerRegistry()->findByPeerSlug($sourceTenantId, $destinationTenantSlug);
-
-        // Resolve destination tenant (must be a different tenant if local)
-        $destinationTenant = DB::table('tenants')
-            ->where('slug', $destinationTenantSlug)
-            ->first(['id', 'slug', 'name']);
-
-        if (! $destinationTenant && ! $remotePeer) {
-            throw new RuntimeException(__('api.caring_hour_transfer_destination_not_found'));
-        }
-        if ($destinationTenant && (int) $destinationTenant->id === $sourceTenantId) {
+        $ownSlug = DB::table('tenants')->where('id', $sourceTenantId)->value('slug');
+        if ($ownSlug !== null && (string) $ownSlug === $destinationTenantSlug) {
             throw new InvalidArgumentException(__('api.caring_hour_transfer_destination_same_as_source'));
         }
-        $counterpartTenantSlug = $destinationTenant
-            ? (string) $destinationTenant->slug
-            : (string) ($remotePeer['peer_slug'] ?? $destinationTenantSlug);
 
-        if ($destinationTenant) {
-            // Match by email — same-platform federation requires the destination
-            // tenant to already have the same email registered.
-            $destinationUser = DB::table('users')
-                ->where('tenant_id', $destinationTenant->id)
-                ->where('email', $sourceUser->email)
-                ->first(['id']);
+        // Same-platform destination: only a cooperative with Caring Community
+        // enabled, an active federation partnership (transactions allowed)
+        // with this cooperative, and an account with the member's email.
+        $local = $this->resolveLocalDestination($sourceTenantId, $destinationTenantSlug, (string) $sourceUser->email);
 
-            if (!$destinationUser) {
-                throw new RuntimeException(__('api.caring_hour_transfer_no_destination_member'));
-            }
+        // Cross-platform federation: an active remote peer registered by this
+        // cooperative's admins under that slug. The remote install looks up
+        // the matching email at delivery time.
+        $remotePeer = $local === null
+            ? $this->peerRegistry()->findByPeerSlug($sourceTenantId, $destinationTenantSlug)
+            : null;
+        $remoteUsable = $remotePeer !== null && (string) ($remotePeer['status'] ?? '') === 'active';
+
+        if ($local === null && ! $remoteUsable) {
+            // One message for every reason (unknown slug, no partnership,
+            // feature off, no matching account) so it reveals nothing (F-132).
+            throw new RuntimeException(__('api.caring_hour_transfer_destination_unavailable'));
         }
-        // For remote peers we accept the email at face value; the remote
-        // install verifies it on delivery.
+
+        $counterpartTenantSlug = $local !== null
+            ? (string) $local['tenant']->slug
+            : (string) ($remotePeer['peer_slug'] ?? $destinationTenantSlug);
 
         $row = [
             'tenant_id'                => $sourceTenantId,
@@ -211,32 +204,28 @@ class CaringHourTransferService
             throw new RuntimeException(__('api.caring_hour_transfer_not_pending_approve'));
         }
 
-        // Resolve destination — either a local tenant (same-platform) or a
-        // registered remote peer (cross-platform).
-        $remotePeer = $this->peerRegistry()->findByPeerSlug($sourceTenantId, (string) $transfer->counterpart_tenant_slug);
+        // Resolve destination again at approval time — the partnership or the
+        // destination's opt-in may have changed since initiation. Either a
+        // local partner cooperative (same-platform) or a registered, active
+        // remote peer (cross-platform).
+        $local = $this->resolveLocalDestination(
+            $sourceTenantId,
+            (string) $transfer->counterpart_tenant_slug,
+            (string) $transfer->counterpart_member_email,
+        );
+        $destinationTenant = $local['tenant'] ?? null;
+        $destinationUser = $local['user'] ?? null;
 
-        $destinationTenant = DB::table('tenants')
-            ->where('slug', $transfer->counterpart_tenant_slug)
-            ->first(['id', 'slug', 'name']);
+        $remotePeer = $local === null
+            ? $this->peerRegistry()->findByPeerSlug($sourceTenantId, (string) $transfer->counterpart_tenant_slug)
+            : null;
 
-        if (! $destinationTenant && ! $remotePeer) {
-            throw new RuntimeException(__('api.caring_hour_transfer_destination_gone'));
-        }
-        if ($remotePeer && (string) ($remotePeer['status'] ?? '') !== 'active') {
-            throw new RuntimeException(__('api.caring_hour_transfer_peer_inactive'));
-        }
-
-        $destinationUser = null;
-        if ($destinationTenant) {
-            $destinationUser = DB::table('users')
-                ->where('tenant_id', $destinationTenant->id)
-                ->where('email', $transfer->counterpart_member_email)
-                ->first(['id', 'email']);
-
-            // If a local tenant exists with that slug but no matching member,
-            // fall back to a remote peer with the same slug if one exists.
-            if (! $destinationUser && ! $remotePeer) {
-                throw new RuntimeException(__('api.caring_hour_transfer_destination_member_gone'));
+        if ($local === null) {
+            if (! $remotePeer) {
+                throw new RuntimeException(__('api.caring_hour_transfer_destination_unavailable'));
+            }
+            if ((string) ($remotePeer['status'] ?? '') !== 'active') {
+                throw new RuntimeException(__('api.caring_hour_transfer_peer_inactive'));
             }
         }
 
@@ -257,7 +246,7 @@ class CaringHourTransferService
             'transfer_id'             => $transferId,
             'generated_at'            => now()->toIso8601String(),
         ];
-        $isRemote = $remotePeer !== null && (! $destinationTenant || ! $destinationUser);
+        $isRemote = $local === null;
         $secret = $isRemote
             ? (string) ($remotePeer['shared_secret'] ?? '')
             : $this->sharedPlatformSecret();
@@ -1168,6 +1157,65 @@ class CaringHourTransferService
         $message = strtolower($e->getMessage());
 
         return $code === '23000' || str_contains($message, 'duplicate');
+    }
+
+    /**
+     * A same-platform cooperative this source may transfer hours to, with the
+     * matching member account, or null. Requires: a different, active tenant
+     * with Caring Community enabled; an active federation partnership with
+     * transactions allowed (in either direction — the destination's admins
+     * approved it, which is their opt-in); and an account with that email.
+     *
+     * @return array{tenant: object, user: object}|null
+     */
+    private function resolveLocalDestination(int $sourceTenantId, string $slug, string $email): ?array
+    {
+        if ($slug === '' || $email === '') {
+            return null;
+        }
+
+        $tenant = DB::table('tenants')
+            ->where('slug', $slug)
+            ->where(function ($q) {
+                $q->whereNull('is_active')->orWhere('is_active', 1);
+            })
+            ->first(['id', 'slug', 'name']);
+
+        if (! $tenant || (int) $tenant->id === $sourceTenantId) {
+            return null;
+        }
+
+        $partnership = FederationPartnershipService::getPartnership($sourceTenantId, (int) $tenant->id);
+        if (
+            $partnership === null
+            || ($partnership['status'] ?? null) !== 'active'
+            || empty($partnership['transactions_enabled'])
+        ) {
+            return null;
+        }
+
+        if (! $this->tenantHasCaringCommunity((int) $tenant->id)) {
+            return null;
+        }
+
+        $user = DB::table('users')
+            ->where('tenant_id', $tenant->id)
+            ->where('email', $email)
+            ->first(['id', 'email']);
+
+        return $user ? ['tenant' => $tenant, 'user' => $user] : null;
+    }
+
+    private function tenantHasCaringCommunity(int $tenantId): bool
+    {
+        try {
+            return (bool) TenantContext::runForTenant(
+                $tenantId,
+                static fn (): bool => (bool) TenantContext::hasFeature('caring_community'),
+            );
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function peerRegistry(): FederationPeerService

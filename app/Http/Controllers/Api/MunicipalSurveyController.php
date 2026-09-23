@@ -161,8 +161,8 @@ class MunicipalSurveyController extends BaseApiController
             );
         }
 
-        // IP hash for rate-limiting (sha256, never stored in plain text)
-        $ipHash = hash('sha256', (string) request()->ip());
+        // Keyed IP hash (HMAC) — never stored in plain text or as a bare sha256
+        $ipHash = MunicipalSurveyService::hashIp((string) request()->ip());
 
         try {
             MunicipalSurveyService::submitResponse(

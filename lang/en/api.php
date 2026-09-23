@@ -3300,6 +3300,9 @@ return [
     'caring_hour_transfer_not_pending_reject' => 'Only pending transfers can be rejected.',
     'caring_hour_transfer_signature_failed' => 'Transfer signature verification failed.',
     'caring_hour_transfer_amount_over_limit' => 'Transfer amount exceeds the permitted single-transfer limit.',
+    'caring_lead_capture_unavailable' => 'We cannot take new sign-ups right now. Please try again later.',
+    'caring_lead_storage_full' => 'The lead list is full. Export and archive older leads before making further changes.',
+    'caring_hour_transfer_destination_unavailable' => 'Hours cannot be transferred to that cooperative. It must be an active partner of this cooperative, and you need an account there with the same email address.',
 
     // Member-to-member hour gifts.
     'caring_hour_gift_participants_required' => 'Sender and recipient are required.',
@@ -3346,6 +3349,8 @@ return [
     'municipal_survey_publish_draft_only' => 'Only draft surveys can be published',
     'municipal_survey_needs_question' => 'Survey must have at least one question before publishing',
     'municipal_survey_close_active_only' => 'Only active surveys can be closed',
+    'municipal_survey_answer_invalid' => 'The answer to question #:id is not one of the allowed options.',
+    'municipal_survey_unknown_question' => 'Question #:id is not part of this survey.',
 
     // Member premium / recurring donations. member_premium_invalid_interval and
     // member_premium_tier_not_found already existed and are reused.
