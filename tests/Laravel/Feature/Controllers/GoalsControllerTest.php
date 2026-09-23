@@ -456,6 +456,57 @@ class GoalsControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    public function test_becoming_a_buddy_returns_only_public_goal_participant_fields(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $buddy = $this->authenticatedUser();
+        DB::table('users')->whereIn('id', [$owner->id, $buddy->id])->update([
+            'phone' => '+353 87 222 2222',
+            'date_of_birth' => '1982-03-04',
+            'location' => 'Private goal address',
+            'latitude' => 52.6638,
+            'longitude' => -8.6267,
+            'last_login_at' => now(),
+            'privacy_profile' => 'connections',
+            'privacy_search' => false,
+            'stripe_customer_id' => 'cus_private_goal_buddy_test',
+        ]);
+        $goal = $this->createGoal([
+            'user_id' => $owner->id,
+            'mentor_id' => null,
+            'is_public' => true,
+            'status' => 'active',
+        ]);
+
+        $response = $this->apiPost("/v2/goals/{$goal->id}/buddy")
+            ->assertOk()
+            ->assertJsonPath('data.goal.user.id', $owner->id)
+            ->assertJsonPath('data.goal.mentor.id', $buddy->id)
+            ->assertJsonPath('data.goal.buddy_id', $buddy->id);
+
+        foreach (['user', 'mentor'] as $participant) {
+            foreach ([
+                'email',
+                'phone',
+                'date_of_birth',
+                'location',
+                'latitude',
+                'longitude',
+                'last_login_at',
+                'role',
+                'privacy_profile',
+                'privacy_search',
+                'stripe_customer_id',
+                'status',
+            ] as $privateField) {
+                $response->assertJsonMissingPath("data.goal.{$participant}.{$privateField}");
+            }
+        }
+    }
+
     // ------------------------------------------------------------------
     //  CHECKINS
     // ------------------------------------------------------------------

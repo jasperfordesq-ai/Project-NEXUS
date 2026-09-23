@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Becoming a buddy for another member's public goal now returns only the goal owner's and buddy's public identity fields, instead of serializing their complete account rows with contact, birth, location, login, privacy, role, and payment-provider metadata (F-097).
+
 - Group owners and admins can no longer download members' email addresses or the names of pending and banned members from group exports; tenant admins still get the full export (F-093).
 
 - Group owners can no longer point their group at, or delete, another group's picture: image paths now come only from uploads, and a shared file is kept while any group still uses it (F-094).

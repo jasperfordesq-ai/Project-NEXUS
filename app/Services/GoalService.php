@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Models\Goal;
 use App\Models\GoalCheckin;
+use App\Models\User;
 use App\Models\UserXpLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -541,7 +542,12 @@ class GoalService
             'buddy_id' => $userId,
         ], $userId);
 
-        return $goal->fresh(['user', 'mentor']);
+        $publicIdentity = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
+
+        return $goal->fresh([
+            "user:{$publicIdentity}",
+            "mentor:{$publicIdentity}",
+        ]);
     }
 
     /**

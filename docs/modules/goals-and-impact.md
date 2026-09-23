@@ -159,6 +159,7 @@ The direct-monetisation summary and the projection are returned side by side in 
 - Goals: ownership is enforced on every mutation (`user_id` match); cross-user edits/deletes return null/false. Tenant isolation is automatic via `HasTenantScope`.
 - Private goals are excluded from public listing, discovery, buddy eligibility, and feed activity.
 - Buddy offers and buddy notes pass through `SafeguardingInteractionPolicy`; blocked or otherwise disallowed contact is rejected.
+- A successful buddy offer embeds the goal owner and buddy through `User::PUBLIC_IDENTITY_COLUMNS` only. Goal responses may include public identity fields needed for names and avatars, but never contact details, date of birth, precise location, login/account metadata, privacy settings, or payment-provider identifiers.
 - Buddy notes are constrained: only the assigned `mentor_id` may post, and `type` is whitelisted (`nudge`, `encouragement`, `offer_help`, `celebration`, `note`).
 - Impact/SROI endpoints call `requireAdmin()` and scope every query by tenant. The SROI calculations expose only aggregates, never per-member transaction rows.
 - SROI input validation (in `AdminAnalyticsReportsController::updateSocialValueConfig`) bounds hour value (0–10000), multiplier (0–100), percentages (0–100), discount rate (0–20), projection years (1–10), investment (0–100,000,000), reporting period (`monthly`/`quarterly`/`annually`), and outcomes (≤ 25, numeric non-negative quantity/proxy).
