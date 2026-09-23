@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Deactivating several communities at once now has the same safeguards as deactivating one: a network admin cannot deactivate their own network, and a community that still has active sub-communities is refused (F-060).
+
 - Simultaneous offers to become a public goal's buddy now have one atomic winner. The selected buddy and its history records are committed together; later contenders receive the existing conflict response and no duplicate notification is created (F-143).
 
 - Ratings left on an exchange can now only be seen by the people in that exchange, its assigned broker and community admins (F-103).

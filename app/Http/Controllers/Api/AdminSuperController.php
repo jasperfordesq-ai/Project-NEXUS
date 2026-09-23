@@ -1771,7 +1771,20 @@ class AdminSuperController extends BaseApiController
                         DB::update("UPDATE tenants SET is_active = 1 WHERE id = ?", [$tid]);
                         break;
                     case 'deactivate':
-                        DB::update("UPDATE tenants SET is_active = 0 WHERE id = ?", [$tid]);
+                        // F-060: the same guards as DELETE /tenants/{id} — the
+                        // caller must be able to MANAGE the tenant (a regional
+                        // super-admin cannot deactivate its own root), and a
+                        // tenant with active children is refused so a network is
+                        // never stranded under an inactive parent.
+                        if (!SuperPanelAccess::canManageTenant($tid)) {
+                            $errors[] = ['code' => 'TENANT_ACCESS_DENIED', 'params' => ['tenant_id' => $tid]];
+                            continue 2;
+                        }
+                        $result = $this->tenantHierarchyService->deleteTenant($tid, false);
+                        if (!$result['success']) {
+                            $errors[] = ['code' => 'TENANT_DEACTIVATION_REFUSED', 'params' => ['tenant_id' => $tid]];
+                            continue 2;
+                        }
                         break;
                     case 'enable_hub':
                         $result = $this->tenantHierarchyService->toggleSubtenantCapability($tid, true);
