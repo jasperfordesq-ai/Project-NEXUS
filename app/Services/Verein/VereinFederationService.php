@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services\Verein;
 
 use App\Core\TenantContext;
+use App\Enums\GroupStatus;
 use App\I18n\LocaleContext;
 use App\Mail\VereinCrossInvitationAccepted;
 use App\Mail\VereinCrossInvitationReceived;
@@ -595,6 +596,20 @@ class VereinFederationService
             ->where('o.org_type', 'club')
             ->where('e.tenant_id', $tenantId)
             ->where('e.status', 'active')
+            ->where(function ($visibility) use ($tenantId) {
+                $visibility->whereNull('e.group_id')
+                    ->orWhereExists(function ($group) use ($tenantId) {
+                        $group->selectRaw('1')
+                            ->from('groups as visible_groups')
+                            ->whereColumn('visible_groups.id', 'e.group_id')
+                            ->where('visible_groups.tenant_id', $tenantId)
+                            ->where('visible_groups.status', GroupStatus::Active->value)
+                            ->where(function ($audience) {
+                                $audience->whereNull('visible_groups.visibility')
+                                    ->orWhere('visible_groups.visibility', 'public');
+                            });
+                    });
+            })
             ->where('e.start_time', '>=', $start)
             ->where('e.start_time', '<', $end)
             ->select([

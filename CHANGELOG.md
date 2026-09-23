@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The public municipality calendar now applies the same group audience boundary as anonymous event discovery. Events linked to private, secret, missing or inactive groups are omitted, while ungrouped events and events in active public groups remain visible (F-042).
+
 - Club administrators can no longer waive another club's membership dues or send reminders for them by combining the club they manage with a dues-record ID from another club. Waiver and reminder lookups and updates now bind the dues record to both the authenticated tenant and the already-authorized club (F-041).
 
 - On iPhones, the mobile app's fingerprint / Face ID lock now always stays on top. Before, a screen opened from a notification or a link while the app was locked could appear above the lock (F-040). Android was not affected.

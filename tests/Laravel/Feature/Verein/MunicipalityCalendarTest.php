@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Verein;
 
 use App\Core\TenantContext;
+use App\Enums\GroupStatus;
 use App\Services\Verein\VereinFederationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -58,15 +59,39 @@ class MunicipalityCalendarTest extends TestCase
         ]);
     }
 
-    private function makeEvent(int $userId, string $title): int
+    private function makeGroup(
+        int $ownerId,
+        string $visibility,
+        GroupStatus $status = GroupStatus::Active,
+        ?int $tenantId = null,
+    ): int
+    {
+        return (int) DB::table('groups')->insertGetId([
+            'tenant_id' => $tenantId ?? self::TENANT_ID,
+            'owner_id' => $ownerId,
+            'name' => 'Municipality calendar ' . $visibility . ' group ' . uniqid(),
+            'slug' => 'municipality-calendar-' . $visibility . '-' . uniqid(),
+            'visibility' => $visibility,
+            'status' => $status->value,
+            'is_active' => $status->legacyIsActive() ? 1 : 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function makeEvent(int $userId, string $title, ?int $groupId = null): int
     {
         return (int) DB::table('events')->insertGetId([
             'tenant_id' => self::TENANT_ID,
             'user_id' => $userId,
+            'group_id' => $groupId,
             'title' => $title,
             'description' => 'd',
             'start_time' => now()->addDays(3),
             'status' => 'active',
+            'publication_status' => 'published',
+            'operational_status' => 'scheduled',
+            'is_recurring_template' => 0,
             'created_at' => now(),
         ]);
     }
@@ -149,5 +174,42 @@ class MunicipalityCalendarTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonPath('data.municipality_code', null);
         $response->assertJsonPath('data.buckets', []);
+    }
+
+    public function test_public_calendar_excludes_events_in_private_groups(): void
+    {
+        $service = app(VereinFederationService::class);
+        $ownerId = $this->makeUser();
+        $organizationId = $this->makeVerein($ownerId, 'Private Calendar Club');
+        $service->setConsent($organizationId, 'events', '8001');
+
+        $publicGroupId = $this->makeGroup($ownerId, 'public');
+        $privateGroupId = $this->makeGroup($ownerId, 'private');
+        $secretGroupId = $this->makeGroup($ownerId, 'secret');
+        $inactiveGroupId = $this->makeGroup($ownerId, 'public', GroupStatus::Archived);
+        $otherTenantId = (int) DB::table('tenants')->where('id', '<>', self::TENANT_ID)->value('id');
+        $this->assertGreaterThan(0, $otherTenantId, 'A second tenant is required for the isolation control.');
+        $crossTenantGroupId = $this->makeGroup($ownerId, 'public', GroupStatus::Active, $otherTenantId);
+        $this->makeEvent($ownerId, 'Public municipality event');
+        $this->makeEvent($ownerId, 'Public group municipality event', $publicGroupId);
+        $this->makeEvent($ownerId, 'Private group municipality event', $privateGroupId);
+        $this->makeEvent($ownerId, 'Secret group municipality event', $secretGroupId);
+        $this->makeEvent($ownerId, 'Inactive group municipality event', $inactiveGroupId);
+        $this->makeEvent($ownerId, 'Cross-tenant group municipality event', $crossTenantGroupId);
+
+        $response = $this->apiGet('/v2/municipality/8001/events-calendar');
+
+        $response->assertOk();
+        $titles = collect($response->json('data.buckets'))
+            ->flatten(1)
+            ->pluck('title')
+            ->all();
+
+        $this->assertContains('Public municipality event', $titles);
+        $this->assertContains('Public group municipality event', $titles);
+        $this->assertNotContains('Private group municipality event', $titles);
+        $this->assertNotContains('Secret group municipality event', $titles);
+        $this->assertNotContains('Inactive group municipality event', $titles);
+        $this->assertNotContains('Cross-tenant group municipality event', $titles);
     }
 }
