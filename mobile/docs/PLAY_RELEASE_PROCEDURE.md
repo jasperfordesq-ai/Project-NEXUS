@@ -43,13 +43,14 @@ emphatically not EAS's remote counter.**
 Check it at **Play Console → Production → Track summary → Latest release**.
 🔴 The Console belongs to the owner's Google account, and its `u/N` slot in the URL
 moves with the browser profile's sign-in order — measured `u/1` on 2026-09-10,
-`u/2` on 2026-09-12, `u/0` on 2026-09-13 and again on 2026-09-15. **Never memorise the slot; try each and
+`u/2` on 2026-09-12, `u/0` on 2026-09-13 and again on 2026-09-15, `u/2` on 2026-09-23. **Never memorise the slot; try each and
 read the page title** — "Production | Timebank Global" is the right one. The wrong
 slots are not merely empty: on 2026-09-12 `u/1` opened a *different, closed*
 developer account, and on 2026-09-13 both `u/1` and `u/2` opened a **"New Play
 Console Terms of Service" page for a different signed-in account**. Do not accept
 those terms — accepting them on the wrong account is not what anyone asked for;
-just move to the next slot.
+just move to the next slot. On 2026-09-23 `u/0` opened that terms page for the owner's
+`jasper.ford.esq` sign-in and `u/1` a different Google account ("Timebank Ireland"); `u/2` was right.
 
 Then record what you read in `mobile/live-store-build.json` once the new build is
 released (commit it was built from, version code, version name = runtime version,
@@ -381,6 +382,25 @@ activity records **submission 12**, submitted **September 16, 2026, 1:22 PM**,
 **Production — In review**. Managed publishing remains off, so approval will
 publish automatically. This records submission, not a confirmed live release;
 `live-store-build.json` remains on build 12 until publication is verified.
+(It then stayed on 12 after build 17 went live. The next release, on 2026-09-23, found it that way.
+The file guards over-the-air updates, so update it the moment a release is confirmed live.)
+
+On **2026-09-23**, build **18 / 1.8.0** went through both steps the same day, at the owner's
+request, **without a physical-device walk of build 18**. It was built by `build-aab-play.sh
+--version-code 18` from `5bb399868`, whose mobile source is `77e62cd50` plus the version bump.
+All six workflow groups passed on `77e62cd50`. The 96,182,826-byte AAB has SHA-256
+`00A4A32B449FBE2162B6DE0C9A4A27B9D4953A564AA9FE42EBF8AE5C897BC1FB` and is filed as
+`releases/android/play/timebank-global-1.8.0-build18.aab`. The owner uploaded it: the agent's
+browser upload was refused by its permission layer. The agent then entered the en-GB notes.
+
+- **Internal testing:** "Ready to release", no quick-checks bar. 0 devices lost on every row
+  (Phone 12,258, Tablet 6,433, TV 3, Chromebook 10, Android XR 1). New install 32.9 MB (+208 KB),
+  update 12.6 MB. Published 12:53 PM.
+- **Production:** promote carried the bundle, name and notes across, with build 17 under
+  "Not included". 100.0% rollout, all targeted countries, 7 active installs.
+- **Quick checks:** the pre-submit bar ran about 13 minutes ("up to 14 minutes" → "Your changes
+  can now be sent for review") before submitting. A second pass then ended "Your changes are now in review".
+- **Submission 13**, submitted September 23, 2026, 1:09 PM, **Production — In review**.
 
 Two Console behaviours worth knowing before you click:
 
