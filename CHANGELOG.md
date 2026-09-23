@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Search no longer shows events from private groups to people who aren't in the group, never includes an event's online meeting or video link, and no longer lists private groups or listings still awaiting moderation when the search engine is unavailable (F-078).
+
 - Signing out everywhere, a password reset, an administrator password or two-factor reset, and suspending or banning a member now also remove that member's registered phone and browser push destinations, so a lost or stolen device stops receiving their notifications (F-117).
 
 - Polls can now only be posted into a group by people allowed to post there, polls made inside a group stay in that group, and people outside a private group can no longer see its polls (F-069).

@@ -15,6 +15,7 @@ use App\Models\MarketplaceListing;
 use App\Models\PodcastEpisode;
 use App\Models\PodcastShow;
 use App\Models\User;
+use App\Support\Events\EventContractMapper;
 use App\Support\Events\EventSearchVisibility;
 use App\Support\Members\MemberDirectoryVisibility;
 use Illuminate\Database\Eloquent\Builder;
@@ -771,6 +772,7 @@ class SearchService
         int $tenantId,
         int $limit = 20,
         int $offset = 0,
+        ?int $viewerId = null,
     ): ?array {
         if (!static::isAvailable()) {
             return null;
@@ -788,7 +790,7 @@ class SearchService
                 'intval',
                 array_column($result->getHits(), 'id'),
             )));
-            $visibleIds = self::visibleEventIds($hitIds, $tenantId);
+            $visibleIds = self::visibleEventIds($hitIds, $tenantId, $viewerId);
 
             return [
                 'ids'   => $visibleIds,
@@ -843,15 +845,17 @@ class SearchService
      * @param string      $term  Search query.
      * @param string|null $type  Filter: 'users', 'listings', 'events', 'groups', 'podcasts', or null for all.
      * @param int         $limit Max results per type.
+     * @param int|null    $viewerId Member searching; null is treated as anonymous
+     *                              (group events/groups limited to public groups).
      * @return array{users?: array, listings?: array, events?: array, groups?: array, podcasts?: array}
      */
-    public function search(string $term, ?string $type = null, int $limit = 10): array
+    public function search(string $term, ?string $type = null, int $limit = 10, ?int $viewerId = null): array
     {
         $limit = min($limit, 50);
 
         if (static::isAvailable()) {
             try {
-                return $this->searchViaMeilisearch($term, $type, $limit);
+                return $this->searchViaMeilisearch($term, $type, $limit, $viewerId);
             } catch (\Throwable $exception) {
                 Log::warning('SearchService: Meilisearch search failed, falling back to SQL', [
                     'error' => $exception->getMessage(),
@@ -859,7 +863,7 @@ class SearchService
             }
         }
 
-        return $this->searchViaSQL($term, $type, $limit);
+        return $this->searchViaSQL($term, $type, $limit, $viewerId);
     }
 
     /**
@@ -893,7 +897,7 @@ class SearchService
         ));
     }
 
-    private function searchViaMeilisearch(string $term, ?string $type, int $limit): array
+    private function searchViaMeilisearch(string $term, ?string $type, int $limit, ?int $viewerId = null): array
     {
         $client   = static::client();
         $tenantId = TenantContext::getId();
@@ -937,28 +941,10 @@ class SearchService
                 'sort'                 => ['start_time:asc'],
             ])->getHits();
 
-            if (!empty($hits)) {
-                // Hydrate from DB under the same canonical visibility policy.
-                // This is required even with Meili filters: the external index
-                // can be stale after an outage or delayed asynchronous delete.
-                $eventIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
-                $eventQuery = $this->event->newQueryWithoutScopes()
-                    ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
-                    ->whereIn('events.id', $eventIds)
-                    ->where('events.start_time', '>=', now());
-                $events = EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId)
-                    ->get()
-                    ->keyBy('id');
-
-                $results['events'] = [];
-                foreach ($eventIds as $eid) {
-                    if ($events->has($eid)) {
-                        $results['events'][] = [...$events[$eid]->toArray(), 'result_type' => 'event'];
-                    }
-                }
-            } else {
-                $results['events'] = [];
-            }
+            $results['events'] = array_map(
+                static fn (array $row): array => [...$row, 'result_type' => 'event'],
+                $this->hydrateEventHits($hits, (int) $tenantId, $viewerId),
+            );
         }
 
         if ($type === null || $type === 'groups') {
@@ -967,34 +953,16 @@ class SearchService
                 'limit'  => $limit,
             ])->getHits();
 
-            if (!empty($hits)) {
-                $groupIds = array_column($hits, 'id');
-                $groups = $this->group->newQuery()
-                    ->active()
-                    ->withCount('activeMembers')
-                    ->whereIn('id', $groupIds)
-                    ->get()
-                    ->keyBy('id');
-
-                $results['groups'] = [];
-                foreach ($groupIds as $gid) {
-                    if ($groups->has($gid)) {
-                        $results['groups'][] = [
-                            ...$groups[$gid]->toArray(),
-                            'result_type'   => 'group',
-                            'members_count' => $groups[$gid]->active_members_count,
-                        ];
-                    }
-                }
-            } else {
-                $results['groups'] = [];
-            }
+            $results['groups'] = array_map(
+                static fn (array $row): array => [...$row, 'result_type' => 'group'],
+                $this->hydrateGroupHits($hits, $viewerId),
+            );
         }
 
         return $results;
     }
 
-    private function searchViaSQL(string $term, ?string $type, int $limit): array
+    private function searchViaSQL(string $term, ?string $type, int $limit, ?int $viewerId = null): array
     {
         $like    = '%' . $term . '%';
         $results = [];
@@ -1036,6 +1004,7 @@ class SearchService
                 ->where(function (Builder $q) {
                     $q->whereNull('status')->orWhere('status', 'active');
                 })
+                ->where(fn (Builder $q) => self::applyListingModeration($q))
                 ->orderByDesc('id')
                 ->limit($limit)
                 ->get()
@@ -1059,25 +1028,27 @@ class SearchService
                       ->orWhere('location', 'LIKE', $like);
                 })
                 ->where('events.start_time', '>=', now());
-            $results['events'] = EventSearchVisibility::applyToEloquent(
-                $eventQuery,
-                (int) TenantContext::getId(),
-            )
+            $tenantId = (int) TenantContext::getId();
+            EventSearchVisibility::applyToEloquent($eventQuery, $tenantId);
+            EventSearchVisibility::applyAudienceToEloquent($eventQuery, $tenantId, $viewerId);
+            $results['events'] = $eventQuery
                 ->orderBy('start_time')
                 ->limit($limit)
                 ->get()
-                ->map(fn (Event $e) => [...$e->toArray(), 'result_type' => 'event'])
+                ->map(fn (Event $e) => [...self::eventSearchRow($e), 'result_type' => 'event'])
                 ->all();
         }
 
         if ($type === null || $type === 'groups') {
-            $results['groups'] = $this->group->newQuery()
+            $groupQuery = $this->group->newQuery()
                 ->active()
                 ->withCount('activeMembers')
                 ->where(function (Builder $q) use ($like) {
                     $q->where('name', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like);
-                })
+                });
+            self::applyGroupSearchVisibility($groupQuery, $viewerId);
+            $results['groups'] = $groupQuery
                 ->orderByDesc('id')
                 ->limit($limit)
                 ->get()
@@ -1112,7 +1083,7 @@ class SearchService
 
         if (static::isAvailable()) {
             try {
-                $result = $this->unifiedSearchViaMeilisearch($term, $filters, $limit, $type, $sort);
+                $result = $this->unifiedSearchViaMeilisearch($term, $filters, $limit, $type, $sort, $userId);
             } catch (\Throwable $e) {
                 // A Meilisearch error (e.g. an index missing a filterable
                 // attribute, or a transient outage) must NEVER 500 the whole
@@ -1120,10 +1091,10 @@ class SearchService
                 Log::warning('SearchService: Meilisearch unified search failed, falling back to SQL', [
                     'error' => $e->getMessage(),
                 ]);
-                $result = $this->unifiedSearchViaSQL($term, $filters, $limit, $type, $sort);
+                $result = $this->unifiedSearchViaSQL($term, $filters, $limit, $type, $sort, $userId);
             }
         } else {
-            $result = $this->unifiedSearchViaSQL($term, $filters, $limit, $type, $sort);
+            $result = $this->unifiedSearchViaSQL($term, $filters, $limit, $type, $sort, $userId);
         }
 
         // Filter out blocked users from search results
@@ -1143,8 +1114,14 @@ class SearchService
         return $result;
     }
 
-    private function unifiedSearchViaMeilisearch(string $term, array $filters, int $limit, string $type, string $sort): array
-    {
+    private function unifiedSearchViaMeilisearch(
+        string $term,
+        array $filters,
+        int $limit,
+        string $type,
+        string $sort,
+        ?int $viewerId = null,
+    ): array {
         $client   = static::client();
         $tenantId = TenantContext::getId();
         $allItems = [];
@@ -1188,20 +1165,8 @@ class SearchService
                 'sort'   => $eventSort,
             ])->getHits();
 
-            if (!empty($hits)) {
-                $eventIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
-                $eventQuery = $this->event->newQueryWithoutScopes()
-                    ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
-                    ->whereIn('events.id', $eventIds)
-                    ->where('events.start_time', '>=', now());
-                $events = EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId)
-                    ->get()
-                    ->keyBy('id');
-                foreach ($eventIds as $eid) {
-                    if ($events->has($eid)) {
-                        $allItems[] = [...$events[$eid]->toArray(), 'type' => 'event'];
-                    }
-                }
+            foreach ($this->hydrateEventHits($hits, (int) $tenantId, $viewerId) as $row) {
+                $allItems[] = [...$row, 'type' => 'event'];
             }
         }
 
@@ -1213,19 +1178,8 @@ class SearchService
                 'limit'  => $limit,
             ])->getHits();
 
-            if (!empty($hits)) {
-                $groupIds = array_column($hits, 'id');
-                $groups = $this->group->newQuery()
-                    ->active()
-                    ->withCount('activeMembers')
-                    ->whereIn('id', $groupIds)
-                    ->get()
-                    ->keyBy('id');
-                foreach ($groupIds as $gid) {
-                    if ($groups->has($gid)) {
-                        $allItems[] = [...$groups[$gid]->toArray(), 'type' => 'group', 'members_count' => $groups[$gid]->active_members_count];
-                    }
-                }
+            foreach ($this->hydrateGroupHits($hits, $viewerId) as $row) {
+                $allItems[] = [...$row, 'type' => 'group'];
             }
         }
 
@@ -1246,8 +1200,14 @@ class SearchService
         ];
     }
 
-    private function unifiedSearchViaSQL(string $term, array $filters, int $limit, string $type, string $sort): array
-    {
+    private function unifiedSearchViaSQL(
+        string $term,
+        array $filters,
+        int $limit,
+        string $type,
+        string $sort,
+        ?int $viewerId = null,
+    ): array {
         $like     = '%' . $term . '%';
         $allItems = [];
 
@@ -1260,7 +1220,8 @@ class SearchService
                 })
                 ->where(function (Builder $q) {
                     $q->whereNull('status')->orWhere('status', 'active');
-                });
+                })
+                ->where(fn (Builder $q) => self::applyListingModeration($q));
 
             if (!empty($filters['category_id'])) {
                 $lq->where('category_id', (int) $filters['category_id']);
@@ -1323,10 +1284,11 @@ class SearchService
                 })
                 ->where('events.start_time', '>=', now());
             EventSearchVisibility::applyToEloquent($eq, (int) TenantContext::getId());
+            EventSearchVisibility::applyAudienceToEloquent($eq, (int) TenantContext::getId(), $viewerId);
 
             $this->applySortOrder($eq, $sort, 'start_time');
             foreach ($eq->limit($limit)->get() as $e) {
-                $allItems[] = [...$e->toArray(), 'type' => 'event'];
+                $allItems[] = [...self::eventSearchRow($e), 'type' => 'event'];
             }
         }
 
@@ -1338,6 +1300,7 @@ class SearchService
                     $q->where('name', 'LIKE', $like)
                       ->orWhere('description', 'LIKE', $like);
                 });
+            self::applyGroupSearchVisibility($gq, $viewerId);
 
             $this->applySortOrder($gq, $sort);
             foreach ($gq->limit($limit)->get() as $g) {
@@ -1459,7 +1422,7 @@ class SearchService
      *
      * @return array{listings: array, users: array, events: array, groups: array}
      */
-    public function suggestions(string $term, int $limit = 5): array
+    public function suggestions(string $term, int $limit = 5, ?int $viewerId = null): array
     {
         if (strlen($term) < 2) {
             return ['listings' => [], 'users' => [], 'events' => [], 'groups' => []];
@@ -1467,7 +1430,7 @@ class SearchService
 
         if (static::isAvailable()) {
             try {
-                return $this->suggestionsViaMeilisearch($term, $limit);
+                return $this->suggestionsViaMeilisearch($term, $limit, $viewerId);
             } catch (\Throwable $e) {
                 // Never let a Meilisearch error 500 autocomplete — degrade to SQL.
                 Log::warning('SearchService: Meilisearch suggestions failed, falling back to SQL', [
@@ -1476,10 +1439,10 @@ class SearchService
             }
         }
 
-        return $this->suggestionsViaSQL($term, $limit);
+        return $this->suggestionsViaSQL($term, $limit, $viewerId);
     }
 
-    private function suggestionsViaMeilisearch(string $term, int $limit): array
+    private function suggestionsViaMeilisearch(string $term, int $limit, ?int $viewerId = null): array
     {
         $client   = static::client();
         $tenantId = TenantContext::getId();
@@ -1515,7 +1478,9 @@ class SearchService
             ->whereIn('events.id', $eventIds)
             ->where('events.start_time', '>=', now())
             ->select(['events.id', 'events.title', 'events.start_time']);
-        $eventRows = EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId)
+        EventSearchVisibility::applyToEloquent($eventQuery, (int) $tenantId);
+        EventSearchVisibility::applyAudienceToEloquent($eventQuery, (int) $tenantId, $viewerId);
+        $eventRows = $eventQuery
             ->get()
             ->keyBy('id');
         $events = [];
@@ -1526,16 +1491,23 @@ class SearchService
         }
 
         // Autocomplete must also hide private groups from non-members.
-        $groups = $client->index('groups')->search($term, [
+        $groupHits = $client->index('groups')->search($term, [
             'filter'               => "tenant_id = {$tenantId} AND privacy = 'public'",
             'limit'                => $limit,
             'attributesToRetrieve' => ['id', 'name'],
         ])->getHits();
+        // Revalidate against the database: a stale document can still claim
+        // `privacy = public` after the group was made private or archived.
+        $visibleGroups = array_flip($this->visibleGroupIds(array_column($groupHits, 'id'), $viewerId));
+        $groups = array_values(array_filter(
+            $groupHits,
+            static fn (array $hit): bool => isset($visibleGroups[(int) ($hit['id'] ?? 0)]),
+        ));
 
         return compact('listings', 'users', 'events', 'groups');
     }
 
-    private function suggestionsViaSQL(string $term, int $limit): array
+    private function suggestionsViaSQL(string $term, int $limit, ?int $viewerId = null): array
     {
         $like = '%' . $term . '%';
 
@@ -1544,6 +1516,7 @@ class SearchService
             ->where(function (Builder $q) {
                 $q->whereNull('status')->orWhere('status', 'active');
             })
+            ->where(fn (Builder $q) => self::applyListingModeration($q))
             ->select('id', 'title', 'type')
             ->orderByDesc('id')
             ->limit($limit)
@@ -1574,19 +1547,20 @@ class SearchService
         $eventQuery = $this->event->newQueryWithoutScopes()
             ->where('title', 'LIKE', $like)
             ->where('events.start_time', '>=', now());
-        $events = EventSearchVisibility::applyToEloquent(
-            $eventQuery,
-            (int) TenantContext::getId(),
-        )
+        EventSearchVisibility::applyToEloquent($eventQuery, (int) TenantContext::getId());
+        EventSearchVisibility::applyAudienceToEloquent($eventQuery, (int) TenantContext::getId(), $viewerId);
+        $events = $eventQuery
             ->select('id', 'title', 'start_time')
             ->orderBy('start_time')
             ->limit($limit)
             ->get()
             ->toArray();
 
-        $groups = $this->group->newQuery()
+        $groupQuery = $this->group->newQuery()
             ->active()
-            ->where('name', 'LIKE', $like)
+            ->where('name', 'LIKE', $like);
+        self::applyGroupSearchVisibility($groupQuery, $viewerId);
+        $groups = $groupQuery
             ->select('id', 'name')
             ->orderByDesc('id')
             ->limit($limit)
@@ -1680,9 +1654,10 @@ class SearchService
      * state. Preserves Meilisearch relevance order while dropping stale rows.
      *
      * @param array<int,mixed> $eventIds
+     * @param int|null $viewerId Viewer for the group-audience check; null = anonymous.
      * @return list<int>
      */
-    private static function visibleEventIds(array $eventIds, int $tenantId): array
+    private static function visibleEventIds(array $eventIds, int $tenantId, ?int $viewerId = null): array
     {
         $eventIds = array_values(array_unique(array_filter(
             array_map('intval', $eventIds),
@@ -1695,7 +1670,9 @@ class SearchService
         $query = Event::withoutGlobalScopes()
             ->whereIn('events.id', $eventIds)
             ->where('events.start_time', '>=', now());
-        $visible = EventSearchVisibility::applyToEloquent($query, $tenantId)
+        EventSearchVisibility::applyToEloquent($query, $tenantId);
+        EventSearchVisibility::applyAudienceToEloquent($query, $tenantId, $viewerId);
+        $visible = $query
             ->pluck('events.id')
             ->map(static fn (mixed $id): int => (int) $id)
             ->flip();
@@ -1704,6 +1681,147 @@ class SearchService
             $eventIds,
             static fn (int $id): bool => $visible->has($id),
         ));
+    }
+
+    /**
+     * Hydrate Meilisearch event hits from the database, preserving relevance
+     * order. The index can be stale after an outage or a delayed asynchronous
+     * delete, and it carries no group audience, so every hit is re-checked
+     * against the canonical lifecycle AND the viewer's group audience.
+     *
+     * @param array<int, array<string, mixed>> $hits
+     * @return list<array<string, mixed>>
+     */
+    private function hydrateEventHits(array $hits, int $tenantId, ?int $viewerId): array
+    {
+        $eventIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
+        if ($eventIds === []) {
+            return [];
+        }
+
+        $eventQuery = $this->event->newQueryWithoutScopes()
+            ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url'])
+            ->whereIn('events.id', $eventIds)
+            ->where('events.start_time', '>=', now());
+        EventSearchVisibility::applyToEloquent($eventQuery, $tenantId);
+        EventSearchVisibility::applyAudienceToEloquent($eventQuery, $tenantId, $viewerId);
+        $events = $eventQuery->get()->keyBy('id');
+
+        $rows = [];
+        foreach ($eventIds as $eventId) {
+            if ($events->has($eventId)) {
+                $rows[] = self::eventSearchRow($events[$eventId]);
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Search results are a discovery surface: they never carry an event's join
+     * link or video URL, whoever is searching. The shared contract mapper
+     * reports the event as online with a `restricted` reveal state; the event
+     * page (EventPolicy::viewMeetingLink) is where an eligible member gets it.
+     *
+     * @return array<string, mixed>
+     */
+    private static function eventSearchRow(Event $event): array
+    {
+        $row = $event->toArray();
+
+        return EventContractMapper::redactLegacyOnlineFields(
+            $row,
+            EventContractMapper::onlineAccess($row, false),
+        );
+    }
+
+    /**
+     * Hydrate Meilisearch group hits from the database under the same group
+     * visibility rule as the SQL path, preserving relevance order.
+     *
+     * @param array<int, array<string, mixed>> $hits
+     * @return list<array<string, mixed>>
+     */
+    private function hydrateGroupHits(array $hits, ?int $viewerId): array
+    {
+        $groupIds = array_values(array_unique(array_map('intval', array_column($hits, 'id'))));
+        if ($groupIds === []) {
+            return [];
+        }
+
+        $groupQuery = $this->group->newQuery()
+            ->active()
+            ->withCount('activeMembers')
+            ->whereIn('groups.id', $groupIds);
+        self::applyGroupSearchVisibility($groupQuery, $viewerId);
+        $groups = $groupQuery->get()->keyBy('id');
+
+        $rows = [];
+        foreach ($groupIds as $groupId) {
+            if ($groups->has($groupId)) {
+                $rows[] = [
+                    ...$groups[$groupId]->toArray(),
+                    'members_count' => $groups[$groupId]->active_members_count,
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param array<int, mixed> $groupIds
+     * @return list<int>
+     */
+    private function visibleGroupIds(array $groupIds, ?int $viewerId): array
+    {
+        $groupIds = array_values(array_unique(array_filter(
+            array_map('intval', $groupIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+        if ($groupIds === []) {
+            return [];
+        }
+
+        $query = $this->group->newQuery()->active()->whereIn('groups.id', $groupIds);
+        self::applyGroupSearchVisibility($query, $viewerId);
+        $visible = $query->pluck('groups.id')->map(static fn (mixed $id): int => (int) $id)->flip();
+
+        return array_values(array_filter($groupIds, static fn (int $id): bool => $visible->has($id)));
+    }
+
+    /**
+     * The group directory rule (GroupService::getAll): public groups, plus
+     * groups the viewer owns or actively belongs to; tenant admins
+     * (GroupAccessService::isTenantAdmin) see all. Null viewer = public only.
+     */
+    private static function applyGroupSearchVisibility(Builder $query, ?int $viewerId): void
+    {
+        $viewerId = $viewerId !== null && $viewerId > 0 ? $viewerId : null;
+        if ($viewerId !== null && GroupAccessService::isTenantAdmin($viewerId)) {
+            return;
+        }
+
+        $tenantId = (int) TenantContext::getId();
+        $query->where(static function (Builder $q) use ($viewerId, $tenantId): void {
+            $q->where('groups.visibility', 'public');
+            if ($viewerId !== null) {
+                $q->orWhere('groups.owner_id', $viewerId)
+                    ->orWhereIn('groups.id', static function ($sub) use ($viewerId, $tenantId): void {
+                        $sub->select('group_id')
+                            ->from('group_members')
+                            ->where('tenant_id', $tenantId)
+                            ->where('user_id', $viewerId)
+                            ->where('status', 'active');
+                    });
+            }
+        });
+    }
+
+    /** Listings still awaiting (or refused by) moderation are not discoverable. */
+    private static function applyListingModeration(Builder $query): void
+    {
+        $query->whereNull('moderation_status')->orWhere('moderation_status', 'approved');
     }
 
     // =========================================================================

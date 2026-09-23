@@ -134,7 +134,8 @@ class SearchController extends BaseApiController
 
         $limit = $this->queryInt('limit', 5, 1, 10);
 
-        $suggestions = $this->searchService->suggestions($query, $limit);
+        // Group events and private groups are filtered by the viewer's audience.
+        $suggestions = $this->searchService->suggestions($query, $limit, $this->getOptionalUserId());
 
         return $this->respondWithData($suggestions);
     }

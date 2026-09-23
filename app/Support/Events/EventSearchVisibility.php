@@ -10,9 +10,12 @@ namespace App\Support\Events;
 
 use App\Enums\EventOperationalState;
 use App\Enums\EventPublicationState;
+use App\Enums\GroupStatus;
 use App\Models\Event;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\DB;
 use UnexpectedValueException;
 
 /** Canonical, fail-closed visibility boundary for every Event search surface. */
@@ -76,6 +79,36 @@ final class EventSearchVisibility
     }
 
     /**
+     * Restrict an Eloquent query to events whose group audience includes the viewer.
+     *
+     * Opt-in and viewer-aware: `applyToEloquent()` answers "is this occurrence
+     * discoverable at all", this answers "may THIS viewer discover it". A null
+     * viewer is treated as anonymous (public groups only), never as "no filter".
+     */
+    public static function applyAudienceToEloquent(
+        EloquentBuilder $query,
+        int $tenantId,
+        ?int $viewerId,
+        string $table = 'events',
+    ): EloquentBuilder {
+        self::applyAudience($query, $tenantId, $viewerId, $table);
+
+        return $query;
+    }
+
+    /** Query-builder variant of applyAudienceToEloquent(). */
+    public static function applyAudienceToQuery(
+        QueryBuilder $query,
+        int $tenantId,
+        ?int $viewerId,
+        string $table = 'events',
+    ): QueryBuilder {
+        self::applyAudience($query, $tenantId, $viewerId, $table);
+
+        return $query;
+    }
+
+    /**
      * Shared Meilisearch predicate. Documents without the canonical lifecycle
      * fields are deliberately excluded, so stale legacy documents cannot leak.
      */
@@ -129,6 +162,80 @@ final class EventSearchVisibility
                         ->where($operational, EventOperationalState::Postponed->value);
                 });
             });
+    }
+
+    /**
+     * The same audience rule as EventService::applyDiscoveryVisibility() and
+     * EventPolicy::canViewAudience(): an event with no group is visible; a group
+     * event only when its group is active in this tenant and is public, owned by
+     * the viewer, has the viewer as an active member, or the viewer holds tenant
+     * admin authority (TenantAdminScope).
+     */
+    private static function applyAudience(
+        EloquentBuilder|QueryBuilder $query,
+        int $tenantId,
+        ?int $viewerId,
+        string $table,
+    ): void {
+        $groupColumn = self::column($table, 'group_id');
+        $viewerId = $viewerId !== null && $viewerId > 0 ? $viewerId : null;
+        $isTenantAdmin = self::viewerIsTenantAdmin($viewerId, $tenantId);
+
+        $query->where(static function ($visibility) use ($groupColumn, $viewerId, $tenantId, $isTenantAdmin): void {
+            $visibility->whereNull($groupColumn)
+                ->orWhereExists(static function ($group) use ($groupColumn, $viewerId, $tenantId, $isTenantAdmin): void {
+                    $group->selectRaw('1')
+                        ->from('groups as search_audience_groups')
+                        ->whereColumn('search_audience_groups.id', $groupColumn)
+                        ->where('search_audience_groups.tenant_id', $tenantId)
+                        ->where('search_audience_groups.status', GroupStatus::Active->value);
+
+                    if ($isTenantAdmin) {
+                        return;
+                    }
+
+                    $group->where(static function ($audience) use ($viewerId, $tenantId): void {
+                        $audience->whereNull('search_audience_groups.visibility')
+                            ->orWhere('search_audience_groups.visibility', 'public');
+
+                        if ($viewerId !== null) {
+                            $audience->orWhere('search_audience_groups.owner_id', $viewerId)
+                                ->orWhereExists(static function ($membership) use ($tenantId, $viewerId): void {
+                                    $membership->selectRaw('1')
+                                        ->from('group_members as search_audience_members')
+                                        ->whereColumn('search_audience_members.group_id', 'search_audience_groups.id')
+                                        ->where('search_audience_members.tenant_id', $tenantId)
+                                        ->where('search_audience_members.user_id', $viewerId)
+                                        ->where('search_audience_members.status', 'active');
+                                });
+                        }
+                    });
+                });
+        });
+    }
+
+    /** Mirrors EventService::isTenantAdmin(): the viewer's own active row, scoped by TenantAdminScope. */
+    private static function viewerIsTenantAdmin(?int $viewerId, int $tenantId): bool
+    {
+        if ($viewerId === null) {
+            return false;
+        }
+
+        $user = DB::table('users')
+            ->where('id', $viewerId)
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->select([
+                'tenant_id',
+                'role',
+                'is_admin',
+                'is_super_admin',
+                'is_tenant_super_admin',
+                'is_god',
+            ])
+            ->first();
+
+        return TenantAdminScope::allows($user, $tenantId);
     }
 
     private static function hasConcreteOccurrenceIdentity(array|Event $event): bool
