@@ -240,7 +240,7 @@ generates the correct snippet for you at **App integrity → App signing**.
 | Path | What |
 | --- | --- |
 | `play/timebank-global-<version>-build<code>.aab` (+ `.sha256`) | Every Play bundle, one per version code |
-| `sideload/timebank-global-<version>-<live|local>-<yyyymmdd-hhmm>.apk` (+ `.sha256`) | Every APK from `npm run build:apk` |
+| `sideload/timebank-global-<version>-<live\|local>-<yyyymmdd-hhmm>.apk` (+ `.sha256`) | Every APK from `npm run build:apk` |
 | `INDEX.tsv` | One line per build: when, kind, version, code, **source commit**, SHA-256, size, file, API host |
 
 `scripts/build-aab-play.sh` and `scripts/build-apk-local.sh` call
