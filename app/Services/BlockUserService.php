@@ -11,6 +11,7 @@ use App\Exceptions\SafeguardingPolicyException;
 use App\Models\BlockedUser;
 use App\Models\Connection;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -117,6 +118,45 @@ class BlockUserService
                 });
             })
             ->exists();
+    }
+
+    /**
+     * Remove candidates that have a block in either direction with the viewer.
+     *
+     * The correlated NOT EXISTS keeps discovery queries bounded in SQL instead
+     * of first materialising every blocked member into a WHERE NOT IN list.
+     */
+    public static function applyBilateralExclusion(
+        Builder|QueryBuilder $query,
+        int $tenantId,
+        int $viewerId,
+        string $candidateIdColumn = 'users.id',
+    ): Builder|QueryBuilder {
+        if ($viewerId <= 0) {
+            return $query;
+        }
+
+        // Callers pass a fixed table/alias column, never request input.
+        $candidateIdColumn = preg_replace('/[^A-Za-z0-9_.]/', '', $candidateIdColumn) ?: 'users.id';
+
+        return $query->whereNotExists(function ($blocks) use ($tenantId, $viewerId, $candidateIdColumn): void {
+            $blocks->selectRaw('1')
+                ->from('user_blocks as ai_blocks');
+
+            if (Schema::hasColumn('user_blocks', 'tenant_id')) {
+                $blocks->where('ai_blocks.tenant_id', $tenantId);
+            }
+
+            $blocks->where(function ($directions) use ($viewerId, $candidateIdColumn): void {
+                $directions->where(function ($outbound) use ($viewerId, $candidateIdColumn): void {
+                    $outbound->where('ai_blocks.user_id', $viewerId)
+                        ->whereColumn('ai_blocks.blocked_user_id', $candidateIdColumn);
+                })->orWhere(function ($inbound) use ($viewerId, $candidateIdColumn): void {
+                    $inbound->whereColumn('ai_blocks.user_id', $candidateIdColumn)
+                        ->where('ai_blocks.blocked_user_id', $viewerId);
+                });
+            });
+        });
     }
 
     /**

@@ -370,4 +370,98 @@ class SearchMembersToolTest extends TestCase
             \App\Services\OnboardingConfigService::clearConfigCache(self::TENANT_ID);
         }
     }
+
+    /**
+     * A connections-only profile may still be discoverable to an accepted
+     * connection, but must not be returned to an unrelated member through the
+     * AI assistant when the ordinary profile route would refuse that viewer.
+     */
+    public function test_execute_honours_connections_only_profile_visibility(): void
+    {
+        $token = 'CONNPRIV' . uniqid();
+        $viewer = $this->insertUser();
+        $restricted = $this->insertUser([
+            'skills' => $token,
+            'privacy_profile' => 'connections',
+            'privacy_search' => 1,
+        ]);
+
+        $unrelated = $this->tool->execute(['query' => $token], $viewer);
+
+        $this->assertTrue($unrelated['ok']);
+        $this->assertNotContains(
+            $restricted,
+            array_column($unrelated['results'], 'id'),
+            'An unrelated member must not receive a connections-only profile through AI search.'
+        );
+
+        DB::table('connections')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'requester_id' => $viewer,
+            'receiver_id' => $restricted,
+            'status' => 'accepted',
+            'created_at' => now()->toDateTimeString(),
+            'updated_at' => now()->toDateTimeString(),
+        ]);
+
+        $connected = $this->tool->execute(['query' => $token], $viewer);
+
+        $this->assertTrue($connected['ok']);
+        $this->assertContains(
+            $restricted,
+            array_column($connected['results'], 'id'),
+            'An accepted connection must retain legitimate access to the member profile.'
+        );
+
+        // Preserve the accepted row to model an inconsistent or partially
+        // failed disconnect. A block must still win over the connection.
+        DB::table('user_blocks')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'user_id' => $viewer,
+            'blocked_user_id' => $restricted,
+            'created_at' => now()->toDateTimeString(),
+        ]);
+
+        $blocked = $this->tool->execute(['query' => $token], $viewer);
+        $this->assertNotContains($restricted, array_column($blocked['results'], 'id'));
+    }
+
+    public function test_execute_excludes_members_blocked_in_either_direction(): void
+    {
+        $token = 'BLOCKPRIV' . uniqid();
+        $viewer = $this->insertUser();
+        $target = $this->insertUser([
+            'skills' => $token,
+            'privacy_profile' => 'public',
+            'privacy_search' => 1,
+        ]);
+
+        DB::table('user_blocks')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'user_id' => $target,
+            'blocked_user_id' => $viewer,
+            'created_at' => now()->toDateTimeString(),
+        ]);
+
+        $result = $this->tool->execute(['query' => $token], $viewer);
+
+        $this->assertTrue($result['ok']);
+        $this->assertNotContains($target, array_column($result['results'], 'id'));
+    }
+
+    public function test_execute_does_not_return_an_admin_only_card_whose_profile_link_is_private(): void
+    {
+        $token = 'ADMINPRIV' . uniqid();
+        $admin = $this->insertUser(['role' => 'admin', 'is_admin' => 1]);
+        $restricted = $this->insertUser([
+            'skills' => $token,
+            'privacy_profile' => 'connections',
+            'privacy_search' => 1,
+        ]);
+
+        $result = $this->tool->execute(['query' => $token], $admin);
+
+        $this->assertTrue($result['ok']);
+        $this->assertNotContains($restricted, array_column($result['results'], 'id'));
+    }
 }

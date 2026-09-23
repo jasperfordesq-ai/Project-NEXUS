@@ -7,8 +7,10 @@
 namespace App\Services\AI\Tools;
 
 use App\Core\TenantContext;
+use App\Services\BlockUserService;
 use Illuminate\Support\Facades\DB;
 use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -82,6 +84,10 @@ class SearchMembersTool extends AbstractTool
             });
 
         MemberDirectoryVisibility::applyToQuery($q, $tenantId);
+        // The member-facing profile route has no administrator privacy bypass;
+        // keep AI cards aligned so every returned profile link is readable.
+        MemberProfileVisibility::applyToQuery($q, $tenantId, $userId, 'users', false);
+        BlockUserService::applyBilateralExclusion($q, $tenantId, $userId);
 
         if ($location !== '') {
             $locLike = '%' . str_replace(['%', '_'], ['\%', '\_'], $location) . '%';

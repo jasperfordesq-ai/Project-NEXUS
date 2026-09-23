@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- AI member searches now enforce each member's profile visibility and bilateral blocks at database hydration time. Connections-only profiles are returned only to accepted connections (or the existing administrative privacy exemption), blocked pairs are excluded in either direction, and semantic-search hits are rechecked against current settings before any profile fields reach the model or the response (F-049).
+
 - Members no longer see draft or unpublished KISS meetings, or the notes coordinators write about them (F-134).
 
 - Cover-care suggestions now respect members' "don't list me" and connections-only privacy settings, and no longer show their location or verification status (F-135).

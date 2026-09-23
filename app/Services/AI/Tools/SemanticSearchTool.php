@@ -8,8 +8,10 @@ namespace App\Services\AI\Tools;
 
 use App\Core\TenantContext;
 use App\Services\EmbeddingService;
+use App\Services\BlockUserService;
 use App\Support\Events\EventSearchVisibility;
 use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
@@ -189,6 +191,10 @@ class SemanticSearchTool extends AbstractTool
                 $query->where('status', 'active')
                     ->where('id', '!=', $userId);
                 MemberDirectoryVisibility::applyToQuery($query, $tenantId);
+                // The member-facing profile route has no administrator privacy
+                // bypass; do not return a card whose link the viewer cannot open.
+                MemberProfileVisibility::applyToQuery($query, $tenantId, $userId, 'users', false);
+                BlockUserService::applyBilateralExclusion($query, $tenantId, $userId);
                 break;
 
             case 'event':

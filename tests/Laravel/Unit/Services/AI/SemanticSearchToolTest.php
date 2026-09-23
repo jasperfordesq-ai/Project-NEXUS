@@ -244,4 +244,121 @@ class SemanticSearchToolTest extends TestCase
             DB::table('users')->whereIn('id', [$listed->id, $optedOut->id])->delete();
         }
     }
+
+    public function test_semantic_search_honours_connections_only_profile_visibility(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $viewer = User::factory()->forTenant($this->testTenantId)->create();
+        $restricted = User::factory()->forTenant($this->testTenantId)->create([
+            'privacy_profile' => 'connections',
+            'privacy_search' => 1,
+        ]);
+
+        try {
+            $service = new class((int) $restricted->id) extends EmbeddingService {
+                public function __construct(private readonly int $restrictedId) {}
+
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000, ?callable $beforeProviderCall = null): array
+                {
+                    return [[
+                        'content_type' => 'user',
+                        'content_id' => $this->restrictedId,
+                        'score' => 0.99,
+                    ]];
+                }
+            };
+
+            $tool = new SemanticSearchTool($service);
+            $unrelated = $tool->execute([
+                'query' => 'member profile',
+                'types' => ['user'],
+            ], (int) $viewer->id);
+
+            $this->assertTrue($unrelated['ok']);
+            $this->assertSame([], $unrelated['results']);
+
+            DB::table('connections')->insert([
+                'tenant_id' => $this->testTenantId,
+                // Reverse orientation from SearchMembersToolTest: accepted
+                // connections must work regardless of who sent the request.
+                'requester_id' => (int) $restricted->id,
+                'receiver_id' => (int) $viewer->id,
+                'status' => 'accepted',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $connected = $tool->execute([
+                'query' => 'member profile',
+                'types' => ['user'],
+            ], (int) $viewer->id);
+
+            $this->assertTrue($connected['ok']);
+            $this->assertSame([(int) $restricted->id], array_column($connected['results'], 'id'));
+        } finally {
+            DB::table('connections')
+                ->where('tenant_id', $this->testTenantId)
+                ->where(function ($query) use ($viewer, $restricted) {
+                    $query->where(function ($pair) use ($viewer, $restricted) {
+                        $pair->where('requester_id', $viewer->id)->where('receiver_id', $restricted->id);
+                    })->orWhere(function ($pair) use ($viewer, $restricted) {
+                        $pair->where('requester_id', $restricted->id)->where('receiver_id', $viewer->id);
+                    });
+                })
+                ->delete();
+            DB::table('users')->whereIn('id', [$viewer->id, $restricted->id])->delete();
+        }
+    }
+
+    public function test_semantic_search_excludes_members_blocked_in_either_direction(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $viewer = User::factory()->forTenant($this->testTenantId)->create();
+        $target = User::factory()->forTenant($this->testTenantId)->create([
+            'privacy_profile' => 'public',
+            'privacy_search' => 1,
+        ]);
+
+        try {
+            DB::table('user_blocks')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => (int) $viewer->id,
+                'blocked_user_id' => (int) $target->id,
+                'created_at' => now(),
+            ]);
+
+            $service = new class((int) $target->id) extends EmbeddingService {
+                public function __construct(private readonly int $targetId) {}
+
+                public function semanticSearch(string $query, int $tenantId, array $contentTypes = [], int $limit = 10, int $candidateCap = 2000, ?callable $beforeProviderCall = null): array
+                {
+                    return [[
+                        'content_type' => 'user',
+                        'content_id' => $this->targetId,
+                        'score' => 0.99,
+                    ]];
+                }
+            };
+
+            $result = (new SemanticSearchTool($service))->execute([
+                'query' => 'member profile',
+                'types' => ['user'],
+            ], (int) $viewer->id);
+
+            $this->assertTrue($result['ok']);
+            $this->assertSame([], $result['results']);
+        } finally {
+            DB::table('user_blocks')
+                ->where('tenant_id', $this->testTenantId)
+                ->where(function ($query) use ($viewer, $target) {
+                    $query->where(function ($pair) use ($viewer, $target) {
+                        $pair->where('user_id', $viewer->id)->where('blocked_user_id', $target->id);
+                    })->orWhere(function ($pair) use ($viewer, $target) {
+                        $pair->where('user_id', $target->id)->where('blocked_user_id', $viewer->id);
+                    });
+                })
+                ->delete();
+            DB::table('users')->whereIn('id', [$viewer->id, $target->id])->delete();
+        }
+    }
 }
