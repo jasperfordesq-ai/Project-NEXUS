@@ -15,7 +15,6 @@ use App\Services\BlockUserService;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Mockery;
 use Tests\Laravel\TestCase;
@@ -33,9 +32,6 @@ class CaringCaregiverLinkAbuseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (! Schema::hasTable('caring_caregiver_links')) {
-            $this->markTestSkipped('caring_caregiver_links table missing');
-        }
 
         $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first();
         $features = [];

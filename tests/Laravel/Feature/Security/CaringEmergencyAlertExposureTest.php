@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Services\CaringCommunity\EmergencyAlertService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -31,9 +30,6 @@ class CaringEmergencyAlertExposureTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts table missing');
-        }
 
         $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first();
         $features = [];

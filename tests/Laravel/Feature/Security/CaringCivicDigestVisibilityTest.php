@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Services\CaringCommunity\CivicDigestService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Tests\Laravel\TestCase;
 
 /**
@@ -76,10 +75,6 @@ class CaringCivicDigestVisibilityTest extends TestCase
 
     public function test_private_and_secret_group_events_reach_only_group_members(): void
     {
-        if (! Schema::hasTable('events') || ! Schema::hasTable('groups')) {
-            $this->markTestSkipped('events/groups tables missing');
-        }
-
         $owner = $this->member();
         $groupMember = $this->member();
         $outsider = $this->member();
@@ -113,10 +108,6 @@ class CaringCivicDigestVisibilityTest extends TestCase
 
     public function test_targeted_safety_alerts_reach_only_their_targets(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts table missing');
-        }
-
         $target = $this->member();
         $bystander = $this->member();
 

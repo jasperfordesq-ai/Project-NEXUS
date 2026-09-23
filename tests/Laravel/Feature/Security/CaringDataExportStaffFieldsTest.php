@@ -12,7 +12,6 @@ use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -52,9 +51,6 @@ class CaringDataExportStaffFieldsTest extends TestCase
 
     public function test_export_omits_staff_fields_from_safeguarding_reports_but_keeps_members_own_report(): void
     {
-        if (! Schema::hasTable('safeguarding_reports')) {
-            $this->markTestSkipped('safeguarding_reports table missing');
-        }
         $this->enableCaring();
 
         $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
@@ -94,9 +90,6 @@ class CaringDataExportStaffFieldsTest extends TestCase
 
     public function test_export_omits_coordinator_fields_from_vol_logs_but_keeps_logged_hours(): void
     {
-        if (! Schema::hasTable('vol_logs') || ! Schema::hasColumn('vol_logs', 'escalation_note')) {
-            $this->markTestSkipped('vol_logs coordinator columns missing');
-        }
         $this->enableCaring();
 
         $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);

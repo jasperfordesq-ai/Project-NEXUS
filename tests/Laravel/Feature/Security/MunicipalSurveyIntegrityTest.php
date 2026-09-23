@@ -14,7 +14,6 @@ use App\Services\MunicipalSurveyService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -40,12 +39,6 @@ class MunicipalSurveyIntegrityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        foreach (['municipality_surveys', 'municipality_survey_questions', 'municipality_survey_responses'] as $table) {
-            if (! Schema::hasTable($table)) {
-                $this->markTestSkipped("{$table} is not present in the test database.");
-            }
-        }
 
         $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first();
         $features = [];
