@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Bookmarks and saved collections no longer reveal an item the viewer is not allowed to see. Saving or bookmarking now requires that the member can see the item (private-group posts, draft or unapproved listings and jobs, unpublished pages and events outside their audience are refused), and bookmark titles and collection previews are withheld for anything the viewer cannot see — including items in another member's public collection (F-066).
+
 - Membership badges no longer disclose another member's dues amounts, currencies, due dates, payment dates or prior-year history. The member and authorized club administrators retain full dues detail, while other signed-in members receive only the current status needed to render the badge (F-050).
 
 - Course detail now returns a syllabus rather than paid or scheduled lesson content to members who have not enrolled. Explicit free-preview lessons remain readable; enrolled learners receive content only after its drip schedule unlocks, while course authors and administrators retain full editing access (F-047).

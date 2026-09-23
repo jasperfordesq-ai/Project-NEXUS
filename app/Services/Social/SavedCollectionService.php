@@ -9,6 +9,7 @@ namespace App\Services\Social;
 use App\Core\TenantContext;
 use App\Models\Social\SavedCollection;
 use App\Models\Social\SavedItem;
+use App\Support\SavedItemVisibility;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -112,7 +113,8 @@ class SavedCollectionService
         }
         $tenantId = TenantContext::getId();
 
-        if (!$this->itemExistsInTenant($itemType, $itemId)) {
+        // F-066: the saver must be able to see the item, not merely have it exist.
+        if (!$this->itemExistsInTenant($itemType, $itemId) || !SavedItemVisibility::canView($itemType, $itemId, $userId)) {
             throw new \InvalidArgumentException(__('api.saved_item_not_found'));
         }
 
@@ -248,7 +250,9 @@ class SavedCollectionService
             ->paginate($perPage, ['*'], 'page', $page);
 
         $items = $paginator->items();
-        $this->attachPreviews($items);
+        // Previews are judged for the VIEWER: a public collection is read by
+        // members who may not see what its owner can (F-066).
+        $this->attachPreviews($items, $userId);
 
         return [
             'data' => $items,
@@ -277,7 +281,7 @@ class SavedCollectionService
      *
      * @param SavedItem[] $items
      */
-    private function attachPreviews(array $items): void
+    private function attachPreviews(array $items, int $viewerId): void
     {
         $grouped = [];
         foreach ($items as $i) {
@@ -295,7 +299,9 @@ class SavedCollectionService
                     ->select($map['cols'])
                     ->get();
                 foreach ($rows as $r) {
-                    $previews[$type][$r->id] = ['title' => $r->title ?? null];
+                    if (SavedItemVisibility::canView($type, (int) $r->id, $viewerId)) {
+                        $previews[$type][$r->id] = ['title' => $r->title ?? null];
+                    }
                 }
             } catch (\Throwable $e) {
                 // Table may not exist in some installations; skip silently.

@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\Bookmark;
 use App\Models\BookmarkCollection;
+use App\Support\SavedItemVisibility;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,10 @@ class BookmarkService
             return ['bookmarked' => false, 'count' => $count];
         }
 
-        if (!$this->itemExistsInTenant($type, $id)) {
+        // F-066: existence in the tenant is not enough — the saver must be able
+        // to see the item, or its title/content leaks through the bookmark list.
+        // Same message as a missing row, so the refusal is not an existence oracle.
+        if (!$this->itemExistsInTenant($type, $id) || !SavedItemVisibility::canView($type, $id, $userId)) {
             throw new \InvalidArgumentException(__('api.saved_item_not_found'));
         }
 
@@ -102,18 +106,23 @@ class BookmarkService
 
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
-        $this->attachTitles($paginator->items());
+        $this->attachTitles($paginator->items(), $userId);
 
         return $paginator;
     }
 
     /**
      * Batch-fetch titles for a list of Bookmark models and attach them as `title`.
-     * Groups by type and runs one query per type — no N+1.
+     * Groups by type and runs one title query per type; the visibility check
+     * below then runs per row (bounded by per_page, max 100).
+     *
+     * A title is only attached when the viewer may still see the item (F-066):
+     * rows saved before that check existed, or items whose visibility changed
+     * since, must not replay their content.
      *
      * @param Bookmark[] $bookmarks
      */
-    private function attachTitles(array $bookmarks): void
+    private function attachTitles(array $bookmarks, int $viewerId): void
     {
         // Group IDs by type
         $grouped = [];
@@ -134,7 +143,9 @@ class BookmarkService
                 ->pluck($map['col'], 'id');
 
             foreach ($rows as $id => $title) {
-                $titles[$type][$id] = $title;
+                if (SavedItemVisibility::canView($type, (int) $id, $viewerId)) {
+                    $titles[$type][$id] = $title;
+                }
             }
         }
 
