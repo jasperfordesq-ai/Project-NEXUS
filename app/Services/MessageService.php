@@ -149,7 +149,7 @@ class MessageService
         }
 
         $message = Message::query()
-            ->with(['sender', 'receiver', 'attachments'])
+            ->with(self::messageResponseRelations())
             ->whereKey((int) $receipt->message_id)
             ->where('sender_id', $senderId)
             ->first();
@@ -745,7 +745,9 @@ class MessageService
                 }
             }
 
-            $persisted = $message->fresh(['sender', 'receiver', 'attachments'])->toArray();
+            $persisted = $message
+                ->fresh(self::messageResponseRelations())
+                ->toArray();
             if ($idempotencyKey !== '') {
                 DB::table('message_send_receipts')->insert([
                     'tenant_id' => (int) $tenantId,
@@ -780,6 +782,22 @@ class MessageService
         }
 
         return $persisted;
+    }
+
+    /**
+     * Relations allowed in a message write/replay response.
+     *
+     * @return list<string>
+     */
+    private static function messageResponseRelations(): array
+    {
+        $participantColumns = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
+
+        return [
+            "sender:{$participantColumns}",
+            "receiver:{$participantColumns}",
+            'attachments',
+        ];
     }
 
     /**

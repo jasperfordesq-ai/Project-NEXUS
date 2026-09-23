@@ -21,6 +21,22 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasTenantScope;
 
+    /**
+     * Public identity fields for embedding a member in another resource.
+     * Context-specific profile/self/admin responses may deliberately expose
+     * more, but generic relations must start from this projection.
+     *
+     * @var list<string>
+     */
+    public const PUBLIC_IDENTITY_COLUMNS = [
+        'id',
+        'first_name',
+        'last_name',
+        'profile_type',
+        'organization_name',
+        'avatar_url',
+    ];
+
     protected $table = 'users';
 
     protected $fillable = [

@@ -136,6 +136,115 @@ class MessagesControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
 
+    public function test_send_and_idempotent_replay_only_return_public_message_participant_fields(): void
+    {
+        $sender = $this->authenticatedUser();
+        $recipient = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->whereIn('id', [$sender->id, $recipient->id])->update([
+            'phone' => '+353 87 000 0000',
+            'date_of_birth' => '1980-01-02',
+            'location' => 'Private home address',
+            'latitude' => 53.3498,
+            'longitude' => -6.2603,
+            'last_login_at' => now(),
+            'privacy_profile' => 'connections',
+            'privacy_search' => false,
+            'stripe_customer_id' => 'cus_private_message_test',
+        ]);
+
+        $payload = ['recipient_id' => $recipient->id, 'body' => 'Public participant projection'];
+        $headers = ['Idempotency-Key' => 'message-participant-projection-1'];
+        $fresh = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(201);
+        $replay = $this->apiPost('/v2/messages', $payload, $headers)->assertStatus(200);
+
+        foreach ([$fresh, $replay] as $response) {
+            $response
+                ->assertJsonPath('data.sender.id', $sender->id)
+                ->assertJsonPath('data.receiver.id', $recipient->id);
+
+            foreach (['sender', 'receiver'] as $participant) {
+                foreach ([
+                    'email',
+                    'phone',
+                    'date_of_birth',
+                    'location',
+                    'latitude',
+                    'longitude',
+                    'last_login_at',
+                    'role',
+                    'privacy_profile',
+                    'privacy_search',
+                    'stripe_customer_id',
+                    'status',
+                ] as $privateField) {
+                    $response->assertJsonMissingPath("data.{$participant}.{$privateField}");
+                }
+            }
+        }
+    }
+
+    public function test_story_reply_uses_the_same_public_message_participant_projection(): void
+    {
+        $sender = $this->authenticatedUser();
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $owner->id)->update([
+            'phone' => '+353 87 111 1111',
+            'date_of_birth' => '1981-02-03',
+            'location' => 'Private story owner address',
+            'latitude' => 51.8985,
+            'longitude' => -8.4756,
+            'last_login_at' => now(),
+            'privacy_profile' => 'connections',
+            'privacy_search' => false,
+            'stripe_customer_id' => 'cus_private_story_reply_test',
+        ]);
+        $storyId = DB::table('stories')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $owner->id,
+            'media_type' => 'text',
+            'text_content' => 'Story reply projection test',
+            'audience' => 'everyone',
+            'duration' => 5,
+            'is_active' => 1,
+            'view_count' => 0,
+            'expires_at' => now()->addDay(),
+            'created_at' => now(),
+        ]);
+
+        $response = $this->apiPost("/v2/stories/{$storyId}/reply", [
+            'body' => 'Reply without account metadata',
+        ])->assertStatus(201)
+            ->assertJsonPath('data.sender.id', $sender->id)
+            ->assertJsonPath('data.receiver.id', $owner->id)
+            ->assertJsonPath('data.context_type', 'story')
+            ->assertJsonPath('data.context_id', $storyId);
+
+        foreach (['sender', 'receiver'] as $participant) {
+            foreach ([
+                'email',
+                'phone',
+                'date_of_birth',
+                'location',
+                'latitude',
+                'longitude',
+                'last_login_at',
+                'role',
+                'privacy_profile',
+                'privacy_search',
+                'stripe_customer_id',
+                'status',
+            ] as $privateField) {
+                $response->assertJsonMissingPath("data.{$participant}.{$privateField}");
+            }
+        }
+    }
+
     public function test_send_message_replays_the_original_result_for_the_same_client_operation(): void
     {
         $sender = $this->authenticatedUser();

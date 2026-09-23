@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Message send responses now restrict embedded sender and recipient objects to public identity fields. Text, attachment, voice, story-reply, and idempotent replay paths no longer return contact details, date of birth, precise location, login/account metadata, privacy settings, or payment-provider identifiers from the users table (F-085).
+
 - Timebank job offers can no longer create time credits from nothing: the employer must have enough credits to pay when an offer is accepted, and job credit amounts are limited to the same cap and precision as wallet transfers (F-100).
 
 - Blind hiring now also hides candidates' names and emails in the applications CSV export, the job's activity history, the interview list and AI candidate ranking (F-102).
