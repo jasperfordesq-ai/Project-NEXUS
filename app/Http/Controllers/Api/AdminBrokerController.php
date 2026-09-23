@@ -19,6 +19,7 @@ use App\Services\BrokerMessageVisibilityService;
 use App\Services\NotificationDispatcher;
 use App\Models\Notification;
 use App\Support\UserDisplayName;
+use App\Support\Authorization\AdminTier;
 
 /**
  * AdminBrokerController -- Admin time-broker exchange monitoring and risk management.
@@ -1397,12 +1398,26 @@ class AdminBrokerController extends BaseApiController
             // in the recipient's locale, not the broker's. See CLAUDE.md
             // "EMAIL & NOTIFICATION LOCALE — MUST WRAP IN LocaleContext".
             $user = DB::selectOne(
-                "SELECT id, tenant_id, first_name, last_name, preferred_language FROM users WHERE id = ? AND tenant_id = ?",
+                "SELECT id, tenant_id, first_name, last_name, preferred_language, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ? AND tenant_id = ?",
                 [$userId, $tenantId]
             );
 
             if (!$user) {
                 return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+            }
+
+            // F-055: a broker/coordinator may not lift (or set) a restriction on
+            // themselves, and nobody may restrict or release someone of equal or
+            // higher rank. Admin-tier operators may still manage their own row.
+            $actor = DB::selectOne(
+                "SELECT id, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ?",
+                [$adminId]
+            );
+            $mayManage = $actor !== null && ((int) $userId === (int) $adminId
+                ? AdminTier::allows($actor)
+                : AdminTier::outranks($actor, $user));
+            if (!$mayManage) {
+                return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
             }
 
             $userTenantId = (int) $user->tenant_id;

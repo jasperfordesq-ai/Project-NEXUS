@@ -67,8 +67,11 @@ class AdminConfigController extends BaseApiController
         'meta_title', 'meta_description', 'h1_headline', 'hero_intro',
     ];
 
-    /** Authentication feature switches are security policy, not delegated-admin controls. */
-    private const SUPER_ADMIN_FEATURES = [
+    /**
+     * Authentication feature switches are security policy, not delegated-admin controls.
+     * Public so the enterprise config endpoint applies the same gate (F-054).
+     */
+    public const SUPER_ADMIN_FEATURES = [
         'two_factor_authentication',
         'biometric_login',
     ];
@@ -95,8 +98,9 @@ class AdminConfigController extends BaseApiController
     /**
      * Settings that only a platform super-admin (God) may modify.
      * Tenant admins and tenant super-admins are rejected with 403.
+     * Public so the enterprise config endpoint applies the same gate (F-054).
      */
-    private const PLATFORM_SUPER_ADMIN_ONLY_KEYS = [
+    public const PLATFORM_SUPER_ADMIN_ONLY_KEYS = [
         'email_verification',
         'admin_approval',
     ];
@@ -106,8 +110,9 @@ class AdminConfigController extends BaseApiController
      * change them. maintenance_mode takes the whole tenant offline, so it is gated above
      * generic admin: a tenant-super-admin (the community's own top admin) or a platform
      * super-admin may set it; a regular admin is rejected with 403. (SEC-003, 2026-06-21.)
+     * Public so the enterprise config endpoint applies the same gate (F-054).
      */
-    private const SUPER_ADMIN_ONLY_KEYS = [
+    public const SUPER_ADMIN_ONLY_KEYS = [
         'maintenance_mode',
     ];
 

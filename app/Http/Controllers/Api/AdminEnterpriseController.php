@@ -791,6 +791,70 @@ class AdminEnterpriseController extends BaseApiController
         'max_file_upload_mb' => 10,
     ];
 
+    /**
+     * Every key the System Config page reads or writes.
+     *
+     * @return list<string>
+     */
+    private function enterpriseConfigKeys(): array
+    {
+        return array_values(array_unique(array_merge(
+            array_keys(self::CONFIG_DIRECT_COLUMNS),
+            array_keys(self::CONFIG_TENANT_SETTINGS)
+        )));
+    }
+
+    /**
+     * Apply the main settings page's tier gates (AdminConfigController) to
+     * enterprise config keys that land on the same general.* settings (F-054):
+     * email verification and admin approval need a platform super-admin,
+     * maintenance mode needs a (tenant or platform) super-admin.
+     *
+     * Returns the 403 response to send, or null when the caller may proceed.
+     *
+     * @param array<int|string, int|string> $configKeys
+     */
+    private function reservedConfigKeysError(array $configKeys): ?JsonResponse
+    {
+        $needsPlatform = false;
+        $needsSuper = false;
+        foreach ($configKeys as $configKey) {
+            $settingKey = self::CONFIG_TENANT_SETTINGS[(string) $configKey] ?? null;
+            if ($settingKey === null || !str_starts_with($settingKey, 'general.')) {
+                continue;
+            }
+            $generalKey = substr($settingKey, strlen('general.'));
+            if (in_array($generalKey, AdminConfigController::PLATFORM_SUPER_ADMIN_ONLY_KEYS, true)) {
+                $needsPlatform = true;
+            }
+            if (in_array($generalKey, AdminConfigController::SUPER_ADMIN_ONLY_KEYS, true)) {
+                $needsSuper = true;
+            }
+        }
+
+        if ($needsPlatform && !$this->isPlatformSuperAdmin()) {
+            return $this->respondWithError(
+                'AUTH_INSUFFICIENT_PERMISSIONS',
+                __('api.platform_super_admin_auth_settings_required'),
+                null,
+                403
+            );
+        }
+
+        if ($needsSuper) {
+            try {
+                $this->requireSuperAdmin();
+            } catch (\Illuminate\Http\Exceptions\HttpResponseException $e) {
+                $response = $e->getResponse();
+                return $response instanceof JsonResponse
+                    ? $response
+                    : $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.super_admin_required'), null, 403);
+            }
+        }
+
+        return null;
+    }
+
     /** GET /api/v2/admin/enterprise/config */
     public function config(): JsonResponse
     {
@@ -880,6 +944,22 @@ class AdminEnterpriseController extends BaseApiController
         $newConfig = $this->getAllInput();
         if (empty($newConfig)) { return $this->respondWithError('VALIDATION_ERROR', __('api.no_configuration_data'), null, 422); }
 
+        // F-054: accept only the keys this page edits. Every key the System
+        // Config UI sends maps to a tenants column or a tenant_settings row, so
+        // nothing is merged into tenants.configuration any more — that JSON
+        // holds modules and other pages' settings (moderation, languages, …).
+        $recognisedKeys = $this->enterpriseConfigKeys();
+        $unknownKeys = array_values(array_diff(array_map('strval', array_keys($newConfig)), $recognisedKeys));
+        $newConfig = array_intersect_key($newConfig, array_flip($recognisedKeys));
+        if (empty($newConfig)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.no_recognized_settings', ['keys' => implode(', ', $unknownKeys)]), null, 422);
+        }
+
+        $tierError = $this->reservedConfigKeysError(array_keys($newConfig));
+        if ($tierError !== null) {
+            return $tierError;
+        }
+
         try {
             DB::beginTransaction();
 
@@ -934,11 +1014,8 @@ class AdminEnterpriseController extends BaseApiController
                 );
             }
 
-            // 3. Remaining keys go into configuration JSON
-            $row = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
-            $existing = json_decode($row->configuration ?? '{}', true) ?: [];
-            $merged = array_merge($existing, $jsonConfig);
-            DB::update("UPDATE tenants SET configuration = ? WHERE id = ?", [json_encode($merged), $tenantId]);
+            // 3. No key reaches tenants.configuration: the input was restricted to
+            // mapped keys above, so $jsonConfig is empty here (F-054).
 
             DB::commit();
 
@@ -968,11 +1045,27 @@ class AdminEnterpriseController extends BaseApiController
 
         $keys = $this->input('keys');
 
+        if (!empty($keys) && is_array($keys)) {
+            // F-054: only this page's own keys can be reset. Anything else in
+            // tenants.configuration (modules, moderation, languages, …) belongs
+            // to other settings pages and their own permission checks.
+            $requestedKeys = array_values(array_filter($keys, 'is_string'));
+            $keys = array_values(array_intersect($requestedKeys, array_keys(self::CONFIG_DEFAULTS)));
+            if ($keys === []) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.no_recognized_settings', ['keys' => implode(', ', $requestedKeys)]), null, 422);
+            }
+            $tierError = $this->reservedConfigKeysError($keys);
+            if ($tierError !== null) {
+                return $tierError;
+            }
+        }
+
         try {
+            $row = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
+            $config = json_decode($row->configuration ?? '{}', true) ?: [];
+
             if (!empty($keys) && is_array($keys)) {
-                // Reset specific keys — from JSON blob and tenant_settings
-                $row = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$tenantId]);
-                $config = json_decode($row->configuration ?? '{}', true) ?: [];
+                // Reset specific keys — legacy copies in the JSON blob and tenant_settings
                 foreach ($keys as $key) {
                     unset($config[$key]);
                     // Skip shared keys to avoid cross-page conflicts
@@ -983,13 +1076,23 @@ class AdminEnterpriseController extends BaseApiController
                 }
                 DB::update("UPDATE tenants SET configuration = ? WHERE id = ?", [json_encode($config), $tenantId]);
             } else {
-                // Reset all — clear JSON blob and enterprise-only tenant_settings (skip shared keys)
-                DB::update("UPDATE tenants SET configuration = '{}' WHERE id = ?", [$tenantId]);
+                // Reset all — drop legacy copies of this page's keys from the JSON
+                // blob (other pages' keys are kept, F-054) and this page's
+                // tenant_settings, skipping shared keys and any reserved key the
+                // caller is not allowed to change.
+                foreach (array_keys(self::CONFIG_DEFAULTS) as $configKey) {
+                    unset($config[$configKey]);
+                }
+                DB::update("UPDATE tenants SET configuration = ? WHERE id = ?", [json_encode((object) $config), $tenantId]);
                 $resettableKeys = [];
                 foreach (self::CONFIG_TENANT_SETTINGS as $configKey => $settingKey) {
-                    if (!in_array($configKey, self::SHARED_KEYS, true)) {
-                        $resettableKeys[] = $settingKey;
+                    if (in_array($configKey, self::SHARED_KEYS, true)) {
+                        continue;
                     }
+                    if ($this->reservedConfigKeysError([$configKey]) !== null) {
+                        continue;
+                    }
+                    $resettableKeys[] = $settingKey;
                 }
                 if (!empty($resettableKeys)) {
                     $placeholders = implode(',', array_fill(0, count($resettableKeys), '?'));
@@ -2049,6 +2152,31 @@ class AdminEnterpriseController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.feature_type_invalid'), 'type', 422);
         }
 
+        // F-054: same rules as PUT /v2/admin/config/features and /modules
+        // (AdminConfigController::updateFeature / updateModule).
+        if ($type === 'feature' && !array_key_exists($key, \App\Services\TenantFeatureConfig::FEATURE_DEFAULTS)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.unknown_feature', ['feature' => $key]), 'key', 422);
+        }
+        if ($type === 'module' && !array_key_exists($key, \App\Services\TenantFeatureConfig::MODULE_DEFAULTS)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.unknown_module', ['module' => $key]), 'key', 422);
+        }
+        if ($type === 'feature' && in_array($key, AdminConfigController::SUPER_ADMIN_FEATURES, true)) {
+            $this->requireSuperAdmin();
+        }
+        if (
+            $type === 'feature'
+            && $key === 'biometric_login'
+            && $value === false
+            && ($input['confirm_disable'] ?? null) !== true
+        ) {
+            return $this->respondWithError(
+                'PASSKEY_DISABLE_CONFIRMATION_REQUIRED',
+                __('api.validation_failed'),
+                'confirm_disable',
+                409
+            );
+        }
+
         try {
             $row = DB::selectOne("SELECT features, configuration FROM tenants WHERE id = ?", [$tenantId]);
 
@@ -2068,6 +2196,17 @@ class AdminEnterpriseController extends BaseApiController
             try {
                 app(\App\Services\RedisCache::class)->delete('tenant_bootstrap', $tenantId);
             } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
+
+            if ($type === 'feature' && $key === 'biometric_login') {
+                try {
+                    app(\App\Services\AuditLogService::class)->logAdminAction(
+                        $value ? 'passkey_authentication_enabled' : 'passkey_authentication_disabled',
+                        $this->getUserId(),
+                        null,
+                        ['tenant_id' => $tenantId, 'enabled' => $value, 'source' => 'enterprise_config']
+                    );
+                } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: passkey audit failed: ' . $e->getMessage()); }
+            }
 
             return $this->respondWithData(['key' => $key, 'value' => $value, 'type' => $type, 'updated' => true]);
         } catch (\Exception $e) {

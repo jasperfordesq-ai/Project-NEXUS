@@ -40,4 +40,52 @@ final class AdminTier
             || (bool) data_get($user, 'is_tenant_super_admin', false)
             || (bool) data_get($user, 'is_god', false);
     }
+
+    /**
+     * Rank used when one operator acts on another person's account
+     * (security resets, messaging restrictions): god 4, platform super-admin 3,
+     * tenant admin / tenant super-admin 2, broker / coordinator 1, member 0.
+     *
+     * @param object|array<string,mixed> $user
+     */
+    public static function securityRank(object|array $user): int
+    {
+        $role = (string) (data_get($user, 'role') ?? 'member');
+        if ($role === 'god' || !empty(data_get($user, 'is_god'))) {
+            return 4;
+        }
+        if ($role === 'super_admin' || !empty(data_get($user, 'is_super_admin'))) {
+            return 3;
+        }
+        if (
+            in_array($role, ['admin', 'tenant_admin'], true)
+            || !empty(data_get($user, 'is_admin'))
+            || !empty(data_get($user, 'is_tenant_super_admin'))
+        ) {
+            return 2;
+        }
+        // Brokers/coordinators outrank ordinary members but never each other
+        // or any admin — callers require a strictly higher rank.
+        if (in_array($role, self::OPERATIONAL_ROLES, true)) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    /**
+     * True when $actor strictly outranks $target (god may act on anyone).
+     *
+     * @param object|array<string,mixed> $actor
+     * @param object|array<string,mixed> $target
+     */
+    public static function outranks(object|array $actor, object|array $target): bool
+    {
+        $actorRank = self::securityRank($actor);
+        if ($actorRank >= 4) {
+            return true;
+        }
+
+        return $actorRank > self::securityRank($target);
+    }
 }

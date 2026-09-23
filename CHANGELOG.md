@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Community admins can no longer switch off email verification or member approval, turn on maintenance mode, or disable passkeys and two-factor sign-in through the enterprise config screen, and resetting that screen no longer wipes other settings (F-054).
+
+- Brokers can no longer lift a messaging restriction placed on themselves, and nobody can restrict or release a member of equal or higher rank (F-055).
+
 - The accessible frontend now sends each visitor's address to the API in the standard forwarded-address header, which the production API server already trusts from its own network, so one visitor's failed sign-ins, reset or registration attempts can no longer lock out every accessible-frontend user (F-110).
 
 - Club member import no longer returns passwords or account ids, no longer enrols or re-activates existing members, always adds plain members, follows the community's approval rule, and sends new members a password-setup email (F-126).
