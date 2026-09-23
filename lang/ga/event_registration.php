@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Roghnaigh tarlú sonrach den imeacht.',
     'event_unavailable' => 'Níl an t-imeacht seo ar fáil le clárú.',
     'event_started' => 'Tá an t-imeacht seo tosaithe agus tá an clárú dúnta.',
+    'window_closed' => 'Níl an clárú don imeacht seo oscailte faoi láthair.',
     'capacity_full' => 'Tá an t-imeacht seo ag a lánacmhainn.',
     'finite_capacity_required' => 'Ní mór acmhainn theoranta a shocrú don imeacht chun liosta feithimh a úsáid.',
     'capacity_available' => 'Tá áit ar fáil fós; deimhnigh an clárú go díreach.',

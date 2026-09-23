@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Selecteer een specifiek evenementmoment voordat u doorgaat.',
     'event_unavailable' => 'Dit evenement is niet beschikbaar voor registratie.',
     'event_started' => 'De registratie is gesloten omdat het evenement al is begonnen.',
+    'window_closed' => 'De registratie voor dit evenement is op dit moment niet geopend.',
     'capacity_full' => 'Dit evenement heeft de maximale capaciteit bereikt.',
     'finite_capacity_required' => 'Voor de wachtlijst moet een maximaal aantal plaatsen voor het evenement zijn ingesteld.',
     'capacity_available' => 'Er zijn plaatsen beschikbaar, dus de registratie kan direct worden bevestigd.',

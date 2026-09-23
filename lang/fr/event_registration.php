@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Sélectionnez une occurrence précise de l\'événement avant de continuer.',
     'event_unavailable' => 'Cet événement n\'est pas disponible pour les inscriptions.',
     'event_started' => 'Les inscriptions sont closes car l\'événement a déjà commencé.',
+    'window_closed' => 'Les inscriptions à cet événement ne sont pas ouvertes pour le moment.',
     'capacity_full' => 'Cet événement a atteint sa capacité maximale.',
     'finite_capacity_required' => 'Une capacité limitée doit être définie pour utiliser la liste d\'attente.',
     'capacity_available' => 'Des places sont disponibles ; l\'inscription peut donc être confirmée directement.',

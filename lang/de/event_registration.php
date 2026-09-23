@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Wählen Sie einen bestimmten Veranstaltungstermin aus, bevor Sie fortfahren.',
     'event_unavailable' => 'Diese Veranstaltung ist nicht für die Registrierung verfügbar.',
     'event_started' => 'Die Registrierung ist geschlossen, weil die Veranstaltung bereits begonnen hat.',
+    'window_closed' => 'Die Anmeldung für diese Veranstaltung ist derzeit nicht geöffnet.',
     'capacity_full' => 'Diese Veranstaltung ist ausgebucht.',
     'finite_capacity_required' => 'Für die Warteliste muss eine begrenzte Veranstaltungskapazität festgelegt sein.',
     'capacity_available' => 'Es sind Plätze verfügbar, daher kann die Registrierung direkt bestätigt werden.',

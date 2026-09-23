@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Seleziona un\'occorrenza specifica dell\'evento prima di continuare.',
     'event_unavailable' => 'Questo evento non è disponibile per la registrazione.',
     'event_started' => 'Le registrazioni sono chiuse perché l\'evento è già iniziato.',
+    'window_closed' => 'Le registrazioni per questo evento non sono aperte in questo momento.',
     'capacity_full' => 'Questo evento ha raggiunto la capienza massima.',
     'finite_capacity_required' => 'Per utilizzare la lista d\'attesa è necessaria una capienza limitata dell\'evento.',
     'capacity_available' => 'Sono disponibili posti, quindi la registrazione può essere confermata direttamente.',

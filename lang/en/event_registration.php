@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Select a specific event occurrence before continuing.',
     'event_unavailable' => 'This event is not available for registration.',
     'event_started' => 'Registration is closed because the event has already started.',
+    'window_closed' => 'Registration is not open for this event right now.',
     'capacity_full' => 'This event has reached capacity.',
     'finite_capacity_required' => 'A finite event capacity is required to use the waitlist.',
     'capacity_available' => 'Capacity is available, so registration can be confirmed directly.',

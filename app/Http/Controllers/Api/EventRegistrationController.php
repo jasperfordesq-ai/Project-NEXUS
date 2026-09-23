@@ -1023,6 +1023,12 @@ final class EventRegistrationController extends BaseApiController
             'event_registration_capacity_full' => [
                 'EVENT_CAPACITY_FULL', __('event_registration.capacity_full'), null, 409,
             ],
+            'event_registration_window_closed' => [
+                'EVENT_REGISTRATION_CLOSED',
+                __('event_registration.window_closed'),
+                null,
+                409,
+            ],
             'event_registration_tenant_disabled' => [
                 'EVENT_REGISTRATION_DISABLED', __('api.events_registration_disabled'), null, 403,
             ],

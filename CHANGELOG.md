@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- An event organiser's decision now holds. A member the organiser declined or removed can still ask for a place again, but the request waits as "pending" for the organiser instead of confirming itself; a member already awaiting approval can no longer confirm themselves; "Require organiser approval" now puts self-registrations in pending; and published registration open/close dates are enforced (F-099).
+
 - A revoked "Peer Endorsed" verification badge now stays revoked: further peer endorsements can no longer restore a badge an administrator took away, and automatically granted badges no longer name the endorsing member as the verifier (F-068).
 
 - Regional network administrators can no longer turn themselves or another branch account into a platform administrator through the generic user create/edit API, or alter accounts at their own or a higher security tier. Platform authority remains available only through the dedicated god-only grant route. User changes are re-authorized under database locks and now write an atomic old/new audit record (F-053).

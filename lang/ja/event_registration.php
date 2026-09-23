@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => '特定のイベント開催回を選択してください。',
     'event_unavailable' => 'このイベントは登録を受け付けていません。',
     'event_started' => 'このイベントはすでに開始されているため、登録は締め切られました。',
+    'window_closed' => 'このイベントの登録は現在受け付けていません。',
     'capacity_full' => 'このイベントは定員に達しています。',
     'finite_capacity_required' => 'キャンセル待ちを使用するには、イベントの定員を設定する必要があります。',
     'capacity_available' => 'まだ空きがあるため、登録を直接確定できます。',

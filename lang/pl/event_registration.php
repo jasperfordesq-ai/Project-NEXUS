@@ -351,6 +351,7 @@ return [
     'concrete_occurrence_required' => 'Przed kontynuowaniem wybierz konkretne wystąpienie wydarzenia.',
     'event_unavailable' => 'To wydarzenie nie jest dostępne do rejestracji.',
     'event_started' => 'Rejestracja jest zamknięta, ponieważ wydarzenie już się rozpoczęło.',
+    'window_closed' => 'Rejestracja na to wydarzenie nie jest obecnie otwarta.',
     'capacity_full' => 'Osiągnięto maksymalną liczbę uczestników tego wydarzenia.',
     'finite_capacity_required' => 'Aby korzystać z listy oczekujących, wydarzenie musi mieć określony limit miejsc.',
     'capacity_available' => 'Są dostępne miejsca, więc rejestrację można potwierdzić bezpośrednio.',

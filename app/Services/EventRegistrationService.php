@@ -494,6 +494,14 @@ final class EventRegistrationService
 
         $this->assertActorAuthorized($event, $subject, $actor);
 
+        // F-099: published registration settings bind a member acting on their
+        // own registration. Resolved BEFORE the idempotency replay check so a
+        // retried "confirm" that was turned into "pending" replays cleanly.
+        $memberActing = (int) $actor->getKey() === $userId;
+        if ($memberActing && $acceptedWaitlistEntryId === null) {
+            $target = $this->memberRequestedTarget($event, $userId, $pool, $target);
+        }
+
         if (in_array($target, [
             EventCapacityRegistrationState::Invited,
             EventCapacityRegistrationState::Pending,
@@ -566,6 +574,16 @@ final class EventRegistrationService
         $from = $registration?->registration_state ?? $legacyState;
         $canonicalizing = $registration === null && $from === $target;
         $managerActing = (int) $actor->getKey() !== $userId;
+
+        // F-099 race guard: if an organiser declined or cancelled this member
+        // between memberRequestedTarget()'s read and this lock, the member's
+        // request still only becomes a request for the organiser to approve.
+        if (! $managerActing
+            && $registration !== null
+            && $target === EventCapacityRegistrationState::Confirmed
+            && $this->isOrganiserDecision($registration, $userId)) {
+            $target = EventCapacityRegistrationState::Pending;
+        }
 
         if ($managerActing
             && in_array($target, [
@@ -774,6 +792,112 @@ final class EventRegistrationService
             $userId,
             'registration_' . $state->value,
         );
+    }
+
+    /**
+     * The state a member's own "register" request should produce (F-099).
+     *
+     * A member keeps the right to ask for a place, but never to overrule the
+     * organiser:
+     * - an organiser's decline or cancellation, or a place already awaiting
+     *   approval, turns "confirm" into "pending" for the organiser to approve;
+     * - outside the PUBLISHED open/close window the request is refused;
+     * - with approval_mode "manual" a confirm becomes pending.
+     * An invitation the organiser issued, or an existing confirmed place, is
+     * left alone: the organiser has already decided. A member who withdrew
+     * their own place re-registers under the normal rules.
+     *
+     * Resolved before the idempotency replay check, so a retried request that
+     * was turned into "pending" replays against the same target.
+     */
+    private function memberRequestedTarget(
+        Event $event,
+        int $userId,
+        string $pool,
+        EventCapacityRegistrationState $target,
+    ): EventCapacityRegistrationState {
+        if (! in_array($target, [
+            EventCapacityRegistrationState::Pending,
+            EventCapacityRegistrationState::Confirmed,
+        ], true)) {
+            return $target;
+        }
+
+        /** @var EventRegistration|null $current */
+        $current = EventRegistration::withoutGlobalScopes()
+            ->where('tenant_id', (int) $event->tenant_id)
+            ->where('event_id', (int) $event->getKey())
+            ->where('user_id', $userId)
+            ->where('capacity_pool_key', $pool)
+            ->first(['id', 'tenant_id', 'registration_state', 'registration_version', 'state_changed_by']);
+        $currentState = $current?->registration_state;
+        if (in_array($currentState, [
+            EventCapacityRegistrationState::Invited,
+            EventCapacityRegistrationState::Confirmed,
+        ], true)) {
+            return $target;
+        }
+
+        $settings = DB::table('event_registration_settings')
+            ->where('tenant_id', (int) $event->tenant_id)
+            ->where('event_id', (int) $event->getKey())
+            ->where('status', 'published')
+            ->first(['approval_mode', 'opens_at_utc', 'closes_at_utc']);
+
+        if ($settings !== null && $settings->opens_at_utc !== null && $settings->closes_at_utc !== null) {
+            $now = Carbon::now('UTC');
+            if ($now->lt(Carbon::parse((string) $settings->opens_at_utc, 'UTC'))
+                || $now->gt(Carbon::parse((string) $settings->closes_at_utc, 'UTC'))) {
+                throw new EventRegistrationException('event_registration_window_closed');
+            }
+        }
+
+        if ($target !== EventCapacityRegistrationState::Confirmed) {
+            return $target;
+        }
+        if (($current !== null && $currentState === EventCapacityRegistrationState::Pending
+                && $this->pendingAwaitsOrganiser($current, $userId))
+            || ($current !== null && $this->isOrganiserDecision($current, $userId))
+            || ($settings !== null && (string) $settings->approval_mode === 'manual')) {
+            return EventCapacityRegistrationState::Pending;
+        }
+
+        return $target;
+    }
+
+    /**
+     * Is this pending place waiting for the organiser, rather than a member's
+     * own intermediate step (e.g. an invited member marking themselves pending)?
+     * It is when staff put it there, or when it is a re-request after an
+     * organiser's decline or cancellation. Read from the history row that
+     * produced the current version.
+     */
+    private function pendingAwaitsOrganiser(EventRegistration $registration, int $userId): bool
+    {
+        $produced = DB::table('event_registration_history')
+            ->where('tenant_id', (int) $registration->tenant_id)
+            ->where('registration_id', (int) $registration->getKey())
+            ->where('registration_version', (int) $registration->registration_version)
+            ->first(['actor_user_id', 'from_state']);
+        if ($produced === null) {
+            return false;
+        }
+
+        return (int) ($produced->actor_user_id ?? 0) !== $userId
+            || in_array((string) ($produced->from_state ?? ''), [
+                EventCapacityRegistrationState::Declined->value,
+                EventCapacityRegistrationState::Cancelled->value,
+            ], true);
+    }
+
+    /** Declined or cancelled by someone other than the member (the organiser or staff). */
+    private function isOrganiserDecision(EventRegistration $registration, int $userId): bool
+    {
+        return in_array($registration->registration_state, [
+            EventCapacityRegistrationState::Declined,
+            EventCapacityRegistrationState::Cancelled,
+        ], true)
+            && (int) ($registration->state_changed_by ?? 0) !== $userId;
     }
 
     private function assertActorAuthorized(Event $event, User $subject, User $actor): void
