@@ -4,14 +4,14 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 63,
-    "call_sites": 686,
-    "distinct_endpoints": 541,
-    "verified": 541,
+    "api_modules": 64,
+    "call_sites": 692,
+    "distinct_endpoints": 544,
+    "verified": 544,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
-    "dynamic_unverifiable": 102,
+    "dynamic_unverifiable": 105,
     "inline_fetch_offenders": 0
   },
   "missing_from_routes": [],
@@ -275,6 +275,21 @@
     {
       "at": "eventSafety.ts:189",
       "http": "DELETE",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafetyManagement.ts:68",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafetyManagement.ts:74",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "eventSafetyManagement.ts:80",
+      "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
@@ -1265,6 +1280,33 @@
       "matched_via": "exact",
       "sites": [
         "events.ts:1127"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/safety/reviews",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventSafetyManagement.ts:84"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/events/{param}/safety/reviews",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventSafetyManagement.ts:90"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/events/{param}/safety/reviews/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventSafetyManagement.ts:95"
       ]
     },
     {

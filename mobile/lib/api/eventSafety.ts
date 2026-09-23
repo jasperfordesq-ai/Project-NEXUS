@@ -103,7 +103,7 @@ const eventSafetyEnvelopeSchema = z.object({ data: eventSafetySchema }).passthro
 export type EventSafety = z.infer<typeof eventSafetySchema>;
 export type GuardianRelationship = 'parent' | 'guardian' | 'legal_guardian' | 'carer';
 
-function requestOptions(idempotencyKey?: string): RequestOptions {
+export function eventSafetyRequestOptions(idempotencyKey?: string): RequestOptions {
   return {
     headers: {
       'X-Events-Contract': '2',
@@ -113,9 +113,9 @@ function requestOptions(idempotencyKey?: string): RequestOptions {
   };
 }
 
-function parseSafety(endpoint: string, response: unknown): { data: EventSafety } {
+export function parseEventSafety(endpoint: string, response: unknown, eventId: number): { data: EventSafety } {
   const parsed = eventSafetyEnvelopeSchema.safeParse(response);
-  if (parsed.success) return parsed.data;
+  if (parsed.success && parsed.data.data.event_id === eventId) return parsed.data;
 
   reportSentryMessage('Event Safety contract drift', {
     level: 'warning',
@@ -125,7 +125,7 @@ function parseSafety(endpoint: string, response: unknown): { data: EventSafety }
       endpoint: endpoint.replace(/\/\d+(?=\/|$)/g, '/{id}'),
     },
     extra: {
-      issues: parsed.error.issues.map((issue) => ({
+      issues: (parsed.success ? [{ path: ['event_id'], code: 'custom' }] : parsed.error.issues).map((issue) => ({
         path: issue.path.map(String).join('.'),
         code: issue.code,
       })),
@@ -136,7 +136,7 @@ function parseSafety(endpoint: string, response: unknown): { data: EventSafety }
 
 export async function getEventSafety(eventId: number): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety`;
-  return parseSafety(endpoint, await api.get<unknown>(endpoint, undefined, requestOptions()));
+  return parseEventSafety(endpoint, await api.get<unknown>(endpoint, undefined, eventSafetyRequestOptions()), eventId);
 }
 
 export async function acknowledgeEventCode(
@@ -146,10 +146,10 @@ export async function acknowledgeEventCode(
   idempotencyKey: string,
 ): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety/code-of-conduct/acknowledgements`;
-  return parseSafety(endpoint, await api.post<unknown>(endpoint, {
+  return parseEventSafety(endpoint, await api.post<unknown>(endpoint, {
     text_version: textVersion,
     text_hash: textHash,
-  }, requestOptions(idempotencyKey)));
+  }, eventSafetyRequestOptions(idempotencyKey)), eventId);
 }
 
 export async function withdrawEventCode(
@@ -158,7 +158,7 @@ export async function withdrawEventCode(
   idempotencyKey: string,
 ): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety/code-of-conduct/acknowledgements/${acknowledgementId}`;
-  return parseSafety(endpoint, await api.delete<unknown>(endpoint, requestOptions(idempotencyKey)));
+  return parseEventSafety(endpoint, await api.delete<unknown>(endpoint, eventSafetyRequestOptions(idempotencyKey)), eventId);
 }
 
 export async function requestEventGuardianConsent(
@@ -172,12 +172,12 @@ export async function requestEventGuardianConsent(
   idempotencyKey: string,
 ): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety/guardian-consents`;
-  return parseSafety(endpoint, await api.post<unknown>(endpoint, {
+  return parseEventSafety(endpoint, await api.post<unknown>(endpoint, {
     guardian_name: input.guardianName,
     guardian_email: input.guardianEmail,
     relationship_code: input.relationship,
     preferred_language: input.preferredLanguage,
-  }, requestOptions(idempotencyKey)));
+  }, eventSafetyRequestOptions(idempotencyKey)), eventId);
 }
 
 export async function withdrawEventGuardianConsent(
@@ -186,5 +186,5 @@ export async function withdrawEventGuardianConsent(
   idempotencyKey: string,
 ): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety/guardian-consents/${consentId}`;
-  return parseSafety(endpoint, await api.delete<unknown>(endpoint, requestOptions(idempotencyKey)));
+  return parseEventSafety(endpoint, await api.delete<unknown>(endpoint, eventSafetyRequestOptions(idempotencyKey)), eventId);
 }

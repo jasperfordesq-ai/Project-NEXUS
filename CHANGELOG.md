@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added validated native API support for organiser event safety drafts, publication, archiving and paginated participation reviews, preserving revision checks and request identities. The native organiser Safety workspace is still being completed.
+
 - Native event organisers can search members, assign permitted team roles with optional expiry, revoke access and review assignment history in a dedicated Team screen. Saved requests preserve their identity after interrupted responses; explicit recovery and confirmed discard protect unresolved changes.
 - Native event organisers can review partner sharing status, delivery counts and safe diagnostic codes in a dedicated read-only federation screen, with refresh recovery and protected account/community changes.
 - Native event organisers can now create and edit agenda sessions, manage speakers and secure resources, cancel sessions with reasons, and reorder the programme from a dedicated screen. Requests are saved encrypted before sending; interrupted requests retain their retry identity, and rejected edits retain their input for review against current versions.
@@ -157,6 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   passes the deployed sha, pinned by scenario 8 of `test-deploy-probe-after-prerender.sh`.
 
 ### Fixed
+
+- Native event Safety reads and mutation responses now reject data for a different event instead of displaying a mismatched safety projection.
 
 - Native event Team expiry requests now use the API's whole-second precision before saving, preventing successful timed role assignments from being mistaken for mismatched recovery receipts.
 

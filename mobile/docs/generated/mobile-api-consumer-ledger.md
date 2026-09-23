@@ -21,13 +21,13 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2248 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 63 |
-| Call sites | 686 |
-| Distinct method + endpoint pairs | 541 |
-| Verified against openapi.json | 541 |
+| API modules read | 64 |
+| Call sites | 692 |
+| Distinct method + endpoint pairs | 544 |
+| Verified against openapi.json | 544 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
-| Dynamic, not verifiable | 102 |
+| Dynamic, not verifiable | 105 |
 | Inline `fetch()` bypassing the client | 0 |
 
 ## Not verifiable (endpoint assembled at runtime)
@@ -89,6 +89,9 @@ and the places a contract test earns the most.
 | eventSafety.ts:161 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
 | eventSafety.ts:175 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventSafety.ts:189 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
+| eventSafetyManagement.ts:68 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| eventSafetyManagement.ts:74 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| eventSafetyManagement.ts:80 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTemplates.ts:165 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTemplates.ts:173 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTemplates.ts:182 | POST | variable "endpoint" is assigned more than one endpoint in this module |
@@ -225,6 +228,9 @@ and the places a contract test earns the most.
 | GET | `/api/v2/events/{param}/people/{param}/history` | eventPeople.ts:66 |
 | POST | `/api/v2/events/{param}/people/bulk` | eventPeople.ts:173 |
 | DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1127 |
+| GET | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:84 |
+| POST | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:90 |
+| DELETE | `/api/v2/events/{param}/safety/reviews/{param}` | eventSafetyManagement.ts:95 |
 | GET | `/api/v2/events/{param}/staff` | eventStaff.ts:57 |
 | POST | `/api/v2/events/{param}/staff` | eventStaff.ts:85 |
 | DELETE | `/api/v2/events/{param}/staff/{param}` | eventStaff.ts:92 |
