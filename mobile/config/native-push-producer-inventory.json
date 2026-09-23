@@ -2838,9 +2838,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/UserService.php:651:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/UserService.php:653:NotificationDispatcher::fanOutPush",
             "file": "app/Services/UserService.php",
-            "line": 651,
+            "line": 653,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user->id",

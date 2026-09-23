@@ -385,6 +385,8 @@ class UserService
      */
     public static function updateProfile(int $userId, array $data): bool
     {
+        self::$errors = [];
+
         // If user has id_verified badge, lock name and DOB fields
         if (isset($data['first_name']) || isset($data['last_name']) || isset($data['date_of_birth'])) {
             $tenantId = \App\Core\TenantContext::getId();
@@ -448,7 +450,7 @@ class UserService
             $updated = self::update($userId, $data);
         } catch (\Throwable $e) {
             Log::warning('Profile update failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            self::setError('UPDATE_FAILED', $e->getMessage());
+            self::setError('UPDATE_FAILED', __('api.generic_error'));
             return false;
         }
 
@@ -702,6 +704,8 @@ class UserService
      */
     public static function updateAvatar(int $userId, array $fileArray): ?string
     {
+        self::$errors = [];
+
         try {
             $avatarUrl = \App\Core\ImageUploader::upload($fileArray, 'profiles', [
                 'crop'   => true,
@@ -739,7 +743,7 @@ class UserService
             return $avatarUrl;
         } catch (\Throwable $e) {
             Log::warning('Avatar upload failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            self::setError('UPLOAD_FAILED', $e->getMessage());
+            self::setError('UPLOAD_FAILED', self::memberSafeUploadMessage($e->getMessage()));
             return null;
         }
     }
@@ -749,6 +753,8 @@ class UserService
      */
     public static function deleteAccount(int $userId): bool
     {
+        self::$errors = [];
+
         $user = User::query()->find($userId);
 
         if (! $user) {
@@ -809,7 +815,7 @@ class UserService
             return true;
         } catch (\Throwable $e) {
             Log::error('Account deletion failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            self::setError('DELETE_FAILED', $e->getMessage());
+            self::setError('DELETE_FAILED', __('api.generic_error'));
             return false;
         }
     }
@@ -868,7 +874,7 @@ class UserService
             return true;
         } catch (\Throwable $e) {
             Log::warning('Privacy update failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            self::setError('UPDATE_FAILED', $e->getMessage());
+            self::setError('UPDATE_FAILED', __('api.generic_error'));
             return false;
         }
     }
@@ -1079,6 +1085,37 @@ class UserService
     /**
      * Record an error for the current operation.
      */
+    /**
+     * ImageUploader validation failures a member can act on. Everything else it
+     * throws (upload-error codes, a directory path, save failures) and every
+     * database error is replaced with a generic message.
+     */
+    private const MEMBER_SAFE_UPLOAD_MESSAGE_PREFIXES = [
+        'Invalid file extension.',
+        'Invalid file type.',
+        'File is not a valid image.',
+        'Image dimensions too large',
+        'File too large.',
+    ];
+
+    /**
+     * F-039 (E-024): the catch blocks in this service used to return
+     * `$e->getMessage()` to the API, so a write the database refused answered
+     * with `SQLSTATE[...] (Connection: mysql, Host: db, Port: 3306, Database:
+     * ..., SQL: update `users` set ...)`. The detail is still logged; the
+     * member gets a fixed message. ProfileErrorDisclosureTest pins this.
+     */
+    private static function memberSafeUploadMessage(string $message): string
+    {
+        foreach (self::MEMBER_SAFE_UPLOAD_MESSAGE_PREFIXES as $prefix) {
+            if (str_starts_with($message, $prefix)) {
+                return $message;
+            }
+        }
+
+        return __('api.generic_error');
+    }
+
     protected static function setError(string $code, string $message): void
     {
         self::$errors[] = ['code' => $code, 'message' => $message];
