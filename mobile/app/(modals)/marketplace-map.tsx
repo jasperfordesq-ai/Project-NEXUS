@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { formatDecimal } from '@/lib/utils/decimal';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
@@ -66,6 +66,15 @@ function MarketplaceMapScreen() {
   const [error, setError] = useState<string | null>(null);
   const [place, setPlace] = useState('');
   const [isLocating, setIsLocating] = useState(false);
+  // Coordinates, current location and place search all write the same results and
+  // fields. Only the most recently started search may write them.
+  const searchGenerationRef = useRef(0);
+  function beginSearch() {
+    const generation = ++searchGenerationRef.current;
+    // A superseded place search never reaches its own finally, so clear its flag here.
+    setIsLocating(false);
+    return () => generation === searchGenerationRef.current;
+  }
 
   async function search() {
     const lat = parseCoordinate(latitude);
@@ -77,6 +86,7 @@ function MarketplaceMapScreen() {
       return;
     }
 
+    const isCurrent = beginSearch();
     setIsLoading(true);
     setHasSearched(true);
     setError(null);
@@ -87,22 +97,26 @@ function MarketplaceMapScreen() {
         radius: radiusKm,
         limit: 50,
       });
+      if (!isCurrent()) return;
       setItems(response.data);
     } catch (err) {
+      if (!isCurrent()) return;
       setItems([]);
       setError(err instanceof Error ? err.message : t('map.loadFailed'));
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }
 
   async function searchCurrentLocation() {
+    const isCurrent = beginSearch();
     setIsLoading(true);
     setHasSearched(true);
     setError(null);
 
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
+      if (!isCurrent()) return;
       if (permission.status !== 'granted') {
         setItems([]);
         setError(t('map.locationPermissionDenied'));
@@ -112,6 +126,8 @@ function MarketplaceMapScreen() {
       const current = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
+      // A slow location fix must not overwrite a place search started meanwhile.
+      if (!isCurrent()) return;
       const nextLatitude = String(current.coords.latitude);
       const nextLongitude = String(current.coords.longitude);
       setLatitude(nextLatitude);
@@ -123,12 +139,14 @@ function MarketplaceMapScreen() {
         radius: Number(radius) || 25,
         limit: 50,
       });
+      if (!isCurrent()) return;
       setItems(response.data);
     } catch (err) {
+      if (!isCurrent()) return;
       setItems([]);
       setError(err instanceof Error ? err.message : t('map.locationLoadFailed'));
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   }
 
@@ -163,12 +181,14 @@ function MarketplaceMapScreen() {
     const query = place.trim();
     if (!query || isLocating) return;
 
+    const isCurrent = beginSearch();
     setIsLocating(true);
     setIsLoading(true);
     setHasSearched(true);
     setError(null);
     try {
       const matches = await Location.geocodeAsync(query);
+      if (!isCurrent()) return;
       const match = matches[0];
       if (!match) {
         setItems([]);
@@ -185,15 +205,19 @@ function MarketplaceMapScreen() {
         radius: Number(radius) || 25,
         limit: 50,
       });
+      if (!isCurrent()) return;
       setItems(response.data);
     } catch {
+      if (!isCurrent()) return;
       // A geocoder can be missing entirely (a device with no Google Play services, an
       // offline phone). Say what to do instead rather than reporting a bare failure.
       setItems([]);
       setError(t('map.placeLookupFailed'));
     } finally {
-      setIsLocating(false);
-      setIsLoading(false);
+      if (isCurrent()) {
+        setIsLocating(false);
+        setIsLoading(false);
+      }
     }
   }
 

@@ -4,18 +4,19 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { render, waitFor, act } from '@testing-library/react-native';
 
 // --- Mocks ---
 
 // 🔴 Spies inside the factory: declared outside, jest's hoisting can evaluate the
 // factory while they are still in the temporal dead zone.
+let mockDocumentType = 'terms';
 jest.mock('expo-router', () => {
   const routerMock = { push: jest.fn(), replace: jest.fn(), back: jest.fn() };
   return {
     useRouter: () => routerMock,
     router: routerMock,
-    useLocalSearchParams: () => ({ type: 'terms' }),
+    useLocalSearchParams: () => ({ type: mockDocumentType }),
     useNavigation: () => ({ setOptions: jest.fn() }),
     Link: 'View',
   };
@@ -100,11 +101,26 @@ const DOCUMENT = {
 };
 
 beforeEach(() => {
+  mockDocumentType = 'terms';
   jest.clearAllMocks();
   mockGetDocument.mockResolvedValue(DOCUMENT);
 });
 
 describe('LegalDocumentScreen', () => {
+  it('shows the newly linked document when an earlier document answers last', async () => {
+    const answers: Record<string, (value: unknown) => void> = {};
+    mockGetDocument.mockImplementation((type: string) => new Promise(resolve => { answers[type] = resolve; }));
+    const view = render(<LegalDocumentScreen />);
+    await waitFor(() => expect(answers.terms).toBeDefined());
+    mockDocumentType = 'privacy';
+    view.rerender(<LegalDocumentScreen />);
+    await waitFor(() => expect(answers.privacy).toBeDefined());
+    await act(async () => { answers.privacy({ data: { ...DOCUMENT.data, type: 'privacy', title: 'Privacy Notice', content: '<p>We keep your data safe.</p>' } }); });
+    await act(async () => { answers.terms(DOCUMENT); });
+    expect(view.getByText('We keep your data safe.')).toBeTruthy();
+    expect(view.queryByText('Use time credits fairly.')).toBeNull();
+  });
+
   it('renders without crashing', () => {
     const { toJSON } = render(<LegalDocumentScreen />);
     expect(toJSON()).toBeTruthy();

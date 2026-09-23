@@ -1370,8 +1370,11 @@ function MessageThreadView({
   const canSend = reply.trim().length > 0 && !isSending;
   const targetLanguage = (i18n.language || 'en').split('-')[0] || 'en';
 
+  // State alone cannot stop two presses in the same frame; each would send a message.
+  const replySendingRef = useRef(false);
   async function sendReply() {
-    if (!reply.trim()) return;
+    if (!reply.trim() || replySendingRef.current) return;
+    replySendingRef.current = true;
     setIsSending(true);
     try {
       const response = await sendFederationMessage({
@@ -1386,6 +1389,7 @@ function MessageThreadView({
     } catch (err) {
       showToast({ title: t('directory.messages.sendFailedTitle'), description: describeApiError(err, t('directory.messages.sendFailedDescription')), variant: 'danger' });
     } finally {
+      replySendingRef.current = false;
       setIsSending(false);
     }
   }
@@ -1609,8 +1613,11 @@ function FederationComposeCard({
     };
   }, [hasTarget, recipientQuery, recipientSearchAttempt]);
 
+  // State alone cannot stop two presses in the same frame; each would send a message.
+  const composeSendingRef = useRef(false);
   async function handleSend() {
-    if (!effectiveToUser || !effectiveToTenant || !body.trim()) return;
+    if (!effectiveToUser || !effectiveToTenant || !body.trim() || composeSendingRef.current) return;
+    composeSendingRef.current = true;
     setIsSending(true);
     try {
       const response = await sendFederationMessage({
@@ -1626,6 +1633,7 @@ function FederationComposeCard({
     } catch (err) {
       showToast({ title: t('directory.messages.sendFailedTitle'), description: describeApiError(err, t('directory.messages.sendFailedDescription')), variant: 'danger' });
     } finally {
+      composeSendingRef.current = false;
       setIsSending(false);
     }
   }

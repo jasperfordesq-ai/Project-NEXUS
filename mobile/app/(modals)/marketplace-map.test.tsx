@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 let mockSearchParams: Record<string, string | string[] | undefined> = {};
@@ -173,6 +173,24 @@ describe('MarketplaceMapRoute', () => {
     expect(getByDisplayValue('-9.0568')).toBeTruthy();
 
     unmount();
+  });
+
+  it('keeps a place search when a slower current-location fix arrives afterwards', async () => {
+    let locate!: (value: unknown) => void;
+    jest.mocked(Location.getCurrentPositionAsync).mockImplementation(() => new Promise(resolve => { locate = resolve; }) as never);
+    jest.mocked(Location.geocodeAsync).mockResolvedValue([{ latitude: 53.2707, longitude: -9.0568 }] as never);
+    const view = render(<MarketplaceMapRoute />);
+    fireEvent.press(view.getByText('Use current location'));
+    await waitFor(() => expect(Location.getCurrentPositionAsync).toHaveBeenCalled());
+    fireEvent.changeText(view.getByTestId('marketplace-map-place'), 'Galway');
+    // The button is disabled while loading; the keyboard's search key is not.
+    fireEvent(view.getByTestId('marketplace-map-place'), 'submitEditing');
+    await waitFor(() => expect(getNearbyMarketplaceListings).toHaveBeenCalledWith(expect.objectContaining({ latitude: 53.2707 })));
+    await act(async () => { locate({ coords: { latitude: 51.5, longitude: -0.12 } }); });
+    expect(view.getByDisplayValue('53.2707')).toBeTruthy();
+    expect(view.queryByDisplayValue('51.5')).toBeNull();
+    expect(getNearbyMarketplaceListings).toHaveBeenCalledTimes(1);
+    view.unmount();
   });
 
   it('says a place could not be found instead of searching from nowhere', async () => {

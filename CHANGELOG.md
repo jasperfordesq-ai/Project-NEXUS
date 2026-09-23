@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Marketplace in the mobile app: changing a filter or searching somewhere else while results are loading no longer shows the older results; opening one collection and then another quickly shows the right items; and collections now load past their first 50 items with a Load more button.
+
+- The legal document screen in the mobile app no longer shows the previous document's text when a link opens a different document.
+
+- In the mobile app, a quick double tap can no longer send a federated message or reply twice, send the contact form twice, or create two saved collections.
+
 - In the mobile app, withdrawing an idea and then leaving the screen before it finished no longer pulls you back to the ideas list from wherever you had gone.
 
 - Creating an event from a template in the mobile app can no longer make two draft events: a retry after a lost connection reuses the original request, and a double tap sends only one.

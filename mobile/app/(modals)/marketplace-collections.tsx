@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -28,6 +28,8 @@ import {
   getMarketplaceCollectionItems,
   getMarketplaceCollections,
   getMarketplaceSavedSearches,
+  marketplaceHasMore,
+  marketplaceNextCursor,
   removeMarketplaceCollectionItem,
   type MarketplaceCollection,
   type MarketplaceCollectionItem,
@@ -116,22 +118,63 @@ function MarketplaceCollectionsScreen() {
     } as unknown as Href);
   }
 
+  // Opening another collection (or going back) starts a new generation; a late answer
+  // for an earlier collection must never land under the one now on screen.
+  const itemsGenerationRef = useRef(0);
+  const [itemsCursor, setItemsCursor] = useState<string | null>(null);
+  const [isLoadingMoreItems, setIsLoadingMoreItems] = useState(false);
+
   async function openCollection(collection: MarketplaceCollection) {
+    const generation = ++itemsGenerationRef.current;
     setSelectedCollection(collection);
     setIsLoadingItems(true);
     setItems([]);
+    setItemsCursor(null);
     try {
       const response = await getMarketplaceCollectionItems(collection.id, null, 50);
+      if (generation !== itemsGenerationRef.current) return;
       setItems(response.data);
+      // The server pages collections; without the cursor, items after the first 50 never appeared.
+      setItemsCursor(marketplaceHasMore(response) ? marketplaceNextCursor(response) : null);
     } catch (err) {
+      if (generation !== itemsGenerationRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: err instanceof Error ? err.message : t('collections.itemsLoadFailed'),
         variant: 'danger',
       });
     } finally {
-      setIsLoadingItems(false);
+      if (generation === itemsGenerationRef.current) setIsLoadingItems(false);
     }
+  }
+
+  async function loadMoreItems() {
+    const collection = selectedCollection;
+    const cursor = itemsCursor;
+    if (!collection || !cursor || isLoadingMoreItems) return;
+    const generation = itemsGenerationRef.current;
+    setIsLoadingMoreItems(true);
+    try {
+      const response = await getMarketplaceCollectionItems(collection.id, cursor, 50);
+      if (generation !== itemsGenerationRef.current) return;
+      setItems((current) => {
+        const seen = new Set(current.map((entry) => entry.listing.id));
+        return [...current, ...response.data.filter((entry) => !seen.has(entry.listing.id))];
+      });
+      setItemsCursor(marketplaceHasMore(response) ? marketplaceNextCursor(response) : null);
+    } catch {
+      if (generation !== itemsGenerationRef.current) return;
+      showToast({ title: t('common:errors.alertTitle'), description: t('collections.itemsLoadFailed'), variant: 'danger' });
+    } finally {
+      if (generation === itemsGenerationRef.current) setIsLoadingMoreItems(false);
+    }
+  }
+
+  function closeCollection() {
+    itemsGenerationRef.current += 1;
+    setSelectedCollection(null);
+    setIsLoadingItems(false);
+    setIsLoadingMoreItems(false);
   }
 
   async function removeItem(item: MarketplaceCollectionItem) {
@@ -240,7 +283,7 @@ function MarketplaceCollectionsScreen() {
   if (selectedCollection) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
-        <AppTopBar title={selectedCollection.name} backLabel={t('common:back')} onBack={() => setSelectedCollection(null)} fallbackHref={'/(modals)/marketplace-collections' as Href} />
+        <AppTopBar title={selectedCollection.name} backLabel={t('common:back')} onBack={closeCollection} fallbackHref={'/(modals)/marketplace-collections' as Href} />
         <FlatList
           data={items}
           keyExtractor={(item) => `${selectedCollection.id}-${item.listing.id}`}
@@ -272,6 +315,11 @@ function MarketplaceCollectionsScreen() {
               </HeroButton>
             </View>
           )}
+          ListFooterComponent={itemsCursor ? (
+            <HeroButton className="mb-4" variant="secondary" isDisabled={isLoadingMoreItems} onPress={() => void loadMoreItems()}>
+              <HeroButton.Label>{t('common:buttons.loadMore')}</HeroButton.Label>
+            </HeroButton>
+          ) : null}
           ListEmptyComponent={isLoadingItems ? <View className="py-16"><LoadingSpinner /></View> : (
             <EmptyState icon="folder-open-outline" title={t('collections.emptyItems')} subtitle={t('collections.emptyItemsHint')} />
           )}

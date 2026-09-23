@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -134,8 +134,13 @@ function MarketplaceCategoryScreen() {
     return () => clearTimeout(timer);
   }, [query]);
 
+  // Filters stay usable while a request runs, so an older request can answer last.
+  // Only the newest generation may write results (a load-more joins the current one).
+  const generationRef = useRef(0);
   const fetchListings = useCallback(async (append = false) => {
     if (!hasFeature('marketplace') || !safeCategoryId) return;
+    const generation = append ? generationRef.current : ++generationRef.current;
+    const current = () => generation === generationRef.current;
     if (append) setIsLoadingMore(true);
     else setIsLoading(true);
     setError(null);
@@ -151,19 +156,23 @@ function MarketplaceCategoryScreen() {
         limit: 20,
         sort,
       });
+      if (!current()) return;
       setCursor(marketplaceNextCursor(response));
       setHasMore(marketplaceHasMore(response));
       setListings((current) => append ? [...current, ...response.data] : response.data);
     } catch (err) {
+      if (!current()) return;
       if (!append) {
         setError(err instanceof Error ? err.message : t('category.unableToLoad'));
       } else {
         showToast({ title: t('common:errors.alertTitle'), description: t('category.loadMoreFailed'), variant: 'danger' });
       }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      setIsLoadingMore(false);
+      if (current()) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setIsLoadingMore(false);
+      }
     }
   }, [conditions, cursor, debouncedQuery, hasFeature, priceMax, priceMin, safeCategoryId, showToast, sort, t]);
 

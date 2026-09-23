@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -38,8 +38,14 @@ function LegalDocumentScreenInner() {
 
   const documentType = String(type ?? '').trim();
 
+  // A link can replace the document type while this screen stays mounted; only the
+  // newest request may write, or the old document's text shows under the new link.
+  const loadGenerationRef = useRef(0);
   const load = useCallback(async () => {
+    const generation = ++loadGenerationRef.current;
+    const current = () => generation === loadGenerationRef.current;
     if (documentType === '') {
+      setDocument(null);
       setFailed(true);
       setIsLoading(false);
       return;
@@ -49,11 +55,13 @@ function LegalDocumentScreenInner() {
     setFailed(false);
     try {
       const response = await getLegalDocument(documentType);
+      if (!current()) return;
       setDocument(response?.data ?? null);
     } catch {
+      if (!current()) return;
       setFailed(true);
     } finally {
-      setIsLoading(false);
+      if (current()) setIsLoading(false);
     }
   }, [documentType]);
 

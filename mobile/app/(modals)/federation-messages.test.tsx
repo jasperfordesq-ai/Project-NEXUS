@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockUsePaginatedApi = jest.fn();
@@ -328,6 +328,18 @@ describe('FederationMessagesScreen', () => {
 
     expect(getByText('No messages with this partner yet')).toBeTruthy();
     expect(getByText('Start from a profile, or clear the filter.')).toBeTruthy();
+  });
+
+  it('sends one federated reply when Send reply is pressed twice in the same frame', async () => {
+    let finish!: (value: unknown) => void;
+    mockSendFederationMessage.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const { getByLabelText, getByPlaceholderText, getByText } = render(<FederationMessagesScreen />);
+    fireEvent.press(getByLabelText('Open thread with Katherine'));
+    fireEvent.changeText(getByPlaceholderText('Write a federated reply...'), 'Yes, let us coordinate.');
+    const send = getByText('Send reply');
+    act(() => { fireEvent.press(send); fireEvent.press(send); });
+    expect(mockSendFederationMessage).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ data: { id: 203 } }); });
   });
 
   it('opens message cards as usable federated threads and sends replies to the partner', async () => {

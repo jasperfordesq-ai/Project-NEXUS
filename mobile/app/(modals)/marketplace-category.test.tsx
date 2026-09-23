@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -149,5 +149,19 @@ describe('MarketplaceCategoryRoute', () => {
         price_min: '5',
       }));
     });
+  });
+
+  it('keeps the newest filter results when an older request answers last', async () => {
+    const answers: ((value: unknown) => void)[] = [];
+    jest.mocked(getMarketplaceListings).mockImplementation(() => new Promise(resolve => { answers.push(resolve); }) as never);
+    const view = render(<MarketplaceCategoryRoute />);
+    await waitFor(() => expect(answers).toHaveLength(1));
+    fireEvent.press(view.getByText('New'));
+    await waitFor(() => expect(answers).toHaveLength(2));
+    const page = (title: string) => ({ data: [{ id: title.length, title }], meta: { has_more: false, next_cursor: null } });
+    await act(async () => { answers[1](page('Filtered result')); });
+    await act(async () => { answers[0](page('Stale unfiltered result')); });
+    expect(view.getByText('Filtered result')).toBeTruthy();
+    expect(view.queryByText('Stale unfiltered result')).toBeNull();
   });
 });

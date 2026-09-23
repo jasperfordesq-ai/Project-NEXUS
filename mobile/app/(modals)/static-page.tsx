@@ -22,7 +22,7 @@
  * community's own contact details instead of being shown a generic failure.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -292,7 +292,10 @@ function ContactPanel({ page }: { page: StaticPageContent }) {
     setSubjectId((current) => (current || subjects[0]?.id) ?? '');
   }, [subjects]);
 
+  // State alone cannot stop two presses in the same frame; each would send the message.
+  const sendingRef = useRef(false);
   async function submit() {
+    if (sendingRef.current) return;
     const nextErrors: { name?: string; email?: string; message?: string } = {};
     if (!name.trim()) nextErrors.name = t('profile:support.contactForm.nameRequired');
     if (!EMAIL_PATTERN.test(email.trim())) nextErrors.email = t('profile:support.contactForm.emailRequired');
@@ -304,6 +307,7 @@ function ContactPanel({ page }: { page: StaticPageContent }) {
       ?? subjects[0]?.label
       ?? t('profile:support.contactForm.subject');
 
+    sendingRef.current = true;
     setIsSending(true);
     try {
       await submitContactMessage({ name, email, subject, message });
@@ -331,6 +335,7 @@ function ContactPanel({ page }: { page: StaticPageContent }) {
         duration: isBotCheck ? 'persistent' : undefined,
       });
     } finally {
+      sendingRef.current = false;
       setIsSending(false);
     }
   }

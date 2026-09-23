@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -132,11 +132,15 @@ function ProfileCollectionsInner() {
     }
   }
 
+  // State alone cannot stop two presses in the same frame; each would create a collection.
+  const creatingRef = useRef(false);
   async function handleCreate(payload: { name: string; description: string; isPublic: boolean }) {
+    if (creatingRef.current) return;
     if (!payload.name.trim()) {
       showToast({ title: t('common:errors.alertTitle'), description: t('collections.nameRequired'), variant: 'warning' });
       return;
     }
+    creatingRef.current = true;
     setCreating(true);
     try {
       await createSavedCollection({
@@ -149,6 +153,7 @@ function ProfileCollectionsInner() {
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.createFailed')), variant: 'danger' });
     } finally {
+      creatingRef.current = false;
       setCreating(false);
     }
   }

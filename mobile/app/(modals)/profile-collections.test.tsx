@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, act } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockCreateSavedCollection = jest.fn();
@@ -159,5 +159,17 @@ describe('ProfileCollectionsScreen', () => {
         is_public: false,
       });
     });
+  });
+
+  it('creates one collection when Create is pressed twice in the same frame', async () => {
+    let finish!: (value: unknown) => void;
+    mockCreateSavedCollection.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const { getAllByText, getByPlaceholderText } = render(<ProfileCollectionsScreen />);
+    fireEvent.press(getAllByText('Create collection')[0]);
+    fireEvent.changeText(getByPlaceholderText('Weekend projects'), 'Training links');
+    const create = getAllByText('Create collection').at(-1)!;
+    act(() => { fireEvent.press(create); fireEvent.press(create); });
+    expect(mockCreateSavedCollection).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ data: { id: 1 } }); });
   });
 });

@@ -225,6 +225,20 @@ describe('StaticPageRoute', () => {
       expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({ subject: 'General Inquiry' }));
     });
 
+    it('sends the message once when Send is pressed twice in the same frame', async () => {
+      let finish!: (value: unknown) => void;
+      mockSubmit.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }) as never);
+      const view = await renderPage();
+      await waitFor(() => expect(view.getByTestId('contact-form')).toBeTruthy());
+      fireEvent.changeText(view.getByLabelText('Your name'), 'Aoife Ryan');
+      fireEvent.changeText(view.getByLabelText('Your email address'), 'aoife@example.org');
+      fireEvent.changeText(view.getByLabelText('Message'), 'Can you help me find a gardener?');
+      const send = view.getByLabelText('Send message');
+      act(() => { fireEvent.press(send); fireEvent.press(send); });
+      expect(mockSubmit).toHaveBeenCalledTimes(1);
+      await act(async () => { finish(undefined); });
+    });
+
     it('refuses to send an incomplete message, and says which field is wrong', async () => {
       const view = await renderPage();
       await waitFor(() => expect(view.getByTestId('contact-form')).toBeTruthy());

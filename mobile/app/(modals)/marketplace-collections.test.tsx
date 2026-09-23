@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 let mockParams: Record<string, string> = {};
 let mockEmptyStateAction: (() => void) | undefined;
@@ -14,6 +14,7 @@ const mockT = (key: string, opts?: Record<string, unknown>) => {
   const map: Record<string, string> = {
     'common:back': 'Back',
     'common:buttons.cancel': 'Cancel',
+    'common:buttons.loadMore': 'Load more',
     'common:buttons.retry': 'Retry',
     'common:errors.alertTitle': 'Error',
     'collections.title': 'Collections',
@@ -68,7 +69,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/AppTopBar', () => {
   const { Text } = require('react-native');
-  return ({ title }: { title: string }) => <Text>{title}</Text>;
+  return ({ title, onBack }: { title: string; onBack?: () => void }) => <><Text>{title}</Text>{onBack ? <Text accessibilityLabel="Back" onPress={onBack}>Back</Text> : null}</>;
 });
 jest.mock('@/components/ui/LoadingSpinner', () => {
   const { Text } = require('react-native');
@@ -83,7 +84,7 @@ jest.mock('@/components/ui/BottomSheet', () => ({
 }));
 jest.mock('@/components/marketplace/MarketplaceListingCard', () => {
   const { Text } = require('react-native');
-  return () => <Text>Listing card</Text>;
+  return ({ item }: { item?: { title?: string } }) => <Text>{item?.title ?? 'Listing card'}</Text>;
 });
 jest.mock('@/components/ui/EmptyState', () => ({
   __esModule: true,
@@ -155,6 +156,8 @@ jest.mock('@/lib/api/marketplace', () => ({
   getMarketplaceCollectionItems: jest.fn(),
   getMarketplaceCollections: jest.fn(),
   getMarketplaceSavedSearches: jest.fn(),
+  marketplaceHasMore: jest.requireActual('@/lib/api/marketplace').marketplaceHasMore,
+  marketplaceNextCursor: jest.requireActual('@/lib/api/marketplace').marketplaceNextCursor,
   removeMarketplaceCollectionItem: jest.fn(),
 }));
 
@@ -249,5 +252,37 @@ describe('MarketplaceCollectionsRoute', () => {
     fireEvent.press(await findByText('Garden kit'));
 
     expect(getMarketplaceCollectionItems).toHaveBeenCalledWith(1, null, 50);
+  });
+
+  const item = (id: number) => ({ listing: { id, title: `Item ${id}` } });
+
+  it('keeps loading a collection beyond its first page instead of stopping at 50 items', async () => {
+    jest.mocked(getMarketplaceCollectionItems)
+      .mockResolvedValueOnce({ data: [item(1), item(2)], meta: { has_more: true, cursor: 'c2' } } as never)
+      .mockResolvedValueOnce({ data: [item(51)], meta: { has_more: false, cursor: null } } as never);
+    const view = render(<MarketplaceCollectionsRoute />);
+    fireEvent.press(await view.findByText('Garden kit'));
+    fireEvent.press(await view.findByText('Load more'));
+    await waitFor(() => expect(getMarketplaceCollectionItems).toHaveBeenLastCalledWith(1, 'c2', 50));
+    expect(await view.findByText('Item 51')).toBeTruthy();
+    expect(view.getByText('Item 1')).toBeTruthy();
+    expect(view.queryByText('Load more')).toBeNull();
+  });
+
+  it('shows only the collection the member opened last when an earlier one answers late', async () => {
+    jest.mocked(getMarketplaceCollections).mockResolvedValue({ data: [
+      { id: 1, name: 'Garden kit', description: null, item_count: 1, is_public: false },
+      { id: 2, name: 'Bike parts', description: null, item_count: 1, is_public: false },
+    ] } as never);
+    const answers: Record<number, (value: unknown) => void> = {};
+    jest.mocked(getMarketplaceCollectionItems).mockImplementation(((id: number) => new Promise(resolve => { answers[id] = resolve; })) as never);
+    const view = render(<MarketplaceCollectionsRoute />);
+    fireEvent.press(await view.findByText('Garden kit'));
+    fireEvent.press(view.getByLabelText('Back'));
+    fireEvent.press(await view.findByText('Bike parts'));
+    await act(async () => { answers[2]({ data: [item(2)] }); });
+    await act(async () => { answers[1]({ data: [item(1)] }); });
+    expect(view.getByText('Item 2')).toBeTruthy();
+    expect(view.queryByText('Item 1')).toBeNull();
   });
 });
