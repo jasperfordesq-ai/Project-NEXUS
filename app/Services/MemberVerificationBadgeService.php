@@ -61,9 +61,37 @@ class MemberVerificationBadgeService
     }
 
     /**
-     * Grant a verification badge to a user (admin action).
+     * Grant a verification badge automatically, on the platform's own authority.
+     *
+     * Unlike grantBadge() this never re-grants: if the member has ever held the
+     * badge — including one an administrator revoked — nothing changes. An
+     * automatic threshold must not be able to undo an administrator's decision,
+     * and the grant is recorded with no verifier rather than naming the member
+     * whose action happened to cross the threshold (F-068).
      */
-    public function grantBadge(int $userId, string $badgeType, int $adminId, ?string $note = null, ?string $expiresAt = null): ?int
+    public function autoGrantBadge(int $userId, string $badgeType, string $note): ?int
+    {
+        $this->errors = [];
+
+        $everHeld = DB::table('member_verification_badges')
+            ->where('user_id', $userId)
+            ->where('tenant_id', TenantContext::getId())
+            ->where('badge_type', $badgeType)
+            ->exists();
+
+        if ($everHeld) {
+            return null;
+        }
+
+        return $this->grantBadge($userId, $badgeType, null, $note);
+    }
+
+    /**
+     * Grant a verification badge to a user (admin action).
+     *
+     * $adminId is null only for automatic grants via autoGrantBadge().
+     */
+    public function grantBadge(int $userId, string $badgeType, ?int $adminId, ?string $note = null, ?string $expiresAt = null): ?int
     {
         $this->errors = [];
         $tenantId = TenantContext::getId();

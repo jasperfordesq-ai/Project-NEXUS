@@ -76,7 +76,9 @@ class PeerEndorsementController extends BaseApiController
         // Auto-grant peer_endorsed badge if threshold reached
         $badgeGranted = false;
         if ($endorsementCount >= self::ENDORSEMENT_THRESHOLD) {
-            $badgeId = $this->badgeService->grantBadge($id, 'peer_endorsed', $endorserId, 'Auto-granted: reached ' . $endorsementCount . ' peer endorsements');
+            // autoGrantBadge, not the admin grantBadge: a revoked badge stays
+            // revoked, and the endorser is not recorded as the verifier (F-068).
+            $badgeId = $this->badgeService->autoGrantBadge($id, 'peer_endorsed', 'Auto-granted: reached ' . $endorsementCount . ' peer endorsements');
             $badgeGranted = $badgeId !== null;
         }
 
