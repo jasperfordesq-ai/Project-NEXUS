@@ -259,3 +259,8 @@ echo "Minification       : ON (mapping verified in bundle)"
 echo ""
 echo "Bundle: $ROOT/$AAB"
 du -h "$AAB" | cut -f1
+
+# 🔴 Gradle overwrites $AAB on the next build. The copy that is uploaded — and kept —
+# is the one filed here, under one name, with its commit and SHA-256 recorded.
+bash scripts/archive-android-build.sh play "$AAB" "$VERSION_CODE" "$API_URL"
+echo "Upload THIS file to Play (the filed copy above), not the Gradle output."

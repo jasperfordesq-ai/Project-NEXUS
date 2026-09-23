@@ -9,7 +9,10 @@
 # service earns its money for store submissions and for builds from a clean machine — not
 # for iteration.
 #
-# What you get: android/app/build/outputs/apk/release/app-release.apk — a standalone APK
+# What you get: a standalone APK, filed as
+# releases/android/sideload/timebank-global-<version>-<live|local>-<time>.apk
+# (see scripts/archive-android-build.sh) — Gradle's own copy at
+# android/app/build/outputs/apk/release/app-release.apk is overwritten next build. It is built
 # with the JavaScript bundled in, so it runs with no Metro and no laptop attached.
 #
 # 🔴 SIGNING. The Expo/React Native template signs `release` with the DEBUG keystore
@@ -138,6 +141,7 @@ PY
 
 echo ""
 echo "APK built: ${APK}  (${SIZE})"
+bash scripts/archive-android-build.sh sideload "$APK" "$API_URL"
 echo ""
 echo "Put it on a phone, whichever suits:"
 echo "  1. USB:  adb install -r \"${APK}\""

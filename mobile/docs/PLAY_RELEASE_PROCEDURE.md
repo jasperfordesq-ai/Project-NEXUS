@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to Google Play — the procedure, and everything that bites
 
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-23
 
 Status: **Maintained — written from an end-to-end release of version code 8 on
 2026-09-09, every timing and fingerprint in it measured rather than assumed.**
@@ -82,7 +82,10 @@ The counter is stale because releases are built locally, which never touches it.
 bash mobile/scripts/build-aab-play.sh --version-code 8
 ```
 
-Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`
+Output, filed automatically once every guard below has passed:
+`mobile/releases/android/play/timebank-global-<version>-build<code>.aab`. **Upload that
+file.** Gradle's own copy at `mobile/android/app/build/outputs/bundle/release/app-release.aab`
+is overwritten by the next build.
 (~91 MB minified; the build itself took **1m 45s** unminified, **2m 14s** with R8
 on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
 version code 11. Version code 13 took **5m 55s** and version code 14 took
@@ -228,6 +231,28 @@ Android App Links never verified for anyone who installed from Play — every
 `https://app.project-nexus.ie/…` link opened a browser instead of the app, while
 `app.json`'s `autoVerify: true` made the other half look correct. Play Console
 generates the correct snippet for you at **App integrity → App signing**.
+
+### Where every build lives
+
+🔴 **One folder: `mobile/releases/android/`** (git-ignored — the bundles are ~96 MB each).
+
+| Path | What |
+| --- | --- |
+| `play/timebank-global-<version>-build<code>.aab` (+ `.sha256`) | Every Play bundle, one per version code |
+| `sideload/timebank-global-<version>-<live|local>-<yyyymmdd-hhmm>.apk` (+ `.sha256`) | Every APK from `npm run build:apk` |
+| `INDEX.tsv` | One line per build: when, kind, version, code, **source commit**, SHA-256, size, file, API host |
+
+`scripts/build-aab-play.sh` and `scripts/build-apk-local.sh` call
+`scripts/archive-android-build.sh` as their last step, so nothing needs copying by hand.
+It refuses to file a second, different bundle under a version code that is already filed —
+Play would refuse the repeat anyway, and two files with one number is how "which one did we
+upload?" starts.
+
+Until 2026-09-23 bundles were copied by hand into the root of `mobile/` under two naming
+styles, with no record of the commit. Those thirteen files were moved into this folder that
+day. The SHA-256s of builds 14–17 matched the ones recorded below, which is the proof they
+are the uploaded artefacts; builds 4–13 carry commit `unknown` except 12 (`5241fa23f`,
+from `live-store-build.json`), because nothing recorded them.
 
 ## 3. Publish to internal testing
 

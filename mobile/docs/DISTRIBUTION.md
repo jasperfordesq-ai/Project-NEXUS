@@ -151,7 +151,7 @@ survives deploys and colour switches — and it is already served as static file
 
 ```bash
 # from the repo root, with .secrets.local/deploy.env loaded as in the deploy docs
-scp -i "$PROD_SSH_KEY" mobile/android/app/build/outputs/apk/release/app-release.apk     "$PROD_SSH_HOST:/tmp/nexus-<version>-<random>.apk"
+scp -i "$PROD_SSH_KEY" mobile/releases/android/sideload/<filed-name>.apk     "$PROD_SSH_HOST:/tmp/nexus-<version>-<random>.apk"
 ssh -i "$PROD_SSH_KEY" -o RequestTTY=force "$PROD_SSH_HOST"   "sudo mkdir -p /var/lib/docker/volumes/nexus-php-uploads/_data/builds &&    sudo mv /tmp/nexus-<version>-<random>.apk /var/lib/docker/volumes/nexus-php-uploads/_data/builds/ &&    sudo chown www-data:www-data /var/lib/docker/volumes/nexus-php-uploads/_data/builds/nexus-<version>-<random>.apk"
 ```
 
@@ -175,7 +175,10 @@ API_URL=http://192.168.1.36:8090 npm run build:apk  # or at this machine over th
 npm run build:apk -- --clean                        # wipe caches first
 ```
 
-→ `android/app/build/outputs/apk/release/app-release.apk`
+→ filed as `releases/android/sideload/timebank-global-<version>-<live|local>-<time>.apk`,
+with its SHA-256 and commit in `releases/android/INDEX.tsv`. Every Android build — Play
+bundles and sideload APKs — is filed in that one folder; see "Where every build lives" in
+[`PLAY_RELEASE_PROCEDURE.md`](PLAY_RELEASE_PROCEDURE.md).
 
 EAS cloud builds are billed per build, and for "put it on my phone and try it" there is
 nothing a paid build does that Gradle here does not. Measured 2026-08-20: **1 m 36 s** for
