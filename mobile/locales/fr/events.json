@@ -920,7 +920,9 @@
       "discard": "Abandonner la modification enregistrée",
       "discard_title": "Abandonner cette modification refusée ?",
       "discard_description": "La modification enregistrée sera supprimée de cet appareil. Le programme actuel restera inchangé.",
-      "review_unavailable": "Cette session ne peut plus être modifiée. Abandonnez la modification refusée pour continuer."
+      "review_unavailable": "Cette session ne peut plus être modifiée. Abandonnez la modification refusée pour continuer.",
+      "comparison": "Comparer avec la session actuelle",
+      "no_differences": "Aucune différence avec la session actuelle."
     },
     "team": {
       "title": "Équipe déléguée",

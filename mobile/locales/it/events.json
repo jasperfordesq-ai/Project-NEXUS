@@ -920,7 +920,9 @@
       "discard": "Scarta la modifica salvata",
       "discard_title": "Scartare questa modifica rifiutata?",
       "discard_description": "La modifica salvata verrà rimossa da questo dispositivo. Il programma attuale non verrà modificato.",
-      "review_unavailable": "Questa sessione non può più essere modificata. Scarta la modifica rifiutata per continuare."
+      "review_unavailable": "Questa sessione non può più essere modificata. Scarta la modifica rifiutata per continuare.",
+      "comparison": "Confronta con la sessione attuale",
+      "no_differences": "Nessuna differenza rispetto alla sessione attuale."
     },
     "team": {
       "title": "Squadra delegata",

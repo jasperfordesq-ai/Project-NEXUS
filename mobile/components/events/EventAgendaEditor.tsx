@@ -13,6 +13,7 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import type { CanonicalEvent, EventAgendaSession } from '@/lib/api/events';
 import type { AgendaSessionPayload } from '@/lib/api/eventAgendaManagement';
 import { agendaDraft, agendaPayload, type AgendaDraft } from '@/lib/eventAgendaDraft';
+import EventAgendaComparison from './EventAgendaComparison';
 
 interface Props {
   event: CanonicalEvent; session?: EventAgendaSession; recoveredInput?: AgendaSessionPayload;
@@ -65,6 +66,7 @@ export default function EventAgendaEditor({ event, session, recoveredInput, bloc
       options={values.map(value => ({ value, label: label(`${prefix}.${value}`), disabled }))} />;
   return <View className="gap-4">
     <Text accessibilityRole="header" className="text-xl font-bold text-foreground">{label(session ? 'edit_title' : 'create_title')}</Text>
+    {session && recoveredInput && <EventAgendaComparison event={event} session={session} draft={draft} original={recoveredInput} />}
     {field('title', 'title_label')}{field('description', 'description_label')}
     {choices('type_label', draft.type, ['session', 'keynote', 'workshop', 'panel', 'break', 'networking', 'other'], 'types', value => change('type', value))}
     {choices('visibility_label', draft.visibility, ['public', 'registered', 'staff'], 'visibilities', value => change('visibility', value))}

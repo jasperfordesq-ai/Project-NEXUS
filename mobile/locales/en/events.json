@@ -920,7 +920,9 @@
       "discard": "Discard saved change",
       "discard_title": "Discard this rejected change?",
       "discard_description": "This removes the saved change from this device. It does not change the current agenda.",
-      "review_unavailable": "This session is no longer available to edit. Discard the rejected change to continue."
+      "review_unavailable": "This session is no longer available to edit. Discard the rejected change to continue.",
+      "comparison": "Compare with the current session",
+      "no_differences": "No differences from the current session."
     },
     "team": {
       "title": "Delegated team",

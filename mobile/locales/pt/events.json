@@ -920,7 +920,9 @@
       "discard": "Descartar alteração guardada",
       "discard_title": "Descartar esta alteração rejeitada?",
       "discard_description": "A alteração guardada será removida deste dispositivo. O programa atual não será alterado.",
-      "review_unavailable": "Esta sessão já não pode ser editada. Descarte a alteração rejeitada para continuar."
+      "review_unavailable": "Esta sessão já não pode ser editada. Descarte a alteração rejeitada para continuar.",
+      "comparison": "Comparar com a sessão atual",
+      "no_differences": "Não há diferenças em relação à sessão atual."
     },
     "team": {
       "title": "Equipe delegada",

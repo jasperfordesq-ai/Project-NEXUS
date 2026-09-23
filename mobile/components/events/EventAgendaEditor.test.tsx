@@ -6,6 +6,8 @@ jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn() }));
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import Editor from './EventAgendaEditor';
+import Comparison from './EventAgendaComparison';
+import { agendaDraft, agendaPayload } from '@/lib/eventAgendaDraft';
 import { Button } from '@/components/ui/NativeButton';
 const mockConfirm = jest.fn();
 jest.mock('@/components/ui/useConfirm', () => ({ useConfirm: () => ({ confirm: mockConfirm, confirmDialog: null }) }));
@@ -21,6 +23,18 @@ const session = { ...require('../../../contracts/events/v2/event-agenda.json').s
   start_at: event.schedule.start_at, end_at: event.schedule.end_at, timezone: event.schedule.timezone };
 function props() { return { event, session, blocked: false, onSave: jest.fn().mockResolvedValue(undefined), onClose: jest.fn() }; }
 beforeEach(() => jest.clearAllMocks());
+it('shows comparison only for a recovered edit and updates it as the organiser corrects input', () => {
+  const p = props();
+  const initial = render(<Editor {...p} />);
+  expect(initial.UNSAFE_queryByType(Comparison)).toBeNull();
+  initial.unmount();
+  const recoveredInput = { ...agendaPayload(agendaDraft(event, session), event, session)!, title: 'Saved title' };
+  const v = render(<Editor {...p} recoveredInput={recoveredInput} />);
+  expect(v.UNSAFE_getByType(Comparison).props.draft.title).toBe('Saved title');
+  fireEvent.changeText(v.getByLabelText('manage.agenda.title_label'), 'Corrected title');
+  expect(v.UNSAFE_getByType(Comparison).props.draft.title).toBe('Corrected title');
+  expect(p.onSave).not.toHaveBeenCalled();
+});
 it('retains input after failed save and preserves linked member speakers', async () => {
   const p = props(); p.onSave.mockRejectedValue(new Error('Lost')); const v = render(<Editor {...p} />);
   fireEvent.changeText(v.getByLabelText('manage.agenda.title_label'), 'Repaired workshop');

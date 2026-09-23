@@ -19,6 +19,12 @@ it('preserves explicit cleared values in a rejected edit against changed server 
   const restored = agendaDraft(event, session, { ...payload, description: null, track_name: null, room_name: null, capacity: null, speakers: [], resources: [] });
   expect(restored).toMatchObject({ description: '', track: '', room: '', capacity: '', speakers: [], resources: [] });
 });
+it('restores the current display name for a saved linked speaker without changing identity', () => {
+  const payload = agendaPayload(agendaDraft(event, session), event)!;
+  const restored = agendaDraft(event, session, payload);
+  expect(restored.speakers[0]).toMatchObject({ userId: 7, name: session.speakers[0].display_name });
+  expect(agendaPayload(restored, event)!.speakers[0].user_id).toBe(7);
+});
 it.each(['2030-05-01T07:00', '2030-05-02T10:00', 'bad'])('rejects invalid or out-of-event start %s', start => {
   expect(agendaPayload({ ...agendaDraft(event, session), start }, event)).toBeNull();
 });

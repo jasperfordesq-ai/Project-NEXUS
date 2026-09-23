@@ -920,7 +920,9 @@
       "discard": "Caith an t-athrú sábháilte amach",
       "discard_title": "An t-athrú diúltaithe seo a chaitheamh amach?",
       "discard_description": "Bainfear an t-athrú sábháilte den ghléas seo. Ní athrófar an clár reatha.",
-      "review_unavailable": "Ní féidir an seisiún seo a chur in eagar a thuilleadh. Caith an t-athrú diúltaithe amach chun leanúint ar aghaidh."
+      "review_unavailable": "Ní féidir an seisiún seo a chur in eagar a thuilleadh. Caith an t-athrú diúltaithe amach chun leanúint ar aghaidh.",
+      "comparison": "Cuir i gcomparáid leis an seisiún reatha",
+      "no_differences": "Níl aon difríochtaí ón seisiún reatha."
     },
     "team": {
       "title": "Foireann tarmligthe",

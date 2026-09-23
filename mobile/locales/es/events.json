@@ -920,7 +920,9 @@
       "discard": "Descartar el cambio guardado",
       "discard_title": "¿Descartar este cambio rechazado?",
       "discard_description": "Se eliminará el cambio guardado de este dispositivo. La agenda actual no se modificará.",
-      "review_unavailable": "Esta sesión ya no se puede editar. Descarta el cambio rechazado para continuar."
+      "review_unavailable": "Esta sesión ya no se puede editar. Descarta el cambio rechazado para continuar.",
+      "comparison": "Comparar con la sesión actual",
+      "no_differences": "No hay diferencias con la sesión actual."
     },
     "team": {
       "title": "Equipo delegado",

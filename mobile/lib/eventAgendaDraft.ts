@@ -23,7 +23,9 @@ export function agendaDraft(event: CanonicalEvent, session?: EventAgendaSession,
     end: eventIsoToLocalInput(input?.end_at ?? session?.end_at ?? event.schedule.end_at, zone),
     track: input ? input.track_name ?? '' : session?.track ?? '', room: input ? input.room_name ?? '' : session?.room ?? '',
     capacity: String((input ? input.capacity : session?.capacity.limit) ?? ''),
-    speakers: input ? input.speakers.map(s => ({ userId: s.user_id, name: s.display_name ?? '', role: s.role_label ?? '' }))
+    speakers: input ? input.speakers.map(s => ({ userId: s.user_id,
+      name: s.display_name ?? (s.user_id ? session?.speakers.find(member => member.member_id === s.user_id)?.display_name : undefined) ?? '',
+      role: s.role_label ?? '' }))
       : session?.speakers.map(s => ({ userId: s.member_id ?? undefined, name: s.display_name ?? '', role: s.role ?? '' })) ?? [],
     // Do not silently drop unavailable resources when replacing the complete resource list.
     resources: input?.resources.map(r => ({ ...r })) ?? session?.resources.map(r => ({

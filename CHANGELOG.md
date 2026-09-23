@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda conflict review now compares current session details with the live proposed edit, including exact times and expandable speaker/resource changes. Restored linked speakers retain their available display names without changing member identity.
+
+
 - Native agenda organisers can explicitly discard a definitively rejected change after confirmation, including when its session has been cancelled or removed. Obsolete editors close during review; uncertain operations and failed local discards remain protected.
 
 

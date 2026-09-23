@@ -920,7 +920,9 @@
       "discard": "Gespeicherte Änderung verwerfen",
       "discard_title": "Diese abgelehnte Änderung verwerfen?",
       "discard_description": "Die gespeicherte Änderung wird von diesem Gerät entfernt. Das aktuelle Programm bleibt unverändert.",
-      "review_unavailable": "Diese Sitzung kann nicht mehr bearbeitet werden. Verwerfen Sie die abgelehnte Änderung, um fortzufahren."
+      "review_unavailable": "Diese Sitzung kann nicht mehr bearbeitet werden. Verwerfen Sie die abgelehnte Änderung, um fortzufahren.",
+      "comparison": "Mit der aktuellen Sitzung vergleichen",
+      "no_differences": "Keine Unterschiede zur aktuellen Sitzung."
     },
     "team": {
       "title": "Delegiertes Team",
