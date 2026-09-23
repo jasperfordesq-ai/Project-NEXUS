@@ -144,10 +144,15 @@ function addRequestLocaleHeader(headers) {
   return headers;
 }
 
-// F-110: tell Laravel which visitor this call is for. Only web-uk sets this
-// header; the value always comes from the request context (never from a
-// caller), and Laravel must trust it only from web-uk's own network.
-const CLIENT_IP_HEADER = 'X-Nexus-Client-IP';
+// F-110: tell Laravel which visitor this call is for. Every web-uk call reaches
+// the API from one container address, so without this every visitor shared one
+// per-address login/reset/registration limit (one visitor could lock everyone
+// out). The production API image's mod_remoteip (Dockerfile.bluegreen:
+// RemoteIPHeader X-Forwarded-For, Docker networks trusted) turns this into
+// REMOTE_ADDR, so ClientIp::get() and $request->ip() both see the visitor.
+// The value always comes from the request context (req.ip under web-uk's own
+// trust-proxy setting), never from a caller-supplied header, which is removed.
+const CLIENT_IP_HEADER = 'X-Forwarded-For';
 
 function addRequestClientIpHeader(headers) {
   for (const name of Object.keys(headers)) {

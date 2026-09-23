@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The accessible frontend now sends each visitor's address to the API in the standard forwarded-address header, which the production API server already trusts from its own network, so one visitor's failed sign-ins, reset or registration attempts can no longer lock out every accessible-frontend user (F-110).
+
 - Club member import no longer returns passwords or account ids, no longer enrols or re-activates existing members, always adds plain members, follows the community's approval rule, and sends new members a password-setup email (F-126).
 
 - The emergency alert banner no longer shows members push-delivery details or who else an alert was sent to, and delivery results no longer store device tokens (F-128).

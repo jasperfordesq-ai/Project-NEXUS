@@ -323,7 +323,7 @@ app.set('view engine', 'njk');
 app.set('trust proxy', 1);
 
 // Every Laravel API call made while serving this request carries the visitor's
-// address (X-Nexus-Client-IP), so Laravel's per-address limits apply per visitor
+// address (X-Forwarded-For), so Laravel's per-address limits apply per visitor
 // rather than to web-uk's single container address (F-110). Mounted before
 // tenantRouting so the tenant-bootstrap call is covered too.
 app.use(requestClientContext);

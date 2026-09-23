@@ -65,24 +65,24 @@ describe('client address forwarding to Laravel (F-110)', () => {
     ]);
 
     expect(observed).toHaveLength(2);
-    expect(observed.map(({ headers }) => headers['X-Nexus-Client-IP']).sort())
+    expect(observed.map(({ headers }) => headers['X-Forwarded-For']).sort())
       .toEqual(['198.51.100.20', '203.0.113.10']);
   });
 
   it('uses the address the trusted proxy appended, not one the visitor prepended', async () => {
     const app = buildApp();
     await request(app).post('/login').set('X-Forwarded-For', '10.9.9.9, 203.0.113.10');
-    expect(observed[0].headers['X-Nexus-Client-IP']).toBe('203.0.113.10');
+    expect(observed[0].headers['X-Forwarded-For']).toBe('203.0.113.10');
   });
 
   it('forwards the address on download requests too', async () => {
     const app = buildApp();
     await request(app).get('/download').set('X-Forwarded-For', '203.0.113.30');
-    expect(observed[0].headers['X-Nexus-Client-IP']).toBe('203.0.113.30');
+    expect(observed[0].headers['X-Forwarded-For']).toBe('203.0.113.30');
   });
 
   it('sends no client header outside a request context', async () => {
     await login('member@example.test', 'pw', 'acme');
-    expect(observed[0].headers).not.toHaveProperty('X-Nexus-Client-IP');
+    expect(observed[0].headers).not.toHaveProperty('X-Forwarded-For');
   });
 });
