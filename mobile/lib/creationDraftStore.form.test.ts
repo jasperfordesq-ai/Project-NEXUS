@@ -89,3 +89,16 @@ it('stores large campaign recipient input encrypted and removes it after acknowl
   expect(await load(campaignScope, { required: true })).toEqual({ status: 'acknowledged', campaignId: 12 });
   expect(files.size).toBe(1);
 });
+it('persists full Safety conduct text encrypted, isolated and recoverable after a failed replacement', async () => {
+  const safetyScope = { ...scope, kind: 'event-safety' as const };
+  const pending = { key: 'original', payload: { code_of_conduct_text: '\n'.repeat(100000) } };
+  expect(await save(safetyScope, pending)).toBe(true);
+  expect(await load(safetyScope, { required: true })).toEqual(pending);
+  expect([...files.values()][0]).not.toContain(JSON.stringify(pending));
+  expect(await load({ ...safetyScope, userId: 8 }, { required: true })).toBeNull();
+  jest.mocked(storage.set).mockRejectedValueOnce(new Error('Keystore unavailable'));
+  expect(await save(safetyScope, { key: 'replacement' })).toBe(false);
+  expect(await load(safetyScope, { required: true })).toEqual(pending);
+  expect(await clear(safetyScope)).toBe(true);
+  expect(await load(safetyScope, { required: true })).toBeNull();
+});

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added encrypted, account-scoped recovery for native organiser Safety requests, preserving exact changes across interrupted responses and preventing uncertain decisions from being replaced. The organiser screen is still being completed.
+
 - Added validated native API support for organiser event safety drafts, publication, archiving and paginated participation reviews, preserving revision checks and request identities. The native organiser Safety workspace is still being completed.
 
 - Native event organisers can search members, assign permitted team roles with optional expiry, revoke access and review assignment history in a dedicated Team screen. Saved requests preserve their identity after interrupted responses; explicit recovery and confirmed discard protect unresolved changes.
