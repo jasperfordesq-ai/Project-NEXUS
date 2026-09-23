@@ -194,6 +194,7 @@ class IdeationChallengesController extends BaseApiController
     public function ideas(int $id): JsonResponse
     {
         $this->ensureFeature();
+        $userId = $this->requireAuth();
         $this->rateLimit('ideation_ideas', 60, 60);
 
         $filters = [
@@ -205,7 +206,11 @@ class IdeationChallengesController extends BaseApiController
             $filters['cursor'] = $this->query('cursor');
         }
 
-        $result = $this->challengeService->getIdeas($id, $filters);
+        $result = $this->challengeService->getIdeas($id, $userId, $filters);
+
+        if ($result === null) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.challenge_not_found'), null, 404);
+        }
 
         return $this->respondWithCollection(
             $result['items'],
@@ -491,6 +496,7 @@ class IdeationChallengesController extends BaseApiController
     public function comments($id): JsonResponse
     {
         $this->ensureFeature();
+        $userId = $this->requireAuth();
 
         $filters = [
             'limit' => $this->queryInt('per_page', 20, 1, 100),
@@ -500,7 +506,11 @@ class IdeationChallengesController extends BaseApiController
             $filters['cursor'] = $this->query('cursor');
         }
 
-        $result = $this->challengeService->getComments((int) $id, $filters);
+        $result = $this->challengeService->getComments((int) $id, $userId, $filters);
+
+        if ($result === null) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.idea_not_found'), null, 404);
+        }
 
         return $this->respondWithCollection(
             $result['items'],
@@ -719,6 +729,11 @@ class IdeationChallengesController extends BaseApiController
     public function listIdeaMedia($id): JsonResponse
     {
         $this->ensureFeature();
+        $userId = $this->requireAuth();
+        if ($this->challengeService->getIdeaById((int) $id, $userId) === null) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.idea_not_found'), null, 404);
+        }
+
         $media = $this->ideaMediaService->getMediaForIdea((int) $id);
         return $this->respondWithData($media);
     }

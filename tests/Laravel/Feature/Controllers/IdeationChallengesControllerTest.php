@@ -10,6 +10,7 @@ use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use App\Models\Tenant;
 use App\Models\User;
 
 /**
@@ -176,6 +177,109 @@ public function test_ideas_requires_auth(): void
         $response->assertStatus(401);
     }
 
+    public function test_idea_list_cannot_read_a_foreign_tenant_through_its_parent_id(): void
+    {
+        $this->authenticatedUser();
+        $victimTenant = Tenant::factory()->create();
+        $victim = User::factory()->forTenant((int) $victimTenant->id)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $foreignChallenge = $this->createChallengeForTenant((int) $victimTenant->id, (int) $victim->id, 'open');
+        $this->createIdea($foreignChallenge, (int) $victim->id, 'submitted', 'Foreign tenant secret');
+
+        $this->apiGet("/v2/ideation-challenges/{$foreignChallenge}/ideas")
+            ->assertNotFound()
+            ->assertJsonMissing(['title' => 'Foreign tenant secret']);
+    }
+
+    public function test_member_idea_reads_hide_drafts_withdrawals_and_unpublished_challenges(): void
+    {
+        $viewer = $this->authenticatedUser();
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $openChallenge = $this->createOpenChallenge((int) $owner->id);
+        $submitted = $this->createIdea($openChallenge, (int) $owner->id, 'submitted', 'Published idea');
+        $draft = $this->createIdea($openChallenge, (int) $owner->id, 'draft', 'Private draft idea');
+        $withdrawn = $this->createIdea($openChallenge, (int) $owner->id, 'withdrawn', 'Withdrawn idea');
+        $draftChallenge = $this->createChallengeForTenant($this->testTenantId, (int) $owner->id, 'draft');
+        $ideaUnderDraftChallenge = $this->createIdea(
+            $draftChallenge,
+            (int) $owner->id,
+            'submitted',
+            'Idea under unpublished challenge'
+        );
+
+        $response = $this->apiGet("/v2/ideation-challenges/{$openChallenge}/ideas")->assertOk();
+        $ids = array_map('intval', array_column($response->json('data'), 'id'));
+        $this->assertContains($submitted, $ids);
+        $this->assertNotContains($draft, $ids);
+        $this->assertNotContains($withdrawn, $ids);
+
+        $this->apiGet("/v2/ideation-ideas/{$draft}")->assertNotFound();
+        $this->apiGet("/v2/ideation-ideas/{$withdrawn}")->assertNotFound();
+        $this->apiGet("/v2/ideation-challenges/{$draftChallenge}/ideas")->assertNotFound();
+        $this->apiGet("/v2/ideation-ideas/{$ideaUnderDraftChallenge}")->assertNotFound();
+        $this->assertNotSame($viewer->id, $owner->id);
+    }
+
+    public function test_comments_and_media_do_not_republish_a_hidden_idea(): void
+    {
+        $this->authenticatedUser();
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $challengeId = $this->createOpenChallenge((int) $owner->id);
+        $draftId = $this->createIdea($challengeId, (int) $owner->id, 'draft', 'Hidden idea with side data');
+        DB::table('challenge_idea_comments')->insert([
+            'idea_id' => $draftId,
+            'user_id' => $owner->id,
+            'body' => 'Hidden comment body',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('idea_media')->insert([
+            'idea_id' => $draftId,
+            'tenant_id' => $this->testTenantId,
+            'media_type' => 'document',
+            'url' => 'https://example.invalid/private-draft.pdf',
+            'caption' => 'Hidden media caption',
+            'sort_order' => 0,
+            'created_at' => now(),
+        ]);
+
+        $this->apiGet("/v2/ideation-ideas/{$draftId}/comments")
+            ->assertNotFound()
+            ->assertJsonMissing(['body' => 'Hidden comment body']);
+        $this->apiGet("/v2/ideation-ideas/{$draftId}/media")
+            ->assertNotFound()
+            ->assertJsonMissing(['caption' => 'Hidden media caption']);
+    }
+
+    public function test_idea_author_and_admin_retain_hidden_idea_access(): void
+    {
+        $author = $this->authenticatedUser();
+        $challengeId = $this->createOpenChallenge((int) $author->id);
+        $draftId = $this->createIdea($challengeId, (int) $author->id, 'draft', 'Author draft');
+        $withdrawnId = $this->createIdea($challengeId, (int) $author->id, 'withdrawn', 'Author withdrawal');
+
+        $this->apiGet("/v2/ideation-ideas/{$draftId}")->assertOk();
+        $this->apiGet("/v2/ideation-ideas/{$withdrawnId}")->assertOk();
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($admin, ['*']);
+        $adminList = $this->apiGet("/v2/ideation-challenges/{$challengeId}/ideas")->assertOk();
+        $adminIds = array_map('intval', array_column($adminList->json('data'), 'id'));
+        $this->assertContains($draftId, $adminIds);
+        $this->assertContains($withdrawnId, $adminIds);
+    }
+
     public function test_native_idea_submission_replays_one_accepted_write_and_rejects_changed_content(): void
     {
         $user = $this->authenticatedUser();
@@ -308,16 +412,34 @@ public function test_ideas_requires_auth(): void
         ]);
     }
 
-    private function createIdea(int $challengeId, int $ownerId): int
+    private function createChallengeForTenant(int $tenantId, int $ownerId, string $status): int
+    {
+        return DB::table('ideation_challenges')->insertGetId([
+            'tenant_id' => $tenantId,
+            'user_id' => $ownerId,
+            'title' => 'Scoped challenge ' . uniqid('', false),
+            'description' => 'A challenge used to verify tenant and lifecycle visibility.',
+            'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createIdea(
+        int $challengeId,
+        int $ownerId,
+        string $status = 'submitted',
+        string $title = 'Tool library'
+    ): int
     {
         return DB::table('challenge_ideas')->insertGetId([
             'challenge_id' => $challengeId,
             'user_id' => $ownerId,
-            'title' => 'Tool library',
+            'title' => $title,
             'description' => 'Share useful tools.',
             'votes_count' => 0,
             'comments_count' => 0,
-            'status' => 'submitted',
+            'status' => $status,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

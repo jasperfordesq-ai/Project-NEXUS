@@ -585,18 +585,35 @@ class IdeationChallengeService
     /**
      * Get ideas for a challenge with cursor-based pagination.
      *
-     * @return array{items: array, cursor: string|null, has_more: bool}
+     * @return array{items: array, cursor: string|null, has_more: bool}|null
      */
-    public function getIdeas(int $challengeId, array $filters = []): array
+    public function getIdeas(int $challengeId, int $viewerId, array $filters = []): ?array
     {
         $limit  = min((int) ($filters['limit'] ?? 20), 100);
         $cursor = $filters['cursor'] ?? null;
         $sort   = $filters['sort'] ?? 'votes';
+        $tenantId = TenantContext::getId();
+
+        $challenge = DB::table('ideation_challenges')
+            ->where('id', $challengeId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+        if ($challenge === null || !$this->canViewChallengeRecord($challenge, $viewerId)) {
+            return null;
+        }
+
+        $canManage = $this->isAdmin($viewerId, $tenantId);
 
         $query = DB::table('challenge_ideas as i')
+            ->join('ideation_challenges as c', 'i.challenge_id', '=', 'c.id')
             ->leftJoin('users as u', 'i.user_id', '=', 'u.id')
             ->where('i.challenge_id', $challengeId)
+            ->where('c.tenant_id', $tenantId)
             ->select('i.*', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url');
+
+        if (!$canManage) {
+            $query->whereNotIn('i.status', ['draft', 'withdrawn']);
+        }
 
         // Add vote count subquery
         $query->selectSub(
@@ -639,7 +656,7 @@ class IdeationChallengeService
     /**
      * Get an idea by ID.
      */
-    public function getIdeaById(int $id, ?int $userId = null): ?array
+    public function getIdeaById(int $id, int $userId): ?array
     {
         $tenantId = TenantContext::getId();
 
@@ -652,11 +669,29 @@ class IdeationChallengeService
                 'i.*',
                 'u.first_name as creator_first_name',
                 'u.last_name as creator_last_name', 'u.profile_type as creator_profile_type', 'u.organization_name as creator_organization_name',
-                'u.avatar_url as creator_avatar'
+                'u.avatar_url as creator_avatar',
+                'ic.status as challenge_status',
+                'ic.user_id as challenge_owner_id'
             )
             ->first();
 
         if (! $idea) {
+            return null;
+        }
+
+        $challenge = (object) [
+            'status' => $idea->challenge_status,
+            'user_id' => $idea->challenge_owner_id,
+        ];
+        if (!$this->canViewChallengeRecord($challenge, $userId)) {
+            return null;
+        }
+
+        if (
+            in_array((string) $idea->status, ['draft', 'withdrawn'], true)
+            && (int) $idea->user_id !== $userId
+            && !$this->isAdmin($userId, $tenantId)
+        ) {
             return null;
         }
 
@@ -667,16 +702,18 @@ class IdeationChallengeService
             'avatar_url' => $data['creator_avatar'] ?? null,
         ];
 
-        if ($userId) {
-            $data['has_voted'] = DB::table('challenge_idea_votes')
-                ->where('idea_id', $id)
-                ->where('user_id', $userId)
-                ->exists();
-        } else {
-            $data['has_voted'] = false;
-        }
+        $data['has_voted'] = DB::table('challenge_idea_votes')
+            ->where('idea_id', $id)
+            ->where('user_id', $userId)
+            ->exists();
 
-        unset($data['creator_first_name'], $data['creator_last_name'], $data['creator_avatar']);
+        unset(
+            $data['creator_first_name'],
+            $data['creator_last_name'],
+            $data['creator_avatar'],
+            $data['challenge_status'],
+            $data['challenge_owner_id']
+        );
 
         return $data;
     }
@@ -689,7 +726,7 @@ class IdeationChallengeService
         $this->errors = [];
         $tenantId = TenantContext::getId();
 
-        $idea = $this->getIdeaById($id);
+        $idea = $this->getIdeaById($id, $userId);
         if (! $idea) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.idea_not_found')];
             return false;
@@ -821,7 +858,7 @@ class IdeationChallengeService
         $this->errors = [];
         $tenantId = TenantContext::getId();
 
-        $idea = $this->getIdeaById($id);
+        $idea = $this->getIdeaById($id, $userId);
         if (! $idea) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.idea_not_found')];
             return false;
@@ -1024,7 +1061,7 @@ class IdeationChallengeService
             return false;
         }
 
-        $idea = $this->getIdeaById($ideaId);
+        $idea = $this->getIdeaById($ideaId, $userId);
         if (! $idea) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.idea_not_found')];
             return false;
@@ -1071,17 +1108,17 @@ class IdeationChallengeService
     /**
      * Get comments for an idea with cursor-based pagination.
      *
-     * @return array{items: array, cursor: string|null, has_more: bool}
+     * @return array{items: array, cursor: string|null, has_more: bool}|null
      */
-    public function getComments(int $ideaId, array $filters = []): array
+    public function getComments(int $ideaId, int $viewerId, array $filters = []): ?array
     {
         $limit  = min((int) ($filters['limit'] ?? 20), 100);
         $cursor = $filters['cursor'] ?? null;
 
         // Verify idea exists in our tenant
-        $idea = $this->getIdeaById($ideaId);
+        $idea = $this->getIdeaById($ideaId, $viewerId);
         if (! $idea) {
-            return ['items' => [], 'cursor' => null, 'has_more' => false];
+            return null;
         }
 
         $query = DB::table('challenge_idea_comments as c')
@@ -1180,7 +1217,7 @@ class IdeationChallengeService
             return null;
         }
 
-        $idea = $this->getIdeaById($ideaId);
+        $idea = $this->getIdeaById($ideaId, $userId);
         if (! $idea) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.idea_not_found')];
             return null;

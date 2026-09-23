@@ -706,9 +706,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/JobVacanciesController.php:570:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/JobVacanciesController.php:571:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/JobVacanciesController.php",
-            "line": 570,
+            "line": 571,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $job->user_id",
@@ -1993,9 +1993,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1565:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1602:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1565,
+            "line": 1602,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $challenge->user_id",
@@ -2006,9 +2006,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1654:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1691:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1654,
+            "line": 1691,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",
@@ -2019,9 +2019,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1719:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1756:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1719,
+            "line": 1756,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",
@@ -2032,9 +2032,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1804:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1841:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1804,
+            "line": 1841,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",
@@ -2162,9 +2162,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobInterviewService.php:590:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobInterviewService.php:617:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobInterviewService.php",
-            "line": 590,
+            "line": 617,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $candidateId",
@@ -2175,9 +2175,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobInterviewService.php:643:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobInterviewService.php:670:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobInterviewService.php",
-            "line": 643,
+            "line": 670,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $posterId",
@@ -2253,9 +2253,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:880:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Services/JobVacancyService.php:919:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Services/JobVacancyService.php",
-            "line": 880,
+            "line": 919,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,

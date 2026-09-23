@@ -107,9 +107,13 @@ abstract class AccessSweepTestCase extends TestCase
         // vol_shifts does not have; no fixture until that model bug is fixed.
         'volunteering/expenses' => 'vol_expense',
         'volunteering/giving-days' => 'vol_giving_day',
-        // 'ideation-*' — served by IdeationChallengesController, NOT the
-        // gamification Challenge model. The control caught the wrong mapping
-        // (own record 404). No factory for the ideation models yet.
+        // Ideation uses its own challenge/idea tables rather than the
+        // gamification Challenge model. Parent and child mappings are explicit
+        // so a foreign parent-id collection cannot pass with an empty fixture.
+        'ideation-challenges' => 'ideation_challenge',
+        'ideation-ideas' => 'challenge_idea',
+        'ideation-comments' => 'challenge_idea_comment',
+        'ideation-media' => 'idea_media',
         'exchanges' => 'exchange_request',
         'kb' => 'help_article',
         'courses' => 'course',
@@ -288,6 +292,9 @@ abstract class AccessSweepTestCase extends TestCase
         'verein_event_share' => ['table' => 'verein_event_shares', 'needs' => ['source_organization_id' => 'organization', 'target_organization_id' => 'organization', 'event_id' => 'event']],
         'verein_member_due' => ['table' => 'verein_member_dues', 'needs' => ['organization_id' => 'organization'], 'owner' => 'user_id', 'columns' => ['membership_year' => '2026', 'amount_cents' => '1000', 'due_date' => '{today}']],
         'ideation_challenge' => ['table' => 'ideation_challenges', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep challenge', 'description' => 'Sweep challenge description']],
+        'challenge_idea' => ['table' => 'challenge_ideas', 'needs' => ['challenge_id' => 'ideation_challenge'], 'owner' => 'user_id', 'columns' => ['title' => 'Sweep idea', 'description' => 'Sweep idea description', 'status' => 'submitted']],
+        'challenge_idea_comment' => ['table' => 'challenge_idea_comments', 'needs' => ['idea_id' => 'challenge_idea'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep idea comment']],
+        'idea_media' => ['table' => 'idea_media', 'needs' => ['idea_id' => 'challenge_idea'], 'columns' => ['media_type' => 'document', 'url' => 'https://example.invalid/sweep-idea.pdf', 'caption' => 'Sweep idea media']],
         // AdminUsersController::removeBadge() looks the badge up by
         // (id, user_id, tenant_id), where user_id is the {id} in the PATH — so the
         // badge must belong to the 'user' fixture, not to the acting administrator.

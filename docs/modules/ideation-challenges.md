@@ -76,7 +76,7 @@ All ideation tables are prefixed with `challenge_` or `ideation_`; they carry no
 | `team_tasks` | Kanban tasks inside implementation groups |
 | `team_documents` | File uploads inside implementation groups |
 
-Tenant scoping: `ideation_challenges.tenant_id` is the root anchor. Most idea, vote, and comment operations scope transitively through their parent challenge; the known `getIdeas()` exception is called out under [Security and privacy invariants](#security-and-privacy-invariants). Categories, tags, templates, and outcomes carry their own `tenant_id` via the `HasTenantScope` trait on the relevant Eloquent models.
+Tenant scoping: `ideation_challenges.tenant_id` is the root anchor. Idea, vote, comment, and media reads scope transitively through that parent challenge. Standard member lists exclude draft and withdrawn ideas; only the idea author and tenant administrators can read those states directly. Ideas beneath unpublished challenges inherit the challenge's creator/admin visibility rule. Categories, tags, templates, and outcomes carry their own `tenant_id` via the `HasTenantScope` trait on the relevant Eloquent models.
 
 ---
 
@@ -205,7 +205,7 @@ Lang file: `lang/en/govuk_alpha_ideation.php` (plus 10 locale variants).
 
 ## Security and privacy invariants
 
-- Challenge CRUD and single-idea/comment operations scope through `ideation_challenges.tenant_id`. **Known gap:** `IdeationChallengeService::getIdeas()` currently filters only by the supplied `challenge_id` and does not join back to the tenant-scoped challenge. Do not treat authentication alone as tenant authorization; add the parent tenant check before extending or reusing that method.
+- Challenge CRUD and idea, comment, and media reads scope through `ideation_challenges.tenant_id`. Collection routes validate the named parent challenge before querying children and retain the tenant join in the child query. Hidden challenge states are creator/admin-only; standard member lists exclude draft and withdrawn ideas, while direct reads of those idea states are limited to the idea author and tenant administrators.
 - Voting: users cannot vote on their own ideas; votes are rejected if the challenge is not in `open` or `voting` status; a duplicate vote toggles the existing vote off (idempotent toggle).
 - Challenge update and delete are admin-only. Idea edit is owner-only and blocked once the challenge leaves `open` status.
 - Draft ideas are owner-private: `getUserDrafts()` always filters by both `challenge_id` and `user_id`.

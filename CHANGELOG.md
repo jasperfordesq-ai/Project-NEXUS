@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Ideation idea lists now verify the tenant-scoped parent challenge and hide draft, withdrawn, and unpublished content from unauthorised members. Direct idea, comment, and media reads apply the same lifecycle rules, preventing a member from naming another community's challenge or a hidden idea to retrieve its contents (F-077).
+
 - An event organiser's decision now holds. A member the organiser declined or removed can still ask for a place again, but the request waits as "pending" for the organiser instead of confirming itself; a member already awaiting approval can no longer confirm themselves; "Require organiser approval" now puts self-registrations in pending; and published registration open/close dates are enforced (F-099).
 
 - A revoked "Peer Endorsed" verification badge now stays revoked: further peer endorsements can no longer restore a badge an administrator took away, and automatically granted badges no longer name the endorsing member as the verifier (F-068).
