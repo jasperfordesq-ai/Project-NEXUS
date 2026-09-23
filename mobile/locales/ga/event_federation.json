@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Comhroinnt chónasctha imeachta",
+      "tab": "Líonra comhpháirtíochta",
+      "overview": "Seiceáil seachadadh idirphobail",
+      "description": "Déan monatóireacht ar an gcaoi a roinntear an t-imeacht seo le pobail chomhpháirtíochta gan sonraí príobháideacha lucht freastail a nochtadh.",
+      "refresh": "Athnuaigh",
+      "loading": "Stádas an chónaisc á lódáil...",
+      "load_error_title": "Níorbh fhéidir stádas an chónaisc a lódáil",
+      "load_error_description": "Níorbh fhéidir diagnóisic seachadta a lódáil. Bain triail eile as.",
+      "try_again": "Bain triail eile as",
+      "not_configured_title": "Níl aon phobal comhpháirtíochta cumraithe",
+      "not_configured_description": "Níl an t-imeacht seo á sheachadadh chuig aon phobal comhpháirtíochta faoi láthair.",
+      "degraded_title": "Tá aird de dhíth ar roinnt seachadtaí",
+      "degraded_description": "Shroich seachadadh amháin nó níos mó an teorainn atrialacha. Úsáid an cód diagnóiseach agus tú i dteagmháil le riarthóir.",
+      "metrics": {
+        "configured_partners": "Comhpháirtithe cumraithe",
+        "recipient_partners": "Stair seachadta",
+        "federation_version": "Leagan an líonra comhpháirtíochta",
+        "visibility": "Infheictheacht roinnte"
+      },
+      "visibility": {
+        "none": "Gan roinnt",
+        "listed": "Liostaithe",
+        "joinable": "Liostaithe agus oscailte le páirt a ghlacadh"
+      },
+      "delivery_summary": "Achoimre seachadta",
+      "delivery_status": {
+        "pending": "Ar feitheamh",
+        "retry": "Atriail sceidealaithe",
+        "processing": "Á phróiseáil",
+        "delivered": "Seachadta",
+        "dead_letter": "Aird de dhíth"
+      },
+      "partners_table_aria": "Seachadadh idirphobail an imeachta de réir comhpháirtí",
+      "columns": {
+        "partner": "Comhpháirtí",
+        "action": "Gníomh",
+        "delivery": "Seachadadh",
+        "attempts": "Iarrachtaí",
+        "activity": "Gníomhaíocht is déanaí"
+      },
+      "no_deliveries": "Níor taifeadadh aon seachadadh idirphobail don imeacht seo.",
+      "removed_partner": "Comhpháirtí bainte",
+      "partner_status": {
+        "active": "Gníomhach",
+        "pending": "Ar feitheamh",
+        "suspended": "Ar fionraí",
+        "failed": "Teipthe",
+        "removed": "Bainte",
+        "unknown": "Stádas anaithnid"
+      },
+      "events_disabled": "Comhroinnt imeachtaí díchumasaithe",
+      "action": {
+        "upsert": "Foilsigh nó nuashonraigh",
+        "tombstone": "Bain"
+      },
+      "not_available": "Níl ar fáil",
+      "error_code": "Cód diagnóiseach: {{code}}",
+      "error_code_unknown": "Níl cód diagnóiseach ar fáil",
+      "attempt_count": "{{count}} as {{max}}",
+      "generated_at": "Nuashonraithe {{time}}",
+      "health": {
+        "not_configured": "Níor bunaíodh comhpháirtithe",
+        "healthy": "Roinnt de ghnáth",
+        "delivering": "A sheoladh chuig comhpháirtithe",
+        "degraded": "Seachadtaí ag teip",
+        "withdrawn": "Tarraingthe siar ó chomhpháirtithe"
+      }
+    }
+  }
+}

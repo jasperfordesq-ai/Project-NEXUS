@@ -18,13 +18,13 @@ when a React member route exists that nobody has classified for mobile.
 | Measure | Count |
 | --- | --- |
 | React member routes | 257 |
-| Mobile routes (Expo Router screens) | 183 |
+| Mobile routes (Expo Router screens) | 184 |
 | Covered natively | 170 |
 | Deliberately out of scope | 87 |
 | **Known gaps** | **0** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 42 |
+| Mobile routes not claimed by a React route | 43 |
 | Broken declarations | 0 |
 
 ## Full matrix
@@ -303,6 +303,7 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `event-analytics`
 - `event-attendance`
 - `event-communications`
+- `event-federation`
 - `event-invitation-recipients`
 - `event-lifecycle-history`
 - `event-people`

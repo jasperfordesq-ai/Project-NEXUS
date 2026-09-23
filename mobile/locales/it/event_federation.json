@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Condivisione federata dell’evento",
+      "tab": "Federazione",
+      "overview": "Controlla la consegna federata",
+      "description": "Monitora come questo evento viene condiviso con le comunità partner senza esporre dati privati dei partecipanti.",
+      "refresh": "Aggiorna",
+      "loading": "Caricamento dello stato di federazione...",
+      "load_error_title": "Impossibile caricare lo stato di federazione",
+      "load_error_description": "Non è stato possibile caricare la diagnostica di consegna. Riprova.",
+      "try_again": "Riprova",
+      "not_configured_title": "Nessuna comunità partner configurata",
+      "not_configured_description": "Questo evento non viene attualmente consegnato ad alcun partner federato.",
+      "degraded_title": "Alcune consegne richiedono attenzione",
+      "degraded_description": "Una o più consegne hanno raggiunto il limite di tentativi. Usa il codice diagnostico quando contatti una persona amministratrice.",
+      "metrics": {
+        "configured_partners": "Partner configurati",
+        "recipient_partners": "Cronologia consegne",
+        "federation_version": "Versione federazione",
+        "visibility": "Visibilità condivisa"
+      },
+      "visibility": {
+        "none": "Non condiviso",
+        "listed": "In elenco",
+        "joinable": "In elenco e accessibile"
+      },
+      "delivery_summary": "Riepilogo consegne",
+      "delivery_status": {
+        "pending": "In attesa",
+        "retry": "Nuovo tentativo pianificato",
+        "processing": "In elaborazione",
+        "delivered": "Consegnato",
+        "dead_letter": "Richiede attenzione"
+      },
+      "partners_table_aria": "Consegna federata dell’evento per partner",
+      "columns": {
+        "partner": "Partner",
+        "action": "Azione",
+        "delivery": "Consegna",
+        "attempts": "Tentativi",
+        "activity": "Attività più recente"
+      },
+      "no_deliveries": "Non sono state registrate consegne federate per questo evento.",
+      "removed_partner": "Partner rimosso",
+      "partner_status": {
+        "active": "Attivo",
+        "pending": "In attesa",
+        "suspended": "Sospeso",
+        "failed": "Non riuscito",
+        "removed": "Rimosso",
+        "unknown": "Stato sconosciuto"
+      },
+      "events_disabled": "Condivisione eventi disattivata",
+      "action": {
+        "upsert": "Pubblica o aggiorna",
+        "tombstone": "Rimuovi"
+      },
+      "not_available": "Non disponibile",
+      "error_code": "Codice diagnostico: {{code}}",
+      "error_code_unknown": "Codice diagnostico non disponibile",
+      "attempt_count": "{{count}} di {{max}}",
+      "generated_at": "Aggiornato: {{time}}",
+      "health": {
+        "not_configured": "Nessun partner configurato",
+        "healthy": "Condivisione normalmente",
+        "delivering": "Invio ai partner",
+        "degraded": "Consegne fallite",
+        "withdrawn": "Ritirato dai partner"
+      }
+    }
+  }
+}

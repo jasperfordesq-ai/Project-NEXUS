@@ -332,6 +332,7 @@ function RootNavigator() {
     'event_templates',
     'event_tickets',
     'event_communications',
+    'event_federation',
     'event_recurrence_blueprints',
     'exchanges',
     'federation',
@@ -647,6 +648,10 @@ function RootNavigator() {
       <Stack.Screen
         name="(modals)/event-agenda"
         options={{ ...modalOptions, headerShown: false, title: t('events:manage.agenda.title') }}
+      />
+      <Stack.Screen
+        name="(modals)/event-federation"
+        options={{ ...modalOptions, headerShown: false, title: t('event_federation:manage.federation.title') }}
       />
       <Stack.Screen
         name="(modals)/event-analytics"

@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Federated event sharing",
+      "tab": "Federation",
+      "overview": "Review federation delivery",
+      "description": "Monitor how this event is shared with partner communities without exposing private attendee data.",
+      "refresh": "Refresh",
+      "loading": "Loading federation status...",
+      "load_error_title": "Unable to load federation status",
+      "load_error_description": "Delivery diagnostics could not be loaded. Please try again.",
+      "try_again": "Try again",
+      "not_configured_title": "No partner communities configured",
+      "not_configured_description": "This event is not currently being delivered to any federated partner.",
+      "degraded_title": "Some deliveries need attention",
+      "degraded_description": "One or more partner deliveries reached the retry limit. Use the diagnostic code when contacting an administrator.",
+      "metrics": {
+        "configured_partners": "Configured partners",
+        "recipient_partners": "Delivery history",
+        "federation_version": "Federation version",
+        "visibility": "Shared visibility"
+      },
+      "visibility": {
+        "none": "Not shared",
+        "listed": "Listed",
+        "joinable": "Listed and joinable"
+      },
+      "delivery_summary": "Delivery summary",
+      "delivery_status": {
+        "pending": "Pending",
+        "retry": "Retry scheduled",
+        "processing": "Processing",
+        "delivered": "Delivered",
+        "dead_letter": "Needs attention"
+      },
+      "partners_table_aria": "Federated event delivery by partner",
+      "columns": {
+        "partner": "Partner",
+        "action": "Action",
+        "delivery": "Delivery",
+        "attempts": "Attempts",
+        "activity": "Latest activity"
+      },
+      "no_deliveries": "No federation deliveries have been recorded for this event.",
+      "removed_partner": "Removed partner",
+      "partner_status": {
+        "active": "Active",
+        "pending": "Pending",
+        "suspended": "Suspended",
+        "failed": "Failed",
+        "removed": "Removed",
+        "unknown": "Unknown status"
+      },
+      "events_disabled": "Event sharing disabled",
+      "action": {
+        "upsert": "Publish or update",
+        "tombstone": "Remove"
+      },
+      "not_available": "Not available",
+      "error_code": "Diagnostic code: {{code}}",
+      "error_code_unknown": "Diagnostic code unavailable",
+      "attempt_count": "{{count}} of {{max}}",
+      "generated_at": "Updated {{time}}",
+      "health": {
+        "not_configured": "No partners set up",
+        "healthy": "Sharing normally",
+        "delivering": "Sending to partners",
+        "degraded": "Deliveries failing",
+        "withdrawn": "Withdrawn from partners"
+      }
+    }
+  }
+}

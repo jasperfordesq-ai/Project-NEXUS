@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Native event organisers can review partner sharing status, delivery counts and safe diagnostic codes in a dedicated read-only federation screen, with refresh recovery and protected account/community changes.
 - Native event organisers can now create and edit agenda sessions, manage speakers and secure resources, cancel sessions with reasons, and reorder the programme from a dedicated screen. Requests are saved encrypted before sending; interrupted requests retain their retry identity, and rejected edits retain their input for review against current versions.
 - Native course learners can share their completion certificate from the course player, with authenticated retrieval, account-change protection and retry after a failed export.
 

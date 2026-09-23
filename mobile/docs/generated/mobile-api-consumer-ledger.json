@@ -4,10 +4,10 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 61,
-    "call_sites": 682,
-    "distinct_endpoints": 537,
-    "verified": 537,
+    "api_modules": 62,
+    "call_sites": 683,
+    "distinct_endpoints": 538,
+    "verified": 538,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -1211,6 +1211,15 @@
       "matched_via": "exact",
       "sites": [
         "eventAnalytics.ts:120"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/federation-status",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventFederation.ts:44"
       ]
     },
     {

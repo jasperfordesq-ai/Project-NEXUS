@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Compartición federada del evento",
+      "tab": "Federación",
+      "overview": "Revisar la entrega federada",
+      "description": "Supervisa cómo se comparte este evento con comunidades asociadas sin exponer datos privados de asistentes.",
+      "refresh": "Actualizar",
+      "loading": "Cargando el estado de federación...",
+      "load_error_title": "No se pudo cargar el estado de federación",
+      "load_error_description": "No se pudieron cargar los diagnósticos de entrega. Inténtalo de nuevo.",
+      "try_again": "Intentar de nuevo",
+      "not_configured_title": "No hay comunidades asociadas configuradas",
+      "not_configured_description": "Este evento no se está entregando actualmente a ningún socio federado.",
+      "degraded_title": "Algunas entregas requieren atención",
+      "degraded_description": "Una o más entregas alcanzaron el límite de reintentos. Utiliza el código de diagnóstico al contactar con una persona administradora.",
+      "metrics": {
+        "configured_partners": "Socios configurados",
+        "recipient_partners": "Historial de entregas",
+        "federation_version": "Versión de federación",
+        "visibility": "Visibilidad compartida"
+      },
+      "visibility": {
+        "none": "No compartido",
+        "listed": "Publicado",
+        "joinable": "Publicado y con inscripción"
+      },
+      "delivery_summary": "Resumen de entregas",
+      "delivery_status": {
+        "pending": "Pendiente",
+        "retry": "Reintento programado",
+        "processing": "Procesando",
+        "delivered": "Entregado",
+        "dead_letter": "Requiere atención"
+      },
+      "partners_table_aria": "Entrega federada del evento por socio",
+      "columns": {
+        "partner": "Socio",
+        "action": "Acción",
+        "delivery": "Entrega",
+        "attempts": "Intentos",
+        "activity": "Actividad más reciente"
+      },
+      "no_deliveries": "No se han registrado entregas federadas para este evento.",
+      "removed_partner": "Socio eliminado",
+      "partner_status": {
+        "active": "Activo",
+        "pending": "Pendiente",
+        "suspended": "Suspendido",
+        "failed": "Fallido",
+        "removed": "Eliminado",
+        "unknown": "Estado desconocido"
+      },
+      "events_disabled": "Compartición de eventos desactivada",
+      "action": {
+        "upsert": "Publicar o actualizar",
+        "tombstone": "Retirar"
+      },
+      "not_available": "No disponible",
+      "error_code": "Código de diagnóstico: {{code}}",
+      "error_code_unknown": "Código de diagnóstico no disponible",
+      "attempt_count": "{{count}} de {{max}}",
+      "generated_at": "Actualizado: {{time}}",
+      "health": {
+        "not_configured": "No hay socios configurados",
+        "healthy": "Compartiendo normalmente",
+        "delivering": "Envío a socios",
+        "degraded": "Entregas fallidas",
+        "withdrawn": "Retirado de socios"
+      }
+    }
+  }
+}

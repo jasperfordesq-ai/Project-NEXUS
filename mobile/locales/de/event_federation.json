@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Föderierte Veranstaltungsfreigabe",
+      "tab": "Föderation",
+      "overview": "Föderationszustellung prüfen",
+      "description": "Überwachen Sie die Freigabe dieser Veranstaltung für Partnergemeinschaften, ohne private Teilnehmendendaten offenzulegen.",
+      "refresh": "Aktualisieren",
+      "loading": "Föderationsstatus wird geladen...",
+      "load_error_title": "Föderationsstatus konnte nicht geladen werden",
+      "load_error_description": "Die Zustelldiagnose konnte nicht geladen werden. Versuchen Sie es erneut.",
+      "try_again": "Erneut versuchen",
+      "not_configured_title": "Keine Partnergemeinschaften konfiguriert",
+      "not_configured_description": "Diese Veranstaltung wird derzeit an keinen föderierten Partner zugestellt.",
+      "degraded_title": "Einige Zustellungen erfordern Aufmerksamkeit",
+      "degraded_description": "Mindestens eine Partnerzustellung hat das Wiederholungslimit erreicht. Verwenden Sie den Diagnosecode, wenn Sie eine Administration kontaktieren.",
+      "metrics": {
+        "configured_partners": "Konfigurierte Partner",
+        "recipient_partners": "Zustellverlauf",
+        "federation_version": "Föderationsversion",
+        "visibility": "Geteilte Sichtbarkeit"
+      },
+      "visibility": {
+        "none": "Nicht geteilt",
+        "listed": "Aufgelistet",
+        "joinable": "Aufgelistet und beitretbar"
+      },
+      "delivery_summary": "Zustellübersicht",
+      "delivery_status": {
+        "pending": "Ausstehend",
+        "retry": "Wiederholung geplant",
+        "processing": "In Bearbeitung",
+        "delivered": "Zugestellt",
+        "dead_letter": "Aufmerksamkeit erforderlich"
+      },
+      "partners_table_aria": "Föderierte Veranstaltungszustellung nach Partner",
+      "columns": {
+        "partner": "Partner",
+        "action": "Aktion",
+        "delivery": "Zustellung",
+        "attempts": "Versuche",
+        "activity": "Letzte Aktivität"
+      },
+      "no_deliveries": "Für diese Veranstaltung wurden keine Föderationszustellungen erfasst.",
+      "removed_partner": "Entfernter Partner",
+      "partner_status": {
+        "active": "Aktiv",
+        "pending": "Ausstehend",
+        "suspended": "Gesperrt",
+        "failed": "Fehlgeschlagen",
+        "removed": "Entfernt",
+        "unknown": "Unbekannter Status"
+      },
+      "events_disabled": "Veranstaltungsfreigabe deaktiviert",
+      "action": {
+        "upsert": "Veröffentlichen oder aktualisieren",
+        "tombstone": "Entfernen"
+      },
+      "not_available": "Nicht verfügbar",
+      "error_code": "Diagnosecode: {{code}}",
+      "error_code_unknown": "Diagnosecode nicht verfügbar",
+      "attempt_count": "{{count}} von {{max}}",
+      "generated_at": "Aktualisiert: {{time}}",
+      "health": {
+        "not_configured": "Es wurden keine Partner eingerichtet",
+        "healthy": "Normales Teilen",
+        "delivering": "Versand an Partner",
+        "degraded": "Lieferungen scheitern",
+        "withdrawn": "Von Partnern zurückgezogen"
+      }
+    }
+  }
+}

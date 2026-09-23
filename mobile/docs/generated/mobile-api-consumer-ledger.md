@@ -21,10 +21,10 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2248 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 61 |
-| Call sites | 682 |
-| Distinct method + endpoint pairs | 537 |
-| Verified against openapi.json | 537 |
+| API modules read | 62 |
+| Call sites | 683 |
+| Distinct method + endpoint pairs | 538 |
+| Verified against openapi.json | 538 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 102 |
@@ -219,6 +219,7 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/events/{param}/agenda/sessions/{param}` | eventAgendaManagement.ts:59 |
 | POST | `/api/v2/events/{param}/agenda/sessions/{param}/cancel` | eventAgendaManagement.ts:69 |
 | GET | `/api/v2/events/{param}/analytics` | eventAnalytics.ts:120 |
+| GET | `/api/v2/events/{param}/federation-status` | eventFederation.ts:44 |
 | GET | `/api/v2/events/{param}/lifecycle-history` | eventLifecycleHistory.ts:62 |
 | GET | `/api/v2/events/{param}/people` | eventPeople.ts:116 |
 | GET | `/api/v2/events/{param}/people/{param}/history` | eventPeople.ts:66 |

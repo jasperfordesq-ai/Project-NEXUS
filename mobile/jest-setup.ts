@@ -15,6 +15,7 @@ import enHome from './locales/en/home.json';
 import enMembers from './locales/en/members.json';
 import enExchanges from './locales/en/exchanges.json';
 import enEvents from './locales/en/events.json';
+import enEventFederation from './locales/en/event_federation.json';
 import enEventTemplates from './locales/en/event_templates.json';
 import enEventTickets from './locales/en/event_tickets.json';
 import enEventRecurrenceBlueprints from './locales/en/event_recurrence_blueprints.json';
@@ -78,6 +79,7 @@ i18n.use(initReactI18next).init({
       event_templates: enEventTemplates,
       event_tickets: enEventTickets,
       event_recurrence_blueprints: enEventRecurrenceBlueprints,
+      event_federation: enEventFederation,
       notifications: enNotifications,
       settings: enSettings,
       wallet: enWallet,
@@ -109,6 +111,7 @@ i18n.use(initReactI18next).init({
     'event_templates',
     'event_tickets',
     'event_recurrence_blueprints',
+    'event_federation',
     'notifications',
     'settings',
     'wallet',

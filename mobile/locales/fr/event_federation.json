@@ -1,0 +1,73 @@
+{
+  "manage": {
+    "federation": {
+      "title": "Partage fédéré de l’événement",
+      "tab": "Fédération",
+      "overview": "Vérifier la livraison fédérée",
+      "description": "Surveillez le partage de cet événement avec les communautés partenaires sans exposer les données privées des participants.",
+      "refresh": "Actualiser",
+      "loading": "Chargement de l’état de fédération...",
+      "load_error_title": "Impossible de charger l’état de fédération",
+      "load_error_description": "Les diagnostics de livraison n’ont pas pu être chargés. Réessayez.",
+      "try_again": "Réessayer",
+      "not_configured_title": "Aucune communauté partenaire configurée",
+      "not_configured_description": "Cet événement n’est actuellement envoyé à aucun partenaire fédéré.",
+      "degraded_title": "Certaines livraisons nécessitent une intervention",
+      "degraded_description": "Une ou plusieurs livraisons ont atteint la limite de tentatives. Utilisez le code de diagnostic lorsque vous contactez une personne administratrice.",
+      "metrics": {
+        "configured_partners": "Partenaires configurés",
+        "recipient_partners": "Historique des livraisons",
+        "federation_version": "Version de fédération",
+        "visibility": "Visibilité partagée"
+      },
+      "visibility": {
+        "none": "Non partagé",
+        "listed": "Répertorié",
+        "joinable": "Répertorié et accessible"
+      },
+      "delivery_summary": "Résumé des livraisons",
+      "delivery_status": {
+        "pending": "En attente",
+        "retry": "Nouvelle tentative planifiée",
+        "processing": "Traitement en cours",
+        "delivered": "Livré",
+        "dead_letter": "Intervention requise"
+      },
+      "partners_table_aria": "Livraison fédérée de l’événement par partenaire",
+      "columns": {
+        "partner": "Partenaire",
+        "action": "Action",
+        "delivery": "Livraison",
+        "attempts": "Tentatives",
+        "activity": "Dernière activité"
+      },
+      "no_deliveries": "Aucune livraison fédérée n’a été enregistrée pour cet événement.",
+      "removed_partner": "Partenaire supprimé",
+      "partner_status": {
+        "active": "Actif",
+        "pending": "En attente",
+        "suspended": "Suspendu",
+        "failed": "Échec",
+        "removed": "Supprimé",
+        "unknown": "État inconnu"
+      },
+      "events_disabled": "Partage d’événements désactivé",
+      "action": {
+        "upsert": "Publier ou mettre à jour",
+        "tombstone": "Retirer"
+      },
+      "not_available": "Indisponible",
+      "error_code": "Code de diagnostic : {{code}}",
+      "error_code_unknown": "Code de diagnostic indisponible",
+      "attempt_count": "{{count}} sur {{max}}",
+      "generated_at": "Mis à jour : {{time}}",
+      "health": {
+        "not_configured": "Aucun partenaire configuré",
+        "healthy": "Partager normalement",
+        "delivering": "Envoi aux partenaires",
+        "degraded": "Livraisons échouées",
+        "withdrawn": "Retiré des partenaires"
+      }
+    }
+  }
+}

@@ -39,6 +39,20 @@ describe('event management load lifecycle', () => {
     jest.mocked(getEvent).mockReset().mockResolvedValue(eventResponse as never);
   });
 
+  it('opens federation diagnostics from the permitted visible management action', async () => {
+    jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { edit: false, manage_agenda: true } } } as never);
+    const screen = render(<EventManageScreen />);
+    fireEvent.press(await screen.findByText('Review federation delivery'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/(modals)/event-federation', params: { id: '7' } });
+  });
+
+  it('does not expose federation diagnostics without event management permission', async () => {
+    jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { edit: true, manage_agenda: false } } } as never);
+    const screen = render(<EventManageScreen />);
+    await act(async () => {});
+    expect(screen.queryByText('Review federation delivery')).toBeNull();
+  });
+
   it.each(['account', 'community', 'event'])('clears loaded actions when the %s changes', async identity => {
     const screen = render(<EventManageScreen />);
     await screen.findByText('Edit event');
@@ -88,7 +102,7 @@ describe('event management load lifecycle', () => {
     ['people', 'manage_people'], ['check-in', 'check_in'], ['agenda', 'manage_agenda'],
     ['safety', 'edit'], ['analytics', 'edit'], ['tickets', 'manage_finance'],
     ['tickets', 'reconcile_tickets'], ['communications', 'broadcast'], ['registration', 'manage_registration'],
-    ['templates', 'edit'], ['team', 'manage_staff'], ['federation', 'edit'],
+    ['templates', 'edit'], ['team', 'manage_staff'], ['federation', 'manage_agenda'],
   ])('opens an authorized %s link with %s permission', async (section, permission) => {
     mockParams = { id: '7', section };
     jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { [permission]: true } } } as never);
