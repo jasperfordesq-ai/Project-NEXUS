@@ -446,10 +446,16 @@ class AdminConfigController extends BaseApiController
         $tenantId = $this->getTenantId();
         $type = $this->input('type', 'tenant');
 
+        // F-059: clearing every community's cache is a cross-tenant action, so
+        // only a PLATFORM super-admin may do it — a community (tenant) super-admin
+        // is limited to their own community. Checked before the try block so the
+        // 403 is not swallowed into a 500.
+        if ($type === 'all') {
+            $this->requirePlatformSuperAdmin();
+        }
+
         try {
             if ($type === 'all') {
-                // Cross-tenant cache clear requires super admin privileges
-                $this->requireSuperAdmin();
                 foreach ([1, 2, 3, 4, 5] as $tid) {
                     $this->redisCache->clearTenant($tid);
                 }
@@ -554,11 +560,13 @@ class AdminConfigController extends BaseApiController
                 INNER JOIN (
                     SELECT job_id, MAX(executed_at) as max_date
                     FROM cron_logs
-                    WHERE tenant_id = ?
+                    WHERE (tenant_id = ? OR tenant_id IS NULL)
                     GROUP BY job_id
                 ) cl2 ON cl1.job_id = cl2.job_id AND cl1.executed_at = cl2.max_date
-                WHERE cl1.tenant_id = ?
+                WHERE (cl1.tenant_id = ? OR cl1.tenant_id IS NULL)
             ", [$tenantId, $tenantId]);
+            // Only the last-run time and status are read here (never output),
+            // so platform-wide (NULL tenant) runs are included — F-064.
 
             foreach ($results as $row) {
                 $lastRuns[$row->job_id] = [
@@ -609,7 +617,6 @@ class AdminConfigController extends BaseApiController
     public function runCronJob(): JsonResponse
     {
         $adminId = $this->requirePlatformSuperAdmin();
-        $tenantId = TenantContext::getId();
 
         $uri = request()->getRequestUri();
         preg_match('#/api/v2/admin/system/cron-jobs/(\d+)/run#', $uri, $matches);
@@ -663,8 +670,10 @@ class AdminConfigController extends BaseApiController
 
         try {
             DB::insert(
-                "INSERT INTO cron_logs (job_id, status, output, duration_seconds, executed_by, tenant_id) VALUES (?, 'running', 'Job started via API...', 0, ?, ?)",
-                [$jobSlug, $adminId, $tenantId]
+                "INSERT INTO cron_logs (job_id, status, output, duration_seconds, executed_by, tenant_id) VALUES (?, 'running', 'Job started via API...', 0, ?, NULL)",
+                // F-064: these jobs run across every community, so the log is
+                // platform-wide (NULL tenant), not the caller's community.
+                [$jobSlug, $adminId]
             );
             $logId = DB::getPdo()->lastInsertId();
         } catch (\Throwable $e) {

@@ -341,11 +341,16 @@ class AdminCronController extends BaseApiController
 
     private function getCronLogVisibilityClause(): string
     {
-        // Platform-wide logs (tenant_id IS NULL) are produced by shared schedulers
-        // like process-queue and process-newsletters. They're system-level and
-        // visible to all tenant admins. cron_jobs-join gating was broken because
-        // cron_jobs is empty in practice.
-        return "(l.tenant_id = ? OR l.tenant_id IS NULL)";
+        // Platform-wide logs (tenant_id IS NULL) are produced by the shared
+        // scheduler, which works across every community; their output can name
+        // other communities' members (F-064). Only a platform super-admin sees
+        // them — a community admin sees only their own community's rows.
+        // (cron_jobs-join gating was broken because cron_jobs is empty in practice.)
+        if ($this->isPlatformSuperAdmin()) {
+            return "(l.tenant_id = ? OR l.tenant_id IS NULL)";
+        }
+
+        return "(l.tenant_id = ? AND l.tenant_id IS NOT NULL)";
     }
 
     private function mapCronLogRow(object $log): array

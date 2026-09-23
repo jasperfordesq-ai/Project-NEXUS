@@ -40,6 +40,13 @@ class SeoRedirectMiddleware
             return $next($request);
         }
 
+        // F-061: never redirect API routes. Routes are served without an /api
+        // prefix (/v2/...), and the old pattern above did not match /api/v2/...
+        // either, so an admin-defined redirect could hijack any API GET.
+        if (preg_match('#^/(api|v\d+)(/|$)#i', $path)) {
+            return $next($request);
+        }
+
         // Skip static file extensions
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         if (in_array($ext, ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'xml', 'txt', 'pdf', 'map'], true)) {
@@ -54,7 +61,10 @@ class SeoRedirectMiddleware
                 [$tenantId, $path]
             );
 
-            if ($redirect && $redirect->destination_url !== $path) {
+            // F-061: rows saved before destination validation existed may point
+            // off-site; never follow them (no open redirect on this host).
+            if ($redirect && $redirect->destination_url !== $path
+                && self::isSafeDestination((string) $redirect->destination_url)) {
                 // Increment hit counter asynchronously (non-blocking)
                 DB::update("UPDATE seo_redirects SET hits = IFNULL(hits, 0) + 1 WHERE id = ?", [$redirect->id]);
 
@@ -66,5 +76,17 @@ class SeoRedirectMiddleware
         }
 
         return $next($request);
+    }
+
+    /**
+     * A redirect destination must be a same-host relative path: it starts with
+     * exactly one "/" (not "//", which browsers treat as another host), has no
+     * scheme, no backslash (browsers normalise a backslash to "/") and no
+     * control or whitespace characters (browsers strip tab/newline, so a tab
+     * between two slashes would become "//").
+     */
+    public static function isSafeDestination(string $destination): bool
+    {
+        return preg_match('#^/(?![/\\\\])[^\\\\\x00-\x20\x7F]*$#D', $destination) === 1;
     }
 }

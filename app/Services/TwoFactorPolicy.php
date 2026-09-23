@@ -10,7 +10,7 @@ use App\Support\Authorization\AdminTier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/** Platform administrators cannot opt out; member enforcement belongs to a tenant. */
+/** Administrators and operational roles cannot opt out; member enforcement belongs to a tenant. */
 final class TwoFactorPolicy
 {
     public function required(object|array $user): bool
@@ -20,6 +20,12 @@ final class TwoFactorPolicy
         if ((bool) data_get($user, 'is_super_admin', false)
             || (bool) data_get($user, 'is_god', false)
             || AdminTier::allows($user) || data_get($user, 'role') === 'org_admin') {
+            return true;
+        }
+        // Brokers and coordinators adjust balances, reset members' second
+        // factor and read broker message review. They are not admin-tier, but
+        // that operational authority needs the same second factor (F-057).
+        if (in_array((string) data_get($user, 'role', ''), AdminTier::OPERATIONAL_ROLES, true)) {
             return true;
         }
         $tenantId = (int) data_get($user, 'tenant_id');

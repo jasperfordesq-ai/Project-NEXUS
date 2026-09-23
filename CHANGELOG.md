@@ -95,6 +95,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Brokers and coordinators must now use two-factor authentication, like administrators (F-057).
+
+- Brokers can no longer edit administrators' or other brokers' profiles, or change the name of an ID-verified member (F-058).
+
+- Only platform super-admins can clear the cache for every community (F-059).
+
+- Admin SEO redirects now only accept pages on the same site and no longer apply to API routes (F-061).
+
+- A community's SMTP server must now be a public mail server; private and internal network addresses are refused (F-062).
+
+- Emails sent over direct SMTP are no longer cut short or altered when a line begins with a full stop (F-063).
+
+- Platform-wide scheduled job logs, which can mention members of any community, are now visible only to platform super-admins (F-064).
+
 - Guardian-consent requests for events now authorize the minor against the event's current audience before creating consent history, notification outbox, or encrypted delivery state. A minor outside a private group's audience remains unable to trigger guardian email, including when an event manager submits the request on their behalf (F-051).
 
 - Members who chose not to appear in member search no longer show up in suggested members, "People you may know", @mention suggestions or members-by-skill, and these lists no longer show surnames (F-080).

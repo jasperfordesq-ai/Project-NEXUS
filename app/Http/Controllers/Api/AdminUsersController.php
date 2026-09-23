@@ -334,6 +334,31 @@ class AdminUsersController extends BaseApiController
                     return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_edit_field'), $reserved, 403);
                 }
             }
+
+            // F-058: a broker/coordinator may edit only accounts it outranks
+            // (ordinary members) — never an administrator or a peer broker.
+            // The hierarchy is re-checked under row locks at the write below.
+            if (!$this->canManageSecurityTarget($adminId, $user)) {
+                return $this->respondWithError(
+                    'AUTH_INSUFFICIENT_PERMISSIONS',
+                    __('api.insufficient_permissions'),
+                    null,
+                    403
+                );
+            }
+            $requiresSecurityAuthorization = true;
+
+            // F-058: an ID-verified member's legal name is locked (the same rule
+            // UserService::updateProfile applies to the member's own edits).
+            // Only an administrator may correct it.
+            if ($this->changesVerifiedName($input, $user, $tenantId)) {
+                return $this->respondWithError(
+                    'AUTH_INSUFFICIENT_PERMISSIONS',
+                    __('api.admin_user_verified_name_locked'),
+                    'first_name',
+                    403
+                );
+            }
         }
 
         $updates = [];
@@ -2115,6 +2140,40 @@ class AdminUsersController extends BaseApiController
         }
 
         return !empty($row->is_super_admin) || !empty($row->is_tenant_super_admin);
+    }
+
+    /**
+     * True when the input would change the first or last name of a member who
+     * holds an active id_verified badge. Mirrors the lock semantics of
+     * UserService::updateProfile (badge present and not revoked). Unchanged
+     * values are allowed so a full-form save that only edits the phone number
+     * still succeeds.
+     *
+     * @param array<string,mixed> $input
+     * @param array<string,mixed> $targetUser
+     */
+    private function changesVerifiedName(array $input, array $targetUser, int $tenantId): bool
+    {
+        $changes = false;
+        foreach (['first_name', 'last_name'] as $field) {
+            if (!array_key_exists($field, $input) || $input[$field] === null) {
+                continue;
+            }
+            $new = is_string($input[$field]) ? trim($input[$field]) : $input[$field];
+            if ((string) $new !== (string) ($targetUser[$field] ?? '')) {
+                $changes = true;
+            }
+        }
+        if (!$changes) {
+            return false;
+        }
+
+        return DB::table('member_verification_badges')
+            ->where('user_id', (int) $targetUser['id'])
+            ->where('tenant_id', $tenantId)
+            ->where('badge_type', 'id_verified')
+            ->whereNull('revoked_at')
+            ->exists();
     }
 
     /**

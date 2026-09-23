@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\Http\Middleware\SeoRedirectMiddleware;
 use App\Services\RedisCache;
 use App\Services\TokenService;
 
@@ -73,6 +74,11 @@ class AdminToolsController extends BaseApiController
         }
         if (empty($destinationUrl)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.to_url_required'), 'destination_url', 422);
+        }
+        // F-061: destinations are same-host paths only ("/new-page"), never
+        // another site — otherwise the API host becomes an open redirect.
+        if (!SeoRedirectMiddleware::isSafeDestination($destinationUrl)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.redirect_destination_invalid'), 'destination_url', 422);
         }
 
         try {

@@ -14,6 +14,7 @@ use App\Services\EmailDispatchService;
 use App\Models\EmailSettings;
 use App\Services\EmailMonitorService;
 use App\Services\RedisCache;
+use App\Support\OutboundUrlGuard;
 
 /**
  * AdminEmailController -- Email settings, provider config, test emails, and deliverability status.
@@ -185,6 +186,17 @@ class AdminEmailController extends BaseApiController
 
         if (empty($toSave)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_valid_settings'), null, 422);
+        }
+
+        // F-062: a community's SMTP server must be a public mail host. Refuse a
+        // host that is, or resolves to, a private, loopback, link-local or
+        // reserved address so the platform cannot be used to probe its own
+        // network. Mailer re-checks (and pins the address) at connect time.
+        if (isset($toSave['smtp_host']) && trim($toSave['smtp_host']) !== '') {
+            $toSave['smtp_host'] = trim($toSave['smtp_host']);
+            if (OutboundUrlGuard::publicAddressesForHost($toSave['smtp_host']) === []) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.smtp_host_not_allowed'), 'smtp_host', 422);
+            }
         }
 
         EmailSettings::setMultiple($tenantId, $toSave);

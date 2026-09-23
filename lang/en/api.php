@@ -34,6 +34,7 @@ return [
     'admin_access_required'        => 'Admin access required',
     'broker_or_admin_access_required' => 'Broker or admin access required',
     'broker_cannot_edit_field'     => 'Brokers cannot change this field. Only an administrator can.',
+    'admin_user_verified_name_locked' => 'This member\'s name is locked because their identity has been verified. Only an administrator can change it.',
     'broker_cannot_adjust_own_balance' => 'Brokers cannot adjust their own balance.',
     'broker_cannot_review_own_match' => 'Brokers cannot review a match they are a party to.',
     'broker_cannot_moderate_own_content' => 'Brokers cannot moderate content they are a party to.',
@@ -757,6 +758,7 @@ return [
     // ADMIN — EMAIL
     // ============================================
     'invalid_email_provider'               => 'Invalid email provider',
+    'smtp_host_not_allowed' => 'The SMTP server must be a public mail server. Private, local and reserved network addresses are not allowed.',
     'no_valid_settings'                    => 'No valid settings provided',
     'failed_send_test_email'               => 'Failed to send test email. Check server logs.',
     'failed_send_test_via'                 => 'Failed to send test email via :provider. Check server logs.',
@@ -1307,6 +1309,7 @@ return [
     'from_url_required'                    => 'from_url is required',
     'to_url_required'                      => 'to_url is required',
     'redirect_create_failed'               => 'Failed to create redirect',
+    'redirect_destination_invalid' => 'The destination must be a page on this site, starting with a single "/" (for example /new-page).',
     'redirect_not_found'                   => 'Redirect not found',
     'redirect_not_found_or_missing_table'  => 'Redirect not found or table does not exist',
     'error_404_not_found'                  => '404 error entry not found',

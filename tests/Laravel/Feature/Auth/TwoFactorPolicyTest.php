@@ -54,7 +54,12 @@ class TwoFactorPolicyTest extends TestCase
         foreach (['is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'] as $flag) {
             $this->assertTrue($policy->required(['role' => 'member', $flag => true, 'tenant_id' => $this->testTenantId]));
         }
-        $this->assertFalse($policy->required(['role' => 'broker', 'is_admin' => true, 'tenant_id' => $this->testTenantId]));
+        // F-057 (E-027): operational roles are not admin-tier, but they must
+        // still use a second factor — with or without a stale admin flag.
+        foreach (['broker', 'coordinator'] as $operationalRole) {
+            $this->assertTrue($policy->required(['role' => $operationalRole, 'tenant_id' => $this->testTenantId]));
+            $this->assertTrue($policy->required(['role' => $operationalRole, 'is_admin' => true, 'tenant_id' => $this->testTenantId]));
+        }
     }
 
     public function test_operational_roles_with_platform_authority_cannot_use_password_only_sessions(): void

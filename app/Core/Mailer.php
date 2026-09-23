@@ -7,6 +7,7 @@
 namespace App\Core;
 
 use App\Models\EmailSettings;
+use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -15,6 +16,12 @@ use Illuminate\Support\Facades\Cache;
 class Mailer
 {
     private $host;
+    /**
+     * True when $host came from a community's own email settings rather than
+     * the platform configuration. Such a host is only ever connected to on a
+     * public address (F-062).
+     */
+    private bool $hostIsTenantConfigured = false;
     private $port;
     private $username;
     private $password;
@@ -328,6 +335,7 @@ class Mailer
                     $smtpHost = EmailSettings::get($tenantId, 'smtp_host');
                     if (!empty($smtpHost)) {
                         $this->host = $smtpHost;
+                        $this->hostIsTenantConfigured = true;
                         $this->port = EmailSettings::get($tenantId, 'smtp_port') ?? 587;
                         $this->username = EmailSettings::get($tenantId, 'smtp_user') ?? '';
                         $this->password = EmailSettings::get($tenantId, 'smtp_password') ?? '';
@@ -1157,17 +1165,39 @@ class Mailer
 
     private function connect()
     {
-        $host = $this->host;
-
-        if ($this->encryption === 'ssl') {
-            $host = "ssl://" . $host;
-        }
-
         if (empty($this->host)) {
             throw new \Exception("SMTP host not configured");
         }
 
-        $this->socket = @fsockopen($host, $this->port, $errno, $errstr, $this->timeout);
+        $connectHost = (string) $this->host;
+        $context = stream_context_create();
+
+        // F-062: a community-configured SMTP host must resolve only to public
+        // addresses (never loopback, private, link-local or reserved), so an
+        // admin cannot point the platform at an internal service. Connect to
+        // the checked IP itself so a second DNS answer cannot differ, and keep
+        // TLS certificate verification / SNI against the configured name.
+        if ($this->hostIsTenantConfigured) {
+            $addresses = OutboundUrlGuard::publicAddressesForHost($connectHost);
+            if ($addresses === []) {
+                throw new \Exception("SMTP host is not a permitted public address");
+            }
+            stream_context_set_option($context, 'ssl', 'peer_name', $connectHost);
+            // Prefer IPv4: not every host running this has IPv6 egress.
+            $ipv4 = array_values(array_filter($addresses, static fn (string $ip): bool => !str_contains($ip, ':')));
+            $pinned = $ipv4[0] ?? $addresses[0];
+            $connectHost = str_contains($pinned, ':') ? '[' . $pinned . ']' : $pinned;
+        }
+
+        $scheme = $this->encryption === 'ssl' ? 'ssl' : 'tcp';
+        $this->socket = @stream_socket_client(
+            "{$scheme}://{$connectHost}:" . (int) $this->port,
+            $errno,
+            $errstr,
+            $this->timeout,
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
         if (!$this->socket) {
             throw new \Exception("Could not connect to SMTP host: $errstr ($errno)");
         }
@@ -1250,11 +1280,25 @@ class Mailer
                 . "Content-Transfer-Encoding: base64\r\n\r\n"
                 . chunk_split(base64_encode($body)) . "\r\n"
                 . "--$boundary--";
-            $this->write($headers . "\r\n" . $mime . "\r\n.");
+            $this->write(self::smtpDataBlock($headers . "\r\n" . $mime) . "\r\n.");
         } else {
-            $this->write($headers . "\r\n" . $body . "\r\n.");
+            $this->write(self::smtpDataBlock($headers . "\r\n" . $body) . "\r\n.");
         }
         $this->read();
+    }
+
+    /**
+     * Prepare a message for the SMTP DATA phase (RFC 5321 section 4.5.2):
+     * normalise every line ending to CRLF, then "dot-stuff" (double a leading
+     * "." on any line) so a body line consisting of "." cannot end the message
+     * early and a line starting with "." is not altered in transit (F-063).
+     * The caller appends the CRLF "." CRLF terminator.
+     */
+    private static function smtpDataBlock(string $message): string
+    {
+        $message = (string) preg_replace('/\r\n|\r|\n/', "\r\n", $message);
+
+        return (string) preg_replace('/^\./m', '..', $message);
     }
 
     private function quit()

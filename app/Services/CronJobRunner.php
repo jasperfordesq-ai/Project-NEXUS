@@ -150,7 +150,11 @@ class CronJobRunner
         }
 
         $duration = microtime(true) - $this->jobStartTime;
-        $tenantId = TenantContext::getId();
+        // F-064: every CronJobRunner job runs across ALL communities, and its
+        // output can name members of any of them. Log it platform-wide
+        // (tenant_id NULL, visible only to platform super-admins) instead of
+        // under whichever community TenantContext happens to hold.
+        $tenantId = null;
 
         try {
             DB::insert(
@@ -178,7 +182,8 @@ class CronJobRunner
     private function logSubTask(string $jobId, string $status, string $output, float $startTime): void
     {
         $duration = microtime(true) - $startTime;
-        $tenantId = TenantContext::getId();
+        // F-064: platform-wide job output — see logJob().
+        $tenantId = null;
         try {
             DB::insert(
                 "INSERT INTO cron_logs (job_id, status, output, duration_seconds, executed_by, tenant_id) VALUES (?, ?, ?, ?, NULL, ?)",

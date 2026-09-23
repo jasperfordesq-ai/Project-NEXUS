@@ -133,6 +133,44 @@ final class OutboundUrlGuard
     }
 
     /**
+     * Resolve a bare host name (no scheme/port) for a non-HTTP outbound
+     * connection such as SMTP. Returns every resolved address when ALL of them
+     * are public; returns [] (refuse) for local names, unresolvable hosts, or
+     * when any address is private, loopback, link-local or reserved. Callers
+     * should connect to one of the returned IPs rather than re-resolving, so a
+     * DNS answer cannot change between this check and the connection.
+     *
+     * @return list<string>
+     */
+    public static function publicAddressesForHost(string $host): array
+    {
+        $host = self::normalizeHost($host);
+        if ($host === '') {
+            return [];
+        }
+        // A host name, not a URL: reject anything carrying a scheme, port,
+        // path or credentials (an IPv6 literal legitimately contains ":").
+        if (!filter_var($host, FILTER_VALIDATE_IP) && preg_match('/[\s\/\\\\@:?#]/', $host) === 1) {
+            return [];
+        }
+        if (self::isBlockedLocalName($host)) {
+            return [];
+        }
+
+        $ips = self::resolveHost($host);
+        if ($ips === []) {
+            return [];
+        }
+        foreach ($ips as $ip) {
+            if (!self::isPublicIp($ip)) {
+                return [];
+            }
+        }
+
+        return $ips;
+    }
+
+    /**
      * Returns true for private, reserved, loopback, link-local, or invalid IPs.
      */
     public static function isBlockedIp(string $ip): bool
