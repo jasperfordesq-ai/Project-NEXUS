@@ -89,6 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Club administrators can no longer waive another club's membership dues or send reminders for them by combining the club they manage with a dues-record ID from another club. Waiver and reminder lookups and updates now bind the dues record to both the authenticated tenant and the already-authorized club (F-041).
+
 - On iPhones, the mobile app's fingerprint / Face ID lock now always stays on top. Before, a screen opened from a notification or a link while the app was locked could appear above the lock (F-040). Android was not affected.
 
 - The platform-wide API request-rate ceiling can no longer be multiplied by changing a request header. Its bucket was keyed partly on the `X-Tenant-ID` / `X-Tenant-Slug` headers the caller supplies, so sending a different community value on each request minted a fresh allowance every time and the ceiling never engaged. It is now keyed on the community the platform actually resolved, so an unrecognised value no longer creates a new allowance. Ordinary use is unaffected, and each community keeps its own separate allowance as before.

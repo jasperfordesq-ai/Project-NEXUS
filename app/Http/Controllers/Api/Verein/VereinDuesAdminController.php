@@ -109,7 +109,9 @@ class VereinDuesAdminController extends BaseApiController
         }
 
         try {
-            return $this->respondWithData($this->duesService->waive($duesId, $adminId, $reason));
+            return $this->respondWithData(
+                $this->duesService->waive($organizationId, $duesId, $adminId, $reason)
+            );
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         } catch (\RuntimeException $e) {
@@ -123,7 +125,9 @@ class VereinDuesAdminController extends BaseApiController
         if ($forbidden) return $forbidden;
 
         try {
-            return $this->respondWithData($this->duesService->sendReminder($duesId));
+            return $this->respondWithData(
+                $this->duesService->sendReminder($organizationId, $duesId)
+            );
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         } catch (\RuntimeException $e) {

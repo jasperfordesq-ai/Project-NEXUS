@@ -280,13 +280,14 @@ class VereinDuesService
         return $result;
     }
 
-    public function waive(int $duesId, int $adminId, string $reason): array
+    public function waive(int $organizationId, int $duesId, int $adminId, string $reason): array
     {
         $tenantId = TenantContext::getId();
 
         $dues = DB::table('verein_member_dues')
             ->where('id', $duesId)
             ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
             ->first();
 
         if (!$dues) {
@@ -300,6 +301,7 @@ class VereinDuesService
         DB::table('verein_member_dues')
             ->where('id', $duesId)
             ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
             ->update([
             'status' => 'waived',
             'waived_by_admin_id' => $adminId,
@@ -309,6 +311,7 @@ class VereinDuesService
 
         Log::info('VereinDues: waived', [
             'tenant_id' => $tenantId,
+            'organization_id' => $organizationId,
             'dues_id' => $duesId,
             'admin_id' => $adminId,
             'reason' => $reason,
@@ -317,13 +320,14 @@ class VereinDuesService
         return ['dues_id' => $duesId, 'status' => 'waived'];
     }
 
-    public function sendReminder(int $duesId): array
+    public function sendReminder(int $organizationId, int $duesId): array
     {
         $tenantId = TenantContext::getId();
 
         $dues = DB::table('verein_member_dues')
             ->where('id', $duesId)
             ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
             ->first();
 
         if (!$dues) {
@@ -344,6 +348,7 @@ class VereinDuesService
         DB::table('verein_member_dues')
             ->where('id', $duesId)
             ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
             ->update([
             'reminder_count' => DB::raw('reminder_count + 1'),
             'last_reminder_at' => now(),

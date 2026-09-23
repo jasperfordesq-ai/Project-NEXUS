@@ -51,13 +51,7 @@ class VereinDuesServiceTest extends TestCase
         $features['caring_community'] = true;
         DB::table('tenants')->where('id', self::TENANT_ID)->update(['features' => json_encode($features)]);
 
-        $this->organizationId = (int) DB::table('vol_organizations')->insertGetId([
-            'tenant_id' => self::TENANT_ID,
-            'name' => 'Test Verein ' . uniqid('', true),
-            'org_type' => 'club',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->organizationId = $this->makeOrganization('Test Verein');
     }
 
     private function makeUser(): int
@@ -76,11 +70,11 @@ class VereinDuesServiceTest extends TestCase
         ]);
     }
 
-    private function joinOrg(int $userId): void
+    private function joinOrg(int $userId, ?int $organizationId = null): void
     {
         DB::table('org_members')->insert([
             'tenant_id' => self::TENANT_ID,
-            'organization_id' => $this->organizationId,
+            'organization_id' => $organizationId ?? $this->organizationId,
             'org_type' => 'volunteer',
             'user_id' => $userId,
             'status' => 'active',
@@ -89,9 +83,9 @@ class VereinDuesServiceTest extends TestCase
         ]);
     }
 
-    private function configureFee(int $cents = 5000): void
+    private function configureFee(int $cents = 5000, ?int $organizationId = null): void
     {
-        $this->service->setFeeConfig($this->organizationId, [
+        $this->service->setFeeConfig($organizationId ?? $this->organizationId, [
             'fee_amount_cents' => $cents,
             'currency' => 'CHF',
             'billing_cycle' => 'annual',
@@ -157,7 +151,7 @@ class VereinDuesServiceTest extends TestCase
             ->value('id');
 
         $admin = $this->makeUser();
-        $result = $this->service->waive($duesId, $admin, 'Hardship case');
+        $result = $this->service->waive($this->organizationId, $duesId, $admin, 'Hardship case');
         $this->assertSame('waived', $result['status']);
 
         $row = DB::table('verein_member_dues')->where('id', $duesId)->first();
@@ -177,7 +171,7 @@ class VereinDuesServiceTest extends TestCase
         DB::table('verein_member_dues')->where('id', $duesId)->update(['status' => 'paid']);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->service->waive($duesId, $this->makeUser(), 'Should fail');
+        $this->service->waive($this->organizationId, $duesId, $this->makeUser(), 'Should fail');
     }
 
     public function test_send_reminder_does_not_mark_sent_when_email_fails(): void
@@ -202,7 +196,7 @@ class VereinDuesServiceTest extends TestCase
             }
         });
 
-        $result = $this->service->sendReminder($duesId);
+        $result = $this->service->sendReminder($this->organizationId, $duesId);
 
         $this->assertFalse($result['sent']);
         $row = DB::table('verein_member_dues')->where('id', $duesId)->first();
@@ -321,7 +315,7 @@ class VereinDuesServiceTest extends TestCase
             }
         });
 
-        $result = $this->service->sendReminder($duesId);
+        $result = $this->service->sendReminder($this->organizationId, $duesId);
 
         $this->assertFalse($result['sent']);
         $failed = DB::table('verein_member_dues')->where('id', $duesId)->first();
@@ -380,4 +374,84 @@ class VereinDuesServiceTest extends TestCase
         $this->assertArrayHasKey((string) $year, $status);
         $this->assertSame('pending', $status[(string) $year]['status']);
     }
+
+    public function test_waive_rejects_dues_from_another_organization_without_mutation(): void
+    {
+        $member = $this->makeUser();
+        $foreignOrganizationId = $this->makeOrganization('Foreign Verein');
+        $this->joinOrg($member, $foreignOrganizationId);
+        $this->configureFee(5000, $foreignOrganizationId);
+        $year = (int) date('Y');
+        $this->service->generateAnnualDues($foreignOrganizationId, $year);
+
+        $foreignDuesId = (int) DB::table('verein_member_dues')
+            ->where('organization_id', $foreignOrganizationId)
+            ->value('id');
+
+        try {
+            $this->service->waive(
+                $this->organizationId,
+                $foreignDuesId,
+                $this->makeUser(),
+                'Must not cross the club boundary'
+            );
+            $this->fail('Expected foreign-organization dues to be rejected.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('verein_dues.errors.dues_not_found'), $e->getMessage());
+        }
+
+        $foreignDues = DB::table('verein_member_dues')->where('id', $foreignDuesId)->first();
+        $this->assertSame('pending', $foreignDues->status);
+        $this->assertNull($foreignDues->waived_by_admin_id);
+        $this->assertNull($foreignDues->waived_reason);
+    }
+
+    public function test_reminder_rejects_dues_from_another_organization_without_delivery(): void
+    {
+        $member = $this->makeUser();
+        $foreignOrganizationId = $this->makeOrganization('Foreign Reminder Verein');
+        $this->joinOrg($member, $foreignOrganizationId);
+        $this->configureFee(5000, $foreignOrganizationId);
+        $year = (int) date('Y');
+        $this->service->generateAnnualDues($foreignOrganizationId, $year);
+
+        $foreignDuesId = (int) DB::table('verein_member_dues')
+            ->where('organization_id', $foreignOrganizationId)
+            ->value('id');
+
+        $delivery = new class extends EmailDispatchService {
+            public int $attempts = 0;
+
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                $this->attempts++;
+                return true;
+            }
+        };
+        app()->instance(EmailDispatchService::class, $delivery);
+
+        try {
+            $this->service->sendReminder($this->organizationId, $foreignDuesId);
+            $this->fail('Expected foreign-organization dues to be rejected.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('verein_dues.errors.dues_not_found'), $e->getMessage());
+        }
+
+        $this->assertSame(0, $delivery->attempts);
+        $foreignDues = DB::table('verein_member_dues')->where('id', $foreignDuesId)->first();
+        $this->assertSame(0, (int) $foreignDues->reminder_count);
+        $this->assertNull($foreignDues->last_reminder_at);
+    }
+
+    private function makeOrganization(string $name): int
+    {
+        return (int) DB::table('vol_organizations')->insertGetId([
+            'tenant_id' => self::TENANT_ID,
+            'name' => $name . ' ' . uniqid('', true),
+            'org_type' => 'club',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
 }
