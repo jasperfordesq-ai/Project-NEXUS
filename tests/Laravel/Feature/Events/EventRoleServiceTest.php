@@ -292,6 +292,33 @@ final class EventRoleServiceTest extends TestCase
         );
     }
 
+    public function test_accepted_grant_replays_after_expiry_without_renewing_access(): void
+    {
+        $owner = $this->user();
+        $staff = $this->user();
+        $eventId = $this->event((int) $owner->id);
+        $expiry = CarbonImmutable::now()->addHour()->startOfSecond();
+        $first = $this->service->grant($eventId, (int) $staff->id,
+            EventStaffRole::CheckInStaff, $owner, $expiry, 'expired-grant-recovery');
+
+        try {
+            CarbonImmutable::setTestNow($expiry->addSecond());
+            $replay = $this->service->grant($eventId, (int) $staff->id,
+                EventStaffRole::CheckInStaff, $owner, $expiry, 'expired-grant-recovery');
+            self::assertFalse($replay['changed']);
+            self::assertSame($first['history_id'], $replay['history_id']);
+            self::assertNull($replay['outbox_id']);
+            self::assertSame(1, $replay['assignment']->assignment_version);
+            self::assertSame(1, $this->historyCount($eventId));
+            self::assertSame([], $this->service->capabilitiesForUser($eventId, (int) $staff->id));
+            $this->assertReason('event_staff_role_expiry_not_future', fn () =>
+                $this->service->grant($eventId, (int) $staff->id,
+                    EventStaffRole::CheckInStaff, $owner, $expiry, 'new-expired-grant'));
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
     public function test_idempotency_keys_replay_the_same_mutation_and_reject_reuse(): void
     {
         $owner = $this->user();
@@ -361,6 +388,8 @@ final class EventRoleServiceTest extends TestCase
 
     public function test_cross_tenant_event_target_and_actor_fail_closed(): void
     {
+        $assignmentCount = DB::table('event_staff_assignments')->count();
+        $historyCount = DB::table('event_staff_assignment_history')->count();
         $owner = $this->user();
         $staff = $this->user();
         $eventId = $this->event((int) $owner->id);
@@ -396,8 +425,8 @@ final class EventRoleServiceTest extends TestCase
                 $foreignOwner,
             ),
         );
-        self::assertSame(0, DB::table('event_staff_assignments')->count());
-        self::assertSame(0, DB::table('event_staff_assignment_history')->count());
+        self::assertSame($assignmentCount, DB::table('event_staff_assignments')->count());
+        self::assertSame($historyCount, DB::table('event_staff_assignment_history')->count());
         self::assertSame(0, $this->outboxCount($eventId));
     }
 

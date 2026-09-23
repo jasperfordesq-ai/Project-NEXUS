@@ -120,7 +120,9 @@ final class EventRoleService
         $this->assertSchemaAvailable();
         $tenantId = $this->tenantIdOrFail();
         $this->assertFeatureEnabled();
-        $expiry = $this->normalizeFutureExpiry($expiresAt);
+        // Normalize identity before replay lookup, but do not reject an accepted
+        // request merely because its expiry passed while the client was offline.
+        $expiry = $expiresAt === null ? null : CarbonImmutable::instance($expiresAt)->utc()->startOfSecond();
         $idempotencyKey = $this->normalizeIdempotencyKey($idempotencyKey);
 
         return DB::transaction(function () use (
@@ -156,6 +158,8 @@ final class EventRoleService
             if ($replay !== null) {
                 return $replay;
             }
+
+            $this->normalizeFutureExpiry($expiry);
 
             $assignment = DB::table('event_staff_assignments')
                 ->where('tenant_id', $tenantId)

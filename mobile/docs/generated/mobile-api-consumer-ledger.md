@@ -21,10 +21,10 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2248 distinc
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 62 |
-| Call sites | 683 |
-| Distinct method + endpoint pairs | 538 |
-| Verified against openapi.json | 538 |
+| API modules read | 63 |
+| Call sites | 686 |
+| Distinct method + endpoint pairs | 541 |
+| Verified against openapi.json | 541 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 102 |
@@ -225,6 +225,9 @@ and the places a contract test earns the most.
 | GET | `/api/v2/events/{param}/people/{param}/history` | eventPeople.ts:66 |
 | POST | `/api/v2/events/{param}/people/bulk` | eventPeople.ts:173 |
 | DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1127 |
+| GET | `/api/v2/events/{param}/staff` | eventStaff.ts:57 |
+| POST | `/api/v2/events/{param}/staff` | eventStaff.ts:85 |
+| DELETE | `/api/v2/events/{param}/staff/{param}` | eventStaff.ts:92 |
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1244 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1230 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |

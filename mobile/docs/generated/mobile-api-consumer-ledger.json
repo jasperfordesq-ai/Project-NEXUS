@@ -4,10 +4,10 @@
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 62,
-    "call_sites": 683,
-    "distinct_endpoints": 538,
-    "verified": 538,
+    "api_modules": 63,
+    "call_sites": 686,
+    "distinct_endpoints": 541,
+    "verified": 541,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -1265,6 +1265,33 @@
       "matched_via": "exact",
       "sites": [
         "events.ts:1127"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/events/{param}/staff",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventStaff.ts:57"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/events/{param}/staff",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventStaff.ts:85"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/events/{param}/staff/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "eventStaff.ts:92"
       ]
     },
     {
