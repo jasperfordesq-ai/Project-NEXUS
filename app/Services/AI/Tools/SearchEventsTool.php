@@ -59,6 +59,9 @@ class SearchEventsTool extends AbstractTool
 
         $q = DB::table('events')->where('start_time', '>=', now());
         EventSearchVisibility::applyToQuery($q, $tenantId, 'events');
+        // F-079: only events whose group audience includes the chatting member
+        // (no group, an active public group, or one they own/belong to/admin).
+        EventSearchVisibility::applyAudienceToQuery($q, $tenantId, $userId, 'events');
 
         if ($query !== '') {
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $query) . '%';

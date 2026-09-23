@@ -200,6 +200,8 @@ class SemanticSearchTool extends AbstractTool
             case 'event':
                 EventSearchVisibility::applyToQuery($query, $tenantId, 'events')
                     ->where('events.start_time', '>=', now());
+                // F-079: the same group-audience rule as unified search (F-078).
+                EventSearchVisibility::applyAudienceToQuery($query, $tenantId, $userId, 'events');
                 break;
 
             case 'group':

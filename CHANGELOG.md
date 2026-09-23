@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The AI assistant's event search and semantic search no longer show events from private or secret groups to members who are not in them (F-079).
+
 - Compose drafts and recent searches now belong to one member of one community and are cleared on sign-out, so the next person on a shared browser can't see or publish them (F-109).
 
 - Opening a link to another community on the shared accessible site no longer signs the member out; the session is refreshed with the community it was issued for (F-112).
