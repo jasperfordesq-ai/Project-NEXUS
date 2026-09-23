@@ -248,7 +248,8 @@ class VereinFederationServiceTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        $this->svc->shareEvent(999999999, [$sourceId], $sourceId);
+        $actorId = (int) DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
+        $this->svc->shareEvent(999999999, [$sourceId], $sourceId, $actorId);
     }
 
     public function test_shareEvent_throws_when_source_not_consenting(): void
@@ -261,7 +262,7 @@ class VereinFederationServiceTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $this->svc->shareEvent($eventId, [$targetId], $sourceId);
+        $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
     }
 
     public function test_shareEvent_returns_shared_count(): void
@@ -276,7 +277,7 @@ class VereinFederationServiceTest extends TestCase
         $userId  = DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
         $eventId = $this->insertEvent((int) $userId);
 
-        $result = $this->svc->shareEvent($eventId, [$targetId], $sourceId);
+        $result = $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
 
         $this->assertSame(1, $result['shared']);
         $this->assertSame(0, $result['skipped']);
@@ -294,8 +295,8 @@ class VereinFederationServiceTest extends TestCase
         $userId  = DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
         $eventId = $this->insertEvent((int) $userId);
 
-        $this->svc->shareEvent($eventId, [$targetId], $sourceId);
-        $result = $this->svc->shareEvent($eventId, [$targetId], $sourceId);
+        $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
+        $result = $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
 
         $this->assertSame(0, $result['shared']);
         $this->assertSame(1, $result['skipped']);
@@ -311,7 +312,7 @@ class VereinFederationServiceTest extends TestCase
         $userId  = DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
         $eventId = $this->insertEvent((int) $userId);
 
-        $result = $this->svc->shareEvent($eventId, [$sourceId], $sourceId);
+        $result = $this->svc->shareEvent($eventId, [$sourceId], $sourceId, (int) $userId);
 
         $this->assertSame(0, $result['shared']);
         $this->assertSame(1, $result['skipped']);
@@ -331,7 +332,7 @@ class VereinFederationServiceTest extends TestCase
         $userId  = DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
         $eventId = $this->insertEvent((int) $userId);
 
-        $this->svc->shareEvent($eventId, [$targetId], $sourceId);
+        $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
 
         $shareId = DB::table('verein_event_shares')
             ->where('tenant_id', $this->tenantId)
@@ -361,7 +362,7 @@ class VereinFederationServiceTest extends TestCase
         $userId  = DB::table('vol_organizations')->where('id', $sourceId)->value('user_id');
         $eventId = $this->insertEvent((int) $userId);
 
-        $this->svc->shareEvent($eventId, [$targetId], $sourceId);
+        $this->svc->shareEvent($eventId, [$targetId], $sourceId, (int) $userId);
 
         $shareId = DB::table('verein_event_shares')
             ->where('tenant_id', $this->tenantId)

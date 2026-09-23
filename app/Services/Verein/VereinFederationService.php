@@ -13,8 +13,13 @@ use App\Enums\GroupStatus;
 use App\I18n\LocaleContext;
 use App\Mail\VereinCrossInvitationAccepted;
 use App\Mail\VereinCrossInvitationReceived;
+use App\Models\Event;
+use App\Models\User;
+use App\Policies\EventPolicy;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Events\EventSearchVisibility;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
@@ -238,16 +243,38 @@ class VereinFederationService
      *
      * @return array{shared:int,skipped:int}
      */
-    public function shareEvent(int $eventId, array $targetOrganizationIds, int $sourceOrganizationId): array
+    public function shareEvent(
+        int $eventId,
+        array $targetOrganizationIds,
+        int $sourceOrganizationId,
+        int $actorId,
+    ): array
     {
         $tenantId = TenantContext::getId();
 
-        $event = DB::table('events')
-            ->where('tenant_id', $tenantId)
-            ->where('id', $eventId)
-            ->first();
+        $eventQuery = DB::table('events as e')
+            ->join('vol_organizations as source_org', function ($join): void {
+                $join->on('source_org.user_id', '=', 'e.user_id')
+                    ->on('source_org.tenant_id', '=', 'e.tenant_id');
+            })
+            ->where('source_org.id', $sourceOrganizationId)
+            ->where('source_org.org_type', 'club')
+            ->where('e.id', $eventId);
+        $this->applyPublicEventVisibility($eventQuery, $tenantId, 'e');
+        $event = $eventQuery->first(['e.id']);
 
         if (!$event) {
+            throw new InvalidArgumentException(__('verein_federation.event_not_found'));
+        }
+
+        $eventModel = Event::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereKey($eventId)
+            ->first();
+        $actor = User::withoutGlobalScopes()
+            ->whereKey($actorId)
+            ->first();
+        if (!$eventModel || !$actor || !app(EventPolicy::class)->manage($actor, $eventModel)) {
             throw new InvalidArgumentException(__('verein_federation.event_not_found'));
         }
 
@@ -268,7 +295,9 @@ class VereinFederationService
             }
             $target = $this->getConsent($targetId);
             if (
-                !$target['is_active']
+                $source['municipality_code'] === null
+                || $target['municipality_code'] === null
+                || !$target['is_active']
                 || !in_array($target['sharing_scope'], ['events', 'both'], true)
                 || $target['municipality_code'] !== $source['municipality_code']
             ) {
@@ -320,16 +349,39 @@ class VereinFederationService
                 $join->on('e.id', '=', 's.event_id')
                     ->on('e.tenant_id', '=', 's.tenant_id');
             })
-            ->leftJoin('vol_organizations as so', function ($join): void {
+            ->join('vol_organizations as so', function ($join): void {
                 $join->on('so.id', '=', 's.source_organization_id')
                     ->on('so.tenant_id', '=', 's.tenant_id');
             })
-            ->leftJoin('vol_organizations as to_org', function ($join): void {
+            ->join('vol_organizations as to_org', function ($join): void {
                 $join->on('to_org.id', '=', 's.target_organization_id')
                     ->on('to_org.tenant_id', '=', 's.tenant_id');
             })
+            ->join('verein_federation_consents as source_consent', function ($join): void {
+                $join->on('source_consent.organization_id', '=', 'so.id')
+                    ->on('source_consent.tenant_id', '=', 's.tenant_id');
+            })
+            ->join('verein_federation_consents as target_consent', function ($join): void {
+                $join->on('target_consent.organization_id', '=', 'to_org.id')
+                    ->on('target_consent.tenant_id', '=', 's.tenant_id');
+            })
             ->where('s.tenant_id', $tenantId)
-            ->where('s.status', 'active');
+            ->where('s.status', 'active')
+            ->whereColumn('e.user_id', 'so.user_id')
+            ->where('so.org_type', 'club')
+            ->where('to_org.org_type', 'club')
+            ->where('source_consent.is_active', 1)
+            ->whereIn('source_consent.sharing_scope', ['events', 'both'])
+            ->where('target_consent.is_active', 1)
+            ->whereIn('target_consent.sharing_scope', ['events', 'both'])
+            ->whereNotNull('source_consent.municipality_code')
+            ->whereNotNull('target_consent.municipality_code')
+            ->whereColumn(
+                'source_consent.municipality_code',
+                'target_consent.municipality_code',
+            );
+
+        $this->applyPublicEventVisibility($query, $tenantId, 'e');
 
         if ($direction === 'outgoing') {
             $query->where('s.source_organization_id', $organizationId);
@@ -361,6 +413,29 @@ class VereinFederationService
             ])
             ->values()
             ->all();
+    }
+
+    private function applyPublicEventVisibility(
+        QueryBuilder $query,
+        int $tenantId,
+        string $eventAlias,
+    ): void {
+        EventSearchVisibility::applyToQuery($query, $tenantId, $eventAlias);
+
+        $query->where(function ($visibility) use ($tenantId, $eventAlias): void {
+            $visibility->whereNull($eventAlias . '.group_id')
+                ->orWhereExists(function ($group) use ($tenantId, $eventAlias): void {
+                    $group->selectRaw('1')
+                        ->from('groups as visible_share_groups')
+                        ->whereColumn('visible_share_groups.id', $eventAlias . '.group_id')
+                        ->where('visible_share_groups.tenant_id', $tenantId)
+                        ->where('visible_share_groups.status', GroupStatus::Active->value)
+                        ->where(function ($audience): void {
+                            $audience->whereNull('visible_share_groups.visibility')
+                                ->orWhere('visible_share_groups.visibility', 'public');
+                        });
+                });
+        });
     }
 
     public function withdrawEventShare(int $shareId, int $sourceOrganizationId): bool

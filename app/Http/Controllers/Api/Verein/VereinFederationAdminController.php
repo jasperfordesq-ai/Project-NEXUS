@@ -72,7 +72,12 @@ class VereinFederationAdminController extends BaseApiController
         }
 
         try {
-            $result = $this->service->shareEvent($eventId, $targets, $organizationId);
+            $result = $this->service->shareEvent(
+                $eventId,
+                $targets,
+                $organizationId,
+                $this->requireAuth(),
+            );
             return $this->respondWithData($result);
         } catch (InvalidArgumentException | RuntimeException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
