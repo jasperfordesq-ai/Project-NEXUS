@@ -355,7 +355,11 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
                   if (picker.field === 'from') setFrom(date); else setUntil(date);
                   setUntilError(false);
                 }} />
-                {Platform.OS === 'ios' && <Button variant="ghost" onPress={() => setPicker(null)}>{t('common:buttons.done')}</Button>}</>}
+                {/* iOS sends no change until the wheel moves: Done keeps the date on screen. */}
+                {Platform.OS === 'ios' && <Button variant="ghost" onPress={() => {
+                  if (picker.field === 'until' && !until && authority.current.permitted) { setUntil(new Date(from.getTime() + 86400000)); setUntilError(false); }
+                  setPicker(null);
+                }}>{t('common:buttons.done')}</Button>}</>}
               <Button disabled={blocked || !subject} isLoading={operation.busy} onPress={saveReview}>{s('actions.save_review')}</Button>
               {(subject || expectedVersion !== null) && <Button variant="ghost" disabled={blocked} onPress={clearReview}>{s('actions.cancel_edit')}</Button>}
             </Card.Body></Card>

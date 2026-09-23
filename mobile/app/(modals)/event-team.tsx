@@ -162,7 +162,8 @@ export function TeamWorkspace({ eventId, tenantId, userId }: { eventId: number; 
               <Button variant="ghost" disabled={blocked} onPress={() => { setExpiry(null); setPicker(null); setExpiryError(false); }}>{label('no_expiry')}</Button></>}
             {picker && permitted && <><DateTimePicker value={expiry ?? new Date(Date.now() + 86400000)} mode={picker} minimumDate={picker === 'date' ? new Date() : undefined}
               onChange={(event, date) => { if (Platform.OS !== 'ios') setPicker(null); if (event.type === 'set' && date && authority.current.permitted) { setExpiry(date); setExpiryError(false); } }} />
-              {Platform.OS === 'ios' && <Button variant="ghost" onPress={() => setPicker(null)}>{t('common:buttons.done')}</Button>}</>}
+              {/* iOS sends no change until the wheel moves: Done keeps the date on screen. */}
+              {Platform.OS === 'ios' && <Button variant="ghost" onPress={() => { if (!expiry && authority.current.permitted) { setExpiry(new Date(Date.now() + 86400000)); setExpiryError(false); } setPicker(null); }}>{t('common:buttons.done')}</Button>}</>}
             {expiryError && <Text accessibilityRole="alert">{label('expiry_invalid')}</Text>}
             <Button disabled={blocked || !selected} isLoading={operation.busy} onPress={assign}>{label('assign')}</Button>
           </Card.Body></Card>

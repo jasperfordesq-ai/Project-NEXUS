@@ -167,3 +167,15 @@ it('blocks changes if saved actions cannot be read and offers storage retry', as
   await act(async () => fireEvent.press(view.getByText('Check saved actions')));
   expect(view.queryByText('Saved actions unavailable')).toBeNull();
 });
+it('keeps the date shown on the iOS wheel when the organiser taps Done without scrolling', async () => {
+  // iOS fires no change event until the wheel moves, so Done used to close the
+  // picker and save no expiry although a date was on screen. jest-expo runs as iOS.
+  const view = await ready(); await select(view); fireEvent.press(view.getByText('Access expires (optional)'));
+  const shown = view.UNSAFE_getByType(DateTimePicker).props.value as Date;
+  fireEvent.press(view.getByText('Done'));
+  expect(view.UNSAFE_queryByType(DateTimePicker)).toBeNull();
+  fireEvent.press(view.getByText('Assign role')); await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  const sent = jest.mocked(execute).mock.calls[0][1] as { payload: { expires_at: string | null } };
+  expect(sent.payload.expires_at).not.toBeNull();
+  expect(Math.abs(Date.parse(sent.payload.expires_at as string) - shown.getTime())).toBeLessThan(5000);
+});

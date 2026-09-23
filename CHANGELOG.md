@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- On an iPhone, the event Team screen (access expiry) and the event Safety screen (review end date) now keep the date shown on the picker when the organiser taps Done without scrolling it. Before, nothing was saved in that case, although a date was on screen.
+
 - In the mobile app, adding a photo (profile picture, group media, marketplace listings and shop profile, onboarding, podcasts and message attachments) now opens the phone's photo picker straight away. The app used to ask for access to the whole photo library first; on an iPhone, anyone who once said no could never add a photo again, because the question is never asked a second time.
 
 - In the mobile app, the agenda change comparison now shows dates and times in the language chosen in the app, like every other screen, instead of the device's language setting.

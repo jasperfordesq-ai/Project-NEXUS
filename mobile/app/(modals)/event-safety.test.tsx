@@ -5,6 +5,7 @@
 import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { AppState } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import i18n from 'i18next';
 import communications from '@/locales/en/event_communications.json';
 import eventSafety from '@/locales/en/eventSafety.json';
@@ -253,4 +254,19 @@ it('reloads current server values once after a change is rejected, without loopi
   await waitFor(() => expect(getEventSafety).toHaveBeenCalledTimes(2));
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 200)); });
   expect(getEventSafety).toHaveBeenCalledTimes(2);
+});
+
+it('keeps the end date shown on the iOS wheel when the organiser taps Done without scrolling', async () => {
+  // iOS fires no change event until the wheel moves; Done must keep what is shown.
+  const view = await ready();
+  fireEvent.changeText(view.getByLabelText('Find a member'), 'New');
+  fireEvent.press(await view.findByLabelText('Select New member · Member #10'));
+  fireEvent.press(view.getByText('Set an end date'));
+  const shown = view.UNSAFE_getByType(DateTimePicker).props.value as Date;
+  fireEvent.press(view.getByText('Done'));
+  fireEvent.press(view.getByText('Save review decision'));
+  await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  const sent = jest.mocked(execute).mock.calls[0][1] as { payload: { effective_until: string | null } };
+  expect(sent.payload.effective_until).not.toBeNull();
+  expect(Math.abs(Date.parse(sent.payload.effective_until as string) - shown.getTime())).toBeLessThan(5000);
 });
