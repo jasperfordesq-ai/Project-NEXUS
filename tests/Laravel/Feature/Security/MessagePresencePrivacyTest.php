@@ -87,6 +87,23 @@ class MessagePresencePrivacyTest extends TestCase
             ->assertJsonPath('meta.conversation.other_user.is_online', true);
     }
 
+    public function test_inbox_never_returns_raw_last_active_times(): void
+    {
+        [$viewer, $hidden] = [$this->member(), $this->member()];
+        DB::table('users')->where('id', $hidden->id)->update(['last_active_at' => now()]);
+        $this->hidePresence($hidden);
+        $this->message($hidden, $viewer, 'From hidden member');
+        Sanctum::actingAs($viewer, ['*']);
+
+        $row = collect($this->apiGet('/v2/messages')->assertOk()->json('data'))->keyBy('partner_id')[$hidden->id];
+
+        foreach (['sender', 'receiver'] as $key) {
+            if (is_array($row[$key] ?? null)) {
+                $this->assertArrayNotHasKey('last_active_at', $row[$key], "The inbox {$key} object must not carry a raw last-active time.");
+            }
+        }
+    }
+
     public function test_group_participant_list_does_not_show_a_hidden_member_as_online(): void
     {
         [$viewer, $hidden, $visible] = [$this->member(), $this->member(), $this->member()];

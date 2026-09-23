@@ -287,6 +287,13 @@ class MessageService
 
         $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds, $viewerIsAdmin) {
             $data = self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin);
+            // F-088: last_active_at is loaded only to derive is_online below; the
+            // raw timestamp would reveal activity despite "hide my presence".
+            foreach (['sender', 'receiver'] as $key) {
+                if (is_array($data[$key] ?? null)) {
+                    unset($data[$key]['last_active_at']);
+                }
+            }
             $data['reactions'] = $reactionCounts[(int) $msg->id] ?? [];
             $partnerId = $msg->sender_id === $userId ? $msg->receiver_id : $msg->sender_id;
             $partner = $msg->sender_id === $userId ? $msg->receiver : $msg->sender;
