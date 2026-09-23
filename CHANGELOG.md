@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Polls can now only be posted into a group by people allowed to post there, polls made inside a group stay in that group, and people outside a private group can no longer see its polls (F-069).
+
+- Comments and reactions on private goals, drafts and items still awaiting moderation can no longer be read or added by other members (F-071).
+
 - Connecting a Google or Facebook login to your account now needs a fresh confirmation (silently after a recent strong sign-in, otherwise your password, authenticator code or backup code), so a stolen session can't add a permanent way in (F-056).
 
 - The admin settings and system configuration screens now lock email verification and member approval for anyone but a platform super-admin and leave those settings out of their saves, so ordinary admins no longer get an error when saving other settings (F-054).

@@ -16,6 +16,7 @@ use App\Services\PollService;
 use App\Services\PollCreationReceiptService;
 use App\Services\PollRankingService;
 use App\Services\PollExportService;
+use App\Support\FeedItemTables;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Support\UserDisplayName;
@@ -46,6 +47,8 @@ class PollsController extends BaseApiController
         $filters = [
             'status' => $this->query('status', 'open'),
             'limit'  => $this->queryInt('per_page', 20, 1, 100),
+            // F-069: leave out polls posted into groups this member cannot see.
+            'viewer_id' => $userId,
         ];
 
         if ($this->query('cursor')) {
@@ -66,14 +69,14 @@ class PollsController extends BaseApiController
 
         $result = $this->pollService->getAll($filters);
 
-        // Enrich with has_voted
-        $items = array_map(function (array $poll) use ($userId) {
+        // Enrich with has_voted. getById() applies the group visibility gate, so
+        // a poll it refuses is dropped rather than returned un-enriched (F-069).
+        $items = array_values(array_filter(array_map(function (array $poll) use ($userId) {
             if (! isset($poll['has_voted'])) {
-                $enriched = $this->pollService->getById((int) $poll['id'], $userId);
-                return $enriched ?? $poll;
+                return $this->pollService->getById((int) $poll['id'], $userId);
             }
             return $poll;
-        }, $result['items']);
+        }, $result['items'])));
 
         return $this->respondWithCollection($items, $result['cursor'], $filters['limit'], $result['has_more']);
     }
@@ -133,6 +136,14 @@ class PollsController extends BaseApiController
         }
         $data['is_anonymous'] = filter_var($data['is_anonymous'] ?? false, FILTER_VALIDATE_BOOL);
 
+        // F-069: a poll may only be posted into a group the author can post in.
+        // The group_id went straight onto the feed row, so a non-member could
+        // drop a poll into a private group's feed.
+        $groupId = ! empty($data['group_id']) ? (int) $data['group_id'] : null;
+        if ($groupId !== null && ! FeedItemTables::canPostInGroup($groupId, $userId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.social_group_membership_required'), 'group_id', 403);
+        }
+
         try {
             $creation = $identity === null
                 ? ['poll' => $this->pollService->create($userId, $data), 'replayed' => false]
@@ -157,7 +168,7 @@ class PollsController extends BaseApiController
                     $poll->id,
                     [
                         'title'    => $data['question'] ?? null,
-                        'group_id' => $data['group_id'] ?? null,
+                        'group_id' => $groupId,
                     ]
                 );
             } catch (\Throwable $e) {

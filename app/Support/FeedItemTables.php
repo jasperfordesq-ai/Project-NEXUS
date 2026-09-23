@@ -130,6 +130,17 @@ final class FeedItemTables
                 return false;
             }
 
+            // F-071: goals and ideation challenges keep their feed row after
+            // they stop being public (a goal switched to private; a challenge
+            // is recorded on creation, while still a draft), so their own read
+            // rule applies whether or not a feed row exists.
+            if ($targetType === 'goal' && !self::canViewGoal($targetId, $viewerId, $tenantId)) {
+                return false;
+            }
+            if ($targetType === 'challenge' && !self::canViewChallenge($targetId, $viewerId)) {
+                return false;
+            }
+
             $activity = DB::table('feed_activity')
                 ->where('tenant_id', $tenantId)
                 ->where('source_type', $targetType)
@@ -145,7 +156,11 @@ final class FeedItemTables
                 return self::canViewGroup($activity->group_id !== null ? (int) $activity->group_id : null, $viewerId, $tenantId);
             }
 
-            return true;
+            // F-071: no feed row. This used to return true, which opened
+            // comments and reactions on private goals and on draft or
+            // unmoderated items to everyone. Fail closed unless the item's own
+            // module says the viewer may read it.
+            return self::canViewWithoutFeedRow($targetType, $targetId, $viewerId, $tenantId);
         } catch (\Throwable $e) {
             Log::warning("[FeedItemTables] visibility check failed for {$targetType}: " . $e->getMessage());
             return false;
@@ -244,6 +259,111 @@ final class FeedItemTables
             (int) $row->group_id,
             $viewerId,
         );
+    }
+
+    /**
+     * Read rule for an item that has no feed_activity row (F-071).
+     *
+     * Each branch reuses the owning module's own read rule. Unknown types are
+     * refused, and so is a guest for every type whose rule needs a viewer.
+     */
+    private static function canViewWithoutFeedRow(string $targetType, int $targetId, ?int $viewerId, int $tenantId): bool
+    {
+        return match ($targetType) {
+            // Already checked against the goal / challenge rule above.
+            'goal', 'challenge' => true,
+            // A poll's group lives on its feed row; a poll without one belongs
+            // to no group, and polls have no draft or hidden state.
+            'poll' => true,
+            // Mirrors ListingService / job / EventPolicy / resource read rules.
+            'listing', 'event', 'job', 'resource' => $viewerId !== null
+                && SavedItemVisibility::canView($targetType, $targetId, $viewerId),
+            'volunteer' => \App\Services\VolunteerService::getOpportunityById($targetId, $viewerId) !== null,
+            'volunteer_hours' => self::canViewVolunteerHours($targetId, $viewerId, $tenantId),
+            'review' => self::canViewReview($targetId, $viewerId, $tenantId),
+            'blog' => self::canViewBlogPost($targetId, $viewerId, $tenantId),
+            default => false,
+        };
+    }
+
+    /** Same rule as GoalsController::canViewGoal(): public, or the owner, or the goal's mentor. */
+    private static function canViewGoal(int $goalId, ?int $viewerId, int $tenantId): bool
+    {
+        $goal = DB::table('goals')
+            ->where('id', $goalId)
+            ->where('tenant_id', $tenantId)
+            ->first(['user_id', 'mentor_id', 'is_public']);
+
+        if (!$goal) {
+            return false;
+        }
+        if ((bool) $goal->is_public) {
+            return true;
+        }
+
+        return $viewerId !== null
+            && ((int) $goal->user_id === $viewerId || (int) ($goal->mentor_id ?? 0) === $viewerId);
+    }
+
+    /** IdeationChallengeService applies canViewChallengeRecord(): draft/archived are creator/admin only. */
+    private static function canViewChallenge(int $challengeId, ?int $viewerId): bool
+    {
+        return app(\App\Services\IdeationChallengeService::class)->getById($challengeId, $viewerId) !== null;
+    }
+
+    /** Pending or declined hours are private to the volunteer; approved hours are feed content. */
+    private static function canViewVolunteerHours(int $logId, ?int $viewerId, int $tenantId): bool
+    {
+        $log = DB::table('vol_logs')
+            ->where('id', $logId)
+            ->where('tenant_id', $tenantId)
+            ->first(['user_id', 'status']);
+
+        if (!$log) {
+            return false;
+        }
+        if ($viewerId !== null && (int) $log->user_id === $viewerId) {
+            return true;
+        }
+
+        return $viewerId !== null && ($log->status ?? null) === 'approved';
+    }
+
+    /** Pending, rejected or author-deleted reviews are visible only to the reviewer and the receiver. */
+    private static function canViewReview(int $reviewId, ?int $viewerId, int $tenantId): bool
+    {
+        $review = DB::table('reviews')
+            ->where('id', $reviewId)
+            ->where('tenant_id', $tenantId)
+            ->first(['reviewer_id', 'receiver_id', 'status', 'deleted_by_author_at']);
+
+        if (!$review || $viewerId === null) {
+            return false;
+        }
+        if ((int) ($review->reviewer_id ?? 0) === $viewerId || (int) $review->receiver_id === $viewerId) {
+            return true;
+        }
+
+        return in_array($review->status ?? null, [null, 'approved'], true)
+            && $review->deleted_by_author_at === null;
+    }
+
+    /** Blog articles (`posts`): BlogService shows only published posts; drafts are the author's. */
+    private static function canViewBlogPost(int $postId, ?int $viewerId, int $tenantId): bool
+    {
+        $post = DB::table('posts')
+            ->where('id', $postId)
+            ->where('tenant_id', $tenantId)
+            ->first(['author_id', 'status']);
+
+        if (!$post) {
+            return false;
+        }
+        if (($post->status ?? null) === 'published') {
+            return true;
+        }
+
+        return $viewerId !== null && (int) $post->author_id === $viewerId;
     }
 
     private static function canViewComment(int $commentId, ?int $viewerId, int $tenantId): bool

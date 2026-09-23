@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Exceptions\PollClosedException;
 use App\Models\Poll;
 use Illuminate\Support\Facades\DB;
+use App\Support\FeedItemTables;
 use App\Support\UserDisplayName;
 
 /**
@@ -56,6 +57,24 @@ class PollService
             $query->where('event_id', (int) $filters['event_id']);
         }
 
+        // F-069: a poll posted into a group carries that group on its
+        // feed_activity row (`polls` has no group_id). Leave out polls whose
+        // group the viewer may not see. A caller that passes no viewer_id gets
+        // community-wide polls only.
+        $tenantId = (int) TenantContext::getId();
+        $viewerId = ! empty($filters['viewer_id']) ? (int) $filters['viewer_id'] : null;
+        $hiddenGroupIds = self::pollGroupIdsHiddenFrom($viewerId, $tenantId);
+        if ($hiddenGroupIds !== []) {
+            $query->whereNotExists(function ($q) use ($tenantId, $hiddenGroupIds) {
+                $q->select(DB::raw(1))
+                    ->from('feed_activity as fa')
+                    ->whereColumn('fa.source_id', 'polls.id')
+                    ->where('fa.tenant_id', $tenantId)
+                    ->where('fa.source_type', 'poll')
+                    ->whereIn('fa.group_id', $hiddenGroupIds);
+            });
+        }
+
         if ($cursor !== null && ($cid = base64_decode($cursor, true)) !== false) {
             $query->where('id', '<', (int) $cid);
         }
@@ -90,6 +109,13 @@ class PollService
         // scope. The poll_options/poll_votes tables also carry tenant_id and
         // are explicitly scoped below for defense in depth.
         $tenantId = \App\Core\TenantContext::getId();
+
+        // F-069: a poll posted into a group is readable only by those who may
+        // see that group's content. Every poll read, vote and ranking goes
+        // through this loader, so the gate covers all of them.
+        if (! self::viewerCanSeePollGroup((int) $poll->id, $currentUserId, (int) $tenantId)) {
+            return null;
+        }
 
         $data = $poll->toArray();
 
@@ -419,5 +445,45 @@ class PollService
             ->sort()
             ->values()
             ->all();
+    }
+
+    /**
+     * Can this viewer see the group (if any) the poll was posted into?
+     * Uses the same group rule as every other feed item (FeedItemTables::canViewGroup).
+     */
+    private static function viewerCanSeePollGroup(int $pollId, ?int $viewerId, int $tenantId): bool
+    {
+        $groupId = DB::table('feed_activity')
+            ->where('tenant_id', $tenantId)
+            ->where('source_type', 'poll')
+            ->where('source_id', $pollId)
+            ->whereNotNull('group_id')
+            ->value('group_id');
+
+        return FeedItemTables::canViewGroup($groupId !== null ? (int) $groupId : null, $viewerId, $tenantId);
+    }
+
+    /**
+     * Groups that have polls in them and whose content this viewer may not see.
+     *
+     * @return list<int>
+     */
+    private static function pollGroupIdsHiddenFrom(?int $viewerId, int $tenantId): array
+    {
+        $groupIds = DB::table('feed_activity')
+            ->where('tenant_id', $tenantId)
+            ->where('source_type', 'poll')
+            ->whereNotNull('group_id')
+            ->distinct()
+            ->pluck('group_id');
+
+        $hidden = [];
+        foreach ($groupIds as $groupId) {
+            if (! FeedItemTables::canViewGroup((int) $groupId, $viewerId, $tenantId)) {
+                $hidden[] = (int) $groupId;
+            }
+        }
+
+        return $hidden;
     }
 }

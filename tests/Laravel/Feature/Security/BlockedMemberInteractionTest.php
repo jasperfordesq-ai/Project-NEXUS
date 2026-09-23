@@ -225,6 +225,13 @@ class BlockedMemberInteractionTest extends TestCase
         );
         $this->assertNotContains($blocked->id, $legacyIds);
         $this->assertContains($friend->id, $legacyIds);
+
+        // The legacy HTTP route passes the viewer through to the service too.
+        $legacyRoute = $this->apiPost('/social/mention-search', ['query' => $needle]);
+        $legacyRoute->assertStatus(200);
+        $routeIds = array_map('intval', array_column($legacyRoute->json('data.users') ?? [], 'id'));
+        $this->assertNotContains($blocked->id, $routeIds);
+        $this->assertContains($friend->id, $routeIds);
     }
 
     // ------------------------------------------------------------------

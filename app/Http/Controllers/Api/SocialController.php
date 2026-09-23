@@ -834,6 +834,14 @@ class SocialController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.social_min_2_options'), 'options', 400);
         }
 
+        // F-069: the group composer sends group_id. It used to be dropped, so a
+        // poll made inside a group landed in the community-wide feed. Keep it,
+        // but only for a group the author may post in.
+        $groupId = ! empty($data['group_id']) ? (int) $data['group_id'] : null;
+        if ($groupId !== null && ! FeedItemTables::canPostInGroup($groupId, $userId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.social_group_membership_required'), 'group_id', 403);
+        }
+
         $pollData = [
             'question'   => $question,
             'options'    => $options,
@@ -851,6 +859,7 @@ class SocialController extends BaseApiController
                 'user_id'     => $userId,
                 'source_type' => 'poll',
                 'source_id'   => $pollId,
+                'group_id'    => $groupId,
                 'title'       => $question,
                 'content'     => $question,
                 'metadata'    => null,
@@ -1586,7 +1595,7 @@ class SocialController extends BaseApiController
     public function mentionSearch(): JsonResponse
     {
         $this->rateLimit('social_mention_search', 30, 60);
-        $this->requireAuth();
+        $userId = $this->requireAuth();
         $tenantId = $this->getTenantId();
 
         $query = trim($this->input('query', ''));
@@ -1596,7 +1605,8 @@ class SocialController extends BaseApiController
         }
 
         try {
-            $users = $this->commentService->searchUsersForMention($query, $tenantId, 10);
+            // F-070: members with a block either way are not suggested.
+            $users = $this->commentService->searchUsersForMention($query, $tenantId, 10, $userId);
 
             return $this->respondWithData(['users' => $users]);
         } catch (\Exception $e) {
