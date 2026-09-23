@@ -329,9 +329,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:1178:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:1182:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 1178,
+            "line": 1182,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -342,9 +342,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:1253:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:1257:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 1253,
+            "line": 1257,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -355,9 +355,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:1295:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:1299:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 1295,
+            "line": 1299,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -368,9 +368,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:1633:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:1637:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 1633,
+            "line": 1637,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -381,9 +381,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:1708:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:1712:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 1708,
+            "line": 1712,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -394,9 +394,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:2273:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:2277:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 2273,
+            "line": 2277,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $id",
@@ -407,9 +407,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:2496:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:2500:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 2496,
+            "line": 2500,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user['id']",
@@ -420,9 +420,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminUsersController.php:2571:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminUsersController.php:2575:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminUsersController.php",
-            "line": 2571,
+            "line": 2575,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user['id']",

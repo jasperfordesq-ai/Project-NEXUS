@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Signing out everywhere, a password reset, an administrator password or two-factor reset, and suspending or banning a member now also remove that member's registered phone and browser push destinations, so a lost or stolen device stops receiving their notifications (F-117).
+
 - Polls can now only be posted into a group by people allowed to post there, polls made inside a group stay in that group, and people outside a private group can no longer see its polls (F-069).
 
 - Comments and reactions on private goals, drafts and items still awaiting moderation can no longer be read or added by other members (F-071).

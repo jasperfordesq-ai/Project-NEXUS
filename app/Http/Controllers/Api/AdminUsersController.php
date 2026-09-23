@@ -882,6 +882,8 @@ class AdminUsersController extends BaseApiController
                 return null;
             }
             DB::update("UPDATE users SET status = 'suspended' WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            // F-117: stop pushes to the member's devices immediately.
+            app(TokenService::class)->forgetPushDestinations($id, $tenantId);
             return $target;
         }, 3);
         if ($lockedUser === null) {
@@ -925,6 +927,8 @@ class AdminUsersController extends BaseApiController
                 return null;
             }
             DB::update("UPDATE users SET status = 'banned' WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            // F-117: stop pushes to the member's devices immediately.
+            app(TokenService::class)->forgetPushDestinations($id, $tenantId);
             return $target;
         }, 3);
         if ($lockedUser === null) {

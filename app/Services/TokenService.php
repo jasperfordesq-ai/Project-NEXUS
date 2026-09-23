@@ -843,6 +843,11 @@ class TokenService
                         ])
                     : 0;
 
+                // F-117: a revoked member must stop receiving pushes on the
+                // devices those sessions registered (a lost or stolen phone).
+                // Their own devices re-register at the next sign-in.
+                $this->forgetPushDestinations($userId, $tenantId);
+
                 // The global cutoff itself always represents one successful
                 // revocation action, even when no tracked session rows existed.
                 return 1 + $refreshCount + $sanctumCount + $legacyApiCount + $trustedDeviceCount;
@@ -851,6 +856,33 @@ class TokenService
             Log::error('[TokenService] Failed to revoke all tokens: ' . $e->getMessage());
             return 0;
         }
+    }
+
+    /**
+     * Remove every push destination a member registered — native (Expo/FCM)
+     * device tokens and browser push subscriptions — in their community
+     * (F-117). Used when all of a member's sessions end and when an
+     * administrator suspends or bans them.
+     */
+    public function forgetPushDestinations(int $userId, int $tenantId): int
+    {
+        $removed = 0;
+        if (Schema::hasTable('fcm_device_tokens')) {
+            $removed += DB::table('fcm_device_tokens')
+                ->where('user_id', $userId)
+                ->where('tenant_id', $tenantId)
+                ->delete();
+        }
+        if (Schema::hasTable('push_subscriptions')) {
+            $removed += DB::table('push_subscriptions')
+                ->where('user_id', $userId)
+                ->where(static function ($query) use ($tenantId): void {
+                    $query->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
+                })
+                ->delete();
+        }
+
+        return $removed;
     }
 
     /** Validate original actor assurance against global and individual logout. */
