@@ -335,6 +335,20 @@ describe('OrganisationsScreen', () => {
     expect(getByText('Dublin, Ireland')).toBeTruthy();
   });
 
+  it('does not claim zero partners when the first load failed or is still loading', () => {
+    mockUsePaginatedApi.mockReturnValueOnce({ ...defaultPaginatedState, items: [], error: 'Network down' });
+    const failed = render(<OrganisationsScreen />);
+    expect(failed.queryByTestId('organisations-hero-stats')).toBeNull();
+    failed.unmount();
+    mockUsePaginatedApi.mockReturnValueOnce({ ...defaultPaginatedState, items: [], isLoading: true });
+    const loading = render(<OrganisationsScreen />);
+    expect(loading.queryByTestId('organisations-hero-stats')).toBeNull();
+    loading.unmount();
+    mockUsePaginatedApi.mockReturnValueOnce({ ...defaultPaginatedState, items: [mockOrganisation] });
+    const loaded = render(<OrganisationsScreen />);
+    expect(loaded.getByTestId('organisations-hero-stats')).toBeTruthy();
+  });
+
   it('keeps loaded organisations visible and warns when a refresh fails', () => {
     const refresh = jest.fn();
     mockUsePaginatedApi.mockReturnValueOnce({

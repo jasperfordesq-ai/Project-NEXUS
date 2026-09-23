@@ -188,13 +188,19 @@ function OrganisationsHero({
           </View>
         </View>
 
-        <View testID="organisations-hero-stats" className={`gap-3 ${largeText ? '' : 'flex-row flex-wrap'}`}>
-          <StatTile icon="business-outline" label={t('stats.organisations')} value={String(organisations.length)} tone={primary} theme={theme} largeText={largeText} />
-          <StatTile icon="checkmark-circle-outline" label={t('stats.verified')} value={String(verifiedCount)} tone="#22c55e" theme={theme} largeText={largeText} />
-          <StatTile icon="heart-outline" label={t('stats.opportunities')} value={String(opportunitiesCount)} tone="#f43f5e" theme={theme} largeText={largeText} />
-          <StatTile icon="people-outline" label={t('stats.volunteers')} value={String(volunteersCount)} tone="#0ea5e9" theme={theme} largeText={largeText} />
-        </View>
-        <Text className="text-xs" style={{ color: theme.textMuted }}>{t('stats.loadedNote')}</Text>
+        {/* Nothing loaded yet (loading, failed or genuinely empty): the list below explains which.
+            Showing "0 partners" here would state a fact the app does not know. */}
+        {organisations.length > 0 ? (
+          <>
+          <View testID="organisations-hero-stats" className={`gap-3 ${largeText ? '' : 'flex-row flex-wrap'}`}>
+            <StatTile icon="business-outline" label={t('stats.organisations')} value={String(organisations.length)} tone={primary} theme={theme} largeText={largeText} />
+            <StatTile icon="checkmark-circle-outline" label={t('stats.verified')} value={String(verifiedCount)} tone="#22c55e" theme={theme} largeText={largeText} />
+            <StatTile icon="heart-outline" label={t('stats.opportunities')} value={String(opportunitiesCount)} tone="#f43f5e" theme={theme} largeText={largeText} />
+            <StatTile icon="people-outline" label={t('stats.volunteers')} value={String(volunteersCount)} tone="#0ea5e9" theme={theme} largeText={largeText} />
+          </View>
+          <Text className="text-xs" style={{ color: theme.textMuted }}>{t('stats.loadedNote')}</Text>
+          </>
+        ) : null}
 
         <View className="flex-row flex-wrap gap-2">
           <ActionPill
