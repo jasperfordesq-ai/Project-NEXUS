@@ -699,6 +699,97 @@ class RegionalPanelIsolationTest extends TestCase
         );
     }
 
+    public function test_a_regional_admin_cannot_revoke_a_peer_in_its_own_branch(): void
+    {
+        $peer = User::factory()->forTenant($this->hubId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $peer->id)->update(['is_tenant_super_admin' => 1]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/users/{$peer->id}/revoke-super-admin", [])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            1,
+            (int) DB::table('users')->where('id', $peer->id)->value('is_tenant_super_admin')
+        );
+        $this->assertDatabaseMissing('super_admin_audit_log', [
+            'action_type' => 'super_admin_revoked',
+            'target_id' => $peer->id,
+        ]);
+    }
+
+    public function test_a_regional_admin_cannot_move_a_peer_or_higher_tier_account(): void
+    {
+        $peer = User::factory()->forTenant($this->childId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $peer->id)->update(['is_tenant_super_admin' => 1]);
+        $higher = User::factory()->forTenant($this->childId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $higher->id)->update(['is_super_admin' => 1]);
+        $this->actAsRegional();
+
+        foreach ([$peer->id, $higher->id] as $targetId) {
+            $this->apiPost("/v2/admin/super/users/{$targetId}/move-tenant", [
+                'new_tenant_id' => $this->hubId,
+            ])->assertStatus(403);
+
+            $this->assertSame(
+                $this->childId,
+                (int) DB::table('users')->where('id', $targetId)->value('tenant_id')
+            );
+        }
+    }
+
+    public function test_a_regional_admin_cannot_move_and_promote_a_peer(): void
+    {
+        $peer = User::factory()->forTenant($this->childId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/users/{$peer->id}/move-and-promote", [
+            'target_tenant_id' => $this->hubId,
+        ])->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $peer->id,
+            'tenant_id' => $this->childId,
+            'role' => 'admin',
+            'is_tenant_super_admin' => 0,
+        ]);
+    }
+
+    public function test_a_bulk_move_skips_a_peer_but_still_moves_a_lower_tier_member(): void
+    {
+        $member = User::factory()->forTenant($this->childId)->create([
+            'role' => 'member', 'status' => 'active', 'is_approved' => true,
+        ]);
+        $peer = User::factory()->forTenant($this->childId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $response = $this->apiPost('/v2/admin/super/bulk/move-users', [
+            'user_ids' => [$member->id, $peer->id],
+            'target_tenant_id' => $this->hubId,
+        ])->assertStatus(200);
+
+        $this->assertSame(1, (int) $response->json('data.moved_count'));
+        $this->assertContains('USER_AUTHORITY_DENIED', array_column($response->json('data.errors'), 'code'));
+        $this->assertSame(
+            $this->hubId,
+            (int) DB::table('users')->where('id', $member->id)->value('tenant_id')
+        );
+        $this->assertSame(
+            $this->childId,
+            (int) DB::table('users')->where('id', $peer->id)->value('tenant_id')
+        );
+    }
+
     public function test_a_sibling_tenant_cannot_be_turned_into_a_hub(): void
     {
         // Structural: making a tenant a hub changes what can be nested under it.

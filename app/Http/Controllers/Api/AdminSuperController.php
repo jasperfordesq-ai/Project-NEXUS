@@ -166,6 +166,71 @@ class AdminSuperController extends BaseApiController
         return 0;
     }
 
+    /**
+     * Lock the actor and target in a deterministic order, then evaluate the
+     * same authority hierarchy used by generic user editing against fresh rows.
+     * Callers must invoke this inside the transaction that performs the mutation.
+     *
+     * @return array{target?:array<string,mixed>,error?:'access_denied'|'authority_denied'}
+     */
+    private static function lockManageableSecurityTarget(
+        int $actorId,
+        int $targetId,
+        int $expectedTenantId
+    ): array {
+        $ids = array_values(array_unique([$actorId, $targetId]));
+        sort($ids, SORT_NUMERIC);
+
+        /** @var array<int,array<string,mixed>> $locked */
+        $locked = DB::table('users')
+            ->whereIn('id', $ids)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->mapWithKeys(static fn ($row): array => [(int) $row->id => (array) $row])
+            ->all();
+
+        $actor = $locked[$actorId] ?? null;
+        $target = $locked[$targetId] ?? null;
+        SuperPanelAccess::reset();
+        $freshAccess = SuperPanelAccess::getAccess($actorId);
+        if (
+            !is_array($actor)
+            || !is_array($target)
+            || (int) ($target['tenant_id'] ?? 0) !== $expectedTenantId
+            || empty($freshAccess['granted'])
+            || !SuperPanelAccess::canAccessTenant((int) $target['tenant_id'])
+        ) {
+            return ['error' => 'access_denied'];
+        }
+
+        if (!self::canManageSecurityTarget($actor, $target)) {
+            return ['error' => 'authority_denied'];
+        }
+
+        return ['target' => $target];
+    }
+
+    /** @return array<string,mixed> */
+    private function requireLockedManageableSecurityTarget(
+        int $actorId,
+        int $targetId,
+        int $expectedTenantId
+    ): array {
+        $result = self::lockManageableSecurityTarget($actorId, $targetId, $expectedTenantId);
+        if (isset($result['target'])) {
+            return $result['target'];
+        }
+
+        $authorityDenied = ($result['error'] ?? null) === 'authority_denied';
+        throw new HttpResponseException($this->respondWithError(
+            $authorityDenied ? ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS : ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED,
+            $authorityDenied ? __('api.insufficient_permissions') : __('api.super_no_access_user_tenant'),
+            null,
+            403
+        ));
+    }
+
     /** @param array{success:bool,moved:int,failed:array<string>,pinned?:array<string,int>,details?:array<string,mixed>} $moveResult */
     private function respondWithUserMoveFailure(array $moveResult): JsonResponse
     {
@@ -1131,13 +1196,16 @@ class AdminSuperController extends BaseApiController
             );
         }
 
-        $result = $this->tenantHierarchyService->revokeTenantSuperAdmin($id);
+        return DB::transaction(function () use ($userId, $id, $user): JsonResponse {
+            $this->requireLockedManageableSecurityTarget($userId, $id, (int) $user['tenant_id']);
+            $result = $this->tenantHierarchyService->revokeTenantSuperAdmin($id);
 
-        if ($result['success']) {
-            return $this->respondWithData(['revoked' => true, 'user_id' => $id]);
-        }
+            if ($result['success']) {
+                return $this->respondWithData(['revoked' => true, 'user_id' => $id]);
+            }
 
-        return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $result['error'], null, 422);
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $result['error'], null, 422);
+        });
     }
 
     /** POST /api/v2/super-admin/users/{id}/grant-global */
@@ -1337,39 +1405,45 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'new_tenant_id', 422);
         }
 
-        $oldTenantId = $user['tenant_id'];
+        return DB::transaction(function () use ($userId, $id, $user, $newTenantId, $newTenant): JsonResponse {
+            $lockedUser = $this->requireLockedManageableSecurityTarget(
+                $userId,
+                $id,
+                (int) $user['tenant_id']
+            );
+            $oldTenantId = (int) $lockedUser['tenant_id'];
 
-        $moveResult = User::moveTenant($id, $newTenantId);
-        if (!$moveResult['success']) {
-            return $this->respondWithUserMoveFailure($moveResult);
-        }
+            $moveResult = User::moveTenant($id, $newTenantId);
+            if (!$moveResult['success']) {
+                return $this->respondWithUserMoveFailure($moveResult);
+            }
 
-        // Revoke super admin if moving to a tenant without sub-tenant capability
-        if (!$newTenant['allows_subtenants']) {
-            DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$id]);
-        }
+            // Revoke super admin if moving to a tenant without sub-tenant capability
+            if (!$newTenant['allows_subtenants']) {
+                DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$id]);
+            }
 
-        // Audit
-        $userName = UserDisplayName::resolve($user) ?: $user['email'];
-        $this->superAdminAuditService->log(
-            'user_moved',
-            'user',
-            $id,
-            $userName,
-            ['tenant_id' => $oldTenantId],
-            ['tenant_id' => $newTenantId],
-            "Moved '{$userName}' to tenant '{$newTenant['name']}'"
-        );
+            $userName = UserDisplayName::resolve($lockedUser) ?: $lockedUser['email'];
+            $this->superAdminAuditService->log(
+                'user_moved',
+                'user',
+                $id,
+                $userName,
+                ['tenant_id' => $oldTenantId],
+                ['tenant_id' => $newTenantId],
+                "Moved '{$userName}' to tenant '{$newTenant['name']}'"
+            );
 
-        return $this->respondWithData([
-            'moved' => true,
-            'user_id' => $id,
-            'old_tenant_id' => $oldTenantId,
-            'new_tenant_id' => $newTenantId,
-            'records_moved' => $moveResult['moved'],
-            'tables_failed' => $moveResult['failed'],
-            'content_moved' => $moveResult['content'],
-        ]);
+            return $this->respondWithData([
+                'moved' => true,
+                'user_id' => $id,
+                'old_tenant_id' => $oldTenantId,
+                'new_tenant_id' => $newTenantId,
+                'records_moved' => $moveResult['moved'],
+                'tables_failed' => $moveResult['failed'],
+                'content_moved' => $moveResult['content'],
+            ]);
+        });
     }
 
     /**
@@ -1431,39 +1505,49 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'target_tenant_id', 422);
         }
 
-        $oldTenantId = $user['tenant_id'];
-
-        // Step 1: Move user
-        $moveResult = User::moveTenant($id, $targetTenantId);
-        if (!$moveResult['success']) {
-            return $this->respondWithUserMoveFailure($moveResult);
-        }
-
-        // Step 2: Grant super admin (role merged into admin; the flag carries the power)
-        DB::update(
-            "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
-            [$id]
-        );
-
-        // Audit
-        $userName = UserDisplayName::resolve($user) ?: $user['email'];
-        $this->superAdminAuditService->log(
-            'user_moved',
-            'user',
+        return DB::transaction(function () use (
+            $userId,
             $id,
-            $userName,
-            ['tenant_id' => $oldTenantId, 'is_tenant_super_admin' => $user['is_tenant_super_admin'] ?? 0],
-            ['tenant_id' => $targetTenantId, 'is_tenant_super_admin' => 1],
-            "Moved '{$userName}' to '{$targetTenant['name']}' and granted Super Admin privileges"
-        );
+            $user,
+            $targetTenantId,
+            $targetTenant
+        ): JsonResponse {
+            $lockedUser = $this->requireLockedManageableSecurityTarget(
+                $userId,
+                $id,
+                (int) $user['tenant_id']
+            );
+            $oldTenantId = (int) $lockedUser['tenant_id'];
 
-        return $this->respondWithData([
-            'moved' => true,
-            'promoted' => true,
-            'user_id' => $id,
-            'old_tenant_id' => $oldTenantId,
-            'new_tenant_id' => $targetTenantId,
-        ]);
+            $moveResult = User::moveTenant($id, $targetTenantId);
+            if (!$moveResult['success']) {
+                return $this->respondWithUserMoveFailure($moveResult);
+            }
+
+            DB::update(
+                "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
+                [$id]
+            );
+
+            $userName = UserDisplayName::resolve($lockedUser) ?: $lockedUser['email'];
+            $this->superAdminAuditService->log(
+                'user_moved',
+                'user',
+                $id,
+                $userName,
+                ['tenant_id' => $oldTenantId, 'is_tenant_super_admin' => $lockedUser['is_tenant_super_admin'] ?? 0],
+                ['tenant_id' => $targetTenantId, 'is_tenant_super_admin' => 1],
+                "Moved '{$userName}' to '{$targetTenant['name']}' and granted Super Admin privileges"
+            );
+
+            return $this->respondWithData([
+                'moved' => true,
+                'promoted' => true,
+                'user_id' => $id,
+                'old_tenant_id' => $oldTenantId,
+                'new_tenant_id' => $targetTenantId,
+            ]);
+        });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1512,6 +1596,7 @@ class AdminSuperController extends BaseApiController
         // Pre-validate ALL users before moving any (prevents partial failures)
         $validatedUsers = [];
         $errors = [];
+        $actor = User::findById($userId, true) ?? [];
 
         foreach ($userIds as $uid) {
             $uid = (int) $uid;
@@ -1532,7 +1617,12 @@ class AdminSuperController extends BaseApiController
                 continue;
             }
 
-            $validatedUsers[] = $uid;
+            if (!self::canManageSecurityTarget($actor, $user)) {
+                $errors[] = ['code' => 'USER_AUTHORITY_DENIED', 'params' => ['user_id' => $uid]];
+                continue;
+            }
+
+            $validatedUsers[] = ['id' => $uid, 'tenant_id' => (int) $user['tenant_id']];
         }
 
         // If pre-validation found errors and no valid users, return early
@@ -1547,10 +1637,55 @@ class AdminSuperController extends BaseApiController
         $movedCount = 0;
         $failures = [];
 
-        foreach ($validatedUsers as $uid) {
+        foreach ($validatedUsers as $validatedUser) {
+            $uid = $validatedUser['id'];
             try {
-                $moveResult = User::moveTenant($uid, $targetTenantId);
-                if (!$moveResult['success']) {
+                $outcome = DB::transaction(function () use (
+                    $userId,
+                    $uid,
+                    $validatedUser,
+                    $targetTenantId,
+                    $targetTenant,
+                    $grantSuperAdmin
+                ): array {
+                    $security = self::lockManageableSecurityTarget(
+                        $userId,
+                        $uid,
+                        $validatedUser['tenant_id']
+                    );
+                    if (isset($security['error'])) {
+                        return ['security_error' => $security['error']];
+                    }
+
+                    $moveResult = User::moveTenant($uid, $targetTenantId);
+                    if (!$moveResult['success']) {
+                        return ['move_result' => $moveResult];
+                    }
+
+                    if ($grantSuperAdmin) {
+                        DB::update(
+                            "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
+                            [$uid]
+                        );
+                    } elseif (!$targetTenant['allows_subtenants']) {
+                        DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$uid]);
+                    }
+
+                    return ['success' => true];
+                });
+
+                if (isset($outcome['security_error'])) {
+                    $errors[] = [
+                        'code' => $outcome['security_error'] === 'authority_denied'
+                            ? 'USER_AUTHORITY_DENIED'
+                            : 'USER_TENANT_ACCESS_DENIED',
+                        'params' => ['user_id' => $uid],
+                    ];
+                    continue;
+                }
+
+                if (isset($outcome['move_result'])) {
+                    $moveResult = $outcome['move_result'];
                     $issue = [
                         'code' => self::moveFailureIssueCode($moveResult),
                         'params' => ['user_id' => $uid],
@@ -1561,15 +1696,6 @@ class AdminSuperController extends BaseApiController
                         ...$issue,
                     ];
                     continue;
-                }
-
-                if ($grantSuperAdmin) {
-                    DB::update(
-                        "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
-                        [$uid]
-                    );
-                } elseif (!$targetTenant['allows_subtenants']) {
-                    DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$uid]);
                 }
 
                 $movedCount++;
