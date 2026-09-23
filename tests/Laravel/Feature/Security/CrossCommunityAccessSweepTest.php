@@ -1190,10 +1190,10 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
         };
 
         $member = $this->actAs(['role' => 'member']);
-        $run('member', $member, static fn ($e) => ! str_starts_with($e['prefix'], 'admin/'));
+        $run('member', $member, fn ($e) => ! $this->isAdminPassRoute($e));
 
         $admin = $this->actAs(['role' => 'admin']);
-        $run('admin', $admin, static fn ($e) => str_starts_with($e['prefix'], 'admin/'));
+        $run('admin', $admin, fn ($e) => $this->isAdminPassRoute($e));
 
         $dir = dirname(__DIR__, 4) . '/.local-docs-archive/security-evidence';
         if (is_dir($dir) || @mkdir($dir, 0o775, true) || is_dir($dir)) {

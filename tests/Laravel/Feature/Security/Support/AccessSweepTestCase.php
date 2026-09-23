@@ -210,7 +210,13 @@ abstract class AccessSweepTestCase extends TestCase
         'post' => ['model' => \App\Models\Post::class],
         'feed_post' => ['model' => \App\Models\FeedPost::class],
         'comment' => ['model' => \App\Models\Comment::class],
-        'message' => ['model' => \App\Models\Message::class],
+        // 🔴 A message is owned through sender_id, which ownerAttributesFor()
+        // does not know about, so until E-022 the factory gave every seeded
+        // message a RANDOM sender and receiver. The acting user was never a
+        // participant, MessageMediaController::authorizedMessage() answered 403,
+        // and every message route in these sweeps was probed with a message its
+        // own control could not open.
+        'message' => ['model' => \App\Models\Message::class, 'owner' => 'sender_id'],
         'review' => ['model' => \App\Models\Review::class],
         'notification' => ['model' => \App\Models\Notification::class],
         'transaction' => ['model' => \App\Models\Transaction::class],
@@ -256,7 +262,7 @@ abstract class AccessSweepTestCase extends TestCase
         'group_announcement' => ['table' => 'group_announcements', 'needs' => ['group_id' => 'group'], 'owner' => 'created_by', 'columns' => ['title' => 'Sweep announcement', 'content' => 'Sweep announcement body']],
         'group_question' => ['table' => 'group_questions', 'needs' => ['group_id' => 'group'], 'owner' => 'user_id', 'columns' => ['title' => 'Sweep group question']],
         'group_answer' => ['table' => 'group_answers', 'needs' => ['question_id' => 'group_question'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep answer']],
-        'group_file' => ['table' => 'group_files', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by', 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_type' => 'text/plain']],
+        'group_file' => ['table' => 'group_files', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by', 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'groups/{tenant}/{row:group_id}/sweep-{n}.txt', 'file_type' => 'text/plain', 'file_size' => '14'], 'store_file' => ['disk' => 'local', 'column' => 'file_path']],
         'group_media' => ['table' => 'group_media', 'needs' => ['group_id' => 'group'], 'owner' => 'uploaded_by'],
         // 'Invite not found or already used' — the lookup wants a live invite, so it
         // needs an explicit pending status and a future expiry, not column defaults.
@@ -271,8 +277,8 @@ abstract class AccessSweepTestCase extends TestCase
         'group_webhook' => ['table' => 'group_webhooks', 'needs' => ['group_id' => 'group'], 'columns' => ['url' => 'https://example.invalid/sweep-{n}', 'events' => '[]']],
         'event_staff_assignment' => ['table' => 'event_staff_assignments', 'needs' => ['event_id' => 'event'], 'owner' => 'user_id', 'columns' => ['role' => 'steward', 'granted_at' => '{now}', 'granted_by' => '{owner}']],
         // E-022 batch 2.
-        'group_data_export' => ['table' => 'group_data_exports', 'uuid_pk' => true, 'needs' => ['group_id' => 'group'], 'owner' => 'requested_by', 'columns' => ['expires_at' => '{tomorrow}']],
-        'message_attachment' => ['table' => 'message_attachments', 'needs' => ['message_id' => 'message'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt']],
+        'group_data_export' => ['table' => 'group_data_exports', 'uuid_pk' => true, 'needs' => ['group_id' => 'group'], 'owner' => 'requested_by', 'columns' => ['status' => 'completed', 'expires_at' => '{tomorrow}', 'storage_path' => 'groups/{tenant}/{row:group_id}/exports/sweep-{n}.json'], 'store_file' => ['disk' => 'local', 'column' => 'storage_path']],
+        'message_attachment' => ['table' => 'message_attachments', 'needs' => ['message_id' => 'message'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'message-media/{tenant}/attachments/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain'], 'store_file' => ['disk' => 'local', 'column' => 'file_path']],
         'listing_image' => ['table' => 'listing_images', 'needs' => ['listing_id' => 'listing'], 'columns' => ['image_url' => 'https://example.invalid/sweep-{n}.png']],
         'story_highlight' => ['table' => 'story_highlights', 'owner' => 'user_id', 'columns' => ['title' => 'Sweep highlight']],
         'marketplace_collection' => ['table' => 'marketplace_collections', 'owner' => 'user_id', 'columns' => ['name' => 'Sweep collection']],
@@ -300,8 +306,8 @@ abstract class AccessSweepTestCase extends TestCase
         // the real one. Added to the child map only — PREFIX_FIXTURES is shared
         // with the read and write sweeps whose figures are published, and this
         // pass must not move them.
-        'kb_article' => ['table' => 'knowledge_base_articles', 'columns' => ['title' => 'Sweep article', 'slug' => 'sweep-article-{n}']],
-        'kb_attachment' => ['table' => 'knowledge_base_attachments', 'needs' => ['article_id' => 'kb_article'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'sweep/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain']],
+        'kb_article' => ['table' => 'knowledge_base_articles', 'columns' => ['title' => 'Sweep article', 'slug' => 'sweep-article-{n}', 'is_published' => '1']],
+        'kb_attachment' => ['table' => 'knowledge_base_attachments', 'needs' => ['article_id' => 'kb_article'], 'columns' => ['file_name' => 'sweep.txt', 'file_path' => 'kb/sweep-{n}.txt', 'file_url' => 'https://example.invalid/sweep-{n}.txt', 'mime_type' => 'text/plain'], 'store_file' => ['disk' => 'public', 'column' => 'file_path']],
         // ---------------------------------------------------------------
         // E-022 / O-045. One fixture per RECORD TYPE for the single-parameter
         // routes that were resolving their id through an ancestor prefix and
@@ -320,7 +326,7 @@ abstract class AccessSweepTestCase extends TestCase
         'job_interview_slot' => ['table' => 'job_interview_slots', 'needs' => ['job_id' => 'job'], 'owner' => 'employer_user_id', 'columns' => ['slot_start' => '{now}', 'slot_end' => '{tomorrow}']],
         'job_pipeline_rule' => ['table' => 'job_pipeline_rules', 'needs' => ['vacancy_id' => 'job'], 'columns' => ['name' => 'Sweep rule', 'trigger_stage' => 'applied']],
         'newsletter_subscriber' => ['table' => 'newsletter_subscribers', 'columns' => ['email' => 'sweep-{n}@example.invalid', 'unsubscribe_token' => 'sweep-unsub-{n}']],
-        'municipal_report_template' => ['table' => 'municipal_report_templates', 'columns' => ['name' => 'Sweep municipal template']],
+        'municipal_report_template' => ['table' => 'municipal_report_templates', 'columns' => ['name' => 'Sweep municipal template {n}']],
         'municipal_verification' => ['table' => 'municipal_verifications', 'columns' => ['domain' => 'sweep-{n}.example.invalid']],
         'course_discussion' => ['table' => 'course_discussions', 'needs' => ['course_id' => 'course'], 'owner' => 'user_id', 'columns' => ['body' => 'Sweep discussion body']],
         'course_quiz_attempt' => ['table' => 'course_quiz_attempts', 'needs' => ['quiz_id' => 'course_quiz'], 'owner' => 'user_id'],
@@ -411,6 +417,30 @@ abstract class AccessSweepTestCase extends TestCase
      * Endpoints that answer 2xx for a child record from another community while
      * provably changing nothing. Shrink-only in both directions.
      */
+    /**
+     * Routes that require a community ADMINISTRATOR but do not live under
+     * /admin/, so the prefix-based pass split put them in the MEMBER pass —
+     * where the control is refused by the permission gate every time and the
+     * endpoint is only ever reported inconclusive. Running them as the admin
+     * actor is the only way to exercise the community check behind that gate.
+     *
+     * @var array<string, string> "METHOD uri" => why it is admin-only
+     */
+    protected const ADMIN_ONLY_OUTSIDE_ADMIN_PREFIX = [
+        // KnowledgeBaseController::deleteAttachment() calls requireAdmin() first.
+        // The community check behind it is KnowledgeBaseAttachmentService::delete(),
+        // which scopes both the lookup and the delete by tenant_id — this entry is
+        // what lets the sweep prove that instead of taking it on trust.
+        'DELETE api/v2/kb/{id}/attachments/{attachmentId}' => 'KB attachment management is admin-only',
+    ];
+
+    /** Does this endpoint belong in the administrator pass? */
+    protected function isAdminPassRoute(array $endpoint): bool
+    {
+        return str_starts_with($endpoint['prefix'], 'admin/')
+            || array_key_exists($endpoint['method'] . ' ' . $endpoint['uri'], self::ADMIN_ONLY_OUTSIDE_ADMIN_PREFIX);
+    }
+
     protected const KNOWN_CHILD_ACCEPTED_NO_CHANGE = [
         // E-022. MarketplaceDiscoveryController::removeCollectionItem() proves the
         // COLLECTION is `id = ? AND user_id = ?`, and both MarketplaceCollection
@@ -762,12 +792,62 @@ abstract class AccessSweepTestCase extends TestCase
      */
     private array $featuresToRestore = [];
 
+    /**
+     * Placeholder files written by 'store_file' fixtures, removed in tearDown().
+     *
+     * @var list<array{0:string,1:string}>
+     */
+    private array $storedFixtureFiles = [];
+
+    /**
+     * Expand path tokens in a fixture column value.
+     *
+     *   {n}         a random suffix, unique per row
+     *   {tenant}    the community the row is being seeded into
+     *   {row:col}   a value already on this row — for a parent id filled in by
+     *               'needs', which is what file paths are keyed on
+     *               (`groups/{tenant}/{row:group_id}/...`)
+     *
+     * Download endpoints refuse any path outside the folder for that community
+     * and parent, so a fixture file has to live exactly where a real upload
+     * would.
+     */
+    private function expandPathTokens(string $value, string $n, int $tenantId, array $row): string
+    {
+        $value = str_replace(['{n}', '{tenant}'], [$n, (string) $tenantId], $value);
+
+        return (string) preg_replace_callback(
+            '/\{row:([a-z_]+)\}/',
+            static fn (array $m): string => (string) ($row[$m[1]] ?? ''),
+            $value,
+        );
+    }
+
+    private function storeFixtureFile(string $disk, string $path): void
+    {
+        if ($path === '') {
+            throw new \RuntimeException('store_file fixture has an empty path');
+        }
+
+        \Illuminate\Support\Facades\Storage::disk($disk)->put($path, "sweep fixture\n");
+        $this->storedFixtureFiles[] = [$disk, $path];
+    }
+
     protected function tearDown(): void
     {
         foreach ($this->featuresToRestore as $tenantId => $original) {
             DB::table('tenants')->where('id', $tenantId)->update(['features' => $original]);
         }
         $this->featuresToRestore = [];
+
+        foreach ($this->storedFixtureFiles as [$disk, $path]) {
+            try {
+                \Illuminate\Support\Facades\Storage::disk($disk)->delete($path);
+            } catch (\Throwable) {
+                // A missing file is the state we wanted anyway.
+            }
+        }
+        $this->storedFixtureFiles = [];
 
         parent::tearDown();
     }
@@ -1005,6 +1085,15 @@ abstract class AccessSweepTestCase extends TestCase
                 $modelClass = $spec['model'];
                 $attributes = array_merge($this->ownerAttributesFor($modelClass, $owner), $spec['attributes'] ?? []);
 
+                // ownerAttributesFor() only knows user_id / created_by / owner_id /
+                // author_id. A model whose owner lives elsewhere — a message is owned
+                // through sender_id — names it with 'owner', exactly as table
+                // fixtures already do, so ownerColumnFor() and recordsBelongTo() see
+                // the same column.
+                if (isset($spec['owner'])) {
+                    $attributes[$spec['owner']] = $owner->id;
+                }
+
                 foreach ($spec['needs'] ?? [] as $column => $parentKey) {
                     if (! isset($ids[$parentKey])) {
                         throw new \RuntimeException("parent fixture '{$parentKey}' missing");
@@ -1081,7 +1170,7 @@ abstract class AccessSweepTestCase extends TestCase
                 // column (`event_staff_assignments` has both `user_id` and a
                 // NOT NULL `granted_by`). 'owner' fills one; this fills the rest.
                 '{owner}' => $owner->id,
-                default => str_replace('{n}', $n, (string) $value),
+                default => $this->expandPathTokens((string) $value, $n, $tenantId, $row),
             };
         }
 
@@ -1094,6 +1183,18 @@ abstract class AccessSweepTestCase extends TestCase
         // A non-auto-increment primary key must be supplied by us. Declared by
         // the fixture with 'uuid_pk' => true rather than sniffed, so a table
         // that gains an odd key type fails loudly instead of silently.
+        // A download endpoint refuses a row whose file is not on disk, so a
+        // fixture with no bytes can never be downloaded even by its owner — the
+        // control fails and the endpoint is reported unexercised. 'store_file'
+        // writes a small placeholder at the path the row names, on the disk the
+        // endpoint reads. Every file written is removed again in tearDown().
+        if (isset($spec['store_file'])) {
+            $this->storeFixtureFile(
+                $spec['store_file']['disk'],
+                (string) ($row[$spec['store_file']['column']] ?? ''),
+            );
+        }
+
         if (! empty($spec['uuid_pk'])) {
             $row['id'] = (string) Str::uuid();
             DB::table($spec['table'])->insert($row);
