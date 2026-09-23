@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 const mockAuthenticate = jest.fn();
@@ -13,6 +13,10 @@ const mockEnabled = jest.fn();
 const mockLogout = jest.fn();
 let mockAuthState = { isAuthenticated: true, isLoading: false, sessionRestoreFailed: false };
 
+jest.mock('react-native-screens', () => {
+  const { View } = require('react-native');
+  return { ...jest.requireActual('react-native-screens'), FullWindowOverlay: ({ children }: { children: React.ReactNode }) => <View testID="full-window-overlay">{children}</View> };
+});
 jest.mock('@/lib/biometricLock', () => ({
   biometricFailureKey: (reason: string) => reason === 'no_hardware' ? 'noHardware' : reason === 'not_enrolled' ? 'notEnrolled' : reason,
   authenticate: (...args: unknown[]) => mockAuthenticate(...args),
@@ -62,6 +66,31 @@ describe('BiometricLockGate', () => {
     mockCapability.mockResolvedValue({ usable: true });
     mockAuthenticate.mockResolvedValue({ ok: true });
     mockLogout.mockResolvedValue(undefined);
+  });
+
+  /*
+    F-040. On iOS every `presentation: 'modal'` route is a native sheet presented ABOVE the React
+    Native root view, so a lock drawn as an absolutely-positioned sibling inside that root is
+    covered by any modal a queued deep link or notification opens. The lock must live in its own
+    window above everything (FullWindowOverlay). Android draws modals inside the same view tree.
+  */
+  it.each([['ios', true], ['android', false]] as const)('on %s renders the lock in a full-window overlay: %s', async (os, overlay) => {
+    const { Platform } = require('react-native');
+    const original = Platform.OS;
+    Platform.OS = os;
+    // Keep the prompt pending so the lock stays up while we inspect where it is drawn.
+    mockAuthenticate.mockReturnValue(new Promise(() => undefined));
+    try {
+      const view = render(<BiometricLockGate><Text>Private account</Text></BiometricLockGate>);
+      const lock = await view.findByTestId('biometric-lock-gate', {}, SLOW_CI);
+      const insideOverlay = view.queryByTestId('full-window-overlay') !== null
+        && within(view.getByTestId('full-window-overlay')).queryByTestId('biometric-lock-gate') !== null;
+      expect(lock).toBeTruthy();
+      expect(insideOverlay).toBe(overlay);
+      view.unmount();
+    } finally {
+      Platform.OS = original;
+    }
   });
 
   it('starts one prompt for rapid unlock taps', async () => {
