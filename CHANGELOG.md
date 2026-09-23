@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda recovery now permits review of an interrupted edit, cancellation or reorder when the API proves its saved version is obsolete and the operation never applied. Accepted retries still return their original receipt; other uncertain outcomes remain protected.
+
+
 - Native agenda editing preserves exact original times when minute-based inputs are unchanged, avoiding false event-boundary errors. Failed saves now bring the recovery notice into view on long forms, and sessions spanning multiple days show both start and end dates.
 
 - Native offline attendance now restores the previous state when undoing an action, permits a valid later scan of the same badge, and avoids counting synced actions again after refreshing the roster. An opt-in history snapshot preserves compatibility with existing clients; uncertain pending actions remain saved for reconciliation.

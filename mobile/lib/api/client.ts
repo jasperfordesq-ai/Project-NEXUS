@@ -56,6 +56,8 @@ export class ApiResponseError extends Error {
      * Absent on most refusals, and that is fine: a caller falls back to the banner.
      */
     public readonly field?: string,
+    /** Authoritative terminal outcome; consumers must also verify their operation and error code. */
+    public readonly operationOutcome?: 'not_applied',
   ) {
     super(message);
     this.name = 'ApiResponseError';
@@ -759,6 +761,7 @@ async function request<T>(
       errBody?.errors,
       code,
       extractErrorField(data),
+      (data as { operation_outcome?: unknown } | null)?.operation_outcome === 'not_applied' ? 'not_applied' : undefined,
     );
   }
 

@@ -13,7 +13,11 @@ use RuntimeException;
 /** Machine-coded agenda failure; transport layers localize the reason. */
 final class EventSessionException extends RuntimeException
 {
-    public function __construct(public readonly string $reasonCode)
+    public function __construct(
+        public readonly string $reasonCode,
+        /** Only after receipt lookup under the event lock proves an obsolete request cannot apply. */
+        public readonly bool $operationNotApplied = false,
+    )
     {
         parent::__construct($reasonCode);
     }

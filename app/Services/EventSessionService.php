@@ -353,7 +353,9 @@ final class EventSessionService
                 throw new EventSessionException('event_agenda_session_cancelled');
             }
             if ((int) $session->version !== $expectedVersion) {
-                throw new EventSessionException('event_agenda_version_conflict');
+                // Receipt lookup above rules out an earlier commit. Versions only increase,
+                // so an obsolete request (including one still in flight) cannot apply later.
+                throw new EventSessionException('event_agenda_version_conflict', (int) $session->version > $expectedVersion);
             }
 
             $currentSpeakers = $this->storedSpeakers($tenantId, $eventId, $sessionId, true);
@@ -510,7 +512,7 @@ final class EventSessionService
                 );
             }
             if ((int) $session->version !== $expectedVersion) {
-                throw new EventSessionException('event_agenda_version_conflict');
+                throw new EventSessionException('event_agenda_version_conflict', (int) $session->version > $expectedVersion);
             }
 
             $nextVersion = $this->nextVersion($session->version);
@@ -614,7 +616,7 @@ final class EventSessionService
 
             $currentAgendaVersion = (int) ($event->getRawOriginal('agenda_version') ?? 0);
             if ($currentAgendaVersion !== $expectedAgendaVersion) {
-                throw new EventSessionException('event_agenda_version_conflict');
+                throw new EventSessionException('event_agenda_version_conflict', $currentAgendaVersion > $expectedAgendaVersion);
             }
             $current = DB::table('event_sessions')
                 ->where('tenant_id', $tenantId)

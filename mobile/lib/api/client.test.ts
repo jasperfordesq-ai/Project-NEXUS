@@ -56,6 +56,14 @@ function mockResponse(
 
 // ---- setup / teardown ----
 
+it.each(['not_applied', 'applied', null])('retains only the recognized operation outcome %s', async outcome => {
+  fetchMock.mockResolvedValue(mockResponse({ errors: [{ code: 'EVENT_AGENDA_CONFLICT', message: 'Conflict' }],
+    operation_outcome: outcome }, { status: 409 }));
+  await expect(api.put('/api/v2/events/1/agenda/sessions/2', {})).rejects.toMatchObject({
+    status: 409, code: 'EVENT_AGENDA_CONFLICT', operationOutcome: outcome === 'not_applied' ? outcome : undefined,
+  });
+});
+
 it('preserves anonymous MFA refusals without refreshing or deleting the current session', async () => {
   fetchMock.mockResolvedValue(mockResponse({ errors: [{ code: 'AUTH_2FA_INVALID', message: 'Invalid code' }] }, { status: 401 }));
   await expect(api.post('/api/totp/verify', { code: '123456' }, { anonymous: true }))

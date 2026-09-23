@@ -124,8 +124,11 @@ async function run(scope: AgendaOperationScope, current: () => boolean, input?: 
         case 'reorder': result = await reorderAgendaSessions(scope.eventId, intent.orderedSessionIds, intent.expectedAgendaVersion, pending.key); break;
       }
     } catch (error) {
-      // A later refusal cannot prove that an earlier lost response never committed.
-      if (pending.attempts === 1 && error instanceof ApiResponseError
+      // Generic later refusals remain uncertain. Only a locked receipt check plus an
+      // obsolete version can prove this exact non-create request never applied and cannot apply.
+      const terminalRefusal = intent.action !== 'create' && error instanceof ApiResponseError
+        && error.status === 409 && error.code === 'EVENT_AGENDA_CONFLICT' && error.operationOutcome === 'not_applied';
+      if ((pending.attempts === 1 || terminalRefusal) && error instanceof ApiResponseError
         && ((error.status === 409 && error.code === 'EVENT_AGENDA_CONFLICT')
           || (error.status === 422 && error.code === 'EVENT_AGENDA_VALIDATION_FAILED'))) {
         await ordered(scope, async () => {

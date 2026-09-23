@@ -139,6 +139,27 @@ it('keeps rejected input when review access is withdrawn', async () => {
   await expect(review(scope, original!.key, () => true)).rejects.toThrow('unavailable');
   expect(await load(scope)).toEqual(original);
 });
+it.each(['update', 'cancel', 'reorder'] as const)('settles an uncertain %s only on an authoritative terminal refusal', async action => {
+  const [intent, send] = cases.find(([item]) => item.action === action)!;
+  (send as jest.Mock).mockRejectedValueOnce(new Error('Lost response'))
+    .mockRejectedValueOnce(Object.assign(new ApiResponseError(409, 'Obsolete', undefined, 'EVENT_AGENDA_CONFLICT'),
+      { operationOutcome: 'not_applied' }));
+  await expect(execute(scope, intent, () => true)).rejects.toThrow('Lost');
+  const pending = await load(scope);
+  await expect(recover(scope, () => true)).rejects.toThrow('Obsolete');
+  expect(await load(scope)).toMatchObject({ status: 'rejected', intent, key: pending!.key });
+  await review(scope, pending!.key, () => true);
+  expect(await load(scope)).toMatchObject({ status: 'review', intent });
+  expect(send).toHaveBeenCalledTimes(2);
+});
+it('does not treat a create refusal as proof that an uncertain creation never committed', async () => {
+  jest.mocked(createAgendaSession).mockRejectedValueOnce(new Error('Lost'))
+    .mockRejectedValueOnce(Object.assign(new ApiResponseError(409, 'Refused', undefined, 'EVENT_AGENDA_CONFLICT'),
+      { operationOutcome: 'not_applied' }));
+  await expect(execute(scope, create, () => true)).rejects.toThrow();
+  await expect(recover(scope, () => true)).rejects.toThrow();
+  expect(await load(scope)).toMatchObject({ status: 'pending', attempts: 2 });
+});
 it('rejects corrupt and wrong-owner saved data instead of replacing it', async () => {
   jest.mocked(loadCreationDraft).mockResolvedValueOnce({ schemaVersion: 99 });
   await expect(execute(scope, create, () => true)).rejects.toThrow();

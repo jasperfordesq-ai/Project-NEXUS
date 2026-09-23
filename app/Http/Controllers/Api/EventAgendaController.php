@@ -422,6 +422,12 @@ final class EventAgendaController extends BaseApiController
             ],
         };
 
-        return $this->respondWithError($code, $message, $field, $status);
+        $response = $this->respondWithError($code, $message, $field, $status);
+        if ($exception->operationNotApplied && $exception->reasonCode === 'event_agenda_version_conflict') {
+            // Additive: preserve the existing error code for older clients.
+            $response->setData([...$response->getData(true), 'operation_outcome' => 'not_applied']);
+        }
+
+        return $response;
     }
 }

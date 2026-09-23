@@ -259,6 +259,48 @@ final class EventAgendaControllerTest extends TestCase
             ->assertJsonPath('errors.0.code', 'EVENT_AGENDA_CONFLICT');
     }
 
+    public function test_only_obsolete_uncommitted_operations_receive_a_terminal_outcome(): void
+    {
+        $owner = $this->user();
+        [$eventId, $start] = $this->event((int) $owner->id);
+        Sanctum::actingAs($owner, ['*']);
+        $created = $this->apiPost("/v2/events/{$eventId}/agenda/sessions", $this->payload($start),
+            ['Idempotency-Key' => 'outcome-create'])->assertCreated();
+        $sessionId = (int) $created->json('data.session.id');
+        $path = "/v2/events/{$eventId}/agenda/sessions/{$sessionId}";
+        $edit = [...$this->payload($start), 'title' => 'Accepted edit', 'expected_version' => 1];
+        $accepted = $this->apiPut($path, $edit, ['Idempotency-Key' => 'outcome-edit'])->assertOk();
+
+        // A delayed request with this obsolete version cannot apply after this refusal.
+        foreach (['first-refusal', 'same-refusal-again'] as $attempt) {
+            $this->apiPut($path, [...$edit, 'title' => 'Stale edit'], ['Idempotency-Key' => 'outcome-stale'])
+                ->assertConflict()->assertJsonPath('errors.0.code', 'EVENT_AGENDA_CONFLICT')
+                ->assertJsonPath('operation_outcome', 'not_applied');
+        }
+        $this->apiPost("{$path}/cancel", ['reason' => 'Stale cancellation', 'expected_version' => 1],
+            ['Idempotency-Key' => 'outcome-stale-cancel'])->assertConflict()
+            ->assertJsonPath('operation_outcome', 'not_applied');
+        $this->apiPut("/v2/events/{$eventId}/agenda/order", ['ordered_session_ids' => [$sessionId], 'expected_agenda_version' => 1],
+            ['Idempotency-Key' => 'outcome-stale-order'])->assertConflict()
+            ->assertJsonPath('operation_outcome', 'not_applied');
+
+        // A future version might become valid later; a mismatched key might already have committed.
+        $this->apiPut($path, [...$edit, 'expected_version' => 99], ['Idempotency-Key' => 'outcome-future'])
+            ->assertConflict()->assertJsonMissingPath('operation_outcome');
+        $this->apiPut($path, [...$edit, 'title' => 'Different intent'], ['Idempotency-Key' => 'outcome-edit'])
+            ->assertConflict()->assertJsonMissingPath('operation_outcome');
+
+        $this->apiPut($path, [...$edit, 'title' => 'Newer edit', 'expected_version' => 2],
+            ['Idempotency-Key' => 'outcome-newer'])->assertOk();
+        // Receipt lookup takes precedence over version refusal even after a later edit.
+        $this->apiPut($path, $edit, ['Idempotency-Key' => 'outcome-edit'])->assertOk()
+            ->assertJsonPath('data.idempotent_replay', true)
+            ->assertJsonPath('data.history_entry_id', $accepted->json('data.history_entry_id'))
+            ->assertJsonMissingPath('operation_outcome');
+        self::assertSame(3, DB::table('event_session_history')->where('event_id', $eventId)->count());
+        self::assertSame('Newer edit', DB::table('event_sessions')->where('id', $sessionId)->value('title'));
+    }
+
     private function user(array $overrides = [], int $tenantId = 2): User
     {
         $user = User::factory()->forTenant($tenantId)->create(array_merge([
