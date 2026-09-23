@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Leg vast hoe de toestemming is gecontroleerd voordat u deze relatie activeert.',
     'caring_caregiver_rejection_reason_required' => 'Geef een reden voor het afwijzen van deze zorgrelatie.',
     'caring_caregiver_pending_link_not_found' => 'Er is geen wachtende verzorgerskoppeling gevonden in deze gemeenschap.',
+    'caring_caregiver_link_unavailable' => 'Met dit lid kan geen mantelzorgkoppeling worden aangevraagd.',
+    'caring_caregiver_link_cooldown' => 'Een recent mantelzorgverzoek aan dit lid is geweigerd of ingetrokken. Je kunt na :days dagen een nieuw verzoek sturen.',
     'caring_caregiver_when_needed_default' => 'Zodra praktisch',
     'caring_provider_directory_unavailable' => 'De lijst met zorgverleners is niet beschikbaar voor deze community.',
     'caring_research_unavailable' => 'Onderzoekspartnerschappen zijn niet beschikbaar voor deze community.',

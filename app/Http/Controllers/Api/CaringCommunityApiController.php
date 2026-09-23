@@ -40,6 +40,21 @@ class CaringCommunityApiController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /** F-133: member-facing vol_logs columns in the caring data export. */
+    private const EXPORT_VOL_LOG_COLUMNS = [
+        'id', 'tenant_id', 'user_id', 'organization_id', 'opportunity_id',
+        'caring_support_relationship_id', 'support_recipient_id',
+        'date_logged', 'hours', 'description', 'status', 'feedback',
+        'created_at', 'updated_at',
+    ];
+
+    /** F-133: member-facing safeguarding_reports columns in the caring data export. */
+    private const EXPORT_SAFEGUARDING_REPORT_COLUMNS = [
+        'id', 'tenant_id', 'category', 'severity', 'description', 'evidence_url',
+        'status', 'review_due_at', 'escalated', 'resolved_at',
+        'created_at', 'updated_at',
+    ];
+
     public function __construct(
         private readonly CaringInviteCodeService $inviteCodeService,
         private readonly CaringLoyaltyService $loyaltyService,
@@ -1732,12 +1747,15 @@ class CaringCommunityApiController extends BaseApiController
 
         // Volunteer hours logged
         if (Schema::hasTable('vol_logs')) {
+            // F-133: member-facing columns only. assigned_to / assigned_at /
+            // escalated_at / escalation_note are the coordinators' review
+            // working state, and the idempotency hashes are internal plumbing.
             $data['vol_logs'] = DB::table('vol_logs')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->orderByDesc('id')
                 ->get()
-                ->map(fn ($row) => (array) $row)
+                ->map(fn ($row) => $this->exportAllowedColumns((array) $row, self::EXPORT_VOL_LOG_COLUMNS))
                 ->all();
         }
 
@@ -1891,12 +1909,16 @@ class CaringCommunityApiController extends BaseApiController
                 }
             }
             if ($reporterCol !== null) {
+                // F-133: the member-facing shape SafeguardingService::myReports()
+                // uses, plus the reporter's own full description and evidence
+                // link. resolution_notes and assigned_to_user_id are the
+                // investigators' working fields and are never shown to reporters.
                 $data['safeguarding_reports'] = DB::table('safeguarding_reports')
                     ->where('tenant_id', $tenantId)
                     ->where($reporterCol, $userId)
                     ->orderByDesc('id')
                     ->get()
-                    ->map(fn ($row) => (array) $row)
+                    ->map(fn ($row) => $this->exportAllowedColumns((array) $row, self::EXPORT_SAFEGUARDING_REPORT_COLUMNS))
                     ->all();
             }
         }
@@ -1933,6 +1955,25 @@ class CaringCommunityApiController extends BaseApiController
     /**
      * Export only member-owned profile fields, never credential/admin/internal columns.
      */
+    /**
+     * Keep only the listed columns of an exported row (F-133).
+     *
+     * @param array<string,mixed> $row
+     * @param list<string> $allowed
+     * @return array<string,mixed>
+     */
+    private function exportAllowedColumns(array $row, array $allowed): array
+    {
+        $out = [];
+        foreach ($allowed as $col) {
+            if (array_key_exists($col, $row)) {
+                $out[$col] = $row[$col];
+            }
+        }
+
+        return $out;
+    }
+
     private function exportUserProfile(int $tenantId, int $userId): ?array
     {
         if (!Schema::hasTable('users')) {

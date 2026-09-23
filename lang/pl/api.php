@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Zapisz sposób weryfikacji zgody przed aktywacją relacji.',
     'caring_caregiver_rejection_reason_required' => 'Podaj powód odrzucenia tej relacji.',
     'caring_caregiver_pending_link_not_found' => 'Nie znaleziono oczekującej relacji w tej społeczności.',
+    'caring_caregiver_link_unavailable' => 'Nie można poprosić o powiązanie opiekuna z tym członkiem.',
+    'caring_caregiver_link_cooldown' => 'Niedawna prośba o opiekę do tego członka została odrzucona lub wycofana. Nową prośbę możesz wysłać po :days dniach.',
     'caring_caregiver_when_needed_default' => 'Tak szybko, jak to możliwe',
     'caring_provider_directory_unavailable' => 'Katalog dostawców opieki nie jest dostępny dla tej społeczności.',
     'caring_research_unavailable' => 'Partnerstwa badawcze nie są dostępne dla tej społeczności.',

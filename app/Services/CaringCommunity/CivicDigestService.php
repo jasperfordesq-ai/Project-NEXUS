@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Enums\GroupStatus;
+use App\Support\Events\EventSearchVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -91,11 +93,11 @@ class CivicDigestService
         $sourceFetchers = [
             'announcement'  => fn (): array => $this->fetchAnnouncements($tenantId),
             'project'       => fn (): array => $this->fetchProjects($tenantId),
-            'event'         => fn (): array => $this->fetchEvents($tenantId),
+            'event'         => fn (): array => $this->fetchEvents($tenantId, $userId),
             'vol_org'       => fn (): array => $this->fetchVolOrgs($tenantId),
             'care_provider' => fn (): array => $this->fetchCareProviders($tenantId),
             'marketplace'   => fn (): array => $this->fetchMarketplace($tenantId),
-            'safety_alert'  => fn (): array => $this->fetchSafetyAlerts($tenantId),
+            'safety_alert'  => fn (): array => $this->fetchSafetyAlerts($tenantId, $userId),
             'help_request'  => fn (): array => $this->fetchHelpRequests($tenantId),
             'feed_post'     => fn (): array => $this->fetchFeedPosts($tenantId),
         ];
@@ -661,7 +663,7 @@ class CivicDigestService
     /**
      * @return list<array<string, mixed>>
      */
-    private function fetchEvents(int $tenantId): array
+    private function fetchEvents(int $tenantId, int $viewerId): array
     {
         if (!Schema::hasTable('events')) {
             return [];
@@ -670,9 +672,15 @@ class CivicDigestService
         $cutoff = $this->cutoff30Days();
         $now = date('Y-m-d H:i:s');
 
-        $rows = DB::table('events')
+        $query = DB::table('events')
             ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
+            ->where('status', 'active');
+        // F-129: canonical lifecycle boundary plus the same group-audience rule
+        // EventService::applyDiscoveryVisibility() uses for member discovery.
+        EventSearchVisibility::applyToQuery($query, $tenantId, 'events');
+        $this->applyEventGroupAudience($query, $tenantId, $viewerId);
+
+        $rows = $query
             ->where('start_time', '>=', $now)
             ->where('start_time', '<=', date('Y-m-d H:i:s', strtotime('+45 days')))
             ->where(function ($q) use ($cutoff) {
@@ -825,7 +833,7 @@ class CivicDigestService
     /**
      * @return list<array<string, mixed>>
      */
-    private function fetchSafetyAlerts(int $tenantId): array
+    private function fetchSafetyAlerts(int $tenantId, int $viewerId): array
     {
         if (!Schema::hasTable('caring_emergency_alerts')) {
             return [];
@@ -844,8 +852,14 @@ class CivicDigestService
                     ->orWhere('created_at', '>=', $cutoff);
             })
             ->orderByDesc('sent_at')
-            ->limit(10)
-            ->get();
+            ->limit(50)
+            ->get()
+            // F-129: a targeted alert reaches only its targets — the same rule
+            // the member alert banner applies (EmergencyAlertService). Filter
+            // before trimming to 10 so other people's alerts cannot crowd out
+            // the viewer's own.
+            ->filter(fn ($r): bool => EmergencyAlertService::isTargetedAt($r->target_user_ids ?? null, $viewerId))
+            ->take(10);
 
         $items = [];
         foreach ($rows as $r) {
@@ -1138,6 +1152,39 @@ class CivicDigestService
         $reasons = array_slice($reasons, 0, 3);
 
         return ['score' => $score, 'reasons' => $reasons];
+    }
+
+    /**
+     * F-129: an event is digest-visible when it belongs to no group, or to an
+     * active group that is public or that the viewer owns or actively belongs
+     * to. Mirrors EventService::applyDiscoveryVisibility() for a non-admin
+     * viewer (the digest is a member surface, so no admin widening).
+     */
+    private function applyEventGroupAudience(\Illuminate\Database\Query\Builder $query, int $tenantId, int $viewerId): void
+    {
+        $query->where(function ($visibility) use ($tenantId, $viewerId): void {
+            $visibility->whereNull('events.group_id')
+                ->orWhereExists(function ($group) use ($tenantId, $viewerId): void {
+                    $group->selectRaw('1')
+                        ->from('groups as digest_groups')
+                        ->whereColumn('digest_groups.id', 'events.group_id')
+                        ->where('digest_groups.tenant_id', $tenantId)
+                        ->where('digest_groups.status', GroupStatus::Active->value)
+                        ->where(function ($audience) use ($tenantId, $viewerId): void {
+                            $audience->whereNull('digest_groups.visibility')
+                                ->orWhere('digest_groups.visibility', 'public')
+                                ->orWhere('digest_groups.owner_id', $viewerId)
+                                ->orWhereExists(function ($membership) use ($tenantId, $viewerId): void {
+                                    $membership->selectRaw('1')
+                                        ->from('group_members as digest_group_members')
+                                        ->whereColumn('digest_group_members.group_id', 'digest_groups.id')
+                                        ->where('digest_group_members.tenant_id', $tenantId)
+                                        ->where('digest_group_members.user_id', $viewerId)
+                                        ->where('digest_group_members.status', 'active');
+                                });
+                        });
+                });
+        });
     }
 
     private function cutoff30Days(): string

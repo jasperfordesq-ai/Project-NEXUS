@@ -111,6 +111,10 @@ class CaregiverApiController extends BaseApiController
                     'is_primary' => $this->inputBool('is_primary'),
                 ],
             );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), 'notes', 422);
         } catch (\RuntimeException $e) {
             return $this->respondWithError('CONFLICT', $e->getMessage(), null, 409);
         }

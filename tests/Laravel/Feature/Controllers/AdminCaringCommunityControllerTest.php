@@ -9,11 +9,13 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
+use App\Jobs\SendPasswordResetEmail;
 use App\Models\User;
 use App\Services\CaringCommunity\VereinMemberImportService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -860,15 +862,23 @@ class AdminCaringCommunityControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonPath('data.summary.total_rows', 3);
         $response->assertJsonPath('data.summary.ready_to_create', 1);
-        $response->assertJsonPath('data.summary.ready_to_link', 1);
+        // F-126: existing accounts are flagged for an invitation, never linked,
+        // and the preview does not disclose their user id.
+        $response->assertJsonPath('data.summary.ready_to_link', 0);
+        $response->assertJsonPath('data.summary.existing_accounts', 1);
         $response->assertJsonPath('data.summary.duplicates', 1);
         $response->assertJsonPath('data.items.0.action', 'create');
-        $response->assertJsonPath('data.items.1.action', 'link_existing');
+        $response->assertJsonPath('data.items.1.action', 'existing_account');
+        $response->assertJsonPath('data.items.1.role', 'member');
         $response->assertJsonPath('data.items.2.action', 'invalid');
+        $this->assertArrayNotHasKey('existing_user_id', (array) $response->json('data.items.1'));
     }
 
     public function test_verein_import_creates_users_and_links_existing_members(): void
     {
+        // F-126: new accounts are created as plain members and receive a queued
+        // password-setup email; existing accounts are not auto-enrolled.
+        Queue::fake();
         $this->setCaringCommunityFeature(true);
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $existing = User::factory()->forTenant($this->testTenantId)->create([
@@ -888,7 +898,10 @@ class AdminCaringCommunityControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonPath('data.created', 1);
-        $response->assertJsonPath('data.linked', 1);
+        $response->assertJsonPath('data.linked', 0);
+        $response->assertJsonPath('data.existing_accounts', 1);
+        $this->assertStringNotContainsString('temporary_password', (string) $response->getContent());
+        Queue::assertPushed(SendPasswordResetEmail::class, fn (SendPasswordResetEmail $job): bool => $job->email === $newEmail);
 
         $createdId = (int) DB::table('users')
             ->where('tenant_id', $this->testTenantId)
@@ -903,12 +916,10 @@ class AdminCaringCommunityControllerTest extends TestCase
             'role' => 'member',
             'status' => 'active',
         ]);
-        $this->assertDatabaseHas('org_members', [
+        $this->assertDatabaseMissing('org_members', [
             'tenant_id' => $this->testTenantId,
             'organization_id' => $vereinId,
             'user_id' => $existing->id,
-            'role' => 'admin',
-            'status' => 'active',
         ]);
     }
 

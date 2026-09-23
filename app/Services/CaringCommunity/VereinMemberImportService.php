@@ -8,7 +8,11 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Jobs\SendPasswordResetEmail;
+use App\Models\User;
+use App\Services\TenantSettingsService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -17,6 +21,11 @@ use RuntimeException;
 class VereinMemberImportService
 {
     private const REQUIRED_HEADERS = ['email'];
+
+    public function __construct(
+        private readonly TenantSettingsService $tenantSettings,
+    ) {
+    }
 
     public function preview(int $tenantId, int $organizationId, string $csv): array
     {
@@ -27,7 +36,9 @@ class VereinMemberImportService
         $summary = [
             'total_rows' => count($rows),
             'ready_to_create' => 0,
+            // Kept for older clients: import never links existing accounts (F-126).
             'ready_to_link' => 0,
+            'existing_accounts' => 0,
             'duplicates' => 0,
             'invalid' => 0,
         ];
@@ -53,7 +64,10 @@ class VereinMemberImportService
                 ? $this->isOrganizationMember($tenantId, $organizationId, (int) $existingUser->id)
                 : false;
 
-            $action = $existingUser ? 'link_existing' : 'create';
+            // F-126: an existing community account is never enrolled by import —
+            // it needs an invitation the member accepts. The preview names the
+            // outcome only; the account's user id is not disclosed.
+            $action = $existingUser ? 'existing_account' : 'create';
             // Being an existing active org member is a skippable info state, NOT a
             // blocking error: import() silently skips these rows (counting them as
             // "skipped") instead of aborting the whole batch. Do not push it into
@@ -68,8 +82,8 @@ class VereinMemberImportService
 
             if ($action === 'create') {
                 $summary['ready_to_create']++;
-            } elseif ($action === 'link_existing') {
-                $summary['ready_to_link']++;
+            } elseif ($action === 'existing_account') {
+                $summary['existing_accounts']++;
             } elseif ($alreadyMember || in_array(__('api.verein_import_duplicate_in_file'), $errors, true)) {
                 $summary['duplicates']++;
             } else {
@@ -82,9 +96,10 @@ class VereinMemberImportService
                 'first_name' => $this->cleanName((string) ($row['first_name'] ?? '')),
                 'last_name' => $this->cleanName((string) ($row['last_name'] ?? '')),
                 'phone' => trim((string) ($row['phone'] ?? '')) ?: null,
-                'role' => $this->normaliseMemberRole((string) ($row['role'] ?? 'member')),
+                // F-126: a CSV cannot grant club owner/admin; import always
+                // adds plain members (club admins are assigned separately).
+                'role' => 'member',
                 'action' => $action,
-                'existing_user_id' => $existingUser ? (int) $existingUser->id : null,
                 'errors' => $errors,
             ];
         }
@@ -114,67 +129,114 @@ class VereinMemberImportService
             throw new InvalidArgumentException(__('api.verein_import_has_errors'));
         }
 
-        $created = 0;
-        $linked = 0;
-        $skipped = 0;
-        $members = [];
+        // F-126: imported accounts follow the community's own admin-approval
+        // rule, exactly as self-registration does (RegistrationService): when
+        // approval is required the account waits in the approval queue.
+        $requiresApproval = $this->tenantSettings->requiresAdminApproval($tenantId);
 
-        DB::transaction(function () use ($tenantId, $organizationId, $actorId, $preview, &$created, &$linked, &$skipped, &$members): void {
+        $created = 0;
+        $skipped = 0;
+        $existingAccounts = 0;
+        $notCreated = 0;
+        $members = [];
+        $passwordEmails = [];
+
+        DB::transaction(function () use ($tenantId, $organizationId, $preview, $requiresApproval, &$created, &$skipped, &$existingAccounts, &$notCreated, &$members, &$passwordEmails): void {
             foreach ($preview['items'] as $item) {
                 if ($item['action'] === 'already_member') {
                     $skipped++;
                     continue;
                 }
 
-                $userId = $item['existing_user_id'];
-                $tempPassword = null;
-                if (!$userId) {
-                    $tempPassword = Str::password(14);
-                    $userId = (int) DB::table('users')->insertGetId([
-                        'tenant_id' => $tenantId,
-                        'name' => $this->displayName($item['first_name'], $item['last_name'], $item['email']),
-                        'first_name' => $item['first_name'] ?: null,
-                        'last_name' => $item['last_name'] ?: null,
-                        'email' => $item['email'],
-                        'username' => $this->uniqueUsername($tenantId, $item['email']),
-                        'password' => password_hash($tempPassword, PASSWORD_BCRYPT),
-                        'password_hash' => password_hash($tempPassword, PASSWORD_BCRYPT),
-                        'phone' => $item['phone'],
-                        'role' => 'member',
-                        'status' => 'active',
-                        'is_approved' => 1,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                    $created++;
-                } else {
-                    $linked++;
+                // F-126: never enrol an existing account (or re-activate a
+                // membership they left). The club invites them instead.
+                if ($item['action'] === 'existing_account'
+                    || DB::table('users')->where('tenant_id', $tenantId)->where('email', $item['email'])->exists()
+                ) {
+                    $existingAccounts++;
+                    continue;
                 }
 
-                DB::table('org_members')->updateOrInsert(
-                    ['organization_id' => $organizationId, 'org_type' => 'volunteer', 'user_id' => $userId],
-                    [
-                        'tenant_id' => $tenantId,
-                        'role' => $item['role'],
-                        'status' => 'active',
-                        'updated_at' => now(),
-                    ]
-                );
-
-                $members[] = [
-                    'user_id' => $userId,
+                // Created through the shared account-creation path. The random
+                // password is never returned or shown to anyone: the member
+                // chooses their own through the password-setup email below.
+                $userId = User::createWithTenant([
+                    'first_name' => $item['first_name'],
+                    'last_name' => $item['last_name'],
                     'email' => $item['email'],
-                    'created' => $tempPassword !== null,
-                    'temporary_password' => $tempPassword,
+                    'password' => Str::password(32),
+                    'phone' => $item['phone'],
+                    'role' => 'member',
+                    'is_approved' => $requiresApproval ? 0 : 1,
+                ], $tenantId);
+
+                if (!$userId) {
+                    // createWithTenant refuses an address already registered
+                    // elsewhere on the platform; do not reveal or touch it.
+                    $notCreated++;
+                    continue;
+                }
+
+                $update = [
+                    'username' => $this->uniqueUsername($tenantId, $item['email']),
+                    'status' => $requiresApproval ? 'pending' : 'active',
+                    'updated_at' => now(),
+                ];
+                if ($item['first_name'] === '' && $item['last_name'] === '') {
+                    $update['name'] = $this->displayName('', '', $item['email']);
+                }
+                DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->update($update);
+
+                // Brand-new account, so there is no prior row to re-activate.
+                // insertOrIgnore keeps it that way even under a race.
+                DB::table('org_members')->insertOrIgnore([
+                    'tenant_id' => $tenantId,
+                    'organization_id' => $organizationId,
+                    'org_type' => 'volunteer',
+                    'user_id' => $userId,
+                    'role' => 'member',
+                    'status' => 'active',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $created++;
+                $passwordEmails[] = $item['email'];
+                $members[] = [
+                    'email' => $item['email'],
+                    'created' => true,
+                    'approval_required' => $requiresApproval,
                 ];
             }
         });
 
+        // Queued only after commit, through the same job as "forgot password",
+        // so each new member sets their own password. A delivery failure never
+        // undoes the import: the member can still use "forgot password".
+        $passwordEmailsFailed = 0;
+        foreach ($passwordEmails as $email) {
+            try {
+                SendPasswordResetEmail::dispatch($email, $tenantId);
+            } catch (\Throwable $e) {
+                $passwordEmailsFailed++;
+                Log::warning('[VereinImport] password-setup email dispatch failed', [
+                    'tenant_id' => $tenantId,
+                    'organization_id' => $organizationId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         return [
             'organization' => $preview['organization'],
             'created' => $created,
-            'linked' => $linked,
+            // Kept for older clients: import never links existing accounts.
+            'linked' => 0,
             'skipped' => $skipped,
+            'existing_accounts' => $existingAccounts,
+            'not_created' => $notCreated,
+            'approval_required' => $requiresApproval,
+            'password_setup_email' => $created === 0 ? null : ($passwordEmailsFailed === 0 ? 'queued' : 'partially_failed'),
             'members' => $members,
             'imported_by' => $actorId,
         ];
@@ -345,11 +407,6 @@ class VereinMemberImportService
     private function cleanName(string $value): string
     {
         return mb_substr(trim($value), 0, 100);
-    }
-
-    private function normaliseMemberRole(string $role): string
-    {
-        return in_array($role, ['owner', 'admin', 'member'], true) ? $role : 'member';
     }
 
     private function displayName(string $firstName, string $lastName, string $email): string

@@ -2665,6 +2665,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Record how consent was verified before activating this relationship.',
     'caring_caregiver_rejection_reason_required' => 'Give a reason for rejecting this caregiver relationship.',
     'caring_caregiver_pending_link_not_found'  => 'Pending caregiver link not found in this community.',
+    'caring_caregiver_link_unavailable'        => 'A caregiver link cannot be requested with this member.',
+    'caring_caregiver_link_cooldown'           => 'A recent caregiver request to this member was declined or withdrawn. You can send a new request after :days days.',
     'caring_caregiver_when_needed_default'     => 'As soon as practical',
     'caring_provider_directory_unavailable'    => 'Care provider directory is not available for this community.',
     'caring_research_unavailable'              => 'Research partnerships are not available for this community.',

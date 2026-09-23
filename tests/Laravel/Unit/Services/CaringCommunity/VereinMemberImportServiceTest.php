@@ -128,7 +128,7 @@ class VereinMemberImportServiceTest extends TestCase
         $this->assertSame(0, $result['summary']['invalid']);
     }
 
-    public function test_preview_marks_existing_non_member_email_as_link_existing(): void
+    public function test_preview_marks_existing_non_member_email_as_existing_account(): void
     {
         $email = 'existing.' . uniqid() . '@example.test';
         DB::table('users')->insertGetId([
@@ -144,8 +144,11 @@ class VereinMemberImportServiceTest extends TestCase
         $csv    = $this->csv([[$email, 'Existing', 'User', 'member']]);
         $result = $this->service()->preview($this->testTenantId, $this->orgId, $csv);
 
-        $this->assertSame('link_existing', $result['items'][0]['action']);
-        $this->assertSame(1, $result['summary']['ready_to_link']);
+        // F-126: flagged for an invitation, never linked, and no user id disclosed.
+        $this->assertSame('existing_account', $result['items'][0]['action']);
+        $this->assertArrayNotHasKey('existing_user_id', $result['items'][0]);
+        $this->assertSame(1, $result['summary']['existing_accounts']);
+        $this->assertSame(0, $result['summary']['ready_to_link']);
         $this->assertSame(0, $result['summary']['ready_to_create']);
     }
 
@@ -223,8 +226,10 @@ class VereinMemberImportServiceTest extends TestCase
             ->where('email', $email)
             ->first();
         $this->assertNotNull($user, 'User row should have been created.');
-        $this->assertSame('active', $user->status);
-        $this->assertSame(1, (int) $user->is_approved);
+        // F-126: the community's admin-approval rule applies to imports.
+        $requiresApproval = app(\App\Services\TenantSettingsService::class)->requiresAdminApproval($this->testTenantId);
+        $this->assertSame($requiresApproval ? 'pending' : 'active', $user->status);
+        $this->assertSame($requiresApproval ? 0 : 1, (int) $user->is_approved);
 
         // org_members row must exist.
         $member = DB::table('org_members')
@@ -234,13 +239,15 @@ class VereinMemberImportServiceTest extends TestCase
         $this->assertNotNull($member, 'org_members row should have been created.');
         $this->assertSame('active', $member->status);
 
-        // Returned members array should carry temporary_password.
+        // F-126: no password or user id is returned; a password-setup email is queued.
         $this->assertCount(1, $result['members']);
-        $this->assertNotNull($result['members'][0]['temporary_password']);
+        $this->assertArrayNotHasKey('temporary_password', $result['members'][0]);
+        $this->assertArrayNotHasKey('user_id', $result['members'][0]);
         $this->assertTrue($result['members'][0]['created']);
+        Queue::assertPushed(\App\Jobs\SendPasswordResetEmail::class);
     }
 
-    public function test_import_links_existing_user_without_creating_new_row(): void
+    public function test_import_does_not_enrol_existing_user(): void
     {
         $email  = 'link.' . uniqid() . '@example.test';
         $userId = (int) DB::table('users')->insertGetId([
@@ -256,17 +263,17 @@ class VereinMemberImportServiceTest extends TestCase
         $csv    = $this->csv([[$email, 'Pre', 'Existing', 'member']]);
         $result = $this->service()->import($this->testTenantId, $this->orgId, $this->actorId, $csv);
 
+        // F-126: existing accounts need an invitation; import never enrols them.
         $this->assertSame(0, $result['created']);
-        $this->assertSame(1, $result['linked']);
+        $this->assertSame(0, $result['linked']);
+        $this->assertSame(1, $result['existing_accounts']);
 
-        // org_members row should reference the pre-existing user.
         $member = DB::table('org_members')
             ->where('organization_id', $this->orgId)
             ->where('user_id', $userId)
             ->first();
-        $this->assertNotNull($member);
-        $this->assertFalse($result['members'][0]['created']);
-        $this->assertNull($result['members'][0]['temporary_password']);
+        $this->assertNull($member);
+        $this->assertSame([], $result['members']);
     }
 
     public function test_preview_marks_existing_org_member_as_already_member_without_blocking_error(): void
@@ -384,7 +391,9 @@ class VereinMemberImportServiceTest extends TestCase
         $result = $this->service()->import($this->testTenantId, $this->orgId, $this->actorId, $csv);
 
         $this->assertSame(1, $result['created']);
-        $this->assertSame(1, $result['linked']);
+        // F-126: the existing account is reported for invitation, not linked.
+        $this->assertSame(0, $result['linked']);
+        $this->assertSame(1, $result['existing_accounts']);
         $this->assertSame(0, $result['skipped']);
         $this->assertSame($this->actorId, $result['imported_by']);
     }

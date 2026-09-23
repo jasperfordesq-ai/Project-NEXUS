@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Registra cómo se verificó el consentimiento antes de activar la relación.',
     'caring_caregiver_rejection_reason_required' => 'Indica un motivo para rechazar esta relación de cuidado.',
     'caring_caregiver_pending_link_not_found' => 'No se encontró un vínculo de cuidador pendiente en esta comunidad.',
+    'caring_caregiver_link_unavailable' => 'No se puede solicitar un vínculo de cuidador con este miembro.',
+    'caring_caregiver_link_cooldown' => 'Una solicitud reciente de cuidador a este miembro fue rechazada o retirada. Puedes enviar una nueva solicitud después de :days días.',
     'caring_caregiver_when_needed_default' => 'Tan pronto como sea práctico',
     'caring_provider_directory_unavailable' => 'El directorio de proveedores de atención no está disponible para esta comunidad.',
     'caring_research_unavailable' => 'Las asociaciones de investigación no están disponibles para esta comunidad.',

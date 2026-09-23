@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Indiquez comment le consentement a été vérifié avant d’activer cette relation.',
     'caring_caregiver_rejection_reason_required' => 'Indiquez un motif de refus de cette relation d’aide.',
     'caring_caregiver_pending_link_not_found' => 'Aucun lien d’aidant en attente n’a été trouvé dans cette communauté.',
+    'caring_caregiver_link_unavailable' => 'Un lien d\'aidant ne peut pas être demandé avec ce membre.',
+    'caring_caregiver_link_cooldown' => 'Une demande d\'aidant récente à ce membre a été refusée ou retirée. Vous pourrez envoyer une nouvelle demande dans :days jours.',
     'caring_caregiver_when_needed_default' => 'Dès que possible',
     'caring_provider_directory_unavailable' => 'L’annuaire des prestataires de soins n’est pas disponible pour cette communauté.',
     'caring_research_unavailable' => 'Les partenariats de recherche ne sont pas disponibles pour cette communauté.',

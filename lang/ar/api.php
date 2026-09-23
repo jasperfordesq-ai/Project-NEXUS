@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'سجل كيفية التحقق من الموافقة قبل تفعيل هذه العلاقة.',
     'caring_caregiver_rejection_reason_required' => 'اذكر سبب رفض علاقة الرعاية هذه.',
     'caring_caregiver_pending_link_not_found' => 'لم يتم العثور على رابط مقدم رعاية معلق في هذا المجتمع.',
+    'caring_caregiver_link_unavailable' => 'لا يمكن طلب ربط مقدّم رعاية مع هذا العضو.',
+    'caring_caregiver_link_cooldown' => 'تم رفض طلب رعاية حديث لهذا العضو أو سحبه. يمكنك إرسال طلب جديد بعد :days يومًا.',
     'caring_caregiver_when_needed_default' => 'في أقرب وقت عملي',
     'caring_provider_directory_unavailable' => 'دليل مقدمي الرعاية غير متوفر لهذا المجتمع.',
     'caring_research_unavailable' => 'الشراكات البحثية غير متاحة لهذا المجتمع.',

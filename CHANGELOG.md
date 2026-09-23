@@ -95,6 +95,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Club member import no longer returns passwords or account ids, no longer enrols or re-activates existing members, always adds plain members, follows the community's approval rule, and sends new members a password-setup email (F-126).
+
+- The emergency alert banner no longer shows members push-delivery details or who else an alert was sent to, and delivery results no longer store device tokens (F-128).
+
+- The civic digest no longer shows members events from private groups they don't belong to, or safety alerts meant for other people (F-129).
+
+- Caregiver link requests now respect blocks and safeguarding contact rules, can't be re-sent within 7 days of being declined or withdrawn, and notes are limited to 1,000 characters (F-130).
+
+- The caring "download my data" export no longer includes staff investigation notes, assignees or escalation notes (F-133).
+
 - Files uploaded to the accessible frontend are now deleted even when the request is refused before it reaches the page, so anonymous uploads can no longer fill the server's disk (F-111).
 
 - The accessible frontend now tells members honestly when a password-reset or verification email was refused for too many attempts, instead of saying it was sent, and passes each visitor's address to the API so per-visitor limits can apply (F-110, accessible-frontend half).

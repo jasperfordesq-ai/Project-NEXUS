@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services\CaringCommunity;
 
 use App\I18n\LocaleContext;
+use App\Services\BlockUserService;
 use App\Services\NotificationDispatcher;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,12 @@ use InvalidArgumentException;
 class CaregiverService
 {
     public const BURNOUT_THRESHOLD_HOURS_PER_WEEK = 20.0;
+
+    /** F-130: maximum length of the free-text note sent with a link request. */
+    public const NOTES_MAX_LENGTH = 1000;
+
+    /** F-130: days before a declined / withdrawn request may be re-sent to the same person. */
+    public const REQUEST_COOLDOWN_DAYS = 7;
 
     // -------------------------------------------------------------------------
     // Availability guard
@@ -276,6 +283,17 @@ class CaregiverService
                 throw new \RuntimeException(__('api.caring_caregiver_pending_link_not_found'));
             }
 
+            // The (tenant, caregiver, cared_for, status) unique key allows one
+            // rejected row per pair. Replace an older rejection so a recipient
+            // can always decline a later request (F-130; mirrors removeLink()).
+            DB::table('caring_caregiver_links')
+                ->where('tenant_id', $tenantId)
+                ->where('caregiver_id', (int) $link->caregiver_id)
+                ->where('cared_for_id', (int) $link->cared_for_id)
+                ->where('status', 'rejected')
+                ->where('id', '<>', $linkId)
+                ->delete();
+
             DB::table('caring_caregiver_links')->where('id', $linkId)->update([
                 'status' => 'rejected',
                 'rejected_at' => now(),
@@ -356,6 +374,31 @@ class CaregiverService
             throw new \RuntimeException(__('api.user_not_found_in_tenant'));
         }
 
+        // F-130: the note is delivered to the recipient, so bound it.
+        $notes = $options['notes'] ?? null;
+        if ($notes !== null && !is_string($notes)) {
+            throw new InvalidArgumentException(__('api.field_too_long_with_limit', ['field' => 'notes', 'max' => self::NOTES_MAX_LENGTH]));
+        }
+        $notes = $notes === null ? null : trim($notes);
+        if ($notes !== null && mb_strlen($notes) > self::NOTES_MAX_LENGTH) {
+            throw new InvalidArgumentException(__('api.field_too_long_with_limit', ['field' => 'notes', 'max' => self::NOTES_MAX_LENGTH]));
+        }
+        $options['notes'] = $notes === '' ? null : $notes;
+
+        // F-130: a link request emails, pushes and notifies the recipient, so it
+        // is a contact channel. Refuse it when either member blocked the other
+        // (the message does not say which), and apply the safeguarding contact
+        // policy before anything is written or sent.
+        if (BlockUserService::isBlockedEither($caregiverId, $caredForId)) {
+            throw new \RuntimeException(__('api.caring_caregiver_link_unavailable'));
+        }
+        app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+            $caregiverId,
+            $caredForId,
+            $tenantId,
+            'caring_caregiver_link_request',
+        );
+
         $link = DB::transaction(function () use ($caregiverId, $caredForId, $relationshipType, $tenantId, $options): array {
             $existing = DB::table('caring_caregiver_links')
                 ->where('caregiver_id', $caregiverId)
@@ -367,6 +410,38 @@ class CaregiverService
 
             if ($existing !== null) {
                 throw new \RuntimeException(__('api.caring_caregiver_duplicate_link'));
+            }
+
+            // F-130 cooldown: no fresh request to the same person within
+            // REQUEST_COOLDOWN_DAYS of them (or staff) declining one, or of the
+            // requester withdrawing a request that was never approved — the
+            // withdraw-and-resend loop would otherwise re-notify at will.
+            // Ending a link that WAS approved does not start a cooldown.
+            $cooldownStart = now()->subDays(self::REQUEST_COOLDOWN_DAYS);
+            $recentlyClosed = DB::table('caring_caregiver_links')
+                ->where('caregiver_id', $caregiverId)
+                ->where('cared_for_id', $caredForId)
+                ->where('tenant_id', $tenantId)
+                ->where(function ($q) use ($cooldownStart): void {
+                    $q->where(function ($rejected) use ($cooldownStart): void {
+                        $rejected->where('status', 'rejected')
+                            ->where(function ($at) use ($cooldownStart): void {
+                                $at->where('rejected_at', '>=', $cooldownStart)
+                                    ->orWhere(function ($legacy) use ($cooldownStart): void {
+                                        $legacy->whereNull('rejected_at')->where('updated_at', '>=', $cooldownStart);
+                                    });
+                            });
+                    })->orWhere(function ($withdrawn) use ($cooldownStart): void {
+                        $withdrawn->where('status', 'inactive')
+                            ->whereNull('approved_at')
+                            ->whereNull('approved_by')
+                            ->where('updated_at', '>=', $cooldownStart);
+                    });
+                })
+                ->exists();
+
+            if ($recentlyClosed) {
+                throw new \RuntimeException(__('api.caring_caregiver_link_cooldown', ['days' => self::REQUEST_COOLDOWN_DAYS]));
             }
 
             $id = DB::table('caring_caregiver_links')->insertGetId([

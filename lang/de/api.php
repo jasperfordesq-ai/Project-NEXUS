@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Halten Sie fest, wie die Zustimmung überprüft wurde, bevor Sie diese Beziehung aktivieren.',
     'caring_caregiver_rejection_reason_required' => 'Geben Sie einen Grund für die Ablehnung dieser Betreuungsbeziehung an.',
     'caring_caregiver_pending_link_not_found' => 'In dieser Gemeinschaft wurde keine ausstehende Betreuungsverknüpfung gefunden.',
+    'caring_caregiver_link_unavailable' => 'Mit diesem Mitglied kann keine Betreuungsverknüpfung angefragt werden.',
+    'caring_caregiver_link_cooldown' => 'Eine kürzliche Betreuungsanfrage an dieses Mitglied wurde abgelehnt oder zurückgezogen. Du kannst nach :days Tagen eine neue Anfrage senden.',
     'caring_caregiver_when_needed_default' => 'Sobald es praktisch ist',
     'caring_provider_directory_unavailable' => 'Das Pflegedienstleisterverzeichnis ist für diese Community nicht verfügbar.',
     'caring_research_unavailable' => 'Forschungspartnerschaften sind für diese Community nicht verfügbar.',

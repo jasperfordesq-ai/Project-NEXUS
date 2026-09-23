@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => '関係を有効にする前に同意の確認方法を記録してください。',
     'caring_caregiver_rejection_reason_required' => 'この介護関係を拒否する理由を入力してください。',
     'caring_caregiver_pending_link_not_found' => 'このコミュニティに保留中の介護者リンクはありません。',
+    'caring_caregiver_link_unavailable' => 'このメンバーとは介護者リンクを申請できません。',
+    'caring_caregiver_link_cooldown' => 'このメンバーへの最近の介護者リクエストは辞退または取り下げられました。:days日後に新しいリクエストを送信できます。',
     'caring_caregiver_when_needed_default' => '実用化され次第',
     'caring_provider_directory_unavailable' => 'このコミュニティでは介護提供者ディレクトリを利用できません。',
     'caring_research_unavailable' => 'このコミュニティでは研究パートナーシップを利用できません。',

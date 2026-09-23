@@ -61,9 +61,81 @@ class EmergencyAlertService
             ->orderBy('created_at', 'desc')
             ->get()
             ->filter(fn ($row): bool => self::alertTargetsUser($row->target_user_ids ?? null, $userId))
-            ->map(fn ($row) => (array) $row)
+            // F-128: members get the banner fields only. push_result (delivery
+            // internals), target_user_ids (who else was told) and the admin
+            // bookkeeping columns stay on the admin surface.
+            ->map(fn ($row) => self::memberFacingAlert((array) $row))
             ->values()
             ->all();
+    }
+
+    /**
+     * Whether an alert row is addressed to the given member. Untargeted alerts
+     * are tenant-wide; targeted ones reach only listed members.
+     */
+    public static function isTargetedAt(mixed $targetUserIds, ?int $userId): bool
+    {
+        return self::alertTargetsUser($targetUserIds, $userId);
+    }
+
+    /**
+     * Reduce an FCM send result to delivery counts (F-128). The raw `errors`
+     * list is never persisted or returned: FCMPushService formats each entry
+     * as "Token {device token}: …", so storing it leaked device tokens.
+     *
+     * @return array{sent:int, failed:int, error_count:int}|null
+     */
+    public static function summarisePushResult(mixed $pushResult): ?array
+    {
+        if ($pushResult === null || $pushResult === '') {
+            return null;
+        }
+
+        $decoded = is_array($pushResult) ? $pushResult : json_decode((string) $pushResult, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $errors = $decoded['errors'] ?? null;
+
+        return [
+            'sent' => (int) ($decoded['sent'] ?? 0),
+            'failed' => (int) ($decoded['failed'] ?? 0),
+            'error_count' => is_array($errors) ? count($errors) : (int) ($decoded['error_count'] ?? 0),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private static function memberFacingAlert(array $row): array
+    {
+        $out = [];
+        foreach (['id', 'title', 'body', 'severity', 'expires_at', 'sent_at', 'created_at'] as $column) {
+            if (array_key_exists($column, $row)) {
+                $out[$column] = $row[$column];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Admin rows keep every column, but push_result is reduced to counts so
+     * rows written before F-128 cannot surface stored device tokens.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private static function adminFacingAlert(array $row): array
+    {
+        if (array_key_exists('push_result', $row)) {
+            $summary = self::summarisePushResult($row['push_result']);
+            $row['push_result'] = $summary === null ? null : json_encode($summary);
+        }
+
+        return $row;
     }
 
     /**
@@ -82,7 +154,7 @@ class EmergencyAlertService
             ->where('tenant_id', $tenantId)
             ->first();
 
-        return $row ? (array) $row : null;
+        return $row ? self::adminFacingAlert((array) $row) : null;
     }
 
     /**
@@ -159,7 +231,8 @@ class EmergencyAlertService
             ->where('id', $alertId)
             ->update([
                 'push_sent'   => 1,
-                'push_result' => json_encode($pushResult),
+                // F-128: counts only — never the per-token error strings.
+                'push_result' => json_encode(self::summarisePushResult($pushResult)),
                 'sent_at'     => Carbon::now(),
                 'updated_at'  => Carbon::now(),
             ]);
@@ -258,7 +331,7 @@ class EmergencyAlertService
             ->where('tenant_id', $tenantId)
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn ($row) => (array) $row)
+            ->map(fn ($row) => self::adminFacingAlert((array) $row))
             ->all();
     }
 

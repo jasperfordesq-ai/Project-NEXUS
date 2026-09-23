@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Registra come è stato verificato il consenso prima di attivare la relazione.',
     'caring_caregiver_rejection_reason_required' => 'Indica un motivo per rifiutare questa relazione.',
     'caring_caregiver_pending_link_not_found' => 'Nessun collegamento in attesa trovato in questa comunità.',
+    'caring_caregiver_link_unavailable' => 'Non è possibile richiedere un collegamento di assistenza con questo membro.',
+    'caring_caregiver_link_cooldown' => 'Una recente richiesta di assistenza a questo membro è stata rifiutata o ritirata. Puoi inviare una nuova richiesta dopo :days giorni.',
     'caring_caregiver_when_needed_default' => 'Non appena pratico',
     'caring_provider_directory_unavailable' => 'L\'elenco dei fornitori di servizi sanitari non è disponibile per questa comunità.',
     'caring_research_unavailable' => 'I partenariati di ricerca non sono disponibili per questa comunità.',

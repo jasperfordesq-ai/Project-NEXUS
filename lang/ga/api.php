@@ -2065,6 +2065,8 @@ return [
     'caring_caregiver_consent_evidence_required' => 'Taifead conas a fíoraíodh an toiliú sula ngníomhachtaítear an caidreamh seo.',
     'caring_caregiver_rejection_reason_required' => 'Tabhair cúis leis an gcaidreamh cúraim seo a dhiúltú.',
     'caring_caregiver_pending_link_not_found' => 'Níor aimsíodh nasc cúramóra ar feitheamh sa phobal seo.',
+    'caring_caregiver_link_unavailable' => 'Ní féidir nasc cúramóra a iarraidh leis an mball seo.',
+    'caring_caregiver_link_cooldown' => 'Diúltaíodh d\'iarratas cúramóra le déanaí chuig an mball seo nó tarraingíodh siar é. Is féidir leat iarratas nua a sheoladh tar éis :days lá.',
     'caring_caregiver_when_needed_default' => 'Chomh luath agus is praiticiúil',
     'caring_provider_directory_unavailable' => 'Níl eolaire soláthraithe cúraim ar fáil don phobal seo.',
     'caring_research_unavailable' => 'Níl comhpháirtíochtaí taighde ar fáil don phobal seo.',
