@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The old social feed endpoint now follows the same privacy rules as the main feed, so it no longer shows private or secret group posts to non-members, other members' private goals, draft or cancelled events, or hidden, draft or deleted posts (F-065).
+
+- The old like and "who liked this" endpoints now refuse items you are not allowed to see, such as posts in a private group you are not in (F-072).
+
 - Ideation idea lists now verify the tenant-scoped parent challenge and hide draft, withdrawn, and unpublished content from unauthorised members. Direct idea, comment, and media reads apply the same lifecycle rules, preventing a member from naming another community's challenge or a hidden idea to retrieve its contents (F-077).
 
 - An event organiser's decision now holds. A member the organiser declined or removed can still ask for a place again, but the request waits as "pending" for the organiser instead of confirming itself; a member already awaiting approval can no longer confirm themselves; "Require organiser approval" now puts self-registrations in pending; and published registration open/close dates are enforced (F-099).

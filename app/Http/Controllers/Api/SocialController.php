@@ -1111,6 +1111,13 @@ class SocialController extends BaseApiController
             return $this->respondWithError('INVALID_INPUT', __('api.social_invalid_target_type'), 'target_type', 400);
         }
 
+        // Same visibility gate as likeV2: a member must not be able to like
+        // (or probe the existence of) an item they cannot see, such as a
+        // private-group post.
+        if (! FeedItemTables::canView($targetType === 'volunteering' ? 'volunteer' : (string) $targetType, (int) $targetId, $userId)) {
+            return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
+        }
+
         try {
             $existing = DB::table('likes')
                 ->where('user_id', $userId)
@@ -1186,6 +1193,11 @@ class SocialController extends BaseApiController
 
         if (empty($targetType) || ! $targetId || $targetId <= 0) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.social_invalid_target'), null, 400);
+        }
+
+        // Who liked an item is only visible to viewers who can see the item.
+        if (! FeedItemTables::canView($targetType === 'volunteering' ? 'volunteer' : (string) $targetType, (int) $targetId, $this->getOptionalUserId())) {
+            return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         }
 
         try {
@@ -1594,43 +1606,93 @@ class SocialController extends BaseApiController
     }
 
     /**
-     * POST /api/social/feed — Aggregated feed with posts, listings, events, polls, goals.
+     * Legacy feed filter values accepted by POST /api/social/feed. Each maps
+     * onto a FeedService::getFeed() type filter.
+     */
+    private const LEGACY_FEED_FILTERS = ['all', 'posts', 'listings', 'events', 'polls', 'goals'];
+
+    /**
+     * Deepest offset the legacy offset-paginated feed will walk to. The
+     * canonical feed is cursor-paginated; offsets are emulated by walking
+     * cursors, so this bounds the work per request.
+     */
+    private const LEGACY_FEED_MAX_OFFSET = 500;
+
+    /**
+     * POST /api/social/feed — deprecated; use GET /api/v2/feed.
      *
-     * Supports filtering by type, user_id, group_id. Offset/page pagination.
+     * Delegates to FeedService::getFeed() so the legacy endpoint enforces the
+     * same visibility rules as the canonical feed (group membership, post
+     * visibility / publish_status / is_hidden / deleted_at, private goals,
+     * event lifecycle, blocks, mutes, profile privacy), then flattens each
+     * item into the legacy response shape. Supports filter, user_id, group_id
+     * and offset/page pagination.
      */
     public function feed(): JsonResponse
     {
         $this->rateLimit('social_feed', 60, 60);
         $currentUserId = $this->getOptionalUserId();
-        $tenantId = $this->getTenantId();
 
         $page = max(1, $this->inputInt('page', 1));
         $limit = min(50, max(5, $this->inputInt('limit', 20)));
-        $filter = $this->input('filter', 'all');
+        $filter = (string) $this->input('filter', 'all');
         $profileUserId = $this->inputInt('user_id', 0);
         $groupId = $this->inputInt('group_id', 0);
 
         // Support offset-based pagination as well as page-based
-        $offset = $this->inputInt('offset', 0);
+        $offset = max(0, $this->inputInt('offset', 0));
         if ($offset === 0) {
             $offset = ($page - 1) * $limit;
         }
 
-        try {
-            $items = [];
+        $empty = ['items' => [], 'page' => $page, 'has_more' => false];
 
+        try {
+            $filters = ['mode' => 'chronological'];
             if ($groupId > 0) {
-                $items = $this->loadGroupFeed($groupId, $currentUserId, $tenantId, $limit, $offset);
+                // The legacy group and profile views only ever listed posts.
+                $filters['type'] = 'posts';
+                $filters['group_id'] = $groupId;
             } elseif ($profileUserId > 0) {
-                $items = $this->loadUserPosts($profileUserId, $currentUserId, $tenantId, $limit, $offset);
+                $filters['type'] = 'posts';
+                $filters['user_id'] = $profileUserId;
+            } elseif (in_array($filter, self::LEGACY_FEED_FILTERS, true)) {
+                $filters['type'] = $filter;
             } else {
-                $items = $this->loadAggregatedFeed($currentUserId, $tenantId, $filter, $limit, $offset);
+                return $this->respondWithData($empty);
             }
+
+            if ($offset > self::LEGACY_FEED_MAX_OFFSET) {
+                return $this->respondWithData($empty);
+            }
+
+            // Emulate offset pagination by walking FeedService cursors.
+            $needed = $offset + $limit;
+            $collected = [];
+            $cursor = null;
+            $hasMore = true;
+            for ($guard = 0; $guard < 20 && $hasMore && count($collected) < $needed; $guard++) {
+                $batchFilters = $filters + ['limit' => min(100, $needed - count($collected))];
+                if ($cursor !== null) {
+                    $batchFilters['cursor'] = $cursor;
+                }
+                $batch = $this->feedService->getFeed($currentUserId, $batchFilters);
+                foreach ($batch['items'] as $item) {
+                    $collected[] = $item;
+                }
+                $cursor = $batch['cursor'] ?? null;
+                $hasMore = (bool) ($batch['has_more'] ?? false) && $cursor !== null;
+            }
+
+            $items = array_map(
+                fn (array $item): array => $this->toLegacyFeedItem($item),
+                array_slice($collected, $offset, $limit)
+            );
 
             return $this->respondWithData([
                 'items'    => $items,
                 'page'     => $page,
-                'has_more' => count($items) >= $limit,
+                'has_more' => $hasMore && count($collected) >= $needed,
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("Feed Load Error: " . $e->getMessage());
@@ -1754,227 +1816,37 @@ class SocialController extends BaseApiController
     }
 
     /**
-     * Load feed posts for a specific group.
-     */
-    private function loadGroupFeed(int $groupId, ?int $currentUserId, int $tenantId, int $limit, int $offset): array
-    {
-        // Check if group_id column exists
-        try {
-            $columns = DB::select("SHOW COLUMNS FROM feed_posts LIKE 'group_id'");
-            if (empty($columns)) {
-                return [];
-            }
-        } catch (\Exception $e) {
-            return [];
-        }
-
-        $currentUserId = (int) $currentUserId;
-        $isLikedSub = $currentUserId
-            ? "(SELECT COUNT(*) FROM likes lk WHERE lk.user_id = {$currentUserId} AND lk.target_type = 'post' AND lk.target_id = p.id AND lk.tenant_id = {$tenantId})"
-            : '0';
-
-        $rows = DB::select(
-            "SELECT p.id, p.content, p.image_url, p.created_at, p.likes_count, p.user_id,
-                    'post' as type,
-                    COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                    u.avatar_url as author_avatar,
-                    p.user_id as author_id,
-                    (SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'post' AND cm.target_id = p.id AND cm.tenant_id = ?) as comments_count,
-                    {$isLikedSub} as is_liked
-             FROM feed_posts p
-             JOIN users u ON p.user_id = u.id
-             WHERE p.group_id = ? AND p.tenant_id = ?
-             ORDER BY p.created_at DESC
-             LIMIT ? OFFSET ?",
-            [$tenantId, $groupId, $tenantId, $limit, $offset]
-        );
-
-        return array_map(fn ($r) => (array) $r, $rows);
-    }
-
-    /**
-     * Load feed posts for a specific user's profile.
-     */
-    private function loadUserPosts(int $userId, ?int $currentUserId, int $tenantId, int $limit, int $offset): array
-    {
-        $currentUserId = (int) $currentUserId;
-        $isLikedSub = $currentUserId
-            ? "(SELECT COUNT(*) FROM likes lk WHERE lk.user_id = {$currentUserId} AND lk.target_type = 'post' AND lk.target_id = p.id AND lk.tenant_id = {$tenantId})"
-            : '0';
-
-        $rows = DB::select(
-            "SELECT p.id, p.content, p.image_url, p.created_at, p.likes_count,
-                    'post' as type,
-                    COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                    u.avatar_url as author_avatar,
-                    p.user_id as author_id,
-                    (SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'post' AND cm.target_id = p.id AND cm.tenant_id = ?) as comments_count,
-                    {$isLikedSub} as is_liked
-             FROM feed_posts p
-             JOIN users u ON p.user_id = u.id
-             WHERE p.user_id = ? AND p.tenant_id = ? AND p.visibility = 'public'
-             ORDER BY p.created_at DESC
-             LIMIT ? OFFSET ?",
-            [$tenantId, $userId, $tenantId, $limit, $offset]
-        );
-
-        return array_map(fn ($r) => (array) $r, $rows);
-    }
-
-    /**
-     * Load aggregated feed combining posts, listings, events, polls, and goals.
+     * Flatten a FeedService::getFeed() item into the legacy POST /api/social/feed shape.
      *
-     * Fetches content from multiple tables, merges, sorts by created_at,
-     * and returns a paginated slice.
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
      */
-    private function loadAggregatedFeed(?int $currentUserId, int $tenantId, string $filter, int $limit, int $offset): array
+    private function toLegacyFeedItem(array $item): array
     {
-        $currentUserId = (int) $currentUserId;
-        $items = [];
+        $author = is_array($item['author'] ?? null) ? $item['author'] : [];
+        $authorId = (int) ($author['id'] ?? $item['user_id'] ?? 0);
 
-        // Posts
-        if ($filter === 'all' || $filter === 'posts') {
-            $isLiked = $currentUserId
-                ? "(SELECT COUNT(*) FROM likes WHERE user_id = {$currentUserId} AND target_type = 'post' AND target_id = p.id AND tenant_id = {$tenantId})"
-                : '0';
-            $commentsSub = "(SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'post' AND cm.target_id = p.id AND cm.tenant_id = {$tenantId})";
-            $postLimit = ($filter === 'posts') ? $limit : 30;
+        $legacy = [
+            'id'                => (int) ($item['id'] ?? 0),
+            'type'              => (string) ($item['type'] ?? ''),
+            'title'             => $item['title'] ?? null,
+            'content'           => $item['content'] ?? null,
+            'content_truncated' => (bool) ($item['content_truncated'] ?? false),
+            'image_url'         => $item['image_url'] ?? null,
+            'created_at'        => $item['created_at'] ?? null,
+            'likes_count'       => (int) ($item['likes_count'] ?? 0),
+            'comments_count'    => (int) ($item['comments_count'] ?? 0),
+            'is_liked'          => !empty($item['is_liked']) ? 1 : 0,
+            'user_id'           => $authorId,
+            'author_id'         => $authorId,
+            'author_name'       => $author['name'] ?? null,
+            'author_avatar'     => $author['avatar_url'] ?? null,
+        ];
 
-            $rows = DB::select(
-                "SELECT p.id, p.content, p.image_url, p.created_at, p.likes_count,
-                        'post' as type,
-                        COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                        u.avatar_url as author_avatar,
-                        p.user_id as author_id,
-                        {$commentsSub} as comments_count,
-                        {$isLiked} as is_liked
-                 FROM feed_posts p
-                 JOIN users u ON p.user_id = u.id
-                 WHERE p.tenant_id = ? AND p.visibility = 'public'
-                 ORDER BY p.created_at DESC
-                 LIMIT {$postLimit}",
-                [$tenantId]
-            );
-            $items = array_merge($items, array_map(fn ($r) => (array) $r, $rows));
+        if (($item['type'] ?? null) === 'event') {
+            $legacy['start_date'] = $item['start_date'] ?? null;
         }
 
-        // Listings
-        if ($filter === 'all' || $filter === 'listings') {
-            $isLiked = $currentUserId
-                ? "(SELECT COUNT(*) FROM likes WHERE user_id = {$currentUserId} AND target_type = 'listing' AND target_id = l.id AND tenant_id = {$tenantId})"
-                : '0';
-            $likesSub = "(SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'listing' AND lk.target_id = l.id AND lk.tenant_id = {$tenantId})";
-            $commentsSub = "(SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'listing' AND cm.target_id = l.id AND cm.tenant_id = {$tenantId})";
-            $listingLimit = ($filter === 'listings') ? $limit : 15;
-
-            $rows = DB::select(
-                "SELECT l.id, l.title, l.description as content, l.image_url, l.created_at,
-                        'listing' as type,
-                        COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                        u.avatar_url as author_avatar,
-                        l.user_id as author_id,
-                        {$likesSub} as likes_count,
-                        {$commentsSub} as comments_count,
-                        {$isLiked} as is_liked
-                 FROM listings l
-                 JOIN users u ON l.user_id = u.id
-                 WHERE l.tenant_id = ? AND l.status = 'active'
-                 ORDER BY l.created_at DESC
-                 LIMIT {$listingLimit}",
-                [$tenantId]
-            );
-            $items = array_merge($items, array_map(fn ($r) => (array) $r, $rows));
-        }
-
-        // Events
-        if ($filter === 'all' || $filter === 'events') {
-            $isLiked = $currentUserId
-                ? "(SELECT COUNT(*) FROM likes WHERE user_id = {$currentUserId} AND target_type = 'event' AND target_id = e.id AND tenant_id = {$tenantId})"
-                : '0';
-            $likesSub = "(SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'event' AND lk.target_id = e.id AND lk.tenant_id = {$tenantId})";
-            $commentsSub = "(SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'event' AND cm.target_id = e.id AND cm.tenant_id = {$tenantId})";
-            $eventLimit = ($filter === 'events') ? $limit : 10;
-
-            $rows = DB::select(
-                "SELECT e.id, e.title, e.description as content, e.cover_image as image_url, e.created_at, e.start_time as start_date,
-                        'event' as type,
-                        COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                        u.avatar_url as author_avatar,
-                        e.user_id as author_id,
-                        {$likesSub} as likes_count,
-                        {$commentsSub} as comments_count,
-                        {$isLiked} as is_liked
-                 FROM events e
-                 JOIN users u ON e.user_id = u.id
-                 WHERE e.tenant_id = ?
-                 ORDER BY e.created_at DESC
-                 LIMIT {$eventLimit}",
-                [$tenantId]
-            );
-            $items = array_merge($items, array_map(fn ($r) => (array) $r, $rows));
-        }
-
-        // Polls
-        if ($filter === 'all' || $filter === 'polls') {
-            $isLiked = $currentUserId
-                ? "(SELECT COUNT(*) FROM likes WHERE user_id = {$currentUserId} AND target_type = 'poll' AND target_id = po.id AND tenant_id = {$tenantId})"
-                : '0';
-            $likesSub = "(SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'poll' AND lk.target_id = po.id AND lk.tenant_id = {$tenantId})";
-            $commentsSub = "(SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'poll' AND cm.target_id = po.id AND cm.tenant_id = {$tenantId})";
-            $pollLimit = ($filter === 'polls') ? $limit : 10;
-
-            $rows = DB::select(
-                "SELECT po.id, po.question as title, po.question as content, po.created_at,
-                        'poll' as type,
-                        COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                        u.avatar_url as author_avatar,
-                        po.user_id as author_id,
-                        {$likesSub} as likes_count,
-                        {$commentsSub} as comments_count,
-                        {$isLiked} as is_liked
-                 FROM polls po
-                 JOIN users u ON po.user_id = u.id
-                 WHERE po.tenant_id = ? AND po.is_active = 1
-                 ORDER BY po.created_at DESC
-                 LIMIT {$pollLimit}",
-                [$tenantId]
-            );
-            $items = array_merge($items, array_map(fn ($r) => (array) $r, $rows));
-        }
-
-        // Goals
-        if ($filter === 'all' || $filter === 'goals') {
-            $isLiked = $currentUserId
-                ? "(SELECT COUNT(*) FROM likes WHERE user_id = {$currentUserId} AND target_type = 'goal' AND target_id = g.id AND tenant_id = {$tenantId})"
-                : '0';
-            $likesSub = "(SELECT COUNT(*) FROM likes lk WHERE lk.target_type = 'goal' AND lk.target_id = g.id AND lk.tenant_id = {$tenantId})";
-            $commentsSub = "(SELECT COUNT(*) FROM comments cm WHERE cm.target_type = 'goal' AND cm.target_id = g.id AND cm.tenant_id = {$tenantId})";
-            $goalLimit = ($filter === 'goals') ? $limit : 10;
-
-            $rows = DB::select(
-                "SELECT g.id, g.title, g.description as content, g.created_at,
-                        'goal' as type,
-                        COALESCE(u.name, CONCAT(u.first_name, ' ', u.last_name)) as author_name,
-                        u.avatar_url as author_avatar,
-                        g.user_id as author_id,
-                        {$likesSub} as likes_count,
-                        {$commentsSub} as comments_count,
-                        {$isLiked} as is_liked
-                 FROM goals g
-                 JOIN users u ON g.user_id = u.id
-                 WHERE g.tenant_id = ?
-                 ORDER BY g.created_at DESC
-                 LIMIT {$goalLimit}",
-                [$tenantId]
-            );
-            $items = array_merge($items, array_map(fn ($r) => (array) $r, $rows));
-        }
-
-        // Sort by created_at descending and apply pagination
-        usort($items, function ($a, $b) {
-            return strtotime($b['created_at']) - strtotime($a['created_at']);
-        });
-
-        return array_slice($items, $offset, $limit);
+        return $legacy;
     }
 }
