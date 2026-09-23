@@ -10,8 +10,7 @@ namespace App\Http\Controllers\Api\Verein;
 
 use App\Core\TenantContext;
 use App\Http\Controllers\Api\BaseApiController;
-use App\Models\User;
-use App\Services\CaringCommunity\VereinMemberImportService;
+use App\Services\Verein\VereinDuesAuthorizationService;
 use App\Services\Verein\VereinDuesService;
 use Illuminate\Http\JsonResponse;
 
@@ -28,7 +27,7 @@ class VereinDuesAdminController extends BaseApiController
 
     public function __construct(
         private readonly VereinDuesService $duesService,
-        private readonly VereinMemberImportService $vereinMemberImportService,
+        private readonly VereinDuesAuthorizationService $duesAuthorization,
     ) {
     }
 
@@ -146,38 +145,10 @@ class VereinDuesAdminController extends BaseApiController
         $actorId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
-        if ($this->canManageDues($tenantId, $actorId, $organizationId)) {
+        if ($this->duesAuthorization->canManageDues($tenantId, $actorId, $organizationId)) {
             return null;
         }
 
         return $this->respondWithError('FORBIDDEN', __('api.admin_access_required'), null, 403);
-    }
-
-    private function canManageDues(int $tenantId, int $actorId, int $organizationId): bool
-    {
-        $actor = User::query()
-            ->where('tenant_id', $tenantId)
-            ->where('id', $actorId)
-            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
-
-        if ($actor && (
-            in_array((string) $actor->role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (int) ($actor->is_admin ?? 0) === 1
-            || (int) ($actor->is_super_admin ?? 0) === 1
-            || (int) ($actor->is_tenant_super_admin ?? 0) === 1
-            || (int) ($actor->is_god ?? 0) === 1
-        )) {
-            return true;
-        }
-
-        // Scoped verein_admin: any of these AG30 perms grants dues management for now.
-        // (Dedicated verein.dues.manage permission seeded by AG54 migration 2026_04_29_201000.)
-        foreach (['verein.dues.manage', 'verein.members.manage', 'verein.members.import'] as $perm) {
-            if ($this->vereinMemberImportService->userHasPermissionInOrg($tenantId, $actorId, $organizationId, $perm)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

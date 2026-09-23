@@ -24,7 +24,7 @@ import { VereinMembershipBadge } from './VereinMembershipBadge';
 
 /** Helper: build a mock API success response */
 function makeResponse(
-  current: { status: string; amount_cents: number; currency: string } | null,
+  current: { status: string } | null,
   isMember = false
 ) {
   return {
@@ -73,7 +73,7 @@ describe('VereinMembershipBadge', () => {
 
   it('renders no chip for status "none" (fallthrough to null return)', async () => {
     vi.mocked(api.get).mockResolvedValueOnce(
-      makeResponse({ status: 'none', amount_cents: 0, currency: 'EUR' })
+      makeResponse({ status: 'none' })
     );
     render(<VereinMembershipBadge userId={1} organizationId={10} hideWhenAbsent={false} />);
     await waitFor(() => {
@@ -87,7 +87,7 @@ describe('VereinMembershipBadge', () => {
 
   it('renders a chip containing the year for status "paid"', async () => {
     vi.mocked(api.get).mockResolvedValueOnce(
-      makeResponse({ status: 'paid', amount_cents: 2000, currency: 'EUR' }, true)
+      makeResponse({ status: 'paid' }, true)
     );
     render(<VereinMembershipBadge userId={1} organizationId={10} />);
     await waitFor(() => {
@@ -99,7 +99,7 @@ describe('VereinMembershipBadge', () => {
 
   it('renders a chip containing the year for status "waived"', async () => {
     vi.mocked(api.get).mockResolvedValueOnce(
-      makeResponse({ status: 'waived', amount_cents: 0, currency: 'EUR' }, true)
+      makeResponse({ status: 'waived' }, true)
     );
     render(<VereinMembershipBadge userId={1} organizationId={10} />);
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe('VereinMembershipBadge', () => {
 
   it('renders a warning chip for status "pending"', async () => {
     vi.mocked(api.get).mockResolvedValueOnce(
-      makeResponse({ status: 'pending', amount_cents: 0, currency: 'EUR' })
+      makeResponse({ status: 'pending' })
     );
     render(<VereinMembershipBadge userId={1} organizationId={10} hideWhenAbsent={false} />);
     await waitFor(() => {
@@ -124,7 +124,7 @@ describe('VereinMembershipBadge', () => {
 
   it('renders a warning chip for status "overdue"', async () => {
     vi.mocked(api.get).mockResolvedValueOnce(
-      makeResponse({ status: 'overdue', amount_cents: 0, currency: 'EUR' })
+      makeResponse({ status: 'overdue' })
     );
     render(<VereinMembershipBadge userId={1} organizationId={10} hideWhenAbsent={false} />);
     await waitFor(() => {

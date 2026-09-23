@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api\Verein;
 
 use App\Core\TenantContext;
 use App\Http\Controllers\Api\BaseApiController;
+use App\Services\Verein\VereinDuesAuthorizationService;
 use App\Services\Verein\VereinDuesService;
 use Illuminate\Http\JsonResponse;
 
@@ -26,8 +27,10 @@ class MyDuesController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
-    public function __construct(private readonly VereinDuesService $duesService)
-    {
+    public function __construct(
+        private readonly VereinDuesService $duesService,
+        private readonly VereinDuesAuthorizationService $duesAuthorization,
+    ) {
     }
 
     public function myDues(): JsonResponse
@@ -79,24 +82,37 @@ class MyDuesController extends BaseApiController
         $forbidden = $this->guardFeature();
         if ($forbidden) return $forbidden;
 
-        $this->requireAuth();
+        $actorId = $this->requireAuth();
         $orgId = (int) ($this->getAllInput()['organization_id'] ?? 0);
         if ($orgId <= 0) {
             return $this->respondWithError('VALIDATION_ERROR', __('verein_dues.errors.organization_required'), 'organization_id', 422);
         }
 
-        $byYear = $this->duesService->getMembershipStatus($userId, $orgId);
         $currentYear = (string) date('Y');
-        $current = $byYear[$currentYear] ?? null;
+        $canViewHistory = $actorId === $userId
+            || $this->duesAuthorization->canManageDues(TenantContext::getId(), $actorId, $orgId);
 
-        return $this->respondWithData([
+        $byYear = null;
+        if ($canViewHistory) {
+            $byYear = $this->duesService->getMembershipStatus($userId, $orgId);
+            $current = $byYear[$currentYear] ?? null;
+        } else {
+            $current = $this->duesService->getCurrentMembershipStatus($userId, $orgId, (int) $currentYear);
+        }
+
+        $data = [
             'user_id' => $userId,
             'organization_id' => $orgId,
             'current_year' => (int) $currentYear,
             'current' => $current,
-            'history' => $byYear,
             'is_current_member' => $current !== null && in_array($current['status'] ?? null, ['paid', 'waived'], true),
-        ]);
+        ];
+
+        if ($canViewHistory) {
+            $data['history'] = $byYear;
+        }
+
+        return $this->respondWithData($data);
     }
 
     private function guardFeature(): ?JsonResponse

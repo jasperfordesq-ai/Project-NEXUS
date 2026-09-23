@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Membership badges no longer disclose another member's dues amounts, currencies, due dates, payment dates or prior-year history. The member and authorized club administrators retain full dues detail, while other signed-in members receive only the current status needed to render the badge (F-050).
+
 - Course detail now returns a syllabus rather than paid or scheduled lesson content to members who have not enrolled. Explicit free-preview lessons remain readable; enrolled learners receive content only after its drip schedule unlocks, while course authors and administrators retain full editing access (F-047).
 
 - Members with an active identity-verification badge can no longer clear their verified name or date of birth by sending JSON `null`, including while a platform administrator is viewing another community. Where guardian consent is enabled for volunteering, missing, invalid or future dates of birth now stop participation until age can be established; consent is rechecked at application, shift signup, waitlist entry and promotion, and group-reservation placement (F-045).

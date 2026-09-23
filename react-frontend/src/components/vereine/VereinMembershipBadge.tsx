@@ -23,7 +23,7 @@ interface MembershipStatusResponse {
   user_id: number;
   organization_id: number;
   current_year: number;
-  current: { status: string; amount_cents: number; currency: string } | null;
+  current: { status: string } | null;
   is_current_member: boolean;
 }
 

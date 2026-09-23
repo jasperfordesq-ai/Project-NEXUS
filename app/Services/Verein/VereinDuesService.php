@@ -437,6 +437,23 @@ class VereinDuesService
         return $byYear;
     }
 
+    /**
+     * Return only the current status needed by the cross-member badge.
+     *
+     * @return array{status:string}|null
+     */
+    public function getCurrentMembershipStatus(int $userId, int $organizationId, int $year): ?array
+    {
+        $status = DB::table('verein_member_dues')
+            ->where('user_id', $userId)
+            ->where('organization_id', $organizationId)
+            ->where('tenant_id', TenantContext::getId())
+            ->where('membership_year', $year)
+            ->value('status');
+
+        return $status === null ? null : ['status' => (string) $status];
+    }
+
     public function getMyDues(int $userId): array
     {
         $tenantId = TenantContext::getId();
