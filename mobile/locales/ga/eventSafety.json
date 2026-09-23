@@ -5,13 +5,25 @@
       "acknowledge": "Admhaigh an cód",
       "withdraw_acknowledgement": "Admháil a tharraingt siar",
       "request_guardian_consent": "Iarr toiliú caomhnóra",
-      "withdraw_guardian_consent": "Iarratas ar thoiliú a tharraingt siar"
+      "withdraw_guardian_consent": "Iarratas ar thoiliú a tharraingt siar",
+      "save_draft": "Sábháil dréacht",
+      "publish": "Ceanglais a fhoilsiú",
+      "archive": "Riachtanais chartlainne",
+      "cancel": "Cealaigh",
+      "confirm_archive": "Cartlann anois",
+      "change_member": "Athrú ball",
+      "save_review": "Sábháil cinneadh athbhreithnithe",
+      "cancel_edit": "Cealaigh eagarthóireacht",
+      "edit_review": "Cinneadh a nuashonrú",
+      "withdraw_review": "Cinneadh a tharraingt siar"
     },
     "confirmations": {
       "withdraw_code_title": "Tarraing siar d’admháil ar an gcód iompair?",
       "withdraw_code_body": "D’fhéadfadh sé seo bac a chur ar do rannpháirtíocht go dtí go n-admhóidh tú an leagan reatha arís.",
       "withdraw_guardian_title": "Tarraing siar an t-iarratas ar thoiliú caomhnóra?",
-      "withdraw_guardian_body": "Beidh an t-iarratas reatha neamhbhailí. Seans go mbeidh ort iarratas nua a sheoladh sula nglacfaidh tú páirt."
+      "withdraw_guardian_body": "Beidh an t-iarratas reatha neamhbhailí. Seans go mbeidh ort iarratas nua a sheoladh sula nglacfaidh tú páirt.",
+      "withdraw_review_title": "Tarraing siar an cinneadh rannpháirtíochta seo?",
+      "withdraw_review_body": "Cuireann sé seo deireadh leis an gcinneadh gníomhach do {{name}} agus coinnítear stair an iniúchta."
     },
     "attendee": {
       "title": "Ceanglais rannpháirtíochta",
@@ -95,6 +107,118 @@
         "withdrawn": "Tarraingthe siar",
         "expired": "Imithe in éag"
       }
+    },
+    "organizer": {
+      "title": "Sábháilteacht imeachtaí",
+      "description": "Riachtanais rannpháirtíochta leagan a shocrú agus taifead rialaithe, in-iniúchta ar chinntí sábháilteachta a choinneáil.",
+      "loading": "Sábháilteacht imeachtaí íoslódáil",
+      "load_error_title": "Níl sábháilteacht imeachtaí ar fáil",
+      "load_error_description": "Níorbh fhéidir an beartas sábháilteachta agus an mórleabhar athbhreithnithe a luchtú. Níor athraíodh aon chinneadh sábháilteachta.",
+      "configuration_invalid": "Níl forfheidhmiú sábháilteachta ar fáil toisc go bhfuil a chumraíocht neamhbhailí.",
+      "shadow_title": "Modh breathnadóireachta",
+      "shadow_description": "Déantar riachtanais a mheas agus a thaifeadadh, ach ní chuireann siad bac ar rannpháirtíocht fós.",
+      "read_only": "Is féidir leat an polasaí seo a fheiceáil ach ní féidir leat a riachtanais a athrú.",
+      "action_error": "Níorbh fhéidir an t-athrú sábháilteachta a shábháil. Athnuaigh an spás oibre agus bain triail eile as.",
+      "success": {
+        "saved": "Ceanglais sábháilteachta a shábháil mar dhréacht.",
+        "published": "Ceanglais sábháilteachta foilsithe.",
+        "archived": "Ceanglais sábháilteachta curtha i gcartlann."
+      }
+    },
+    "requirements": {
+      "title": "Beartas rannpháirtíochta",
+      "description": "Tá na dréacht-athruithe príobháideach go dtí go bhfoilsítear iad. Cruthaíonn an fhoilsitheoireacht leagan nach féidir a mhalartú le haghaidh meaitseáil fianaise.",
+      "minimum_age": "Aois íosta",
+      "minimum_age_hint": "Fág bán nuair nach bhfuil aois íosta ag an imeacht.",
+      "guardian_required": "Toiliú caomhnóra a éileamh do mhionaoisigh",
+      "guardian_required_hint": "Tá toiliú ceangailte leis an leagan ceanglais fhoilsithe chruinn agus dáta an imeachta.",
+      "minor_threshold": "Tairseach mionaoise",
+      "minor_threshold_hint": "Teastaíonn toiliú ó bhaill faoi bhun na haoise seo ag an imeacht.",
+      "code_required": "Admháil cód iompair a éileamh",
+      "code_required_hint": "Ní mór dóibh siúd atá i láthair an téacs cruinn foilsithe a admháil sula nglacfaidh siad páirt.",
+      "code_version": "Leagan téacs cód",
+      "code_version_hint": "Úsáid aitheantóir brí, amhail imeacht-iompar-2026-01.",
+      "code_text": "Cód iompair",
+      "code_text_hint": "Luaigh na téarmaí iomlána a chaithfidh an lucht freastail a léamh agus a admháil.",
+      "archive_title": "Na ceanglais sábháilteachta seo a chur i gcartlann?",
+      "archive_description": "Ní polasaí rannpháirtíochta gníomhaí iad ceanglais chartlainne. Coinnítear an fhianaise agus an stair iniúchta i gcónaí.",
+      "status": {
+        "draft": "Dréacht",
+        "published": "Foilsithe",
+        "archived": "Cartlannaithe"
+      }
+    },
+    "reviews": {
+      "title": "Léirmheasanna ar rannpháirtíocht",
+      "description": "Cinntí rialaithe a thaifeadadh gan nótaí saor-théacs, sonraí teagmhála, nó taifid teagmhais.",
+      "new_title": "Taifead a dhéanamh ar chinneadh",
+      "edit_title": "Nuashonraigh an cinneadh seo",
+      "member_label": "Aimsigh ball",
+      "member_hint": "Cuardaigh de réir ainm, ansin roghnaigh an ball ceart.",
+      "member_search_error": "Níorbh fhéidir baill a chuardach. Bain triail eile as.",
+      "decision_label": "Cinneadh",
+      "reason_label": "Cúis rialaithe",
+      "effective_from": "Éifeachtach ó",
+      "effective_until": "Éifeachtach go dtí",
+      "effective_until_hint": "Fág bán é nuair nach mbíonn deireadh sceidealta leis an gcinneadh.",
+      "no_notes_notice": "Ar mhaithe le príobháideacht, ní ghlacann an mórleabhar seo ach le cóid um chúiseanna rialaithe. Taifead teagmhais agus fianaise íogair sa chóras cosanta ceadaithe.",
+      "saved": "Athbhreithniú rannpháirtíochta sábháilte.",
+      "withdrawn": "Tarraingíodh siar athbhreithniú rannpháirtíochta.",
+      "action_error": "Níorbh fhéidir an t-athbhreithniú rannpháirtíochta a athrú. Athnuaigh agus bain triail eile as.",
+      "history_title": "Mórleabhar athbhreithnithe",
+      "total": "{{count}} cinneadh taifeadta",
+      "empty": "Níl aon léirmheasanna rannpháirtíochta taifeadta don imeacht seo.",
+      "reviewed_by": "Athbhreithnithe ag",
+      "version": "Leagan Cinnidh",
+      "audit_history": "Stair iniúchta ({{count}} iontrálacha)",
+      "pagination": "Leathanaigh athbhreithnithe rannpháirtíochta"
+    },
+    "rollout": {
+      "off": "Forfheidhmiú as",
+      "shadow": "Modh breathnadóireachta",
+      "enforce": "Forfheidhmiú gníomhach"
+    },
+    "decisions": {
+      "deny": "Diúltaigh rannpháirtíocht",
+      "remove": "Bain den imeacht"
+    },
+    "review_status": {
+      "active": "Gníomhach",
+      "withdrawn": "Tarraingthe siar",
+      "expired": "imithe in éag"
+    },
+    "mobile": {
+      "access_hint": "Seans nach bhfuil cead agat sábháilteacht an imeachta seo a bhainistiú.",
+      "recovery_draft": "Sábháil dréacht an bheartais rannpháirtíochta",
+      "recovery_publish": "Foilsigh an beartas rannpháirtíochta",
+      "recovery_archive": "Cartlannaigh an beartas rannpháirtíochta",
+      "recovery_review": "Taifead cinneadh do bhall #{{id}}",
+      "recovery_withdraw": "Tarraing siar cinneadh #{{id}}",
+      "rejected_title": "Níor cuireadh an t-athrú sábháilte i bhfeidhm",
+      "rejected_hint": "D’athraigh duine éigin an beartas nó an cinneadh seo ar dtús. Athbhreithnigh na luachanna reatha, ansin cuir an t-athrú sábháilte i leataobh sula ndéanfaidh tú ceann eile.",
+      "discard_title": "An bhfuil tú ag iarraidh an t-athrú diúltaithe seo a chur i leataobh?",
+      "discard_hint": "Baintear an t-athrú sábháilte den ghléas seo. Ní athraíonn sé socruithe sábháilteachta an imeachta.",
+      "discard_label": "Cuir an t-athrú sábháilte i leataobh",
+      "action_error": "Níorbh fhéidir an t-athrú sábháilteachta a chríochnú. Seiceáil an t-athrú sábháilte sula ndéanfaidh tú iarracht eile.",
+      "invalid_age": "Cuir isteach slánuimhir ó 0 go 125.",
+      "change_date": "Athraigh an dáta",
+      "change_time": "Athraigh an t-am",
+      "set_until": "Socraigh dáta deiridh",
+      "clear_until": "Gan dáta deiridh",
+      "until_invalid": "Caithfidh an deireadh a bheith i ndiaidh an tosaigh.",
+      "timezone": "Taispeántar na hamanna in {{timezone}}.",
+      "page_status": "Leathanach {{page}} as {{pages}}",
+      "previous_page": "An leathanach roimhe seo",
+      "next_page": "An chéad leathanach eile",
+      "member_fallback": "Ball #{{id}}",
+      "select_member": "Roghnaigh {{name}}",
+      "searching": "Ag cuardach…",
+      "no_results": "Níor aimsíodh aon bhaill.",
+      "refresh_title": "Athnuaigh sábháilteacht an imeachta",
+      "refresh_hint": "Glacadh le d’athrú. Athnuaigh chun na luachanna reatha a fheiceáil sula ndéanfaidh tú athrú eile.",
+      "no_requirements": "Níor sábháladh aon bheartas rannpháirtíochta fós.",
+      "policy_revision": "Athbhreithniú {{revision}}, leagan an bheartais {{version}}",
+      "archived_notice": "Tá an beartas seo cartlannaithe. Cuirtear tús le beartas nua nuair a shábháiltear dréacht nua."
     }
   }
 }

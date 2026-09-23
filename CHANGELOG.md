@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Event organisers can now manage event safety in the mobile app: set the participation policy (minimum age, guardian consent for minors, code of conduct), save it as a draft, publish or archive it, and record, update or withdraw participation review decisions with controlled reasons and effective dates. Interrupted changes stay saved on the device and are only resent when the organiser chooses to. Available in all seven app languages.
+
 - Added encrypted, account-scoped recovery for native organiser Safety requests, preserving exact changes across interrupted responses and preventing uncertain decisions from being replaced. The organiser screen is still being completed.
 
 - Added validated native API support for organiser event safety drafts, publication, archiving and paginated participation reviews, preserving revision checks and request identities. The native organiser Safety workspace is still being completed.

@@ -5,13 +5,25 @@
       "acknowledge": "Reconocer el código",
       "withdraw_acknowledgement": "Retirar reconocimiento",
       "request_guardian_consent": "Solicitar consentimiento del tutor",
-      "withdraw_guardian_consent": "Retirar la solicitud de consentimiento"
+      "withdraw_guardian_consent": "Retirar la solicitud de consentimiento",
+      "save_draft": "Guardar borrador",
+      "publish": "Requisitos de publicación",
+      "archive": "Requisitos de archivo",
+      "cancel": "Cancelar",
+      "confirm_archive": "Archivar ahora",
+      "change_member": "Cambiar miembro",
+      "save_review": "Guardar decisión de revisión",
+      "cancel_edit": "Cancelar edición",
+      "edit_review": "Actualizar decisión",
+      "withdraw_review": "decisión de retirar"
     },
     "confirmations": {
       "withdraw_code_title": "¿Retirar tu aceptación del código de conducta?",
       "withdraw_code_body": "Esto puede impedir tu participación hasta que vuelvas a aceptar la versión actual.",
       "withdraw_guardian_title": "¿Retirar la solicitud de consentimiento del tutor?",
-      "withdraw_guardian_body": "La solicitud actual dejará de ser válida. Puede que tengas que enviar una nueva antes de participar."
+      "withdraw_guardian_body": "La solicitud actual dejará de ser válida. Puede que tengas que enviar una nueva antes de participar.",
+      "withdraw_review_title": "¿Retirar esta decisión de participación?",
+      "withdraw_review_body": "Esto finaliza la decisión activa para {{name}} y conserva su historial de auditoría."
     },
     "attendee": {
       "title": "Requisitos de participación",
@@ -95,6 +107,118 @@
         "withdrawn": "Withdrawn",
         "expired": "Expired"
       }
+    },
+    "organizer": {
+      "title": "Seguridad en eventos",
+      "description": "Establezca requisitos de participación versionados y mantenga un registro controlado y auditable de las decisiones de seguridad.",
+      "loading": "Seguridad de eventos de carga",
+      "load_error_title": "La seguridad del evento no está disponible",
+      "load_error_description": "No se pudo cargar la política de seguridad y el libro de revisión. No se ha modificado ninguna decisión de seguridad.",
+      "configuration_invalid": "La aplicación de seguridad no está disponible porque su configuración no es válida.",
+      "shadow_title": "Modo de observación",
+      "shadow_description": "Los requisitos se evalúan y registran, pero aún no bloquean la participación.",
+      "read_only": "Puede ver esta política pero no puede cambiar sus requisitos.",
+      "action_error": "No se pudo guardar el cambio de seguridad. Actualice el espacio de trabajo e inténtelo de nuevo.",
+      "success": {
+        "saved": "Requisitos de seguridad guardados como borrador.",
+        "published": "Requisitos de seguridad publicados.",
+        "archived": "Requisitos de seguridad archivados."
+      }
+    },
+    "requirements": {
+      "title": "Política de participación",
+      "description": "Los borradores de cambios son privados hasta su publicación. La publicación crea una versión inmutable para la comparación de pruebas.",
+      "minimum_age": "Edad mínima",
+      "minimum_age_hint": "Dejar en blanco cuando el evento no tenga edad mínima.",
+      "guardian_required": "Requerir el consentimiento del tutor para menores",
+      "guardian_required_hint": "El consentimiento está vinculado a la versión exacta del requisito publicado y a la fecha del evento.",
+      "minor_threshold": "Umbral de edad menor",
+      "minor_threshold_hint": "Los miembros menores de esta edad en el evento necesitan consentimiento.",
+      "code_required": "Requerir reconocimiento del código de conducta",
+      "code_required_hint": "Los asistentes deben reconocer el texto exacto publicado antes de participar.",
+      "code_version": "Versión de texto del código",
+      "code_version_hint": "Utilice un identificador significativo, como event-conduct-2026-01.",
+      "code_text": "Código de conducta",
+      "code_text_hint": "Indique los términos completos que los asistentes deben leer y reconocer.",
+      "archive_title": "¿Archivar estos requisitos de seguridad?",
+      "archive_description": "Los requisitos archivados dejan de ser la política de participación activa. La evidencia y el historial de auditoría permanecen conservados.",
+      "status": {
+        "draft": "Borrador",
+        "published": "Publicado",
+        "archived": "Archivado"
+      }
+    },
+    "reviews": {
+      "title": "Revisiones de participación",
+      "description": "Registre decisiones controladas sin notas de texto libre, datos de contacto ni registros de incidentes.",
+      "new_title": "Registrar una decisión",
+      "edit_title": "Actualizar esta decisión",
+      "member_label": "encontrar un miembro",
+      "member_hint": "Busque por nombre y luego seleccione el miembro correcto.",
+      "member_search_error": "No se pudo buscar a los miembros. Intentar otra vez.",
+      "decision_label": "Decisión",
+      "reason_label": "razón controlada",
+      "effective_from": "Efectivo desde",
+      "effective_until": "Efectivo hasta",
+      "effective_until_hint": "Dejar en blanco cuando la decisión no tenga final previsto.",
+      "no_notes_notice": "Por motivos de privacidad, este libro mayor acepta únicamente códigos de motivo controlados. Registrar incidentes y evidencia sensible en el sistema de salvaguardia aprobado.",
+      "saved": "Revisión de participación guardada.",
+      "withdrawn": "Revisión de participación retirada.",
+      "action_error": "La revisión de participación no se pudo cambiar. Actualiza e inténtalo de nuevo.",
+      "history_title": "Revisar el libro mayor",
+      "total": "{{count}} decisiones registradas",
+      "empty": "No se han registrado reseñas de participación para este evento.",
+      "reviewed_by": "Revisado por",
+      "version": "Versión de decisión",
+      "audit_history": "Historial de auditoría (entradas {{count}})",
+      "pagination": "Páginas de revisión de participación"
+    },
+    "rollout": {
+      "off": "Ejecución desactivada",
+      "shadow": "Modo de observación",
+      "enforce": "Ejecución activa"
+    },
+    "decisions": {
+      "deny": "Negar participación",
+      "remove": "Quitar del evento"
+    },
+    "review_status": {
+      "active": "Activo",
+      "withdrawn": "Retirado",
+      "expired": "Venció"
+    },
+    "mobile": {
+      "access_hint": "Es posible que no tengas permiso para gestionar la seguridad de este evento.",
+      "recovery_draft": "Guardar el borrador de la política de participación",
+      "recovery_publish": "Publicar la política de participación",
+      "recovery_archive": "Archivar la política de participación",
+      "recovery_review": "Registrar una decisión para el miembro #{{id}}",
+      "recovery_withdraw": "Retirar la decisión #{{id}}",
+      "rejected_title": "El cambio guardado no se aplicó",
+      "rejected_hint": "Alguien cambió primero esta política o decisión. Revisa los valores actuales y descarta el cambio guardado antes de hacer otro.",
+      "discard_title": "¿Descartar este cambio rechazado?",
+      "discard_hint": "Esto elimina el cambio guardado de este dispositivo. No cambia la configuración de seguridad del evento.",
+      "discard_label": "Descartar el cambio guardado",
+      "action_error": "No se pudo completar el cambio de seguridad. Revisa el cambio guardado antes de volver a intentarlo.",
+      "invalid_age": "Introduce un número entero de 0 a 125.",
+      "change_date": "Cambiar fecha",
+      "change_time": "Cambiar hora",
+      "set_until": "Establecer una fecha de fin",
+      "clear_until": "Sin fecha de fin",
+      "until_invalid": "El fin debe ser posterior al inicio.",
+      "timezone": "Las horas se muestran en {{timezone}}.",
+      "page_status": "Página {{page}} de {{pages}}",
+      "previous_page": "Página anterior",
+      "next_page": "Página siguiente",
+      "member_fallback": "Miembro #{{id}}",
+      "select_member": "Seleccionar a {{name}}",
+      "searching": "Buscando…",
+      "no_results": "No se encontraron miembros.",
+      "refresh_title": "Actualizar la seguridad del evento",
+      "refresh_hint": "Tu cambio fue aceptado. Actualiza para ver los valores actuales antes de hacer otro cambio.",
+      "no_requirements": "Todavía no se ha guardado ninguna política de participación.",
+      "policy_revision": "Revisión {{revision}}, versión de la política {{version}}",
+      "archived_notice": "Esta política está archivada. Guardar un nuevo borrador inicia una nueva política."
     }
   }
 }

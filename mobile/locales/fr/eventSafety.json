@@ -5,13 +5,25 @@
       "acknowledge": "Reconnaître le code",
       "withdraw_acknowledgement": "Retirer un accusé de réception",
       "request_guardian_consent": "Demander le consentement du tuteur",
-      "withdraw_guardian_consent": "Retirer la demande de consentement"
+      "withdraw_guardian_consent": "Retirer la demande de consentement",
+      "save_draft": "Enregistrer le brouillon",
+      "publish": "Exigences de publication",
+      "archive": "Exigences en matière d'archivage",
+      "cancel": "Annuler",
+      "confirm_archive": "Archiver maintenant",
+      "change_member": "Changer de membre",
+      "save_review": "Enregistrer la décision de révision",
+      "cancel_edit": "Annuler la modification",
+      "edit_review": "Mettre à jour la décision",
+      "withdraw_review": "Retirer la décision"
     },
     "confirmations": {
       "withdraw_code_title": "Retirer votre acceptation du code de conduite ?",
       "withdraw_code_body": "Cela peut bloquer votre participation jusqu’à ce que vous acceptiez à nouveau la version actuelle.",
       "withdraw_guardian_title": "Retirer la demande de consentement du responsable légal ?",
-      "withdraw_guardian_body": "La demande actuelle deviendra invalide. Vous devrez peut-être en envoyer une nouvelle avant de participer."
+      "withdraw_guardian_body": "La demande actuelle deviendra invalide. Vous devrez peut-être en envoyer une nouvelle avant de participer.",
+      "withdraw_review_title": "Retirer cette décision de participation ?",
+      "withdraw_review_body": "Cela met fin à la décision active pour {{name}} tout en conservant son historique d’audit."
     },
     "attendee": {
       "title": "Conditions de participation",
@@ -95,6 +107,118 @@
         "withdrawn": "Withdrawn",
         "expired": "Expired"
       }
+    },
+    "organizer": {
+      "title": "Sécurité des événements",
+      "description": "Définissez des exigences de participation versionnées et conservez un enregistrement contrôlé et vérifiable des décisions de sécurité.",
+      "loading": "Sécurité des événements de chargement",
+      "load_error_title": "La sécurité de l'événement n'est pas disponible",
+      "load_error_description": "La politique de sécurité et le grand livre de révision n'ont pas pu être chargés. Aucune décision de sécurité n’a été modifiée.",
+      "configuration_invalid": "L'application de la sécurité n'est pas disponible car sa configuration n'est pas valide.",
+      "shadow_title": "Mode observation",
+      "shadow_description": "Les exigences sont évaluées et enregistrées, mais elles ne bloquent pas encore la participation.",
+      "read_only": "Vous pouvez consulter cette politique mais ne pouvez pas modifier ses exigences.",
+      "action_error": "La modification de sécurité n'a pas pu être enregistrée. Actualisez l'espace de travail et réessayez.",
+      "success": {
+        "saved": "Exigences de sécurité enregistrées sous forme de brouillon.",
+        "published": "Exigences de sécurité publiées.",
+        "archived": "Exigences de sécurité archivées."
+      }
+    },
+    "requirements": {
+      "title": "Politique de participation",
+      "description": "Les projets de modifications sont privés jusqu’à leur publication. La publication crée une version immuable pour la correspondance des preuves.",
+      "minimum_age": "Âge minimum",
+      "minimum_age_hint": "Laissez vide lorsque l’événement n’a pas d’âge minimum.",
+      "guardian_required": "Exiger le consentement du tuteur pour les mineurs",
+      "guardian_required_hint": "Le consentement est lié à la version exacte de l’exigence publiée et à la date de l’événement.",
+      "minor_threshold": "Seuil d'âge mineur",
+      "minor_threshold_hint": "Les membres en dessous de cet âge à l’événement doivent obtenir leur consentement.",
+      "code_required": "Exiger la reconnaissance du code de conduite",
+      "code_required_hint": "Les participants doivent reconnaître le texte exact publié avant de participer.",
+      "code_version": "Version texte du code",
+      "code_version_hint": "Utilisez un identifiant significatif, tel que event-conduct-2026-01.",
+      "code_text": "Code de conduite",
+      "code_text_hint": "Indiquez les conditions complètes que les participants doivent lire et reconnaître.",
+      "archive_title": "Archiver ces exigences de sécurité ?",
+      "archive_description": "Les exigences archivées ne constituent plus la politique de participation active. Les preuves et l’historique d’audit restent conservés.",
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      }
+    },
+    "reviews": {
+      "title": "Examens de participation",
+      "description": "Enregistrez les décisions contrôlées sans notes en texte libre, coordonnées ou enregistrements d'incidents.",
+      "new_title": "Enregistrer une décision",
+      "edit_title": "Mettre à jour cette décision",
+      "member_label": "Trouver un membre",
+      "member_hint": "Recherchez par nom, puis sélectionnez le bon membre.",
+      "member_search_error": "Les membres n'ont pas pu être recherchés. Essayer à nouveau.",
+      "decision_label": "Décision",
+      "reason_label": "Raison contrôlée",
+      "effective_from": "En vigueur à partir de",
+      "effective_until": "En vigueur jusqu'à",
+      "effective_until_hint": "Laissez vide lorsque la décision n’a pas de fin programmée.",
+      "no_notes_notice": "Pour des raisons de confidentialité, ce grand livre accepte uniquement les codes de motif contrôlés. Enregistrez les incidents et les preuves sensibles dans le système de sauvegarde approuvé.",
+      "saved": "Bilan de participation enregistré.",
+      "withdrawn": "Examen de la participation retiré.",
+      "action_error": "L'examen de la participation n'a pas pu être modifié. Actualisez et réessayez.",
+      "history_title": "Réviser le grand livre",
+      "total": "{{count}} décisions enregistrées",
+      "empty": "Aucun avis de participation n'a été enregistré pour cet événement.",
+      "reviewed_by": "Révisé par",
+      "version": "Version de la décision",
+      "audit_history": "Historique d'audit (entrées {{count}})",
+      "pagination": "Pages d'évaluation des participations"
+    },
+    "rollout": {
+      "off": "Application désactivée",
+      "shadow": "Mode observation",
+      "enforce": "Application active"
+    },
+    "decisions": {
+      "deny": "Refuser la participation",
+      "remove": "Supprimer de l'événement"
+    },
+    "review_status": {
+      "active": "Actif",
+      "withdrawn": "Retirée",
+      "expired": "Expiré"
+    },
+    "mobile": {
+      "access_hint": "Vous n'avez peut-être pas l'autorisation de gérer la sécurité de cet événement.",
+      "recovery_draft": "Enregistrer le brouillon de la politique de participation",
+      "recovery_publish": "Publier la politique de participation",
+      "recovery_archive": "Archiver la politique de participation",
+      "recovery_review": "Enregistrer une décision pour le membre n° {{id}}",
+      "recovery_withdraw": "Retirer la décision n° {{id}}",
+      "rejected_title": "La modification enregistrée n'a pas été appliquée",
+      "rejected_hint": "Quelqu'un a modifié cette politique ou cette décision en premier. Vérifiez les valeurs actuelles, puis supprimez la modification enregistrée avant d'en faire une autre.",
+      "discard_title": "Supprimer cette modification refusée ?",
+      "discard_hint": "Cela supprime la modification enregistrée de cet appareil. Les paramètres de sécurité de l'événement ne changent pas.",
+      "discard_label": "Supprimer la modification enregistrée",
+      "action_error": "La modification de sécurité n'a pas pu être effectuée. Vérifiez la modification enregistrée avant de réessayer.",
+      "invalid_age": "Saisissez un nombre entier de 0 à 125.",
+      "change_date": "Modifier la date",
+      "change_time": "Modifier l'heure",
+      "set_until": "Définir une date de fin",
+      "clear_until": "Aucune date de fin",
+      "until_invalid": "La fin doit être postérieure au début.",
+      "timezone": "Les heures sont affichées en {{timezone}}.",
+      "page_status": "Page {{page}} sur {{pages}}",
+      "previous_page": "Page précédente",
+      "next_page": "Page suivante",
+      "member_fallback": "Membre n° {{id}}",
+      "select_member": "Sélectionner {{name}}",
+      "searching": "Recherche…",
+      "no_results": "Aucun membre trouvé.",
+      "refresh_title": "Actualiser la sécurité de l'événement",
+      "refresh_hint": "Votre modification a été acceptée. Actualisez pour voir les valeurs actuelles avant d'en faire une autre.",
+      "no_requirements": "Aucune politique de participation n'a encore été enregistrée.",
+      "policy_revision": "Révision {{revision}}, version de la politique {{version}}",
+      "archived_notice": "Cette politique est archivée. Enregistrer un nouveau brouillon démarre une nouvelle politique."
     }
   }
 }

@@ -121,6 +121,14 @@ describe('event management load lifecycle', () => {
     expect(router.replace).toHaveBeenCalledTimes(1);
   });
 
+  it('opens the dedicated Safety workspace rather than the event detail screen', async () => {
+    mockParams = { id: '7', section: 'safety' };
+    jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { edit: true } } } as never);
+    render(<EventManageScreen />);
+    await act(async () => {});
+    expect(router.replace).toHaveBeenCalledWith({ pathname: '/(modals)/event-safety', params: { id: '7' } });
+  });
+
   it.each([401, 403, 404])('removes retained management actions after %s and during retry', async status => {
     const screen = render(<EventManageScreen />);
     await screen.findByText('Edit event');

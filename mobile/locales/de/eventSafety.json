@@ -5,13 +5,25 @@
       "acknowledge": "Bestätigen Sie den Code",
       "withdraw_acknowledgement": "Bestätigung zurückziehen",
       "request_guardian_consent": "Fordern Sie die Zustimmung des Erziehungsberechtigten an",
-      "withdraw_guardian_consent": "Einwilligungsanfrage zurückziehen"
+      "withdraw_guardian_consent": "Einwilligungsanfrage zurückziehen",
+      "save_draft": "Entwurf speichern",
+      "publish": "Anforderungen veröffentlichen",
+      "archive": "Archivanforderungen",
+      "cancel": "Abbrechen",
+      "confirm_archive": "Jetzt archivieren",
+      "change_member": "Mitglied wechseln",
+      "save_review": "Bewertungsentscheidung speichern",
+      "cancel_edit": "Bearbeitung abbrechen",
+      "edit_review": "Entscheidung aktualisieren",
+      "withdraw_review": "Entscheidung zurückziehen"
     },
     "confirmations": {
       "withdraw_code_title": "Bestätigung des Verhaltenskodex zurückziehen?",
       "withdraw_code_body": "Dies kann Ihre Teilnahme sperren, bis Sie die aktuelle Fassung erneut bestätigen.",
       "withdraw_guardian_title": "Anfrage zur Zustimmung der Aufsichtsperson zurückziehen?",
-      "withdraw_guardian_body": "Die aktuelle Anfrage wird ungültig. Vor der Teilnahme müssen Sie möglicherweise eine neue Anfrage senden."
+      "withdraw_guardian_body": "Die aktuelle Anfrage wird ungültig. Vor der Teilnahme müssen Sie möglicherweise eine neue Anfrage senden.",
+      "withdraw_review_title": "Diese Teilnahmeentscheidung zurückziehen?",
+      "withdraw_review_body": "Damit wird die aktive Entscheidung für {{name}} beendet; der Prüfverlauf bleibt erhalten."
     },
     "attendee": {
       "title": "Teilnahmevoraussetzungen",
@@ -95,6 +107,118 @@
         "withdrawn": "Withdrawn",
         "expired": "Expired"
       }
+    },
+    "organizer": {
+      "title": "Veranstaltungssicherheit",
+      "description": "Legen Sie versionierte Teilnahmeanforderungen fest und führen Sie eine kontrollierte, überprüfbare Aufzeichnung von Sicherheitsentscheidungen.",
+      "loading": "Sicherheit beim Laden von Ereignissen",
+      "load_error_title": "Veranstaltungssicherheit ist nicht verfügbar",
+      "load_error_description": "Die Sicherheitsrichtlinie und das Überprüfungsbuch konnten nicht geladen werden. Es wurde keine Sicherheitsentscheidung geändert.",
+      "configuration_invalid": "Die Sicherheitsdurchsetzung ist nicht verfügbar, da die Konfiguration ungültig ist.",
+      "shadow_title": "Beobachtungsmodus",
+      "shadow_description": "Anforderungen werden bewertet und erfasst, blockieren aber noch nicht die Teilnahme.",
+      "read_only": "Sie können diese Richtlinie anzeigen, ihre Anforderungen jedoch nicht ändern.",
+      "action_error": "Die Sicherheitsänderung konnte nicht gespeichert werden. Aktualisieren Sie den Arbeitsbereich und versuchen Sie es erneut.",
+      "success": {
+        "saved": "Sicherheitsanforderungen als Entwurf gespeichert.",
+        "published": "Sicherheitsanforderungen veröffentlicht.",
+        "archived": "Sicherheitsanforderungen archiviert."
+      }
+    },
+    "requirements": {
+      "title": "Teilnahmepolitik",
+      "description": "Entwurfsänderungen sind bis zur Veröffentlichung privat. Durch die Veröffentlichung wird eine unveränderliche Version für den Beweisabgleich erstellt.",
+      "minimum_age": "Mindestalter",
+      "minimum_age_hint": "Lassen Sie das Feld leer, wenn für die Veranstaltung kein Mindestalter gilt.",
+      "guardian_required": "Für Minderjährige ist die Zustimmung des Erziehungsberechtigten erforderlich",
+      "guardian_required_hint": "Die Zustimmung ist an die genaue veröffentlichte Anforderungsversion und das Veranstaltungsdatum gebunden.",
+      "minor_threshold": "Untere Altersgrenze",
+      "minor_threshold_hint": "Mitglieder unter diesem Alter benötigen bei der Veranstaltung eine Einwilligung.",
+      "code_required": "Erfordern eine Anerkennung des Verhaltenskodex",
+      "code_required_hint": "Teilnehmer müssen vor der Teilnahme den genauen veröffentlichten Text zur Kenntnis nehmen.",
+      "code_version": "Codetextversion",
+      "code_version_hint": "Verwenden Sie eine aussagekräftige Kennung, z. B. „event-conduct-2026-01“.",
+      "code_text": "Verhaltenskodex",
+      "code_text_hint": "Geben Sie die vollständigen Bedingungen an, die die Teilnehmer lesen und anerkennen müssen.",
+      "archive_title": "Diese Sicherheitsanforderungen archivieren?",
+      "archive_description": "Archivierte Anforderungen gelten nicht mehr als aktive Teilnahmerichtlinie. Die Nachweise und die Prüfhistorie bleiben erhalten.",
+      "status": {
+        "draft": "Entwurf",
+        "published": "Veröffentlicht",
+        "archived": "Archiviert"
+      }
+    },
+    "reviews": {
+      "title": "Teilnahmeberichte",
+      "description": "Erfassen Sie kontrollierte Entscheidungen ohne Freitextnotizen, Kontaktdaten oder Vorfallaufzeichnungen.",
+      "new_title": "Zeichnen Sie eine Entscheidung auf",
+      "edit_title": "Aktualisieren Sie diese Entscheidung",
+      "member_label": "Finden Sie ein Mitglied",
+      "member_hint": "Suchen Sie nach Namen und wählen Sie dann das richtige Mitglied aus.",
+      "member_search_error": "Mitglieder konnten nicht durchsucht werden. Versuchen Sie es erneut.",
+      "decision_label": "Entscheidung",
+      "reason_label": "Kontrollierter Grund",
+      "effective_from": "Gültig ab",
+      "effective_until": "Gültig bis",
+      "effective_until_hint": "Lassen Sie das Feld leer, wenn die Entscheidung kein geplantes Ende hat.",
+      "no_notes_notice": "Aus Datenschutzgründen akzeptiert dieses Ledger nur kontrollierte Ursachencodes. Erfassen Sie Vorfälle und sensible Beweise im genehmigten Sicherungssystem.",
+      "saved": "Teilnahmebewertung gespeichert.",
+      "withdrawn": "Teilnahmebesprechung zurückgezogen.",
+      "action_error": "Die Teilnahmebeurteilung konnte nicht geändert werden. Aktualisieren Sie und versuchen Sie es erneut.",
+      "history_title": "Überprüfen Sie das Hauptbuch",
+      "total": "{{count}} erfasste Entscheidungen",
+      "empty": "Für diese Veranstaltung wurden keine Teilnahmebewertungen erfasst.",
+      "reviewed_by": "Bewertet von",
+      "version": "Entscheidungsversion",
+      "audit_history": "Audit-Verlauf ({{count}}-Einträge)",
+      "pagination": "Seiten zur Teilnahmeüberprüfung"
+    },
+    "rollout": {
+      "off": "Durchsetzung aus",
+      "shadow": "Beobachtungsmodus",
+      "enforce": "Durchsetzung aktiv"
+    },
+    "decisions": {
+      "deny": "Teilnahme verweigern",
+      "remove": "Aus der Veranstaltung entfernen"
+    },
+    "review_status": {
+      "active": "Aktiv",
+      "withdrawn": "Zurückgezogen",
+      "expired": "Abgelaufen"
+    },
+    "mobile": {
+      "access_hint": "Möglicherweise sind Sie nicht berechtigt, die Sicherheit dieser Veranstaltung zu verwalten.",
+      "recovery_draft": "Entwurf der Teilnahmerichtlinie speichern",
+      "recovery_publish": "Teilnahmerichtlinie veröffentlichen",
+      "recovery_archive": "Teilnahmerichtlinie archivieren",
+      "recovery_review": "Entscheidung für Mitglied #{{id}} erfassen",
+      "recovery_withdraw": "Entscheidung #{{id}} zurückziehen",
+      "rejected_title": "Gespeicherte Änderung wurde nicht übernommen",
+      "rejected_hint": "Jemand hat diese Richtlinie oder Entscheidung zuerst geändert. Prüfen Sie die aktuellen Werte und verwerfen Sie dann die gespeicherte Änderung, bevor Sie eine neue vornehmen.",
+      "discard_title": "Diese abgelehnte Änderung verwerfen?",
+      "discard_hint": "Dadurch wird die gespeicherte Änderung von diesem Gerät entfernt. Die Sicherheitseinstellungen der Veranstaltung bleiben unverändert.",
+      "discard_label": "Gespeicherte Änderung verwerfen",
+      "action_error": "Die Sicherheitsänderung konnte nicht abgeschlossen werden. Prüfen Sie die gespeicherte Änderung, bevor Sie es erneut versuchen.",
+      "invalid_age": "Geben Sie eine ganze Zahl von 0 bis 125 ein.",
+      "change_date": "Datum ändern",
+      "change_time": "Uhrzeit ändern",
+      "set_until": "Enddatum festlegen",
+      "clear_until": "Kein Enddatum",
+      "until_invalid": "Das Ende muss nach dem Beginn liegen.",
+      "timezone": "Zeiten werden in {{timezone}} angezeigt.",
+      "page_status": "Seite {{page}} von {{pages}}",
+      "previous_page": "Vorherige Seite",
+      "next_page": "Nächste Seite",
+      "member_fallback": "Mitglied #{{id}}",
+      "select_member": "{{name}} auswählen",
+      "searching": "Suche läuft…",
+      "no_results": "Keine Mitglieder gefunden.",
+      "refresh_title": "Veranstaltungssicherheit aktualisieren",
+      "refresh_hint": "Ihre Änderung wurde angenommen. Aktualisieren Sie, um die aktuellen Werte zu sehen, bevor Sie eine weitere Änderung vornehmen.",
+      "no_requirements": "Es wurde noch keine Teilnahmerichtlinie gespeichert.",
+      "policy_revision": "Überarbeitung {{revision}}, Richtlinienfassung {{version}}",
+      "archived_notice": "Diese Richtlinie ist archiviert. Das Speichern eines neuen Entwurfs beginnt eine neue Richtlinie."
     }
   }
 }

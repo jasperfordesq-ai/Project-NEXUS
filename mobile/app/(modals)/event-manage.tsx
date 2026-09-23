@@ -42,9 +42,7 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
     case 'analytics': return { pathname: '/(modals)/event-analytics', params } as Href;
     case 'federation': return { pathname: '/(modals)/event-federation', params } as Href;
     case 'team': return { pathname: '/(modals)/event-team', params } as Href;
-    case 'safety':
-      // Remaining organiser destinations still use the event detail screen.
-      return { pathname: '/(modals)/event-detail', params } as unknown as Href;
+    case 'safety': return { pathname: '/(modals)/event-safety', params } as Href;
     default: return null;
   }
 }
@@ -63,7 +61,7 @@ function EventManageScreen() {
 }
 
 function EventManageContent({ eventId, section }: { eventId: number; section?: string }) {
-  const { t } = useTranslation(['events', 'common', 'event_templates', 'event_tickets', 'event_communications', 'event_recurrence_blueprints', 'event_federation']);
+  const { t } = useTranslation(['events', 'common', 'eventSafety', 'event_templates','event_tickets', 'event_communications', 'event_recurrence_blueprints', 'event_federation']);
   const primary = usePrimaryColor();
   const theme = useTheme();
   const eventState = useApi(() => getEvent(eventId), [eventId], { enabled: eventId > 0, clearOnRefusal: true });
@@ -105,6 +103,7 @@ function EventManageContent({ eventId, section }: { eventId: number; section?: s
       event.permissions.check_in && { label: t('manage.overview.check_in'), route: eventManagementRoute(event.id, 'check-in')! },
       event.permissions.manage_agenda && { label: t('manage.overview.agenda'), route: eventManagementRoute(event.id, 'agenda')! },
       event.permissions.manage_agenda && { label: t('event_federation:manage.federation.overview'), route: eventManagementRoute(event.id, 'federation')! },
+      event.permissions.edit && { label: t('eventSafety:safety.organizer.title'), route: eventManagementRoute(event.id, 'safety')! },
       event.permissions.edit && { label: t('analytics.title'), route: eventManagementRoute(event.id, 'analytics')! },
       event.permissions.manage_registration && { label: t('registrationSettings.title'), route: eventManagementRoute(event.id, 'registration')! },
       (event.permissions.manage_finance || event.permissions.reconcile_tickets) && { label: t('event_tickets:tickets.mobile.title'), route: eventManagementRoute(event.id, 'tickets')! },

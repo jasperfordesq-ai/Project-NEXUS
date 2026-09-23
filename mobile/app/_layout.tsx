@@ -654,6 +654,10 @@ function RootNavigator() {
         options={{ presentation: 'card', headerShown: false }}
       />
       <Stack.Screen
+        name="(modals)/event-safety"
+        options={{ presentation: 'card', headerShown: false }}
+      />
+      <Stack.Screen
         name="(modals)/event-federation"
         options={{ ...modalOptions, headerShown: false, title: t('event_federation:manage.federation.title') }}
       />

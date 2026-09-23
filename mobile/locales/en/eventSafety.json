@@ -5,13 +5,25 @@
       "acknowledge": "Acknowledge the code",
       "withdraw_acknowledgement": "Withdraw acknowledgement",
       "request_guardian_consent": "Request guardian consent",
-      "withdraw_guardian_consent": "Withdraw consent request"
+      "withdraw_guardian_consent": "Withdraw consent request",
+      "save_draft": "Save draft",
+      "publish": "Publish requirements",
+      "archive": "Archive requirements",
+      "cancel": "Cancel",
+      "confirm_archive": "Archive now",
+      "change_member": "Change member",
+      "save_review": "Save review decision",
+      "cancel_edit": "Cancel edit",
+      "edit_review": "Update decision",
+      "withdraw_review": "Withdraw decision"
     },
     "confirmations": {
       "withdraw_code_title": "Withdraw your code-of-conduct acknowledgement?",
       "withdraw_code_body": "This may block your participation until you acknowledge the current version again.",
       "withdraw_guardian_title": "Withdraw the guardian consent request?",
-      "withdraw_guardian_body": "The current request will become invalid. You may need to send a new request before participating."
+      "withdraw_guardian_body": "The current request will become invalid. You may need to send a new request before participating.",
+      "withdraw_review_title": "Withdraw this participation decision?",
+      "withdraw_review_body": "This ends the active decision for {{name}} while preserving its audit history."
     },
     "attendee": {
       "title": "Participation requirements",
@@ -95,6 +107,118 @@
         "withdrawn": "Withdrawn",
         "expired": "Expired"
       }
+    },
+    "organizer": {
+      "title": "Event safety",
+      "description": "Set versioned participation requirements and keep a controlled, auditable record of safety decisions.",
+      "loading": "Loading event safety",
+      "load_error_title": "Event safety is unavailable",
+      "load_error_description": "The safety policy and review ledger could not be loaded. No safety decision has been changed.",
+      "configuration_invalid": "Safety enforcement is unavailable because its configuration is invalid.",
+      "shadow_title": "Observation mode",
+      "shadow_description": "Requirements are evaluated and recorded, but they do not yet block participation.",
+      "read_only": "You can view this policy but cannot change its requirements.",
+      "action_error": "The safety change could not be saved. Refresh the workspace and try again.",
+      "success": {
+        "saved": "Safety requirements saved as a draft.",
+        "published": "Safety requirements published.",
+        "archived": "Safety requirements archived."
+      }
+    },
+    "requirements": {
+      "title": "Participation policy",
+      "description": "Draft changes are private until published. Publishing creates an immutable version for evidence matching.",
+      "minimum_age": "Minimum age",
+      "minimum_age_hint": "Leave blank when the event has no minimum age.",
+      "guardian_required": "Require guardian consent for minors",
+      "guardian_required_hint": "Consent is bound to the exact published requirement version and event date.",
+      "minor_threshold": "Minor age threshold",
+      "minor_threshold_hint": "Members below this age at the event need consent.",
+      "code_required": "Require code-of-conduct acknowledgement",
+      "code_required_hint": "Attendees must acknowledge the exact published text before participating.",
+      "code_version": "Code text version",
+      "code_version_hint": "Use a meaningful identifier, such as event-conduct-2026-01.",
+      "code_text": "Code of conduct",
+      "code_text_hint": "State the complete terms attendees must read and acknowledge.",
+      "archive_title": "Archive these safety requirements?",
+      "archive_description": "Archived requirements stop being the active participation policy. The evidence and audit history remain retained.",
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      }
+    },
+    "reviews": {
+      "title": "Participation reviews",
+      "description": "Record controlled decisions without free-text notes, contact details, or incident records.",
+      "new_title": "Record a decision",
+      "edit_title": "Update this decision",
+      "member_label": "Find a member",
+      "member_hint": "Search by name, then select the correct member.",
+      "member_search_error": "Members could not be searched. Try again.",
+      "decision_label": "Decision",
+      "reason_label": "Controlled reason",
+      "effective_from": "Effective from",
+      "effective_until": "Effective until",
+      "effective_until_hint": "Leave blank when the decision has no scheduled end.",
+      "no_notes_notice": "For privacy, this ledger accepts controlled reason codes only. Record incidents and sensitive evidence in the approved safeguarding system.",
+      "saved": "Participation review saved.",
+      "withdrawn": "Participation review withdrawn.",
+      "action_error": "The participation review could not be changed. Refresh and try again.",
+      "history_title": "Review ledger",
+      "total": "{{count}} recorded decisions",
+      "empty": "No participation reviews have been recorded for this event.",
+      "reviewed_by": "Reviewed by",
+      "version": "Decision version",
+      "audit_history": "Audit history ({{count}} entries)",
+      "pagination": "Participation review pages"
+    },
+    "rollout": {
+      "off": "Enforcement off",
+      "shadow": "Observation mode",
+      "enforce": "Enforcement active"
+    },
+    "decisions": {
+      "deny": "Deny participation",
+      "remove": "Remove from event"
+    },
+    "review_status": {
+      "active": "Active",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired"
+    },
+    "mobile": {
+      "access_hint": "You may not have permission to manage safety for this event.",
+      "recovery_draft": "Save the participation policy draft",
+      "recovery_publish": "Publish the participation policy",
+      "recovery_archive": "Archive the participation policy",
+      "recovery_review": "Record a decision for member #{{id}}",
+      "recovery_withdraw": "Withdraw decision #{{id}}",
+      "rejected_title": "Saved change was not applied",
+      "rejected_hint": "Someone changed this policy or decision first. Review the current values, then discard the saved change before making another.",
+      "discard_title": "Discard this rejected change?",
+      "discard_hint": "This removes the saved change from this device. It does not change the event's safety settings.",
+      "discard_label": "Discard saved change",
+      "action_error": "The safety change could not be completed. Check the saved change before trying again.",
+      "invalid_age": "Enter a whole number from 0 to 125.",
+      "change_date": "Change date",
+      "change_time": "Change time",
+      "set_until": "Set an end date",
+      "clear_until": "No end date",
+      "until_invalid": "The end must be after the start.",
+      "timezone": "Times are shown in {{timezone}}.",
+      "page_status": "Page {{page}} of {{pages}}",
+      "previous_page": "Previous page",
+      "next_page": "Next page",
+      "member_fallback": "Member #{{id}}",
+      "select_member": "Select {{name}}",
+      "searching": "Searching…",
+      "no_results": "No members found.",
+      "refresh_title": "Refresh event safety",
+      "refresh_hint": "Your change was accepted. Refresh to see the current values before making another change.",
+      "no_requirements": "No participation policy has been saved yet.",
+      "policy_revision": "Revision {{revision}}, policy version {{version}}",
+      "archived_notice": "This policy is archived. Saving a new draft starts a new policy."
     }
   }
 }
