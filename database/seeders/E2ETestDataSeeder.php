@@ -305,6 +305,18 @@ class E2ETestDataSeeder extends Seeder
                 'updated_at' => $now,
             ]
         );
+        // A raw insert bypasses EventService, which gives every concrete event an
+        // occurrence key. Without it Safety, registration and check-in refuse the
+        // event as "concrete event required". Same format as EventService.
+        $welcomeEventId = (int) DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('title', 'E2E Community Welcome Event')
+            ->value('id');
+        DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $welcomeEventId)
+            ->where(fn ($query) => $query->whereNull('occurrence_key')->orWhere('occurrence_key', ''))
+            ->update(['occurrence_key' => "event:{$tenantId}:{$welcomeEventId}"]);
 
         DB::table('marketplace_categories')->updateOrInsert(
             ['tenant_id' => $tenantId, 'slug' => 'e2e-community-goods'],

@@ -164,11 +164,18 @@ class E2ETestDataSeederLoginTest extends TestCase
                 'organization.status' => 'approved',
             ])->exists());
 
-        $this->assertTrue(DB::table('events')->where([
+        $event = DB::table('events')->where([
             'tenant_id' => $tenantId,
             'title' => 'E2E Community Welcome Event',
             'status' => 'active',
-        ])->exists());
+        ])->first(['id', 'occurrence_key', 'is_recurring_template']);
+        $this->assertNotNull($event);
+        // Safety, registration and check-in all refuse an event without an occurrence
+        // key ("concrete event required"), which the mobile RSVP journey then shows as
+        // "Registration workspace could not be loaded". Raw inserts must set it the way
+        // EventService does.
+        $this->assertSame("event:{$tenantId}:{$event->id}", $event->occurrence_key);
+        $this->assertSame(0, (int) $event->is_recurring_template);
 
         $this->assertTrue(DB::table('marketplace_listings')->where([
             'tenant_id' => $tenantId,
