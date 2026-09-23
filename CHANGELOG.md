@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- In the mobile app, the agenda change comparison now shows dates and times in the language chosen in the app, like every other screen, instead of the device's language setting.
+
 - With very large text in the mobile app, the Listings title no longer breaks in the middle of the word and the Home feed header wraps instead of being cut off.
 
 - On a member's profile in the mobile app, the action buttons (Connect, Send credits, Send message, Say thanks) now sit two to a row, so their labels are no longer cut off.

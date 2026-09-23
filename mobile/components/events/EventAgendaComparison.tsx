@@ -10,12 +10,13 @@ import type { CanonicalEvent, EventAgendaSession } from '@/lib/api/events';
 import type { AgendaSessionPayload } from '@/lib/api/eventAgendaManagement';
 import { agendaDraft, type AgendaDraft } from '@/lib/eventAgendaDraft';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/utils/eventDateTime';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 /** Read-only comparison of the authoritative session and the live proposed edit. */
 export default function EventAgendaComparison({ event, session, draft, original }: {
   event: CanonicalEvent; session: EventAgendaSession; draft: AgendaDraft; original: AgendaSessionPayload;
 }) {
-  const { t, i18n } = useTranslation('events');
+  const { t } = useTranslation('events');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const current = agendaDraft(event, session);
   const empty = t('registrationSettings.not_set');
@@ -23,7 +24,7 @@ export default function EventAgendaComparison({ event, session, draft, original 
   const exactTime = (value: string, previous: string) => value === eventIsoToLocalInput(previous, event.schedule.timezone)
     ? previous : eventLocalInputToIso(value, event.schedule.timezone) ?? value;
   const time = (value: string, zone: string) => {
-    try { return new Intl.DateTimeFormat(i18n?.language, { dateStyle: 'medium', timeStyle: 'long', timeZone: zone }).format(new Date(value)); }
+    try { return new Intl.DateTimeFormat(dateLocale(), { dateStyle: 'medium', timeStyle: 'long', timeZone: zone }).format(new Date(value)); }
     catch { return value; }
   };
   const rows: { key: string; before: string; after: string }[] = [
