@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The local development stack now exposes its keyless search engine and root-login phpMyAdmin on this machine only, not the local network (F-124).
+
 - The deploy-drift watchdog workflow no longer pastes the latest commit subject or production response values into a shell script, closing a CI command-injection route to its alert-bot token (F-122).
 
 - Search no longer shows events from private groups to people who aren't in the group, never includes an event's online meeting or video link, and no longer lists private groups or listings still awaiting moderation when the search engine is unavailable (F-078).

@@ -169,7 +169,8 @@ services:
       MEILI_ENV: development
       MEILI_NO_ANALYTICS: "true"
     ports:
-      - "7700:7700"
+      # Loopback only (F-124): development Meilisearch runs without a master key.
+      - "127.0.0.1:7700:7700"
     volumes:
       - nexus-meili-data:/meili_data
     networks:
@@ -295,7 +296,8 @@ services:
       PMA_PASSWORD: ${DB_ROOT_PASSWORD:-nexus_root_secret}
       UPLOAD_LIMIT: 100M
     ports:
-      - "8091:80"
+      # Loopback only (F-124): phpMyAdmin auto-logs in as root.
+      - "127.0.0.1:8091:80"
     depends_on:
       - db
     networks:
