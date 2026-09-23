@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- An open conversation in the mobile app now catches up when you come back to the app, so messages sent while it was in the background appear straight away instead of waiting for a pull to refresh.
+
 - Creating or editing a time-bank listing in the mobile app: pressing Post with something missing now scrolls to the first problem, such as "Please choose a category". Before, the message appeared off-screen and the button seemed to do nothing.
 
 - Marketplace in the mobile app: changing a filter or searching somewhere else while results are loading no longer shows the older results; opening one collection and then another quickly shows the right items; and collections now load past their first 50 items with a Load more button.

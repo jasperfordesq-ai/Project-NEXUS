@@ -202,6 +202,11 @@ function ThreadScreenInner() {
   const appActiveRef = useRef(AppState.currentState === 'active');
   const [isAppActive, setIsAppActive] = useState(appActiveRef.current);
   const recoveredVersionRef = useRef(recoveryVersion);
+  // Bumped when the app returns from the background, so the thread catches up even when
+  // realtime is down or has not resubscribed (recoveryVersion only moves on resubscription).
+  const [resumeVersion, setResumeVersion] = useState(0);
+  const recoveredResumeRef = useRef(0);
+  const lastAppStateRef = useRef<string>(AppState.currentState);
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
   /*
     🔴 Which message shows the 👍 ❤️ 😂 ⋯ quick-react row. It used to be EVERY message: the
@@ -541,10 +546,11 @@ function ThreadScreenInner() {
     // GET thread also marks it read: defer recovery while covered/backgrounded
     // and while a local send is still resolving its optimistic message.
     if (!isFocused || !isAppActive || !isValidId || isSending
-      || recoveredVersionRef.current === recoveryVersion) return;
+      || (recoveredVersionRef.current === recoveryVersion && recoveredResumeRef.current === resumeVersion)) return;
     recoveredVersionRef.current = recoveryVersion;
+    recoveredResumeRef.current = resumeVersion;
     refresh();
-  }, [isFocused, isAppActive, isValidId, isSending, recoveryVersion, refresh]);
+  }, [isFocused, isAppActive, isValidId, isSending, recoveryVersion, resumeVersion, refresh]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (next) => {
@@ -556,6 +562,10 @@ function ThreadScreenInner() {
           await persistMessageDraft();
         })();
       }
+      // Only a real return from the background counts, not an 'inactive' blip (system
+      // dialog, notification shade) where nothing could have been missed.
+      if (lastAppStateRef.current === 'background' && next === 'active') setResumeVersion((version) => version + 1);
+      lastAppStateRef.current = next;
       appActiveRef.current = next === 'active';
       setIsAppActive(next === 'active');
     });

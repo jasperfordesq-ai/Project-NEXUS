@@ -492,6 +492,29 @@ describe('ThreadScreen', () => {
     view.unmount();
   });
 
+  it('reloads the open conversation when the member returns to the app, even with no realtime reconnect', async () => {
+    let onState: ((state: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => void) | undefined;
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, handler) => {
+      onState = handler;
+      return { remove: jest.fn() };
+    });
+    const refresh = jest.fn();
+    mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh });
+    const view = render(<ThreadScreen />);
+    await act(async () => {});
+    refresh.mockClear();
+    // Realtime may be down or slow to resubscribe; messages sent meanwhile must still appear.
+    act(() => onState?.('background'));
+    act(() => onState?.('active'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    // An inactive blip (notification shade, system dialog) is not a return from the background.
+    act(() => onState?.('inactive'));
+    act(() => onState?.('active'));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    await act(async () => {});
+    view.unmount();
+  });
+
   it('refetches missed messages on recovery but defers a covered conversation until focus returns', async () => {
     const refresh = jest.fn();
     mockUseApi.mockReturnValue({ data: { data: mockMessages }, isLoading: false, error: null, refresh });
