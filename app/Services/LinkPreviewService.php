@@ -6,10 +6,12 @@
 
 namespace App\Services;
 
+use App\Support\BoundedResponseBody;
 use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * LinkPreviewService — Fetches, caches, and retrieves Open Graph metadata for URLs.
@@ -121,14 +123,19 @@ class LinkPreviewService
             return $this->formatPreviewResponse($preview);
         }
 
-        // Fetch the URL with DNS/IP validation pinned into the cURL request.
+        // Fetch into a bounded sink on the cURL handler. `stream => true`
+        // selects Guzzle's PHP stream handler in production, which ignores the
+        // CURLOPT_RESOLVE pin from OutboundUrlGuard. Reading Response::body()
+        // would also materialise the entire decoded response before truncation.
+        $responseBody = new BoundedResponseBody(self::MAX_BODY_SIZE);
         try {
             $response = Http::timeout(self::HTTP_TIMEOUT)
+                ->connectTimeout(self::HTTP_TIMEOUT)
                 ->withHeaders([
                     'User-Agent' => self::USER_AGENT,
                     'Accept' => 'text/html,application/xhtml+xml',
                 ])
-                ->withOptions(['stream' => true] + OutboundUrlGuard::httpClientOptions($url))
+                ->withOptions($this->httpOptionsFor($url, $responseBody))
                 ->get($url);
 
             if (! $response->successful()) {
@@ -141,11 +148,12 @@ class LinkPreviewService
                 return null;
             }
 
-            // Read body with size limit
-            $body = substr($response->body(), 0, self::MAX_BODY_SIZE);
+            $body = $responseBody->contents();
         } catch (\Exception $e) {
             Log::debug('LinkPreviewService: fetch failed', ['url' => $url, 'error' => $e->getMessage()]);
             return null;
+        } finally {
+            $responseBody->close();
         }
 
         // Parse OG metadata ($domain already resolved above)
@@ -386,6 +394,31 @@ class LinkPreviewService
     // =========================================================================
     // Private Methods
     // =========================================================================
+
+    /**
+     * Keep the transfer on Guzzle's cURL handler so its DNS pin and protocol
+     * restrictions apply, while refusing both declared and streamed oversize
+     * responses before they can be accumulated in PHP memory.
+     *
+     * @return array<string,mixed>
+     */
+    private function httpOptionsFor(string $url, BoundedResponseBody $responseBody): array
+    {
+        return array_merge(
+            OutboundUrlGuard::httpClientOptions($url),
+            [
+                'sink' => $responseBody,
+                'on_headers' => static function (ResponseInterface $response): void {
+                    $contentLength = trim($response->getHeaderLine('Content-Length'));
+                    if ($contentLength !== ''
+                        && preg_match('/^\d+$/D', $contentLength) === 1
+                        && (int) $contentLength > self::MAX_BODY_SIZE) {
+                        throw new \LengthException('Remote response body exceeds the allowed size.');
+                    }
+                },
+            ]
+        );
+    }
 
     /**
      * Check if a URL is allowed for fetching (protocol allowlist).

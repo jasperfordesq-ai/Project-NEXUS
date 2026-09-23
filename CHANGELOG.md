@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Link previews now retain cURL DNS pinning and stop downloading as soon as the decoded response exceeds 500 KB. Authenticated members can no longer make a preview worker load an unbounded response into memory or bypass the pinned address through the PHP stream handler (F-148 / E-025 R21).
+
 - External federation transfer cancellations now lock and recheck the completed transfer before reversing credits. Two simultaneous authenticated partner cancellations can no longer deduct the same transfer twice (F-147 / E-025 R14).
 
 - React sessions now bind requests, retries, sign-in completions, tenant changes, logout, impersonation and offline event check-in data to one immutable account generation. Delayed work from account A can no longer refresh, resend, overwrite, clear or retarget account B after a same-browser account switch (F-020 / E-025 R04).
