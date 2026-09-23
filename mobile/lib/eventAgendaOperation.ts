@@ -131,10 +131,13 @@ async function run(scope: AgendaOperationScope, current: () => boolean, input?: 
       if ((pending.attempts === 1 || terminalRefusal) && error instanceof ApiResponseError
         && ((error.status === 409 && error.code === 'EVENT_AGENDA_CONFLICT')
           || (error.status === 422 && error.code === 'EVENT_AGENDA_VALIDATION_FAILED'))) {
+        // Snapshot the classified value before queued work. On a fresh Hermes runtime,
+        // capturing the catch binding inside this async callback loses it after read().
+        const rejectionCode = error.code as 'EVENT_AGENDA_CONFLICT' | 'EVENT_AGENDA_VALIDATION_FAILED';
         await ordered(scope, async () => {
           const saved = await read(scope);
           if (!saved || saved.status !== 'pending' || saved.key !== pending.key) throw new AgendaOperationError('Rejection mismatch');
-          await write(scope, { ...saved, status: 'rejected', code: error.code as 'EVENT_AGENDA_CONFLICT' | 'EVENT_AGENDA_VALIDATION_FAILED' });
+          await write(scope, { ...saved, status: 'rejected', code: rejectionCode });
         });
       }
       throw error;
