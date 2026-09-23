@@ -91,8 +91,12 @@ class CourseController extends BaseApiController
         $userId = $this->getOptionalUserId() ?? $this->resolveSanctumUserOptionally();
         $this->ensureCourseViewable($course, $userId);
 
-        $data = $course->toArray();
-        $data['is_enrolled'] = $userId !== null && CourseEnrollmentService::isEnrolled($course->id, $userId);
+        $enrollment = $userId !== null
+            ? CourseEnrollmentService::find((int) $course->id, $userId)
+            : null;
+        $canManage = $userId !== null && $this->canManageCourseAsUser($course, $userId);
+        $data = CourseService::detailForViewer($course, $enrollment, $canManage);
+        $data['is_enrolled'] = $enrollment !== null;
 
         return $this->respondWithData($data);
     }

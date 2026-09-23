@@ -101,6 +101,136 @@ class CourseControllerTest extends TestCase
         return $course;
     }
 
+    public function test_course_detail_hides_protected_lesson_content_until_enrollment_but_keeps_free_previews(): void
+    {
+        $this->enableCourses();
+        $viewer = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $course = $this->publishedCourse();
+        $section = CourseSection::create(['course_id' => $course->id, 'title' => 'Syllabus section']);
+        $protected = CourseLesson::create([
+            'course_id' => $course->id,
+            'section_id' => $section->id,
+            'title' => 'Paid lesson',
+            'content_type' => 'text',
+            'body' => 'paid-body-secret',
+            'transcript' => 'paid-transcript-secret',
+            'video_url' => 'https://media.invalid/paid-video-secret',
+            'attachment_url' => 'https://media.invalid/paid-attachment-secret',
+            'embed_url' => 'https://media.invalid/paid-embed-secret',
+            'is_preview' => false,
+        ]);
+        CourseQuiz::create([
+            'course_id' => $course->id,
+            'lesson_id' => $protected->id,
+            'title' => 'paid-quiz-secret',
+            'description' => 'paid-quiz-description-secret',
+        ]);
+        $preview = CourseLesson::create([
+            'course_id' => $course->id,
+            'section_id' => $section->id,
+            'title' => 'Free preview',
+            'content_type' => 'text',
+            'body' => 'free-preview-body',
+            'is_preview' => true,
+        ]);
+        $unassigned = CourseLesson::create([
+            'course_id' => $course->id,
+            'title' => 'Unassigned paid lesson',
+            'content_type' => 'file',
+            'body' => 'unassigned-body-secret',
+            'attachment_url' => 'https://media.invalid/unassigned-attachment-secret',
+            'is_preview' => false,
+        ]);
+
+        foreach ([$course->id, $course->slug] as $identifier) {
+            $response = $this->apiGet('/v2/courses/' . $identifier, $this->authHeaders($viewer))
+                ->assertOk()
+                ->assertJsonPath('data.sections.0.title', 'Syllabus section')
+                ->assertJsonPath('data.sections.0.lessons.0.id', $protected->id)
+                ->assertJsonPath('data.sections.0.lessons.0.title', 'Paid lesson')
+                ->assertJsonPath('data.sections.0.lessons.1.id', $preview->id)
+                ->assertJsonPath('data.sections.0.lessons.1.body', 'free-preview-body')
+                ->assertJsonPath('data.unassigned_lessons.0.id', $unassigned->id)
+                ->assertJsonPath('data.unassigned_lessons.0.title', 'Unassigned paid lesson');
+
+            foreach (['body', 'transcript', 'video_url', 'attachment_url', 'embed_url', 'quiz'] as $field) {
+                $response->assertJsonMissingPath('data.sections.0.lessons.0.' . $field);
+            }
+            foreach (['body', 'attachment_url'] as $field) {
+                $response->assertJsonMissingPath('data.unassigned_lessons.0.' . $field);
+            }
+            $response
+                ->assertJsonMissing(['paid-body-secret'])
+                ->assertJsonMissing(['paid-quiz-secret'])
+                ->assertJsonMissing(['unassigned-body-secret']);
+        }
+    }
+
+    public function test_course_detail_exposes_only_available_content_to_enrolled_learners_and_all_content_to_managers(): void
+    {
+        $this->enableCourses();
+        $learner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $course = $this->publishedCourse(['author' => $owner]);
+        $section = CourseSection::create(['course_id' => $course->id, 'title' => 'Timed section']);
+        $available = CourseLesson::create([
+            'course_id' => $course->id,
+            'section_id' => $section->id,
+            'title' => 'Available now',
+            'content_type' => 'text',
+            'body' => 'available-enrolled-body',
+            'drip_type' => 'none',
+        ]);
+        $locked = CourseLesson::create([
+            'course_id' => $course->id,
+            'section_id' => $section->id,
+            'title' => 'Available later',
+            'content_type' => 'text',
+            'body' => 'locked-future-body-secret',
+            'drip_type' => 'fixed_date',
+            'drip_date' => now()->addWeek(),
+        ]);
+        \App\Models\CourseEnrollment::create([
+            'course_id' => $course->id,
+            'user_id' => $learner->id,
+            'status' => 'active',
+            'enrolled_at' => now(),
+        ]);
+
+        $this->apiGet('/v2/courses/' . $course->id, $this->authHeaders($learner))
+            ->assertOk()
+            ->assertJsonPath('data.is_enrolled', true)
+            ->assertJsonPath('data.sections.0.lessons.0.id', $available->id)
+            ->assertJsonPath('data.sections.0.lessons.0.body', 'available-enrolled-body')
+            ->assertJsonPath('data.sections.0.lessons.1.id', $locked->id)
+            ->assertJsonPath('data.sections.0.lessons.1.title', 'Available later')
+            ->assertJsonMissingPath('data.sections.0.lessons.1.body')
+            ->assertJsonMissing(['locked-future-body-secret']);
+
+        $this->apiGet('/v2/courses/' . $course->id, $this->authHeaders($owner))
+            ->assertOk()
+            ->assertJsonPath('data.sections.0.lessons.1.body', 'locked-future-body-secret');
+
+        \App\Models\CourseEnrollment::where('course_id', $course->id)
+            ->where('user_id', $learner->id)
+            ->update(['status' => 'dropped']);
+
+        $this->apiGet('/v2/courses/' . $course->id, $this->authHeaders($learner))
+            ->assertOk()
+            ->assertJsonPath('data.is_enrolled', false)
+            ->assertJsonMissingPath('data.sections.0.lessons.0.body')
+            ->assertJsonMissing(['available-enrolled-body']);
+    }
+
     public function test_deleted_section_lessons_remain_visible_and_can_be_reassigned(): void
     {
         $this->enableCourses();

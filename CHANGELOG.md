@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Course detail now returns a syllabus rather than paid or scheduled lesson content to members who have not enrolled. Explicit free-preview lessons remain readable; enrolled learners receive content only after its drip schedule unlocks, while course authors and administrators retain full editing access (F-047).
+
 - Members with an active identity-verification badge can no longer clear their verified name or date of birth by sending JSON `null`, including while a platform administrator is viewing another community. Where guardian consent is enabled for volunteering, missing, invalid or future dates of birth now stop participation until age can be established; consent is rechecked at application, shift signup, waitlist entry and promotion, and group-reservation placement (F-045).
 
 - Club event sharing now accepts only a public event that belongs to the authorized source club and that the authenticated administrator has event-management authority over. Both clubs must have non-empty matching municipality codes. Incoming and outgoing share lists also recheck the owner relationship, public visibility, both current consents and municipality before returning event details, so old or later-restricted shares no longer disclose them (F-043).

@@ -8,6 +8,8 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\CourseLesson;
 use Illuminate\Support\Str;
 
 /**
@@ -100,6 +102,59 @@ class CourseService
         return Course::where('slug', $slug)
             ->with(['category', 'author:id,name,avatar_url', 'sections.lessons.quiz', 'unassignedLessons.quiz'])
             ->first();
+    }
+
+    /**
+     * Serialize course detail for the current viewer without turning the public
+     * syllabus response into a lesson-content endpoint.
+     *
+     * Free previews and course managers may read complete lessons. Enrolled
+     * learners may read only lessons whose drip schedule is currently open.
+     * Everyone else receives the stable syllabus fields needed by the clients.
+     *
+     * @return array<string,mixed>
+     */
+    public static function detailForViewer(
+        Course $course,
+        ?CourseEnrollment $enrollment,
+        bool $canManage,
+    ): array {
+        $data = $course->toArray();
+
+        $serializeLesson = static function (CourseLesson $lesson) use ($enrollment, $canManage): array {
+            $contentAvailable = $canManage
+                || (bool) $lesson->is_preview
+                || ($enrollment !== null
+                    && CourseLessonService::availability($lesson, $enrollment->enrolled_at)['available']);
+
+            if ($contentAvailable) {
+                return $lesson->toArray();
+            }
+
+            return array_intersect_key($lesson->toArray(), array_flip([
+                'id',
+                'course_id',
+                'section_id',
+                'title',
+                'content_type',
+                'position',
+                'is_preview',
+            ]));
+        };
+
+        $data['sections'] = $course->sections
+            ->map(static function ($section) use ($serializeLesson): array {
+                $sectionData = $section->toArray();
+                $sectionData['lessons'] = $section->lessons->map($serializeLesson)->all();
+
+                return $sectionData;
+            })
+            ->all();
+        $data['unassigned_lessons'] = $course->unassignedLessons
+            ->map($serializeLesson)
+            ->all();
+
+        return $data;
     }
 
     public static function create(int $authorUserId, array $data): Course
