@@ -79,6 +79,14 @@ class ShiftWaitlistService
             return null;
         }
 
+        // Enforce safeguarding in the service as well as the HTTP controller:
+        // direct callers must not be able to place an unknown-age member or a
+        // minor without consent onto a waitlist that can promote automatically.
+        if ($guardianError = VolunteerService::guardianConsentError($userId, (int) $context->opportunity_id)) {
+            self::$errors[] = $guardianError;
+            return null;
+        }
+
         $approvedApplication = DB::table('vol_applications')
             ->where('opportunity_id', (int) $context->opportunity_id)
             ->where('user_id', $userId)
@@ -384,6 +392,17 @@ class ShiftWaitlistService
 
                 if (strtotime($shift->start_time) < time()) {
                     self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_shift_started')];
+                    return false;
+                }
+
+                // Consent can expire or be withdrawn after the member joined
+                // the waitlist. Recheck at the promotion write boundary so a
+                // stale offer cannot attach the application to the shift.
+                if ($guardianError = VolunteerService::guardianConsentError(
+                    (int) $entry->user_id,
+                    (int) $shift->opportunity_id
+                )) {
+                    self::$errors[] = $guardianError;
                     return false;
                 }
 

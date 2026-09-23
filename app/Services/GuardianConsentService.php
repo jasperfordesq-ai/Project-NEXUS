@@ -27,6 +27,12 @@ class GuardianConsentService
     /** Minimum age threshold (users younger than this are minors). */
     private const MINOR_AGE_THRESHOLD = 18;
 
+    public const AGE_MINOR = 'minor';
+    public const AGE_ADULT = 'adult';
+    public const AGE_UNKNOWN = 'unknown';
+    public const AGE_INVALID = 'invalid';
+    public const AGE_UNAVAILABLE = 'unavailable';
+
     /** Valid relationship types for guardians. */
     private const VALID_RELATIONSHIPS = ['parent', 'guardian', 'legal_guardian', 'carer'];
 
@@ -45,26 +51,52 @@ class GuardianConsentService
      */
     public static function isMinor(int $userId): bool
     {
+        return self::classifyAge($userId) === self::AGE_MINOR;
+    }
+
+    /**
+     * Classify age for safeguarding without treating unknown input as adult.
+     */
+    public static function classifyAge(int $userId): string
+    {
         try {
             $tenantId = TenantContext::getId();
 
-            $dob = DB::table('users')
+            $user = DB::table('users')
                 ->where('id', $userId)
                 ->where('tenant_id', $tenantId)
-                ->value('date_of_birth');
+                ->select('date_of_birth')
+                ->first();
 
-            if (!$dob) {
-                return false;
+            if (!$user) {
+                return self::AGE_UNAVAILABLE;
             }
 
-            $birthDate = new \DateTime($dob);
-            $now = new \DateTime();
+            $dob = $user->date_of_birth ?? null;
+
+            if (!$dob) {
+                return self::AGE_UNKNOWN;
+            }
+
+            $birthDate = \DateTimeImmutable::createFromFormat('!Y-m-d', (string) $dob);
+            $dateErrors = \DateTimeImmutable::getLastErrors();
+            if (!$birthDate
+                || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+                || $birthDate->format('Y-m-d') !== (string) $dob) {
+                return self::AGE_INVALID;
+            }
+
+            $now = new \DateTimeImmutable('today');
+            if ($birthDate > $now) {
+                return self::AGE_INVALID;
+            }
+
             $age = $now->diff($birthDate)->y;
 
-            return $age < self::MINOR_AGE_THRESHOLD;
-        } catch (\Exception $e) {
-            Log::warning('[GuardianConsent] isMinor check failed: ' . $e->getMessage());
-            return false;
+            return $age < self::MINOR_AGE_THRESHOLD ? self::AGE_MINOR : self::AGE_ADULT;
+        } catch (\Throwable $e) {
+            Log::warning('[GuardianConsent] age classification failed: ' . $e->getMessage());
+            return self::AGE_UNAVAILABLE;
         }
     }
 

@@ -325,24 +325,66 @@ class VolunteerService
      * Apply to a volunteer opportunity.
      */
     /**
-     * Whether the guardian-consent safeguarding gate BLOCKS this user from
-     * taking part in the given opportunity. True only when the tenant requires
-     * guardian consent, the user is a minor (by date_of_birth), and no active
-     * consent exists. Centralised here so EVERY entry path — the React apply/
-     * signup controllers, the accessible (GOV.UK) frontend, and group
-     * reservations — enforces the same gate; previously it lived only in
-     * VolunteerController and any direct service caller silently skipped it,
-     * letting a minor take part without consent via the accessible frontend or
-     * by being added to a group reservation.
+     * Return the safeguarding error for this member, or null when participation
+     * is allowed. Unknown or invalid age fails closed while the gate is enabled.
+     *
+     * @return array{code:string,message:string,field?:string}|null
      */
-    public static function guardianConsentBlocks(int $userId, int $opportunityId): bool
+    public static function guardianConsentError(int $userId, int $opportunityId): ?array
     {
         if (! VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)) {
-            return false;
+            return null;
         }
 
-        return \App\Services\GuardianConsentService::isMinor($userId)
-            && ! \App\Services\GuardianConsentService::checkConsent($userId, $opportunityId);
+        $classification = GuardianConsentService::classifyAge($userId);
+
+        if ($classification === GuardianConsentService::AGE_ADULT) {
+            return null;
+        }
+
+        if ($classification === GuardianConsentService::AGE_MINOR) {
+            return GuardianConsentService::checkConsent($userId, $opportunityId) ? null : [
+                'code' => 'GUARDIAN_CONSENT_REQUIRED',
+                'message' => __('api.guardian_consent_required'),
+            ];
+        }
+
+        if ($classification === GuardianConsentService::AGE_UNKNOWN) {
+            return [
+                'code' => 'VALIDATION_REQUIRED_FIELD',
+                'message' => __('api_controllers_2.identity.dob_required'),
+                'field' => 'date_of_birth',
+            ];
+        }
+
+        if ($classification === GuardianConsentService::AGE_INVALID) {
+            return [
+                'code' => 'VALIDATION_INVALID_FORMAT',
+                'message' => __('api_controllers_2.identity.dob_invalid'),
+                'field' => 'date_of_birth',
+            ];
+        }
+
+        return [
+            'code' => 'SERVER_ERROR',
+            'message' => __('api.server_error'),
+        ];
+    }
+
+    public static function guardianConsentErrorStatus(array $error): int
+    {
+        return match ($error['code'] ?? '') {
+            'GUARDIAN_CONSENT_REQUIRED' => 403,
+            'VALIDATION_REQUIRED_FIELD', 'VALIDATION_INVALID_FORMAT' => 422,
+            'SERVER_ERROR' => 500,
+            default => 403,
+        };
+    }
+
+    /** Whether the central guardian-consent safeguarding gate blocks participation. */
+    public static function guardianConsentBlocks(int $userId, int $opportunityId): bool
+    {
+        return self::guardianConsentError($userId, $opportunityId) !== null;
     }
 
     public static function apply(int $opportunityId, int $userId, array $data = []): VolApplication
@@ -367,8 +409,11 @@ class VolunteerService
         // Safeguarding: minors need an active guardian consent. Enforced in the
         // service so the accessible frontend (which calls apply() directly) and
         // any other caller cannot bypass the controller-level gate.
-        if (self::guardianConsentBlocks($userId, $opportunityId)) {
-            throw new \RuntimeException(__('api.guardian_consent_required'), 403);
+        if ($guardianError = self::guardianConsentError($userId, $opportunityId)) {
+            throw new \RuntimeException(
+                $guardianError['message'],
+                self::guardianConsentErrorStatus($guardianError)
+            );
         }
 
         // Creators cannot apply to their own opportunity
@@ -1573,8 +1618,8 @@ class VolunteerService
 
         // Safeguarding re-check: a minor's guardian consent may have expired or
         // been withdrawn between application approval and shift signup.
-        if (self::guardianConsentBlocks($userId, $opportunityId)) {
-            self::$errors[] = ['code' => 'GUARDIAN_CONSENT_REQUIRED', 'message' => __('api.guardian_consent_required')];
+        if ($guardianError = self::guardianConsentError($userId, $opportunityId)) {
+            self::$errors[] = $guardianError;
             return false;
         }
 

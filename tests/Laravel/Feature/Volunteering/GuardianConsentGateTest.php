@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\VolunteerService;
+use App\Services\ShiftWaitlistService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -19,7 +20,8 @@ use Tests\Laravel\TestCase;
  * Guardian-consent enforcement (2026-06-12): members under 18 (by
  * date_of_birth) must hold an ACTIVE guardian consent before applying to a
  * volunteering opportunity, signing up for a shift, or joining a waitlist.
- * Adults — and users with no recorded date of birth — are unaffected.
+ * Adults are unaffected. When the gate is enabled, an absent or invalid date
+ * of birth must fail closed until the member supplies a valid value.
  */
 class GuardianConsentGateTest extends TestCase
 {
@@ -138,14 +140,62 @@ class GuardianConsentGateTest extends TestCase
         $response->assertStatus(201);
     }
 
-    public function test_user_without_dob_is_not_gated(): void
+    public function test_user_without_dob_is_blocked_until_age_can_be_determined(): void
     {
         [$oppId] = $this->makeOpportunityWithShift();
-        $this->actingAsUserWithDob(null);
+        $user = $this->actingAsUserWithDob(null);
 
         $response = $this->apiPost("/v2/volunteering/opportunities/{$oppId}/apply", ['message' => 'hi']);
 
-        $response->assertStatus(201);
+        $response->assertStatus(422);
+        $this->assertSame('VALIDATION_REQUIRED_FIELD', $response->json('errors.0.code'));
+        $this->assertSame('date_of_birth', $response->json('errors.0.field'));
+        $this->assertDatabaseMissing('vol_applications', [
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_user_with_future_dob_is_blocked_until_age_can_be_determined(): void
+    {
+        [$oppId] = $this->makeOpportunityWithShift();
+        $this->actingAsUserWithDob(now()->addYear()->toDateString());
+
+        $response = $this->apiPost("/v2/volunteering/opportunities/{$oppId}/apply", ['message' => 'hi']);
+
+        $response->assertStatus(422);
+        $this->assertSame('VALIDATION_INVALID_FORMAT', $response->json('errors.0.code'));
+        $this->assertSame('date_of_birth', $response->json('errors.0.field'));
+    }
+
+    public function test_user_without_dob_is_unchanged_when_guardian_gate_is_disabled(): void
+    {
+        VolunteeringConfigurationService::set(
+            VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED,
+            false
+        );
+        [$oppId] = $this->makeOpportunityWithShift();
+        $this->actingAsUserWithDob(null);
+
+        $this->apiPost("/v2/volunteering/opportunities/{$oppId}/apply", ['message' => 'hi'])
+            ->assertStatus(201);
+    }
+
+    public function test_unknown_age_is_blocked_from_shift_signup_and_waitlist(): void
+    {
+        [, $shiftId] = $this->makeOpportunityWithShift();
+        $this->actingAsUserWithDob(null);
+
+        foreach ([
+            "/v2/volunteering/shifts/{$shiftId}/signup",
+            "/v2/volunteering/shifts/{$shiftId}/waitlist",
+        ] as $path) {
+            $response = $this->apiPost($path);
+            $response->assertStatus(422);
+            $this->assertSame('VALIDATION_REQUIRED_FIELD', $response->json('errors.0.code'));
+            $this->assertSame('date_of_birth', $response->json('errors.0.field'));
+        }
     }
 
     /**
@@ -176,6 +226,65 @@ class GuardianConsentGateTest extends TestCase
             'opportunity_id' => $oppId,
             'user_id' => $minor->id,
         ]);
+    }
+
+    public function test_service_apply_blocks_user_without_dob(): void
+    {
+        [$oppId] = $this->makeOpportunityWithShift();
+        $user = User::factory()->forTenant($this->testTenantId)->create(['date_of_birth' => null]);
+        TenantContext::setById($this->testTenantId);
+
+        try {
+            VolunteerService::apply($oppId, $user->id, ['message' => 'hi']);
+            $this->fail('apply() must fail closed when age cannot be determined');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(422, $e->getCode());
+        }
+
+        $this->assertDatabaseMissing('vol_applications', [
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_service_waitlist_blocks_user_without_dob(): void
+    {
+        [, $shiftId] = $this->makeOpportunityWithShift();
+        $user = User::factory()->forTenant($this->testTenantId)->create(['date_of_birth' => null]);
+        TenantContext::setById($this->testTenantId);
+
+        $this->assertNull(ShiftWaitlistService::join($shiftId, $user->id));
+        $this->assertSame('VALIDATION_REQUIRED_FIELD', ShiftWaitlistService::getErrors()[0]['code'] ?? null);
+        $this->assertSame('date_of_birth', ShiftWaitlistService::getErrors()[0]['field'] ?? null);
+    }
+
+    public function test_waitlist_promotion_rechecks_age_before_assigning_shift(): void
+    {
+        [$oppId, $shiftId] = $this->makeOpportunityWithShift();
+        $user = User::factory()->forTenant($this->testTenantId)->create(['date_of_birth' => null]);
+        TenantContext::setById($this->testTenantId);
+        $applicationId = (int) DB::table('vol_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'user_id' => $user->id,
+            'status' => 'approved',
+            'created_at' => now(),
+        ]);
+        $waitlistId = (int) DB::table('vol_shift_waitlist')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'shift_id' => $shiftId,
+            'user_id' => $user->id,
+            'position' => 1,
+            'status' => 'notified',
+            'notified_at' => now(),
+            'created_at' => now(),
+        ]);
+
+        $this->assertFalse(ShiftWaitlistService::promoteUser($waitlistId, $this->testTenantId));
+        $this->assertSame('VALIDATION_REQUIRED_FIELD', ShiftWaitlistService::getErrors()[0]['code'] ?? null);
+        $this->assertSame('notified', DB::table('vol_shift_waitlist')->where('id', $waitlistId)->value('status'));
+        $this->assertNull(DB::table('vol_applications')->where('id', $applicationId)->value('shift_id'));
     }
 
     public function test_service_signup_rechecks_consent_after_approval(): void

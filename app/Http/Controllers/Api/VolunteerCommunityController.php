@@ -23,6 +23,7 @@ use App\Services\VolunteerDonationService;
 use App\Services\GuardianConsentService;
 use App\Services\WebhookDispatchService;
 use App\Services\VolunteerReminderService;
+use App\Services\VolunteerService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
 
@@ -63,10 +64,13 @@ class VolunteerCommunityController extends BaseApiController
             $code = $error['code'] ?? '';
             if ($code === 'NOT_FOUND') return 404;
             if ($code === 'FORBIDDEN') return 403;
+            if ($code === 'GUARDIAN_CONSENT_REQUIRED') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
             if ($code === 'DECISION_CONFLICT') return 409;
             if ($code === 'IDEMPOTENCY_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
+            if (in_array($code, ['VALIDATION_REQUIRED_FIELD', 'VALIDATION_INVALID_FORMAT'], true)) return 422;
+            if ($code === 'SERVER_ERROR') return 500;
         }
         return 400;
     }
@@ -81,17 +85,17 @@ class VolunteerCommunityController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_waitlist_join', 20, 60);
 
-        // Guardian-consent gate for minors — the waitlist leads straight to a
-        // shift place on promotion, so it must be gated like signUp().
-        if (VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)
-            && \App\Services\GuardianConsentService::isMinor($userId)) {
-            $gateOppId = \Illuminate\Support\Facades\DB::table('vol_shifts')
-                ->where('tenant_id', \App\Core\TenantContext::getId())
-                ->where('id', (int) $id)
-                ->value('opportunity_id');
-            if (!\App\Services\GuardianConsentService::checkConsent($userId, $gateOppId ? (int) $gateOppId : null)) {
-                return $this->respondWithError('GUARDIAN_CONSENT_REQUIRED', __('api.guardian_consent_required'), null, 403);
-            }
+        $gateOppId = \Illuminate\Support\Facades\DB::table('vol_shifts')
+            ->where('tenant_id', \App\Core\TenantContext::getId())
+            ->where('id', (int) $id)
+            ->value('opportunity_id');
+        if ($gateOppId && ($guardianError = VolunteerService::guardianConsentError($userId, (int) $gateOppId))) {
+            return $this->respondWithError(
+                $guardianError['code'],
+                $guardianError['message'],
+                $guardianError['field'] ?? null,
+                VolunteerService::guardianConsentErrorStatus($guardianError)
+            );
         }
 
         try {

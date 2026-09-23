@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Members with an active identity-verification badge can no longer clear their verified name or date of birth by sending JSON `null`, including while a platform administrator is viewing another community. Where guardian consent is enabled for volunteering, missing, invalid or future dates of birth now stop participation until age can be established; consent is rechecked at application, shift signup, waitlist entry and promotion, and group-reservation placement (F-045).
+
 - Club event sharing now accepts only a public event that belongs to the authorized source club and that the authenticated administrator has event-management authority over. Both clubs must have non-empty matching municipality codes. Incoming and outgoing share lists also recheck the owner relationship, public visibility, both current consents and municipality before returning event details, so old or later-restricted shares no longer disclose them (F-043).
 
 - The public municipality calendar now applies the same group audience boundary as anonymous event discovery. Events linked to private, secret, missing or inactive groups are omitted, while ungrouped events and events in active public groups remain visible (F-042).

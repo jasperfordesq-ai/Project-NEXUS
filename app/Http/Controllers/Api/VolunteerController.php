@@ -79,10 +79,13 @@ class VolunteerController extends BaseApiController
             $code = $error['code'] ?? '';
             if ($code === 'NOT_FOUND') return 404;
             if ($code === 'FORBIDDEN') return 403;
+            if ($code === 'GUARDIAN_CONSENT_REQUIRED') return 403;
             if ($code === 'ALREADY_EXISTS') return 409;
             if ($code === 'IDEMPOTENCY_CONFLICT') return 409;
             if ($code === 'DECISION_CONFLICT') return 409;
             if ($code === 'FEATURE_DISABLED') return 403;
+            if (in_array($code, ['VALIDATION_REQUIRED_FIELD', 'VALIDATION_INVALID_FORMAT'], true)) return 422;
+            if ($code === 'SERVER_ERROR') return 500;
         }
         return 400;
     }
@@ -240,13 +243,13 @@ class VolunteerController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_apply', 20, 60);
 
-        // Minors (by date_of_birth) need an active guardian consent before
-        // taking part in volunteering. Adults (or users without a recorded
-        // date of birth) are unaffected.
-        if (VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)
-            && \App\Services\GuardianConsentService::isMinor($userId)
-            && !\App\Services\GuardianConsentService::checkConsent($userId, (int) $id)) {
-            return $this->respondWithError('GUARDIAN_CONSENT_REQUIRED', __('api.guardian_consent_required'), null, 403);
+        if ($guardianError = VolunteerService::guardianConsentError($userId, (int) $id)) {
+            return $this->respondWithError(
+                $guardianError['code'],
+                $guardianError['message'],
+                $guardianError['field'] ?? null,
+                VolunteerService::guardianConsentErrorStatus($guardianError)
+            );
         }
 
         $data = ['message' => trim($this->input('message', '')), 'shift_id' => $this->inputInt('shift_id') ?: null];
@@ -460,17 +463,6 @@ class VolunteerController extends BaseApiController
         $this->ensureFeature();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_shift_signup', 20, 60);
-
-        // Guardian-consent gate for minors (see apply()).
-        if (VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)
-            && \App\Services\GuardianConsentService::isMinor($userId)) {
-            $gateOppId = VolShift::where('tenant_id', TenantContext::getId())
-                ->where('id', (int) $id)
-                ->value('opportunity_id');
-            if (!\App\Services\GuardianConsentService::checkConsent($userId, $gateOppId ? (int) $gateOppId : null)) {
-                return $this->respondWithError('GUARDIAN_CONSENT_REQUIRED', __('api.guardian_consent_required'), null, 403);
-            }
-        }
 
         try {
             $input = $this->getAllInput();

@@ -388,13 +388,17 @@ class UserService
         self::$errors = [];
 
         // If user has id_verified badge, lock name and DOB fields
-        if (isset($data['first_name']) || isset($data['last_name']) || isset($data['date_of_birth'])) {
-            $tenantId = \App\Core\TenantContext::getId();
-            $hasIdBadge = \Illuminate\Support\Facades\DB::table('member_verification_badges')
-                ->where('user_id', $userId)
-                ->where('tenant_id', $tenantId)
-                ->where('badge_type', 'id_verified')
-                ->whereNull('revoked_at')
+        if (array_key_exists('first_name', $data)
+            || array_key_exists('last_name', $data)
+            || array_key_exists('date_of_birth', $data)) {
+            $hasIdBadge = \Illuminate\Support\Facades\DB::table('member_verification_badges as badge')
+                ->join('users as verified_user', function ($join): void {
+                    $join->on('badge.user_id', '=', 'verified_user.id')
+                        ->on('badge.tenant_id', '=', 'verified_user.tenant_id');
+                })
+                ->where('verified_user.id', $userId)
+                ->where('badge.badge_type', 'id_verified')
+                ->whereNull('badge.revoked_at')
                 ->exists();
 
             if ($hasIdBadge) {

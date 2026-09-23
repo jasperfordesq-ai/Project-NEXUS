@@ -6,9 +6,11 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Core\TenantContext;
 use App\Models\Listing;
 use App\Models\User;
 use App\Services\EmailDispatchService;
+use App\Services\UserService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -124,6 +126,61 @@ class UsersControllerTest extends TestCase
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 422]);
+    }
+
+    public function test_verified_member_cannot_clear_date_of_birth_with_json_null(): void
+    {
+        $dateOfBirth = now()->subYears(17)->toDateString();
+        $user = $this->authenticatedUser([
+            'date_of_birth' => $dateOfBirth,
+            'bio' => 'Before',
+        ]);
+
+        DB::table('member_verification_badges')->insert([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'badge_type' => 'id_verified',
+            'verified_by' => $user->id,
+            'granted_at' => now(),
+        ]);
+
+        $this->apiPut('/v2/users/me', [
+            'date_of_birth' => null,
+            'bio' => 'After',
+        ])->assertStatus(200);
+
+        $user->refresh();
+        $this->assertSame($dateOfBirth, (string) $user->date_of_birth);
+        $this->assertSame('After', $user->bio);
+    }
+
+    public function test_verified_member_lock_uses_home_tenant_while_browsing_another_tenant(): void
+    {
+        $dateOfBirth = now()->subYears(17)->toDateString();
+        $user = $this->authenticatedUser(['date_of_birth' => $dateOfBirth]);
+        DB::table('member_verification_badges')->insert([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'badge_type' => 'id_verified',
+            'verified_by' => $user->id,
+            'granted_at' => now(),
+        ]);
+        DB::table('tenants')->insertOrIgnore([
+            'id' => 999,
+            'name' => 'Viewed Tenant',
+            'slug' => 'viewed-tenant',
+            'is_active' => true,
+            'depth' => 0,
+            'allows_subtenants' => false,
+        ]);
+        TenantContext::setById(999);
+
+        $this->assertTrue(UserService::updateProfile($user->id, ['date_of_birth' => null]));
+
+        $this->assertSame(
+            $dateOfBirth,
+            (string) User::withoutGlobalScopes()->findOrFail($user->id)->date_of_birth
+        );
     }
 
     // ================================================================
@@ -330,10 +387,17 @@ class UsersControllerTest extends TestCase
         $dormant = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'privacy_search' => 1,
+            'onboarding_completed' => 1,
+            'avatar_url' => '/uploads/test/dormant-avatar.png',
+            'bio' => 'Dormant member directory regression fixture.',
             'last_login_at' => now()->subYears(3),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        $response = $this->apiGet('/v2/users?sort=name&limit=100');
+        // Sort newest first so this fresh fixture is in the first page even
+        // when a shared development database has more than 100 active users.
+        $response = $this->apiGet('/v2/users?sort=joined&order=DESC&limit=100');
 
         $response->assertStatus(200);
         $this->assertContains($dormant->id, array_column($response->json('data'), 'id'));

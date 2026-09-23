@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\ShiftGroupReservationService;
 use App\Services\ShiftWaitlistService;
 use App\Services\VolunteerService;
+use App\Services\VolunteeringConfigurationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -217,6 +218,28 @@ class VolunteeringAuditFixesTest extends TestCase
         $this->assertNotNull($row);
         $this->assertSame($this->testTenantId, (int) $row->tenant_id);
         $this->assertSame('confirmed', $row->status);
+    }
+
+    public function test_group_reservation_rejects_member_without_dob_when_guardian_gate_enabled(): void
+    {
+        VolunteeringConfigurationService::set(
+            VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED,
+            true
+        );
+        $leader = User::factory()->forTenant($this->testTenantId)->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create(['date_of_birth' => null]);
+        $reservationId = $this->createReservation((int) $leader->id);
+
+        $this->assertFalse(
+            ShiftGroupReservationService::addMember($reservationId, (int) $member->id, (int) $leader->id)
+        );
+        $this->assertSame('VALIDATION_REQUIRED_FIELD', ShiftGroupReservationService::getErrors()[0]['code'] ?? null);
+        $this->assertSame('date_of_birth', ShiftGroupReservationService::getErrors()[0]['field'] ?? null);
+        $this->assertDatabaseMissing('vol_shift_group_members', [
+            'tenant_id' => $this->testTenantId,
+            'reservation_id' => $reservationId,
+            'user_id' => $member->id,
+        ]);
     }
 
     public function test_re_adding_removed_member_succeeds(): void

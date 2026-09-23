@@ -206,8 +206,8 @@ class ShiftGroupReservationService
             ->where('id', (int) $reservation->shift_id)
             ->where('tenant_id', $tenantId)
             ->value('opportunity_id');
-        if ($opportunityId > 0 && \App\Services\VolunteerService::guardianConsentBlocks($userId, $opportunityId)) {
-            self::$errors[] = ['code' => 'GUARDIAN_CONSENT_REQUIRED', 'message' => __('api.guardian_consent_required')];
+        if ($opportunityId > 0 && ($guardianError = VolunteerService::guardianConsentError($userId, $opportunityId))) {
+            self::$errors[] = $guardianError;
             return false;
         }
 

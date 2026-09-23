@@ -19,7 +19,7 @@ class GuardianConsentServiceTest extends TestCase
 
     public function test_isMinor_returns_false_when_no_dob(): void
     {
-        DB::shouldReceive('table->where->where->value')->andReturn(null);
+        DB::shouldReceive('table->where->where->select->first')->andReturn((object) ['date_of_birth' => null]);
 
         $this->assertFalse(GuardianConsentService::isMinor(1));
     }
@@ -28,7 +28,7 @@ class GuardianConsentServiceTest extends TestCase
     {
         // 10 years old
         $dob = (new \DateTime())->modify('-10 years')->format('Y-m-d');
-        DB::shouldReceive('table->where->where->value')->andReturn($dob);
+        DB::shouldReceive('table->where->where->select->first')->andReturn((object) ['date_of_birth' => $dob]);
 
         $this->assertTrue(GuardianConsentService::isMinor(1));
     }
@@ -37,14 +37,14 @@ class GuardianConsentServiceTest extends TestCase
     {
         // 25 years old
         $dob = (new \DateTime())->modify('-25 years')->format('Y-m-d');
-        DB::shouldReceive('table->where->where->value')->andReturn($dob);
+        DB::shouldReceive('table->where->where->select->first')->andReturn((object) ['date_of_birth' => $dob]);
 
         $this->assertFalse(GuardianConsentService::isMinor(1));
     }
 
     public function test_isMinor_returns_false_on_exception(): void
     {
-        DB::shouldReceive('table->where->where->value')->andThrow(new \Exception('error'));
+        DB::shouldReceive('table->where->where->select->first')->andThrow(new \Exception('error'));
 
         $this->assertFalse(GuardianConsentService::isMinor(1));
     }
@@ -102,7 +102,7 @@ class GuardianConsentServiceTest extends TestCase
     public function test_requestConsent_throws_when_user_not_minor(): void
     {
         $dob = (new \DateTime())->modify('-25 years')->format('Y-m-d');
-        DB::shouldReceive('table->where->where->value')->andReturn($dob);
+        DB::shouldReceive('table->where->where->select->first')->andReturn((object) ['date_of_birth' => $dob]);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('not a minor');
@@ -117,7 +117,8 @@ class GuardianConsentServiceTest extends TestCase
     public function test_requestConsent_returns_consent_record(): void
     {
         $dob = (new \DateTime())->modify('-10 years')->format('Y-m-d');
-        DB::shouldReceive('table->where->where->value')->andReturn($dob);
+        DB::shouldReceive('table->where->where->select->first')->andReturn((object) ['date_of_birth' => $dob]);
+        DB::shouldReceive('table->where->where->value')->andReturn(null);
         DB::shouldReceive('table->insertGetId')->andReturn(5);
 
         $result = GuardianConsentService::requestConsent(1, [
