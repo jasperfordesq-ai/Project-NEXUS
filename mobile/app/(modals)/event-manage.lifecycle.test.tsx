@@ -45,6 +45,16 @@ describe('event management load lifecycle', () => {
     fireEvent.press(await screen.findByText('Review federation delivery'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/(modals)/event-federation', params: { id: '7' } });
   });
+  it('opens the Team screen using staff permission independently of event editing', async () => {
+    jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { edit: false, manage_staff: true } } } as never);
+    const screen = render(<EventManageScreen />);
+    fireEvent.press(await screen.findByText('Delegated team'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/(modals)/event-team', params: { id: '7' } });
+  });
+  it('hides Team controls from an event editor without staff permission', async () => {
+    const screen = render(<EventManageScreen />); await screen.findByText('Edit event');
+    expect(screen.queryByText('Delegated team')).toBeNull();
+  });
 
   it('does not expose federation diagnostics without event management permission', async () => {
     jest.mocked(getEvent).mockResolvedValue({ data: { ...eventResponse.data, permissions: { edit: true, manage_agenda: false } } } as never);

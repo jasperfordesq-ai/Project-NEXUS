@@ -984,7 +984,22 @@
       "revoke_cancel": "Mantenha o acesso",
       "revoke_confirm": "Revogar função",
       "revoke_success": "O acesso para {{name}} foi revogado.",
-      "revoke_error": "A função do evento não pôde ser revogada."
+      "revoke_error": "A função do evento não pôde ser revogada.",
+      "mobile": {
+        "access_hint": "Pode não ter permissão para gerir a equipa deste evento.",
+        "rejected_title": "A alteração guardada não foi aplicada",
+        "rejected_hint": "Verifique a equipa atual e descarte esta alteração rejeitada antes de iniciar outra ação.",
+        "saved_revoke": "Revogar atribuição n.º {{id}}",
+        "discard_title": "Descartar esta alteração rejeitada?",
+        "discard_hint": "A alteração guardada será removida deste dispositivo. A equipa atual do evento não será alterada.",
+        "action_error": "Não foi possível concluir a ação. Verifique a ação guardada antes de tentar novamente.",
+        "time": "Alterar hora de expiração",
+        "timezone": "As horas são apresentadas no fuso {{timezone}}.",
+        "unknown_capability": "Permissão desconhecida",
+        "refresh_title": "Atualizar a equipa do evento",
+        "refresh_hint": "A alteração foi aceite. Atualize para ver a atribuição atualizada antes de fazer outra alteração.",
+        "discard_label": "Descartar alteração guardada"
+      }
     }
   },
   "queue": {

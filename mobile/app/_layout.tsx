@@ -650,6 +650,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('events:manage.agenda.title') }}
       />
       <Stack.Screen
+        name="(modals)/event-team"
+        options={{ presentation: 'card', headerShown: false }}
+      />
+      <Stack.Screen
         name="(modals)/event-federation"
         options={{ ...modalOptions, headerShown: false, title: t('event_federation:manage.federation.title') }}
       />

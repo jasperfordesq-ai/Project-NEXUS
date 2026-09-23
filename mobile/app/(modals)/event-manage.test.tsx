@@ -8,6 +8,7 @@ import { eventManagementRoute } from './event-manage';
 describe('eventManagementRoute', () => {
   it('routes dedicated native management workspaces without losing the event id', () => {
     expect(eventManagementRoute(42, 'people')).toEqual({ pathname: '/(modals)/event-people', params: { id: '42' } });
+    expect(eventManagementRoute(42, 'team')).toEqual({ pathname: '/(modals)/event-team', params: { id: '42' } });
     expect(eventManagementRoute(42, 'federation')).toEqual({ pathname: '/(modals)/event-federation', params: { id: '42' } });
     expect(eventManagementRoute(42, 'analytics')).toEqual({ pathname: '/(modals)/event-analytics', params: { id: '42' } });
     expect(eventManagementRoute(42, 'check-in')).toEqual({ pathname: '/(modals)/event-attendance', params: { id: '42' } });

@@ -984,7 +984,22 @@
       "revoke_cancel": "Coinnigh rochtain",
       "revoke_confirm": "Ról a chúlghairm",
       "revoke_success": "Cúlghairmeadh rochtain ar {{name}}.",
-      "revoke_error": "Níorbh fhéidir ról an imeachta a chúlghairm."
+      "revoke_error": "Níorbh fhéidir ról an imeachta a chúlghairm.",
+      "mobile": {
+        "access_hint": "Seans nach bhfuil cead agat foireann na hócáide seo a bhainistiú.",
+        "rejected_title": "Níor cuireadh an t-athrú sábháilte i bhfeidhm",
+        "rejected_hint": "Athbhreithnigh an fhoireann reatha, ansin scrios an t-athrú diúltaithe seo sula dtosaíonn tú gníomh eile.",
+        "saved_revoke": "Cúlghair sannadh #{{id}}",
+        "discard_title": "Scrios an t-athrú diúltaithe seo?",
+        "discard_hint": "Bainfear an t-athrú sábháilte den ghléas seo. Ní athróidh sé foireann reatha na hócáide.",
+        "action_error": "Níorbh fhéidir an gníomh a chríochnú. Seiceáil an gníomh sábháilte sula ndéanann tú iarracht eile.",
+        "time": "Athraigh am éaga",
+        "timezone": "Taispeántar amanna in {{timezone}}.",
+        "unknown_capability": "Cumas anaithnid",
+        "refresh_title": "Athnuaigh foireann na hócáide",
+        "refresh_hint": "Glacadh le d’athrú. Athnuaigh chun an sannadh nuashonraithe a fheiceáil sula ndéanann tú athrú eile.",
+        "discard_label": "Scrios an t-athrú sábháilte"
+      }
     }
   },
   "queue": {

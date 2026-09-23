@@ -984,7 +984,22 @@
       "revoke_cancel": "Keep access",
       "revoke_confirm": "Revoke role",
       "revoke_success": "Access for {{name}} was revoked.",
-      "revoke_error": "The event role could not be revoked."
+      "revoke_error": "The event role could not be revoked.",
+      "mobile": {
+        "access_hint": "You may not have permission to manage the team for this event.",
+        "rejected_title": "Saved change was not applied",
+        "rejected_hint": "Review the current team, then discard this rejected change before starting another action.",
+        "saved_revoke": "Revoke assignment #{{id}}",
+        "discard_title": "Discard this rejected change?",
+        "discard_hint": "This removes the saved change from this device. It does not change the current event team.",
+        "action_error": "The action could not be completed. Check the saved action before trying again.",
+        "time": "Change expiry time",
+        "timezone": "Times are shown in {{timezone}}.",
+        "unknown_capability": "Unrecognised capability",
+        "refresh_title": "Refresh the event team",
+        "refresh_hint": "Your change was accepted. Refresh to see the updated assignment before making another change.",
+        "discard_label": "Discard saved change"
+      }
     }
   },
   "queue": {

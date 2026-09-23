@@ -41,8 +41,8 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
     case 'agenda': return { pathname: '/(modals)/event-agenda', params } as Href;
     case 'analytics': return { pathname: '/(modals)/event-analytics', params } as Href;
     case 'federation': return { pathname: '/(modals)/event-federation', params } as Href;
+    case 'team': return { pathname: '/(modals)/event-team', params } as Href;
     case 'safety':
-    case 'team':
       // Remaining organiser destinations still use the event detail screen.
       return { pathname: '/(modals)/event-detail', params } as unknown as Href;
     default: return null;
@@ -101,6 +101,7 @@ function EventManageContent({ eventId, section }: { eventId: number; section?: s
     return [
       event.permissions.edit && { label: t('manage.overview.edit_event'), route: { pathname: '/(modals)/edit-event', params } as unknown as Href },
       event.permissions.manage_people && { label: t('manage.overview.people'), route: eventManagementRoute(event.id, 'people')! },
+      event.permissions.manage_staff && { label: t('manage.team.title'), route: eventManagementRoute(event.id, 'team')! },
       event.permissions.check_in && { label: t('manage.overview.check_in'), route: eventManagementRoute(event.id, 'check-in')! },
       event.permissions.manage_agenda && { label: t('manage.overview.agenda'), route: eventManagementRoute(event.id, 'agenda')! },
       event.permissions.manage_agenda && { label: t('event_federation:manage.federation.overview'), route: eventManagementRoute(event.id, 'federation')! },

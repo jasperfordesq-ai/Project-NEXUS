@@ -984,7 +984,22 @@
       "revoke_cancel": "Conserver l'accès",
       "revoke_confirm": "Révoquer le rôle",
       "revoke_success": "L'accès de {{name}} a été révoqué.",
-      "revoke_error": "Le rôle d'événement n'a pas pu être révoqué."
+      "revoke_error": "Le rôle d'événement n'a pas pu être révoqué.",
+      "mobile": {
+        "access_hint": "Vous n’avez peut-être pas l’autorisation de gérer l’équipe de cet événement.",
+        "rejected_title": "La modification enregistrée n’a pas été appliquée",
+        "rejected_hint": "Vérifiez l’équipe actuelle, puis supprimez cette modification refusée avant de lancer une autre action.",
+        "saved_revoke": "Révoquer l’attribution n° {{id}}",
+        "discard_title": "Supprimer cette modification refusée ?",
+        "discard_hint": "La modification enregistrée sera supprimée de cet appareil. L’équipe actuelle de l’événement ne sera pas modifiée.",
+        "action_error": "L’action n’a pas pu être terminée. Vérifiez l’action enregistrée avant de réessayer.",
+        "time": "Modifier l’heure d’expiration",
+        "timezone": "Les heures sont affichées dans le fuseau {{timezone}}.",
+        "unknown_capability": "Autorisation inconnue",
+        "refresh_title": "Actualiser l’équipe de l’événement",
+        "refresh_hint": "Votre modification a été acceptée. Actualisez pour voir l’attribution mise à jour avant d’effectuer une autre modification.",
+        "discard_label": "Supprimer la modification enregistrée"
+      }
     }
   },
   "queue": {

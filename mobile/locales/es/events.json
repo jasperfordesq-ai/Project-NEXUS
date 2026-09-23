@@ -984,7 +984,22 @@
       "revoke_cancel": "Mantener acceso",
       "revoke_confirm": "Revocar rol",
       "revoke_success": "Se revocó el acceso de {{name}}.",
-      "revoke_error": "No se pudo revocar la función del evento."
+      "revoke_error": "No se pudo revocar la función del evento.",
+      "mobile": {
+        "access_hint": "Es posible que no tengas permiso para gestionar el equipo de este evento.",
+        "rejected_title": "No se aplicó el cambio guardado",
+        "rejected_hint": "Revisa el equipo actual y descarta este cambio rechazado antes de iniciar otra acción.",
+        "saved_revoke": "Revocar asignación n.º {{id}}",
+        "discard_title": "¿Descartar este cambio rechazado?",
+        "discard_hint": "Se eliminará el cambio guardado de este dispositivo. No se modificará el equipo actual del evento.",
+        "action_error": "No se pudo completar la acción. Revisa la acción guardada antes de volver a intentarlo.",
+        "time": "Cambiar hora de caducidad",
+        "timezone": "Las horas se muestran en {{timezone}}.",
+        "unknown_capability": "Permiso desconocido",
+        "refresh_title": "Actualizar el equipo del evento",
+        "refresh_hint": "Se aceptó tu cambio. Actualiza para ver la asignación actualizada antes de hacer otro cambio.",
+        "discard_label": "Descartar cambio guardado"
+      }
     }
   },
   "queue": {

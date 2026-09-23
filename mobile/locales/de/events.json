@@ -984,7 +984,22 @@
       "revoke_cancel": "Zugriff behalten",
       "revoke_confirm": "Rolle entziehen",
       "revoke_success": "Der Zugriff für {{name}} wurde widerrufen.",
-      "revoke_error": "Die Ereignisrolle konnte nicht widerrufen werden."
+      "revoke_error": "Die Ereignisrolle konnte nicht widerrufen werden.",
+      "mobile": {
+        "access_hint": "Möglicherweise dürfen Sie das Team dieser Veranstaltung nicht verwalten.",
+        "rejected_title": "Gespeicherte Änderung wurde nicht angewendet",
+        "rejected_hint": "Prüfen Sie das aktuelle Team und verwerfen Sie diese abgelehnte Änderung, bevor Sie eine weitere Aktion starten.",
+        "saved_revoke": "Zuweisung #{{id}} widerrufen",
+        "discard_title": "Diese abgelehnte Änderung verwerfen?",
+        "discard_hint": "Die gespeicherte Änderung wird von diesem Gerät entfernt. Das aktuelle Veranstaltungsteam bleibt unverändert.",
+        "action_error": "Die Aktion konnte nicht abgeschlossen werden. Prüfen Sie die gespeicherte Aktion, bevor Sie es erneut versuchen.",
+        "time": "Ablaufzeit ändern",
+        "timezone": "Zeiten werden in {{timezone}} angezeigt.",
+        "unknown_capability": "Unbekannte Berechtigung",
+        "refresh_title": "Veranstaltungsteam aktualisieren",
+        "refresh_hint": "Ihre Änderung wurde angenommen. Aktualisieren Sie die Ansicht, um die neue Zuweisung zu sehen, bevor Sie weitere Änderungen vornehmen.",
+        "discard_label": "Gespeicherte Änderung verwerfen"
+      }
     }
   },
   "queue": {

@@ -984,7 +984,22 @@
       "revoke_cancel": "Mantieni l'accesso",
       "revoke_confirm": "Revocare il ruolo",
       "revoke_success": "L'accesso per {{name}} è stato revocato.",
-      "revoke_error": "Non è stato possibile revocare il ruolo dell'evento."
+      "revoke_error": "Non è stato possibile revocare il ruolo dell'evento.",
+      "mobile": {
+        "access_hint": "Potresti non avere il permesso di gestire il team di questo evento.",
+        "rejected_title": "La modifica salvata non è stata applicata",
+        "rejected_hint": "Controlla il team attuale, poi elimina questa modifica rifiutata prima di avviare un’altra azione.",
+        "saved_revoke": "Revoca assegnazione n. {{id}}",
+        "discard_title": "Eliminare questa modifica rifiutata?",
+        "discard_hint": "La modifica salvata verrà rimossa da questo dispositivo. Il team attuale dell’evento non verrà modificato.",
+        "action_error": "Impossibile completare l’azione. Controlla l’azione salvata prima di riprovare.",
+        "time": "Modifica l’ora di scadenza",
+        "timezone": "Gli orari sono mostrati nel fuso {{timezone}}.",
+        "unknown_capability": "Autorizzazione sconosciuta",
+        "refresh_title": "Aggiorna il team dell’evento",
+        "refresh_hint": "La modifica è stata accettata. Aggiorna per vedere l’assegnazione aggiornata prima di apportare un’altra modifica.",
+        "discard_label": "Elimina la modifica salvata"
+      }
     }
   },
   "queue": {
