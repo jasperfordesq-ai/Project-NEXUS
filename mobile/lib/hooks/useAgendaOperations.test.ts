@@ -6,9 +6,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useAgendaOperations } from './useAgendaOperations';
 import { loadAgendaOperation, type SavedAgendaOperation } from '../eventAgendaOperation';
-import { executeAgendaOperation, recoverAgendaOperation } from '../eventAgendaOperation';
+import { discardRejectedAgendaOperation, executeAgendaOperation, recoverAgendaOperation } from '../eventAgendaOperation';
 
-jest.mock('../eventAgendaOperation', () => ({ loadAgendaOperation: jest.fn(), executeAgendaOperation: jest.fn(), recoverAgendaOperation: jest.fn() }));
+jest.mock('../eventAgendaOperation', () => ({ loadAgendaOperation: jest.fn(), executeAgendaOperation: jest.fn(), recoverAgendaOperation: jest.fn(), discardRejectedAgendaOperation: jest.fn() }));
 const scope = { tenantId: 2, userId: 3, eventId: 7 };
 const intent = { action: 'reorder' as const, expectedAgendaVersion: 1, orderedSessionIds: [1, 2] };
 const pending: SavedAgendaOperation = { ...scope, schemaVersion: 1, key: 'original', status: 'pending', attempts: 0, intent };
@@ -63,4 +63,32 @@ it.each(['unmount', 'permission'] as const)('suppresses completion after %s and 
   if (departure === 'unmount') unmount(); else rerender({ allowed: false });
   await act(async () => { finish(); await running; });
   expect(accepted).not.toHaveBeenCalled();
+});
+it('reloads after confirmed discard and rejects a stale confirmation without sending', async () => {
+  const rejected: SavedAgendaOperation = { ...pending, status: 'rejected', code: 'EVENT_AGENDA_CONFLICT' };
+  jest.mocked(loadAgendaOperation).mockResolvedValue(rejected);
+  const accepted = jest.fn();
+  const { result } = renderHook(() => useAgendaOperations(scope, true, accepted));
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  await act(async () => { expect(await result.current.discard('older')).toBe(false); });
+  expect(discardRejectedAgendaOperation).not.toHaveBeenCalled();
+  jest.mocked(discardRejectedAgendaOperation).mockImplementationOnce(async () => {
+    jest.mocked(loadAgendaOperation).mockResolvedValue(null);
+  });
+  await act(async () => { expect(await result.current.discard('original')).toBe(true); });
+  expect(result.current.saved).toBeNull();
+  expect(result.current.blocked).toBe(false);
+  expect(accepted).not.toHaveBeenCalled();
+  expect(executeAgendaOperation).not.toHaveBeenCalled();
+});
+it('keeps review blocked from replacement when discard fails', async () => {
+  const rejected: SavedAgendaOperation = { ...pending, status: 'rejected', code: 'EVENT_AGENDA_CONFLICT' };
+  jest.mocked(loadAgendaOperation).mockResolvedValue(rejected);
+  jest.mocked(discardRejectedAgendaOperation).mockRejectedValueOnce(new Error('Storage unavailable'));
+  const { result } = renderHook(() => useAgendaOperations(scope, true, jest.fn()));
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  await act(async () => { await expect(result.current.discard('original')).rejects.toThrow('Storage unavailable'); });
+  expect(result.current.saved).toEqual(rejected);
+  expect(result.current.operationFailed).toBe(true);
+  expect(result.current.blocked).toBe(true);
 });

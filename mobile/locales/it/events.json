@@ -916,7 +916,11 @@
       "input_format": "Usa AAAA-MM-GGTHH:mm, ad esempio 2030-06-15T14:30.",
       "invalid_fields": "Controlla titolo, orari entro i limiti dell’evento, capienza, relatori e collegamenti sicuri.",
       "review": "Rivedi la modifica salvata",
-      "review_hint": "La modifica non è stata applicata. Controlla il programma attuale prima di correggerla e inviarla di nuovo."
+      "review_hint": "La modifica non è stata applicata. Controlla il programma attuale prima di correggerla e inviarla di nuovo.",
+      "discard": "Scarta la modifica salvata",
+      "discard_title": "Scartare questa modifica rifiutata?",
+      "discard_description": "La modifica salvata verrà rimossa da questo dispositivo. Il programma attuale non verrà modificato.",
+      "review_unavailable": "Questa sessione non può più essere modificata. Scarta la modifica rifiutata per continuare."
     },
     "team": {
       "title": "Squadra delegata",

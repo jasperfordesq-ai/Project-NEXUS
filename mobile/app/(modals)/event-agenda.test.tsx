@@ -12,10 +12,11 @@ let mockFocused = true;
 let mockState: any;
 let mockOperation: any;
 const mockUseOperation = jest.fn();
+const mockConfirm = jest.fn();
 jest.mock('expo-router', () => ({ useLocalSearchParams: () => ({ id: mockId }) }));
 jest.mock('@react-navigation/native', () => ({ useIsFocused: () => mockFocused }));
 jest.mock('@/lib/hooks/useUnsavedChangesGuard', () => ({ useUnsavedChangesGuard: jest.fn() }));
-jest.mock('@/components/ui/useConfirm', () => ({ useConfirm: () => ({ confirm: jest.fn(), confirmDialog: null }) }));
+jest.mock('@/components/ui/useConfirm', () => ({ useConfirm: () => ({ confirm: mockConfirm, confirmDialog: null }) }));
 jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
 jest.mock('@/lib/hooks/useTenant', () => ({ useTenant: () => ({ tenant: { id: 2 } }) }));
 jest.mock('@/lib/hooks/useApi', () => ({ useApi: () => mockState }));
@@ -38,7 +39,8 @@ beforeEach(() => {
     agenda: { ...agenda, permissions: { manage: true }, sessions: [session, { ...session, id: 502, title: 'Second' }] } },
   isLoading: false, error: null, errorStatus: null, refresh: jest.fn() };
   mockOperation = { saved: null, blocked: false, busy: false, storageFailed: false, operationFailed: false,
-    submit: jest.fn().mockResolvedValue(undefined), review: jest.fn().mockResolvedValue(undefined), reload: jest.fn().mockResolvedValue(undefined) };
+    submit: jest.fn().mockResolvedValue(undefined), review: jest.fn().mockResolvedValue(undefined), reload: jest.fn().mockResolvedValue(undefined),
+    discard: jest.fn().mockResolvedValue(true) };
 });
 it.each([undefined, '0', '1.5', '01', ['101']])('rejects invalid route %s', id => {
   mockId = id; render(<Screen />); expect(mockUseOperation).not.toHaveBeenCalled();
@@ -93,4 +95,35 @@ it('shows the end date as well as the start date for a session spanning calendar
   mockState.data.agenda.sessions = [{ ...session, end_at: '2031-01-02T12:00:00Z' }];
   const v = render(<Screen />);
   expect(v.getByText(/2031/)).toBeTruthy();
+});
+it.each(['cancelled', 'missing'])('offers a confirmed exit when the reviewed target is %s', async status => {
+  mockOperation.saved = { status: 'review', key: 'rejected-key',
+    agenda: { ...mockState.data.agenda, sessions: status === 'missing' ? [] : [{ ...session, status: 'cancelled' }] },
+    intent: { action: 'update', sessionId: session.id, payload: { title: 'Preserved' } } };
+  const v = render(<Screen />);
+  expect(v.getByText('manage.agenda.review_unavailable')).toBeTruthy();
+  expect(v.queryByText('manage.agenda.review')).toBeNull();
+  fireEvent.press(v.getByText('manage.agenda.discard'));
+  expect(mockOperation.discard).not.toHaveBeenCalled();
+  expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+  await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  expect(mockOperation.discard).toHaveBeenCalledWith('rejected-key');
+  expect(mockOperation.submit).not.toHaveBeenCalled();
+  expect(mockState.refresh).toHaveBeenCalled();
+});
+it('does not offer discard for an uncertain operation', () => {
+  mockOperation.saved = { status: 'pending' }; mockOperation.blocked = true;
+  const v = render(<Screen />);
+  expect(v.queryByText('manage.agenda.discard')).toBeNull();
+});
+it('closes the obsolete editor when conflict review discovers a cancelled target', () => {
+  const v = render(<Screen />);
+  fireEvent.press(v.getAllByText('manage.agenda.edit_session')[0]);
+  expect(v.UNSAFE_getByType(Editor)).toBeTruthy();
+  mockOperation.saved = { status: 'review', key: 'cancelled-target',
+    agenda: { ...mockState.data.agenda, sessions: [{ ...session, status: 'cancelled' }] },
+    intent: { action: 'update', sessionId: session.id, payload: { title: 'Preserved' } } };
+  v.rerender(<Screen />);
+  expect(v.UNSAFE_queryByType(Editor)).toBeNull();
+  expect(v.getByText('manage.agenda.discard')).toBeTruthy();
 });

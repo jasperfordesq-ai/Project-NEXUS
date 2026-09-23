@@ -54,6 +54,7 @@ function CancelSession({ session, blocked, initialReason = '', onCancel, onClose
 }
 export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number; tenantId: number; userId: number }) {
   const { t } = useTranslation(['events', 'common', 'event_communications']);
+  const { confirm, confirmDialog } = useConfirm();
   const scroll = useRef<ScrollView>(null);
   const focused = useIsFocused();
   const [appState, setAppState] = useState(AppState.currentState);
@@ -74,6 +75,9 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
     setEditor(null); setCancel(null); setMinimumVersion(response.data.agenda_version); state.refresh();
   });
   const review = operation.saved?.status === 'review' ? operation.saved : null;
+  const reviewSessionId = review && 'sessionId' in review.intent ? review.intent.sessionId : null;
+  const reviewTargetUnavailable = !!review && reviewSessionId !== null
+    && !review.agenda.sessions.some(session => session.id === reviewSessionId && session.status === 'scheduled');
   const needsAttention = operation.storageFailed || operation.operationFailed
     || operation.saved?.status === 'pending' || operation.saved?.status === 'rejected';
   useEffect(() => {
@@ -87,7 +91,7 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
     if (intent.action === 'create') setEditor({ input: intent.payload, key: review.key });
     if (intent.action === 'update' || intent.action === 'cancel') {
       const session = review.agenda.sessions.find(s => s.id === intent.sessionId && s.status === 'scheduled');
-      if (!session) return;
+      if (!session) { setEditor(null); setCancel(null); return; }
       if (intent.action === 'update') setEditor({ session, input: intent.payload, key: review.key });
       else setCancel({ session, reason: intent.reason });
     }
@@ -127,11 +131,20 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
           <Text accessibilityRole="alert" className="text-foreground">{t('manage.agenda.review_hint')}</Text>
           <Button isDisabled={!permitted || operation.busy} onPress={() => { void operation.review().catch(() => undefined); }}>{t('manage.agenda.review')}</Button>
         </View>}
-        {review && <View className="gap-2"><Text className="text-foreground">{t('manage.agenda.review_hint')}</Text>
-          {!editor && !cancel && review.intent.action !== 'reorder' && <Button isDisabled={frozen} onPress={() => {
+        {review && <View className="gap-2"><Text className="text-foreground">{t(reviewTargetUnavailable ? 'manage.agenda.review_unavailable' : 'manage.agenda.review_hint')}</Text>
+          {!reviewTargetUnavailable && !editor && !cancel && review.intent.action !== 'reorder' && <Button isDisabled={frozen} onPress={() => {
             reviewed.current = null; setReviewVisit(value => value + 1);
           }}>{t('manage.agenda.review')}</Button>}
         </View>}
+        {(review || operation.saved?.status === 'rejected') && <Button variant="secondary" isDisabled={!permitted || operation.busy} onPress={() => {
+          const key = operation.saved!.key;
+          confirm({ title: t('manage.agenda.discard_title'), message: t('manage.agenda.discard_description'),
+            confirmLabel: t('manage.agenda.discard'), cancelLabel: t('common:buttons.cancel'), variant: 'danger',
+            onConfirm: async () => {
+              try { if (await operation.discard(key)) { setEditor(null); setCancel(null); state.refresh(); } }
+              catch { /* Keep the saved input and show the operation error. */ }
+            } });
+        }}>{t('manage.agenda.discard')}</Button>}
         {editor ? <EventAgendaEditor key={editor.key} event={data.event} session={editor.session} recoveredInput={editor.input}
           blocked={frozen} onClose={() => setEditor(null)} onSave={payload => operation.submit(editor.session
             ? { action: 'update', sessionId: editor.session.id, expectedVersion: editor.session.version, payload }
@@ -163,6 +176,7 @@ export function AgendaWorkspace({ eventId, tenantId, userId }: { eventId: number
           </>}
       </View>
     </ScrollView>
+    {confirmDialog}
   </KeyboardAvoidingView>;
 }
 function Screen() {

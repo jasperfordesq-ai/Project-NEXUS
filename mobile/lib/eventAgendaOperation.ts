@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { z } from 'zod';
-import { loadCreationDraft, saveCreationDraft, type CreationDraftScope } from './creationDraftStore';
+import { clearCreationDraft, loadCreationDraft, saveCreationDraft, type CreationDraftScope } from './creationDraftStore';
 import { mutationIdempotencyKey } from './utils/idempotencyKey';
 import { ApiResponseError } from './api/client';
 import { eventAgendaSchema, eventAgendaSessionSchema, getEventAgenda } from './api/events';
@@ -160,6 +160,18 @@ export function executeAgendaOperation(scope: AgendaOperationScope, intent: Agen
 }
 /** Explicit recovery only; mounting or reading storage never dispatches a mutation. */
 export function recoverAgendaOperation(scope: AgendaOperationScope, current: () => boolean) { return run(scope, current); }
+/** Confirmed local discard only. An uncertain operation must never be released this way. */
+export function discardRejectedAgendaOperation(scope: AgendaOperationScope, key: string, current: () => boolean) {
+  return ordered(scope, async () => {
+    if (!current()) throw new AgendaOperationError('Departed');
+    const saved = await read(scope);
+    if (!current() || active.has(owner(scope))) throw new AgendaOperationError('Inactive or busy');
+    if (!saved || saved.key !== key || (saved.status !== 'rejected' && saved.status !== 'review')) {
+      throw new AgendaOperationError('No matching rejected change');
+    }
+    if (!await clearCreationDraft(draftScope(scope))) throw new AgendaOperationError('Discard not saved');
+  });
+}
 /** Keep the rejected input intact while fetching authoritative versions for an explicit correction. */
 export async function reviewAgendaOperation(scope: AgendaOperationScope, key: string, current: () => boolean) {
   if (!current()) throw new AgendaOperationError('Departed');

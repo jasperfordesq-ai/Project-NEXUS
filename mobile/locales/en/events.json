@@ -916,7 +916,11 @@
       "input_format": "Use YYYY-MM-DDTHH:mm, for example 2030-06-15T14:30.",
       "invalid_fields": "Check the title, times within the event, capacity, speakers and secure resource links.",
       "review": "Review saved change",
-      "review_hint": "Your change was not applied. Review the current agenda before correcting and resubmitting it."
+      "review_hint": "Your change was not applied. Review the current agenda before correcting and resubmitting it.",
+      "discard": "Discard saved change",
+      "discard_title": "Discard this rejected change?",
+      "discard_description": "This removes the saved change from this device. It does not change the current agenda.",
+      "review_unavailable": "This session is no longer available to edit. Discard the rejected change to continue."
     },
     "team": {
       "title": "Delegated team",

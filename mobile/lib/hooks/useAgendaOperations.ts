@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { executeAgendaOperation, recoverAgendaOperation, reviewAgendaOperation } from '../eventAgendaOperation';
+import { discardRejectedAgendaOperation, executeAgendaOperation, recoverAgendaOperation, reviewAgendaOperation } from '../eventAgendaOperation';
 import { loadAgendaOperation, type AgendaOperationScope, type AgendaOperationIntent,
   type SavedAgendaOperation } from '../eventAgendaOperation';
 
@@ -70,6 +70,22 @@ export function useAgendaOperations(scope: AgendaOperationScope, permitted: bool
       if (mounted.current) setBusy(false);
     }
   }
-  return { saved, ready, storageFailed, busy, operationFailed, reload, submit, review,
+  async function discard(key: string) {
+    if (!mounted.current || !allowed.current || locked.current || !ready || storageFailed
+      || saved?.key !== key || (saved.status !== 'rejected' && saved.status !== 'review')) return false;
+    locked.current = true; setBusy(true); setOperationFailed(false);
+    try {
+      const current = () => mounted.current && allowed.current;
+      await discardRejectedAgendaOperation({ tenantId, userId, eventId }, key, current);
+      return current();
+    } catch (error) {
+      if (mounted.current) setOperationFailed(true);
+      throw error;
+    } finally {
+      await reload(); locked.current = false;
+      if (mounted.current) setBusy(false);
+    }
+  }
+  return { saved, ready, storageFailed, busy, operationFailed, reload, submit, review, discard,
     blocked: !ready || storageFailed || busy || saved?.status === 'pending' || saved?.status === 'rejected' || !permitted };
 }

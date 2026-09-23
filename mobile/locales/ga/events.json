@@ -916,7 +916,11 @@
       "input_format": "Úsáid BBBB-MM-LLTHH:mm, mar shampla 2030-06-15T14:30.",
       "invalid_fields": "Seiceáil an teideal, na hamanna laistigh den imeacht, an acmhainn, na cainteoirí agus na naisc shlána.",
       "review": "Athbhreithnigh an t-athrú sábháilte",
-      "review_hint": "Níor cuireadh d’athrú i bhfeidhm. Athbhreithnigh an clár reatha sula gceartaíonn tú é agus sula seolann tú arís é."
+      "review_hint": "Níor cuireadh d’athrú i bhfeidhm. Athbhreithnigh an clár reatha sula gceartaíonn tú é agus sula seolann tú arís é.",
+      "discard": "Caith an t-athrú sábháilte amach",
+      "discard_title": "An t-athrú diúltaithe seo a chaitheamh amach?",
+      "discard_description": "Bainfear an t-athrú sábháilte den ghléas seo. Ní athrófar an clár reatha.",
+      "review_unavailable": "Ní féidir an seisiún seo a chur in eagar a thuilleadh. Caith an t-athrú diúltaithe amach chun leanúint ar aghaidh."
     },
     "team": {
       "title": "Foireann tarmligthe",

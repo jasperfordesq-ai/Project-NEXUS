@@ -3,13 +3,13 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { loadCreationDraft, saveCreationDraft } from './creationDraftStore';
+import { clearCreationDraft, loadCreationDraft, saveCreationDraft } from './creationDraftStore';
 import { ApiResponseError } from './api/client';
 import { getEventAgenda } from './api/events';
 import { createAgendaSession, updateAgendaSession, cancelAgendaSession, reorderAgendaSessions } from './api/eventAgendaManagement';
 import { executeAgendaOperation as execute, recoverAgendaOperation as recover,
-  loadAgendaOperation as load, reviewAgendaOperation as review, type AgendaOperationIntent } from './eventAgendaOperation';
-jest.mock('./creationDraftStore', () => ({ loadCreationDraft: jest.fn(), saveCreationDraft: jest.fn() }));
+  loadAgendaOperation as load, reviewAgendaOperation as review, discardRejectedAgendaOperation as discard, type AgendaOperationIntent } from './eventAgendaOperation';
+jest.mock('./creationDraftStore', () => ({ loadCreationDraft: jest.fn(), saveCreationDraft: jest.fn(), clearCreationDraft: jest.fn() }));
 jest.mock('./api/eventAgendaManagement', () => ({ createAgendaSession: jest.fn(), updateAgendaSession: jest.fn(),
   cancelAgendaSession: jest.fn(), reorderAgendaSessions: jest.fn() }));
 jest.mock('./api/events', () => ({ ...jest.requireActual('./api/events'), getEventAgenda: jest.fn() }));
@@ -28,6 +28,7 @@ beforeEach(() => {
   jest.clearAllMocks(); saved.clear();
   jest.mocked(loadCreationDraft).mockImplementation(async key => clone(saved.get(JSON.stringify(key)) ?? null) as never);
   jest.mocked(saveCreationDraft).mockImplementation(async (key, value) => { saved.set(JSON.stringify(key), clone(value)); return true; });
+  jest.mocked(clearCreationDraft).mockImplementation(async key => { saved.delete(JSON.stringify(key)); return true; });
   jest.mocked(createAgendaSession).mockResolvedValue(receipt);
   jest.mocked(updateAgendaSession).mockResolvedValue(receipt);
   jest.mocked(cancelAgendaSession).mockResolvedValue(receipt);
@@ -197,4 +198,38 @@ it('does not settle a wrong-session or stale-version receipt', async () => {
   jest.mocked(updateAgendaSession).mockResolvedValueOnce({ data: { ...receipt.data, session: { ...session, id: session.id + 1 } } });
   await expect(execute(scope, intent, () => true)).rejects.toThrow('Stale receipt');
   expect(await load(scope)).toMatchObject({ status: 'pending' });
+});
+it('can explicitly discard a rejected edit after its target is cancelled, without a mutation', async () => {
+  const intent = { action: 'update' as const, sessionId: session.id, expectedVersion: session.version, payload };
+  jest.mocked(updateAgendaSession).mockRejectedValueOnce(new ApiResponseError(409, 'Refused', undefined, 'EVENT_AGENDA_CONFLICT'));
+  await expect(execute(scope, intent, () => true)).rejects.toThrow();
+  const original = await load(scope);
+  jest.mocked(getEventAgenda).mockResolvedValueOnce({ data: { ...agenda, permissions: { manage: true },
+    sessions: [{ ...session, status: 'cancelled' }] }, meta: { base_url: 'https://example.org' } });
+  await review(scope, original!.key, () => true);
+  await discard(scope, original!.key, () => true);
+  expect(await load(scope)).toBeNull();
+  expect(updateAgendaSession).toHaveBeenCalledTimes(1);
+  await execute(scope, create, () => true);
+  expect(createAgendaSession).toHaveBeenCalledTimes(1);
+});
+it('never discards an uncertain operation, an obsolete confirmation, or another owner', async () => {
+  jest.mocked(createAgendaSession).mockRejectedValueOnce(new Error('Uncertain'));
+  await expect(execute(scope, create, () => true)).rejects.toThrow();
+  const pending = await load(scope);
+  await expect(discard(scope, pending!.key, () => true)).rejects.toThrow();
+  await expect(discard({ ...scope, userId: 99 }, pending!.key, () => true)).rejects.toThrow();
+  expect(clearCreationDraft).not.toHaveBeenCalled();
+  expect(await load(scope)).toEqual(pending);
+});
+it('preserves rejected input when discard storage fails or the confirmation becomes stale', async () => {
+  jest.mocked(createAgendaSession).mockRejectedValueOnce(new ApiResponseError(422, 'Invalid', undefined, 'EVENT_AGENDA_VALIDATION_FAILED'));
+  await expect(execute(scope, create, () => true)).rejects.toThrow();
+  const rejected = await load(scope);
+  await expect(discard(scope, 'old-key', () => true)).rejects.toThrow();
+  await expect(discard(scope, rejected!.key, () => false)).rejects.toThrow();
+  expect(clearCreationDraft).not.toHaveBeenCalled();
+  jest.mocked(clearCreationDraft).mockResolvedValueOnce(false);
+  await expect(discard(scope, rejected!.key, () => true)).rejects.toThrow();
+  expect(await load(scope)).toEqual(rejected);
 });

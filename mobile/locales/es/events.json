@@ -916,7 +916,11 @@
       "input_format": "Usa AAAA-MM-DDTHH:mm, por ejemplo 2030-06-15T14:30.",
       "invalid_fields": "Revisa el título, los horarios dentro del evento, el aforo, los ponentes y los enlaces seguros.",
       "review": "Revisar cambio guardado",
-      "review_hint": "El cambio no se aplicó. Revisa la agenda actual antes de corregirlo y enviarlo de nuevo."
+      "review_hint": "El cambio no se aplicó. Revisa la agenda actual antes de corregirlo y enviarlo de nuevo.",
+      "discard": "Descartar el cambio guardado",
+      "discard_title": "¿Descartar este cambio rechazado?",
+      "discard_description": "Se eliminará el cambio guardado de este dispositivo. La agenda actual no se modificará.",
+      "review_unavailable": "Esta sesión ya no se puede editar. Descarta el cambio rechazado para continuar."
     },
     "team": {
       "title": "Equipo delegado",

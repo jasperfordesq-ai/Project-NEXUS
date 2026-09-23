@@ -916,7 +916,11 @@
       "input_format": "Use AAAA-MM-DDTHH:mm, por exemplo 2030-06-15T14:30.",
       "invalid_fields": "Verifique o título, os horários dentro do evento, a lotação, os oradores e as ligações seguras.",
       "review": "Rever alteração guardada",
-      "review_hint": "A alteração não foi aplicada. Reveja a agenda atual antes de a corrigir e voltar a enviar."
+      "review_hint": "A alteração não foi aplicada. Reveja a agenda atual antes de a corrigir e voltar a enviar.",
+      "discard": "Descartar alteração guardada",
+      "discard_title": "Descartar esta alteração rejeitada?",
+      "discard_description": "A alteração guardada será removida deste dispositivo. O programa atual não será alterado.",
+      "review_unavailable": "Esta sessão já não pode ser editada. Descarte a alteração rejeitada para continuar."
     },
     "team": {
       "title": "Equipe delegada",

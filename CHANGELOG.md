@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native agenda organisers can explicitly discard a definitively rejected change after confirmation, including when its session has been cancelled or removed. Obsolete editors close during review; uncertain operations and failed local discards remain protected.
+
+
 - Native agenda recovery now permits review of an interrupted edit, cancellation or reorder when the API proves its saved version is obsolete and the operation never applied. Accepted retries still return their original receipt; other uncertain outcomes remain protected.
 
 

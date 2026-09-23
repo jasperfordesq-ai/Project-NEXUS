@@ -916,7 +916,11 @@
       "input_format": "Format: JJJJ-MM-TTTHH:mm, zum Beispiel 2030-06-15T14:30.",
       "invalid_fields": "Prüfen Sie Titel, Zeiten innerhalb der Veranstaltung, Kapazität, Vortragende und sichere Ressourcenlinks.",
       "review": "Gespeicherte Änderung prüfen",
-      "review_hint": "Ihre Änderung wurde nicht übernommen. Prüfen Sie die aktuelle Agenda, bevor Sie die Änderung korrigieren und erneut senden."
+      "review_hint": "Ihre Änderung wurde nicht übernommen. Prüfen Sie die aktuelle Agenda, bevor Sie die Änderung korrigieren und erneut senden.",
+      "discard": "Gespeicherte Änderung verwerfen",
+      "discard_title": "Diese abgelehnte Änderung verwerfen?",
+      "discard_description": "Die gespeicherte Änderung wird von diesem Gerät entfernt. Das aktuelle Programm bleibt unverändert.",
+      "review_unavailable": "Diese Sitzung kann nicht mehr bearbeitet werden. Verwerfen Sie die abgelehnte Änderung, um fortzufahren."
     },
     "team": {
       "title": "Delegiertes Team",

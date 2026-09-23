@@ -916,7 +916,11 @@
       "input_format": "Utilisez AAAA-MM-JJTHH:mm, par exemple 2030-06-15T14:30.",
       "invalid_fields": "Vérifiez le titre, les horaires dans les limites de l’événement, la capacité, les intervenants et les liens sécurisés.",
       "review": "Examiner la modification enregistrée",
-      "review_hint": "Votre modification n’a pas été appliquée. Consultez le programme actuel avant de la corriger et de la renvoyer."
+      "review_hint": "Votre modification n’a pas été appliquée. Consultez le programme actuel avant de la corriger et de la renvoyer.",
+      "discard": "Abandonner la modification enregistrée",
+      "discard_title": "Abandonner cette modification refusée ?",
+      "discard_description": "La modification enregistrée sera supprimée de cet appareil. Le programme actuel restera inchangé.",
+      "review_unavailable": "Cette session ne peut plus être modifiée. Abandonnez la modification refusée pour continuer."
     },
     "team": {
       "title": "Équipe déléguée",
