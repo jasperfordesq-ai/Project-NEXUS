@@ -438,6 +438,11 @@ class NotificationQueueTenantIntegrityTest extends TestCase
 
     public function test_instant_notification_queue_sends_business_audit_categories_with_tenant_context(): void
     {
+        // This integration suite runs against the shared local test database.
+        // Isolate the claimed batch so unrelated pending fixtures cannot add
+        // deliveries to the four categories asserted below; the transaction
+        // restores those rows after the test.
+        DB::table('notification_queue')->delete();
         $mailer = $this->fakeMailer(true);
         app()->instance(EmailDispatchService::class, $mailer);
         Cache::forget('notification_queue:instant:runner_lock');

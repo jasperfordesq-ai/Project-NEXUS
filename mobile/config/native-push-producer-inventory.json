@@ -1421,9 +1421,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2406:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:2422:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2406,
+            "line": 2422,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",
@@ -1434,9 +1434,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2564:NotificationDispatcher::dispatchHotMatch",
+            "id": "app/Services/CronJobRunner.php:2580:NotificationDispatcher::dispatchHotMatch",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2564,
+            "line": 2580,
             "transport": "NotificationDispatcher::dispatchHotMatch",
             "role": "producer",
             "recipient_expression": "$user['user_id']",
@@ -1447,9 +1447,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:3273:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:3289:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 3273,
+            "line": 3289,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",

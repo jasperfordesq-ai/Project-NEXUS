@@ -907,7 +907,8 @@ class CronJobRunner
                             fn () => self::resolveEmailSubject($item['activity_type'], $item['content_snippet'] ?? '')
                         );
 
-                        $body = $item['email_body'] ?? nl2br($item['content_snippet']);
+                        $body = $item['email_body']
+                            ?? self::renderPlainTextEmailBody((string) ($item['content_snippet'] ?? ''));
 
                         // Replace placeholder URLs in email body
                         $baseUrl = TenantContext::getFrontendUrl();
@@ -1095,6 +1096,20 @@ class CronJobRunner
 
             default => 'notification_queue',
         };
+    }
+
+    /**
+     * Convert a plain notification snippet into a minimal HTML body.
+     *
+     * The snippet also feeds bells, push and digest text, so it must remain
+     * plain at rest. Escape only at this HTML sink, before adding line breaks.
+     */
+    private static function renderPlainTextEmailBody(string $snippet): string
+    {
+        return nl2br(
+            htmlspecialchars($snippet, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+            false,
+        );
     }
 
     /**
@@ -1982,7 +1997,8 @@ class CronJobRunner
                     fn () => self::resolveEmailSubject($item['activity_type'], $item['content_snippet'] ?? '')
                 );
 
-                $body = $item['email_body'] ?? nl2br($item['content_snippet']);
+                $body = $item['email_body']
+                    ?? self::renderPlainTextEmailBody((string) ($item['content_snippet'] ?? ''));
 
                 // Replace placeholder URLs in email body
                 $baseUrl = TenantContext::getFrontendUrl();
