@@ -1204,6 +1204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Android exports no longer include six unused Material Symbols font weights through the font-loader import, removing approximately 5.9 MB of asset data while preserving the default font and explicitly selected weights.
+
 - **Erasing an account now also deletes the notifications still queued for that person.** GDPR
   erasure deleted the bell notifications (`notifications`) but left the queued copies
   (`notification_queue`), which carry `content_snippet` — text describing what that member did —
