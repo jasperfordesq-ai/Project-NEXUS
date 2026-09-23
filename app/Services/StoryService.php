@@ -644,6 +644,22 @@ class StoryService
 
         $highlightId = (int) DB::getPdo()->lastInsertId();
 
+        // F-067: a highlight may only hold the owner's own stories. Filter the
+        // submitted ids to stories this member owns, keeping their order.
+        $ownedIds = [];
+        if (!empty($storyIds)) {
+            $requested = array_slice(array_values(array_unique(array_map('intval', $storyIds))), 0, 100);
+            $owned = DB::table('stories')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->whereIn('id', $requested)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+            $ownedIds = array_values(array_filter($requested, fn ($id) => in_array($id, $owned, true)));
+        }
+        $storyIds = $ownedIds;
+
         // Add stories to highlight
         foreach ($storyIds as $idx => $sid) {
             DB::insert(
@@ -706,6 +722,16 @@ class StoryService
             throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
 
+        // F-067: only the highlight owner's own stories can be added.
+        $ownsStory = DB::table('stories')
+            ->where('id', $storyId)
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->exists();
+        if (!$ownsStory) {
+            throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
+        }
+
         // Get next order
         $maxOrder = DB::selectOne(
             'SELECT MAX(display_order) as max_order FROM story_highlight_items WHERE highlight_id = ?',
@@ -757,7 +783,8 @@ class StoryService
                     u.first_name, u.last_name, u.avatar_url,
                     ' . ($viewerId ? 'CASE WHEN sv.id IS NOT NULL THEN 1 ELSE 0 END as is_viewed' : '0 as is_viewed') . '
              FROM story_highlight_items shi
-             JOIN stories s ON s.id = shi.story_id
+             JOIN story_highlights h ON h.id = shi.highlight_id AND h.tenant_id = ?
+             JOIN stories s ON s.id = shi.story_id AND s.user_id = h.user_id
              JOIN users u ON u.id = s.user_id
              ' . ($viewerId ? 'LEFT JOIN story_views sv ON sv.story_id = s.id AND sv.viewer_id = ' . (int) $viewerId : '') . '
              WHERE shi.highlight_id = ?
@@ -765,8 +792,17 @@ class StoryService
                AND s.is_active = 1
                AND s.expires_at > NOW()
              ORDER BY shi.display_order ASC',
-            [$highlightId, $tenantId]
+            [$tenantId, $highlightId, $tenantId]
         );
+
+        // F-067: a highlight shows a story only to viewers its audience admits
+        // (close friends, connections) — the owner always sees their own.
+        $stories = array_values(array_filter(
+            $stories,
+            fn ($s) => $viewerId !== null
+                ? $this->canViewStory($s, $viewerId, $tenantId)
+                : in_array((string) ($s->audience ?? 'everyone'), ['everyone', ''], true)
+        ));
 
         return array_map(fn($s) => $this->formatStory($s), $stories);
     }

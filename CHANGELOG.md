@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Story highlights can now only contain your own stories, and a highlight shows each story only to people its audience allows, so close-friends and connections-only stories can no longer be read through someone else's highlight (F-067).
+
 - Volunteer hours can now only be logged for the last 90 days, and no single day can hold more than 24 hours in total across all organisations, so hours can no longer be backdated for years to create credits (F-101, F-141).
 
 - Tenant administrator AI master and chat switches now stop both the general member assistant and job-specific AI chat before conversation persistence, context/tool preparation, or primary/fallback provider dispatch. Retained provider keys and malformed legacy switch values can no longer keep chat active after an administrator disables it (F-048).
