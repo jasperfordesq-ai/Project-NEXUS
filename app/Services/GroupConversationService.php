@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Jobs\CopyGroupMessageForBrokerReview;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\User;
@@ -71,6 +72,14 @@ class GroupConversationService
             return null;
         }
 
+        // Creating a group puts the creator in contact with every member, so
+        // the same sender restrictions as a one-to-one send apply (F-086).
+        $senderError = MessageService::senderWriteRestriction($creatorId, (int) $tenantId);
+        if ($senderError !== null) {
+            self::$errors[] = $senderError;
+            return null;
+        }
+
         // Verify all members exist in the same tenant
         $validMembers = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
@@ -84,12 +93,17 @@ class GroupConversationService
             return null;
         }
 
-        // Check block relationships — remove blocked users silently
-        $blockedIds = BlockUserService::getBlockedPairIds($creatorId);
-        $validMembers = array_diff($validMembers, $blockedIds);
-
-        if (count($validMembers) < 2) {
-            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.group_conversation_not_enough_members_blocked')];
+        // A block in either direction between the creator and an invitee
+        // refuses the whole request (F-086). It used to drop the member
+        // silently, which still told the creator about the block and left the
+        // add-participant path as a way round it. Checked before the
+        // safeguarding cohort policy so a blocked member cannot probe the
+        // other member's safeguarding settings. Blocks between two invitees
+        // are not the creator's to see; those pairs are hidden from each
+        // other when group messages are read.
+        $blockedIds = array_map('intval', BlockUserService::getBlockedPairIds($creatorId));
+        if (array_intersect(array_map('intval', $validMembers), $blockedIds) !== []) {
+            self::$errors[] = ['code' => 'BLOCKED', 'message' => __('safeguarding.errors.blocked_interaction')];
             return null;
         }
 
@@ -164,6 +178,12 @@ class GroupConversationService
             return null;
         }
 
+        $senderError = MessageService::senderWriteRestriction($addedByUserId, (int) $tenantId);
+        if ($senderError !== null) {
+            self::$errors[] = $senderError;
+            return null;
+        }
+
         // Check participant limit
         $activeCount = ConversationParticipant::where('conversation_id', $conversationId)
             ->whereNull('left_at')
@@ -190,6 +210,14 @@ class GroupConversationService
 
         if ($existing && $existing->left_at === null) {
             self::$errors[] = ['code' => 'ALREADY_EXISTS', 'message' => __('api.group_conversation_already_member')];
+            return null;
+        }
+
+        // Adding someone is contact from the adder, so a block in either
+        // direction refuses it — before the safeguarding policy, as for
+        // one-to-one sends (F-086).
+        if (BlockUserService::isBlockedEither($addedByUserId, $userId)) {
+            self::$errors[] = ['code' => 'BLOCKED', 'message' => __('safeguarding.errors.blocked_interaction')];
             return null;
         }
 
@@ -355,7 +383,7 @@ class GroupConversationService
             return null;
         }
 
-        return ConversationParticipant::where('conversation_id', $conversationId)
+        $participants = ConversationParticipant::where('conversation_id', $conversationId)
             ->whereNull('left_at')
             ->join('users', 'conversation_participants.user_id', '=', 'users.id')
             ->select([
@@ -372,8 +400,16 @@ class GroupConversationService
             ])
             ->orderByRaw("CASE WHEN conversation_participants.role = 'admin' THEN 0 ELSE 1 END")
             ->orderBy('conversation_participants.joined_at')
-            ->get()
-            ->map(function ($p) {
+            ->get();
+
+        // "Hide my presence" is honoured for everyone but the viewer (F-088).
+        $hiddenIds = PresenceService::hiddenUserIds(array_values(array_diff(
+            $participants->pluck('user_id')->map(static fn ($id): int => (int) $id)->all(),
+            [$userId],
+        )));
+
+        return $participants
+            ->map(function ($p) use ($hiddenIds) {
                 $name = ($p->profile_type === 'organisation' && !empty($p->organization_name))
                     ? $p->organization_name
                     : UserDisplayName::resolve($p);
@@ -385,7 +421,8 @@ class GroupConversationService
                     'avatar_url' => $p->avatar_url,
                     'role' => $p->role,
                     'joined_at' => $p->joined_at,
-                    'is_online' => $p->last_active_at && \Carbon\Carbon::parse($p->last_active_at)->gt(now()->subMinutes(5)),
+                    'is_online' => ! in_array((int) $p->user_id, $hiddenIds, true)
+                        && $p->last_active_at && \Carbon\Carbon::parse($p->last_active_at)->gt(now()->subMinutes(5)),
                 ];
             });
     }
@@ -406,13 +443,16 @@ class GroupConversationService
             ->orderByDesc('updated_at')
             ->get();
 
-        return $conversations->map(function ($conv) use ($userId) {
+        $hiddenSenderIds = self::hiddenGroupSenderIds($userId);
+
+        return $conversations->map(function ($conv) use ($userId, $hiddenSenderIds) {
             $data = self::formatConversation($conv);
 
             // Get last message
             $lastMessage = DB::table('messages')
                 ->where('conversation_id', $conv->id)
                 ->where('tenant_id', TenantContext::getId())
+                ->when($hiddenSenderIds !== [], fn ($query) => $query->whereNotIn('sender_id', $hiddenSenderIds))
                 ->orderByDesc('id')
                 ->first();
 
@@ -436,6 +476,7 @@ class GroupConversationService
                 ->where('conversation_id', $conv->id)
                 ->where('tenant_id', TenantContext::getId())
                 ->where('sender_id', '!=', $userId)
+                ->when($hiddenSenderIds !== [], fn ($query) => $query->whereNotIn('sender_id', $hiddenSenderIds))
                 ->where('is_read', false)
                 ->count();
 
@@ -475,6 +516,11 @@ class GroupConversationService
             ->where('conversation_id', $conversationId)
             ->where('tenant_id', $tenantId)
             ->where('is_deleted', false);
+
+        $hiddenSenderIds = self::hiddenGroupSenderIds($userId);
+        if ($hiddenSenderIds !== []) {
+            $query->whereNotIn('sender_id', $hiddenSenderIds);
+        }
 
         // If user left, only show messages from before they left
         if ($participant->left_at) {
@@ -592,6 +638,12 @@ class GroupConversationService
             return null;
         }
 
+        $senderError = MessageService::senderWriteRestriction($senderId, (int) $tenantId);
+        if ($senderError !== null) {
+            self::$errors[] = $senderError;
+            return null;
+        }
+
         $body = \App\Helpers\HtmlSanitizer::stripAll(trim($body));
         if (empty($body)) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.message_body_required')];
@@ -628,6 +680,21 @@ class GroupConversationService
         // Update conversation timestamp
         $conversation->touch();
 
+        // One-to-one sends reach broker review through the MessageSent
+        // listener; group messages have no single receiver and never raised
+        // that event, so monitored members' group messages went unreviewed
+        // (F-086). The job applies the same copy rules, off the request path.
+        // A dispatch failure is logged loudly but never un-sends the message.
+        try {
+            CopyGroupMessageForBrokerReview::dispatch((int) $tenantId, (int) $messageId, $senderId, $recipientIds);
+        } catch (\Throwable $e) {
+            Log::error('GroupConversationService: broker review copy dispatch failed', [
+                'tenant_id' => $tenantId,
+                'message_id' => (int) $messageId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         $sender = User::withoutGlobalScopes()->find($senderId);
 
         return [
@@ -645,6 +712,19 @@ class GroupConversationService
                 'avatar_url' => $sender->avatar_url,
             ] : null,
         ];
+    }
+
+    /**
+     * Senders whose group messages the viewer does not see: anyone with a
+     * block in either direction with the viewer. A block made after two
+     * members already share a group neither removes them nor stops the group
+     * for everyone else; the pair simply stop seeing each other's messages.
+     *
+     * @return list<int>
+     */
+    private static function hiddenGroupSenderIds(int $viewerId): array
+    {
+        return array_values(array_map('intval', BlockUserService::getBlockedPairIds($viewerId)));
     }
 
     /**

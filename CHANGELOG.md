@@ -95,6 +95,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Group chats now respect blocks and "messaging disabled" restrictions, need the same completed setup and accepted terms as one-to-one messages, and copy monitored members' messages for broker review (F-086).
+
+- Deleting a conversation through the older app route now hides it only for you, instead of erasing the other person's messages and the broker's safeguarding copies (F-087).
+
+- "Hide my presence" now stays in effect, including on message screens (F-088).
+
+- Messages can no longer carry forged attachment details; attachments come only from real uploads (F-089).
+
+- A blocked member can no longer see the safeguarding notice of the member who blocked them (F-092).
+
 - Deactivating several communities at once now has the same safeguards as deactivating one: a network admin cannot deactivate their own network, and a community that still has active sub-communities is refused (F-060).
 
 - Simultaneous offers to become a public goal's buddy now have one atomic winner. The selected buddy and its history records are committed together; later contenders receive the existing conflict response and no duplicate notification is created (F-143).

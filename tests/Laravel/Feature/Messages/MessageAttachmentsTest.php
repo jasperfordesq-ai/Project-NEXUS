@@ -16,11 +16,16 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
- * MessageService::send now persists file/image attachments (message_attachments
- * table) passed as metadata rows by the controller, allows an attachment-only
- * message (no text body), and getMessages() eager-loads them back. Before this,
- * the React composer's attachments[] were silently dropped. Real-DB coverage so
- * the write + read paths can't drift from the schema again.
+ * MessageService::sendWithUploadedAttachments persists file/image attachments
+ * (message_attachments table) staged server-side by the controller, allows an
+ * attachment-only message (no text body), and getMessages() eager-loads them
+ * back. Before this, the React composer's attachments[] were silently dropped.
+ * Real-DB coverage so the write + read paths can't drift from the schema again.
+ *
+ * F-089: generic MessageService::send() no longer accepts attachment metadata
+ * at all. These tests used to pass invented `/uploads/...` rows straight to
+ * send(), which is exactly the client-injection path that was closed; they now
+ * stage real files in the tenant's private attachment store, as the upload does.
  */
 class MessageAttachmentsTest extends TestCase
 {
@@ -40,17 +45,18 @@ class MessageAttachmentsTest extends TestCase
             },
         );
         $payload = [
+            'recipient_id' => $receiver,
             'body' => 'atomic attachment regression',
             'idempotency_key' => 'atomic-attachment-regression',
             'idempotency_request_hash' => hash('sha256', 'atomic attachment regression'),
-            'attachments' => array_map(fn ($name) => [
-                'url' => '/uploads/' . $tenantId . '/message_attachments/' . $name,
-                'name' => $name, 'size' => 10, 'mime' => 'image/png',
-            ], ['atomic-first.png', 'atomic-second.png']),
         ];
+        $staged = array_map(
+            fn ($name) => $this->stageAttachment($tenantId, $name, 'image/png'),
+            ['atomic-first.png', 'atomic-second.png'],
+        );
         try {
             $failure = null;
-            try { MessageService::send($sender, $receiver, $payload); }
+            try { MessageService::sendWithUploadedAttachments($sender, $payload, $staged); }
             catch (\RuntimeException $error) { $failure = $error; }
             $this->assertNotNull($failure, 'A partial attachment send must not report success');
             $this->assertSame('synthetic attachment persistence failure', $failure->getMessage());
@@ -59,12 +65,79 @@ class MessageAttachmentsTest extends TestCase
             $this->assertDatabaseMissing('message_send_receipts', ['tenant_id' => $tenantId, 'sender_id' => $sender, 'idempotency_key_hash' => hash('sha256', $payload['idempotency_key'])]);
             \Illuminate\Support\Facades\Event::assertNotDispatched(\App\Events\MessageSent::class);
             $failAttachment = false;
-            $result = MessageService::send($sender, $receiver, $payload);
+            $result = MessageService::sendWithUploadedAttachments($sender, $payload, $staged);
             $this->assertCount(2, $result['attachments']);
-            $replay = MessageService::send($sender, $receiver, $payload);
+            $replay = MessageService::sendWithUploadedAttachments($sender, $payload, $staged);
             $this->assertSame($result['id'], $replay['id']);
             $this->assertSame(1, DB::table('messages')->where('tenant_id', $tenantId)->where('sender_id', $sender)->where('body', $payload['body'])->count());
-        } finally { $failAttachment = false; TenantContext::reset(); }
+        } finally { $failAttachment = false; $this->unstage($staged); TenantContext::reset(); }
+    }
+
+    /** @return array{url:string,path:string,name:string,size:int,mime:string,type:string} */
+    private function stageAttachment(int $tenantId, string $name, string $mime, int $size = 10): array
+    {
+        $extension = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+        $relative = "message-media/{$tenantId}/attachments/" . bin2hex(random_bytes(16)) . ".{$extension}";
+        $path = storage_path('app/private/' . $relative);
+        File::ensureDirectoryExists(dirname($path), 0700, true);
+        File::put($path, str_repeat('x', $size));
+
+        return [
+            'url' => $relative,
+            'path' => $relative,
+            'name' => $name,
+            'size' => $size,
+            'mime' => $mime,
+            'type' => str_starts_with($mime, 'image/') ? 'image' : 'file',
+        ];
+    }
+
+    /** @param list<array{path:string}> $staged */
+    private function unstage(array $staged): void
+    {
+        foreach ($staged as $attachment) {
+            @unlink(storage_path('app/private/' . $attachment['path']));
+        }
+    }
+
+    public function test_generic_send_ignores_client_attachment_metadata(): void
+    {
+        [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
+        $staged = [$this->stageAttachment($tenantId, 'someone-elses.pdf', 'application/pdf')];
+
+        try {
+            $result = MessageService::send($sender, $receiver, [
+                'body' => 'forged metadata',
+                'attachments' => $staged,
+            ]);
+
+            $this->assertNotEmpty($result);
+            $this->assertSame([], $result['attachments']);
+        } finally {
+            $this->unstage($staged);
+            TenantContext::reset();
+        }
+    }
+
+    public function test_uploaded_attachment_rows_must_resolve_in_this_tenants_store(): void
+    {
+        [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
+        $missing = "message-media/{$tenantId}/attachments/does-not-exist.pdf";
+        $legacy = '/uploads/' . $tenantId . '/message_attachments/x.png';
+
+        try {
+            foreach ([
+                ['url' => $missing, 'path' => $missing, 'name' => 'x.pdf', 'size' => 1, 'mime' => 'application/pdf', 'type' => 'file'],
+                ['url' => $legacy, 'path' => $legacy, 'name' => 'x.png', 'size' => 1, 'mime' => 'image/png', 'type' => 'image'],
+                ['url' => 'https://example.test/x.png', 'path' => 'https://example.test/x.png', 'name' => 'x.png', 'size' => 1, 'mime' => 'image/png', 'type' => 'image'],
+            ] as $row) {
+                $result = MessageService::sendWithUploadedAttachments($sender, ['recipient_id' => $receiver, 'body' => 'x'], [$row]);
+                $this->assertSame([], $result, 'Unresolvable attachment row was accepted: ' . $row['path']);
+                $this->assertSame('VALIDATION_ERROR', MessageService::getErrors()[0]['code'] ?? null);
+            }
+        } finally {
+            TenantContext::reset();
+        }
     }
 
     /** @return array{0:int,1:int,2:int} [tenantId, senderId, receiverId] */
@@ -91,13 +164,13 @@ class MessageAttachmentsTest extends TestCase
     {
         [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
 
+        $staged = [$this->stageAttachment($tenantId, 'photo.png', 'image/png', 1234)];
+
         try {
-            $result = MessageService::send($sender, $receiver, [
+            $result = MessageService::sendWithUploadedAttachments($sender, [
+                'recipient_id' => $receiver,
                 'body' => 'See the attached file',
-                'attachments' => [
-                    ['url' => '/uploads/' . $tenantId . '/message_attachments/abc.png', 'name' => 'photo.png', 'size' => 1234, 'mime' => 'image/png'],
-                ],
-            ]);
+            ], $staged);
 
             $this->assertNotEmpty($result, 'Send failed: ' . json_encode(MessageService::getErrors()));
             $this->assertArrayHasKey('attachments', $result);
@@ -118,10 +191,11 @@ class MessageAttachmentsTest extends TestCase
                 ->where('message_id', (int) $result['id'])
                 ->first();
             $this->assertNotNull($row, 'Attachment row not persisted');
-            $this->assertSame('/uploads/' . $tenantId . '/message_attachments/abc.png', $row->file_url);
+            $this->assertSame($staged[0]['path'], $row->file_url);
             $this->assertSame('image/png', $row->mime_type);
             $this->assertSame(1234, (int) $row->file_size);
         } finally {
+            $this->unstage($staged);
             TenantContext::reset();
         }
     }
@@ -130,18 +204,19 @@ class MessageAttachmentsTest extends TestCase
     {
         [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
 
+        $staged = [$this->stageAttachment($tenantId, 'brief.pdf', 'application/pdf', 999)];
+
         try {
-            $result = MessageService::send($sender, $receiver, [
+            $result = MessageService::sendWithUploadedAttachments($sender, [
+                'recipient_id' => $receiver,
                 'body' => '',
-                'attachments' => [
-                    ['url' => '/uploads/' . $tenantId . '/message_attachments/doc.pdf', 'name' => 'brief.pdf', 'size' => 999, 'mime' => 'application/pdf'],
-                ],
-            ]);
+            ], $staged);
 
             $this->assertNotEmpty($result, 'Attachment-only send failed: ' . json_encode(MessageService::getErrors()));
             $this->assertSame('', (string) ($result['body'] ?? ''));
             $this->assertCount(1, $result['attachments'] ?? []);
         } finally {
+            $this->unstage($staged);
             TenantContext::reset();
         }
     }
@@ -164,13 +239,13 @@ class MessageAttachmentsTest extends TestCase
     {
         [$tenantId, $sender, $receiver] = $this->tenantAndTwoUsers();
 
+        $staged = [$this->stageAttachment($tenantId, 'x.png', 'image/png')];
+
         try {
-            MessageService::send($sender, $receiver, [
+            MessageService::sendWithUploadedAttachments($sender, [
+                'recipient_id' => $receiver,
                 'body' => 'with file',
-                'attachments' => [
-                    ['url' => '/uploads/' . $tenantId . '/message_attachments/x.png', 'name' => 'x.png', 'size' => 10, 'mime' => 'image/png'],
-                ],
-            ]);
+            ], $staged);
 
             $thread = MessageService::getMessages($receiver, $sender, ['limit' => 10]);
             $this->assertNotNull($thread);
@@ -178,6 +253,7 @@ class MessageAttachmentsTest extends TestCase
             $this->assertNotNull($withAttachment, 'getMessages did not return the attachment');
             $this->assertSame('x.png', $withAttachment['attachments'][0]['file_name']);
         } finally {
+            $this->unstage($staged);
             TenantContext::reset();
         }
     }

@@ -48,13 +48,9 @@ class MessageService
             ];
         }
 
-        $senderAllowed = User::withoutGlobalScopes()
-            ->where('id', $senderId)
-            ->where('tenant_id', $tenantId)
-            ->whereNotIn('status', ['suspended', 'banned', 'deactivated'])
-            ->exists();
-        if (! $senderAllowed) {
-            return ['code' => 'FORBIDDEN', 'message' => __('api.message_sender_not_allowed')];
+        $senderError = self::senderWriteRestriction($senderId, (int) $tenantId);
+        if ($senderError !== null) {
+            return $senderError;
         }
 
         $recipientExists = User::withoutGlobalScopes()
@@ -63,15 +59,6 @@ class MessageService
             ->exists();
         if (! $recipientExists) {
             return ['code' => 'NOT_FOUND', 'message' => __('api.message_recipient_not_found')];
-        }
-
-        $messagingDisabled = DB::table('user_messaging_restrictions')
-            ->where('user_id', $senderId)
-            ->where('tenant_id', $tenantId)
-            ->where('messaging_disabled', true)
-            ->exists();
-        if ($messagingDisabled) {
-            return ['code' => 'MESSAGING_DISABLED', 'message' => __('api.message_messaging_restricted')];
         }
 
         $blocked = DB::table('user_blocks')
@@ -105,6 +92,38 @@ class MessageService
         }
 
         return self::buildSafeguardingError($gate);
+    }
+
+    /**
+     * Sender-side account and broker restrictions shared by every
+     * member-to-member message write: direct preflight, and group
+     * conversation create/add/send (F-086), so a suspended or
+     * "messaging disabled" member cannot route around the restriction by
+     * starting or posting in a group.
+     *
+     * @return array{code: string, message: string}|null Null when the sender may write.
+     */
+    public static function senderWriteRestriction(int $senderId, int $tenantId): ?array
+    {
+        $senderAllowed = User::withoutGlobalScopes()
+            ->where('id', $senderId)
+            ->where('tenant_id', $tenantId)
+            ->whereNotIn('status', ['suspended', 'banned', 'deactivated'])
+            ->exists();
+        if (! $senderAllowed) {
+            return ['code' => 'FORBIDDEN', 'message' => __('api.message_sender_not_allowed')];
+        }
+
+        $messagingDisabled = DB::table('user_messaging_restrictions')
+            ->where('user_id', $senderId)
+            ->where('tenant_id', $tenantId)
+            ->where('messaging_disabled', true)
+            ->exists();
+        if ($messagingDisabled) {
+            return ['code' => 'MESSAGING_DISABLED', 'message' => __('api.message_messaging_restricted')];
+        }
+
+        return null;
     }
 
     /**
@@ -256,7 +275,11 @@ class MessageService
             }
         }
 
-        $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts) {
+        // "Hide my presence" applies here too (F-088): is_online is derived
+        // from last_active_at, which the setting does not touch.
+        $hiddenPartnerIds = PresenceService::hiddenUserIds($partnerIds);
+
+        $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds) {
             $data = $msg->toArray();
             $data['reactions'] = $reactionCounts[(int) $msg->id] ?? [];
             $partnerId = $msg->sender_id === $userId ? $msg->receiver_id : $msg->sender_id;
@@ -269,7 +292,8 @@ class MessageService
                 'first_name' => $partner->first_name,
                 'last_name'  => $partner->last_name,
                 'avatar_url' => $partner->avatar_url,
-                'is_online'  => ($partner->last_active_at && $partner->last_active_at->gt(now()->subMinutes(5))),
+                'is_online'  => ! in_array((int) $partner->id, $hiddenPartnerIds, true)
+                    && ($partner->last_active_at && $partner->last_active_at->gt(now()->subMinutes(5))),
             ] : null;
             $data['last_message'] = [
                 'id'         => $msg->id,
@@ -484,7 +508,64 @@ class MessageService
             return [];
         }
 
+        // Attachment metadata is never accepted from generic message input
+        // (F-089): a client-supplied array was persisted as given, letting a
+        // member attach any path in the tenant's message store under a forged
+        // name and type. Uploaded files arrive through sendWithUploadedAttachments().
+        if (is_array($receiverIdOrData)) {
+            unset($receiverIdOrData['attachments']);
+        } elseif (is_array($data)) {
+            unset($data['attachments']);
+        }
+
         return self::sendInternal($senderId, $receiverIdOrData, $data);
+    }
+
+    /**
+     * Persist a text/attachment message whose files were stored by the
+     * server-side multipart upload (MessageAttachmentUploader::upload()).
+     *
+     * Each staged row is re-resolved against this tenant's private attachment
+     * store before it is written, so no other call site can persist a remote,
+     * traversal, missing or cross-tenant path.
+     *
+     * @param array<string, mixed> $data Controller-style payload (recipient_id, body, …).
+     * @param list<array{url: string, path: string, name: string, size: int, mime: string, type: string}> $uploadedAttachments
+     */
+    public static function sendWithUploadedAttachments(int $senderId, array $data, array $uploadedAttachments): array
+    {
+        $tenantId = (int) app('tenant.id');
+        foreach ($uploadedAttachments as $attachment) {
+            $path = is_array($attachment) ? (string) ($attachment['path'] ?? '') : '';
+            if ($path === ''
+                || ($attachment['url'] ?? null) !== $path
+                || ! str_starts_with($path, "message-media/{$tenantId}/attachments/")
+                || \App\Core\MessageAttachmentUploader::resolveForTenant($path, $tenantId) === null) {
+                self::$errors = [[
+                    'code' => 'VALIDATION_ERROR',
+                    'message' => __('api.message_attachment_upload_error'),
+                ]];
+
+                return [];
+            }
+        }
+
+        unset($data['attachments']);
+        if (array_key_exists('voice_url', $data)
+            || array_key_exists('audio_url', $data)
+            || !empty($data['is_voice'])) {
+            self::$errors = [[
+                'code' => 'VALIDATION_ERROR',
+                'message' => __('api.message_voice_file_required'),
+            ]];
+
+            return [];
+        }
+        if ($uploadedAttachments !== []) {
+            $data['attachments'] = array_values($uploadedAttachments);
+        }
+
+        return self::sendInternal($senderId, $data);
     }
 
     /**
@@ -628,9 +709,9 @@ class MessageService
         $voiceUrl = $data['voice_url'] ?? ($data['audio_url'] ?? null);
         $isVoice = !empty($data['is_voice']) || !empty($voiceUrl);
 
-        // File/image attachments: the caller (controller) has already validated +
-        // stored each file and passes metadata rows [url,name,size,mime]. A message
-        // may carry attachments with no text body (e.g. "here's the photo").
+        // File/image attachments: only sendWithUploadedAttachments() can supply
+        // these, after the controller stored each file server-side (F-089).
+        // A message may carry attachments with no text body (e.g. "here's the photo").
         $attachments = [];
         if (is_array($data['attachments'] ?? null)) {
             foreach ($data['attachments'] as $att) {
@@ -844,7 +925,12 @@ class MessageService
         }
 
         // Server-authoritative: only a genuinely restricted recipient warrants a staff alert.
-        $gate = self::evaluateSafeguardingContactGate($senderId, $recipientId, $tenantId);
+        // A blocked pair gets the "not restricted" answer without the policy
+        // being consulted, so the reply cannot reveal the recipient's
+        // safeguarding settings or confirm the block (F-092).
+        $gate = BlockUserService::isBlockedEither($senderId, $recipientId)
+            ? null
+            : self::evaluateSafeguardingContactGate($senderId, $recipientId, $tenantId);
         if ($gate === null) {
             self::$errors = [[
                 'code' => 'SAFEGUARDING_NOT_RESTRICTED',
@@ -1184,8 +1270,14 @@ class MessageService
         // member types. This is a pure read; it never alerts staff. Only an actual send
         // attempt (MessageService::send) or an explicit "Request coordinator help" action
         // (MessageService::requestCoordinatorAssistance) notifies brokers/admins.
+        // Blocks are checked first, as in send(), so a member with a block in
+        // either direction cannot read the other member's confidential
+        // safeguarding settings (F-092). They get the same answer as for an
+        // unrestricted member, which also does not confirm the block.
         $safeguarding = null;
-        $gate = self::evaluateSafeguardingContactGate($userId, $otherUserId, $tenantId);
+        $gate = BlockUserService::isBlockedEither($userId, $otherUserId)
+            ? null
+            : self::evaluateSafeguardingContactGate($userId, $otherUserId, $tenantId);
         if ($gate !== null) {
             $error = self::buildSafeguardingError($gate);
             $safeguarding = [
@@ -1209,7 +1301,8 @@ class MessageService
                 'first_name' => $otherUser->first_name,
                 'last_name'  => $otherUser->last_name,
                 'avatar_url' => $otherUser->avatar_url,
-                'is_online'  => ($otherUser->last_active_at && $otherUser->last_active_at->gt(now()->subMinutes(5))),
+                'is_online'  => PresenceService::hiddenUserIds([(int) $otherUser->id]) === []
+                    && ($otherUser->last_active_at && $otherUser->last_active_at->gt(now()->subMinutes(5))),
             ],
             'unread_count'  => $unreadCount,
             'message_count' => $messageCount,
@@ -1318,17 +1411,11 @@ class MessageService
         $totalUpdated = 0;
 
         if (! self::hasArchivedColumns()) {
-            // Fall back to hard delete if columns don't exist
-            return DB::table('messages')
-                ->where('tenant_id', $tenantId)
-                ->where(function ($q) use ($userId, $otherUserId) {
-                    $q->where(function ($q2) use ($userId, $otherUserId) {
-                        $q2->where('sender_id', $userId)->where('receiver_id', $otherUserId);
-                    })->orWhere(function ($q2) use ($userId, $otherUserId) {
-                        $q2->where('sender_id', $otherUserId)->where('receiver_id', $userId);
-                    });
-                })
-                ->delete();
+            // This used to fall back to a hard delete of BOTH members'
+            // messages, which also cascades away broker safeguarding copies
+            // (F-087). Hiding a conversation must never destroy the other
+            // member's messages; without the columns it cannot be done at all.
+            throw new \RuntimeException('messages.archived_by_* columns are missing; cannot archive a conversation.');
         }
 
         if ($scope === 'everyone') {
@@ -1670,6 +1757,11 @@ class MessageService
         $conversationId = (int) ($message->conversation_id ?? 0);
         if ($conversationId <= 0) {
             return ['code' => 'FORBIDDEN', 'message' => __('api.message_not_participant')];
+        }
+
+        $senderError = self::senderWriteRestriction($actorUserId, $tenantId);
+        if ($senderError !== null) {
+            return $senderError;
         }
 
         $recipientIds = DB::table('conversation_participants')

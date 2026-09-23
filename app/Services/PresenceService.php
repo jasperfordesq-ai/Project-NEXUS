@@ -74,7 +74,9 @@ class PresenceService
                 'status_emoji' => $existing['status_emoji'] ?? null,
                 'last_activity_at' => $now,
                 'last_seen_at' => $now,
-                'hide_presence' => $existing['hide_presence'] ?? false,
+                // Rebuilt after the 5-minute entry expires: re-read the stored
+                // setting, never default to visible (F-088).
+                'hide_presence' => self::hidePresenceFor($userId, $existing),
             ];
 
             Redis::setex($redisKey, self::CACHE_TTL, json_encode($payload));
@@ -317,6 +319,7 @@ class PresenceService
                 'custom_status' => $customStatus,
                 'status_emoji' => $emoji,
                 'last_seen_at' => $now,
+                'hide_presence' => self::hidePresenceFor($userId, $existing),
             ]);
 
             Redis::setex($redisKey, self::CACHE_TTL, json_encode($payload));
@@ -361,6 +364,46 @@ class PresenceService
             }
         } catch (\Throwable) {
             // Non-critical
+        }
+    }
+
+    /**
+     * Which of these members have chosen "hide my presence".
+     *
+     * Read from user_presence.hide_presence, the durable copy of the setting,
+     * for surfaces that derive "online" from users.last_active_at (messages,
+     * group participants) rather than from this service (F-088). If the read
+     * fails every member is treated as hidden: showing someone as online who
+     * asked not to be is the outcome to avoid.
+     *
+     * @param array<int|string> $userIds
+     * @return list<int>
+     */
+    public static function hiddenUserIds(array $userIds): array
+    {
+        $userIds = array_values(array_unique(array_filter(
+            array_map('intval', $userIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+        if ($userIds === []) {
+            return [];
+        }
+
+        try {
+            return DB::table('user_presence')
+                ->where('tenant_id', TenantContext::getId())
+                ->whereIn('user_id', $userIds)
+                ->where('hide_presence', 1)
+                ->pluck('user_id')
+                ->map(static fn ($id): int => (int) $id)
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            Log::error('Presence hiddenUserIds lookup failed; treating members as hidden', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return $userIds;
         }
     }
 
@@ -458,6 +501,20 @@ class PresenceService
         }
 
         return null;
+    }
+
+    /**
+     * The hide_presence value to write into a rebuilt Redis entry. A live
+     * entry that already carries the flag is trusted (setPrivacy keeps it in
+     * step); otherwise the stored setting is re-read.
+     */
+    private static function hidePresenceFor(int $userId, ?array $existing): bool
+    {
+        if (is_array($existing) && array_key_exists('hide_presence', $existing)) {
+            return (bool) $existing['hide_presence'];
+        }
+
+        return in_array($userId, self::hiddenUserIds([$userId]), true);
     }
 
     /**

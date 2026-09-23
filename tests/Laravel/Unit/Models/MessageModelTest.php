@@ -13,14 +13,13 @@ use App\Models\Message;
 use App\Models\Concerns\HasTenantScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use ReflectionMethod;
 
 /**
  * Message Model Tests
  *
  * Tests the Message Eloquent model structure, traits, relationships,
  * scopes, and available static methods:
- * deleteConversation(), getReactionsBatch().
+ * getReactionsBatch().
  */
 class MessageModelTest extends \Tests\Laravel\TestCase
 {
@@ -105,25 +104,15 @@ class MessageModelTest extends \Tests\Laravel\TestCase
     // Static Method Existence Tests
     // ==========================================
 
-    public function testDeleteConversationMethodExists(): void
+    public function testHardDeleteConversationHelperWasRemoved(): void
     {
-        $this->assertTrue(
+        // F-087: Message::deleteConversation() hard-deleted both members'
+        // messages and cascaded away broker safeguarding copies. It was
+        // removed; the legacy route now archives for the caller only.
+        $this->assertFalse(
             method_exists(Message::class, 'deleteConversation'),
-            'Message::deleteConversation() should exist'
+            'Message::deleteConversation() must not be reintroduced'
         );
-    }
-
-    public function testDeleteConversationIsPublicStatic(): void
-    {
-        $method = new ReflectionMethod(Message::class, 'deleteConversation');
-        $this->assertTrue($method->isPublic());
-        $this->assertTrue($method->isStatic());
-    }
-
-    public function testDeleteConversationReturnType(): void
-    {
-        $method = new ReflectionMethod(Message::class, 'deleteConversation');
-        $this->assertEquals('bool', $method->getReturnType()->getName());
     }
 
     public function testGetReactionsBatchMethodExists(): void

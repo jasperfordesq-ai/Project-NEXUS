@@ -618,14 +618,16 @@ Route::middleware(['feature:groups', 'module:messages'])
         'userId' => '[0-9]+',
     ])
     ->group(function () {
-Route::post('/v2/conversations/groups', [\App\Http\Controllers\Api\GroupConversationController::class, 'store']);
+// Group create/add/send carry the same onboarding and legal-acceptance gates
+// as a one-to-one send (/v2/messages) — F-086.
+Route::post('/v2/conversations/groups', [\App\Http\Controllers\Api\GroupConversationController::class, 'store'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::get('/v2/conversations/groups', [\App\Http\Controllers\Api\GroupConversationController::class, 'index']);
 Route::get('/v2/conversations/{id}/participants', [\App\Http\Controllers\Api\GroupConversationController::class, 'participants']);
-Route::post('/v2/conversations/{id}/participants', [\App\Http\Controllers\Api\GroupConversationController::class, 'addParticipant']);
+Route::post('/v2/conversations/{id}/participants', [\App\Http\Controllers\Api\GroupConversationController::class, 'addParticipant'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::delete('/v2/conversations/{id}/participants/{userId}', [\App\Http\Controllers\Api\GroupConversationController::class, 'removeParticipant']);
 Route::patch('/v2/conversations/{id}/group', [\App\Http\Controllers\Api\GroupConversationController::class, 'updateGroup']);
 Route::get('/v2/conversations/{id}/messages', [\App\Http\Controllers\Api\GroupConversationController::class, 'messages']);
-Route::post('/v2/conversations/{id}/messages', [\App\Http\Controllers\Api\GroupConversationController::class, 'sendMessage']);
+Route::post('/v2/conversations/{id}/messages', [\App\Http\Controllers\Api\GroupConversationController::class, 'sendMessage'])->middleware('onboarding-required')->middleware('legal-acceptance');
 });
 
 // ============================================

@@ -237,7 +237,8 @@ class GroupConversationController extends BaseApiController
     {
         return match ($errors[0]['code'] ?? null) {
             'SAFEGUARDING_POLICY_UNAVAILABLE' => 503,
-            'VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED', 'FORBIDDEN' => 403,
+            'VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED', 'FORBIDDEN',
+            'BLOCKED', 'MESSAGING_DISABLED' => 403,
             default => $default,
         };
     }

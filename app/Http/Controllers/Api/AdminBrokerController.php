@@ -1124,14 +1124,27 @@ class AdminBrokerController extends BaseApiController
             $copy['tenant_name'] = $copy['tenant_name'] ?? 'Unknown';
             $copyTenantId = (int) $copy['tenant_id'];
 
+            // A copy of a group-conversation message (F-086) names one
+            // recipient, but its context is the group thread, not that
+            // pair's one-to-one history.
+            $groupConversationId = (int) (DB::table('messages')
+                ->where('id', (int) $copy['original_message_id'])
+                ->where('tenant_id', $copyTenantId)
+                ->value('conversation_id') ?? 0);
+            $threadWhere = $groupConversationId > 0
+                ? 'm.conversation_id = ?'
+                : '((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))';
+            $threadParams = $groupConversationId > 0
+                ? [$groupConversationId]
+                : [$copy['sender_id'], $copy['receiver_id'], $copy['receiver_id'], $copy['sender_id']];
             $thread = DB::select(
                 "SELECT m.id, m.sender_id, m.receiver_id, m.body, m.created_at, m.is_deleted,
                     " . UserDisplayName::sql('u', 'sender_name') . "
                 FROM messages m LEFT JOIN users u ON m.sender_id = u.id
                 WHERE m.tenant_id = ?
-                  AND ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
+                  AND {$threadWhere}
                 ORDER BY m.created_at ASC LIMIT 200",
-                [$copyTenantId, $copy['sender_id'], $copy['receiver_id'], $copy['receiver_id'], $copy['sender_id']]
+                array_merge([$copyTenantId], $threadParams)
             );
             $thread = array_map(fn($r) => (array)$r, $thread);
 

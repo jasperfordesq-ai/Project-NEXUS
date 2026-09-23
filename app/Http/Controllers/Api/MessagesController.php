@@ -115,6 +115,9 @@ class MessagesController extends BaseApiController
         $this->rateLimit('messages_send', 30, 60);
 
         $data = $this->getAllInput();
+        // Attachment metadata comes only from the files uploaded with this
+        // request, never from client input (F-089).
+        unset($data['attachments']);
 
         if (empty($data['recipient_id'])) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_recipient_required'), 'recipient_id', 422);
@@ -201,17 +204,15 @@ class MessagesController extends BaseApiController
                 return $this->respondWithError('UPLOAD_FAILED', __('api.message_attachment_upload_error'), 'attachments', 400);
             }
         }
-        if (!empty($attachments)) {
-            $data['attachments'] = $attachments;
-        }
-
         if (empty($body) && empty($attachments)) {
             $this->deleteStagedAttachments($attachments);
             return $this->respondWithError('VALIDATION_ERROR', __('api.message_body_required'), 'body', 422);
         }
 
         try {
-            $message = $this->messageService->send($userId, $data);
+            $message = $attachments === []
+                ? $this->messageService->send($userId, $data)
+                : $this->messageService->sendWithUploadedAttachments($userId, $data, $attachments);
         } catch (\Throwable $error) {
             $this->deleteStagedAttachments($attachments);
             throw $error;
@@ -521,7 +522,14 @@ class MessagesController extends BaseApiController
     }
 
     /**
-     * DELETE /api/v2/messages/conversations (v1 legacy — delete conversation)
+     * POST /api/messages/delete-conversation (v1 legacy — delete conversation)
+     *
+     * Same semantics as the v2 delete-conversation with scope "self": the
+     * conversation is hidden from the caller's inbox only (restorable). This
+     * used to hard-delete BOTH members' messages, and the broker_message_copies
+     * foreign key cascaded the broker's safeguarding copies away with them
+     * (F-087). No client calls this route; it is kept only so an old caller
+     * gets a safe answer instead of a 404.
      */
     public function deleteConversation(): JsonResponse
     {
@@ -534,8 +542,8 @@ class MessagesController extends BaseApiController
         }
 
         try {
-            $deleted = Message::deleteConversation($userId, $otherUserId);
-            return $this->success(['deleted' => $deleted]);
+            $archived = $this->messageService->archiveConversation($otherUserId, $userId, 'self');
+            return $this->success(['deleted' => $archived > 0]);
         } catch (\Throwable $e) {
             Log::error('Failed to delete conversation', ['error' => $e->getMessage(), 'user' => $userId, 'other_user' => $otherUserId]);
             return $this->error('Failed to delete conversation', 500);

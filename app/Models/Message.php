@@ -100,26 +100,9 @@ class Message extends Model
         });
     }
 
-    /**
-     * Delete all messages in a conversation between two users.
-     */
-    public static function deleteConversation(int $userId, int $otherUserId): bool
-    {
-        $tenantId = TenantContext::getId();
-
-        $affected = DB::table('messages')
-            ->where('tenant_id', $tenantId)
-            ->where(function ($q) use ($userId, $otherUserId) {
-                $q->where(function ($q2) use ($userId, $otherUserId) {
-                    $q2->where('sender_id', $userId)->where('receiver_id', $otherUserId);
-                })->orWhere(function ($q2) use ($userId, $otherUserId) {
-                    $q2->where('sender_id', $otherUserId)->where('receiver_id', $userId);
-                });
-            })
-            ->delete();
-
-        return $affected > 0;
-    }
+    // deleteConversation() was removed (F-087): it hard-deleted BOTH members'
+    // messages, cascading away broker safeguarding copies. A member "deleting"
+    // a conversation is MessageService::archiveConversation($other, $me, 'self').
 
     /**
      * Get public reaction counts for multiple messages (batch).

@@ -49,18 +49,70 @@ class BrokerMessageVisibilityService
      */
     public function shouldCopyMessage(int $senderId, int $receiverId, ?int $listingId = null): ?string
     {
+        return $this->evaluateCopyRules($senderId, [$receiverId], $listingId)[0] ?? null;
+    }
+
+    /**
+     * Copy a group-conversation message for broker review when the
+     * one-to-one rules would copy it to any of its recipients (F-086).
+     *
+     * Group messages are stored with receiver_id = 0 and never raise
+     * MessageSent, so the listener-driven path cannot see them. The copy names
+     * the recipient that triggered the rule (the monitored recipient, or the
+     * first-contact recipient) and otherwise the first active recipient.
+     *
+     * @param list<int> $recipientIds Active participants other than the sender.
+     * @return int|null Copy ID, or null when no rule applies.
+     */
+    public function copyGroupMessageIfRequired(int $messageId, int $senderId, array $recipientIds): ?int
+    {
+        $recipientIds = array_values(array_filter(
+            array_map('intval', $recipientIds),
+            static fn (int $id): bool => $id > 0 && $id !== $senderId,
+        ));
+        if ($recipientIds === []) {
+            return null;
+        }
+
+        $decision = $this->evaluateCopyRules($senderId, $recipientIds, null);
+        if ($decision === null) {
+            return null;
+        }
+
+        return $this->copyMessageForBroker($messageId, $decision[0], $decision[1]);
+    }
+
+    /**
+     * The broker copy rules, in priority order, for one sender and one or
+     * more recipients. With a single recipient this is exactly the historic
+     * one-to-one rule set.
+     *
+     * @param non-empty-list<int> $receiverIds
+     * @return array{0: string, 1: int}|null [reason, receiver the copy names]
+     */
+    private function evaluateCopyRules(int $senderId, array $receiverIds, ?int $listingId): ?array
+    {
         if (!$this->configService->isBrokerVisibilityEnabled()) {
             return null;
         }
 
+        $firstReceiverId = $receiverIds[0];
+
         // Check BOTH sender and receiver — messages to/from vulnerable users must be monitored
-        if ($this->isUserUnderMonitoring($senderId) || $this->isUserUnderMonitoring($receiverId)) {
-            return self::REASON_FLAGGED_USER;
+        if ($this->isUserUnderMonitoring($senderId)) {
+            return [self::REASON_FLAGGED_USER, $firstReceiverId];
+        }
+        foreach ($receiverIds as $receiverId) {
+            if ($this->isUserUnderMonitoring($receiverId)) {
+                return [self::REASON_FLAGGED_USER, $receiverId];
+            }
         }
 
         if ($this->configService->isFirstContactMonitoringEnabled()) {
-            if ($this->isFirstContact($senderId, $receiverId)) {
-                return self::REASON_FIRST_CONTACT;
+            foreach ($receiverIds as $receiverId) {
+                if ($this->isFirstContact($senderId, $receiverId)) {
+                    return [self::REASON_FIRST_CONTACT, $receiverId];
+                }
             }
         }
 
@@ -70,7 +122,7 @@ class BrokerMessageVisibilityService
             $messagingConfig = $this->configService->getConfig('messaging');
             $monitoringDays = (int) ($messagingConfig['new_member_monitoring_days'] ?? 30);
             if ($monitoringDays > 0 && $this->isNewMember($senderId, $monitoringDays)) {
-                return self::REASON_NEW_MEMBER;
+                return [self::REASON_NEW_MEMBER, $firstReceiverId];
             }
         }
 
@@ -82,14 +134,14 @@ class BrokerMessageVisibilityService
                 ->whereIn('risk_level', ['high', 'critical'])
                 ->exists();
             if ($isHighRisk) {
-                return self::REASON_HIGH_RISK_LISTING;
+                return [self::REASON_HIGH_RISK_LISTING, $firstReceiverId];
             }
         }
 
-        // Random sampling
+        // Random sampling — one draw per message, however many recipients.
         $sampleRate = (int) ($config['random_sample_percentage'] ?? 0);
         if ($sampleRate > 0 && rand(1, 100) <= $sampleRate) {
-            return self::REASON_MONITORING;
+            return [self::REASON_MONITORING, $firstReceiverId];
         }
 
         return null;
@@ -100,9 +152,12 @@ class BrokerMessageVisibilityService
      *
      * @param int $messageId Original message ID
      * @param string $reason Copy reason
+     * @param int|null $receiverId Recipient the copy names. Only group
+     *                             messages pass this: they are stored with
+     *                             receiver_id = 0, which is not a member.
      * @return int|null Copy ID or null
      */
-    public function copyMessageForBroker(int $messageId, string $reason): ?int
+    public function copyMessageForBroker(int $messageId, string $reason, ?int $receiverId = null): ?int
     {
         $tenantId = TenantContext::getId();
 
@@ -113,9 +168,16 @@ class BrokerMessageVisibilityService
             return null;
         }
 
-        $ids = [(int) $message->sender_id, (int) $message->receiver_id];
-        sort($ids);
-        $conversationKey = md5(implode('-', $ids));
+        $receiverId ??= (int) $message->receiver_id;
+        $groupConversationId = (int) ($message->conversation_id ?? 0);
+        if ($groupConversationId > 0) {
+            // All copies from one group share a key, like a one-to-one thread.
+            $conversationKey = md5('group-' . $groupConversationId);
+        } else {
+            $ids = [(int) $message->sender_id, $receiverId];
+            sort($ids);
+            $conversationKey = md5(implode('-', $ids));
+        }
 
         // firstOrCreate is atomic against the
         // (tenant_id, original_message_id) unique index. A retried queue job
@@ -129,7 +191,7 @@ class BrokerMessageVisibilityService
             [
                 'conversation_key' => $conversationKey,
                 'sender_id' => $message->sender_id,
-                'receiver_id' => $message->receiver_id,
+                'receiver_id' => $receiverId,
                 'message_body' => $message->body ?? '',
                 'sent_at' => $message->created_at,
                 'copy_reason' => $reason,
@@ -196,7 +258,7 @@ class BrokerMessageVisibilityService
 
         // Record first contact if applicable
         if ($reason === self::REASON_FIRST_CONTACT) {
-            $this->recordFirstContact($message->sender_id, $message->receiver_id, $messageId);
+            $this->recordFirstContact((int) $message->sender_id, $receiverId, $messageId);
         }
 
         return $copy->id;

@@ -91,7 +91,7 @@ Opening a conversation (`GET /api/v2/messages/{id}`) automatically marks it as r
 
 ### Send
 
-`POST /api/v2/messages` requires `recipient_id` plus either `body` or an `attachments[]` file upload. It rejects client-supplied `voice_url` and `audio_url` pointers; voice messages must use the dedicated multipart route below.
+`POST /api/v2/messages` requires `recipient_id` plus either `body` or an `attachments[]` file upload. It rejects client-supplied `voice_url` and `audio_url` pointers; voice messages must use the dedicated multipart route below. A JSON `attachments` array (url/path/name/mime metadata) is ignored: attachment rows come only from files uploaded with the request, persisted through `MessageService::sendWithUploadedAttachments()`, which re-resolves each staged path in the tenant's private store. Generic `MessageService::send()` drops any `attachments` key.
 
 - `body` is validated server-side with `HtmlSanitizer::stripAll()` (all HTML stripped before storage).
 - Maximum body length: **10,000 characters**.
@@ -116,6 +116,12 @@ Either the sender or receiver may delete with `scope=everyone`. Only the respect
 ### Conversation archive and restore
 
 `DELETE /api/v2/messages/conversations/{id}` archives a conversation. The `scope` parameter accepts `self` (default — hides from the current user's inbox only, restorable) or `everyone` (hides from both inboxes). `POST /api/v2/messages/conversations/{id}/restore` restores an archived conversation for the calling user.
+
+The legacy `POST /api/messages/delete-conversation` (`other_user_id`) is the same `self` archive. It used to hard-delete both members' messages, and the `broker_message_copies.original_message_id` foreign key (`ON DELETE CASCADE`) removed the broker's safeguarding copies with them. No member-facing path hard-deletes message rows; do not add one.
+
+### Group conversations and member controls
+
+Group create, add-participant and send apply the same sender restrictions as a direct send (`MessageService::senderWriteRestriction()`: suspended/banned/deactivated accounts and broker "messaging disabled"). A block in either direction between the creator and an invitee, or between the adding admin and the new member, refuses the request with `BLOCKED` (403) before the safeguarding policy runs. A block made after two members already share a group removes neither of them; each simply stops seeing the other's group messages (thread, last-message preview and unread count).
 
 ### Reactions
 
@@ -227,6 +233,8 @@ The broker safeguarding feature allows an admin team to review a copy of qualify
 | Random compliance sampling | `broker_visibility.random_sample_percentage` | 0 |
 
 Only the first matching criterion determines the `copy_reason`. Broker visibility must be enabled via `broker_visibility.enabled` for any copy to occur.
+
+Group-conversation messages are stored with `receiver_id = 0` and do not raise `MessageSent`. `GroupConversationService::sendGroupMessage()` instead queues `App\Jobs\CopyGroupMessageForBrokerReview`, which applies the same criteria across every active recipient (`BrokerMessageVisibilityService::copyGroupMessageIfRequired()`; one random-sample draw per message). The copy's `receiver_id` names the recipient that triggered the rule (the monitored or first-contact recipient, otherwise the first recipient), `conversation_key` is shared by all copies from one group, and the broker detail view shows the group thread as context.
 
 ### Copy storage and notification
 
