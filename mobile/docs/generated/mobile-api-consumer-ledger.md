@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -227,7 +227,7 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1244 |
 | GET | `/api/v2/events/{param}/waitlist` | events.ts:1230 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
-| POST | `/api/v2/exchanges` | client.ts:784, exchanges.ts:217 |
+| POST | `/api/v2/exchanges` | client.ts:787, exchanges.ts:217 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
 | GET | `/api/v2/exchanges/{param}` | exchangeRequests.ts:122 |
 | POST | `/api/v2/exchanges/{param}/accept` | exchangeRequests.ts:141 |
@@ -604,7 +604,7 @@ and the places a contract test earns the most.
 | PUT | `/api/v2/team-tasks/{param}` | groups.ts:862 |
 | GET | `/api/v2/tenant/bootstrap` | tenant.ts:84, tenant.ts:104 |
 | GET | `/api/v2/tenants` | tenant.ts:119 |
-| GET | `/api/v2/users` | client.ts:783, eventPeople.ts:92, members.ts:76 |
+| GET | `/api/v2/users` | client.ts:786, eventPeople.ts:92, members.ts:76 |
 | GET | `/api/v2/users/{param}` | members.ts:81 |
 | GET | `/api/v2/users/{param}/appreciations` | appreciations.ts:46 |
 | DELETE | `/api/v2/users/{param}/block` | settings.ts:148 |

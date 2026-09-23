@@ -1204,6 +1204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The mobile organiser's Event analytics action now opens its own screen instead of the top of event details. It supports refresh, visible stale-data errors and refusal states, and clears prior results when the event, account or community changes.
+
 - Mobile bundles now share one React Hook Form implementation and load only the QR matrix generator needed by native SVG codes, avoiding duplicate form code and unused browser QR renderers.
 
 - Android exports no longer include six unused Material Symbols font weights through the font-loader import, removing approximately 5.9 MB of asset data while preserving the default font and explicitly selected weights.

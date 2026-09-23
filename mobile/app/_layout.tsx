@@ -649,6 +649,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('events:manage.agenda.title') }}
       />
       <Stack.Screen
+        name="(modals)/event-analytics"
+        options={{ ...modalOptions, headerShown: false, title: t('events:analytics.title') }}
+      />
+      <Stack.Screen
         name="(modals)/event-attendance"
         options={{ ...modalOptions, headerShown: false, title: t('events:attendance.title') }}
       />

@@ -39,8 +39,8 @@ export function eventManagementRoute(eventId: number, section?: string): Href | 
     case 'templates': return '/(modals)/event-templates' as Href;
     case 'series-definitions': return { pathname: '/(modals)/event-recurrence-blueprints', params } as unknown as Href;
     case 'agenda': return { pathname: '/(modals)/event-agenda', params } as Href;
+    case 'analytics': return { pathname: '/(modals)/event-analytics', params } as Href;
     case 'safety':
-    case 'analytics':
     case 'team':
     case 'federation':
       // Remaining organiser destinations still use the event detail screen.
