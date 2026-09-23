@@ -2962,6 +2962,8 @@ return [
     'volunteer_log_hours_max' => 'Cannot log more than 24 hours in a single entry',
     'volunteer_log_hours_over_max' => 'Cannot log more than :max hours in a single entry',
     'volunteer_log_future_date' => 'Cannot log hours for a future date',
+    'volunteer_log_too_old' => 'Hours can only be logged for the last :days days.',
+    'volunteer_log_daily_total_exceeded' => 'You can log at most 24 hours in total for one day. You have :remaining hours left for that date.',
     'volunteer_log_duplicate' => 'You have already logged hours for this organization and date',
     'volunteer_log_failed' => 'Failed to log hours',
     'volunteer_log_not_found' => 'Log entry not found',

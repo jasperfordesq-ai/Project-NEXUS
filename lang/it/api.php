@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'Non è possibile registrare più di 24 ore in una singola voce',
     'volunteer_log_hours_over_max' => 'Impossibile registrare più di :max ore in una singola voce',
     'volunteer_log_future_date' => 'Non è possibile registrare ore per una data futura',
+    'volunteer_log_too_old' => 'Le ore possono essere registrate solo per gli ultimi :days giorni.',
+    'volunteer_log_daily_total_exceeded' => 'Puoi registrare al massimo 24 ore in totale per un giorno. Ti restano :remaining ore per quella data.',
     'volunteer_log_duplicate' => 'Ha già registrato ore per questa organizzazione e questa data',
     'volunteer_log_failed' => 'Impossibile registrare le ore',
     'volunteer_log_not_found' => 'Voce di registro non trovata',

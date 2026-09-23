@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'Pro Eintrag können maximal 24 Stunden erfasst werden',
     'volunteer_log_hours_over_max' => 'Es können nicht mehr als :max Stunden in einem einzelnen Eintrag protokolliert werden',
     'volunteer_log_future_date' => 'Stunden können nicht für ein zukünftiges Datum erfasst werden',
+    'volunteer_log_too_old' => 'Stunden können nur für die letzten :days Tage erfasst werden.',
+    'volunteer_log_daily_total_exceeded' => 'Du kannst für einen Tag insgesamt höchstens 24 Stunden erfassen. Für dieses Datum bleiben dir noch :remaining Stunden.',
     'volunteer_log_duplicate' => 'Sie haben für diese Organisation und dieses Datum bereits Stunden erfasst',
     'volunteer_log_failed' => 'Stunden konnten nicht erfasst werden',
     'volunteer_log_not_found' => 'Eintrag nicht gefunden',

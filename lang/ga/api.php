@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'Ní féidir níos mó ná 24 uair an chloig a logáil in aon iontráil amháin',
     'volunteer_log_hours_over_max' => 'Ní féidir logáil níos mó ná :max uair an chloig in aon iontráil amháin',
     'volunteer_log_future_date' => 'Ní féidir uaireanta a logáil le haghaidh dáta sa todhchaí',
+    'volunteer_log_too_old' => 'Ní féidir uaireanta a logáil ach amháin don :days lá is déanaí.',
+    'volunteer_log_daily_total_exceeded' => 'Is féidir leat 24 uair an chloig ar a mhéad a logáil san iomlán in aon lá amháin. Tá :remaining uair an chloig fágtha agat don dáta sin.',
     'volunteer_log_duplicate' => 'Tá uaireanta logáilte agat cheana don eagraíocht agus don dáta seo',
     'volunteer_log_failed' => 'Theip ar na huaireanta a logáil',
     'volunteer_log_not_found' => 'Níor aimsíodh an iontráil loga',

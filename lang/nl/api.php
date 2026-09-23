@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'U kunt niet meer dan 24 uur in één registratie vastleggen',
     'volunteer_log_hours_over_max' => 'Kan niet meer dan :max uur in één keer registreren',
     'volunteer_log_future_date' => 'U kunt geen uren registreren voor een datum in de toekomst',
+    'volunteer_log_too_old' => 'Uren kunnen alleen worden geregistreerd voor de afgelopen :days dagen.',
+    'volunteer_log_daily_total_exceeded' => 'Je kunt voor één dag in totaal maximaal 24 uur registreren. Je hebt voor die datum nog :remaining uur over.',
     'volunteer_log_duplicate' => 'U heeft voor deze organisatie en datum al uren geregistreerd',
     'volunteer_log_failed' => 'Registreren van uren is mislukt',
     'volunteer_log_not_found' => 'Registratie niet gevonden',

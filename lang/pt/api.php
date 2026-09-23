@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'Não é possível registar mais de 24 horas numa única entrada',
     'volunteer_log_hours_over_max' => 'Não é possível registrar mais de :max horas em uma única entrada',
     'volunteer_log_future_date' => 'Não é possível registar horas para uma data futura',
+    'volunteer_log_too_old' => 'Só é possível registar horas dos últimos :days dias.',
+    'volunteer_log_daily_total_exceeded' => 'Pode registar no máximo 24 horas no total por dia. Restam-lhe :remaining horas para essa data.',
     'volunteer_log_duplicate' => 'Já registou horas para esta organização e data',
     'volunteer_log_failed' => 'Não foi possível registar as horas',
     'volunteer_log_not_found' => 'Entrada de registo não encontrada',

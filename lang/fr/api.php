@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'Impossible d\'enregistrer plus de 24 heures dans une seule entrée',
     'volunteer_log_hours_over_max' => 'Impossible d\'enregistrer plus de :max heures dans une seule entrée',
     'volunteer_log_future_date' => 'Impossible d\'enregistrer des heures pour une date future',
+    'volunteer_log_too_old' => 'Les heures ne peuvent être enregistrées que pour les :days derniers jours.',
+    'volunteer_log_daily_total_exceeded' => 'Vous pouvez enregistrer au maximum 24 heures au total pour une journée. Il vous reste :remaining heures pour cette date.',
     'volunteer_log_duplicate' => 'Vous avez déjà enregistré des heures pour cette organisation à cette date',
     'volunteer_log_failed' => 'Échec de l\'enregistrement des heures',
     'volunteer_log_not_found' => 'Entrée introuvable',

@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => 'لا يمكن تسجيل أكثر من 24 ساعة في إدخال واحد',
     'volunteer_log_hours_over_max' => 'لا يمكن تسجيل أكثر من :max ساعة في إدخال واحد',
     'volunteer_log_future_date' => 'لا يمكن تسجيل ساعات لتاريخ في المستقبل',
+    'volunteer_log_too_old' => 'لا يمكن تسجيل الساعات إلا لآخر :days يومًا.',
+    'volunteer_log_daily_total_exceeded' => 'يمكنك تسجيل 24 ساعة كحد أقصى في اليوم الواحد. تبقّى لك :remaining ساعة لذلك التاريخ.',
     'volunteer_log_duplicate' => 'لقد سجّلت ساعات بالفعل لهذه المنظمة وهذا التاريخ',
     'volunteer_log_failed' => 'فشل تسجيل الساعات',
     'volunteer_log_not_found' => 'لم يتم العثور على الإدخال',

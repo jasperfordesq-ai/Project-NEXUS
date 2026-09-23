@@ -34,6 +34,16 @@ class VolunteerService
     public const PUBLIC_OPPORTUNITY_STATUSES = ['open', 'active'];
     public const PUBLIC_ORGANIZATION_STATUSES = ['approved', 'active'];
 
+    /**
+     * How far back a volunteer may log hours (F-101). Without a window, an
+     * organisation owner and a second account could mint credits for every
+     * past day, and auto-approved hours let one volunteer do it alone.
+     */
+    public const MAX_HOUR_LOG_BACKDATE_DAYS = 90;
+
+    /** No calendar day can hold more than this many hours in total, across all organisations. */
+    public const MAX_HOURS_PER_CALENDAR_DAY = 24.0;
+
     public function __construct(
         private readonly VolOpportunity $opportunity,
         private readonly VolApplication $application,
@@ -1880,6 +1890,31 @@ class VolunteerService
 
         if (strtotime($data['date']) > time()) {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_log_future_date'), 'field' => 'date'];
+            return null;
+        }
+
+        // F-101: bounded backdating, and no day holds more than 24h in total.
+        $logDate = \Illuminate\Support\Carbon::parse((string) $data['date'])->startOfDay();
+        if ($logDate->lt(now()->startOfDay()->subDays(self::MAX_HOUR_LOG_BACKDATE_DAYS))) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_log_too_old', ['days' => self::MAX_HOUR_LOG_BACKDATE_DAYS]), 'field' => 'date'];
+            return null;
+        }
+        $alreadyThatDay = (float) DB::table('vol_logs')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereDate('date_logged', $logDate->toDateString())
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhereNotIn('status', ['declined', 'rejected']);
+            })
+            ->sum('hours');
+        if ($alreadyThatDay + (float) $data['hours'] > self::MAX_HOURS_PER_CALENDAR_DAY) {
+            self::$errors[] = [
+                'code' => 'VALIDATION_ERROR',
+                'message' => __('api.volunteer_log_daily_total_exceeded', [
+                    'remaining' => rtrim(rtrim(number_format(max(0.0, self::MAX_HOURS_PER_CALENDAR_DAY - $alreadyThatDay), 2, '.', ''), '0'), '.'),
+                ]),
+                'field' => 'hours',
+            ];
             return null;
         }
 

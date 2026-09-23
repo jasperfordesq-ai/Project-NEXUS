@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Volunteer hours can now only be logged for the last 90 days, and no single day can hold more than 24 hours in total across all organisations, so hours can no longer be backdated for years to create credits (F-101, F-141).
+
 - Becoming a buddy for another member's public goal now returns only the goal owner's and buddy's public identity fields, instead of serializing their complete account rows with contact, birth, location, login, privacy, role, and payment-provider metadata (F-097).
 
 - Group owners and admins can no longer download members' email addresses or the names of pending and banned members from group exports; tenant admins still get the full export (F-093).

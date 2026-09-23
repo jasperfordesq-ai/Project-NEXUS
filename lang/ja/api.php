@@ -2312,6 +2312,8 @@ return [
     'volunteer_log_hours_max' => '1回の記録で24時間を超える時間は記録できません',
     'volunteer_log_hours_over_max' => '1 つのエントリで :max 時間を超えるログを記録することはできません',
     'volunteer_log_future_date' => '未来の日付の時間は記録できません',
+    'volunteer_log_too_old' => '時間を記録できるのは過去:days日間のみです。',
+    'volunteer_log_daily_total_exceeded' => '1日に記録できるのは合計24時間までです。その日の残りは:remaining時間です。',
     'volunteer_log_duplicate' => 'この団体・日付の時間はすでに記録済みです',
     'volunteer_log_failed' => '時間の記録に失敗しました',
     'volunteer_log_not_found' => '記録が見つかりません',
