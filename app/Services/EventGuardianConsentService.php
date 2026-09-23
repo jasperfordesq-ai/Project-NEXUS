@@ -20,6 +20,7 @@ use App\Models\EventGuardianConsentHistory;
 use App\Models\EventSafetyRequirement;
 use App\Models\EventSafetyRequirementVersion;
 use App\Models\User;
+use App\Policies\EventPolicy;
 use App\Support\Events\EventSafetyFoundationSupport;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -39,6 +40,7 @@ final class EventGuardianConsentService
         private readonly ?EventGuardianConsentDeliveryEnvelopeService $deliveryEnvelopes = null,
         private readonly ?EventGuardianLocaleResolver $localeResolver = null,
         private readonly ?EventGuardianConsentStatusPublisher $statusNotifications = null,
+        private readonly ?EventPolicy $eventPolicy = null,
     ) {
         $this->tokenGenerator = $tokenGenerator
             ?? fn (): string => $this->support->guardianToken();
@@ -158,6 +160,12 @@ final class EventGuardianConsentService
             );
             if ((int) $persistedActor->id !== (int) $persistedMinor->id) {
                 $this->support->authorizeManager($persistedActor, $event);
+            }
+            // A guardian-consent request is participation state for the minor,
+            // so the minor must be inside the event's current audience before
+            // any consent, history, outbox or delivery-envelope row is written.
+            if (! ($this->eventPolicy ?? new EventPolicy())->view($persistedMinor, $event)) {
+                throw new EventSafetyException('event_safety_authorization_denied');
             }
             $context = $this->publishedGuardianContext($tenantId, $eventId, true);
             $guardianLocale = $withDelivery

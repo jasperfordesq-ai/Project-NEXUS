@@ -95,13 +95,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Guardian-consent requests for events now authorize the minor against the event's current audience before creating consent history, notification outbox, or encrypted delivery state. A minor outside a private group's audience remains unable to trigger guardian email, including when an event manager submits the request on their behalf (F-051).
+
 - Members who chose not to appear in member search no longer show up in suggested members, "People you may know", @mention suggestions or members-by-skill, and these lists no longer show surnames (F-080).
 
 - Members whose profile is visible to connections only are no longer listed in the member directory or nearby members for anyone else, and their listings and reviews are no longer readable by other members (F-081).
 
 - Other members now see a member's location, and the location of their listings, only to about 1 km, and nearby-search distances can no longer be used to pinpoint someone (F-082).
 
-- AI member searches now enforce each member's profile visibility and bilateral blocks at database hydration time. Connections-only profiles are returned only to accepted connections (or the existing administrative privacy exemption), blocked pairs are excluded in either direction, and semantic-search hits are rechecked against current settings before any profile fields reach the model or the response (F-049).
+- AI member searches now enforce each member's profile visibility and bilateral blocks at database hydration time. Connections-only profiles are returned only to accepted connections, blocked pairs are excluded in either direction, and semantic-search hits are rechecked against current settings before any profile fields reach the model or the response (F-049).
 
 - Members no longer see draft or unpublished KISS meetings, or the notes coordinators write about them (F-134).
 

@@ -10,6 +10,7 @@ namespace Tests\Laravel\Feature\Events;
 
 use App\Core\TenantContext;
 use App\Exceptions\EventSafetyException;
+use App\Models\Group;
 use App\Models\User;
 use App\Services\EventDomainOutboxService;
 use App\Services\EventGuardianConsentDeliveryEnvelope;
@@ -188,6 +189,126 @@ final class EventSafetyGuardianDeliveryBoundaryTest extends TestCase
                 ->delete(),
         );
         $this->assertSecretsAbsentFromDurableDelivery($context, $secrets);
+    }
+
+    public function test_private_group_nonmember_cannot_create_guardian_consent_side_effects(): void
+    {
+        $owner = $this->user();
+        $start = CarbonImmutable::now('UTC')->addMonths(2)->startOfDay()->addHours(10);
+        $minor = $this->user([
+            'date_of_birth' => $start->subYears(16)->addDay()->toDateString(),
+        ]);
+        $group = Group::factory()->forTenant($this->testTenantId)->create([
+            'owner_id' => (int) $owner->id,
+            'visibility' => 'private',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $eventId = $this->event((int) $owner->id, $start);
+        DB::table('events')->where('id', $eventId)->update(['group_id' => (int) $group->id]);
+
+        $requirements = new EventSafetyRequirementService();
+        $draft = $requirements->saveDraft($eventId, $owner, [
+            'minimum_age' => null,
+            'guardian_consent_required' => true,
+            'minor_age_threshold' => 18,
+            'code_of_conduct_required' => false,
+            'code_of_conduct_text' => null,
+            'code_of_conduct_text_version' => null,
+        ], 0, 'private-guardian-policy-draft-' . bin2hex(random_bytes(6)));
+        $requirements->publish(
+            $eventId,
+            $owner,
+            (int) $draft['requirements']->revision,
+            (int) $draft['version']->version_number,
+            'private-guardian-policy-publish-' . bin2hex(random_bytes(6)),
+        );
+
+        $exception = null;
+        try {
+            (new EventGuardianConsentService())->requestWithDelivery(
+                $eventId,
+                $minor,
+                $minor,
+                [
+                    'guardian_name' => 'Private Guardian',
+                    'guardian_email' => 'private-guardian@example.test',
+                    'relationship_code' => 'guardian',
+                ],
+                'en',
+                'private-guardian-request-' . bin2hex(random_bytes(6)),
+            );
+        } catch (EventSafetyException $caught) {
+            $exception = $caught;
+        }
+
+        self::assertSame('event_safety_authorization_denied', $exception?->getMessage());
+        self::assertSame(0, DB::table('event_guardian_consents')->where('event_id', $eventId)->count());
+        self::assertSame(0, DB::table('event_guardian_consent_history')->where('event_id', $eventId)->count());
+        self::assertSame(0, DB::table('event_domain_outbox')
+            ->where('event_id', $eventId)
+            ->where('action', 'event.safety.guardian_consent.requested')
+            ->count());
+        self::assertSame(0, DB::table('event_guardian_consent_delivery_envelopes')->where('event_id', $eventId)->count());
+
+        $managerException = null;
+        try {
+            (new EventGuardianConsentService())->requestWithDelivery(
+                $eventId,
+                $minor,
+                $owner,
+                [
+                    'guardian_name' => 'Manager Requested Guardian',
+                    'guardian_email' => 'manager-guardian@example.test',
+                    'relationship_code' => 'guardian',
+                ],
+                'en',
+                'private-manager-request-' . bin2hex(random_bytes(6)),
+            );
+        } catch (EventSafetyException $caught) {
+            $managerException = $caught;
+        }
+
+        self::assertSame('event_safety_authorization_denied', $managerException?->getMessage());
+        self::assertSame(0, DB::table('event_guardian_consents')->where('event_id', $eventId)->count());
+        self::assertSame(0, DB::table('event_guardian_consent_history')->where('event_id', $eventId)->count());
+        self::assertSame(0, DB::table('event_domain_outbox')
+            ->where('event_id', $eventId)
+            ->where('action', 'event.safety.guardian_consent.requested')
+            ->count());
+        self::assertSame(0, DB::table('event_guardian_consent_delivery_envelopes')->where('event_id', $eventId)->count());
+
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => (int) $group->id,
+            'user_id' => (int) $minor->id,
+            'role' => 'member',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $permitted = (new EventGuardianConsentService())->requestWithDelivery(
+            $eventId,
+            $minor,
+            $owner,
+            [
+                'guardian_name' => 'Private Guardian',
+                'guardian_email' => 'private-guardian@example.test',
+                'relationship_code' => 'guardian',
+            ],
+            'en',
+            'private-guardian-permitted-' . bin2hex(random_bytes(6)),
+        );
+
+        self::assertTrue($permitted['changed']);
+        self::assertSame(1, DB::table('event_guardian_consents')->where('event_id', $eventId)->count());
+        self::assertSame(1, DB::table('event_guardian_consent_history')->where('event_id', $eventId)->count());
+        self::assertSame(1, DB::table('event_domain_outbox')
+            ->where('event_id', $eventId)
+            ->where('action', 'event.safety.guardian_consent.requested')
+            ->count());
+        self::assertSame(1, DB::table('event_guardian_consent_delivery_envelopes')->where('event_id', $eventId)->count());
     }
 
     public function test_external_delivery_is_idempotent_and_cannot_alias_internal_recipient(): void
