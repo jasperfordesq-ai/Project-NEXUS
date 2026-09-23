@@ -123,6 +123,13 @@ it('does not silently add an expiry when the date picker is dismissed', async ()
   fireEvent.press(view.getByText('Assign role')); await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
   expect(execute).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ payload: expect.objectContaining({ expires_at: null }) }), expect.any(Function));
 });
+it('saves expiry at the server second precision before persisting request identity', async () => {
+  const view = await ready(); await select(view); fireEvent.press(view.getByText('Access expires (optional)'));
+  const future = new Date(Math.floor(Date.now() / 1000) * 1000 + 600123);
+  act(() => view.UNSAFE_getByType(DateTimePicker).props.onChange({ type: 'set' }, future));
+  fireEvent.press(view.getByText('Assign role')); await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  expect(execute).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ payload: expect.objectContaining({ expires_at: new Date(Math.floor(future.getTime() / 1000) * 1000).toISOString() }) }), expect.any(Function));
+});
 it('ignores an old confirmation after leaving the focused workspace', async () => {
   const view = await ready(); fireEvent.press(view.getByText('Revoke access')); const confirmation = mockConfirm.mock.calls[0][0];
   mockFocused = false; view.rerender(<Screen />); await act(async () => confirmation.onConfirm());

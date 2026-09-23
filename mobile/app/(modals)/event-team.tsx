@@ -108,8 +108,11 @@ export function TeamWorkspace({ eventId, tenantId, userId }: { eventId: number; 
     discardLabel: t('common:unsavedChanges.discard'), cancelLabel: t('common:buttons.cancel') });
   function assign() {
     if (blocked || !selected || !roles.includes(role)) return;
-    if (expiry && (!Number.isFinite(expiry.getTime()) || expiry.getTime() <= Date.now())) { setExpiryError(true); return; }
-    const payload = { user_id: selected.id, role, expires_at: expiry?.toISOString() ?? null };
+    // The canonical API stores whole seconds. Normalize before saving the
+    // operation so an accepted receipt matches its exact durable request.
+    const expiryMillis = expiry ? Math.floor(expiry.getTime() / 1000) * 1000 : null;
+    if (expiryMillis !== null && (!Number.isFinite(expiryMillis) || expiryMillis <= Date.now())) { setExpiryError(true); return; }
+    const payload = { user_id: selected.id, role, expires_at: expiryMillis === null ? null : new Date(expiryMillis).toISOString() };
     confirm({ title: label('assign'), message: [name(selected), t(`manage.roles.${role}`), expiry ? timestamp(payload.expires_at) : label('no_expiry')].join('\n'),
       confirmLabel: label('assign'), cancelLabel: t('common:buttons.cancel'), onConfirm: async () => {
         if (!authority.current.permitted || !authority.current.roles.includes(payload.role)) return;

@@ -158,6 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event Team expiry requests now use the API's whole-second precision before saving, preventing successful timed role assignments from being mistaken for mismatched recovery receipts.
+
 - Native event Team search and confirmations distinguish members with identical privacy-limited names using their public member number, without revealing hidden surnames or contact details.
 
 - Retrying an accepted event staff grant after its expiry now returns its original receipt without renewing access or creating another history entry. New grants with expired dates remain rejected.
