@@ -436,6 +436,8 @@
     }
   },
   "analytics": {
+    "access_unavailable": "Event analytics are unavailable",
+    "access_unavailable_hint": "You may not have permission to view analytics for this event.",
     "title": "Event analytics",
     "subtitle": "Operational performance, attendance, communications and privacy-safe conversion metrics.",
     "generated_at": "Generated {{date}}",

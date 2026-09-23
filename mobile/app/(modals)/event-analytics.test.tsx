@@ -51,6 +51,8 @@ it.each([401, 403, 404])('clears retained analytics on refusal %s', async status
   jest.mocked(getEventAnalytics).mockRejectedValueOnce(new ApiResponseError(status, 'Unavailable'));
   await act(async () => view.UNSAFE_getByType(ScrollView).props.refreshControl.props.onRefresh());
   expect(view.queryByText('Synthetic analytics')).toBeNull();
+  expect(view.getByText('Event analytics are unavailable')).toBeTruthy();
+  expect(view.queryByText('Event management is not available')).toBeNull();
 });
 it('keeps a visibly stale summary on network refresh failure', async () => {
   const view = render(<Screen />); await view.findByText('Synthetic analytics');

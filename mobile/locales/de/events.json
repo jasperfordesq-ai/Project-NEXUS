@@ -436,6 +436,8 @@
     }
   },
   "analytics": {
+    "access_unavailable": "Die Ereignisanalyse ist nicht verfügbar",
+    "access_unavailable_hint": "Möglicherweise haben Sie keine Berechtigung, die Analyse dieses Ereignisses anzuzeigen.",
     "title": "Ereignisanalyse",
     "subtitle": "Betriebsleistung, Anwesenheit, Kommunikation und datenschutzsichere Konvertierungsmetriken.",
     "generated_at": "Generiert {{date}}",

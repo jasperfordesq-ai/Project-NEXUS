@@ -1204,6 +1204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Mobile analytics access errors now describe the unavailable analytics screen without incorrectly claiming that every event-management tool is unavailable; the message is translated in all seven app languages.
+
 - The mobile organiser's Event analytics action now opens its own screen instead of the top of event details. It supports refresh, visible stale-data errors and refusal states, and clears prior results when the event, account or community changes.
 
 - Mobile bundles now share one React Hook Form implementation and load only the QR matrix generator needed by native SVG codes, avoiding duplicate form code and unused browser QR renderers.

@@ -436,6 +436,8 @@
     }
   },
   "analytics": {
+    "access_unavailable": "Les analyses de cet événement ne sont pas disponibles",
+    "access_unavailable_hint": "Vous n’avez peut-être pas l’autorisation de consulter les analyses de cet événement.",
     "title": "Analyse d'événements",
     "subtitle": "Mesures de performance opérationnelle, de présence, de communications et de conversion respectueuses de la confidentialité.",
     "generated_at": "Généré {{date}}",

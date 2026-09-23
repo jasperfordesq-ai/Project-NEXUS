@@ -46,7 +46,7 @@ function AnalyticsWorkspace({ eventId }: { eventId: number }) {
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 16 }}
       refreshControl={eventId > 0 ? <RefreshControl refreshing={state.isLoading && Boolean(state.data)} onRefresh={state.refresh} tintColor={primary} colors={[primary]} /> : undefined}>
       {eventId <= 0 ? <EmptyState icon="warning-outline" title={t('detail.invalidId')} />
-        : refused ? <EmptyState icon="lock-closed-outline" title={t('manage.access_denied_title')} subtitle={t('manage.access_denied_desc')} />
+        : refused ? <EmptyState icon="lock-closed-outline" title={t('analytics.access_unavailable')} subtitle={t('analytics.access_unavailable_hint')} />
           : <>
             <RefreshFailedNotice error={state.data ? state.error : null} onRetry={state.refresh} isRetrying={state.isLoading} />
             <EventAnalyticsCard summary={state.data?.data ?? null} isLoading={state.isLoading} error={state.error}

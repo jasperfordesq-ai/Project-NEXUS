@@ -436,6 +436,8 @@
     }
   },
   "analytics": {
+    "access_unavailable": "Le analisi dell’evento non sono disponibili",
+    "access_unavailable_hint": "Potresti non avere il permesso di visualizzare le analisi di questo evento.",
     "title": "Analisi degli eventi",
     "subtitle": "Prestazioni operative, presenze, comunicazioni e metriche di conversione rispettose della privacy.",
     "generated_at": "Generato {{date}}",

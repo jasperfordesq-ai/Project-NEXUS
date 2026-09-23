@@ -436,6 +436,8 @@
     }
   },
   "analytics": {
+    "access_unavailable": "Níl anailísíocht an imeachta ar fáil",
+    "access_unavailable_hint": "Seans nach bhfuil cead agat anailísíocht an imeachta seo a fheiceáil.",
     "title": "Anailísíocht imeachtaí",
     "subtitle": "Feidhmíocht oibriúcháin, tinreamh, cumarsáid agus méadracht tiontaithe atá sábháilte ó thaobh príobháideachta.",
     "generated_at": "Gineadh {{date}}",
