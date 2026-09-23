@@ -24,13 +24,15 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, type SessionExpiredDetail } from '@/lib/api';
+import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, SESSION_REPLACED_EVENT, type SessionExpiredDetail, type SessionReplacedDetail } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import i18n from '@/i18n';
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { loginResponseSchema, userSchema } from '@/lib/api-schemas';
 import { queueSentryAuthEvent, queueSentryUser } from '@/lib/telemetryQueue';
-import { purgeAllOfflineCheckinData } from '@/lib/event-offline-checkin-store';
+import {
+  purgeOfflineCheckinDataForGeneration,
+} from '@/lib/event-offline-checkin-store';
 import { unsubscribeBrowserPushOnLogout } from '@/hooks/useWebPush';
 import { clearUserScopedStorage } from '@/lib/userScopedStorage';
 import type {
@@ -88,7 +90,7 @@ interface AuthContextValue extends AuthState {
   refreshUser: () => Promise<void>;
   clearError: () => void;
   cancel2FA: () => void;
-  beginTwoFactorChallenge: (token: string, setup: boolean, methods: string[], trustAllowed: boolean) => void;
+  beginTwoFactorChallenge: (token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null) => void;
   /** WCAG 2.2.1 — reschedule the session-expiry warning after a silent token refresh */
   scheduleSessionWarning: (expiresInSeconds: number) => void;
 }
@@ -196,8 +198,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     try {
       const response = await api.get<User>('/v2/users/me');
+
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return;
 
       if (response.success && response.data) {
         // Dev-only: validate user profile shape
@@ -205,9 +210,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // Only set tenant ID from user data if no tenant was pre-selected
         // This allows super admins to access any tenant they selected at login
-        if (response.data.tenant_id && !tokenManager.getTenantId()) {
-          tokenManager.setTenantId(response.data.tenant_id);
-        }
+        const contextCommitted = await tokenManager.runIfSessionCurrent(
+          sessionGenerationAtStart,
+          () => {
+            if (response.data?.tenant_id && !tokenManager.getTenantId()) {
+              tokenManager.setTenantId(response.data.tenant_id);
+            }
+            return true;
+          },
+        );
+        if (!contextCommitted) return;
 
         // Set Sentry user context
         setTelemetryUser(response.data);
@@ -229,7 +241,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Only an explicit authentication-invalid response may destroy a
         // persisted session. The API client resolves transport failures rather
         // than throwing, so generic success:false is not proof of invalidity.
-        tokenManager.clearTokens();
+        tokenManager.clearSession(sessionGenerationAtStart);
+        if (tokenManager.getAccessToken()) return;
         setTelemetryUser(null);
         setState({
           user: null,
@@ -295,19 +308,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * thinner user object beats no session. api.ts does not throw, so a failed
    * fetch surfaces as `success: false` rather than as an exception.
    */
-  const hydrateUserProfile = useCallback(async (fallback: User): Promise<User> => {
+  const hydrateUserProfile = useCallback(async (
+    fallback: User,
+    expectedGeneration: string | null,
+  ): Promise<User | null> => {
     const profileRes = await api.get<User>('/v2/users/me');
+    if (
+      tokenManager.getSessionGeneration() !== expectedGeneration
+      || profileRes.code === 'AUTH_CONTEXT_CHANGED'
+      || profileRes.code === 'TENANT_CONTEXT_CHANGED'
+    ) return null;
     return profileRes?.success && profileRes.data ? profileRes.data : fallback;
   }, []);
 
   const login = useCallback(async (credentials: LoginRequest): Promise<LoginResult> => {
     setState((prev) => ({ ...prev, status: 'loading', error: null }));
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     const response = await api.post<LoginSuccessResponse | TwoFactorRequiredResponse>(
       '/auth/login',
       credentials,
       { skipAuth: true }
     );
+
+    if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+      return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+    }
 
     if (!response.success) {
       const loginError = i18n.t('auth:login.failed');
@@ -346,7 +372,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // A setup challenge is an enrollment capability, never a bearer token.
     if (data && 'requires_2fa_setup' in data && data.requires_2fa_setup) {
       const setupResp = data as { two_factor_token?: string };
-      tokenManager.clearTokens();
+      tokenManager.clearSession(sessionGenerationAtStart);
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+        return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+      }
       setState((prev) => ({ ...prev, user: null, status: 'requires_2fa_setup', error: null,
         twoFactorToken: setupResp.two_factor_token || null, twoFactorMethods: ['totp_setup'] }));
       return { success: false, requires2FA: false, requires2FASetup: true };
@@ -374,25 +403,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { success: false, requires2FA: false, error: message, errorCode: stale ? 'STALE_CLIENT' : 'UNRECOGNISED_LOGIN_ANSWER' };
     }
 
-    if (loginData.access_token || loginData.token) {
-      tokenManager.setAccessToken(loginData.access_token || loginData.token);
+    // Only adopt the user's tenant if no tenant was pre-selected at login. The
+    // session generation is committed after every credential write.
+    const loginTenantId = loginData.user?.tenant_id && !tokenManager.getTenantId()
+      ? loginData.user.tenant_id
+      : undefined;
+    const loginGeneration = await tokenManager.adoptSessionIfCurrent(
+      sessionGenerationAtStart,
+      loginData.access_token || loginData.token,
+      loginData.refresh_token,
+      loginTenantId,
+    );
+    if (!loginGeneration || tokenManager.getSessionGeneration() !== loginGeneration) {
+      const loginError = i18n.t('auth:login.failed');
+      setState((prev) => ({ ...prev, status: 'error', error: loginError }));
+      return { success: false, requires2FA: false, error: loginError, errorCode: 'AUTH_STORAGE_UNAVAILABLE' };
     }
-    if (loginData.refresh_token) {
-      tokenManager.setRefreshToken(loginData.refresh_token);
-    }
-    // Only set tenant ID from user data if no tenant was pre-selected at login
-    // This allows super admins to access any tenant they selected
-    if (loginData.user?.tenant_id && !tokenManager.getTenantId()) {
-      tokenManager.setTenantId(loginData.user.tenant_id);
+    const hydratedUser = await hydrateUserProfile(loginData.user, loginGeneration);
+    if (!hydratedUser || tokenManager.getSessionGeneration() !== loginGeneration) {
+      return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
     }
 
     // Set Sentry user context and capture login event
-    setTelemetryUser(loginData.user);
-    captureTelemetryAuthEvent('login', loginData.user.id);
+    setTelemetryUser(hydratedUser);
+    captureTelemetryAuthEvent('login', hydratedUser.id);
 
     // Apply user's server-side language preference (overrides browser detection)
-    if (loginData.user?.preferred_language) {
-      i18n.changeLanguage(loginData.user.preferred_language);
+    if (hydratedUser.preferred_language) {
+      i18n.changeLanguage(hydratedUser.preferred_language);
     }
 
     // WCAG 2.2.1 — schedule a warning 30 s before the access token expires
@@ -402,7 +440,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     wasAuthenticated.current = true;
     setState({
-      user: await hydrateUserProfile(loginData.user),
+      user: hydratedUser,
       status: 'authenticated',
       error: null,
       twoFactorToken: null,
@@ -418,6 +456,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginWithBiometric = useCallback(async (_email?: string, abortSignal?: AbortSignal): Promise<LoginResult> => {
     setState((prev) => ({ ...prev, status: 'loading', error: null }));
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     try {
       const { authenticateWithBiometric } = await import('@/lib/webauthn');
@@ -425,6 +464,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // the legacy positional parameter for caller compatibility, but never
       // forward account identity to the public challenge endpoint.
       const result = await authenticateWithBiometric(undefined, abortSignal);
+
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+        return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+      }
 
       if (!result.success || !result.data) {
         // All ceremony failures return to idle; the login page maps stable error codes.
@@ -449,11 +492,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const { user, access_token, refresh_token, expires_in } = result.data;
 
-      tokenManager.setAccessToken(access_token);
-      tokenManager.setRefreshToken(refresh_token);
+      const biometricGeneration = await tokenManager.adoptSessionIfCurrent(
+        sessionGenerationAtStart,
+        access_token,
+        refresh_token,
+      );
+      if (!biometricGeneration || tokenManager.getSessionGeneration() !== biometricGeneration) {
+        setState((prev) => ({ ...prev, status: 'idle', error: null }));
+        return { success: false, requires2FA: false, errorCode: 'AUTH_STORAGE_UNAVAILABLE' };
+      }
 
       if (abortSignal?.aborted) {
-        tokenManager.clearTokens();
+        tokenManager.clearSession(biometricGeneration);
         setState((prev) => ({ ...prev, status: 'idle', error: null }));
         return { success: false, requires2FA: false, errorCode: 'cancelled' };
       }
@@ -461,8 +511,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Fetch full user profile (biometric auth response has minimal user data)
       try {
         const profileRes = await api.get<User>('/v2/users/me');
+        if (
+          tokenManager.getSessionGeneration() !== biometricGeneration
+          || profileRes.code === 'AUTH_CONTEXT_CHANGED'
+          || profileRes.code === 'TENANT_CONTEXT_CHANGED'
+        ) {
+          return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+        }
         if (abortSignal?.aborted) {
-          tokenManager.clearTokens();
+          tokenManager.clearSession(biometricGeneration);
           setState((prev) => ({ ...prev, status: 'idle', error: null }));
           return { success: false, requires2FA: false, errorCode: 'cancelled' };
         }
@@ -488,8 +545,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
         }
       } catch (err) {
+        if (tokenManager.getSessionGeneration() !== biometricGeneration) {
+          return { success: false, requires2FA: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+        }
         if (abortSignal?.aborted) {
-          tokenManager.clearTokens();
+          tokenManager.clearSession(biometricGeneration);
           setState((prev) => ({ ...prev, status: 'idle', error: null }));
           return { success: false, requires2FA: false, errorCode: 'cancelled' };
         }
@@ -504,7 +564,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (abortSignal?.aborted) {
-        tokenManager.clearTokens();
+        tokenManager.clearSession(biometricGeneration);
         setState((prev) => ({ ...prev, status: 'idle', error: null }));
         return { success: false, requires2FA: false, errorCode: 'cancelled' };
       }
@@ -546,6 +606,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     setState((prev) => ({ ...prev, status: 'loading', error: null }));
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     const response = await api.post<LoginSuccessResponse>(
       '/totp/verify',
@@ -557,6 +618,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
       { skipAuth: true }
     );
+
+    if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return false;
 
     if (!response.success) {
       // Check if we need to restart login
@@ -580,17 +643,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const data = response.data!;
 
-    if (data.access_token || data.token) {
-      tokenManager.setAccessToken(data.access_token || data.token);
-    }
-    if (data.refresh_token) {
-      tokenManager.setRefreshToken(data.refresh_token);
-    }
-    // Only set tenant ID from user data if no tenant was pre-selected at login
-    // This allows super admins to access any tenant they selected
-    if (data.user?.tenant_id && !tokenManager.getTenantId()) {
-      tokenManager.setTenantId(data.user.tenant_id);
-    }
+    const verifiedTenantId = data.user?.tenant_id && !tokenManager.getTenantId()
+      ? data.user.tenant_id
+      : undefined;
+    const verifiedGeneration = await tokenManager.adoptSessionIfCurrent(
+      sessionGenerationAtStart,
+      data.access_token || data.token,
+      data.refresh_token,
+      verifiedTenantId,
+    );
+    if (!verifiedGeneration || tokenManager.getSessionGeneration() !== verifiedGeneration) return false;
+    const hydratedUser = await hydrateUserProfile(data.user, verifiedGeneration);
+    if (!hydratedUser || tokenManager.getSessionGeneration() !== verifiedGeneration) return false;
 
     // WCAG 2.2.1 — schedule warning 30 s before the new access token expires
     if (data.expires_in) {
@@ -599,7 +663,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     wasAuthenticated.current = true;
     setState({
-      user: await hydrateUserProfile(data.user),
+      user: hydratedUser,
       status: 'authenticated',
       error: null,
       twoFactorToken: null,
@@ -623,8 +687,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }, []);
 
-  const beginTwoFactorChallenge = useCallback((token: string, setup: boolean, methods: string[], trustAllowed: boolean) => {
-    tokenManager.clearTokens();
+  const beginTwoFactorChallenge = useCallback((token: string, setup: boolean, methods: string[], trustAllowed: boolean, expectedGeneration: string | null) => {
+    tokenManager.clearSession(expectedGeneration);
+    if (tokenManager.getSessionGeneration() !== expectedGeneration) return;
     setState({ user: null, status: setup ? 'requires_2fa_setup' : 'requires_2fa', error: null,
       twoFactorToken: token, twoFactorMethods: methods, twoFactorTrustDeviceAllowed: trustAllowed });
   }, []);
@@ -635,6 +700,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = useCallback(async (data: RegisterRequest): Promise<RegisterResult> => {
     setState((prev) => ({ ...prev, status: 'loading', error: null }));
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     // Use a generic type since the response shape varies based on whether tokens are issued
     const response = await api.post<Record<string, unknown>>(
@@ -642,6 +708,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data,
       { skipAuth: true }
     );
+
+    if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+      return { success: false, errorCode: 'AUTH_CONTEXT_CHANGED' };
+    }
 
     if (!response.success) {
       const registrationError = i18n.t('auth:register.failed');
@@ -689,13 +759,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const user = responseData.user as User | undefined;
 
     if (accessToken) {
-      tokenManager.setAccessToken(accessToken);
-    }
-    if (refreshToken) {
-      tokenManager.setRefreshToken(refreshToken);
-    }
-    if (user?.tenant_id && !tokenManager.getTenantId()) {
-      tokenManager.setTenantId(user.tenant_id);
+      const registrationGeneration = await tokenManager.adoptSessionIfCurrent(
+        sessionGenerationAtStart,
+        accessToken,
+        refreshToken,
+        user?.tenant_id && !tokenManager.getTenantId() ? user.tenant_id : undefined,
+      );
+      if (!registrationGeneration || tokenManager.getSessionGeneration() !== registrationGeneration) {
+        return { success: false, error: i18n.t('auth:register.failed') };
+      }
     }
 
     wasAuthenticated.current = true;
@@ -722,6 +794,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const userId = state.user?.id;
     const refreshToken = tokenManager.getRefreshToken();
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     try {
       // F-108: drop this browser's push subscription while the session is still
@@ -730,11 +803,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // push on this browser receives both accounts'. Best-effort and time-boxed:
       // it never throws and never holds sign-out up.
       await unsubscribeBrowserPushOnLogout();
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return;
 
       // Call logout endpoint to invalidate tokens server-side
       // We verify the response but still proceed with local logout regardless
       try {
-        const response = await api.logoutSession(refreshToken);
+        const response = await api.logoutSession(refreshToken, sessionGenerationAtStart);
 
         // Log if server-side logout failed (for audit purposes)
         if (!response.success) {
@@ -748,6 +822,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         logWarn('Logout request failed - proceeding with local logout');
       }
 
+      // Remove only the generation captured for this logout. Account B has a
+      // different record, so no cross-tab timing can make this delete B.
+      tokenManager.clearSession(sessionGenerationAtStart);
+      if (
+        tokenManager.getSessionGeneration() !== sessionGenerationAtStart
+        || tokenManager.getAccessToken()
+      ) return;
+      const clearedGeneration = tokenManager.getSessionGeneration();
+
       // Clear auth tokens AND tenant identity. Tenant slug/id used to be
       // preserved across logout as a UX nicety, but that caused cross-tenant
       // login bugs: visiting app.project-nexus.ie/ after logout would still
@@ -757,10 +840,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // from a clean platform state and the user explicitly picks a community.
       // Logout preserves trusted device token by design.
       // Call tokenManager.clearTrustedDeviceToken() for an explicit "forget this device" flow.
-      await purgeAllOfflineCheckinData().catch(() => {
+      await purgeOfflineCheckinDataForGeneration(sessionGenerationAtStart).catch(() => {
         logWarn('Offline event check-in data purge failed during logout');
       });
-      tokenManager.clearTokens();
+      if (
+        tokenManager.getAccessToken()
+        || tokenManager.getSessionGeneration() !== clearedGeneration
+      ) return;
       localStorage.removeItem('nexus_tenant_id');
       localStorage.removeItem('nexus_tenant_slug');
       // F-109: compose drafts and recent searches are private to the member who
@@ -798,14 +884,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const handleSessionExpired = (event: Event) => {
-      void purgeAllOfflineCheckinData();
+      const detail = (event as CustomEvent<SessionExpiredDetail>).detail;
+      if (
+        detail?.sessionGeneration !== undefined
+        && tokenManager.getSessionGeneration() !== null
+        && tokenManager.getSessionGeneration() !== detail.sessionGeneration
+      ) return;
+      void purgeOfflineCheckinDataForGeneration(detail?.sessionGeneration ?? null);
       // Cancel any pending warning timer — the session is already gone
       clearSessionWarningTimer();
       // The server may have ended the session because the account now needs a
       // second factor (mandatory administrator two-factor, 12 September 2026).
       // That deserves its own words: "your session has expired" sends the member
       // hunting for a fault that is not there.
-      const reason = (event as CustomEvent<SessionExpiredDetail>).detail?.reason;
+      const reason = detail?.reason;
       // Only set error message if user had an active session — stale tokens
       // on first visit should silently clear without showing "session expired"
       if (wasAuthenticated.current) {
@@ -834,6 +926,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [clearSessionWarningTimer]);
 
+  useEffect(() => {
+    const handleSessionReplaced = (event: Event) => {
+      const previousGeneration = (event as CustomEvent<SessionReplacedDetail>)
+        .detail?.previousSessionGeneration;
+      if (previousGeneration === undefined) return;
+      clearUserScopedStorage();
+      void purgeOfflineCheckinDataForGeneration(previousGeneration);
+    };
+    window.addEventListener(SESSION_REPLACED_EVENT, handleSessionReplaced);
+    return () => window.removeEventListener(SESSION_REPLACED_EVENT, handleSessionReplaced);
+  }, []);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Cross-Tab Logout — sync auth state when tokens are cleared in another tab
   // ─────────────────────────────────────────────────────────────────────────
@@ -844,11 +948,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // follow the admin tab's localStorage logout — otherwise the admin signing
       // out (or their token rotating) tears down the impersonated session too.
       if (isImpersonatedTab()) return;
+      if (
+        event.key === 'nexus_auth_session_generation'
+        && event.newValue
+        && (state.status === 'authenticated' || state.status === 'loading')
+        && tokenManager.hasAccessToken()
+      ) {
+        // Another tab committed a complete replacement session. Stop rendering
+        // the previous member immediately, discard their local UI state, and
+        // hydrate the replacement identity before authenticated routes resume.
+        api.clearInflightRequests();
+        clearUserScopedStorage();
+        void purgeOfflineCheckinDataForGeneration(event.oldValue);
+        setTelemetryUser(null);
+        setState((prev) => ({ ...prev, user: null, status: 'loading', error: null }));
+        void refreshUser();
+        return;
+      }
       // localStorage 'storage' event only fires in OTHER tabs (not the one that made the change).
       // When access token is removed (logout in another tab), clear state here too.
-      if (event.key === 'nexus_access_token' && event.newValue === null && state.status === 'authenticated') {
-        void purgeAllOfflineCheckinData();
-        tokenManager.clearTokens();
+      const removedGeneration = event.newValue === null
+        ? tokenManager.getGenerationForRecordKey(event.key)
+        : null;
+      if (
+        (((removedGeneration !== null
+            && removedGeneration === tokenManager.getSessionGeneration())
+          || (event.key === 'nexus_access_token'
+            && event.newValue === null
+            && tokenManager.getSessionGeneration() === null)))
+        && (state.status === 'authenticated' || state.status === 'loading')
+      ) {
+        tokenManager.clearSession(removedGeneration);
+        if (
+          tokenManager.getSessionGeneration() !== removedGeneration
+          || tokenManager.getAccessToken()
+        ) return;
         // Also clear tenant context so the next login gets a fresh tenant bootstrap.
         // Without this, a stale tenant slug from the previous session could cause
         // the wrong community's branding to appear on the login page in this tab.
@@ -868,7 +1002,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [state.status]);
+  }, [refreshUser, state.status]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Initial Auth Check

@@ -54,13 +54,15 @@ const authDefaults = {
 let authOverrides: Partial<typeof authDefaults> = {};
 let conditionalAutofillEnabled = true;
 let passkeyAuthenticationEnabled = true;
+let tenantContextTenant: { id: number; name: string; slug: string; tagline: null } | null = { id: 2, name: 'Test Tenant', slug: 'test', tagline: null };
+let tenantContextSlug: string | null = 'test';
 
 vi.mock('@/contexts', () => ({
   useAuth: () => ({ ...authDefaults, ...authOverrides }),
   useTenant: () => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test', tagline: null },
+    tenant: tenantContextTenant,
     branding: { name: 'Test Community', logo_url: null },
-    tenantSlug: 'test',
+    tenantSlug: tenantContextSlug,
     tenantPath: mockTenantPath,
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
     isLoading: false,
@@ -86,9 +88,9 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test', tagline: null },
+    tenant: tenantContextTenant,
     branding: { name: 'Test Community', logo_url: null },
-    tenantSlug: 'test',
+    tenantSlug: tenantContextSlug,
     tenantPath: mockTenantPath,
     authenticationConfig: { 'passkeys.conditional_autofill': conditionalAutofillEnabled },
     isLoading: false,
@@ -128,6 +130,10 @@ vi.mock('@/lib/api', () => ({
     post: vi.fn().mockResolvedValue({ success: true }),
   },
   tokenManager: {
+    adoptSession: vi.fn(() => 'test-session'),
+    adoptSessionIfCurrent: vi.fn(() => Promise.resolve('test-session')),
+    runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
+    getSessionGeneration: vi.fn(() => 'test-session'),
     setTenantId: vi.fn(),
     clearTokens: vi.fn(),
     setAccessToken: vi.fn(),
@@ -176,6 +182,7 @@ vi.mock('lucide-react', async () => {
 
 // ── Import component under test ─────────────────────────────────────────────
 import { LoginPage } from './LoginPage';
+import { api, tokenManager } from '@/lib/api';
 
 // ── Tests ───────────────────────────────────────────────────────────────────
 describe('LoginPage — Passkey/WebAuthn functionality', () => {
@@ -184,6 +191,11 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     authOverrides = {};
     conditionalAutofillEnabled = true;
     passkeyAuthenticationEnabled = true;
+    tenantContextTenant = { id: 2, name: 'Test Tenant', slug: 'test', tagline: null };
+    tenantContextSlug = 'test';
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
+    vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (_expected, commit) => commit());
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     Object.defineProperty(window, 'PublicKeyCredential', {
       value: class MockPublicKeyCredential {},
       configurable: true,
@@ -193,6 +205,45 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     mockIsConditionalMediationAvailable.mockResolvedValue(false);
     mockStartConditionalAuthentication.mockResolvedValue(null);
     mockLoginWithBiometric.mockResolvedValue({ success: false, errorCode: 'cancelled' });
+  });
+
+  it('does not clear session B when it replaces A before the login mount cleanup runs', async () => {
+    let releaseCleanup!: () => void;
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-a');
+    vi.mocked(tokenManager.runIfSessionCurrent).mockImplementationOnce(async (expected, commit) => {
+      await new Promise<void>((resolve) => { releaseCleanup = resolve; });
+      return tokenManager.getSessionGeneration() === expected ? commit() : null;
+    });
+
+    render(<LoginPage />);
+    await waitFor(() => expect(releaseCleanup).toBeDefined());
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-b');
+    releaseCleanup();
+    await waitFor(() => expect(tokenManager.runIfSessionCurrent).toHaveBeenCalled());
+
+    expect(tokenManager.clearTokens).not.toHaveBeenCalled();
+  });
+
+  it('ignores a delayed tenant list after session B replaces A', async () => {
+    tenantContextTenant = null;
+    tenantContextSlug = null;
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-a');
+    let resolveTenants!: (value: { success: true; data: Array<{ id: number; name: string; slug: string }> }) => void;
+    vi.mocked(api.get).mockReturnValueOnce(new Promise((resolve) => { resolveTenants = resolve; }));
+
+    render(<LoginPage />);
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith(
+      '/v2/tenants?include_master=1',
+      { skipAuth: true, skipTenant: true },
+    ));
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-b');
+    resolveTenants({
+      success: true,
+      data: [{ id: 9, name: 'Stale Tenant', slug: 'stale' }],
+    });
+    await Promise.resolve();
+
+    expect(tokenManager.setTenantId).not.toHaveBeenCalledWith(9);
   });
 
   afterEach(() => {

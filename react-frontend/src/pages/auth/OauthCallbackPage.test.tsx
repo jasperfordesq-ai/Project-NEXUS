@@ -36,6 +36,8 @@ const {
   mockSetAccessToken,
   mockSetRefreshToken,
   mockSetTenantId,
+  mockAdoptSession,
+  mockGetSessionGeneration,
   mockGetOAuthBrowserVerifier,
   mockClearOAuthBrowserVerifier,
 } = vi.hoisted(() => ({
@@ -45,6 +47,8 @@ const {
   mockSetAccessToken: vi.fn(),
   mockSetRefreshToken: vi.fn(),
   mockSetTenantId: vi.fn(),
+  mockAdoptSession: vi.fn(),
+  mockGetSessionGeneration: vi.fn(() => 'test-session'),
   mockGetOAuthBrowserVerifier: vi.fn(() => 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'),
   mockClearOAuthBrowserVerifier: vi.fn(),
 }));
@@ -139,6 +143,9 @@ vi.mock('@/contexts/TenantContext', () => ({
 vi.mock('@/lib/api', () => ({
   API_BASE: 'https://api.example.test/api',
   tokenManager: {
+    adoptSession: mockAdoptSession,
+    adoptSessionIfCurrent: mockAdoptSession,
+    getSessionGeneration: mockGetSessionGeneration,
     getAccessToken: vi.fn(() => null),
     setAccessToken: mockSetAccessToken,
     getRefreshToken: vi.fn(() => null),
@@ -241,6 +248,8 @@ beforeEach(() => {
   // Default: empty params — individual tests override as needed.
   mockSearchParams.mockReturnValue(makeParams(''));
   vi.clearAllMocks();
+  mockAdoptSession.mockReturnValue('test-session');
+  mockGetSessionGeneration.mockReturnValue('test-session');
   // Re-apply defaults that clearAllMocks wipes.
   mockSearchParams.mockReturnValue(makeParams(''));
 });
@@ -261,7 +270,13 @@ describe('OauthCallbackPage', () => {
       two_factor_token: 'restricted-challenge', methods: setup ? ['totp_setup'] : ['totp'], allow_trusted_device: false,
     }) }));
     render(<OauthCallbackPage />);
-    await waitFor(() => expect(mockBeginChallenge).toHaveBeenCalledWith('restricted-challenge', setup, setup ? ['totp_setup'] : ['totp'], false));
+    await waitFor(() => expect(mockBeginChallenge).toHaveBeenCalledWith(
+      'restricted-challenge',
+      setup,
+      setup ? ['totp_setup'] : ['totp'],
+      false,
+      'test-session',
+    ));
     expect(mockSetAccessToken).not.toHaveBeenCalled();
     expect(mockSetRefreshToken).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining(setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
@@ -292,7 +307,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockSetAccessToken).toHaveBeenCalledWith('jwt-abc');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', null, '99');
     });
     expect(mockGetOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
@@ -316,11 +331,8 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockSetRefreshToken).toHaveBeenCalledWith('refresh-xyz');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', 'refresh-xyz', '99');
     });
-    expect(mockSetRefreshToken.mock.invocationCallOrder[0]).toBeLessThan(
-      mockSetAccessToken.mock.invocationCallOrder[0],
-    );
   });
 
   it('exchanges once and completes when StrictMode restarts the effect', async () => {
@@ -347,11 +359,7 @@ describe('OauthCallbackPage', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(mockSetRefreshToken).toHaveBeenCalledWith('strict-refresh');
-    expect(mockSetAccessToken).toHaveBeenCalledWith('strict-access');
-    expect(mockSetRefreshToken.mock.invocationCallOrder[0]).toBeLessThan(
-      mockSetAccessToken.mock.invocationCallOrder[0],
-    );
+    expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'strict-access', 'strict-refresh', '99');
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledTimes(1);
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
   });
@@ -368,7 +376,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockSetTenantId).toHaveBeenCalledWith('99');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, '99');
     });
   });
 
@@ -424,7 +432,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockSetAccessToken).toHaveBeenCalledWith('tok');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, undefined);
     });
     expect(mockSetTenantId).not.toHaveBeenCalled();
   });

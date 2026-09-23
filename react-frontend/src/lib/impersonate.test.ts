@@ -6,6 +6,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { sendImpersonationToken, listenForImpersonationToken, endImpersonation } from './impersonate';
 
+const mockPurgeOfflineGeneration = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('@/lib/event-offline-checkin-store', () => ({
+  purgeOfflineCheckinDataForGeneration: mockPurgeOfflineGeneration,
+}));
+
 // ── Mock @/lib/api ──────────────────────────────────────────────────────────
 vi.mock('@/lib/api', () => ({
   API_BASE: '/api',
@@ -13,6 +18,10 @@ vi.mock('@/lib/api', () => ({
   IMPERSONATION_CONTEXT_KEY: 'nexus_impersonation_context',
   isImpersonatedTab: vi.fn(() => false),
   tokenManager: {
+    adoptSession: vi.fn(() => 'test-session'),
+    adoptSessionIfCurrent: vi.fn(() => Promise.resolve('test-session')),
+    runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
+    getSessionGeneration: vi.fn(() => 'test-session'),
     setAccessToken: vi.fn(),
     getAccessToken: vi.fn(() => 'impersonated-access-token'),
     setTenantId: vi.fn(),
@@ -122,9 +131,16 @@ beforeEach(() => {
   vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
   clearHash();
   vi.mocked(tokenManager.setAccessToken).mockClear();
+  vi.mocked(tokenManager.adoptSessionIfCurrent).mockClear();
+  vi.mocked(tokenManager.adoptSessionIfCurrent).mockResolvedValue('test-session');
+  vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
+  vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (expected, commit) => (
+    tokenManager.getSessionGeneration() === expected ? commit() : null
+  ));
   vi.mocked(tokenManager.setTenantId).mockClear();
   vi.mocked(tokenManager.setTenantSlug).mockClear();
   vi.mocked(tokenManager.clearAll).mockClear();
+  mockPurgeOfflineGeneration.mockClear();
   sessionStorage.clear();
   // Default: the exchange succeeds. Individual tests override.
   vi.stubGlobal('fetch', mockExchangeOk());
@@ -352,8 +368,12 @@ describe('listenForImpersonationToken', () => {
       }),
     );
     // The token that gets stored is the exchanged one, never the proof.
-    expect(tokenManager.setAccessToken).toHaveBeenCalledWith('real-access-token');
-    expect(tokenManager.setAccessToken).not.toHaveBeenCalledWith('the-impersonation-proof');
+    expect(tokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
+      'test-session', 'real-access-token', null, 5,
+    );
+    expect(tokenManager.adoptSessionIfCurrent).not.toHaveBeenCalledWith(
+      'test-session', 'the-impersonation-proof', null, 5,
+    );
     expect(onReceived).toHaveBeenCalledTimes(1);
   });
 
@@ -363,8 +383,9 @@ describe('listenForImpersonationToken', () => {
     // session.
     setHash('#impersonate=my-session-id');
     let flagWhenTokenStored: string | null = null;
-    vi.mocked(tokenManager.setAccessToken).mockImplementation(() => {
+    vi.mocked(tokenManager.adoptSessionIfCurrent).mockImplementation(async () => {
       flagWhenTokenStored = sessionStorage.getItem('nexus_impersonation_active');
+      return 'test-session';
     });
 
     listenForImpersonationToken(vi.fn());
@@ -389,7 +410,9 @@ describe('listenForImpersonationToken', () => {
     });
     await flushExchange();
 
-    expect(tokenManager.setTenantId).toHaveBeenCalledWith(5);
+    expect(tokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
+      'test-session', 'real-access-token', null, 5,
+    );
     expect(tokenManager.setTenantSlug).toHaveBeenCalledWith('other-community');
     const init = (vi.mocked(fetch).mock.calls[0]?.[1] ?? {}) as RequestInit;
     expect(init.headers).toMatchObject({
@@ -443,6 +466,25 @@ describe('listenForImpersonationToken', () => {
 
     expect(onFailed).toHaveBeenCalledTimes(1);
     expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
+  });
+
+  it('does not unmark replacement session B when delayed exchange A is refused', async () => {
+    let resolveExchange!: (value: Response) => void;
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((resolve) => {
+      resolveExchange = resolve;
+    })));
+    setHash('#impersonate=my-session-id');
+    listenForImpersonationToken(vi.fn(), vi.fn());
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'stale-proof', sessionId: 'my-session-id' });
+    await Promise.resolve();
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('replacement-session');
+    resolveExchange({ ok: false, json: async () => ({ success: false }) } as Response);
+    await flushExchange();
+
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBe('1');
+    expect(tokenManager.adoptSessionIfCurrent).not.toHaveBeenCalled();
   });
 
   it('stores the impersonation context so the banner can render', async () => {
@@ -502,7 +544,7 @@ describe('listenForImpersonationToken', () => {
       sessionId: 'wrong-session-id',
     });
 
-    expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    expect(tokenManager.adoptSessionIfCurrent).not.toHaveBeenCalled();
     expect(onReceived).not.toHaveBeenCalled();
     expect(bc.close).not.toHaveBeenCalled();
   });
@@ -519,7 +561,7 @@ describe('listenForImpersonationToken', () => {
       sessionId: 'my-session-id',
     });
 
-    expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    expect(tokenManager.adoptSessionIfCurrent).not.toHaveBeenCalled();
     expect(onReceived).not.toHaveBeenCalled();
   });
 
@@ -531,7 +573,7 @@ describe('listenForImpersonationToken', () => {
     const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
     bc._simulateMessage({ type: 'ready', sessionId: 'my-session-id' });
 
-    expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    expect(tokenManager.adoptSessionIfCurrent).not.toHaveBeenCalled();
     expect(onReceived).not.toHaveBeenCalled();
   });
 
@@ -635,6 +677,7 @@ describe('endImpersonation', () => {
       }),
     );
     expect(tokenManager.clearAll).toHaveBeenCalled();
+    expect(mockPurgeOfflineGeneration).toHaveBeenCalledWith('test-session');
     expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
     expect(sessionStorage.getItem('nexus_impersonation_context')).toBeNull();
   });
@@ -649,5 +692,23 @@ describe('endImpersonation', () => {
 
     expect(tokenManager.clearAll).toHaveBeenCalled();
     expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
+  });
+
+  it('does not clear or unmark replacement session B after delayed session A revocation', async () => {
+    let resolveRevoke!: (value: Response) => void;
+    sessionStorage.setItem('nexus_impersonation_active', '1');
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((resolve) => {
+      resolveRevoke = resolve;
+    })));
+
+    const pending = endImpersonation();
+    await Promise.resolve();
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('replacement-session');
+    resolveRevoke({ ok: true } as Response);
+    await pending;
+
+    expect(tokenManager.clearAll).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBe('1');
+    expect(mockPurgeOfflineGeneration).not.toHaveBeenCalled();
   });
 });

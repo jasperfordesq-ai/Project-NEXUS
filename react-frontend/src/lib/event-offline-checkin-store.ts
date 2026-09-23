@@ -9,6 +9,7 @@ import {
   type OfflineCheckinManifest,
   type OfflineOperation,
 } from '@/lib/event-offline-checkin-api';
+import { tokenManager } from '@/lib/api';
 
 const DATABASE_NAME = 'nexus-event-checkin-v1';
 const DATABASE_VERSION = 1;
@@ -35,6 +36,7 @@ export interface OfflineQueueItem {
 }
 
 export interface OfflineCheckinSession {
+  sessionGeneration: string | null;
   eventId: number;
   deviceId: number;
   deviceVersion: number;
@@ -48,6 +50,7 @@ export interface OfflineCheckinSession {
 
 interface EncryptedRecord {
   id: string;
+  sessionGeneration?: string | null;
   eventId: number;
   deviceId: number;
   expiresAt: string;
@@ -70,8 +73,20 @@ interface SignedClaims {
   ver: number;
 }
 
-function sessionId(eventId: number, deviceId: number): string {
-  return `event:${eventId}:device:${deviceId}`;
+function currentSessionGeneration(): string | null {
+  try {
+    const storage = sessionStorage.getItem('nexus_impersonation_active') === '1'
+      ? sessionStorage
+      : localStorage;
+    return storage.getItem('nexus_auth_session_generation');
+  } catch {
+    return null;
+  }
+}
+
+function sessionId(eventId: number, deviceId: number, generation: string | null): string {
+  const suffix = `event:${eventId}:device:${deviceId}`;
+  return generation ? `session:${generation}:${suffix}` : suffix;
 }
 
 function base64UrlBytes(value: string): Uint8Array {
@@ -193,6 +208,7 @@ export async function activateOfflineCheckinSession(
     throw new Error('manifest_expired');
   }
   const session: OfflineCheckinSession = {
+    sessionGeneration: currentSessionGeneration(),
     eventId: manifest.event_id,
     deviceId: manifest.device.id,
     deviceVersion: manifest.device.version,
@@ -342,20 +358,28 @@ export async function loadOfflineCheckinSession(
   deviceId: number,
 ): Promise<OfflineCheckinSession | null> {
   const database = await openDatabase();
-  const id = sessionId(eventId, deviceId);
+  const generation = currentSessionGeneration();
+  const id = sessionId(eventId, deviceId, generation);
+  const legacyId = sessionId(eventId, deviceId, null);
   const record = await requestResult<EncryptedRecord | undefined>(
     database.transaction(RECORD_STORE, 'readonly').objectStore(RECORD_STORE).get(id),
   );
+  if (generation !== null) {
+    const unownedLegacyRecord = await requestResult<EncryptedRecord | undefined>(
+      database.transaction(RECORD_STORE, 'readonly').objectStore(RECORD_STORE).get(legacyId),
+    );
+    if (unownedLegacyRecord) await purgeRecord(database, legacyId);
+  }
   if (!record) return null;
   if (new Date(record.expiresAt) <= new Date()) {
-    await purgeOfflineCheckinSession(eventId, deviceId);
+    await purgeRecord(database, id);
     return null;
   }
   const key = await requestResult<CryptoKey | undefined>(
     database.transaction(KEY_STORE, 'readonly').objectStore(KEY_STORE).get(id),
   );
   if (!key) {
-    await purgeOfflineCheckinSession(eventId, deviceId);
+    await purgeRecord(database, id);
     return null;
   }
   try {
@@ -366,21 +390,22 @@ export async function loadOfflineCheckinSession(
     );
     const session = JSON.parse(new TextDecoder().decode(plaintext)) as OfflineCheckinSession;
     session.activeBatchNonces ??= [];
+    session.sessionGeneration = generation;
     assertSessionActive(session);
     return session;
   } catch {
-    await purgeOfflineCheckinSession(eventId, deviceId);
+    await purgeRecord(database, id);
     throw new Error('encrypted_store_invalid');
   }
 }
 
-export async function purgeOfflineCheckinSession(eventId: number, deviceId: number): Promise<void> {
+export async function purgeOfflineCheckinSession(
+  eventId: number,
+  deviceId: number,
+  generation = currentSessionGeneration(),
+): Promise<void> {
   const database = await openDatabase();
-  const id = sessionId(eventId, deviceId);
-  const transaction = database.transaction([KEY_STORE, RECORD_STORE], 'readwrite');
-  transaction.objectStore(KEY_STORE).delete(id);
-  transaction.objectStore(RECORD_STORE).delete(id);
-  await transactionComplete(transaction);
+  await purgeRecord(database, sessionId(eventId, deviceId, generation));
 }
 
 export async function removeSyncedOfflineCheckinItems(
@@ -397,18 +422,38 @@ export async function removeSyncedOfflineCheckinItems(
 }
 
 export async function purgeAllOfflineCheckinData(): Promise<void> {
+  return purgeOfflineCheckinDataForGeneration(currentSessionGeneration());
+}
+
+export async function purgeOfflineCheckinDataForGeneration(
+  generation: string | null,
+): Promise<void> {
   if (typeof indexedDB === 'undefined') return;
   const database = await openDatabase();
   const transaction = database.transaction([KEY_STORE, RECORD_STORE], 'readwrite');
-  transaction.objectStore(KEY_STORE).clear();
-  transaction.objectStore(RECORD_STORE).clear();
+  const keyStore = transaction.objectStore(KEY_STORE);
+  const records = transaction.objectStore(RECORD_STORE);
+  const cursorRequest = records.openCursor();
+  cursorRequest.onsuccess = () => {
+    const cursor = cursorRequest.result;
+    if (!cursor) return;
+    const record = cursor.value as EncryptedRecord;
+    if (record.sessionGeneration === generation || record.sessionGeneration === undefined) {
+      keyStore.delete(record.id);
+      cursor.delete();
+    }
+    cursor.continue();
+  };
   await transactionComplete(transaction);
 }
 
 async function saveSession(session: OfflineCheckinSession): Promise<void> {
   assertSessionActive(session);
+  if (currentSessionGeneration() !== session.sessionGeneration) {
+    throw new Error('auth_context_changed');
+  }
   const database = await openDatabase();
-  const id = sessionId(session.eventId, session.deviceId);
+  const id = sessionId(session.eventId, session.deviceId, session.sessionGeneration);
   let key = await requestResult<CryptoKey | undefined>(
     database.transaction(KEY_STORE, 'readonly').objectStore(KEY_STORE).get(id),
   );
@@ -427,6 +472,7 @@ async function saveSession(session: OfflineCheckinSession): Promise<void> {
   const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
   const record: EncryptedRecord = {
     id,
+    sessionGeneration: session.sessionGeneration,
     eventId: session.eventId,
     deviceId: session.deviceId,
     expiresAt: session.manifest.expires_at,
@@ -434,9 +480,24 @@ async function saveSession(session: OfflineCheckinSession): Promise<void> {
     ciphertext: bytesToBase64(new Uint8Array(ciphertext)),
     updatedAt: session.updatedAt,
   };
-  const recordTransaction = database.transaction(RECORD_STORE, 'readwrite');
-  recordTransaction.objectStore(RECORD_STORE).put(record);
+  let recordTransaction: IDBTransaction | null = null;
+  const committed = await tokenManager.runIfSessionCurrent(session.sessionGeneration, () => {
+    recordTransaction = database.transaction(RECORD_STORE, 'readwrite');
+    recordTransaction.objectStore(RECORD_STORE).put(record);
+    return true;
+  });
+  if (!committed || !recordTransaction) {
+    await purgeRecord(database, id);
+    throw new Error('auth_context_changed');
+  }
   await transactionComplete(recordTransaction);
+}
+
+async function purgeRecord(database: IDBDatabase, id: string): Promise<void> {
+  const transaction = database.transaction([KEY_STORE, RECORD_STORE], 'readwrite');
+  transaction.objectStore(KEY_STORE).delete(id);
+  transaction.objectStore(RECORD_STORE).delete(id);
+  await transactionComplete(transaction);
 }
 
 function assertSessionActive(session: OfflineCheckinSession): void {

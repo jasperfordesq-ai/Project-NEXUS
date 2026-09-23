@@ -8,7 +8,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TwoFactorSetupPage from './TwoFactorSetupPage';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn(), access: vi.fn(), refresh: vi.fn(), user: vi.fn(), cancel: vi.fn() }));
+const mocks = vi.hoisted(() => ({ post: vi.fn(), adopt: vi.fn(() => 'test-session'), generation: vi.fn(() => 'test-session'), access: vi.fn(), refresh: vi.fn(), user: vi.fn(), cancel: vi.fn() }));
 // The page imports the context hooks from their direct modules (bundle-budget rule
 // for auth startup surfaces), so the mocks must target those modules, not the barrel.
 vi.mock('@/contexts/AuthContext', () => ({
@@ -18,7 +18,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({ tenantPath: (path: string) => path }),
 }));
-vi.mock('@/lib/api', () => ({ api: { post: mocks.post }, tokenManager: { setAccessToken: mocks.access, setRefreshToken: mocks.refresh } }));
+vi.mock('@/lib/api', () => ({ api: { post: mocks.post }, tokenManager: { adoptSession: mocks.adopt, adoptSessionIfCurrent: mocks.adopt, getSessionGeneration: mocks.generation, setAccessToken: mocks.access, setRefreshToken: mocks.refresh } }));
 
 beforeEach(() => { vi.clearAllMocks(); });
 
@@ -36,8 +36,7 @@ it('keeps credentials out of storage until the recovery codes are acknowledged',
   expect(mocks.refresh).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'I have saved my recovery codes' }));
   await waitFor(() => expect(mocks.user).toHaveBeenCalled());
-  expect(mocks.access).toHaveBeenCalledWith('access');
-  expect(mocks.refresh).toHaveBeenCalledWith('refresh');
+  expect(mocks.adopt).toHaveBeenCalledWith('test-session', 'access', 'refresh');
 });
 
 // Two-factor security review (E-004): cancelling forgets the challenge, and an

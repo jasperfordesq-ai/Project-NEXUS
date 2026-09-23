@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 import LogIn from 'lucide-react/icons/log-in';
 import Clock from 'lucide-react/icons/clock';
-import { SESSION_EXPIRED_EVENT, type SessionEndReason, type SessionExpiredDetail } from '@/lib/api';
+import { SESSION_EXPIRED_EVENT, tokenManager, type SessionEndReason, type SessionExpiredDetail } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
@@ -40,9 +40,14 @@ export function SessionExpiredModal() {
 
   useEffect(() => {
     function handleSessionExpired(event: Event) {
+      const detail = (event as CustomEvent<SessionExpiredDetail>).detail;
+      if (
+        detail?.sessionGeneration !== undefined
+        && tokenManager.getSessionGeneration() !== detail.sessionGeneration
+      ) return;
       // Only show modal if user had an active session — not for stale tokens on first visit
       if (wasAuthenticated.current) {
-        setReason((event as CustomEvent<SessionExpiredDetail>).detail?.reason ?? 'expired');
+        setReason(detail?.reason ?? 'expired');
         setIsOpen(true);
       }
     }

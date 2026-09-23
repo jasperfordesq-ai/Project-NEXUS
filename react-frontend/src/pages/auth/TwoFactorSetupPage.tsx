@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@heroui/react/button';
 import { Input } from '@heroui/react/input';
@@ -36,6 +36,7 @@ export default function TwoFactorSetupPage() {
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [copied, setCopied] = useState(false);
+  const completionGenerationRef = useRef<string | null>(null);
   usePageTitle(t('mandatory_setup.title'));
 
   useEffect(() => {
@@ -61,11 +62,17 @@ export default function TwoFactorSetupPage() {
     event.preventDefault();
     setBusy(true);
     setError('');
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     try {
       const result = await api.post<Completion>('/v2/auth/2fa/verify', {
         two_factor_token: twoFactorToken, code,
       }, { skipAuth: true });
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+        setError(t('mandatory_setup.failed'));
+        return;
+      }
       if (result.success && result.data?.login_complete && result.data.access_token && result.data.refresh_token) {
+        completionGenerationRef.current = sessionGenerationAtStart;
         setCompletion(result.data);
         setSetup(null);
         setCode('');
@@ -112,8 +119,21 @@ export default function TwoFactorSetupPage() {
   async function finish() {
     if (!completion) return;
     setBusy(true);
-    tokenManager.setRefreshToken(completion.refresh_token);
-    tokenManager.setAccessToken(completion.access_token);
+    if (tokenManager.getSessionGeneration() !== completionGenerationRef.current) {
+      setError(t('mandatory_setup.failed'));
+      setBusy(false);
+      return;
+    }
+    const generation = await tokenManager.adoptSessionIfCurrent(
+      completionGenerationRef.current,
+      completion.access_token,
+      completion.refresh_token,
+    );
+    if (!generation || tokenManager.getSessionGeneration() !== generation) {
+      setError(t('mandatory_setup.failed'));
+      setBusy(false);
+      return;
+    }
     scheduleSessionWarning(completion.expires_in);
     await refreshUser();
     navigate(tenantPath('/dashboard'), { replace: true });

@@ -27,9 +27,17 @@ vi.mock('@/lib/api', async () => {
       get: vi.fn(),
       post: vi.fn(),
       logoutSession: vi.fn(),
+      clearInflightRequests: vi.fn(),
     },
     recoverStaleClient: vi.fn(),
     tokenManager: {
+      adoptSession: vi.fn(() => 'test-session'),
+      adoptSessionIfCurrent: vi.fn(() => Promise.resolve('test-session')),
+      runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
+      getSessionGeneration: vi.fn(() => 'test-session'),
+      getSessionRecordKey: vi.fn(() => 'nexus_auth_session:test-session'),
+      getGenerationForRecordKey: vi.fn((key: string | null) => key?.split(':').pop() ?? null),
+      sessionGenerationIsCurrent: vi.fn(() => true),
       getAccessToken: vi.fn(),
       setAccessToken: vi.fn(),
       getRefreshToken: vi.fn(),
@@ -39,6 +47,7 @@ vi.mock('@/lib/api', async () => {
       hasAccessToken: vi.fn(),
       hasRefreshToken: vi.fn(),
       clearTokens: vi.fn(),
+      clearSession: vi.fn(),
       clearAll: vi.fn(),
     },
   };
@@ -120,7 +129,11 @@ describe('AuthContext', () => {
 
     // Default mock implementations
     vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue(null);
     vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
+    vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (_expected, commit) => commit());
+    vi.mocked(tokenManager.sessionGenerationIsCurrent).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -236,7 +249,7 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user')).toHaveTextContent('none');
       });
 
-      expect(tokenManager.clearTokens).toHaveBeenCalled();
+      expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
   });
 
@@ -273,8 +286,9 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
       });
 
-      expect(tokenManager.setAccessToken).toHaveBeenCalledWith('access-token');
-      expect(tokenManager.setRefreshToken).toHaveBeenCalledWith('refresh-token');
+      expect(tokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
+        'test-session', 'access-token', 'refresh-token', 1,
+      );
     });
 
     /*
@@ -566,6 +580,38 @@ describe('AuthContext', () => {
   });
 
   describe('logout', () => {
+    it('does not let a delayed account A logout clear an account B replacement', async () => {
+      const user = userEvent.setup();
+      let resolveLogout: ((value: { success: boolean }) => void) | undefined;
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(tokenManager.getAccessToken).mockReturnValue('account-a-access');
+      vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-a');
+      vi.mocked(tokenManager.sessionGenerationIsCurrent).mockReturnValue(true);
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'Account A', last_name: 'Member', tenant_id: 2 },
+      });
+      vi.mocked(api.logoutSession).mockImplementationOnce(() => new Promise((resolve) => {
+        resolveLogout = resolve;
+      }));
+      localStorage.setItem('compose-draft-post:t2:u2', '{"plainText":"account-b-draft"}');
+
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+      await user.click(screen.getByRole('button', { name: 'Logout' }));
+      await waitFor(() => expect(api.logoutSession).toHaveBeenCalledOnce());
+
+      vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-b');
+      vi.mocked(tokenManager.getAccessToken).mockReturnValue('account-b-access');
+      vi.mocked(tokenManager.sessionGenerationIsCurrent).mockReturnValue(false);
+      resolveLogout?.({ success: true });
+
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+      expect(tokenManager.clearSession).toHaveBeenCalledWith('account-a');
+      expect(tokenManager.clearTokens).not.toHaveBeenCalled();
+      expect(localStorage.getItem('compose-draft-post:t2:u2')).toBe('{"plainText":"account-b-draft"}');
+    });
+
     it('clears all tokens and resets state', async () => {
       const user = userEvent.setup();
 
@@ -597,7 +643,7 @@ describe('AuthContext', () => {
       // so the user stays on the same community's login page. Stale slugs are
       // harmless because TenantShell and TenantProvider only use them when
       // auth tokens exist.
-      expect(tokenManager.clearTokens).toHaveBeenCalled();
+      expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
       expect(api.logoutSession).toHaveBeenCalledTimes(1);
     });
 
@@ -672,8 +718,38 @@ describe('AuthContext', () => {
       });
 
       // Should still clear tokens even on network error
-      expect(tokenManager.clearTokens).toHaveBeenCalled();
+      expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
+  });
+
+  it('replaces stale account A state when another tab commits account B', async () => {
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue('account-a-access');
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'Account A', last_name: 'Member', tenant_id: 2 },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: { id: 2, first_name: 'Account B', last_name: 'Member', tenant_id: 2 },
+      });
+
+    render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('Account A'));
+
+    vi.mocked(tokenManager.getAccessToken).mockReturnValue('account-b-access');
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'nexus_auth_session_generation',
+        oldValue: 'account-a',
+        newValue: 'account-b',
+        storageArea: localStorage,
+      }));
+    });
+
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('Account B'));
+    expect(api.clearInflightRequests).toHaveBeenCalledOnce();
   });
 
   describe('register', () => {

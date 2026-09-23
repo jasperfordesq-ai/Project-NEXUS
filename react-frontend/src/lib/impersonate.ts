@@ -39,6 +39,7 @@ import {
   IMPERSONATION_FLAG_KEY,
   IMPERSONATION_CONTEXT_KEY,
 } from '@/lib/api';
+import { purgeOfflineCheckinDataForGeneration } from '@/lib/event-offline-checkin-store';
 
 const CHANNEL_NAME = 'nexus_impersonate';
 const HANDOFF_TIMEOUT_MS = 30_000; // 30 seconds for new tab to be ready
@@ -154,6 +155,13 @@ function unmarkTabAsImpersonating(): void {
   } catch { /* best-effort */ }
 }
 
+async function unmarkIfSessionCurrent(expectedGeneration: string | null): Promise<void> {
+  await tokenManager.runIfSessionCurrent(expectedGeneration, () => {
+    unmarkTabAsImpersonating();
+    return true;
+  });
+}
+
 /** Read this tab's impersonation context, or null when not impersonating. */
 export function readImpersonationContext(): ImpersonationContext | null {
   try {
@@ -183,13 +191,7 @@ async function exchangeProofForSession(
   // land in this tab's sessionStorage, never in the shared localStorage that
   // holds the admin's own session.
   markTabAsImpersonating();
-
-  if (tenantId != null && String(tenantId) !== '') {
-    tokenManager.setTenantId(tenantId);
-  }
-  if (tenantSlug) {
-    tokenManager.setTenantSlug(tenantSlug);
-  }
+  const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -213,26 +215,44 @@ async function exchangeProofForSession(
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data?.success || !data?.access_token) {
-      unmarkTabAsImpersonating();
+      await unmarkIfSessionCurrent(sessionGenerationAtStart);
       return false;
     }
 
-    tokenManager.setAccessToken(data.access_token);
+    if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+      await unmarkIfSessionCurrent(sessionGenerationAtStart);
+      return false;
+    }
 
+    const generation = await tokenManager.adoptSessionIfCurrent(
+      sessionGenerationAtStart,
+      data.access_token,
+      null,
+      tenantId,
+    );
+    if (!generation || tokenManager.getSessionGeneration() !== generation) {
+      await unmarkIfSessionCurrent(sessionGenerationAtStart);
+      return false;
+    }
     const info = data.impersonation ?? {};
-    try {
-      sessionStorage.setItem(IMPERSONATION_CONTEXT_KEY, JSON.stringify({
-        userId: Number(info.user_id ?? 0),
-        userName: String(info.user_name ?? ''),
-        adminId: Number(info.admin_id ?? 0),
-        adminName: String(info.admin_name ?? ''),
-        startedAt: Date.now(),
-      } satisfies ImpersonationContext));
-    } catch { /* banner will fall back to generic copy */ }
+    const finalized = await tokenManager.runIfSessionCurrent(generation, () => {
+      if (tenantSlug) tokenManager.setTenantSlug(tenantSlug);
+      try {
+        sessionStorage.setItem(IMPERSONATION_CONTEXT_KEY, JSON.stringify({
+          userId: Number(info.user_id ?? 0),
+          userName: String(info.user_name ?? ''),
+          adminId: Number(info.admin_id ?? 0),
+          adminName: String(info.admin_name ?? ''),
+          startedAt: Date.now(),
+        } satisfies ImpersonationContext));
+      } catch { /* banner will fall back to generic copy */ }
+      return true;
+    });
+    if (!finalized) return false;
 
     return true;
   } catch {
-    unmarkTabAsImpersonating();
+    await unmarkIfSessionCurrent(sessionGenerationAtStart);
     return false;
   }
 }
@@ -308,6 +328,7 @@ export function listenForImpersonationToken(
  */
 export async function endImpersonation(): Promise<void> {
   const token = tokenManager.getAccessToken();
+  const sessionGeneration = tokenManager.getSessionGeneration();
 
   if (token) {
     try {
@@ -325,6 +346,15 @@ export async function endImpersonation(): Promise<void> {
     }
   }
 
-  tokenManager.clearAll();
-  unmarkTabAsImpersonating();
+  const cleared = await tokenManager.runIfSessionCurrent(sessionGeneration, () => {
+    // Pointer-relative cleanup is safe only while this origin-wide lock holds;
+    // a replacement adoption cannot interleave between the ownership check and
+    // removal of the tab-private pointer, record, tenant, and context.
+    tokenManager.clearAll();
+    unmarkTabAsImpersonating();
+    return true;
+  });
+  if (cleared) {
+    await purgeOfflineCheckinDataForGeneration(sessionGeneration).catch(() => undefined);
+  }
 }

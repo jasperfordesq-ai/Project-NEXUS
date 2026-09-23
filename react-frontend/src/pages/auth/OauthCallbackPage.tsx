@@ -97,6 +97,7 @@ export function OauthCallbackPage() {
     let cancelled = false;
     const code = params.get('code');
     const flow = params.get('flow');
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     const errCode = params.get('error');
     const errMsg = params.get('message');
 
@@ -111,26 +112,36 @@ export function OauthCallbackPage() {
     }
 
     void exchangeOAuthCode(code, flow).then(
-      (data) => {
+      async (data) => {
         if (cancelled) return;
+        if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) {
+          setError(t('oauth.callback_failed'));
+          return;
+        }
 
         if (data.two_factor_token && (data.requires_2fa || data.requires_2fa_setup)) {
           clearOAuthBrowserVerifier(flow);
-          beginTwoFactorChallenge(data.two_factor_token, !!data.requires_2fa_setup, data.methods || ['totp'], data.allow_trusted_device === true);
+          beginTwoFactorChallenge(
+            data.two_factor_token,
+            !!data.requires_2fa_setup,
+            data.methods || ['totp'],
+            data.allow_trusted_device === true,
+            sessionGenerationAtStart,
+          );
           navigate(tenantPath(data.requires_2fa_setup ? '/auth/two-factor/setup' : '/login'), { replace: true });
           return;
         }
 
-        if (data.tenant_id) {
-          tokenManager.setTenantId(String(data.tenant_id));
+        const adoptedGeneration = await tokenManager.adoptSessionIfCurrent(
+          sessionGenerationAtStart,
+          String(data.access_token || data.token),
+          data.refresh_token ? String(data.refresh_token) : null,
+          data.tenant_id ? String(data.tenant_id) : undefined,
+        );
+        if (!adoptedGeneration || tokenManager.getSessionGeneration() !== adoptedGeneration) {
+          setError(t('oauth.callback_failed'));
+          return;
         }
-        if (data.refresh_token) {
-          tokenManager.setRefreshToken(String(data.refresh_token));
-        }
-        // Persist the rotating credential before the access token. Other tabs
-        // wake on the access-token storage event and must observe a complete
-        // token generation rather than new access paired with stale refresh.
-        tokenManager.setAccessToken(String(data.access_token || data.token));
         clearOAuthBrowserVerifier(flow);
         window.location.href = tenantPath('/dashboard');
       },

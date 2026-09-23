@@ -131,6 +131,13 @@ export function SessionTimeoutWarning() {
         return;
       }
 
+      if (outcome === 'context_changed') {
+        // This warning belongs to the session that started the refresh. A new
+        // account is now active, so close the stale dialog without logging it out.
+        handleClose();
+        return;
+      }
+
       // Only an authoritative credential rejection ends the session.
       handleClose();
       await logout();

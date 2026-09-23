@@ -84,6 +84,37 @@ describe('tokenManager', () => {
     sessionStorage.clear();
   });
 
+  it('refuses stale credential adoption after a newer session wins the origin lock', async () => {
+    const locks = installQueuedWebLocks();
+    let releaseBlocker!: () => void;
+    let blockerEntered!: () => void;
+    const entered = new Promise<void>((resolve) => { blockerEntered = resolve; });
+    const blocker = navigator.locks.request(
+      'nexus-auth-session-adoption',
+      { mode: 'exclusive' },
+      async () => {
+        tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+        blockerEntered();
+        await new Promise<void>((resolve) => { releaseBlocker = resolve; });
+      },
+    );
+    await entered;
+
+    const staleAccountA = tokenManager.adoptSessionIfCurrent(
+      null,
+      'account-a-access',
+      'account-a-refresh',
+      '2',
+    );
+    releaseBlocker();
+    await blocker;
+
+    await expect(staleAccountA).resolves.toBeNull();
+    expect(tokenManager.getAccessToken()).toBe('account-b-access');
+    expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+    locks.restore();
+  });
+
   /**
    * 🔴 Per-tab isolation for impersonated sessions.
    *
@@ -468,6 +499,71 @@ describe('API Client', () => {
   });
 
   describe('file uploads', () => {
+    it('discards a fetch upload response after a same-tenant account switch', async () => {
+      tokenManager.setTenantId('2');
+      tokenManager.setAccessToken('account-a-access');
+      localStorage.setItem('nexus_auth_session_generation', 'account-a');
+      let resolveUpload: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveUpload = resolve;
+      }));
+
+      const pending = api.upload('/v2/files', new File(['private'], 'private.txt'));
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+      tokenManager.setAccessToken('account-b-access');
+      localStorage.setItem('nexus_auth_session_generation', 'account-b');
+      resolveUpload?.({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ data: { id: 9 } }),
+      } as Response);
+
+      await expect(pending).resolves.toEqual({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not refresh a progress upload after a same-tenant account switch', async () => {
+      class FakeXMLHttpRequest {
+        static instances: FakeXMLHttpRequest[] = [];
+        status = 0;
+        responseText = '';
+        timeout = 0;
+        withCredentials = false;
+        upload: { onprogress: ((event: ProgressEvent) => void) | null } = { onprogress: null };
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        ontimeout: (() => void) | null = null;
+        onabort: (() => void) | null = null;
+        constructor() { FakeXMLHttpRequest.instances.push(this); }
+        open(): void {}
+        setRequestHeader(): void {}
+        send(): void {}
+        abort(): void { this.onabort?.(); }
+        respond(status: number, body: Record<string, unknown>): void {
+          this.status = status;
+          this.responseText = JSON.stringify(body);
+          this.onload?.();
+        }
+      }
+
+      vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
+      tokenManager.setTenantId('2');
+      tokenManager.setAccessToken('account-a-access');
+      tokenManager.setRefreshToken('account-a-refresh');
+      localStorage.setItem('nexus_auth_session_generation', 'account-a');
+      const pending = api.upload('/v2/files', new File(['private'], 'private.txt'), 'file', {
+        onUploadProgress: vi.fn(),
+      });
+
+      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      FakeXMLHttpRequest.instances[0]?.respond(401, { error: 'Unauthorized' });
+
+      await expect(pending).resolves.toEqual({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
+      expect(fetch).not.toHaveBeenCalled();
+      expect(FakeXMLHttpRequest.instances).toHaveLength(1);
+    });
+
     it('preserves application-level upload failure envelopes returned with HTTP 2xx', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -571,6 +667,30 @@ describe('API Client', () => {
   });
 
   describe('file downloads', () => {
+    it('discards a downloaded file after a same-tenant account switch', async () => {
+      tokenManager.setTenantId('2');
+      tokenManager.setAccessToken('account-a-access');
+      localStorage.setItem('nexus_auth_session_generation', 'account-a');
+      let resolveDownload: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveDownload = resolve;
+      }));
+
+      const pending = api.download('/v2/export');
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+      tokenManager.setAccessToken('account-b-access');
+      localStorage.setItem('nexus_auth_session_generation', 'account-b');
+      resolveDownload?.({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        blob: () => Promise.resolve(new Blob(['private'])),
+      } as Response);
+
+      await expect(pending).rejects.toMatchObject({ name: 'AuthContextChangedError' });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
     it('stops after one refresh when the retried download remains unauthorized', async () => {
       tokenManager.setAccessToken('old-token');
       tokenManager.setRefreshToken('refresh-token');
@@ -883,6 +1003,77 @@ describe('API Client', () => {
       expect(tokenManager.getRefreshToken()).toBe('tenant-b-refresh');
     });
 
+    it('never retries an in-flight account A mutation with account B credentials in the same tenant', async () => {
+      tokenManager.adoptSession('account-a-access', 'account-a-refresh', 'tenant-a');
+      let resolveOriginalRequest: ((response: Response) => void) | undefined;
+
+      vi.mocked(fetch)
+        .mockImplementationOnce(() => new Promise<Response>((resolve) => {
+          resolveOriginalRequest = resolve;
+        }))
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({
+            success: true,
+            access_token: 'account-b-rotated-access',
+            refresh_token: 'account-b-rotated-refresh',
+          }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ data: { transferred: true } }),
+        } as Response);
+
+      const client = new ApiClient('/api');
+      const inFlight = client.post('/v2/wallet/transfer', {
+        recipient_id: 42,
+        amount: 1,
+        idempotency_key: 'account-a-intent',
+      });
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+      tokenManager.adoptSession('account-b-access', 'account-b-refresh', 'tenant-a');
+      resolveOriginalRequest?.({
+        ok: false,
+        status: 401,
+        headers: new Headers(),
+        json: () => Promise.resolve({ error: 'Unauthorized' }),
+      } as Response);
+
+      await expect(inFlight).resolves.toEqual({
+        success: false,
+        code: 'AUTH_CONTEXT_CHANGED',
+      });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(tokenManager.getAccessToken()).toBe('account-b-access');
+      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+    });
+
+    it('discards a successful account A response after a same-tenant account switch', async () => {
+      tokenManager.adoptSession('account-a-access', null, 'tenant-a');
+      let resolveOriginalRequest: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveOriginalRequest = resolve;
+      }));
+
+      const inFlight = api.get('/v2/messages/private');
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+      tokenManager.adoptSession('account-b-access', null, 'tenant-a');
+      resolveOriginalRequest?.({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ data: { private: 'account-a-data' } }),
+      } as Response);
+
+      await expect(inFlight).resolves.toEqual({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
+      expect(tokenManager.getAccessToken()).toBe('account-b-access');
+    });
+
     it('keeps a Web Lock held when refresh exceeds the old 15-second lease', async () => {
       const webLocks = installQueuedWebLocks();
       vi.useFakeTimers();
@@ -994,6 +1185,144 @@ describe('API Client', () => {
         expect(localStorage.getItem('nexus_logout_generation')).not.toBeNull();
       } finally {
         webLocks.restore();
+      }
+    });
+
+    it('does not let a delayed account A logout clear a newly adopted account B session', async () => {
+      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      const accountAGeneration = tokenManager.getSessionGeneration();
+      let resolveLogout: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveLogout = resolve;
+      }));
+
+      const client = new ApiClient('/api');
+      const logout = client.logoutSession('account-a-refresh', accountAGeneration);
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      const accountBGeneration = tokenManager.getSessionGeneration();
+      resolveLogout?.({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ success: true }),
+      } as Response);
+
+      await expect(logout).resolves.toMatchObject({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
+      expect(tokenManager.getAccessToken()).toBe('account-b-access');
+      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+      expect(tokenManager.getTenantId()).toBe('2');
+      expect(tokenManager.getSessionGeneration()).toBe(accountBGeneration);
+    });
+
+    it('cannot delete account B when B is adopted at the exact account A deletion boundary', async () => {
+      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      const accountAGeneration = tokenManager.getSessionGeneration();
+      const accountARecordKey = tokenManager.getSessionRecordKey();
+      let resolveLogout: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveLogout = resolve;
+      }));
+
+      const nativeRemoveItem = Storage.prototype.removeItem;
+      let switched = false;
+      const removeSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (key: string) {
+        if (!switched && key === accountARecordKey) {
+          switched = true;
+          tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+        }
+        nativeRemoveItem.call(this, key);
+      });
+
+      try {
+        const client = new ApiClient('/api');
+        const logout = client.logoutSession('account-a-refresh', accountAGeneration);
+        await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+        resolveLogout?.({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ success: true }),
+        } as Response);
+
+        await expect(logout).resolves.toMatchObject({ success: true });
+        expect(switched).toBe(true);
+        expect(tokenManager.getAccessToken()).toBe('account-b-access');
+        expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+      } finally {
+        removeSpy.mockRestore();
+      }
+    });
+
+    it('does not let an account A refresh overwrite a newly installed account B session', async () => {
+      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      let resolveRefresh: ((response: Response) => void) | undefined;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveRefresh = resolve;
+      }));
+
+      const client = new ApiClient('/api');
+      const refresh = client.refreshSession();
+      await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      resolveRefresh?.({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: true,
+          access_token: 'stale-account-a-access',
+          refresh_token: 'stale-account-a-refresh',
+        }),
+      } as Response);
+
+      await expect(refresh).resolves.toBe('context_changed');
+      expect(tokenManager.getAccessToken()).toBe('account-b-access');
+      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+    });
+
+    it('writes a delayed account A refresh only to A when B adopts at the write boundary', async () => {
+      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      const accountARecordKey = tokenManager.getSessionRecordKey();
+      let resolveRefresh!: (response: Response) => void;
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
+        resolveRefresh = resolve;
+      }));
+
+      const nativeSetItem = Storage.prototype.setItem;
+      let switched = false;
+      const setSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (key: string, value: string) {
+        if (!switched && key === accountARecordKey && value.includes('stale-account-a-access')) {
+          switched = true;
+          tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+        }
+        nativeSetItem.call(this, key, value);
+      });
+
+      try {
+        const client = new ApiClient('/api');
+        const refresh = client.refreshSession();
+        await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+        resolveRefresh({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({
+            success: true,
+            access_token: 'stale-account-a-access',
+            refresh_token: 'stale-account-a-refresh',
+          }),
+        } as Response);
+
+        await expect(refresh).resolves.toBe('context_changed');
+        expect(switched).toBe(true);
+        expect(tokenManager.getAccessToken()).toBe('account-b-access');
+        expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+        expect(localStorage.getItem(accountARecordKey!)).toBeNull();
+      } finally {
+        setSpy.mockRestore();
       }
     });
 

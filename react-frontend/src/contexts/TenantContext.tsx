@@ -367,6 +367,7 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
    */
   const loadTenant = useCallback(async (forceFresh: boolean) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null, notFoundSlug: null }));
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     try {
       // Build endpoint with optional tenant slug
@@ -399,22 +400,30 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
         const responseMatchesRequest = !effectiveTenantSlug
           || (tenant.slug && tenant.slug === effectiveTenantSlug);
 
-        const storedTenantId = tokenManager.getTenantId();
-        if (tenant.id && responseMatchesRequest) {
-          if (storedTenantId && String(storedTenantId) !== String(tenant.id)) {
-            console.warn(
-              `[TenantContext] Overriding stale localStorage tenant_id. ` +
-              `Stored: ${storedTenantId}, URL-resolved: ${tenant.id}`
-            );
-            // Tokens are tenant-bound server-side; a tenant switch needs a fresh login.
-            tokenManager.clearTokens();
-            api.clearInflightRequests();
-          }
-          tokenManager.setTenantId(tenant.id);
-        }
-        if (tenant.slug && responseMatchesRequest) {
-          tokenManager.setTenantSlug(tenant.slug);
-        } else if (tenant.slug && !responseMatchesRequest) {
+        const contextCommitted = await tokenManager.runIfSessionCurrent(
+          sessionGenerationAtStart,
+          () => {
+            const storedTenantId = tokenManager.getTenantId();
+            if (tenant.id && responseMatchesRequest) {
+              if (storedTenantId && String(storedTenantId) !== String(tenant.id)) {
+                console.warn(
+                  `[TenantContext] Overriding stale localStorage tenant_id. ` +
+                  `Stored: ${storedTenantId}, URL-resolved: ${tenant.id}`
+                );
+                // This clear is safe inside the same origin-wide ownership lock.
+                tokenManager.clearTokens();
+                api.clearInflightRequests();
+              }
+              tokenManager.setTenantId(tenant.id);
+            }
+            if (tenant.slug && responseMatchesRequest) {
+              tokenManager.setTenantSlug(tenant.slug);
+            }
+            return true;
+          },
+        );
+        if (!contextCommitted) return;
+        if (tenant.slug && !responseMatchesRequest) {
           console.warn(
             `[TenantContext] Bootstrap response slug "${tenant.slug}" does not match ` +
             `requested slug "${effectiveTenantSlug}" — NOT updating localStorage`

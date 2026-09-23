@@ -263,6 +263,26 @@ describe('SessionTimeoutWarning — opens on event (real timers)', () => {
     expect(document.body.textContent).toContain('30');
   });
 
+  it('does not log out a replacement account when the original session changes during refresh', async () => {
+    vi.mocked(api.refreshSession).mockResolvedValue('context_changed');
+
+    render(<SessionTimeoutWarning />);
+    await act(async () => {
+      dispatchExpiringEvent();
+    });
+    await waitForText('30');
+    const extendButton = Array.from(document.querySelectorAll('button')).find((button) =>
+      button.textContent?.toLowerCase().includes('extend'),
+    );
+
+    await act(async () => {
+      fireEvent.click(extendButton!);
+    });
+
+    await waitFor(() => expect(api.refreshSession).toHaveBeenCalledOnce());
+    expect(logoutSpy).not.toHaveBeenCalled();
+  });
+
   it('closes the modal when the unauthenticated state is detected', async () => {
     render(<SessionTimeoutWarning />);
 

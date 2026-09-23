@@ -10,6 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { TenantProvider, useTenant, useFeature, useModule } from './TenantContext';
+import { tokenManager } from '@/lib/api';
 
 // Mock dependencies
 const mockApiGet = vi.fn();
@@ -21,12 +22,15 @@ vi.mock('@/lib/api', () => ({
     clearInflightRequests: vi.fn(),
   },
   tokenManager: {
+    getSessionGeneration: vi.fn().mockReturnValue('test-session'),
+    runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
     getTenantId: vi.fn().mockReturnValue(null),
     setTenantId: vi.fn(),
     getTenantSlug: vi.fn().mockReturnValue(null),
     setTenantSlug: vi.fn(),
     hasAccessToken: vi.fn().mockReturnValue(false),
     hasRefreshToken: vi.fn().mockReturnValue(false),
+    clearTokens: vi.fn(),
   },
   fetchCsrfToken: (...args: unknown[]) => mockFetchCsrfToken(...args),
 }));
@@ -103,6 +107,33 @@ function TestConsumer() {
 describe('TenantContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
+    vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (expected, commit) => (
+      tokenManager.getSessionGeneration() === expected ? commit() : null
+    ));
+  });
+
+  it('does not clear or retarget session B when bootstrap A resolves late', async () => {
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-a');
+    vi.mocked(tokenManager.getTenantId).mockReturnValue('2');
+    let resolveBootstrap!: (value: { success: true; data: typeof mockTenantConfig }) => void;
+    mockApiGet.mockReturnValueOnce(new Promise((resolve) => { resolveBootstrap = resolve; }));
+
+    render(
+      <TenantProvider>
+        <TestConsumer />
+      </TenantProvider>,
+    );
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalled());
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-b');
+    resolveBootstrap({
+      success: true,
+      data: { ...mockTenantConfig, id: 3, slug: 'replacement-target' },
+    });
+    await Promise.resolve();
+
+    expect(tokenManager.clearTokens).not.toHaveBeenCalled();
+    expect(tokenManager.setTenantId).not.toHaveBeenCalledWith(3);
   });
 
   it('shows loading state initially', async () => {

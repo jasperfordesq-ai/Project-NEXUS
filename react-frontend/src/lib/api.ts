@@ -44,6 +44,14 @@ const REFRESH_TOKEN_KEY = 'nexus_refresh_token';
 const TENANT_ID_KEY = 'nexus_tenant_id';
 const TENANT_SLUG_KEY = 'nexus_tenant_slug';
 const CSRF_TOKEN_KEY = 'nexus_csrf_token';
+const AUTH_SESSION_GENERATION_KEY = 'nexus_auth_session_generation';
+const AUTH_SESSION_RECORD_PREFIX = 'nexus_auth_session:';
+
+interface StoredAuthSession {
+  accessToken: string;
+  refreshToken: string | null;
+  tenantId: string | null;
+}
 
 // Default tenant ID - only used if nothing is in localStorage
 // In production, tenant is detected from subdomain during bootstrap
@@ -54,8 +62,15 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID || null;
 export const SESSION_EXPIRED_EVENT = 'nexus:session_expired';
 /** Why a session ended: plain expiry, or the server now requiring a second factor. */
 export type SessionEndReason = 'expired' | 'mfa_required';
-export interface SessionExpiredDetail { reason: SessionEndReason }
+export interface SessionExpiredDetail {
+  reason: SessionEndReason;
+  sessionGeneration?: string | null;
+}
 export const SESSION_EXPIRING_EVENT = 'nexus:session_expiring';
+export const SESSION_REPLACED_EVENT = 'nexus:session_replaced';
+export interface SessionReplacedDetail {
+  previousSessionGeneration: string | null;
+}
 export const API_ERROR_EVENT = 'nexus:api_error';
 
 function captureTelemetryApiCall(
@@ -254,7 +269,12 @@ export interface ApiError {
   fieldErrors?: Record<string, string[]>;
 }
 
-export type TokenRefreshOutcome = 'refreshed' | 'invalid' | 'transient';
+export type TokenRefreshOutcome = 'refreshed' | 'invalid' | 'transient' | 'context_changed';
+
+interface AuthContextSnapshot {
+  sessionGeneration: string | null;
+  tenantId: string | null;
+}
 
 interface TokenGenerationSnapshot {
   accessToken: string | null;
@@ -262,6 +282,7 @@ interface TokenGenerationSnapshot {
   refreshAttempt: string | null;
   logoutGeneration: string | null;
   tenantId: string | null;
+  sessionGeneration: string | null;
 }
 
 interface PendingRefreshWaiter {
@@ -410,24 +431,195 @@ function authStore(): Storage {
   return isImpersonatedTab() ? sessionStorage : localStorage;
 }
 
-function authStoreSet(key: string, value: string): void {
+function authStoreSet(key: string, value: string): boolean {
   if (isImpersonatedTab()) {
     try {
       sessionStorage.setItem(key, value);
+      return true;
     } catch {
       // Quota/private-mode failures must not throw mid-request.
+      return false;
     }
-    return;
   }
-  safeLocalStorageSet(key, value);
+  return safeLocalStorageSet(key, value);
+}
+
+function createAuthSessionGeneration(): string {
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}:${Math.random().toString(36).slice(2)}`;
+}
+
+function authSessionRecordKey(generation: string): string {
+  return `${AUTH_SESSION_RECORD_PREFIX}${generation}`;
+}
+
+function readAuthSessionRecord(store: Storage, generation: string): StoredAuthSession | null {
+  try {
+    const parsed = JSON.parse(store.getItem(authSessionRecordKey(generation)) ?? 'null') as Partial<StoredAuthSession> | null;
+    return parsed && typeof parsed.accessToken === 'string'
+      ? {
+          accessToken: parsed.accessToken,
+          refreshToken: typeof parsed.refreshToken === 'string' ? parsed.refreshToken : null,
+          tenantId: typeof parsed.tenantId === 'string' ? parsed.tenantId : null,
+        }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeAuthSessionRecord(store: Storage, generation: string, record: StoredAuthSession): boolean {
+  const value = JSON.stringify(record);
+  if (store === sessionStorage) {
+    try {
+      store.setItem(authSessionRecordKey(generation), value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return safeLocalStorageSet(authSessionRecordKey(generation), value);
+}
+
+function withIndexedDbAuthAdoptionLock<T>(commit: () => T): Promise<T | null> {
+  if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const open = indexedDB.open('nexus-auth-coordination-v1', 1);
+    open.onupgradeneeded = () => {
+      if (!open.result.objectStoreNames.contains('locks')) {
+        open.result.createObjectStore('locks');
+      }
+    };
+    open.onerror = () => resolve(null);
+    open.onsuccess = () => {
+      const database = open.result;
+      let result: T | null = null;
+      const transaction = database.transaction('locks', 'readwrite');
+      const request = transaction.objectStore('locks').put(Date.now(), 'session-adoption');
+      request.onsuccess = () => {
+        result = commit();
+      };
+      transaction.oncomplete = () => {
+        database.close();
+        resolve(result);
+      };
+      transaction.onerror = () => {
+        database.close();
+        resolve(null);
+      };
+      transaction.onabort = () => {
+        database.close();
+        resolve(null);
+      };
+    };
+  });
 }
 
 export const tokenManager = {
+  getSessionGeneration(): string | null {
+    return authStore().getItem(AUTH_SESSION_GENERATION_KEY);
+  },
+
+  getSessionRecordKey(): string | null {
+    const generation = this.getSessionGeneration();
+    return generation ? authSessionRecordKey(generation) : null;
+  },
+
+  getGenerationForRecordKey(key: string | null): string | null {
+    return key?.startsWith(AUTH_SESSION_RECORD_PREFIX)
+      ? key.slice(AUTH_SESSION_RECORD_PREFIX.length) || null
+      : null;
+  },
+
+  adoptSession(accessToken: string, refreshToken?: string | null, tenantId?: string | number | null): string | null {
+    const store = authStore();
+    const previousGeneration = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    const previousRecord = previousGeneration ? readAuthSessionRecord(store, previousGeneration) : null;
+    const committedTenantId = tenantId !== undefined && tenantId !== null
+      ? String(tenantId)
+      : previousRecord?.tenantId ?? store.getItem(TENANT_ID_KEY) ?? DEFAULT_TENANT_ID;
+    const generation = createAuthSessionGeneration();
+    if (!writeAuthSessionRecord(store, generation, {
+      accessToken,
+      refreshToken: refreshToken || null,
+      tenantId: committedTenantId,
+    })) return null;
+    // Cross-tab commit marker: written last after the complete record exists.
+    if (!authStoreSet(AUTH_SESSION_GENERATION_KEY, generation)) {
+      store.removeItem(authSessionRecordKey(generation));
+      return null;
+    }
+    // Fixed-name keys are migration-only. Remove them after commit so a failed
+    // adoption cannot damage the previously active legacy session.
+    store.removeItem(TOKEN_KEY);
+    store.removeItem(REFRESH_TOKEN_KEY);
+    if (committedTenantId !== null) authStoreSet(TENANT_ID_KEY, committedTenantId);
+    if (previousGeneration) {
+      store.removeItem(authSessionRecordKey(previousGeneration));
+    }
+    if (previousGeneration !== generation && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent<SessionReplacedDetail>(SESSION_REPLACED_EVENT, {
+        detail: { previousSessionGeneration: previousGeneration },
+      }));
+    }
+    return generation;
+  },
+
+  /**
+   * Serialize credential adoption across the origin and re-check ownership
+   * inside the lock. IndexedDB write transactions provide the compatibility
+   * lock where Web Locks are unavailable; if neither exists, fail closed.
+   */
+  async adoptSessionIfCurrent(
+    expectedGeneration: string | null,
+    accessToken: string,
+    refreshToken?: string | null,
+    tenantId?: string | number | null,
+  ): Promise<string | null> {
+    return this.runIfSessionCurrent(
+      expectedGeneration,
+      () => this.adoptSession(accessToken, refreshToken, tenantId),
+    );
+  },
+
+  async runIfSessionCurrent<T>(
+    expectedGeneration: string | null,
+    commit: () => T,
+  ): Promise<T | null> {
+    const guardedCommit = () => this.getSessionGeneration() === expectedGeneration
+      ? commit()
+      : null;
+    if (typeof navigator !== 'undefined' && typeof navigator.locks?.request === 'function') {
+      return navigator.locks.request(
+        'nexus-auth-session-adoption',
+        { mode: 'exclusive' },
+        guardedCommit,
+      );
+    }
+    return withIndexedDbAuthAdoptionLock(guardedCommit);
+  },
+
+  sessionGenerationIsCurrent(expected: string | null): boolean {
+    return authStore().getItem(AUTH_SESSION_GENERATION_KEY) === expected;
+  },
+
   getAccessToken(): string | null {
-    return authStore().getItem(TOKEN_KEY);
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    return generation
+      ? readAuthSessionRecord(store, generation)?.accessToken ?? null
+      : store.getItem(TOKEN_KEY);
   },
 
   setAccessToken(token: string): void {
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    const record = generation ? readAuthSessionRecord(store, generation) : null;
+    if (generation && record) {
+      writeAuthSessionRecord(store, generation, { ...record, accessToken: token });
+      return;
+    }
     authStoreSet(TOKEN_KEY, token);
   },
 
@@ -435,16 +627,54 @@ export const tokenManager = {
     // An impersonated session is deliberately issued without a refresh token,
     // so this returns null there and a 401 ends the session instead of
     // reviving the admin's.
-    return authStore().getItem(REFRESH_TOKEN_KEY);
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    return generation
+      ? readAuthSessionRecord(store, generation)?.refreshToken ?? null
+      : store.getItem(REFRESH_TOKEN_KEY);
   },
 
   setRefreshToken(token: string): void {
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    const record = generation ? readAuthSessionRecord(store, generation) : null;
+    if (generation && record) {
+      writeAuthSessionRecord(store, generation, { ...record, refreshToken: token });
+      return;
+    }
     authStoreSet(REFRESH_TOKEN_KEY, token);
   },
 
+  updateSessionTokens(
+    expectedGeneration: string | null,
+    accessToken: string,
+    refreshToken?: string | null,
+  ): void {
+    const store = authStore();
+    const record = expectedGeneration ? readAuthSessionRecord(store, expectedGeneration) : null;
+    if (expectedGeneration && record) {
+      // Write only the record captured by the refresh request. A replacement
+      // session may become active after the response check; it has a different
+      // key and therefore cannot receive these stale credentials.
+      writeAuthSessionRecord(store, expectedGeneration, {
+        accessToken,
+        refreshToken: refreshToken || record.refreshToken,
+        tenantId: record.tenantId,
+      });
+      return;
+    }
+    if (expectedGeneration !== null) return;
+    if (refreshToken) authStoreSet(REFRESH_TOKEN_KEY, refreshToken);
+    authStoreSet(TOKEN_KEY, accessToken);
+  },
+
   getTenantId(): string | null {
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    const record = generation ? readAuthSessionRecord(store, generation) : null;
+    if (record?.tenantId) return record.tenantId;
     // First check storage (set during login or tenant bootstrap)
-    const storedTenantId = authStore().getItem(TENANT_ID_KEY);
+    const storedTenantId = store.getItem(TENANT_ID_KEY);
     if (storedTenantId) {
       return storedTenantId;
     }
@@ -453,7 +683,14 @@ export const tokenManager = {
   },
 
   setTenantId(id: string | number): void {
-    authStoreSet(TENANT_ID_KEY, String(id));
+    const value = String(id);
+    const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    const record = generation ? readAuthSessionRecord(store, generation) : null;
+    if (generation && record) {
+      writeAuthSessionRecord(store, generation, { ...record, tenantId: value });
+    }
+    authStoreSet(TENANT_ID_KEY, value);
   },
 
   getTenantSlug(): string | null {
@@ -466,25 +703,47 @@ export const tokenManager = {
 
   clearTokens(): void {
     const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    if (generation) store.removeItem(authSessionRecordKey(generation));
+    store.removeItem(TOKEN_KEY);
+    store.removeItem(REFRESH_TOKEN_KEY);
+  },
+
+  clearSession(expectedGeneration: string | null): void {
+    const store = authStore();
+    if (expectedGeneration) {
+      // This key belongs exclusively to the captured session. No compare then
+      // delete sequence is needed, so another tab can adopt a replacement at
+      // any point without its credentials being touched.
+      store.removeItem(authSessionRecordKey(expectedGeneration));
+      return;
+    }
+    // Migration path for a pre-generation session. A concurrent new adoption
+    // uses its own record, so removing these legacy keys cannot erase it.
     store.removeItem(TOKEN_KEY);
     store.removeItem(REFRESH_TOKEN_KEY);
   },
 
   clearAll(): void {
     const store = authStore();
+    const generation = store.getItem(AUTH_SESSION_GENERATION_KEY);
+    if (generation) store.removeItem(authSessionRecordKey(generation));
     store.removeItem(TOKEN_KEY);
     store.removeItem(REFRESH_TOKEN_KEY);
     store.removeItem(TENANT_ID_KEY);
     store.removeItem(TENANT_SLUG_KEY);
+    // Impersonated sessions use tab-private sessionStorage, so removing their
+    // pointer cannot race with another tab's replacement login.
+    if (isImpersonatedTab()) store.removeItem(AUTH_SESSION_GENERATION_KEY);
     // Preserve trusted device token across logouts — it's meant to persist for 30 days
   },
 
   hasAccessToken(): boolean {
-    return !!authStore().getItem(TOKEN_KEY);
+    return !!this.getAccessToken();
   },
 
   hasRefreshToken(): boolean {
-    return !!authStore().getItem(REFRESH_TOKEN_KEY);
+    return !!this.getRefreshToken();
   },
 
   // CSRF Token management
@@ -541,14 +800,19 @@ export class ApiClient {
         // events belong to the admin's own session and must not steer it.
         if (isImpersonatedTab()) return;
 
-        if (e.key === TOKEN_KEY && this.pendingRefreshWaiters.size > 0) {
+        const currentRecordKey = tokenManager.getSessionRecordKey();
+        if (
+          ((e.key === TOKEN_KEY && tokenManager.getSessionGeneration() === null)
+            || (currentRecordKey !== null && e.key === currentRecordKey))
+          && this.pendingRefreshWaiters.size > 0
+        ) {
           // A value means the other tab refreshed successfully. Removal means
           // it proved that the shared session is invalid.
           const currentTenantId = tokenManager.getTenantId();
           for (const waiter of [...this.pendingRefreshWaiters]) {
             if (currentTenantId !== waiter.tenantIdAtWait) {
               this.resolvePendingRefreshWaiter(waiter, 'transient');
-            } else if (e.newValue) {
+            } else if (e.newValue && tokenManager.getAccessToken() !== waiter.accessTokenAtWait) {
               this.inflightRequests.clear();
               this.resolvePendingRefreshWaiter(waiter, 'refreshed');
             } else {
@@ -618,9 +882,12 @@ export class ApiClient {
     });
   }
 
-  private expireSession(reason: SessionEndReason = 'expired'): void {
-    tokenManager.clearTokens();
-    this.dispatchSessionExpired(reason);
+  private expireSession(
+    reason: SessionEndReason = 'expired',
+    expectedGeneration: string | null = tokenManager.getSessionGeneration(),
+  ): void {
+    tokenManager.clearSession(expectedGeneration);
+    this.dispatchSessionExpired(reason, expectedGeneration);
   }
 
   /**
@@ -642,11 +909,25 @@ export class ApiClient {
     }
   }
 
-  private isLogoutInProgress(): boolean {
+  private isLogoutInProgress(
+    expectedGeneration: string | null = tokenManager.getSessionGeneration(),
+  ): boolean {
     const marker = localStorage.getItem(ApiClient.LOGOUT_IN_PROGRESS_KEY);
     if (!marker) return false;
 
-    const startedAt = Number.parseInt(marker.split(':', 1)[0] ?? '', 10);
+    let startedAt = Number.NaN;
+    let markerGeneration: string | null = null;
+    try {
+      const parsed = JSON.parse(marker) as { startedAt?: unknown; sessionGeneration?: unknown };
+      startedAt = typeof parsed.startedAt === 'number' ? parsed.startedAt : Number.NaN;
+      markerGeneration = typeof parsed.sessionGeneration === 'string' ? parsed.sessionGeneration : null;
+    } catch {
+      // Compatibility with a marker left by the previous bundle.
+      startedAt = Number.parseInt(marker.split(':', 1)[0] ?? '', 10);
+      // The old marker was not session-bound. It can safely suppress only a
+      // legacy, ungenerated session; it must never be attributed to a new B.
+      markerGeneration = null;
+    }
     if (!Number.isFinite(startedAt) || Date.now() - startedAt > ApiClient.LOGOUT_IN_PROGRESS_TTL) {
       // A tab can disappear mid-logout. Expire its marker so that a later,
       // independent login is never permanently prevented from refreshing.
@@ -656,7 +937,7 @@ export class ApiClient {
       return false;
     }
 
-    return true;
+    return markerGeneration === expectedGeneration;
   }
 
   private sessionExpiredResponse<T>(reason: SessionEndReason = 'expired'): ApiResponse<T> {
@@ -682,6 +963,35 @@ export class ApiClient {
     return { success: false, code: 'TENANT_CONTEXT_CHANGED' };
   }
 
+  private authContextChangedResponse<T>(): ApiResponse<T> {
+    return { success: false, code: 'AUTH_CONTEXT_CHANGED' };
+  }
+
+  private captureAuthContext(): AuthContextSnapshot {
+    return {
+      sessionGeneration: tokenManager.getSessionGeneration(),
+      tenantId: tokenManager.getTenantId(),
+    };
+  }
+
+  private authContextIsUnchanged(expected: AuthContextSnapshot): boolean {
+    const current = this.captureAuthContext();
+    return current.sessionGeneration === expected.sessionGeneration
+      && current.tenantId === expected.tenantId;
+  }
+
+  private changedContextResponse<T>(expected: AuthContextSnapshot): ApiResponse<T> {
+    return tokenManager.getTenantId() !== expected.tenantId
+      ? this.tenantContextChangedResponse<T>()
+      : this.authContextChangedResponse<T>();
+  }
+
+  private contextChangedDownloadError(): Error {
+    const error = new Error(i18n.t('session_expired_message', { ns: 'errors' }));
+    error.name = 'AuthContextChangedError';
+    return error;
+  }
+
   /**
    * Clear all in-flight request cache (call on tenant switch)
    */
@@ -693,11 +1003,16 @@ export class ApiClient {
   /**
    * Dispatch session expired event (debounced — fires at most once per 5 seconds)
    */
-  private dispatchSessionExpired(reason: SessionEndReason = 'expired'): void {
+  private dispatchSessionExpired(
+    reason: SessionEndReason = 'expired',
+    sessionGeneration: string | null = tokenManager.getSessionGeneration(),
+  ): void {
     const now = Date.now();
     if (now - lastSessionExpiredTime > 5000) {
       lastSessionExpiredTime = now;
-      window.dispatchEvent(new CustomEvent<SessionExpiredDetail>(SESSION_EXPIRED_EVENT, { detail: { reason } }));
+      window.dispatchEvent(new CustomEvent<SessionExpiredDetail>(SESSION_EXPIRED_EVENT, {
+        detail: { reason, sessionGeneration },
+      }));
     }
   }
 
@@ -721,7 +1036,8 @@ export class ApiClient {
     // rapid tenant switch. Without this, identical URLs share a cache
     // entry across tenants and leak the wrong tenant's data.
     const tenantId = tokenManager.getTenantId() ?? '-';
-    return `${options.method || 'GET'}:${endpoint}#t=${tenantId}`;
+    const sessionGeneration = options.skipAuth ? '-' : tokenManager.getSessionGeneration() ?? '-';
+    return `${options.method || 'GET'}:${endpoint}#t=${tenantId}#s=${sessionGeneration}`;
   }
 
   private getResponseCacheTtl(endpoint: string, options: RequestOptions): number {
@@ -825,7 +1141,8 @@ export class ApiClient {
    */
   private async refreshAccessToken(signal?: AbortSignal): Promise<TokenRefreshOutcome> {
     const logoutGenerationAtStart = localStorage.getItem(ApiClient.LOGOUT_GENERATION_KEY);
-    if (this.isLogoutInProgress()) {
+    const authContextAtStart = this.captureAuthContext();
+    if (this.isLogoutInProgress(authContextAtStart.sessionGeneration)) {
       return 'invalid';
     }
 
@@ -852,12 +1169,19 @@ export class ApiClient {
         signal,
       });
 
+      if (!this.authContextIsUnchanged(authContextAtStart)) {
+        return 'context_changed';
+      }
+
       if (!response.ok) {
         // Credential and account-policy rejections are authoritative. Server,
         // rate-limit, and transport failures are temporary and must not delete
         // an otherwise valid refresh token.
         if (response.status === 409) {
           const conflict = await response.json().catch(() => null);
+          if (!this.authContextIsUnchanged(authContextAtStart)) {
+            return 'context_changed';
+          }
           if (hasApiErrorCode(conflict, 'AUTH_REFRESH_SUPERSEDED')) {
             // Another request already consumed and rotated this token. Preserve
             // the locally stored credentials; cross-tab generation checks stop
@@ -875,7 +1199,8 @@ export class ApiClient {
 
       if (
         signal?.aborted
-        || this.isLogoutInProgress()
+        || !this.authContextIsUnchanged(authContextAtStart)
+        || this.isLogoutInProgress(authContextAtStart.sessionGeneration)
         || localStorage.getItem(ApiClient.LOGOUT_GENERATION_KEY) !== logoutGenerationAtStart
       ) {
         return 'transient';
@@ -885,11 +1210,16 @@ export class ApiClient {
         // Persist the rotated single-use credential before access-token storage
         // events wake another tab. A woken tab must observe the complete token
         // generation, never the new access token paired with the old refresh.
-        if (data.refresh_token) {
-          tokenManager.setRefreshToken(data.refresh_token);
-        }
-        tokenManager.setAccessToken(data.access_token);
+        tokenManager.updateSessionTokens(
+          authContextAtStart.sessionGeneration,
+          data.access_token,
+          data.refresh_token,
+        );
 
+        if (!this.authContextIsUnchanged(authContextAtStart)) {
+          tokenManager.clearSession(authContextAtStart.sessionGeneration);
+          return 'context_changed';
+        }
         return 'refreshed';
       }
 
@@ -906,6 +1236,7 @@ export class ApiClient {
       refreshAttempt: localStorage.getItem(ApiClient.REFRESH_ATTEMPT_KEY),
       logoutGeneration: localStorage.getItem(ApiClient.LOGOUT_GENERATION_KEY),
       tenantId: tokenManager.getTenantId(),
+      sessionGeneration: tokenManager.getSessionGeneration(),
     };
   }
 
@@ -919,6 +1250,9 @@ export class ApiClient {
     const current = this.captureTokenGeneration();
     if (current.logoutGeneration !== generationAtQueueTime.logoutGeneration) {
       return 'invalid';
+    }
+    if (current.sessionGeneration !== generationAtQueueTime.sessionGeneration) {
+      return 'context_changed';
     }
     if (current.tenantId !== generationAtQueueTime.tenantId) {
       // Never refresh or retry work from one tenant with another tenant's
@@ -959,6 +1293,7 @@ export class ApiClient {
       && current.refreshAttempt === generationAtQueueTime.refreshAttempt
       && current.logoutGeneration === generationAtQueueTime.logoutGeneration
       && current.tenantId === generationAtQueueTime.tenantId
+      && current.sessionGeneration === generationAtQueueTime.sessionGeneration
     ) {
       return true;
     }
@@ -1005,7 +1340,7 @@ export class ApiClient {
           } else if (outcome === 'invalid') {
             // Publish the invalid generation before releasing the Web Lock so
             // the next queued owner cannot submit the same rejected token.
-            tokenManager.clearTokens();
+            tokenManager.clearSession(generationAtQueueTime.sessionGeneration);
           }
 
           return outcome;
@@ -1068,8 +1403,9 @@ export class ApiClient {
    * Handle token refresh with request queuing and cross-tab coordination
    */
   private async handleTokenRefresh(): Promise<TokenRefreshOutcome> {
-    if (this.isLogoutInProgress()) {
-      this.expireSession();
+    const generationAtQueueTime = this.captureTokenGeneration();
+    if (this.isLogoutInProgress(generationAtQueueTime.sessionGeneration)) {
+      this.expireSession('expired', generationAtQueueTime.sessionGeneration);
       return 'invalid';
     }
 
@@ -1078,7 +1414,6 @@ export class ApiClient {
       return this.refreshPromise;
     }
 
-    const generationAtQueueTime = this.captureTokenGeneration();
     this.isRefreshing = true;
     this.refreshPromise = this.supportsWebLocks()
       ? this.refreshWithWebLock(generationAtQueueTime)
@@ -1092,7 +1427,7 @@ export class ApiClient {
         // get a fresh response with the new token rather than the cached 401.
         this.inflightRequests.clear();
       } else if (outcome === 'invalid') {
-        this.expireSession();
+        this.expireSession('expired', generationAtQueueTime.sessionGeneration);
       }
 
       return outcome;
@@ -1123,8 +1458,13 @@ export class ApiClient {
    */
   async logoutSession(
     refreshToken: string | null = tokenManager.getRefreshToken(),
+    expectedSessionGeneration: string | null = tokenManager.getSessionGeneration(),
   ): Promise<ApiResponse<unknown>> {
-    const marker = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    const marker = JSON.stringify({
+      startedAt: Date.now(),
+      sessionGeneration: expectedSessionGeneration,
+      nonce: Math.random().toString(36).slice(2),
+    });
     safeLocalStorageSet(ApiClient.LOGOUT_IN_PROGRESS_KEY, marker);
     safeLocalStorageSet(ApiClient.LOGOUT_GENERATION_KEY, marker);
 
@@ -1144,11 +1484,13 @@ export class ApiClient {
       } finally {
         // Clear while the logout marker is still active. An already-running
         // refresh compares the persistent generation before any token write.
-        tokenManager.clearTokens();
-        this.inflightRequests.clear();
-        this.responseCache.clear();
-        for (const waiter of [...this.pendingRefreshWaiters]) {
-          this.resolvePendingRefreshWaiter(waiter, 'invalid');
+        tokenManager.clearSession(expectedSessionGeneration);
+        if (!tokenManager.getAccessToken()) {
+          this.inflightRequests.clear();
+          this.responseCache.clear();
+          for (const waiter of [...this.pendingRefreshWaiters]) {
+            this.resolvePendingRefreshWaiter(waiter, 'invalid');
+          }
         }
       }
 
@@ -1182,15 +1524,12 @@ export class ApiClient {
     endpoint: string,
     options: RequestOptions = {},
     retryOnUnauthorized = true,
-    expectedTenantId?: string | null,
+    expectedAuthContext?: AuthContextSnapshot,
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
-    const currentTenantId = tokenManager.getTenantId();
-    const tenantIdAtRequestStart = expectedTenantId === undefined
-      ? currentTenantId
-      : expectedTenantId;
-    if (currentTenantId !== tenantIdAtRequestStart) {
-      return this.tenantContextChangedResponse<T>();
+    const authContextAtRequestStart = expectedAuthContext ?? this.captureAuthContext();
+    if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+      return this.changedContextResponse<T>(authContextAtRequestStart);
     }
     const headers = this.buildHeaders(options);
     const body = options.body ? JSON.stringify(options.body) : undefined;
@@ -1237,6 +1576,10 @@ export class ApiClient {
       });
       clearTimeout(timeoutId);
 
+      if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+        return this.changedContextResponse<T>(authContextAtRequestStart);
+      }
+
       // Capture API call in Sentry (success or error)
       const duration = performance.now() - startTime;
       captureTelemetryApiCall(method, endpoint, response.status, duration);
@@ -1249,25 +1592,32 @@ export class ApiClient {
 
       // Handle 401 Unauthorized with exactly one token refresh and retry.
       if (response.status === 401 && !options.skipAuth) {
-        if (await this.isTwoFactorRequiredRefusal(response)) {
-          this.expireSession('mfa_required');
+        const isTwoFactorRequired = await this.isTwoFactorRequiredRefusal(response);
+        if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
+        if (isTwoFactorRequired) {
+          this.expireSession('mfa_required', authContextAtRequestStart.sessionGeneration);
           return this.sessionExpiredResponse<T>('mfa_required');
         }
         if (retryOnUnauthorized) {
           // A response from tenant A must never be retried after the user has
           // switched to tenant B; that could replay a state-changing body in
           // the wrong community with B's newly stored credentials.
-          if (tokenManager.getTenantId() !== tenantIdAtRequestStart) {
-            return this.tenantContextChangedResponse<T>();
+          if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+            return this.changedContextResponse<T>(authContextAtRequestStart);
           }
 
           const outcome = await this.handleTokenRefresh();
 
           if (outcome === 'refreshed') {
-            if (tokenManager.getTenantId() !== tenantIdAtRequestStart) {
-              return this.tenantContextChangedResponse<T>();
+            if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+              return this.changedContextResponse<T>(authContextAtRequestStart);
             }
-            return this.request<T>(endpoint, options, false, tenantIdAtRequestStart);
+            return this.request<T>(endpoint, options, false, authContextAtRequestStart);
+          }
+          if (outcome === 'context_changed') {
+            return this.changedContextResponse<T>(authContextAtRequestStart);
           }
           if (outcome === 'transient') {
             return this.refreshUnavailableResponse<T>();
@@ -1277,7 +1627,7 @@ export class ApiClient {
 
         // A freshly-issued access token was explicitly rejected. Do not enter
         // another refresh cycle; deterministically expire the session.
-        this.expireSession();
+        this.expireSession('expired', authContextAtRequestStart.sessionGeneration);
         return this.sessionExpiredResponse<T>();
       }
 
@@ -1285,6 +1635,9 @@ export class ApiClient {
       if (response.status === 503) {
         try {
           const maintenanceData = await response.json() as Record<string, unknown>;
+          if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+            return this.changedContextResponse<T>(authContextAtRequestStart);
+          }
           const errors = Array.isArray(maintenanceData.errors)
             ? maintenanceData.errors as ApiErrorDetail[]
             : undefined;
@@ -1310,11 +1663,17 @@ export class ApiClient {
 
       if (response.ok && options.responseType === 'blob') {
         const data = await response.blob();
+        if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
         return { success: true, data: data as T };
       }
 
       if (response.ok && options.responseType === 'text') {
         const data = await response.text();
+        if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
         return { success: true, data: data as T };
       }
 
@@ -1322,7 +1681,13 @@ export class ApiClient {
       let data;
       try {
         data = await response.json();
+        if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
       } catch {
+        if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
         if (response.ok) {
           return { success: true, data: undefined as T };
         }
@@ -1397,6 +1762,10 @@ export class ApiClient {
       };
     } catch (error) {
       clearTimeout(timeoutId);
+
+      if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+        return this.changedContextResponse<T>(authContextAtRequestStart);
+      }
 
       // Caller cancellation is an expected control-flow outcome and must not
       // be surfaced as a timeout or dispatched to the global error UI.
@@ -1533,7 +1902,12 @@ export class ApiClient {
     endpoint: string,
     options: RequestOptions & { filename?: string },
     retryOnUnauthorized: boolean,
+    expectedAuthContext?: AuthContextSnapshot,
   ): Promise<Blob> {
+    const authContextAtRequestStart = expectedAuthContext ?? this.captureAuthContext();
+    if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+      throw this.contextChangedDownloadError();
+    }
     const url = `${this.baseUrl}${endpoint}`;
     const headers = this.buildHeaders(options);
     // Override Accept to allow any content type from the server
@@ -1547,25 +1921,37 @@ export class ApiClient {
       credentials: 'include',
     });
 
+    if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+      throw this.contextChangedDownloadError();
+    }
+
     // Stale-client gate — same check as request(), gates blob downloads too.
     checkStaleBuild(response);
 
     // Handle 401 with exactly one token refresh and retry.
     if (response.status === 401 && !options.skipAuth) {
-      if (await this.isTwoFactorRequiredRefusal(response)) {
-        this.expireSession('mfa_required');
+      const isTwoFactorRequired = await this.isTwoFactorRequiredRefusal(response);
+      if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+        throw this.contextChangedDownloadError();
+      }
+      if (isTwoFactorRequired) {
+        this.expireSession('mfa_required', authContextAtRequestStart.sessionGeneration);
         throw new Error(i18n.t('session_mfa_required_message', { ns: 'errors' }));
       }
       if (retryOnUnauthorized) {
         const outcome = await this.handleTokenRefresh();
         if (outcome === 'refreshed') {
-          return this.downloadWithRetry(endpoint, options, false);
+          if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+            throw this.contextChangedDownloadError();
+          }
+          return this.downloadWithRetry(endpoint, options, false, authContextAtRequestStart);
         }
+        if (outcome === 'context_changed') throw this.contextChangedDownloadError();
         if (outcome === 'transient') {
           throw new Error(i18n.t('api.download_failed_status', { ns: 'errors', status: response.status }));
         }
       } else {
-        this.expireSession();
+        this.expireSession('expired', authContextAtRequestStart.sessionGeneration);
       }
       throw new Error(i18n.t('session_expired_message', { ns: 'errors' }));
     }
@@ -1575,6 +1961,9 @@ export class ApiClient {
     }
 
     const blob = await response.blob();
+    if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+      throw this.contextChangedDownloadError();
+    }
 
     // Auto-trigger download if filename is provided
     if (options.filename) {
@@ -1618,7 +2007,12 @@ export class ApiClient {
     fieldName: string,
     options: RequestOptions | undefined,
     retryOnUnauthorized: boolean,
+    expectedAuthContext?: AuthContextSnapshot,
   ): Promise<ApiResponse<T>> {
+    const authContextAtRequestStart = expectedAuthContext ?? this.captureAuthContext();
+    if (!options?.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+      return this.changedContextResponse<T>(authContextAtRequestStart);
+    }
     let formData: FormData;
 
     if (files instanceof FormData) {
@@ -1672,6 +2066,7 @@ export class ApiClient {
         options,
         options.onUploadProgress,
         retryOnUnauthorized,
+        authContextAtRequestStart,
       );
     }
 
@@ -1708,29 +2103,47 @@ export class ApiClient {
       });
       clearTimeout(uploadTimeoutId);
 
+      if (!options?.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+        return this.changedContextResponse<T>(authContextAtRequestStart);
+      }
+
       // Stale-client gate — uploads count as API calls too.
       checkStaleBuild(response);
 
       if (response.status === 401 && !options?.skipAuth) {
-        if (await this.isTwoFactorRequiredRefusal(response)) {
-          this.expireSession('mfa_required');
+        const isTwoFactorRequired = await this.isTwoFactorRequiredRefusal(response);
+        if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
+        if (isTwoFactorRequired) {
+          this.expireSession('mfa_required', authContextAtRequestStart.sessionGeneration);
           return this.sessionExpiredResponse<T>('mfa_required');
         }
         if (retryOnUnauthorized) {
           const outcome = await this.handleTokenRefresh();
           if (outcome === 'refreshed') {
-            return this.uploadWithRetry<T>(endpoint, files, fieldName, options, false);
+            if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+              return this.changedContextResponse<T>(authContextAtRequestStart);
+            }
+            return this.uploadWithRetry<T>(endpoint, files, fieldName, options, false, authContextAtRequestStart);
+          }
+          if (outcome === 'context_changed') {
+            return this.changedContextResponse<T>(authContextAtRequestStart);
           }
           if (outcome === 'transient') {
             return this.refreshUnavailableResponse<T>();
           }
         } else {
-          this.expireSession();
+          this.expireSession('expired', authContextAtRequestStart.sessionGeneration);
         }
         return this.sessionExpiredResponse<T>();
       }
 
       const data = await response.json();
+
+      if (!options?.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+        return this.changedContextResponse<T>(authContextAtRequestStart);
+      }
 
       if (response.ok) {
         if (data === null || data === undefined) {
@@ -1761,6 +2174,9 @@ export class ApiClient {
       };
     } catch (error) {
       clearTimeout(uploadTimeoutId);
+      if (!options?.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+        return this.changedContextResponse<T>(authContextAtRequestStart);
+      }
       if (isAbortError(error)) {
         if (callerSignal?.aborted && !uploadTimedOut) {
           return { success: false, error: i18n.t('api.upload_cancelled', { ns: 'errors' }), code: 'UPLOAD_ABORTED' };
@@ -1786,6 +2202,7 @@ export class ApiClient {
     options: RequestOptions | undefined,
     onProgress: (percent: number) => void,
     retryOnUnauthorized: boolean,
+    authContextAtRequestStart: AuthContextSnapshot,
   ): Promise<ApiResponse<T>> {
     return new Promise<ApiResponse<T>>((resolve) => {
       const xhr = new XMLHttpRequest();
@@ -1821,16 +2238,26 @@ export class ApiClient {
       };
 
       xhr.onload = () => {
+        if (!options?.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
+          resolve(this.changedContextResponse<T>(authContextAtRequestStart));
+          return;
+        }
         if (xhr.status === 401 && !options?.skipAuth) {
           if (!retryOnUnauthorized) {
-            this.expireSession();
+            this.expireSession('expired', authContextAtRequestStart.sessionGeneration);
             resolve(this.sessionExpiredResponse<T>());
             return;
           }
 
           void this.handleTokenRefresh().then((outcome) => {
             if (outcome === 'refreshed') {
-              resolve(this.uploadWithRetry<T>(endpoint, formData, 'file', options, false));
+              if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+                resolve(this.changedContextResponse<T>(authContextAtRequestStart));
+                return;
+              }
+              resolve(this.uploadWithRetry<T>(endpoint, formData, 'file', options, false, authContextAtRequestStart));
+            } else if (outcome === 'context_changed') {
+              resolve(this.changedContextResponse<T>(authContextAtRequestStart));
             } else if (outcome === 'transient') {
               resolve(this.refreshUnavailableResponse<T>());
             } else {

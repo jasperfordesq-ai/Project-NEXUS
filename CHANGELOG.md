@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- React sessions now bind requests, retries, sign-in completions, tenant changes, logout, impersonation and offline event check-in data to one immutable account generation. Delayed work from account A can no longer refresh, resend, overwrite, clear or retarget account B after a same-browser account switch (F-020 / E-025 R04).
+
 - Super-panel user moves now lock and recheck the destination community before changing an account. A simultaneous hierarchy, active-state, or hub-capability change can no longer make a previously valid destination stale; hierarchy moves use the same tenant-before-user lock order (F-144).
 
 - The message inbox no longer returns other members' last-active time (F-088).

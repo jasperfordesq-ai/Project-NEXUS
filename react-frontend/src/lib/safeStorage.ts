@@ -41,12 +41,14 @@ const EVICTABLE_KEYS = [
 const CRITICAL_KEYS = new Set([
   'nexus_access_token',
   'nexus_refresh_token',
+  'nexus_auth_session_generation',
   'nexus_tenant_id',
   'nexus_tenant_slug',
   'nexus_theme',
   'nexus_language_user_chosen',
   'userId',
 ]);
+const CRITICAL_PREFIXES = ['nexus_auth_session:'];
 
 function isQuotaError(e: unknown): boolean {
   return e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22);
@@ -69,7 +71,7 @@ function evictAllNonCritical(): void {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key) continue;
-    if (!CRITICAL_KEYS.has(key)) toRemove.push(key);
+    if (!CRITICAL_KEYS.has(key) && !CRITICAL_PREFIXES.some((prefix) => key.startsWith(prefix))) toRemove.push(key);
   }
   toRemove.forEach((k) => localStorage.removeItem(k));
 }

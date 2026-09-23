@@ -31,6 +31,8 @@ vi.mock('@/lib/api', () => ({
   // src/test/failing-suites.baseline.json rather than for any product reason.
   API_BASE: '/api',
   tokenManager: {
+    getSessionGeneration: vi.fn(() => 'test-session'),
+    runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
     getTenantId: vi.fn(),
     clearTokens: vi.fn(),
     setTenantId: vi.fn(),
@@ -98,10 +100,15 @@ vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,      form: ({ children, ...props }: Record<string, unknown>) => <form {...filterMotion(props)}>{children}</form>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { RegisterPage } from './RegisterPage';
+import { tokenManager } from '@/lib/api';
 
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
+    vi.mocked(tokenManager.runIfSessionCurrent).mockImplementation(async (expected, commit) => (
+      tokenManager.getSessionGeneration() === expected ? commit() : null
+    ));
     apiMocks.get.mockImplementation((url: string) => {
       if (url === '/v2/auth/registration-info') {
         return Promise.resolve({
@@ -121,6 +128,28 @@ describe('RegisterPage', () => {
       });
     });
     apiMocks.post.mockResolvedValue({ success: true });
+  });
+
+  it('ignores delayed tenant discovery after session B replaces A', async () => {
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-a');
+    let resolveTenants!: (value: { success: true; data: Array<{ id: number; name: string; slug: string }> }) => void;
+    apiMocks.get.mockImplementation((url: string) => {
+      if (url === '/v2/tenants') {
+        return new Promise((resolve) => { resolveTenants = resolve; });
+      }
+      return Promise.resolve({ success: true, data: { registration_mode: 'open' } });
+    });
+
+    render(<RegisterPage />);
+    await waitFor(() => expect(apiMocks.get).toHaveBeenCalledWith(
+      '/v2/tenants',
+      { skipAuth: true, skipTenant: true },
+    ));
+    vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('account-b');
+    resolveTenants({ success: true, data: [{ id: 2, name: 'Stale Tenant', slug: 'stale' }] });
+    await Promise.resolve();
+
+    expect(tokenManager.setTenantId).not.toHaveBeenCalled();
   });
 
   it('renders without crashing', async () => {

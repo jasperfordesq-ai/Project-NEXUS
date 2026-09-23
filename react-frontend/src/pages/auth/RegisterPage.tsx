@@ -191,12 +191,11 @@ export function RegisterPage() {
   useEffect(() => {
     let cancelled = false;
     const fetchTenants = async () => {
+      const sessionGenerationAtStart = tokenManager.getSessionGeneration();
       try {
         const response = await api.get<Tenant[]>('/v2/tenants', { skipAuth: true, skipTenant: true });
-        if (cancelled) return;
+        if (cancelled || tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return;
         if (response.success && response.data) {
-          setTenants(response.data);
-
           // Priority: TenantContext (custom domain) > URL slug > ?tenant= > auto-select single
           const tenantHint = tenantSlug || searchParams.get('tenant');
           const contextMatch = tenant?.id
@@ -207,16 +206,17 @@ export function RegisterPage() {
             : null;
 
           const match = contextMatch || hintMatch;
-          if (match) {
-            setSelectedTenantId(String(match.id));
-            tokenManager.setTenantId(match.id);
-          } else if (response.data.length === 1) {
-            const firstTenant = response.data[0];
-            if (firstTenant) {
-              setSelectedTenantId(String(firstTenant.id));
-              tokenManager.setTenantId(firstTenant.id);
-            }
-          }
+          const selected = match ?? (response.data.length === 1 ? response.data[0] : undefined);
+          const committed = await tokenManager.runIfSessionCurrent(
+            sessionGenerationAtStart,
+            () => {
+              if (selected) tokenManager.setTenantId(selected.id);
+              return true;
+            },
+          );
+          if (!committed || cancelled) return;
+          setTenants(response.data);
+          if (selected) setSelectedTenantId(String(selected.id));
         }
       } catch (err) {
         if (cancelled) return;
@@ -275,7 +275,11 @@ export function RegisterPage() {
     const tenantId = Array.from(selectedKeys)[0] || '';
     setSelectedTenantId(tenantId);
     if (tenantId) {
-      tokenManager.setTenantId(tenantId);
+      const expectedGeneration = tokenManager.getSessionGeneration();
+      void tokenManager.runIfSessionCurrent(expectedGeneration, () => {
+        tokenManager.setTenantId(tenantId);
+        return true;
+      });
     }
   }, []);
 

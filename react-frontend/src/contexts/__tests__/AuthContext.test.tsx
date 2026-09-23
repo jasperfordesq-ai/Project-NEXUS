@@ -76,6 +76,13 @@ const { mockApiGet, mockApiPost, mockApiLogoutSession, mockTokenManager } = vi.h
   const mockApiPost = vi.fn();
   const mockApiLogoutSession = vi.fn();
   const mockTokenManager = {
+    adoptSession: vi.fn(() => 'test-session'),
+    adoptSessionIfCurrent: vi.fn(() => Promise.resolve('test-session')),
+    runIfSessionCurrent: vi.fn(async (_expected: string | null, commit: () => unknown) => commit()),
+    getSessionGeneration: vi.fn(() => 'test-session'),
+    getSessionRecordKey: vi.fn(() => 'nexus_auth_session:test-session'),
+    getGenerationForRecordKey: vi.fn((key: string | null) => key?.split(':').pop() ?? null),
+    sessionGenerationIsCurrent: vi.fn(() => true),
     getAccessToken: vi.fn(),
     setAccessToken: vi.fn(),
     getRefreshToken: vi.fn(),
@@ -83,6 +90,7 @@ const { mockApiGet, mockApiPost, mockApiLogoutSession, mockTokenManager } = vi.h
     getTenantId: vi.fn(),
     setTenantId: vi.fn(),
     clearTokens: vi.fn(),
+    clearSession: vi.fn(),
     clearAll: vi.fn(),
     hasAccessToken: vi.fn(),
     hasRefreshToken: vi.fn(),
@@ -98,6 +106,7 @@ vi.mock('@/lib/api', () => ({
   },
   tokenManager: mockTokenManager,
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
+  SESSION_REPLACED_EVENT: 'nexus:session_replaced',
 }));
 
 import { AuthProvider, useAuth, useAuthOptional } from '../AuthContext';
@@ -142,6 +151,9 @@ describe('AuthContext', () => {
     mockTokenManager.getAccessToken.mockReturnValue(null);
     mockTokenManager.getRefreshToken.mockReturnValue(null);
     mockTokenManager.getTenantId.mockReturnValue(null);
+    mockTokenManager.getSessionGeneration.mockReturnValue('test-session');
+    mockTokenManager.adoptSessionIfCurrent.mockResolvedValue('test-session');
+    mockTokenManager.runIfSessionCurrent.mockImplementation(async (_expected, commit) => commit());
     // Default API responses
     mockApiGet.mockResolvedValue({ success: false, error: 'Not authenticated' });
     mockApiPost.mockResolvedValue({ success: true });
@@ -277,7 +289,7 @@ describe('AuthContext', () => {
 
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
-      expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+      expect(mockTokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
 
     it.each([
@@ -377,8 +389,9 @@ describe('AuthContext', () => {
       expect(loginResult.requires2FA).toBe(false);
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user).toMatchObject({ id: 1 });
-      expect(mockTokenManager.setAccessToken).toHaveBeenCalledWith('access-abc');
-      expect(mockTokenManager.setRefreshToken).toHaveBeenCalledWith('refresh-xyz');
+      expect(mockTokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
+        'test-session', 'access-abc', 'refresh-xyz', 2,
+      );
     });
 
     it('returns requires2FA true and sets status to requires_2fa when server demands 2FA', async () => {
@@ -446,6 +459,34 @@ describe('AuthContext', () => {
       // Resolve so the hook can clean up
       resolveLogin({ success: false, error: 'Server error' });
     });
+
+    it('discards account A when account B replaces it before a delayed login succeeds', async () => {
+      let resolveLogin!: (value: unknown) => void;
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-a');
+      mockApiPost.mockReturnValueOnce(new Promise((resolve) => { resolveLogin = resolve; }));
+
+      const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      let pending!: ReturnType<typeof result.current.login>;
+      act(() => {
+        pending = result.current.login({ email: 'account-a@example.com', password: 'secret' });
+      });
+      await waitFor(() => expect(mockApiPost).toHaveBeenCalledOnce());
+
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-b');
+      let loginResult!: Awaited<typeof pending>;
+      await act(async () => {
+        resolveLogin({
+          success: true,
+          data: { access_token: 'account-a-access', refresh_token: 'account-a-refresh', user: mockUser },
+        });
+        loginResult = await pending;
+      });
+
+      expect(loginResult).toMatchObject({ success: false, errorCode: 'AUTH_CONTEXT_CHANGED' });
+      expect(mockTokenManager.adoptSessionIfCurrent).not.toHaveBeenCalled();
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -483,7 +524,7 @@ describe('AuthContext', () => {
         await result.current.logout();
       });
 
-      expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+      expect(mockTokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
 
     it('still clears local state even if server-side logout request fails', async () => {
@@ -502,7 +543,7 @@ describe('AuthContext', () => {
       // Local state still cleared
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
-      expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+      expect(mockTokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
 
     describe('browser push subscription (F-108)', () => {
@@ -549,7 +590,7 @@ describe('AuthContext', () => {
         expect(calls.indexOf('post:/push/unsubscribe')).toBeGreaterThan(-1);
         expect(calls.indexOf('post:/push/unsubscribe')).toBeLessThan(calls.indexOf('logout-session'));
         expect(result.current.isAuthenticated).toBe(false);
-        expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+        expect(mockTokenManager.clearSession).toHaveBeenCalledWith('test-session');
       });
 
       it('still signs out when push cleanup fails', async () => {
@@ -567,7 +608,7 @@ describe('AuthContext', () => {
 
         expect(mockApiLogoutSession).toHaveBeenCalled();
         expect(result.current.isAuthenticated).toBe(false);
-        expect(mockTokenManager.clearTokens).toHaveBeenCalled();
+        expect(mockTokenManager.clearSession).toHaveBeenCalledWith('test-session');
       });
     });
   });
@@ -790,6 +831,32 @@ describe('AuthContext', () => {
       expect(result.current.status).toBe('idle');
       expect(result.current.user).toBeNull();
     });
+
+    it('does not clear account B when account A validation finishes invalid after replacement', async () => {
+      mockTokenManager.hasAccessToken.mockReturnValue(true);
+      mockTokenManager.getAccessToken.mockReturnValue('account-a-access');
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-a');
+      mockApiGet.mockResolvedValueOnce({ success: true, data: mockUser });
+
+      const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
+      await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+      let resolveValidation!: (value: { success: false; code: string }) => void;
+      mockApiGet.mockImplementationOnce(() => new Promise((resolve) => { resolveValidation = resolve; }));
+      let pending!: Promise<void>;
+      act(() => { pending = result.current.refreshUser(); });
+      await waitFor(() => expect(mockApiGet).toHaveBeenCalledTimes(2));
+
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-b');
+      mockTokenManager.getAccessToken.mockReturnValue('account-b-access');
+      await act(async () => {
+        resolveValidation({ success: false, code: 'AUTH_TOKEN_INVALID' });
+        await pending;
+      });
+
+      expect(mockTokenManager.clearSession).not.toHaveBeenCalledWith('account-b');
+      expect(result.current.user?.id).toBe(mockUser.id);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -826,7 +893,43 @@ describe('AuthContext', () => {
 
       expect(loginResult.success).toBe(true);
       expect(result.current.isAuthenticated).toBe(true);
-      expect(mockTokenManager.setAccessToken).toHaveBeenCalledWith('bio-access');
+      expect(mockTokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
+        'test-session', 'bio-access', 'bio-refresh',
+      );
+    });
+
+    it('does not install account A after account B replaces it during profile hydration', async () => {
+      let resolveProfile!: (value: { success: false; code: string }) => void;
+      mockAuthenticateWithBiometric.mockResolvedValue({
+        success: true,
+        data: {
+          user: { id: 1, name: 'Account A' },
+          access_token: 'account-a-access',
+          refresh_token: 'account-a-refresh',
+          expires_in: 3600,
+        },
+      });
+      mockApiGet.mockImplementationOnce(() => new Promise((resolve) => { resolveProfile = resolve; }));
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-a');
+      mockTokenManager.adoptSessionIfCurrent.mockResolvedValue('account-a');
+
+      const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      let pending!: ReturnType<typeof result.current.loginWithBiometric>;
+      act(() => {
+        pending = result.current.loginWithBiometric();
+      });
+      await waitFor(() => expect(mockApiGet).toHaveBeenCalledOnce());
+
+      mockTokenManager.getSessionGeneration.mockReturnValue('account-b');
+      await act(async () => {
+        resolveProfile({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
+        await pending;
+      });
+
+      expect(result.current.user?.name).not.toBe('Account A');
+      expect(mockTokenManager.clearSession).not.toHaveBeenCalledWith('account-b');
     });
 
     it('sets status to idle silently when user cancels biometric prompt', async () => {

@@ -134,6 +134,7 @@ export function LoginPage() {
   const biometricAbortRef = useRef<AbortController | null>(null);
   const biometricInFlightRef = useRef(false);
   const mountedRef = useRef(true);
+  const mountedSessionGenerationRef = useRef(tokenManager.getSessionGeneration());
   const selectedTenantIdRef = useRef(selectedTenantId);
   selectedTenantIdRef.current = selectedTenantId;
   const selectedTenant = tenants.find((candidate) => String(candidate.id) === selectedTenantId);
@@ -149,7 +150,10 @@ export function LoginPage() {
 
   // Clear stale auth tokens on mount — login page should always start clean
   useEffect(() => {
-    tokenManager.clearTokens();
+    void tokenManager.runIfSessionCurrent(mountedSessionGenerationRef.current, () => {
+      tokenManager.clearTokens();
+      return true;
+    });
   }, []);
 
   // Start conditional mediation (passkey autofill) after the user focuses the
@@ -184,15 +188,30 @@ export function LoginPage() {
       }
 
       // Bind every request and eventual token write to this immutable tenant.
-      tokenManager.setTenantId(tenantId);
+      const sessionGenerationAtStart = tokenManager.getSessionGeneration();
+      const tenantCommitted = await tokenManager.runIfSessionCurrent(
+        sessionGenerationAtStart,
+        () => {
+          tokenManager.setTenantId(tenantId);
+          return true;
+        },
+      );
+      if (!tenantCommitted) return;
 
       const result = await startConditionalAuthentication(controller.signal);
       if (controller.signal.aborted || selectedTenantIdRef.current !== tenantId) return;
+      if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return;
       if (result?.success && result.data) {
         // Reload so AuthContext bootstraps the authenticated session normally.
-        tokenManager.setAccessToken(result.data.access_token);
-        tokenManager.setRefreshToken(result.data.refresh_token);
-        window.location.href = from;
+        const generation = await tokenManager.adoptSessionIfCurrent(
+          sessionGenerationAtStart,
+          result.data.access_token,
+          result.data.refresh_token,
+          tenantId,
+        );
+        if (generation && tokenManager.getSessionGeneration() === generation) {
+          window.location.href = from;
+        }
       }
     } catch (err) {
       if (!controller.signal.aborted) {
@@ -237,7 +256,11 @@ export function LoginPage() {
   useEffect(() => {
     if (tenantResolvedFromUrl && tenant) {
       setSelectedTenantId(String(tenant.id));
-      tokenManager.setTenantId(tenant.id);
+      const expectedGeneration = tokenManager.getSessionGeneration();
+      void tokenManager.runIfSessionCurrent(expectedGeneration, () => {
+        tokenManager.setTenantId(tenant.id);
+        return true;
+      });
     }
   }, [tenantResolvedFromUrl, tenant]);
 
@@ -250,29 +273,29 @@ export function LoginPage() {
     let cancelled = false;
     const fetchTenants = async () => {
       setTenantsLoading(true);
+      const sessionGenerationAtStart = tokenManager.getSessionGeneration();
       try {
         // Fetch ALL tenants including tenant 1 for super admin access
         const response = await api.get<Tenant[]>('/v2/tenants?include_master=1', { skipAuth: true, skipTenant: true });
-        if (cancelled) return;
+        if (cancelled || tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return;
         if (response.success && response.data) {
-          setTenants(response.data);
-
           // Pre-select from ?tenant= query param
           const tenantHint = searchParams.get('tenant');
           const hintMatch = tenantHint
             ? response.data.find((t) => t.slug === tenantHint)
             : null;
 
-          if (hintMatch) {
-            setSelectedTenantId(String(hintMatch.id));
-            tokenManager.setTenantId(hintMatch.id);
-          } else if (response.data.length === 1) {
-            const firstTenant = response.data[0];
-            if (firstTenant) {
-              setSelectedTenantId(String(firstTenant.id));
-              tokenManager.setTenantId(firstTenant.id);
-            }
-          }
+          const selected = hintMatch ?? (response.data.length === 1 ? response.data[0] : undefined);
+          const committed = await tokenManager.runIfSessionCurrent(
+            sessionGenerationAtStart,
+            () => {
+              if (selected) tokenManager.setTenantId(selected.id);
+              return true;
+            },
+          );
+          if (!committed || cancelled) return;
+          setTenants(response.data);
+          if (selected) setSelectedTenantId(String(selected.id));
         }
       } catch (err) {
         if (!cancelled) logError('[LoginPage] Failed to fetch tenants', err);
@@ -294,7 +317,11 @@ export function LoginPage() {
     conditionalStartedRef.current = false;
     setSelectedTenantId(tenantId);
     if (tenantId) {
-      tokenManager.setTenantId(tenantId);
+      const expectedGeneration = tokenManager.getSessionGeneration();
+      void tokenManager.runIfSessionCurrent(expectedGeneration, () => {
+        tokenManager.setTenantId(tenantId);
+        return true;
+      });
     }
   };
 
@@ -324,8 +351,13 @@ export function LoginPage() {
     setLoginErrorCode(undefined);
     setLoginRetryAfter(null);
     setResendVerificationSent(false);
-    tokenManager.clearTokens();
-    tokenManager.setTenantId(selectedTenantId);
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
+    const prepared = await tokenManager.runIfSessionCurrent(sessionGenerationAtStart, () => {
+      tokenManager.clearTokens();
+      tokenManager.setTenantId(selectedTenantId);
+      return true;
+    });
+    if (!prepared) return;
 
     const result = await login({ email, password });
     // Admin without 2FA — route directly into the setup flow.
@@ -367,8 +399,17 @@ export function LoginPage() {
     conditionalStartedRef.current = false;
 
     if (mountedRef.current) setBiometricLoading(true);
-    tokenManager.clearTokens();
-    tokenManager.setTenantId(tenantId);
+    const sessionGenerationAtStart = tokenManager.getSessionGeneration();
+    const prepared = await tokenManager.runIfSessionCurrent(sessionGenerationAtStart, () => {
+      tokenManager.clearTokens();
+      tokenManager.setTenantId(tenantId);
+      return true;
+    });
+    if (!prepared) {
+      biometricInFlightRef.current = false;
+      if (mountedRef.current) setBiometricLoading(false);
+      return;
+    }
 
     try {
       const result = await loginWithBiometric(undefined, controller.signal);
