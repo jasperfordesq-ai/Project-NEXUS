@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- On a member's profile in the mobile app, the action buttons (Connect, Send credits, Send message, Say thanks) now sit two to a row, so their labels are no longer cut off.
+
+- The Volunteering page in the mobile app shows a dash instead of "0" for opportunities, applications and verified hours until they have loaded.
+
 - When the phone loses its connection and gets it back, screens in the mobile app that could not load now load again by themselves instead of waiting for you to press Retry. While a list cannot load, the Listings, Events and Search pages no longer show a false "0 results".
 
 - The Organisations page in the mobile app no longer shows "0 partners, 0 volunteers" while the list is still loading or has failed to load.

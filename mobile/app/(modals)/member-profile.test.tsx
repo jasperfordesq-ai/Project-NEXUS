@@ -319,7 +319,7 @@ jest.mock('@/lib/ui/rootInsets', () => ({
   setRootBottomInset: jest.fn(),
 }));
 
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { endorseSkill } from '@/lib/api/endorsements';
 import { sendAppreciation } from '@/lib/api/appreciations';
 import MemberProfileScreen from './member-profile';
@@ -426,6 +426,17 @@ describe('MemberProfileScreen', () => {
 
     const footer = StyleSheet.flatten(getByTestId('member-profile-footer').props.style);
     expect(footer.paddingBottom).toBe(48 + 12);
+  });
+
+  it('lays the action bar out two per row so labels are not truncated, and reserves its measured height', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+    const view = render(<MemberProfileScreen />);
+    const footer = view.getByTestId('member-profile-footer');
+    const halves = footer.findAll((node) => StyleSheet.flatten(node.props?.style)?.flexBasis === '47%', { deep: true });
+    expect(halves.length).toBeGreaterThanOrEqual(2);
+    act(() => { footer.props.onLayout({ nativeEvent: { layout: { height: 180, width: 400, x: 0, y: 0 } } }); });
+    const scroll = view.UNSAFE_getAllByType(ScrollView)[0];
+    expect(StyleSheet.flatten(scroll.props.contentContainerStyle).paddingBottom).toBe(196);
   });
 
   it('renders a loading spinner when the API is loading', () => {

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import * as ReactNative from 'react-native';
-import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react-native';
 
 // --- Mocks ---
 
@@ -767,6 +767,16 @@ describe('VolunteeringScreen', () => {
     const { getByText } = render(<VolunteeringScreen />);
     expect(getByText('Garden Helper')).toBeTruthy();
     expect(getByText('Green Spaces')).toBeTruthy();
+  });
+
+  it('shows a dash, not a false 0, for counts that have not loaded', () => {
+    mockUsePaginatedApi.mockReturnValueOnce({ items: [], response: null, isLoading: true, isLoadingMore: false, error: null, hasMore: false, loadMore: jest.fn(), refresh: jest.fn() });
+    const loading = render(<VolunteeringScreen />);
+    expect(within(loading.getByTestId('volunteering-stat-opportunities')).getByText('—')).toBeTruthy();
+    loading.unmount();
+    mockUsePaginatedApi.mockReturnValueOnce({ items: [mockOpportunity], response: { data: [mockOpportunity] }, isLoading: false, isLoadingMore: false, error: null, hasMore: false, loadMore: jest.fn(), refresh: jest.fn() });
+    const loaded = render(<VolunteeringScreen />);
+    expect(within(loaded.getByTestId('volunteering-stat-opportunities')).getByText('1')).toBeTruthy();
   });
 
   it('does not render empty state when loading', () => {

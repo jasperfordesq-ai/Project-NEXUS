@@ -150,6 +150,7 @@ function MemberProfileScreenInner() {
   const { hasFeature, hasModule, tenant } = useTenant();
   const theme = useTheme();
   const bottomInset = useBottomInset();
+  const [footerHeight, setFooterHeight] = useState(0);
   const { user } = useAuth();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -612,7 +613,7 @@ function MemberProfileScreenInner() {
       <ScrollView
         style={{ flex: 1, backgroundColor: theme.bg }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 96 + bottomInset }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: Math.max(96 + bottomInset, footerHeight + 16) }}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => void refresh()} tintColor={primary} colors={[primary]} />}
       >
         <View className="px-4">
@@ -874,40 +875,42 @@ function MemberProfileScreenInner() {
       */}
       <Surface
         testID="member-profile-footer"
+        onLayout={(event) => setFooterHeight(event.nativeEvent.layout.height)}
         variant="default"
         className="absolute bottom-0 left-0 right-0 border-t border-border px-3 pt-3"
         style={{ paddingBottom: Math.max(12, bottomInset + 12) }}
       >
-        <View className="flex-row items-center gap-2">
+        {/* Two per row: four actions in one row truncated to "Send c…" / "Say th…" at normal text size. */}
+        <View className="flex-row flex-wrap items-center gap-2">
           {isOwnProfile ? (
             <HeroButton
               className="min-w-0 flex-1"
               variant="primary"
-              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }}
               accessibilityLabel={t('profile.editProfile')}
               onPress={openEditProfile}
             >
               <AccentIcon name="create-outline" size={16} />
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.editProfile')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.editProfile')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {!isOwnProfile && connStatusFailed ? (
-            <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8 }} isDisabled={connLoading} accessibilityLabel={t('profile.connectionStatusUnavailable')} onPress={() => void loadConnectionStatus()}>
+            <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }} isDisabled={connLoading} accessibilityLabel={t('profile.connectionStatusUnavailable')} onPress={() => void loadConnectionStatus()}>
               <Ionicons name="refresh-outline" size={16} color={primary} />
               <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.connectionStatusUnavailable')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {!isOwnProfile && !connStatusFailed && connStatus === 'none' ? (
-            <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8 }} isDisabled={connActionLoading} accessibilityLabel={t('profile.connect')} onPress={() => void handleConnect()}>
+            <HeroButton className="min-w-0 flex-1" variant="secondary" style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }} isDisabled={connActionLoading} accessibilityLabel={t('profile.connect')} onPress={() => void handleConnect()}>
               {connActionLoading ? <Spinner size="sm" /> : <Ionicons name="person-add-outline" size={16} color={primary} />}
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.connect')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.connect')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {isFederatedProfile && member.transactions_enabled ? (
             <HeroButton
               className="min-w-0 flex-1"
               variant="secondary"
-              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }}
               accessibilityLabel={t('profile.sendCredits')}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -915,14 +918,14 @@ function MemberProfileScreenInner() {
               }}
             >
               <Ionicons name="wallet-outline" size={16} color={primary} />
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendCredits')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendCredits')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {sameTenantCanSendCredits ? (
             <HeroButton
               className="min-w-0 flex-1"
               variant="secondary"
-              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }}
               accessibilityLabel={t('profile.sendCredits')}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -933,14 +936,14 @@ function MemberProfileScreenInner() {
               }}
             >
               <Ionicons name="wallet-outline" size={16} color={primary} />
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendCredits')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendCredits')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {!isOwnProfile ? (
             <HeroButton
               className="min-w-0 flex-1"
               variant="primary"
-              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }}
               accessibilityLabel={t('profile.sendMessage')}
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -955,7 +958,7 @@ function MemberProfileScreenInner() {
               }}
             >
               <AccentIcon name="chatbubble-outline" size={16} />
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendMessage')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sendMessage')}</HeroButton.Label>
             </HeroButton>
           ) : null}
           {/*
@@ -968,7 +971,7 @@ function MemberProfileScreenInner() {
             <HeroButton
               className="min-w-0 flex-1"
               variant="secondary"
-              style={{ minHeight: 48, paddingHorizontal: 8 }}
+              style={{ minHeight: 48, paddingHorizontal: 8, flexBasis: '47%' }}
               accessibilityLabel={t('profile.sayThanks')}
               testID="profile-say-thanks"
               onPress={() => {
@@ -977,7 +980,7 @@ function MemberProfileScreenInner() {
               }}
             >
               <Ionicons name="heart-outline" size={16} color={primary} />
-              <HeroButton.Label numberOfLines={1} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sayThanks')}</HeroButton.Label>
+              <HeroButton.Label numberOfLines={2} style={{ fontSize: 13, lineHeight: 16 }}>{t('profile.sayThanks')}</HeroButton.Label>
             </HeroButton>
           ) : null}
         </View>

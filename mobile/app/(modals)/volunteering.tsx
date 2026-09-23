@@ -352,11 +352,13 @@ function HeroHeader({
   verifiedHours,
   canPostOpportunity,
 }: {
-  activeCount: number;
-  applicationsCount: number;
-  verifiedHours: number;
+  // null = not loaded (still loading, failed, or signed out): shown as a dash, never as 0.
+  activeCount: number | null;
+  applicationsCount: number | null;
+  verifiedHours: number | null;
   canPostOpportunity: boolean;
 }) {
+  const shown = (value: number | null) => (value === null ? '—' : String(value));
   const { t } = useTranslation('volunteering');
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -385,9 +387,9 @@ function HeroHeader({
         </View>
 
         <View testID="volunteering-hero-stats" className="flex-row flex-wrap gap-3">
-          <StatTile testID="volunteering-stat-opportunities" label={t('stats.opportunities')} value={String(activeCount)} tone="#e11d48" icon="briefcase-outline" />
-          <StatTile testID="volunteering-stat-applications" label={t('stats.applications')} value={String(applicationsCount)} tone={primary} icon="send-outline" />
-          <StatTile testID="volunteering-stat-hours" label={t('stats.hours')} value={String(verifiedHours)} tone="#22c55e" icon="time-outline" />
+          <StatTile testID="volunteering-stat-opportunities" label={t('stats.opportunities')} value={shown(activeCount)} tone="#e11d48" icon="briefcase-outline" />
+          <StatTile testID="volunteering-stat-applications" label={t('stats.applications')} value={shown(applicationsCount)} tone={primary} icon="send-outline" />
+          <StatTile testID="volunteering-stat-hours" label={t('stats.hours')} value={shown(verifiedHours)} tone="#22c55e" icon="time-outline" />
         </View>
 
         <View className="flex-row flex-wrap gap-2">
@@ -2553,9 +2555,9 @@ function VolunteeringScreenInner() {
         ListHeaderComponent={
           <View className="gap-4 pt-3">
             <HeroHeader
-              activeCount={opportunities.length}
-              applicationsCount={applications.length}
-              verifiedHours={verifiedHours}
+              activeCount={opportunitiesApi.response ? opportunities.length : null}
+              applicationsCount={applicationsApi.response ? applications.length : null}
+              verifiedHours={summary ? verifiedHours : null}
               canPostOpportunity={canPostAnyOpportunity(organisations)}
             />
 
