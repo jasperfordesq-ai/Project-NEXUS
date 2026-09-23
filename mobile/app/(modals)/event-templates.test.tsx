@@ -239,6 +239,38 @@ describe('EventTemplatesScreen', () => {
       });
     });
   });
+  it('retries a creation whose response was lost with the SAME request key, so the server cannot make a second draft', async () => {
+    const { ApiResponseError } = jest.requireActual('@/lib/api/client');
+    mockMaterialize.mockRejectedValueOnce(new ApiResponseError(0, 'Network request failed'));
+    const screen = render(<EventTemplatesScreen />);
+    fireEvent.press(await screen.findByText('Use template'));
+    fireEvent.changeText(screen.getByDisplayValue('Reusable event'), 'Fresh mobile draft');
+    fireEvent.changeText(screen.getByTestId('event-template-start'), '2030-08-01T10:00');
+    fireEvent.changeText(screen.getByTestId('event-template-end'), '2030-08-01T12:00');
+    fireEvent.press(screen.getByText('Review draft'));
+    fireEvent.press(await screen.findByText('Create draft'));
+    await waitFor(() => expect(mockMaterialize).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText('Create draft')).toBeTruthy());
+    fireEvent.press(screen.getByText('Create draft'));
+    await waitFor(() => expect(mockMaterialize).toHaveBeenCalledTimes(2));
+    expect(mockMaterialize.mock.calls[1][2]).toBe(mockMaterialize.mock.calls[0][2]);
+  });
+
+  it('sends one request when Create draft is pressed twice in the same frame', async () => {
+    let finish!: (value: unknown) => void;
+    mockMaterialize.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const screen = render(<EventTemplatesScreen />);
+    fireEvent.press(await screen.findByText('Use template'));
+    fireEvent.changeText(screen.getByDisplayValue('Reusable event'), 'Fresh mobile draft');
+    fireEvent.changeText(screen.getByTestId('event-template-start'), '2030-08-01T10:00');
+    fireEvent.changeText(screen.getByTestId('event-template-end'), '2030-08-01T12:00');
+    fireEvent.press(screen.getByText('Review draft'));
+    const create = await screen.findByText('Create draft');
+    act(() => { fireEvent.press(create); fireEvent.press(create); });
+    expect(mockMaterialize).toHaveBeenCalledTimes(1);
+    await act(async () => { finish({ created_event: { id: 21 } }); });
+  });
+
   /**
    * 🔴 S4-12. The suggested start was built from `toISOString()` — UTC — and then labelled
    * with the template's zone, so it read an hour (or more) off. It must be tomorrow on the

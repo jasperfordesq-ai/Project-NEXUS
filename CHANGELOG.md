@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- In the mobile app, withdrawing an idea and then leaving the screen before it finished no longer pulls you back to the ideas list from wherever you had gone.
+
+- Creating an event from a template in the mobile app can no longer make two draft events: a retry after a lost connection reuses the original request, and a double tap sends only one.
+
 - The automated test data for the mobile app now creates its sample event the same way the app does, so the event safety, registration and check-in sections open for it instead of showing "Registration workspace could not be loaded". Real events were not affected.
 
 - Native agenda conflicts now persist their rejected state reliably on the first Android attempt. Recovery snapshots the validated refusal code before queued storage work, preserving the saved change for review instead of leaving it pending after a runtime error.

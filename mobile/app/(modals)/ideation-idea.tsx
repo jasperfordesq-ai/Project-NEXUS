@@ -71,10 +71,14 @@ function IdeationIdeaScreen() {
     setIsDeleting(true);
     try {
       await deleteIdeationIdea(ideaId);
+      // The member may have left while the request ran; never pull them back from
+      // wherever they are now (vote, comment and save already follow this rule).
+      if (!isMountedRef.current) return;
       showToast({ title: t('ideation:idea_detail.withdrawn'), variant: 'success' });
       // Back to the list: the screen they are standing on no longer describes anything.
       router.replace('/(modals)/ideation');
     } catch (err) {
+      if (!isMountedRef.current) return;
       showToast({
         title: t('common:errors.alertTitle'),
         description: describeApiError(err, t('ideation:idea_detail.withdraw_failed')),

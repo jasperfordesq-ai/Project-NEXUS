@@ -15,7 +15,7 @@ let mockUser: { id: number } | null = { id: 7 };
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
-  router: { push: jest.fn(), back: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
   useLocalSearchParams: () => mockParams,
 }));
 jest.mock('react-i18next', () => ({
@@ -333,6 +333,22 @@ describe('IdeationIdeaScreen', () => {
 
       await act(async () => { await mockConfirm.mock.calls[0][0].onConfirm(); });
       expect(deleteIdeationIdea).toHaveBeenCalledWith(31);
+    });
+
+    it('does not pull the member back to the list when a withdrawal finishes after they left', async () => {
+      const { deleteIdeationIdea } = require('@/lib/api/ideation');
+      const { router } = require('expo-router');
+      let finish!: (value: unknown) => void;
+      jest.mocked(deleteIdeationIdea).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+      const screen = render(<IdeationIdeaScreen />);
+      await waitFor(() => expect(screen.getByTestId('idea-withdraw')).toBeTruthy());
+      fireEvent.press(screen.getByTestId('idea-withdraw'));
+      let pending!: Promise<unknown> | void;
+      act(() => { pending = mockConfirm.mock.calls[0][0].onConfirm(); });
+      screen.unmount();
+      await act(async () => { finish({}); await pending; });
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(mockToast).not.toHaveBeenCalled();
     });
 
     it('offers no withdraw button to somebody else', async () => {

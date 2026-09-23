@@ -75,6 +75,8 @@ function EventTemplatesScreenInner() {
   const [confirmedInput, setConfirmedInput] = useState<MobileEventTemplateInput | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const creatingRef = useRef(false);
+  const creationKeyRef = useRef<{ identity: string; key: string } | null>(null);
   const [auditTarget, setAuditTarget] = useState<MobileEventTemplate | null>(null);
   const [audits, setAudits] = useState<MobileEventTemplateAudit[]>([]);
   const [auditNextCursor, setAuditNextCursor] = useState<string | null>(null);
@@ -262,14 +264,20 @@ function EventTemplatesScreenInner() {
   }
 
   async function createDraft() {
-    if (!selected || !confirmedInput) return;
+    if (!selected || !confirmedInput || creatingRef.current) return;
+    creatingRef.current = true;
     setIsCreating(true);
+    // The server de-duplicates only by this key. Keep one key per reviewed draft, so a
+    // retry after a lost response returns the draft already made instead of a second one.
+    const identity = JSON.stringify([selected.id, confirmedInput]);
+    if (creationKeyRef.current?.identity !== identity) creationKeyRef.current = { identity, key: idempotencyKey() };
     try {
       const result = await materializeEventTemplate(
         selected.id,
         confirmedInput,
-        idempotencyKey(),
+        creationKeyRef.current.key,
       );
+      creationKeyRef.current = null;
       showToast({
         title: t('templates.mobile.createdTitle'),
         description: t('templates.mobile.createdDescription'),
@@ -286,6 +294,7 @@ function EventTemplatesScreenInner() {
         variant: 'danger',
       });
     } finally {
+      creatingRef.current = false;
       setIsCreating(false);
     }
   }
