@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { User } from '@/types/api';
 import userEvent from '@testing-library/user-event';
 
 // ─── Hoist mock data ─────────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ const { mockAdminEnterprise, mockToast } = vi.hoisted(() => ({
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 const mockAuthState = vi.hoisted(() => ({
-  user: null as Record<string, unknown> | null,
+  user: null as User | null,
 }));
 
 // ─── Module mocks ────────────────────────────────────────────────────────────
@@ -36,7 +37,17 @@ vi.mock('react-router-dom', async (importOriginal) => {
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useAuth: () => ({ user: mockAuthState.user, isAuthenticated: mockAuthState.user !== null }),
+    useAuth: () => ({
+      user: mockAuthState.user,
+      isAuthenticated: mockAuthState.user !== null,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
@@ -358,7 +369,7 @@ describe('SystemConfig', () => {
       fireEvent.click(saveBtn!);
 
       await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledTimes(1));
-      const payload = mockAdminEnterprise.updateConfig.mock.calls[0][0] as Record<string, unknown>;
+      const payload = mockAdminEnterprise.updateConfig.mock.calls[0]?.[0] as Record<string, unknown>;
       expect(payload).toEqual({ site_name: 'Renamed' });
     });
 

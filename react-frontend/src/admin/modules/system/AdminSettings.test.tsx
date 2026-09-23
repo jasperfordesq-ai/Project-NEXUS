@@ -368,7 +368,7 @@ describe('AdminSettings', () => {
       await userEvent.click(saveBtn!);
 
       await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledTimes(1));
-      const payload = mockAdminSettings.update.mock.calls[0][0] as Record<string, unknown>;
+      const payload = mockAdminSettings.update.mock.calls[0]?.[0] as Record<string, unknown>;
       expect(payload).toEqual({ partner_logo_label: 'Partner' });
       expect(payload).not.toHaveProperty('email_verification');
       expect(payload).not.toHaveProperty('admin_approval');
