@@ -654,7 +654,7 @@ describe('NewMarketplaceListingRoute', () => {
     jest.mocked(updateMarketplaceListing).mockResolvedValue({ data: { id: 43 } } as never);
     jest.mocked(uploadMarketplaceImages).mockResolvedValue({ data: [] } as never);
 
-    const { getByText } = render(<NewMarketplaceListingRoute />);
+    const { getByText, getAllByLabelText } = render(<NewMarketplaceListingRoute />);
 
     await waitFor(() => expect(getByText('Cover')).toBeTruthy());
     fireEvent.press(getByText('Add images'));
@@ -665,6 +665,8 @@ describe('NewMarketplaceListingRoute', () => {
         selectionLimit: 19,
       }));
     });
+    // Wait for the picked photo to join the form before saving.
+    await waitFor(() => expect(getAllByLabelText('Remove image')).toHaveLength(2));
 
     fireEvent.press(getByText('Update'));
 

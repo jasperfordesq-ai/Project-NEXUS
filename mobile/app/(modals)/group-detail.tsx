@@ -1909,13 +1909,6 @@ function GroupMediaPanel({
   async function pickMedia(type: GroupMediaType) {
     if (!beginMutation()) return;
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!isMountedRef.current) return;
-      if (!permission.granted) {
-        showToast({ title: t('detail.media.permissionTitle'), description: t('detail.media.permissionMessage'), variant: 'warning' });
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: type === 'video' ? ['videos'] : ['images'],
         allowsMultipleSelection: false,

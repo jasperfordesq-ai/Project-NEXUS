@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- In the mobile app, adding a photo (profile picture, group media, marketplace listings and shop profile, onboarding, podcasts and message attachments) now opens the phone's photo picker straight away. The app used to ask for access to the whole photo library first; on an iPhone, anyone who once said no could never add a photo again, because the question is never asked a second time.
+
 - In the mobile app, the agenda change comparison now shows dates and times in the language chosen in the app, like every other screen, instead of the device's language setting.
 
 - With very large text in the mobile app, the Listings title no longer breaks in the middle of the word and the Home feed header wraps instead of being cut off.

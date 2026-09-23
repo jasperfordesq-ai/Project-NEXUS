@@ -1280,7 +1280,6 @@ describe('GroupDetailScreen', () => {
     });
 
     await waitFor(() => {
-      expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalled();
       expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(expect.objectContaining({
         mediaTypes: ['images'],
       }));
@@ -1289,9 +1288,10 @@ describe('GroupDetailScreen', () => {
         fileName: 'group-media.jpg',
         mimeType: 'image/jpeg',
       }), expect.any(String));
-      expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1);
       expect(uploadGroupMedia).toHaveBeenCalledTimes(1);
     });
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 
   it.each([false, true])('publishes questions with an initial rejection: %s', async (rejectFirst) => {

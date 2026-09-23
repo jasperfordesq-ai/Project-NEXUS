@@ -72,4 +72,19 @@ describe('picked photos are shrunk before upload', () => {
 
     expect(deprecated).toEqual([]);
   });
+
+  it('opens the photo library without asking for library permission first', () => {
+    /*
+      The system photo picker (PHPicker on iOS, the Android photo picker) needs no
+      photo-library permission. Asking first did harm: once a member refused on iOS the
+      prompt never reappears, `granted` stays false for ever, and the photo button showed a
+      warning and did nothing, with no route back. Four screens already skipped the request
+      and worked. E-026 iOS review, 2026-09-23.
+    */
+    const asking = pickers
+      .filter((file) => /launchImageLibraryAsync/.test(file.source) && file.source.includes('requestMediaLibraryPermissionsAsync'))
+      .map((file) => file.name);
+
+    expect(asking).toEqual([]);
+  });
 });

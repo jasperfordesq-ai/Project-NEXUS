@@ -469,11 +469,6 @@ export function MarketplaceListingForm() {
       showToast({ title: t('forms.validation'), description: t('forms.maxImagesReached', { max: MAX_IMAGES }), variant: 'warning' });
       return;
     }
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showToast({ title: t('forms.permissionTitle'), description: t('forms.permissionMessage'), variant: 'warning' });
-      return;
-    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
@@ -490,11 +485,6 @@ export function MarketplaceListingForm() {
   }
 
   async function pickVideo() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showToast({ title: t('forms.permissionTitle'), description: t('forms.permissionMessage'), variant: 'warning' });
-      return;
-    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['videos'],
       allowsMultipleSelection: false,

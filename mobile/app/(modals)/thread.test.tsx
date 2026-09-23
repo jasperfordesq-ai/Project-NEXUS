@@ -974,31 +974,30 @@ describe('ThreadScreen', () => {
     expect(screen.getByLabelText('Remove photo.jpg')).toBeTruthy();
   });
 
-  it('does not open the photo library when permission completes after departure', async () => {
-    let finish!: (value: { granted: boolean }) => void;
-    mockRequestMediaLibraryPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+  it('opens the photo library even when photo access was refused for good', async () => {
+    // The system picker needs no library permission; asking first made one
+    // refusal on iOS permanent.
+    mockRequestMediaLibraryPermissionsAsync.mockResolvedValue({ granted: false, canAskAgain: false });
     const screen = render(<ThreadScreen />);
     fireEvent.press(screen.getByLabelText('Add attachment'));
     fireEvent.press(screen.getByLabelText('Photo library'));
-    screen.unmount();
-    await act(async () => finish({ granted: true }));
-    expect(mockLaunchImageLibraryAsync).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockLaunchImageLibraryAsync).toHaveBeenCalledTimes(1));
+    expect(mockRequestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 
-  it('prevents overlapping photo permission requests', async () => {
-    let finish!: (value: { granted: boolean }) => void;
-    mockRequestMediaLibraryPermissionsAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+  it('prevents overlapping photo picker opens', async () => {
+    let finish!: (value: unknown) => void;
+    mockLaunchImageLibraryAsync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
     const screen = render(<ThreadScreen />);
     fireEvent.press(screen.getByLabelText('Add attachment'));
     const pick = screen.getByLabelText('Photo library');
     act(() => { fireEvent.press(pick); fireEvent.press(pick); });
-    expect(mockRequestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
-    await act(async () => finish({ granted: false }));
+    expect(mockLaunchImageLibraryAsync).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ canceled: true, assets: null }));
   });
 
-  it.each(['permission', 'picker'])('reports a photo %s failure and allows another attempt with the draft preserved', async (stage) => {
-    if (stage === 'permission') mockRequestMediaLibraryPermissionsAsync.mockRejectedValueOnce(new Error('Native permission unavailable'));
-    else mockLaunchImageLibraryAsync.mockRejectedValueOnce(new Error('Native picker unavailable'));
+  it.each(['picker'])('reports a photo %s failure and allows another attempt with the draft preserved', async (stage) => {
+    mockLaunchImageLibraryAsync.mockRejectedValueOnce(new Error('Native picker unavailable'));
     const screen = render(<ThreadScreen />);
     fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Keep my caption');
     fireEvent.press(screen.getByLabelText('Add attachment'));
@@ -1163,7 +1162,6 @@ describe('ThreadScreen', () => {
     fireEvent.press(getByLabelText('Photo library'));
 
     await waitFor(() => {
-      expect(mockRequestMediaLibraryPermissionsAsync).toHaveBeenCalled();
       expect(getByText('photo.jpg')).toBeTruthy();
     });
 

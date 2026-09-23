@@ -165,11 +165,6 @@ function MarketplaceMerchantOnboardingScreen() {
   }
 
   async function pickAvatar() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      showToast({ title: t('forms.permissionTitle'), description: t('forms.permissionMessage'), variant: 'warning' });
-      return;
-    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,

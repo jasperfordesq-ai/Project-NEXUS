@@ -929,13 +929,6 @@ function ThreadScreenInner() {
     if (pickingImagesRef.current || !recordingMountedRef.current || pendingAttachments.length >= MAX_ATTACHMENTS) return;
     pickingImagesRef.current = true;
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!recordingMountedRef.current) return;
-      if (!permission.granted) {
-        showToast({ title: t('thread.attachments.permissionTitle'), description: t('thread.attachments.permissionMessage'), variant: 'warning' });
-        return;
-      }
-
       const remaining = Math.max(1, MAX_ATTACHMENTS - pendingAttachments.length);
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],

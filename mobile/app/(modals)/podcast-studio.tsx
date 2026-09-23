@@ -487,11 +487,6 @@ function PodcastStudioScreen() {
 
   async function pickImage(onPicked: (uri: string) => void): Promise<void> {
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        showToast({ title: t('common:errors.alertTitle'), description: t('common:errors.generic'), variant: 'warning' });
-        return;
-      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 0.9,

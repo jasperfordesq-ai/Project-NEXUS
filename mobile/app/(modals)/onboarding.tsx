@@ -189,12 +189,6 @@ function OnboardingScreenInner() {
   const pickAvatar = useCallback(async () => {
     if (busy) return;
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!mountedRef.current) return;
-      if (!permission.granted) {
-        showToast({ title: t('toast_upload_failed'), description: t('profile:permissionMessage'), variant: 'warning' });
-        return;
-      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 0.85,

@@ -251,7 +251,7 @@ describe('EditProfileScreen', () => {
     });
 
     await waitFor(() => expect(updateAvatar).toHaveBeenCalledTimes(1));
-    expect(ImagePicker.requestMediaLibraryPermissionsAsync).toHaveBeenCalledTimes(1);
+    expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledTimes(1);
   });
 
   it('does not upload a photo returned after leaving the profile editor', async () => {
@@ -265,15 +265,14 @@ describe('EditProfileScreen', () => {
     expect(updateAvatar).not.toHaveBeenCalled();
   });
 
-  it('does not open the photo picker when permission resolves after departure', async () => {
-    let resolvePermission!: (value: ImagePicker.MediaLibraryPermissionResponse) => void;
-    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockReturnValueOnce(new Promise((resolve) => { resolvePermission = resolve; }));
+  it('opens the system photo picker even when photo-library access was refused for good', async () => {
+    // The system picker needs no library permission. Asking first turned one
+    // refusal on iOS into a photo button that could never work again.
+    jest.mocked(ImagePicker.requestMediaLibraryPermissionsAsync).mockResolvedValue({ granted: false, canAskAgain: false, expires: 'never', status: ImagePicker.PermissionStatus.DENIED });
     const screen = render(<EditProfileScreen />);
     fireEvent.press(screen.getByLabelText('Change profile photo'));
-    screen.unmount();
-    await act(async () => resolvePermission({ granted: true, canAskAgain: true, expires: 'never', status: ImagePicker.PermissionStatus.GRANTED }));
-    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
-    expect(updateAvatar).not.toHaveBeenCalled();
+    await waitFor(() => expect(updateAvatar).toHaveBeenCalledTimes(1));
+    expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 
   it('keeps an accepted avatar update successful when the local user cache cannot refresh', async () => {

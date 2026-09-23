@@ -127,13 +127,6 @@ function EditProfileScreenInner() {
     setUploadingAvatar(true);
 
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!isMountedRef.current) return;
-      if (!permission.granted) {
-        showToast({ title: t('permissionNeeded'), description: t('permissionMessage'), variant: 'warning' });
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 0.85,
