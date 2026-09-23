@@ -138,8 +138,12 @@ describe('BiometricLockGate', () => {
     fireEvent.press(view.getByTestId('biometric-sign-out'));
     expect(await view.findByText('common:errors.generic')).toBeTruthy();
     expect(view.queryByText('Private account')).toBeNull();
-    fireEvent.press(view.getByTestId('biometric-unlock'));
-    await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull());
+    // Press inside act so the unlock's resolved prompt commits before the assertion. Pressed
+    // bare, the state update lands outside act and React defers it: measured 810 ms to open
+    // locally (40 ms inside act), which crossed waitFor's 1 s default on every CI release-gate
+    // run of 87bfd3080 while passing here - a timing flake, not a lock defect.
+    await act(async () => { fireEvent.press(view.getByTestId('biometric-unlock')); });
+    await waitFor(() => expect(view.queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
   });
 
   it('never blocks a signed-out member from reaching the login UI', async () => {
@@ -189,7 +193,7 @@ describe('BiometricLockGate', () => {
     await act(async () => { fireEvent.press(getByText('common:labels.signOut')); });
     expect(mockLogout).toHaveBeenCalledTimes(1);
 
-    fireEvent.press(getByText('settings:biometricLock.unlock'));
+    await act(async () => { fireEvent.press(getByText('settings:biometricLock.unlock')); });
     await waitFor(() => expect(queryByTestId('biometric-lock-gate')).toBeNull(), SLOW_CI);
     expect(mockAuthenticate).toHaveBeenCalledTimes(2);
   });
