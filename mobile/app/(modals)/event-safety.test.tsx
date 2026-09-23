@@ -107,7 +107,8 @@ it('shows a loading state, then the policy, observation notice and review ledger
   expect(view.getByText('Revision 2, policy version 1')).toBeTruthy();
   expect(view.getByDisplayValue('16')).toBeTruthy();
   expect(await view.findByText('Reviewed member · Member #9')).toBeTruthy();
-  expect(view.getByText('1 recorded decisions')).toBeTruthy();
+  expect(view.getByText('Recorded decisions: 1')).toBeTruthy();
+  expect(view.getByText('Audit history: 1')).toBeTruthy();
 });
 
 it('shows an empty ledger and "no policy" state', async () => {
@@ -234,4 +235,22 @@ it('pages the review ledger', async () => {
   fireEvent.press(view.getByText('Next page'));
   expect(await view.findByText('Page 2 of 2')).toBeTruthy();
   expect(getEventSafetyReviews).toHaveBeenLastCalledWith(7, 2, 25);
+});
+
+it('locks an archived policy, because the server refuses further drafts', async () => {
+  jest.mocked(getEventSafety).mockResolvedValue({ data: safety({ requirements: { ...safety().requirements, status: 'archived' } }) } as never);
+  const view = await ready();
+  expect(view.getByText('This policy is archived and can no longer be changed. Its evidence and audit history are kept.')).toBeTruthy();
+  expect(view.queryByText('Save draft')).toBeNull();
+  expect(view.queryByText('Archive requirements')).toBeNull();
+  expect(view.getByDisplayValue('16').props.editable).toBe(false);
+});
+
+it('reloads current server values once after a change is rejected, without looping', async () => {
+  jest.mocked(load).mockResolvedValue({ ...pendingReview, status: 'rejected', code: 'EVENT_SAFETY_CONFLICT' } as never);
+  const view = await ready();
+  expect(view.getByText('Saved change was not applied')).toBeTruthy();
+  await waitFor(() => expect(getEventSafety).toHaveBeenCalledTimes(2));
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 200)); });
+  expect(getEventSafety).toHaveBeenCalledTimes(2);
 });

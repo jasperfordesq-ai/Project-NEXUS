@@ -218,7 +218,9 @@
       "refresh_hint": "Tu cambio fue aceptado. Actualiza para ver los valores actuales antes de hacer otro cambio.",
       "no_requirements": "Todavía no se ha guardado ninguna política de participación.",
       "policy_revision": "Revisión {{revision}}, versión de la política {{version}}",
-      "archived_notice": "Esta política está archivada. Guardar un nuevo borrador inicia una nueva política."
+      "archived_notice": "Esta política está archivada y ya no se puede cambiar. Se conservan sus pruebas y su historial de auditoría.",
+      "review_total": "Decisiones registradas: {{count}}",
+      "audit_count": "Historial de auditoría: {{count}}"
     }
   }
 }

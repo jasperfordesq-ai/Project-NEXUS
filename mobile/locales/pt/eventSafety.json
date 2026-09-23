@@ -218,7 +218,9 @@
       "refresh_hint": "A sua alteração foi aceite. Atualize para ver os valores atuais antes de fazer outra alteração.",
       "no_requirements": "Ainda não foi guardada nenhuma política de participação.",
       "policy_revision": "Revisão {{revision}}, versão da política {{version}}",
-      "archived_notice": "Esta política está arquivada. Guardar um novo rascunho inicia uma nova política."
+      "archived_notice": "Esta política está arquivada e já não pode ser alterada. As provas e o histórico de auditoria são mantidos.",
+      "review_total": "Decisões registadas: {{count}}",
+      "audit_count": "Histórico de auditoria: {{count}}"
     }
   }
 }

@@ -218,7 +218,9 @@
       "refresh_hint": "La tua modifica è stata accettata. Aggiorna per vedere i valori attuali prima di fare un'altra modifica.",
       "no_requirements": "Non è ancora stata salvata alcuna politica di partecipazione.",
       "policy_revision": "Revisione {{revision}}, versione della politica {{version}}",
-      "archived_notice": "Questa politica è archiviata. Salvare una nuova bozza avvia una nuova politica."
+      "archived_notice": "Questa politica è archiviata e non può più essere modificata. Le prove e la cronologia di controllo vengono conservate.",
+      "review_total": "Decisioni registrate: {{count}}",
+      "audit_count": "Cronologia di controllo: {{count}}"
     }
   }
 }

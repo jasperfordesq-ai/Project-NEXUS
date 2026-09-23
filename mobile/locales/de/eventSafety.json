@@ -218,7 +218,9 @@
       "refresh_hint": "Ihre Änderung wurde angenommen. Aktualisieren Sie, um die aktuellen Werte zu sehen, bevor Sie eine weitere Änderung vornehmen.",
       "no_requirements": "Es wurde noch keine Teilnahmerichtlinie gespeichert.",
       "policy_revision": "Überarbeitung {{revision}}, Richtlinienfassung {{version}}",
-      "archived_notice": "Diese Richtlinie ist archiviert. Das Speichern eines neuen Entwurfs beginnt eine neue Richtlinie."
+      "archived_notice": "Diese Richtlinie ist archiviert und kann nicht mehr geändert werden. Nachweise und Prüfverlauf bleiben erhalten.",
+      "review_total": "Erfasste Entscheidungen: {{count}}",
+      "audit_count": "Prüfverlauf: {{count}}"
     }
   }
 }

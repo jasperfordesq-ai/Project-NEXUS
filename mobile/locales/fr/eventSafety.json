@@ -218,7 +218,9 @@
       "refresh_hint": "Votre modification a été acceptée. Actualisez pour voir les valeurs actuelles avant d'en faire une autre.",
       "no_requirements": "Aucune politique de participation n'a encore été enregistrée.",
       "policy_revision": "Révision {{revision}}, version de la politique {{version}}",
-      "archived_notice": "Cette politique est archivée. Enregistrer un nouveau brouillon démarre une nouvelle politique."
+      "archived_notice": "Cette politique est archivée et ne peut plus être modifiée. Ses preuves et son historique d’audit sont conservés.",
+      "review_total": "Décisions enregistrées : {{count}}",
+      "audit_count": "Historique d’audit : {{count}}"
     }
   }
 }

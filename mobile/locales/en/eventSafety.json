@@ -218,7 +218,9 @@
       "refresh_hint": "Your change was accepted. Refresh to see the current values before making another change.",
       "no_requirements": "No participation policy has been saved yet.",
       "policy_revision": "Revision {{revision}}, policy version {{version}}",
-      "archived_notice": "This policy is archived. Saving a new draft starts a new policy."
+      "archived_notice": "This policy is archived and can no longer be changed. Its evidence and audit history are kept.",
+      "review_total": "Recorded decisions: {{count}}",
+      "audit_count": "Audit history: {{count}}"
     }
   }
 }

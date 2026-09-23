@@ -218,7 +218,9 @@
       "refresh_hint": "Glacadh le d’athrú. Athnuaigh chun na luachanna reatha a fheiceáil sula ndéanfaidh tú athrú eile.",
       "no_requirements": "Níor sábháladh aon bheartas rannpháirtíochta fós.",
       "policy_revision": "Athbhreithniú {{revision}}, leagan an bheartais {{version}}",
-      "archived_notice": "Tá an beartas seo cartlannaithe. Cuirtear tús le beartas nua nuair a shábháiltear dréacht nua."
+      "archived_notice": "Tá an beartas seo cartlannaithe agus ní féidir é a athrú a thuilleadh. Coinnítear a fhianaise agus a stair iniúchta.",
+      "review_total": "Cinntí taifeadta: {{count}}",
+      "audit_count": "Stair iniúchta: {{count}}"
     }
   }
 }

@@ -112,9 +112,14 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
   const timestamp = (value: string | null) => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(locale) : '—';
 
   const safety = state.data?.safety;
+  // An archived policy is final: the API refuses any further draft (event_safety_requirements_archived).
+  const archived = safety?.requirements?.status === 'archived';
   const canManage = !!safety?.permissions.manage_requirements;
+  const canEdit = canManage && !archived;
   const canReview = !!safety?.permissions.review_participation;
-  const permitted = active && !state.isLoading && !state.error && (canManage || canReview);
+  // Stay permitted during a background refresh: toggling would reset the operation hook and hide a
+  // failure or rejection the organiser still needs to see. The server checks revisions on every change.
+  const permitted = active && !!state.data && !state.error && (canManage || canReview);
   const authority = useRef({ permitted, canManage, canReview }); authority.current = { permitted, canManage, canReview };
 
   // Requirements form. It is re-seeded from the server only when it has no unsaved edits,
@@ -156,6 +161,13 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
   const needsAttention = operation.storageFailed || operation.operationFailed || saved?.status === 'pending' || saved?.status === 'rejected';
   useEffect(() => { if (needsAttention) scroll.current?.scrollTo({ y: 0, animated: true }); }, [needsAttention]);
   useEffect(() => { if (!permitted) setPicker(null); }, [permitted]);
+  // After a refused or failed change, reload the server's current values so the organiser can
+  // review them. Once per saved change: a refresh briefly resets the operation state, so keying on
+  // a boolean would loop.
+  const badKey = saved?.status === 'rejected' ? `rejected:${saved.key}` : operation.operationFailed ? `failed:${saved?.key ?? ''}` : null;
+  const refreshedFor = useRef<string | null>(null);
+  const refresh = useRef(state.refresh); refresh.current = state.refresh;
+  useEffect(() => { if (badKey && badKey !== refreshedFor.current) { refreshedFor.current = badKey; refresh.current(); } }, [badKey]);
   useEffect(() => {
     let cancelled = false;
     setResults([]); setSearchState('idle');
@@ -180,7 +192,7 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
 
   function saveDraft() {
     setSubmitted(true);
-    if (blocked || !form || !safety || !authority.current.canManage) return;
+    if (blocked || !form || !safety || !authority.current.canManage || archived) return;
     const draft = draftFromForm(form);
     if (!draft) return;
     void submit({ action: 'draft', payload: draft, expectedRevision: safety.requirements?.revision ?? null });
@@ -260,7 +272,7 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
             <Text className="text-base text-foreground">{saved.status === 'pending' ? t('event_communications:recovery_description') : m('rejected_hint')}</Text>
             <Text className="text-base text-foreground">{describe(saved.intent)}</Text>
             {saved.status === 'pending' ? <Button disabled={!permitted || operation.busy} onPress={operation.recover}>{t('event_communications:recovery_button')}</Button>
-              : <Button variant="danger" disabled={!permitted || operation.busy} onPress={() => confirm({ title: m('discard_title'), message: m('discard_hint'), confirmLabel: m('discard_label'), cancelLabel: s('actions.cancel'), variant: 'danger', onConfirm: operation.discard })}>{m('discard_label')}</Button>}
+              : <Button variant="danger" disabled={!permitted || operation.busy} onPress={() => confirm({ title: m('discard_title'), message: m('discard_hint'), confirmLabel: m('discard_label'), cancelLabel: s('actions.cancel'), variant: 'danger', onConfirm: async () => { await operation.discard(); state.refresh(); } })}>{m('discard_label')}</Button>}
           </Card.Body></Card>}
           {operation.operationFailed && <Text accessibilityRole="alert" className="text-base text-foreground">{m('action_error')}</Text>}
 
@@ -278,22 +290,22 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
             {!requirements && <Text className="text-base text-foreground">{m('no_requirements')}</Text>}
             {requirements?.status === 'archived' && <Text className="text-base text-foreground">{m('archived_notice')}</Text>}
             {!canManage && <Text className="text-base text-foreground">{s('organizer.read_only')}</Text>}
-            <Input label={s('requirements.minimum_age')} helper={s('requirements.minimum_age_hint')} keyboardType="number-pad" value={form.minimumAge} editable={canManage && !blocked}
+            <Input label={s('requirements.minimum_age')} helper={s('requirements.minimum_age_hint')} keyboardType="number-pad" value={form.minimumAge} editable={canEdit && !blocked}
               onChangeText={value => update({ minimumAge: value })} error={submitted && minimumInvalid ? m('invalid_age') : undefined} />
-            <Toggle label={s('requirements.guardian_required')} value={form.guardian} disabled={!canManage || blocked} onValueChange={value => update({ guardian: value })} />
+            <Toggle label={s('requirements.guardian_required')} value={form.guardian} disabled={!canEdit || blocked} onValueChange={value => update({ guardian: value })} />
             <Text className="text-sm text-muted-foreground">{s('requirements.guardian_required_hint')}</Text>
-            {form.guardian && <Input label={s('requirements.minor_threshold')} helper={s('requirements.minor_threshold_hint')} keyboardType="number-pad" value={form.threshold} editable={canManage && !blocked}
+            {form.guardian && <Input label={s('requirements.minor_threshold')} helper={s('requirements.minor_threshold_hint')} keyboardType="number-pad" value={form.threshold} editable={canEdit && !blocked}
               onChangeText={value => update({ threshold: value })} error={submitted && thresholdInvalid ? m('invalid_age') : undefined} />}
-            <Toggle label={s('requirements.code_required')} value={form.codeRequired} disabled={!canManage || blocked} onValueChange={value => update({ codeRequired: value })} />
+            <Toggle label={s('requirements.code_required')} value={form.codeRequired} disabled={!canEdit || blocked} onValueChange={value => update({ codeRequired: value })} />
             <Text className="text-sm text-muted-foreground">{s('requirements.code_required_hint')}</Text>
             {form.codeRequired && <>
-              <Input label={s('requirements.code_version')} helper={s('requirements.code_version_hint')} value={form.codeVersion} editable={canManage && !blocked} maxLength={64}
+              <Input label={s('requirements.code_version')} helper={s('requirements.code_version_hint')} value={form.codeVersion} editable={canEdit && !blocked} maxLength={64}
                 onChangeText={value => update({ codeVersion: value })} error={submitted && codeInvalid && !form.codeVersion.trim() ? s('requirements.code_version_hint') : undefined} />
-              <TextArea label={s('requirements.code_text')} placeholder={s('requirements.code_text_hint')} value={form.codeText} editable={canManage && !blocked}
+              <TextArea label={s('requirements.code_text')} placeholder={s('requirements.code_text_hint')} value={form.codeText} editable={canEdit && !blocked}
                 onChangeText={value => update({ codeText: value })} error={submitted && codeInvalid && !form.codeText.trim() ? s('requirements.code_text_hint') : undefined} />
             </>}
             {canManage && <>
-              <Button disabled={blocked} isLoading={operation.busy} onPress={saveDraft}>{s('actions.save_draft')}</Button>
+              {!archived && <Button disabled={blocked} isLoading={operation.busy} onPress={saveDraft}>{s('actions.save_draft')}</Button>}
               {requirements?.status === 'draft' && <Button variant="secondary" disabled={blocked || formDirty} onPress={publish}>{s('actions.publish')}</Button>}
               {requirements && requirements.status !== 'archived' && <Button variant="danger" disabled={blocked} onPress={archive}>{s('actions.archive')}</Button>}
             </>}
@@ -349,7 +361,7 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
             </Card.Body></Card>
 
             <Text accessibilityRole="header" className="text-xl font-bold text-foreground">{s('reviews.history_title')}</Text>
-            <Text className="text-base text-muted-foreground">{s('reviews.total', { count: reviews.total })}</Text>
+            <Text className="text-base text-muted-foreground">{m('review_total', { count: reviews.total })}</Text>
             {reviews.items.length === 0 && <EmptyState icon="shield-checkmark-outline" title={s('reviews.empty')} />}
             {reviews.items.map(item => <Card key={item.denial.id}><Card.Body className="gap-2 p-4">
               <Text accessibilityRole="header" className="text-lg font-bold text-foreground">{item.member.display_name} · {m('member_fallback', { id: item.member.id })}</Text>
@@ -363,7 +375,7 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
                 <Button variant="secondary" disabled={blocked} onPress={() => editReview(item)}>{s('actions.edit_review')}</Button>
                 <Button variant="danger" disabled={blocked} onPress={() => withdrawReview(item)}>{s('actions.withdraw_review')}</Button>
               </View>}
-              <Text accessibilityRole="header" className="font-bold">{s('reviews.audit_history', { count: item.history.length })}</Text>
+              <Text accessibilityRole="header" className="font-bold">{m('audit_count', { count: item.history.length })}</Text>
               {item.history.map(entry => <View key={`${entry.decision_version}-${entry.action}-${entry.reviewed_at}`} className="gap-1 border-t border-border pt-2">
                 <Text>{s('reviews.version')} {entry.decision_version} · {s(`review_status.${entry.status}`)} · {s(`decisions.${entry.decision}`)}</Text>
                 <Text className="text-sm text-muted-foreground">{entry.reviewer.display_name} · {timestamp(entry.reviewed_at)}</Text>
