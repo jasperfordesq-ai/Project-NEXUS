@@ -271,6 +271,10 @@ class ListingsController extends BaseApiController
 
         $listing['is_featured'] = (bool) ($listing['is_featured'] ?? false);
 
+        // F-082: exact coordinates only for the owner (their edit form) and
+        // administrators; everyone else sees them rounded to ~1 km.
+        $listing = ListingService::coarsenListingCoordinates($listing, $userId);
+
         // Reciprocity: load the listing owner's OTHER active listings (max 6)
         try {
             $ownerUserId = (int) ($listing['user_id'] ?? 0);

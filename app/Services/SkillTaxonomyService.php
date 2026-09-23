@@ -7,6 +7,8 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -481,19 +483,39 @@ class SkillTaxonomyService
 
     /**
      * Get members who have a specific skill.
+     *
+     * F-080: this is a DISCOVERY surface ("who can do X"), so it lists only
+     * the members the directory would list (their own "show me in member
+     * search" switch and the community's listing requirements), never a
+     * member with a block either way with the viewer, never a
+     * connections-only profile the viewer could not open, and shows
+     * non-admin viewers a first name only.
      */
-    public function getMembersWithSkill(string $skillName, int $limit = 30): array
+    public function getMembersWithSkill(string $skillName, int $limit = 30, ?int $viewerId = null): array
     {
-        $tenantId = TenantContext::getId();
+        $tenantId = (int) TenantContext::getId();
 
-        return DB::table('user_skills as us')
+        $query = DB::table('user_skills as us')
             ->join('users as u', function ($join) {
                 $join->on('u.id', '=', 'us.user_id')
                      ->whereColumn('u.tenant_id', 'us.tenant_id');
             })
             ->where('us.tenant_id', $tenantId)
             ->where('us.skill_name', $skillName)
-            ->where('u.status', 'active')
+            ->where('u.status', 'active');
+
+        MemberDirectoryVisibility::applyToQuery($query, $tenantId, 'u');
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+        MemberProfileVisibility::applyToQuery($query, $tenantId, $viewerId, 'u', $viewerIsAdmin);
+
+        if ($viewerId !== null && $viewerId > 0) {
+            $blockedIds = array_map('intval', BlockUserService::getBlockedPairIds($viewerId));
+            if ($blockedIds !== []) {
+                $query->whereNotIn('u.id', $blockedIds);
+            }
+        }
+
+        return $query
             ->orderByRaw("FIELD(us.proficiency, 'expert', 'advanced', 'intermediate', 'beginner')")
             ->orderBy('u.first_name')
             ->limit($limit)
@@ -503,7 +525,14 @@ class SkillTaxonomyService
                 'us.is_offering', 'us.is_requesting'
             )
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(static function ($r) use ($viewerIsAdmin): array {
+                $row = (array) $r;
+                if (! $viewerIsAdmin) {
+                    unset($row['last_name']);
+                }
+
+                return $row;
+            })
             ->all();
     }
 

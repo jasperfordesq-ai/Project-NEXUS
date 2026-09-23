@@ -118,6 +118,17 @@ class MemberRankingService
 
         OnboardingConfigService::applyVisibilityScope($usersQuery);
 
+        // F-081: connections-only profiles are ranked into this viewer's
+        // directory only when the viewer is one of their connections (or an
+        // administrator). The cache key above is per viewer, so a cached
+        // ranking never crosses viewers.
+        [$profileSql, $profileBindings] = \App\Support\Members\MemberProfileVisibility::sqlCondition($tenantId, $viewerId, 'users');
+        if ($profileSql !== '') {
+            $usersQuery->where(static function ($query) use ($profileSql, $profileBindings) {
+                $query->whereRaw('(' . $profileSql . ')', $profileBindings);
+            });
+        }
+
         $users = $usersQuery->get();
 
         if ($users->isEmpty()) {

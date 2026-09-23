@@ -26,6 +26,7 @@ use App\Services\OnboardingConfigService;
 use App\Services\GamificationService;
 use App\Services\GroupAccessService;
 use App\Models\UserBadge;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * UsersController - User profiles, settings, preferences, sessions.
@@ -243,6 +244,15 @@ class UsersController extends BaseApiController
         $id = (int) $id;
         $this->rateLimit('user_listings', 30, 60);
 
+        // F-081: "listings by this member" is part of their profile, so the
+        // member's own privacy_profile choice applies exactly as it does on
+        // the profile page — same 404 and code, so a restricted member is not
+        // confirmed by a different answer here.
+        $viewerId = $this->getOptionalUserId();
+        if (! MemberProfileVisibility::canView($id, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
         $limit = $this->queryInt('limit', 20, 1, 100);
         $type = $this->query('type');
 
@@ -250,6 +260,12 @@ class UsersController extends BaseApiController
             'user_id' => $id,
             'limit'   => $limit,
         ];
+
+        // Lets the owner (and an administrator) see their listings' exact
+        // coordinates; everyone else gets them rounded (F-082).
+        if ($viewerId !== null) {
+            $filters['current_user_id'] = $viewerId;
+        }
 
         if ($type && in_array($type, ['offer', 'request'])) {
             $filters['type'] = $type;
@@ -1599,6 +1615,8 @@ class UsersController extends BaseApiController
                     if (($u['profile_type'] ?? 'individual') !== 'organisation') {
                         $u['name'] = $u['first_name'] ?? '';
                     }
+                    // F-082: coordinates rounded to ~1 km for other members.
+                    $u = MemberProfileVisibility::coarsenCoordinates($u, false);
                 }
                 return $u;
             }, $users);
@@ -1655,6 +1673,14 @@ class UsersController extends BaseApiController
         $visibilityConditions = OnboardingConfigService::getVisibilitySqlConditions($tenantId);
         foreach ($visibilityConditions as $condition) {
             $whereClause .= " AND ($condition)";
+        }
+
+        // F-081: a member whose profile is visible to their connections only
+        // is listed only to those connections (and to administrators).
+        [$profileSql, $profileParams] = MemberProfileVisibility::sqlCondition($tenantId, $viewerId, 'u', $viewerIsAdmin);
+        if ($profileSql !== '') {
+            $whereClause .= " AND ($profileSql)";
+            $params = array_merge($params, $profileParams);
         }
 
         $totalCount = (int) DB::selectOne("SELECT COUNT(*) as total FROM users u WHERE $whereClause", $params)->total;
@@ -1762,6 +1788,8 @@ class UsersController extends BaseApiController
                 if (($u['profile_type'] ?? 'individual') !== 'organisation') {
                     $u['name'] = $u['first_name'] ?? '';
                 }
+                // F-082: coordinates rounded to ~1 km for other members.
+                $u = MemberProfileVisibility::coarsenCoordinates($u, false);
             }
             return $u;
         }, $users);
@@ -1805,6 +1833,10 @@ class UsersController extends BaseApiController
         foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId) as $condition) {
             $listed[] = "($condition)";
         }
+        [$profileSql, $profileParams] = MemberProfileVisibility::sqlCondition($tenantId, $viewerId, 'u');
+        if ($profileSql !== '') {
+            $listed[] = "($profileSql)";
+        }
         $listedSql = implode(' AND ', $listed);
 
         $row = DB::selectOne(
@@ -1812,7 +1844,7 @@ class UsersController extends BaseApiController
                     SUM(CASE WHEN $listedSql THEN 1 ELSE 0 END) AS directory_total
              FROM users u
              WHERE $where",
-            $params
+            array_merge($profileParams, $params)
         );
 
         $config   = OnboardingConfigService::getConfig($tenantId);

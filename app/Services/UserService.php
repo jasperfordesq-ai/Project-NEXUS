@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -178,6 +179,11 @@ class UserService
                 if (($user->profile_type ?? 'individual') !== 'organisation') {
                     $profile['name'] = $user->first_name ?? '';
                 }
+
+                // F-082: other members see coordinates rounded to ~1 km — the
+                // stored values are often a home address from the location
+                // picker. The owner and administrators keep the exact values.
+                $profile = MemberProfileVisibility::coarsenCoordinates($profile, false);
             }
         }
 
@@ -956,16 +962,25 @@ class UserService
         $offset   = max((int) ($filters['offset'] ?? 0), 0);
         $search   = trim((string) ($filters['q'] ?? ''));
 
-        // Haversine formula (result in km) — tenant scoping via HasTenantScope on User model
+        // Haversine formula (result in km) — tenant scoping via HasTenantScope on User model.
+        //
+        // F-082: the distance is measured to the member's coordinates ROUNDED
+        // to the precision other members are shown (about 1 km), never to the
+        // stored ones. The caller chooses the centre point, so an exact
+        // distance from three chosen points would locate a member's home to
+        // the metre however the coordinates themselves were rounded. LEAST /
+        // GREATEST keep acos() inside its domain for a point at distance 0.
+        $d = MemberProfileVisibility::PUBLIC_COORDINATE_DECIMALS;
         $haversine = "(
-            6371 * acos(
-                cos(radians(?)) * cos(radians(latitude)) *
-                cos(radians(longitude) - radians(?)) +
-                sin(radians(?)) * sin(radians(latitude))
-            )
+            6371 * acos(LEAST(1.0, GREATEST(-1.0,
+                cos(radians(?)) * cos(radians(ROUND(latitude, {$d}))) *
+                cos(radians(ROUND(longitude, {$d})) - radians(?)) +
+                sin(radians(?)) * sin(radians(ROUND(latitude, {$d})))
+            )))
         )";
 
         $tenantId = TenantContext::getId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId);
 
         $query = User::query()
             ->selectRaw(
@@ -1010,6 +1025,9 @@ class UserService
         // Apply onboarding visibility gating
         OnboardingConfigService::applyVisibilityScope($query);
 
+        // F-081: connections-only profiles appear only to their connections.
+        MemberProfileVisibility::applyToQuery($query, (int) $tenantId, $currentUserId, 'users', $viewerIsAdmin);
+
         $items = $query->offset($offset)->limit($limit + 1)->get();
 
         $hasMore = $items->count() > $limit;
@@ -1045,8 +1063,8 @@ class UserService
             }
         }
 
-        $result = $items->map(function (User $user) use ($badgesByUser) {
-            return [
+        $result = $items->map(function (User $user) use ($badgesByUser, $viewerIsAdmin) {
+            $row = [
                 'id'                   => $user->id,
                 'name'                 => ($user->profile_type === 'organisation' && $user->organization_name)
                                               ? $user->organization_name
@@ -1056,8 +1074,9 @@ class UserService
                 'avatar'               => $user->avatar_url,
                 'tagline'              => $user->getRawOriginal('tagline') ?: ($user->bio ? mb_substr($user->bio, 0, 120) : null),
                 'location'             => $user->location,
-                'latitude'             => $user->latitude,
-                'longitude'            => $user->longitude,
+                // F-082: other members see coordinates rounded to ~1 km.
+                'latitude'             => $viewerIsAdmin ? $user->latitude : MemberProfileVisibility::publicCoordinate($user->latitude),
+                'longitude'            => $viewerIsAdmin ? $user->longitude : MemberProfileVisibility::publicCoordinate($user->longitude),
                 'created_at'           => $user->created_at?->toISOString(),
                 'is_verified'          => (bool) $user->is_verified,
                 'xp'                   => (int) ($user->xp ?? 0),
@@ -1068,6 +1087,9 @@ class UserService
                 'showcased_badges'     => $badgesByUser[$user->id] ?? [],
                 'distance'             => round((float) $user->distance, 1),
             ];
+
+            // The directory's surname rule applies to nearby members too.
+            return $viewerIsAdmin ? $row : MemberProfileVisibility::withoutSurname($row);
         })->all();
 
         return [
@@ -1377,19 +1399,9 @@ class UserService
      */
     private static function areConnected(int $userId1, int $userId2): bool
     {
-        $tenantId = TenantContext::getId();
-
-        return DB::table('connections')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'accepted')
-            ->where(function ($q) use ($userId1, $userId2) {
-                $q->where(function ($q2) use ($userId1, $userId2) {
-                    $q2->where('requester_id', $userId1)->where('receiver_id', $userId2);
-                })->orWhere(function ($q2) use ($userId1, $userId2) {
-                    $q2->where('requester_id', $userId2)->where('receiver_id', $userId1);
-                });
-            })
-            ->exists();
+        // One definition shared with the directory, nearby, listings-by-member
+        // and reviews-of-member checks (F-081).
+        return MemberProfileVisibility::areConnected($userId1, $userId2);
     }
 
     /**

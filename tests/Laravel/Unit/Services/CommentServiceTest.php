@@ -185,13 +185,10 @@ class CommentServiceTest extends TestCase
 
     public function test_searchUsersForMention_returns_array(): void
     {
-        DB::shouldReceive('table')->with('users')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('select')->andReturnSelf();
-        DB::shouldReceive('limit')->andReturnSelf();
-        DB::shouldReceive('get')->andReturn(collect([]));
-
-        $result = CommentService::searchUsersForMention('john', 2);
+        // Runs against the real query builder: the search now applies
+        // MemberDirectoryVisibility (F-080), which needs a real Builder.
+        $result = CommentService::searchUsersForMention('zz-no-such-member-' . uniqid(), 2);
         $this->assertIsArray($result);
+        $this->assertSame([], $result);
     }
 }

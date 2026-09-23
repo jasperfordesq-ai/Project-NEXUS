@@ -719,9 +719,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/ListingsController.php:1014:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/ListingsController.php:1018:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/ListingsController.php",
-            "line": 1014,
+            "line": 1018,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -2487,9 +2487,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/MentionService.php:178:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/MentionService.php:179:NotificationDispatcher::fanOutPush",
             "file": "app/Services/MentionService.php",
-            "line": 178,
+            "line": 179,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $mentionedUserId",
@@ -2838,9 +2838,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/UserService.php:657:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/UserService.php:663:NotificationDispatcher::fanOutPush",
             "file": "app/Services/UserService.php",
-            "line": 657,
+            "line": 663,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user->id",

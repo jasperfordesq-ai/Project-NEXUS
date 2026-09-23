@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\ReviewService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
@@ -97,6 +98,13 @@ class ReviewsController extends BaseApiController
     public function userReviews(int $userId): JsonResponse
     {
         $this->rateLimit('reviews_list', 60, 60);
+
+        // F-081: the reviews a member has received are part of their profile,
+        // so their privacy_profile choice applies exactly as on the profile
+        // page (same 404 and code).
+        if (! MemberProfileVisibility::canView($userId, $this->getOptionalUserId())) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
 
         $filters = [
             'limit' => $this->queryInt('per_page', 20, 1, 100),

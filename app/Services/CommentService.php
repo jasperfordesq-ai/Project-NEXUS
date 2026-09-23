@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Services\BlockUserService;
 use App\Services\MentionService;
 use App\Support\FeedItemTables;
+use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -670,30 +672,54 @@ class CommentService
     /**
      * Search users for @mention autocomplete.
      *
-     * When $currentUserId is given, members who have a block with the
+     * When $currentUserId is given (or, for the legacy route that does not
+     * pass it, the signed-in member), members who have a block with the
      * searcher (either direction) are excluded (F-070).
+     *
+     * F-080: like the v2 autocomplete this is a DISCOVERY surface, so it
+     * lists only active members the directory would list, and shows
+     * non-admin searchers a first name only.
      */
     public static function searchUsersForMention(string $query, int $tenantId, int $limit = 10, int $currentUserId = 0): array
     {
+        if ($currentUserId <= 0) {
+            $currentUserId = (int) (\Illuminate\Support\Facades\Auth::id() ?? 0);
+        }
+
         $searchTerm = '%' . $query . '%';
         $blockedIds = $currentUserId > 0 ? BlockUserService::getBlockedPairIds($currentUserId) : [];
 
         $query = DB::table('users')
             ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
             ->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', $searchTerm)
                   ->orWhere('first_name', 'LIKE', $searchTerm)
                   ->orWhere('username', 'LIKE', $searchTerm);
             });
+        if ($currentUserId > 0) {
+            $query->where('id', '!=', $currentUserId);
+        }
         if ($blockedIds !== []) {
             $query->whereNotIn('id', $blockedIds);
         }
+        MemberDirectoryVisibility::applyToQuery($query, $tenantId);
+
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId > 0 ? $currentUserId : null);
 
         return $query
-            ->select(['id', 'name', 'first_name', 'username', 'avatar_url'])
+            ->select(['id', 'name', 'first_name', 'username', 'avatar_url', 'profile_type', 'organization_name'])
             ->limit($limit)
             ->get()
-            ->map(fn ($r) => (array) $r)
+            ->map(static function ($r) use ($viewerIsAdmin): array {
+                $row = (array) $r;
+                if (! $viewerIsAdmin) {
+                    $row = MemberProfileVisibility::withoutSurname($row);
+                }
+                unset($row['profile_type'], $row['organization_name']);
+
+                return $row;
+            })
             ->all();
     }
 

@@ -205,8 +205,20 @@ class MentionServiceTest extends TestCase
     //  searchUsers
     // ------------------------------------------------------------------
 
+    /**
+     * searchUsers() now also reads the community's directory-listing rules
+     * (F-080) through OnboardingConfigService, which uses DB::select. Load
+     * that (cached) config for real before DB::select is mocked, so the mock
+     * below still answers only the search query.
+     */
+    private function primeDirectoryListingRules(): void
+    {
+        \App\Services\OnboardingConfigService::getConfig($this->testTenantId);
+    }
+
     public function test_searchUsers_returns_formatted_results(): void
     {
+        $this->primeDirectoryListingRules();
         DB::shouldReceive('select')
             ->once()
             ->andReturn([
@@ -221,17 +233,21 @@ class MentionServiceTest extends TestCase
                 ],
             ]);
 
-        $result = MentionService::searchUsers('john', $this->testTenantId, 1, 10);
+        // A searcher id with no account: an ordinary (non-admin) viewer.
+        $result = MentionService::searchUsers('john', $this->testTenantId, 2147480000, 10);
 
         $this->assertCount(1, $result);
         $this->assertEquals(5, $result[0]['id']);
-        $this->assertEquals('John Doe', $result[0]['name']);
+        // F-080: the directory's surname rule — a first name only for non-admins.
+        $this->assertEquals('John', $result[0]['name']);
+        $this->assertArrayNotHasKey('last_name', $result[0]);
         $this->assertEquals('johndoe', $result[0]['username']);
         $this->assertTrue($result[0]['is_connection']);
     }
 
     public function test_searchUsers_returns_empty_for_no_matches(): void
     {
+        $this->primeDirectoryListingRules();
         DB::shouldReceive('select')
             ->once()
             ->andReturn([]);
@@ -243,6 +259,7 @@ class MentionServiceTest extends TestCase
 
     public function test_searchUsers_works_without_current_user(): void
     {
+        $this->primeDirectoryListingRules();
         DB::shouldReceive('select')
             ->once()
             ->andReturn([

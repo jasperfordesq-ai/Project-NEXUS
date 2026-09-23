@@ -44,10 +44,17 @@ final class PublicListingResource
             'primary_image' => self::primaryImage($listing, $title),
             'gallery' => self::gallery($listing, $title),
             'category' => self::category($listing),
+            // F-082: the public contract is for anonymous public pages, so the
+            // coordinates are always rounded to ~1 km, exactly as
+            // PublicMarketplaceListingResource does.
             'location' => [
                 'label' => self::nullableString($listing['location'] ?? null),
-                'latitude' => self::nullableFloat($listing['latitude'] ?? null),
-                'longitude' => self::nullableFloat($listing['longitude'] ?? null),
+                'latitude' => ($latitude = self::nullableFloat($listing['latitude'] ?? null)) !== null
+                    ? round($latitude, 2)
+                    : null,
+                'longitude' => ($longitude = self::nullableFloat($listing['longitude'] ?? null)) !== null
+                    ? round($longitude, 2)
+                    : null,
             ],
             'time_credit_value' => [
                 'hours' => self::nullableFloat($listing['hours_estimate'] ?? $listing['price'] ?? null),

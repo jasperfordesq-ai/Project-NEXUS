@@ -142,7 +142,7 @@ class SkillTaxonomyController extends BaseApiController
         }
 
         $limit = $this->queryInt('limit', 30, 1, 50);
-        $members = $this->skillTaxonomyService->getMembersWithSkill($skillName, $limit);
+        $members = $this->skillTaxonomyService->getMembersWithSkill($skillName, $limit, $this->getOptionalUserId());
 
         return $this->respondWithData($members);
     }

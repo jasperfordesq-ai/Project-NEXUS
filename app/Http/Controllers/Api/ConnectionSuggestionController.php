@@ -7,6 +7,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
+use App\Services\OnboardingConfigService;
+use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
@@ -134,10 +137,28 @@ class ConnectionSuggestionController extends BaseApiController
         // Recency score: users active in last 30 days get a boost
         $recencyCase = "CASE WHEN u.last_active_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 2 ELSE 0 END";
 
+        // F-080: a DISCOVERY surface lists only the members the directory
+        // would list — their own "show me in member search" switch and the
+        // community's listing requirements — and (F-081) never a
+        // connections-only profile the viewer could not open. These fragments
+        // are built from fixed column names; no request value reaches them.
+        $visibilitySql = '(u.privacy_search = 1 OR u.privacy_search IS NULL)';
+        foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId, 'u') as $condition) {
+            $visibilitySql .= " AND ({$condition})";
+        }
+        [$profileSql, $profileParams] = MemberProfileVisibility::sqlCondition($tenantId, $userId, 'u');
+        if ($profileSql !== '') {
+            $visibilitySql .= " AND ({$profileSql})";
+        }
+
         $sql = "
             SELECT
                 u.id,
                 COALESCE(u.name, CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, ''))) AS name,
+                u.first_name,
+                u.last_name,
+                u.profile_type,
+                u.organization_name,
                 u.avatar_url,
                 u.bio,
                 u.skills,
@@ -149,6 +170,7 @@ class ConnectionSuggestionController extends BaseApiController
             AND u.id NOT IN ({$excludePlaceholders})
             AND u.is_active = 1
             AND u.status != 'suspended'
+            AND {$visibilitySql}
             ORDER BY score DESC, u.last_active_at DESC
             LIMIT ?
         ";
@@ -160,6 +182,7 @@ class ConnectionSuggestionController extends BaseApiController
             $sharedGroupsParams,  // score: shared_groups part (was missing — caused HY093 mismatch)
             [$tenantId],
             $excludeIds,
+            $profileParams,
             [$limit]
         );
 
@@ -171,11 +194,15 @@ class ConnectionSuggestionController extends BaseApiController
                 'error' => $e->getMessage(),
             ]);
 
-            $candidates = DB::table('users')
+            $fallback = DB::table('users')
                 ->where('tenant_id', $tenantId)
                 ->whereNotIn('id', $excludeIds)
                 ->where('is_active', 1)
-                ->where('status', '!=', 'suspended')
+                ->where('status', '!=', 'suspended');
+            MemberDirectoryVisibility::applyToQuery($fallback, $tenantId);
+            MemberProfileVisibility::applyToQuery($fallback, $tenantId, $userId);
+
+            $candidates = $fallback
                 ->orderByDesc('last_active_at')
                 ->limit($limit)
                 ->get(['id', 'name', 'first_name', 'last_name', 'profile_type', 'organization_name', 'avatar_url', 'bio', 'skills'])
@@ -202,6 +229,9 @@ class ConnectionSuggestionController extends BaseApiController
             }
         }
 
+        // The directory's surname rule: non-admin viewers see a first name only.
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+
         $suggestions = [];
         foreach ($candidates as $candidate) {
             $candidateSkills = [];
@@ -220,11 +250,28 @@ class ConnectionSuggestionController extends BaseApiController
                 }
             }
 
+            $name = $candidate->name ?: '';
+            if (! $viewerIsAdmin) {
+                $name = (string) MemberProfileVisibility::withoutSurname([
+                    'name' => $name,
+                    'first_name' => $candidate->first_name ?? '',
+                    'profile_type' => $candidate->profile_type ?? 'individual',
+                    'organization_name' => $candidate->organization_name ?? null,
+                ])['name'];
+            }
+
+            // A suggestion card shows a teaser, as the directory does
+            // (LEFT(bio, 120)), not the member's whole biography.
+            $bio = $candidate->bio ?? null;
+            if (is_string($bio) && mb_strlen($bio) > 120) {
+                $bio = mb_substr($bio, 0, 120);
+            }
+
             $suggestions[] = [
                 'id' => (int) $candidate->id,
-                'name' => $candidate->name ?: '',
+                'name' => $name,
                 'avatar_url' => $candidate->avatar_url ?? null,
-                'bio' => $candidate->bio ?? null,
+                'bio' => $bio,
                 'mutual_connections_count' => (int) ($candidate->mutual_connections_count ?? 0),
                 'shared_skills' => array_slice($sharedSkills, 0, 5),
                 'connection_status' => 'none',

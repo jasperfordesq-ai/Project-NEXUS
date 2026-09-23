@@ -11,6 +11,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -300,11 +301,12 @@ class MentionService
         }
 
         $sql = "SELECT u.id, COALESCE(u.name, CONCAT(u.first_name, ' ', COALESCE(u.last_name, ''))) as name,
-                       u.username, u.avatar_url, u.first_name, u.last_name
+                       u.username, u.avatar_url, u.first_name, u.last_name,
+                       u.profile_type, u.organization_name
                        {$connectionSubquery}
                 FROM users u
                 WHERE u.tenant_id = ?
-                  AND u.status != 'banned'
+                  AND u.status = 'active'
                   AND u.deleted_at IS NULL
                   AND (u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?)";
 
@@ -314,6 +316,18 @@ class MentionService
         $bindings[] = $searchTerm;
         $bindings[] = $searchTerm;
         $bindings[] = $searchTerm;
+
+        // F-080: autocomplete is a DISCOVERY surface — typing a few letters
+        // lists members the searcher did not name. It therefore lists only
+        // the members the directory would list: their own "show me in member
+        // search" switch and the community's listing requirements. An
+        // opted-out member can still be mentioned by someone who types their
+        // exact @username; resolveMentions() looks names up directly and is
+        // deliberately not filtered.
+        $sql .= " AND (u.privacy_search = 1 OR u.privacy_search IS NULL)";
+        foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId, 'u') as $condition) {
+            $sql .= " AND ({$condition})";
+        }
 
         // Exclude the current user from results
         if ($currentUserId > 0) {
@@ -340,10 +354,23 @@ class MentionService
 
         $results = DB::select($sql, $bindings);
 
-        return array_map(function ($user) {
+        // The directory's surname rule: non-admin viewers see a first name only.
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId > 0 ? $currentUserId : null);
+
+        return array_map(function ($user) use ($viewerIsAdmin) {
+            $name = $user->name ?? UserDisplayName::resolve($user);
+            if (! $viewerIsAdmin) {
+                $name = (string) MemberProfileVisibility::withoutSurname([
+                    'name' => $name,
+                    'first_name' => $user->first_name ?? '',
+                    'profile_type' => $user->profile_type ?? 'individual',
+                    'organization_name' => $user->organization_name ?? null,
+                ])['name'];
+            }
+
             return [
                 'id'            => (int) $user->id,
-                'name'          => $user->name ?? UserDisplayName::resolve($user),
+                'name'          => $name,
                 'username'      => $user->username,
                 'avatar_url'    => $user->avatar_url,
                 'is_connection' => (bool) ($user->is_connection ?? false),

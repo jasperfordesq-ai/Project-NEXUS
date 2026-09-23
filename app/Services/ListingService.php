@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -86,6 +87,7 @@ class ListingService
         $currentUserId = ! empty($filters['current_user_id'])
             ? (int) $filters['current_user_id']
             : null;
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId);
 
         // ── Meilisearch search path ──────────────────────────────────────────
         // When a search term is present and Meilisearch is available, use it for
@@ -216,7 +218,7 @@ class ListingService
                 foreach ($ids as $id) {
                     $listing = $listingsById[$id] ?? null;
                     if ($listing) {
-                        $items[] = self::formatListingItem($listing, $savedIds, $currentUserId, $authorRatings);
+                        $items[] = self::formatListingItem($listing, $savedIds, $currentUserId, $authorRatings, $viewerIsAdmin);
                     }
                 }
 
@@ -375,7 +377,7 @@ class ListingService
         }
 
         $result = $items->map(
-            fn(Listing $listing) => self::formatListingItem($listing, $savedIds, $currentUserId, $authorRatings)
+            fn(Listing $listing) => self::formatListingItem($listing, $savedIds, $currentUserId, $authorRatings, $viewerIsAdmin)
         )->all();
 
         return [
@@ -386,13 +388,37 @@ class ListingService
     }
 
     /**
+     * F-082: a listing's coordinates are shown to everyone but its owner and
+     * the community's administrators rounded to ~1 km. When a member creates
+     * a listing without a location, create() copies their PROFILE location
+     * in — often a home address from the location picker — so the exact
+     * values would otherwise be published on every listing card. What is
+     * stored is not changed; the owner's edit form still gets exact values.
+     *
+     * @param  array<string, mixed> $data A listing row (Listing::toArray()).
+     * @return array<string, mixed>
+     */
+    public static function coarsenListingCoordinates(array $data, ?int $viewerId, ?bool $viewerIsAdmin = null): array
+    {
+        $ownerId = isset($data['user_id']) ? (int) $data['user_id'] : 0;
+        $isOwner = $viewerId !== null && $viewerId > 0 && $ownerId === $viewerId;
+        if ($isOwner) {
+            return $data;
+        }
+
+        $viewerIsAdmin ??= MemberProfileVisibility::viewerIsAdmin($viewerId);
+
+        return MemberProfileVisibility::coarsenCoordinates($data, $viewerIsAdmin);
+    }
+
+    /**
      * Shape a Listing model into the array contract expected by the React frontend.
      *
      * @param array $authorRatings Pre-fetched map of user_id => avg_rating (avoids N+1 when processing lists)
      */
-    private static function formatListingItem(Listing $listing, array $savedIds, ?int $currentUserId, array $authorRatings = []): array
+    private static function formatListingItem(Listing $listing, array $savedIds, ?int $currentUserId, array $authorRatings = [], bool $viewerIsAdmin = false): array
     {
-        $data = $listing->toArray();
+        $data = self::coarsenListingCoordinates($listing->toArray(), $currentUserId, $viewerIsAdmin);
 
         $user = $listing->user;
         $authorName = $user
@@ -532,11 +558,14 @@ class ListingService
             $bindings[] = $radiusKm;
 
             $whereStr = implode(' AND ', $whereClauses);
+            // Same rounded coordinates as getNearby() (F-082), so the count
+            // matches the list and cannot be used to probe exact positions.
+            $d = MemberProfileVisibility::PUBLIC_COORDINATE_DECIMALS;
             $sql = "SELECT COUNT(*) AS total FROM (
                 SELECT (6371 * acos(LEAST(1.0, GREATEST(-1.0,
-                    cos(radians(?)) * cos(radians(latitude)) *
-                    cos(radians(longitude) - radians(?)) +
-                    sin(radians(?)) * sin(radians(latitude))
+                    cos(radians(?)) * cos(radians(ROUND(latitude, {$d}))) *
+                    cos(radians(ROUND(longitude, {$d})) - radians(?)) +
+                    sin(radians(?)) * sin(radians(ROUND(latitude, {$d})))
                 )))) AS distance_km
                 FROM listings
                 WHERE {$whereStr}
@@ -803,9 +832,13 @@ class ListingService
             }
         }
 
+        // F-082: measured to the listing's coordinates rounded as they are
+        // shown (~1 km), so distances from caller-chosen centre points cannot
+        // be used to recover the stored location.
+        $d = MemberProfileVisibility::PUBLIC_COORDINATE_DECIMALS;
         $haversine = '(6371 * acos(LEAST(1.0, GREATEST(-1.0, '
-            . 'cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + '
-            . 'sin(radians(?)) * sin(radians(latitude))'
+            . "cos(radians(?)) * cos(radians(ROUND(latitude, {$d}))) * cos(radians(ROUND(longitude, {$d})) - radians(?)) + "
+            . "sin(radians(?)) * sin(radians(ROUND(latitude, {$d})))"
             . '))))';
 
         $query = Listing::query()
@@ -893,8 +926,10 @@ class ListingService
                 ->pluck('listing_id')->flip()->all();
         }
 
-        $result = $items->map(function (Listing $listing) use ($savedIds, $currentUserId) {
-            $data = $listing->toArray();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($currentUserId);
+
+        $result = $items->map(function (Listing $listing) use ($savedIds, $currentUserId, $viewerIsAdmin) {
+            $data = self::coarsenListingCoordinates($listing->toArray(), $currentUserId, $viewerIsAdmin);
             $user = $listing->user;
             $data['author_name'] = ($user && $user->profile_type === 'organisation' && $user->organization_name)
                 ? $user->organization_name
@@ -956,7 +991,8 @@ class ListingService
             ->limit($limit)
             ->get()
             ->map(function (Listing $listing) {
-                $data = $listing->toArray();
+                // Featured listings are shown without a viewer: always rounded (F-082).
+                $data = MemberProfileVisibility::coarsenCoordinates($listing->toArray(), false);
                 $user = $listing->user;
                 $data['author_name'] = ($user && $user->profile_type === 'organisation' && $user->organization_name)
                     ? $user->organization_name

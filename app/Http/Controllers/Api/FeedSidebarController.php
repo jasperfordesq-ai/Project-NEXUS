@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -98,20 +101,16 @@ class FeedSidebarController extends BaseApiController
                 $connectedIds = array_merge($connectedIds, array_map('intval', $connections));
             } catch (\Exception $e) { /* connections table may not exist */ }
 
-            $members = DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->whereNotIn('id', $connectedIds)
-                ->orderByDesc('last_active_at')
-                ->orderByDesc('created_at')
+            $members = $this->suggestedMembersQuery($tenantId, $userId, $connectedIds)
                 ->limit($limit)
                 ->select('id', 'first_name', 'last_name', 'organization_name', 'profile_type', 'avatar_url', 'location', 'last_active_at')
                 ->get();
 
+            $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
             $now = now();
-            $filtered = $members->map(function ($m) use ($now) {
+            $filtered = $members->map(function ($m) use ($now, $viewerIsAdmin) {
                 $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
-                return [
+                $row = [
                     'id'                => (int) $m->id,
                     // Emit the resolved display name: without it a client has to
                     // concatenate first+last, which is the contact person rather
@@ -126,6 +125,8 @@ class FeedSidebarController extends BaseApiController
                     'is_online'         => $lastActive && $lastActive->gt($now->copy()->subMinutes(5)),
                     'is_recent'         => $lastActive && $lastActive->gt($now->copy()->subDay()),
                 ];
+
+                return $viewerIsAdmin ? $row : MemberProfileVisibility::withoutSurname($row);
             })->values()->all();
 
             return $this->respondWithData($filtered);
@@ -325,22 +326,18 @@ class FeedSidebarController extends BaseApiController
                     $connectedIds = array_merge($connectedIds, array_map('intval', $cids));
                 } catch (\Exception $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
 
-                $data['suggested_members'] = DB::table('users')
-                    ->where('tenant_id', $tenantId)
-                    ->where('status', 'active')
-                    ->whereNotIn('id', $connectedIds)
-                    ->orderByDesc('last_active_at')
-                    ->orderByDesc('created_at')
+                $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
+                $data['suggested_members'] = $this->suggestedMembersQuery($tenantId, $userId, $connectedIds)
                     ->limit(5)
                     ->select('id', 'first_name', 'last_name', 'organization_name', 'profile_type', 'avatar_url', 'location', 'last_active_at')
                     ->get()
-                    ->map(function ($m) use ($now) {
+                    ->map(function ($m) use ($now, $viewerIsAdmin) {
                         $arr = (array) $m;
                         $arr['name'] = UserDisplayName::resolve($m);
                         $lastActive = $m->last_active_at ? \Carbon\Carbon::parse($m->last_active_at) : null;
                         $arr['is_online'] = $lastActive && $lastActive->gt($now->copy()->subMinutes(5));
                         $arr['is_recent'] = $lastActive && $lastActive->gt($now->copy()->subDay());
-                        return $arr;
+                        return $viewerIsAdmin ? $arr : MemberProfileVisibility::withoutSurname($arr);
                     })
                     ->all();
             } catch (\Throwable $e) {
@@ -349,5 +346,35 @@ class FeedSidebarController extends BaseApiController
         }
 
         return $this->respondWithData($data);
+    }
+
+    /**
+     * Candidate members for "people you may know". This is a DISCOVERY
+     * surface, so it lists only the members the directory would list
+     * (F-080): their own "show me in member search" switch and the
+     * community's listing requirements, never a member with a block either
+     * way with the viewer, and never a connections-only profile the viewer
+     * could not open (F-081).
+     *
+     * @param array<int, int> $excludeIds The viewer and their existing connections.
+     */
+    private function suggestedMembersQuery(int $tenantId, int $userId, array $excludeIds): \Illuminate\Database\Query\Builder
+    {
+        $excludeIds = array_values(array_unique(array_merge(
+            $excludeIds,
+            array_map('intval', BlockUserService::getBlockedPairIds($userId)),
+        )));
+
+        $query = DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->whereNotIn('id', $excludeIds)
+            ->orderByDesc('last_active_at')
+            ->orderByDesc('created_at');
+
+        MemberDirectoryVisibility::applyToQuery($query, $tenantId);
+        MemberProfileVisibility::applyToQuery($query, $tenantId, $userId);
+
+        return $query;
     }
 }
