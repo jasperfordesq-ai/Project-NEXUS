@@ -105,6 +105,17 @@ function firstVisible(locator: import('@playwright/test').Locator) {
 test.describe('Header dropdowns open reliably @smoke', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
   test.beforeEach(async ({ page }) => {
+    // Keep the unrelated consent dialog from being counted as a header
+    // popover after Escape. This test is about the menus, not first-visit consent.
+    await page.addInitScript(() => {
+      localStorage.setItem('dev_notice_dismissed', '2.1');
+      localStorage.setItem('nexus_cookie_consent', JSON.stringify({
+        essential: true,
+        analytics: false,
+        preferences: true,
+        timestamp: new Date().toISOString(),
+      }));
+    });
     await primeApiAuth(page, 'user');
     await goToTenantPage(page, '/feed');
     await waitForPageLoad(page);
