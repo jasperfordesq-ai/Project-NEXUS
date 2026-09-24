@@ -68,6 +68,8 @@ const { mockApiGet, mockApiClearInflight, mockFetchCsrfToken, mockTokenManager }
     getTenantSlug: vi.fn().mockReturnValue(null),
     hasAccessToken: vi.fn().mockReturnValue(false),
     hasRefreshToken: vi.fn().mockReturnValue(false),
+    getSessionGeneration: vi.fn().mockReturnValue(0),
+    runIfSessionCurrent: vi.fn(async (_generation: number, callback: () => boolean) => callback()),
     setTenantId: vi.fn(),
     setTenantSlug: vi.fn(),
     clearTokens: vi.fn(),
