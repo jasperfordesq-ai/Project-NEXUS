@@ -309,14 +309,11 @@ describe('AuthContext', () => {
 
       const { result } = renderHook(() => useAuth(), { wrapper: authWrapper });
 
-      await waitFor(() => {
-        expect(mockApiGet).toHaveBeenCalledWith('/v2/users/me');
-      });
+      await waitFor(() => expect(result.current.status).toBe('unavailable'));
 
       expect(mockTokenManager.clearTokens).not.toHaveBeenCalled();
       expect(result.current.isAuthenticated).toBe(false);
-      expect(result.current.status).toBe('loading');
-      expect(result.current.isLoading).toBe(true);
+      expect(result.current.isLoading).toBe(false);
     });
 
     it('retries a recoverable cold-start check when the browser comes online', async () => {

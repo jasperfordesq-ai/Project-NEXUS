@@ -160,6 +160,25 @@ describe('AuthContext', () => {
     expect(api.get).toHaveBeenCalledWith('/v2/users/me');
   });
 
+  it('retries a transient cookie restoration without leaving the member at a loading gate', async () => {
+    vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(true);
+    vi.mocked(api.refreshSession)
+      .mockResolvedValueOnce('transient')
+      .mockImplementation(async () => {
+        vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+        vi.mocked(tokenManager.getAccessToken).mockReturnValue('restored-access');
+        return 'refreshed';
+      });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: {
+      id: 1, first_name: 'Jane', last_name: 'Doe', tenant_id: 2,
+    } });
+
+    render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('unavailable'));
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'), { timeout: 4000 });
+    expect(api.refreshSession).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps a required enrollment challenge out of the bearer token store', async () => {
     const { api } = await import('@/lib/api');
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { requires_2fa_setup: true, two_factor_token: 'setup-only' } });

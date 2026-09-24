@@ -41,7 +41,7 @@ const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation('common');
-  const { isAuthenticated, isLoading, status, user } = useAuth();
+  const { isAuthenticated, isLoading, status, user, refreshUser } = useAuth();
   const { tenantPath, tenant } = useTenant();
   const location = useLocation();
   const {
@@ -57,6 +57,18 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Show loading while checking auth status
   if (isLoading || status === 'loading') {
     return <LoadingScreen message={t('checking_authentication')} />;
+  }
+
+  if (status === 'unavailable') {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4" role="alert">
+        <div className="max-w-sm text-center">
+          <h1 className="text-xl font-semibold text-theme-primary">{t('errors.unexpected')}</h1>
+          <p className="mt-2 text-sm text-theme-muted">{t('errors.connection_failed_detail')}</p>
+          <Button className="mt-5" onPress={() => { void refreshUser(); }}>{t('actions.retry')}</Button>
+        </div>
+      </div>
+    );
   }
 
   // Redirect to login if not authenticated, preserving tenant slug prefix

@@ -51,6 +51,7 @@ import type {
 export type AuthStatus =
   | 'idle'           // Not logged in, no action
   | 'loading'        // Auth operation in progress
+  | 'unavailable'    // Session may exist; restoration is temporarily unavailable
   | 'requires_2fa_setup'
   | 'requires_2fa'   // Login succeeded, awaiting 2FA
   | 'authenticated'  // Fully authenticated
@@ -198,7 +199,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (outcome !== 'refreshed' || !tokenManager.hasAccessToken()) {
         setState((prev) => ({
           ...prev,
-          status: outcome === 'transient' ? 'loading' : 'idle',
+          status: outcome === 'transient' ? 'unavailable' : 'idle',
           user: null,
         }));
         return;
@@ -264,7 +265,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // routes do not redirect merely because the network is unavailable.
         setState((prev) => ({
           ...prev,
-          status: prev.user ? 'authenticated' : 'loading',
+          status: prev.user ? 'authenticated' : 'unavailable',
           error: null,
         }));
       } else {
@@ -287,7 +288,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ...prev,
         status: prev.user
           ? 'authenticated'
-          : tokenManager.hasAccessToken() ? 'loading' : 'idle',
+          : tokenManager.hasAccessToken() || tokenManager.hasRefreshToken() ? 'unavailable' : 'idle',
         error: null,
       }));
     }
@@ -1043,11 +1044,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshUser();
   }, [refreshUser]);
 
-  // A cold-start session check that failed offline remains recoverable instead
-  // of redirecting to login. Retry automatically when connectivity returns.
+  // A cold-start session check can fail while the cookie is still valid.
+  // Retry a few times online, then leave a visible retry action instead of an
+  // endless loading gate or an incorrect sign-in redirect.
+  useEffect(() => {
+    if (state.status !== 'unavailable') return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const delays = [2000, 5000, 10000];
+    const retry = async (attempt: number) => {
+      if (cancelled) return;
+      await refreshUser();
+      if (!cancelled && attempt + 1 < delays.length) {
+        timer = setTimeout(() => { void retry(attempt + 1); }, delays[attempt + 1]);
+      }
+    };
+    timer = setTimeout(() => { void retry(0); }, delays[0]);
+    return () => {
+      cancelled = true;
+      if (timer !== null) clearTimeout(timer);
+    };
+  }, [state.status, refreshUser]);
+
+  // Retry on regained connectivity as well, even after the bounded timer ends.
   useEffect(() => {
     const retrySessionCheck = () => {
-      if (state.status === 'loading') {
+      if (state.status === 'loading' || state.status === 'unavailable') {
         void refreshUser();
       }
     };

@@ -15,12 +15,15 @@ class TenantContextTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_custom_domain_api_can_select_only_its_active_direct_child(): void
+    public function test_custom_domain_api_can_select_only_its_active_descendants(): void
     {
         $domain = 'browser-api-' . bin2hex(random_bytes(5)) . '.example.test';
         $parent = Tenant::factory()->create(['domain' => $domain, 'is_active' => true]);
         $child = Tenant::factory()->create([
             'domain' => null, 'parent_id' => $parent->id, 'is_active' => true,
+        ]);
+        $grandchild = Tenant::factory()->create([
+            'domain' => null, 'parent_id' => $child->id, 'is_active' => true,
         ]);
         $unrelated = Tenant::factory()->create(['domain' => null, 'is_active' => true]);
         $previous = [
@@ -36,6 +39,16 @@ class TenantContextTest extends TestCase
             TenantContext::reset();
             TenantContext::resolve();
             $this->assertSame((int) $child->id, TenantContext::getId());
+
+            $_SERVER['HTTP_X_TENANT_ID'] = (string) $grandchild->id;
+            TenantContext::reset();
+            TenantContext::resolve();
+            $this->assertSame((int) $grandchild->id, TenantContext::getId());
+
+            $child->update(['is_active' => false]);
+            TenantContext::reset();
+            TenantContext::resolve();
+            $this->assertSame((int) $parent->id, TenantContext::getId());
 
             $_SERVER['HTTP_X_TENANT_ID'] = (string) $unrelated->id;
             TenantContext::reset();

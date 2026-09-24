@@ -149,18 +149,32 @@ class TenantContext
                     }
                 }
 
-                // The React app on a parent's custom domain sends its child's
-                // tenant ID with /api requests. Accept only an active direct
-                // child of this host's tenant; never let a header select an
-                // unrelated community on a dedicated domain.
+                // The React app on a custom domain sends the selected tenant
+                // ID with /api requests. A slug may select a nested descendant;
+                // accept it only when its full active ancestry reaches this
+                // host's tenant, never an unrelated community.
                 $apiTenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? null;
                 if (str_starts_with((string) $path, '/api/') && is_numeric($apiTenantId)) {
                     $childRow = DB::table('tenants')
                         ->where('id', (int) $apiTenantId)
-                        ->where('parent_id', (int) $domainTenant['id'])
                         ->where('is_active', 1)
                         ->first();
-                    if ($childRow) {
+                    $ancestorId = $childRow ? (int) $childRow->parent_id : 0;
+                    $seen = $childRow ? [(int) $childRow->id => true] : [];
+                    $isDescendant = false;
+                    for ($depth = 0; $ancestorId > 0 && $depth < 64; $depth++) {
+                        if (isset($seen[$ancestorId])) break;
+                        if ($ancestorId === (int) $domainTenant['id']) {
+                            $isDescendant = true;
+                            break;
+                        }
+                        $seen[$ancestorId] = true;
+                        $ancestor = DB::table('tenants')->where('id', $ancestorId)
+                            ->where('is_active', 1)->first(['id', 'parent_id']);
+                        if (!$ancestor) break;
+                        $ancestorId = (int) $ancestor->parent_id;
+                    }
+                    if ($childRow && $isDescendant) {
                         $tokenTenantId = self::extractTenantIdFromBearerToken();
                         if ($tokenTenantId !== null && $tokenTenantId !== (int) $childRow->id
                             && !self::isTokenUserSuperAdmin()) {
@@ -177,7 +191,7 @@ class TenantContext
                     }
                 }
 
-                // No child tenant found — lock to the custom-domain (parent) tenant.
+                // No permitted descendant — lock to the custom-domain tenant.
                 self::$tenant = $domainTenant;
                 self::$basePath = '';
                 self::$cachedId = (int) $domainTenant['id'];
