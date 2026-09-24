@@ -99,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - External federation transfer cancellations now lock and recheck the completed transfer before reversing credits. Two simultaneous authenticated partner cancellations can no longer deduct the same transfer twice (F-147 / E-025 R14).
 
-- React sessions now bind requests, retries, sign-in completions, tenant changes, logout, impersonation and offline event check-in data to one immutable account generation. Delayed work from account A can no longer refresh, resend, overwrite, clear or retarget account B after a same-browser account switch (F-020 / E-025 R04).
+- React sessions now bind requests, retries, sign-in completions, tenant changes, logout, impersonation and offline event check-in data to one immutable account generation. Delayed work from account A can no longer refresh, resend, overwrite, clear or retarget account B after a same-browser account switch. Regression coverage now exercises the exact browser-storage mutation boundaries, and the test-type ratchet locks in the corrected biometric response fixtures (F-020 / E-025 R04).
 
 - Super-panel user moves now lock and recheck the destination community before changing an account. A simultaneous hierarchy, active-state, or hub-capability change can no longer make a previously valid destination stale; hierarchy moves use the same tenant-before-user lock order (F-144).
 
