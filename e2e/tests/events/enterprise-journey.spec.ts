@@ -143,6 +143,7 @@ interface BulkPeopleResult {
 
 let apiContext: APIRequestContext | undefined;
 let harness: EventsJourneyHarness | undefined;
+let lastAdminTotpCompletion = 0;
 
 test.describe.configure({ mode: 'serial', timeout: 90_000 });
 
@@ -198,6 +199,13 @@ function assertSafeFixtureTarget(): void {
 
 async function loginActor(kind: 'user' | 'admin'): Promise<ActorSession> {
   if (!apiContext) throw new Error('Events E2E API context is not initialized.');
+  if (kind === 'admin' && lastAdminTotpCompletion > 0) {
+    // These serial UI visits use one synthetic admin. A TOTP code cannot be
+    // replayed in the same 30-second step; an invalid retry also consumes the
+    // real five-attempt MFA limit. Wait for a fresh step before signing in again.
+    const waitMs = Math.max(0, 31_000 - (Date.now() - lastAdminTotpCompletion));
+    if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
   const email = process.env[kind === 'admin' ? 'E2E_ADMIN_EMAIL' : 'E2E_USER_EMAIL'];
   const password = process.env[kind === 'admin' ? 'E2E_ADMIN_PASSWORD' : 'E2E_USER_PASSWORD'];
   if (!email || !password) throw new Error(`Events E2E ${kind} credentials are missing.`);
@@ -220,6 +228,7 @@ async function loginActor(kind: 'user' | 'admin'): Promise<ActorSession> {
   const loginData = await completeTwoFactorIfChallenged(await response.json(), {
     request: apiContext, apiBaseUrl: origin, tenantSlug: TENANT, email, origin,
   });
+  if (kind === 'admin') lastAdminTotpCompletion = Date.now();
   const token = loginData?.data?.access_token || loginData?.access_token;
   const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
   const tenantId = Number(loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
