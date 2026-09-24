@@ -16,11 +16,13 @@ set -euo pipefail
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 success() { echo -e "${GREEN}✓ $1${NC}"; }
 error()   { echo -e "${RED}✗ $1${NC}"; }
 info()    { echo -e "${CYAN}→ $1${NC}"; }
+warn()    { echo -e "${YELLOW}⚠ $1${NC}"; }
 
 # Load local secrets if present. .secrets.local/deploy.env is gitignored
 # and contains PROD_SSH_HOST + PROD_SSH_KEY for this developer's machine.
@@ -45,21 +47,32 @@ echo "║         PRODUCTION DATABASE BACKUP                        ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
+# E-035 F-203: run a shell snippet on the server as root with MYSQL_PWD read
+# THERE from /opt/nexus-php/.env. The snippet travels on ssh's stdin and the
+# password reaches the container through the environment (`docker exec -e
+# MYSQL_PWD`, no value), so it is never on a command line on either machine
+# and never copied to this one.
+remote_db() {
+    { printf '%s\n' 'MYSQL_PWD=$(sed -n "s/^DB_PASS=//p" /opt/nexus-php/.env | head -n 1); export MYSQL_PWD'
+      printf '%s\n' "$1"; } | ssh $SSH_OPTS "$SSH_HOST" "sudo sh -s"
+}
+
 # Read credentials from server
 info "Reading production credentials..."
-if [[ -n "${PROD_DB_PASS:-}" && -n "${PROD_DB_USER:-}" ]]; then
+if [[ -n "${PROD_DB_PASS:-}" ]]; then
+    warn "PROD_DB_PASS is ignored: the password is read on the server and never leaves it"
+fi
+if [[ -n "${PROD_DB_USER:-}" ]]; then
     DB_USER="$PROD_DB_USER"
-    DB_PASS="$PROD_DB_PASS"
 else
     DB_USER=$(ssh $SSH_OPTS "$SSH_HOST" "sudo grep '^DB_USER=' /opt/nexus-php/.env | cut -d= -f2")
-    DB_PASS=$(ssh $SSH_OPTS "$SSH_HOST" "sudo grep '^DB_PASS=' /opt/nexus-php/.env | cut -d= -f2")
 fi
 
-if [[ -z "$DB_PASS" ]]; then
+if [[ -z "$DB_USER" ]] || ! ssh $SSH_OPTS "$SSH_HOST" "sudo grep -q '^DB_PASS=.' /opt/nexus-php/.env"; then
     error "Could not read DB credentials"
     exit 1
 fi
-success "Credentials obtained"
+success "Credentials found on the server"
 
 # Create backup
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -67,10 +80,8 @@ BACKUP_NAME="manual_backup_${TIMESTAMP}.sql"
 BACKUP_PATH="/opt/nexus-php/backups/${BACKUP_NAME}"
 
 info "Creating backup..."
-ssh $SSH_OPTS "$SSH_HOST" \
-    "sudo mkdir -p /opt/nexus-php/backups && \
-     sudo docker exec -e MYSQL_PWD='${DB_PASS}' ${DB_CONTAINER} mariadb-dump -u '${DB_USER}' ${DB_NAME} \
-     | sudo tee ${BACKUP_PATH} > /dev/null" || {
+remote_db "set -e; umask 077; mkdir -p /opt/nexus-php/backups; chmod 755 /opt/nexus-php/backups
+docker exec -e MYSQL_PWD ${DB_CONTAINER} mariadb-dump -u '${DB_USER}' ${DB_NAME} > ${BACKUP_PATH}" || {
     error "Backup failed!"
     exit 1
 }
