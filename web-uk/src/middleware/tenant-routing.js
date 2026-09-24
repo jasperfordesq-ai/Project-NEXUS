@@ -433,7 +433,22 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
     }
 
     const sluglessPath = validateReturnUrl(rest, '/');
-    res.redirect(permanentRedirectStatus(req), withQuery(sluglessPath, queryIndex, originalUrl));
+    const location = withQuery(sluglessPath, queryIndex, originalUrl);
+    const localOrigin = 'https://nexus.invalid';
+    try {
+      if (
+        location.startsWith('/') &&
+        !location.startsWith('//') &&
+        !location.startsWith('/\\') &&
+        new URL(location, localOrigin).origin === localOrigin
+      ) {
+        res.redirect(permanentRedirectStatus(req), location);
+      } else {
+        res.redirect(permanentRedirectStatus(req), '/');
+      }
+    } catch {
+      res.redirect(permanentRedirectStatus(req), '/');
+    }
     return true;
   } catch (error) {
     if (error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404)) {
