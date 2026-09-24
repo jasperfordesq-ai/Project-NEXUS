@@ -12,10 +12,27 @@ if (!keyPath || !certPath) {
   throw new Error('Pass the temporary CI TLS key and certificate paths');
 }
 
+const frontendPort = Number(process.env.NEXUS_E2E_FRONTEND_PORT || 3000);
+const apiPort = Number(process.env.NEXUS_E2E_API_PORT || frontendPort);
+const listenPort = Number(process.env.NEXUS_E2E_PROXY_PORT || 3443);
+const listenHost = process.env.NEXUS_E2E_PROXY_HOST;
+for (const port of [frontendPort, apiPort, listenPort]) {
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error('Invalid HTTPS proxy port');
+  }
+}
+
 createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, (incoming, outgoing) => {
+  // Production's browser-auth middleware requires HTTPS and an exact Host/Origin
+  // match. Route API calls straight to the candidate API so the frontend proxy
+  // cannot strip the test origin's port from Host.
+  const apiRequest = incoming.url?.startsWith('/api/')
+    || incoming.url?.startsWith('/version.php')
+    || incoming.url?.startsWith('/health.php');
+  const targetPort = apiRequest ? apiPort : frontendPort;
   const upstream = request({
     hostname: '127.0.0.1',
-    port: 3000,
+    port: targetPort,
     path: incoming.url,
     method: incoming.method,
     headers: { ...incoming.headers, 'x-forwarded-proto': 'https' },
@@ -28,4 +45,4 @@ createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, (inco
     outgoing.end();
   });
   incoming.pipe(upstream);
-}).listen(3443);
+}).listen(listenPort, listenHost);

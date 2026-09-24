@@ -1627,7 +1627,7 @@ cmd_deploy() {
     # so it never surprise-blocks a deploy before it is explicitly configured.
     if [ -f "$SELF_DIR/phases/candidate-journeys.sh" ]; then
         read -r _gate_api_port _gate_frontend_port < <(ports_for_color "$target")
-        if ! bash "$SELF_DIR/phases/candidate-journeys.sh" "$_gate_api_port" "$_gate_frontend_port" "$target"; then
+        if ! bash "$SELF_DIR/phases/candidate-journeys.sh" "$_gate_api_port" "$_gate_frontend_port" "$target" "$release_dir" "$commit"; then
             log_err "Candidate journey gate failed — aborting before cutover. Active color $active is unaffected."
             write_deploy_status "failed" "candidate journey gate failed" "$active" "$target" "$commit"
             stop_workers_for_color "$target"
