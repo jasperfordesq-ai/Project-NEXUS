@@ -14,6 +14,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -220,7 +221,7 @@ final class EventInvitationRecipientAuthorizer
                 }
                 $target = $emailTargets[$email] ?? null;
                 if ($target === null) {
-                    $decisions[] = $this->externalTargetDecision($tenantId, $event);
+                    $decisions[] = $this->externalTargetDecision($tenantId, $event, $actor);
                     continue;
                 }
             } else {
@@ -381,9 +382,15 @@ final class EventInvitationRecipientAuthorizer
      * ordinary community member without the invitation itself. Private linked
      * groups and non-published events therefore fail closed.
      */
-    private function externalTargetDecision(int $tenantId, Event $event): string
+    private function externalTargetDecision(int $tenantId, Event $event, User $actor): string
     {
         try {
+            // Inviting people who are not members is a bulk-reach capability
+            // reserved for community admins (E-035 F-161). Re-checked here so
+            // delivery of an already-issued invitation also fails closed.
+            if (! TenantAdminScope::allows($actor, $tenantId)) {
+                return self::DENIED;
+            }
             $publication = $event->getRawOriginal('publication_status');
             $published = is_string($publication) && trim($publication) !== ''
                 ? $publication === EventPublicationState::Published->value

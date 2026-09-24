@@ -1400,12 +1400,14 @@ class IdeationChallengeService
         $this->errors = [];
         $tenantId = TenantContext::getId();
 
-        $exists = DB::table('ideation_challenges')
+        $challenge = DB::table('ideation_challenges')
             ->where('id', $challengeId)
             ->where('tenant_id', $tenantId)
-            ->exists();
+            ->first(['id', 'status', 'user_id']);
 
-        if (! $exists) {
+        // E-035 F-187: a challenge the member cannot see (a draft) answers
+        // exactly like one that does not exist — the same rule as the list.
+        if (! $challenge || ! $this->canViewChallengeRecord($challenge, $userId)) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.challenge_not_found')];
             return ['favorited' => false];
         }

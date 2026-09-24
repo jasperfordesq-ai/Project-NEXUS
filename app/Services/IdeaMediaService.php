@@ -101,6 +101,14 @@ class IdeaMediaService
             return null;
         }
 
+        // E-035 F-207: the link is rendered as an `href` by both frontends, so
+        // only an absolute http(s) URL is stored — never javascript:, data:,
+        // or a scheme-relative link.
+        if (!self::isHttpUrl($url)) {
+            $this->addError('VALIDATION_INVALID_VALUE', __('api.invalid_url'), 'url');
+            return null;
+        }
+
         $mediaType = $data['media_type'] ?? 'image';
         if (!in_array($mediaType, ['image', 'video', 'document', 'link'])) {
             $mediaType = 'image';
@@ -131,6 +139,17 @@ class IdeaMediaService
             $this->addError('SERVER_INTERNAL_ERROR', 'Failed to add media');
             return null;
         }
+    }
+
+    private static function isHttpUrl(string $url): bool
+    {
+        if (strlen($url) > 2048 || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $host = (string) parse_url($url, PHP_URL_HOST);
+
+        return ($scheme === 'http' || $scheme === 'https') && $host !== '';
     }
 
     /**

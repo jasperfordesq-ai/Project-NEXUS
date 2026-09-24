@@ -28,7 +28,9 @@ final class EventInvitationSecurityBoundaryTest extends TestCase
 
     public function test_private_group_outsider_is_filtered_and_invitation_never_grants_view(): void
     {
-        $owner = $this->eventUser();
+        // E-035 F-161: email/CSV campaigns are admin-only, so the external
+        // preview below needs an admin organiser to reach the private-group rule.
+        $owner = $this->eventUser(['role' => 'admin']);
         $outsider = $this->eventUser();
         [$eventId] = $this->registrationEvent((int) $owner->id);
         $group = $this->group($owner, 'private');

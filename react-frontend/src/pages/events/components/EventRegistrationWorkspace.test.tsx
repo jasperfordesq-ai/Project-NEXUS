@@ -22,10 +22,16 @@ const mockToast = vi.hoisted(() => ({
   warning: vi.fn(),
 }));
 const mockConfirm = vi.hoisted(() => vi.fn());
+const mockAuth = vi.hoisted(() => ({
+  user: null as null | { id: number; role: string; is_admin?: boolean },
+}));
 
 vi.mock('@/contexts/ToastContext', () => ({ useToast: () => mockToast }));
 vi.mock('@/components/ui/ConfirmDialog', () => ({ useConfirm: () => mockConfirm }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuthOptional: () => ({ user: mockAuth.user }),
+}));
 
 function formFixture(): RegistrationForm {
   return {
@@ -165,6 +171,7 @@ function overviewFixture(): EventRegistrationOverview {
 describe('EventRegistrationWorkspace', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth.user = { id: 5, role: 'member' };
     mockConfirm.mockResolvedValue(true);
     vi.spyOn(eventRegistrationApi, 'organizerOverview').mockResolvedValue({
       success: true,
@@ -409,5 +416,40 @@ describe('EventRegistrationWorkspace', () => {
       status: 'danger',
       confirmLabel: 'Apply anonymisation',
     }));
+  });
+
+  describe('F-161: bulk invitation types are for community admins', () => {
+    async function openCampaignTypes(user: ReturnType<typeof userEvent.setup>) {
+      renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+        path: '/events/42/manage/registration',
+        route: '/events/42/manage/registration',
+      });
+      await user.click(await screen.findByRole('tab', { name: 'Invitations' }));
+      const label = await screen.findByText('Audience source');
+      const selectRoot = label.closest('[data-slot="select"]');
+      expect(selectRoot).not.toBeNull();
+      await user.click(within(selectRoot as HTMLElement).getByRole('button'));
+      await screen.findByRole('option', { name: 'Selected members' });
+    }
+
+    it('offers an ordinary organiser only the member picker and group invitations', async () => {
+      const user = userEvent.setup();
+      await openCampaignTypes(user);
+
+      expect(screen.getByRole('option', { name: 'Group members' })).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'Email addresses' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'Audience segment' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'CSV upload' })).not.toBeInTheDocument();
+    });
+
+    it('keeps every campaign type for a community admin', async () => {
+      mockAuth.user = { id: 1, role: 'admin', is_admin: true };
+      const user = userEvent.setup();
+      await openCampaignTypes(user);
+
+      expect(screen.getByRole('option', { name: 'Email addresses' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Audience segment' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'CSV upload' })).toBeInTheDocument();
+    });
   });
 });

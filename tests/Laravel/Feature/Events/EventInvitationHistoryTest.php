@@ -23,7 +23,8 @@ final class EventInvitationHistoryTest extends TestCase
 
     public function test_history_paginates_without_mutation_and_filters_recipient_fields_by_authority(): void
     {
-        $owner = $this->eventUser();
+        // E-035 F-161: email/CSV campaigns are admin-only.
+        $owner = $this->eventUser(['role' => 'admin']);
         $members = [$this->eventUser(), $this->eventUser(), $this->eventUser()];
         [$eventId, $start] = $this->registrationEvent((int) $owner->id);
         $preview = (new EventInvitationCampaignService())->preview($eventId, $owner, 'member',

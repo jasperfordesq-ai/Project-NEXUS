@@ -172,7 +172,8 @@ final class EventRegistrationPhaseBTest extends TestCase
     public function test_audience_campaign_snapshot_schedule_and_cancellation_are_versioned_and_private(): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2027-05-01T10:00:00Z'));
-        $owner = $this->eventUser(['created_at' => '2027-01-02 10:00:00']);
+        // E-035 F-161: community-wide (all_active) audiences are admin-only.
+        $owner = $this->eventUser(['created_at' => '2027-01-02 10:00:00', 'role' => 'admin']);
         $this->eventUser(['created_at' => '2027-02-02 10:00:00']);
         [$eventId, $start] = $this->registrationEvent(
             (int) $owner->id,

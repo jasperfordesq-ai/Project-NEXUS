@@ -1899,22 +1899,10 @@ class VolunteerService
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_log_too_old', ['days' => self::MAX_HOUR_LOG_BACKDATE_DAYS]), 'field' => 'date'];
             return null;
         }
-        $alreadyThatDay = (float) DB::table('vol_logs')
-            ->where('tenant_id', $tenantId)
-            ->where('user_id', $userId)
-            ->whereDate('date_logged', $logDate->toDateString())
-            ->where(function ($q) {
-                $q->whereNull('status')->orWhereNotIn('status', ['declined', 'rejected']);
-            })
-            ->sum('hours');
-        if ($alreadyThatDay + (float) $data['hours'] > self::MAX_HOURS_PER_CALENDAR_DAY) {
-            self::$errors[] = [
-                'code' => 'VALIDATION_ERROR',
-                'message' => __('api.volunteer_log_daily_total_exceeded', [
-                    'remaining' => rtrim(rtrim(number_format(max(0.0, self::MAX_HOURS_PER_CALENDAR_DAY - $alreadyThatDay), 2, '.', ''), '0'), '.'),
-                ]),
-                'field' => 'hours',
-            ];
+        // Early, unlocked read for a fast answer. It is advisory only: the
+        // authoritative check is repeated under a member row lock inside the
+        // inserting transaction below (E-035 F-188).
+        if (self::dailyHoursCapExceeded($tenantId, $userId, $logDate->toDateString(), (float) $data['hours'])) {
             return null;
         }
 
@@ -2016,8 +2004,25 @@ class VolunteerService
 
             $status = self::resolveCaringHourLogStatus($userId, $tenantId, $policy);
             $logId = null;
+            $dailyCapExceeded = false;
+            $logDateString = $logDate->toDateString();
 
-            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, &$logId): void {
+            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, $logDateString, &$logId, &$dailyCapExceeded): void {
+                // Serialise every hour log for this member (across all
+                // organisations and opportunities) so the day total read
+                // below cannot be raced by a concurrent submission. The
+                // dedupe cache lock above is per org+opportunity and does
+                // not cover this (E-035 F-188).
+                DB::table('users')
+                    ->where('id', $userId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first(['id']);
+                if (self::dailyHoursCapExceeded($tenantId, $userId, $logDateString, (float) $data['hours'])) {
+                    $dailyCapExceeded = true;
+                    return;
+                }
+
                 DB::insert(
                     "INSERT INTO vol_logs (tenant_id, user_id, creation_idempotency_key_hash, creation_request_hash, organization_id, opportunity_id, date_logged, hours, description, status, created_at)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
@@ -2056,6 +2061,11 @@ class VolunteerService
                     );
                 }
             });
+
+            if ($dailyCapExceeded) {
+                // dailyHoursCapExceeded() already recorded the error.
+                return null;
+            }
 
             self::$lastLogStatus = $status;
 
@@ -3046,6 +3056,37 @@ class VolunteerService
     private static function refreshPrerenderForOrganization(int $tenantId, int $organizationId): void
     {
         app(PrerenderContentInvalidator::class)->refreshVolunteerOrganisation($tenantId, $organizationId);
+    }
+
+    /**
+     * F-101 / E-035 F-188: would adding $hours push this member's day past
+     * MAX_HOURS_PER_CALENDAR_DAY? Records the translated error when it would.
+     * Declined/rejected logs do not count. Callers that insert must invoke
+     * this inside the transaction, after locking the member's users row.
+     */
+    private static function dailyHoursCapExceeded(int $tenantId, int $userId, string $logDate, float $hours): bool
+    {
+        $alreadyThatDay = (float) DB::table('vol_logs')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereDate('date_logged', $logDate)
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhereNotIn('status', ['declined', 'rejected']);
+            })
+            ->sum('hours');
+        if ($alreadyThatDay + $hours <= self::MAX_HOURS_PER_CALENDAR_DAY) {
+            return false;
+        }
+
+        self::$errors[] = [
+            'code' => 'VALIDATION_ERROR',
+            'message' => __('api.volunteer_log_daily_total_exceeded', [
+                'remaining' => rtrim(rtrim(number_format(max(0.0, self::MAX_HOURS_PER_CALENDAR_DAY - $alreadyThatDay), 2, '.', ''), '0'), '.'),
+            ]),
+            'field' => 'hours',
+        ];
+
+        return true;
     }
 
     private static function userCanVolunteerForOrganization(int $tenantId, int $userId, int $organizationId): bool

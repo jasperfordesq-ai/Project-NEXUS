@@ -723,7 +723,30 @@ class SafeguardingService
     }
 
     /**
+     * Fields a reporter may see on their own incident. Mirrors the list view
+     * returned by getIncidentsByReporter(): the investigators' record
+     * (action_taken, resolution_notes, authority_*, assigned lead / DLP,
+     * subject and involved identities) is never part of the reporter view.
+     */
+    public const REPORTER_VIEW_FIELDS = [
+        'id', 'title', 'incident_type', 'type', 'description', 'status',
+        'severity', 'category', 'incident_date', 'date', 'created_at', 'updated_at',
+        'organization_name', 'reported_by',
+    ];
+
+    /**
+     * Reduce a full incident record to the reporter-visible whitelist.
+     */
+    public function toReporterView(array $incident): array
+    {
+        return array_intersect_key($incident, array_flip(self::REPORTER_VIEW_FIELDS));
+    }
+
+    /**
      * Get a single safeguarding incident by ID.
+     *
+     * Returns the FULL investigator record. Callers serving a non-admin
+     * reporter must pass the result through toReporterView().
      */
     public function getIncident(int $incidentId, int $tenantId): ?array
     {

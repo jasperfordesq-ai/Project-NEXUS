@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Models\Campaign;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
@@ -20,6 +21,17 @@ use App\Support\UserDisplayName;
  */
 class CampaignService
 {
+    /**
+     * Challenge statuses an ordinary member may see. MUST equal
+     * IdeationChallengeService::MEMBER_VISIBLE_STATUSES (pinned by
+     * IdeationDraftChallengeLeakTest) so draft/archived challenges never
+     * surface through a campaign (E-035 F-187).
+     */
+    public const MEMBER_VISIBLE_CHALLENGE_STATUSES = ['open', 'voting', 'evaluating', 'closed'];
+
+    /** Campaign statuses an ordinary member may see (drafts are admin-only). */
+    private const MEMBER_VISIBLE_CAMPAIGN_STATUSES = ['active', 'completed', 'archived'];
+
     /** @var array<int, array{code: string, message: string, field?: string}> */
     private array $errors = [];
 
@@ -50,6 +62,25 @@ class CampaignService
         $tenantId = TenantContext::getId();
         $limit = $filters['limit'] ?? 20;
         $cursor = $filters['cursor'] ?? null;
+        $viewerId = $this->viewerId($filters['viewer_id'] ?? null);
+        $canManage = $viewerId !== null && $this->isAdmin($viewerId);
+
+        // Members count only challenges they could open themselves.
+        $countSql = '(SELECT COUNT(*) FROM campaign_challenges cc'
+            . ' JOIN ideation_challenges icc ON icc.id = cc.challenge_id AND icc.tenant_id = c.tenant_id'
+            . ' WHERE cc.campaign_id = c.id';
+        $countBindings = [];
+        if (! $canManage) {
+            $placeholders = implode(',', array_fill(0, count(self::MEMBER_VISIBLE_CHALLENGE_STATUSES), '?'));
+            $countSql .= " AND (icc.status IN ({$placeholders})";
+            $countBindings = self::MEMBER_VISIBLE_CHALLENGE_STATUSES;
+            if ($viewerId !== null) {
+                $countSql .= ' OR icc.user_id = ?';
+                $countBindings[] = $viewerId;
+            }
+            $countSql .= ')';
+        }
+        $countSql .= ') AS challenge_count';
 
         $query = DB::table('campaigns as c')
             ->leftJoin('users as u', 'c.created_by', '=', 'u.id')
@@ -58,12 +89,20 @@ class CampaignService
                 'c.*',
                 'u.first_name',
                 'u.last_name', 'u.profile_type', 'u.organization_name',
-                DB::raw('(SELECT COUNT(*) FROM campaign_challenges cc WHERE cc.campaign_id = c.id) AS challenge_count'),
-            ]);
+            ])
+            ->selectRaw($countSql, $countBindings);
 
+        $allowedStatuses = $canManage
+            ? ['draft', 'active', 'completed', 'archived']
+            : self::MEMBER_VISIBLE_CAMPAIGN_STATUSES;
+        if (! $canManage) {
+            $query->whereIn('c.status', self::MEMBER_VISIBLE_CAMPAIGN_STATUSES);
+        }
         $status = $filters['status'] ?? null;
-        if ($status && in_array($status, ['draft', 'active', 'completed', 'archived'])) {
+        if ($status && in_array($status, $allowedStatuses, true)) {
             $query->where('c.status', $status);
+        } elseif ($status && in_array($status, ['draft', 'active', 'completed', 'archived'], true)) {
+            $query->whereRaw('1 = 0');
         }
 
         if ($cursor) {
@@ -110,9 +149,11 @@ class CampaignService
     /**
      * Get a campaign by ID with its linked challenges.
      */
-    public function getById(int $id): ?array
+    public function getById(int $id, ?int $viewerId = null): ?array
     {
         $tenantId = TenantContext::getId();
+        $viewerId = $this->viewerId($viewerId);
+        $canManage = $viewerId !== null && $this->isAdmin($viewerId);
 
         $campaign = DB::table('campaigns as c')
             ->leftJoin('users as u', 'c.created_by', '=', 'u.id')
@@ -124,6 +165,10 @@ class CampaignService
         if (!$campaign) {
             return null;
         }
+        if (! $canManage && ! in_array((string) $campaign->status, self::MEMBER_VISIBLE_CAMPAIGN_STATUSES, true)) {
+            // Same answer as a missing campaign: a draft's existence is not disclosed.
+            return null;
+        }
 
         $result = (array) $campaign;
         $result['creator'] = [
@@ -133,10 +178,20 @@ class CampaignService
         unset($result['first_name'], $result['last_name']);
 
         // Get linked challenges
-        $result['challenges'] = DB::table('campaign_challenges as cc')
+        $challengeQuery = DB::table('campaign_challenges as cc')
             ->join('ideation_challenges as ic', 'cc.challenge_id', '=', 'ic.id')
             ->where('cc.campaign_id', $id)
-            ->where('ic.tenant_id', $tenantId)
+            ->where('ic.tenant_id', $tenantId);
+        if (! $canManage) {
+            // Mirrors IdeationChallengeService::canViewChallengeRecord().
+            $challengeQuery->where(function ($visible) use ($viewerId): void {
+                $visible->whereIn('ic.status', self::MEMBER_VISIBLE_CHALLENGE_STATUSES);
+                if ($viewerId !== null) {
+                    $visible->orWhere('ic.user_id', $viewerId);
+                }
+            });
+        }
+        $result['challenges'] = $challengeQuery
             ->select(['ic.id', 'ic.title', 'ic.status', 'ic.ideas_count', 'ic.cover_image', 'cc.sort_order'])
             ->orderBy('cc.sort_order')
             ->orderBy('ic.title')
@@ -361,6 +416,20 @@ class CampaignService
             $this->addError('SERVER_INTERNAL_ERROR', 'Failed to unlink challenge');
             return false;
         }
+    }
+
+    /**
+     * The viewer for visibility decisions: an explicit id, else the
+     * authenticated user. Null means "treat as an ordinary member".
+     */
+    private function viewerId(mixed $explicit): ?int
+    {
+        if ($explicit !== null && (int) $explicit > 0) {
+            return (int) $explicit;
+        }
+        $authId = Auth::id();
+
+        return $authId !== null && (int) $authId > 0 ? (int) $authId : null;
     }
 
     private function isAdmin(int $userId): bool

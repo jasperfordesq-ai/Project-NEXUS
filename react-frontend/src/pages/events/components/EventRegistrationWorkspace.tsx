@@ -33,6 +33,8 @@ import { Switch } from '@/components/ui/Switch';
 import { Textarea } from '@/components/ui/Textarea';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/contexts/ToastContext';
+import { useAuthOptional } from '@/contexts/AuthContext';
+import { isAdminTier } from '@/lib/roles';
 import {
   eventRegistrationApi,
   type EventRegistrationOverview,
@@ -99,6 +101,18 @@ const CAMPAIGN_TYPES: InvitationCampaign['campaign_type'][] = [
   'audience',
   'csv',
 ];
+
+/**
+ * F-161: inviting people who are not members (typed emails, a CSV) or the whole
+ * community (the audience builder) is reserved for community admins; the server
+ * refuses these types for ordinary organisers. Offering them to an organiser
+ * would only lead to a refusal, so they are not shown.
+ */
+const ADMIN_ONLY_CAMPAIGN_TYPES: ReadonlySet<InvitationCampaign['campaign_type']> = new Set([
+  'email',
+  'audience',
+  'csv',
+]);
 
 const SUPPORTED_LOCALES = ['ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt'];
 
@@ -204,6 +218,14 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  const auth = useAuthOptional();
+  const canSendBulkInvitations = isAdminTier(auth?.user);
+  const campaignTypes = useMemo(
+    () => (canSendBulkInvitations
+      ? CAMPAIGN_TYPES
+      : CAMPAIGN_TYPES.filter((type) => !ADMIN_ONLY_CAMPAIGN_TYPES.has(type))),
+    [canSendBulkInvitations],
+  );
   const [campaignType, setCampaignType] = useState<InvitationCampaign['campaign_type']>('member');
   const [campaignSource, setCampaignSource] = useState('');
   const [campaignLocale, setCampaignLocale] = useState(i18n.language.split('-')[0] || 'en');
@@ -213,6 +235,16 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   const [scheduledFor, setScheduledFor] = useState(toLocalDateTime(new Date(Date.now() + 3_600_000)));
   const [campaignBusyId, setCampaignBusyId] = useState<number | null>(null);
   const [cancelCampaign, setCancelCampaign] = useState<InvitationCampaign | null>(null);
+
+  // If the signed-in account loses admin reach while the builder is open, fall
+  // back to the member picker instead of leaving an admin-only type selected.
+  useEffect(() => {
+    if (!canSendBulkInvitations && ADMIN_ONLY_CAMPAIGN_TYPES.has(campaignType)) {
+      setCampaignType('member');
+      setCampaignSource('');
+      setPreviewCampaign(null);
+    }
+  }, [canSendBulkInvitations, campaignType]);
   const [cancelReason, setCancelReason] = useState('');
 
   const [retentionAsOf, setRetentionAsOf] = useState(new Date().toISOString().slice(0, 10));
@@ -1058,7 +1090,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                   }
                 }}
               >
-                {CAMPAIGN_TYPES.map((type) => <SelectItem key={type} id={type}>{t(`invitations.types.${type}`)}</SelectItem>)}
+                {campaignTypes.map((type) => <SelectItem key={type} id={type}>{t(`invitations.types.${type}`)}</SelectItem>)}
               </Select>
               <Select
                 label={t('invitations.locale_label')}

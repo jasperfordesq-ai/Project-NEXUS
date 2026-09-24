@@ -34,7 +34,8 @@ final class EventInvitationServiceTest extends TestCase
     public function test_csv_preview_never_persists_raw_data_and_email_tokens_are_one_shot_identity_bound(): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2027-01-01T12:00:00Z'));
-        $owner = $this->eventUser();
+        // E-035 F-161: email/CSV campaigns are admin-only.
+        $owner = $this->eventUser(['role' => 'admin']);
         $invitee = $this->eventUser(['email' => 'invitee@example.test']);
         [$eventId, $start] = $this->registrationEvent(
             (int) $owner->id,

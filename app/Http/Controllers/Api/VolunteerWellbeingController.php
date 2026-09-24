@@ -483,6 +483,12 @@ class VolunteerWellbeingController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.vol_incident_view_forbidden'), null, 403);
         }
 
+        // A reporter sees the same whitelist as their list view — never the
+        // investigators' record (E-035 F-159).
+        if (!$isAdmin) {
+            $incident = $this->safeguardingService->toReporterView($incident);
+        }
+
         return $this->respondWithData($incident);
     }
 

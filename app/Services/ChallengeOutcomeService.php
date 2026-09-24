@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Models\ChallengeOutcome;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -19,6 +20,14 @@ use Illuminate\Support\Facades\Log;
  */
 class ChallengeOutcomeService
 {
+    /**
+     * Challenge statuses an ordinary member may see. MUST equal
+     * IdeationChallengeService::MEMBER_VISIBLE_STATUSES (pinned by
+     * IdeationDraftChallengeLeakTest) so a draft/archived challenge's title
+     * and outcome never surface here (E-035 F-187).
+     */
+    public const MEMBER_VISIBLE_CHALLENGE_STATUSES = ['open', 'voting', 'evaluating', 'closed'];
+
     /** @var array<int, array{code: string, message: string, field?: string}> */
     private array $errors = [];
 
@@ -44,9 +53,23 @@ class ChallengeOutcomeService
     /**
      * Get outcome for a challenge.
      */
-    public function getForChallenge(int $challengeId): ?array
+    public function getForChallenge(int $challengeId, ?int $viewerId = null): ?array
     {
         $tenantId = TenantContext::getId();
+        $viewerId = $this->viewerId($viewerId);
+
+        if ($viewerId === null || ! $this->isAdmin($viewerId)) {
+            $challenge = DB::table('ideation_challenges')
+                ->where('id', $challengeId)
+                ->where('tenant_id', $tenantId)
+                ->first(['status', 'user_id']);
+            $visible = $challenge !== null
+                && (in_array((string) $challenge->status, self::MEMBER_VISIBLE_CHALLENGE_STATUSES, true)
+                    || ($viewerId !== null && (int) $challenge->user_id === $viewerId));
+            if (! $visible) {
+                return null;
+            }
+        }
 
         $outcome = DB::table('challenge_outcomes as co')
             ->leftJoin('challenge_ideas as ci', 'co.winning_idea_id', '=', 'ci.id')
@@ -165,14 +188,28 @@ class ChallengeOutcomeService
     /**
      * Get outcomes dashboard (all outcomes for a tenant).
      */
-    public function getDashboard(): array
+    public function getDashboard(?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
+        $viewerId = $this->viewerId($viewerId);
+        $canManage = $viewerId !== null && $this->isAdmin($viewerId);
 
-        $outcomes = DB::table('challenge_outcomes as co')
+        $query = DB::table('challenge_outcomes as co')
             ->join('ideation_challenges as ic', 'co.challenge_id', '=', 'ic.id')
             ->leftJoin('challenge_ideas as ci', 'co.winning_idea_id', '=', 'ci.id')
             ->where('co.tenant_id', $tenantId)
+            ->where('ic.tenant_id', $tenantId);
+        if (! $canManage) {
+            // Mirrors IdeationChallengeService::canViewChallengeRecord().
+            $query->where(function ($visible) use ($viewerId): void {
+                $visible->whereIn('ic.status', self::MEMBER_VISIBLE_CHALLENGE_STATUSES);
+                if ($viewerId !== null) {
+                    $visible->orWhere('ic.user_id', $viewerId);
+                }
+            });
+        }
+
+        $outcomes = $query
             ->select([
                 'co.*',
                 'ic.title as challenge_title',
@@ -203,6 +240,20 @@ class ChallengeOutcomeService
             'outcomes' => $outcomes,
             'stats' => $stats,
         ];
+    }
+
+    /**
+     * The viewer for visibility decisions: an explicit id, else the
+     * authenticated user. Null means "treat as an ordinary member".
+     */
+    private function viewerId(?int $explicit): ?int
+    {
+        if ($explicit !== null && $explicit > 0) {
+            return $explicit;
+        }
+        $authId = Auth::id();
+
+        return $authId !== null && (int) $authId > 0 ? (int) $authId : null;
     }
 
     private function isAdmin(int $userId): bool

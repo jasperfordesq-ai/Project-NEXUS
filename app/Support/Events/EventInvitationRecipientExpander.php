@@ -12,6 +12,7 @@ use App\Enums\EventInvitationCampaignType;
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Models\User;
 use App\Services\GroupAccessService;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -55,6 +56,12 @@ final class EventInvitationRecipientExpander
         User|int $actor,
     ): array {
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
+        $this->assertBulkReachAuthority(
+            $tenantId,
+            $type,
+            $type === EventInvitationCampaignType::Audience ? $this->rawAudienceCriteria($source) : null,
+            $actor,
+        );
         $reference = null;
         $candidates = [];
         $structuralErrors = [];
@@ -330,6 +337,15 @@ final class EventInvitationRecipientExpander
         User|int $actor,
     ): void {
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
+        // Re-checked at issue so a bulk campaign previewed by someone who has
+        // since lost admin authority (or previewed before E-035 F-161) cannot
+        // be sent by an ordinary organiser.
+        $this->assertBulkReachAuthority(
+            $tenantId,
+            $type,
+            is_array($snapshot['criteria'] ?? null) ? $snapshot['criteria'] : null,
+            $actor,
+        );
         if ($type === EventInvitationCampaignType::Group) {
             $reference = $snapshot['source_reference'] ?? null;
             if (! is_string($reference)
@@ -371,6 +387,79 @@ final class EventInvitationRecipientExpander
             array_values(array_unique($normalized)),
             'event_invitation_audience_group_not_found',
         );
+    }
+
+    /**
+     * Bulk-reach campaign types are reserved for community admins (E-035
+     * F-161): arbitrary external addresses (Email, CSV) and any Audience that
+     * is not confined to an explicit member selection or to groups the actor
+     * already has authority over (all_active, or a tenant-wide segment such as
+     * approved / roles / joined_after without group_ids). Ordinary organisers
+     * keep the member picker, their own groups, and group-scoped audiences.
+     *
+     * Refusal reuses the generic authorization reason so it maps to the
+     * existing translated 403.
+     *
+     * @param array<string,mixed>|null $criteria Audience criteria (raw or snapshot)
+     */
+    public function assertBulkReachAuthority(
+        int $tenantId,
+        EventInvitationCampaignType $type,
+        ?array $criteria,
+        User|int $actor,
+    ): void {
+        if (! $this->isBulkReach($type, $criteria)) {
+            return;
+        }
+        $actorModel = $actor instanceof User
+            ? $actor
+            : User::withoutGlobalScopes()->where('tenant_id', $tenantId)->find($actor);
+        if (! $actorModel instanceof User || ! TenantAdminScope::allows($actorModel, $tenantId)) {
+            throw new EventRegistrationFoundationException('event_registration_authorization_denied');
+        }
+    }
+
+    /** @param array<string,mixed>|null $criteria */
+    private function isBulkReach(EventInvitationCampaignType $type, ?array $criteria): bool
+    {
+        if ($type === EventInvitationCampaignType::Email || $type === EventInvitationCampaignType::Csv) {
+            return true;
+        }
+        if ($type !== EventInvitationCampaignType::Audience) {
+            return false;
+        }
+        if ($criteria === null) {
+            // Unknown/malformed audience shape: treat as bulk (fail closed).
+            return true;
+        }
+        if (array_keys($criteria) === ['member_ids']) {
+            return false;
+        }
+        if (array_key_exists('all_active', $criteria)) {
+            return true;
+        }
+        $groupIds = $criteria['group_ids'] ?? null;
+
+        return ! is_array($groupIds) || $groupIds === [];
+    }
+
+    /**
+     * The criteria an Audience source would expand, before validation, for the
+     * bulk-reach decision only. Explicit selections carry just member_ids.
+     *
+     * @param array<string,mixed> $source
+     * @return array<string,mixed>|null
+     */
+    private function rawAudienceCriteria(array $source): ?array
+    {
+        if (array_keys($source) === ['member_ids']) {
+            return ['member_ids' => $source['member_ids']];
+        }
+        if (array_keys($source) === ['criteria'] && is_array($source['criteria'])) {
+            return $source['criteria'];
+        }
+
+        return null;
     }
 
     /**

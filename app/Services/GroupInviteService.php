@@ -335,6 +335,30 @@ final class GroupInviteService
         return $this->previewPayload($invite, $group, $membershipStatus);
     }
 
+    /**
+     * Was this user removed from the group by a manager at or after the moment
+     * the invite was created? GroupService::removeMember() deletes the
+     * membership row, so the durable record of the removal is the group audit
+     * log entry it writes in the same transaction.
+     */
+    private function removedSinceInvite(int $groupId, int $userId, int $tenantId, object $invite): bool
+    {
+        $inviteCreatedAt = $invite->created_at ?? null;
+        $query = DB::table('group_audit_log')
+            ->where('tenant_id', $tenantId)
+            ->where('group_id', $groupId)
+            ->where('action', GroupAuditService::ACTION_MEMBER_REMOVED)
+            ->whereRaw(
+                "CAST(JSON_UNQUOTE(JSON_EXTRACT(details, '$.target_user_id')) AS UNSIGNED) = ?",
+                [$userId],
+            );
+        if ($inviteCreatedAt !== null && $inviteCreatedAt !== '') {
+            $query->where('created_at', '>=', $inviteCreatedAt);
+        }
+
+        return $query->exists();
+    }
+
     /** Atomically accept an invitation and activate membership. */
     public function acceptInvite(string $token, int $userId): ?array
     {
@@ -402,6 +426,15 @@ final class GroupInviteService
                 }
                 $this->syncCachedMemberCount((int) $group->id, $tenantId);
                 return $this->acceptancePayload($invite, $group, 'already_member');
+            }
+
+            // A manager's removal outranks any invite that predates it: a
+            // removed member cannot walk back in with a reusable link (or an
+            // older email invite). A new invite issued after the removal is a
+            // deliberate re-invitation and is honoured (E-035 F-186).
+            if ($this->removedSinceInvite((int) $group->id, $userId, $tenantId, $invite)) {
+                $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.group_invite_forbidden')];
+                return null;
             }
 
             if (! $this->assertInviteMembershipCapacity($group, $userId, $tenantId)) {
