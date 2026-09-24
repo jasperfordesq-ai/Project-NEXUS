@@ -9,6 +9,7 @@ import {
   waitForPageLoad,
   dismissBlockingModals,
 } from '../../helpers/test-utils';
+import { primeApiAuth } from '../../helpers/browser-session';
 
 /**
  * Dropdowns must actually drop down — in every engine.
@@ -102,7 +103,9 @@ function firstVisible(locator: import('@playwright/test').Locator) {
 }
 
 test.describe('Header dropdowns open reliably @smoke', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
   test.beforeEach(async ({ page }) => {
+    await primeApiAuth(page, 'user');
     await goToTenantPage(page, '/feed');
     await waitForPageLoad(page);
     await dismissBlockingModals(page);
