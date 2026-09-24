@@ -199,8 +199,14 @@ class StoryService
         );
         $connectedIds = array_map(fn($r) => (int) $r->friend_id, $connectionUserIds);
 
+        // F-158: members on either side of a block do not see each other's stories.
+        $blockedIds = array_flip(array_map('intval', BlockUserService::getBlockedPairIds($userId)));
+
         $result = [];
         foreach ($rows as $row) {
+            if (isset($blockedIds[(int) $row->user_id])) {
+                continue;
+            }
             $isOwn = (int) $row->user_id === $userId;
             $isConnected = in_array((int) $row->user_id, $connectedIds);
 
@@ -239,6 +245,11 @@ class StoryService
     {
         $tenantId = TenantContext::getId();
         $viewerInt = $viewerId ? (int) $viewerId : 0;
+
+        // F-158: no stories across a block, in either direction.
+        if ($viewerInt && $viewerInt !== $userId && BlockUserService::isBlockedEither($viewerInt, $userId)) {
+            return [];
+        }
 
         // If the viewer is the story owner, show all their stories (no audience filter).
         // Otherwise, enforce audience visibility (everyone / connections / close_friends).
@@ -380,14 +391,17 @@ class StoryService
      * @param int $storyId
      * @param int $userId
      * @param string $reactionType e.g. 'heart', 'laugh', 'wow', 'fire', 'clap', 'sad'
+     * @return string 'added', 'changed' or 'removed' — only 'added' should notify the owner
      */
-    public function reactToStory(int $storyId, int $userId, string $reactionType): void
+    public function reactToStory(int $storyId, int $userId, string $reactionType): string
     {
         $tenantId = TenantContext::getId();
 
-        // Verify story belongs to this tenant
+        // Verify story belongs to this tenant. F-180: `audience` must be loaded,
+        // or canViewStory() reads it as missing and treats every story as
+        // visible to everyone.
         $story = DB::selectOne(
-            'SELECT id, user_id FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
+            'SELECT id, user_id, audience FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
             [$storyId, $tenantId]
         );
 
@@ -414,10 +428,12 @@ class StoryService
             if ($existing->reaction_type === $reactionType) {
                 // Same reaction — remove it (toggle off)
                 DB::delete('DELETE FROM story_reactions WHERE id = ? AND tenant_id = ?', [$existing->id, $tenantId]);
-                return;
+                return 'removed';
             }
             // Different reaction — update in place
             if ((int) $story->user_id !== $userId) {
+                // F-158: no reacting across a block, in either direction.
+                BlockUserService::assertNoBlockBetween($userId, (int) $story->user_id);
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId,
                     (int) $story->user_id,
@@ -431,6 +447,7 @@ class StoryService
             );
         } else {
             if ((int) $story->user_id !== $userId) {
+                BlockUserService::assertNoBlockBetween($userId, (int) $story->user_id);
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId,
                     (int) $story->user_id,
@@ -485,6 +502,8 @@ class StoryService
                 ]);
             }
         }
+
+        return $existing ? 'changed' : 'added';
     }
 
     /**
@@ -524,11 +543,16 @@ class StoryService
         $tenantId = TenantContext::getId();
 
         $story = DB::selectOne(
-            'SELECT id, user_id, media_type, poll_options FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
+            'SELECT id, user_id, audience, media_type, poll_options FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
             [$storyId, $tenantId]
         );
 
         if (!$story) {
+            throw new \RuntimeException(__('api.story_not_found'));
+        }
+
+        // F-180: voting (and the results it returns) follows the story's audience.
+        if (!$this->canViewStory((object) $story, $userId, $tenantId)) {
             throw new \RuntimeException(__('api.story_not_found'));
         }
 
@@ -557,6 +581,8 @@ class StoryService
             }
 
             if ((int) $story->user_id !== $userId) {
+                // F-158: no voting across a block, in either direction.
+                BlockUserService::assertNoBlockBetween($userId, (int) $story->user_id);
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId,
                     (int) $story->user_id,
@@ -919,9 +945,10 @@ class StoryService
     {
         $tenantId = TenantContext::getId();
 
-        // Verify story exists, is active, and belongs to this tenant
+        // Verify story exists, is active, and belongs to this tenant. F-180:
+        // `audience` is needed by canViewStory() below.
         $story = DB::selectOne(
-            'SELECT id, user_id FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
+            'SELECT id, user_id, audience FROM stories WHERE id = ? AND tenant_id = ? AND is_active = 1 AND expires_at > NOW()',
             [$storyId, $tenantId]
         );
 

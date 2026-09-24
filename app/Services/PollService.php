@@ -376,6 +376,9 @@ class PollService
             }
 
             if ((int) $poll->user_id !== $userId) {
+                // F-158: a vote notifies the poll's creator, so it obeys the
+                // block rule as well as the safeguarding contact rule.
+                BlockUserService::assertNoBlockBetween($userId, (int) $poll->user_id);
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId,
                     (int) $poll->user_id,

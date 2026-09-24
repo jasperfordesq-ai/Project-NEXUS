@@ -254,9 +254,11 @@ class StoryController extends BaseApiController
         }
 
         try {
-            $this->storyService->reactToStory($id, $userId, $reactionType);
+            $outcome = $this->storyService->reactToStory($id, $userId, $reactionType);
 
-            // Notify story creator about the reaction (skip self-reactions)
+            // Notify story creator about a NEW reaction only (skip self-reactions).
+            // F-158: removing or changing a reaction used to notify again, so a
+            // react/unreact loop sent a bell and push on every call.
             try {
                 $tenantId = $this->getTenantId();
                 $story = DB::selectOne(
@@ -264,7 +266,7 @@ class StoryController extends BaseApiController
                     [$id, $tenantId]
                 );
 
-                if ($story && (int) $story->user_id !== $userId) {
+                if ($outcome === 'added' && $story && (int) $story->user_id !== $userId) {
                     $reactor = DB::selectOne(
                         'SELECT first_name, last_name FROM users WHERE id = ? AND tenant_id = ?',
                         [$userId, $tenantId]

@@ -140,6 +140,12 @@ final class FeedItemTables
             if ($targetType === 'challenge' && !self::canViewChallenge($targetId, $viewerId)) {
                 return false;
             }
+            // F-157: a review keeps its feed row after an admin hides or flags
+            // it, or its author deletes it, so the review's own read rule must
+            // apply whether or not a visible feed row exists.
+            if ($targetType === 'review' && !self::canViewReview($targetId, $viewerId, $tenantId)) {
+                return false;
+            }
 
             $activity = DB::table('feed_activity')
                 ->where('tenant_id', $tenantId)

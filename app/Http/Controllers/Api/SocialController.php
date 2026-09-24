@@ -379,6 +379,13 @@ class SocialController extends BaseApiController
 
             $action = 'unliked';
         } else {
+            // F-158: liking reaches the owner (bell, push, email), so it obeys
+            // the same block and safeguarding contact rules as comments and
+            // reactions. Unliking stays allowed.
+            if ($refusal = $this->engagementContactRefusal($targetType, (int) $targetId, $userId, $tenantId, 'like')) {
+                return $refusal;
+            }
+
             // Like — use INSERT IGNORE to prevent duplicates from concurrent requests
             // (protected by uk_likes_user_target unique constraint)
             $affected = DB::affectingStatement(
@@ -535,101 +542,37 @@ class SocialController extends BaseApiController
     public function createPost(): JsonResponse
     {
         $this->rateLimit('social_create_post', 20, 60);
-        $userId = $this->requireAuth();
-        $tenantId = $this->getTenantId();
+        $this->requireAuth();
 
-        $content = trim($this->input('content', ''));
-        $emoji = $this->input('emoji');
-        $imageUrl = $this->input('image_url');
-        $visibility = $this->input('visibility', 'public');
+        // F-184: this legacy endpoint wrote straight to feed_posts and skipped
+        // the HTML sanitiser, the length limit, spam moderation, the legal
+        // acceptance gate and the group write rule. It now runs the current
+        // create path (POST /api/v2/feed/posts) behind the same legal gate that
+        // route carries, and only reshapes the reply into the legacy format.
+        $response = app(\App\Http\Middleware\EnsureLegalAcceptance::class)->handle(
+            request(),
+            fn () => $this->createPostV2()
+        );
 
-        // Validate visibility
-        $validVisibility = ['public', 'private', 'friends'];
-        if (! in_array($visibility, $validVisibility, true)) {
-            $visibility = 'public';
-        }
-        $groupId = $this->inputInt('group_id', 0);
-
-        if (empty($content) && empty($imageUrl)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.social_post_content_required'), null, 400);
-        }
-
-        // If posting to a group, verify membership
-        if ($groupId > 0) {
-            $membership = DB::table('group_members')
-                ->where('group_id', $groupId)
-                ->where('user_id', $userId)
-                ->where('status', 'active')
-                ->first();
-
-            if (! $membership) {
-                return $this->respondWithError('FORBIDDEN', __('api.social_group_membership_required'), null, 403);
-            }
+        if (! $response instanceof JsonResponse) {
+            return new JsonResponse(
+                json_decode((string) $response->getContent(), true),
+                $response->getStatusCode(),
+                $response->headers->all()
+            );
         }
 
-        try {
-            // Handle image upload if present (file upload takes precedence over URL)
-            $uploadedUrl = $this->handleImageUpload();
-            if ($uploadedUrl) {
-                $imageUrl = $uploadedUrl;
-            }
-
-            // Build insert data
-            $insertData = [
-                'user_id'     => $userId,
-                'tenant_id'   => $tenantId,
-                'content'     => $content,
-                'emoji'       => $emoji,
-                'image_url'   => $imageUrl,
-                'likes_count' => 0,
-                'visibility'  => $visibility,
-                'created_at'  => now(),
-            ];
-
-            // Check if group_id column exists (backward compatibility)
-            $hasGroupColumn = false;
-            try {
-                $columns = DB::select("SHOW COLUMNS FROM feed_posts LIKE 'group_id'");
-                $hasGroupColumn = ! empty($columns);
-            } catch (\Exception $e) {
-                // Column doesn't exist
-            }
-
-            if ($hasGroupColumn && $groupId > 0) {
-                $insertData['group_id'] = $groupId;
-            }
-
-            $postId = DB::table('feed_posts')->insertGetId($insertData);
-
-            // Record in feed_activity so post appears in the feed
-            try {
-                $this->feedActivityService->recordActivity($tenantId, $userId, 'post', (int) $postId, [
-                    'content'    => $content,
-                    'image_url'  => $imageUrl,
-                    'group_id'   => $groupId ?: null,
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
-            } catch (\Exception $faEx) {
-                \Illuminate\Support\Facades\Log::warning('SocialController::createPost feed_activity failed: ' . $faEx->getMessage());
-            }
-
-            // Handle multi-image uploads
-            $mediaFiles = $this->collectMediaFiles();
-            $media = [];
-            if (!empty($mediaFiles)) {
-                $altTexts = request()->input('alt_texts', []);
-                $media = $this->postMediaService->attachMedia((int) $postId, $mediaFiles, is_array($altTexts) ? $altTexts : []);
-            }
-
-            return $this->respondWithData([
-                'status'  => 'success',
-                'post_id' => $postId,
-                'media'   => $media,
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("Create Post Error: " . $e->getMessage());
-            return $this->respondWithError('OPERATION_FAILED', __('api.social_post_create_failed'), null, 500);
+        if ($response->getStatusCode() !== 201) {
+            return $response;
         }
+
+        $post = (array) ($response->getData(true)['data'] ?? []);
+
+        return $this->respondWithData([
+            'status'  => 'success',
+            'post_id' => (int) ($post['id'] ?? 0),
+            'media'   => $post['media'] ?? [],
+        ]);
     }
 
     // ========================================================================
@@ -1147,6 +1090,12 @@ class SocialController extends BaseApiController
 
                 $action = 'unliked';
             } else {
+                // F-158: same block and safeguarding contact rules as likeV2().
+                $likeType = $targetType === 'volunteering' ? 'volunteer' : (string) $targetType;
+                if ($refusal = $this->engagementContactRefusal($likeType, (int) $targetId, $userId, $tenantId, 'like')) {
+                    return $refusal;
+                }
+
                 // Use INSERT IGNORE to prevent duplicates from concurrent requests
                 // (protected by uk_likes_user_target unique constraint)
                 DB::affectingStatement(
@@ -1341,40 +1290,41 @@ class SocialController extends BaseApiController
         }
 
         $content = trim($this->input('content', ''));
+        $parentType = (string) $parentType;
+
+        // F-158: this legacy endpoint inserted a new feed post and emailed the
+        // owner on every call, with no visibility, block or safeguarding check.
+        // It now goes through the current ShareService (visibility check, owner
+        // lookup, self-share refusal, safeguarding contact rule, one share per
+        // member per item) plus the block rule, keeping its "share" (not
+        // toggle) meaning: sharing something already shared is a no-op.
+        $shareService = app(\App\Services\ShareService::class);
+        if (! in_array($parentType, \App\Services\ShareService::VALID_TYPES, true)) {
+            return $this->respondWithError('INVALID_INPUT', __('api.invalid_shareable_type'), 'parent_type', 400);
+        }
 
         try {
-            if (class_exists(FeedPost::class)) {
-                // tenant_id is auto-set by HasTenantScope; timestamps + likes_count default.
-                FeedPost::create([
-                    'user_id'     => $userId,
-                    'content'     => $content,
-                    'parent_id'   => $parentId,
-                    'parent_type' => $parentType,
-                    'visibility'  => 'public',
-                ]);
-            } else {
-                DB::table('feed_posts')->insert([
-                    'user_id'     => $userId,
-                    'tenant_id'   => $tenantId,
-                    'content'     => $content,
-                    'likes_count' => 0,
-                    'visibility'  => 'public',
-                    'created_at'  => now(),
-                    'parent_id'   => $parentId,
-                    'parent_type' => $parentType,
-                ]);
+            if ($shareService->isShared($userId, $parentType, $parentId, $tenantId)) {
+                return $this->respondWithData(['message' => __('api.shared_successfully')]);
             }
 
-            try {
-                $contentOwnerId = $this->socialNotificationService->getContentOwnerId($parentType, $parentId);
-                if ($contentOwnerId && $contentOwnerId != $userId) {
-                    $this->socialNotificationService->notifyShare($contentOwnerId, $userId, $parentType, $parentId);
-                }
-            } catch (\Throwable $e) {
-                // Non-critical
+            if (! FeedItemTables::canView($parentType, $parentId, $userId)) {
+                return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
             }
+
+            if ($refusal = $this->engagementContactRefusal($parentType, $parentId, $userId, $tenantId, 'feed_share')) {
+                return $refusal;
+            }
+
+            $shareService->toggle($userId, $parentType, $parentId, $content !== '' ? $content : null);
 
             return $this->respondWithData(['message' => __('api.shared_successfully')]);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        } catch (\DomainException $e) {
+            return $this->respondWithError('SELF_SHARE', __('api.cannot_share_own_post'), null, 422);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('NOT_FOUND', __('api.target_not_found'), null, 404);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("Share Error: " . $e->getMessage());
             return $this->respondWithError('OPERATION_FAILED', __('api.social_share_failed'), null, 500);
@@ -1742,6 +1692,35 @@ class SocialController extends BaseApiController
      * Validates MIME type, file size, and extension. Returns the public URL
      * path on success, or null if no file or validation fails.
      */
+    /**
+     * F-158: likes and legacy shares reach the content owner (bell, push,
+     * email), so they obey the same rules comments and reactions already do: no
+     * contact across a block in either direction, and the safeguarding contact
+     * policy. Returns the refusal response, or null when the action may go ahead.
+     * Content with no resolvable owner has nobody to protect or notify.
+     */
+    private function engagementContactRefusal(string $targetType, int $targetId, int $userId, int $tenantId, string $channel): ?JsonResponse
+    {
+        $ownerId = SocialNotificationService::getContentOwnerId($targetType, $targetId);
+        if ($ownerId === null || $ownerId <= 0 || $ownerId === $userId) {
+            return null;
+        }
+
+        try {
+            \App\Services\BlockUserService::assertNoBlockBetween($userId, $ownerId);
+            app(\App\Services\SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $userId,
+                $ownerId,
+                $tenantId,
+                $channel,
+            );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+
+        return null;
+    }
+
     private function handleImageUpload(): ?string
     {
         $request = request();

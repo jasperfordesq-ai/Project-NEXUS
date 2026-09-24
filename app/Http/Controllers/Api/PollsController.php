@@ -311,6 +311,17 @@ class PollsController extends BaseApiController
         }
 
         try {
+            // F-158: a ranked ballot notifies the poll's creator, so it obeys
+            // the block rule as well as the safeguarding contact rule applied
+            // inside the ranking service.
+            $pollOwnerId = (int) \Illuminate\Support\Facades\DB::table('polls')
+                ->where('id', $id)
+                ->where('tenant_id', TenantContext::getId())
+                ->value('user_id');
+            if ($pollOwnerId > 0 && $pollOwnerId !== $userId) {
+                \App\Services\BlockUserService::assertNoBlockBetween($userId, $pollOwnerId);
+            }
+
             $submission = $this->rankingService->submitRankingWithResult($id, $userId, $rankings);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);

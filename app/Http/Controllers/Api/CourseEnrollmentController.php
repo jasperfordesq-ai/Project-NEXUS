@@ -74,8 +74,13 @@ class CourseEnrollmentController extends BaseApiController
         $course = $this->findCourseOrFail($id);
         $this->ensureCourseViewable($course, $userId);
 
+        // F-183: list only prerequisites the caller could open themselves.
         return $this->respondWithData(
-            \App\Services\CoursePrerequisiteService::statusFor($course, $userId)
+            \App\Services\CoursePrerequisiteService::statusFor(
+                $course,
+                $userId,
+                fn (\App\Models\Course $prerequisite): bool => $this->canViewCourse($prerequisite, $userId),
+            )
         );
     }
 

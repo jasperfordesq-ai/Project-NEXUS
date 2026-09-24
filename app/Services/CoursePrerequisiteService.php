@@ -20,9 +20,15 @@ class CoursePrerequisiteService
      * Prerequisite courses for a course, each annotated with the learner's
      * completion state.
      *
+     * F-183: pass $canView to list only the prerequisites the caller may see;
+     * a draft, rejected or group-only course's title and slug must not be read
+     * back through another course. unmetIds() deliberately passes none, so a
+     * prerequisite the learner cannot see still gates enrolment.
+     *
+     * @param (callable(Course):bool)|null $canView
      * @return array<int,array{id:int,title:string,slug:string,completed:bool}>
      */
-    public static function statusFor(Course $course, ?int $userId): array
+    public static function statusFor(Course $course, ?int $userId, ?callable $canView = null): array
     {
         $ids = self::prerequisiteIds($course);
         if (!$ids) {
@@ -44,7 +50,9 @@ class CoursePrerequisiteService
         }
 
         return Course::whereIn('id', $ids)
-            ->get(['id', 'title', 'slug'])
+            ->get()
+            ->filter(fn (Course $c) => $canView === null || $canView($c))
+            ->values()
             ->map(fn ($c) => [
                 'id' => (int) $c->id,
                 'title' => $c->title,

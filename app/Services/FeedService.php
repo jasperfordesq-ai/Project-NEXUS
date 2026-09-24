@@ -593,7 +593,7 @@ class FeedService
         // Orphans shouldn't exist (deletion paths call FeedActivityService::deleteActivity),
         // but historical data gaps let them slip through — they surface as "Post not found"
         // when a user tries to share/react. Hide them from the feed entirely.
-        $items = $this->filterOutOrphanedItems($items, $tenantId);
+        $items = $this->filterOutOrphanedItems($items, $tenantId, $currentUserId);
 
         // Enrich review receivers with names
         if (!empty($receiverIds)) {
@@ -1082,15 +1082,16 @@ class FeedService
      *
      * @param  array<int, array<string, mixed>>  $items
      */
-    private function filterOutOrphanedItems(array $items, int $tenantId): array
+    private function filterOutOrphanedItems(array $items, int $tenantId, ?int $currentUserId = null): array
     {
         if (empty($items)) {
             return $items;
         }
 
         // Keep this list in sync with FeedActivityService source_type tables.
-        // Review/badge_earned/level_up/discussion don't need validation — they
-        // either have no source row or their source is inlined in the activity.
+        // badge_earned/level_up/discussion don't need validation — they either
+        // have no source row or their source is inlined in the activity.
+        // Reviews and courses are also checked against their lifecycle below.
         $sourceTables = [
             'listing'   => 'listings',
             'event'     => 'events',
@@ -1102,6 +1103,7 @@ class FeedService
             'volunteer' => 'vol_opportunities',
             'volunteer_hours' => 'vol_logs',
             'review'    => 'reviews',
+            'course'    => 'courses',
         ];
 
         $idsByType = [];
@@ -1126,6 +1128,23 @@ class FeedService
                 EventSearchVisibility::applyToQuery($query, $tenantId, $table);
             } else {
                 $query->where($table . '.tenant_id', $tenantId);
+            }
+            if ($type === 'review') {
+                // F-157: a review an admin hid or flagged, or its author
+                // deleted, keeps its row. Feed cards recorded before the
+                // moderation paths started hiding them must not show either.
+                $query->where(function ($q) use ($table) {
+                    $q->whereNull($table . '.status')->orWhere($table . '.status', 'approved');
+                })->whereNull($table . '.deleted_by_author_at');
+            }
+            if ($type === 'course') {
+                // F-181: only a published, approved course whose audience
+                // includes the viewer. Group-only courses never appear in the
+                // community feed (a feed card carries one group; a course can
+                // be linked to several), and members-only needs a member.
+                $query->where($table . '.status', 'published')
+                    ->where($table . '.moderation_status', 'approved')
+                    ->whereIn($table . '.visibility', $currentUserId !== null ? ['public', 'members'] : ['public']);
             }
             $existing = $query->pluck($table . '.id')->all();
             $existsByType[$type] = array_flip($existing);
@@ -1443,7 +1462,7 @@ class FeedService
         }
         // Server-side XSS prevention: sanitize HTML content before storage
         $content = \App\Helpers\HtmlSanitizer::sanitize(trim($data['content'] ?? ''));
-        $image = $data['image_url'] ?? $data['image'] ?? null;
+        $image = self::platformUploadPathOrNull($data['image_url'] ?? $data['image'] ?? null);
         $visibility = $data['visibility'] ?? 'public';
         if ($visibility === 'connections') {
             $visibility = 'friends';
@@ -1625,6 +1644,25 @@ class FeedService
         }
 
         return $freshPost;
+    }
+
+    /**
+     * O-065: a post's single image must be one of this platform's own uploads
+     * (the controller stores an uploaded file under /uploads/ and passes that
+     * path). A client-supplied remote address is dropped: it would be rendered
+     * to every reader, disclosing their network details to whoever runs it.
+     */
+    private static function platformUploadPathOrNull(mixed $image): ?string
+    {
+        if (!is_string($image)) {
+            return null;
+        }
+        $image = trim($image);
+        if ($image === '' || str_contains($image, '..') || str_contains($image, '\\')) {
+            return null;
+        }
+
+        return preg_match('#^/uploads/[A-Za-z0-9._/-]+$#', $image) === 1 ? $image : null;
     }
 
     /**

@@ -261,11 +261,22 @@ class FeedSidebarController extends BaseApiController
 
             // 5. Suggested listings
             try {
+                // F-185: the same public rule as the listings browse
+                // (ListingService::applyPublicVisibility): active and not held
+                // or refused by moderation. Members on either side of a block
+                // are not suggested to each other.
+                $blockedOwnerIds = array_map('intval', \App\Services\BlockUserService::getBlockedPairIds($userId));
                 $data['suggested_listings'] = DB::table('listings as l')
                     ->join('users as u', 'l.user_id', '=', 'u.id')
                     ->where('l.tenant_id', $tenantId)
+                    ->where('u.tenant_id', $tenantId)
                     ->where('l.user_id', '!=', $userId)
                     ->where('l.status', 'active')
+                    ->whereNull('l.deleted_at')
+                    ->where(function ($q) {
+                        $q->whereNull('l.moderation_status')->orWhere('l.moderation_status', 'approved');
+                    })
+                    ->when($blockedOwnerIds !== [], fn ($q) => $q->whereNotIn('l.user_id', $blockedOwnerIds))
                     ->orderByDesc('l.created_at')
                     ->limit(4)
                     ->select(

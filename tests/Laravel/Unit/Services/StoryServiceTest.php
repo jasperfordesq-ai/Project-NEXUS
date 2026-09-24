@@ -24,6 +24,21 @@ class StoryServiceTest extends TestCase
         $this->service = new StoryService();
     }
 
+    /**
+     * Story lists now drop members on either side of a block (E-035 F-158),
+     * which reads user_blocks. With the DB facade mocked, stub that lookup as
+     * "no blocks".
+     */
+    private function stubNoBlocks(): void
+    {
+        \Illuminate\Support\Facades\Schema::shouldReceive('hasColumn')->andReturn(false);
+        $blocks = \Mockery::mock();
+        $blocks->shouldReceive('where')->andReturnSelf();
+        $blocks->shouldReceive('pluck')->andReturn(collect());
+        $blocks->shouldReceive('exists')->andReturn(false);
+        DB::shouldReceive('table')->with('user_blocks')->andReturn($blocks);
+    }
+
     // ------------------------------------------------------------------
     //  create
     // ------------------------------------------------------------------
@@ -420,7 +435,7 @@ class StoryServiceTest extends TestCase
     {
         DB::shouldReceive('selectOne')
             ->once()
-            ->andReturn((object) ['id' => 1, 'media_type' => 'text', 'poll_options' => null]);
+            ->andReturn((object) ['id' => 1, 'user_id' => 1, 'media_type' => 'text', 'poll_options' => null]);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('This story is not a poll');
@@ -451,6 +466,7 @@ class StoryServiceTest extends TestCase
             ->once()
             ->andReturn((object) [
                 'id' => 1,
+                'user_id' => 1,
                 'media_type' => 'poll',
                 'poll_options' => json_encode(['Red', 'Blue']),
             ]);
@@ -755,6 +771,8 @@ class StoryServiceTest extends TestCase
 
     public function test_getFeedStories_returns_sorted_array(): void
     {
+        $this->stubNoBlocks();
+
         // Active stories query
         DB::shouldReceive('select')
             ->once()
@@ -785,6 +803,8 @@ class StoryServiceTest extends TestCase
 
     public function test_getFeedStories_returns_empty_when_no_stories(): void
     {
+        $this->stubNoBlocks();
+
         DB::shouldReceive('select')
             ->once()
             ->andReturn([]);
@@ -804,6 +824,8 @@ class StoryServiceTest extends TestCase
 
     public function test_getUserStories_returns_formatted_stories(): void
     {
+        $this->stubNoBlocks();
+
         DB::shouldReceive('select')
             ->once()
             ->andReturn([

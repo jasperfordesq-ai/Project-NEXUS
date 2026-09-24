@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
+use App\Support\VideoEmbedUrl;
 
 /**
  * JobVacancyService — Laravel DI-based service for job vacancy operations.
@@ -54,6 +55,25 @@ class JobVacancyService
      * Returns the normalised amount (null when no credits are set), or false
      * after recording a validation error.
      */
+    /**
+     * F-195: the employer video is framed inside the job page every member sees,
+     * so only a recognised video provider's link is accepted (see VideoEmbedUrl).
+     * Returns the trimmed URL (null when empty), or false after recording a
+     * validation error.
+     */
+    private function validateVideoUrl(mixed $value): string|null|false
+    {
+        if ($value === null || (is_string($value) && trim($value) === '')) {
+            return null;
+        }
+        if (!is_string($value) || !VideoEmbedUrl::isAllowed($value)) {
+            $this->errors[] = ['code' => 'VALIDATION_INVALID_VALUE', 'message' => __('api.invalid_url'), 'field' => 'video_url'];
+            return false;
+        }
+
+        return trim($value);
+    }
+
     private function validateTimebankCredits(mixed $value, int $tenantId): float|null|false
     {
         if ($value === null || $value === '') {
@@ -840,6 +860,13 @@ class JobVacancyService
         }
 
         $brandingEnabled = $this->configBool(JobConfigurationService::CONFIG_ENABLE_EMPLOYER_BRANDING, true);
+        $videoUrl = null;
+        if ($brandingEnabled) {
+            $videoUrl = $this->validateVideoUrl($data['video_url'] ?? null);
+            if ($videoUrl === false) {
+                return 0;
+            }
+        }
         $blindHiringEnabled = $this->configBool(JobConfigurationService::CONFIG_ENABLE_BLIND_HIRING, false);
         $salaryCurrency = trim((string) ($data['salary_currency'] ?? ''));
         if ($salaryCurrency === '') {
@@ -874,7 +901,7 @@ class JobVacancyService
             'status'         => $status,
             'user_id'        => $userId,
             'tagline'        => $brandingEnabled && isset($data['tagline']) ? trim((string) $data['tagline']) : null,
-            'video_url'      => $brandingEnabled ? ($data['video_url'] ?? null) : null,
+            'video_url'      => $videoUrl,
             'culture_photos' => $brandingEnabled ? $this->normalizeJsonList($data['culture_photos'] ?? null) : null,
             'company_size'   => $brandingEnabled ? ($data['company_size'] ?? null) : null,
             'benefits'       => $brandingEnabled ? $this->normalizeJsonList($data['benefits'] ?? null) : null,
@@ -1040,6 +1067,13 @@ class JobVacancyService
         }
         if (array_key_exists('benefits', $updates)) {
             $updates['benefits'] = $this->normalizeJsonList($updates['benefits']);
+        }
+        if (array_key_exists('video_url', $updates)) {
+            $videoUrl = $this->validateVideoUrl($updates['video_url']);
+            if ($videoUrl === false) {
+                return false;
+            }
+            $updates['video_url'] = $videoUrl;
         }
         if (array_key_exists('blind_hiring', $updates)) {
             $updates['blind_hiring'] = $this->configBool(JobConfigurationService::CONFIG_ENABLE_BLIND_HIRING, false)

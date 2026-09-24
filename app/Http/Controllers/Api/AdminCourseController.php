@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Services\CourseCategoryService;
 use App\Services\CourseInstructorService;
+use App\Services\CourseService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 
@@ -66,6 +67,10 @@ class AdminCourseController extends BaseApiController
             $course->status = 'draft';
         }
         $course->save();
+
+        // F-181: a rejected or flagged course leaves the community feed; an
+        // approved, published one gets (or regains) its card.
+        CourseService::syncFeedActivity($course);
 
         return $this->respondWithData($course);
     }

@@ -262,6 +262,7 @@ class AdminReviewsController extends BaseApiController
         $reviewTenantId = (int) $review->tenant_id;
 
         DB::update("UPDATE reviews SET status = 'pending' WHERE id = ? AND tenant_id = ? AND deleted_by_author_at IS NULL", [$id, $reviewTenantId]);
+        $this->hideReviewFeedActivity($id, $reviewTenantId);
 
         ActivityLog::log(
             $adminId,
@@ -298,6 +299,7 @@ class AdminReviewsController extends BaseApiController
         $reviewTenantId = (int) $review->tenant_id;
 
         DB::update("UPDATE reviews SET status = 'rejected' WHERE id = ? AND tenant_id = ?", [$id, $reviewTenantId]);
+        $this->hideReviewFeedActivity($id, $reviewTenantId);
 
         ActivityLog::log(
             $adminId,
@@ -362,6 +364,10 @@ class AdminReviewsController extends BaseApiController
         $reviewerId = (int) $review->reviewer_id;
 
         DB::delete("DELETE FROM reviews WHERE id = ? AND tenant_id = ?", [$id, $reviewTenantId]);
+        DB::delete(
+            "DELETE FROM feed_activity WHERE tenant_id = ? AND source_type = 'review' AND source_id = ?",
+            [$reviewTenantId, $id]
+        );
 
         ActivityLog::log(
             $adminId,
@@ -398,5 +404,18 @@ class AdminReviewsController extends BaseApiController
         }
 
         return $this->respondWithData(['success' => true, 'message' => __('api_controllers_1.admin_reviews.review_deleted')]);
+    }
+
+    /**
+     * F-157: a flagged or hidden review must leave the community feed. The
+     * review's own tenant is used (not the request's) so the super-admin path
+     * hides the right row.
+     */
+    private function hideReviewFeedActivity(int $reviewId, int $reviewTenantId): void
+    {
+        DB::update(
+            "UPDATE feed_activity SET is_visible = 0 WHERE tenant_id = ? AND source_type = 'review' AND source_id = ?",
+            [$reviewTenantId, $reviewId]
+        );
     }
 }

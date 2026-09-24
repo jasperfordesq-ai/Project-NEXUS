@@ -109,6 +109,10 @@ class ShareService
             throw new \DomainException('self_share');
         }
 
+        // E-035 F-158 sibling: sharing someone's content notifies them, so a
+        // block in either direction must stop it, as it stops likes/comments.
+        BlockUserService::assertNoBlockBetween($userId, $ownerId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $userId,
             $ownerId,

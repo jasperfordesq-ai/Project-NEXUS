@@ -10,6 +10,8 @@ use App\Core\TenantContext;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\CourseLesson;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -175,7 +177,7 @@ class CourseService
             'credit_cost' => self::nonNegativeDecimal($data['credit_cost'] ?? 0),
             'learner_credit_reward' => self::nonNegativeDecimal($data['learner_credit_reward'] ?? 0),
             'instructor_credit_reward' => self::nonNegativeDecimal($data['instructor_credit_reward'] ?? 0),
-            'prerequisites' => $data['prerequisites'] ?? null,
+            'prerequisites' => self::allowedPrerequisites($data['prerequisites'] ?? null, $authorUserId, null),
         ]);
 
         // Author identity and lifecycle/moderation state are set server-side only —
@@ -197,6 +199,8 @@ class CourseService
             'learner_credit_reward', 'instructor_credit_reward', 'prerequisites',
         ];
 
+        $wasApproved = $course->moderation_status === 'approved';
+
         foreach ($fields as $field) {
             if (array_key_exists($field, $data)) {
                 $course->{$field} = match ($field) {
@@ -204,12 +208,27 @@ class CourseService
                     'visibility' => self::enumValue($data[$field], self::VISIBILITIES, $course->visibility),
                     'enrollment_type' => self::enumValue($data[$field], self::ENROLLMENT_TYPES, $course->enrollment_type),
                     'credit_cost', 'learner_credit_reward', 'instructor_credit_reward' => self::nonNegativeDecimal($data[$field]),
+                    // F-183: only courses the author may see can be named as
+                    // prerequisites, or their titles leak through the
+                    // prerequisites endpoint.
+                    'prerequisites' => self::allowedPrerequisites($data[$field], (int) $course->author_user_id, (int) $course->id),
                     default => $data[$field],
                 };
             }
         }
 
+        // F-182: when the community moderates courses, an approved course whose
+        // content changes goes back to the review queue, as podcasts do.
+        $materiallyChanged = $course->isDirty(['title', 'summary', 'description', 'cover_image', 'visibility']);
+        if ($materiallyChanged && $wasApproved && self::moderationEnabled()) {
+            $course->moderation_status = 'pending';
+            $course->moderation_notes = null;
+            $course->moderated_by = null;
+            $course->moderated_at = null;
+        }
+
         $course->save();
+        self::syncFeedActivity($course);
 
         return $course;
     }
@@ -224,42 +243,27 @@ class CourseService
 
         return TenantContext::runForTenant($tenantId, function () use ($course, $autoApprove): Course {
             $course->status = 'published';
-            $moderationEnabled = filter_var(
-                TenantContext::getSetting('courses.moderation_enabled', false),
-                FILTER_VALIDATE_BOOLEAN
-            );
+            $moderationEnabled = self::moderationEnabled();
 
-            if ($autoApprove && !$moderationEnabled) {
+            if ($course->moderation_status === 'rejected') {
+                // F-182: republishing must not undo an admin's rejection. The
+                // course goes back to the review queue instead.
+                $course->moderation_status = 'pending';
+            } elseif ($course->moderation_status === 'flagged') {
+                // F-182: a flag stays until an admin clears it.
+            } elseif ($autoApprove && !$moderationEnabled) {
                 $course->moderation_status = 'approved';
             } elseif ($course->moderation_status !== 'approved') {
                 $course->moderation_status = 'pending';
             }
-            $firstPublish = !$course->published_at && $course->moderation_status === 'approved';
-            if ($firstPublish) {
+            if (!$course->published_at && $course->moderation_status === 'approved') {
                 $course->published_at = now();
             }
             $course->save();
 
-            // Post a celebration activity to the community feed on first publish.
-            // Guarded so a feed failure never blocks publishing.
-            if ($firstPublish) {
-                try {
-                    app(\App\Services\FeedActivityService::class)->recordActivity(
-                        TenantContext::getId(),
-                        (int) $course->author_user_id,
-                        'course',
-                        (int) $course->id,
-                        [
-                            'title' => $course->title,
-                            'content' => (string) ($course->summary ?? ''),
-                            'image_url' => $course->cover_image,
-                            'metadata' => ['slug' => $course->slug, 'level' => $course->level],
-                        ]
-                    );
-                } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning('[CourseService] feed post on publish failed', ['error' => $e->getMessage()]);
-                }
-            }
+            // Post (or restore) the course's card in the community feed once it
+            // is live. Guarded inside so a feed failure never blocks publishing.
+            self::syncFeedActivity($course);
 
             return $course;
         });
@@ -269,13 +273,170 @@ class CourseService
     {
         $course->status = 'draft';
         $course->save();
+        self::syncFeedActivity($course);
 
         return $course;
     }
 
     public static function delete(Course $course): bool
     {
-        return (bool) $course->delete();
+        $courseId = (int) $course->id;
+        $tenantId = (int) ($course->tenant_id ?: TenantContext::getId());
+        $deleted = (bool) $course->delete();
+
+        if ($deleted) {
+            // F-181: a deleted course must not leave its card in the feed.
+            try {
+                DB::table('feed_activity')
+                    ->where('tenant_id', $tenantId)
+                    ->where('source_type', 'course')
+                    ->where('source_id', $courseId)
+                    ->delete();
+            } catch (\Throwable $e) {
+                Log::warning('[CourseService] feed card removal on delete failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Keep a course's community-feed card in step with its lifecycle (F-181).
+     *
+     * The card is shown only while the course is published, approved and open
+     * to the whole community (public or members). Group-only courses are kept
+     * out of the community feed, as podcasts are: a feed card carries one group
+     * and a course can be linked to several. An existing card is re-shown in
+     * place rather than re-recorded, so republishing does not bump it to the top.
+     */
+    public static function syncFeedActivity(Course $course): void
+    {
+        try {
+            $tenantId = (int) ($course->tenant_id ?: TenantContext::getId());
+            $eligible = $course->status === 'published'
+                && $course->moderation_status === 'approved'
+                && in_array($course->visibility, ['public', 'members'], true);
+
+            $existing = DB::table('feed_activity')
+                ->where('tenant_id', $tenantId)
+                ->where('source_type', 'course')
+                ->where('source_id', (int) $course->id)
+                ->exists();
+
+            if (!$eligible) {
+                if ($existing) {
+                    DB::table('feed_activity')
+                        ->where('tenant_id', $tenantId)
+                        ->where('source_type', 'course')
+                        ->where('source_id', (int) $course->id)
+                        ->update(['is_visible' => 0]);
+                }
+                return;
+            }
+
+            $payload = [
+                'title' => $course->title,
+                'content' => (string) ($course->summary ?? ''),
+                'image_url' => $course->cover_image,
+                'metadata' => ['slug' => $course->slug, 'level' => $course->level],
+            ];
+
+            if ($existing) {
+                DB::table('feed_activity')
+                    ->where('tenant_id', $tenantId)
+                    ->where('source_type', 'course')
+                    ->where('source_id', (int) $course->id)
+                    ->update([
+                        'title' => $payload['title'],
+                        'content' => $payload['content'],
+                        'image_url' => $payload['image_url'],
+                        'metadata' => json_encode($payload['metadata']),
+                        'group_id' => null,
+                        'is_visible' => 1,
+                    ]);
+                return;
+            }
+
+            app(FeedActivityService::class)->recordActivity(
+                $tenantId,
+                (int) $course->author_user_id,
+                'course',
+                (int) $course->id,
+                $payload
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[CourseService] feed card sync failed', ['course_id' => $course->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * F-182: lesson content added, changed or removed after approval sends an
+     * approved course back to the review queue when the community moderates
+     * courses, as a material edit of the course itself does.
+     */
+    public static function requeueAfterContentChange(Course $course): void
+    {
+        if ($course->moderation_status !== 'approved' || !self::moderationEnabled()) {
+            return;
+        }
+
+        $course->moderation_status = 'pending';
+        $course->moderation_notes = null;
+        $course->moderated_by = null;
+        $course->moderated_at = null;
+        $course->save();
+        self::syncFeedActivity($course);
+    }
+
+    private static function moderationEnabled(): bool
+    {
+        return filter_var(
+            TenantContext::getSetting('courses.moderation_enabled', false),
+            FILTER_VALIDATE_BOOLEAN
+        );
+    }
+
+    /**
+     * F-183: keep only prerequisite ids the author may see — their own courses,
+     * or courses published, approved and open to the whole community. Anything
+     * else (someone's draft, a rejected or group-only course, another tenant's
+     * id) is dropped, so its title cannot be read back through the
+     * prerequisites endpoint.
+     *
+     * @return array<int,int>|null
+     */
+    private static function allowedPrerequisites(mixed $raw, int $authorUserId, ?int $courseId): ?array
+    {
+        if ($raw === null) {
+            return null;
+        }
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $raw),
+            static fn (int $id): bool => $id > 0 && $id !== $courseId
+        )));
+        if ($ids === []) {
+            return [];
+        }
+
+        $allowed = Course::query()
+            ->whereIn('id', $ids)
+            ->where(function ($q) use ($authorUserId) {
+                $q->where('author_user_id', $authorUserId)
+                    ->orWhere(function ($p) {
+                        $p->where('status', 'published')
+                            ->where('moderation_status', 'approved')
+                            ->whereIn('visibility', ['public', 'members']);
+                    });
+            })
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+
+        return array_values(array_intersect($ids, $allowed));
     }
 
     private static function uniqueSlug(string $base): string

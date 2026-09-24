@@ -60,6 +60,26 @@ class SocialNotificationService
         try {
             $tenantId = TenantContext::getId();
 
+            // F-158: a like/unlike loop used to send a bell, push and email on
+            // every like. Notify once per liker per item per day.
+            $dedupKey = sprintf(
+                'social:like_notified:%d:%d:%d:%s:%d',
+                (int) $tenantId,
+                (int) $contentOwnerId,
+                (int) $likerId,
+                (string) $contentType,
+                (int) $contentId,
+            );
+            try {
+                $firstLike = \Illuminate\Support\Facades\Cache::add($dedupKey, 1, now()->addDay());
+            } catch (\Throwable $cacheError) {
+                // A cache outage must not silence genuine like notifications.
+                $firstLike = true;
+            }
+            if (!$firstLike) {
+                return;
+            }
+
             $liker = DB::table('users')
                 ->where('id', $likerId)
                 ->where('tenant_id', $tenantId)

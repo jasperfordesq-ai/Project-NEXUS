@@ -9,8 +9,10 @@ namespace App\Services;
 use App\Models\Course;
 use App\Models\CourseLesson;
 use App\Models\CourseSection;
+use App\Support\VideoEmbedUrl;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * CourseLessonService — tenant-scoped lesson CRUD for the course builder.
@@ -26,10 +28,15 @@ class CourseLessonService
         'drip_type', 'drip_offset_days', 'drip_date', 'is_preview',
     ];
 
+    /** F-182: lesson fields a moderator reviews; changing one after approval re-queues the course. */
+    private const REVIEWED_FIELDS = [
+        'title', 'content_type', 'body', 'transcript', 'video_url', 'attachment_url', 'embed_url',
+    ];
+
     public static function create(int $courseId, array $data): CourseLesson
     {
         return DB::transaction(function () use ($courseId, $data) {
-            Course::whereKey($courseId)->lockForUpdate()->firstOrFail();
+            $course = Course::whereKey($courseId)->lockForUpdate()->firstOrFail();
             $payload = [
                 'course_id' => $courseId,
                 'title' => trim((string) ($data['title'] ?? '')),
@@ -45,7 +52,10 @@ class CourseLessonService
 
             $payload['section_id'] = self::sectionIdInCourse($payload['section_id'] ?? null, $courseId);
 
-            return CourseLesson::create($payload);
+            $lesson = CourseLesson::create($payload);
+            CourseService::requeueAfterContentChange($course);
+
+            return $lesson;
         });
     }
 
@@ -57,7 +67,7 @@ class CourseLessonService
         }
 
         return DB::transaction(function () use ($lesson, $id, $data) {
-            Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
+            $course = Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
             $lesson = CourseLesson::whereKey($id)->lockForUpdate()->first();
             if (!$lesson) {
                 return null;
@@ -74,7 +84,11 @@ class CourseLessonService
                         : $value;
                 }
             }
+            $contentChanged = $lesson->isDirty(self::REVIEWED_FIELDS);
             $lesson->save();
+            if ($contentChanged) {
+                CourseService::requeueAfterContentChange($course);
+            }
 
             return $lesson;
         });
@@ -88,9 +102,14 @@ class CourseLessonService
         }
 
         return DB::transaction(function () use ($lesson, $id) {
-            Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
+            $course = Course::whereKey($lesson->course_id)->lockForUpdate()->firstOrFail();
             $current = CourseLesson::whereKey($id)->lockForUpdate()->first();
-            return $current ? (bool) $current->delete() : false;
+            if (!$current || !$current->delete()) {
+                return false;
+            }
+            CourseService::requeueAfterContentChange($course);
+
+            return true;
         });
     }
 
@@ -154,7 +173,11 @@ class CourseLessonService
 
     private static function normaliseField(string $field, mixed $value): mixed
     {
-        if (in_array($field, ['video_url', 'attachment_url', 'embed_url'], true)) {
+        if ($field === 'embed_url') {
+            return self::normaliseEmbedUrl($value);
+        }
+
+        if (in_array($field, ['video_url', 'attachment_url'], true)) {
             return self::normalizeMediaUrl(is_string($value) ? $value : null);
         }
 
@@ -175,6 +198,26 @@ class CourseLessonService
         }
 
         return $value;
+    }
+
+    /**
+     * F-195: an "embed" lesson is framed inside the course player, so only a
+     * recognised video provider's link is accepted (YouTube, Vimeo — see
+     * VideoEmbedUrl). Anything else is refused rather than silently dropped, so
+     * the author knows why the lesson did not save.
+     *
+     * @throws ValidationException
+     */
+    private static function normaliseEmbedUrl(mixed $value): ?string
+    {
+        if ($value === null || (is_string($value) && trim($value) === '')) {
+            return null;
+        }
+        if (!is_string($value) || !VideoEmbedUrl::isAllowed($value)) {
+            throw ValidationException::withMessages(['embed_url' => __('api.invalid_url')]);
+        }
+
+        return trim($value);
     }
 
     private static function sectionIdInCourse(mixed $sectionId, int $courseId): ?int

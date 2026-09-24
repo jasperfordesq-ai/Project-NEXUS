@@ -264,9 +264,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReviewsController.php:330:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReviewsController.php:332:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReviewsController.php",
-            "line": 330,
+            "line": 332,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reviewerId",
@@ -277,9 +277,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReviewsController.php:393:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReviewsController.php:399:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReviewsController.php",
-            "line": 393,
+            "line": 399,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reviewerId",
@@ -849,9 +849,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/PollsController.php:335:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/PollsController.php:346:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/PollsController.php",
-            "line": 335,
+            "line": 346,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $pollModel->user_id",
@@ -862,9 +862,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/SocialController.php:994:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/SocialController.php:937:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/SocialController.php",
-            "line": 994,
+            "line": 937,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -875,9 +875,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/StoryController.php:300:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/StoryController.php:302:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/StoryController.php",
-            "line": 300,
+            "line": 302,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $story->user_id",
@@ -888,9 +888,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/StoryController.php:530:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/StoryController.php:532:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/StoryController.php",
-            "line": 530,
+            "line": 532,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $story->user_id",
@@ -2253,9 +2253,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:919:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Services/JobVacancyService.php:946:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Services/JobVacancyService.php",
-            "line": 919,
+            "line": 946,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
@@ -2617,9 +2617,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SocialNotificationService.php:89:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SocialNotificationService.php:109:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SocialNotificationService.php",
-            "line": 89,
+            "line": 109,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $contentOwnerId",
@@ -2630,9 +2630,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SocialNotificationService.php:145:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SocialNotificationService.php:165:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SocialNotificationService.php",
-            "line": 145,
+            "line": 165,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $contentOwnerId",
@@ -2643,9 +2643,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SocialNotificationService.php:202:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SocialNotificationService.php:222:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SocialNotificationService.php",
-            "line": 202,
+            "line": 222,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $commentOwnerId",
@@ -2656,9 +2656,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SocialNotificationService.php:254:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SocialNotificationService.php:274:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SocialNotificationService.php",
-            "line": 254,
+            "line": 274,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $contentOwnerId",
@@ -2669,9 +2669,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/StoryService.php:1316:NotificationDispatcher::dispatch",
+            "id": "app/Services/StoryService.php:1343:NotificationDispatcher::dispatch",
             "file": "app/Services/StoryService.php",
-            "line": 1316,
+            "line": 1343,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$friendId",

@@ -304,7 +304,7 @@ class PodcastService
     public static function publishShow(PodcastShow $show): PodcastShow
     {
         $show->status = 'published';
-        $show->moderation_status = self::moderationEnabled() ? 'pending' : 'approved';
+        $show->moderation_status = self::republishModerationStatus((string) $show->moderation_status);
         if (!$show->published_at) {
             $show->published_at = now();
         }
@@ -528,7 +528,7 @@ class PodcastService
 
         $wasPublished = $episode->status === 'published';
         $episode->status = 'published';
-        $episode->moderation_status = self::moderationEnabled() ? 'pending' : 'approved';
+        $episode->moderation_status = self::republishModerationStatus((string) $episode->moderation_status);
         if (!$episode->published_at) {
             $episode->published_at = $episode->scheduled_for && $episode->scheduled_for->isFuture()
                 ? $episode->scheduled_for
@@ -1982,6 +1982,24 @@ class PodcastService
     private static function moderationEnabled(): bool
     {
         return (bool) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_MODERATION_ENABLED);
+    }
+
+    /**
+     * F-182: an author (re)publishing must never undo an admin decision. A
+     * rejected show or episode goes back to the review queue; a flagged one
+     * stays flagged until an admin (or report resolution) clears it. Otherwise
+     * the tenant's moderation setting decides, as before.
+     */
+    private static function republishModerationStatus(string $current): string
+    {
+        if ($current === 'rejected') {
+            return 'pending';
+        }
+        if ($current === 'flagged') {
+            return 'flagged';
+        }
+
+        return self::moderationEnabled() ? 'pending' : 'approved';
     }
 
     private static function moderationActionToStatus(string $action): string

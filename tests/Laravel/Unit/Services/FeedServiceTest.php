@@ -566,7 +566,7 @@ class FeedServiceTest extends TestCase
 
         $service->createPost(10, [
             'content' => 'My post content',
-            'image_url' => '/images/photo.jpg',
+            'image_url' => '/uploads/posts/photo.jpg',
             'visibility' => 'private',
         ]);
 
@@ -577,7 +577,7 @@ class FeedServiceTest extends TestCase
         $this->assertSame('post', $capturedAttributes['type']);
         // createPost() maps the image input to the 'image' attribute key
         $imageValue = $capturedAttributes['image'] ?? $capturedAttributes['image_url'] ?? null;
-        $this->assertSame('/images/photo.jpg', $imageValue);
+        $this->assertSame('/uploads/posts/photo.jpg', $imageValue);
     }
 
     // ── 6. createPost() rejects empty content without image ───────────

@@ -764,6 +764,14 @@ class ReviewService
         $review->deleted_by_author_at = now();
         $review->save();
 
+        // F-157: an author-deleted review must also leave the community feed.
+        // The lookup above is tenant-scoped, so the current tenant is the review's.
+        DB::table('feed_activity')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('source_type', 'review')
+            ->where('source_id', $reviewId)
+            ->update(['is_visible' => 0]);
+
         return true;
     }
 }
