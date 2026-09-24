@@ -37,7 +37,9 @@ class CreditDonationService
      */
     public function donate(int $tenantId, int $fromUserId, int $toUserId, float $amount, ?string $message = null, ?string $idempotencyFingerprint = null): bool
     {
-        if ($amount <= 0 || $fromUserId === $toUserId) {
+        // F-166: balances are DECIMAL(…,2) and the debit and the credit round
+        // independently, so a sub-cent amount (0.015) minted a cent per donation.
+        if ($amount <= 0 || $fromUserId === $toUserId || round($amount, 2) != $amount) {
             return false;
         }
 
@@ -223,6 +225,9 @@ class CreditDonationService
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
+        }
+        if (round($amount, 2) != $amount) {
+            return ['success' => false, 'error' => __('api.wallet_transfer_amount_precision')];
         }
 
         // CommunityFundService::receiveDonation handles balance checks, deduction,

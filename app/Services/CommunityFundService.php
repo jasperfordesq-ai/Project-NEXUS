@@ -62,6 +62,16 @@ class CommunityFundService
     }
 
     /**
+     * F-166: balances are DECIMAL(…,2) and each side of a movement rounds on its
+     * own, so an amount with a third decimal place (0.015) debits one cent and
+     * credits two. Every fund movement refuses such amounts.
+     */
+    private static function hasSubCentPrecision(float $amount): bool
+    {
+        return round($amount, 2) != $amount;
+    }
+
+    /**
      * Get fund balance and statistics.
      */
     public static function getBalance(): array
@@ -85,6 +95,9 @@ class CommunityFundService
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
+        }
+        if (self::hasSubCentPrecision($amount)) {
+            return ['success' => false, 'error' => __('api.wallet_transfer_amount_precision')];
         }
 
         $tenantId = TenantContext::getId();
@@ -140,6 +153,9 @@ class CommunityFundService
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
+        }
+        if (self::hasSubCentPrecision($amount)) {
+            return ['success' => false, 'error' => __('api.wallet_transfer_amount_precision')];
         }
 
         $tenantId = TenantContext::getId();
@@ -322,6 +338,9 @@ class CommunityFundService
     {
         if ($amount <= 0) {
             return ['success' => false, 'error' => __('api.amount_must_be_greater_than_0')];
+        }
+        if (self::hasSubCentPrecision($amount)) {
+            return ['success' => false, 'error' => __('api.wallet_transfer_amount_precision')];
         }
 
         $tenantId = TenantContext::getId();

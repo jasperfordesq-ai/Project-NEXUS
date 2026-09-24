@@ -67,8 +67,10 @@ class AdminBillingController extends BaseApiController
         }
 
         // Block downgrade to free plan or lower tier while on an active paid subscription
-        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, tier_level FROM pay_plans WHERE id = ?", [$planId]);
-        if (!$targetPlan) {
+        $targetPlan = DB::selectOne("SELECT id, price_monthly, price_yearly, tier_level, is_active FROM pay_plans WHERE id = ?", [$planId]);
+        // F-178: a withdrawn plan is not purchasable — a zero-price one would
+        // otherwise activate directly, without Stripe.
+        if (!$targetPlan || !(int) ($targetPlan->is_active ?? 0)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_plan_id'), 'plan_id', 422);
         }
         $isFreeTarget = ((float) $targetPlan->price_monthly === 0.0 && (float) $targetPlan->price_yearly === 0.0);

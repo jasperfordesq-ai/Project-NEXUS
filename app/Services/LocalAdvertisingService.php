@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Support\UserDisplayName;
@@ -425,6 +426,25 @@ class LocalAdvertisingService
             throw new \InvalidArgumentException(__('api.invalid_id', ['resource' => 'ad']));
         }
 
+        // F-176: a tracking token counts at most ONE impression per viewer. The
+        // endpoint is open to anonymous callers, and a replayed token used to
+        // mint a fresh impression — and so a fresh chargeable click — each time.
+        // A replay returns the impression already recorded for that viewer.
+        $replayKey = sprintf(
+            'ad_impression_token:%d:%s:%s',
+            $tenantId,
+            hash('sha256', (string) $trackingToken),
+            $userId !== null ? 'u' . $userId : 'anon'
+        );
+        try {
+            $existing = Cache::get($replayKey);
+            if (is_int($existing) && $existing > 0) {
+                return $existing;
+            }
+        } catch (\Throwable $e) {
+            // Cache trouble must not break ad display; fall through and record.
+        }
+
         $impressionId = DB::table(self::TABLE_IMPRESSIONS)->insertGetId([
             'campaign_id' => $campaignId,
             'creative_id' => $creativeId,
@@ -439,6 +459,12 @@ class LocalAdvertisingService
             ->where('tenant_id', $tenantId)
             ->increment('impression_count');
 
+        try {
+            Cache::put($replayKey, (int) $impressionId, self::TRACKING_TOKEN_TTL_SECONDS);
+        } catch (\Throwable $e) {
+            // best-effort — a failed write only weakens replay protection
+        }
+
         return $impressionId;
     }
 
@@ -447,6 +473,11 @@ class LocalAdvertisingService
      *
      * Atomically increments the campaign's click_count and deducts CPC from
      * budget (default 10 cents if campaign has no explicit CPC set).
+     *
+     * F-176: only a signed-in member's click on their OWN impression is charged,
+     * and at most once per member per campaign per 24 hours. Anonymous clicks
+     * are counted for reporting but never spend budget — the endpoint is open,
+     * so an anonymous caller could otherwise drain a campaign with a loop.
      */
     public static function recordClick(
         int $impressionId,
@@ -460,7 +491,7 @@ class LocalAdvertisingService
             ->where('id', $impressionId)
             ->where('campaign_id', $campaignId)
             ->where('tenant_id', $tenantId)
-            ->first(['id', 'creative_id']);
+            ->first(['id', 'creative_id', 'user_id']);
         if (!$impression) {
             throw new \InvalidArgumentException(__('api.invalid_id', ['resource' => 'impression']));
         }
@@ -473,6 +504,16 @@ class LocalAdvertisingService
         if ($alreadyClicked) {
             return;
         }
+
+        $chargeable = $userId !== null
+            && $impression->user_id !== null
+            && (int) $impression->user_id === $userId
+            && !DB::table(self::TABLE_CLICKS)
+                ->where('campaign_id', $campaignId)
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->exists();
 
         DB::table(self::TABLE_CLICKS)->insert([
             'impression_id' => $impressionId,
@@ -487,7 +528,7 @@ class LocalAdvertisingService
             ->where('tenant_id', $tenantId)
             ->update([
                 'click_count'  => DB::raw('click_count + 1'),
-                'spent_cents'  => DB::raw('spent_cents + ' . self::DEFAULT_CPC_CENTS),
+                'spent_cents'  => DB::raw('spent_cents + ' . ($chargeable ? self::DEFAULT_CPC_CENTS : 0)),
                 'updated_at'   => Carbon::now(),
             ]);
     }
@@ -531,6 +572,9 @@ class LocalAdvertisingService
             'r' => $creativeId,
             'p' => $placement,
             'e' => time() + self::TRACKING_TOKEN_TTL_SECONDS,
+            // F-176: unique per serve, so the per-token impression limit is per
+            // served ad rather than shared by everyone served in the same second.
+            'n' => bin2hex(random_bytes(8)),
         ];
         $encoded = self::base64UrlEncode(json_encode($payload, JSON_THROW_ON_ERROR));
         $signature = hash_hmac('sha256', $encoded, self::trackingSecret());

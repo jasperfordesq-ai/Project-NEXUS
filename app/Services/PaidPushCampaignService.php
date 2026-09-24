@@ -35,7 +35,10 @@ class PaidPushCampaignService
     private const TABLE       = 'paid_push_campaigns';
     private const TABLE_SENDS = 'paid_push_campaign_sends';
 
-    private const EDITABLE_STATUSES = ['draft', 'pending_review'];
+    // F-179 (E-035): content is frozen once submitted. Editing used to be
+    // allowed in `pending_review`, so an admin could approve one message and a
+    // different title/body/link/audience was then sent to members.
+    private const EDITABLE_STATUSES = ['draft'];
 
     // -----------------------------------------------------------------------
     // Feature availability guard
@@ -145,7 +148,7 @@ class PaidPushCampaignService
     }
 
     /**
-     * Update a campaign — only allowed while in draft or pending_review.
+     * Update a campaign — only allowed while in draft (F-179: frozen once submitted).
      */
     public static function updateCampaign(int $id, int $tenantId, array $data): array
     {

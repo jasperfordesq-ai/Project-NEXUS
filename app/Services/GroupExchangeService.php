@@ -72,11 +72,15 @@ class GroupExchangeService
                 'description'  => trim($data['description'] ?? '') ?: null,
                 'organizer_id' => $organizerId,
                 'listing_id'   => $data['listing_id'] ?? null,
-                'status'       => $data['status'] ?? 'draft',
+                // F-177: server-derived. A new exchange always starts as a draft —
+                // only start() may move it on, after its provider/receiver and
+                // conservation checks — and the organiser cannot name a broker or
+                // write "broker notes" for one; nothing member-facing assigns those.
+                'status'       => 'draft',
                 'split_type'   => $data['split_type'] ?? 'equal',
                 'total_hours'  => (float) ($data['total_hours'] ?? 0),
-                'broker_id'    => $data['broker_id'] ?? null,
-                'broker_notes' => $data['broker_notes'] ?? null,
+                'broker_id'    => null,
+                'broker_notes' => null,
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ]);
@@ -551,7 +555,10 @@ class GroupExchangeService
     {
         $tenantId = TenantContext::getId();
 
-        $allowed = ['title', 'description', 'split_type', 'total_hours', 'broker_id', 'broker_notes', 'listing_id'];
+        // F-177: broker_id / broker_notes are not organiser-editable — the only
+        // caller of update() is the organiser's PUT, and those fields are shown
+        // to participants as a broker's word.
+        $allowed = ['title', 'description', 'split_type', 'total_hours', 'listing_id'];
         $updates = collect($data)->only($allowed)->filter(fn ($v) => $v !== null)->all();
 
         return DB::transaction(function () use ($id, $tenantId, $updates): bool {

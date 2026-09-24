@@ -157,6 +157,7 @@ class StripeWebhookController extends BaseApiController
             } else {
                 match ($event->type) {
                     'checkout.session.completed' => $this->handleCheckoutCompleted($event->data->object),
+                    'checkout.session.async_payment_succeeded' => $this->handleCheckoutAsyncPaymentSucceeded($event->data->object),
                     'customer.subscription.updated' => $this->handleSubscriptionUpdated($event->data->object),
                     'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event->data->object),
                     'invoice.paid' => $this->handleInvoicePaid($event->data->object),
@@ -249,6 +250,28 @@ class StripeWebhookController extends BaseApiController
             || !empty($meta->nexus_order_id ?? null);
         if ($isMarketplace) {
             MarketplacePaymentService::handleWebhookEvent('checkout.session.completed', $session);
+            return;
+        }
+
+        StripeSubscriptionService::handleCheckoutCompleted($session);
+    }
+
+    /**
+     * E-035 F-178 follow-up: tenant billing now activates only on a checkout
+     * whose payment_status is paid (or no_payment_required). A delayed payment
+     * method (e.g. a bank debit) completes the checkout as unpaid and Stripe
+     * later sends checkout.session.async_payment_succeeded with the session
+     * now paid — route that to the same tenant-billing handler so such a
+     * community still activates. Marketplace sessions are left exactly as
+     * before (logged, not handled here) rather than widening that flow.
+     */
+    private function handleCheckoutAsyncPaymentSucceeded(object $session): void
+    {
+        $meta = $session->metadata ?? null;
+        $isMarketplace = (($meta->nexus_type ?? null) === 'marketplace')
+            || !empty($meta->nexus_order_id ?? null);
+        if ($isMarketplace) {
+            Log::info('Stripe webhook: marketplace checkout.session.async_payment_succeeded not handled here');
             return;
         }
 

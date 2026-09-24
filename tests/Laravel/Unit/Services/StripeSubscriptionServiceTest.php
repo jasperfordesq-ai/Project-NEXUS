@@ -86,6 +86,7 @@ class StripeSubscriptionServiceTest extends TestCase
                 'nexus_plan_id' => '5',
             ],
             'subscription' => 'sub_test_456',
+            'payment_status' => 'paid',
         ];
 
         DB::shouldReceive('transaction')->once()->andReturnUsing(function ($callback) {
@@ -95,7 +96,7 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id FROM tenant_plan_assignments WHERE tenant_id = ?",
+                "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
                 [2]
             )
             ->andReturnNull();
@@ -126,6 +127,7 @@ class StripeSubscriptionServiceTest extends TestCase
                 'nexus_plan_id' => '3',
             ],
             'subscription' => 'sub_test_789',
+            'payment_status' => 'paid',
         ];
 
         DB::shouldReceive('transaction')->once()->andReturnUsing(function ($callback) {
@@ -135,10 +137,10 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id FROM tenant_plan_assignments WHERE tenant_id = ?",
+                "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
                 [2]
             )
-            ->andReturn((object) ['id' => 10]);
+            ->andReturn((object) ['id' => 10, 'status' => 'active', 'stripe_subscription_id' => 'sub_old']);
 
         DB::shouldReceive('update')->once()->andReturn(1);
 
@@ -228,7 +230,7 @@ class StripeSubscriptionServiceTest extends TestCase
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id, tenant_id FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+                "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
                 ['sub_unknown']
             )
             ->andReturnNull();
@@ -246,12 +248,12 @@ class StripeSubscriptionServiceTest extends TestCase
 
     public function test_handleSubscriptionUpdated_mapsStripeCancelledToNexusCancelled(): void
     {
-        $assignment = (object) ['id' => 7, 'tenant_id' => 2];
+        $assignment = (object) ['id' => 7, 'tenant_id' => 2, 'pay_plan_id' => 3, 'status' => 'active'];
 
         DB::shouldReceive('selectOne')
             ->once()
             ->with(
-                "SELECT id, tenant_id FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+                "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
                 ['sub_cancelled']
             )
             ->andReturn($assignment);

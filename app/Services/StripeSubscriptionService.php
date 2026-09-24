@@ -179,13 +179,24 @@ class StripeSubscriptionService
      */
     public static function createCheckoutSession(int $tenantId, int $planId, string $billingInterval): array
     {
-        $client = StripeService::client();
-
         // Load tenant
         $tenant = DB::selectOne("SELECT id, name, stripe_customer_id FROM tenants WHERE id = ?", [$tenantId]);
         if (!$tenant) {
             throw new \RuntimeException("Tenant {$tenantId} not found");
         }
+
+        // F-178: validate the plan before any Stripe call. A withdrawn
+        // (is_active = 0) plan must not be purchasable — and a zero-price one
+        // would otherwise activate below without Stripe ever being involved.
+        $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
+        if (!$plan) {
+            throw new \RuntimeException("Plan {$planId} not found");
+        }
+        if (!(int) ($plan->is_active ?? 0)) {
+            throw new \RuntimeException("Plan {$planId} is not available");
+        }
+
+        $client = StripeService::client();
 
         // Get or create Stripe Customer
         $customerId = $tenant->stripe_customer_id;
@@ -205,12 +216,7 @@ class StripeSubscriptionService
             }
         }
 
-        // Load plan and resolve the correct price ID
-        $plan = DB::selectOne("SELECT * FROM pay_plans WHERE id = ?", [$planId]);
-        if (!$plan) {
-            throw new \RuntimeException("Plan {$planId} not found");
-        }
-
+        // Resolve the correct price ID
         $priceId = $billingInterval === 'yearly'
             ? $plan->stripe_price_id_yearly
             : $plan->stripe_price_id_monthly;
@@ -348,13 +354,35 @@ class StripeSubscriptionService
             return;
         }
 
+        // F-178: a completed checkout is not a paid one. With a delayed payment
+        // method Stripe reports `unpaid` here and settles later; activating now
+        // granted the plan before (or without) payment. `no_payment_required`
+        // is a genuine zero-due checkout (trial, 100% coupon).
+        $paymentStatus = (string) ($session->payment_status ?? '');
+        if (!in_array($paymentStatus, ['paid', 'no_payment_required'], true)) {
+            Log::warning('Stripe checkout.session.completed not paid — plan not activated', [
+                'session_id' => $session->id ?? null,
+                'tenant_id' => $tenantId,
+                'payment_status' => $paymentStatus,
+            ]);
+            return;
+        }
+
         try {
-            DB::transaction(function () use ($tenantId, $planId, $subscriptionId, $session) {
+            $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId): bool {
                 // Upsert tenant_plan_assignments
                 $existing = DB::selectOne(
-                    "SELECT id FROM tenant_plan_assignments WHERE tenant_id = ?",
+                    "SELECT id, status, stripe_subscription_id FROM tenant_plan_assignments WHERE tenant_id = ?",
                     [$tenantId]
                 );
+
+                // F-178: a late (redelivered or out-of-order) checkout event for a
+                // subscription that has since been cancelled must not revive it.
+                if ($existing && ($existing->status ?? null) === 'cancelled'
+                    && $subscriptionId !== null
+                    && ($existing->stripe_subscription_id ?? null) === $subscriptionId) {
+                    return false;
+                }
 
                 if ($existing) {
                     DB::update(
@@ -372,7 +400,17 @@ class StripeSubscriptionService
                         [$tenantId, $planId, $subscriptionId]
                     );
                 }
+
+                return true;
             });
+
+            if (!$activated) {
+                Log::warning('Stripe checkout.session.completed for a cancelled subscription — ignored', [
+                    'tenant_id' => $tenantId,
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return;
+            }
 
             Log::info('Stripe checkout completed — subscription activated', [
                 'tenant_id' => $tenantId,
@@ -418,7 +456,7 @@ class StripeSubscriptionService
         }
 
         $assignment = DB::selectOne(
-            "SELECT id, tenant_id FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
+            "SELECT id, tenant_id, pay_plan_id, status FROM tenant_plan_assignments WHERE stripe_subscription_id = ?",
             [$stripeSubId]
         );
 
@@ -427,30 +465,63 @@ class StripeSubscriptionService
             return;
         }
 
-        // Map Stripe status to our status
+        // F-178: a Stripe subscription id has one lifecycle — once it has been
+        // cancelled here, a late or redelivered update must not revive it.
+        if (($assignment->status ?? null) === 'cancelled') {
+            Log::info('Stripe subscription.updated for a cancelled assignment — ignored', ['subscription_id' => $stripeSubId]);
+            return;
+        }
+
+        // Map Stripe status to our status. F-178: `incomplete` (first payment
+        // never succeeded) and `past_due` (renewal failed) are NOT active; the
+        // assignment enum has no dedicated value, so they record as `expired`
+        // and return to `active` on the next update once Stripe collects. An
+        // unknown future status fails safe to `expired` as well.
         $stripeStatus = $subscription->status ?? 'active';
         $statusMap = [
             'active' => 'active',
-            'past_due' => 'active',
+            'past_due' => 'expired',
             'canceled' => 'cancelled',
             'trialing' => 'trial',
             'unpaid' => 'expired',
-            'incomplete' => 'active',
+            'incomplete' => 'expired',
             'incomplete_expired' => 'expired',
             'paused' => 'expired',
         ];
-        $nexusStatus = $statusMap[$stripeStatus] ?? 'active';
+        $nexusStatus = $statusMap[$stripeStatus] ?? 'expired';
 
         $periodEnd = isset($subscription->current_period_end)
             ? date('Y-m-d H:i:s', $subscription->current_period_end)
             : null;
 
+        // F-178: derive the plan from the subscription's price. A plan change
+        // made in the Stripe billing portal arrives only as a new price id; it
+        // never reached pay_plan_id, so the platform kept the old plan.
+        $oldPlanId = (int) ($assignment->pay_plan_id ?? 0);
+        $newPlanId = $oldPlanId;
+        $stripeItems = $subscription->items->data ?? [];
+        $newPriceId = !empty($stripeItems) ? ($stripeItems[0]->price->id ?? null) : null;
+        if ($newPriceId) {
+            $pricedPlan = DB::selectOne(
+                "SELECT id FROM pay_plans WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ? LIMIT 1",
+                [$newPriceId, $newPriceId]
+            );
+            if ($pricedPlan) {
+                $newPlanId = (int) $pricedPlan->id;
+            } else {
+                Log::warning('Stripe subscription.updated — price matches no plan; plan left unchanged', [
+                    'subscription_id' => $stripeSubId,
+                    'price_id' => $newPriceId,
+                ]);
+            }
+        }
+
         try {
             DB::update(
                 "UPDATE tenant_plan_assignments
-                 SET status = ?, stripe_current_period_end = ?, updated_at = NOW()
+                 SET status = ?, stripe_current_period_end = ?, pay_plan_id = ?, updated_at = NOW()
                  WHERE id = ?",
-                [$nexusStatus, $periodEnd, $assignment->id]
+                [$nexusStatus, $periodEnd, $newPlanId, $assignment->id]
             );
 
             Log::info('Stripe subscription updated', [
@@ -466,47 +537,28 @@ class StripeSubscriptionService
             throw $e;
         }
 
-        // Detect plan/price change
+        // Notify the tenant admin of a plan change (derived from the price id above)
         $tenantId = (int) $assignment->tenant_id;
-        $stripeItems = $subscription->items->data ?? [];
-        if (!empty($stripeItems)) {
-            $newPriceId = $stripeItems[0]->price->id ?? null;
-            if ($newPriceId) {
-                // Fetch current price ID from our DB
-                $currentAssignment = DB::selectOne(
-                    "SELECT tpa.*, pp.name as plan_name, pp.stripe_price_id_monthly, pp.stripe_price_id_yearly
-                     FROM tenant_plan_assignments tpa
-                     LEFT JOIN pay_plans pp ON pp.id = tpa.pay_plan_id
-                     WHERE tpa.id = ?",
-                    [$assignment->id]
+        if ($newPlanId !== $oldPlanId) {
+            $newPlan = DB::selectOne("SELECT name FROM pay_plans WHERE id = ?", [$newPlanId]);
+            $oldPlan = DB::selectOne("SELECT name FROM pay_plans WHERE id = ?", [$oldPlanId]);
+            $newPlanName = $newPlan->name ?? 'Updated Plan';
+            $oldPlanName = $oldPlan->name ?? 'Previous Plan';
+
+            try {
+                static::sendRequiredTenantAdminEmail(
+                    $tenantId,
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_subject', 'params' => ['new_plan' => $newPlanName]],
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_title'],
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_body', 'params' => ['old_plan' => $oldPlanName, 'new_plan' => $newPlanName]],
+                    '/admin/billing',
+                    ['key' => 'emails_misc.stripe_subscription.plan_changed_cta'],
+                    'default',
+                    'plan changed'
                 );
-                $currentPriceId = $currentAssignment->stripe_price_id_monthly ?? $currentAssignment->stripe_price_id_yearly ?? null;
-
-                if ($currentPriceId && $newPriceId !== $currentPriceId) {
-                    // Find the new plan name
-                    $newPlan = DB::selectOne(
-                        "SELECT name FROM pay_plans WHERE stripe_price_id_monthly = ? OR stripe_price_id_yearly = ?",
-                        [$newPriceId, $newPriceId]
-                    );
-                    $newPlanName = $newPlan->name ?? 'Updated Plan';
-                    $oldPlanName = $currentAssignment->plan_name ?? 'Previous Plan';
-
-                    try {
-                        static::sendRequiredTenantAdminEmail(
-                            $tenantId,
-                            ['key' => 'emails_misc.stripe_subscription.plan_changed_subject', 'params' => ['new_plan' => $newPlanName]],
-                            ['key' => 'emails_misc.stripe_subscription.plan_changed_title'],
-                            ['key' => 'emails_misc.stripe_subscription.plan_changed_body', 'params' => ['old_plan' => $oldPlanName, 'new_plan' => $newPlanName]],
-                            '/admin/billing',
-                            ['key' => 'emails_misc.stripe_subscription.plan_changed_cta'],
-                            'default',
-                            'plan changed'
-                        );
-                    } catch (\Throwable $e) {
-                        Log::warning('[StripeSubscriptionService] plan_changed email failed: ' . $e->getMessage());
-                        throw $e;
-                    }
-                }
+            } catch (\Throwable $e) {
+                Log::warning('[StripeSubscriptionService] plan_changed email failed: ' . $e->getMessage());
+                throw $e;
             }
         }
 

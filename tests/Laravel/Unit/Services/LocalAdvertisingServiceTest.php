@@ -108,12 +108,13 @@ class LocalAdvertisingServiceTest extends TestCase
     /**
      * Insert an impression row and return its ID.
      */
-    private function insertImpression(int $campaignId, int $creativeId, string $placement = 'feed', int $tenantId = self::TENANT_ID): int
+    private function insertImpression(int $campaignId, int $creativeId, string $placement = 'feed', int $tenantId = self::TENANT_ID, ?int $userId = null): int
     {
         return DB::table('ad_impressions')->insertGetId([
             'campaign_id' => $campaignId,
             'creative_id' => $creativeId,
             'tenant_id'   => $tenantId,
+            'user_id'     => $userId,
             'placement'   => $placement,
             'created_at'  => now(),
         ]);
@@ -562,14 +563,38 @@ class LocalAdvertisingServiceTest extends TestCase
             'click_count'  => 0,
         ]);
         $creativeId   = $this->insertCreative($campaignId);
+        $viewerId     = $this->insertUser();
+        $impressionId = $this->insertImpression($campaignId, $creativeId, 'feed', self::TENANT_ID, $viewerId);
+
+        LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID, $viewerId);
+
+        $row = DB::table('ad_campaigns')->find($campaignId);
+        $this->assertSame(1, (int) $row->click_count);
+        // Default CPC is 10 cents.
+        $this->assertSame(10, (int) $row->spent_cents);
+    }
+
+    public function test_recordClick_anonymous_is_counted_but_not_charged(): void
+    {
+        // E-035 F-176: the click endpoint is open to anonymous callers, so an
+        // anonymous click must never spend the advertiser's budget.
+        $userId     = $this->insertUser();
+        $campaignId = $this->insertCampaign([
+            'created_by'   => $userId,
+            'status'       => 'active',
+            'placement'    => 'feed',
+            'budget_cents' => 1000,
+            'spent_cents'  => 0,
+            'click_count'  => 0,
+        ]);
+        $creativeId   = $this->insertCreative($campaignId);
         $impressionId = $this->insertImpression($campaignId, $creativeId);
 
         LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID);
 
         $row = DB::table('ad_campaigns')->find($campaignId);
         $this->assertSame(1, (int) $row->click_count);
-        // Default CPC is 10 cents.
-        $this->assertSame(10, (int) $row->spent_cents);
+        $this->assertSame(0, (int) $row->spent_cents);
     }
 
     public function test_recordClick_is_idempotent_for_same_impression(): void
@@ -584,11 +609,12 @@ class LocalAdvertisingServiceTest extends TestCase
             'click_count'  => 0,
         ]);
         $creativeId   = $this->insertCreative($campaignId);
-        $impressionId = $this->insertImpression($campaignId, $creativeId);
+        $viewerId     = $this->insertUser();
+        $impressionId = $this->insertImpression($campaignId, $creativeId, 'feed', self::TENANT_ID, $viewerId);
 
         // Click twice on the same impression.
-        LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID);
-        LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID);
+        LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID, $viewerId);
+        LocalAdvertisingService::recordClick($impressionId, $campaignId, self::TENANT_ID, $viewerId);
 
         $row = DB::table('ad_campaigns')->find($campaignId);
         // Only one click should be counted (idempotency guard).

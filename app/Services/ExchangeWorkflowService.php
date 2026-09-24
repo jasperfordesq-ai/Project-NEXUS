@@ -936,7 +936,9 @@ class ExchangeWorkflowService
 
         $varianceTolerance = 0.25;
         if (abs($requesterHours - $providerHours) <= $varianceTolerance) {
-            $finalHours = ($requesterHours + $providerHours) / 2;
+            // F-166: the average of 1.01 and 1.00 is 1.005; round it here so the
+            // figure recorded and the figure moved are the same 2-dp amount.
+            $finalHours = round(($requesterHours + $providerHours) / 2, 2);
             return self::completeExchange($exchangeId, $finalHours);
         }
 
@@ -1017,6 +1019,12 @@ class ExchangeWorkflowService
 
     private static function completeExchange(int $exchangeId, float $finalHours): bool
     {
+        // F-166: balances are DECIMAL(…,2) and the debit and the credit round
+        // independently, so a sub-cent figure (an averaged 1.005, or a clamped
+        // variance bound) debited 1.00 and credited 1.01. Every completion path
+        // passes through here, so round once, before any credit moves.
+        $finalHours = round($finalHours, 2);
+
         $exchange = ExchangeRequest::find($exchangeId);
         if (!$exchange) {
             return false;
@@ -1491,7 +1499,7 @@ class ExchangeWorkflowService
         $proposed = (float) $exchange->proposed_hours;
         $minHours = $proposed * (1 - $varianceFactor);
         $maxHours = $proposed * (1 + $varianceFactor);
-        $clamped = max($minHours, min($maxHours, $finalHours));
+        $clamped = round(max($minHours, min($maxHours, $finalHours)), 2);
 
         self::logHistory(
             $exchangeId,

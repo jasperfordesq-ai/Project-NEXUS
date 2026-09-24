@@ -105,6 +105,9 @@ class WalletFeaturesController extends BaseApiController
         if (empty($data['amount']) || (float) $data['amount'] <= 0) {
             return $this->error(__('api.amount_gt_zero'), 400);
         }
+        if (self::hasSubCentPrecision($data['amount'])) {
+            return $this->error(__('api.wallet_transfer_amount_precision'), 400);
+        }
 
         $result = $this->communityFundService->adminDeposit(
             $userId,
@@ -142,6 +145,9 @@ class WalletFeaturesController extends BaseApiController
         if (empty($data['amount']) || (float) $data['amount'] <= 0) {
             return $this->error(__('api.amount_gt_zero'), 400);
         }
+        if (self::hasSubCentPrecision($data['amount'])) {
+            return $this->error(__('api.wallet_transfer_amount_precision'), 400);
+        }
 
         $result = $this->communityFundService->adminWithdraw(
             $userId,
@@ -176,6 +182,9 @@ class WalletFeaturesController extends BaseApiController
         }
         if ((float) $data['amount'] > 1000) {
             return $this->error(__('api.amount_out_of_range'), 400);
+        }
+        if (self::hasSubCentPrecision($data['amount'])) {
+            return $this->error(__('api.wallet_transfer_amount_precision'), 400);
         }
 
         $lock = \Illuminate\Support\Facades\Cache::lock(
@@ -368,6 +377,12 @@ class WalletFeaturesController extends BaseApiController
         if ((float) $data['amount'] > 1000) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.amount_out_of_range'), 'amount', 400);
         }
+        // F-166: balances are stored to 2 dp and the debit and the credit round
+        // independently, so 0.015 used to debit 0.01 and credit 0.02. Same
+        // precision rule as WalletService::transfer.
+        if (self::hasSubCentPrecision($data['amount'])) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.wallet_transfer_amount_precision'), 'amount', 400);
+        }
 
         // Anti-double-submit across time, not just across concurrent requests. The lock
         // below stops two donations landing in the same ten seconds; it cannot stop the
@@ -455,6 +470,18 @@ class WalletFeaturesController extends BaseApiController
         }
 
         return $this->respondWithData(['message' => __('api_controllers_2.wallet.donation_successful')], null, 201);
+    }
+
+    /**
+     * F-166: true when an amount carries more than two decimal places. Balances
+     * are DECIMAL(…,2); a sub-cent amount rounds differently on the debit and the
+     * credit side and mints (or destroys) a cent per operation.
+     */
+    private static function hasSubCentPrecision(mixed $amount): bool
+    {
+        $value = (float) $amount;
+
+        return round($value, 2) != $value;
     }
 
     /** GET /api/v2/wallet/donation-history */

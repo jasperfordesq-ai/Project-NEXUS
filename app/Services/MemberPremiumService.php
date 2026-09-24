@@ -698,19 +698,31 @@ class MemberPremiumService
         $stripeSubId = $session->subscription ?? null;
         $stripeCustomerId = $session->customer ?? null;
 
+        // F-178: a completed checkout is not necessarily a paid one (delayed
+        // payment methods report `unpaid` and settle later). Record it as
+        // `incomplete`; the subscription.updated / invoice.paid that follows a
+        // successful payment makes it active.
+        $paymentStatus = (string) ($session->payment_status ?? '');
+        $checkoutStatus = in_array($paymentStatus, ['paid', 'no_payment_required'], true) ? 'active' : 'incomplete';
+
         // Initial upsert — subscription.updated event will refine period dates.
         $existing = DB::selectOne(
-            "SELECT id FROM member_subscriptions WHERE stripe_subscription_id = ?",
+            "SELECT id, status FROM member_subscriptions WHERE stripe_subscription_id = ?",
             [$stripeSubId]
         );
+
+        // F-178: a late checkout event must not revive a cancelled subscription.
+        if ($existing && ($existing->status ?? null) === 'canceled') {
+            return;
+        }
 
         if ($existing) {
             DB::update(
                 "UPDATE member_subscriptions
-                 SET tier_id = ?, status = 'active', billing_interval = ?,
+                 SET tier_id = ?, status = ?, billing_interval = ?,
                      stripe_customer_id = ?, payment_route = ?, stripe_account_id = ?, updated_at = NOW()
                   WHERE id = ?",
-                [$tierId, $interval, $stripeCustomerId, $paymentRoute, $stripeAccountId, $existing->id]
+                [$tierId, $checkoutStatus, $interval, $stripeCustomerId, $paymentRoute, $stripeAccountId, $existing->id]
             );
             $subId = (int) $existing->id;
         } else {
@@ -722,7 +734,7 @@ class MemberPremiumService
                 'stripe_customer_id' => $stripeCustomerId,
                 'payment_route' => $paymentRoute,
                 'stripe_account_id' => $stripeAccountId,
-                'status' => 'active',
+                'status' => $checkoutStatus,
                 'billing_interval' => $interval,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -762,7 +774,8 @@ class MemberPremiumService
             'incomplete_expired' => 'canceled',
             'paused' => 'canceled',
         ];
-        $status = $statusMap[$stripeStatus] ?? 'active';
+        // F-178: an unknown status fails safe to a non-entitled one.
+        $status = $statusMap[$stripeStatus] ?? 'incomplete';
 
         $periodStart = isset($sub->current_period_start)
             ? date('Y-m-d H:i:s', (int) $sub->current_period_start) : null;
@@ -778,9 +791,34 @@ class MemberPremiumService
         }
 
         $existing = DB::selectOne(
-            "SELECT id FROM member_subscriptions WHERE stripe_subscription_id = ?",
+            "SELECT id, tenant_id, status FROM member_subscriptions WHERE stripe_subscription_id = ?",
             [$stripeSubId]
         );
+
+        // F-178: a Stripe subscription id has one lifecycle — a late or
+        // redelivered update must not revive one already cancelled here.
+        if ($existing && ($existing->status ?? null) === 'canceled') {
+            return;
+        }
+
+        // F-178: the tier (and interval) follow the subscription's PRICE, not
+        // its metadata. A tier switch in the Stripe billing portal changes the
+        // price but leaves the metadata naming the original tier.
+        $priceTenantId = $existing ? (int) $existing->tenant_id : $tenantId;
+        $items = $sub->items->data ?? [];
+        $priceId = !empty($items) ? ($items[0]->price->id ?? null) : null;
+        if ($priceId && $priceTenantId > 0) {
+            $pricedTier = DB::selectOne(
+                "SELECT id, stripe_price_id_yearly FROM member_premium_tiers
+                 WHERE tenant_id = ? AND (stripe_price_id_monthly = ? OR stripe_price_id_yearly = ?)
+                 LIMIT 1",
+                [$priceTenantId, $priceId, $priceId]
+            );
+            if ($pricedTier) {
+                $tierId = (int) $pricedTier->id;
+                $interval = ($pricedTier->stripe_price_id_yearly ?? null) === $priceId ? 'yearly' : 'monthly';
+            }
+        }
 
         if ($existing) {
             DB::update(
@@ -870,10 +908,11 @@ class MemberPremiumService
             return;
         }
 
+        // F-178: a late invoice.paid must not revive a cancelled subscription.
         DB::update(
             "UPDATE member_subscriptions
              SET status = 'active', grace_period_ends_at = NULL, updated_at = NOW()
-             WHERE id = ?",
+             WHERE id = ? AND status <> 'canceled'",
             [$row->id]
         );
 

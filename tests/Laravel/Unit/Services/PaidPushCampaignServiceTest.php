@@ -372,7 +372,8 @@ class PaidPushCampaignServiceTest extends TestCase
         PaidPushCampaignService::updateCampaign($id, self::TENANT_ID, ['name' => 'Hack']);
     }
 
-    public function test_updateCampaign_allowed_in_pending_review_status(): void
+    /** E-035 F-179: content is frozen once submitted for review. */
+    public function test_updateCampaign_refused_in_pending_review_status(): void
     {
         $userId = $this->insertUser('u3');
         $id = DB::table('paid_push_campaigns')->insertGetId([
@@ -392,9 +393,10 @@ class PaidPushCampaignServiceTest extends TestCase
             'updated_at'       => now(),
         ]);
 
-        $updated = PaidPushCampaignService::updateCampaign($id, self::TENANT_ID, ['title' => 'Updated Title']);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/cannot be edited/i');
 
-        $this->assertSame('Updated Title', $updated['title']);
+        PaidPushCampaignService::updateCampaign($id, self::TENANT_ID, ['title' => 'Updated Title']);
     }
 
     // ─── rejectCampaign ───────────────────────────────────────────────────────
