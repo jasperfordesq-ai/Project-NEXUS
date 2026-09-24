@@ -130,7 +130,18 @@ fi
 echo "===> [2/4] Pushing main to origin"
 git push origin main || { echo "===> Push failed — aborting deploy."; exit 1; }
 
-echo "===> [3/4] Confirming GitHub has fully checked this commit"
+# 🔴 E-035 F-202: pin the EXACT commit the check below approves, and deploy that
+# commit — never "whatever origin/main is by the time the server fetches". The
+# check can wait on CI for many minutes; anything pushed meanwhile used to ship
+# unverified, and its deploy scripts ran as root. The pinned SHA is checked again
+# on the server (must be on origin/main) and handed to the blue/green engine.
+DEPLOY_SHA="$(git rev-parse HEAD)"
+if ! [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "===> Could not resolve the commit to deploy (got '$DEPLOY_SHA') — aborting."
+    exit 1
+fi
+
+echo "===> [3/4] Confirming GitHub has fully checked this commit (${DEPLOY_SHA:0:9})"
 if [ "${ALLOW_UNVERIFIED_DEPLOY:-0}" = "1" ]; then
     echo ""
     echo "    ⚠  ⚠  ⚠   ALLOW_UNVERIFIED_DEPLOY=1 is set."
@@ -138,7 +149,7 @@ if [ "${ALLOW_UNVERIFIED_DEPLOY:-0}" = "1" ]; then
     echo "    ⚠   Only do this in a genuine emergency, and check the result yourself."
     echo ""
 else
-    if ! bash scripts/predeploy-ci-check.sh --trigger; then
+    if ! bash scripts/predeploy-ci-check.sh --trigger --sha "$DEPLOY_SHA"; then
         echo ""
         echo "===> Deploy ABORTED — this commit has not been fully checked."
         echo "===> Nothing was deployed. Your code IS pushed to origin/main."
@@ -187,8 +198,13 @@ export NEXUS_DELIVERY_ORIGINS
 # variable — exporting it server-side (/etc/environment, a shell profile) would
 # NOT reach `sudo git`. That is why this is a change to the deploy command and
 # not to production configuration.
+#
+# E-035 F-202: the server resets to the PINNED commit, refuses if it is not on
+# origin/main, and passes it to bluegreen-deploy.sh as NEXUS_DEPLOY_SHA so the
+# release it builds is that commit too (not a second re-fetch of origin/main).
+# DEPLOY_SHA was validated as 40 hex characters above, so it is safe to embed.
 ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
-    "cd /opt/nexus-php && sudo env GIT_TERMINAL_PROMPT=0 git fetch origin main && sudo git reset --hard origin/main && sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach$WEBUK_FLAG"
+    "cd /opt/nexus-php && sudo env GIT_TERMINAL_PROMPT=0 git fetch origin main && sudo git merge-base --is-ancestor $DEPLOY_SHA origin/main && sudo git reset --hard $DEPLOY_SHA && sudo env NEXUS_DEPLOY_SHA=$DEPLOY_SHA bash scripts/deploy/bluegreen-deploy.sh deploy --detach$WEBUK_FLAG"
 
 DEPLOY_SSH_STATUS=$?
 if [ "$DEPLOY_SSH_STATUS" -ne 0 ]; then
@@ -274,7 +290,8 @@ echo "===> Error watch started in the background (pid $WATCH_PID); its checkpoin
 # is otherwise healthy for members — but it must be loud, because silence is
 # exactly how this went unnoticed for two months.
 if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
-    DEPLOY_SHA="$(git rev-parse origin/main 2>/dev/null || true)"
+    # The pinned commit from step 3 (E-035 F-202) — what the server built.
+    DEPLOY_SHA="${DEPLOY_SHA:-$(git rev-parse origin/main 2>/dev/null || true)}"
     PROBE_NOTE=""
     echo "===> Waiting for the server's post-deploy render to publish before probing crawler delivery..."
     # 🔴 SSH_KEY/SSH_HOST are assigned above as plain shell variables, NOT exported.

@@ -72,7 +72,7 @@ show_status() {
         DB_PASS=$(grep "^DB_PASS=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"')
         DB_NAME=$(grep "^DB_NAME=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "nexus")
         local APPLIED
-        APPLIED=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+        APPLIED=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
             -N -e "SELECT migration_name FROM migrations WHERE migration_name IS NOT NULL;" 2>/dev/null || echo "")
         local PENDING_COUNT=0
         for SQL_FILE in "$MIGRATION_DIR"/*.sql; do
@@ -106,7 +106,7 @@ show_status() {
         DB_PASS=$(grep "^DB_PASSWORD=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "")
     fi
     if [ -n "$DB_PASS" ] && docker ps --format "{{.Names}}" | grep -qx "nexus-php-db"; then
-        MAINT_DB=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+        MAINT_DB=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
             -N -e "SELECT setting_value FROM tenant_settings WHERE setting_key='general.maintenance_mode' LIMIT 1;" 2>/dev/null || echo "unknown")
     fi
 

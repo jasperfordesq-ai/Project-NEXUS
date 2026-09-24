@@ -42,9 +42,14 @@ db_backup_with_offsite() {
     DB_BACKUP_FILE=""
 
     mkdir -p "$DB_BACKUP_DIR"
+    # E-035 F-203: a pre-migrate dump is the whole platform in plaintext. Keep
+    # the directory owner-only, and create the file 0600 before the dump writes
+    # into it (the redirect below truncates it and keeps that mode).
+    chmod 700 "$DB_BACKUP_DIR"
     local stamp
     stamp="$(date +%Y%m%d-%H%M%S)"
     local backup_file="$DB_BACKUP_DIR/pre-migrate-${stamp}.sql.gz"
+    ( umask 077 && : > "$backup_file" )
 
     local db_user db_pass db_name
     db_user="$(grep "^DB_USER=" "$DEPLOY_DIR/.env" 2>/dev/null | sed 's/^DB_USER=//' | tr -d "\"'" || echo nexus)"
@@ -57,7 +62,7 @@ db_backup_with_offsite() {
     fi
 
     log_info "Dumping ${db_name} to ${backup_file}..."
-    if ! docker exec -e MYSQL_PWD="$db_pass" nexus-php-db \
+    if ! MYSQL_PWD="$db_pass" docker exec -e MYSQL_PWD nexus-php-db \
         mariadb-dump --single-transaction --quick --routines --triggers \
         -u "$db_user" "$db_name" 2>/dev/null \
         | gzip > "$backup_file"; then

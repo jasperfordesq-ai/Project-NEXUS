@@ -95,6 +95,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Community boundaries: an admin can no longer look up another community's members through data-protection requests, CRM tasks or deliverables; a federation partnership can no longer be made active without the other community agreeing; switching federation off now takes a community out of federation completely; secret groups and private-group events are no longer shared with partner communities; either side can no longer reactivate a credit agreement the other suspended; and the partner API respects each community's own switch.
+
+- Sign-up and sign-in: a community's identity-verification and waiting-list rules now apply to email sign-ups too; switching off "new members need approval" needs a platform administrator; turning on two-step sign-in asks you to confirm it is you; resending a verification email to the same address is rate-limited; and the test identity provider is no longer available on shared test servers.
+
+- Admin powers: a broker can no longer undo an admin's ban; a network super-admin can no longer impersonate an equal; community-deactivation safeguards apply on every edit path; and audit, activity and safeguarding records have minimum retention periods.
+
+- Outbound requests and push: the server can no longer be pointed at its own internal addresses through unusual address formats; web-push subscriptions must point at a recognised push service; a phone's push registration can no longer be moved to another account or community; and group-webhook replies are size-limited.
+
+- Credits and billing: donations and community-fund movements refuse amounts smaller than a cent, and exchanges round agreed hours once so both balances move by exactly the same amount; anonymous clicks and repeated views no longer spend an advertiser's budget; new group exchanges always start as drafts; subscription billing now follows Stripe for plan changes made in the billing portal, unpaid or failed payments, cancellations and delayed bank payments; and a paid push campaign can no longer change after it is submitted for review.
+
+- Safeguarding, events, groups and volunteering: the person who reports a volunteering safeguarding incident no longer sees the investigators' notes; guardian consent refuses the young person's own email address; only community admins can send event invitations to email lists, CSV uploads or the whole community, and other organisers no longer see those options; a member removed from a private group can no longer rejoin with an older invite; draft ideation challenges no longer appear in campaign lists, outcome dashboards or favourites; and the daily 24-hour volunteering limit holds even for simultaneous submissions.
+
+- Feed, stories, polls and courses: reviews that are hidden, flagged or deleted leave the feed; blocking someone also stops their likes, story reactions, shares and poll votes; stories shared with a limited audience can no longer be reacted to or answered by others; course cards follow the course's visibility and status; republishing no longer undoes an admin's rejection of a course or podcast, and changes to an approved course or its lessons go back for review where the community reviews courses; course prerequisites no longer reveal hidden courses; the older post endpoint applies the current checks; sidebar suggestions hide listings awaiting moderation and blocked members; and posts can no longer embed images hosted elsewhere.
+
+- Uploads and messages: uploaded SVG images are fully cleaned and uploaded files are served under a strict content policy; photos no longer keep hidden location data; editing a message that a broker reviews sends it back for review, marked as edited; and a voice message deleted for everyone no longer shows its transcript in the conversation list.
+
+- AI features outside the assistant chat (voice-message transcripts, message and content translation, AI-written listing, marketplace and job descriptions, and marketplace suggested replies) now respect the community's AI switch and each member's AI allowance. The assistant's "generate" buttons, which had stopped working, work again.
+
+- Videos and links: job videos and course embed lessons accept only YouTube and Vimeo links and play in a locked-down frame; idea attachment links accept only ordinary web addresses; and the sign-in error page no longer shows text taken from the link.
+
+- React app: profile preview cards no longer show the previous person's view of other members after someone else signs in on the same browser tab.
+
+- Accessible site: sign-in limits apply to each visitor instead of to shared Cloudflare addresses; file uploads keep the visitor's address and language; and sign-in and session cookies are locked to the site's own address. Existing sign-ins keep working through this release.
+
+- Mobile app: the appreciations and collections screens name members only from the server, and accepted-offer checkout shows the price the server holds rather than one taken from a link.
+
+- A member's data export includes their recorded sign-in history again.
+
+- Deployment and backups: a production deploy now builds exactly the commit its pre-deploy check approved; backups are created readable by their owner only; database passwords no longer appear in the server's process list; deploy state no longer lives in a shared temporary folder; and a deleted community's old web address is removed from the cross-site allow-list.
+
 - Keep external Partner API and partner federation traffic closed by default on new rollouts, even if database switches are enabled. Caring Community's disabled state now blocks its API routes and invite lookup, external Caring data paths and the React invite page (F-150).
 
 - Patched development dependencies used by the root, React and accessible frontends, including the SVG optimizer. Unused accessibility and HeroUI command-line packages were removed. The React test runner and Lighthouse CI archive dependency still need compatible upstream fixes.

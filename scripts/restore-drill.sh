@@ -24,7 +24,7 @@
 #   1. Dump the local DB the same way the nightly backup does:
 #        DB_PASS=$(grep -E '^DB_(PASSWORD|PASS)=' .env | head -1 | cut -d= -f2 | tr -d '"')
 #        mkdir -p /tmp/drill/backups
-#        docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db \
+#        MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db \
 #          mariadb-dump -u nexus nexus | gzip > /tmp/drill/backups/nexus_db_$(date +%F).sql.gz
 #   2. Run the drill against the local source container + that backup:
 #        BACKUP_DIR=/tmp/drill/backups SOURCE_DB_CONTAINER=nexus-php-db \
@@ -104,7 +104,7 @@ success "Throwaway DB up"
 # 4. Restore
 log "Restoring dump into throwaway DB..."
 gunzip -c "$BACKUP_FILE" \
-    | docker exec -i -e MYSQL_PWD="$DRILL_PASS" "$DRILL_CONTAINER" \
+    | MYSQL_PWD="$DRILL_PASS" docker exec -i -e MYSQL_PWD "$DRILL_CONTAINER" \
         mariadb -u root nexus \
     || fail "Restore failed"
 success "Restore complete"
@@ -115,11 +115,11 @@ DB_PASS="$(grep -E '^DB_(PASSWORD|PASS)=' "$ENV_FILE" | head -1 | cut -d= -f2 | 
 DB_NAME="$(grep -E '^DB_(DATABASE|NAME)=' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')"
 
 count_drill() {
-    docker exec -e MYSQL_PWD="$DRILL_PASS" "$DRILL_CONTAINER" \
+    MYSQL_PWD="$DRILL_PASS" docker exec -e MYSQL_PWD "$DRILL_CONTAINER" \
         mariadb -N -B -u root "$DB_NAME" -e "SELECT COUNT(*) FROM \`$1\`" 2>/dev/null || echo 0
 }
 count_live() {
-    docker exec -e MYSQL_PWD="$DB_PASS" "$SOURCE_DB_CONTAINER" \
+    MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$SOURCE_DB_CONTAINER" \
         mariadb -N -B -u "$DB_USER" "$DB_NAME" -e "SELECT COUNT(*) FROM \`$1\`" 2>/dev/null || echo 0
 }
 

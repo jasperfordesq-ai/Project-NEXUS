@@ -653,7 +653,7 @@ get_tenants() {
     fi
     QUERY="$QUERY ORDER BY id"
 
-    docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db \
+    MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db \
         mysql -u"$DB_USER" "$DB_NAME" -N -e "$QUERY" 2>/dev/null
 }
 

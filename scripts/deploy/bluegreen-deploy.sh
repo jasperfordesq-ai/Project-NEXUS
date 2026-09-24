@@ -619,7 +619,27 @@ prepare_release() {
     git fetch origin main
 
     local commit release_dir
-    commit="$(git rev-parse origin/main)"
+    # 🔴 E-035 F-202: scripts/deploy.sh pins the exact commit its CI check
+    # approved and passes it as NEXUS_DEPLOY_SHA. Build THAT commit, and refuse
+    # anything that is not a full SHA on origin/main. Without the variable (a
+    # manual run on the server) the old behaviour — the tip of origin/main — is
+    # kept, and said out loud.
+    if [ -n "${NEXUS_DEPLOY_SHA:-}" ]; then
+        if ! [[ "$NEXUS_DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            log_err "NEXUS_DEPLOY_SHA is not a full commit id: '$NEXUS_DEPLOY_SHA'"
+            exit 1
+        fi
+        if ! git cat-file -e "${NEXUS_DEPLOY_SHA}^{commit}" 2>/dev/null \
+            || ! git merge-base --is-ancestor "$NEXUS_DEPLOY_SHA" origin/main; then
+            log_err "Pinned commit $NEXUS_DEPLOY_SHA is not on origin/main — refusing to build it."
+            exit 1
+        fi
+        commit="$NEXUS_DEPLOY_SHA"
+        log_info "Building the pinned, CI-checked commit ${commit:0:9}"
+    else
+        commit="$(git rev-parse origin/main)"
+        log_warn "No NEXUS_DEPLOY_SHA given — building the tip of origin/main (${commit:0:9}), which was not pinned to a CI check."
+    fi
     release_dir="$RELEASES_DIR/$commit"
 
     if [ ! -e "$release_dir/.git" ]; then
@@ -974,10 +994,14 @@ smoke_color() {
         # 30 seconds is far longer than a warm render, so a page that never appears
         # still aborts the deploy before the traffic switch.
         local webuk_page_ok=0 webuk_status="" webuk_body=""
+        # E-035 F-204: a private temp file, not a fixed /tmp path another local
+        # user could pre-create (to block this smoke test) as this runs as root.
+        local webuk_smoke_file
+        webuk_smoke_file="$(mktemp -t nexus-webuk-smoke.XXXXXX)"
         for attempt in $(seq 1 10); do
-            webuk_status="$(curl -s -o /tmp/webuk-smoke.html -w '%{http_code}' \
+            webuk_status="$(curl -s -o "$webuk_smoke_file" -w '%{http_code}' \
                 "http://127.0.0.1:$webuk_port/hour-timebank/accessible/" 2>/dev/null || echo 000)"
-            if [ "$webuk_status" = "200" ] && grep -q 'govuk' /tmp/webuk-smoke.html 2>/dev/null; then
+            if [ "$webuk_status" = "200" ] && grep -q 'govuk' "$webuk_smoke_file" 2>/dev/null; then
                 webuk_page_ok=1
                 [ "$attempt" -gt 1 ] && log_info "web-uk page rendered on attempt $attempt"
                 break
@@ -990,16 +1014,16 @@ smoke_color() {
             # and nothing else, because `curl -sf` prints nothing on an error status —
             # so the log could not distinguish "Laravel unreachable" from "template
             # broken" from "wrong tenant". Both are one-line fixes to diagnose now.
-            webuk_body="$(head -c 300 /tmp/webuk-smoke.html 2>/dev/null || true)"
+            webuk_body="$(head -c 300 "$webuk_smoke_file" 2>/dev/null || true)"
             log_err "web-uk did not render an accessible page on $webuk_port after 10 attempts (~30s)"
             log_err "Last HTTP status: ${webuk_status:-none}"
             log_err "First 300 bytes of the response:"
             printf '%s\n' "$webuk_body" | sed 's/^/    /'
             log_err "Check: docker logs $(container_name "$color" webuk) --tail 50"
-            rm -f /tmp/webuk-smoke.html
+            rm -f "$webuk_smoke_file"
             return 1
         fi
-        rm -f /tmp/webuk-smoke.html
+        rm -f "$webuk_smoke_file"
         log_ok "web-uk rendered an accessible page"
     fi
 }

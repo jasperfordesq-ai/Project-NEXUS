@@ -41,8 +41,6 @@ class CorsHelper
         'https://api.project-nexus.ie',
         'https://hour-timebank.ie',
         'https://www.hour-timebank.ie',
-        'https://nexuscivic.ie',
-        'https://www.nexuscivic.ie',
         'https://timebank.global',
         'https://www.timebank.global',
         // staging.timebank.local removed — stale domain

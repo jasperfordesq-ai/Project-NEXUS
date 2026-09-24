@@ -22,6 +22,10 @@
 #   RCLONE_REMOTE="nexus-backups:nexus-backups" in this script or the environment.
 
 set -euo pipefail
+# E-035 F-203: every backup holds the whole platform (database, uploads incl.
+# vetting documents, storage). Create files owner-only so no other local account
+# on the host can read them.
+umask 077
 
 BACKUP_DIR="/opt/nexus-php/backups"
 ENV_FILE="/opt/nexus-php/.env"
@@ -44,6 +48,7 @@ fail()    { log "✗ ERROR: $1"; exit 1; }
 
 log "=== Nightly backup starting ==="
 mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
 
 # ---------------------------------------------------------------------------
 # 1. Database
@@ -58,7 +63,7 @@ DB_PASS=$(grep -E '^DB_(PASSWORD|PASS)='  "$ENV_FILE" | head -1 | cut -d= -f2 | 
     fail "Could not read DB credentials from $ENV_FILE"
 
 log "Dumping database: $DB_NAME → $DB_BACKUP"
-docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" \
+MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" \
     mariadb-dump -u "$DB_USER" "$DB_NAME" \
     | gzip > "$DB_BACKUP"
 
@@ -94,6 +99,11 @@ docker run --rm \
 
 [[ ! -s "$STORAGE_BACKUP" ]] && fail "Storage backup is empty"
 success "Storage backup — $(du -sh "$STORAGE_BACKUP" | cut -f1)"
+
+# The two tarballs above are written by a helper container, which ignores this
+# script's umask, so tighten them here — and any backup left world-readable by an
+# earlier run (E-035 F-203).
+find "$BACKUP_DIR" -maxdepth 1 -type f -exec chmod 600 {} +
 
 # ---------------------------------------------------------------------------
 # 4. Rotation — keep last KEEP_DAYS per type

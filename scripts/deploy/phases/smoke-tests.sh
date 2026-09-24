@@ -59,7 +59,7 @@ run_smoke_tests() {
 
     # Check database connectivity (read password from .env)
     DB_PASS=$(grep "^DB_PASS=" "$DEPLOY_DIR/.env" 2>/dev/null | sed 's/^DB_PASS=//' | tr -d "\"'")
-    if docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysqladmin ping -h localhost -unexus > /dev/null 2>&1; then
+    if MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysqladmin ping -h localhost -unexus > /dev/null 2>&1; then
         log_ok "Database still accessible"
     else
         log_err "Database connection lost"

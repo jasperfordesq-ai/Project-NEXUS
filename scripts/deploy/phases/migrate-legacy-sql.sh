@@ -16,7 +16,7 @@ backup_database_before_migrate() {
     local BACKUP_FILE="$BACKUP_DIR/pre-migrate-$(date +%Y%m%d-%H%M%S).sql.gz"
     log_info "Taking pre-migration database snapshot -> $BACKUP_FILE"
 
-    if docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysqldump -u nexus nexus 2>/dev/null | gzip > "$BACKUP_FILE"; then
+    if MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysqldump -u nexus nexus 2>/dev/null | gzip > "$BACKUP_FILE"; then
         log_ok "Database backed up to $BACKUP_FILE ($(du -sh "$BACKUP_FILE" | cut -f1))"
         find "$BACKUP_DIR" -name "pre-migrate-*.sql.gz" -mtime +7 -delete
     else
@@ -41,7 +41,7 @@ run_pending_migrations() {
     DB_PASS=$(grep "^DB_PASS=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"')
     DB_NAME=$(grep "^DB_NAME=" "$DEPLOY_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '"' || echo "nexus")
 
-    docker exec -i -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" 2>/dev/null <<'EOSQL'
+    MYSQL_PWD="$DB_PASS" docker exec -i -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" 2>/dev/null <<'EOSQL'
 CREATE TABLE IF NOT EXISTS migrations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     migration_name VARCHAR(255) NOT NULL UNIQUE,
@@ -51,13 +51,13 @@ CREATE TABLE IF NOT EXISTS migrations (
 EOSQL
 
     local APPLIED
-    APPLIED=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+    APPLIED=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
         -N -e "SELECT migration_name FROM migrations WHERE migration_name IS NOT NULL;" 2>/dev/null || echo "")
 
     local APPLIED_COUNT LARAVEL_MIGRATION_COUNT
-    APPLIED_COUNT=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+    APPLIED_COUNT=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
         -N -e "SELECT COUNT(*) FROM migrations WHERE migration_name IS NOT NULL;" 2>/dev/null || echo "0")
-    LARAVEL_MIGRATION_COUNT=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+    LARAVEL_MIGRATION_COUNT=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
         -N -e "SELECT COUNT(*) FROM laravel_migrations;" 2>/dev/null || echo "0")
 
     if [ "${APPLIED_COUNT:-0}" = "0" ] && [ "${LARAVEL_MIGRATION_COUNT:-0}" != "0" ]; then
@@ -67,12 +67,12 @@ EOSQL
             [ -f "$SQL_FILE" ] || continue
             local BASENAME_ESCAPED
             BASENAME_ESCAPED=$(basename "$SQL_FILE" | sed "s/'/''/g")
-            docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e "
+            MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e "
                 INSERT IGNORE INTO migrations (migration_name, backups, executed_at)
                 VALUES ('$BASENAME_ESCAPED', 'schema-dump-bootstrap', NOW());
             " 2>/dev/null
         done
-        APPLIED=$(docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
+        APPLIED=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" \
             -N -e "SELECT migration_name FROM migrations WHERE migration_name IS NOT NULL;" 2>/dev/null || echo "")
     fi
 
@@ -122,8 +122,8 @@ EOSQL
         fi
 
         log_info "Running: $BASENAME"
-        if docker exec -i -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" < "$SQL_FILE" 2>&1 | tee -a "$LOG_FILE"; then
-            docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e "
+        if MYSQL_PWD="$DB_PASS" docker exec -i -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" < "$SQL_FILE" 2>&1 | tee -a "$LOG_FILE"; then
+            MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e "
                 INSERT IGNORE INTO migrations (migration_name, backups, executed_at)
                 VALUES ('$BASENAME_ESCAPED', '$BASENAME_ESCAPED', NOW());
             " 2>/dev/null

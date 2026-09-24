@@ -175,14 +175,14 @@ db_maintenance_set() {
 
     # Update existing rows
     local updated
-    if ! updated=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
+    if ! updated=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
         "UPDATE tenant_settings SET setting_value = '$value' WHERE setting_key = 'general.maintenance_mode'; SELECT ROW_COUNT();" 2>/dev/null); then
         log_err "Layer 2: failed to update maintenance settings"
         return 1
     fi
 
     # Insert for any tenants that don't have the setting yet
-    if ! docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -e \
+    if ! MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -e \
         "INSERT IGNORE INTO tenant_settings (tenant_id, setting_key, setting_value, setting_type)
          SELECT t.id, 'general.maintenance_mode', '$value', 'boolean'
          FROM tenants t WHERE t.is_active = 1
@@ -195,7 +195,7 @@ db_maintenance_set() {
     fi
 
     local mismatched
-    if ! mismatched=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
+    if ! mismatched=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
         "SELECT COUNT(*)
            FROM tenants t
            LEFT JOIN tenant_settings ts
@@ -275,7 +275,7 @@ db_maintenance_matches() {
     [ -n "$DB_PASS" ] || return 1
 
     local mismatched
-    mismatched=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" \
+    mismatched=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" \
         mysql -u"$DB_USER" "$DB_NAME" -sN -e \
         "SELECT COUNT(*)
            FROM tenants t
@@ -309,7 +309,7 @@ queue_and_wait_for_live_prerender() {
             log_err "The shared frontend maintenance gate disappeared during the rebuild"
             return 1
         fi
-        status=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" \
+        status=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" \
             mysql -u"$DB_USER" "$DB_NAME" -sN -e \
             "SELECT CASE WHEN fence_state = 'pending' THEN 'pending_fence' ELSE status END FROM prerender_jobs WHERE id = $job_id LIMIT 1;" 2>/dev/null || echo "")
         case "$status" in
@@ -380,11 +380,11 @@ db_maintenance_status() {
     fi
 
     local count
-    count=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
+    count=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
         "SELECT COUNT(*) FROM tenant_settings WHERE setting_key = 'general.maintenance_mode' AND setting_value = 'true';" 2>/dev/null || echo "?")
 
     local total
-    total=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
+    total=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
         "SELECT COUNT(*) FROM tenant_settings WHERE setting_key = 'general.maintenance_mode';" 2>/dev/null || echo "?")
 
     if [ "$count" = "0" ]; then
@@ -595,7 +595,7 @@ maintenance_status() {
     get_db_creds
     if [ -n "$DB_PASS" ]; then
         local db_count
-        db_count=$(docker exec -e MYSQL_PWD="$DB_PASS" "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
+        db_count=$(MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" mysql -u"$DB_USER" "$DB_NAME" -sN -e \
             "SELECT COUNT(*) FROM tenant_settings WHERE setting_key = 'general.maintenance_mode' AND setting_value = 'true';" 2>/dev/null || echo "0")
         if [ "$db_count" != "0" ]; then
             db_on=true

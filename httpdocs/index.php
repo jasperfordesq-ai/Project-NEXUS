@@ -28,8 +28,6 @@ if (file_exists(__DIR__ . '/../.maintenance')) {
             'https://www.hour-timebank.ie',
             'https://timebank.global',
             'https://www.timebank.global',
-            'https://nexuscivic.ie',
-            'https://www.nexuscivic.ie',
             'http://localhost:5173',
             'http://localhost:8082',
             'http://127.0.0.1:8082',

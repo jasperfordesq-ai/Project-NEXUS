@@ -22,7 +22,7 @@ _deploy_db_maintenance_set() {
     fi
 
     if docker ps --format "{{.Names}}" | grep -qx "nexus-php-db"; then
-        docker exec -e MYSQL_PWD="$DB_PASS" nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e \
+        MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db mysql -u"$DB_USER" "$DB_NAME" -e \
             "UPDATE tenant_settings SET setting_value = '$value' WHERE setting_key = 'general.maintenance_mode';" 2>/dev/null \
             && log_ok "Layer 2: Database maintenance_mode = '$value'" \
             || log_warn "Layer 2: Database update failed"
