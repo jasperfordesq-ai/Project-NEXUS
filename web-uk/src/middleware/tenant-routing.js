@@ -415,6 +415,24 @@ async function resolveCustomAccessibleDomain(req, pathname) {
   }
 }
 
+function isLocalUrl(location) {
+  if (
+    typeof location !== 'string' ||
+    !location.startsWith('/') ||
+    location.startsWith('//') ||
+    location.startsWith('/\\')
+  ) {
+    return false;
+  }
+
+  const localOrigin = 'https://nexus.invalid';
+  try {
+    return new URL(location, localOrigin).origin === localOrigin;
+  } catch {
+    return false;
+  }
+}
+
 async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, queryIndex, originalUrl) {
   const host = requestHost(req);
   if (!shouldResolveCustomAccessibleDomain(host)) {
@@ -435,19 +453,9 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
 
     const sluglessPath = validateReturnUrl(rest, '/');
     const location = withQuery(sluglessPath, queryIndex, originalUrl);
-    const localOrigin = 'https://nexus.invalid';
-    try {
-      if (
-        location.startsWith('/') &&
-        !location.startsWith('//') &&
-        !location.startsWith('/\\') &&
-        new URL(location, localOrigin).origin === localOrigin
-      ) {
-        res.redirect(permanentRedirectStatus(req), location);
-      } else {
-        res.redirect(permanentRedirectStatus(req), '/');
-      }
-    } catch {
+    if (isLocalUrl(location)) {
+      res.redirect(permanentRedirectStatus(req), location);
+    } else {
       res.redirect(permanentRedirectStatus(req), '/');
     }
     return true;
