@@ -585,9 +585,18 @@ function resolveBackendAssetUrl(value) {
 function resolveBackendMediaUrl(value) {
   const asset = String(value || '').trim();
   if (!asset) return '';
-  if (/^[a-z][a-z0-9+.-]*:/i.test(asset) || asset.startsWith('//')) {
-    // Already absolute (or protocol-relative): leave the host alone.
+  if (/^https?:\/\//i.test(asset)) {
+    // Already absolute http(s): leave the host alone.
     return asset;
+  }
+  // F-207: these values reach `href` and `src` (message attachments, feed
+  // media). Any other scheme — javascript:, data:, vbscript:, file: … — and a
+  // scheme-relative `//host` are refused. A browser also ignores tabs and
+  // newlines inside a scheme, so a value carrying control characters is
+  // refused before it could be read as a scheme at all.
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001f\u007f]/.test(asset) || /^[a-z][a-z0-9+.-]*:/i.test(asset) || asset.startsWith('//') || asset.startsWith('\\')) {
+    return '';
   }
   return resolveBackendAssetUrl(asset);
 }

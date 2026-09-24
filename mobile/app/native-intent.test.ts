@@ -15,6 +15,9 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/users/25717')).toBe('/(modals)/member-profile?id=25717');
     expect(mapSystemPathToNativeRoute('/users/25717/appreciations')).toBe('/(modals)/appreciations?userId=25717');
     expect(mapSystemPathToNativeRoute('/users/25717/collections')).toBe('/(modals)/profile-collections?userId=25717&scope=public');
+    // F-198: the link's `name` is the author's claim; both screens name the member from the server.
+    expect(mapSystemPathToNativeRoute('/users/25717/appreciations?name=Community%20Coordinator')).toBe('/(modals)/appreciations?userId=25717');
+    expect(mapSystemPathToNativeRoute('/users/25717/collections?name=Community%20Coordinator')).toBe('/(modals)/profile-collections?userId=25717&scope=public');
   });
 
   it('keeps the current-member profile link on the Profile tab', () => {

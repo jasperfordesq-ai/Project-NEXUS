@@ -452,15 +452,18 @@ describe('OauthCallbackPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the error message param text in the error card', () => {
+  it('never renders the ?message= text from the link (F-196)', () => {
     vi.stubGlobal('fetch', vi.fn());
     mockSearchParams.mockReturnValue(
-      makeParams('error=access_denied&message=User+denied+access'),
+      makeParams('error=oauth_failed&message=Your+account+is+suspended.+Call+0800+123+456'),
     );
 
     render(<OauthCallbackPage />);
 
-    expect(screen.getByText('User denied access')).toBeInTheDocument();
+    expect(screen.queryByText(/suspended/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0800/)).not.toBeInTheDocument();
+    // Our own translated wording is shown instead.
+    expect(screen.getAllByText('oauth.callback_failed').length).toBeGreaterThanOrEqual(2);
   });
 
   it('falls back to the translation key when ?error= has no ?message=', () => {

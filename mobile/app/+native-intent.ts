@@ -282,8 +282,10 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         : appendParams('/(tabs)/profile', params);
 
     case 'users':
-      if (id && detail === 'appreciations') return appendParams('/(modals)/appreciations', { ...params, userId: id });
-      if (id && detail === 'collections') return appendParams('/(modals)/profile-collections', { ...params, userId: id, scope: 'public' });
+      // F-198: a display name in the link is the link author's claim. Both screens
+      // name the member from the server, so the link's `name` is not carried.
+      if (id && detail === 'appreciations') return appendParams('/(modals)/appreciations', { ...withoutLinkName(params), userId: id });
+      if (id && detail === 'collections') return appendParams('/(modals)/profile-collections', { ...withoutLinkName(params), userId: id, scope: 'public' });
       return id ? appendParams('/(modals)/member-profile', { ...params, id }) : '/(modals)/members';
 
     case 'me':
@@ -833,6 +835,13 @@ function mapMessagePath(segments: string[], queryParams: Record<string, string>)
     return appendParams('/(modals)/thread', { ...params, id: branch });
   }
   return branch === 'new' ? appendParams('/(modals)/new-message', params) : appendParams('/(tabs)/messages', params);
+}
+
+/** A copy of the link's query without its `name` (the link author's claim, F-118/F-198). */
+function withoutLinkName(params: Record<string, string>): Record<string, string> {
+  const copy = { ...params };
+  delete copy.name;
+  return copy;
 }
 
 function appendParams(pathname: string, params: Record<string, string | undefined>): string {

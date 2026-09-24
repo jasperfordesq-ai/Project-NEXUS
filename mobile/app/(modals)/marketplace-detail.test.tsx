@@ -468,6 +468,9 @@ describe('MarketplaceDetailRoute', () => {
     (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
       data: { ...mockListing, status: 'reserved', time_credit_price: 4 },
     });
+    jest.mocked(getMarketplaceOffers).mockResolvedValueOnce({
+      data: [{ id: 31, amount: 37, currency: 'EUR', status: 'accepted', created_at: '2026-06-01T10:00:00Z', listing: { id: 9, title: 'Bike', status: 'reserved', price: 50, price_currency: 'EUR', image: null } }],
+    } as never);
     (createMarketplaceOrder as jest.Mock).mockResolvedValueOnce({
       data: { id: 51, order_number: 'MKT-OFFER-51', status: 'pending_payment' },
     });
@@ -491,6 +494,61 @@ describe('MarketplaceDetailRoute', () => {
     });
     const payload = (createMarketplaceOrder as jest.Mock).mock.calls[0][0];
     expect(payload).not.toHaveProperty('coupon_code');
+  });
+
+  describe('F-199: the accepted-offer price comes from the server, not the link', () => {
+    const acceptedOffer = (amount: number, overrides: Record<string, unknown> = {}) => ({
+      id: 31,
+      amount,
+      currency: 'EUR',
+      status: 'accepted',
+      created_at: '2026-06-01T10:00:00Z',
+      listing: { id: 9, title: 'Bike', status: 'reserved', price: 50, price_currency: 'EUR', image: null },
+      ...overrides,
+    });
+
+    it('shows the amount the server holds for the offer, whatever the link says', async () => {
+      mockRouteParams = { id: '9', offer_id: '31', offer_amount: '0.01' };
+      (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
+        data: { ...mockListing, status: 'reserved' },
+      });
+      jest.mocked(getMarketplaceOffers).mockResolvedValueOnce({ data: [acceptedOffer(42)] } as never);
+
+      const screen = render(<MarketplaceDetailRoute />);
+      await waitFor(() => expect(getMarketplaceOffers).toHaveBeenCalledWith('sent', null));
+      const buy = await screen.findByText(/^Buy for /);
+      expect(String(buy.props.children)).toMatch(/42/);
+      expect(screen.queryByText(/0\.01/)).toBeNull();
+    });
+
+    it('walks later pages of sent offers to find the accepted one', async () => {
+      mockRouteParams = { id: '9', offer_id: '31', offer_amount: '1' };
+      (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
+        data: { ...mockListing, status: 'reserved' },
+      });
+      jest.mocked(getMarketplaceOffers)
+        .mockResolvedValueOnce({ data: [acceptedOffer(5, { id: 30 })], meta: { next_cursor: 'page-2', has_more: true } } as never)
+        .mockResolvedValueOnce({ data: [acceptedOffer(44)] } as never);
+
+      const screen = render(<MarketplaceDetailRoute />);
+      const buy = await screen.findByText(/^Buy for /);
+      expect(getMarketplaceOffers).toHaveBeenLastCalledWith('sent', 'page-2');
+      expect(String(buy.props.children)).toMatch(/44/);
+    });
+
+    it('offers no offer checkout when the server does not confirm an accepted offer', async () => {
+      mockRouteParams = { id: '9', offer_id: '31', offer_amount: '1' };
+      (getMarketplaceListing as jest.Mock).mockResolvedValueOnce({
+        data: { ...mockListing, status: 'reserved' },
+      });
+      jest.mocked(getMarketplaceOffers).mockResolvedValueOnce({ data: [acceptedOffer(42, { status: 'declined' })] } as never);
+
+      const screen = render(<MarketplaceDetailRoute />);
+      await waitFor(() => expect(getMarketplaceOffers).toHaveBeenCalled());
+      await act(async () => {});
+      expect(screen.queryByText(/^Buy for 1\b/)).toBeNull();
+      expect(screen.queryByText(/^Buy for .*1\.00/)).toBeNull();
+    });
   });
 
   it('submits pickup slot selection atomically with order creation', async () => {

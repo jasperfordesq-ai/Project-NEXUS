@@ -9,6 +9,10 @@
  * The backend redirects the user here after a successful OAuth round-trip with
  * a short-lived `?code=<one-time-code>` that is exchanged via POST.
  * On error: `?error=<code>&message=<text>&provider=<x>`.
+ *
+ * F-196: only our own translated text is ever shown. The `message` parameter is
+ * never rendered — anyone can craft a link to this page, and its text would
+ * otherwise appear under the platform's own heading.
  */
 
 import { useEffect, useState } from 'react';
@@ -99,10 +103,11 @@ export function OauthCallbackPage() {
     const flow = params.get('flow');
     const sessionGenerationAtStart = tokenManager.getSessionGeneration();
     const errCode = params.get('error');
-    const errMsg = params.get('message');
 
     if (errCode) {
-      setError(errMsg || t('oauth.callback_failed'));
+      // The error code (oauth_failed, sso_failed, a provider's access_denied …)
+      // only decides THAT sign-in failed; the wording is always ours.
+      setError(t('oauth.callback_failed'));
       return;
     }
 

@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthProvider, useAuth } from './AuthContext';
-import { tokenManager, SESSION_EXPIRED_EVENT } from '@/lib/api';
+import { tokenManager, SESSION_EXPIRED_EVENT, SESSION_REPLACED_EVENT } from '@/lib/api';
 // The i18next singleton src/test/setup.ts initialises from public/locales/en. AuthContext replaces
 // raw API error strings with localized ones, so the assertions below resolve their expected text
 // through the same keys the provider uses rather than hard-coding English. Four tests here pinned
@@ -691,6 +691,37 @@ describe('AuthContext', () => {
       expect(localStorage.getItem('nexus_theme')).toBe('dark');
     });
 
+    it('tells viewer-specific caches (the profile hover card) to empty on sign-out (F-194)', async () => {
+      const user = userEvent.setup();
+      const onReset = vi.fn();
+      window.addEventListener('nexus:viewer-caches-reset', onReset);
+
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+      });
+      vi.mocked(api.logoutSession).mockResolvedValueOnce({ success: true });
+
+      render(
+        <AuthProvider>
+          <TestAuthActions />
+        </AuthProvider>
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      });
+      expect(onReset).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('button', { name: 'Logout' }));
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('idle');
+      });
+
+      expect(onReset).toHaveBeenCalledTimes(1);
+      window.removeEventListener('nexus:viewer-caches-reset', onReset);
+    });
+
     it('proceeds with local logout even if server logout fails', async () => {
       const user = userEvent.setup();
 
@@ -846,6 +877,36 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('status')).toHaveTextContent('idle');
         expect(screen.getByTestId('error')).toHaveTextContent('session has expired');
       });
+    });
+
+    it('tells viewer-specific caches to empty when the session expires or is replaced (F-194)', async () => {
+      const onReset = vi.fn();
+      window.addEventListener('nexus:viewer-caches-reset', onReset);
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+      });
+
+      render(
+        <AuthProvider>
+          <TestAuthDisplay />
+        </AuthProvider>
+      );
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      });
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent(SESSION_REPLACED_EVENT, { detail: { previousSessionGeneration: 'old' } }));
+      });
+      expect(onReset).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+      });
+      expect(onReset).toHaveBeenCalledTimes(2);
+      window.removeEventListener('nexus:viewer-caches-reset', onReset);
     });
   });
 

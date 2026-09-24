@@ -42,7 +42,8 @@ vi.mock('@/components/courses/LessonDiscussion', () => ({
   LessonDiscussion: () => <div data-testid="lesson-discussion" />,
 }));
 
-vi.mock('@/lib/courseContentSecurity', () => ({
+vi.mock('@/lib/courseContentSecurity', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/courseContentSecurity')>()),
   normalizeCourseMediaUrl: (url: string | null | undefined) => url ?? null,
 }));
 
@@ -329,5 +330,46 @@ describe('CoursePlayerPage', () => {
       expect(container.querySelector('video')).toBeTruthy();
     });
     expect(container.querySelector('details')).toBeNull();
+  });
+
+  it('frames an embed lesson only as a rebuilt, sandboxed video player (F-195)', async () => {
+    const embedLesson = {
+      ...lesson1,
+      content_type: 'embed' as const,
+      embed_url: 'https://youtu.be/dQw4w9WgXcQ?si=tracking',
+    };
+    mockCoursesApi.show.mockResolvedValue({
+      success: true,
+      data: {
+        ...mockCourse,
+        sections: [{ id: 1, course_id: 42, title: 'Section One', position: 1, lessons: [embedLesson] }],
+      },
+    });
+
+    const { container, unmount } = render(<CoursePlayerPage />);
+    await waitFor(() => {
+      expect(container.querySelector('iframe')).toBeTruthy();
+    });
+    const frame = container.querySelector('iframe')!;
+    expect(frame.getAttribute('src')).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?cc_load_policy=1');
+    expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin allow-presentation');
+    unmount();
+
+    // A link to any other site (here a Google-hosted form) is not framed at all.
+    mockCoursesApi.show.mockResolvedValue({
+      success: true,
+      data: {
+        ...mockCourse,
+        sections: [{
+          id: 1, course_id: 42, title: 'Section One', position: 1,
+          lessons: [{ ...embedLesson, embed_url: 'https://docs.google.com/forms/d/e/fake/viewform' }],
+        }],
+      },
+    });
+    const second = render(<CoursePlayerPage />);
+    await waitFor(() => {
+      expect(screen.getAllByText('Introduction').length).toBeGreaterThanOrEqual(1);
+    });
+    expect(second.container.querySelector('iframe')).toBeNull();
   });
 });

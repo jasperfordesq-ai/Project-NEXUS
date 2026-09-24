@@ -166,9 +166,36 @@ type ReportReason = 'counterfeit' | 'illegal' | 'unsafe' | 'misleading' | 'discr
 const REPORT_REASONS: ReportReason[] = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
 type FulfilmentChoice = 'pickup' | `shipping:${number}`;
 
+/** How many pages of the buyer's sent offers to search for the accepted one. */
+const ACCEPTED_OFFER_LOOKUP_PAGES = 10;
+
+/**
+ * F-199: the accepted amount as the SERVER holds it for this buyer's offer, or null
+ * when the server does not confirm an accepted offer on this listing. The checkout
+ * link used to carry `offer_amount`, which the summary showed as the price — so a
+ * crafted link could show a member one figure while the server charged another.
+ */
+async function findAcceptedOfferAmount(offerId: number, listingId: number): Promise<number | null> {
+  let cursor: string | null = null;
+  for (let page = 0; page < ACCEPTED_OFFER_LOOKUP_PAGES; page += 1) {
+    const response = await getMarketplaceOffers('sent', cursor);
+    const match = (response.data ?? []).find((offer) => Number(offer.id) === offerId);
+    if (match) {
+      const amount = Number(match.amount);
+      const sameListing = match.listing?.id === undefined || Number(match.listing.id) === listingId;
+      return match.status === 'accepted' && sameListing && Number.isFinite(amount) && amount >= 0 ? amount : null;
+    }
+    const next = response.meta?.next_cursor ?? response.meta?.cursor ?? null;
+    if (!next || next === cursor || response.meta?.has_more === false) return null;
+    cursor = next;
+  }
+  return null;
+}
+
 function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () => void; revision: CheckoutOperation | null }) {
   const { t } = useTranslation(['marketplace', 'common']);
-  const params = useLocalSearchParams<{ id?: string; offer_id?: string; offer_amount?: string }>();
+  // F-199: `offer_amount` in the link is deliberately not read — see findAcceptedOfferAmount.
+  const params = useLocalSearchParams<{ id?: string; offer_id?: string }>();
   const primary = usePrimaryColor();
   const { hasFeature, tenant } = useTenant();
   const bottomInset = useBottomInset();
@@ -180,10 +207,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
   const safeId = Number.isFinite(listingId) && listingId > 0 ? listingId : 0;
   const parsedOfferId = Number(params.offer_id);
   const acceptedOfferId = Number.isInteger(parsedOfferId) && parsedOfferId > 0 ? parsedOfferId : null;
-  const parsedOfferAmount = Number(params.offer_amount);
-  const acceptedOfferAmount = Number.isFinite(parsedOfferAmount) && parsedOfferAmount >= 0
-    ? parsedOfferAmount
-    : null;
+  const [acceptedOfferAmount, setAcceptedOfferAmount] = useState<number | null>(null);
   const [listing, setListing] = useState<MarketplaceListingDetail | null>(null);
   const [listingError, setListingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -323,8 +347,15 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
     }
     setIsLoading(true);
     setListingError(null);
+    setAcceptedOfferAmount(null);
     try {
-      const response = await getMarketplaceListing(safeId, acceptedOfferId);
+      const [response, serverOfferAmount] = await Promise.all([
+        getMarketplaceListing(safeId, acceptedOfferId),
+        acceptedOfferId
+          ? findAcceptedOfferAmount(acceptedOfferId, safeId).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+      setAcceptedOfferAmount(serverOfferAmount);
       setListing(response.data);
     } catch (err) {
       /*

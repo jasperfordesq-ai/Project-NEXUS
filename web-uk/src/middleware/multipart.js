@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const fs = require('node:fs');
+const { AsyncResource } = require('node:async_hooks');
 const { formidable } = require('formidable');
 
 function isMultipart(req) {
@@ -71,7 +72,12 @@ function parseMultipartForm(options = {}) {
       filter: part => typeof part.originalFilename === 'string' && part.originalFilename.trim() !== ''
     });
 
-    return form.parse(req, (error, fields, files) => {
+    // F-206: formidable calls back from a later socket event, outside the
+    // AsyncLocalStorage context this request started in, so the API calls an
+    // upload route made afterwards carried no visitor address (F-110), no
+    // language and no community fallback. Binding the callback to the current
+    // async context hands control back inside the request's own context.
+    return form.parse(req, AsyncResource.bind((error, fields, files) => {
       if (error) {
         // Formidable flags an over-limit upload with httpCode 413. Surface that
         // as a real 413 so the error handler renders the friendly "file is too
@@ -95,7 +101,7 @@ function parseMultipartForm(options = {}) {
         req.headers['x-csrf-token'] = req.body._csrf;
       }
       return next();
-    });
+    }));
   };
 }
 

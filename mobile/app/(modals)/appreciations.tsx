@@ -21,6 +21,7 @@ import {
 } from '@/lib/api/appreciations';
 import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useServerMemberName } from '@/lib/hooks/useServerMemberName';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -63,11 +64,13 @@ function AppreciationsScreen() {
 
 function AppreciationsScreenInner() {
   const { t } = useTranslation(['members', 'common']);
-  const params = useLocalSearchParams<{ userId?: string | string[]; id?: string | string[]; name?: string | string[] }>();
+  const params = useLocalSearchParams<{ userId?: string | string[]; id?: string | string[] }>();
   const rawUserId = params.userId ?? params.id;
   const numericUserId = typeof rawUserId === 'string' ? Number(rawUserId) : 0;
   const userId = Number.isSafeInteger(numericUserId) && numericUserId > 0 ? String(numericUserId) : '';
-  const titleName = typeof params.name === 'string' ? params.name : undefined;
+  // F-198: never the link's `?name=` — that is whatever the link's author typed.
+  // Only the server's description of the member names the wall.
+  const titleName = useServerMemberName(userId);
   const { isAuthenticated } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();

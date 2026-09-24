@@ -10,6 +10,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockUseApi = jest.fn();
 const mockReactToAppreciation = jest.fn();
 const mockGetAppreciations = jest.fn();
+const mockGetMember = jest.fn();
 let mockUserId: string | string[] = '7';
 let mockViewerId = 3;
 let mockTenantId = 2;
@@ -96,6 +97,10 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+jest.mock('@/lib/api/members', () => ({
+  getMember: (...args: unknown[]) => mockGetMember(...args),
+}));
+
 jest.mock('@/lib/api/appreciations', () => ({
   getUserAppreciations: (...args: unknown[]) => mockGetAppreciations(...args),
   reactToAppreciation: (...args: unknown[]) => mockReactToAppreciation(...args),
@@ -125,6 +130,7 @@ describe('AppreciationsScreen', () => {
     mockViewerId = 3;
     mockTenantId = 2;
     mockGetAppreciations.mockReset();
+    mockGetMember.mockReset().mockReturnValue(new Promise(() => {}));
     mockReactToAppreciation.mockReset().mockResolvedValue({ data: { reacted: true, reaction_type: 'heart' } });
     mockUseApi.mockReturnValue({
       data: {
@@ -427,5 +433,32 @@ describe('AppreciationsScreen', () => {
     expect(queryByText('appreciations.react.heart')).toBeNull();
     expect(queryByText('appreciations.react.clap')).toBeNull();
     expect(queryByText('appreciations.react.star')).toBeNull();
+  });
+
+  describe('F-198: the wall is named only from the server', () => {
+    it('never shows the name carried in the link', async () => {
+      // The route carries name: 'Alice' (see the expo-router mock). The server
+      // has not answered, so the title is the generic one.
+      const screen = render(<AppreciationsScreen />);
+      expect(screen.getAllByText('Appreciations').length).toBeGreaterThan(0);
+      expect(screen.queryByText("Alice's appreciations")).toBeNull();
+      expect(mockGetMember).toHaveBeenCalledWith(7);
+    });
+
+    it('titles the wall with the name the server returns for that member', async () => {
+      mockGetMember.mockResolvedValue({ data: { id: 7, name: 'Priya Shah', first_name: 'Priya' } });
+      const screen = render(<AppreciationsScreen />);
+      expect(await screen.findByText("Priya Shah's appreciations")).toBeTruthy();
+      expect(screen.queryByText("Alice's appreciations")).toBeNull();
+    });
+
+    it('keeps the generic title when the server refuses', async () => {
+      mockGetMember.mockRejectedValue(new ApiResponseError(403, 'Private'));
+      const screen = render(<AppreciationsScreen />);
+      await waitFor(() => expect(mockGetMember).toHaveBeenCalled());
+      await act(async () => {});
+      expect(screen.getAllByText('Appreciations').length).toBeGreaterThan(0);
+      expect(screen.queryByText(/Alice/)).toBeNull();
+    });
   });
 });

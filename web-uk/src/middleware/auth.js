@@ -31,49 +31,154 @@ function sessionEnvelope(result) {
     : null;
 }
 
-// Helper to set auth cookies
-function setAuthCookies(res, accessToken, refreshTokenValue, options = {}) {
-  const settings = options && typeof options === 'object' ? options : { tenantSlug: options };
-  const expiresIn = positiveSeconds(settings.expiresIn, DEFAULT_ACCESS_EXPIRES_IN);
-  const refreshExpiresIn = positiveSeconds(settings.refreshExpiresIn, DEFAULT_REFRESH_EXPIRES_IN);
-  res.cookie('token', accessToken, {
+// ─── Cookie names (F-208) ──────────────────────────────────────────────────
+//
+// In production the sign-in cookies carry the `__Host-` prefix. A browser only
+// accepts a `__Host-` cookie that is Secure, has Path=/ and no Domain, so a
+// sibling subdomain (anything else under the same registrable domain) can no
+// longer plant its own signed session cookie here and swap the member into
+// another account. Development keeps the plain names so it works over http.
+//
+// Every route reads `req.signedCookies.token` (about sixty call sites), so the
+// prefixed names are mapped back to the plain names on the way IN by
+// `normalizeAuthCookieNames`, which server.js mounts before cookie-parser.
+//
+// 🔴 One-release fallback: a member signed in before this change still holds
+// the plain-named cookies, and is read from them only when NO `__Host-` sign-in
+// cookie is present — so nobody is signed out by the deploy, and a planted plain
+// cookie can never override a real `__Host-` session. The next token refresh
+// (at most ~15 minutes) rewrites them under the new names. Remove the fallback
+// in the release after this one.
+const HOST_COOKIE_PREFIX = '__Host-';
+const AUTH_COOKIE_NAMES = Object.freeze(['token', 'refresh_token', 'tenant_slug']);
+const SESSION_COOKIE_BASE_NAME = 'nexus.sid';
+const ORIGINAL_CLEAR_COOKIE = Symbol('nexus.originalClearCookie');
+
+function usesHostPrefixedCookies(nodeEnv = NODE_ENV) {
+  return nodeEnv === 'production';
+}
+
+/** The name a sign-in cookie is WRITTEN under in this environment. */
+function authCookieName(name, nodeEnv = NODE_ENV) {
+  return usesHostPrefixedCookies(nodeEnv) ? `${HOST_COOKIE_PREFIX}${name}` : name;
+}
+
+/**
+ * The express-session cookie name. No legacy fallback for this one on purpose:
+ * the session is not the sign-in (the token cookies are), and a planted session
+ * could carry someone else's pending two-factor state. Dropping it at the deploy
+ * signs nobody out; at worst a half-filled form is not restored once.
+ */
+function sessionCookieName(nodeEnv = NODE_ENV) {
+  return usesHostPrefixedCookies(nodeEnv)
+    ? `${HOST_COOKIE_PREFIX}${SESSION_COOKIE_BASE_NAME}`
+    : SESSION_COOKIE_BASE_NAME;
+}
+
+function authCookieOptions(maxAge) {
+  return {
     path: '/',
     httpOnly: true,
     signed: true,
     secure: NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: expiresIn * 1000
-  });
+    maxAge
+  };
+}
+
+// A browser only honours the deletion of a Secure (and any `__Host-`) cookie
+// when the deleting Set-Cookie is Secure too.
+function clearingOptions() {
+  return { path: '/', httpOnly: true, signed: true, sameSite: 'lax', secure: NODE_ENV === 'production' };
+}
+
+function cookiePairName(pair) {
+  const index = pair.indexOf('=');
+  return (index < 0 ? pair : pair.slice(0, index)).trim();
+}
+
+/**
+ * Mounted BEFORE cookie-parser and express-session (production only).
+ *
+ * Inbound: `__Host-token=…` is presented to the app as `token=…` (likewise
+ * refresh_token and tenant_slug). When any `__Host-` sign-in cookie is present,
+ * plain-named sign-in cookies are discarded; otherwise they are kept as the
+ * one-release fallback. A plain `nexus.sid` is always discarded.
+ *
+ * Outbound: `res.clearCookie('token')` from anywhere (the error handlers clear
+ * the plain names) also clears the `__Host-` cookie, so a sign-out or a 401
+ * really ends the session.
+ */
+function normalizeAuthCookieNames(req, res, next) {
+  if (!usesHostPrefixedCookies()) return next();
+
+  const header = req.headers && req.headers.cookie;
+  if (typeof header === 'string' && header !== '') {
+    const pairs = header.split(';').map((pair) => pair.trim()).filter(Boolean);
+    const names = new Set(pairs.map(cookiePairName));
+    const hasHostSignIn = AUTH_COOKIE_NAMES.some((name) => names.has(`${HOST_COOKIE_PREFIX}${name}`));
+    const kept = [];
+    for (const pair of pairs) {
+      const name = cookiePairName(pair);
+      if (name === SESSION_COOKIE_BASE_NAME) continue;
+      if (AUTH_COOKIE_NAMES.includes(name)) {
+        if (!hasHostSignIn) kept.push(pair);
+        continue;
+      }
+      const base = name.startsWith(HOST_COOKIE_PREFIX) ? name.slice(HOST_COOKIE_PREFIX.length) : '';
+      if (AUTH_COOKIE_NAMES.includes(base)) {
+        kept.push(`${base}${pair.slice(pair.indexOf(name) + name.length)}`);
+        continue;
+      }
+      kept.push(pair);
+    }
+    req.headers.cookie = kept.join('; ');
+    req.legacyAuthCookies = !hasHostSignIn && AUTH_COOKIE_NAMES.some((name) => names.has(name));
+  }
+
+  if (res && typeof res.clearCookie === 'function' && !res.clearCookie[ORIGINAL_CLEAR_COOKIE]) {
+    const originalClearCookie = res.clearCookie;
+    const hostAwareClearCookie = function clearCookie(name, options) {
+      if (AUTH_COOKIE_NAMES.includes(name)) {
+        originalClearCookie.call(this, `${HOST_COOKIE_PREFIX}${name}`, clearingOptions());
+        return originalClearCookie.call(this, name, { ...(options || {}), ...clearingOptions() });
+      }
+      return originalClearCookie.call(this, name, options);
+    };
+    hostAwareClearCookie[ORIGINAL_CLEAR_COOKIE] = originalClearCookie;
+    res.clearCookie = hostAwareClearCookie;
+  }
+
+  return next();
+}
+
+// Helper to set auth cookies
+function setAuthCookies(res, accessToken, refreshTokenValue, options = {}) {
+  const settings = options && typeof options === 'object' ? options : { tenantSlug: options };
+  const expiresIn = positiveSeconds(settings.expiresIn, DEFAULT_ACCESS_EXPIRES_IN);
+  const refreshExpiresIn = positiveSeconds(settings.refreshExpiresIn, DEFAULT_REFRESH_EXPIRES_IN);
+  res.cookie(authCookieName('token'), accessToken, authCookieOptions(expiresIn * 1000));
 
   if (refreshTokenValue) {
-    res.cookie('refresh_token', refreshTokenValue, {
-      path: '/',
-      httpOnly: true,
-      signed: true,
-      secure: NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: refreshExpiresIn * 1000
-    });
+    res.cookie(authCookieName('refresh_token'), refreshTokenValue, authCookieOptions(refreshExpiresIn * 1000));
   }
 
   const normalizedTenantSlug = String(settings.tenantSlug || '').trim();
   if (normalizedTenantSlug) {
-    res.cookie('tenant_slug', normalizedTenantSlug, {
-      path: '/',
-      httpOnly: true,
-      signed: true,
-      secure: NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: refreshExpiresIn * 1000
-    });
+    res.cookie(authCookieName('tenant_slug'), normalizedTenantSlug, authCookieOptions(refreshExpiresIn * 1000));
   }
 }
 
-// Helper to clear auth cookies
+// Helper to clear auth cookies — both the `__Host-` and the plain names in
+// production, so the one-release fallback cannot resurrect a signed-out session.
 function clearAuthCookies(res) {
-  res.clearCookie('token', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
-  res.clearCookie('refresh_token', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
-  res.clearCookie('tenant_slug', { path: '/', httpOnly: true, signed: true, sameSite: 'lax' });
+  const hostAware = Boolean(res.clearCookie && res.clearCookie[ORIGINAL_CLEAR_COOKIE]);
+  for (const name of AUTH_COOKIE_NAMES) {
+    if (usesHostPrefixedCookies() && !hostAware) {
+      res.clearCookie(`${HOST_COOKIE_PREFIX}${name}`, clearingOptions());
+    }
+    res.clearCookie(name, clearingOptions());
+  }
 }
 
 function redirectTo(res, pathname) {
@@ -352,6 +457,9 @@ module.exports = {
   refreshAuthSession,
   setAuthCookies,
   clearAuthCookies,
+  normalizeAuthCookieNames,
+  authCookieName,
+  sessionCookieName,
   sessionEnvelope,
   jwtExpiresSoon
 };

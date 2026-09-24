@@ -64,10 +64,18 @@
   {% if media and media.length %}
     <ul class="govuk-list">
       {% for item in media %}
+        {#- F-207: a member typed this link. Only an http(s) address becomes an
+            href; anything else (javascript:, data:, …) is shown as text only. -#}
+        {% set mediaHref = (item.url or "") | string | trim %}
+        {% set mediaScheme = mediaHref | lower %}
         <li class="govuk-!-margin-bottom-2">
-          <a class="govuk-link" href="{{ item.url }}" rel="noopener noreferrer" target="_blank">
+          {% if mediaScheme.indexOf("https://") == 0 or mediaScheme.indexOf("http://") == 0 %}
+          <a class="govuk-link" href="{{ mediaHref }}" rel="noopener noreferrer" target="_blank">
             {{ item.caption if item.caption else t("govuk_alpha_ideation.media.open") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_ideation.page.media_opens_new_tab") }}</span>
           </a>
+          {% else %}
+          <span>{{ item.caption if item.caption else t("govuk_alpha_ideation.media.open") }}</span>
+          {% endif %}
           <span class="govuk-body-s nexus-alpha-meta">({{ item.typeLabel }})</span>
         </li>
       {% endfor %}

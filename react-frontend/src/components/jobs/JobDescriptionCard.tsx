@@ -16,6 +16,7 @@ import Check from 'lucide-react/icons/check';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { SafeHtml } from '@/components/ui/SafeHtml';
+import { buildVideoEmbedSrc, VIDEO_EMBED_SANDBOX } from '@/lib/videoEmbed';
 import type { JobVacancy, MatchResult, QualificationData } from './JobDetailTypes';
 
 interface JobDescriptionCardProps {
@@ -37,6 +38,9 @@ export function JobDescriptionCard({
 }: JobDescriptionCardProps) {
   const { t } = useTranslation('jobs');
   const [qualOpen, setQualOpen] = useState(false);
+  // F-195: the player address is rebuilt from a parsed YouTube/Vimeo id; any
+  // other stored link is not framed at all.
+  const videoEmbedSrc = buildVideoEmbedSrc(vacancy.video_url);
 
   return (
     <>
@@ -100,7 +104,7 @@ export function JobDescriptionCard({
       )}
 
       {/* Employer Branding */}
-      {(vacancy.tagline || vacancy.video_url || (vacancy.benefits && vacancy.benefits.length > 0)) && (
+      {(vacancy.tagline || videoEmbedSrc || (vacancy.benefits && vacancy.benefits.length > 0)) && (
         <GlassCard className="p-5 mt-4">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
             <Building2 size={16} aria-hidden="true" />
@@ -109,17 +113,16 @@ export function JobDescriptionCard({
           {vacancy.tagline && (
             <p className="text-sm text-theme-secondary italic mb-3">&ldquo;{vacancy.tagline}&rdquo;</p>
           )}
-          {vacancy.video_url && (
+          {videoEmbedSrc && (
             <div className="aspect-video rounded-lg overflow-hidden mb-3">
               <iframe
-                src={(() => {
-                  const base = vacancy.video_url
-                    .replace('watch?v=', 'embed/')
-                    .replace('youtu.be/', 'youtube.com/embed/');
-                  return base.includes('?') ? `${base}&cc_load_policy=1` : `${base}?cc_load_policy=1`;
-                })()}
+                src={videoEmbedSrc}
                 className="w-full h-full"
+                sandbox={VIDEO_EMBED_SANDBOX}
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
+                loading="lazy"
                 title={t('branding.video_label')}
               />
             </div>

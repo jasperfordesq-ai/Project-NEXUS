@@ -21,7 +21,7 @@ const MOCK_USER_DATA = vi.hoisted(() => ({
   connection_status: 'none' as const,
   stats: { total_hours_given: 10, connections_count: 5, listings_count: 2 },
 }));
-const mockAuthState = vi.hoisted(() => ({ isAuthenticated: true }));
+const mockAuthState = vi.hoisted(() => ({ isAuthenticated: true, viewerId: 10 }));
 
 // ── mock @/lib/api ────────────────────────────────────────────────────────────
 
@@ -60,7 +60,7 @@ vi.mock('./PresenceIndicator', () => ({
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({
-      user: mockAuthState.isAuthenticated ? { id: 10, name: 'Signed-in Member' } : null,
+      user: mockAuthState.isAuthenticated ? { id: mockAuthState.viewerId, name: 'Signed-in Member' } : null,
       isAuthenticated: mockAuthState.isAuthenticated,
       isLoading: false,
       status: 'idle' as const,
@@ -82,7 +82,7 @@ vi.mock('@/contexts', () =>
 
 // ── component import (after mocks) ────────────────────────────────────────────
 
-import { UserHoverCard } from './UserHoverCard';
+import { UserHoverCard, clearUserHoverCardCache, VIEWER_CACHE_RESET_EVENT } from './UserHoverCard';
 
 // ── helper ────────────────────────────────────────────────────────────────────
 
@@ -120,6 +120,7 @@ describe('UserHoverCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthState.isAuthenticated = true;
+    mockAuthState.viewerId = 10;
     stubNonTouchDevice();
     mockApiObj.get.mockResolvedValue({ success: true, data: MOCK_USER_DATA });
     // Flush the module-level cache so each test starts fresh
@@ -384,5 +385,71 @@ describe('UserHoverCard', () => {
     // cleanup
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).ontouchstart;
+  });
+
+  describe('F-194: the cache belongs to one viewer', () => {
+    const PRIVATE_VIEW = { ...MOCK_USER_DATA, id: 555, name: 'Private View Of Dana', tagline: 'Seen by viewer 10 only' };
+    const OTHER_VIEW = { ...MOCK_USER_DATA, id: 555, name: 'Dana', tagline: 'Public view' };
+
+    async function hoverAndSee(testId: string, text: string) {
+      const trigger = screen.getByTestId(testId).parentElement!;
+      await userEvent.hover(trigger);
+      await waitFor(() => {
+        expect(screen.getAllByText(text).length).toBeGreaterThanOrEqual(1);
+      });
+    }
+
+    it('does not show the previous viewer cached card to the next person signed in on the same tab', async () => {
+      clearUserHoverCardCache();
+      mockApiObj.get.mockResolvedValueOnce({ success: true, data: PRIVATE_VIEW });
+      const first = render(
+        <UserHoverCard userId={555}>
+          <span data-testid="trigger-dana">Dana</span>
+        </UserHoverCard>,
+      );
+      await hoverAndSee('trigger-dana', 'Private View Of Dana');
+      first.unmount();
+
+      // A different member signs in on the same tab (no page reload).
+      mockAuthState.viewerId = 11;
+      mockApiObj.get.mockResolvedValueOnce({ success: true, data: OTHER_VIEW });
+      render(
+        <UserHoverCard userId={555}>
+          <span data-testid="trigger-dana">Dana</span>
+        </UserHoverCard>,
+      );
+      await hoverAndSee('trigger-dana', 'Public view');
+      expect(mockApiObj.get).toHaveBeenCalledTimes(2);
+      expect(screen.queryByText('Seen by viewer 10 only')).not.toBeInTheDocument();
+    });
+
+    it('listens for the same event name AuthContext dispatches on sign-out', () => {
+      // AuthContext.tsx repeats this literal to avoid an import cycle.
+      expect(VIEWER_CACHE_RESET_EVENT).toBe('nexus:viewer-caches-reset');
+    });
+
+    it('empties the cache when the sign-out reset event fires', async () => {
+      clearUserHoverCardCache();
+      mockApiObj.get.mockResolvedValue({ success: true, data: PRIVATE_VIEW });
+      const first = render(
+        <UserHoverCard userId={555}>
+          <span data-testid="trigger-dana">Dana</span>
+        </UserHoverCard>,
+      );
+      await hoverAndSee('trigger-dana', 'Private View Of Dana');
+      first.unmount();
+      expect(mockApiObj.get).toHaveBeenCalledTimes(1);
+
+      window.dispatchEvent(new Event(VIEWER_CACHE_RESET_EVENT));
+
+      render(
+        <UserHoverCard userId={555}>
+          <span data-testid="trigger-dana">Dana</span>
+        </UserHoverCard>,
+      );
+      await hoverAndSee('trigger-dana', 'Private View Of Dana');
+      // Same viewer, but the cache was emptied, so the card was fetched again.
+      expect(mockApiObj.get).toHaveBeenCalledTimes(2);
+    });
   });
 });

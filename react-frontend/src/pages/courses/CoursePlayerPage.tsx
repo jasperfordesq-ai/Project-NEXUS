@@ -19,7 +19,7 @@ import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { coursesApi, type Course, type CourseLesson, type LessonProgress, type LessonAvailability, type Quiz } from '@/lib/api/courses';
 import { LessonDiscussion } from '@/components/courses/LessonDiscussion';
-import { normalizeCourseMediaUrl } from '@/lib/courseContentSecurity';
+import { COURSE_EMBED_SANDBOX, courseEmbedSrc, normalizeCourseMediaUrl } from '@/lib/courseContentSecurity';
 
 export default function CoursePlayerPage() {
   const { t } = useTranslation('courses');
@@ -207,7 +207,7 @@ function LessonTranscript({ lesson }: { lesson: CourseLesson }) {
 
 function LessonContent({ lesson }: { lesson: CourseLesson }) {
   const videoUrl = normalizeCourseMediaUrl(lesson.video_url);
-  const embedUrl = normalizeCourseMediaUrl(lesson.embed_url);
+  const embedUrl = courseEmbedSrc(lesson.embed_url);
   const attachmentUrl = normalizeCourseMediaUrl(lesson.attachment_url);
 
   switch (lesson.content_type) {
@@ -229,7 +229,7 @@ function LessonContent({ lesson }: { lesson: CourseLesson }) {
               title={lesson.title}
               src={embedUrl}
               className="w-full h-full rounded-md"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              sandbox={COURSE_EMBED_SANDBOX}
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />

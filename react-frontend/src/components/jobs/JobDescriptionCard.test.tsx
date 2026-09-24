@@ -330,4 +330,36 @@ describe('JobDescriptionCard', () => {
     // No skill chips rendered
     expect(screen.queryByText('React')).not.toBeInTheDocument();
   });
+
+  describe('F-195: member-supplied employer video', () => {
+    function renderWithVideo(videoUrl: string) {
+      return render(
+        <JobDescriptionCard
+          vacancy={{ ...BASE_VACANCY, video_url: videoUrl }}
+          isOwner={false}
+          isAuthenticated={false}
+          matchResult={null}
+          qualificationData={null}
+          onCheckQualification={onCheckQualification}
+        />
+      );
+    }
+
+    it('rebuilds a sandboxed YouTube player from the video id', () => {
+      renderWithVideo('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=junk');
+      const frame = document.querySelector('iframe')!;
+      expect(frame).toHaveAttribute('src', 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?cc_load_policy=1');
+      expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin allow-presentation');
+    });
+
+    it('rebuilds a Vimeo player from the video id', () => {
+      renderWithVideo('https://vimeo.com/76979871');
+      expect(document.querySelector('iframe')).toHaveAttribute('src', 'https://player.vimeo.com/video/76979871');
+    });
+
+    it('never frames a link that is not a recognised video provider', () => {
+      renderWithVideo('https://docs.google.com/forms/d/e/fake/viewform?embedded=true');
+      expect(document.querySelector('iframe')).toBeNull();
+    });
+  });
 });

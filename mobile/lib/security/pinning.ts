@@ -11,8 +11,8 @@
  *   The OS rejects any TLS connection whose certificate chain does not match the pins
  *   declared in that file — no JS code is needed at runtime on Android.
  *
- * iOS: Enforced via ATS (App Transport Security) settings. For strict SHA-256 pinning
- *   on iOS, TrustKit or a similar native module is required — see docs/SECURITY.md.
+ * iOS: NOT pinned. ATS enforces HTTPS and ordinary CA validation only, so
+ *   "pinning" is true for Android alone. See docs/SECURITY.md, Section 2.
  *
  * This module exports the expected pin configuration so the set of pinned hosts is
  * declared in one place and can be referenced consistently across the codebase
@@ -20,7 +20,7 @@
  */
 
 /**
- * Hostnames for which certificate pinning is enforced.
+ * Hostnames for which certificate pinning is enforced — on Android only (see above).
  * Mirrors the <domain> entries in android-network-security-config.xml.
  */
 export const PINNED_HOSTS: readonly string[] = ['api.project-nexus.ie'];

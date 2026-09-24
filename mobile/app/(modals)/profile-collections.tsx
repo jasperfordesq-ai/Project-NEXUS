@@ -24,6 +24,7 @@ import {
   type SavedItem,
 } from '@/lib/api/savedCollections';
 import { useApi } from '@/lib/hooks/useApi';
+import { useServerMemberName } from '@/lib/hooks/useServerMemberName';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -61,11 +62,13 @@ function ProfileCollectionsScreen() {
 function ProfileCollectionsInner() {
   const { t } = useTranslation(['members', 'common']);
   const { confirm, confirmDialog } = useConfirm();
-  const params = useLocalSearchParams<{ userId?: string; name?: string; scope?: string; collectionId?: string }>();
+  const params = useLocalSearchParams<{ userId?: string; scope?: string; collectionId?: string }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const publicScope = isPublicScope(params.scope) && Boolean(params.userId);
+  // F-198: the owner is named only from the server, never from the link's `?name=`.
+  const ownerName = useServerMemberName(publicScope ? params.userId : null);
   const [selectedCollection, setSelectedCollection] = useState<SavedCollection | null>(null);
   const [itemPage, setItemPage] = useState(1);
   const [items, setItems] = useState<SavedItem[]>([]);
@@ -225,7 +228,7 @@ function ProfileCollectionsInner() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       <AppTopBar
-        title={publicScope && params.name ? t('collections.publicTitleFor', { name: params.name }) : t(publicScope ? 'collections.publicTitle' : 'collections.myTitle')}
+        title={publicScope && ownerName ? t('collections.publicTitleFor', { name: ownerName }) : t(publicScope ? 'collections.publicTitle' : 'collections.myTitle')}
         backLabel={t('common:back')}
         fallbackHref={publicScope && params.userId ? { pathname: '/(modals)/member-profile', params: { id: params.userId } } : '/(tabs)/profile'}
       />

@@ -55,7 +55,40 @@ interface HoverCardData {
 
 /* ─── Cache ────────────────────────────────────────────────── */
 
-const userCache = new Map<number, HoverCardData>();
+/**
+ * Window event that empties every in-memory cache holding one viewer's view of
+ * other members. AuthContext dispatches it on sign-out, session expiry and when
+ * another sign-in replaces the session. The literal is repeated in
+ * AuthContext.tsx (importing this component there would create an import
+ * cycle through `@/contexts`), so keep the two in step.
+ */
+export const VIEWER_CACHE_RESET_EVENT = 'nexus:viewer-caches-reset';
+
+/**
+ * F-194: what the API returns for a profile depends on WHO is looking (their
+ * connection, blocks, privacy settings, community). The cache is therefore keyed
+ * by community + viewer + viewed member, and it is emptied on sign-out, so the
+ * next person on a shared browser tab can never be shown the previous viewer's
+ * cached view.
+ */
+const userCache = new Map<string, HoverCardData>();
+
+function hoverCacheKey(
+  tenantId: number | string | null | undefined,
+  viewerId: number | string | null | undefined,
+  userId: number,
+): string {
+  return `t${tenantId ?? '-'}:v${viewerId ?? 'anon'}:u${userId}`;
+}
+
+/** Empty the hover-card cache. Exported for tests and sign-out paths. */
+export function clearUserHoverCardCache(): void {
+  userCache.clear();
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(VIEWER_CACHE_RESET_EVENT, clearUserHoverCardCache);
+}
 
 /* ─── Touch device detection ───────────────────────────────── */
 
@@ -72,10 +105,11 @@ export const UserHoverCard = memo(function UserHoverCard({
   openOnMount = false,
 }: UserHoverCardProps) {
   const { t } = useTranslation('social');
-  const { tenantPath, hasFeature, hasModule } = useTenant();
+  const { tenant, tenantPath, hasFeature, hasModule } = useTenant();
   const hasConnections = hasFeature('connections');
   const canMessage = hasModule('messages') && hasFeature('direct_messaging');
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: viewer } = useAuth();
+  const cacheKey = hoverCacheKey(tenant?.id, viewer?.id, userId);
   // Don't render hover card on touch devices
   const isTouch = useRef(isTouchDevice());
 
@@ -87,10 +121,11 @@ export const UserHoverCard = memo(function UserHoverCard({
   const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const fetchUserData = useCallback(async () => {
-    if (!isAuthenticated) return;
-    // Return cached data
-    if (userCache.has(userId)) {
-      setUserData(userCache.get(userId)!);
+    if (!isAuthenticated || viewer?.id == null) return;
+    // Return cached data — only this viewer's own, in this community.
+    const cached = userCache.get(cacheKey);
+    if (cached) {
+      setUserData(cached);
       return;
     }
 
@@ -98,7 +133,7 @@ export const UserHoverCard = memo(function UserHoverCard({
     try {
       const response = await api.get<HoverCardData>(`/v2/users/${userId}`);
       if (response.success && response.data) {
-        userCache.set(userId, response.data);
+        userCache.set(cacheKey, response.data);
         setUserData(response.data);
       }
     } catch (err) {
@@ -106,7 +141,13 @@ export const UserHoverCard = memo(function UserHoverCard({
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, viewer?.id, cacheKey, userId]);
+
+  // A different viewer (or community) must never keep seeing the card state
+  // fetched for the previous one while this component stays mounted.
+  useEffect(() => {
+    setUserData(null);
+  }, [cacheKey]);
 
   useEffect(() => {
     if (!isAuthenticated || !openOnMount || isTouch.current) return;
@@ -197,14 +238,14 @@ export const UserHoverCard = memo(function UserHoverCard({
       if (res.success) {
         const updated = { ...userData, connection_status: 'pending' as const };
         setUserData(updated);
-        userCache.set(userId, updated);
+        userCache.set(cacheKey, updated);
       }
     } catch (err) {
       logError('Failed to send connection request from hover card', err);
     } finally {
       setIsConnecting(false);
     }
-  }, [isAuthenticated, userData, userId, isConnecting]);
+  }, [isAuthenticated, userData, userId, isConnecting, cacheKey]);
 
   // Anonymous and touch users get the original link/avatar only. Member data
   // must never be fetched or restored from the in-memory hover-card cache.

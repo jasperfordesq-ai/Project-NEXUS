@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { normalizeCourseMediaUrl } from './courseContentSecurity';
+import { courseEmbedSrc, normalizeCourseMediaUrl } from './courseContentSecurity';
 
 describe('normalizeCourseMediaUrl', () => {
   it('allows http and https media URLs', () => {
@@ -21,5 +21,20 @@ describe('normalizeCourseMediaUrl', () => {
   it('returns null for malformed URLs', () => {
     expect(normalizeCourseMediaUrl('not a url')).toBeNull();
     expect(normalizeCourseMediaUrl('')).toBeNull();
+  });
+});
+
+describe('courseEmbedSrc (F-195)', () => {
+  it('rebuilds YouTube and Vimeo players from the parsed id', () => {
+    expect(courseEmbedSrc('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?cc_load_policy=1');
+    expect(courseEmbedSrc('https://player.vimeo.com/video/76979871?h=abc')).toBe('https://player.vimeo.com/video/76979871');
+  });
+
+  it('refuses every other site, including Google-hosted pages the CSP allows', () => {
+    expect(courseEmbedSrc('https://docs.google.com/forms/d/e/fake/viewform')).toBeNull();
+    expect(courseEmbedSrc('https://sites.google.com/view/fake-login')).toBeNull();
+    expect(courseEmbedSrc('https://example.com/embed')).toBeNull();
+    expect(courseEmbedSrc('javascript:alert(1)')).toBeNull();
+    expect(courseEmbedSrc(null)).toBeNull();
   });
 });

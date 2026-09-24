@@ -8,12 +8,14 @@ import { fireEvent, render, waitFor, act } from '@testing-library/react-native';
 
 const mockUseApi = jest.fn();
 const mockCreateSavedCollection = jest.fn();
+const mockGetMember = jest.fn();
+let mockRouteParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockRouteParams,
 }));
 
 jest.mock('@/lib/hooks/useApi', () => ({
@@ -69,6 +71,7 @@ jest.mock('react-i18next', () => ({
         'collections.myTitle': 'My collections',
         'collections.mySubtitle': 'Organise saved items into reusable collections.',
         'collections.publicTitle': 'Public collections',
+        'collections.publicTitleFor': `${String(opts?.name ?? '')}'s public collections`,
         'collections.publicSubtitle': 'Browse collections this member has shared publicly.',
         'collections.create': 'Create collection',
         'collections.closeCreate': 'Close create form',
@@ -100,10 +103,16 @@ jest.mock('@/lib/api/savedCollections', () => ({
   createSavedCollection: (...args: unknown[]) => mockCreateSavedCollection(...args),
 }));
 
+jest.mock('@/lib/api/members', () => ({
+  getMember: (...args: unknown[]) => mockGetMember(...args),
+}));
+
 import ProfileCollectionsScreen from './profile-collections';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRouteParams = {};
+  mockGetMember.mockReset().mockReturnValue(new Promise(() => {}));
   mockCreateSavedCollection.mockResolvedValue({ data: { id: 2, name: 'New set' } });
   mockUseApi.mockImplementation((_fetchFn: unknown, _deps: unknown[], options?: { enabled?: boolean }) => {
     if (options?.enabled === false) {
@@ -171,5 +180,30 @@ describe('ProfileCollectionsScreen', () => {
     act(() => { fireEvent.press(create); fireEvent.press(create); });
     expect(mockCreateSavedCollection).toHaveBeenCalledTimes(1);
     await act(async () => { finish({ data: { id: 1 } }); });
+  });
+
+  describe('F-198: public collections are named only from the server', () => {
+    it('never shows the name carried in the link', () => {
+      mockRouteParams = { userId: '7', scope: 'public', name: 'Community Coordinator' };
+      const screen = render(<ProfileCollectionsScreen />);
+      expect(screen.getAllByText('Public collections').length).toBeGreaterThan(0);
+      expect(screen.queryByText(/Community Coordinator/)).toBeNull();
+      expect(mockGetMember).toHaveBeenCalledWith(7);
+    });
+
+    it('uses the owner name the server returns', async () => {
+      mockRouteParams = { userId: '7', scope: 'public', name: 'Community Coordinator' };
+      mockGetMember.mockResolvedValue({ data: { id: 7, name: 'Priya Shah', first_name: 'Priya' } });
+      const screen = render(<ProfileCollectionsScreen />);
+      expect(await screen.findByText("Priya Shah's public collections")).toBeTruthy();
+      expect(screen.queryByText(/Community Coordinator/)).toBeNull();
+    });
+
+    it('does not look anyone up for the signed-in member\'s own collections', () => {
+      mockRouteParams = { name: 'Community Coordinator' };
+      const screen = render(<ProfileCollectionsScreen />);
+      expect(screen.getAllByText('My collections').length).toBeGreaterThan(0);
+      expect(mockGetMember).not.toHaveBeenCalled();
+    });
   });
 });

@@ -44,6 +44,24 @@ import type {
   RegisterRequest,
 } from '@/types';
 
+/**
+ * F-194: window event that tells in-memory caches holding one viewer's view of
+ * other members (the profile hover card) to empty themselves. The same literal
+ * is exported as VIEWER_CACHE_RESET_EVENT from
+ * `@/components/social/UserHoverCard` — importing it here would create an
+ * import cycle through `@/contexts`, so keep the two in step.
+ */
+const VIEWER_CACHE_RESET_EVENT = 'nexus:viewer-caches-reset';
+
+/** Discard every in-memory, viewer-specific cache. Never throws. */
+function resetViewerCaches(): void {
+  try {
+    window.dispatchEvent(new Event(VIEWER_CACHE_RESET_EVENT));
+  } catch {
+    // A listener failing must never hold sign-out up.
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -853,6 +871,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // typed them. On a shared browser the next person to sign in must not see
       // (or publish) them.
       clearUserScopedStorage();
+      resetViewerCaches();
 
       // Clear Sentry user context and capture logout event
       captureTelemetryAuthEvent('logout', userId);
@@ -891,6 +910,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         && tokenManager.getSessionGeneration() !== detail.sessionGeneration
       ) return;
       void purgeOfflineCheckinDataForGeneration(detail?.sessionGeneration ?? null);
+      resetViewerCaches();
       // Cancel any pending warning timer — the session is already gone
       clearSessionWarningTimer();
       // The server may have ended the session because the account now needs a
@@ -932,6 +952,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .detail?.previousSessionGeneration;
       if (previousGeneration === undefined) return;
       clearUserScopedStorage();
+      resetViewerCaches();
       void purgeOfflineCheckinDataForGeneration(previousGeneration);
     };
     window.addEventListener(SESSION_REPLACED_EVENT, handleSessionReplaced);
@@ -959,6 +980,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // hydrate the replacement identity before authenticated routes resume.
         api.clearInflightRequests();
         clearUserScopedStorage();
+        resetViewerCaches();
         void purgeOfflineCheckinDataForGeneration(event.oldValue);
         setTelemetryUser(null);
         setState((prev) => ({ ...prev, user: null, status: 'loading', error: null }));
@@ -988,6 +1010,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // the wrong community's branding to appear on the login page in this tab.
         localStorage.removeItem('nexus_tenant_id');
         localStorage.removeItem('nexus_tenant_slug');
+        resetViewerCaches();
         setState({
           user: null,
           status: 'idle',

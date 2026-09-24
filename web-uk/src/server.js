@@ -93,6 +93,7 @@ const laravelPrepRoutes = require('./routes/laravel-prep-pages');
 const { errorLogger, errorPageFallbackLocals, finalErrorHandler } = require('./lib/errorHandler');
 const { ApiError, getExchangeConfig } = require('./lib/api');
 const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./lib/rateLimiter');
+const { applyTrustedProxies } = require('./lib/trusted-proxies');
 const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
@@ -111,7 +112,12 @@ const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { requestClientContext } = require('./middleware/request-client-context');
 const { isValidEmail } = require('./lib/inputValidator');
 const { validateReturnUrl } = require('./lib/urlValidator');
-const { refreshAuthSession, requireAuth } = require('./middleware/auth');
+const {
+  normalizeAuthCookieNames,
+  refreshAuthSession,
+  requireAuth,
+  sessionCookieName
+} = require('./middleware/auth');
 const { assertProductionConfig } = require('./lib/production-config');
 const { createSessionStore } = require('./lib/session-store');
 
@@ -319,8 +325,12 @@ nunjucksEnv.addFilter('humanizeLabel', humanizeLabel);
 
 app.set('view engine', 'njk');
 
-// Trust proxy for rate limiting behind reverse proxy
-app.set('trust proxy', 1);
+// Which proxies may say who the visitor is (F-167): loopback, the Docker
+// bridge ranges and Cloudflare's published ranges — so req.ip, every rate
+// limit and the address forwarded to Laravel are the VISITOR behind Cloudflare,
+// not the Cloudflare edge. It used to be `trust proxy 1`, which stopped at the
+// edge address the host's Apache appends. See src/lib/trusted-proxies.js.
+applyTrustedProxies(app);
 
 // Every Laravel API call made while serving this request carries the visitor's
 // address (X-Forwarded-For), so Laravel's per-address limits apply per visitor
@@ -513,6 +523,11 @@ app.use(express.urlencoded({
 }));
 app.use(express.json({ limit: BODY_LIMIT }));
 
+// Sign-in cookies are `__Host-` prefixed in production (F-208); this maps them
+// to the names every route reads and applies the one-release fallback for the
+// old names. It must run before cookie-parser and express-session.
+app.use(normalizeAuthCookieNames);
+
 // Cookies
 app.use(cookieParser(COOKIE_SECRET));
 
@@ -535,7 +550,8 @@ app.use(session({
     maxAge: 30 * 60 * 1000, // 30 minutes
     sameSite: 'lax'
   },
-  name: 'nexus.sid'
+  // `__Host-nexus.sid` in production (F-208) — Secure, Path=/, no Domain.
+  name: sessionCookieName()
 }));
 
 // Flash messages
