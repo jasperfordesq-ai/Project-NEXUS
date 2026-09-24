@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Saisissez votre mot de passe pour désactiver la vérification en deux étapes. Votre compte sera moins sécurisé.',
         'password_label' => 'Votre mot de passe',
         'password_required' => 'Saisissez votre mot de passe pour désactiver la vérification en deux étapes.',
+        'setup_password_required' => 'Saisissez votre mot de passe pour activer la vérification en deux étapes.',
+        'setup_confirm_failed' => 'Nous n\'avons pas pu confirmer votre mot de passe. Vérifiez-le et réessayez.',
         'disable_button' => 'Désactiver la vérification en deux étapes',
         'disable_failed' => 'Nous n\'avons pas pu désactiver la vérification en deux étapes. Vérifiez votre mot de passe et réessayez.',
         'devices_revoke_failed' => 'Nous ne pouvions pas oublier vos appareils mémorisés. Réessayez dans un instant.',

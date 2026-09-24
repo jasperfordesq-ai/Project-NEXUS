@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Introduzca su contraseña para desactivar la verificación en dos pasos. Su cuenta será menos segura.',
         'password_label' => 'Su contraseña',
         'password_required' => 'Introduzca su contraseña para desactivar la verificación en dos pasos.',
+        'setup_password_required' => 'Introduzca su contraseña para activar la verificación en dos pasos.',
+        'setup_confirm_failed' => 'No hemos podido confirmar su contraseña. Compruébela e inténtelo de nuevo.',
         'disable_button' => 'Desactivar la verificación en dos pasos',
         'disable_failed' => 'No hemos podido desactivar la verificación en dos pasos. Compruebe su contraseña e inténtelo de nuevo.',
         'devices_revoke_failed' => 'No podíamos olvidarnos de tus dispositivos recordados. Inténtalo de nuevo en un momento.',

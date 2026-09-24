@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Wprowadź swoje hasło, aby wyłączyć weryfikację dwuetapową. Twoje konto będzie mniej bezpieczne.',
         'password_label' => 'Twoje hasło',
         'password_required' => 'Wprowadź swoje hasło, aby wyłączyć weryfikację dwuetapową.',
+        'setup_password_required' => 'Wprowadź swoje hasło, aby włączyć weryfikację dwuetapową.',
+        'setup_confirm_failed' => 'Nie udało się potwierdzić hasła. Sprawdź je i spróbuj ponownie.',
         'disable_button' => 'Wyłącz weryfikację dwuetapową',
         'disable_failed' => 'Nie udało się wyłączyć weryfikacji dwuetapowej. Sprawdź swoje hasło i spróbuj ponownie.',
         'devices_revoke_failed' => 'Nie mogliśmy zapomnieć o Waszych zapamiętanych urządzeniach. Spróbuj ponownie za chwilę.',

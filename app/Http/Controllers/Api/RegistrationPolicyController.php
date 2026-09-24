@@ -69,6 +69,38 @@ class RegistrationPolicyController extends BaseApiController
             }
         }
 
+        // 🔴 E-035 F-153: turning member approval OFF through the registration
+        // policy is the same reserved change as writing general.admin_approval=
+        // false on the settings endpoint, which AdminSettingsController restricts
+        // to platform super-admins. upsertPolicy()->syncToLegacySettings() maps
+        // every mode except open_with_approval to admin_approval=false, so a
+        // plain admin could clear approval via this back door. Require the same
+        // platform-super-admin authorization when the change would disable an
+        // approval gate that is currently on. A plain admin may still switch
+        // between modes that keep approval on, or that leave an already-off
+        // approval off.
+        $requestedMode = isset($input['registration_mode']) && is_string($input['registration_mode'])
+            ? $input['registration_mode']
+            : null;
+        if ($requestedMode !== null && in_array($requestedMode, RegistrationPolicyService::MODES, true)) {
+            // open_with_approval is the only mode that keeps member approval ON.
+            $wouldRequireApproval = $requestedMode === 'open_with_approval';
+            $currentlyRequiresApproval = app(\App\Services\TenantSettingsService::class)
+                ->requiresAdminApproval($tenantId);
+            if (!$wouldRequireApproval && $currentlyRequiresApproval) {
+                try {
+                    $this->requirePlatformSuperAdmin();
+                } catch (\Throwable) {
+                    return $this->respondWithError(
+                        'AUTH_INSUFFICIENT_PERMISSIONS',
+                        __('api.super_admin_required'),
+                        'registration_mode',
+                        403
+                    );
+                }
+            }
+        }
+
         try {
             $policy = $this->registrationPolicyService->upsertPolicy($tenantId, $input);
             return $this->respondWithData($policy);

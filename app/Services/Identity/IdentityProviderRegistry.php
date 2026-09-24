@@ -85,17 +85,28 @@ class IdentityProviderRegistry
         return $list;
     }
 
+    /**
+     * Whether the mock identity provider may be registered.
+     *
+     * E-035 O-059: this used to return true for EVERY non-production
+     * environment — both branches after the production check returned true, so
+     * ALLOW_MOCK_IDENTITY_PROVIDER was dead and the pen-test staging server
+     * (APP_ENV=staging) exposed a provider whose webhook signature check always
+     * passes. The mock is now available only on a developer machine or under
+     * test, or when the flag is explicitly true. Production never gets it.
+     */
     public static function mockProviderAllowed(): bool
     {
         if (app()->environment('production')) {
             return false;
         }
 
-        if ((bool) env('ALLOW_MOCK_IDENTITY_PROVIDER', false)) {
+        // 'development' is the local Docker stack's APP_ENV (see AGENTS.md).
+        if (app()->environment(['local', 'development', 'testing'])) {
             return true;
         }
 
-        return true;
+        return filter_var(env('ALLOW_MOCK_IDENTITY_PROVIDER', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**

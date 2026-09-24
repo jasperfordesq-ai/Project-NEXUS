@@ -244,10 +244,7 @@ class RegistrationOrchestrationService
             switch ($policy['post_verification']) {
                 case 'activate':
                     // Auto-activate the user
-                    DB::statement(
-                        "UPDATE users SET is_approved = 1 WHERE id = ? AND tenant_id = ?",
-                        [$userId, $tenantId]
-                    );
+                    self::approveAndRelease($userId, $tenantId);
                     IdentityVerificationEventService::log(
                         $tenantId,
                         $userId,
@@ -328,9 +325,10 @@ class RegistrationOrchestrationService
             case 'native_registration':
                 // Auto-activate (standard registration without verification)
                 DB::statement(
-                    "UPDATE users SET is_approved = 1, verification_status = 'none' WHERE id = ? AND tenant_id = ?",
+                    "UPDATE users SET verification_status = 'none' WHERE id = ? AND tenant_id = ?",
                     [$userId, $tenantId]
                 );
+                self::approveAndRelease($userId, $tenantId);
                 return [
                     'action' => 'activated',
                     'requires_verification' => false,
@@ -408,6 +406,26 @@ class RegistrationOrchestrationService
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────
+
+    /**
+     * Approve an account and, when it is still pending, activate it.
+     *
+     * E-035 F-152: email verification no longer activates an account held by
+     * an identity-verification policy, so the verification outcome (or an
+     * administrator's review) is what releases it. Activation waits for a
+     * verified email when the community requires one; email verification then
+     * activates the already-approved account itself.
+     */
+    private static function approveAndRelease(int $userId, int $tenantId): void
+    {
+        $emailRequired = app(\App\Services\TenantSettingsService::class)->requiresEmailVerification($tenantId);
+        DB::statement(
+            "UPDATE users SET is_approved = 1,
+                status = CASE WHEN status = 'pending' AND (email_verified_at IS NOT NULL OR ? = 0) THEN 'active' ELSE status END
+             WHERE id = ? AND tenant_id = ?",
+            [$emailRequired ? 1 : 0, $userId, $tenantId]
+        );
+    }
 
     private static function handleOpenRegistration(int $userId, int $tenantId, array $policy): array
     {
@@ -540,16 +558,26 @@ class RegistrationOrchestrationService
 
     private static function handleWaitlist(int $userId, int $tenantId, array $policy): array
     {
-        // Waitlist: user is placed on the waitlist, admin activates in order
+        // Waitlist: the member stays pending and unapproved; an administrator
+        // activates members in order.
+        //
+        // E-035 F-152: this used to write verification_status = 'waitlisted',
+        // a value outside that column's enum ('none','pending','passed',
+        // 'failed','expired'). With the connection's non-strict mode MariaDB
+        // stored an empty string instead, so the waitlist left no mark and the
+        // position count below matched nobody. The queue is now the tenant's
+        // members awaiting activation (pending and unapproved), which is what
+        // an administrator works through.
         DB::statement(
-            "UPDATE users SET verification_status = 'waitlisted' WHERE id = ? AND tenant_id = ?",
+            "UPDATE users SET is_approved = 0, status = CASE WHEN status = 'active' THEN 'pending' ELSE status END
+             WHERE id = ? AND tenant_id = ?",
             [$userId, $tenantId]
         );
 
         // Calculate position on waitlist
         $positionRow = DB::selectOne(
             "SELECT COUNT(*) AS pos FROM users
-             WHERE tenant_id = ? AND verification_status = 'waitlisted' AND is_approved = 0
+             WHERE tenant_id = ? AND status = 'pending' AND is_approved = 0
                AND created_at <= (SELECT created_at FROM users WHERE id = ? AND tenant_id = ?)",
             [$tenantId, $userId, $tenantId]
         );
@@ -567,7 +595,7 @@ class RegistrationOrchestrationService
         return [
             'action' => 'waitlisted',
             'requires_verification' => false,
-            'requires_approval' => false,
+            'requires_approval' => true,
             'requires_waitlist' => true,
             'waitlist_position' => (int) $position,
             'verification_session' => null,
@@ -610,9 +638,10 @@ class RegistrationOrchestrationService
 
             // Activate the user
             DB::statement(
-                "UPDATE users SET is_approved = 1, verification_status = 'passed', verification_completed_at = ? WHERE id = ? AND tenant_id = ?",
+                "UPDATE users SET verification_status = 'passed', verification_completed_at = ? WHERE id = ? AND tenant_id = ?",
                 [date('Y-m-d H:i:s'), $userId, $tenantId]
             );
+            self::approveAndRelease($userId, $tenantId);
 
             // Log admin approved event
             IdentityVerificationEventService::log(

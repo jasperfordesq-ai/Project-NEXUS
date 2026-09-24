@@ -132,9 +132,24 @@ class TwoFactorControllerTest extends TestCase
         $this->withHeader('Authorization', 'Bearer ' . app(TokenService::class)->generateToken($user->id, $this->testTenantId));
         $this->setTwoFactorEnrollmentAllowed(true);
 
-        $response = $this->apiPost('/v2/auth/2fa/setup');
+        // E-035 F-170: an authenticated (bearer) enrolment requires a fresh
+        // security confirmation, exactly as passkey registration does.
+        $confirmation = app(TokenService::class)->generateSecurityConfirmationToken($user->id, $this->testTenantId, 'password');
+        $response = $this->apiPost('/v2/auth/2fa/setup', ['security_confirmation_token' => $confirmation]);
 
         $response->assertStatus(200);
+    }
+
+    public function test_setup_is_refused_without_a_fresh_security_confirmation(): void
+    {
+        // E-035 F-170: bearer alone (what a session thief holds) must not enrol.
+        $user = $this->authenticatedUser();
+        $this->withHeader('Authorization', 'Bearer ' . app(TokenService::class)->generateToken($user->id, $this->testTenantId));
+        $this->setTwoFactorEnrollmentAllowed(true);
+
+        $this->apiPost('/v2/auth/2fa/setup')
+            ->assertForbidden()
+            ->assertJsonPath('errors.0.code', 'SECURITY_CONFIRMATION_REQUIRED');
     }
 
     public function test_cross_tenant_setup_challenge_issues_home_tenant_login_tokens(): void
@@ -247,11 +262,15 @@ class TwoFactorControllerTest extends TestCase
         $this->withHeader('Authorization', 'Bearer ' . app(TokenService::class)->generateToken($user->id, $this->testTenantId));
         $this->setTwoFactorEnrollmentAllowed(false);
 
-        $this->apiPost('/v2/auth/2fa/setup')
+        // E-035 F-170: supply the fresh security confirmation so this test still
+        // exercises the feature-disabled gate rather than the step-up gate.
+        $confirmation = app(TokenService::class)->generateSecurityConfirmationToken($user->id, $this->testTenantId, 'password');
+
+        $this->apiPost('/v2/auth/2fa/setup', ['security_confirmation_token' => $confirmation])
             ->assertForbidden()
             ->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
 
-        $this->apiPost('/v2/auth/2fa/verify', ['code' => '123456'])
+        $this->apiPost('/v2/auth/2fa/verify', ['code' => '123456', 'security_confirmation_token' => $confirmation])
             ->assertForbidden()
             ->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
     }

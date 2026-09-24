@@ -85,11 +85,16 @@ async function settingsUiMock() {
         'data-testid': rest['data-testid'] as string | undefined,
       }, (isLoading ? 'Loading...' : children) as ReactNode),
     ButtonGroup: ({ children }: { children: ReactNode }) => R.createElement('div', null, children),
-    Input: ({ label, value, onChange, placeholder, type, name }: Record<string, unknown>) =>
+    Input: ({ label, value, onChange, onValueChange, placeholder, type, name }: Record<string, unknown>) =>
       R.createElement('input', {
         'aria-label': label as string,
         value: value as string ?? '',
-        onChange: onChange as React.ChangeEventHandler<HTMLInputElement>,
+        // Forward both handlers: HeroUI Input supports `onValueChange` too, and the
+        // shared SecurityConfirmationModal uses it.
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+          (onChange as React.ChangeEventHandler<HTMLInputElement> | undefined)?.(e);
+          (onValueChange as ((v: string) => void) | undefined)?.(e.target.value);
+        },
         placeholder: placeholder as string,
         type: (type as string) || 'text',
         name: name as string,
@@ -184,6 +189,10 @@ vi.mock('@/lib/api', () => ({
     upload: vi.fn().mockResolvedValue({ success: true, data: { avatar_url: '/new-avatar.png' } }),
   },
   tokenManager: { getTenantId: vi.fn() },
+}));
+
+vi.mock('@/lib/webauthn', () => ({
+  confirmWebAuthnSecurity: vi.fn().mockResolvedValue({ success: false }),
 }));
 
 // Stable references — CRITICAL: useAuth/useTenant/useToast must return the SAME object
@@ -378,6 +387,7 @@ vi.mock('@/lib/motion', async () => {
 
 import { SettingsPage } from './SettingsPage';
 import { api } from '@/lib/api';
+import { confirmWebAuthnSecurity } from '@/lib/webauthn';
 import { useAuth } from '@/contexts';
 
 function Wrapper({ children }: { children: ReactNode }) {
@@ -486,6 +496,32 @@ describe('SettingsPage', () => {
     await user.click(screen.getByRole('button', { name: 'twofa_disable_confirm' }));
     await waitFor(() => expect(useAuth().logout).toHaveBeenCalledOnce());
     expect(api.post).toHaveBeenCalledWith('/v2/auth/2fa/disable', { password: 'CurrentPassword!123', code: '123456' });
+  });
+
+  it('asks for a fresh confirmation before enrolling an authenticator and sends its token (E-035 F-170)', async () => {
+    vi.mocked(confirmWebAuthnSecurity)
+      // No recent passkey / SSO sign-in: the silent attempt is refused.
+      .mockResolvedValueOnce({ success: false, errorCode: 'SECURITY_CONFIRMATION_REQUIRED' })
+      .mockResolvedValueOnce({ success: true, securityConfirmationToken: 'conf-tok', expiresIn: 300 });
+    vi.mocked(api.post).mockResolvedValueOnce({
+      success: true,
+      data: { secret: 'S', qr_code_url: 'otpauth://x', manual_entry_key: 'S' },
+    });
+    const user = userEvent.setup();
+    render(<SettingsPage />, { wrapper: Wrapper });
+    await user.click(screen.getByRole('tab', { name: 'Security' }));
+    await user.click(await screen.findByRole('button', { name: 'twofa_enable' }));
+
+    // Setup must NOT be called before the member confirms it is them.
+    expect(api.post).not.toHaveBeenCalledWith('/v2/auth/2fa/setup', expect.anything());
+    await user.type(await screen.findByLabelText('passkey_security_confirm_password'), 'CurrentPassword!123');
+    await user.click(screen.getByRole('button', { name: 'passkey_security_confirm_action' }));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith(
+      '/v2/auth/2fa/setup',
+      { security_confirmation_token: 'conf-tok' },
+    ));
+    expect(confirmWebAuthnSecurity).toHaveBeenLastCalledWith({ current_password: 'CurrentPassword!123' });
   });
 
   it('hides Profile and Notifications tabs when their modules are disabled', () => {

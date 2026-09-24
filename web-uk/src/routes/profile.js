@@ -315,6 +315,17 @@ const TWO_FACTOR_STATUS_MESSAGES = {
     type: 'error',
     message: 'We could not forget your remembered devices. Try again in a moment.',
     anchor: 'tfa-form'
+  },
+  // E-035 F-170: turning two-step verification ON now needs the password too.
+  '2fa-setup-password-required': {
+    type: 'error',
+    message: 'Enter your password to turn on two-step verification.',
+    anchor: 'tfa-form'
+  },
+  '2fa-setup-confirm-failed': {
+    type: 'error',
+    message: 'We could not confirm your password. Check it and try again.',
+    anchor: 'tfa-form'
   }
 };
 const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
@@ -324,7 +335,9 @@ const TWO_FACTOR_STATUS_MESSAGE_KEYS = Object.freeze({
   '2fa-code-invalid': 'security_2fa.code_invalid',
   '2fa-password-required': 'security_2fa.password_required',
   '2fa-disable-failed': 'security_2fa.disable_failed',
-  '2fa-devices-revoke-failed': 'security_2fa.devices_revoke_failed'
+  '2fa-devices-revoke-failed': 'security_2fa.devices_revoke_failed',
+  '2fa-setup-password-required': 'security_2fa.setup_password_required',
+  '2fa-setup-confirm-failed': 'security_2fa.setup_confirm_failed'
 });
 
 function tokenFrom(req) {
@@ -1107,14 +1120,20 @@ function pendingTwoFactorSetup(req) {
   return { qr_data_uri: qrDataUri, secret };
 }
 
-function rememberPendingTwoFactorSetup(req, setup) {
+function rememberPendingTwoFactorSetup(req, setup, securityConfirmationToken = '') {
   if (!req.session || !setup) return false;
   req.session.pendingTwoFactorSetup = { ...setup, startedAt: Date.now() };
+  // E-035 F-170: the verify step must present the same fresh confirmation.
+  // Held server-side in the session only; never rendered into the page.
+  if (securityConfirmationToken) {
+    req.session.pendingTwoFactorConfirmation = securityConfirmationToken;
+  }
   return true;
 }
 
 function forgetPendingTwoFactorSetup(req) {
   if (req.session && req.session.pendingTwoFactorSetup) delete req.session.pendingTwoFactorSetup;
+  if (req.session && req.session.pendingTwoFactorConfirmation) delete req.session.pendingTwoFactorConfirmation;
 }
 
 function renderTwoFactor(req, res, twoFactor, status = '', options = {}) {
@@ -1831,9 +1850,34 @@ router.post('/two-factor/setup', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
+  // E-035 F-170: enrolling an authenticator on a signed-in session needs a fresh
+  // confirmation (the same proof passkey management uses), so a stolen session
+  // alone cannot turn on two-step verification and lock the owner out.
+  // Passwords are not trimmed: leading/trailing spaces can be part of one.
+  const currentPassword = typeof req.body.current_password === 'string' ? req.body.current_password : '';
+  if (currentPassword === '') {
+    return redirectTo(res, twoFactorRedirect('2fa-setup-password-required'));
+  }
+
+  let securityConfirmationToken;
+  try {
+    securityConfirmationToken = await confirmWebAuthnSecurityAction(token, currentPassword);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    if (error instanceof ApiError && error.status === 429) {
+      return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
+    }
+    if (error instanceof ApiError) {
+      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed'));
+    }
+    throw error;
+  }
+
   let twoFactor;
   try {
-    const setupPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/setup'));
+    const setupPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/setup', {
+      security_confirmation_token: securityConfirmationToken
+    }));
     twoFactor = normalizeTwoFactorPayload({ enabled: false, setup: setupPayload });
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
@@ -1855,7 +1899,7 @@ router.post('/two-factor/setup', asyncRoute(async (req, res) => {
   }
   // Post/Redirect/Get: a refresh of the next page re-reads the pending setup
   // rather than re-submitting this form and generating yet another secret.
-  if (rememberPendingTwoFactorSetup(req, twoFactor.setup)) {
+  if (rememberPendingTwoFactorSetup(req, twoFactor.setup, securityConfirmationToken)) {
     return redirectTo(res, '/profile/two-factor');
   }
   return renderTwoFactor(req, res, twoFactor);
@@ -1899,7 +1943,13 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
   }
 
   try {
-    const verifiedPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/verify', { code }));
+    const securityConfirmationToken = req.session && typeof req.session.pendingTwoFactorConfirmation === 'string'
+      ? req.session.pendingTwoFactorConfirmation
+      : '';
+    const verifiedPayload = payloadFrom(await callProfile(token, 'POST', '/auth/2fa/verify', {
+      code,
+      ...(securityConfirmationToken ? { security_confirmation_token: securityConfirmationToken } : {})
+    }));
     forgetPendingTwoFactorSetup(req);
     const twoFactor = normalizeTwoFactorPayload({
       ...verifiedPayload,
@@ -1911,6 +1961,12 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 400) {
       return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
+    }
+    // E-035 F-170: the fresh confirmation lapsed (or was never given) — start
+    // setup again with the password rather than leave a dead pending secret.
+    if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'SECURITY_CONFIRMATION_REQUIRED') {
+      forgetPendingTwoFactorSetup(req);
+      return redirectTo(res, twoFactorRedirect('2fa-setup-confirm-failed'));
     }
     if (error instanceof ApiError && error.status === 429) {
       return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });

@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Voer uw wachtwoord in om de verificatie in twee stappen uit te schakelen. Uw account zal minder beveiligd zijn.',
         'password_label' => 'Uw wachtwoord',
         'password_required' => 'Voer uw wachtwoord in om de verificatie in twee stappen uit te schakelen.',
+        'setup_password_required' => 'Voer uw wachtwoord in om de verificatie in twee stappen in te schakelen.',
+        'setup_confirm_failed' => 'We konden uw wachtwoord niet bevestigen. Controleer het en probeer het opnieuw.',
         'disable_button' => 'Verificatie in twee stappen uitschakelen',
         'disable_failed' => 'We konden de verificatie in twee stappen niet uitschakelen. Controleer uw wachtwoord en probeer het opnieuw.',
         'devices_revoke_failed' => 'We konden uw herinnerde apparaten niet vergeten. Probeer het zo nog eens.',

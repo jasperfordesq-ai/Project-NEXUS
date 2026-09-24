@@ -27,6 +27,12 @@ class RegistrationPolicyService
         'waitlist',
     ];
 
+    /** Modes in which a new member must pass identity verification before using the account. */
+    public const IDENTITY_VERIFICATION_MODES = [
+        'verified_identity',
+        'government_id',
+    ];
+
     /** Valid verification levels */
     public const VERIFICATION_LEVELS = [
         'none',
@@ -86,8 +92,22 @@ class RegistrationPolicyService
         $generalRegistrationMode = self::getGeneralRegistrationMode($tenantId);
 
         if ($policy) {
+            $storedMode = (string) ($policy['registration_mode'] ?? '');
+            // E-035 F-152: `tenant_registration_policies.registration_mode` is an
+            // enum that has never included 'waitlist', and the connection runs
+            // non-strict, so saving the waitlist mode stores an empty string.
+            // upsertPolicy() only accepts self::MODES, and waitlist is the one
+            // MODE the column cannot hold, so an empty stored mode can only be a
+            // waitlist save. Read it back as waitlist (which holds new members
+            // for an administrator) rather than as an unknown, open-ish mode.
+            if ($storedMode === '') {
+                $storedMode = 'waitlist';
+            } elseif (!in_array($storedMode, self::MODES, true)) {
+                $storedMode = 'open_with_approval';
+            }
+
             $effectivePolicy = [
-                'registration_mode' => $policy['registration_mode'],
+                'registration_mode' => $storedMode,
                 'verification_provider' => $policy['verification_provider'],
                 'verification_level' => $policy['verification_level'],
                 'post_verification' => $policy['post_verification'],
@@ -245,6 +265,20 @@ class RegistrationPolicyService
     }
 
     /**
+     * Whether a registration mode leaves the legacy member-approval gate ON.
+     *
+     * Only `open_with_approval` keeps admin approval on; every other mode maps
+     * to `admin_approval=false` in syncToLegacySettings(). Exposed so callers
+     * (e.g. RegistrationPolicyController) can tell — without re-deriving the
+     * mapping and drifting from it — whether a policy change would turn member
+     * approval OFF, which is a platform-super-admin-only change (F-153).
+     */
+    public static function modeRequiresApproval(string $mode): bool
+    {
+        return $mode === 'open_with_approval';
+    }
+
+    /**
      * Sync registration policy to legacy tenant_settings for backwards compatibility.
      */
     private static function syncToLegacySettings(int $tenantId, string $mode, bool $requireEmailVerify): void
@@ -253,27 +287,22 @@ class RegistrationPolicyService
 
         // Map new modes to legacy settings
         $registrationMode = 'open';
-        $adminApproval = false;
 
         switch ($mode) {
             case 'open':
-                $registrationMode = 'open';
-                $adminApproval = false;
-                break;
             case 'open_with_approval':
-                $registrationMode = 'open';
-                $adminApproval = true;
-                break;
             case 'verified_identity':
             case 'government_id':
                 $registrationMode = 'open';
-                $adminApproval = false; // verification replaces approval
                 break;
             case 'invite_only':
                 $registrationMode = 'invite_only';
-                $adminApproval = false;
                 break;
         }
+
+        // admin_approval is derived from the mode via the single shared mapping
+        // so this and RegistrationPolicyController's F-153 guard never diverge.
+        $adminApproval = self::modeRequiresApproval($mode);
 
         $tss->set($tenantId, 'registration_mode', $registrationMode, 'string');
         $tss->set($tenantId, 'admin_approval', $adminApproval ? 'true' : 'false', 'boolean');

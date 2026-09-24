@@ -73,6 +73,40 @@ class TwoFactorController extends BaseApiController
         ));
     }
 
+    /**
+     * 🔴 E-035 F-170: enrolling a new authenticator on an ALREADY authenticated
+     * session (bearer token, not the first-login `two_factor_token` challenge)
+     * must present a fresh security confirmation — the same step-up passkey
+     * registration requires (F-056, WebAuthnController::requireSecurityConfirmation).
+     * The bearer alone is what a session thief already holds; without this a
+     * thief could enrol their own authenticator and lock the owner out. The
+     * first-login setup challenge path (setupToken !== null) is itself a fresh
+     * authentication and is deliberately exempt.
+     *
+     * The proof is a short-lived security-confirmation token obtained from
+     * POST /api/v2/webauthn/security-confirm (password / TOTP / backup code),
+     * passed as `security_confirmation_token` or the X-Security-Confirmation
+     * header — identical to the passkey management flow.
+     */
+    private function requireFreshSecurityConfirmation(int $userId, int $tenantId): void
+    {
+        $input = $this->getAllInput();
+        $token = $input['security_confirmation_token']
+            ?? request()->headers->get('X-Security-Confirmation');
+        if (
+            !is_string($token)
+            || $token === ''
+            || $this->tokenService->validateSecurityConfirmationToken($token, $userId, $tenantId) === null
+        ) {
+            throw new HttpResponseException($this->respondWithError(
+                'SECURITY_CONFIRMATION_REQUIRED',
+                __('api.validation_failed'),
+                'security_confirmation',
+                403
+            ));
+        }
+    }
+
     /** Called inside the transaction, before any enrollment or token mutation. */
     private function lockSetupIdentity(int $userId, ?string $setupToken, int $tenantId): void
     {
@@ -140,6 +174,11 @@ class TwoFactorController extends BaseApiController
     {
         [$userId, $setupToken, $tenantId] = $this->resolveSetupIdentity();
         $this->lockSetupIdentity($userId, $setupToken, $tenantId);
+        // F-170: an authenticated (bearer) enrolment needs a fresh step-up. The
+        // first-login setup-challenge path is exempt (it is itself fresh auth).
+        if ($setupToken === null) {
+            $this->requireFreshSecurityConfirmation($userId, $tenantId);
+        }
         $enrollmentAllowed = TenantContext::runForTenant(
             $tenantId,
             fn (): bool => TenantContext::hasFeature('two_factor_authentication')
@@ -191,6 +230,11 @@ class TwoFactorController extends BaseApiController
     {
         [$userId, $setupToken, $tenantId] = $this->resolveSetupIdentity();
         $this->lockSetupIdentity($userId, $setupToken, $tenantId);
+        // F-170: an authenticated (bearer) enrolment needs a fresh step-up. The
+        // first-login setup-challenge path is exempt (it is itself fresh auth).
+        if ($setupToken === null) {
+            $this->requireFreshSecurityConfirmation($userId, $tenantId);
+        }
         $enrollmentAllowed = TenantContext::runForTenant(
             $tenantId,
             fn (): bool => TenantContext::hasFeature('two_factor_authentication')

@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Introduza a sua palavra-passe para desativar a verificação em dois passos. A sua conta ficará menos segura.',
         'password_label' => 'A sua palavra-passe',
         'password_required' => 'Introduza a sua palavra-passe para desativar a verificação em dois passos.',
+        'setup_password_required' => 'Introduza a sua palavra-passe para ativar a verificação em dois passos.',
+        'setup_confirm_failed' => 'Não foi possível confirmar a sua palavra-passe. Verifique-a e tente novamente.',
         'disable_button' => 'Desativar a verificação em dois passos',
         'disable_failed' => 'Não foi possível desativar a verificação em dois passos. Verifique a sua palavra-passe e tente novamente.',
         'devices_revoke_failed' => 'Não poderíamos esquecer seus dispositivos lembrados. Tente novamente em alguns instantes.',

@@ -103,7 +103,14 @@ class EmailVerificationController extends BaseApiController
         //     ACTIVATES the account. Self-serve registration never sets
         //     is_approved, so without this a verified user is stuck 'pending'
         //     forever and login's approval gate blocks them permanently.
-        if ($this->tenantSettings->requiresAdminApproval($tenantId)) {
+        //   - Identity-verification or waitlist community (E-035 F-152): held
+        //     exactly like approval REQUIRED. Verifying the email never approves
+        //     the account; it is released by passing identity verification
+        //     (RegistrationOrchestrationService) or by an administrator.
+        if (
+            $this->tenantSettings->requiresAdminApproval($tenantId)
+            || $this->tenantSettings->registrationActivationHold($tenantId) !== null
+        ) {
             DB::update(
                 "UPDATE users SET email_verified_at = NOW(), is_verified = 1, status = CASE WHEN status = 'pending' AND is_approved = 1 THEN 'active' ELSE status END WHERE id = ? AND tenant_id = ?",
                 [$userId, $tenantId]
@@ -252,18 +259,40 @@ class EmailVerificationController extends BaseApiController
             return $this->respondWithData($genericResponse);
         }
 
+        // 🔴 SECURITY (E-035 F-171). Per-RECIPIENT cooldown. The per-IP limit
+        // above does not stop an attacker from spamming ONE inbox from many IPs
+        // (email bombing), and each send rotates the recipient's token — so a
+        // rapid burst also repeatedly invalidates a link the member may already
+        // be trying to use. Throttle per (tenant, address) across all source IPs
+        // so at most one resend per address per window actually dispatches; the
+        // rest are dropped, which also stops the burst from churning the token.
+        //
+        // Enumeration-safe: the key is hashed from the SUBMITTED address (which
+        // the attacker already knows) and set for EVERY well-formed address,
+        // account or not, so it does not correlate with account existence. When
+        // the cooldown is active we still return the SAME generic response and
+        // never a 429 — a distinct throttle response would itself be an oracle.
+        $cooldownKey = 'resend_verify_recipient:' . $tenantId . ':' . hash('sha256', $email);
+        $firstInWindow = \Illuminate\Support\Facades\Cache::add(
+            $cooldownKey,
+            1,
+            self::RESEND_COOLDOWN_SECONDS
+        );
+
         // Do the account lookup and send OFF the request, on the queue worker.
         //
-        // 🔴 SECURITY (E-013 F-024). The response above is identical whether or
-        // not the address has an account, but sending the verification email
-        // inline — and only for an account that exists AND is unverified — made
-        // that address answer measurably slower than an unknown one, a
-        // response-time oracle for enumerating unverified accounts. We run under
-        // mod_php (no early response flush), so this is dispatched to the queue.
-        // Dispatching UNCONDITIONALLY (the lookup lives in the job, not here)
-        // makes the request path do identical, constant work for every address.
-        // Same fix and reasoning as F-023's SendPasswordResetEmail.
-        SendEmailVerificationResend::dispatch($email, $tenantId);
+        // 🔴 SECURITY (E-013 F-024). The response is identical whether or not the
+        // address has an account, but sending the verification email inline — and
+        // only for an account that exists AND is unverified — made that address
+        // answer measurably slower than an unknown one, a response-time oracle
+        // for enumerating unverified accounts. We run under mod_php (no early
+        // response flush), so this is dispatched to the queue. Dispatching (the
+        // lookup lives in the job, not here) makes the request path do identical,
+        // constant work for every address; the per-recipient cooldown above only
+        // gates the dispatch and is constant work in itself.
+        if ($firstInWindow) {
+            SendEmailVerificationResend::dispatch($email, $tenantId);
+        }
 
         return $this->respondWithData($genericResponse);
     }

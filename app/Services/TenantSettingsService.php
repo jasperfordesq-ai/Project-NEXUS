@@ -223,6 +223,16 @@ class TenantSettingsService
         }
 
         if ($status === 'pending') {
+            // A sign-up held for identity verification is also 'pending'; tell
+            // the member which of the two things they are waiting for.
+            if (($user['verification_status'] ?? null) === 'pending') {
+                return [
+                    'code' => 'AUTH_PENDING_VERIFICATION',
+                    'message' => __('svc_notifications_2.tenant_settings.pending_verification'),
+                    'extra' => ['pending_verification' => true],
+                ];
+            }
+
             return [
                 'code' => ApiErrorCodes::AUTH_ACCOUNT_PENDING_APPROVAL,
                 'message' => __('svc_notifications_2.tenant_settings.pending_admin_approval'),
@@ -247,9 +257,10 @@ class TenantSettingsService
         }
 
         $tenantId = (int)($user['tenant_id'] ?? 0);
+        $verificationStatus = $user['verification_status'] ?? null;
 
         if (array_key_exists('is_approved', $user) && empty($user['is_approved'])) {
-            return [
+            return $this->unverifiedIdentityGate($tenantId, $verificationStatus) ?? [
                 'code' => ApiErrorCodes::AUTH_ACCOUNT_PENDING_APPROVAL,
                 'message' => __('svc_notifications_2.tenant_settings.pending_admin_approval'),
                 'extra' => ['pending_approval' => true],
@@ -257,7 +268,6 @@ class TenantSettingsService
         }
 
         // Check identity verification status (if present)
-        $verificationStatus = $user['verification_status'] ?? null;
         if ($verificationStatus === 'pending') {
             return [
                 'code' => 'AUTH_PENDING_VERIFICATION',
@@ -298,6 +308,66 @@ class TenantSettingsService
         }
 
         return null;
+    }
+
+    /**
+     * Whether the tenant's effective registration policy requires identity
+     * verification before a new member may use the account.
+     */
+    public function communityRequiresIdentityVerification(int $tenantId): bool
+    {
+        if ($tenantId <= 0) {
+            return false;
+        }
+
+        $mode = \App\Services\Identity\RegistrationPolicyService::getEffectivePolicy($tenantId)['registration_mode'] ?? 'open';
+
+        return in_array($mode, \App\Services\Identity\RegistrationPolicyService::IDENTITY_VERIFICATION_MODES, true);
+    }
+
+    /**
+     * The registration hold, if any, that email verification alone must not
+     * release: 'identity' (verified_identity / government_id) or 'waitlist'.
+     *
+     * E-035 F-152: in these modes the email/password path used to approve and
+     * activate the account the moment the email was verified, so the policy's
+     * identity check or waitlist was never applied.
+     */
+    public function registrationActivationHold(int $tenantId): ?string
+    {
+        if ($tenantId <= 0) {
+            return null;
+        }
+
+        $mode = \App\Services\Identity\RegistrationPolicyService::getEffectivePolicy($tenantId)['registration_mode'] ?? 'open';
+        if (in_array($mode, \App\Services\Identity\RegistrationPolicyService::IDENTITY_VERIFICATION_MODES, true)) {
+            return 'identity';
+        }
+
+        return $mode === 'waitlist' ? 'waitlist' : null;
+    }
+
+    /**
+     * Refusal for an unapproved account in a verification-required community
+     * that has not passed identity verification; null when that does not apply.
+     *
+     * An already-approved member with no verification record is deliberately
+     * NOT refused: switching a community to an ID-verification policy must not
+     * lock out the members it approved before the switch.
+     *
+     * @return array{code:string,message:string,extra:array<string,bool>}|null
+     */
+    private function unverifiedIdentityGate(int $tenantId, ?string $verificationStatus): ?array
+    {
+        if ($verificationStatus === 'passed' || !$this->communityRequiresIdentityVerification($tenantId)) {
+            return null;
+        }
+
+        return [
+            'code' => 'AUTH_PENDING_VERIFICATION',
+            'message' => __('svc_notifications_2.tenant_settings.pending_verification'),
+            'extra' => ['pending_verification' => true],
+        ];
     }
 
     /**

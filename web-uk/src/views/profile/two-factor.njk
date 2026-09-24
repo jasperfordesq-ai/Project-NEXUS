@@ -126,6 +126,11 @@
         {# F-115: setup generates a new secret, so it starts from a POST, never a GET. #}
         <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/setup') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {# E-035 F-170: turning two-step verification on needs your password. #}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="setup-password">{{ t("security_2fa.password_label") }}</label>
+            <input class="govuk-input govuk-input--width-20" id="setup-password" name="current_password" type="password" autocomplete="current-password" spellcheck="false" required>
+          </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("mandatory_2fa.title") }}</button>
         </form>
       {% else %}

@@ -6,13 +6,21 @@
 
 namespace Tests\Laravel\Feature\Security\TwoFactor;
 
+use App\Models\User;
 use App\Services\MemberDataExportService;
+use App\Services\TokenService;
 use App\Services\TotpService;
 use Illuminate\Support\Facades\DB;
 
 /** P10, P11 — limits are per account, and secrets stay where they belong. */
 class LimitsAndLeakageTest extends TwoFactorAuditTestCase
 {
+    /** E-035 F-170: the fresh proof a signed-in authenticator enrolment requires. */
+    private function freshConfirmation(User $user): string
+    {
+        return app(TokenService::class)->generateSecurityConfirmationToken((int) $user->id, (int) $user->tenant_id, 'password');
+    }
+
     public function test_two_accounts_behind_one_ip_have_independent_code_limits(): void
     {
         $a = $this->member();
@@ -34,7 +42,8 @@ class LimitsAndLeakageTest extends TwoFactorAuditTestCase
         $member = $this->member();
         $headers = $this->bearer($member);
 
-        $setup = $this->apiPost('/v2/auth/2fa/setup', [], $headers)->assertOk();
+        // E-035 F-170: a signed-in enrolment needs a fresh security confirmation.
+        $setup = $this->apiPost('/v2/auth/2fa/setup', ['security_confirmation_token' => $this->freshConfirmation($member)], $headers)->assertOk();
         $this->assertStringContainsString('no-store', (string) $setup->headers->get('Cache-Control'));
         $secret = $setup->json('data.secret');
         $this->assertIsString($secret);
@@ -65,7 +74,7 @@ class LimitsAndLeakageTest extends TwoFactorAuditTestCase
     {
         $this->allowEnrollment();
         $member = $this->member();
-        $secret = $this->apiPost('/v2/auth/2fa/setup', [], $this->bearer($member))->assertOk()->json('data.secret');
+        $secret = $this->apiPost('/v2/auth/2fa/setup', ['security_confirmation_token' => $this->freshConfirmation($member)], $this->bearer($member))->assertOk()->json('data.secret');
         $row = (string) DB::table('user_totp_settings')->where('user_id', $member->id)->value('totp_secret_encrypted');
         $this->assertNotSame('', $row);
         $this->assertStringNotContainsString($secret, $row);

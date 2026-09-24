@@ -901,17 +901,22 @@ abstract class BaseApiController extends Controller
                 // Not a Sanctum token — try legacy JWT
             }
 
+            $payload = null;
             try {
                 $tokenService = app(\App\Services\TokenService::class);
                 $payload = $tokenService->validateToken($bearer);
-                if ($payload) {
-                    $userId = (int) ($payload['user_id'] ?? $payload['sub'] ?? 0);
-                    if ($userId) {
-                        return $userId;
-                    }
-                }
             } catch (\Throwable $e) {
                 // Invalid JWT — ignore
+                $payload = null;
+            }
+            if ($payload) {
+                // Outside the try: the refusal must not be swallowed as an
+                // "invalid JWT" and silently downgraded to anonymous.
+                $this->refuseImpersonatedWriteOnOptionalAuth($payload);
+                $userId = (int) ($payload['user_id'] ?? $payload['sub'] ?? 0);
+                if ($userId) {
+                    return $userId;
+                }
             }
         }
 
@@ -944,6 +949,36 @@ abstract class BaseApiController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * E-035 O-061: a support (impersonation) session is read-only. The
+     * Authenticate middleware enforces that on protected routes, but public
+     * optional-auth endpoints never pass through it, so an impersonation
+     * token was accepted there as the member for writes (guardian consent,
+     * resend verification, cookie consent). Refuse non-read requests with the
+     * same response and the same exemptions as the middleware.
+     *
+     * @param array<string,mixed> $payload validated access-token claims
+     */
+    protected function refuseImpersonatedWriteOnOptionalAuth(array $payload): void
+    {
+        if (empty($payload['impersonated_by'])) {
+            return;
+        }
+
+        $request = request();
+        if (in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true)
+            || in_array($request->path(), ['api/auth/logout', 'api/v2/auth/logout', 'api/v2/auth/impersonate/end'], true)) {
+            return;
+        }
+
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            response()->json([
+                'success' => false,
+                'errors' => [['code' => 'AUTH_INSUFFICIENT_PERMISSIONS', 'message' => __('mfa.impersonation_read_only')]],
+            ], 403)->header('Cache-Control', 'no-store, private')
+        );
     }
 
     // ============================================

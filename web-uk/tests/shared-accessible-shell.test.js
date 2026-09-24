@@ -2753,14 +2753,18 @@ describe('shared accessible frontend shell', () => {
         backup_codes: []
       }
     });
+    // E-035 F-170: the start form carries the password, exchanged for a fresh
+    // security confirmation before setup.
+    expect(start.text).toContain('name="current_password"');
+    api.callWebAuthnApi.mockResolvedValueOnce({ data: { security_confirmation_token: 'conf-tok' } });
     const started = await request(app)
       .post('/profile/two-factor/setup')
       .set('Cookie', sessionCookies)
       .type('form')
-      .send({ _csrf: csrfToken });
+      .send({ _csrf: csrfToken, current_password: 'CurrentPassword!123' });
     expect(started.status).toBe(302);
     expect(started.headers.location).toBe('/profile/two-factor');
-    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup', { security_confirmation_token: 'conf-tok' });
 
     api.callProfileApi.mockResolvedValueOnce(disabledStatus);
     const setup = await request(app)

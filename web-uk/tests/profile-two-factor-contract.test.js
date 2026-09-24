@@ -79,6 +79,32 @@ describe('Laravel two-factor enrolment contract', () => {
     jest.clearAllMocks();
     // Queued one-off answers must not leak from one test into the next.
     api.callProfileApi.mockReset();
+    api.callWebAuthnApi.mockReset();
+  });
+
+  // E-035 F-170: starting enrolment on a signed-in session needs a fresh
+  // password confirmation; the token it returns goes to setup AND verify.
+  function confirmsPassword(tokenValue = 'conf-tok') {
+    api.callWebAuthnApi.mockResolvedValueOnce({ data: { security_confirmation_token: tokenValue } });
+  }
+
+  it('refuses to start setup without the password and never calls the API (E-035 F-170)', async () => {
+    const response = await request(createApp()).post('/profile/two-factor/setup').type('form').send({});
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain('2fa-setup-password-required');
+    expect(api.callWebAuthnApi).not.toHaveBeenCalled();
+    expect(api.callProfileApi).not.toHaveBeenCalled();
+  });
+
+  it('does not start setup when the password cannot be confirmed (E-035 F-170)', async () => {
+    api.callWebAuthnApi.mockRejectedValueOnce(new api.ApiError('Security confirmation required', 403, {
+      errors: [{ code: 'SECURITY_CONFIRMATION_REQUIRED' }]
+    }));
+    const response = await request(createApp()).post('/profile/two-factor/setup').type('form').send({ current_password: 'wrong' });
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain('2fa-setup-confirm-failed');
+    expect(api.callWebAuthnApi).toHaveBeenCalledWith('test-token', 'POST', '/security-confirm', { current_password: 'wrong' });
+    expect(api.callProfileApi).not.toHaveBeenCalled();
   });
 
   it.each([429, 503])('does not show a false disabled state when status fails with %s', async (status) => {
@@ -123,12 +149,14 @@ describe('Laravel two-factor enrolment contract', () => {
         data: { enabled: false, setup_required: false, backup_codes_remaining: 0 }
       });
     const app = createApp();
+    confirmsPassword();
 
-    const started = await request(app).post('/profile/two-factor/setup');
+    const started = await request(app).post('/profile/two-factor/setup').type('form').send({ current_password: 'CurrentPassword!123' });
 
     expect(started.status).toBe(302);
     expect(started.headers.location).toBe('/profile/two-factor');
-    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup');
+    expect(api.callWebAuthnApi).toHaveBeenCalledWith('test-token', 'POST', '/security-confirm', { current_password: 'CurrentPassword!123' });
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/setup', { security_confirmation_token: 'conf-tok' });
 
     for (let visit = 0; visit < 2; visit += 1) {
       const page = await request(app).get('/profile/two-factor');
@@ -148,19 +176,42 @@ describe('Laravel two-factor enrolment contract', () => {
       .mockResolvedValueOnce({ data: { backup_codes: ['otter-amber'] } })
       .mockResolvedValueOnce({ data: { enabled: false, setup_required: false, backup_codes_remaining: 0 } });
     const app = createApp();
+    confirmsPassword('verify-tok');
 
-    await request(app).post('/profile/two-factor/setup');
+    await request(app).post('/profile/two-factor/setup').type('form').send({ current_password: 'CurrentPassword!123' });
     await request(app).post('/profile/two-factor/verify').type('form').send({ code: '123456' });
     const page = await request(app).get('/profile/two-factor');
 
+    // The verify step carries the same fresh confirmation the setup step used.
+    expect(api.callProfileApi).toHaveBeenCalledWith('test-token', 'POST', '/auth/2fa/verify', {
+      code: '123456',
+      security_confirmation_token: 'verify-tok'
+    });
     expect(page.body.locals.setup).toBeNull();
     expect(page.body.locals.canStartSetup).toBe(true);
   });
 
+  it('asks for the password again when the confirmation lapsed before verify (E-035 F-170)', async () => {
+    api.callProfileApi
+      .mockResolvedValueOnce({ data: { qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+', secret: 'PENDING' } })
+      .mockRejectedValueOnce(new api.ApiError('Security confirmation required', 403, {
+        errors: [{ code: 'SECURITY_CONFIRMATION_REQUIRED' }]
+      }));
+    const app = createApp();
+    confirmsPassword();
+
+    await request(app).post('/profile/two-factor/setup').type('form').send({ current_password: 'CurrentPassword!123' });
+    const verified = await request(app).post('/profile/two-factor/verify').type('form').send({ code: '123456' });
+
+    expect(verified.status).toBe(302);
+    expect(verified.headers.location).toContain('2fa-setup-confirm-failed');
+  });
+
   it('says setup could not start, and offers it again, when the API refuses', async () => {
+    confirmsPassword();
     api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Failed to initialize 2FA setup', 500));
 
-    const response = await request(createApp()).post('/profile/two-factor/setup');
+    const response = await request(createApp()).post('/profile/two-factor/setup').type('form').send({ current_password: 'CurrentPassword!123' });
 
     expect(response.status).toBe(200);
     expect(response.body.locals.setupUnavailable).toBe(true);

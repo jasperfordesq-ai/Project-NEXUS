@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Inserisci la tua password per disattivare la verifica in due passaggi. Il tuo account sarà meno sicuro.',
         'password_label' => 'La tua password',
         'password_required' => 'Inserisci la tua password per disattivare la verifica in due passaggi.',
+        'setup_password_required' => 'Inserisci la tua password per attivare la verifica in due passaggi.',
+        'setup_confirm_failed' => 'Non è stato possibile confermare la tua password. Controllala e riprova.',
         'disable_button' => 'Disattiva la verifica in due passaggi',
         'disable_failed' => 'Non è stato possibile disattivare la verifica in due passaggi. Controlla la tua password e riprova.',
         'devices_revoke_failed' => 'Non potevamo dimenticare i tuoi dispositivi ricordati. Riprova tra un attimo.',

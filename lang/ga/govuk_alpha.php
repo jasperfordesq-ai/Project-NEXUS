@@ -3532,6 +3532,8 @@ return [
         'disable_intro' => 'Cuir isteach do phasfhocal chun fíordheimhniú dhá chéim a chasadh as. Beidh do chuntas níos lú slán.',
         'password_label' => 'Do phasfhocal',
         'password_required' => 'Cuir isteach do phasfhocal chun fíordheimhniú dhá chéim a chasadh as.',
+        'setup_password_required' => 'Cuir isteach do phasfhocal chun fíordheimhniú dhá chéim a chasadh air.',
+        'setup_confirm_failed' => 'Níorbh fhéidir do phasfhocal a dhearbhú. Seiceáil é agus bain triail eile as.',
         'disable_button' => 'Cas as fíordheimhniú dhá chéim',
         'disable_failed' => 'Níorbh fhéidir fíordheimhniú dhá chéim a chasadh as. Seiceáil do phasfhocal agus bain triail eile as.',
         'devices_revoke_failed' => 'Níorbh fhéidir linn do ghléasanna cuimhnithe a dhearmad. Bain triail eile as i gceann nóiméid.',

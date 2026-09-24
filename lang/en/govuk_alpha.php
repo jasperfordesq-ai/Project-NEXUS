@@ -3583,6 +3583,8 @@ return [
         'disable_intro' => 'Enter your password to turn off two-step verification. Your account will be less secure.',
         'password_label' => 'Your password',
         'password_required' => 'Enter your password to turn off two-step verification.',
+        'setup_password_required' => 'Enter your password to turn on two-step verification.',
+        'setup_confirm_failed' => 'We could not confirm your password. Check it and try again.',
         'disable_button' => 'Turn off two-step verification',
         'disable_failed' => 'We could not turn off two-step verification. Check your password and try again.',
         'devices_revoke_failed' => 'We could not forget your remembered devices. Try again in a moment.',

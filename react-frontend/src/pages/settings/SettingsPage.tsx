@@ -44,6 +44,12 @@ import { AvailabilityGrid } from '@/components/availability/AvailabilityGrid';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
+import { confirmWebAuthnSecurity } from '@/lib/webauthn';
+import {
+  SecurityConfirmationModal,
+  buildSecurityConfirmationInput,
+} from '@/components/security/SecurityConfirmationModal';
+import type { SecurityConfirmationMethod } from '@/components/security/SecurityConfirmationModal';
 import { isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
@@ -288,6 +294,15 @@ export function SettingsPage() {
   const [twoFactorSetupData, setTwoFactorSetupData] = useState<TwoFactorSetup | null>(null);
   const [twoFactorVerifyCode, setTwoFactorVerifyCode] = useState('');
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  // E-035 F-170: enrolling an authenticator on a signed-in session needs a
+  // fresh "confirm it is you" step (same proof passkey management uses). The
+  // token is held only in memory for this enrolment.
+  const twoFactorConfirmModal = useDisclosure();
+  const twoFactorConfirmTokenRef = useRef<string | null>(null);
+  const [twoFactorConfirmMethod, setTwoFactorConfirmMethod] = useState<SecurityConfirmationMethod>('password');
+  const [twoFactorConfirmValue, setTwoFactorConfirmValue] = useState('');
+  const [twoFactorConfirmError, setTwoFactorConfirmError] = useState<string | null>(null);
+  const [isConfirming2FA, setIsConfirming2FA] = useState(false);
   const [twoFactorDisablePassword, setTwoFactorDisablePassword] = useState('');
   const [twoFactorDisableCode, setTwoFactorDisableCode] = useState('');
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
@@ -852,12 +867,56 @@ export function SettingsPage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   async function handleSetup2FA() {
+    twoFactorConfirmTokenRef.current = null;
+    setTwoFactorConfirmError(null);
+    setTwoFactorConfirmValue('');
+    setTwoFactorConfirmMethod('password');
+    // A recent passkey / SSO sign-in can confirm silently; otherwise ask.
+    try {
+      const silent = await confirmWebAuthnSecurity({});
+      if (silent.success && silent.securityConfirmationToken) {
+        twoFactorConfirmTokenRef.current = silent.securityConfirmationToken;
+        await startTwoFactorSetup();
+        return;
+      }
+    } catch {
+      // Fall through to the explicit confirmation prompt.
+    }
+    twoFactorConfirmModal.onOpen();
+  }
+
+  async function submitTwoFactorConfirmation() {
+    if (!twoFactorConfirmValue.trim() || isConfirming2FA) return;
+    setIsConfirming2FA(true);
+    setTwoFactorConfirmError(null);
+    try {
+      const result = await confirmWebAuthnSecurity(
+        buildSecurityConfirmationInput(twoFactorConfirmMethod, twoFactorConfirmValue),
+      );
+      if (!result.success || !result.securityConfirmationToken) {
+        setTwoFactorConfirmError(t('passkey_security_confirm_failed'));
+        return;
+      }
+      twoFactorConfirmTokenRef.current = result.securityConfirmationToken;
+      setTwoFactorConfirmValue('');
+      twoFactorConfirmModal.onClose();
+      await startTwoFactorSetup();
+    } catch {
+      setTwoFactorConfirmError(t('passkey_security_confirm_failed'));
+    } finally {
+      setIsConfirming2FA(false);
+    }
+  }
+
+  async function startTwoFactorSetup() {
     try {
       setTwoFactorSetupData(null);
       setTwoFactorVerifyCode('');
       twoFactorSetupModal.onOpen();
 
-      const response = await api.post<TwoFactorSetup>('/v2/auth/2fa/setup');
+      const response = await api.post<TwoFactorSetup>('/v2/auth/2fa/setup', {
+        security_confirmation_token: twoFactorConfirmTokenRef.current ?? undefined,
+      });
       if (response.success && response.data) {
         setTwoFactorSetupData(response.data);
       } else {
@@ -881,9 +940,11 @@ export function SettingsPage() {
       setIsVerifying2FA(true);
       const response = await api.post<{ backup_codes: string[] }>('/v2/auth/2fa/verify', {
         code: twoFactorVerifyCode,
+        security_confirmation_token: twoFactorConfirmTokenRef.current ?? undefined,
       });
 
       if (response.success) {
+        twoFactorConfirmTokenRef.current = null;
         setTwoFactorEnabled(true);
         if (response.data?.backup_codes) {
           setBackupCodes(response.data.backup_codes);
@@ -1347,6 +1408,26 @@ export function SettingsPage() {
             onCopyBackupCodes={handleCopyBackupCodes}
           />
         )}
+
+        {/* E-035 F-170: fresh confirmation before enrolling an authenticator. */}
+        <SecurityConfirmationModal
+          isOpen={twoFactorConfirmModal.isOpen}
+          onOpenChange={(open) => (open ? twoFactorConfirmModal.onOpen() : twoFactorConfirmModal.onClose())}
+          methods={{ password: true, totp: false }}
+          method={twoFactorConfirmMethod}
+          onMethodChange={setTwoFactorConfirmMethod}
+          value={twoFactorConfirmValue}
+          onValueChange={setTwoFactorConfirmValue}
+          error={twoFactorConfirmError}
+          isConfirming={isConfirming2FA}
+          isSubmitDisabled={!twoFactorConfirmValue.trim() || isConfirming2FA}
+          onSubmit={() => { void submitTwoFactorConfirmation(); }}
+          onCancel={() => {
+            setTwoFactorConfirmValue('');
+            setTwoFactorConfirmError(null);
+          }}
+          description={t('twofa_confirm_password')}
+        />
 
         {/* SKILLS TAB */}
         {activeTab === 'skills' && <SkillsTab />}

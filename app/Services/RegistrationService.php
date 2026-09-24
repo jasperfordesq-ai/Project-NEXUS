@@ -516,6 +516,29 @@ class RegistrationService
             }
         }
 
+        // E-035 F-152: an identity-verification or waitlist community runs the
+        // same policy orchestration OAuth sign-up has always run. Without it
+        // the email/password path marked nothing, and verifying the email then
+        // approved and activated an account that had never been verified.
+        // open / open_with_approval / invite_only / closed are unchanged and do
+        // not pass through here. A failure is logged, not swallowed into a
+        // success: the account stays pending and unapproved either way, because
+        // email verification no longer releases an account held by these modes.
+        $orchestration = null;
+        $policyMode = (string) ($policy['registration_mode'] ?? 'open');
+        if (in_array($policyMode, array_merge(RegistrationPolicyService::IDENTITY_VERIFICATION_MODES, ['waitlist']), true)) {
+            try {
+                $orchestration = \App\Services\Identity\RegistrationOrchestrationService::processRegistration((int) $user->id, $tenantId);
+            } catch (\Throwable $e) {
+                Log::error('registration.policy_orchestration_failed', [
+                    'user_id' => (int) $user->id,
+                    'tenant_id' => $tenantId,
+                    'registration_mode' => $policyMode,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // Record WHICH VERSION of the terms this member agreed to.
         //
         // 🔴 The `terms_accepted` field is validated above and was then thrown
@@ -620,14 +643,19 @@ class RegistrationService
         // being left to discover it by failing to log in, where the only signal was
         // one line of red text.
         //
-        // `requires_waitlist` / `waitlist_position` are deliberately NOT returned:
-        // the waitlist registration mode is declared in RegistrationPolicyService
-        // but this method does not implement it (it only honours `closed` and
-        // `invite_only`), so claiming a waitlist position here would be inventing
-        // one. Wire those up when the mode is genuinely implemented.
+        // `requires_waitlist` / `waitlist_position` come from the policy
+        // orchestration above, which now runs for the waitlist mode (E-035
+        // F-152). `requires_verification` stays the EMAIL-verification flag both
+        // clients already read; identity verification is reported separately.
         $requiresApproval = $this->tenantSettings->requiresAdminApproval($tenantId);
+        $requiresIdentityVerification = in_array($policyMode, RegistrationPolicyService::IDENTITY_VERIFICATION_MODES, true);
+        $requiresWaitlist = $policyMode === 'waitlist';
+        if ($orchestration !== null) {
+            $requiresApproval = (bool) ($orchestration['requires_approval'] ?? $requiresApproval);
+            $requiresIdentityVerification = (bool) ($orchestration['requires_verification'] ?? $requiresIdentityVerification);
+        }
 
-        return [
+        $result = [
             'user' => [
                 'id' => $user->id,
                 'email' => $user->email,
@@ -636,8 +664,17 @@ class RegistrationService
             ],
             'requires_verification' => true,
             'requires_approval' => $requiresApproval,
+            'requires_identity_verification' => $requiresIdentityVerification,
             'message' => __('emails_misc.registration.success_message'),
         ];
+        if ($requiresWaitlist) {
+            $result['requires_waitlist'] = true;
+            if (isset($orchestration['waitlist_position'])) {
+                $result['waitlist_position'] = (int) $orchestration['waitlist_position'];
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -667,8 +704,12 @@ class RegistrationService
         // pending until an admin promotes it (was previously promoted to
         // 'active' unconditionally — the toggle's "must be approved before
         // activation" label was effectively a no-op for the alpha frontend).
+        // E-035 F-152: an identity-verification or waitlist community is held
+        // exactly like an approval community — verifying the email never
+        // approves or activates the account on its own.
         $requiresAdminApproval = $this->tenantSettings
-            ->requiresAdminApproval((int) $user->tenant_id);
+            ->requiresAdminApproval((int) $user->tenant_id)
+            || $this->tenantSettings->registrationActivationHold((int) $user->tenant_id) !== null;
 
         // B2 — self-serve activation lockout: when admin approval is OFF the
         // account becomes active AND approved, so login's is_approved gate

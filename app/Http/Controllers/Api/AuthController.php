@@ -1157,7 +1157,15 @@ class AuthController extends BaseApiController
 
         // Check Bearer token
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-        if (empty($authHeader) || !preg_match('/Bearer\s+(.+)$/i', $authHeader, $matches)) {
+        $token = null;
+        if (!empty($authHeader) && preg_match('/Bearer\s+(.+)$/i', $authHeader, $matches)) {
+            $token = $matches[1];
+        } else {
+            // The superglobal is not populated under every SAPI (or the test
+            // kernel); the request object always carries the header.
+            $token = request()->bearerToken();
+        }
+        if (!is_string($token) || $token === '') {
             return $this->authError(
                 __('api.bearer_token_required'),
                 ApiErrorCodes::AUTH_TOKEN_MISSING,
@@ -1165,7 +1173,6 @@ class AuthController extends BaseApiController
             );
         }
 
-        $token = $matches[1];
         $payload = $this->tokenService->validateToken($token);
 
         if (!$payload || ($payload['type'] ?? 'access') !== 'access') {
@@ -1173,6 +1180,18 @@ class AuthController extends BaseApiController
                 __('api.invalid_or_expired_token'),
                 ApiErrorCodes::AUTH_TOKEN_INVALID,
                 401
+            );
+        }
+
+        // E-035 O-061: a support (impersonation) token is read-only and bound
+        // to its short delegated window. Converting it into an ordinary legacy
+        // session would drop the impersonation marker, so every later request
+        // on that session would run as the member with full write access.
+        if (!empty($payload['impersonated_by'])) {
+            return $this->authError(
+                __('mfa.impersonation_read_only'),
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                403
             );
         }
 

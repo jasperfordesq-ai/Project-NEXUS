@@ -3530,6 +3530,8 @@ return [
         'disable_intro' => 'Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu deaktivieren. Ihr Konto wird dadurch weniger sicher.',
         'password_label' => 'Ihr Passwort',
         'password_required' => 'Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu deaktivieren.',
+        'setup_password_required' => 'Geben Sie Ihr Passwort ein, um die Zwei-Schritt-Verifizierung zu aktivieren.',
+        'setup_confirm_failed' => 'Ihr Passwort konnte nicht bestätigt werden. Überprüfen Sie es und versuchen Sie es erneut.',
         'disable_button' => 'Zwei-Schritt-Verifizierung deaktivieren',
         'disable_failed' => 'Die Zwei-Schritt-Verifizierung konnte nicht deaktiviert werden. Überprüfen Sie Ihr Passwort und versuchen Sie es erneut.',
         'devices_revoke_failed' => 'Wir konnten Ihre erinnerten Geräte nicht vergessen. Versuchen Sie es gleich noch einmal.',
