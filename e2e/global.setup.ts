@@ -342,7 +342,9 @@ async function globalSetup(config: FullConfig) {
   try {
     // Verify server is accessible
     console.log(`📡 Checking server at ${BASE_URL}...`);
-    const context = await browser.newContext();
+    // This manually created context does not inherit the project's TLS setting.
+    // The CI Safari gate uses a temporary self-signed localhost certificate.
+    const context = await browser.newContext({ ignoreHTTPSErrors: true });
     const page = await context.newPage();
 
     // Dismiss dev notice modal for server check
