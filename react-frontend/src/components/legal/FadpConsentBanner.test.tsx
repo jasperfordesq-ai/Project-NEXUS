@@ -46,7 +46,7 @@ vi.mock('@/contexts', () => createMockContexts({
     register: vi.fn(),
     updateUser: vi.fn(),
     refreshUser: vi.fn(),
-    status: 'authenticated' as const,
+    status: 'idle' as const,
     error: null,
   }),
   useTenant: () => ({
