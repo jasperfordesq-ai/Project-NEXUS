@@ -421,9 +421,12 @@ class WebAuthnControllerTest extends TestCase
         )
             ->assertStatus(403);
 
-        // Without browser metadata, the WebAuthn challenge itself still rejects
-        // a verification request in a different allowed context.
-        $this->apiPost('/webauthn/auth-verify', $payload)
+        // A same-origin request on the other allowed domain reaches WebAuthn,
+        // where the challenge must still reject the changed ceremony origin.
+        $this->apiPost('/webauthn/auth-verify', $payload, [
+            'Origin' => 'https://accessible.example.test',
+            'Host' => 'accessible.example.test',
+        ])
             ->assertStatus(401)
             ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
     }
