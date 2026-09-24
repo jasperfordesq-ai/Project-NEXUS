@@ -627,6 +627,7 @@ class AuthControllerTest extends TestCase
         $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => true,
+            'email_verified_at' => now(),
         ]);
         $tokens = app(TokenService::class);
         $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
