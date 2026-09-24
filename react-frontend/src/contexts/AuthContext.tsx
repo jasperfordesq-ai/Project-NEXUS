@@ -190,12 +190,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = useCallback(async () => {
     if (!tokenManager.hasAccessToken()) {
-      setState((prev) => ({
-        ...prev,
-        status: 'idle',
-        user: null,
-      }));
-      return;
+      if (isImpersonatedTab() || !tokenManager.hasRefreshToken()) {
+        setState((prev) => ({ ...prev, status: 'idle', user: null }));
+        return;
+      }
+      const outcome = await api.refreshSession();
+      if (outcome !== 'refreshed' || !tokenManager.hasAccessToken()) {
+        setState((prev) => ({
+          ...prev,
+          status: outcome === 'transient' ? 'loading' : 'idle',
+          user: null,
+        }));
+        return;
+      }
     }
 
     const sessionGenerationAtStart = tokenManager.getSessionGeneration();
@@ -413,6 +420,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       loginData.access_token || loginData.token,
       loginData.refresh_token,
       loginTenantId,
+      loginData.session_binding,
     );
     if (!loginGeneration || tokenManager.getSessionGeneration() !== loginGeneration) {
       const loginError = i18n.t('auth:login.failed');
@@ -490,12 +498,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, requires2FA: false, errorCode: 'cancelled' };
       }
 
-      const { user, access_token, refresh_token, expires_in } = result.data;
+      const { user, access_token, refresh_token, expires_in, session_binding } = result.data;
 
       const biometricGeneration = await tokenManager.adoptSessionIfCurrent(
         sessionGenerationAtStart,
         access_token,
         refresh_token,
+        undefined,
+        session_binding,
       );
       if (!biometricGeneration || tokenManager.getSessionGeneration() !== biometricGeneration) {
         setState((prev) => ({ ...prev, status: 'idle', error: null }));
@@ -651,6 +661,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data.access_token || data.token,
       data.refresh_token,
       verifiedTenantId,
+      data.session_binding,
     );
     if (!verifiedGeneration || tokenManager.getSessionGeneration() !== verifiedGeneration) return false;
     const hydratedUser = await hydrateUserProfile(data.user, verifiedGeneration);
@@ -764,6 +775,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         accessToken,
         refreshToken,
         user?.tenant_id && !tokenManager.getTenantId() ? user.tenant_id : undefined,
+        typeof responseData.session_binding === 'string' ? responseData.session_binding : null,
       );
       if (!registrationGeneration || tokenManager.getSessionGeneration() !== registrationGeneration) {
         return { success: false, error: i18n.t('auth:register.failed') };
@@ -952,17 +964,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
         event.key === 'nexus_auth_session_generation'
         && event.newValue
         && (state.status === 'authenticated' || state.status === 'loading')
-        && tokenManager.hasAccessToken()
       ) {
         // Another tab committed a complete replacement session. Stop rendering
         // the previous member immediately, discard their local UI state, and
         // hydrate the replacement identity before authenticated routes resume.
+        tokenManager.clearSession(event.oldValue);
         api.clearInflightRequests();
         clearUserScopedStorage();
         void purgeOfflineCheckinDataForGeneration(event.oldValue);
         setTelemetryUser(null);
         setState((prev) => ({ ...prev, user: null, status: 'loading', error: null }));
         void refreshUser();
+        return;
+      }
+      if (event.key === 'nexus_logout_generation' && event.newValue
+          && (state.status === 'authenticated' || state.status === 'loading')) {
+        let generation: string | null;
+        try {
+          const marker = JSON.parse(event.newValue) as { sessionGeneration?: string | null };
+          generation = marker.sessionGeneration ?? null;
+          if (generation !== tokenManager.getSessionGeneration()) return;
+        } catch { return; }
+        api.clearInflightRequests();
+        clearUserScopedStorage();
+        void purgeOfflineCheckinDataForGeneration(generation);
+        tokenManager.clearSession(generation);
+        localStorage.removeItem('nexus_tenant_id');
+        localStorage.removeItem('nexus_tenant_slug');
+        setTelemetryUser(null);
+        setState({ user: null, status: 'idle', error: null,
+          twoFactorToken: null, twoFactorMethods: [] });
         return;
       }
       // localStorage 'storage' event only fires in OTHER tabs (not the one that made the change).
@@ -1016,7 +1047,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // of redirecting to login. Retry automatically when connectivity returns.
   useEffect(() => {
     const retrySessionCheck = () => {
-      if (state.status === 'loading' && tokenManager.hasAccessToken()) {
+      if (state.status === 'loading') {
         void refreshUser();
       }
     };

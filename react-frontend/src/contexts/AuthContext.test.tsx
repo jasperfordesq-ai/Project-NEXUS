@@ -27,6 +27,7 @@ vi.mock('@/lib/api', async () => {
       get: vi.fn(),
       post: vi.fn(),
       logoutSession: vi.fn(),
+      refreshSession: vi.fn(),
       clearInflightRequests: vi.fn(),
     },
     recoverStaleClient: vi.fn(),
@@ -129,6 +130,7 @@ describe('AuthContext', () => {
 
     // Default mock implementations
     vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+    vi.mocked(api.refreshSession).mockResolvedValue('invalid');
     vi.mocked(tokenManager.getAccessToken).mockReturnValue(null);
     vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
     vi.mocked(tokenManager.getSessionGeneration).mockReturnValue('test-session');
@@ -139,6 +141,23 @@ describe('AuthContext', () => {
   afterEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+  });
+
+  it('restores a reload from the HttpOnly cookie before fetching the member profile', async () => {
+    vi.mocked(tokenManager.hasRefreshToken).mockReturnValue(true);
+    vi.mocked(api.refreshSession).mockImplementation(async () => {
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(tokenManager.getAccessToken).mockReturnValue('restored-access');
+      return 'refreshed';
+    });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: {
+      id: 1, first_name: 'Jane', last_name: 'Doe', tenant_id: 2,
+    } });
+
+    render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+    expect(api.refreshSession).toHaveBeenCalledOnce();
+    expect(api.get).toHaveBeenCalledWith('/v2/users/me');
   });
 
   it('keeps a required enrollment challenge out of the bearer token store', async () => {
@@ -261,7 +280,7 @@ describe('AuthContext', () => {
         success: true,
         data: {
           access_token: 'access-token',
-          refresh_token: 'refresh-token',
+          session_binding: 'test-browser-session-binding',
           user: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
         },
       });
@@ -287,7 +306,7 @@ describe('AuthContext', () => {
       });
 
       expect(tokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
-        'test-session', 'access-token', 'refresh-token', 1,
+        'test-session', 'access-token', undefined, 1, 'test-browser-session-binding',
       );
     });
 

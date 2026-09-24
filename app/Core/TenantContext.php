@@ -149,6 +149,34 @@ class TenantContext
                     }
                 }
 
+                // The React app on a parent's custom domain sends its child's
+                // tenant ID with /api requests. Accept only an active direct
+                // child of this host's tenant; never let a header select an
+                // unrelated community on a dedicated domain.
+                $apiTenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? null;
+                if (str_starts_with((string) $path, '/api/') && is_numeric($apiTenantId)) {
+                    $childRow = DB::table('tenants')
+                        ->where('id', (int) $apiTenantId)
+                        ->where('parent_id', (int) $domainTenant['id'])
+                        ->where('is_active', 1)
+                        ->first();
+                    if ($childRow) {
+                        $tokenTenantId = self::extractTenantIdFromBearerToken();
+                        if ($tokenTenantId !== null && $tokenTenantId !== (int) $childRow->id
+                            && !self::isTokenUserSuperAdmin()) {
+                            self::respondWithTenantMismatchError();
+                            return;
+                        }
+                        self::$headerTenantId = (int) $childRow->id;
+                        self::$tokenTenantId = $tokenTenantId;
+                        self::$tenant = (array) $childRow;
+                        self::$basePath = '';
+                        self::$cachedId = (int) $childRow->id;
+                        self::$parentDomain = (string) $domainTenant['domain'];
+                        return;
+                    }
+                }
+
                 // No child tenant found — lock to the custom-domain (parent) tenant.
                 self::$tenant = $domainTenant;
                 self::$basePath = '';

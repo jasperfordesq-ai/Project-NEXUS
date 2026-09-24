@@ -71,10 +71,11 @@ vi.mock('@/lib/webauthn', () => ({
 }));
 
 // Mock the api module — use vi.hoisted so these are available in the hoisted vi.mock factory
-const { mockApiGet, mockApiPost, mockApiLogoutSession, mockTokenManager } = vi.hoisted(() => {
+const { mockApiGet, mockApiPost, mockApiLogoutSession, mockApiRefreshSession, mockTokenManager } = vi.hoisted(() => {
   const mockApiGet = vi.fn();
   const mockApiPost = vi.fn();
   const mockApiLogoutSession = vi.fn();
+  const mockApiRefreshSession = vi.fn();
   const mockTokenManager = {
     adoptSession: vi.fn(() => 'test-session'),
     adoptSessionIfCurrent: vi.fn(() => Promise.resolve('test-session')),
@@ -95,7 +96,7 @@ const { mockApiGet, mockApiPost, mockApiLogoutSession, mockTokenManager } = vi.h
     hasAccessToken: vi.fn(),
     hasRefreshToken: vi.fn(),
   };
-  return { mockApiGet, mockApiPost, mockApiLogoutSession, mockTokenManager };
+  return { mockApiGet, mockApiPost, mockApiLogoutSession, mockApiRefreshSession, mockTokenManager };
 });
 
 vi.mock('@/lib/api', () => ({
@@ -103,7 +104,9 @@ vi.mock('@/lib/api', () => ({
     get: (...args: unknown[]) => mockApiGet(...args),
     post: (...args: unknown[]) => mockApiPost(...args),
     logoutSession: (...args: unknown[]) => mockApiLogoutSession(...args),
+    refreshSession: (...args: unknown[]) => mockApiRefreshSession(...args),
   },
+  isImpersonatedTab: () => false,
   tokenManager: mockTokenManager,
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
   SESSION_REPLACED_EVENT: 'nexus:session_replaced',
@@ -158,6 +161,7 @@ describe('AuthContext', () => {
     mockApiGet.mockResolvedValue({ success: false, error: 'Not authenticated' });
     mockApiPost.mockResolvedValue({ success: true });
     mockApiLogoutSession.mockResolvedValue({ success: true });
+    mockApiRefreshSession.mockResolvedValue('invalid');
   });
 
   afterEach(() => {
@@ -372,7 +376,7 @@ describe('AuthContext', () => {
         success: true,
         data: {
           access_token: 'access-abc',
-          refresh_token: 'refresh-xyz',
+          session_binding: 'binding',
           user: mockUser,
         },
       });
@@ -390,7 +394,7 @@ describe('AuthContext', () => {
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user).toMatchObject({ id: 1 });
       expect(mockTokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
-        'test-session', 'access-abc', 'refresh-xyz', 2,
+        'test-session', 'access-abc', undefined, 2, 'binding',
       );
     });
 
@@ -880,7 +884,7 @@ describe('AuthContext', () => {
             email: 'jane@example.com',
           },
           access_token: 'bio-access',
-          refresh_token: 'bio-refresh',
+          session_binding: 'binding',
           expires_in: 3600,
         },
       });
@@ -899,7 +903,7 @@ describe('AuthContext', () => {
       expect(loginResult.success).toBe(true);
       expect(result.current.isAuthenticated).toBe(true);
       expect(mockTokenManager.adoptSessionIfCurrent).toHaveBeenCalledWith(
-        'test-session', 'bio-access', 'bio-refresh',
+        'test-session', 'bio-access', undefined, undefined, 'binding',
       );
     });
 

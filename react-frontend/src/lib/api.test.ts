@@ -9,12 +9,27 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-  ApiClient,
-  tokenManager,
+  ApiClient as PrimaryApiClient,
+  tokenManager as primaryTokenManager,
   SESSION_EXPIRED_EVENT,
   API_ERROR_EVENT,
   buildQueryString,
 } from './api';
+
+let tokenManager = primaryTokenManager;
+let ApiClient = PrimaryApiClient;
+
+const TEST_SESSION_BINDING = 'test-browser-session-binding';
+
+function setTestBinding(_formerRefreshToken: string): void {
+  const generation = tokenManager.getSessionGeneration();
+  if (generation) localStorage.setItem(`nexus_auth_binding:${generation}`, TEST_SESSION_BINDING);
+}
+
+function adoptTestSession(accessToken: string, _formerRefreshToken?: string | null,
+  tenantId?: string | number | null): string | null {
+  return tokenManager.adoptSession(accessToken, null, tenantId, TEST_SESSION_BINDING);
+}
 
 /**
  * Minimal origin-wide exclusive Web Locks queue for deterministic unit tests.
@@ -75,6 +90,7 @@ function installQueuedWebLocks() {
 
 describe('tokenManager', () => {
   beforeEach(() => {
+    tokenManager = primaryTokenManager;
     localStorage.clear();
     sessionStorage.clear();
   });
@@ -93,7 +109,7 @@ describe('tokenManager', () => {
       'nexus-auth-session-adoption',
       { mode: 'exclusive' },
       async () => {
-        tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+        adoptTestSession('account-b-access', 'account-b-refresh', '2');
         blockerEntered();
         await new Promise<void>((resolve) => { releaseBlocker = resolve; });
       },
@@ -111,7 +127,8 @@ describe('tokenManager', () => {
 
     await expect(staleAccountA).resolves.toBeNull();
     expect(tokenManager.getAccessToken()).toBe('account-b-access');
-    expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+    expect(tokenManager.getRefreshToken()).toBeNull();
+    expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
     locks.restore();
   });
 
@@ -125,20 +142,22 @@ describe('tokenManager', () => {
    * these tests exist to prevent.
    */
   describe('impersonated-tab isolation', () => {
-    it('writes the session to sessionStorage, leaving the admin session intact', () => {
+    it('keeps the impersonated access token in memory and leaves the admin session intact', () => {
       tokenManager.setAccessToken('admin-token');
-      tokenManager.setRefreshToken('admin-refresh');
+      setTestBinding('admin-refresh');
 
       sessionStorage.setItem('nexus_impersonation_active', '1');
       tokenManager.setAccessToken('member-token');
 
       expect(tokenManager.getAccessToken()).toBe('member-token');
-      expect(localStorage.getItem('nexus_access_token')).toBe('admin-token');
-      expect(localStorage.getItem('nexus_refresh_token')).toBe('admin-refresh');
+      expect(localStorage.getItem('nexus_access_token')).toBeNull();
+      expect(localStorage.getItem('nexus_refresh_token')).toBeNull();
+      sessionStorage.removeItem('nexus_impersonation_active');
+      expect(tokenManager.getAccessToken()).toBe('admin-token');
     });
 
     it('exposes no refresh token, so a 401 cannot revive the admin session', () => {
-      tokenManager.setRefreshToken('admin-refresh');
+      setTestBinding('admin-refresh');
 
       sessionStorage.setItem('nexus_impersonation_active', '1');
 
@@ -148,7 +167,7 @@ describe('tokenManager', () => {
 
     it('clearAll in an impersonated tab does not sign the admin out', () => {
       tokenManager.setAccessToken('admin-token');
-      tokenManager.setRefreshToken('admin-refresh');
+      setTestBinding('admin-refresh');
       tokenManager.setTenantId('2');
 
       sessionStorage.setItem('nexus_impersonation_active', '1');
@@ -156,9 +175,11 @@ describe('tokenManager', () => {
       tokenManager.clearAll();
 
       expect(tokenManager.getAccessToken()).toBeNull();
-      expect(localStorage.getItem('nexus_access_token')).toBe('admin-token');
-      expect(localStorage.getItem('nexus_refresh_token')).toBe('admin-refresh');
+      expect(localStorage.getItem('nexus_access_token')).toBeNull();
+      expect(localStorage.getItem('nexus_refresh_token')).toBeNull();
       expect(localStorage.getItem('nexus_tenant_id')).toBe('2');
+      sessionStorage.removeItem('nexus_impersonation_active');
+      expect(tokenManager.getAccessToken()).toBe('admin-token');
     });
 
     it('keeps tenant context per-tab so the two tabs can be in different communities', () => {
@@ -205,10 +226,25 @@ describe('tokenManager', () => {
     });
   });
 
-  describe('refresh token', () => {
-    it('stores and retrieves refresh token', () => {
-      tokenManager.setRefreshToken('refresh-token');
-      expect(tokenManager.getRefreshToken()).toBe('refresh-token');
+  describe('browser session binding', () => {
+    it('never persists either credential when adopting a browser session', () => {
+      const generation = tokenManager.adoptSession('access-secret', 'refresh-secret', '2', TEST_SESSION_BINDING);
+      expect(generation).not.toBeNull();
+      expect(tokenManager.getAccessToken()).toBe('access-secret');
+      expect(tokenManager.getRefreshToken()).toBeNull();
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
+      for (const store of [localStorage, sessionStorage]) {
+        const values = Array.from({ length: store.length }, (_, index) => store.getItem(store.key(index)!));
+        expect(values.join(' ')).not.toContain('access-secret');
+        expect(values.join(' ')).not.toContain('refresh-secret');
+      }
+    });
+
+    it('never exposes a refresh token to script', () => {
+      tokenManager.setAccessToken('access-token');
+      setTestBinding('refresh-token');
+      expect(tokenManager.getRefreshToken()).toBeNull();
+      expect(localStorage.getItem('nexus_refresh_token')).toBeNull();
     });
 
     it('returns null when no refresh token exists', () => {
@@ -216,7 +252,8 @@ describe('tokenManager', () => {
     });
 
     it('hasRefreshToken returns true when token exists', () => {
-      tokenManager.setRefreshToken('refresh-token');
+      tokenManager.setAccessToken('access-token');
+      setTestBinding('refresh-token');
       expect(tokenManager.hasRefreshToken()).toBe(true);
     });
 
@@ -264,7 +301,7 @@ describe('tokenManager', () => {
   describe('clearTokens', () => {
     it('clears access and refresh tokens', () => {
       tokenManager.setAccessToken('access');
-      tokenManager.setRefreshToken('refresh');
+      setTestBinding('refresh');
       tokenManager.clearTokens();
 
       expect(tokenManager.getAccessToken()).toBeNull();
@@ -281,7 +318,7 @@ describe('tokenManager', () => {
   describe('clearAll', () => {
     it('clears all stored data including tenant ID', () => {
       tokenManager.setAccessToken('access');
-      tokenManager.setRefreshToken('refresh');
+      setTestBinding('refresh');
       tokenManager.setTenantId('123');
       tokenManager.clearAll();
 
@@ -289,6 +326,25 @@ describe('tokenManager', () => {
       expect(tokenManager.getRefreshToken()).toBeNull();
       // Tenant ID returns null or environment default after clear
     });
+  });
+
+  it('removes readable credentials left by an older browser bundle on startup', async () => {
+    localStorage.setItem('nexus_access_token', 'legacy-access');
+    localStorage.setItem('nexus_refresh_token', 'legacy-refresh');
+    localStorage.setItem('nexus_auth_session:old-generation', JSON.stringify({
+      accessToken: 'legacy-record-access', refreshToken: 'legacy-record-refresh', tenantId: '2',
+    }));
+    sessionStorage.setItem('nexus_auth_session:impersonated', JSON.stringify({
+      accessToken: 'legacy-impersonation-access', refreshToken: null, tenantId: '2',
+    }));
+
+    vi.resetModules();
+    const fresh = await import('./api');
+    expect(fresh.tokenManager.getAccessToken()).toBeNull();
+    for (const store of [localStorage, sessionStorage]) {
+      const values = Array.from({ length: store.length }, (_, index) => store.getItem(store.key(index)!));
+      expect(values.join(' ')).not.toContain('legacy-');
+    }
   });
 });
 
@@ -302,12 +358,15 @@ describe('API Client', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     vi.resetModules();
     vi.stubGlobal('fetch', vi.fn());
 
     // Re-import to get fresh instance
     const module = await import('./api');
     api = module.api;
+    tokenManager = module.tokenManager;
+    ApiClient = module.ApiClient;
   });
 
   afterEach(() => {
@@ -376,7 +435,7 @@ describe('API Client', () => {
     // deserves to be told why they were signed out, not "session expired".
     it('ends the session with a two-factor reason on 401 AUTH_MFA_REQUIRED, without trying a refresh', async () => {
       tokenManager.setAccessToken('old-session');
-      tokenManager.setRefreshToken('old-refresh');
+      setTestBinding('old-refresh');
       const reasons: unknown[] = [];
       const listener = (event: Event) => reasons.push((event as CustomEvent).detail?.reason);
       window.addEventListener('nexus:session_expired', listener);
@@ -550,13 +609,13 @@ describe('API Client', () => {
       vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
       tokenManager.setTenantId('2');
       tokenManager.setAccessToken('account-a-access');
-      tokenManager.setRefreshToken('account-a-refresh');
+      setTestBinding('account-a-refresh');
       localStorage.setItem('nexus_auth_session_generation', 'account-a');
       const pending = api.upload('/v2/files', new File(['private'], 'private.txt'), 'file', {
         onUploadProgress: vi.fn(),
       });
 
-      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      adoptTestSession('account-b-access', 'account-b-refresh', '2');
       FakeXMLHttpRequest.instances[0]?.respond(401, { error: 'Unauthorized' });
 
       await expect(pending).resolves.toEqual({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
@@ -581,7 +640,7 @@ describe('API Client', () => {
 
     it('stops fetch upload after one refresh when the retry remains unauthorized', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -593,7 +652,7 @@ describe('API Client', () => {
           ok: true,
           status: 200,
           headers: new Headers(),
-          json: () => Promise.resolve({ success: true, access_token: 'new-token' }),
+          json: () => Promise.resolve({ success: true, access_token: 'new-token', session_binding: TEST_SESSION_BINDING }),
         } as Response)
         .mockResolvedValueOnce({
           ok: false,
@@ -640,12 +699,12 @@ describe('API Client', () => {
 
       vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         status: 200,
         headers: new Headers(),
-        json: () => Promise.resolve({ success: true, access_token: 'new-token' }),
+        json: () => Promise.resolve({ success: true, access_token: 'new-token', session_binding: TEST_SESSION_BINDING }),
       } as Response);
 
       const responsePromise = api.upload(
@@ -693,7 +752,7 @@ describe('API Client', () => {
 
     it('stops after one refresh when the retried download remains unauthorized', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -704,7 +763,7 @@ describe('API Client', () => {
           ok: true,
           status: 200,
           headers: new Headers(),
-          json: () => Promise.resolve({ success: true, access_token: 'new-token' }),
+          json: () => Promise.resolve({ success: true, access_token: 'new-token', session_binding: TEST_SESSION_BINDING }),
         } as Response)
         .mockResolvedValueOnce({
           ok: false,
@@ -866,9 +925,28 @@ describe('API Client', () => {
   });
 
   describe('401 handling and token refresh', () => {
+    it('sends no refresh credential in the browser request body and rejects a different cookie family', async () => {
+      adoptTestSession('old-access', null, '2');
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true, status: 200, headers: new Headers(),
+        json: () => Promise.resolve({ success: true, access_token: 'other-account-access',
+          session_binding: 'different-family' }),
+      } as Response);
+
+      const outcome = await api.refreshSession();
+      const request = vi.mocked(fetch).mock.calls[0]?.[1];
+      expect(request?.body).toBe('{}');
+      expect(request?.credentials).toBe('include');
+      expect(new Headers(request?.headers).get('X-Nexus-Session-Binding')).toBe(TEST_SESSION_BINDING);
+      expect(outcome).toBe('invalid');
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(localStorage.getItem('nexus_access_token')).toBeNull();
+      expect(localStorage.getItem('nexus_refresh_token')).toBeNull();
+    });
+
     it('attempts token refresh on 401', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
 
       // First call returns 401
       vi.mocked(fetch)
@@ -886,7 +964,7 @@ describe('API Client', () => {
           json: () =>
             Promise.resolve({
               success: true,
-              access_token: 'new-token',
+              access_token: 'new-token', session_binding: TEST_SESSION_BINDING,
               refresh_token: 'new-refresh-token',
             }),
         } as Response)
@@ -907,7 +985,7 @@ describe('API Client', () => {
     it('uses one Web Locks refresh for two separate ApiClient requests', async () => {
       const webLocks = installQueuedWebLocks();
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       const tokenWriteSpy = vi.spyOn(Storage.prototype, 'setItem');
       let refreshCalls = 0;
 
@@ -922,7 +1000,7 @@ describe('API Client', () => {
               headers: new Headers(),
               json: () => Promise.resolve({
                 success: true,
-                access_token: 'rotated-access-token',
+                access_token: 'rotated-access-token', session_binding: TEST_SESSION_BINDING,
                 refresh_token: 'rotated-refresh-token',
               }),
             } as Response;
@@ -959,10 +1037,9 @@ describe('API Client', () => {
         expect(webLocks.request).toHaveBeenCalledTimes(2);
 
         const tokenWrites = tokenWriteSpy.mock.calls.map(([key]) => key);
-        const refreshWrite = tokenWrites.indexOf('nexus_refresh_token');
-        const accessWrite = tokenWrites.indexOf('nexus_access_token');
-        expect(refreshWrite).toBeGreaterThanOrEqual(0);
-        expect(accessWrite).toBeGreaterThan(refreshWrite);
+        expect(tokenWrites).not.toContain('nexus_refresh_token');
+        expect(tokenWrites).not.toContain('nexus_access_token');
+        expect(tokenManager.getAccessToken()).toBe('rotated-access-token');
       } finally {
         tokenWriteSpy.mockRestore();
         webLocks.restore();
@@ -972,7 +1049,7 @@ describe('API Client', () => {
     it('never retries an in-flight tenant A request with tenant B credentials', async () => {
       tokenManager.setTenantId('tenant-a');
       tokenManager.setAccessToken('tenant-a-access');
-      tokenManager.setRefreshToken('tenant-a-refresh');
+      setTestBinding('tenant-a-refresh');
       let resolveOriginalRequest: ((response: Response) => void) | undefined;
 
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
@@ -984,7 +1061,7 @@ describe('API Client', () => {
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
 
       tokenManager.setTenantId('tenant-b');
-      tokenManager.setRefreshToken('tenant-b-refresh');
+      setTestBinding('tenant-b-refresh');
       tokenManager.setAccessToken('tenant-b-access');
       resolveOriginalRequest?.({
         ok: false,
@@ -1000,11 +1077,11 @@ describe('API Client', () => {
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(tokenManager.getTenantId()).toBe('tenant-b');
       expect(tokenManager.getAccessToken()).toBe('tenant-b-access');
-      expect(tokenManager.getRefreshToken()).toBe('tenant-b-refresh');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
     });
 
     it('never retries an in-flight account A mutation with account B credentials in the same tenant', async () => {
-      tokenManager.adoptSession('account-a-access', 'account-a-refresh', 'tenant-a');
+      adoptTestSession('account-a-access', 'account-a-refresh', 'tenant-a');
       let resolveOriginalRequest: ((response: Response) => void) | undefined;
 
       vi.mocked(fetch)
@@ -1017,7 +1094,7 @@ describe('API Client', () => {
           headers: new Headers(),
           json: () => Promise.resolve({
             success: true,
-            access_token: 'account-b-rotated-access',
+            access_token: 'account-b-rotated-access', session_binding: TEST_SESSION_BINDING,
             refresh_token: 'account-b-rotated-refresh',
           }),
         } as Response)
@@ -1036,7 +1113,7 @@ describe('API Client', () => {
       });
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
 
-      tokenManager.adoptSession('account-b-access', 'account-b-refresh', 'tenant-a');
+      adoptTestSession('account-b-access', 'account-b-refresh', 'tenant-a');
       resolveOriginalRequest?.({
         ok: false,
         status: 401,
@@ -1050,11 +1127,11 @@ describe('API Client', () => {
       });
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(tokenManager.getAccessToken()).toBe('account-b-access');
-      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
     });
 
     it('discards a successful account A response after a same-tenant account switch', async () => {
-      tokenManager.adoptSession('account-a-access', null, 'tenant-a');
+      adoptTestSession('account-a-access', null, 'tenant-a');
       let resolveOriginalRequest: ((response: Response) => void) | undefined;
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
         resolveOriginalRequest = resolve;
@@ -1062,7 +1139,7 @@ describe('API Client', () => {
 
       const inFlight = api.get('/v2/messages/private');
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
-      tokenManager.adoptSession('account-b-access', null, 'tenant-a');
+      adoptTestSession('account-b-access', null, 'tenant-a');
       resolveOriginalRequest?.({
         ok: true,
         status: 200,
@@ -1078,7 +1155,7 @@ describe('API Client', () => {
       const webLocks = installQueuedWebLocks();
       vi.useFakeTimers();
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       let refreshCalls = 0;
       let completeRefresh: ((response: Response) => void) | undefined;
 
@@ -1114,7 +1191,7 @@ describe('API Client', () => {
           headers: new Headers(),
           json: () => Promise.resolve({
             success: true,
-            access_token: 'rotated-access-token',
+            access_token: 'rotated-access-token', session_binding: TEST_SESSION_BINDING,
             refresh_token: 'rotated-refresh-token',
           }),
         } as Response);
@@ -1134,9 +1211,10 @@ describe('API Client', () => {
     it('does not let a delayed refresh response resurrect a logged-out session', async () => {
       const webLocks = installQueuedWebLocks();
       tokenManager.setAccessToken('old-access-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       let completeRefresh: ((response: Response) => void) | undefined;
       let logoutBody: string | undefined;
+      let logoutBinding: string | null = null;
 
       try {
         vi.mocked(fetch).mockImplementation((input, init) => {
@@ -1148,6 +1226,7 @@ describe('API Client', () => {
           }
           if (url.endsWith('/auth/logout')) {
             logoutBody = typeof init?.body === 'string' ? init.body : undefined;
+            logoutBinding = new Headers(init?.headers).get('X-Nexus-Session-Binding');
             return Promise.resolve({
               ok: true,
               status: 200,
@@ -1171,14 +1250,15 @@ describe('API Client', () => {
           headers: new Headers(),
           json: () => Promise.resolve({
             success: true,
-            access_token: 'delayed-access-token',
+            access_token: 'delayed-access-token', session_binding: TEST_SESSION_BINDING,
             refresh_token: 'delayed-refresh-token',
           }),
         } as Response);
 
         await expect(refresh).resolves.toBe('transient');
         await expect(logout).resolves.toMatchObject({ success: true });
-        expect(JSON.parse(logoutBody ?? '{}')).toEqual({ refresh_token: 'old-refresh-token' });
+        expect(JSON.parse(logoutBody ?? '{}')).toEqual({});
+        expect(logoutBinding).toBe(TEST_SESSION_BINDING);
         expect(tokenManager.getAccessToken()).toBeNull();
         expect(tokenManager.getRefreshToken()).toBeNull();
         expect(localStorage.getItem('nexus_logout_in_progress')).toBeNull();
@@ -1189,7 +1269,7 @@ describe('API Client', () => {
     });
 
     it('does not let a delayed account A logout clear a newly adopted account B session', async () => {
-      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      adoptTestSession('account-a-access', 'account-a-refresh', '2');
       const accountAGeneration = tokenManager.getSessionGeneration();
       let resolveLogout: ((response: Response) => void) | undefined;
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
@@ -1200,7 +1280,7 @@ describe('API Client', () => {
       const logout = client.logoutSession('account-a-refresh', accountAGeneration);
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
 
-      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      adoptTestSession('account-b-access', 'account-b-refresh', '2');
       const accountBGeneration = tokenManager.getSessionGeneration();
       resolveLogout?.({
         ok: true,
@@ -1211,28 +1291,27 @@ describe('API Client', () => {
 
       await expect(logout).resolves.toMatchObject({ success: false, code: 'AUTH_CONTEXT_CHANGED' });
       expect(tokenManager.getAccessToken()).toBe('account-b-access');
-      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       expect(tokenManager.getTenantId()).toBe('2');
       expect(tokenManager.getSessionGeneration()).toBe(accountBGeneration);
     });
 
     it('cannot delete account B when B is adopted at the exact account A deletion boundary', async () => {
-      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      adoptTestSession('account-a-access', 'account-a-refresh', '2');
       const accountAGeneration = tokenManager.getSessionGeneration();
-      const accountARecordKey = tokenManager.getSessionRecordKey();
       let resolveLogout: ((response: Response) => void) | undefined;
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
         resolveLogout = resolve;
       }));
 
-      const nativeRemoveItem = Storage.prototype.removeItem;
+      const originalClearSession = tokenManager.clearSession.bind(tokenManager);
       let switched = false;
-      const removeSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (this: Storage, key: string) {
-        if (!switched && key === accountARecordKey) {
+      const clearSpy = vi.spyOn(tokenManager, 'clearSession').mockImplementation((generation) => {
+        if (!switched && generation === accountAGeneration) {
           switched = true;
-          tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+          adoptTestSession('account-b-access', 'account-b-refresh', '2');
         }
-        nativeRemoveItem.call(this, key);
+        originalClearSession(generation);
       });
 
       try {
@@ -1249,14 +1328,14 @@ describe('API Client', () => {
         await expect(logout).resolves.toMatchObject({ success: true });
         expect(switched).toBe(true);
         expect(tokenManager.getAccessToken()).toBe('account-b-access');
-        expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+        expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       } finally {
-        removeSpy.mockRestore();
+        clearSpy.mockRestore();
       }
     });
 
     it('does not let an account A refresh overwrite a newly installed account B session', async () => {
-      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
+      adoptTestSession('account-a-access', 'account-a-refresh', '2');
       let resolveRefresh: ((response: Response) => void) | undefined;
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
         resolveRefresh = resolve;
@@ -1266,39 +1345,38 @@ describe('API Client', () => {
       const refresh = client.refreshSession();
       await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
 
-      tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+      adoptTestSession('account-b-access', 'account-b-refresh', '2');
       resolveRefresh?.({
         ok: true,
         status: 200,
         headers: new Headers(),
         json: () => Promise.resolve({
           success: true,
-          access_token: 'stale-account-a-access',
+          access_token: 'stale-account-a-access', session_binding: TEST_SESSION_BINDING,
           refresh_token: 'stale-account-a-refresh',
         }),
       } as Response);
 
       await expect(refresh).resolves.toBe('context_changed');
       expect(tokenManager.getAccessToken()).toBe('account-b-access');
-      expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
     });
 
     it('writes a delayed account A refresh only to A when B adopts at the write boundary', async () => {
-      tokenManager.adoptSession('account-a-access', 'account-a-refresh', '2');
-      const accountARecordKey = tokenManager.getSessionRecordKey();
+      adoptTestSession('account-a-access', 'account-a-refresh', '2');
       let resolveRefresh!: (response: Response) => void;
       vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => {
         resolveRefresh = resolve;
       }));
 
-      const nativeSetItem = Storage.prototype.setItem;
+      const originalUpdate = tokenManager.updateSessionTokens.bind(tokenManager);
       let switched = false;
-      const setSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
-        if (!switched && key === accountARecordKey && value.includes('stale-account-a-access')) {
+      const updateSpy = vi.spyOn(tokenManager, 'updateSessionTokens').mockImplementation((generation, access, refresh) => {
+        if (!switched && access === 'stale-account-a-access') {
           switched = true;
-          tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
+          adoptTestSession('account-b-access', 'account-b-refresh', '2');
         }
-        nativeSetItem.call(this, key, value);
+        originalUpdate(generation, access, refresh);
       });
 
       try {
@@ -1311,7 +1389,7 @@ describe('API Client', () => {
           headers: new Headers(),
           json: () => Promise.resolve({
             success: true,
-            access_token: 'stale-account-a-access',
+            access_token: 'stale-account-a-access', session_binding: TEST_SESSION_BINDING,
             refresh_token: 'stale-account-a-refresh',
           }),
         } as Response);
@@ -1319,10 +1397,10 @@ describe('API Client', () => {
         await expect(refresh).resolves.toBe('context_changed');
         expect(switched).toBe(true);
         expect(tokenManager.getAccessToken()).toBe('account-b-access');
-        expect(tokenManager.getRefreshToken()).toBe('account-b-refresh');
-        expect(localStorage.getItem(accountARecordKey!)).toBeNull();
+        expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
+        expect(localStorage.getItem('nexus_access_token')).toBeNull();
       } finally {
-        setSpy.mockRestore();
+        updateSpy.mockRestore();
       }
     });
 
@@ -1330,7 +1408,7 @@ describe('API Client', () => {
       const webLocks = installQueuedWebLocks();
       tokenManager.setTenantId('tenant-a');
       tokenManager.setAccessToken('tenant-a-access');
-      tokenManager.setRefreshToken('tenant-a-refresh');
+      setTestBinding('tenant-a-refresh');
       let releaseHeldLock = (): void => undefined;
 
       try {
@@ -1348,7 +1426,7 @@ describe('API Client', () => {
         await vi.waitFor(() => expect(webLocks.request).toHaveBeenCalledTimes(2));
 
         tokenManager.setTenantId('tenant-b');
-        tokenManager.setRefreshToken('tenant-b-refresh');
+        setTestBinding('tenant-b-refresh');
         tokenManager.setAccessToken('tenant-b-access');
         releaseHeldLock();
 
@@ -1356,7 +1434,7 @@ describe('API Client', () => {
         await expect(queuedRefresh).resolves.toBe('transient');
         expect(fetch).not.toHaveBeenCalled();
         expect(tokenManager.getAccessToken()).toBe('tenant-b-access');
-        expect(tokenManager.getRefreshToken()).toBe('tenant-b-refresh');
+        expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       } finally {
         releaseHeldLock();
         webLocks.restore();
@@ -1365,7 +1443,7 @@ describe('API Client', () => {
 
     it('preserves credentials for an explicitly superseded refresh conflict', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -1386,14 +1464,14 @@ describe('API Client', () => {
 
       expect(response).toEqual({ success: false, code: 'AUTH_REFRESH_UNAVAILABLE' });
       expect(tokenManager.getAccessToken()).toBe('old-token');
-      expect(tokenManager.getRefreshToken()).toBe('old-refresh-token');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     it('does not let a queued Web Lock owner retry a superseded refresh token', async () => {
       const webLocks = installQueuedWebLocks();
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       let refreshCalls = 0;
 
       try {
@@ -1419,7 +1497,7 @@ describe('API Client', () => {
         expect(outcomes).toEqual(['transient', 'transient']);
         expect(refreshCalls).toBe(1);
         expect(tokenManager.getAccessToken()).toBe('old-token');
-        expect(tokenManager.getRefreshToken()).toBe('old-refresh-token');
+        expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
         expect(webLocks.request).toHaveBeenCalledTimes(2);
       } finally {
         webLocks.restore();
@@ -1428,7 +1506,7 @@ describe('API Client', () => {
 
     it('treats an unrelated refresh conflict as an invalid credential', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('old-refresh-token');
+      setTestBinding('old-refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -1458,7 +1536,7 @@ describe('API Client', () => {
       window.addEventListener(SESSION_EXPIRED_EVENT, eventHandler);
 
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
 
       // First call returns 401
       vi.mocked(fetch)
@@ -1502,7 +1580,7 @@ describe('API Client', () => {
       ['abort-like transport failure', new DOMException('Aborted', 'AbortError')],
     ])('preserves credentials when token refresh has a transient %s', async (_label, failure) => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -1516,13 +1594,13 @@ describe('API Client', () => {
 
       expect(response).toEqual({ success: false, code: 'AUTH_REFRESH_UNAVAILABLE' });
       expect(tokenManager.getAccessToken()).toBe('old-token');
-      expect(tokenManager.getRefreshToken()).toBe('refresh-token');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     it('preserves credentials when the refresh endpoint returns 5xx', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -1541,13 +1619,13 @@ describe('API Client', () => {
 
       expect(response.code).toBe('AUTH_REFRESH_UNAVAILABLE');
       expect(tokenManager.getAccessToken()).toBe('old-token');
-      expect(tokenManager.getRefreshToken()).toBe('refresh-token');
+      expect(tokenManager.getSessionBinding()).toBe(TEST_SESSION_BINDING);
       expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     it('expires after one refresh when the retried standard request is still 401', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: false,
@@ -1559,7 +1637,7 @@ describe('API Client', () => {
           ok: true,
           status: 200,
           headers: new Headers(),
-          json: () => Promise.resolve({ success: true, access_token: 'new-token' }),
+          json: () => Promise.resolve({ success: true, access_token: 'new-token', session_binding: TEST_SESSION_BINDING }),
         } as Response)
         .mockResolvedValueOnce({
           ok: false,
@@ -1576,9 +1654,9 @@ describe('API Client', () => {
       expect(tokenManager.getRefreshToken()).toBeNull();
     });
 
-    it('observes a cross-tab refresh that completes during lock handoff without waiting', async () => {
+    it('refreshes through the cookie when another tab releases the fallback lock during handoff', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       localStorage.setItem('nexus_token_refresh_lock', String(Date.now()));
 
       const originalGetItem = Storage.prototype.getItem;
@@ -1587,6 +1665,8 @@ describe('API Client', () => {
         const value = originalGetItem.call(this, key);
         if (key === 'nexus_token_refresh_lock' && !raced) {
           raced = true;
+          // A stale bundle may still write a readable token. This client must
+          // ignore it and obtain its own access token from the cookie route.
           localStorage.setItem('nexus_access_token', 'other-tab-token');
           localStorage.removeItem('nexus_token_refresh_lock');
         }
@@ -1604,6 +1684,13 @@ describe('API Client', () => {
           ok: true,
           status: 200,
           headers: new Headers(),
+          json: () => Promise.resolve({ success: true, access_token: 'cookie-refreshed-token',
+            session_binding: TEST_SESSION_BINDING }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
           json: () => Promise.resolve({ data: { id: 1 } }),
         } as Response);
 
@@ -1611,14 +1698,14 @@ describe('API Client', () => {
 
       getItemSpy.mockRestore();
       expect(response.success).toBe(true);
-      expect(fetch).toHaveBeenCalledTimes(2);
-      const retryHeaders = vi.mocked(fetch).mock.calls[1]?.[1]?.headers as Headers;
-      expect(retryHeaders.get('Authorization')).toBe('Bearer other-tab-token');
+      expect(fetch).toHaveBeenCalledTimes(3);
+      const retryHeaders = vi.mocked(fetch).mock.calls[2]?.[1]?.headers as Headers;
+      expect(retryHeaders.get('Authorization')).toBe('Bearer cookie-refreshed-token');
     });
 
-    it('resumes immediately when a refreshing tab publishes a new token storage event', async () => {
+    it('resumes on lock release and ignores another tab’s readable-token storage event', async () => {
       tokenManager.setAccessToken('old-token');
-      tokenManager.setRefreshToken('refresh-token');
+      setTestBinding('refresh-token');
       localStorage.setItem('nexus_token_refresh_lock', String(Date.now()));
       vi.mocked(fetch)
         .mockResolvedValueOnce({
@@ -1626,6 +1713,13 @@ describe('API Client', () => {
           status: 401,
           headers: new Headers(),
           json: () => Promise.resolve({ error: 'Unauthorized' }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ success: true, access_token: 'cookie-refreshed-token',
+            session_binding: TEST_SESSION_BINDING }),
         } as Response)
         .mockResolvedValueOnce({
           ok: true,
@@ -1649,12 +1743,17 @@ describe('API Client', () => {
         newValue: 'published-token',
         storageArea: localStorage,
       }));
+      localStorage.removeItem('nexus_token_refresh_lock');
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'nexus_token_refresh_lock', oldValue: String(Date.now()),
+        newValue: null, storageArea: localStorage,
+      }));
 
       const response = await responsePromise;
       expect(response.success).toBe(true);
-      expect(fetch).toHaveBeenCalledTimes(2);
-      const retryHeaders = vi.mocked(fetch).mock.calls[1]?.[1]?.headers as Headers;
-      expect(retryHeaders.get('Authorization')).toBe('Bearer published-token');
+      expect(fetch).toHaveBeenCalledTimes(3);
+      const retryHeaders = vi.mocked(fetch).mock.calls[2]?.[1]?.headers as Headers;
+      expect(retryHeaders.get('Authorization')).toBe('Bearer cookie-refreshed-token');
     });
   });
 

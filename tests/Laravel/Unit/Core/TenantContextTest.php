@@ -9,10 +9,51 @@ namespace Tests\Laravel\Unit\Core;
 use App\Core\TenantContext;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Models\Tenant;
 
 class TenantContextTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public function test_custom_domain_api_can_select_only_its_active_direct_child(): void
+    {
+        $domain = 'browser-api-' . bin2hex(random_bytes(5)) . '.example.test';
+        $parent = Tenant::factory()->create(['domain' => $domain, 'is_active' => true]);
+        $child = Tenant::factory()->create([
+            'domain' => null, 'parent_id' => $parent->id, 'is_active' => true,
+        ]);
+        $unrelated = Tenant::factory()->create(['domain' => null, 'is_active' => true]);
+        $previous = [
+            $_SERVER['HTTP_HOST'] ?? null,
+            $_SERVER['REQUEST_URI'] ?? null,
+            $_SERVER['HTTP_X_TENANT_ID'] ?? null,
+        ];
+
+        try {
+            $_SERVER['HTTP_HOST'] = $domain;
+            $_SERVER['REQUEST_URI'] = '/api/v2/tenant/bootstrap';
+            $_SERVER['HTTP_X_TENANT_ID'] = (string) $child->id;
+            TenantContext::reset();
+            TenantContext::resolve();
+            $this->assertSame((int) $child->id, TenantContext::getId());
+
+            $_SERVER['HTTP_X_TENANT_ID'] = (string) $unrelated->id;
+            TenantContext::reset();
+            TenantContext::resolve();
+            $this->assertSame((int) $parent->id, TenantContext::getId());
+
+            unset($_SERVER['HTTP_X_TENANT_ID']);
+            TenantContext::reset();
+            TenantContext::resolve();
+            $this->assertSame((int) $parent->id, TenantContext::getId());
+        } finally {
+            foreach (['HTTP_HOST', 'REQUEST_URI', 'HTTP_X_TENANT_ID'] as $index => $key) {
+                if ($previous[$index] === null) unset($_SERVER[$key]);
+                else $_SERVER[$key] = $previous[$index];
+            }
+            TenantContext::reset();
+        }
+    }
 
     // -------------------------------------------------------
     // get() / getId()
