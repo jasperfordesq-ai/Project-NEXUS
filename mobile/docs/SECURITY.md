@@ -1,6 +1,6 @@
 # Project NEXUS Mobile — Security Guide
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-09-25
 
 This document describes the mobile app's security posture, identifies known gaps, and provides implementation guidance for hardening.
 
@@ -23,7 +23,7 @@ This document describes the mobile app's security posture, identifies known gaps
 
 ### Known gaps / future hardening
 
-- iOS uses ATS HTTPS enforcement but does not yet enforce strict SHA-256 certificate pinning (see Section 2)
+- iOS certificate pinning is configured (ATS `NSPinnedDomains`, Section 2, Step 5) but has not yet been proven on a signed iOS build; no iOS build has shipped
 - Play Integrity / App Attest server-backed attestation is not yet implemented (see Section 3)
 - Extend schema validation beyond auth forms where native forms accept high-risk input
 
@@ -50,7 +50,7 @@ only a JavaScript host/configuration helper; Android enforcement is native and
 does not depend on a runtime JS interceptor. The generated `mobile/android/`
 directory is gitignored and is not the source of truth.
 
-iOS currently relies on App Transport Security (ATS) HTTPS enforcement. Strict iOS SHA-256 certificate pinning still requires TrustKit or a similar native module in a prebuild/bare workflow.
+iOS pins the same host with the same two CA pins, declaratively through App Transport Security (`NSPinnedDomains` in `app.json` → `ios.infoPlist`); no TrustKit or native module is needed. See Step 5 below.
 
 ### How to maintain Android pinning
 
@@ -158,12 +158,23 @@ contains the exact `api.project-nexus.ie` domain plus SHA-256 pins. CI's
 addition to `npm run verify:release`, mobile type-check/tests, and
 `expo-doctor`.
 
-**Step 5 - iOS ATS (App Transport Security):**
+**Step 5 - iOS pinning (ATS `NSPinnedDomains`):**
 
-iOS enforces HTTPS by default via ATS. To add certificate pinning on iOS you need a bare workflow or a custom native module. For managed workflow, ATS ensures HTTPS but cannot pin specific certificates. Options:
+iOS pins `api.project-nexus.ie` declaratively through App Transport Security:
+`app.json` → `expo.ios.infoPlist.NSAppTransportSecurity.NSPinnedDomains`, which Expo
+writes into `Info.plist`. No native module is needed (iOS 14+; the deployment target
+is 15.1). It uses the **same two CA pins as Android** (`NSPinnedCAIdentities`: the
+GTS WE1 intermediate and the GTS Root R4), never the 90-day leaf, and does not extend
+to subdomains.
 
-- Use `react-native-ssl-pinning` (requires bare/prebuild workflow)
-- Or rely on ATS + your CA chain for managed workflow
+- 🔴 **iOS has no fail-open expiry** equivalent to Android's `pin-set expiration`. A
+  wrong pin cuts that build off from the API until a new store build ships, and an
+  over-the-air update cannot change it (it is baked into the binary). So
+  `npm run verify:release` fails unless the iOS host and pin list are identical to
+  `android-network-security-config.xml`. Rotate both files together.
+- Before the first iOS release, prove it on a signed build: sign-in works on Wi-Fi and
+  mobile data, and a proxy with a user-installed root (Charles, mitmproxy) is refused
+  for `api.project-nexus.ie`.
 
 **Important — pin rotation:**
 

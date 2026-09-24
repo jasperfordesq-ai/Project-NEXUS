@@ -11,8 +11,10 @@
  *   The OS rejects any TLS connection whose certificate chain does not match the pins
  *   declared in that file — no JS code is needed at runtime on Android.
  *
- * iOS: NOT pinned. ATS enforces HTTPS and ordinary CA validation only, so
- *   "pinning" is true for Android alone. See docs/SECURITY.md, Section 2.
+ * iOS: Enforced declaratively by ATS `NSPinnedDomains` (app.json → ios.infoPlist),
+ *   with the SAME two CA pins as Android; no native module. iOS has no fail-open
+ *   expiry, so `npm run verify:release` requires the two pin lists to be identical.
+ *   See docs/SECURITY.md, Section 2.
  *
  * This module exports the expected pin configuration so the set of pinned hosts is
  * declared in one place and can be referenced consistently across the codebase

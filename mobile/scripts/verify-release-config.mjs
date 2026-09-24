@@ -156,6 +156,21 @@ assert(!network.includes('trustkit-config'), 'Android config contains an unsuppo
 assert((network.match(/<pin digest="SHA-256">/g) ?? []).length >= 2, 'certificate pin set needs primary and backup pins');
 const expiry = network.match(/<pin-set expiration="([0-9-]+)"/)?.[1];
 assert(Boolean(expiry) && Date.parse(expiry) > Date.now() + 90 * 86400_000, 'certificate pins must remain valid for at least 90 days');
+
+// iOS pins the same host with the same CA identities, through ATS NSPinnedDomains
+// (no native module). Unlike Android's pin-set there is NO fail-open expiry on iOS,
+// so the two lists must never drift: a pin Android has dropped would still be the
+// only thing iOS accepts. Keep them identical, and pins on CAs (never the leaf).
+const androidPins = [...network.matchAll(/<pin digest="SHA-256">([^<]+)<\/pin>/g)].map((m) => m[1].trim()).sort();
+const androidHosts = [...network.matchAll(/<domain[^>]*>([^<]+)<\/domain>/g)].map((m) => m[1].trim()).sort();
+const iosPinned = app.ios?.infoPlist?.NSAppTransportSecurity?.NSPinnedDomains ?? {};
+assert(JSON.stringify(Object.keys(iosPinned).sort()) === JSON.stringify(androidHosts), 'iOS NSPinnedDomains must pin exactly the hosts Android pins');
+for (const [host, rule] of Object.entries(iosPinned)) {
+  const iosPins = (rule?.NSPinnedCAIdentities ?? []).map((entry) => String(entry?.['SPKI-SHA256-BASE64'] ?? '').trim()).sort();
+  assert(JSON.stringify(iosPins) === JSON.stringify(androidPins), `iOS pins for ${host} must equal the Android pin set`);
+  assert(rule?.NSIncludesSubdomains === false, `iOS pinning for ${host} must not extend to subdomains (Android does not)`);
+  assert(!('NSPinnedLeafIdentities' in (rule ?? {})), `iOS must not pin the 90-day leaf certificate for ${host}`);
+}
 assert(app.android?.intentFilters?.every((filter) => filter.data?.every((entry) => entry.scheme === 'nexus' || (entry.scheme === 'https' && entry.host === 'app.project-nexus.ie'))), 'Android app links must allow only the trusted host or nexus scheme');
 
 /**

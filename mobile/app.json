@@ -173,7 +173,18 @@
         "NSPhotoLibraryUsageDescription": "Choose photos and videos from your library for your profile picture, posts, listings, events, groups, marketplace items and organisation logo.",
         "NSMicrophoneUsageDescription": "Record a voice message when you choose to send one.",
         "CFBundleAllowMixedLocalizations": true,
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": ["audio"],
+        "NSAppTransportSecurity": {
+          "NSPinnedDomains": {
+            "api.project-nexus.ie": {
+              "NSIncludesSubdomains": false,
+              "NSPinnedCAIdentities": [
+                { "SPKI-SHA256-BASE64": "kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=" },
+                { "SPKI-SHA256-BASE64": "mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=" }
+              ]
+            }
+          }
+        }
       }
     },
     "android": {
