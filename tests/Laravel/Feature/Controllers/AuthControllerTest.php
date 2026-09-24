@@ -641,7 +641,8 @@ class AuthControllerTest extends TestCase
         $this->apiPost('/auth/refresh-token', ['refresh_token' => $refresh], $headers)
             ->assertStatus(400);
 
-        $response = $this->withCookie(BrowserRefreshCookie::cookieName($binding), $refresh)
+        $response = $this->withCredentials()->disableCookieEncryption()
+            ->withCookie(BrowserRefreshCookie::cookieName($binding), $refresh)
             ->apiPost('/auth/refresh-token', ['refresh_token' => 'body-is-ignored'], $headers)
             ->assertOk()
             ->assertJsonPath('session_binding', $binding);
@@ -659,7 +660,8 @@ class AuthControllerTest extends TestCase
         $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
         $wrongBinding = hash('sha256', 'different-family');
 
-        $this->withCookie(BrowserRefreshCookie::cookieName($wrongBinding), $refresh)
+        $this->withCredentials()->disableCookieEncryption()
+            ->withCookie(BrowserRefreshCookie::cookieName($wrongBinding), $refresh)
             ->apiPost('/auth/refresh-token', [], [
                 'Origin' => 'http://localhost',
                 'X-Nexus-Session-Binding' => $wrongBinding,

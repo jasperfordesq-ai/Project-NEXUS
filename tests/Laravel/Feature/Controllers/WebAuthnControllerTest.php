@@ -423,10 +423,11 @@ class WebAuthnControllerTest extends TestCase
 
         // A same-origin request on the other allowed domain reaches WebAuthn,
         // where the challenge must still reject the changed ceremony origin.
-        $this->apiPost('/webauthn/auth-verify', $payload, [
-            'Origin' => 'https://accessible.example.test',
-            'Host' => 'accessible.example.test',
-        ])
+        $this->postJson(
+            'https://accessible.example.test/api/webauthn/auth-verify',
+            $payload,
+            $this->withTenantHeader(['Origin' => 'https://accessible.example.test'])
+        )
             ->assertStatus(401)
             ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
     }
