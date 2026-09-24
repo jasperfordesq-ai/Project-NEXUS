@@ -873,7 +873,12 @@ describe('AuthContext', () => {
       mockAuthenticateWithBiometric.mockResolvedValue({
         success: true,
         data: {
-          user: { id: 1, name: 'Jane' },
+          user: {
+            id: 1,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            email: 'jane@example.com',
+          },
           access_token: 'bio-access',
           refresh_token: 'bio-refresh',
           expires_in: 3600,
@@ -903,7 +908,12 @@ describe('AuthContext', () => {
       mockAuthenticateWithBiometric.mockResolvedValue({
         success: true,
         data: {
-          user: { id: 1, name: 'Account A' },
+          user: {
+            id: 1,
+            first_name: 'Account',
+            last_name: 'A',
+            email: 'account-a@example.com',
+          },
           access_token: 'account-a-access',
           refresh_token: 'account-a-refresh',
           expires_in: 3600,

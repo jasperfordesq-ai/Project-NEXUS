@@ -1227,7 +1227,7 @@ describe('API Client', () => {
 
       const nativeRemoveItem = Storage.prototype.removeItem;
       let switched = false;
-      const removeSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (key: string) {
+      const removeSpy = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(function (this: Storage, key: string) {
         if (!switched && key === accountARecordKey) {
           switched = true;
           tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');
@@ -1293,7 +1293,7 @@ describe('API Client', () => {
 
       const nativeSetItem = Storage.prototype.setItem;
       let switched = false;
-      const setSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (key: string, value: string) {
+      const setSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
         if (!switched && key === accountARecordKey && value.includes('stale-account-a-access')) {
           switched = true;
           tokenManager.adoptSession('account-b-access', 'account-b-refresh', '2');

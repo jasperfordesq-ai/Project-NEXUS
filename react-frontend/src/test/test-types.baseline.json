@@ -1190,9 +1190,6 @@
     "src/contexts/PusherContext.test.tsx": {
       "TS2571": 1
     },
-    "src/contexts/__tests__/AuthContext.test.tsx": {
-      "TS2353": 1
-    },
     "src/contexts/__tests__/NotificationsContext.test.tsx": {
       "TS2578": 1,
       "TS2722": 2
@@ -1303,9 +1300,6 @@
     },
     "src/pages/auth/LoginPage.test.tsx": {
       "TS2769": 1
-    },
-    "src/pages/auth/OauthCallbackPage.test.tsx": {
-      "TS2345": 2
     },
     "src/pages/auth/RegisterPage.test.tsx": {
       "TS2322": 2
@@ -1946,7 +1940,7 @@
     }
   },
   "totals": {
-    "fileCount": 575,
-    "errorCount": 1755
+    "fileCount": 573,
+    "errorCount": 1752
   }
 }
