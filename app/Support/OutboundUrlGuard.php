@@ -244,10 +244,72 @@ final class OutboundUrlGuard
 
     private static function isPublicIp(string $ip): bool
     {
+        // An IPv6 literal can embed an IPv4 address — IPv4-mapped
+        // (::ffff:127.0.0.1 / ::ffff:7f00:1), IPv4-compatible (::127.0.0.1) or
+        // NAT64 (64:ff9b::7f00:1). filter_var does not decode these, so a mapped
+        // loopback/private/metadata address would otherwise read as a public
+        // IPv6 address (SSRF). Re-validate the embedded IPv4 as the effective
+        // target and refuse when it is not itself public.
+        if (str_contains($ip, ':')) {
+            $embedded = self::embeddedIpv4($ip);
+            if ($embedded !== null && !self::isPublicIp($embedded)) {
+                return false;
+            }
+        }
+
         return filter_var(
             $ip,
             FILTER_VALIDATE_IP,
             FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
         ) !== false;
+    }
+
+    /**
+     * Extract the embedded IPv4 address from an IPv4-mapped, IPv4-compatible or
+     * NAT64 well-known-prefix IPv6 literal. Returns null for any other IPv6
+     * address (a genuine global address is never in ::/96 or 64:ff9b::/96).
+     */
+    private static function embeddedIpv4(string $ip): ?string
+    {
+        // Drop any zone identifier (e.g. fe80::1%eth0) before decoding.
+        $zone = strpos($ip, '%');
+        $bare = $zone === false ? $ip : substr($ip, 0, $zone);
+
+        $packed = @inet_pton($bare);
+        if ($packed === false || strlen($packed) !== 16) {
+            return null;
+        }
+
+        /** @var array<int,int> $bytes */
+        $bytes = array_values(unpack('C16', $packed) ?: []);
+        if (count($bytes) !== 16) {
+            return null;
+        }
+
+        $highBytesZero = static function (int $count) use ($bytes): bool {
+            for ($i = 0; $i < $count; $i++) {
+                if ($bytes[$i] !== 0) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        // ::ffff:a.b.c.d — IPv4-mapped.
+        $isMapped = $highBytesZero(10) && $bytes[10] === 0xff && $bytes[11] === 0xff;
+        // ::a.b.c.d — IPv4-compatible (deprecated); also covers ::/96 low addresses.
+        $isCompatible = $highBytesZero(12);
+        // 64:ff9b::a.b.c.d — NAT64 well-known prefix (RFC 6052).
+        $isNat64 = $bytes[0] === 0x00 && $bytes[1] === 0x64
+            && $bytes[2] === 0xff && $bytes[3] === 0x9b
+            && $bytes[4] === 0 && $bytes[5] === 0 && $bytes[6] === 0 && $bytes[7] === 0
+            && $bytes[8] === 0 && $bytes[9] === 0 && $bytes[10] === 0 && $bytes[11] === 0;
+
+        if ($isMapped || $isCompatible || $isNat64) {
+            return sprintf('%d.%d.%d.%d', $bytes[12], $bytes[13], $bytes[14], $bytes[15]);
+        }
+
+        return null;
     }
 }

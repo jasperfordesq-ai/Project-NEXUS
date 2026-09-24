@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,7 +27,15 @@ class PushNotificationService
     public function subscribe(int $userId, array $subscription): bool
     {
         $endpoint = $subscription['endpoint'] ?? '';
-        if (empty($endpoint)) {
+        if (!is_string($endpoint) || $endpoint === '') {
+            return false;
+        }
+
+        // A push endpoint is a server-side callback target: the platform POSTs to
+        // it when delivering notifications. Reject anything that is not an HTTPS
+        // URL for a recognised web-push provider so a stored endpoint cannot point
+        // at an internal/loopback address (SSRF).
+        if (!self::isAcceptablePushEndpoint($endpoint)) {
             return false;
         }
 
@@ -61,6 +70,70 @@ class PushNotificationService
         ]);
 
         return true;
+    }
+
+    /**
+     * Exact-match hosts for recognised web-push service providers.
+     *
+     * @var list<string>
+     */
+    private const ALLOWED_PUSH_HOSTS = [
+        'fcm.googleapis.com',                    // Chrome / Chromium / Android (FCM)
+        'updates.push.services.mozilla.com',     // Firefox (Mozilla autopush)
+        'web.push.apple.com',                    // Safari / Apple web push
+    ];
+
+    /**
+     * Suffix-match hosts for providers that use regional/tenant subdomains.
+     *
+     * @var list<string>
+     */
+    private const ALLOWED_PUSH_HOST_SUFFIXES = [
+        '.notify.windows.com',            // Windows Notification Service (Edge)
+        '.push.services.mozilla.com',     // Mozilla autopush regional hosts
+    ];
+
+    /**
+     * Whether an endpoint is a safe, recognised web-push delivery target.
+     *
+     * Enforces HTTPS, rejects loopback/private/reserved literals (including
+     * IPv4-mapped IPv6 forms via OutboundUrlGuard) and restricts the host to a
+     * known push provider. Does not resolve DNS — this runs on the request path,
+     * and the provider allowlist already guarantees a real external target.
+     */
+    public static function isAcceptablePushEndpoint(string $endpoint): bool
+    {
+        $endpoint = trim($endpoint);
+        if ($endpoint === '' || strlen($endpoint) > 2048) {
+            return false;
+        }
+
+        // Structural safety: HTTP(S) scheme, no local names, no private/loopback
+        // (or IPv4-mapped IPv6) literals.
+        if (!OutboundUrlGuard::isSafeBrowserUrl($endpoint)) {
+            return false;
+        }
+
+        $parts = parse_url($endpoint);
+        if (!is_array($parts) || strtolower((string) ($parts['scheme'] ?? '')) !== 'https') {
+            return false;
+        }
+
+        $host = strtolower(trim((string) ($parts['host'] ?? ''), '[]'));
+        if ($host === '') {
+            return false;
+        }
+
+        if (in_array($host, self::ALLOWED_PUSH_HOSTS, true)) {
+            return true;
+        }
+        foreach (self::ALLOWED_PUSH_HOST_SUFFIXES as $suffix) {
+            if (str_ends_with($host, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

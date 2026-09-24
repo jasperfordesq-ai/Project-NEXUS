@@ -491,6 +491,9 @@ final class GroupWebhookService
         $response = Http::connectTimeout(3)
             ->timeout(5)
             ->withOptions(OutboundUrlGuard::httpClientOptions($url, requireHttps: true))
+            // Do not eagerly buffer the whole body; responseExcerpt() reads only a
+            // bounded prefix, so a hostile endpoint cannot exhaust worker memory.
+            ->withOptions(['stream' => true])
             ->withHeaders($headers)
             ->withBody($encodedBody, 'application/json')
             ->post($url);
@@ -721,7 +724,27 @@ final class GroupWebhookService
 
     private static function responseExcerpt(Response $response): ?string
     {
-        $body = trim($response->body());
+        // Read only a bounded prefix of the body. A hostile endpoint could return
+        // an arbitrarily large response, and $response->body() would buffer all of
+        // it into the worker's memory just to keep a 1,000-char excerpt. A UTF-8
+        // character is at most 4 bytes, so reading RESPONSE_EXCERPT_LENGTH * 4
+        // bytes is always enough to fill the excerpt after trimming/substr.
+        $maxBytes = self::RESPONSE_EXCERPT_LENGTH * 4;
+        $stream = $response->toPsrResponse()->getBody();
+        if ($stream->isSeekable()) {
+            $stream->rewind();
+        }
+
+        $raw = '';
+        while (strlen($raw) < $maxBytes && !$stream->eof()) {
+            $chunk = $stream->read($maxBytes - strlen($raw));
+            if ($chunk === '') {
+                break;
+            }
+            $raw .= $chunk;
+        }
+
+        $body = trim($raw);
         if ($body === '') {
             return null;
         }

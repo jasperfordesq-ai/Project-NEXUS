@@ -139,6 +139,22 @@ class GuardianConsentService
             throw new \InvalidArgumentException(__('api.guardian_consent_not_required'));
         }
 
+        // F-160: the guardian must be someone other than the minor themselves.
+        // A minor naming their own account email would self-approve the consent.
+        // The events consent path already refuses this; mirror it here. This
+        // closes the own-email case; it does NOT prove the address belongs to a
+        // real, distinct adult (aliases / a second mailbox remain possible) —
+        // that requires a staff-verification step, which is an owner decision.
+        $minorEmail = (string) DB::table('users')
+            ->where('id', $minorUserId)
+            ->where('tenant_id', $tenantId)
+            ->value('email');
+        if ($minorEmail !== ''
+            && strtolower(trim($minorEmail)) === strtolower(trim((string) $guardianData['guardian_email']))
+        ) {
+            throw new \InvalidArgumentException(__('api.guardian_email_invalid'));
+        }
+
         // Generate consent token
         $consentToken = bin2hex(random_bytes(32));
 

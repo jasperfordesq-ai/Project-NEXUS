@@ -132,23 +132,58 @@ class FCMPushService
     /**
      * Register a device token for push notifications.
      *
-     * Uses INSERT ... ON DUPLICATE KEY UPDATE for idempotency (token column has unique index).
+     * The `token` column is unique platform-wide (one row per app install). A
+     * device that is handed to a new person legitimately re-registers the same
+     * token, so re-pointing it to another user within the SAME tenant is allowed.
+     * A token already bound to a DIFFERENT tenant is never silently reassigned —
+     * that would let a leaked token be captured across communities and redirect
+     * (or deny) the original owner's notifications (F-197). Cross-tenant
+     * re-registration is refused rather than repointed.
      */
     public function registerDevice(int $userId, string $token, string $platform = 'android'): bool
     {
         try {
             $tenantId = TenantContext::getId();
 
-            DB::statement(
-                'INSERT INTO fcm_device_tokens (user_id, tenant_id, token, platform, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, NOW(), NOW())
-                 ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), tenant_id = VALUES(tenant_id),
-                                         platform = VALUES(platform), updated_at = NOW()',
-                [$userId, $tenantId, $token, $platform]
-            );
+            $existing = DB::table('fcm_device_tokens')
+                ->where('token', $token)
+                ->first(['id', 'user_id', 'tenant_id']);
+
+            if ($existing !== null) {
+                if ((int) $existing->tenant_id !== (int) $tenantId) {
+                    Log::warning('FCMPushService::registerDevice cross-tenant reassignment refused', [
+                        'requesting_tenant' => (int) $tenantId,
+                        'existing_tenant' => (int) $existing->tenant_id,
+                    ]);
+                    return false;
+                }
+
+                DB::table('fcm_device_tokens')
+                    ->where('id', (int) $existing->id)
+                    ->update([
+                        'user_id' => $userId,
+                        'tenant_id' => $tenantId,
+                        'platform' => $platform,
+                        'updated_at' => now(),
+                    ]);
+
+                return true;
+            }
+
+            DB::table('fcm_device_tokens')->insert([
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'token' => $token,
+                'platform' => $platform,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             return true;
         } catch (\Throwable $e) {
+            // A concurrent insert can still race the unique index between the
+            // read and the write above; the unique key keeps the row single and
+            // the failure is reported rather than silently overwriting an owner.
             Log::error('FCMPushService::registerDevice failed', [
                 'user_id' => $userId,
                 'error' => $e->getMessage(),

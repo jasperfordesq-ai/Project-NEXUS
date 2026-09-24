@@ -503,9 +503,17 @@ class FCMPushServiceTest extends TestCase
     // registerDevice()
     // =========================================================================
 
-    public function test_registerDevice_returns_true_on_success(): void
+    public function test_registerDevice_inserts_a_new_unclaimed_token(): void
     {
-        DB::shouldReceive('statement')->once()->andReturn(true);
+        $lookup = \Mockery::mock();
+        $lookup->shouldReceive('where')->with('token', 'token123')->once()->andReturnSelf();
+        $lookup->shouldReceive('first')->once()->andReturn(null);
+
+        $insertQuery = \Mockery::mock();
+        $insertQuery->shouldReceive('insert')->once()->andReturn(true);
+
+        DB::shouldReceive('table')->with('fcm_device_tokens')->twice()
+            ->andReturn($lookup, $insertQuery);
 
         $result = $this->service->registerDevice(1, 'token123', 'ios');
         $this->assertTrue($result);
@@ -513,7 +521,10 @@ class FCMPushServiceTest extends TestCase
 
     public function test_registerDevice_returns_false_on_exception(): void
     {
-        DB::shouldReceive('statement')->andThrow(new \Exception('DB error'));
+        $lookup = \Mockery::mock();
+        $lookup->shouldReceive('where')->with('token', 'token123')->once()->andReturnSelf();
+        $lookup->shouldReceive('first')->once()->andThrow(new \Exception('DB error'));
+        DB::shouldReceive('table')->with('fcm_device_tokens')->once()->andReturn($lookup);
         Log::shouldReceive('error')->once();
 
         $result = $this->service->registerDevice(1, 'token123');

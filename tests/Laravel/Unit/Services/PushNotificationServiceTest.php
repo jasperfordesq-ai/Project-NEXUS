@@ -36,7 +36,7 @@ class PushNotificationServiceTest extends TestCase
         DB::shouldReceive('table->where->where->update')->once();
 
         $result = $this->service->subscribe(1, [
-            'endpoint' => 'https://push.example.com/abc',
+            'endpoint' => 'https://fcm.googleapis.com/fcm/send/abc',
             'keys' => ['p256dh' => 'key1', 'auth' => 'auth1'],
         ]);
         $this->assertTrue($result);
@@ -48,7 +48,7 @@ class PushNotificationServiceTest extends TestCase
         DB::shouldReceive('table->insert')->once();
 
         $result = $this->service->subscribe(1, [
-            'endpoint' => 'https://push.example.com/new',
+            'endpoint' => 'https://updates.push.services.mozilla.com/wpush/v2/new',
             'keys' => ['p256dh' => 'key2', 'auth' => 'auth2'],
         ]);
         $this->assertTrue($result);

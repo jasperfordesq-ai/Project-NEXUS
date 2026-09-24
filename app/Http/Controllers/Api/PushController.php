@@ -39,6 +39,11 @@ class PushController extends BaseApiController
         $userId = $this->requireAuth();
         $data = $this->getAllInput();
 
+        $endpoint = $data['endpoint'] ?? '';
+        if (!is_string($endpoint) || !PushNotificationService::isAcceptablePushEndpoint($endpoint)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'endpoint', 422);
+        }
+
         $result = $this->pushService->subscribe($userId, $data);
 
         return $this->respondWithData(['subscribed' => $result], null, 201);
