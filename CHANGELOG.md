@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The Swiss AI consent notice now appears only after sign-in, when its consent choices can be saved, and dismissing it applies only to the current member and community.
+
 - Prepare Android 1.8.0 (build 18) for Internal testing: the organiser Safety screen, the iPhone lock, photo, date and location fixes, and the reconnect and large-text fixes from the mobile finish work.
 
 - In the mobile app, if location access has been refused for good (always the case on an iPhone after one refusal), the Listings "Near me" filter and the nearby marketplace map now offer an "Open settings" button, so the member can turn location back on. Before, they only saw a message with no way forward.
