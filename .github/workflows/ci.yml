@@ -1859,6 +1859,21 @@ jobs:
           # Isolate the disposable CI cache between stages so the per-user
           # five-attempt production throttle remains enforced within each run.
           docker compose -f compose.ci.yml exec -T app php artisan cache:clear
+          # WebKit will not send a Secure __Host- cookie to an HTTP localhost
+          # origin. Exercise the same cookie contract through local HTTPS.
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout "$RUNNER_TEMP/nexus-e2e-tls.key" \
+            -out "$RUNNER_TEMP/nexus-e2e-tls.crt" \
+            -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost' >/dev/null 2>&1
+          node e2e/scripts/ci-https-proxy.mjs \
+            "$RUNNER_TEMP/nexus-e2e-tls.key" "$RUNNER_TEMP/nexus-e2e-tls.crt" &
+          proxy_pid=$!
+          trap 'kill "$proxy_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            curl --insecure --fail --silent https://localhost:3443/health >/dev/null && break
+            sleep 1
+          done
+          curl --insecure --fail --silent https://localhost:3443/health >/dev/null
           # Same specs, Safari's engine. BLOCKING: a Mac user reported the app
           # misbehaving and there was no check that could have caught it, because
           # the only WebKit project lived in a secret-gated job that is skipped
@@ -1873,8 +1888,8 @@ jobs:
             exit 1
           }
         env:
-          E2E_BASE_URL: http://localhost:3000
-          E2E_API_URL: http://localhost:3000
+          E2E_BASE_URL: https://localhost:3443
+          E2E_API_URL: https://localhost:3443
           E2E_USER_EMAIL: e2e-member@example.test
           E2E_USER_PASSWORD: password
           E2E_ADMIN_EMAIL: e2e-admin@example.test
