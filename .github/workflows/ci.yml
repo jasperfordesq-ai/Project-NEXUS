@@ -1849,6 +1849,10 @@ jobs:
 
       - name: Run Playwright Smoke Tests (WebKit / Safari engine)
         run: |
+          # The synthetic admin signs in with MFA in each browser invocation.
+          # Isolate the disposable CI cache between stages so the per-user
+          # five-attempt production throttle remains enforced within each run.
+          docker compose -f compose.ci.yml exec -T app php artisan cache:clear
           # Same specs, Safari's engine. BLOCKING: a Mac user reported the app
           # misbehaving and there was no check that could have caught it, because
           # the only WebKit project lived in a secret-gated job that is skipped
@@ -1874,6 +1878,7 @@ jobs:
 
       - name: Run Destructive Events Enterprise Journey
         run: |
+          docker compose -f compose.ci.yml exec -T app php artisan cache:clear
           npm run test:events:e2e:enterprise || {
             echo "::group::App container logs"
             docker compose -f compose.ci.yml logs --no-color app || true
@@ -1902,6 +1907,7 @@ jobs:
 
       - name: Run Real-Browser Accessibility Gate
         run: |
+          docker compose -f compose.ci.yml exec -T app php artisan cache:clear
           npx playwright test e2e/tests/accessibility-audit.spec.ts --project=accessibility || {
             echo "::group::App container logs"
             docker compose -f compose.ci.yml logs --no-color app || true
@@ -1939,7 +1945,9 @@ jobs:
           CI: true
 
       - name: Verify Editor Bundle Isolation
-        run: npm run test:e2e:editor-isolation
+        run: |
+          docker compose -f compose.ci.yml exec -T app php artisan cache:clear
+          npm run test:e2e:editor-isolation
         env:
           E2E_BASE_URL: http://localhost:3000
           E2E_API_URL: http://localhost:3000
