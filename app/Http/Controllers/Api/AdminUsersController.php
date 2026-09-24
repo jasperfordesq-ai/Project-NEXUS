@@ -1013,9 +1013,22 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
 
-        $lockedUser = DB::transaction(function () use ($adminId, $id, $tenantId): ?array {
+        // F-169: reactivating a BANNED account overturns an explicit exclusion, so it
+        // must be an admin-rank decision. A broker/coordinator can still lift an
+        // ordinary suspension (its prior behaviour) but not reverse a ban set by an
+        // admin. Checked here for a fast, specific refusal and again under the lock
+        // below so a concurrent ban cannot be undone in the same instant.
+        $callerIsAdmin = $this->callerIsAdminTier();
+        if (($user['status'] ?? '') === 'banned' && !$callerIsAdmin) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+
+        $lockedUser = DB::transaction(function () use ($adminId, $id, $tenantId, $callerIsAdmin): ?array {
             $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
             if ($target === null) {
+                return null;
+            }
+            if (($target['status'] ?? '') === 'banned' && !$callerIsAdmin) {
                 return null;
             }
             DB::update("UPDATE users SET status = 'active', is_approved = 1 WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);

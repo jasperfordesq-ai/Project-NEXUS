@@ -299,7 +299,7 @@ class AdminEnterpriseController extends BaseApiController
             $total = (int)(DB::selectOne("SELECT COUNT(*) as cnt FROM gdpr_requests gr WHERE $where", $params)->cnt ?? 0);
             $fetchParams = array_merge($params, [$perPage, $offset]);
             $requests = array_map(fn($r) => (array)$r, DB::select(
-                "SELECT gr.*, gr.request_type as type, u.name as user_name, u.email as user_email FROM gdpr_requests gr LEFT JOIN users u ON u.id = gr.user_id WHERE $where ORDER BY gr.created_at DESC LIMIT ? OFFSET ?",
+                "SELECT gr.*, gr.request_type as type, u.name as user_name, u.email as user_email FROM gdpr_requests gr LEFT JOIN users u ON u.id = gr.user_id AND u.tenant_id = gr.tenant_id WHERE $where ORDER BY gr.created_at DESC LIMIT ? OFFSET ?",
                 $fetchParams
             ));
             return $this->respondWithPaginatedCollection($requests, $total, $page, $perPage);
@@ -1157,8 +1157,8 @@ class AdminEnterpriseController extends BaseApiController
                 "SELECT gr.*, gr.request_type as type, u.name as user_name, u.email as user_email,
                         au.name as assigned_to_name
                  FROM gdpr_requests gr
-                 LEFT JOIN users u ON u.id = gr.user_id
-                 LEFT JOIN users au ON au.id = gr.assigned_to
+                 LEFT JOIN users u ON u.id = gr.user_id AND u.tenant_id = gr.tenant_id
+                 LEFT JOIN users au ON au.id = gr.assigned_to AND au.tenant_id = gr.tenant_id
                  WHERE gr.id = ? AND gr.tenant_id = ?",
                 [$id, $tenantId]
             );
@@ -1219,6 +1219,16 @@ class AdminEnterpriseController extends BaseApiController
         $validTypes = ['access', 'erasure', 'portability', 'rectification', 'restriction', 'objection'];
         if (!in_array($type, $validTypes, true)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.invalid_request_type', ['types' => implode(', ', $validTypes)]), 'type', 422);
+        }
+
+        // F-155: the subject of a GDPR request must belong to the caller's own
+        // community. Without this a community admin could raise a request against
+        // any account platform-wide and then read back its name and email via
+        // showGdprRequest()/gdprRequests(). The subject id is a member, so scope
+        // it to the tenant exactly as the erasure/export paths already do.
+        $subject = DB::selectOne("SELECT id FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
+        if (!$subject) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.user_not_found'), 'user_id', 422);
         }
 
         try {

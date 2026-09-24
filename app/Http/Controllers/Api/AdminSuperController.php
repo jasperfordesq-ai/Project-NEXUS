@@ -689,6 +689,61 @@ class AdminSuperController extends BaseApiController
             }
         }
 
+        // F-172: is_active, max_depth and allows_subtenants are hierarchy-structural
+        // controls. The dedicated deactivate endpoint (tenantDelete) guards them with
+        // canManageTenant() plus an active-children / master check — but a plain
+        // tenantUpdate only checked canAccessTenant() above, which (unlike
+        // canManageTenant) admits the caller's OWN tenant. Without this a regional
+        // super-admin could deactivate its own root (locking its whole community out),
+        // deactivate a parent that still has active children, or widen its own subtree
+        // limits — all of which the delete path refuses. Re-apply those guards here,
+        // but only when a value actually CHANGES so a full-object PUT that merely
+        // echoes the current structural values back still works.
+        $current = DB::table('tenants')
+            ->where('id', $id)
+            ->first(['is_active', 'max_depth', 'allows_subtenants']);
+        if ($current) {
+            $deactivating = array_key_exists('is_active', $input)
+                && (int) (bool) $input['is_active'] === 0
+                && (int) (bool) $current->is_active === 1;
+            $structuralChange = (array_key_exists('max_depth', $input)
+                    && (int) $input['max_depth'] !== (int) $current->max_depth)
+                || (array_key_exists('allows_subtenants', $input)
+                    && (int) (bool) $input['allows_subtenants'] !== (int) (bool) $current->allows_subtenants);
+
+            if (($deactivating || $structuralChange) && !SuperPanelAccess::canManageTenant($id)) {
+                return $this->respondWithError(
+                    ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED,
+                    __('api.super_no_access_tenant'),
+                    null,
+                    403
+                );
+            }
+
+            if ($deactivating) {
+                if ($id === 1) {
+                    return $this->respondWithError(
+                        ApiErrorCodes::VALIDATION_ERROR,
+                        __('api.super_delete_master_forbidden'),
+                        null,
+                        422
+                    );
+                }
+                $activeChildren = (int) DB::table('tenants')
+                    ->where('parent_id', $id)
+                    ->where('is_active', 1)
+                    ->count();
+                if ($activeChildren > 0) {
+                    return $this->respondWithError(
+                        ApiErrorCodes::VALIDATION_ERROR,
+                        __('api.super_delete_has_children'),
+                        null,
+                        422
+                    );
+                }
+            }
+        }
+
         $result = $this->tenantHierarchyService->updateTenant($id, $input);
 
         if ($result['success']) {
@@ -1423,8 +1478,19 @@ class AdminSuperController extends BaseApiController
             );
         }
 
-        $tokenService = app(\App\Services\TokenService::class);
-        $token = $tokenService->generateImpersonationToken($id, $targetTenantId, $adminId);
+        // F-168: impersonation must never let an actor borrow the authority of a
+        // same-rank or higher peer. The platform-super-admin/god block above stops
+        // the obvious case, but a REGIONAL super-admin could otherwise impersonate a
+        // peer tenant-super-admin (or another admin) inside its own subtree, because
+        // this endpoint checked only canAccessTenant() and not rank. Apply the same
+        // locked outrank check the community impersonation endpoint uses, evaluated
+        // against freshly locked rows so a concurrent promotion cannot slip a peer
+        // through. Impersonating a strictly-lower-tier member still works.
+        $token = DB::transaction(function () use ($adminId, $id, $targetTenantId): string {
+            $this->requireLockedManageableSecurityTarget($adminId, $id, $targetTenantId);
+            return app(\App\Services\TokenService::class)
+                ->generateImpersonationToken($id, $targetTenantId, $adminId);
+        });
 
         $tenantSlug = DB::table('tenants')->where('id', $targetTenantId)->value('slug');
 

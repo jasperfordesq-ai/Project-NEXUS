@@ -54,13 +54,23 @@ class RetentionPolicyService
      *                own where_in status guard. NULL timestamps never match.
      */
     public const DATA_TYPES = [
+        // 🔴 min_days (F-174): a per-type floor for accountability data. A plain
+        // tenant admin must not be able to shrink retention of audit, activity or
+        // safeguarding records to the global 30-day minimum — those windows exist for
+        // statutory/assurance reasons. upsertPolicy() enforces
+        // max(MIN_RETENTION_DAYS, min_days). The values are conservative defaults;
+        // the owner may adjust per the customer's own retention schedule.
         'activity_log' => [
             'table' => 'activity_log',
             'column' => 'created_at',
+            'default_days' => 365,
+            'min_days' => 365,
         ],
         'admin_audit_log' => [
             'table' => 'org_audit_log',
             'column' => 'created_at',
+            'default_days' => 2555,
+            'min_days' => 2555,
         ],
         'notifications' => [
             'table' => 'notifications',
@@ -85,6 +95,7 @@ class RetentionPolicyService
             'table' => 'vol_wellbeing_alerts',
             'column' => 'created_at',
             'default_days' => 730,
+            'min_days' => 730,
             'where_in' => ['status' => ['resolved', 'dismissed']],
         ],
         'vol_safeguarding_incidents' => [
@@ -94,6 +105,7 @@ class RetentionPolicyService
             'table' => 'vol_safeguarding_incidents',
             'column' => 'created_at',
             'default_days' => 2555,
+            'min_days' => 2555,
             'where_in' => ['status' => ['resolved', 'closed']],
         ],
         'vol_guardian_consents' => [
@@ -108,6 +120,7 @@ class RetentionPolicyService
             'table' => 'vol_guardian_consents',
             'column' => 'expires_at',
             'default_days' => 365,
+            'min_days' => 365,
             'or_windows' => [
                 ['column' => 'consent_withdrawn_at'],
                 ['column' => 'created_at', 'where_in' => ['status' => ['pending']]],
@@ -118,6 +131,17 @@ class RetentionPolicyService
         // retention policy cannot scope it correctly; every registered
         // type MUST be a tenant-scoped table (see enforcePolicy guard).
     ];
+
+    /**
+     * The minimum retention window allowed for a data type: the global floor,
+     * raised by the type's own min_days where one is declared (F-174).
+     */
+    public static function minRetentionDaysFor(string $dataType): int
+    {
+        $config = self::DATA_TYPES[$dataType] ?? [];
+
+        return max(self::MIN_RETENTION_DAYS, (int) ($config['min_days'] ?? 0));
+    }
 
     /**
      * All policies for a tenant, keyed by data type. Types without a row
@@ -141,6 +165,8 @@ class RetentionPolicyService
                 'retention_days' => $row ? (int) $row->retention_days : (int) ($config['default_days'] ?? 365),
                 'action' => $row ? (string) $row->action : 'delete',
                 'is_enabled' => $row ? (bool) $row->is_enabled : false,
+                // F-174: surface the per-type floor so the admin UI can enforce it too.
+                'min_days' => self::minRetentionDaysFor($type),
                 'updated_at' => $row->updated_at ?? null,
             ];
         }
@@ -166,9 +192,13 @@ class RetentionPolicyService
         if (!in_array($action, self::ACTIONS, true)) {
             return __('api.retention_unknown_action');
         }
-        if ($retentionDays < self::MIN_RETENTION_DAYS || $retentionDays > self::MAX_RETENTION_DAYS) {
+        // F-174: accountability data types carry a per-type floor above the global
+        // minimum. A plain admin cannot set audit/activity/safeguarding retention
+        // below it.
+        $minDays = self::minRetentionDaysFor($dataType);
+        if ($retentionDays < $minDays || $retentionDays > self::MAX_RETENTION_DAYS) {
             return __('api.retention_days_range', [
-                'min' => self::MIN_RETENTION_DAYS,
+                'min' => $minDays,
                 'max' => self::MAX_RETENTION_DAYS,
             ]);
         }

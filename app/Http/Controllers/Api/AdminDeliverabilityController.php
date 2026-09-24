@@ -158,8 +158,8 @@ class AdminDeliverabilityController extends BaseApiController
                     CONCAT(COALESCE(owner.first_name, ''), ' ', COALESCE(owner.last_name, '')) as owner_name,
                     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name
              FROM deliverables d
-             LEFT JOIN users owner ON d.owner_id = owner.id
-             LEFT JOIN users assignee ON d.assigned_to = assignee.id
+             LEFT JOIN users owner ON d.owner_id = owner.id AND owner.tenant_id = d.tenant_id
+             LEFT JOIN users assignee ON d.assigned_to = assignee.id AND assignee.tenant_id = d.tenant_id
              WHERE {$where}
              ORDER BY d.created_at DESC
              LIMIT ? OFFSET ?",
@@ -210,8 +210,8 @@ class AdminDeliverabilityController extends BaseApiController
                     CONCAT(COALESCE(owner.first_name, ''), ' ', COALESCE(owner.last_name, '')) as owner_name,
                     CONCAT(COALESCE(assignee.first_name, ''), ' ', COALESCE(assignee.last_name, '')) as assignee_name
              FROM deliverables d
-             LEFT JOIN users owner ON d.owner_id = owner.id
-             LEFT JOIN users assignee ON d.assigned_to = assignee.id
+             LEFT JOIN users owner ON d.owner_id = owner.id AND owner.tenant_id = d.tenant_id
+             LEFT JOIN users assignee ON d.assigned_to = assignee.id AND assignee.tenant_id = d.tenant_id
              WHERE d.id = ? AND d.tenant_id = ?",
             [$id, $tenantId]
         );
@@ -335,6 +335,20 @@ class AdminDeliverabilityController extends BaseApiController
         $priority = 'medium';
         if (isset($data['priority']) && in_array($data['priority'], self::VALID_PRIORITIES, true)) {
             $priority = $data['priority'];
+        }
+
+        // F-155: the assignee is echoed back by name in the list/detail views and
+        // is sent an in-app notification + push. Refuse an assignee outside the
+        // caller's community — otherwise a community admin could name any account
+        // platform-wide, read back its name, and fan a notification out to it.
+        if (isset($data['assigned_to']) && $data['assigned_to'] !== null && (int) $data['assigned_to'] !== 0) {
+            $assignee = DB::selectOne(
+                "SELECT id FROM users WHERE id = ? AND tenant_id = ?",
+                [(int) $data['assigned_to'], $tenantId]
+            );
+            if (!$assignee) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.user_not_found'), 'assigned_to', 422);
+            }
         }
 
         $tags = isset($data['tags']) ? json_encode($data['tags']) : '[]';
@@ -476,6 +490,17 @@ class AdminDeliverabilityController extends BaseApiController
         // Assignment
         if (array_key_exists('assigned_to', $data)) {
             $newAssignee = $data['assigned_to'] !== null ? (int) $data['assigned_to'] : null;
+            // F-155: same tenant guard as createDeliverable() — never assign to,
+            // disclose, or notify an account outside the caller's community.
+            if ($newAssignee !== null && $newAssignee !== 0) {
+                $assignee = DB::selectOne(
+                    "SELECT id FROM users WHERE id = ? AND tenant_id = ?",
+                    [$newAssignee, $tenantId]
+                );
+                if (!$assignee) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.user_not_found'), 'assigned_to', 422);
+                }
+            }
             $fields[] = 'assigned_to = ?';
             $params[] = $newAssignee;
 

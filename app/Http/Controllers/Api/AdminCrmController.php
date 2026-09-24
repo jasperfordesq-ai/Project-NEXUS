@@ -412,9 +412,9 @@ class AdminCrmController extends BaseApiController
             "SELECT ct.*, assigned.name as assigned_to_name, creator.name as created_by_name,
                     member.name as user_name, member.avatar_url as user_avatar
              FROM coordinator_tasks ct
-             LEFT JOIN users assigned ON assigned.id = ct.assigned_to
-             LEFT JOIN users creator ON creator.id = ct.created_by
-             LEFT JOIN users member ON member.id = ct.user_id
+             LEFT JOIN users assigned ON assigned.id = ct.assigned_to AND assigned.tenant_id = ct.tenant_id
+             LEFT JOIN users creator ON creator.id = ct.created_by AND creator.tenant_id = ct.tenant_id
+             LEFT JOIN users member ON member.id = ct.user_id AND member.tenant_id = ct.tenant_id
              WHERE {$where}
              ORDER BY
                 CASE ct.status WHEN 'pending' THEN 0 WHEN 'in_progress' THEN 1 WHEN 'completed' THEN 2 WHEN 'cancelled' THEN 3 END,
@@ -450,7 +450,18 @@ class AdminCrmController extends BaseApiController
         $validPriorities = ['low', 'medium', 'high', 'urgent'];
         $priority = in_array($this->input('priority', ''), $validPriorities, true) ? $this->input('priority') : 'medium';
 
+        // F-155: a task may reference a member (user_id) whose name/avatar is then
+        // returned in the task payload and the CSV export. Validate that member
+        // belongs to the caller's tenant — otherwise a community admin could name
+        // any account platform-wide and read back its display name. Mirrors the
+        // existing guard in createNote()/createTag().
         $userId = $this->input('user_id') ? (int) $this->input('user_id') : null;
+        if ($userId !== null) {
+            $member = DB::selectOne("SELECT id FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
+            if (!$member) {
+                return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+            }
+        }
         $dueDate = $this->input('due_date') ? trim($this->input('due_date')) : null;
         $description = $this->input('description') ? trim($this->input('description')) : null;
 
@@ -470,9 +481,9 @@ class AdminCrmController extends BaseApiController
             "SELECT ct.*, assigned.name as assigned_to_name, creator.name as created_by_name,
                     member.name as user_name, member.avatar_url as user_avatar
              FROM coordinator_tasks ct
-             LEFT JOIN users assigned ON assigned.id = ct.assigned_to
-             LEFT JOIN users creator ON creator.id = ct.created_by
-             LEFT JOIN users member ON member.id = ct.user_id
+             LEFT JOIN users assigned ON assigned.id = ct.assigned_to AND assigned.tenant_id = ct.tenant_id
+             LEFT JOIN users creator ON creator.id = ct.created_by AND creator.tenant_id = ct.tenant_id
+             LEFT JOIN users member ON member.id = ct.user_id AND member.tenant_id = ct.tenant_id
              WHERE ct.id = ? AND ct.tenant_id = ?",
             [$taskId, $tenantId]
         );
@@ -537,7 +548,16 @@ class AdminCrmController extends BaseApiController
 
         if (request()->has('user_id')) {
             $userIdInput = $this->input('user_id');
-            $updates[] = "user_id = ?"; $params[] = $userIdInput ? (int) $userIdInput : null;
+            $newUserId = $userIdInput ? (int) $userIdInput : null;
+            // F-155: same tenant guard as createTask() — never link a task to an
+            // account outside the caller's community.
+            if ($newUserId !== null) {
+                $member = DB::selectOne("SELECT id FROM users WHERE id = ? AND tenant_id = ?", [$newUserId, $tenantId]);
+                if (!$member) {
+                    return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+                }
+            }
+            $updates[] = "user_id = ?"; $params[] = $newUserId;
         }
 
         if (empty($updates)) {
@@ -552,9 +572,9 @@ class AdminCrmController extends BaseApiController
             "SELECT ct.*, assigned.name as assigned_to_name, creator.name as created_by_name,
                     member.name as user_name, member.avatar_url as user_avatar
              FROM coordinator_tasks ct
-             LEFT JOIN users assigned ON assigned.id = ct.assigned_to
-             LEFT JOIN users creator ON creator.id = ct.created_by
-             LEFT JOIN users member ON member.id = ct.user_id
+             LEFT JOIN users assigned ON assigned.id = ct.assigned_to AND assigned.tenant_id = ct.tenant_id
+             LEFT JOIN users creator ON creator.id = ct.created_by AND creator.tenant_id = ct.tenant_id
+             LEFT JOIN users member ON member.id = ct.user_id AND member.tenant_id = ct.tenant_id
              WHERE ct.id = ? AND ct.tenant_id = ?",
             [$id, $tenantId]
         );
@@ -911,9 +931,9 @@ class AdminCrmController extends BaseApiController
                     assigned.name as assigned_to_name, member.name as related_member,
                     ct.due_date, ct.completed_at, creator.name as created_by_name, ct.created_at
              FROM coordinator_tasks ct
-             LEFT JOIN users assigned ON assigned.id = ct.assigned_to
-             LEFT JOIN users creator ON creator.id = ct.created_by
-             LEFT JOIN users member ON member.id = ct.user_id
+             LEFT JOIN users assigned ON assigned.id = ct.assigned_to AND assigned.tenant_id = ct.tenant_id
+             LEFT JOIN users creator ON creator.id = ct.created_by AND creator.tenant_id = ct.tenant_id
+             LEFT JOIN users member ON member.id = ct.user_id AND member.tenant_id = ct.tenant_id
              WHERE ct.tenant_id = ? ORDER BY ct.created_at DESC",
             [$tenantId]
         );
