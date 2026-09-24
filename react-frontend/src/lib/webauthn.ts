@@ -317,7 +317,8 @@ export async function authenticateWithBiometric(
   data?: {
     user: { id: number; first_name: string; last_name: string; email: string };
     access_token: string;
-    refresh_token: string;
+    refresh_token?: string;
+    session_binding?: string;
     expires_in: number;
     security_confirmation_token?: string;
     security_confirmation_expires_in?: number;
@@ -397,7 +398,8 @@ export async function authenticateWithBiometric(
       success: boolean;
       user: { id: number; first_name: string; last_name: string; email: string };
       access_token: string;
-      refresh_token: string;
+      refresh_token?: string;
+      session_binding?: string;
       expires_in: number;
       security_confirmation_token?: string;
       security_confirmation_expires_in?: number;
@@ -465,7 +467,8 @@ export async function startConditionalAuthentication(
   data?: {
     user: { id: number; first_name: string; last_name: string; email: string };
     access_token: string;
-    refresh_token: string;
+    refresh_token?: string;
+    session_binding?: string;
     expires_in: number;
     security_confirmation_token?: string;
     security_confirmation_expires_in?: number;
@@ -538,7 +541,8 @@ export async function startConditionalAuthentication(
       success: boolean;
       user: { id: number; first_name: string; last_name: string; email: string };
       access_token: string;
-      refresh_token: string;
+      refresh_token?: string;
+      session_binding?: string;
       expires_in: number;
       security_confirmation_token?: string;
       security_confirmation_expires_in?: number;

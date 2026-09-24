@@ -208,6 +208,7 @@ export function LoginPage() {
           result.data.access_token,
           result.data.refresh_token,
           tenantId,
+          result.data.session_binding,
         );
         if (generation && tokenManager.getSessionGeneration() === generation) {
           window.location.href = from;

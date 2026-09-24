@@ -14,10 +14,10 @@ import {
   type Response,
   type TestInfo,
 } from '@playwright/test';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { CreateEventPage, EventDetailPage } from '../../page-objects/EventsPage';
+import { completeTwoFactorIfChallenged } from '../../helpers/two-factor';
 
 const TENANT = process.env.E2E_TENANT || 'hour-timebank';
 const FRONTEND_BASE_URL = (process.env.E2E_BASE_URL || 'http://localhost:5173').replace(/\/+$/, '');
@@ -59,10 +59,12 @@ function processAuthoritativeEventOutbox(): void {
 }
 
 interface ActorSession {
+  kind: 'user' | 'admin';
   id: number;
   name: string;
   token: string;
-  refreshToken?: string;
+  sessionBinding: string;
+  refreshCookie: Awaited<ReturnType<APIRequestContext['storageState']>>['cookies'][number];
   tenantId: number;
 }
 
@@ -141,6 +143,7 @@ interface BulkPeopleResult {
 
 let apiContext: APIRequestContext | undefined;
 let harness: EventsJourneyHarness | undefined;
+let lastAdminTotpCompletion = 0;
 
 test.describe.configure({ mode: 'serial', timeout: 90_000 });
 
@@ -194,34 +197,52 @@ function assertSafeFixtureTarget(): void {
   }
 }
 
-function loadStoredActor(kind: 'user' | 'admin'): ActorSession {
-  const statePath = path.resolve(__dirname, '..', '..', 'fixtures', '.auth', `${kind}.json`);
-  const state = JSON.parse(fs.readFileSync(statePath, 'utf8')) as {
-    origins?: Array<{ localStorage?: Array<{ name: string; value: string }> }>;
-  };
-  const values = new Map<string, string>();
-  for (const origin of state.origins ?? []) {
-    for (const item of origin.localStorage ?? []) values.set(item.name, item.value);
+async function loginActor(kind: 'user' | 'admin'): Promise<ActorSession> {
+  if (!apiContext) throw new Error('Events E2E API context is not initialized.');
+  if (kind === 'admin' && lastAdminTotpCompletion > 0) {
+    // These serial UI visits use one synthetic admin. A TOTP code cannot be
+    // replayed in the same 30-second step; an invalid retry also consumes the
+    // real five-attempt MFA limit. Wait for a fresh step before signing in again.
+    const waitMs = Math.max(0, 31_000 - (Date.now() - lastAdminTotpCompletion));
+    if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
   }
-
-  const token = values.get('nexus_access_token');
-  // Some login responses rely on the already-resolved tenant context and omit
-  // tenant_id. The E2E tenant id remains explicit in .env.test.
-  const tenantId = Number(values.get('nexus_tenant_id') ?? process.env.E2E_TENANT_ID);
-  if (!token || !Number.isSafeInteger(tenantId) || tenantId <= 0) {
-    throw new Error(
-      `Events E2E requires a valid ${kind} storage state. `
-      + 'Run Playwright setup with configured member and admin credentials.',
-    );
+  const email = process.env[kind === 'admin' ? 'E2E_ADMIN_EMAIL' : 'E2E_USER_EMAIL'];
+  const password = process.env[kind === 'admin' ? 'E2E_ADMIN_PASSWORD' : 'E2E_USER_PASSWORD'];
+  if (!email || !password) throw new Error(`Events E2E ${kind} credentials are missing.`);
+  const origin = new URL(FRONTEND_BASE_URL).origin;
+  const doLogin = () => apiContext!.post(`${origin}/api/auth/login`, {
+    data: { email, password, tenant_slug: TENANT },
+    headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': TENANT, Origin: origin },
+  });
+  let response = await doLogin();
+  for (let attempt = 0; attempt < 6 && response.status() === 429; attempt++) {
+    let retryAfter = 2;
+    try {
+      const parsed = Number((await response.json())?.retry_after);
+      if (Number.isFinite(parsed) && parsed > 0) retryAfter = parsed;
+    } catch { /* Use the default backoff for non-JSON responses. */ }
+    await new Promise((resolve) => setTimeout(resolve, Math.min(retryAfter, 10) * 1000 + 500));
+    response = await doLogin();
   }
-
-  return {
-    id: 0,
-    name: kind,
-    token,
-    refreshToken: values.get('nexus_refresh_token'),
-    tenantId,
-  };
+  if (!response.ok()) throw new Error(`Events E2E ${kind} browser login failed (${response.status()}).`);
+  const loginData = await completeTwoFactorIfChallenged(await response.json(), {
+    request: apiContext, apiBaseUrl: origin, tenantSlug: TENANT, email, origin,
+  });
+  if (kind === 'admin') lastAdminTotpCompletion = Date.now();
+  const token = loginData?.data?.access_token || loginData?.access_token;
+  const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
+  const tenantId = Number(loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+    || loginData?.data?.tenant_id || loginData?.tenant_id || process.env.E2E_TENANT_ID);
+  if (typeof token !== 'string' || typeof sessionBinding !== 'string'
+    || !/^[a-f0-9]{64}$/.test(sessionBinding)
+    || !Number.isSafeInteger(tenantId) || tenantId <= 0) {
+    throw new Error(`Events E2E ${kind} browser login returned an incomplete session.`);
+  }
+  const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;
+  const refreshCookie = (await apiContext.storageState()).cookies.find((cookie) =>
+    cookie.name === cookieName && cookie.httpOnly);
+  if (!refreshCookie) throw new Error(`Events E2E ${kind} browser login did not set an HttpOnly cookie.`);
+  return { kind, id: 0, name: kind, token, sessionBinding, refreshCookie, tenantId };
 }
 
 async function hydrateActor(actor: ActorSession, label: string): Promise<ActorSession> {
@@ -296,9 +317,17 @@ async function bridgeDockerAssetHost(page: Page): Promise<void> {
 
 async function useActor(page: Page, actor: ActorSession): Promise<void> {
   await bridgeDockerAssetHost(page);
-  await page.addInitScript(({ token, refreshToken, tenantId }) => {
-    localStorage.setItem('nexus_access_token', token);
-    if (refreshToken) localStorage.setItem('nexus_refresh_token', refreshToken);
+  // Each UI visit gets a fresh family; a prior page has already rotated the
+  // previous HttpOnly cookie while restoring its in-memory access token.
+  const browserSession = await loginActor(actor.kind);
+  await page.context().clearCookies();
+  await page.context().addCookies([browserSession.refreshCookie]);
+  const generation = randomUUID();
+  await page.addInitScript(({ sessionBinding, generation, tenantId }) => {
+    localStorage.removeItem('nexus_access_token');
+    localStorage.removeItem('nexus_refresh_token');
+    localStorage.setItem('nexus_auth_session_generation', generation);
+    localStorage.setItem(`nexus_auth_binding:${generation}`, sessionBinding);
     localStorage.setItem('nexus_tenant_id', String(tenantId));
     localStorage.setItem('dev_notice_dismissed', '2.1');
     localStorage.setItem('nexus_cookie_consent', JSON.stringify({
@@ -308,8 +337,8 @@ async function useActor(page: Page, actor: ActorSession): Promise<void> {
       timestamp: new Date().toISOString(),
     }));
   }, {
-    token: actor.token,
-    refreshToken: actor.refreshToken,
+    sessionBinding: browserSession.sessionBinding,
+    generation,
     tenantId: actor.tenantId,
   });
 }
@@ -442,8 +471,8 @@ test.beforeAll(async ({}, testInfo: TestInfo) => {
   const context = await playwrightRequest.newContext({ timeout: 30_000 });
   apiContext = context;
   try {
-    const participant = await hydrateActor(loadStoredActor('user'), 'member');
-    const admin = await hydrateActor(loadStoredActor('admin'), 'admin');
+    const participant = await hydrateActor(await loginActor('user'), 'member');
+    const admin = await hydrateActor(await loginActor('admin'), 'admin');
     const rosterMember = await resolveRosterMember(participant, admin);
     harness = { participant, admin, rosterMember };
   } catch (error) {

@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Browser sign-in now keeps the 15-minute access credential in memory and the rotating refresh credential in a secure, host-only HttpOnly cookie. Existing readable browser token records are removed on startup, and the native app's token response remains available. Same-origin API routing, session continuity checks, and recoverable retry screens across protected panels protect custom communities and account switches. Browser gates now use distinct cookie sessions, test Safari's engine over HTTPS, and isolate synthetic MFA and accessibility runs under the existing rate limits. The mobile API route inventory is checked against the running Laravel build (F-149 / CodeQL #1778).
+
 - Patched development dependencies used by the root, React and accessible frontends, including the SVG optimizer. Unused accessibility and HeroUI command-line packages were removed. The React test runner and Lighthouse CI archive dependency still need compatible upstream fixes.
 
 - Hardened legacy community-link redirects on custom accessible domains with path and origin validation while preserving safe local paths and their query strings.

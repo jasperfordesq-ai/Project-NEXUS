@@ -6,6 +6,8 @@
 import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type { Result } from 'axe-core';
+import { primeApiAuth } from '../helpers/browser-session';
+import { completeTwoFactorIfChallenged } from '../helpers/two-factor';
 import {
   DEFAULT_TENANT,
   dismissBlockingModals,
@@ -23,8 +25,6 @@ function apiUrl(pathname: string): string {
 }
 
 const EMPTY_STORAGE = { cookies: [], origins: [] };
-const USER_STORAGE = 'e2e/fixtures/.auth/user.json';
-const ADMIN_STORAGE = 'e2e/fixtures/.auth/admin.json';
 
 type ThemeSetup = {
   theme?: 'light' | 'dark';
@@ -252,7 +252,8 @@ test.describe('real-browser accessibility gate', () => {
   });
 
   test.describe('authenticated member surfaces', () => {
-    test.use({ storageState: USER_STORAGE });
+    test.use({ storageState: EMPTY_STORAGE });
+    test.beforeEach(async ({ page }) => { await primeApiAuth(page, 'user'); });
 
     test('dashboard and route focus are accessible', async ({ page }) => {
       await setThemeProfile(page, { theme: 'light' });
@@ -276,6 +277,7 @@ test.describe('real-browser accessibility gate', () => {
     });
 
     test('search modal has combobox semantics, traps focus, and restores it', async ({ page }) => {
+      await setThemeProfile(page, { theme: 'light' });
       await visit(page, 'dashboard');
 
       const restoreTarget = page.locator('button:visible').first();
@@ -332,8 +334,25 @@ test.describe('real-browser accessibility gate', () => {
       // restore in `finally` so the shared fixture user is not left in Irish
       // for every other spec that reuses this storage state.
       await visit(page, IRISH_MEMBER_ROUTES[0].path);
-      const token = await page.evaluate(() => localStorage.getItem('nexus_access_token'));
-      expect(token, 'signed-in member access token from the saved auth fixture').toBeTruthy();
+      // The browser's access token stays in module memory. Obtain a separate
+      // native API credential for this account-language fixture in test code.
+      const languageLogin = await page.request.post(apiUrl('/auth/login'), {
+        data: {
+          email: process.env.E2E_USER_EMAIL,
+          password: process.env.E2E_USER_PASSWORD,
+          tenant_slug: DEFAULT_TENANT,
+        },
+        headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': DEFAULT_TENANT },
+      });
+      expect(languageLogin.ok(), 'account-language fixture login').toBe(true);
+      const loginData = await completeTwoFactorIfChallenged(await languageLogin.json(), {
+        request: page.request,
+        apiBaseUrl: API_BASE_URL,
+        tenantSlug: DEFAULT_TENANT,
+        email: process.env.E2E_USER_EMAIL || '',
+      });
+      const token = loginData?.data?.access_token || loginData?.access_token;
+      expect(typeof token, 'account-language fixture access token').toBe('string');
 
       const setAccountLanguage = async (language: string): Promise<void> => {
         const response = await page.request.put(apiUrl('/v2/users/me/language'), {
@@ -396,7 +415,8 @@ test.describe('real-browser accessibility gate', () => {
   });
 
   test.describe('administrator table and help drawer', () => {
-    test.use({ storageState: ADMIN_STORAGE });
+    test.use({ storageState: EMPTY_STORAGE });
+    test.beforeEach(async ({ page }) => { await primeApiAuth(page, 'admin'); });
 
     test('admin users table and contextual help drawer have no violations', async ({ page }) => {
       await setThemeProfile(page, { theme: 'dark' });

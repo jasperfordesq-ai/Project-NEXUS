@@ -38,6 +38,7 @@ interface OAuthExchangeResponse {
   token?: string;
   access_token?: string;
   refresh_token?: string;
+  session_binding?: string;
   tenant_id?: number | string;
   message?: string;
 }
@@ -137,6 +138,7 @@ export function OauthCallbackPage() {
           String(data.access_token || data.token),
           data.refresh_token ? String(data.refresh_token) : null,
           data.tenant_id ? String(data.tenant_id) : undefined,
+          data.session_binding,
         );
         if (!adoptedGeneration || tokenManager.getSessionGeneration() !== adoptedGeneration) {
           setError(t('oauth.callback_failed'));

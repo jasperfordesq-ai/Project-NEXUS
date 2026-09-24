@@ -42,6 +42,7 @@ const TENANT_SLUG = process.env.E2E_TENANT || 'hour-timebank';
 const HAS_USER_CREDENTIALS = Boolean(process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD);
 const HAS_ADMIN_CREDENTIALS = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 const SKIP_DATA_SEED = process.env.E2E_SKIP_DATA_SEED === '1';
+const SKIP_SAVED_AUTH = process.env.E2E_SKIP_SAVED_AUTH === '1';
 const REQUIRE_CONFIGURED_AUTH = process.env.E2E_REQUIRE_AUTH === '1';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
@@ -109,12 +110,8 @@ async function dismissDevNoticeModal(page: any): Promise<void> {
 }
 
 /**
- * Authenticate a React user via the API (JWT-based).
- *
- * The React app uses JWT tokens stored in localStorage,
- * not session cookies. This function calls the auth API directly,
- * then injects the JWT tokens into the browser's localStorage
- * via the storage state file.
+ * Authenticate through the browser-facing API and save its HttpOnly session
+ * cookie plus the non-secret binding needed to restore an in-memory token.
  */
 async function authenticateViaApi(
   authContext: any,
@@ -123,9 +120,8 @@ async function authenticateViaApi(
   userType: string,
   authDir: string
 ): Promise<void> {
-  // The PHP API is accessible at the same BASE_URL for local dev (proxied)
-  // or via the API_BASE_URL env var for CI/production
-  const apiBaseUrl = process.env.E2E_API_URL || BASE_URL;
+  const reactUrl = process.env.E2E_REACT_URL || BASE_URL;
+  const apiBaseUrl = new URL(reactUrl).origin;
 
   console.log(`   Authenticating admin via API at ${apiBaseUrl}/api/auth/login...`);
 
@@ -140,9 +136,10 @@ async function authenticateViaApi(
       password: credentials.password,
       tenant_slug: TENANT_SLUG,
     },
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Tenant-Slug': TENANT_SLUG,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-Slug': TENANT_SLUG,
+        Origin: apiBaseUrl,
     },
   });
 
@@ -182,18 +179,27 @@ async function authenticateViaApi(
     apiBaseUrl,
     tenantSlug: TENANT_SLUG,
     email: credentials.email,
+    origin: apiBaseUrl,
   });
 
-  // Extract tokens from response — API returns {success, data: {access_token, refresh_token, user, tenant_id}}
+  // Credential responses keep the refresh secret in a host-only HttpOnly cookie.
   const accessToken = loginData?.data?.access_token || loginData?.access_token;
-  const refreshToken = loginData?.data?.refresh_token || loginData?.refresh_token;
-  const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
+  const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
+  const tenantId = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+    || loginData?.data?.tenant_id || loginData?.tenant_id;
 
-  if (!accessToken) {
-    throw new Error('No access_token in login response: ' + JSON.stringify(loginData));
+  if (!accessToken || typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
+    throw new Error('Browser API login did not return an access token and session binding');
+  }
+  if (!Number.isSafeInteger(Number(tenantId)) || Number(tenantId) <= 0) {
+    throw new Error('Browser API login did not return a tenant ID');
   }
 
-  console.log('   JWT tokens obtained, injecting into localStorage...');
+  const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;
+  const cookies = await authContext.cookies(apiBaseUrl);
+  if (!cookies.some((cookie: { name: string; httpOnly: boolean }) => cookie.name === cookieName && cookie.httpOnly)) {
+    throw new Error('Browser API login did not set its HttpOnly refresh cookie');
+  }
 
   // Ensure onboarding is marked complete to avoid redirecting to the wizard
   try {
@@ -211,24 +217,22 @@ async function authenticateViaApi(
 
   // Navigate to the React app origin so we can set localStorage
   // Use the React frontend URL (may differ from API URL in Docker setup)
-  const reactUrl = process.env.E2E_REACT_URL || BASE_URL;
   await authPage.goto(`${reactUrl}/${TENANT_SLUG}/login`, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {
     // If /login redirects or fails, try the root
     return authPage.goto(reactUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
   });
 
-  // Inject JWT tokens into localStorage
+  // The access token stays in module memory. Only the non-secret continuity
+  // marker is serialized so the SPA can restore through its HttpOnly cookie.
   await authPage.evaluate(
-    ({ accessToken, refreshToken, tenantId, cookieConsent }: {
-      accessToken: string;
-      refreshToken?: string;
+    ({ sessionBinding, tenantId, cookieConsent }: {
+      sessionBinding: string;
       tenantId?: string | number;
       cookieConsent: typeof COOKIE_CONSENT;
     }) => {
-      localStorage.setItem('nexus_access_token', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('nexus_refresh_token', refreshToken);
-      }
+      const generation = crypto.randomUUID();
+      localStorage.setItem('nexus_auth_session_generation', generation);
+      localStorage.setItem(`nexus_auth_binding:${generation}`, sessionBinding);
       if (tenantId) {
         localStorage.setItem('nexus_tenant_id', String(tenantId));
       }
@@ -236,12 +240,18 @@ async function authenticateViaApi(
       localStorage.setItem('dev_notice_dismissed', '2.1');
       localStorage.setItem('nexus_cookie_consent', JSON.stringify(cookieConsent));
     },
-    { accessToken, refreshToken, tenantId: tenantId ? String(tenantId) : undefined, cookieConsent: COOKIE_CONSENT }
+    { sessionBinding, tenantId: tenantId ? String(tenantId) : undefined, cookieConsent: COOKIE_CONSENT }
   );
 
-  // Save storage state (includes localStorage with JWT tokens)
+  // Storage state contains no script-readable credential.
   const storagePath = path.join(authDir, `${userType}.json`);
   await authContext.storageState({ path: storagePath });
+  const savedState = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
+  const storedNames = (savedState.origins ?? []).flatMap((origin: { localStorage?: Array<{ name: string }> }) =>
+    (origin.localStorage ?? []).map((entry) => entry.name));
+  if (storedNames.includes('nexus_access_token') || storedNames.includes('nexus_refresh_token')) {
+    throw new Error('E2E auth state contains a script-readable credential');
+  }
 }
 
 /**
@@ -317,13 +327,12 @@ async function globalSetup(config: FullConfig) {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
-  // Create empty auth files first (so tests can run even if auth fails)
+  // Replace stale states before every run. The focused CI browser specs create
+  // a distinct session per test and deliberately do not share these cookies.
   const emptyState = { cookies: [], origins: [] };
   for (const userType of ['user', 'admin']) {
     const storagePath = path.join(authDir, `${userType}.json`);
-    if (!fs.existsSync(storagePath)) {
-      fs.writeFileSync(storagePath, JSON.stringify(emptyState, null, 2));
-    }
+    fs.writeFileSync(storagePath, JSON.stringify(emptyState, null, 2));
   }
 
   const browser = await chromium.launch();
@@ -333,7 +342,9 @@ async function globalSetup(config: FullConfig) {
   try {
     // Verify server is accessible
     console.log(`📡 Checking server at ${BASE_URL}...`);
-    const context = await browser.newContext();
+    // This manually created context does not inherit the project's TLS setting.
+    // The CI Safari gate uses a temporary self-signed localhost certificate.
+    const context = await browser.newContext({ ignoreHTTPSErrors: true });
     const page = await context.newPage();
 
     // Dismiss dev notice modal for server check
@@ -359,7 +370,7 @@ async function globalSetup(config: FullConfig) {
       throw new Error(`Required E2E auth could not run because ${BASE_URL} is unavailable`);
     }
 
-    const configuredUsers = Object.entries(TEST_USERS).filter(([userType]) => (
+    const configuredUsers = SKIP_SAVED_AUTH ? [] : Object.entries(TEST_USERS).filter(([userType]) => (
       userType === 'admin' ? HAS_ADMIN_CREDENTIALS : HAS_USER_CREDENTIALS
     ));
 
@@ -367,7 +378,9 @@ async function globalSetup(config: FullConfig) {
       throw new Error('Required E2E auth needs both member and admin credential pairs');
     }
 
-    if (configuredUsers.length === 0) {
+    if (SKIP_SAVED_AUTH) {
+      console.log('Focused browser specs create their own independent auth sessions.');
+    } else if (configuredUsers.length === 0) {
       console.log('No E2E auth credentials configured; using empty auth state files.');
     }
 

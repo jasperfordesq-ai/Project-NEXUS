@@ -346,7 +346,9 @@ export default defineConfig(({ command, mode }) => {
       // Uses Docker service name 'app' when running in Docker, localhost:8090 otherwise
       '/api': {
         target: apiUrl,
-        changeOrigin: true,
+        // Browser auth binds its HttpOnly cookie to the page origin. Preserve
+        // the browser-facing Host, including the Vite port, on API requests.
+        changeOrigin: false,
         secure: false,
         timeout: 120000,
         proxyTimeout: 120000,
@@ -385,7 +387,7 @@ export default defineConfig(({ command, mode }) => {
     proxy: {
       '/api': {
         target: apiUrl,
-        changeOrigin: true,
+        changeOrigin: false,
         secure: false,
         timeout: 120000,
         proxyTimeout: 120000,

@@ -20,7 +20,8 @@ import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCode
 
 interface Setup { qr_code_url: string; secret: string }
 interface Completion {
-  backup_codes: string[]; access_token: string; refresh_token: string;
+  backup_codes: string[]; access_token: string; refresh_token?: string;
+  session_binding?: string;
   login_complete: boolean; expires_in: number;
 }
 
@@ -71,7 +72,7 @@ export default function TwoFactorSetupPage() {
         setError(t('mandatory_setup.failed'));
         return;
       }
-      if (result.success && result.data?.login_complete && result.data.access_token && result.data.refresh_token) {
+      if (result.success && result.data?.login_complete && result.data.access_token && result.data.session_binding) {
         completionGenerationRef.current = sessionGenerationAtStart;
         setCompletion(result.data);
         setSetup(null);
@@ -128,6 +129,8 @@ export default function TwoFactorSetupPage() {
       completionGenerationRef.current,
       completion.access_token,
       completion.refresh_token,
+      undefined,
+      completion.session_binding,
     );
     if (!generation || tokenManager.getSessionGeneration() !== generation) {
       setError(t('mandatory_setup.failed'));

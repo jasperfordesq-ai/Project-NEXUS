@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 // Mock react-router-dom to prevent heavy bundle import
@@ -130,6 +130,23 @@ describe('ProtectedRoute', () => {
       </ProtectedRoute>
     );
     expect(screen.getByTestId('loading')).toBeInTheDocument();
+  });
+
+  it('keeps a temporarily unavailable session recoverable without redirecting', () => {
+    const refreshUser = vi.fn();
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+      status: 'unavailable',
+      user: null,
+      refreshUser,
+    });
+
+    render(<ProtectedRoute><div>Protected Content</div></ProtectedRoute>);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByTestId('navigate')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button'));
+    expect(refreshUser).toHaveBeenCalledOnce();
   });
 
   it('redirects to login when not authenticated', () => {

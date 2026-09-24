@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
+import { AuthUnavailableScreen } from './AuthUnavailableScreen';
 import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
 
@@ -57,6 +58,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Show loading while checking auth status
   if (isLoading || status === 'loading') {
     return <LoadingScreen message={t('checking_authentication')} />;
+  }
+
+  if (status === 'unavailable') {
+    return <AuthUnavailableScreen />;
   }
 
   // Redirect to login if not authenticated, preserving tenant slug prefix
