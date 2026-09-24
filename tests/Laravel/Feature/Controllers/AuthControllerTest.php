@@ -633,8 +633,7 @@ class AuthControllerTest extends TestCase
         $familyId = $tokens->inspectRefreshTokenForRotation($refresh)['family_id'];
         $binding = hash('sha256', $familyId);
         $headers = [
-            'Host' => 'api.project-nexus.ie',
-            'Origin' => 'https://api.project-nexus.ie',
+            'Origin' => 'http://localhost',
             'X-Nexus-Session-Binding' => $binding,
         ];
 
@@ -662,8 +661,7 @@ class AuthControllerTest extends TestCase
 
         $this->withCookie(BrowserRefreshCookie::cookieName($wrongBinding), $refresh)
             ->apiPost('/auth/refresh-token', [], [
-                'Host' => 'api.project-nexus.ie',
-                'Origin' => 'https://api.project-nexus.ie',
+                'Origin' => 'http://localhost',
                 'X-Nexus-Session-Binding' => $wrongBinding,
             ])->assertStatus(401);
 

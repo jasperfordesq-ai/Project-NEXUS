@@ -417,8 +417,13 @@ class WebAuthnControllerTest extends TestCase
         $this->apiPost(
             '/webauthn/auth-verify',
             $payload,
-            ['Host' => 'accessible.example.test', 'Origin' => 'https://accessible.example.test']
+            ['Origin' => 'https://accessible.example.test']
         )
+            ->assertStatus(403);
+
+        // Without browser metadata, the WebAuthn challenge itself still rejects
+        // a verification request in a different allowed context.
+        $this->apiPost('/webauthn/auth-verify', $payload)
             ->assertStatus(401)
             ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
     }
