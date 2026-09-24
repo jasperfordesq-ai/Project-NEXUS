@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Patched development dependencies used by the root, React and accessible frontends, including the SVG optimizer. Unused accessibility and HeroUI command-line packages were removed. The React test runner and Lighthouse CI archive dependency still need compatible upstream fixes.
+
+- Hardened legacy community-link redirects on custom accessible domains while preserving safe local paths and their query strings.
+
 - Link previews now retain cURL DNS pinning and stop downloading as soon as the decoded response exceeds 500 KB. Authenticated members can no longer make a preview worker load an unbounded response into memory or bypass the pinned address through the PHP stream handler (F-148 / E-025 R21).
 
 - External federation transfer cancellations now lock and recheck the completed transfer before reversing credits. Two simultaneous authenticated partner cancellations can no longer deduct the same transfer twice (F-147 / E-025 R14).

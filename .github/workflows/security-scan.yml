@@ -231,7 +231,7 @@ jobs:
 
       # The BLOCKING gate audits the production dependency tree only
       # (--omit=dev). Build/test/CI tooling — Vite's dev server, Lighthouse,
-      # @lhci/cli, heroui-cli — never ships in the deployed bundle, so its
+      # @lhci/cli — never ships in the deployed bundle, so its
       # advisories are not a production attack surface and must not gate
       # releases. Dev-dependency advisories are documented in docs/SECURITY-SCANNING.md
       # and remain visible in the non-blocking OWASP/Trivy SARIF uploads.

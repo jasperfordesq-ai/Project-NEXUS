@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const SHARED_MOUNT_RE = /^\/([A-Za-z0-9_-]+)\/(accessible|alpha)(?=\/|$)/;
+const { validateReturnUrl } = require('../lib/urlValidator');
 const UNPREFIXED_PATHS = [
   '/api',
   '/assets',
@@ -431,7 +432,7 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
       return false;
     }
 
-    const sluglessPath = rest === '/' ? '/' : rest;
+    const sluglessPath = validateReturnUrl(rest, '/');
     res.redirect(permanentRedirectStatus(req), withQuery(sluglessPath, queryIndex, originalUrl));
     return true;
   } catch (error) {

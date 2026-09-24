@@ -25,6 +25,8 @@
 
 const express = require('express');
 const request = require('supertest');
+const net = require('node:net');
+const { once } = require('node:events');
 
 class MockApiError extends Error {
   constructor(message, status) {
@@ -95,6 +97,38 @@ describe('slug-prefixed requests on a custom accessible domain', () => {
 
     expect(response.status).toBe(301);
     expect(response.headers.location).toBe('/evil.example');
+  });
+
+  it('rejects an encoded backslash authority in the slugless redirect', async () => {
+    const response = await request(buildApp())
+      .get('/hour-timebank/accessible/%5Cevil.example/phish?next=%5Cok')
+      .set('Host', HOST);
+
+    expect(response.status).toBe(301);
+    expect(response.headers.location).toBe('/?next=%5Cok');
+    expect(new URL(response.headers.location, `https://${HOST}`).host).toBe(HOST);
+  });
+
+  it('rejects a literal backslash authority before any client normalizes the URL', async () => {
+    const server = buildApp().listen(0, '127.0.0.1');
+    await once(server, 'listening');
+    try {
+      const response = await new Promise((resolve, reject) => {
+        const socket = net.createConnection(server.address().port, '127.0.0.1');
+        let body = '';
+        socket.on('connect', () => {
+          socket.write(`GET /hour-timebank/accessible/\\evil.example/phish?next=%5Cok HTTP/1.0\r\nHost: ${HOST}\r\nConnection: close\r\n\r\n`);
+        });
+        socket.on('data', (chunk) => { body += chunk.toString(); });
+        socket.on('end', () => resolve(body));
+        socket.on('error', reject);
+      });
+      const location = response.match(/^Location:\s*([^\r\n]+)/mi)?.[1];
+      expect(location).toBe('/?next=%5Cok');
+      expect(new URL(location, `https://${HOST}`).host).toBe(HOST);
+    } finally {
+      server.close();
+    }
   });
 });
 
