@@ -26,9 +26,11 @@ createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, (inco
   // Production's browser-auth middleware requires HTTPS and an exact Host/Origin
   // match. Route API calls straight to the candidate API so the frontend proxy
   // cannot strip the test origin's port from Host.
-  const apiRequest = incoming.url?.startsWith('/api/')
+  const recoveryPage = incoming.url === '/api/sw-reset'
+    || incoming.url?.startsWith('/api/sw-reset?');
+  const apiRequest = !recoveryPage && (incoming.url?.startsWith('/api/')
     || incoming.url?.startsWith('/version.php')
-    || incoming.url?.startsWith('/health.php');
+    || incoming.url?.startsWith('/health.php'));
   const targetPort = apiRequest ? apiPort : frontendPort;
   const upstream = request({
     hostname: '127.0.0.1',
