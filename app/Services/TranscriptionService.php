@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Services\AI\AiUsageGate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -33,7 +34,42 @@ class TranscriptionService
     }
 
     /**
+     * Transcribe a member's voice message, but only through the AI gate.
+     *
+     * 🔴 E-035 F-164: voice-message transcription used to call Whisper on every
+     * voice message with only an "is a key configured" check — it ignored the
+     * community's AI master switch and never counted against the member's AI
+     * budget. Member-triggered transcription MUST come through here, never
+     * through {@see transcribe()} directly.
+     *
+     * Returns null (and makes no provider request) when AI is switched off for
+     * the community or the member's AI budget is spent. Callers treat null as
+     * "no transcript" — the voice message itself is still stored and sent.
+     *
+     * @return array{text: string, language: string}|null
+     */
+    public static function transcribeForMember(int $userId, string $audioFilePath): ?array
+    {
+        if (!self::isConfigured() || !file_exists($audioFilePath)) {
+            return null;
+        }
+
+        $admission = AiUsageGate::admit($userId);
+        if (!$admission['allowed']) {
+            Log::info('TranscriptionService::transcribeForMember — skipped by AI gate', [
+                'user_id' => $userId,
+                'reason' => $admission['reason'] ?? null,
+            ]);
+            return null;
+        }
+
+        return self::transcribe($audioFilePath);
+    }
+
+    /**
      * Transcribe an audio file using OpenAI Whisper API.
+     *
+     * Member-triggered callers must use {@see transcribeForMember()}.
      *
      * @param string $audioFilePath Absolute path to the audio file on disk.
      * @return array{text: string, language: string}|null Returns transcript data or null on failure.

@@ -835,6 +835,14 @@ class MarketplaceListingController extends BaseApiController
             'condition' => 'nullable|string|max:50',
         ]);
 
+        // E-035 F-164: the community AI master switch and the member's AI budget.
+        $admission = \App\Services\AI\AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return \App\Services\AI\AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        }
+
         $prompt = "Write a compelling marketplace listing description for the following item. "
             . "Keep it concise (2-3 paragraphs), honest, and appealing to buyers.\n\n"
             . "Title: {$data['title']}";

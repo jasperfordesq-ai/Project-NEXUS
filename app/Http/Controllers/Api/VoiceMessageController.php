@@ -92,14 +92,16 @@ class VoiceMessageController extends BaseApiController
 
             $messageId = $messageData['id'] ?? null;
 
-            // Transcribe the audio file (non-blocking — failures are logged, not thrown)
+            // Transcribe the audio file (non-blocking — failures are logged, not thrown).
+            // E-035 F-164: only through the AI gate — skipped (message still sent)
+            // when the community has AI switched off or the member's budget is spent.
             $transcript = null;
             $transcriptLanguage = null;
             try {
                 $audioPath = $audioResult['local_path'] ?? null;
 
                 if ($audioPath && file_exists($audioPath)) {
-                    $transcription = TranscriptionService::transcribe($audioPath);
+                    $transcription = TranscriptionService::transcribeForMember($senderId, $audioPath);
                     if ($transcription && !empty($transcription['text'])) {
                         $transcript = $transcription['text'];
                         $transcriptLanguage = $transcription['language'] ?? 'en';

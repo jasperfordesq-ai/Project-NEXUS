@@ -18,6 +18,7 @@ use App\Models\Event;
 use App\Models\Listing;
 use App\Models\User;
 use App\Services\AI\AIServiceFactory;
+use App\Services\AI\AiUsageGate;
 use App\Services\AI\AiModuleDocsService;
 use App\Services\AI\AiTurnTraceService;
 use App\Services\AI\AiUserMemoryService;
@@ -528,9 +529,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $title = trim($this->input('title', ''));
@@ -552,11 +559,14 @@ TXT;
 
             $response = $aiProvider->chat($messages, ['temperature' => 0.7, 'max_tokens' => 800]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_listing', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_listing',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -577,9 +587,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $title = trim($this->input('title', ''));
@@ -600,11 +616,14 @@ TXT;
 
             $response = $aiProvider->chat($messages, ['temperature' => 0.7, 'max_tokens' => 800]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_event', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_event',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -625,9 +644,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $originalMessage = trim($this->input('original_message', ''));
@@ -662,11 +687,14 @@ TXT;
 
             $response = $aiProvider->chat($messages, ['temperature' => 0.8, 'max_tokens' => 300]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_message', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_message',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -687,9 +715,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $existingBio = trim($this->input('existing_bio', ''));
@@ -741,11 +775,14 @@ TXT;
 
             $response = $aiProvider->chat($messages, ['temperature' => 0.7, 'max_tokens' => 250]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_bio', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_bio',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -770,9 +807,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $type = $this->input('type', 'subject');
@@ -796,11 +839,14 @@ TXT;
                 'max_tokens' => $type === 'content' ? 2000 : 500,
             ]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_newsletter', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_newsletter',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -822,9 +868,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $type = $this->input('type', 'content');
@@ -844,11 +896,14 @@ TXT;
                 'max_tokens' => $type === 'content' ? 3000 : 500,
             ]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_blog', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_blog',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,
@@ -870,9 +925,15 @@ TXT;
             return $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403);
         }
 
-        $limitCheck = AiUserLimit::canMakeRequest($userId);
-        if (!$limitCheck['allowed']) {
-            return $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        // E-035 O-066: the shared gate reserves one unit of the member's AI
+        // allowance atomically and honours the community AI switch. The previous
+        // one-argument canMakeRequest()/incrementUsage() calls threw on every
+        // request (both require userId AND tenantId).
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $type = $this->input('type', 'section');
@@ -892,11 +953,14 @@ TXT;
                 'max_tokens' => $type === 'full' ? 3000 : 1000,
             ]);
 
-            AiUserLimit::incrementUsage($userId);
-            AiUsage::log($userId, $aiProvider->getId(), 'generate_page', [
-                'tokens_input' => $response['tokens_input'] ?? 0,
-                'tokens_output' => $response['tokens_output'] ?? 0,
-            ]);
+            AiUsage::log(
+                (int) $userId,
+                (int) $this->getTenantId(),
+                'generate_page',
+                (int) ($response['tokens_input'] ?? 0),
+                (int) ($response['tokens_output'] ?? 0),
+                0.0
+            );
 
             return $this->respondWithData([
                 'success' => true,

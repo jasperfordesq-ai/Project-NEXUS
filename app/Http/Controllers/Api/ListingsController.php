@@ -16,6 +16,7 @@ use App\Http\Resources\PublicListingResource;
 use App\Models\ListingImage;
 use App\Models\Notification;
 use App\Services\AiChatService;
+use App\Services\AI\AiUsageGate;
 use App\Services\ListingService;
 use App\Services\ListingAnalyticsService;
 use App\Services\ListingConfigurationService;
@@ -1292,13 +1293,22 @@ class ListingsController extends BaseApiController
         $userId = $this->requireAuth();
         $this->rateLimit('listing_ai_generate', 5, 60);
 
-        $title = trim($this->input('title') ?? '');
-        $category = trim($this->input('category') ?? '');
+        // E-035 F-164: every free-text field placed in the prompt is bounded.
+        $title = AiUsageGate::clip(is_string($v = $this->input('title')) ? $v : '', 200);
+        $category = AiUsageGate::clip(is_string($v = $this->input('category')) ? $v : '', 100);
         $type = $this->input('type', 'offer');
-        $notes = trim($this->input('notes') ?? '');
+        $notes = AiUsageGate::clip(is_string($v = $this->input('notes')) ? $v : '');
 
         if (empty($title)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.title_required'), 'title', 422);
+        }
+
+        // E-035 F-164: the community AI master switch and the member's AI budget.
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.listing_ai_descriptions_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $typeLabel = $type === 'request'

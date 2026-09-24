@@ -889,6 +889,12 @@ class FederationV2ControllerTest extends TestCase
     {
         $this->enableFederationForTenant($this->testTenantId);
         $this->enableMessageTranslationForTenant($this->testTenantId);
+        // E-035 F-164: translation now honours the community AI switch.
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => '1', 'updated_at' => now()]
+        );
+        \App\Services\AI\AIServiceFactory::clearCache();
         Config::set('services.openai.api_key', 'test-openai-key');
 
         $viewer = $this->seedFederatedUser($this->testTenantId);

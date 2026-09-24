@@ -1307,6 +1307,16 @@ class MessagesControllerTest extends TestCase
     // TRANSLATE — Authentication required
     // ================================================================
 
+    /** E-035 F-164: AI features now honour the community AI switch; turn it on. */
+    private function enableAiForTenant(): void
+    {
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => '1', 'updated_at' => now()]
+        );
+        \App\Services\AI\AIServiceFactory::clearCache();
+    }
+
     public function test_translate_returns_401_without_auth(): void
     {
         $this->disableMaintenanceMode();
@@ -1393,6 +1403,7 @@ class MessagesControllerTest extends TestCase
 
     public function test_translate_text_message_returns_translated_text(): void
     {
+        $this->enableAiForTenant();
         $this->disableMaintenanceMode();
         $sender = $this->authenticatedUser();
         $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
@@ -1428,6 +1439,7 @@ class MessagesControllerTest extends TestCase
 
     public function test_translate_voice_transcript_returns_translated_text(): void
     {
+        $this->enableAiForTenant();
         $this->disableMaintenanceMode();
 
         // Ensure transcript columns exist (migration may not have run on test DB)
@@ -1482,6 +1494,7 @@ class MessagesControllerTest extends TestCase
 
     public function test_translate_prefers_transcript_over_body(): void
     {
+        $this->enableAiForTenant();
         $this->disableMaintenanceMode();
 
         if (!DB::getSchemaBuilder()->hasColumn('messages', 'transcript')) {
@@ -1529,6 +1542,7 @@ class MessagesControllerTest extends TestCase
 
     public function test_translate_text_uses_auto_language_detection(): void
     {
+        $this->enableAiForTenant();
         $this->disableMaintenanceMode();
         $sender = $this->authenticatedUser();
         $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
@@ -1592,6 +1606,7 @@ class MessagesControllerTest extends TestCase
 
     public function test_translate_works_for_receiver(): void
     {
+        $this->enableAiForTenant();
         $this->disableMaintenanceMode();
         $sender = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
         $recipient = $this->authenticatedUser();

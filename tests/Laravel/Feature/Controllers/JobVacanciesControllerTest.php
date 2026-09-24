@@ -1324,8 +1324,9 @@ class JobVacanciesControllerTest extends TestCase
             'commitment' => 'part_time',
         ]);
 
-        // May return 200 (success) or 503 (AI service unavailable in test env)
-        $this->assertContains($response->status(), [200, 503]);
+        // May return 200 (success), 403 (community AI switched off — E-035 F-164)
+        // or 503 (AI service unavailable in test env)
+        $this->assertContains($response->status(), [200, 403, 503]);
     }
 
     // =====================================================================

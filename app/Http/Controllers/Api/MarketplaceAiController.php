@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
 use App\Models\MarketplaceListing;
+use App\Services\AI\AiUsageGate;
 use App\Services\MarketplaceAiService;
 
 /**
@@ -66,6 +67,14 @@ class MarketplaceAiController extends BaseApiController
         $data = $request->validate([
             'message' => 'required|string|min:5|max:2000',
         ]);
+
+        // E-035 F-164: the community AI master switch and the member's AI budget.
+        $admission = AiUsageGate::admit((int) $userId);
+        if (!$admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.ai_feature_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        }
 
         try {
             $reply = $this->aiService->generateAutoReply($id, $data['message']);

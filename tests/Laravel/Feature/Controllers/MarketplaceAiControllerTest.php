@@ -123,8 +123,19 @@ class MarketplaceAiControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [403, 422]);
     }
 
+    /** E-035 F-164: AI features now honour the community AI switch; turn it on. */
+    private function enableAiForTenant(): void
+    {
+        DB::table('ai_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'],
+            ['setting_value' => '1', 'updated_at' => now()]
+        );
+        \App\Services\AI\AIServiceFactory::clearCache();
+    }
+
     public function test_auto_reply_does_not_expose_provider_exception_text(): void
     {
+        $this->enableAiForTenant();
         $this->enableMarketplaceFeature();
         $user = $this->authenticatedUser();
         $listingId = $this->createListing($user->id, $this->testTenantId);

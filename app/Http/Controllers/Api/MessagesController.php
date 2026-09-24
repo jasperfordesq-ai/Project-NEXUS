@@ -11,6 +11,7 @@ use App\Services\MessageService;
 use App\Services\BrokerMessageVisibilityService;
 use App\Services\TranscriptionService;
 use App\Services\TranslationConfigurationService;
+use App\Services\AI\AiUsageGate;
 use App\Core\AudioUploader;
 use App\Core\MessageAttachmentUploader;
 use App\Models\Message;
@@ -763,11 +764,13 @@ class MessagesController extends BaseApiController
 
             $this->awardMessageXp($userId, $message);
 
-            // Transcribe the audio (non-blocking — failures are logged, not thrown)
+            // Transcribe the audio (non-blocking — failures are logged, not thrown).
+            // E-035 F-164: only through the AI gate — skipped (message still sent)
+            // when the community has AI switched off or the member's budget is spent.
             try {
                 $audioPath = $audioResult['local_path'] ?? null;
                 if ($audioPath && file_exists($audioPath)) {
-                    $transcription = TranscriptionService::transcribe($audioPath);
+                    $transcription = TranscriptionService::transcribeForMember($userId, $audioPath);
                     if ($transcription && !empty($transcription['text'])) {
                         $messageId = $message['id'] ?? $message['message_id'] ?? null;
                         if ($messageId) {
@@ -985,7 +988,9 @@ class MessagesController extends BaseApiController
         // auto-translate loop, which retries every message on each cycle: a
         // distinguishable answer lets a client stop asking. Checked before the
         // provider call so no request is made at all.
-        if (! TranscriptionService::isConfigured()) {
+        // E-035 F-164: the community AI master switch is the same permanent
+        // "unavailable" condition as a missing key — no provider request.
+        if (! TranscriptionService::isConfigured() || ! AiUsageGate::aiEnabled()) {
             return $this->respondWithError(
                 'TRANSLATION_UNAVAILABLE',
                 __('api.message_translation_unavailable'),
@@ -1036,6 +1041,14 @@ class MessagesController extends BaseApiController
             foreach ($glossaryRows as $row) {
                 $glossary[$row->source_term] = $row->target_term;
             }
+        }
+
+        // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
+        $admission = AiUsageGate::admit($userId, (int) $tenantId);
+        if (! $admission['allowed']) {
+            return AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('TRANSLATION_UNAVAILABLE', __('api.message_translation_unavailable'), null, 503)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $translatedText = TranscriptionService::translate($sourceText, $fromLanguage, $targetLanguage, $conversationContext, $glossary);

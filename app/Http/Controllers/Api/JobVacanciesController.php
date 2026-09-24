@@ -1995,14 +1995,15 @@ class JobVacanciesController extends BaseApiController
     public function generateDescription(): JsonResponse
     {
         $this->ensureFeature();
-        $this->getUserId();
+        $userId = $this->getUserId();
         $this->rateLimit('jobs_ai_generate', 10, 60);
 
         if (!$this->configBool(JobConfigurationService::CONFIG_ENABLE_AI_DESCRIPTIONS, true)) {
             return $this->respondWithError('FEATURE_DISABLED', __('api.job_ai_descriptions_disabled'), null, 403);
         }
 
-        $title = $this->input('title');
+        // E-035 F-164: every free-text field placed in the prompt is bounded.
+        $title = \App\Services\AI\AiUsageGate::clip(is_string($v = $this->input('title')) ? $v : '', 200);
         $skills = $this->input('skills', []);
         $type = $this->input('type', 'paid');
         $commitment = $this->input('commitment', 'flexible');
@@ -2011,7 +2012,18 @@ class JobVacanciesController extends BaseApiController
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.title_required'), 'title', 400);
         }
 
-        $skillsList = is_array($skills) ? implode(', ', $skills) : (string) $skills;
+        $skillsList = is_array($skills)
+            ? implode(', ', array_filter($skills, 'is_string'))
+            : (is_string($skills) ? $skills : '');
+        $skillsList = \App\Services\AI\AiUsageGate::clip($skillsList, 1000);
+
+        // E-035 F-164: the community AI master switch and the member's AI budget.
+        $admission = \App\Services\AI\AiUsageGate::admit($userId);
+        if (!$admission['allowed']) {
+            return \App\Services\AI\AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('FEATURE_DISABLED', __('api.job_ai_descriptions_disabled'), null, 403)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
+        }
 
         $typeLabel = match ($type) {
             'paid' => 'paid position',

@@ -115,6 +115,6 @@ class VoiceMessageControllerTest extends TestCase
         $this->assertStringContainsString('$audioResult[\'local_path\'] ?? null', $controller);
         $this->assertStringContainsString('$audioResult[\'local_path\'] ?? null', $messages);
         $this->assertStringNotContainsString('safeDownloadAudio', $controller);
-        $this->assertStringContainsString('TranscriptionService::transcribe($audioPath)', $messages);
+        $this->assertStringContainsString('TranscriptionService::transcribeForMember($userId, $audioPath)', $messages);
     }
 }

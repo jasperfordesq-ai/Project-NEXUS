@@ -3165,7 +3165,8 @@ class FederationV2Controller extends BaseApiController
         // Same reasoning as MessagesController::translate(): a missing provider
         // key is a permanent condition, not a failure to retry. Answer
         // "unavailable" rather than a 500 that says "please try again".
-        if (! TranscriptionService::isConfigured()) {
+        // E-035 F-164: the community AI master switch counts as unavailable too.
+        if (! TranscriptionService::isConfigured() || ! \App\Services\AI\AiUsageGate::aiEnabled()) {
             return $this->respondWithError(
                 'TRANSLATION_UNAVAILABLE',
                 __('api.message_translation_unavailable'),
@@ -3221,6 +3222,14 @@ class FederationV2Controller extends BaseApiController
             foreach ($glossaryRows as $row) {
                 $glossary[$row->source_term] = $row->target_term;
             }
+        }
+
+        // E-035 F-164: reserve one slot of the member's AI budget before the provider call.
+        $admission = \App\Services\AI\AiUsageGate::admit((int) $userId, (int) $tenantId);
+        if (! $admission['allowed']) {
+            return \App\Services\AI\AiUsageGate::isDisabled($admission)
+                ? $this->respondWithError('TRANSLATION_UNAVAILABLE', __('api.message_translation_unavailable'), null, 503)
+                : $this->respondWithError('RATE_LIMIT', __('api.ai_rate_limit'), null, 429);
         }
 
         $translatedText = TranscriptionService::translate($sourceText, 'auto', $targetLanguage, $conversationContext, $glossary);
