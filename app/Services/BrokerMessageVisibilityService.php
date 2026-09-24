@@ -265,6 +265,56 @@ class BrokerMessageVisibilityService
     }
 
     /**
+     * Refresh the broker copy of a message after its sender edits it (F-163).
+     *
+     * The copy is taken once at send time, and a message may be edited for
+     * 24 hours afterwards. Without this the queue kept the original — often
+     * already reviewed — text while the recipient read the new one, so an
+     * edit walked straight past broker review. The copy takes the new body
+     * and goes back to the unreviewed queue; if it had been approved or
+     * flagged into an archive, the link is cleared so it can be decided
+     * again. The archive row itself is history and is left untouched.
+     *
+     * Only a message that already has a copy is affected; an edit never
+     * creates one. Returns the copy ID, or null when there is no copy.
+     */
+    public function refreshCopyAfterEdit(int $messageId, string $newBody): ?int
+    {
+        $tenantId = TenantContext::getId();
+
+        $copy = DB::table('broker_message_copies')
+            ->where('tenant_id', $tenantId)
+            ->where('original_message_id', $messageId)
+            ->first(['id', 'reviewed_by', 'reviewed_at', 'archive_id']);
+        if ($copy === null) {
+            return null;
+        }
+
+        DB::table('broker_message_copies')
+            ->where('id', $copy->id)
+            ->where('tenant_id', $tenantId)
+            ->update([
+                'message_body' => $newBody,
+                'reviewed_by'  => null,
+                'reviewed_at'  => null,
+                'archived_at'  => null,
+                'archive_id'   => null,
+            ]);
+
+        if ($copy->reviewed_at !== null || $copy->archive_id !== null) {
+            Log::info('[BrokerMessageVisibilityService] Broker copy re-queued after sender edit', [
+                'tenant_id'             => $tenantId,
+                'copy_id'               => (int) $copy->id,
+                'original_message_id'   => $messageId,
+                'previous_reviewed_by'  => $copy->reviewed_by !== null ? (int) $copy->reviewed_by : null,
+                'previous_archive_id'   => $copy->archive_id !== null ? (int) $copy->archive_id : null,
+            ]);
+        }
+
+        return (int) $copy->id;
+    }
+
+    /**
      * Get unreviewed messages for broker.
      *
      * @param int $limit Max number of messages

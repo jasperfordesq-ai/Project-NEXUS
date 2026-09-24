@@ -1139,6 +1139,7 @@ class AdminBrokerController extends BaseApiController
                 : [$copy['sender_id'], $copy['receiver_id'], $copy['receiver_id'], $copy['sender_id']];
             $thread = DB::select(
                 "SELECT m.id, m.sender_id, m.receiver_id, m.body, m.created_at, m.is_deleted,
+                    m.is_edited, m.edited_at,
                     " . UserDisplayName::sql('u', 'sender_name') . "
                 FROM messages m LEFT JOIN users u ON m.sender_id = u.id
                 WHERE m.tenant_id = ?

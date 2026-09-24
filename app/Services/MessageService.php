@@ -286,7 +286,12 @@ class MessageService
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
 
         $items = $messages->map(function (Message $msg) use ($userId, $unreadCounts, $reactionCounts, $hiddenPartnerIds, $viewerIsAdmin) {
-            $data = self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin);
+            // F-193: the latest message can be a deleted-for-everyone voice
+            // note; apply the same tombstone as the thread view.
+            $data = self::withDeletedMessageTombstone(
+                self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin),
+                $msg
+            );
             // F-088: last_active_at is loaded only to derive is_online below; the
             // raw timestamp would reveal activity despite "hide my presence".
             foreach (['sender', 'receiver'] as $key) {
@@ -391,18 +396,10 @@ class MessageService
         $reactionCounts = self::publicReactionCountsForMessages($messages, $userId);
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($userId);
         $items = $messages->map(function (Message $msg) use ($reactionCounts, $userId, $viewerIsAdmin): array {
-            $data = self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin);
-            if ((bool) $msg->is_deleted) {
-                // Keep the tombstone needed to render conversation history, but
-                // do not return retained private content or fresh media routes.
-                // The underlying rows/files may remain for moderation and GDPR
-                // workflows after delete-for-everyone.
-                $data['transcript'] = null;
-                $data['transcript_language'] = null;
-                $data['audio_url'] = null;
-                $data['audio_duration'] = null;
-                $data['attachments'] = [];
-            }
+            $data = self::withDeletedMessageTombstone(
+                self::withoutParticipantSurnames($msg->toArray(), $userId, $viewerIsAdmin),
+                $msg
+            );
             $data['reactions'] = $reactionCounts[(int) $msg->id] ?? [];
 
             return $data;
@@ -413,6 +410,34 @@ class MessageService
             'cursor'   => $hasMore && $messages->isNotEmpty() ? base64_encode((string) $messages->last()->id) : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    /**
+     * Project a deleted-for-everyone message to its tombstone.
+     *
+     * Keeps what is needed to render conversation history, but never returns
+     * retained private content or fresh media routes. The underlying rows and
+     * files may remain for moderation and GDPR workflows after the delete.
+     * Shared by the thread view and the conversation list (F-046, F-193).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private static function withDeletedMessageTombstone(array $data, Message $msg): array
+    {
+        if (! (bool) $msg->is_deleted) {
+            return $data;
+        }
+
+        $data['transcript'] = null;
+        $data['transcript_language'] = null;
+        $data['audio_url'] = null;
+        $data['audio_duration'] = null;
+        if (array_key_exists('attachments', $data)) {
+            $data['attachments'] = [];
+        }
+
+        return $data;
     }
 
     /**
@@ -1592,7 +1617,12 @@ class MessageService
             $message->edited_at = now();
         }
 
-        $message->save();
+        // F-163: the edit and the broker copy change together, so an edit can
+        // never land without the review queue seeing the new text.
+        DB::transaction(function () use ($message, $newBody): void {
+            $message->save();
+            app(BrokerMessageVisibilityService::class)->refreshCopyAfterEdit((int) $message->id, $newBody);
+        });
 
         return [
             'id'         => $message->id,

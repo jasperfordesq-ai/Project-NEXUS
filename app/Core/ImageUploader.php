@@ -110,13 +110,24 @@ class ImageUploader
         }
 
         // Auto-resize oversized images (unless explicit dimensions provided)
+        $reencoded = false;
         if (empty($options['width']) && empty($options['crop'])) {
-            self::autoResizeIfNeeded($targetPath);
+            $reencoded = self::autoResizeIfNeeded($targetPath);
         }
 
         // Process Image (Resize/Crop) - explicit options from caller
         if (!empty($options['crop']) || !empty($options['width'])) {
             self::processImage($targetPath, $options);
+            $reencoded = true;
+        }
+
+        // Strip metadata from every JPEG/PNG/WebP (F-192). Only a resize used to
+        // re-encode, so a photo of 1920px or less kept its EXIF block — GPS
+        // position included — and was served publicly as uploaded. Re-encoding
+        // through GD writes pixels only; the orientation flag is applied to the
+        // pixels first so portrait photos stay upright.
+        if (!$reencoded && \in_array($imageInfo['mime'] ?? '', ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            self::processImage($targetPath, []);
         }
 
         // Auto-convert to WebP for performance (JPG/PNG only)
@@ -218,15 +229,18 @@ class ImageUploader
     /**
      * Auto-resize image if it exceeds maximum dimensions.
      */
-    private static function autoResizeIfNeeded(string $path): void
+    /**
+     * @return bool True when the image was re-encoded (resized).
+     */
+    private static function autoResizeIfNeeded(string $path): bool
     {
         if (!\function_exists('imagecreatefromjpeg')) {
-            return;
+            return false;
         }
 
         $info = @\getimagesize($path);
         if (!$info) {
-            return;
+            return false;
         }
 
         $srcWidth = $info[0];
@@ -234,7 +248,7 @@ class ImageUploader
         $maxDim = self::$maxDimension;
 
         if ($srcWidth <= $maxDim && $srcHeight <= $maxDim) {
-            return;
+            return false;
         }
 
         if ($srcWidth > $srcHeight) {
@@ -251,6 +265,8 @@ class ImageUploader
         ]);
 
         \Illuminate\Support\Facades\Log::warning("Auto-resized image: {$srcWidth}x{$srcHeight} -> {$newWidth}x{$newHeight}");
+
+        return true;
     }
 
     private static function processImage($path, $options)
@@ -293,11 +309,27 @@ class ImageUploader
         if ($mime === 'image/jpeg' && \function_exists('exif_read_data')) {
             $exif = @\exif_read_data($path);
             if ($exif && !empty($exif['Orientation'])) {
+                // The re-encode below drops the orientation tag, so every
+                // variant — mirrored ones included — must go into the pixels.
                 switch ((int) $exif['Orientation']) {
+                    case 2: // mirrored horizontally
+                        \imageflip($image, IMG_FLIP_HORIZONTAL);
+                        break;
                     case 3: // 180°
                         $image = \imagerotate($image, 180, 0);
                         break;
+                    case 4: // mirrored vertically
+                        \imageflip($image, IMG_FLIP_VERTICAL);
+                        break;
+                    case 5: // mirrored, then 90° CCW
+                        \imageflip($image, IMG_FLIP_HORIZONTAL);
+                        $image = \imagerotate($image, 90, 0);
+                        break;
                     case 6: // 90° CW (phone held upright)
+                        $image = \imagerotate($image, -90, 0);
+                        break;
+                    case 7: // mirrored, then 90° CW
+                        \imageflip($image, IMG_FLIP_HORIZONTAL);
                         $image = \imagerotate($image, -90, 0);
                         break;
                     case 8: // 90° CCW
@@ -311,7 +343,14 @@ class ImageUploader
         }
 
         $targetWidth = $options['width'] ?? $srcWidth;
-        $targetHeight = $options['height'] ?? ($options['crop'] ? $targetWidth : $srcHeight);
+        $targetHeight = $options['height'] ?? (!empty($options['crop']) ? $targetWidth : $srcHeight);
+
+        // Plain re-encode (no resize/crop): keep PNG/WebP transparency, which
+        // GD otherwise drops when writing the image it loaded.
+        if (empty($options['crop']) && !isset($options['width']) && ($mime === 'image/png' || $mime === 'image/webp')) {
+            \imagealphablending($image, false);
+            \imagesavealpha($image, true);
+        }
 
         if (!empty($options['crop'])) {
             $thumbRatio = $targetWidth / $targetHeight;

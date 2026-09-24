@@ -157,6 +157,10 @@ class SvgUploader
             throw new \Exception('Root element must be <svg>.');
         }
 
+        // scrubNode() vets the attributes of each CHILD it visits, never those of
+        // the node it is given — so the root <svg> must be scrubbed explicitly,
+        // or `<svg onload=…>` survives (F-162).
+        self::scrubAttributes($dom->documentElement);
         self::scrubNode($dom->documentElement);
 
         $out = $dom->saveXML($dom->documentElement);

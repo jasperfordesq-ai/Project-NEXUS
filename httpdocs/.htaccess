@@ -151,6 +151,18 @@ RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|pht|phar)(?:/|$) - [F,L,NC]
 
     # HSTS (only on HTTPS)
     Header setifempty Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+
+    # Uploaded files are user-controlled content served from this origin. If
+    # one is ever opened directly as a document (an SVG logo, say), it must
+    # not be able to run script or reach anything: no script, no network, no
+    # forms, sandboxed. Images, audio and video embedded by the apps are
+    # unaffected — a CSP on a sub-resource applies only when it is opened as
+    # a page. Scoped with <If> because uploads/.htaccess is a separate
+    # per-directory config, and on production httpdocs/uploads is a volume
+    # whose .htaccess does not come from this repository (E-035 F-162).
+    <If "%{REQUEST_URI} =~ m#^/uploads/#">
+        Header set Content-Security-Policy "default-src 'none'; img-src 'self' data:; media-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; sandbox"
+    </If>
 </IfModule>
 
 # 1. HTTPS and WWW Redirect - COMPLETELY DISABLED FOR CLOUDFLARE
