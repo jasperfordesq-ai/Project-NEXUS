@@ -417,7 +417,7 @@ class WebAuthnControllerTest extends TestCase
         $this->apiPost(
             '/webauthn/auth-verify',
             $payload,
-            ['Origin' => 'https://accessible.example.test']
+            ['Host' => 'accessible.example.test', 'Origin' => 'https://accessible.example.test']
         )
             ->assertStatus(401)
             ->assertJsonPath('errors.0.code', 'AUTH_WEBAUTHN_ORIGIN_NOT_ALLOWED');
@@ -827,7 +827,7 @@ class WebAuthnControllerTest extends TestCase
             0x1D
         );
 
-        $this->apiPost('/webauthn/auth-verify', $payload, ['Origin' => 'http://localhost'])
+        $response = $this->apiPost('/webauthn/auth-verify', $payload, ['Origin' => 'http://localhost'])
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('user.id', (int) $user->id)
@@ -835,10 +835,13 @@ class WebAuthnControllerTest extends TestCase
             ->assertJsonPath('sanctum_token', null)
             ->assertJsonStructure([
                 'access_token',
-                'refresh_token',
+                'session_binding',
                 'security_confirmation_token',
                 'security_confirmation_expires_in',
             ]);
+
+        $this->assertArrayNotHasKey('refresh_token', $response->json());
+        $this->assertNotEmpty($response->headers->getCookies());
 
         $updated = DB::table('webauthn_credentials')
             ->where('credential_id', $credential['credential_id'])
