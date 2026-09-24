@@ -256,6 +256,10 @@ class FederationFeatureService
      */
     public function isExternalFederationEnabled(): bool
     {
+        if (! config('external_partners.enabled', false)) {
+            return false;
+        }
+
         if (! $this->isGloballyEnabled()) {
             return false;
         }
@@ -395,6 +399,10 @@ class FederationFeatureService
      */
     public function setExternalFederation(bool $enabled, int $adminId, ?string $reason = null): bool
     {
+        if ($enabled && !config('external_partners.enabled', false)) {
+            return false;
+        }
+
         try {
             DB::table('federation_system_control')->where('id', 1)->update([
                 'external_federation_enabled' => $enabled ? 1 : 0,

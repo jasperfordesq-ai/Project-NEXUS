@@ -30,6 +30,10 @@ class PartnerApiKillSwitch
     /** Emergency lockdown stops the Partner API too — one big red button. */
     public function isEnabled(): bool
     {
+        if (! config('external_partners.enabled', false)) {
+            return false;
+        }
+
         if ($this->cache !== null) {
             return $this->cache;
         }

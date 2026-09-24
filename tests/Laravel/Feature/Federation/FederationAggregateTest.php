@@ -37,6 +37,26 @@ final class FederationAggregateTest extends TestCase
         parent::setUp();
         $this->service = new FederationAggregateService();
         $this->enableAggregateFederation();
+        $this->setCaringCommunityFeature(true);
+    }
+
+    private function setCaringCommunityFeature(bool $enabled): void
+    {
+        $row = DB::table('tenants')->where('id', $this->testTenantId)->first(['features']);
+        $features = json_decode($row->features ?? '{}', true, 512, JSON_THROW_ON_ERROR);
+        $features['caring_community'] = $enabled;
+        DB::table('tenants')->where('id', $this->testTenantId)
+            ->update(['features' => json_encode($features, JSON_THROW_ON_ERROR)]);
+        TenantContext::setById($this->testTenantId);
+    }
+
+    public function test_aggregate_is_unavailable_when_target_tenant_turns_caring_off_despite_consent(): void
+    {
+        $this->service->setEnabled($this->testTenantId, true);
+        $this->setCaringCommunityFeature(false);
+
+        $this->getJson("/api/v2/federation/aggregates?tenant_slug={$this->testTenantSlug}")
+            ->assertNotFound();
     }
 
     /**

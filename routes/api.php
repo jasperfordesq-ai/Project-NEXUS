@@ -2876,11 +2876,13 @@ Route::post('/v2/admin/federation/api-keys/{id}/revoke', [\App\Http\Controllers\
 Route::get('/v2/admin/federation/data', [\App\Http\Controllers\Api\AdminFederationController::class, 'dataManagement']);
 Route::get('/v2/admin/federation/export/{type}', [\App\Http\Controllers\Api\AdminFederationController::class, 'exportData']);
 // Federation cross-node aggregate consent (R1+R2 — Caring Community federation)
-Route::get('/v2/admin/federation/aggregate-consent', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'consent']);
-Route::put('/v2/admin/federation/aggregate-consent', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'updateConsent']);
-Route::post('/v2/admin/federation/aggregate-consent/rotate-secret', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'rotateSecret']);
-Route::get('/v2/admin/federation/aggregate-consent/audit-log', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'auditLog']);
-Route::get('/v2/admin/federation/aggregate-consent/preview', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'preview']);
+Route::middleware('feature:caring_community')->group(function () {
+    Route::get('/v2/admin/federation/aggregate-consent', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'consent']);
+    Route::put('/v2/admin/federation/aggregate-consent', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'updateConsent']);
+    Route::post('/v2/admin/federation/aggregate-consent/rotate-secret', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'rotateSecret']);
+    Route::get('/v2/admin/federation/aggregate-consent/audit-log', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'auditLog']);
+    Route::get('/v2/admin/federation/aggregate-consent/preview', [\App\Http\Controllers\Api\AdminFederationAggregateController::class, 'preview']);
+});
 // Enhanced federation analytics overview (KPIs + chart data)
 Route::get('/v2/admin/federation/analytics/overview', [\App\Http\Controllers\Api\AdminFederationAnalyticsController::class, 'overview']);
 // Federation data management: full export / import / purge

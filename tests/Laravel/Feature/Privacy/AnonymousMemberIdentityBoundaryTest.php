@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Privacy;
 
+use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,15 @@ class AnonymousMemberIdentityBoundaryTest extends TestCase
 
     public function test_identity_bearing_get_endpoints_require_authentication(): void
     {
+        // The auth boundary is the property under test, so enable the
+        // separately controlled Caring module before checking its routes.
+        $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first(['features']);
+        $features = json_decode($tenant->features ?? '{}', true, 512, JSON_THROW_ON_ERROR);
+        $features['caring_community'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)
+            ->update(['features' => json_encode($features, JSON_THROW_ON_ERROR)]);
+        TenantContext::setById($this->testTenantId);
+
         foreach (self::identityBearingGetEndpoints() as $label => [$endpoint]) {
             $response = $this->apiGet($endpoint);
 

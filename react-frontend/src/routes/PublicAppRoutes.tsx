@@ -167,7 +167,7 @@ export function PublicAppRoutes() {
         <Route path="whats-on/:id" element={<FeatureGate feature="events" redirect="/"><FeatureGate feature="public_events" redirect="/"><FeatureErrorBoundary featureName={navLabel('events')}><PublicEventDetailPage /></FeatureErrorBoundary></FeatureGate></FeatureGate>} />
         <Route path="pricing" element={<ErrorBoundary><PricingPage /></ErrorBoundary>} />
         <Route path={CARING_COMMUNITY_ROUTE.path} element={<FeatureGate feature={CARING_COMMUNITY_ROUTE.feature} fallback={<ComingSoonPage feature={label('caring_community')} />}><FeatureErrorBoundary featureName={label('caring_community')}><CaringCommunityPage /></FeatureErrorBoundary></FeatureGate>} />
-        <Route path="join/:code" element={<ErrorBoundary><InviteRedemptionPage /></ErrorBoundary>} />
+        <Route path="join/:code" element={<FeatureGate feature="caring_community" fallback={<ComingSoonPage feature={label('caring_community')} />}><ErrorBoundary><InviteRedemptionPage /></ErrorBoundary></FeatureGate>} />
         <Route path="*" element={<ErrorBoundary><NotFoundPage /></ErrorBoundary>} />
       </Route>
     </>

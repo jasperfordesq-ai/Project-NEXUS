@@ -631,8 +631,8 @@ export function AppRoutes() {
           </ProtectedRoute>
         } />
 
-        {/* Public: Caring Community invite redemption â€” no auth, no feature gate needed */}
-        <Route path="join/:code" element={<ErrorBoundary><InviteRedemptionPage /></ErrorBoundary>} />
+        {/* Public invite redemption still requires the Caring Community feature. */}
+        <Route path="join/:code" element={<FeatureGate feature="caring_community" fallback={<ComingSoonPage feature={t('coming_soon.features.caring_community')} />}><ErrorBoundary><InviteRedemptionPage /></ErrorBoundary></FeatureGate>} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>

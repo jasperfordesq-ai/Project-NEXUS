@@ -95,6 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Keep external Partner API and partner federation traffic closed by default on new rollouts, even if database switches are enabled. Caring Community's disabled state now blocks its API routes and invite lookup, external Caring data paths and the React invite page (F-150).
+
 - Patched development dependencies used by the root, React and accessible frontends, including the SVG optimizer. Unused accessibility and HeroUI command-line packages were removed. The React test runner and Lighthouse CI archive dependency still need compatible upstream fixes.
 
 - Hardened legacy community-link redirects on custom accessible domains with path and origin validation while preserving safe local paths and their query strings.

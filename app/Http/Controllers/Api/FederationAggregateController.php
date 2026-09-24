@@ -57,6 +57,12 @@ class FederationAggregateController extends BaseApiController
             return $this->silent404();
         }
 
+        // The report describes the requested tenant, which may differ from the
+        // tenant resolved from the HTTP host. Honour that tenant's master switch.
+        if (!TenantContext::runForTenant((int) $tenant->id, static fn (): bool => TenantContext::hasFeature('caring_community'))) {
+            return $this->silent404();
+        }
+
         $consent = $this->service->getConsentInternal((int) $tenant->id);
         if (!$consent || !((bool) $consent->enabled) || empty($consent->signing_secret)) {
             return $this->silent404();

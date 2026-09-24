@@ -108,6 +108,10 @@ abstract class TestCase extends BaseTestCase
      */
     protected function setUpExternalAccessControls(): void
     {
+        // Functional protocol tests opt in deliberately; every real rollout
+        // defaults to the independent environment-level hold.
+        config()->set('external_partners.enabled', true);
+
         try {
             // Mirror FederationFeatureService::initializeSystemDefaults() in
             // full, not just the external columns. This row is a singleton, so

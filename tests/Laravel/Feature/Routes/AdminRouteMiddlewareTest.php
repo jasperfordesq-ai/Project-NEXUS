@@ -6,8 +6,10 @@
 
 namespace Tests\Laravel\Feature\Routes;
 
+use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -26,6 +28,17 @@ use Tests\Laravel\TestCase;
 class AdminRouteMiddlewareTest extends TestCase
 {
     use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first(['features']);
+        $features = json_decode($tenant->features ?? '{}', true, 512, JSON_THROW_ON_ERROR);
+        $features['caring_community'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)
+            ->update(['features' => json_encode($features, JSON_THROW_ON_ERROR)]);
+        TenantContext::setById($this->testTenantId);
+    }
 
     /** Representative admin route from each hardened block. */
     public static function adminRoutes(): array

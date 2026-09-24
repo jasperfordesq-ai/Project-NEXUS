@@ -99,6 +99,22 @@ final class PartnerApiKillSwitchTest extends TestCase
         $this->assertStringNotContainsString('partner_api_disabled', (string) $response->getContent());
     }
 
+    public function test_new_rollout_environment_hold_blocks_both_external_surfaces_even_if_database_switches_are_on(): void
+    {
+        $this->seedControls([
+            'partner_api_enabled' => 1,
+            'external_federation_enabled' => 1,
+            'external_protocol_credit_commons_enabled' => 1,
+        ]);
+        config()->set('external_partners.enabled', false);
+
+        $this->assertFalse(app(PartnerApiKillSwitch::class)->isEnabled());
+        $this->assertFalse(app(FederationFeatureService::class)->isExternalFederationEnabled());
+        $this->postJson('/api/partner/v1/oauth/token')->assertStatus(503)
+            ->assertJsonPath('errors.0.code', 'partner_api_disabled');
+        $this->getJson('/api/v2/federation/cc/about')->assertStatus(503);
+    }
+
     public function test_emergency_lockdown_also_blocks_the_partner_api(): void
     {
         $this->seedControls(['partner_api_enabled' => 1, 'emergency_lockdown_active' => 1]);

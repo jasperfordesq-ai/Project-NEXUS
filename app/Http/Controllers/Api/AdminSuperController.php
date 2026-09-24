@@ -2105,6 +2105,16 @@ class AdminSuperController extends BaseApiController
             )),
         ];
 
+        if (!config('external_partners.enabled', false)) {
+            foreach ($allowedFields as $field) {
+                if (($field === 'partner_api_enabled' || $field === 'external_federation_enabled'
+                    || str_starts_with($field, 'external_protocol_'))
+                    && !empty($input[$field])) {
+                    return $this->respondWithError('EXTERNAL_PARTNER_APIS_DISABLED', __('api.service_unavailable'), null, 403);
+                }
+            }
+        }
+
         $updates = [];
         $params = [];
         $touchesExternalFederation = false;

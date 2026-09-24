@@ -407,4 +407,42 @@ class HourTransferTest extends TestCase
             'A forged signature must not credit the destination wallet.'
         );
     }
+
+    public function test_inbound_refuses_a_valid_peer_when_destination_caring_is_disabled(): void
+    {
+        $sourceSlug = (string) DB::table('tenants')->where('id', self::SOURCE_TENANT_ID)->value('slug');
+        $secret = str_repeat('d', 64);
+        DB::table('caring_federation_peers')->insert([
+            'tenant_id' => $this->destinationTenantId,
+            'peer_slug' => $sourceSlug,
+            'display_name' => 'Disabled Destination Source',
+            'base_url' => 'https://93.184.216.34',
+            'shared_secret' => $secret,
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $email = 'disabled.' . uniqid() . '@example.com';
+        $destinationUser = $this->makeUser($this->destinationTenantId, $email, 4.0);
+        $payload = [
+            'source_tenant_slug' => $sourceSlug,
+            'destination_tenant_slug' => $this->destinationSlug,
+            'source_member_email' => $email,
+            'hours' => 3.5,
+            'reason' => 'disabled destination',
+            'transfer_id' => random_int(10000, 99999),
+            'generated_at' => now()->toIso8601String(),
+        ];
+        $signature = app(CaringHourTransferService::class)->signPayload($payload, $secret);
+        $this->setCaringCommunityFeature($this->destinationTenantId, false);
+
+        $this->postJson('/api/v2/federation/hour-transfer/inbound', [
+            'payload' => $payload,
+            'signature' => $signature,
+        ])->assertNotFound();
+
+        $this->assertEqualsWithDelta(4.0, (float) DB::table('users')->where('id', $destinationUser)->value('balance'), 0.001);
+        $this->assertSame(0, DB::table('caring_hour_transfers')->where('tenant_id', $this->destinationTenantId)
+            ->where('remote_idempotency_key', $sourceSlug . ':' . $payload['transfer_id'])->count());
+    }
 }

@@ -654,6 +654,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // it cannot affect the web frontend.
             \App\Http\Middleware\EnforceMobileMinimumVersion::class,
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\EnsureCaringCommunityEnabled::class,
             \App\Http\Middleware\SeoRedirectMiddleware::class,
         ], append: [
             'throttle:api',

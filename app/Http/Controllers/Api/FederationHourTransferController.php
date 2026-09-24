@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Core\TenantContext;
 use App\Services\CaringCommunity\CaringHourTransferService;
 use App\Services\CaringCommunity\FederationPeerService;
 use Illuminate\Http\JsonResponse;
@@ -71,6 +72,11 @@ class FederationHourTransferController extends BaseApiController
         }
 
         $destinationTenantId = (int) $context['tenant']['id'];
+        if (!TenantContext::runForTenant($destinationTenantId, static fn (): bool => TenantContext::hasFeature('caring_community'))) {
+            // Match the unknown-peer response so the disabled destination is
+            // not distinguishable from an unregistered destination.
+            return $this->respondWithError('FEDERATION_PEER_UNKNOWN', 'Peer is not registered for this destination.', null, 404);
+        }
 
         // Run the transfer in the destination tenant's own scope. We don't
         // need TenantContext since the service takes the tenant id directly.

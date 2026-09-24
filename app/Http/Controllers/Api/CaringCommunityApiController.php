@@ -542,6 +542,10 @@ class CaringCommunityApiController extends BaseApiController
      */
     public function lookupInvite(string $code): JsonResponse
     {
+        if (!TenantContext::hasFeature('caring_community')) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
+        }
+
         $tenantId = TenantContext::getId();
         $result   = $this->inviteCodeService->lookup($tenantId, strtoupper(trim($code)));
 
