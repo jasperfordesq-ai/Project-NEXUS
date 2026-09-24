@@ -185,10 +185,14 @@ async function authenticateViaApi(
   // Credential responses keep the refresh secret in a host-only HttpOnly cookie.
   const accessToken = loginData?.data?.access_token || loginData?.access_token;
   const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
-  const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
+  const tenantId = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+    || loginData?.data?.tenant_id || loginData?.tenant_id;
 
   if (!accessToken || typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
     throw new Error('Browser API login did not return an access token and session binding');
+  }
+  if (!Number.isSafeInteger(Number(tenantId)) || Number(tenantId) <= 0) {
+    throw new Error('Browser API login did not return a tenant ID');
   }
 
   const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;

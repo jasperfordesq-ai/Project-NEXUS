@@ -1826,6 +1826,11 @@ jobs:
           }
           echo "CI stack is healthy — all services passed their healthchecks."
 
+      - name: Verify committed mobile API routes against running Laravel
+        run: |
+          docker compose -f compose.ci.yml exec -T app php artisan route:list --json > "$RUNNER_TEMP/nexus-ci-routes.json"
+          node mobile/scripts/check-live-route-inventory.mjs "$RUNNER_TEMP/nexus-ci-routes.json"
+
       - name: Run Playwright Smoke Tests
         run: |
           npx playwright test e2e/tests/smoke.spec.ts --grep @smoke --project=chromium-modern || {

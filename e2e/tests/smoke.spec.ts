@@ -80,9 +80,13 @@ async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
         origin: browserOrigin,
       });
       const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
-      const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
+      const tenantId = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+        || loginData?.data?.tenant_id || loginData?.tenant_id;
       if (typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
         throw new Error(`E2E ${kind} browser login did not return a session binding`);
+      }
+      if (!Number.isSafeInteger(Number(tenantId)) || Number(tenantId) <= 0) {
+        throw new Error(`E2E ${kind} browser login did not return a tenant ID`);
       }
       const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;
       const cookies = await page.context().cookies(browserOrigin);

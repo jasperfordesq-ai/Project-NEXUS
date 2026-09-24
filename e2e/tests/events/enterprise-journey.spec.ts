@@ -222,7 +222,8 @@ async function loginActor(kind: 'user' | 'admin'): Promise<ActorSession> {
   });
   const token = loginData?.data?.access_token || loginData?.access_token;
   const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
-  const tenantId = Number(loginData?.data?.tenant_id || loginData?.tenant_id || process.env.E2E_TENANT_ID);
+  const tenantId = Number(loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+    || loginData?.data?.tenant_id || loginData?.tenant_id || process.env.E2E_TENANT_ID);
   if (typeof token !== 'string' || typeof sessionBinding !== 'string'
     || !/^[a-f0-9]{64}$/.test(sessionBinding)
     || !Number.isSafeInteger(tenantId) || tenantId <= 0) {
