@@ -34,8 +34,21 @@ vi.mock('@/lib/safeStorage', () => ({
 
 // hasFeature is the critical switch for this component
 const mockHasFeature = vi.fn(() => false);
+const mockIsAuthenticated = vi.fn(() => true);
+const mockUser = vi.fn(() => ({ id: 7 }));
 
 vi.mock('@/contexts', () => createMockContexts({
+  useAuth: () => ({
+    user: mockUser(),
+    isAuthenticated: mockIsAuthenticated(),
+    login: vi.fn(),
+    logout: vi.fn(),
+    register: vi.fn(),
+    updateUser: vi.fn(),
+    refreshUser: vi.fn(),
+    status: 'authenticated' as const,
+    error: null,
+  }),
   useTenant: () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
@@ -50,6 +63,13 @@ import { FadpConsentBanner } from './FadpConsentBanner';
 function renderBanner() {
   return render(<FadpConsentBanner />);
 }
+
+const consentStorageKey = 'fadp_consented:2:7';
+
+beforeEach(() => {
+  mockIsAuthenticated.mockReturnValue(true);
+  mockUser.mockReturnValue({ id: 7 });
+});
 
 describe('FadpConsentBanner — gate / visibility', () => {
   beforeEach(() => {
@@ -72,9 +92,17 @@ describe('FadpConsentBanner — gate / visibility', () => {
     expect(banner.className).toContain('var(--safe-area-bottom)');
   });
 
+  it('does not offer authenticated consent actions to a guest', () => {
+    mockHasFeature.mockReturnValue(true);
+    mockIsAuthenticated.mockReturnValue(false);
+    renderBanner();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
   it('renders nothing when already dismissed (localStorage fadp_consented=true)', () => {
     mockHasFeature.mockReturnValue(true);
-    mockStorageMap['fadp_consented'] = 'true';
+    mockStorageMap[consentStorageKey] = 'true';
     renderBanner();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
@@ -104,13 +132,21 @@ describe('FadpConsentBanner — dismiss (X button)', () => {
   it('sets localStorage flag on dismiss', () => {
     renderBanner();
     fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
-    expect(mockStorageMap['fadp_consented']).toBe('true');
+    expect(mockStorageMap[consentStorageKey]).toBe('true');
   });
 
   it('does NOT call the consent API when dismissing via X button', () => {
     renderBanner();
     fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
     expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('does not dismiss the banner for another member on the same browser', () => {
+    const { rerender } = renderBanner();
+    fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
+    mockUser.mockReturnValue({ id: 8 });
+    rerender(<FadpConsentBanner />);
+    expect(screen.getByRole('region')).toBeInTheDocument();
   });
 });
 
@@ -140,7 +176,7 @@ describe('FadpConsentBanner — accept action', () => {
     renderBanner();
     fireEvent.click(screen.getByText('Accept AI features'));
     await waitFor(() => expect(screen.queryByRole('region')).not.toBeInTheDocument());
-    expect(mockStorageMap['fadp_consented']).toBe('true');
+    expect(mockStorageMap[consentStorageKey]).toBe('true');
   });
 
   it('retains the banner with a retryable error if the API call throws', async () => {
@@ -149,7 +185,7 @@ describe('FadpConsentBanner — accept action', () => {
     fireEvent.click(screen.getByText('Accept AI features'));
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(screen.getByRole('region')).toBeInTheDocument();
-    expect(mockStorageMap['fadp_consented']).toBeUndefined();
+    expect(mockStorageMap[consentStorageKey]).toBeUndefined();
   });
 
   it('retains the banner when the API resolves a failure envelope', async () => {
@@ -159,7 +195,7 @@ describe('FadpConsentBanner — accept action', () => {
 
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(screen.getByRole('region')).toBeInTheDocument();
-    expect(mockStorageMap['fadp_consented']).toBeUndefined();
+    expect(mockStorageMap[consentStorageKey]).toBeUndefined();
   });
 });
 
@@ -189,7 +225,7 @@ describe('FadpConsentBanner — decline action', () => {
     renderBanner();
     fireEvent.click(screen.getByText('Use basic features only'));
     await waitFor(() => expect(screen.queryByRole('region')).not.toBeInTheDocument());
-    expect(mockStorageMap['fadp_consented']).toBe('true');
+    expect(mockStorageMap[consentStorageKey]).toBe('true');
   });
 
   it('retains the banner if the decline API call throws', async () => {
@@ -198,6 +234,6 @@ describe('FadpConsentBanner — decline action', () => {
     fireEvent.click(screen.getByText('Use basic features only'));
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(screen.getByRole('region')).toBeInTheDocument();
-    expect(mockStorageMap['fadp_consented']).toBeUndefined();
+    expect(mockStorageMap[consentStorageKey]).toBeUndefined();
   });
 });

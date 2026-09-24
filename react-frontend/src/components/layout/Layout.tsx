@@ -155,7 +155,7 @@ export function Layout({
         )}
 
         {/* AG42 — Swiss FADP consent banner (fadp_compliance feature tenants only) */}
-        {hasFeature('fadp_compliance') && (
+        {isAuthenticated && hasFeature('fadp_compliance') && (
           <Suspense fallback={null}>
             <FadpConsentBanner />
           </Suspense>

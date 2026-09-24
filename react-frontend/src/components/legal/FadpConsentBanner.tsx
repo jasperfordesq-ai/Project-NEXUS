@@ -22,29 +22,29 @@ import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import api from '@/lib/api';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
 
-const STORAGE_KEY = 'fadp_consented';
+const STORAGE_KEY_PREFIX = 'fadp_consented';
 
 export function FadpConsentBanner() {
   const { t } = useTranslation('legal');
-  const { hasFeature } = useTenant();
+  const { isAuthenticated, user } = useAuth();
+  const { hasFeature, tenant } = useTenant();
+  const storageKey = `${STORAGE_KEY_PREFIX}:${tenant?.id}:${user?.id}`;
 
-  const [dismissed, setDismissed] = useState<boolean>(
-    () => safeLocalStorageGet(STORAGE_KEY) === 'true'
-  );
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
   const [loading, setLoading] = useState<'accept' | 'decline' | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
 
-  // Only render for tenants with FADP compliance feature
-  if (!hasFeature('fadp_compliance')) return null;
-  if (dismissed) return null;
+  // The consent endpoint records a decision for a signed-in member only.
+  if (!isAuthenticated || !user?.id || !tenant?.id || !hasFeature('fadp_compliance')) return null;
+  if (dismissedKey === storageKey || safeLocalStorageGet(storageKey) === 'true') return null;
 
   const dismiss = () => {
-    safeLocalStorageSet(STORAGE_KEY, 'true');
-    setDismissed(true);
+    safeLocalStorageSet(storageKey, 'true');
+    setDismissedKey(storageKey);
   };
 
   const handleConsent = async (action: 'granted' | 'withdrawn') => {
