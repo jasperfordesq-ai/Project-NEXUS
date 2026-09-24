@@ -6,7 +6,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
 import { DEFAULT_TENANT } from './test-utils';
-import { completeTwoFactorIfChallenged } from './two-factor';
+import { completeTwoFactorIfChallenged, completedLoginTenantId } from './two-factor';
 
 /** Start a distinct browser session before loading the SPA in each test. */
 export async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
@@ -23,12 +23,12 @@ export async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<
       headers: { 'Content-Type': 'application/json', 'X-Tenant-Slug': DEFAULT_TENANT, Origin: browserOrigin },
     });
     if (response.ok()) {
-      const loginData = await completeTwoFactorIfChallenged(await response.json(), {
+      const loginContext = {
         request: page.request, apiBaseUrl: browserOrigin, tenantSlug: DEFAULT_TENANT, email, origin: browserOrigin,
-      });
+      };
+      const loginData = await completeTwoFactorIfChallenged(await response.json(), loginContext);
       const binding = loginData?.data?.session_binding || loginData?.session_binding;
-      const tenantId = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
-        || loginData?.data?.tenant_id || loginData?.tenant_id;
+      const tenantId = await completedLoginTenantId(loginData, loginContext);
       if (typeof binding !== 'string' || !/^[a-f0-9]{64}$/.test(binding)) {
         throw new Error(`E2E ${kind} browser login did not return a session binding`);
       }

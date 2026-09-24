@@ -13,7 +13,7 @@ import {
   pinSpaApiToCandidate,
   DEFAULT_TENANT,
 } from '../helpers/test-utils';
-import { completeTwoFactorIfChallenged } from '../helpers/two-factor';
+import { completeTwoFactorIfChallenged, completedLoginTenantId } from '../helpers/two-factor';
 
 /**
  * Smoke Test Suite — Deployment Gate
@@ -72,16 +72,16 @@ async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
       },
     });
     if (response.ok()) {
-      const loginData = await completeTwoFactorIfChallenged(await response.json(), {
+      const loginContext = {
         request: page.request,
         apiBaseUrl: browserOrigin,
         tenantSlug: DEFAULT_TENANT,
         email,
         origin: browserOrigin,
-      });
+      };
+      const loginData = await completeTwoFactorIfChallenged(await response.json(), loginContext);
       const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
-      const tenantId = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
-        || loginData?.data?.tenant_id || loginData?.tenant_id;
+      const tenantId = await completedLoginTenantId(loginData, loginContext);
       if (typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
         throw new Error(`E2E ${kind} browser login did not return a session binding`);
       }

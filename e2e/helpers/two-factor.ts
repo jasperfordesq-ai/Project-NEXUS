@@ -138,3 +138,28 @@ export async function completeTwoFactorIfChallenged(loginData: any, ctx: TwoFact
 
   return loginData;
 }
+
+/** The first-time MFA setup response has tokens but no profile fields. */
+export async function completedLoginTenantId(loginData: any, ctx: TwoFactorLoginContext): Promise<number> {
+  const direct = loginData?.data?.user?.tenant_id || loginData?.user?.tenant_id
+    || loginData?.data?.tenant_id || loginData?.tenant_id;
+  if (Number.isSafeInteger(Number(direct)) && Number(direct) > 0) return Number(direct);
+
+  const accessToken = loginData?.data?.access_token || loginData?.access_token;
+  if (typeof accessToken !== 'string' || accessToken === '') {
+    throw new Error('Completed login has neither a tenant ID nor an access token');
+  }
+  const profile = await ctx.request.get(`${ctx.apiBaseUrl}/api/v2/users/me`, {
+    headers: {
+      'X-Tenant-Slug': ctx.tenantSlug,
+      Authorization: `Bearer ${accessToken}`,
+      ...(ctx.origin ? { Origin: ctx.origin } : {}),
+    },
+  });
+  const profileBody = await profile.json();
+  const tenantId = profileBody?.data?.tenant_id;
+  if (!profile.ok() || !Number.isSafeInteger(Number(tenantId)) || Number(tenantId) <= 0) {
+    throw new Error(`Completed login profile has no tenant ID (${profile.status()})`);
+  }
+  return Number(tenantId);
+}
