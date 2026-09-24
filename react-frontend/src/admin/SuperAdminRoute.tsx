@@ -28,6 +28,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
+import { AuthUnavailableScreen } from '@/components/routing/AuthUnavailableScreen';
 import { canAccessSuperPanel, superPanelLevel } from '@/lib/access';
 
 export function SuperAdminRoute() {
@@ -37,6 +38,10 @@ export function SuperAdminRoute() {
 
   if (isLoading || status === 'loading') {
     return <LoadingScreen message={t('layout.loading')} />;
+  }
+
+  if (status === 'unavailable') {
+    return <AuthUnavailableScreen />;
   }
 
   /*
@@ -69,6 +74,10 @@ export function PlatformOnlyRoute() {
 
   if (isLoading || status === 'loading') {
     return <LoadingScreen message={t('layout.loading')} />;
+  }
+
+  if (status === 'unavailable') {
+    return <AuthUnavailableScreen />;
   }
 
   if (superPanelLevel(user) !== 'master') {

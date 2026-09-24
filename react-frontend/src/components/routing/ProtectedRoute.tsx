@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
+import { AuthUnavailableScreen } from './AuthUnavailableScreen';
 import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
 
@@ -41,7 +42,7 @@ const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation('common');
-  const { isAuthenticated, isLoading, status, user, refreshUser } = useAuth();
+  const { isAuthenticated, isLoading, status, user } = useAuth();
   const { tenantPath, tenant } = useTenant();
   const location = useLocation();
   const {
@@ -60,15 +61,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (status === 'unavailable') {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4" role="alert">
-        <div className="max-w-sm text-center">
-          <h1 className="text-xl font-semibold text-theme-primary">{t('errors.unexpected')}</h1>
-          <p className="mt-2 text-sm text-theme-muted">{t('errors.connection_failed_detail')}</p>
-          <Button className="mt-5" onPress={() => { void refreshUser(); }}>{t('actions.retry')}</Button>
-        </div>
-      </div>
-    );
+    return <AuthUnavailableScreen />;
   }
 
   // Redirect to login if not authenticated, preserving tenant slug prefix

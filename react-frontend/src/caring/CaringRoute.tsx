@@ -6,6 +6,7 @@
 import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, useTenant } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
+import { AuthUnavailableScreen } from '@/components/routing/AuthUnavailableScreen';
 import { stripTenantSlug } from '@/lib/tenant-routing';
 import { hasFullCaringAccess, hasSafeguardingAccess } from './access';
 
@@ -19,6 +20,10 @@ export function CaringRoute() {
 
   if (isLoading || status === 'loading') {
     return <LoadingScreen />;
+  }
+
+  if (status === 'unavailable') {
+    return <AuthUnavailableScreen />;
   }
 
   if (!isAuthenticated) {
