@@ -29,9 +29,62 @@ class ApiPartnerAdminController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * F-175: scopes that can mint or move time credits. Granting these is a
+     * platform-level decision — a tenant admin must never be able to create a
+     * partner integration that can write to the wallet.
+     */
+    private const CREDIT_WRITING_SCOPES = ['wallet.write'];
+
+    /**
+     * F-175: the Partner API is a per-community opt-in feature (default OFF in
+     * TenantFeatureConfig). A tenant admin may only manage partner records when
+     * their community has the `partner_api` feature enabled. This is distinct
+     * from the platform-wide kill switch (EnsurePartnerApiEnabled): the flag was
+     * declared but enforced nowhere, so any tenant admin could create bearer-token
+     * partners against their members and wallet.
+     *
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
+    private function requirePartnerApiFeature(): void
+    {
+        if (! TenantContext::hasFeature('partner_api')) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->error(__('api.partner_api.disabled'), 403, 'PARTNER_API_DISABLED')
+            );
+        }
+    }
+
+    /**
+     * F-175: reject any attempt by a non-platform-super-admin to grant a
+     * credit-writing scope. Returns an error response to bubble up, or null when
+     * the requested scopes are acceptable for the caller.
+     *
+     * @param array<int,mixed> $requestedScopes
+     */
+    private function rejectReservedScopes(array $requestedScopes): ?JsonResponse
+    {
+        $reserved = array_intersect(
+            array_map(static fn ($s): string => (string) $s, $requestedScopes),
+            self::CREDIT_WRITING_SCOPES
+        );
+
+        if (! empty($reserved) && ! $this->isPlatformSuperAdmin()) {
+            return $this->respondWithError(
+                'SCOPE_NOT_ALLOWED',
+                __('api.super_admin_required'),
+                'allowed_scopes',
+                403
+            );
+        }
+
+        return null;
+    }
+
     public function index(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $partners = DB::table('api_partners')
@@ -47,6 +100,7 @@ class ApiPartnerAdminController extends BaseApiController
     public function show(int $id): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $partner = DB::table('api_partners')
@@ -74,6 +128,7 @@ class ApiPartnerAdminController extends BaseApiController
     public function store(Request $request): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $name = trim((string) $request->input('name', ''));
@@ -89,6 +144,11 @@ class ApiPartnerAdminController extends BaseApiController
         $allowedScopes = $request->input('allowed_scopes', []);
         if (! is_array($allowedScopes)) {
             $allowedScopes = [];
+        }
+
+        // F-175: a plain tenant admin cannot grant wallet-writing scopes.
+        if ($reject = $this->rejectReservedScopes($allowedScopes)) {
+            return $reject;
         }
 
         $allowedCidrs = $request->input('allowed_ip_cidrs', []);
@@ -123,6 +183,7 @@ class ApiPartnerAdminController extends BaseApiController
     public function update(Request $request, int $id): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $partner = DB::table('api_partners')
@@ -140,7 +201,12 @@ class ApiPartnerAdminController extends BaseApiController
             }
         }
         if ($request->has('allowed_scopes')) {
-            $update['allowed_scopes'] = json_encode(array_values((array) $request->input('allowed_scopes', [])));
+            $requestedScopes = array_values((array) $request->input('allowed_scopes', []));
+            // F-175: a plain tenant admin cannot grant wallet-writing scopes.
+            if ($reject = $this->rejectReservedScopes($requestedScopes)) {
+                return $reject;
+            }
+            $update['allowed_scopes'] = json_encode($requestedScopes);
         }
         if ($request->has('allowed_ip_cidrs')) {
             $update['allowed_ip_cidrs'] = json_encode(array_values((array) $request->input('allowed_ip_cidrs', [])));
@@ -173,6 +239,7 @@ class ApiPartnerAdminController extends BaseApiController
     private function setStatus(int $id, string $status): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $updated = DB::table('api_partners')
@@ -190,6 +257,7 @@ class ApiPartnerAdminController extends BaseApiController
     public function regenerateCredentials(int $id): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $partner = DB::table('api_partners')
@@ -216,6 +284,7 @@ class ApiPartnerAdminController extends BaseApiController
     public function callLog(Request $request, int $id): JsonResponse
     {
         $this->requireAdmin();
+        $this->requirePartnerApiFeature();
         $tenantId = TenantContext::getId();
 
         $partner = DB::table('api_partners')

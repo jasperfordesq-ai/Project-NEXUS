@@ -278,6 +278,11 @@ class PartnerApiWalletReliabilityTest extends TestCase
 
     private function createPartner(int $tenantId, string $slug): int
     {
+        // F-175: the Partner API is now gated by the per-tenant `partner_api` feature.
+        $features = json_decode((string) (DB::table('tenants')->where('id', $tenantId)->value('features') ?: '{}'), true) ?: [];
+        $features['partner_api'] = true;
+        DB::table('tenants')->where('id', $tenantId)->update(['features' => json_encode($features)]);
+
         return (int) DB::table('api_partners')->insertGetId([
             'tenant_id' => $tenantId,
             'name' => ucfirst(str_replace('-', ' ', $slug)),

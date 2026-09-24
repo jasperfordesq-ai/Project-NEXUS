@@ -57,6 +57,15 @@ class PartnerApiAuth
         // cross-tenant safe even when the host header doesn't carry a slug.
         TenantContext::setById((int) $partner['tenant_id']);
 
+        // F-175: the Partner API is a per-community opt-in feature (default OFF).
+        // Even with a valid token and the platform kill switch on, a partner whose
+        // community has the `partner_api` feature turned off must be refused. The
+        // platform kill switch (EnsurePartnerApiEnabled) is a separate, global gate.
+        if (! TenantContext::hasFeature('partner_api')) {
+            $this->log($request, $partner, 403, $startedAt);
+            return $this->reject(403, 'partner_api_disabled', 'Partner API is not enabled for this community.');
+        }
+
         // IP allowlist (CIDR list, optional)
         $allowedCidrs = $this->decodeJsonArray($partner['allowed_ip_cidrs'] ?? null);
         if (! empty($allowedCidrs) && ! $this->ipMatchesAny($request->ip() ?? '', $allowedCidrs)) {

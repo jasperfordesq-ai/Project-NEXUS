@@ -233,7 +233,14 @@ class AdminFederationDataController extends BaseApiController
                     $summary['partnerships']['skipped']++;
                     continue;
                 }
-                $status = in_array($row['status'], ['suspended', 'terminated'], true) ? $row['status'] : 'pending';
+                // F-154: an imported partnership must ALWAYS start as 'pending',
+                // regardless of the status in the uploaded file. Only the
+                // counterparty's genuine approval (approvePartnership) may make a
+                // partnership active. Allowing an import to seed a 'suspended' row
+                // — which carries no suspended_by_tenant_id and no approved_at —
+                // let this tenant then call reactivatePartnership() and flip it to
+                // active without the partner community ever approving it.
+                $status = 'pending';
 
                 $summary['partnerships']['new']++;
                 if (!$dryRun) {

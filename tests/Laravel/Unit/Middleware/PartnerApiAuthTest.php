@@ -54,6 +54,12 @@ class PartnerApiAuthTest extends TestCase
 
         $partner = (array) DB::table('api_partners')->where('id', $partnerId)->first();
 
+        // F-175: the Partner API is now gated by the per-tenant `partner_api`
+        // feature, so the partner's tenant must have it enabled for a token to work.
+        $features = json_decode((string) (DB::table('tenants')->where('id', $this->testTenantId)->value('features') ?: '{}'), true) ?: [];
+        $features['partner_api'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode($features)]);
+
         TenantContext::setById($this->testTenantId);
         $tokenData = PartnerApiAuthService::issueAccessToken($partner, $scopes);
 

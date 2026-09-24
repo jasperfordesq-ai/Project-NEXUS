@@ -121,6 +121,85 @@ class FederationV2Controller extends BaseApiController
         return $this->respondWithError('FORBIDDEN', __('api.federation.feature_disabled'), null, 403);
     }
 
+    /**
+     * F-156: federation is SYMMETRIC. requireFederationOperation() only checks
+     * the caller's tenant, so a partner community B that disables its own
+     * `federation` feature (or a per-operation feature) is still reachable
+     * because the queries key only on an active federation_partnerships row.
+     *
+     * This returns the partner tenant IDs — of the caller's ACTIVE partnerships
+     * — whose OWN federation operation state is enabled. A federated read must
+     * constrain its results to this set; a write to a specific partner must
+     * check that partner is in it. An empty array means no partner currently
+     * permits the operation and the caller should return no results.
+     *
+     * @return array<int,int> distinct partner tenant IDs (possibly empty)
+     */
+    private function operationEnabledPartnerTenantIds(string $operation): array
+    {
+        $tenantId = $this->getTenantId();
+
+        try {
+            $rows = DB::select(
+                "SELECT DISTINCT CASE WHEN tenant_id = ? THEN partner_tenant_id ELSE tenant_id END AS partner_id
+                 FROM federation_partnerships
+                 WHERE (tenant_id = ? OR partner_tenant_id = ?) AND status = 'active'",
+                [$tenantId, $tenantId, $tenantId]
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('FederationV2Api::operationEnabledPartnerTenantIds error: ' . $e->getMessage());
+            return [];
+        }
+
+        $allowed = [];
+        foreach ($rows as $row) {
+            $partnerId = (int) ($row->partner_id ?? 0);
+            if ($partnerId <= 0 || $partnerId === $tenantId) {
+                continue;
+            }
+            if ($this->federationFeatureService->isOperationAllowed($operation, $partnerId)['allowed'] ?? false) {
+                $allowed[] = $partnerId;
+            }
+        }
+
+        return array_values(array_unique($allowed));
+    }
+
+    /**
+     * True when the given partner tenant currently permits $operation on its
+     * own side. Used by the federated write paths (message/transaction) where
+     * the partner tenant is known explicitly.
+     */
+    private function partnerTenantAllowsOperation(string $operation, int $partnerTenantId): bool
+    {
+        if ($partnerTenantId <= 0) {
+            return false;
+        }
+
+        return (bool) ($this->federationFeatureService->isOperationAllowed($operation, $partnerTenantId)['allowed'] ?? false);
+    }
+
+    /**
+     * Build an ` AND <column> IN (:fedp0, ...)` fragment plus its bound params
+     * for the given set of partner tenant IDs, for the named-placeholder PDO
+     * queries in this controller.
+     *
+     * @param array<int,int> $tenantIds
+     * @return array{0:string,1:array<string,int>}
+     */
+    private function partnerTenantInClause(string $column, array $tenantIds): array
+    {
+        $names = [];
+        $params = [];
+        foreach (array_values($tenantIds) as $i => $id) {
+            $name = ':fedp' . $i;
+            $names[] = $name;
+            $params[$name] = (int) $id;
+        }
+
+        return [' AND ' . $column . ' IN (' . implode(', ', $names) . ')', $params];
+    }
+
     private function requireFederationOptIn(): ?JsonResponse
     {
         $userId = $this->getUserId();
@@ -904,6 +983,24 @@ class FederationV2Controller extends BaseApiController
         $partnerId = $partnerFilter ? $partnerFilter['id'] : 0;
 
         try {
+            // F-156: only include partners whose OWN 'events' federation state is enabled.
+            $allowedPartners = $this->operationEnabledPartnerTenantIds('events');
+            if (empty($allowedPartners)) {
+                return $this->respondWithCollection([], null, $perPage, false);
+            }
+            [$partnerClause, $partnerParams] = $this->partnerTenantInClause('e.tenant_id', $allowedPartners);
+
+            // F-190: an event that belongs to a private or secret group must not
+            // leak cross-community, even when its federated_visibility is 'listed'
+            // or 'joinable'. Standalone events (group_id IS NULL) and public-group
+            // events are unaffected.
+            $groupPrivacyClause = "
+                AND (e.group_id IS NULL OR NOT EXISTS (
+                    SELECT 1 FROM `groups` g
+                    WHERE g.id = e.group_id AND g.visibility IN ('private', 'secret')
+                ))
+            ";
+
             $sql = "
                 SELECT e.id, e.title, e.description, e.start_time as start_date, e.end_time as end_date,
                     e.location, e.allow_remote_attendance as is_online, e.cover_image, e.max_attendees,
@@ -920,8 +1017,8 @@ class FederationV2Controller extends BaseApiController
                 WHERE fp.status = 'active' AND fp.events_enabled = 1
                 AND e.tenant_id != :tid3 AND e.status = 'active'
                 AND e.federated_visibility IN ('listed', 'joinable')
-            ";
-            $params = [':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId];
+            " . $partnerClause . $groupPrivacyClause;
+            $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
             if ($upcoming) {
                 $sql .= " AND e.start_time >= NOW()";
@@ -1023,6 +1120,13 @@ class FederationV2Controller extends BaseApiController
         $partnerId = $partnerFilter ? $partnerFilter['id'] : 0;
 
         try {
+            // F-156: only include partners whose OWN 'groups' federation state is enabled.
+            $allowedPartners = $this->operationEnabledPartnerTenantIds('groups');
+            if (empty($allowedPartners)) {
+                return $this->respondWithCollection([], null, $perPage, false);
+            }
+            [$partnerClause, $partnerParams] = $this->partnerTenantInClause('g.tenant_id', $allowedPartners);
+
             $sql = "
                 SELECT
                     g.id, g.name, g.description, g.visibility,
@@ -1044,8 +1148,9 @@ class FederationV2Controller extends BaseApiController
                   AND fus_owner.profile_visible_federated = 1
                   AND fus_owner.appear_in_federated_search = 1
                   AND (g.federated_visibility IN ('listed', 'joinable') OR g.allow_federated_members = 1)
-            ";
-            $params = [':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId];
+                  AND g.visibility <> 'secret'
+            " . $partnerClause;
+            $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
             if (!empty($q)) {
                 $sql .= " AND (g.name LIKE :q1 OR g.description LIKE :q2)";
@@ -1221,6 +1326,13 @@ class FederationV2Controller extends BaseApiController
         $partnerId = $partnerFilter ? $partnerFilter['id'] : 0;
 
         try {
+            // F-156: only include partners whose OWN 'listings' federation state is enabled.
+            $allowedPartners = $this->operationEnabledPartnerTenantIds('listings');
+            if (empty($allowedPartners)) {
+                return $this->respondWithCollection([], null, $perPage, false);
+            }
+            [$partnerClause, $partnerParams] = $this->partnerTenantInClause('l.tenant_id', $allowedPartners);
+
             $fromWhere = "
                 FROM listings l
                 JOIN users u ON u.id = l.user_id AND u.tenant_id = l.tenant_id
@@ -1235,8 +1347,8 @@ class FederationV2Controller extends BaseApiController
                 AND l.status = 'active' AND l.tenant_id != :tid3
                 AND l.federated_visibility IN ('listed', 'bookable')
                 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1
-            ";
-            $params = [':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId];
+            " . $partnerClause;
+            $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
             if (!empty($q)) {
                 $fromWhere .= " AND (l.title LIKE :q1 OR l.description LIKE :q2)";
@@ -1514,6 +1626,13 @@ class FederationV2Controller extends BaseApiController
         $partnerId = $partnerFilter ? $partnerFilter['id'] : 0;
 
         try {
+            // F-156: only include partners whose OWN 'profiles' federation state is enabled.
+            $allowedPartners = $this->operationEnabledPartnerTenantIds('profiles');
+            if (empty($allowedPartners)) {
+                return $this->respondWithCollection([], null, $perPage, false);
+            }
+            [$partnerClause, $partnerParams] = $this->partnerTenantInClause('u.tenant_id', $allowedPartners);
+
             $fromWhere = "
                 FROM users u
                 JOIN federation_user_settings fus ON fus.user_id = u.id
@@ -1525,8 +1644,8 @@ class FederationV2Controller extends BaseApiController
                 WHERE fp.status = 'active' AND fp.profiles_enabled = 1
                 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1
                 AND u.status = 'active' AND u.tenant_id != :tid3
-            ";
-            $filterParams = [':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId];
+            " . $partnerClause;
+            $filterParams = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
             if (!empty($q)) {
                 $fromWhere .= " AND (u.first_name LIKE :q1 OR u.last_name LIKE :q2 OR (fus.show_skills_federated = 1 AND u.skills LIKE :q3) OR u.bio LIKE :q4)";
@@ -1783,6 +1902,14 @@ class FederationV2Controller extends BaseApiController
         }
 
         try {
+            // F-156: only resolve members in partner tenants whose OWN 'profiles'
+            // federation state is enabled.
+            $allowedPartners = $this->operationEnabledPartnerTenantIds('profiles');
+            if (empty($allowedPartners)) {
+                return $this->respondWithError('MEMBER_NOT_FOUND', __('api.fed_member_not_found'), null, 404);
+            }
+            [$partnerClause, $partnerParams] = $this->partnerTenantInClause('u.tenant_id', $allowedPartners);
+
             $sql = "
                 SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.bio, u.skills,
                     u.location, u.tenant_id, t.name as tenant_name,
@@ -1800,8 +1927,8 @@ class FederationV2Controller extends BaseApiController
                 WHERE u.id = :user_id AND fp.status = 'active' AND fp.profiles_enabled = 1
                 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1
                 AND u.status = 'active'
-            ";
-            $params = [':tid1' => $tenantId, ':tid2' => $tenantId, ':user_id' => $memberId];
+            " . $partnerClause;
+            $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':user_id' => $memberId], $partnerParams);
 
             if ($memberTenantId) {
                 $sql .= " AND u.tenant_id = :member_tenant_id";
@@ -2161,6 +2288,14 @@ class FederationV2Controller extends BaseApiController
         }
         $memberTenantId = $this->queryInt('tenant_id') ?: $tenantId;
 
+        // F-156: a cross-tenant review lookup is only allowed while the member's
+        // own community still permits federated profiles. Own-tenant reviews
+        // ($memberTenantId === current tenant) are unaffected.
+        if ($memberTenantId !== $tenantId
+            && ! $this->partnerTenantAllowsOperation('profiles', $memberTenantId)) {
+            return $this->respondWithData([]);
+        }
+
         try {
             $visibleMember = DB::selectOne("
                 SELECT fus.show_reviews_federated
@@ -2490,6 +2625,14 @@ class FederationV2Controller extends BaseApiController
             }
 
             if (!($partnership['messaging_enabled'] ?? false)) {
+                return $this->respondWithError('MESSAGING_NOT_ALLOWED', __('api.fed_messaging_not_allowed'), null, 403);
+            }
+
+            // F-156: federation is symmetric. Even with an active partnership, the
+            // recipient community must currently permit federated messaging on its
+            // OWN side — a partner that disabled its `federation` (or messaging)
+            // feature must not be reachable.
+            if (! $this->partnerTenantAllowsOperation('messaging', (int) $receiverTenantId)) {
                 return $this->respondWithError('MESSAGING_NOT_ALLOWED', __('api.fed_messaging_not_allowed'), null, 403);
             }
 
@@ -3406,6 +3549,12 @@ class FederationV2Controller extends BaseApiController
             // Partnership check
             $partnership = $this->federationPartnershipService->getPartnership($tenantId, $receiverTenantIdInt);
             if (!$partnership || $partnership['status'] !== 'active' || !($partnership['transactions_enabled'] ?? false)) {
+                return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
+            }
+
+            // F-156: the recipient community must currently permit federated
+            // transactions on its OWN side, not just have an active partnership row.
+            if (! $this->partnerTenantAllowsOperation('transactions', $receiverTenantIdInt)) {
                 return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
             }
 

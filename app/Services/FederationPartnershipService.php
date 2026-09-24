@@ -485,6 +485,19 @@ class FederationPartnershipService
             return ['success' => false, 'error' => __('api.federation.partnership_only_suspender_can_reactivate')];
         }
 
+        // F-154: refuse to activate a partnership that has NEVER been mutually
+        // active. A genuine suspension is only reachable from an 'active' row
+        // (suspendPartnership requires status='active'), and reaching 'active'
+        // always stamps approved_at. A row that is 'suspended' with no
+        // suspended_by_tenant_id AND no approved_at was never approved by the
+        // counterparty — typically a directly-imported 'suspended' row — so
+        // reactivating it would fabricate consent. The legacy NULL-column
+        // fallback above stays only for rows that WERE active before the
+        // suspended_by_tenant_id column existed (those carry approved_at).
+        if ($suspendedByTenantId === null && empty($partnership['approved_at'])) {
+            return ['success' => false, 'error' => __('api.federation.partnership_cannot_be_reactivated')];
+        }
+
         try {
             $updated = DB::table('federation_partnerships')
                 ->where('id', $partnershipId)

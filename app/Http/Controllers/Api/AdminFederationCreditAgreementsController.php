@@ -136,6 +136,26 @@ class AdminFederationCreditAgreementsController extends BaseApiController
                 ? (int) $agreement->to_tenant_id
                 : (int) $agreement->from_tenant_id;
 
+            // F-173: only the tenant that suspended a credit agreement may bring it
+            // back to active. Mirrors the partnership reactivation rule. The table
+            // has no suspended_by column, so the suspender is derived from the
+            // federation audit log — the source_tenant_id of the most recent
+            // 'credit_agreement_suspend' entry for this agreement. When no suspend
+            // record exists (a legacy suspension, or one caused by partnership
+            // termination), the check falls through to the existing behaviour,
+            // matching how the partnership rule treats a NULL suspender.
+            if (in_array($action, ['activate', 'reactivate'], true)
+                && (string) ($agreement->status ?? '') === 'suspended') {
+                $lastSuspend = DB::table('federation_audit_log')
+                    ->where('action_type', 'credit_agreement_suspend')
+                    ->whereRaw("JSON_EXTRACT(data, '$.agreement_id') = ?", [$id])
+                    ->orderByDesc('id')
+                    ->first();
+                if ($lastSuspend !== null && (int) ($lastSuspend->source_tenant_id ?? 0) !== $tenantId) {
+                    return $this->respondWithError('SUSPENDER_ONLY', __('api.credit_agreement_invalid_transition'), null, 409);
+                }
+            }
+
             if ($action === 'approve') {
                 // Dual consent: 'approve' only records THIS party's consent —
                 // FederationCreditService::approveAgreement() activates the

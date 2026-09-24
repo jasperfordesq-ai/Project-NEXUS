@@ -43,6 +43,11 @@ class PartnerAuthMiddlewareTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // F-175: the Partner API is now gated by the per-tenant `partner_api` feature.
+        $features = json_decode((string) (DB::table('tenants')->where('id', $this->testTenantId)->value('features') ?: '{}'), true) ?: [];
+        $features['partner_api'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode($features)]);
     }
 
     public function test_missing_bearer_token_returns_401(): void
