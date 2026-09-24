@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const SHARED_MOUNT_RE = /^\/([A-Za-z0-9_-]+)\/(accessible|alpha)(?=\/|$)/;
+const { URL } = require('node:url');
 const { validateReturnUrl } = require('../lib/urlValidator');
 const UNPREFIXED_PATHS = [
   '/api',
