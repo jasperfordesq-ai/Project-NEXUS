@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\RateLimiter;
 use App\Core\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -876,18 +877,26 @@ class MemberDataExportService
         }
 
         if (Schema::hasTable('login_attempts')) {
-            $email = (string) (DB::table('users')->where('id', $userId)->value('email') ?? '');
+            $user = DB::table('users')->where('id', $userId)->select('email', 'tenant_id')->first();
+            $email = (string) ($user->email ?? '');
             if ($email === '') {
                 return [];
             }
+            // E-035 F-191: attempts are stored under a tenant-scoped digest of
+            // the address, not the raw address (RateLimiter::emailIdentifierFor).
+            // The raw form is kept for rows written before that change.
+            $identifiers = [
+                RateLimiter::emailIdentifierFor($email, (int) $user->tenant_id),
+                $email,
+            ];
             return DB::table('login_attempts')
-                ->where('identifier', $email)
+                ->where('type', 'email')
+                ->whereIn('identifier', $identifiers)
                 ->orderByDesc('attempted_at')
                 ->limit(50)
                 ->get()
                 ->map(function ($r) {
                     return [
-                        'identifier'   => $r->identifier ?? null,
                         'type'         => $r->type ?? null,
                         'ip_address'   => $r->ip_address ?? null,
                         'success'      => (bool) ($r->success ?? false),

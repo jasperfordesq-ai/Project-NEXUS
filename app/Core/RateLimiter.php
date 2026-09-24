@@ -129,13 +129,21 @@ class RateLimiter
             return $identifier;
         }
 
-        $tenantId = TenantContext::currentId();
+        return self::emailIdentifierFor($identifier, TenantContext::currentId());
+    }
 
+    /**
+     * The stored login_attempts identifier for an email in a given tenant.
+     * Public so the member data export (E-035 F-191) can find a member's own
+     * sign-in history without re-deriving the scheme.
+     */
+    public static function emailIdentifierFor(string $email, ?int $tenantId): string
+    {
         // Keep the persisted identifier comfortably inside the legacy
         // VARCHAR(255) column even when the submitted email is at its maximum
         // valid length. The raw address is not needed to enforce or clear the
         // bucket, so a stable digest also avoids retaining it in this table.
-        $emailDigest = hash('sha256', mb_strtolower(trim($identifier)));
+        $emailDigest = hash('sha256', mb_strtolower(trim($email)));
 
         return 'tenant:' . ($tenantId ?? 0) . ':email:' . $emailDigest;
     }
