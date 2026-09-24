@@ -42,6 +42,7 @@ const TENANT_SLUG = process.env.E2E_TENANT || 'hour-timebank';
 const HAS_USER_CREDENTIALS = Boolean(process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD);
 const HAS_ADMIN_CREDENTIALS = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 const SKIP_DATA_SEED = process.env.E2E_SKIP_DATA_SEED === '1';
+const SKIP_SAVED_AUTH = process.env.E2E_SKIP_SAVED_AUTH === '1';
 const REQUIRE_CONFIGURED_AUTH = process.env.E2E_REQUIRE_AUTH === '1';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
@@ -322,13 +323,12 @@ async function globalSetup(config: FullConfig) {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
-  // Create empty auth files first (so tests can run even if auth fails)
+  // Replace stale states before every run. The focused CI browser specs create
+  // a distinct session per test and deliberately do not share these cookies.
   const emptyState = { cookies: [], origins: [] };
   for (const userType of ['user', 'admin']) {
     const storagePath = path.join(authDir, `${userType}.json`);
-    if (!fs.existsSync(storagePath)) {
-      fs.writeFileSync(storagePath, JSON.stringify(emptyState, null, 2));
-    }
+    fs.writeFileSync(storagePath, JSON.stringify(emptyState, null, 2));
   }
 
   const browser = await chromium.launch();
@@ -364,7 +364,7 @@ async function globalSetup(config: FullConfig) {
       throw new Error(`Required E2E auth could not run because ${BASE_URL} is unavailable`);
     }
 
-    const configuredUsers = Object.entries(TEST_USERS).filter(([userType]) => (
+    const configuredUsers = SKIP_SAVED_AUTH ? [] : Object.entries(TEST_USERS).filter(([userType]) => (
       userType === 'admin' ? HAS_ADMIN_CREDENTIALS : HAS_USER_CREDENTIALS
     ));
 
@@ -372,7 +372,9 @@ async function globalSetup(config: FullConfig) {
       throw new Error('Required E2E auth needs both member and admin credential pairs');
     }
 
-    if (configuredUsers.length === 0) {
+    if (SKIP_SAVED_AUTH) {
+      console.log('Focused browser specs create their own independent auth sessions.');
+    } else if (configuredUsers.length === 0) {
       console.log('No E2E auth credentials configured; using empty auth state files.');
     }
 

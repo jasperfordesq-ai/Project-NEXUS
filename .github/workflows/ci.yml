@@ -1845,6 +1845,7 @@ jobs:
           E2E_ADMIN_EMAIL: e2e-admin@example.test
           E2E_ADMIN_PASSWORD: password
           E2E_REQUIRE_AUTH: 1
+          E2E_SKIP_SAVED_AUTH: 1
           CI: true
 
       - name: Run Playwright Smoke Tests (WebKit / Safari engine)
@@ -1874,6 +1875,7 @@ jobs:
           E2E_ADMIN_EMAIL: e2e-admin@example.test
           E2E_ADMIN_PASSWORD: password
           E2E_REQUIRE_AUTH: 1
+          E2E_SKIP_SAVED_AUTH: 1
           CI: true
 
       - name: Run Destructive Events Enterprise Journey
@@ -1900,6 +1902,7 @@ jobs:
           E2E_ADMIN_PASSWORD: password
           E2E_SKIP_DATA_SEED: 1
           E2E_REQUIRE_AUTH: 1
+          E2E_SKIP_SAVED_AUTH: 1
           CI: true
 
       - name: Verify Accessibility Gate Contracts
@@ -1926,6 +1929,7 @@ jobs:
           E2E_ADMIN_PASSWORD: password
           E2E_SKIP_DATA_SEED: 1
           E2E_REQUIRE_AUTH: 1
+          E2E_SKIP_SAVED_AUTH: 1
           CI: true
 
       - name: Run Production PWA Offline Gate
@@ -1957,6 +1961,7 @@ jobs:
           E2E_ADMIN_PASSWORD: password
           E2E_SKIP_DATA_SEED: 1
           E2E_REQUIRE_AUTH: 1
+          E2E_SKIP_SAVED_AUTH: 1
           CI: true
 
       - name: Upload Smoke Test Results
