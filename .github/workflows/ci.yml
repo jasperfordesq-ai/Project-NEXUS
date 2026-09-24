@@ -1930,16 +1930,28 @@ jobs:
 
       - name: Run Real-Browser Accessibility Gate
         run: |
-          docker compose -f compose.ci.yml exec -T app php artisan cache:clear
-          npx playwright test e2e/tests/accessibility-audit.spec.ts --project=accessibility || {
-            echo "::group::App container logs"
-            docker compose -f compose.ci.yml logs --no-color app || true
-            echo "::endgroup::"
-            echo "::group::Frontend container logs"
-            docker compose -f compose.ci.yml logs --no-color frontend || true
-            echo "::endgroup::"
-            exit 1
+          run_a11y_group() {
+            local label="$1"
+            shift
+            # Browser session restoration now makes a refresh request per
+            # context. Keep independent synthetic groups below the unchanged
+            # production IP limit of ten refreshes per minute.
+            docker compose -f compose.ci.yml exec -T app php artisan cache:clear
+            npx playwright test e2e/tests/accessibility-audit.spec.ts --project=accessibility "$@" || {
+              echo "::group::App container logs"
+              docker compose -f compose.ci.yml logs --no-color app || true
+              echo "::endgroup::"
+              echo "::group::Frontend container logs"
+              docker compose -f compose.ci.yml logs --no-color frontend || true
+              echo "::endgroup::"
+              exit 1
+            }
+            cp e2e/reports/results.json "e2e/reports/accessibility-${label}.json"
           }
+          run_a11y_group public --grep 'anonymous public and auth surfaces|mobile drawer surface'
+          run_a11y_group member --grep 'authenticated member surfaces' --grep-invert 'core Irish member routes'
+          run_a11y_group irish --grep 'core Irish member routes'
+          run_a11y_group admin --grep 'administrator table and help drawer'
         env:
           E2E_BASE_URL: http://localhost:3000
           E2E_API_URL: http://localhost:3000

@@ -277,6 +277,7 @@ test.describe('real-browser accessibility gate', () => {
     });
 
     test('search modal has combobox semantics, traps focus, and restores it', async ({ page }) => {
+      await setThemeProfile(page, { theme: 'light' });
       await visit(page, 'dashboard');
 
       const restoreTarget = page.locator('button:visible').first();
