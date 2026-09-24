@@ -257,14 +257,26 @@ RUN mkdir -p /var/www/html/storage/app/public \
              /var/www/html/bootstrap/cache \
              /var/www/html/httpdocs/uploads/tenants \
              /var/www/html/httpdocs/uploads/posts \
+             /var/www/html/logs \
     && rm -rf /var/www/html/httpdocs/storage \
     && ln -sfn /var/www/html/storage/app/public /var/www/html/httpdocs/storage \
     && composer dump-autoload --no-dev --optimize --no-interaction \
-    && chown -R www-data:www-data /var/www/html \
+    && chown -R root:root /var/www/html \
+    && chmod -R go-w /var/www/html \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+             /var/www/html/httpdocs/uploads /var/www/html/logs /var/www/html/httpdocs/assets/img \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# E-035 F-205: the application code is owned by root and read-only to the web
+# user, so a file-write bug in the application cannot become code execution.
+# www-data may write ONLY the runtime data paths: storage/ and bootstrap/cache
+# (Laravel), httpdocs/uploads (member uploads), logs/ (LoggerService default
+# base_path('logs')) and httpdocs/assets/img (WebPConverter's in-place
+# conversion). A new runtime write anywhere else must be added to that list.
+# The queue and scheduler containers now drop to www-data too (compose.bluegreen.yml).
+#
 # setgid on storage/cache dirs so files created by any process (incl. the
-# root-run queue/scheduler containers with umask 0002) inherit the www-data
+# queue/scheduler containers with umask 0002) inherit the www-data
 # group and stay group-writable — prevents the cross-container "Permission
 # denied" on the daily log file regardless of which container writes it first.
 RUN find /var/www/html/storage /var/www/html/bootstrap/cache -type d -exec chmod 2775 {} +

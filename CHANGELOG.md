@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A member's data export includes their recorded sign-in history again.
 
-- Deployment and backups: a production deploy now builds exactly the commit its pre-deploy check approved; backups are created readable by their owner only; database passwords no longer appear in the server's process list, and the manual backup and migration scripts never handle the password at all; deploy state no longer lives in a shared temporary folder; and a deleted community's old web address is removed from the cross-site allow-list.
+- Deployment and backups: a production deploy now builds exactly the commit its pre-deploy check approved; backups are created readable by their owner only; database passwords no longer appear in the server's process list, and the manual backup and migration scripts never handle the password at all; deploy state no longer lives in a shared temporary folder; and a deleted community's old web address is removed from the cross-site allow-list. The background job and scheduler processes no longer run with full system rights, and the platform's own code can no longer be changed by the web server's user.
 
 - Keep external Partner API and partner federation traffic closed by default on new rollouts, even if database switches are enabled. Caring Community's disabled state now blocks its API routes and invite lookup, external Caring data paths and the React invite page (F-150).
 

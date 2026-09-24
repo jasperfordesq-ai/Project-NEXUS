@@ -42,10 +42,12 @@ db_backup_with_offsite() {
     DB_BACKUP_FILE=""
 
     mkdir -p "$DB_BACKUP_DIR"
-    # E-035 F-203: a pre-migrate dump is the whole platform in plaintext. Keep
-    # the directory owner-only, and create the file 0600 before the dump writes
-    # into it (the redirect below truncates it and keeps that mode).
-    chmod 700 "$DB_BACKUP_DIR"
+    # E-035 F-203: a pre-migrate dump is the whole platform in plaintext, so the
+    # FILE is created 0600 before the dump writes into it (the redirect below
+    # truncates it and keeps that mode). The directory is 0755, not 0700: the
+    # scheduler container runs as www-data (F-205) and backup:verify must list it
+    # and read file dates; names and dates are not sensitive, contents are.
+    chmod 755 "$DB_BACKUP_DIR"
     local stamp
     stamp="$(date +%Y%m%d-%H%M%S)"
     local backup_file="$DB_BACKUP_DIR/pre-migrate-${stamp}.sql.gz"

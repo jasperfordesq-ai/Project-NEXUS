@@ -48,7 +48,10 @@ fail()    { log "✗ ERROR: $1"; exit 1; }
 
 log "=== Nightly backup starting ==="
 mkdir -p "$BACKUP_DIR"
-chmod 700 "$BACKUP_DIR"
+# E-035 F-203/F-205: files are 0600 (umask 077 above, chmod 600 below); the
+# directory is 0755 so the www-data scheduler's backup:verify can list it and
+# read file dates. Names and dates are not sensitive; contents are.
+chmod 755 "$BACKUP_DIR"
 
 # ---------------------------------------------------------------------------
 # 1. Database

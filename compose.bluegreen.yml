@@ -124,7 +124,12 @@ services:
     # crash loop is what produced the ~600-event Sentry NEXUS-PHP-10 bursts
     # (23/31 Jul, 1/7 Aug 2026) — the missing-routes error is collateral, not
     # the cause. `$$` is the Compose escape for a literal `$`.
-    command: sh -c "umask 0002; n=0; until php -d default_socket_timeout=3 -r 'exit(@fsockopen($$argv[1], (int)$$argv[2])?0:1);' -- $$REDIS_HOST $$REDIS_PORT 2>/dev/null; do n=$$((n+1)); if [ $$n -ge 60 ]; then echo '[WARN] Redis unreachable after 120s - starting Horizon anyway'; break; fi; sleep 2; done; php artisan package:discover --ansi 2>/dev/null; php artisan optimize && exec php artisan horizon"
+    #
+    # E-035 F-205: the container starts as root only to hand storage/ and
+    # bootstrap/cache to www-data (as the app container's startup does), then
+    # `setpriv` drops to www-data for discovery, optimize and Horizon itself.
+    # Jobs therefore run with the web user's rights, never root's.
+    command: sh -c "umask 0002; n=0; until php -d default_socket_timeout=3 -r 'exit(@fsockopen($$argv[1], (int)$$argv[2])?0:1);' -- $$REDIS_HOST $$REDIS_PORT 2>/dev/null; do n=$$((n+1)); if [ $$n -ge 60 ]; then echo '[WARN] Redis unreachable after 120s - starting Horizon anyway'; break; fi; sleep 2; done; find /var/www/html/storage /var/www/html/bootstrap/cache -path /var/www/html/storage/prerendered -prune -o -exec chown www-data:www-data {} + || echo '[WARN] startup chown failed'; touch /var/log/php_errors.log && chown www-data:www-data /var/log/php_errors.log || true; exec setpriv --reuid=www-data --regid=www-data --init-groups sh -c 'umask 0002; php artisan package:discover --ansi 2>/dev/null; php artisan optimize && exec php artisan horizon'"
     restart: unless-stopped
     stop_grace_period: 120s
     deploy:
@@ -185,7 +190,11 @@ services:
   scheduler:
     image: nexus-php-app:${BUILD_COMMIT:-candidate}
     container_name: nexus-${NEXUS_COLOR:-green}-php-scheduler
-    command: sh -c "umask 0002; trap 'php artisan schedule:interrupt >/dev/null 2>&1 || true; exit 0' TERM INT; php artisan optimize && while true; do php artisan schedule:run --no-interaction; sleep 60 & wait $!; done"
+    # E-035 F-205: root only for the ownership hand-over, then `setpriv` drops to
+    # www-data; the trap moves into the unprivileged shell, which is PID 1 after
+    # exec, so the healthcheck and graceful stop are unchanged. The read-only
+    # backups mount is pruned from the chown.
+    command: sh -c "umask 0002; find /var/www/html/storage /var/www/html/bootstrap/cache \\( -path /var/www/html/storage/prerendered -o -path /var/www/html/storage/backups \\) -prune -o -exec chown www-data:www-data {} + || echo '[WARN] startup chown failed'; touch /var/log/php_errors.log && chown www-data:www-data /var/log/php_errors.log || true; exec setpriv --reuid=www-data --regid=www-data --init-groups sh -c 'umask 0002; trap \"php artisan schedule:interrupt >/dev/null 2>&1 || true; exit 0\" TERM INT; php artisan optimize && while true; do php artisan schedule:run --no-interaction; sleep 60 & wait $!; done'"
     restart: unless-stopped
     stop_grace_period: 90s
     deploy:
