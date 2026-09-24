@@ -42,6 +42,7 @@ export interface TwoFactorLoginContext {
   apiBaseUrl: string;
   tenantSlug: string;
   email: string;
+  origin?: string;
 }
 
 const SECRETS_FILE = path.join(__dirname, '..', 'fixtures', '.auth', 'totp-secrets.json');
@@ -77,7 +78,11 @@ export async function completeTwoFactorIfChallenged(loginData: any, ctx: TwoFact
   if (challenge === '') {
     return loginData;
   }
-  const headers = { 'Content-Type': 'application/json', 'X-Tenant-Slug': ctx.tenantSlug };
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Tenant-Slug': ctx.tenantSlug,
+    ...(ctx.origin ? { Origin: ctx.origin } : {}),
+  };
 
   if (loginData?.requires_2fa_setup === true) {
     const setup = await ctx.request.post(`${ctx.apiBaseUrl}/api/v2/auth/2fa/setup`, {

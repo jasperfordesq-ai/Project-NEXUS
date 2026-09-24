@@ -4,8 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { test, expect, type Page } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
+import { randomUUID } from 'node:crypto';
 import {
   tenantUrl,
   goToTenantPage,
@@ -32,7 +31,6 @@ import { completeTwoFactorIfChallenged } from '../helpers/two-factor';
 let consoleErrors: string[] = [];
 const hasUserCredentials = Boolean(process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD);
 const hasAdminCredentials = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
-const apiBaseUrl = process.env.E2E_API_URL || process.env.E2E_BASE_URL || 'http://localhost:8090';
 const cookieConsent = {
   essential: true,
   analytics: false,
@@ -47,65 +45,21 @@ async function primeBrowserState(page: Page): Promise<void> {
   }, cookieConsent);
 }
 
-type CachedAuth = {
-  accessToken: string;
-  refreshToken?: string;
-  tenantId?: string | number;
-};
-
-// Log in at most once per role per worker and reuse the tokens across every
-// test. `/api/auth/login` is IP-rate-limited (route `throttle:30,1` plus the
-// App\Core\RateLimiter brute-force limiter) and returns 429 `rate_limited`;
-// logging in per test flooded it (~40 logins/min from the CI runner's single
-// IP → ~11 succeed, the rest 429 and fail the whole smoke suite). Caching keeps
-// it to two logins per worker, and the retry below absorbs any residual throttle
-// when parallel workers share the runner IP.
-const authTokenCache = new Map<'user' | 'admin', CachedAuth>();
-
-/**
- * The global setup has already signed this role in and saved the tokens in its
- * storage-state file (the same file `test.use({ storageState })` loads). Reuse
- * them rather than logging in again: since the MFA baseline an administrator's
- * login hands over a two-factor step, and every extra login is one more
- * single-use code for the workers to contend over.
- */
-function tokensFromStorageState(kind: 'user' | 'admin'): CachedAuth | null {
-  try {
-    const file = path.resolve(__dirname, '..', 'fixtures', '.auth', `${kind}.json`);
-    const state = JSON.parse(fs.readFileSync(file, 'utf8'));
-    const entries: Array<{ name: string; value: string }> = (state?.origins ?? []).flatMap(
-      (origin: { localStorage?: Array<{ name: string; value: string }> }) => origin.localStorage ?? []
-    );
-    const read = (name: string) => entries.find((entry) => entry.name === name)?.value;
-    const accessToken = read('nexus_access_token');
-    if (!accessToken) {
-      return null;
-    }
-    return { accessToken, refreshToken: read('nexus_refresh_token'), tenantId: read('nexus_tenant_id') };
-  } catch {
-    return null;
-  }
-}
-
-async function loginForRole(page: Page, kind: 'user' | 'admin'): Promise<CachedAuth> {
+async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
   const email = kind === 'admin' ? process.env.E2E_ADMIN_EMAIL : process.env.E2E_USER_EMAIL;
   const password = kind === 'admin' ? process.env.E2E_ADMIN_PASSWORD : process.env.E2E_USER_PASSWORD;
-
   if (!email || !password) {
     throw new Error(`Missing E2E ${kind} credentials`);
   }
-
-  const saved = tokensFromStorageState(kind);
-  if (saved) {
-    return saved;
-  }
-
+  const browserOrigin = new URL(process.env.E2E_BASE_URL || 'http://localhost:5173').origin;
+  // Each test gets its own rotating cookie. Reusing one saved cookie across
+  // parallel contexts would consume the same refresh token more than once.
+  await page.context().clearCookies();
   const maxAttempts = 5;
   let lastStatus = 0;
   let lastBody = '';
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const response = await page.request.post(`${apiBaseUrl}/api/auth/login`, {
+    const response = await page.request.post(`${browserOrigin}/api/auth/login`, {
       data: {
         email,
         password,
@@ -114,32 +68,39 @@ async function loginForRole(page: Page, kind: 'user' | 'admin'): Promise<CachedA
       headers: {
         'Content-Type': 'application/json',
         'X-Tenant-Slug': DEFAULT_TENANT,
+        Origin: browserOrigin,
       },
     });
-
     if (response.ok()) {
       const loginData = await completeTwoFactorIfChallenged(await response.json(), {
         request: page.request,
-        apiBaseUrl,
+        apiBaseUrl: browserOrigin,
         tenantSlug: DEFAULT_TENANT,
         email,
+        origin: browserOrigin,
       });
-      const accessToken = loginData?.data?.access_token || loginData?.access_token;
-      const refreshToken = loginData?.data?.refresh_token || loginData?.refresh_token;
+      const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
       const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
-
-      if (!accessToken) {
-        throw new Error(`E2E ${kind} API login did not return an access token`);
+      if (typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
+        throw new Error(`E2E ${kind} browser login did not return a session binding`);
       }
-
-      return { accessToken, refreshToken, tenantId };
+      const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;
+      const cookies = await page.context().cookies(browserOrigin);
+      if (!cookies.some((cookie) => cookie.name === cookieName && cookie.httpOnly)) {
+        throw new Error(`E2E ${kind} browser login did not set an HttpOnly refresh cookie`);
+      }
+      const generation = randomUUID();
+      await page.addInitScript(({ binding, generation, tenantId }) => {
+        localStorage.removeItem('nexus_access_token');
+        localStorage.removeItem('nexus_refresh_token');
+        localStorage.setItem('nexus_auth_session_generation', generation);
+        localStorage.setItem(`nexus_auth_binding:${generation}`, binding);
+        if (tenantId) localStorage.setItem('nexus_tenant_id', String(tenantId));
+      }, { binding: sessionBinding, generation, tenantId });
+      return;
     }
-
     lastStatus = response.status();
     lastBody = await response.text();
-
-    // On a throttle response, honour retry_after (seconds) and try again rather
-    // than failing the suite on a transient rate-limit.
     if (lastStatus === 429 && attempt < maxAttempts) {
       let retryAfter = 2;
       try {
@@ -153,34 +114,9 @@ async function loginForRole(page: Page, kind: 'user' | 'admin'): Promise<CachedA
       await page.waitForTimeout(Math.min(retryAfter, 20) * 1000);
       continue;
     }
-
     break;
   }
-
   throw new Error(`E2E ${kind} API login failed (${lastStatus}): ${lastBody}`);
-}
-
-async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
-  let tokens = authTokenCache.get(kind);
-  if (!tokens) {
-    tokens = await loginForRole(page, kind);
-    authTokenCache.set(kind, tokens);
-  }
-
-  const { accessToken, refreshToken, tenantId } = tokens;
-
-  await page.addInitScript(
-    ({ accessToken, refreshToken, tenantId }) => {
-      localStorage.setItem('nexus_access_token', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('nexus_refresh_token', refreshToken);
-      }
-      if (tenantId) {
-        localStorage.setItem('nexus_tenant_id', String(tenantId));
-      }
-    },
-    { accessToken, refreshToken, tenantId }
-  );
 }
 
 async function waitForTenantHydration(page: Page): Promise<void> {

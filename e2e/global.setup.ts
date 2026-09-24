@@ -109,12 +109,8 @@ async function dismissDevNoticeModal(page: any): Promise<void> {
 }
 
 /**
- * Authenticate a React user via the API (JWT-based).
- *
- * The React app uses JWT tokens stored in localStorage,
- * not session cookies. This function calls the auth API directly,
- * then injects the JWT tokens into the browser's localStorage
- * via the storage state file.
+ * Authenticate through the browser-facing API and save its HttpOnly session
+ * cookie plus the non-secret binding needed to restore an in-memory token.
  */
 async function authenticateViaApi(
   authContext: any,
@@ -123,9 +119,8 @@ async function authenticateViaApi(
   userType: string,
   authDir: string
 ): Promise<void> {
-  // The PHP API is accessible at the same BASE_URL for local dev (proxied)
-  // or via the API_BASE_URL env var for CI/production
-  const apiBaseUrl = process.env.E2E_API_URL || BASE_URL;
+  const reactUrl = process.env.E2E_REACT_URL || BASE_URL;
+  const apiBaseUrl = new URL(reactUrl).origin;
 
   console.log(`   Authenticating admin via API at ${apiBaseUrl}/api/auth/login...`);
 
@@ -140,9 +135,10 @@ async function authenticateViaApi(
       password: credentials.password,
       tenant_slug: TENANT_SLUG,
     },
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Tenant-Slug': TENANT_SLUG,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-Slug': TENANT_SLUG,
+        Origin: apiBaseUrl,
     },
   });
 
@@ -182,18 +178,23 @@ async function authenticateViaApi(
     apiBaseUrl,
     tenantSlug: TENANT_SLUG,
     email: credentials.email,
+    origin: apiBaseUrl,
   });
 
-  // Extract tokens from response — API returns {success, data: {access_token, refresh_token, user, tenant_id}}
+  // Credential responses keep the refresh secret in a host-only HttpOnly cookie.
   const accessToken = loginData?.data?.access_token || loginData?.access_token;
-  const refreshToken = loginData?.data?.refresh_token || loginData?.refresh_token;
+  const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
   const tenantId = loginData?.data?.tenant_id || loginData?.tenant_id;
 
-  if (!accessToken) {
-    throw new Error('No access_token in login response: ' + JSON.stringify(loginData));
+  if (!accessToken || typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
+    throw new Error('Browser API login did not return an access token and session binding');
   }
 
-  console.log('   JWT tokens obtained, injecting into localStorage...');
+  const cookieName = `__Host-nexus_refresh_${sessionBinding.slice(0, 32)}`;
+  const cookies = await authContext.cookies(apiBaseUrl);
+  if (!cookies.some((cookie: { name: string; httpOnly: boolean }) => cookie.name === cookieName && cookie.httpOnly)) {
+    throw new Error('Browser API login did not set its HttpOnly refresh cookie');
+  }
 
   // Ensure onboarding is marked complete to avoid redirecting to the wizard
   try {
@@ -211,24 +212,22 @@ async function authenticateViaApi(
 
   // Navigate to the React app origin so we can set localStorage
   // Use the React frontend URL (may differ from API URL in Docker setup)
-  const reactUrl = process.env.E2E_REACT_URL || BASE_URL;
   await authPage.goto(`${reactUrl}/${TENANT_SLUG}/login`, { waitUntil: 'domcontentloaded', timeout: 10000 }).catch(() => {
     // If /login redirects or fails, try the root
     return authPage.goto(reactUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
   });
 
-  // Inject JWT tokens into localStorage
+  // The access token stays in module memory. Only the non-secret continuity
+  // marker is serialized so the SPA can restore through its HttpOnly cookie.
   await authPage.evaluate(
-    ({ accessToken, refreshToken, tenantId, cookieConsent }: {
-      accessToken: string;
-      refreshToken?: string;
+    ({ sessionBinding, tenantId, cookieConsent }: {
+      sessionBinding: string;
       tenantId?: string | number;
       cookieConsent: typeof COOKIE_CONSENT;
     }) => {
-      localStorage.setItem('nexus_access_token', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('nexus_refresh_token', refreshToken);
-      }
+      const generation = crypto.randomUUID();
+      localStorage.setItem('nexus_auth_session_generation', generation);
+      localStorage.setItem(`nexus_auth_binding:${generation}`, sessionBinding);
       if (tenantId) {
         localStorage.setItem('nexus_tenant_id', String(tenantId));
       }
@@ -236,12 +235,18 @@ async function authenticateViaApi(
       localStorage.setItem('dev_notice_dismissed', '2.1');
       localStorage.setItem('nexus_cookie_consent', JSON.stringify(cookieConsent));
     },
-    { accessToken, refreshToken, tenantId: tenantId ? String(tenantId) : undefined, cookieConsent: COOKIE_CONSENT }
+    { sessionBinding, tenantId: tenantId ? String(tenantId) : undefined, cookieConsent: COOKIE_CONSENT }
   );
 
-  // Save storage state (includes localStorage with JWT tokens)
+  // Storage state contains no script-readable credential.
   const storagePath = path.join(authDir, `${userType}.json`);
   await authContext.storageState({ path: storagePath });
+  const savedState = JSON.parse(fs.readFileSync(storagePath, 'utf8'));
+  const storedNames = (savedState.origins ?? []).flatMap((origin: { localStorage?: Array<{ name: string }> }) =>
+    (origin.localStorage ?? []).map((entry) => entry.name));
+  if (storedNames.includes('nexus_access_token') || storedNames.includes('nexus_refresh_token')) {
+    throw new Error('E2E auth state contains a script-readable credential');
+  }
 }
 
 /**
