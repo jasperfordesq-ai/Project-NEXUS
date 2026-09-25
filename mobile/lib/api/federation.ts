@@ -326,8 +326,12 @@ export function sendFederationMessage(payload: {
   subject?: string;
   body: string;
   reference_message_id?: number | string | null;
-}): Promise<{ data: FederatedMessage }> {
-  return api.post<{ data: FederatedMessage }>(`${API_V2}/federation/messages`, payload);
+}, idempotencyKey?: string): Promise<{ data: FederatedMessage }> {
+  return api.post<{ data: FederatedMessage }>(
+    `${API_V2}/federation/messages`,
+    idempotencyKey ? { ...payload, idempotency_key: idempotencyKey } : payload,
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
 }
 
 export function sendFederationTransaction(payload: FederationTransactionPayload): Promise<FederationTransactionResponse> {

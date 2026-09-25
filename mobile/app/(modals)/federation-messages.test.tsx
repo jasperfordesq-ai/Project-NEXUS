@@ -14,6 +14,12 @@ const mockMarkReadBatch = jest.fn().mockResolvedValue({ data: { updated: 1 } });
 const mockSendFederationMessage = jest.fn().mockResolvedValue({ data: { id: 202 } });
 const mockTranslateFederationMessage = jest.fn().mockResolvedValue({ data: { translated_text: 'Could we coordinate this across communities? (translated)' } });
 const mockGetFederationMembers = jest.fn();
+const mockReserveFederationMessage = jest.fn().mockResolvedValue({
+  storageKey: 'federation-message-operation',
+  key: 'mobile-federation-message-key',
+  createdAt: 1,
+});
+const mockCompleteFederationMessage = jest.fn().mockResolvedValue(undefined);
 let mockSearchParams: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
@@ -116,6 +122,11 @@ jest.mock('@/lib/api/federation', () => ({
   sendFederationMessage: (...args: unknown[]) => mockSendFederationMessage(...args),
   translateFederationMessage: (...args: unknown[]) => mockTranslateFederationMessage(...args),
   updateFederationSettings: jest.fn(),
+}));
+
+jest.mock('@/lib/federationMessageCreationOperation', () => ({
+  reserveFederationMessageCreationOperation: (...args: unknown[]) => mockReserveFederationMessage(...args),
+  completeFederationMessageCreationOperation: (...args: unknown[]) => mockCompleteFederationMessage(...args),
 }));
 
 jest.mock('@expo/vector-icons', () => ({
@@ -261,6 +272,13 @@ beforeEach(() => {
   mockSendFederationMessage.mockClear();
   mockTranslateFederationMessage.mockClear();
   mockGetFederationMembers.mockReset();
+  mockReserveFederationMessage.mockClear();
+  mockCompleteFederationMessage.mockClear();
+  mockReserveFederationMessage.mockResolvedValue({
+    storageKey: 'federation-message-operation',
+    key: 'mobile-federation-message-key',
+    createdAt: 1,
+  });
   mockSendFederationMessage.mockResolvedValue({ data: { id: 202 } });
   mockTranslateFederationMessage.mockResolvedValue({ data: { translated_text: 'Could we coordinate this across communities? (translated)' } });
   mockGetFederationMembers.mockResolvedValue({ data: [] });
@@ -338,7 +356,7 @@ describe('FederationMessagesScreen', () => {
     fireEvent.changeText(getByPlaceholderText('Write a federated reply...'), 'Yes, let us coordinate.');
     const send = getByText('Send reply');
     act(() => { fireEvent.press(send); fireEvent.press(send); });
-    expect(mockSendFederationMessage).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockSendFederationMessage).toHaveBeenCalledTimes(1));
     await act(async () => { finish({ data: { id: 203 } }); });
   });
 
@@ -364,7 +382,7 @@ describe('FederationMessagesScreen', () => {
         subject: 'Shared project',
         body: 'Yes, let us coordinate.',
         reference_message_id: 101,
-      });
+      }, 'mobile-federation-message-key');
     });
     expect(mockRefresh).toHaveBeenCalled();
   });
@@ -476,7 +494,7 @@ describe('FederationMessagesScreen', () => {
         receiver_tenant_id: '5',
         subject: 'Shared project',
         body: 'Let us coordinate this.',
-      });
+      }, 'mobile-federation-message-key');
     });
     expect(getByText('Federated conversation')).toBeTruthy();
     expect(getByText('Let us coordinate this.')).toBeTruthy();
@@ -532,7 +550,7 @@ describe('FederationMessagesScreen', () => {
         receiver_tenant_id: 5,
         subject: 'Shared project',
         body: 'Could we coordinate?',
-      });
+      }, 'mobile-federation-message-key');
     });
     expect(getByText('Federated conversation')).toBeTruthy();
   });

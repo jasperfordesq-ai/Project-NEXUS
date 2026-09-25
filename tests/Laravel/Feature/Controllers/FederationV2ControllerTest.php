@@ -825,6 +825,77 @@ class FederationV2ControllerTest extends TestCase
         $this->assertStringContainsString('SET notification_sent_at = NOW()', $source);
     }
 
+    public function test_send_message_replays_same_idempotent_result_without_duplicate_delivery(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Message Replay Partner');
+        $this->seedPartnership($partnerTenantId);
+        $sender = $this->seedFederatedUser($this->testTenantId, ['first_name' => 'Replay Sender']);
+        $receiver = $this->seedFederatedUser($partnerTenantId, ['first_name' => 'Replay Receiver']);
+        Sanctum::actingAs($sender, ['*']);
+
+        $payload = [
+            'receiver_id' => $receiver->id,
+            'receiver_tenant_id' => $partnerTenantId,
+            'subject' => 'Retry-safe federation',
+            'body' => 'Deliver this message once.',
+            'idempotency_key' => 'federation-message-replay-key-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost('/v2/federation/messages', $payload, $headers);
+        $second = $this->apiPost('/v2/federation/messages', $payload, $headers);
+
+        $first->assertCreated();
+        $second->assertCreated();
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(2, DB::table('federation_messages')
+            ->where('sender_user_id', $sender->id)
+            ->where('receiver_user_id', $receiver->id)
+            ->where('body', $payload['body'])
+            ->count());
+        $this->assertSame(1, DB::table('federation_message_creation_receipts')
+            ->where('sender_tenant_id', $this->testTenantId)
+            ->where('sender_user_id', $sender->id)
+            ->count());
+        $this->assertSame(1, DB::table('notifications')
+            ->where('tenant_id', $partnerTenantId)
+            ->where('user_id', $receiver->id)
+            ->where('type', 'federation_message')
+            ->count());
+    }
+
+    public function test_send_message_rejects_changed_intent_for_same_idempotency_key(): void
+    {
+        $partnerTenantId = $this->seedPartnerTenant('Message Conflict Partner');
+        $this->seedPartnership($partnerTenantId);
+        $sender = $this->seedFederatedUser($this->testTenantId);
+        $receiver = $this->seedFederatedUser($partnerTenantId);
+        Sanctum::actingAs($sender, ['*']);
+
+        $key = 'federation-message-conflict-key-1';
+        $payload = [
+            'receiver_id' => $receiver->id,
+            'receiver_tenant_id' => $partnerTenantId,
+            'subject' => 'Original subject',
+            'body' => 'Original message.',
+            'idempotency_key' => $key,
+        ];
+        $this->apiPost('/v2/federation/messages', $payload, ['Idempotency-Key' => $key])
+            ->assertCreated();
+
+        $response = $this->apiPost('/v2/federation/messages', [
+            ...$payload,
+            'body' => 'Changed message.',
+        ], ['Idempotency-Key' => $key]);
+
+        $response->assertStatus(409);
+        $response->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        $this->assertSame(2, DB::table('federation_messages')
+            ->where('sender_user_id', $sender->id)
+            ->where('receiver_user_id', $receiver->id)
+            ->count());
+    }
+
     public function test_messages_endpoint_only_returns_the_viewers_copy_of_internal_messages(): void
     {
         $partnerTenantId = $this->seedPartnerTenant('Message Partner');

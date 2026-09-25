@@ -60,6 +60,10 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 import { appResolvedMember, rememberAppResolvedMember } from '@/lib/federation/appResolvedMembers';
+import {
+  completeFederationMessageCreationOperation,
+  reserveFederationMessageCreationOperation,
+} from '@/lib/federationMessageCreationOperation';
 
 type DirectoryMode = 'partners' | 'members' | 'messages' | 'listings' | 'groups' | 'events' | 'settings';
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -1383,13 +1387,16 @@ function MessageThreadView({
     replySendingRef.current = true;
     setIsSending(true);
     try {
-      const response = await sendFederationMessage({
+      const payload = {
         receiver_id: thread.partner.id,
         receiver_tenant_id: thread.partner.tenant_id ?? '',
         subject: thread.lastMessage.subject ?? '',
         body: reply.trim(),
         reference_message_id: thread.lastMessage.id,
-      });
+      };
+      const operation = await reserveFederationMessageCreationOperation(JSON.stringify(payload));
+      const response = await sendFederationMessage(payload, operation.key);
+      await completeFederationMessageCreationOperation(operation);
       setReply('');
       onSent(response.data);
     } catch (err) {
@@ -1631,12 +1638,15 @@ function FederationComposeCard({
     composeSendingRef.current = true;
     setIsSending(true);
     try {
-      const response = await sendFederationMessage({
+      const payload = {
         receiver_id: effectiveToUser,
         receiver_tenant_id: effectiveToTenant,
         subject: subject.trim(),
         body: body.trim(),
-      });
+      };
+      const operation = await reserveFederationMessageCreationOperation(JSON.stringify(payload));
+      const response = await sendFederationMessage(payload, operation.key);
+      await completeFederationMessageCreationOperation(operation);
       setSubject('');
       setBody('');
       showToast({ title: t('directory.messages.sentTitle'), description: t('directory.messages.sentDescription', { name: recipientName }), variant: 'success' });

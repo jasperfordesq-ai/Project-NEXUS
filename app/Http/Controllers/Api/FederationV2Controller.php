@@ -21,6 +21,7 @@ use App\Models\Notification;
 use App\Services\FederatedConnectionService;
 use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
+use App\Services\FederationMessageCreationReceiptService;
 use App\Services\FederationPartnershipService;
 use App\Services\FederationSearchService;
 use App\Services\MessageService;
@@ -2544,6 +2545,22 @@ class FederationV2Controller extends BaseApiController
         }
 
         $input = request()->all();
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $input['idempotency_key'] ?? null;
+        if (($headerKey !== null && ! is_string($headerKey))
+            || ($bodyKey !== null && ! is_string($bodyKey))
+            || ($headerKey !== null && $bodyKey !== null
+                && ! hash_equals(trim($headerKey), trim($bodyKey)))) {
+            return $this->respondWithError(
+                'IDEMPOTENCY_INVALID',
+                __('event_registration.idempotency_invalid'),
+                'idempotency_key',
+                422,
+            );
+        }
+        $idempotencyKey = is_string($headerKey) && trim($headerKey) !== ''
+            ? trim($headerKey)
+            : (is_string($bodyKey) ? trim($bodyKey) : null);
         $receiverId = $input['receiver_id'] ?? null;
         $receiverTenantId = $input['receiver_tenant_id'] ?? null;
         $subject = $input['subject'] ?? '';
@@ -2585,6 +2602,22 @@ class FederationV2Controller extends BaseApiController
         $body = trim((string) $body);
         if ($body === '') {
             return $this->respondWithErrors([['code' => 'VALIDATION_ERROR', 'message' => __('api_controllers_1.federation_v2.message_body_required'), 'field' => 'body']]);
+        }
+
+        $identity = FederationMessageCreationReceiptService::identity($idempotencyKey, [
+            'receiver_id' => (string) $receiverId,
+            'receiver_tenant_id' => (string) $receiverTenantId,
+            'subject' => $subject,
+            'body' => $body,
+            'reference_message_id' => $referenceMessageId !== null ? (string) $referenceMessageId : null,
+        ]);
+        if ($identity === false) {
+            return $this->respondWithError(
+                'IDEMPOTENCY_INVALID',
+                __('event_registration.idempotency_invalid'),
+                'idempotency_key',
+                422,
+            );
         }
 
         // ── External partner message routing ──
@@ -2673,15 +2706,46 @@ class FederationV2Controller extends BaseApiController
 
             $senderName = UserDisplayName::resolve($sender);
 
-            [$outboundId, $inboundId] = DB::transaction(function () use (
+            $messageMutation = DB::transaction(function () use (
                 $tenantId,
                 $userId,
                 $receiverTenantId,
                 $receiverId,
                 $subject,
                 $body,
-                $referenceMessageId
+                $referenceMessageId,
+                $identity,
             ): array {
+                if ($identity !== null) {
+                    FederationMessageCreationReceiptService::lockSender($tenantId, $userId);
+                    $receipt = FederationMessageCreationReceiptService::find(
+                        $tenantId,
+                        $userId,
+                        $identity['key_hash'],
+                    );
+                    if ($receipt !== null) {
+                        if (! hash_equals((string) $receipt->request_hash, $identity['request_hash'])) {
+                            return ['error' => 'IDEMPOTENCY_CONFLICT'];
+                        }
+                        $outboundExists = DB::table('federation_messages')
+                            ->where('id', (int) $receipt->outbound_message_id)
+                            ->where('sender_tenant_id', $tenantId)
+                            ->where('sender_user_id', $userId)
+                            ->exists();
+                        $inboundExists = DB::table('federation_messages')
+                            ->where('id', (int) $receipt->inbound_message_id)
+                            ->exists();
+                        if (! $outboundExists || ! $inboundExists) {
+                            return ['error' => 'IDEMPOTENCY_RESULT_GONE'];
+                        }
+                        return [
+                            'outbound_id' => (int) $receipt->outbound_message_id,
+                            'inbound_id' => (int) $receipt->inbound_message_id,
+                            'replayed' => true,
+                        ];
+                    }
+                }
+
                 // Insert outbound message (sender's copy)
                 DB::insert("
                     INSERT INTO federation_messages
@@ -2720,8 +2784,37 @@ class FederationV2Controller extends BaseApiController
                     FederationAuditService::LEVEL_INFO
                 );
 
-                return [$outboundId, $inboundId];
+                if ($identity !== null) {
+                    FederationMessageCreationReceiptService::store(
+                        $tenantId,
+                        $userId,
+                        $identity,
+                        $outboundId,
+                        $inboundId,
+                    );
+                }
+
+                return [
+                    'outbound_id' => $outboundId,
+                    'inbound_id' => $inboundId,
+                    'replayed' => false,
+                ];
             });
+
+            if (isset($messageMutation['error'])) {
+                $code = (string) $messageMutation['error'];
+                return $this->respondWithError(
+                    $code,
+                    $code === 'IDEMPOTENCY_CONFLICT'
+                        ? __('event_registration.idempotency_conflict')
+                        : __('api.generic_error'),
+                    'idempotency_key',
+                    $code === 'IDEMPOTENCY_CONFLICT' ? 409 : 500,
+                );
+            }
+            $outboundId = (int) $messageMutation['outbound_id'];
+            $inboundId = (int) $messageMutation['inbound_id'];
+            $isReplay = (bool) $messageMutation['replayed'];
 
             // ── Notification dispatch (email + realtime + in-app + push) ──
             // These are async/non-blocking: failures are logged but don't affect the response.
@@ -2729,93 +2822,99 @@ class FederationV2Controller extends BaseApiController
             $senderTenantName = $sender['tenant_name'] ?? '';
 
             // 1. Email notification to recipient
-            try {
-                $emailSent = $this->federationEmailService->sendNewMessageNotification(
-                    (int)$receiverId,
-                    $userId,
-                    $tenantId,
-                    substr($body, 0, 200),
-                    (int)$receiverTenantId
-                );
+            if (! $isReplay) {
+                try {
+                    $emailSent = $this->federationEmailService->sendNewMessageNotification(
+                        (int) $receiverId,
+                        $userId,
+                        $tenantId,
+                        substr($body, 0, 200),
+                        (int) $receiverTenantId
+                    );
 
-                DB::update(
-                    "UPDATE federation_messages
+                    DB::update(
+                        "UPDATE federation_messages
                         SET email_sent_at = ?,
                             email_failed_at = ?,
                             email_last_error = ?
                       WHERE id = ? AND receiver_tenant_id = ?",
-                    [
-                        $emailSent ? now() : null,
-                        $emailSent ? null : now(),
-                        $emailSent ? null : 'Federation message email returned false',
-                        $inboundId,
-                        (int)$receiverTenantId,
-                    ]
-                );
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message email: " . $e->getMessage());
-                DB::update(
-                    "UPDATE federation_messages
+                        [
+                            $emailSent ? now() : null,
+                            $emailSent ? null : now(),
+                            $emailSent ? null : 'Federation message email returned false',
+                            $inboundId,
+                            (int) $receiverTenantId,
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message email: " . $e->getMessage());
+                    DB::update(
+                        "UPDATE federation_messages
                         SET email_sent_at = NULL,
                             email_failed_at = NOW(),
                             email_last_error = ?
                       WHERE id = ? AND receiver_tenant_id = ?",
-                    [$e->getMessage(), $inboundId, (int)$receiverTenantId]
-                );
+                        [$e->getMessage(), $inboundId, (int) $receiverTenantId]
+                    );
+                }
             }
 
             // 2. Real-time notification via Pusher
-            try {
-                $this->federationRealtimeService->broadcastNewMessage(
-                    $userId,
-                    $tenantId,
-                    (int)$receiverId,
-                    (int)$receiverTenantId,
-                    [
-                        'message_id' => $inboundId,
-                        'outbound_message_id' => $outboundId,
-                        'sender_name' => $senderName,
-                        'sender_tenant_name' => $senderTenantName,
-                        'subject' => $subject,
-                        'body' => $body,
-                    ]
-                );
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message realtime: " . $e->getMessage());
+            if (! $isReplay) {
+                try {
+                    $this->federationRealtimeService->broadcastNewMessage(
+                        $userId,
+                        $tenantId,
+                        (int) $receiverId,
+                        (int) $receiverTenantId,
+                        [
+                            'message_id' => $inboundId,
+                            'outbound_message_id' => $outboundId,
+                            'sender_name' => $senderName,
+                            'sender_tenant_name' => $senderTenantName,
+                            'subject' => $subject,
+                            'body' => $body,
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message realtime: " . $e->getMessage());
+                }
             }
 
             // 3. In-app notification + push notification
-            try {
-                LocaleContext::withLocale($receiver['preferred_language'] ?? null, function () use ($receiverId, $receiverTenantId, $senderName, $senderTenantName, $subject) {
-                    $subjectPreview = mb_substr($subject ?: __('api.federation_no_subject'), 0, 50);
-                    if (mb_strlen($subject) > 50) {
-                        $subjectPreview .= '...';
-                    }
-                    $notifMessage = __('api.federation_new_message_notif', [
-                        'sender' => $senderName,
-                        'community' => $senderTenantName,
-                        'subject' => $subjectPreview,
-                    ]);
+            if (! $isReplay) {
+                try {
+                    LocaleContext::withLocale($receiver['preferred_language'] ?? null, function () use ($receiverId, $receiverTenantId, $senderName, $senderTenantName, $subject) {
+                        $subjectPreview = mb_substr($subject ?: __('api.federation_no_subject'), 0, 50);
+                        if (mb_strlen($subject) > 50) {
+                            $subjectPreview .= '...';
+                        }
+                        $notifMessage = __('api.federation_new_message_notif', [
+                            'sender' => $senderName,
+                            'community' => $senderTenantName,
+                            'subject' => $subjectPreview,
+                        ]);
 
-                    Notification::createNotification(
-                        (int)$receiverId,
-                        $notifMessage,
-                        '/federation/messages',
-                        'federation_message',
-                        true,
-                        (int)$receiverTenantId  // Receiver's tenant, not sender's
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $receiverId, 'federation_message', $notifMessage, '/federation/messages');
-                });
+                        Notification::createNotification(
+                            (int) $receiverId,
+                            $notifMessage,
+                            '/federation/messages',
+                            'federation_message',
+                            true,
+                            (int) $receiverTenantId  // Receiver's tenant, not sender's
+                        );
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $receiverId, 'federation_message', $notifMessage, '/federation/messages');
+                    });
 
-                DB::update(
-                    "UPDATE federation_messages
+                    DB::update(
+                        "UPDATE federation_messages
                         SET notification_sent_at = NOW()
                       WHERE id = ? AND receiver_tenant_id = ? AND notification_sent_at IS NULL",
-                    [$inboundId, (int)$receiverTenantId]
-                );
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message in-app notification: " . $e->getMessage());
+                        [$inboundId, (int) $receiverTenantId]
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("FederationV2: Failed to send federation message in-app notification: " . $e->getMessage());
+                }
             }
 
             // Return the outbound message in the expected format

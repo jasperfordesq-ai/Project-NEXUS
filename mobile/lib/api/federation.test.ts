@@ -30,6 +30,7 @@ import {
   optInFederation,
   optOutFederation,
   removeFederationConnection,
+  sendFederationMessage,
   sendFederationTransaction,
 } from './federation';
 import type { FederationResponse, FederatedTenant } from './federation';
@@ -151,6 +152,27 @@ describe('sendFederationTransaction', () => {
     await sendFederationTransaction(payload);
 
     expect(api.post).toHaveBeenCalledWith('/api/v2/federation/transactions', payload);
+  });
+});
+
+describe('sendFederationMessage', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('sends the same stable idempotency key in the body and header', async () => {
+    const payload = {
+      receiver_id: 272,
+      receiver_tenant_id: 5,
+      subject: 'Shared project',
+      body: 'Could we coordinate?',
+    };
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 230 } });
+
+    await sendFederationMessage(payload, 'mobile-federation-message-key');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/federation/messages', {
+      ...payload,
+      idempotency_key: 'mobile-federation-message-key',
+    }, { headers: { 'Idempotency-Key': 'mobile-federation-message-key' } });
   });
 });
 
