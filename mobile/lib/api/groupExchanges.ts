@@ -114,8 +114,14 @@ export function getGroupExchange(id: number): Promise<{ data: GroupExchangeDetai
   return api.get<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges/${id}`);
 }
 
-export function createGroupExchange(payload: CreateGroupExchangePayload): Promise<{ data: GroupExchangeDetail }> {
-  return api.post<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges`, payload);
+export function createGroupExchange(payload: CreateGroupExchangePayload, idempotencyKey?: string): Promise<{ data: GroupExchangeDetail }> {
+  return idempotencyKey
+    ? api.post<{ data: GroupExchangeDetail }>(
+        `${API_V2}/group-exchanges`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupExchangeDetail }>(`${API_V2}/group-exchanges`, payload);
 }
 
 export function confirmGroupExchange(id: number, termsToken?: string): Promise<{ data: GroupExchangeDetail }> {

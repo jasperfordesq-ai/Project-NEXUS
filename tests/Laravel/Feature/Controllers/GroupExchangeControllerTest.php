@@ -111,6 +111,63 @@ class GroupExchangeControllerTest extends TestCase
         $this->apiPost('/v2/group-exchanges', ['title' => 'No hours', 'total_hours' => 0])->assertStatus(400);
     }
 
+    public function test_store_replays_one_exchange_after_response_loss(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $provider = $this->makeUser();
+        $receiver = $this->makeUser();
+        $payload = [
+            'title' => 'Restart-safe group exchange',
+            'description' => 'One shared creation intent.',
+            'split_type' => 'weighted',
+            'total_hours' => 6,
+            'participants' => [
+                ['user_id' => $provider->id, 'role' => 'provider', 'hours' => 2, 'weight' => 1.5],
+                ['user_id' => $receiver->id, 'role' => 'receiver', 'hours' => 4, 'weight' => 2],
+            ],
+            'idempotency_key' => 'mobile-group-exchange-response-loss-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost('/v2/group-exchanges', $payload, $headers)->assertStatus(201);
+        $replay = $this->apiPost('/v2/group-exchanges', $payload, $headers)->assertStatus(201);
+
+        $exchangeId = (int) $first->json('data.id');
+        $this->assertSame($exchangeId, (int) $replay->json('data.id'));
+        $this->assertSame(1, DB::table('group_exchanges')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('organizer_id', $organizer->id)
+            ->where('title', $payload['title'])
+            ->count());
+        $this->assertSame(2, DB::table('group_exchange_participants')
+            ->where('group_exchange_id', $exchangeId)
+            ->count());
+        $this->assertSame(1, DB::table('group_exchange_creation_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $organizer->id)
+            ->where('group_exchange_id', $exchangeId)
+            ->count());
+    }
+
+    public function test_store_rejects_changed_intent_for_the_same_creation_key(): void
+    {
+        $this->authenticatedUser();
+        $key = 'mobile-group-exchange-content-conflict-1';
+        $headers = ['Idempotency-Key' => $key];
+        $payload = [
+            'title' => 'Original exchange',
+            'split_type' => 'equal',
+            'total_hours' => 3,
+            'idempotency_key' => $key,
+        ];
+
+        $this->apiPost('/v2/group-exchanges', $payload, $headers)->assertStatus(201);
+        $payload['title'] = 'Changed exchange';
+        $this->apiPost('/v2/group-exchanges', $payload, $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+    }
+
     // ------------------------------------------------------------------
     //  Response contract
     // ------------------------------------------------------------------

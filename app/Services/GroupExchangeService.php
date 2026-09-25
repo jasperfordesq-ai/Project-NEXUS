@@ -23,6 +23,7 @@ use App\Support\UserDisplayName;
 class GroupExchangeService
 {
     private ?SafeguardingInteractionDecision $lastContactRestriction = null;
+    private ?string $lastCreationError = null;
 
     public function __construct()
     {
@@ -34,6 +35,7 @@ class GroupExchangeService
     public function create(int $organizerId, array $data): ?int
     {
         $this->lastContactRestriction = null;
+        $this->lastCreationError = null;
         $tenantId = TenantContext::getId();
         $participants = [];
         foreach (is_array($data['participants'] ?? null) ? $data['participants'] : [] as $participant) {
@@ -49,36 +51,74 @@ class GroupExchangeService
                 'weight' => (float) ($participant['weight'] ?? 1.0),
             ];
         }
-
-        $contactIds = array_values(array_unique(array_merge(
-            [$organizerId],
-            array_column($participants, 'user_id'),
-        )));
-        $tenantUserCount = (int) DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->whereIn('id', $contactIds)
-            ->count();
-        $restriction = $this->firstContactRestriction($contactIds, $tenantId, 'group_exchange_create');
-        if ($tenantUserCount !== count($contactIds) || $restriction !== null) {
-            $this->lastContactRestriction = $restriction;
+        ksort($participants);
+        $participants = array_values($participants);
+        $intent = [
+            'title' => trim((string) ($data['title'] ?? '')),
+            'description' => trim((string) ($data['description'] ?? '')) ?: null,
+            'listing_id' => isset($data['listing_id']) ? (int) $data['listing_id'] : null,
+            'split_type' => (string) ($data['split_type'] ?? 'equal'),
+            'total_hours' => (float) ($data['total_hours'] ?? 0),
+            'participants' => $participants,
+        ];
+        $identity = GroupExchangeCreationReceiptService::identity(
+            is_string($data['idempotency_key'] ?? null) ? $data['idempotency_key'] : null,
+            $intent,
+        );
+        if ($identity === false) {
+            $this->lastCreationError = 'IDEMPOTENCY_INVALID';
             return null;
         }
 
-        return DB::transaction(function () use ($tenantId, $organizerId, $data, $participants): int {
+        return DB::transaction(function () use ($tenantId, $organizerId, $intent, $participants, $identity): ?int {
+            if ($identity !== null) {
+                GroupExchangeCreationReceiptService::lockActor($tenantId, $organizerId);
+                $receipt = GroupExchangeCreationReceiptService::find($tenantId, $organizerId, $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! hash_equals((string) $receipt->request_hash, $identity['request_hash'])) {
+                        $this->lastCreationError = 'IDEMPOTENCY_CONFLICT';
+                        return null;
+                    }
+                    $existing = DB::table('group_exchanges')
+                        ->where('tenant_id', $tenantId)
+                        ->where('id', (int) $receipt->group_exchange_id)
+                        ->value('id');
+                    if ($existing === null) {
+                        $this->lastCreationError = 'IDEMPOTENCY_RESULT_GONE';
+                        return null;
+                    }
+                    return (int) $existing;
+                }
+            }
+
+            $contactIds = array_values(array_unique(array_merge(
+                [$organizerId],
+                array_column($participants, 'user_id'),
+            )));
+            $tenantUserCount = (int) DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->whereIn('id', $contactIds)
+                ->count();
+            $restriction = $this->firstContactRestriction($contactIds, $tenantId, 'group_exchange_create');
+            if ($tenantUserCount !== count($contactIds) || $restriction !== null) {
+                $this->lastContactRestriction = $restriction;
+                return null;
+            }
+
             $id = (int) DB::table('group_exchanges')->insertGetId([
                 'tenant_id'    => $tenantId,
-                'title'        => trim($data['title'] ?? ''),
-                'description'  => trim($data['description'] ?? '') ?: null,
+                'title'        => $intent['title'],
+                'description'  => $intent['description'],
                 'organizer_id' => $organizerId,
-                'listing_id'   => $data['listing_id'] ?? null,
+                'listing_id'   => $intent['listing_id'],
                 // F-177: server-derived. A new exchange always starts as a draft —
                 // only start() may move it on, after its provider/receiver and
                 // conservation checks — and the organiser cannot name a broker or
                 // write "broker notes" for one; nothing member-facing assigns those.
                 'status'       => 'draft',
-                'split_type'   => $data['split_type'] ?? 'equal',
-                'total_hours'  => (float) ($data['total_hours'] ?? 0),
+                'split_type'   => $intent['split_type'],
+                'total_hours'  => $intent['total_hours'],
                 'broker_id'    => null,
                 'broker_notes' => null,
                 'created_at'   => now(),
@@ -97,8 +137,22 @@ class GroupExchangeService
                 ]);
             }
 
+            if ($identity !== null) {
+                GroupExchangeCreationReceiptService::store(
+                    $tenantId,
+                    $organizerId,
+                    $identity,
+                    $id,
+                );
+            }
+
             return $id;
         });
+    }
+
+    public function getLastCreationError(): ?string
+    {
+        return $this->lastCreationError;
     }
 
     /**

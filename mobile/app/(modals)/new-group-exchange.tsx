@@ -25,6 +25,10 @@ import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { describeApiError } from '@/lib/api/describeApiError';
+import {
+  completeGroupExchangeCreationOperation,
+  reserveGroupExchangeCreationOperation,
+} from '@/lib/groupExchangeCreationOperation';
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -170,7 +174,9 @@ function NewGroupExchangeScreen() {
             }))
           : undefined,
       };
-      const response = await createGroupExchange(payload);
+      const creationOperation = await reserveGroupExchangeCreationOperation(JSON.stringify(payload));
+      const response = await createGroupExchange(payload, creationOperation.key);
+      await completeGroupExchangeCreationOperation(creationOperation);
       accepted = true;
       if (!mountedRef.current) return;
       const id = response.data?.id;

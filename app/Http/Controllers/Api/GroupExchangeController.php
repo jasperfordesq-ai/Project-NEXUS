@@ -51,6 +51,23 @@ class GroupExchangeController extends BaseApiController
 
         $data = $this->getAllInput();
 
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $data['idempotency_key'] ?? null;
+        if (($headerKey !== null && ! is_string($headerKey))
+            || ($bodyKey !== null && ! is_string($bodyKey))
+            || ($headerKey !== null && $bodyKey !== null
+                && ! hash_equals(trim($headerKey), trim($bodyKey)))) {
+            return $this->respondWithError(
+                'IDEMPOTENCY_INVALID',
+                __('event_registration.idempotency_invalid'),
+                'idempotency_key',
+                422,
+            );
+        }
+        if (is_string($headerKey) && trim($headerKey) !== '') {
+            $data['idempotency_key'] = trim($headerKey);
+        }
+
         if (empty($data['title'])) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.title_required'), 'title', 400);
         }
@@ -62,6 +79,24 @@ class GroupExchangeController extends BaseApiController
         $id = $this->groupExchangeService->create($userId, $data);
 
         if (!$id) {
+            $creationError = $this->groupExchangeService->getLastCreationError();
+            if ($creationError !== null) {
+                $creationStatus = match ($creationError) {
+                    'IDEMPOTENCY_CONFLICT' => 409,
+                    'IDEMPOTENCY_INVALID' => 422,
+                    default => 500,
+                };
+                return $this->respondWithError(
+                    $creationError,
+                    $creationError === 'IDEMPOTENCY_CONFLICT'
+                        ? __('event_registration.idempotency_conflict')
+                        : ($creationError === 'IDEMPOTENCY_INVALID'
+                            ? __('event_registration.idempotency_invalid')
+                            : __('api.generic_error')),
+                    'idempotency_key',
+                    $creationStatus,
+                );
+            }
             if ($restriction = $this->groupExchangeService->getLastContactRestriction()) {
                 $error = MessageService::buildSafeguardingError([
                     'code' => $restriction->code,

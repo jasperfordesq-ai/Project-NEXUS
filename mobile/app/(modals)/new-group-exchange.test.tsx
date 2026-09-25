@@ -9,6 +9,8 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 const mockCreateGroupExchange = jest.fn();
 const mockGetMembers = jest.fn();
 const mockRouterReplace = jest.fn();
+const mockReserveCreation = jest.fn();
+const mockCompleteCreation = jest.fn();
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -90,6 +92,10 @@ jest.mock('@/lib/api/groupExchanges', () => ({
 jest.mock('@/lib/api/members', () => ({
   getMembers: (...args: unknown[]) => mockGetMembers(...args),
 }));
+jest.mock('@/lib/groupExchangeCreationOperation', () => ({
+  reserveGroupExchangeCreationOperation: (...args: unknown[]) => mockReserveCreation(...args),
+  completeGroupExchangeCreationOperation: (...args: unknown[]) => mockCompleteCreation(...args),
+}));
 
 // Stable AppToast mock — fns created inside the factory closure.
 jest.mock('@/components/ui/AppToast', () => {
@@ -141,6 +147,12 @@ beforeEach(() => {
     ],
   });
   mockRouterReplace.mockReset();
+  mockReserveCreation.mockReset().mockResolvedValue({
+    storageKey: 'saved-group-exchange',
+    key: 'mobile-group-exchange-create-123',
+    createdAt: 1,
+  });
+  mockCompleteCreation.mockReset().mockResolvedValue(undefined);
 });
 
 describe('NewGroupExchangeRoute', () => {
@@ -151,7 +163,7 @@ describe('NewGroupExchangeRoute', () => {
     fireEvent.changeText(screen.getByPlaceholderText('e.g. Community garden workday'), 'Shared exchange');
     fireEvent.changeText(screen.getByPlaceholderText('e.g. 6'), '6');
     act(() => { fireEvent.press(screen.getByText('Create exchange')); fireEvent.press(screen.getByText('Create exchange')); });
-    expect(mockCreateGroupExchange).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockCreateGroupExchange).toHaveBeenCalledTimes(1));
     await act(async () => { finish({ data: { id: 55 } }); });
   });
   it('ignores a create response after departure', async () => {
@@ -161,6 +173,7 @@ describe('NewGroupExchangeRoute', () => {
     fireEvent.changeText(screen.getByPlaceholderText('e.g. Community garden workday'), 'Shared exchange');
     fireEvent.changeText(screen.getByPlaceholderText('e.g. 6'), '6');
     fireEvent.press(screen.getByText('Create exchange'));
+    await waitFor(() => expect(mockCreateGroupExchange).toHaveBeenCalledTimes(1));
     screen.unmount();
     await act(async () => { finish({ data: { id: 55 } }); await new Promise(resolve => setTimeout(resolve, 10)); });
     expect(mockRouterReplace).not.toHaveBeenCalled();
@@ -194,8 +207,19 @@ describe('NewGroupExchangeRoute', () => {
           { user_id: 7, role: 'provider', hours: 2, weight: 1.5 },
           { user_id: 8, role: 'receiver', hours: 4, weight: 2 },
         ],
-      });
+      }, 'mobile-group-exchange-create-123');
     });
+    expect(mockReserveCreation).toHaveBeenCalledWith(JSON.stringify({
+      title: 'Community garden workday',
+      description: 'Prepare the beds and paths together.',
+      split_type: 'weighted',
+      total_hours: 6,
+      participants: [
+        { user_id: 7, role: 'provider', hours: 2, weight: 1.5 },
+        { user_id: 8, role: 'receiver', hours: 4, weight: 2 },
+      ],
+    }));
+    expect(mockCompleteCreation).toHaveBeenCalledWith(expect.objectContaining({ key: 'mobile-group-exchange-create-123' }));
     expect(mockRouterReplace).toHaveBeenCalledWith({
       pathname: '/(modals)/group-exchange-detail',
       params: { id: '55' },

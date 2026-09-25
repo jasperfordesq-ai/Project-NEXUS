@@ -30,4 +30,20 @@ describe('groupExchanges API', () => {
 
     expect(mockPost).toHaveBeenCalledWith('/api/v2/group-exchanges', payload);
   });
+
+  it('sends the durable creation key in the body and header', async () => {
+    const payload = {
+      title: 'Community garden workday',
+      split_type: 'equal' as const,
+      total_hours: 6,
+    };
+
+    await createGroupExchange(payload, 'mobile-group-exchange-create-123');
+
+    expect(mockPost).toHaveBeenCalledWith(
+      '/api/v2/group-exchanges',
+      { ...payload, idempotency_key: 'mobile-group-exchange-create-123' },
+      { headers: { 'Idempotency-Key': 'mobile-group-exchange-create-123' } },
+    );
+  });
 });
