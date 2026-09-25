@@ -115,6 +115,17 @@ if (!$isDocker) {
 $_ENV['APP_ENV'] = 'testing';
 $_SERVER['APP_ENV'] = 'testing';
 putenv('APP_ENV=testing');
+
+// 🔴 APP_URL is pinned to CI's value for the same reason. The dev container sets
+// APP_URL=http://localhost:8090, so every local test request went to port 8090
+// while CI (APP_URL=http://localhost) uses port 80. BrowserRefreshCookie's
+// same-origin check compares ports, so a test sending Origin http://localhost was
+// refused locally (403 AUTH_BROWSER_ORIGIN_INVALID) but passed in CI — 15
+// WebAuthnControllerTest cases failed only on this machine, and blocked commits
+// through the pre-commit test gate. Local runs must behave like CI.
+$_ENV['APP_URL'] = 'http://localhost';
+$_SERVER['APP_URL'] = 'http://localhost';
+putenv('APP_URL=http://localhost');
 $_ENV['APP_DEBUG'] = 'true';
 
 // Set timezone
