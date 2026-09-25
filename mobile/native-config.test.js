@@ -239,11 +239,14 @@ describe('native app configuration', () => {
     expect(app.android.adaptiveIcon.foregroundImage).toBe('./assets/adaptive-icon.png');
   });
 
-  it('checks the pinned release channel for updates on launch', () => {
+  // E-035 F-201 (owner decision, 25 September 2026): over-the-air updates are OFF —
+  // they were not code-signed. Every change ships as a store build. Re-enabling them
+  // needs a codeSigningCertificate first (verify-release-config.mjs enforces both).
+  it('never checks for or applies over-the-air updates', () => {
     const app = readJson('app.json').expo;
 
-    expect(app.updates.enabled).toBe(true);
-    expect(app.updates.checkAutomatically).toBe('ON_LOAD');
+    expect(app.updates.enabled).toBe(false);
+    expect(app.updates.checkAutomatically).toBe('NEVER');
     expect(app.updates.fallbackToCacheTimeout).toBe(0);
   });
 

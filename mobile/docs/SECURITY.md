@@ -19,6 +19,7 @@ This document describes the mobile app's security posture, identifies known gaps
 | **Rate limit awareness** | Non-2xx API responses, including 429, are surfaced through typed `ApiResponseError` objects | `lib/api/client.ts` |
 | **No secrets in code** | All credentials come from `EXPO_PUBLIC_*` env vars; `.env.local` is gitignored | `.gitignore` |
 | **Auth input validation** | Zod schemas validate login, registration, forgot-password, and reset-password forms before submission | `app/(auth)/*.tsx` |
+| **No over-the-air code updates** | `updates.enabled: false`; every change ships as a signed store build. Re-enabling needs EAS update code signing first (enforced by the release gate) | `app.json`, `scripts/verify-release-config.mjs`, `scripts/publish-update.mjs` |
 | **Android certificate pinning** | A project config plugin copies the fail-closed network security policy into generated Android builds and wires it into the manifest | `plugins/with-android-network-security.js`, `android-network-security-config.xml`, `scripts/verify-release-config.mjs` |
 
 ### Known gaps / future hardening

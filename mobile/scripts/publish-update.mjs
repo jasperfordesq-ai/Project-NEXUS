@@ -58,6 +58,22 @@ if (!channels.includes(channel)) {
   process.exit(64);
 }
 
+// E-035 F-201: over-the-air updates are switched off (owner decision, 25 September
+// 2026). They were not code-signed (EAS update signing needs a paid Expo plan), so
+// anyone holding publish rights on the Expo project could run code in every
+// installed app. Builds made from an app.json with `updates.enabled: false` never
+// fetch an update; this also refuses to publish one to store builds that predate
+// the switch. Every app change now ships as a store build. `rollback-update.mjs`
+// stays usable so a mistaken publish could still be withdrawn.
+const appConfig = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8')).expo;
+if (appConfig?.updates?.enabled !== true) {
+  console.error(
+    'Over-the-air updates are switched off for this app (app.json updates.enabled is not true). ' +
+      'Ship the change as a store build instead.'
+  );
+  process.exit(79);
+}
+
 const approvalVar = APPROVAL_ENV_VARS[channel];
 if (approvalVar && process.env[approvalVar] !== 'yes') {
   console.error(

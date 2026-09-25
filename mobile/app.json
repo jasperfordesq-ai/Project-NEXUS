@@ -340,8 +340,8 @@
       ]
     ],
     "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
+      "enabled": false,
+      "checkAutomatically": "NEVER",
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/90f411f3-b6b4-4251-85ad-00937bb0513d",
       "requestHeaders": {

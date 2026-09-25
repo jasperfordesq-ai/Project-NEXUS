@@ -1,6 +1,6 @@
 # Timebank Global mobile distribution
 
-Last reviewed: 2026-08-27
+Last reviewed: 2026-09-25
 
 This file records the release identity and distribution decisions for the native mobile app.
 
@@ -219,6 +219,17 @@ It is not fine for anything else:
    old ones. Verified in the artefact: both current pins present, the retired leaf absent.
 
 ## Sending an update, and taking one back
+
+🔴 **Over-the-air updates are switched off (owner decision, 2026-09-25).** They were not
+code-signed, and EAS update signing needs a paid Expo plan, so the owner chose to ship
+every app change as a store build instead. `app.json` has `updates.enabled: false` and
+`checkAutomatically: "NEVER"`, `npm run verify:release` fails if either is changed without
+a `codeSigningCertificate`, and `scripts/publish-update.mjs` refuses to publish (exit 79).
+Store builds made before the switch (version code 12 and earlier) still check for updates
+until members install a newer build, so no update may be published to them either;
+`scripts/rollback-update.mjs` remains available to withdraw one published by mistake. The
+rest of this section describes the mechanism as it was, for reference and for any future
+decision to re-enable it with signing.
 
 🔴 **No over-the-air update had ever been published before 2026-09-10, and the build on
 Play could not have received one.** Opening the version code 8 bundle showed two faults:

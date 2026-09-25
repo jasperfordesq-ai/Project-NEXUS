@@ -24,7 +24,17 @@ assert(
   `Android versionCode ${app.android?.versionCode} is below the live store build ${liveBuild.android.versionCode} (live-store-build.json) — Play would reject it as a downgrade`,
 );
 assert(app.runtimeVersion?.policy === 'appVersion', 'runtimeVersion must use appVersion policy');
-assert(app.updates?.enabled === true && app.updates?.checkAutomatically === 'ON_LOAD', 'OTA checks must be enabled on load');
+// E-035 F-201 (owner decision, 25 September 2026): over-the-air updates are OFF.
+// They were unsigned, and signing needs a paid Expo plan; every change ships as a
+// store build. Re-enabling them needs code signing (`codeSigningCertificate`) first.
+assert(
+  app.updates?.enabled === false && app.updates?.checkAutomatically === 'NEVER',
+  'over-the-air updates must stay switched off (updates.enabled false, checkAutomatically NEVER) — they are not code-signed',
+);
+assert(
+  !(app.updates?.enabled === true && !app.updates?.codeSigningCertificate),
+  'over-the-air updates may only be enabled together with a codeSigningCertificate',
+);
 assert(eas.build?.production?.channel === 'production', 'production build must be pinned to production OTA channel');
 
 // 🔴 Crash reports are unreadable without source maps, and the release build FAILS without
