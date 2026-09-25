@@ -155,6 +155,14 @@ async function main() {
     bad(`Could not read the live version from ${HEALTH_URL} and no --release given. Finishing UNKNOWN.`);
     return 2;
   }
+  // The deploy pins a full SHA, but BUILD_COMMIT, X-Build and Sentry releases
+  // use its first 12 characters. Querying Sentry with the full SHA silently
+  // reports zero new-release errors even when the deployment is failing.
+  if (!/^[0-9a-f]{12}(?:[0-9a-f]{28})?$/i.test(release)) {
+    bad(`Release '${release}' is not a 12- or 40-character commit id. Finishing UNKNOWN.`);
+    return 2;
+  }
+  release = release.slice(0, 12).toLowerCase();
 
   // --- baseline, then watch --------------------------------------------------------
   const t0 = new Date();

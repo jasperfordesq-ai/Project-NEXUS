@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The scheduler and queue workers now use the same prerender snapshot volume as the web app, so drift detection and cache invalidation work after workers drop root privileges.
+- The post-deploy Sentry watch now shortens an explicitly pinned full commit to the 12-character release used by the running services, so it counts errors from that release correctly.
 
 - Newsletter subscriber activity tables now ignore malformed rows without an email instead of crashing when a row has no stable key. The API also excludes blank emails before counting and paging these lists, so totals match the rows shown.
 
