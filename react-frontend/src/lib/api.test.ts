@@ -462,7 +462,7 @@ describe('API Client', () => {
     // with its own reason and carries the server's translated explanation.
     it('ends the session with an under-minimum-age reason on 403 ACCOUNT_UNDER_MINIMUM_AGE', async () => {
       tokenManager.setAccessToken('old-session');
-      tokenManager.setRefreshToken('old-refresh');
+      setTestBinding('old-refresh');
       const details: unknown[] = [];
       const listener = (event: Event) => details.push((event as CustomEvent).detail);
       window.addEventListener('nexus:session_expired', listener);
@@ -516,7 +516,7 @@ describe('API Client', () => {
 
     it('names the minimum-age reason when the token refresh itself is refused for it', async () => {
       tokenManager.setAccessToken('expired-access');
-      tokenManager.setRefreshToken('old-refresh');
+      setTestBinding('old-refresh');
       const details: unknown[] = [];
       const listener = (event: Event) => details.push((event as CustomEvent).detail);
       window.addEventListener('nexus:session_expired', listener);
