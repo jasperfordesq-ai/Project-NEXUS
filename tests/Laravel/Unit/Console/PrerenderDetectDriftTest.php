@@ -485,6 +485,31 @@ class PrerenderDetectDriftTest extends TestCase
             ->assertExitCode(0);
     }
 
+    public function test_active_master_job_with_null_slug_does_not_abort_the_sweep(): void
+    {
+        DB::table('tenants')->where('id', self::TENANT_ID)->update(['slug' => null]);
+        DB::table('prerender_jobs')->insert([
+            'tenant_id' => self::TENANT_ID,
+            'status' => 'queued',
+            'priority' => PrerenderService::PRIORITY_HIGH,
+            'queued_at' => now(),
+        ]);
+
+        $masterTarget = $this->makeTenantTarget();
+        $masterTarget['slug'] = null;
+        $masterTarget['prefix'] = '';
+        $this->prerenderMock->shouldReceive('loadTenantTargets')->once()->andReturn([$masterTarget]);
+        $this->prerenderMock->shouldReceive('inventory')->once()->with(null, false)->andReturn([]);
+        $this->sitemapMock->shouldNotReceive('generateForTenant');
+        $this->prerenderMock->shouldNotReceive('enqueueJob');
+
+        $exitCode = Artisan::call('prerender:detect-drift', ['--dry-run' => true]);
+        $report = $this->decodeReport(Artisan::output());
+
+        $this->assertSame(0, $exitCode);
+        $this->assertContains('active_job_exists', $report['skipped']);
+    }
+
     // =========================================================================
     // --max-tenants=0 → no tenants processed, no enqueueJob.
     // =========================================================================
