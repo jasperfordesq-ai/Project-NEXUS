@@ -155,6 +155,18 @@ async function main() {
     bad(`Could not read the live version from ${HEALTH_URL} and no --release given. Finishing UNKNOWN.`);
     return 2;
   }
+  // The deploy pins a full SHA, but BUILD_COMMIT, X-Build and Sentry releases
+  // use its first 12 characters. Querying Sentry with the full SHA silently
+  // reports zero new-release errors even when the deployment is failing.
+  // Keep safe non-SHA labels (such as Compose's "candidate") intact: Sentry
+  // records those exact labels on manually started stacks.
+  if (!/^[a-z0-9._-]{1,64}$/i.test(release)
+      || (/^[0-9a-f]{13,}$/i.test(release) && release.length !== 40)) {
+    bad(`Release '${release}' is not a valid build label. Finishing UNKNOWN.`);
+    return 2;
+  }
+  if (/^[0-9a-f]{40}$/i.test(release)) release = release.slice(0, 12).toLowerCase();
+  else if (/^[0-9a-f]{12}$/i.test(release)) release = release.toLowerCase();
 
   // --- baseline, then watch --------------------------------------------------------
   const t0 = new Date();
