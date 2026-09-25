@@ -2719,7 +2719,7 @@ class AdminNewsletterController extends BaseApiController
 
             if ($this->tableExists('newsletter_opens')) {
                 $countRow = DB::selectOne(
-                    "SELECT COUNT(DISTINCT email) as cnt FROM newsletter_opens WHERE newsletter_id = ? AND tenant_id = ?",
+                    "SELECT COUNT(DISTINCT email) as cnt FROM newsletter_opens WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''",
                     [$id, $tenantId]
                 );
                 $total = (int) ($countRow->cnt ?? 0);
@@ -2727,7 +2727,7 @@ class AdminNewsletterController extends BaseApiController
                 $items = DB::select(
                     "SELECT email, MIN(opened_at) as first_opened, COUNT(*) as open_count
                      FROM newsletter_opens
-                     WHERE newsletter_id = ? AND tenant_id = ?
+                     WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      GROUP BY email
                      ORDER BY first_opened DESC
                      LIMIT ? OFFSET ?",
@@ -2769,7 +2769,7 @@ class AdminNewsletterController extends BaseApiController
 
             if ($this->tableExists('newsletter_clicks')) {
                 $countRow = DB::selectOne(
-                    "SELECT COUNT(DISTINCT email) as cnt FROM newsletter_clicks WHERE newsletter_id = ? AND tenant_id = ?",
+                    "SELECT COUNT(DISTINCT email) as cnt FROM newsletter_clicks WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''",
                     [$id, $tenantId]
                 );
                 $total = (int) ($countRow->cnt ?? 0);
@@ -2777,7 +2777,7 @@ class AdminNewsletterController extends BaseApiController
                 $items = DB::select(
                     "SELECT email, MIN(clicked_at) as first_clicked, COUNT(*) as click_count, COUNT(DISTINCT url) as unique_links
                      FROM newsletter_clicks
-                     WHERE newsletter_id = ? AND tenant_id = ?
+                     WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      GROUP BY email
                      ORDER BY first_clicked DESC
                      LIMIT ? OFFSET ?",
@@ -2823,9 +2823,10 @@ class AdminNewsletterController extends BaseApiController
                     "SELECT COUNT(*) as cnt
                      FROM newsletter_queue q
                      WHERE q.newsletter_id = ? AND q.tenant_id = ? AND q.status = 'sent'
+                     AND TRIM(q.email) <> ''
                      AND q.email NOT IN (
                          SELECT DISTINCT email FROM newsletter_opens
-                         WHERE newsletter_id = ? AND tenant_id = ?
+                         WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      )",
                     [$id, $tenantId, $id, $tenantId]
                 );
@@ -2836,9 +2837,10 @@ class AdminNewsletterController extends BaseApiController
                      FROM newsletter_queue q
                      LEFT JOIN users u ON q.user_id = u.id
                      WHERE q.newsletter_id = ? AND q.tenant_id = ? AND q.status = 'sent'
+                     AND TRIM(q.email) <> ''
                      AND q.email NOT IN (
                          SELECT DISTINCT email FROM newsletter_opens
-                         WHERE newsletter_id = ? AND tenant_id = ?
+                         WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      )
                      ORDER BY q.sent_at DESC
                      LIMIT ? OFFSET ?",
@@ -2884,9 +2886,10 @@ class AdminNewsletterController extends BaseApiController
                     "SELECT COUNT(DISTINCT o.email) as cnt
                      FROM newsletter_opens o
                      WHERE o.newsletter_id = ? AND o.tenant_id = ?
+                     AND TRIM(o.email) <> ''
                      AND o.email NOT IN (
                          SELECT DISTINCT email FROM newsletter_clicks
-                         WHERE newsletter_id = ? AND tenant_id = ?
+                         WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      )",
                     [$id, $tenantId, $id, $tenantId]
                 );
@@ -2899,9 +2902,10 @@ class AdminNewsletterController extends BaseApiController
                      LEFT JOIN newsletter_queue q ON o.email = q.email AND q.newsletter_id = ?
                      LEFT JOIN users u ON q.user_id = u.id
                      WHERE o.newsletter_id = ? AND o.tenant_id = ?
+                     AND TRIM(o.email) <> ''
                      AND o.email NOT IN (
                          SELECT DISTINCT email FROM newsletter_clicks
-                         WHERE newsletter_id = ? AND tenant_id = ?
+                         WHERE newsletter_id = ? AND tenant_id = ? AND TRIM(email) <> ''
                      )
                      GROUP BY o.email, u.first_name, u.last_name
                      ORDER BY first_opened DESC
