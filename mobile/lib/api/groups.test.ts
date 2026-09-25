@@ -21,6 +21,7 @@ jest.mock('@/lib/constants', () => ({
 
 import { api } from '@/lib/api/client';
 import {
+  createGroup,
   createGroupAnnouncement,
   createGroupDiscussion,
   acceptGroupAnswer,
@@ -253,6 +254,18 @@ describe('group announcement helpers', () => {
     expect(api.post).toHaveBeenNthCalledWith(6, '/api/v2/groups/7/tasks', {
       title: 'Water seedlings', status: 'todo', idempotency_key: 'task-key-1',
     }, { headers: { 'Idempotency-Key': 'task-key-1' } });
+  });
+
+  it('sends durable operation identity with group creation', async () => {
+    const payload = { name: 'Repair club', description: 'Share practical repair skills.' };
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 21 } });
+
+    await createGroup(payload, 'group-create-key-1');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/groups', {
+      ...payload,
+      idempotency_key: 'group-create-key-1',
+    }, { headers: { 'Idempotency-Key': 'group-create-key-1' } });
   });
 
   it('updates a group announcement', async () => {

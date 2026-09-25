@@ -11,6 +11,8 @@ use App\Models\Group;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -140,7 +142,8 @@ class GroupsControllerTest extends TestCase
 
     public function test_authenticated_user_can_create_group(): void
     {
-        $this->authenticatedUser();
+        Event::fake([\App\Events\GroupCreated::class]);
+        $this->authenticatedUser(['email' => 'group-create@partner-demo.test']);
 
         $response = $this->apiPost('/v2/groups', [
             'name' => 'Test Group',
@@ -150,6 +153,56 @@ class GroupsControllerTest extends TestCase
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
         $response->assertJsonStructure(['data']);
+    }
+
+    public function test_create_group_replays_the_same_result_after_a_lost_response(): void
+    {
+        Event::fake([\App\Events\GroupCreated::class]);
+        $user = $this->authenticatedUser(['email' => 'group-replay@partner-demo.test']);
+        $payload = [
+            'name' => 'Response loss repair group',
+            'description' => 'A complete group description used to verify one durable creation result.',
+            'visibility' => 'public',
+            'idempotency_key' => 'mobile-group-create-response-loss-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $first = $this->apiPost('/v2/groups', $payload, $headers)->assertCreated();
+        $second = $this->apiPost('/v2/groups', $payload, $headers)->assertCreated();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Group::query()->where('owner_id', $user->id)->where('name', $payload['name'])->count());
+        $this->assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $user->id)
+            ->where('operation_type', 'group')
+            ->count());
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)
+            ->where('action', 'create_group')
+            ->count());
+    }
+
+    public function test_create_group_rejects_reusing_a_key_for_changed_content(): void
+    {
+        Event::fake([\App\Events\GroupCreated::class]);
+        $user = $this->authenticatedUser(['email' => 'group-conflict@partner-demo.test']);
+        $payload = [
+            'name' => 'Original repair group',
+            'description' => 'The original group creation request has stable content for replay.',
+            'visibility' => 'public',
+            'idempotency_key' => 'mobile-group-create-content-conflict-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+
+        $this->apiPost('/v2/groups', $payload, $headers)->assertCreated();
+        $this->apiPost('/v2/groups', [...$payload, 'name' => 'Changed repair group'], $headers)
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+
+        $this->assertSame(1, Group::query()->where('owner_id', $user->id)
+            ->whereIn('name', ['Original repair group', 'Changed repair group'])->count());
     }
 
     public function test_unauthenticated_user_cannot_create_group(): void

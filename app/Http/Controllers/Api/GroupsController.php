@@ -128,6 +128,22 @@ class GroupsController extends BaseApiController
         $this->rateLimit('groups_create', 10, 60);
 
         $data = $this->getAllInput();
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $data['idempotency_key'] ?? null;
+        if (($headerKey !== null && ! is_string($headerKey))
+            || ($bodyKey !== null && ! is_string($bodyKey))
+            || ($headerKey !== null && $bodyKey !== null
+                && ! hash_equals(trim($headerKey), trim($bodyKey)))) {
+            return $this->respondWithError(
+                'IDEMPOTENCY_INVALID',
+                __('event_registration.idempotency_invalid'),
+                'idempotency_key',
+                422,
+            );
+        }
+        if (is_string($headerKey) && trim($headerKey) !== '') {
+            $data['idempotency_key'] = trim($headerKey);
+        }
         // Image paths only ever come from files this request uploads; a client
         // supplied path could point at another group's file (F-094).
         unset($data['image_url'], $data['cover_image_url']);
@@ -156,14 +172,12 @@ class GroupsController extends BaseApiController
         if ($createdGroup === null) {
             $this->cleanupStagedGroupImages($stagedImages);
             $errors = $this->groupService->getErrors();
-            $status = 422;
-            foreach ($errors as $error) {
-                if ($error['code'] === 'FORBIDDEN') {
-                    $status = 403;
-                    break;
-                }
-            }
-            return $this->respondWithErrors($errors, $status);
+            $status = $this->resolveErrorStatus($errors);
+            return $this->respondWithErrors($errors, $status === 400 ? 422 : $status);
+        }
+
+        if ((bool) $createdGroup->getAttribute('_idempotent_replay')) {
+            $this->cleanupStagedGroupImages($stagedImages);
         }
 
         // create() returns a Group model — use its ID to fetch the full response
@@ -171,7 +185,8 @@ class GroupsController extends BaseApiController
         $group = $this->groupService->getById($groupId, $userId);
 
         // Pending-review groups have not completed creation for economy purposes.
-        if ($createdGroup->status === \App\Enums\GroupStatus::Active) {
+        if (! (bool) $createdGroup->getAttribute('_idempotent_replay')
+            && $createdGroup->status === \App\Enums\GroupStatus::Active) {
             try {
                 \App\Services\GamificationService::awardXP($userId, \App\Services\GamificationService::XP_VALUES['create_group'], 'create_group', __('api.group_created'));
             } catch (\Throwable $e) {

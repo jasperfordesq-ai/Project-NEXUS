@@ -395,6 +395,7 @@ export interface CreateGroupPayload {
   latitude?: number | null;
   longitude?: number | null;
   federated_visibility?: 'none' | 'listed' | 'joinable';
+  idempotency_key?: string;
 }
 
 /**
@@ -422,8 +423,14 @@ export function getGroup(id: number): Promise<{ data: GroupDetail }> {
 /**
  * POST /api/v2/groups — create a community group.
  */
-export function createGroup(payload: CreateGroupPayload): Promise<{ data: GroupDetail }> {
-  return api.post<{ data: GroupDetail }>(`${API_V2}/groups`, payload);
+export function createGroup(payload: CreateGroupPayload, idempotencyKey?: string): Promise<{ data: GroupDetail }> {
+  return idempotencyKey
+    ? api.post<{ data: GroupDetail }>(
+        `${API_V2}/groups`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupDetail }>(`${API_V2}/groups`, payload);
 }
 
 export function updateGroup(id: number, payload: CreateGroupPayload): Promise<{ data: GroupDetail }> {

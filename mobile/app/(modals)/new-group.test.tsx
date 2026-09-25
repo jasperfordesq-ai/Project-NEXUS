@@ -11,6 +11,8 @@ const mockGetGroup = jest.fn();
 const mockGetGroupTemplates = jest.fn();
 const mockUpdateGroup = jest.fn();
 const mockUploadGroupImage = jest.fn();
+const mockReserveGroupCreationOperation = jest.fn();
+const mockCompleteGroupCreationOperation = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
@@ -127,6 +129,10 @@ jest.mock('@/lib/api/groups', () => ({
   updateGroup: (...args: unknown[]) => mockUpdateGroup(...args),
   uploadGroupImage: (...args: unknown[]) => mockUploadGroupImage(...args),
 }));
+jest.mock('@/lib/groupCreationOperation', () => ({
+  reserveGroupCreationOperation: (...args: unknown[]) => mockReserveGroupCreationOperation(...args),
+  completeGroupCreationOperation: (...args: unknown[]) => mockCompleteGroupCreationOperation(...args),
+}));
 jest.mock('@/lib/haptics', () => ({
   notificationAsync: jest.fn().mockResolvedValue(undefined),
   impactAsync: jest.fn().mockResolvedValue(undefined),
@@ -214,6 +220,10 @@ describe('NewGroupRoute', () => {
     mockUpdateGroup.mockReset();
     mockUpdateGroup.mockResolvedValue({ data: { id: 484 } });
     mockUploadGroupImage.mockReset().mockResolvedValue({ data: { image_url: '/uploads/groups/group.jpg' } });
+    mockReserveGroupCreationOperation.mockReset().mockResolvedValue({
+      storageKey: 'nexus_group_creation_hash', key: 'mobile-group-create-stable', createdAt: 1,
+    });
+    mockCompleteGroupCreationOperation.mockReset().mockResolvedValue(undefined);
     mockLaunchImageLibraryAsync.mockReset().mockResolvedValue({
       canceled: false,
       assets: [{ uri: 'file:///tmp/group.jpg', mimeType: 'image/jpeg', fileSize: 1024 }],
@@ -306,8 +316,10 @@ describe('NewGroupRoute', () => {
         latitude: 51.501,
         longitude: -0.125,
         federated_visibility: 'listed',
-      }));
+      }), 'mobile-group-create-stable');
     });
+    expect(mockReserveGroupCreationOperation).toHaveBeenCalledWith(expect.stringContaining('"name":"Repair club"'));
+    expect(mockCompleteGroupCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'mobile-group-create-stable' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/group-detail', params: { id: '484' } }));
   });
 
@@ -329,7 +341,7 @@ describe('NewGroupRoute', () => {
     await waitFor(() => {
       expect(mockCreateGroup).toHaveBeenCalledWith(expect.objectContaining({
         visibility: 'private',
-      }));
+      }), 'mobile-group-create-stable');
     });
   });
 
@@ -539,7 +551,10 @@ describe('NewGroupRoute', () => {
     fireEvent.changeText(screen.getByPlaceholderText('-0.1246'), '-6,3');
     fireEvent.press(screen.getByText('Create group'));
 
-    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith(expect.objectContaining({ latitude: 52.1, longitude: -6.3 })));
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith(
+      expect.objectContaining({ latitude: 52.1, longitude: -6.3 }),
+      'mobile-group-create-stable',
+    ));
   });
 
   /** S4-22 / S4-26. The selected visibility uses the accent foreground and announces its state. */

@@ -24,6 +24,7 @@ import { parseDecimalInput } from '@/lib/utils/decimal';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
+import { completeGroupCreationOperation, reserveGroupCreationOperation } from '@/lib/groupCreationOperation';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ChoiceChips from '@/components/ui/ChoiceChips';
 import { useAppToast } from '@/components/ui/AppToast';
@@ -272,7 +273,13 @@ function NewGroupScreen() {
           ? (hydratedFederatedVisibilityRef.current === 'joinable' ? 'joinable' : 'listed')
           : 'none',
       } as const;
-      const result = isEditing ? await updateGroup(groupId, payload) : await createGroup(payload);
+      const creationOperation = isEditing
+        ? null
+        : await reserveGroupCreationOperation(JSON.stringify(payload));
+      const result = isEditing
+        ? await updateGroup(groupId, payload)
+        : await createGroup(payload, creationOperation?.key);
+      if (creationOperation) await completeGroupCreationOperation(creationOperation);
       saved = true;
       setHasSaved(true);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

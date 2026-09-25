@@ -565,12 +565,45 @@ class GroupService
             return null;
         }
 
+        $tenantId = (int) TenantContext::getId();
+        $idempotencyKey = $data['idempotency_key'] ?? null;
+        unset($data['idempotency_key']);
+        $identity = GroupContentCreationReceiptService::identity($idempotencyKey, [
+            'data' => $data,
+            'provenance' => $provenance,
+        ]);
+        if ($identity === false) {
+            self::$errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
+
         $initialStatus = GroupConfigurationService::get(
             GroupConfigurationService::CONFIG_REQUIRE_GROUP_APPROVAL,
             false,
         ) ? GroupStatus::PendingReview : GroupStatus::Active;
 
-        $group = DB::transaction(function () use ($userId, $data, $initialStatus, $provenance) {
+        $group = DB::transaction(function () use ($userId, $tenantId, $data, $initialStatus, $provenance, $identity) {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'group', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                        return null;
+                    }
+                    $existing = Group::query()
+                        ->where('tenant_id', $tenantId)
+                        ->whereKey((int) $receipt->result_id)
+                        ->first();
+                    if ($existing === null) {
+                        self::$errors[] = ['code' => 'IDEMPOTENCY_RESULT_GONE', 'message' => __('api.generic_error')];
+                        return null;
+                    }
+                    $existing->setAttribute('_idempotent_replay', true);
+                    return $existing;
+                }
+            }
+
             $group = new Group([
                 'owner_id'             => $userId,
                 'name'                 => trim($data['name']),
@@ -629,12 +662,29 @@ class GroupService
                 GroupApprovalWorkflowService::submitForApproval($group->id, $userId);
             }
 
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    (int) $group->id,
+                    'group',
+                    $identity,
+                    (int) $group->id,
+                    ['group_id' => (int) $group->id],
+                );
+            }
+
             $fresh = $group->fresh(['creator']);
 
             return $fresh ?? $group;
         });
 
-        if ($initialStatus === GroupStatus::Active) {
+        if ($group === null) {
+            return null;
+        }
+
+        $isReplay = (bool) $group->getAttribute('_idempotent_replay');
+        if (! $isReplay && $initialStatus === GroupStatus::Active) {
             $eventTenantId = (int) TenantContext::getId();
             DB::afterCommit(static function () use ($group, $eventTenantId): void {
                 try {
@@ -650,6 +700,9 @@ class GroupService
 
         // Send creation confirmation email to the group creator
         try {
+            if ($isReplay) {
+                return $group;
+            }
             $creator = DB::table('users')
                 ->where('id', $userId)
                 ->where('tenant_id', TenantContext::getId())
