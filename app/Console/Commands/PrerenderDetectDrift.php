@@ -219,12 +219,13 @@ class PrerenderDetectDrift extends Command
         }
 
         // Active-job skip list to avoid pile-up.
-        $activeTenants = DB::table('prerender_jobs as j')
+        $activeTenantIds = DB::table('prerender_jobs as j')
             ->join('tenants as t', 't.id', '=', 'j.tenant_id')
             ->whereIn('j.status', ['queued', 'claimed', 'running'])
-            ->pluck('t.slug')
+            ->pluck('j.tenant_id')
             ->toArray();
-        $activeSet = array_flip($activeTenants);
+        // The platform master tenant has a null slug; job ownership is by ID.
+        $activeSet = array_fill_keys($activeTenantIds, true);
 
         // 🔴 Same unbounded guard as blockingGlobalJob() had, one level down.
         // Skipping a tenant that already has work in flight is right; doing it
@@ -252,7 +253,7 @@ class PrerenderDetectDrift extends Command
                 $skipped[$t['slug']] = 'tenant_cap';
                 continue;
             }
-            if (isset($activeSet[$t['slug']])) {
+            if (isset($activeSet[(int) $t['tenant_id']])) {
                 if (isset($stuckBySlug[$t['slug']])) {
                     $skipped[$t['slug']] = 'active_job_stuck';
                     $planningErrors++;
