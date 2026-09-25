@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Przed zalogowaniem zweryfikuj swój adres e-mail. Sprawdź, czy w skrzynce odbiorczej znajduje się link potwierdzający.',
         'pending_verification' => 'Twoje konto jest nadal weryfikowane. Możesz się zalogować po zakończeniu weryfikacji.',
         'account_suspended' => 'To konto zostało zawieszone. Skontaktuj się z pomocą techniczną, aby uzyskać pomoc.',
+        'account_under_minimum_age' => 'Ta platforma jest przeznaczona wyłącznie dla osób dorosłych w wieku 18 lat i starszych, dlatego tego konta nie można używać. Jeśli uważasz, że to błąd, skontaktuj się z organizatorami swojej społeczności.',
         'register_failed' => 'Sprawdź szczegóły i spróbuj ponownie.',
         'register_duplicate' => 'Konto o tym adresie e-mail już istnieje. Spróbuj się zalogować lub użyj innego adresu e-mail.',
         'register_password_pwned' => 'To hasło zostało znalezione w znanych przypadkach naruszenia bezpieczeństwa danych. Wybierz inne hasło.',

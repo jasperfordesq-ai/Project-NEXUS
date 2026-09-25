@@ -756,10 +756,6 @@
                 "policy_intro": "As alterações preliminares permanecem privadas até serem publicadas. Cada versão publicada é mantida para comparação de evidências.",
                 "minimum_age": "Idade mínima",
                 "minimum_age_hint": "Deixar em branco quando o evento não tiver idade mínima.",
-                "guardian_policy": "Consentimento do tutor",
-                "guardian_required": "Exigir consentimento do tutor para menores",
-                "minor_threshold": "Limite de idade menor",
-                "minor_threshold_hint": "Os membros abaixo dessa idade no evento precisam do consentimento do responsável.",
                 "code_policy": "Código de Conduta",
                 "code_required": "Exija que os participantes reconheçam o código de conduta",
                 "code_version": "Versão do texto do código",
@@ -782,7 +778,6 @@
                 "confirm_code": "Li e concordo com o código de conduta completo.",
                 "acknowledge": "Reconheça o código",
                 "withdraw_acknowledgement": "Retirar reconhecimento",
-                "guardian_title": "Consentimento do tutor",
                 "guardian_status": {
                     "not_required": "O consentimento do tutor não é necessário.",
                     "required": "É necessária uma solicitação de consentimento do responsável.",
@@ -791,18 +786,6 @@
                     "withdrawn": "O pedido de consentimento do responsável foi retirado.",
                     "expired": "A solicitação de consentimento do responsável expirou."
                 },
-                "guardian_name": "Nome do guardião",
-                "guardian_email": "Endereço de e-mail do responsável",
-                "guardian_relationship": "Relacionamento com o participante",
-                "relationships": {
-                    "parent": "Pai/Mãe",
-                    "guardian": "Responsável",
-                    "legal_guardian": "Responsável legal",
-                    "carer": "Cuidador"
-                },
-                "guardian_privacy": "O endereço é criptografado para entrega e removido do envelope de entrega após processamento.",
-                "request_guardian": "Enviar solicitação de consentimento",
-                "withdraw_guardian": "Retirar solicitação de consentimento",
                 "reviews_title": "Avaliações de participação",
                 "reviews_intro": "Registre decisões controladas sem notas de texto livre, detalhes de contato ou registros de incidentes.",
                 "review_member": "Participante do evento",
@@ -843,7 +826,6 @@
                 "ledger_empty": "Nenhuma avaliação de participação foi registrada para este evento.",
                 "confirm_archive_checkbox": "Compreendo que isto desativará os requisitos de segurança atuais.",
                 "confirm_withdraw_code": "Compreendo que isto pode impedir a minha participação até aceitar novamente o código.",
-                "confirm_withdraw_guardian": "Compreendo que o pedido de consentimento atual ficará inválido.",
                 "confirm_withdraw_review": "Confirmo que pretendo retirar a decisão ativa de :name."
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "Verifique seu endereço de e-mail antes de fazer login. Verifique sua caixa de entrada para obter o link de confirmação.",
                 "pending_verification": "Sua conta ainda está sendo verificada. Você pode fazer login assim que a verificação for concluída.",
                 "account_suspended": "Esta conta foi suspensa. Entre em contato com o suporte para obter ajuda.",
+                "account_under_minimum_age": "Esta plataforma destina-se a adultos com 18 anos ou mais, por isso esta conta não pode ser utilizada. Se acha que isto é um erro, contacte os organizadores da sua comunidade.",
                 "register_failed": "Verifique os detalhes e tente novamente.",
                 "register_duplicate": "Já existe uma conta com este endereço de e-mail. Tente fazer login ou use um e-mail diferente.",
                 "register_password_pwned": "Esta senha foi encontrada em violações de dados conhecidas. Escolha uma senha diferente.",

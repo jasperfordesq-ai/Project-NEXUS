@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Verifique seu endereço de e-mail antes de fazer login. Verifique sua caixa de entrada para obter o link de confirmação.',
         'pending_verification' => 'Sua conta ainda está sendo verificada. Você pode fazer login assim que a verificação for concluída.',
         'account_suspended' => 'Esta conta foi suspensa. Entre em contato com o suporte para obter ajuda.',
+        'account_under_minimum_age' => 'Esta plataforma destina-se a adultos com 18 anos ou mais, por isso esta conta não pode ser utilizada. Se acha que isto é um erro, contacte os organizadores da sua comunidade.',
         'register_failed' => 'Verifique os detalhes e tente novamente.',
         'register_duplicate' => 'Já existe uma conta com este endereço de e-mail. Tente fazer login ou use um e-mail diferente.',
         'register_password_pwned' => 'Esta senha foi encontrada em violações de dados conhecidas. Escolha uma senha diferente.',

@@ -22,8 +22,8 @@ const { findRelease, latestRelease, listReleases, releaseCount } = require('../s
 describe('feature catalogue', () => {
   it('carries the whole shared catalogue', () => {
     expect(groupCount).toBe(8);
-    expect(itemCount).toBe(119);
-    expect(filterCatalogue({ locale: 'en' }).total).toBe(119);
+    expect(itemCount).toBe(118);
+    expect(filterCatalogue({ locale: 'en' }).total).toBe(118);
   });
 
   it('🔴 stays in step with the shared source the React page reads', () => {
@@ -61,7 +61,7 @@ describe('feature catalogue', () => {
       return acc;
     }, {});
 
-    expect(counts).toEqual({ ga: 79, beta: 11, preview: 21, dormant: 8 });
+    expect(counts).toEqual({ ga: 78, beta: 11, preview: 21, dormant: 8 });
   });
 
   it('filters by search term, ignoring case', () => {
@@ -69,7 +69,7 @@ describe('feature catalogue', () => {
     const upper = filterCatalogue({ locale: 'en', query: 'WALLET' });
 
     expect(lower.shown).toBeGreaterThan(0);
-    expect(lower.shown).toBeLessThan(119);
+    expect(lower.shown).toBeLessThan(118);
     expect(upper.shown).toBe(lower.shown);
   });
 
@@ -98,7 +98,7 @@ describe('feature catalogue', () => {
     // "Everything" — a dead end caused by a stale or hand-edited URL.
     const result = filterCatalogue({ locale: 'en', category: 'no_such_group' });
 
-    expect(result.shown).toBe(119);
+    expect(result.shown).toBe(118);
     expect(result.categoryIsKnown).toBe(false);
   });
 
@@ -114,7 +114,7 @@ describe('feature catalogue', () => {
 
     expect(result.groups).toHaveLength(0);
     expect(result.shown).toBe(0);
-    expect(result.total).toBe(119);
+    expect(result.total).toBe(118);
     expect(result.isFiltered).toBe(true);
   });
 

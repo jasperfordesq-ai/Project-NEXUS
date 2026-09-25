@@ -756,10 +756,6 @@
                 "policy_intro": "Entwurfsänderungen bleiben bis zur Veröffentlichung privat. Jede veröffentlichte Version wird zum Zwecke des Beweisabgleichs aufbewahrt.",
                 "minimum_age": "Mindestalter",
                 "minimum_age_hint": "Lassen Sie das Feld leer, wenn für die Veranstaltung kein Mindestalter gilt.",
-                "guardian_policy": "Zustimmung des Erziehungsberechtigten",
-                "guardian_required": "Für Minderjährige ist die Zustimmung des Erziehungsberechtigten erforderlich",
-                "minor_threshold": "Untere Altersgrenze",
-                "minor_threshold_hint": "Mitglieder unter diesem Alter benötigen bei der Veranstaltung die Zustimmung eines Erziehungsberechtigten.",
                 "code_policy": "Verhaltenskodex",
                 "code_required": "Fordern Sie die Teilnehmer auf, den Verhaltenskodex anzuerkennen",
                 "code_version": "Codetextversion",
@@ -782,7 +778,6 @@
                 "confirm_code": "Ich habe den vollständigen Verhaltenskodex gelesen und stimme ihm zu.",
                 "acknowledge": "Bestätigen Sie den Code",
                 "withdraw_acknowledgement": "Bestätigung zurückziehen",
-                "guardian_title": "Zustimmung des Erziehungsberechtigten",
                 "guardian_status": {
                     "not_required": "Eine Einwilligung des Erziehungsberechtigten ist nicht erforderlich.",
                     "required": "Es ist eine Anfrage zur Einwilligung des Erziehungsberechtigten erforderlich.",
@@ -791,18 +786,6 @@
                     "withdrawn": "Der Antrag auf Einwilligung des Erziehungsberechtigten wurde zurückgezogen.",
                     "expired": "Die Anfrage zur Einwilligung des Erziehungsberechtigten ist abgelaufen."
                 },
-                "guardian_name": "Name des Wächters",
-                "guardian_email": "E-Mail-Adresse des Erziehungsberechtigten",
-                "guardian_relationship": "Beziehung zum Teilnehmer",
-                "relationships": {
-                    "parent": "Elternteil",
-                    "guardian": "Erziehungsberechtigter",
-                    "legal_guardian": "Erziehungsberechtigter",
-                    "carer": "Betreuungsperson"
-                },
-                "guardian_privacy": "Die Adresse wird für den Versand verschlüsselt und nach der Verarbeitung aus dem Versandumschlag entfernt.",
-                "request_guardian": "Einwilligungsanfrage senden",
-                "withdraw_guardian": "Einwilligungsanfrage zurückziehen",
                 "reviews_title": "Teilnahmeberichte",
                 "reviews_intro": "Erfassen Sie kontrollierte Entscheidungen ohne Freitextnotizen, Kontaktdaten oder Vorfallaufzeichnungen.",
                 "review_member": "Veranstaltungsteilnehmer",
@@ -843,7 +826,6 @@
                 "ledger_empty": "Für diese Veranstaltung wurden keine Teilnahmebewertungen erfasst.",
                 "confirm_archive_checkbox": "Ich verstehe, dass dadurch die aktuellen Sicherheitsanforderungen deaktiviert werden.",
                 "confirm_withdraw_code": "Ich verstehe, dass meine Teilnahme gesperrt sein kann, bis ich den Kodex erneut bestätige.",
-                "confirm_withdraw_guardian": "Ich verstehe, dass die aktuelle Zustimmungsanfrage ungültig wird.",
                 "confirm_withdraw_review": "Ich bestätige, dass ich die aktive Entscheidung für :name zurückziehen möchte."
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "Überprüfen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden. Suchen Sie in Ihrem Posteingang nach dem Bestätigungslink.",
                 "pending_verification": "Ihr Konto wird noch überprüft. Sobald die Verifizierung abgeschlossen ist, können Sie sich anmelden.",
                 "account_suspended": "Dieses Konto wurde gesperrt. Wenden Sie sich an den Support, um Hilfe zu erhalten.",
+                "account_under_minimum_age": "Diese Plattform ist nur für Erwachsene ab 18 Jahren, daher kann dieses Konto nicht verwendet werden. Wenn Sie das für einen Fehler halten, wenden Sie sich an die Organisatoren Ihrer Community.",
                 "register_failed": "Überprüfen Sie die Details und versuchen Sie es erneut.",
                 "register_duplicate": "Es existiert bereits ein Konto mit dieser E-Mail-Adresse. Versuchen Sie, sich anzumelden, oder verwenden Sie eine andere E-Mail-Adresse.",
                 "register_password_pwned": "Dieses Passwort wurde bei bekannten Datenschutzverletzungen gefunden. Wählen Sie ein anderes Passwort.",

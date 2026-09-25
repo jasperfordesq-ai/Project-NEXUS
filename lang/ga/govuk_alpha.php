@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Fíoraigh do sheoladh ríomhphoist roimh síniú isteach. Seiceáil do bhosca isteach chun an nasc deimhnithe a fháil.',
         'pending_verification' => 'Tá do chuntas fós á fhíorú. Is féidir leat síniú isteach nuair a bheidh an fíorú críochnaithe.',
         'account_suspended' => 'Tá an cuntas seo curtha ar fionraí. Déan teagmháil le tacaíocht chun cabhair a fháil.',
+        'account_under_minimum_age' => 'Is do dhaoine fásta atá 18 mbliana d\'aois nó níos sine an t-ardán seo, mar sin ní féidir an cuntas seo a úsáid. Má cheapann tú go bhfuil sé seo mícheart, déan teagmháil le heagraithe do phobail.',
         'register_failed' => 'Seiceáil na sonraí agus bain triail eile as.',
         'register_duplicate' => 'Tá cuntas leis an seoladh ríomhphoist seo ann cheana. Bain triail as síniú isteach nó úsáid ríomhphost eile.',
         'register_password_pwned' => 'Fuarthas an pasfhocal seo i sáruithe aitheanta sonraí. Roghnaigh pasfhocal eile.',

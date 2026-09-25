@@ -14,7 +14,7 @@
     "ar"
   ],
   "groupCount": 8,
-  "itemCount": 119,
+  "itemCount": 118,
   "groups": [
     {
       "key": "core_platform",
@@ -235,10 +235,6 @@
         },
         {
           "key": "collections_and_bookmarks",
-          "maturity": "ga"
-        },
-        {
-          "key": "guardian_consent",
           "maturity": "ga"
         }
       ]
@@ -544,7 +540,7 @@
       "meta_title": "Features - Project NEXUS v1.6",
       "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
       "heading": "What Project NEXUS does",
-      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v2.0.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v2.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "maturity_key_title": "How we label maturity",
       "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
       "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -792,11 +788,6 @@
             "collections_and_bookmarks": {
               "title": "Collections & Saved Items",
               "description": "Save listings, members and posts, and group them into collections you can share with other members."
-            },
-            "guardian_consent": {
-              "title": "Guardian Consent",
-              "description": "Guardian approval for a minor volunteer or event attendee: single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
-              "note": "Project NEXUS is for adults — signing up requires confirming you are 18 or older. This is for communities that run supervised activity with young people, where a coordinator sets the account up. It is switched off unless a community turns it on."
             },
             "member_premium": {
               "title": "Donations & Support",
@@ -1139,7 +1130,7 @@
       "meta_title": "Gnéithe - Project NEXUS v1.6",
       "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don chónaidhm, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
       "heading": "Cad a dhéanann Project NEXUS",
-      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v2.0.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
+      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v2.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
       "maturity_key_title": "Conas a lipéadaímid aibíocht",
       "maturity_ga": "Ar fáil go ginearálta - cobhsaí, tacaithe, in úsáid i dtáirgeadh ar fud na dtionóntaí píolótacha.",
       "maturity_beta": "Ag obair i dtáirgeadh anois, ach tá an comhéadan poiblí nó an prótacal cumarsáide fós á dhaingniú.",
@@ -1387,11 +1378,6 @@
             "collections_and_bookmarks": {
               "title": "Cnuasaigh agus Míreanna Sábháilte",
               "description": "Sábháil liostálacha, baill agus postálacha, agus grúpáil iad i gcnuasaigh is féidir leat a roinnt le baill eile."
-            },
-            "guardian_consent": {
-              "title": "Toiliú Caomhnóra",
-              "description": "Ceadú caomhnóra do dhuine óg atá ag obair go deonach nó ag freastal ar imeacht: naisc toilithe aon-úsáide, sonraí caomhnóra criptithe, agus stair toilithe nach féidir ach cur léi, riamh a chur in eagar.",
-              "note": "Ardán do dhaoine fásta is é Project NEXUS — ní mór dearbhú go bhfuil tú 18 nó níos sine chun clárú. Tá sé seo do phobail a reáchtálann gníomhaíochtaí faoi mhaoirseacht le daoine óga, áit a gcuireann comhordaitheoir an cuntas ar bun. Tá sé múchta mura gcuireann pobal ar siúl é."
             },
             "member_premium": {
               "title": "Síntiúis agus Tacaíocht",
@@ -1983,11 +1969,6 @@
               "title": "Sammlungen und gespeicherte Elemente",
               "description": "Speichern Sie Einträge, Mitglieder und Beiträge und gruppieren Sie sie in Sammlungen, die Sie mit anderen Mitgliedern teilen können."
             },
-            "guardian_consent": {
-              "title": "Einwilligung des Erziehungsberechtigten",
-              "description": "Zustimmung der Erziehungsberechtigten für minderjährige Freiwillige oder Veranstaltungsteilnehmende: Einmal-Zustimmungslinks, verschlüsselte Angaben der Erziehungsberechtigten und ein Zustimmungsverlauf, der nur ergänzt, aber nie bearbeitet werden kann.",
-              "note": "Project NEXUS ist für Erwachsene — bei der Registrierung muss bestätigt werden, dass man 18 Jahre oder älter ist. Dies richtet sich an Gemeinschaften, die betreute Angebote mit jungen Menschen durchführen, bei denen eine Koordinatorin oder ein Koordinator das Konto anlegt. Es ist ausgeschaltet, sofern eine Gemeinschaft es nicht aktiviert."
-            },
             "member_premium": {
               "title": "Spenden & Unterstützung",
               "description": "Mitglieder können eine einmalige Spende tätigen oder eine regelmäßige Spende einrichten, um die Community zu unterstützen, die ihre Zeitbank betreibt, und diese jederzeit selbst verwalten oder stoppen. Unterstützer werden dafür gewürdigt – es handelt sich hierbei nicht um eine kostenpflichtige Stufe, und kein Teil der Plattform wird jemals hinter einer Zahlung zurückgestellt."
@@ -2329,7 +2310,7 @@
       "meta_title": "Fonctionnalités - Project NEXUS v1.6",
       "meta_description": "Tous les modules livrés dans Project NEXUS v1.6, avec des indications honnêtes sur leur maturité pour la fédération, la banque de temps, la place de marché, les outils communautaires, la sécurité, l'analyse et l'infrastructure open source.",
       "heading": "Ce que Project NEXUS fait",
-      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v2.0.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
+      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v2.1.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
       "maturity_key_title": "Comment nous indiquons la maturité",
       "maturity_ga": "Disponibilité générale - stable, prise en charge, utilisée en production chez les locataires pilotes.",
       "maturity_beta": "Déjà en production, mais la surface publique ou le protocole filaire est encore en cours de renforcement.",
@@ -2577,11 +2558,6 @@
             "collections_and_bookmarks": {
               "title": "Collections et éléments enregistrés",
               "description": "Enregistrez les listes, les membres et les publications, et regroupez-les dans des collections que vous pouvez partager avec d'autres membres."
-            },
-            "guardian_consent": {
-              "title": "Consentement du tuteur",
-              "description": "Accord du tuteur pour un jeune bénévole ou participant à un événement : liens de consentement à usage unique, coordonnées du tuteur chiffrées et un historique de consentement que l'on peut seulement compléter, jamais modifier.",
-              "note": "Project NEXUS s'adresse aux adultes : l'inscription exige de confirmer que l'on a 18 ans ou plus. Cette fonction est destinée aux communautés qui encadrent des activités avec des jeunes, où un coordinateur crée le compte. Elle est désactivée tant qu'une communauté ne l'active pas."
             },
             "member_premium": {
               "title": "Dons et soutien",
@@ -3173,11 +3149,6 @@
               "title": "Raccolte ed elementi salvati",
               "description": "Salva elenchi, membri e post e raggruppali in raccolte che puoi condividere con altri membri."
             },
-            "guardian_consent": {
-              "title": "Consenso del tutore",
-              "description": "Consenso del tutore per un volontario o un partecipante minorenne: link di consenso monouso, dati del tutore cifrati e uno storico dei consensi a cui si può solo aggiungere, mai modificare.",
-              "note": "Project NEXUS è per adulti: per registrarsi bisogna confermare di avere almeno 18 anni. Questa funzione è pensata per le comunità che gestiscono attività supervisionate con ragazzi, dove è un coordinatore a creare l'account. È disattivata se una comunità non la abilita."
-            },
             "member_premium": {
               "title": "Donazioni e supporto",
               "description": "I membri possono fare una donazione una tantum, o impostarne una regolare, per sostenere la comunità che gestisce la loro banca del tempo e gestirla o interromperla da soli in qualsiasi momento. I sostenitori sono riconosciuti per questo: questo non è un livello a pagamento e nessuna parte della piattaforma è mai soggetta a un pagamento."
@@ -3767,11 +3738,6 @@
             "collections_and_bookmarks": {
               "title": "Coleções e itens salvos",
               "description": "Salve listagens, membros e postagens e agrupe-os em coleções que você pode compartilhar com outros membros."
-            },
-            "guardian_consent": {
-              "title": "Consentimento do Guardião",
-              "description": "Autorização do responsável para um jovem voluntário ou participante num evento: ligações de consentimento de uso único, dados do responsável cifrados e um histórico de consentimentos ao qual só é possível acrescentar, nunca editar.",
-              "note": "O Project NEXUS é para adultos — para se registar é necessário confirmar que tem 18 anos ou mais. Isto destina-se a comunidades que realizam atividades supervisionadas com jovens, em que é um coordenador que cria a conta. Está desativado, a menos que uma comunidade o ative."
             },
             "member_premium": {
               "title": "Doações e Apoio",
@@ -4363,11 +4329,6 @@
               "title": "Colecciones y elementos guardados",
               "description": "Guarde listados, miembros y publicaciones, y agrúpelos en colecciones que pueda compartir con otros miembros."
             },
-            "guardian_consent": {
-              "title": "Consentimiento del tutor",
-              "description": "Autorización del tutor para una persona menor de edad que hace voluntariado o asiste a un evento: enlaces de consentimiento de un solo uso, datos del tutor cifrados y un historial de consentimientos al que solo se puede añadir, nunca editar.",
-              "note": "Project NEXUS es para adultos: para registrarse hay que confirmar que se tienen 18 años o más. Esto es para comunidades que organizan actividades supervisadas con jóvenes, donde una persona coordinadora crea la cuenta. Está desactivado a menos que una comunidad lo active."
-            },
             "member_premium": {
               "title": "Donaciones y apoyo",
               "description": "Los miembros pueden hacer una donación única o establecer una regular para apoyar a la comunidad que gestiona su banco de tiempo y gestionarlo o detenerlo ellos mismos en cualquier momento. Los seguidores son reconocidos por ello: este no es un nivel pago y ninguna parte de la plataforma respalda un pago."
@@ -4709,7 +4670,7 @@
       "meta_title": "Functies - Project NEXUS v1.6",
       "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
       "heading": "Wat Project NEXUS doet",
-      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v2.0.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
+      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v2.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
       "maturity_key_title": "Hoe we volwassenheid labelen",
       "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
       "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -4957,11 +4918,6 @@
             "collections_and_bookmarks": {
               "title": "Collecties en opgeslagen items",
               "description": "Bewaar vermeldingen, leden en berichten en groepeer ze in collecties die u met andere leden kunt delen."
-            },
-            "guardian_consent": {
-              "title": "Toestemming van de voogd",
-              "description": "Toestemming van de ouder of voogd voor een minderjarige vrijwilliger of deelnemer aan een evenement: eenmalige toestemmingslinks, versleutelde gegevens van de voogd en een toestemmingsgeschiedenis waaraan alleen kan worden toegevoegd, nooit gewijzigd.",
-              "note": "Project NEXUS is voor volwassenen — bij het aanmelden moet je bevestigen dat je 18 jaar of ouder bent. Dit is bedoeld voor gemeenschappen die begeleide activiteiten met jongeren organiseren, waarbij een coördinator het account aanmaakt. Het staat uit, tenzij een gemeenschap het aanzet."
             },
             "member_premium": {
               "title": "Donaties en ondersteuning",
@@ -5553,11 +5509,6 @@
               "title": "Kolekcje i zapisane elementy",
               "description": "Zapisuj oferty, członków i posty oraz grupuj je w kolekcje, które możesz udostępniać innym członkom."
             },
-            "guardian_consent": {
-              "title": "Zgoda opiekuna",
-              "description": "Zgoda opiekuna dla niepełnoletniego wolontariusza lub uczestnika wydarzenia: jednorazowe linki do wyrażenia zgody, zaszyfrowane dane opiekuna i historia zgód, do której można tylko dopisywać, nigdy jej nie edytować.",
-              "note": "Project NEXUS jest dla osób dorosłych — przy rejestracji trzeba potwierdzić, że ma się ukończone 18 lat. Ta funkcja jest przeznaczona dla społeczności prowadzących zajęcia z młodzieżą pod opieką, gdzie konto zakłada koordynator. Jest wyłączona, dopóki społeczność jej nie włączy."
-            },
             "member_premium": {
               "title": "Darowizny i wsparcie",
               "description": "Członkowie mogą przekazać jednorazową darowiznę lub ustawić regularną darowiznę, aby wesprzeć społeczność prowadzącą ich bank czasu i samodzielnie zarządzać nią lub ją zatrzymać w dowolnym momencie. Zwolennicy tego są doceniani — nie jest to poziom płatny i żadna część platformy nigdy nie jest obciążona płatnością."
@@ -5899,7 +5850,7 @@
       "meta_title": "機能 - Project NEXUS v1.6",
       "meta_description": "Project NEXUS v1.6 で提供されるすべてのモジュールを、フェデレーション、タイムバンキング、マーケットプレイス、コミュニティツール、セキュリティ、分析、オープンソース基盤の各分野で、正直な成熟度ラベルとともに紹介します。",
       "heading": "Project NEXUS でできること",
-      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v2.0.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
+      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v2.1.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
       "maturity_key_title": "成熟度の表記について",
       "maturity_ga": "一般提供 (GA) - 安定して稼働し、サポートされ、パイロットテナントで本番運用中。",
       "maturity_beta": "本番で稼働中ですが、公開インターフェイスやワイヤープロトコルはまだ強化作業中です。",
@@ -6147,11 +6098,6 @@
             "collections_and_bookmarks": {
               "title": "コレクションと保存されたアイテム",
               "description": "リスト、メンバー、投稿を保存し、他のメンバーと共有できるコレクションにグループ化します。"
-            },
-            "guardian_consent": {
-              "title": "保護者の同意",
-              "description": "未成年のボランティアやイベント参加者に対する保護者の同意。使い捨ての同意リンク、暗号化された保護者情報、追記のみが可能で編集できない同意履歴を備えています。",
-              "note": "Project NEXUS は成人向けです。登録には18歳以上であることの確認が必要です。この機能は、コーディネーターがアカウントを作成し、若者とともに活動を行うコミュニティのためのものです。コミュニティが有効にしない限り、オフのままです。"
             },
             "member_premium": {
               "title": "寄付とサポート",
@@ -6742,11 +6688,6 @@
             "collections_and_bookmarks": {
               "title": "المجموعات والعناصر المحفوظة",
               "description": "احفظ القوائم والأعضاء والمشاركات وقم بتجميعها في مجموعات يمكنك مشاركتها مع الأعضاء الآخرين."
-            },
-            "guardian_consent": {
-              "title": "موافقة الوصي",
-              "description": "موافقة ولي الأمر على مشاركة متطوع أو حاضر دون السن القانونية: روابط موافقة تُستخدم مرة واحدة، وبيانات ولي أمر مُشفّرة، وسجل موافقات يمكن الإضافة إليه فقط دون تعديله أبدًا.",
-              "note": "Project NEXUS مخصص للبالغين، ويتطلب التسجيل تأكيد أن عمرك 18 عامًا أو أكثر. هذه الميزة موجهة للمجتمعات التي تنظّم أنشطة مع الشباب تحت الإشراف، حيث يقوم منسّق بإنشاء الحساب. وهي معطّلة إلا إذا شغّلها المجتمع."
             },
             "member_premium": {
               "title": "التبرعات والدعم",

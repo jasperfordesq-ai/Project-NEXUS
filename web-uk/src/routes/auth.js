@@ -9,6 +9,11 @@ const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { createTranslator } = require('../lib/localization');
 const { isValidEmail } = require('../lib/inputValidator');
+const {
+  ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH,
+  ACCOUNT_UNDER_MINIMUM_AGE_STATUS,
+  isAccountUnderMinimumAgeError
+} = require('../lib/account-age-refusal');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -35,7 +40,10 @@ const LOGIN_ERROR_STATUS_KEYS = Object.freeze({
   'verification-rate-limited': 'auth.reset_rate_limited',
   'email-not-verified': 'auth.email_not_verified',
   'pending-verification': 'auth.pending_verification',
-  'account-suspended': 'auth.account_suspended'
+  'account-suspended': 'auth.account_suspended',
+  // Project NEXUS is for adults aged 18 and over. Used both for a refused
+  // sign-in and for an existing session that Laravel now refuses.
+  [ACCOUNT_UNDER_MINIMUM_AGE_STATUS]: 'auth.account_under_minimum_age'
 });
 
 const TWO_FACTOR_ERROR_STATUS_KEYS = Object.freeze({
@@ -339,6 +347,9 @@ router.post('/login', asyncRoute(async (req, res) => {
       } else if (code === 'AUTH_ACCOUNT_SUSPENDED') {
         loginStatus = 'account-suspended';
         errorMessage = translate(req, 'auth.account_suspended');
+      } else if (isAccountUnderMinimumAgeError(error)) {
+        loginStatus = ACCOUNT_UNDER_MINIMUM_AGE_STATUS;
+        errorMessage = translate(req, 'auth.account_under_minimum_age');
       }
     }
 
@@ -409,6 +420,10 @@ async function handleTwoFactorPost(req, res) {
     }
 
     const codeValue = errorCode(error);
+    if (isAccountUnderMinimumAgeError(error)) {
+      clearPendingTwoFactor(req);
+      return redirectTo(res, ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH);
+    }
     if (TWO_FACTOR_EXPIRED_CODES.has(codeValue)) {
       clearPendingTwoFactor(req);
       return redirectTo(res, '/login?status=two-factor-expired');

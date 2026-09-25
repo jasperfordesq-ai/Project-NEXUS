@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Verifique su dirección de correo electrónico antes de iniciar sesión. Revise su bandeja de entrada para ver el enlace de confirmación.',
         'pending_verification' => 'Su cuenta aún se está verificando. Puede iniciar sesión una vez que se complete la verificación.',
         'account_suspended' => 'Esta Cuenta Ha Sido Suspendida. Póngase en contacto con el soporte para obtener ayuda.',
+        'account_under_minimum_age' => 'Esta plataforma es solo para personas adultas de 18 años o más, por lo que esta cuenta no se puede usar. Si crees que es un error, contacta con los organizadores de tu comunidad.',
         'register_failed' => 'Verifique los detalles y vuelva a intentarlo.',
         'register_duplicate' => 'Ya existe una cuenta con esta dirección de correo electrónico. Intente iniciar sesión o utilice un correo electrónico diferente.',
         'register_password_pwned' => 'Esta contraseña se ha encontrado en violaciones de datos conocidas. Elija una contraseña diferente.',

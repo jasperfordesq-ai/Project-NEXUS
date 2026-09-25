@@ -756,10 +756,6 @@
                 "policy_intro": "Wersje robocze zmian pozostają prywatne do czasu ich opublikowania. Każda opublikowana wersja jest zachowywana w celu dopasowania dowodów.",
                 "minimum_age": "Minimalny wiek",
                 "minimum_age_hint": "Pozostaw puste, jeśli wydarzenie nie ma minimalnego wieku.",
-                "guardian_policy": "Zgoda opiekuna",
-                "guardian_required": "Wymagaj zgody opiekuna w przypadku osób niepełnoletnich",
-                "minor_threshold": "Niewielki próg wiekowy",
-                "minor_threshold_hint": "Członkowie poniżej tego wieku biorący udział w wydarzeniu muszą uzyskać zgodę opiekuna.",
                 "code_policy": "Kodeks postępowania",
                 "code_required": "Wymagaj od uczestników zapoznania się z kodeksem postępowania",
                 "code_version": "Wersja tekstowa kodu",
@@ -782,7 +778,6 @@
                 "confirm_code": "Przeczytałem i zgadzam się z pełnym kodeksem postępowania.",
                 "acknowledge": "Zatwierdź kod",
                 "withdraw_acknowledgement": "Wycofaj potwierdzenie",
-                "guardian_title": "Zgoda opiekuna",
                 "guardian_status": {
                     "not_required": "Zgoda opiekuna nie jest wymagana.",
                     "required": "Wymagana jest prośba o zgodę opiekuna.",
@@ -791,18 +786,6 @@
                     "withdrawn": "Prośba o zgodę opiekuna została wycofana.",
                     "expired": "Prośba o zgodę opiekuna wygasła."
                 },
-                "guardian_name": "Imię opiekuna",
-                "guardian_email": "Adres e-mail opiekuna",
-                "guardian_relationship": "Stosunek do uczestnika",
-                "relationships": {
-                    "parent": "Rodzic",
-                    "guardian": "Opiekun",
-                    "legal_guardian": "Opiekun prawny",
-                    "carer": "Opiekun faktyczny"
-                },
-                "guardian_privacy": "Adres jest szyfrowany na potrzeby dostawy i po przetworzeniu usuwany z koperty wysyłkowej.",
-                "request_guardian": "Wyślij prośbę o zgodę",
-                "withdraw_guardian": "Wycofaj prośbę o zgodę",
                 "reviews_title": "Recenzje udziału",
                 "reviews_intro": "Rejestruj kontrolowane decyzje bez notatek, danych kontaktowych i zapisów incydentów.",
                 "review_member": "Uczestnik wydarzenia",
@@ -843,7 +826,6 @@
                 "ledger_empty": "Nie zarejestrowano żadnych recenzji uczestnictwa w tym wydarzeniu.",
                 "confirm_archive_checkbox": "Rozumiem, że spowoduje to wyłączenie bieżących wymagań bezpieczeństwa.",
                 "confirm_withdraw_code": "Rozumiem, że może to zablokować mój udział do czasu ponownej akceptacji kodeksu.",
-                "confirm_withdraw_guardian": "Rozumiem, że bieżąca prośba o zgodę stanie się nieważna.",
                 "confirm_withdraw_review": "Potwierdzam, że chcę wycofać aktywną decyzję dotyczącą :name."
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "Przed zalogowaniem zweryfikuj swój adres e-mail. Sprawdź, czy w skrzynce odbiorczej znajduje się link potwierdzający.",
                 "pending_verification": "Twoje konto jest nadal weryfikowane. Możesz się zalogować po zakończeniu weryfikacji.",
                 "account_suspended": "To konto zostało zawieszone. Skontaktuj się z pomocą techniczną, aby uzyskać pomoc.",
+                "account_under_minimum_age": "Ta platforma jest przeznaczona wyłącznie dla osób dorosłych w wieku 18 lat i starszych, dlatego tego konta nie można używać. Jeśli uważasz, że to błąd, skontaktuj się z organizatorami swojej społeczności.",
                 "register_failed": "Sprawdź szczegóły i spróbuj ponownie.",
                 "register_duplicate": "Konto o tym adresie e-mail już istnieje. Spróbuj się zalogować lub użyj innego adresu e-mail.",
                 "register_password_pwned": "To hasło zostało znalezione w znanych przypadkach naruszenia bezpieczeństwa danych. Wybierz inne hasło.",

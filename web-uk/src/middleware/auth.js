@@ -5,6 +5,11 @@
 
 const { createHash } = require('node:crypto');
 const { refreshToken: refreshTokenApi, validateToken, ApiError, ApiOfflineError } = require('../lib/api');
+const {
+  ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH,
+  endUnderAgeSession,
+  isAccountUnderMinimumAgeError
+} = require('../lib/account-age-refusal');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -287,7 +292,11 @@ async function ensureAuthSession(req, res) {
     // authoritative credential failures expire the complete local pair.
     delete req.signedCookies.token;
     delete req.token;
-    if (refreshFailureClearsSession(req, error)) {
+    // An under-18 account is refused by Laravel whatever community the address
+    // names, so its session always ends, and the sign-in page says why.
+    const underMinimumAge = isAccountUnderMinimumAgeError(error);
+    if (underMinimumAge) req.accountUnderMinimumAge = true;
+    if (underMinimumAge || refreshFailureClearsSession(req, error)) {
       delete req.signedCookies.refresh_token;
       clearAuthCookies(res);
     }
@@ -359,7 +368,7 @@ async function requireAuth(req, res, next) {
   const token = req.token || req.signedCookies.token;
 
   if (!token) {
-    return redirectTo(res, AUTH_REQUIRED_LOGIN_PATH);
+    return redirectTo(res, req.accountUnderMinimumAge ? ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH : AUTH_REQUIRED_LOGIN_PATH);
   }
 
   if (redirectForeignTenantMount(req, res)) {
@@ -403,11 +412,12 @@ function withTokenRefresh(handler) {
           } catch (refreshError) {
             delete req.token;
             delete req.signedCookies.token;
-            if (refreshFailureClearsSession(req, refreshError)) {
+            const underMinimumAge = isAccountUnderMinimumAgeError(refreshError);
+            if (underMinimumAge || refreshFailureClearsSession(req, refreshError)) {
               delete req.signedCookies.refresh_token;
               clearAuthCookies(res);
             }
-            return redirectTo(res, AUTH_REQUIRED_LOGIN_PATH);
+            return redirectTo(res, underMinimumAge ? ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH : AUTH_REQUIRED_LOGIN_PATH);
           }
         }
 
@@ -415,6 +425,10 @@ function withTokenRefresh(handler) {
         // the 401 is about that community, not this member's session (F-112).
         if (!isForeignCommunityRequest(req)) clearAuthCookies(res);
         return redirectTo(res, AUTH_REQUIRED_LOGIN_PATH);
+      }
+
+      if (isAccountUnderMinimumAgeError(error)) {
+        return endUnderAgeSession(req, res);
       }
 
       // Not a 401 error - pass to error handler

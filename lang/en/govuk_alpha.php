@@ -528,6 +528,7 @@ return [
         'email_not_verified' => 'Verify your email address before signing in. Check your inbox for the confirmation link.',
         'pending_verification' => 'Your account is still being verified. You can sign in once verification is complete.',
         'account_suspended' => 'This account has been suspended. Contact support for help.',
+        'account_under_minimum_age' => 'This platform is for adults aged 18 and over, so this account cannot be used. If you think this is wrong, contact your community organisers.',
         'register_failed' => 'Check the details and try again.',
         'register_duplicate' => 'An account with this email address already exists. Try signing in or use a different email.',
         'register_password_pwned' => 'This password has been found in known data breaches. Choose a different password.',

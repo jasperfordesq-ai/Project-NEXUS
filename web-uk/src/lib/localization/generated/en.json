@@ -756,10 +756,6 @@
                 "policy_intro": "Draft changes remain private until published. Each published version is retained for evidence matching.",
                 "minimum_age": "Minimum age",
                 "minimum_age_hint": "Leave blank when the event has no minimum age.",
-                "guardian_policy": "Guardian consent",
-                "guardian_required": "Require guardian consent for minors",
-                "minor_threshold": "Minor age threshold",
-                "minor_threshold_hint": "Members below this age at the event need guardian consent.",
                 "code_policy": "Code of conduct",
                 "code_required": "Require attendees to acknowledge the code of conduct",
                 "code_version": "Code text version",
@@ -782,7 +778,6 @@
                 "confirm_code": "I have read and agree to the complete code of conduct.",
                 "acknowledge": "Acknowledge the code",
                 "withdraw_acknowledgement": "Withdraw acknowledgement",
-                "guardian_title": "Guardian consent",
                 "guardian_status": {
                     "not_required": "Guardian consent is not required.",
                     "required": "A guardian consent request is required.",
@@ -791,18 +786,6 @@
                     "withdrawn": "The guardian consent request was withdrawn.",
                     "expired": "The guardian consent request has expired."
                 },
-                "guardian_name": "Guardian name",
-                "guardian_email": "Guardian email address",
-                "guardian_relationship": "Relationship to the attendee",
-                "relationships": {
-                    "parent": "Parent",
-                    "guardian": "Guardian",
-                    "legal_guardian": "Legal guardian",
-                    "carer": "Carer"
-                },
-                "guardian_privacy": "The address is encrypted for delivery and removed from the delivery envelope after processing.",
-                "request_guardian": "Send consent request",
-                "withdraw_guardian": "Withdraw consent request",
                 "reviews_title": "Participation reviews",
                 "reviews_intro": "Record controlled decisions without free-text notes, contact details or incident records.",
                 "review_member": "Event participant",
@@ -843,7 +826,6 @@
                 "ledger_empty": "No participation reviews have been recorded for this event.",
                 "confirm_archive_checkbox": "I understand this will deactivate the current safety requirements.",
                 "confirm_withdraw_code": "I understand this may block my participation until I acknowledge the code again.",
-                "confirm_withdraw_guardian": "I understand the current consent request will become invalid.",
                 "confirm_withdraw_review": "I confirm that I want to withdraw the active decision for :name."
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "Verify your email address before signing in. Check your inbox for the confirmation link.",
                 "pending_verification": "Your account is still being verified. You can sign in once verification is complete.",
                 "account_suspended": "This account has been suspended. Contact support for help.",
+                "account_under_minimum_age": "This platform is for adults aged 18 and over, so this account cannot be used. If you think this is wrong, contact your community organisers.",
                 "register_failed": "Check the details and try again.",
                 "register_duplicate": "An account with this email address already exists. Try signing in or use a different email.",
                 "register_password_pwned": "This password has been found in known data breaches. Choose a different password.",

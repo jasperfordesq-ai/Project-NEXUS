@@ -756,10 +756,6 @@
                 "policy_intro": "ドラフトの変更は公開されるまで非公開のままです。公開された各バージョンは証拠照合のために保持されます。",
                 "minimum_age": "最低年齢",
                 "minimum_age_hint": "イベントに最低年齢がない場合は空白のままにします。",
-                "guardian_policy": "保護者の同意",
-                "guardian_required": "未成年者の場合は保護者の同意が必要です",
-                "minor_threshold": "未成年者の年齢制限",
-                "minor_threshold_hint": "イベントにこの年齢未満のメンバーが参加する場合は、保護者の同意が必要です。",
                 "code_policy": "行動規範",
                 "code_required": "参加者に行動規範を承認するよう要求する",
                 "code_version": "コードテキストバージョン",
@@ -782,7 +778,6 @@
                 "confirm_code": "私は完全な行動規範を読み、これに同意します。",
                 "acknowledge": "コードを確認する",
                 "withdraw_acknowledgement": "承認の撤回",
-                "guardian_title": "保護者の同意",
                 "guardian_status": {
                     "not_required": "保護者の同意は必要ありません。",
                     "required": "保護者の同意書が必要となります。",
@@ -791,18 +786,6 @@
                     "withdrawn": "保護者の同意リクエストは取り下げられました。",
                     "expired": "保護者の同意リクエストの有効期限が切れました。"
                 },
-                "guardian_name": "守護者名",
-                "guardian_email": "保護者のメールアドレス",
-                "guardian_relationship": "出席者との関係",
-                "relationships": {
-                    "parent": "親",
-                    "guardian": "保護者",
-                    "legal_guardian": "法定後見人",
-                    "carer": "介護者"
-                },
-                "guardian_privacy": "住所は配送のために暗号化され、処理後に配送封筒から削除されます。",
-                "request_guardian": "同意リクエストを送信する",
-                "withdraw_guardian": "同意リクエストの撤回",
                 "reviews_title": "参加レビュー",
                 "reviews_intro": "自由記述のメモ、連絡先の詳細、事件記録を使用せずに、管理された決定を記録します。",
                 "review_member": "イベント参加者",
@@ -843,7 +826,6 @@
                 "ledger_empty": "このイベントには参加レビューが記録されていません。",
                 "confirm_archive_checkbox": "現在の安全要件が無効になることを理解しています。",
                 "confirm_withdraw_code": "行動規範に再度同意するまで参加できなくなる場合があることを理解しています。",
-                "confirm_withdraw_guardian": "現在の同意依頼が無効になることを理解しています。",
                 "confirm_withdraw_review": ":name に対する有効な決定を取り消すことを確認します。"
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "サインインする前に電子メール アドレスを確認してください。受信トレイで確認リンクを確認してください。",
                 "pending_verification": "あなたのアカウントはまだ認証中です。認証が完了するとサインインできるようになります。",
                 "account_suspended": "このアカウントは停止されました。サポートが必要な場合はサポートにお問い合わせください。",
+                "account_under_minimum_age": "このプラットフォームは18歳以上の成人のみが利用できるため、このアカウントは使用できません。誤りだと思われる場合は、コミュニティの運営者にお問い合わせください。",
                 "register_failed": "詳細を確認して、再試行してください。",
                 "register_duplicate": "このメール アドレスのアカウントはすでに存在します。サインインするか、別のメールアドレスを使用してみてください。",
                 "register_password_pwned": "このパスワードは既知のデータ侵害で発見されました。別のパスワードを選択してください。",

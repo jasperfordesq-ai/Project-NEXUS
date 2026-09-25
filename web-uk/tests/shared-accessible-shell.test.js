@@ -1898,11 +1898,13 @@ describe('shared accessible frontend shell', () => {
     expect(features.status).toBe(200);
     // 🔴 This asserted three of the SIX hand-written bullets /features used to
     // show, plus its button through to the guide. The page now renders the shared
-    // 119-feature catalogue that the React /features page renders, with server-side
+    // 118-feature catalogue that the React /features page renders, with server-side
     // search and category filtering, so those strings are gone by design.
     expect(features.text).toContain(featuresText('en').heading);
     expect(features.text).toContain(featuresText('en').groups.core_platform.title);
-    expect(features.text).toContain('Showing 119 of 119 entries');
+    expect(features.text).toContain('Showing 118 of 118 entries');
+    // Guardian consent for minors was retired (adults-only, 18+); it is not a feature.
+    expect(features.text).not.toContain('Guardian Consent');
     expect(features.text).toContain('href="/changelog"');
     expect(features.text).not.toContain('Feature guidance will be ported');
   });
@@ -2050,7 +2052,7 @@ describe('shared accessible frontend shell', () => {
     expect(guide.text).toContain(translate('ar', 'guide.step1_title'));
     expect(guide.text).toContain(translate('ar', 'guide.step1_body'));
     // 🔴 These asserted two of the SIX hand-written bullets /features used to
-    // show. That page now renders the shared 119-feature catalogue, whose text comes
+    // show. That page now renders the shared 118-feature catalogue, whose text comes
     // from the React locale files rather than lang/*/govuk_alpha.php. The point of
     // the assertion is unchanged — the page renders in Arabic — so it now checks the
     // catalogue's own Arabic heading, a group title and a feature title.
@@ -25796,6 +25798,15 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('name="action" value="record_review"');
     expect(response.text).toContain('Alex Morgan');
     expect(api.callEventApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/42/safety/reviews?page=1&per_page=25');
+    // Project NEXUS is for adults aged 18 and over: guardian consent for minors
+    // is retired, so none of its controls render even for an old policy version
+    // or a server that still declares a guardian permission.
+    expect(response.text).not.toContain('name="guardian_consent_required"');
+    expect(response.text).not.toContain('name="minor_age_threshold"');
+    expect(response.text).not.toContain('value="request_guardian_consent"');
+    expect(response.text).not.toContain('value="withdraw_guardian_consent"');
+    expect(response.text).not.toContain('value="guardian_consent"');
+    expect(response.text).not.toMatch(/guardian/i);
   });
 
   it('submits versioned Laravel Event Safety policies with an idempotency header', async () => {
@@ -25819,13 +25830,31 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers.location).toBe('/events/42/safety?status=safety-updated');
     expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/42/safety/requirements', {
       minimum_age: 16,
-      guardian_consent_required: true,
-      minor_age_threshold: 18,
+      // Always off: a stale form field can never switch guardian consent back on.
+      guardian_consent_required: false,
+      minor_age_threshold: null,
       code_of_conduct_required: true,
       code_of_conduct_text: 'Respect every participant.',
       code_of_conduct_text_version: 'conduct-3',
       expected_revision: 3
     }, { headers: { 'Idempotency-Key': 'event-safety-save-key' } });
+  });
+
+  it('no longer accepts the retired guardian-consent actions', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    for (const body of [
+      { action: 'request_guardian_consent', guardian_name: 'Pat Parent', guardian_email: 'pat@example.test', relationship_code: 'parent' },
+      { action: 'withdraw_guardian_consent', consent_id: '91', confirm_destructive: '1' }
+    ]) {
+      const response = await agent.post('/events/42/safety').set('Cookie', signedCookieHeader()).type('form').send({
+        _csrf: csrf, idempotency_key: 'event-safety-guardian-key', ...body
+      });
+      expect(response.headers.location).toBe('/events/42/safety?status=safety-failed');
+    }
+    expect(api.callEventApi).not.toHaveBeenCalled();
   });
 
   it('requires explicit confirmation before destructive Event Safety mutations', async () => {

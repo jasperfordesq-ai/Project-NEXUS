@@ -120,6 +120,7 @@ const {
 } = require('./middleware/auth');
 const { assertProductionConfig } = require('./lib/production-config');
 const { createSessionStore } = require('./lib/session-store');
+const { endUnderAgeSession, isAccountUnderMinimumAgeError } = require('./lib/account-age-refusal');
 
 const app = express();
 
@@ -615,14 +616,32 @@ app.use(async (req, res, next) => {
     res.locals.sessionTimeout = maxAge ? Math.floor(maxAge / 1000 / 60) : null;
   }
 
+  // The access-token refresh (refreshAuthSession, above) already found an
+  // under-18 account and cleared its cookies; tell the member why.
+  if (req.accountUnderMinimumAge) {
+    return endUnderAgeSession(req, res);
+  }
+
   // Fetch notification and message counts for authenticated users
   if (token) {
+    // These two calls run on every signed-in request, so they are where an
+    // existing session of an under-18 account is first refused by Laravel
+    // (HTTP 403, ACCOUNT_UNDER_MINIMUM_AGE). That session is over: sign it out
+    // here, once, instead of every page showing its own "access denied".
+    let underMinimumAge = false;
+    const countOrZero = (error) => {
+      if (isAccountUnderMinimumAgeError(error)) underMinimumAge = true;
+      return { unreadCount: 0 };
+    };
     try {
       const { getNotificationUnreadCount, getUnreadCount } = require('./lib/api');
       const [notifResult, msgResult] = await Promise.all([
-        getNotificationUnreadCount(token).catch(() => ({ unreadCount: 0 })),
-        getUnreadCount(token).catch(() => ({ unreadCount: 0 }))
+        getNotificationUnreadCount(token).catch(countOrZero),
+        getUnreadCount(token).catch(countOrZero)
       ]);
+      if (underMinimumAge) {
+        return endUnderAgeSession(req, res);
+      }
       const notificationCounts = notifResult?.data || notifResult || {};
       const messageCounts = msgResult?.data || msgResult || {};
       res.locals.notificationCount = notificationCounts.unread

@@ -9,6 +9,7 @@
 
 const { ApiError, ApiOfflineError } = require('./api');
 const { clearAuthCookies } = require('../middleware/auth');
+const { endUnderAgeSession, isAccountUnderMinimumAgeError } = require('./account-age-refusal');
 
 function resolveRedirectTarget(res, target) {
   if (typeof target !== 'string') return target;
@@ -84,6 +85,13 @@ function handleApiError(error, req, res, options = {}) {
   }
 
   if (error instanceof ApiError) {
+    // An under-18 account's session is refused on every request (HTTP 403,
+    // ACCOUNT_UNDER_MINIMUM_AGE). Treat it as signed out, and say why.
+    if (isAccountUnderMinimumAgeError(error)) {
+      endUnderAgeSession(req, res);
+      return true;
+    }
+
     // Handle 401 - clear cookies, clear flash messages, and redirect to login
     if (error.status === 401) {
       clearAuthCookies(res);

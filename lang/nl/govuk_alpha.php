@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Controleer uw e-mailadres voordat u zich aanmeldt. Controleer uw inbox voor de bevestigingslink.',
         'pending_verification' => 'Je account wordt nog steeds geverifieerd. U kunt inloggen zodra de verificatie is voltooid.',
         'account_suspended' => 'Dit account is opgeschort. Neem contact op met ondersteuning voor hulp.',
+        'account_under_minimum_age' => 'Dit platform is alleen voor volwassenen van 18 jaar en ouder, daarom kan dit account niet worden gebruikt. Denk je dat dit niet klopt, neem dan contact op met de organisatoren van je community.',
         'register_failed' => 'Controleer de details en probeer het opnieuw.',
         'register_duplicate' => 'Er bestaat al een account met dit e-mailadres. Probeer in te loggen of gebruik een ander e-mailadres.',
         'register_password_pwned' => 'Dit wachtwoord is aangetroffen bij bekende datalekken. Kies een ander wachtwoord.',

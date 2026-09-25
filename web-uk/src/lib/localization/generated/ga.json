@@ -756,10 +756,6 @@
                 "policy_intro": "Fanann dréacht-athruithe príobháideach go dtí go bhfoilsítear iad. Coinnítear gach leagan foilsithe chun fianaise a mheaitseáil.",
                 "minimum_age": "Aois íosta",
                 "minimum_age_hint": "Fág bán nuair nach bhfuil aois íosta ag an imeacht.",
-                "guardian_policy": "Toiliú caomhnóra",
-                "guardian_required": "Toiliú caomhnóra a éileamh do mhionaoisigh",
-                "minor_threshold": "Tairseach mionaoise",
-                "minor_threshold_hint": "Teastaíonn toiliú caomhnóra ó bhaill faoi bhun na haoise seo ag an imeacht.",
                 "code_policy": "Cód iompair",
                 "code_required": "A cheangal ar lucht freastail an cód iompair a admháil",
                 "code_version": "Leagan téacs cód",
@@ -782,7 +778,6 @@
                 "confirm_code": "Tá an cód iompair iomlán léite agam agus aontaím leis.",
                 "acknowledge": "Admhaigh an cód",
                 "withdraw_acknowledgement": "Admháil a tharraingt siar",
-                "guardian_title": "Toiliú caomhnóra",
                 "guardian_status": {
                     "not_required": "Níl toiliú caomhnóra ag teastáil.",
                     "required": "Tá iarratas ar thoiliú caomhnóra ag teastáil.",
@@ -791,18 +786,6 @@
                     "withdrawn": "Tarraingíodh siar an t-iarratas ar thoiliú caomhnóra.",
                     "expired": "Tá an t-iarratas ar thoiliú caomhnóra imithe in éag."
                 },
-                "guardian_name": "Ainm an chaomhnóra",
-                "guardian_email": "Seoladh ríomhphoist caomhnóra",
-                "guardian_relationship": "Gaol leis an duine atá ag freastal",
-                "relationships": {
-                    "parent": "Tuismitheoir",
-                    "guardian": "Caomhnóir",
-                    "legal_guardian": "Caomhnóir dlíthiúil",
-                    "carer": "Cúramóir"
-                },
-                "guardian_privacy": "Criptítear an seoladh le seachadadh agus baintear é den chlúdach seachadta tar éis a phróiseáil.",
-                "request_guardian": "Seol iarratas toiliú",
-                "withdraw_guardian": "Iarratas ar thoiliú a tharraingt siar",
                 "reviews_title": "Léirmheasanna ar rannpháirtíocht",
                 "reviews_intro": "Cinntí rialaithe a thaifeadadh gan nótaí saor-théacs, sonraí teagmhála nó taifid teagmhais.",
                 "review_member": "Rannpháirtí imeachtaí",
@@ -843,7 +826,6 @@
                 "ledger_empty": "Níl aon léirmheasanna rannpháirtíochta taifeadta don imeacht seo.",
                 "confirm_archive_checkbox": "Tuigim go ndíghníomhóidh sé seo na riachtanais sábháilteachta reatha.",
                 "confirm_withdraw_code": "Tuigim go bhféadfadh sé seo bac a chur ar mo rannpháirtíocht go dtí go n-admhóidh mé an cód arís.",
-                "confirm_withdraw_guardian": "Tuigim go mbeidh an t-iarratas toilithe reatha neamhbhailí.",
                 "confirm_withdraw_review": "Deimhním gur mian liom an cinneadh gníomhach do :name a tharraingt siar."
             }
         },
@@ -1513,6 +1495,7 @@
                 "email_not_verified": "Fíoraigh do sheoladh ríomhphoist roimh síniú isteach. Seiceáil do bhosca isteach chun an nasc deimhnithe a fháil.",
                 "pending_verification": "Tá do chuntas fós á fhíorú. Is féidir leat síniú isteach nuair a bheidh an fíorú críochnaithe.",
                 "account_suspended": "Tá an cuntas seo curtha ar fionraí. Déan teagmháil le tacaíocht chun cabhair a fháil.",
+                "account_under_minimum_age": "Is do dhaoine fásta atá 18 mbliana d'aois nó níos sine an t-ardán seo, mar sin ní féidir an cuntas seo a úsáid. Má cheapann tú go bhfuil sé seo mícheart, déan teagmháil le heagraithe do phobail.",
                 "register_failed": "Seiceáil na sonraí agus bain triail eile as.",
                 "register_duplicate": "Tá cuntas leis an seoladh ríomhphoist seo ann cheana. Bain triail as síniú isteach nó úsáid ríomhphost eile.",
                 "register_password_pwned": "Fuarthas an pasfhocal seo i sáruithe aitheanta sonraí. Roghnaigh pasfhocal eile.",

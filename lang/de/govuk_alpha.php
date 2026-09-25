@@ -503,6 +503,7 @@ return [
         'email_not_verified' => 'Überprüfen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden. Suchen Sie in Ihrem Posteingang nach dem Bestätigungslink.',
         'pending_verification' => 'Ihr Konto wird noch überprüft. Sobald die Verifizierung abgeschlossen ist, können Sie sich anmelden.',
         'account_suspended' => 'Dieses Konto wurde gesperrt. Wenden Sie sich an den Support, um Hilfe zu erhalten.',
+        'account_under_minimum_age' => 'Diese Plattform ist nur für Erwachsene ab 18 Jahren, daher kann dieses Konto nicht verwendet werden. Wenn Sie das für einen Fehler halten, wenden Sie sich an die Organisatoren Ihrer Community.',
         'register_failed' => 'Überprüfen Sie die Details und versuchen Sie es erneut.',
         'register_duplicate' => 'Es existiert bereits ein Konto mit dieser E-Mail-Adresse. Versuchen Sie, sich anzumelden, oder verwenden Sie eine andere E-Mail-Adresse.',
         'register_password_pwned' => 'Dieses Passwort wurde bei bekannten Datenschutzverletzungen gefunden. Wählen Sie ein anderes Passwort.',
