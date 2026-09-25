@@ -56,6 +56,13 @@
     "files": {
       "title": "Comhaid an ghrúpa",
       "subtitle": "Cáipéisí agus acmhainní roinnte le baill an ghrúpa.",
+      "upload": "Uaslódáil comhad",
+      "uploadLabel": "Roghnaigh comhad le roinnt leis an ngrúpa seo",
+      "uploading": "Comhad á uaslódáil",
+      "uploadSuccess": "Uaslódáladh an comhad.",
+      "uploadError": "Níorbh fhéidir an comhad a uaslódáil.",
+      "tooLarge": "Roghnaigh comhad nach mó ná {{max}} MB.",
+      "unsupportedType": "Ní thacaítear leis an gcineál comhaid seo.",
       "empty": "Níl aon chomhad roinnte leis an ngrúpa seo fós.",
       "joinToView": "Glac páirt sa ghrúpa seo chun comhaid chomhroinnte a fheiceáil.",
       "download": "Íoslódáil",

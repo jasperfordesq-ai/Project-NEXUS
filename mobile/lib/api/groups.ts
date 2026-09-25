@@ -120,6 +120,11 @@ export interface GroupFileItem {
   uploader_avatar?: string | null;
   folder?: string | null;
   description?: string | null;
+  download_count?: number;
+  capabilities?: {
+    can_download: boolean;
+    can_delete: boolean;
+  };
   created_at: string | null;
 }
 
@@ -452,6 +457,17 @@ type UploadGroupMediaResponse = {
   message?: string;
 };
 
+type UploadGroupFileResponse = {
+  data?: GroupFileItem | null;
+  message?: string;
+};
+
+export interface GroupFileUploadAsset {
+  uri: string;
+  fileName: string;
+  mimeType?: string | null;
+}
+
 export interface GroupMediaUploadAsset {
   uri: string;
   fileName?: string | null;
@@ -514,6 +530,22 @@ async function appendGroupMediaFile(formData: FormData, asset: GroupMediaUploadA
 
   const type = getMimeType(filename, asset.mimeType);
   formData.append('file', { uri: asset.uri, name: filename, type } as unknown as Blob);
+}
+
+async function appendGroupFile(formData: FormData, asset: GroupFileUploadAsset): Promise<void> {
+  const type = asset.mimeType || 'application/octet-stream';
+  if (Platform.OS === 'web') {
+    const response = await fetch(asset.uri);
+    const blob = await response.blob();
+    const resolvedType = asset.mimeType || blob.type || 'application/octet-stream';
+    if (typeof File !== 'undefined') {
+      formData.append('file', new File([blob], asset.fileName, { type: resolvedType }));
+      return;
+    }
+    formData.append('file', blob, asset.fileName);
+    return;
+  }
+  formData.append('file', { uri: asset.uri, name: asset.fileName, type } as unknown as Blob);
 }
 
 /**
@@ -668,6 +700,16 @@ export function getGroupFiles(
 
 export function deleteGroupFile(id: number, fileId: number): Promise<{ data: { message: string } }> {
   return api.delete<{ data: { message: string } }>(`${API_V2}/groups/${id}/files/${fileId}`);
+}
+
+export async function uploadGroupFile(id: number, asset: GroupFileUploadAsset): Promise<{ data: GroupFileItem }> {
+  const formData = new FormData();
+  await appendGroupFile(formData, asset);
+  const response = await api.upload<UploadGroupFileResponse>(`${API_V2}/groups/${id}/files`, formData);
+  if (!response.data) {
+    throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
+  }
+  return { data: response.data };
 }
 
 /**

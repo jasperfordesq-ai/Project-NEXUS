@@ -96,6 +96,13 @@
     "files": {
       "title": "Group files",
       "subtitle": "Documents and resources shared with group members.",
+      "upload": "Upload file",
+      "uploadLabel": "Choose a file to share with this group",
+      "uploading": "Uploading file",
+      "uploadSuccess": "File uploaded.",
+      "uploadError": "Could not upload the file.",
+      "tooLarge": "Choose a file no larger than {{max}} MB.",
+      "unsupportedType": "This file type is not supported.",
       "empty": "No files have been shared with this group yet.",
       "joinToView": "Join this group to view shared files.",
       "download": "Download",

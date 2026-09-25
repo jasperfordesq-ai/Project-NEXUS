@@ -89,6 +89,13 @@ jest.mock('react-i18next', () => ({
         'detail.tabs.marketplace': 'Marketplace',
         'detail.files.title': 'Group files',
         'detail.files.subtitle': 'Documents and resources.',
+        'detail.files.upload': 'Upload file',
+        'detail.files.uploadLabel': 'Choose a file to share with this group',
+        'detail.files.uploading': 'Uploading file',
+        'detail.files.uploadSuccess': 'File uploaded.',
+        'detail.files.uploadError': 'Could not upload the file.',
+        'detail.files.tooLarge': 'Choose a file no larger than 25 MB.',
+        'detail.files.unsupportedType': 'This file type is not supported.',
         'detail.files.empty': 'No files yet.',
         'detail.files.joinToView': 'Join to view files.',
         'detail.files.download': 'Download',
@@ -389,6 +396,7 @@ jest.mock('@/lib/api/groups', () => ({
   getGroupAnnouncements: jest.fn(),
   getGroupFiles: jest.fn(),
   deleteGroupFile: jest.fn().mockResolvedValue({ data: { message: 'Deleted' } }),
+  uploadGroupFile: jest.fn().mockResolvedValue({ data: { id: 32, file_name: 'group-notes.txt' } }),
   getGroupMedia: jest.fn().mockResolvedValue({ data: { items: [], cursor: null, has_more: false } }),
   deleteGroupMedia: jest.fn().mockResolvedValue({ data: { message: 'Deleted' } }),
   uploadGroupMedia: jest.fn().mockResolvedValue({ data: { id: 82, url: '/uploads/groups/media.jpg', type: 'image', uploaded_by: 10, created_at: '2026-06-01T00:00:00Z' } }),
@@ -427,6 +435,10 @@ jest.mock('@/lib/api/groups', () => ({
   deleteGroupAnnouncement: jest.fn().mockResolvedValue({ data: { deleted: true } }),
   joinGroup: jest.fn().mockResolvedValue({}),
   leaveGroup: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock('@/lib/media/pickGroupFile', () => ({
+  pickGroupFile: jest.fn(),
 }));
 
 jest.mock('@/components/ui/Avatar', () => 'View');
@@ -504,11 +516,13 @@ import {
   updateGroupTask,
   updateGroupWikiPage,
   updateGroupAnnouncement,
+  uploadGroupFile,
   uploadGroupMedia,
   voteGroupQA,
 } from '@/lib/api/groups';
 import { ApiResponseError } from '@/lib/api/client';
 import * as ImagePicker from 'expo-image-picker';
+import { pickGroupFile } from '@/lib/media/pickGroupFile';
 
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
 
@@ -1066,6 +1080,7 @@ describe('GroupDetailScreen', () => {
             uploader_avatar: null,
             folder: 'Guides',
             description: 'Spring planting checklist.',
+            capabilities: { can_download: true, can_delete: true },
             created_at: '2026-06-01T00:00:00Z',
           }],
           cursor: null,
@@ -1094,6 +1109,65 @@ describe('GroupDetailScreen', () => {
     expect(getByText('Planting guide.pdf')).toBeTruthy();
     expect(getByText('Spring planting checklist.')).toBeTruthy();
     expect(getByText('Download')).toBeTruthy();
+    expect(getByText('Delete')).toBeTruthy();
+    expect(getByText('Upload file')).toBeTruthy();
+  });
+
+  it.each(['picked', 'cancelled', 'too_large', 'unsupported_type'] as const)('handles group file picker result: %s', async (outcome) => {
+    const refreshFiles = jest.fn();
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'member', is_admin: false } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyAnnouncementsState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const filesState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: refreshFiles };
+    const emptyQuestionsState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const eventsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyListState, emptyListState, emptyAnnouncementsState, filesState, emptyQuestionsState, eventsState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+    jest.mocked(pickGroupFile).mockResolvedValue(
+      outcome === 'picked'
+        ? { status: 'picked', file: { uri: 'file:///cache/group-notes.txt', name: 'group-notes.txt', mimeType: 'text/plain', size: 1024 } }
+        : outcome === 'too_large'
+          ? { status: 'too_large', maxMb: 25 }
+          : { status: outcome },
+    );
+
+    const { getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Files'));
+    fireEvent.press(getByText('Upload file'));
+
+    await waitFor(() => expect(pickGroupFile).toHaveBeenCalled());
+    if (outcome !== 'picked') {
+      expect(uploadGroupFile).not.toHaveBeenCalled();
+      expect(refreshFiles).not.toHaveBeenCalled();
+      if (outcome !== 'cancelled') {
+        expect(mockShowToast).toHaveBeenCalledWith({
+          title: 'Error',
+          description: outcome === 'too_large'
+            ? 'Choose a file no larger than 25 MB.'
+            : 'This file type is not supported.',
+          variant: 'danger',
+        });
+      }
+      return;
+    }
+    await waitFor(() => {
+      expect(uploadGroupFile).toHaveBeenCalledWith(1, {
+        uri: 'file:///cache/group-notes.txt',
+        fileName: 'group-notes.txt',
+        mimeType: 'text/plain',
+      });
+      expect(refreshFiles).toHaveBeenCalled();
+    });
   });
 
   it.each([false, true])('handles file deletion confirmation with departed screen = %s', async (departed) => {

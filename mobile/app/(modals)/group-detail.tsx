@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
+import { pickGroupFile } from '@/lib/media/pickGroupFile';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -67,6 +68,7 @@ import {
   updateGroupAnnouncement,
   updateGroupTask,
   updateGroupWikiPage,
+  uploadGroupFile,
   uploadGroupMedia,
   voteGroupQA,
   type GroupAnnouncement,
@@ -1395,6 +1397,7 @@ function GroupDetailScreenInner() {
             onLoadMore={filesApi.loadMore}
             canView={userCanSeeMemberContent}
             canManage={canManageGroup}
+            currentUserId={user?.id ?? null}
             onRefresh={filesApi.refresh}
           />
         ) : null}
@@ -1653,6 +1656,7 @@ function GroupFilesPanel({
   onLoadMore,
   canView,
   canManage,
+  currentUserId,
   onRefresh,
 }: {
   groupId: number;
@@ -1663,6 +1667,7 @@ function GroupFilesPanel({
   onLoadMore: () => void;
   canView: boolean;
   canManage: boolean;
+  currentUserId: number | null;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation(['groups', 'common']);
@@ -1671,7 +1676,41 @@ function GroupFilesPanel({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
+
+  async function handleUpload() {
+    if (!beginMutation()) return;
+    setUploading(true);
+    try {
+      const selection = await pickGroupFile();
+      if (!isMountedRef.current || selection.status === 'cancelled') return;
+      if (selection.status === 'too_large') {
+        showToast({ title: t('common:errors.alertTitle'), description: t('detail.files.tooLarge', { max: selection.maxMb }), variant: 'danger' });
+        return;
+      }
+      if (selection.status === 'unsupported_type') {
+        showToast({ title: t('common:errors.alertTitle'), description: t('detail.files.unsupportedType'), variant: 'danger' });
+        return;
+      }
+      await uploadGroupFile(groupId, {
+        uri: selection.file.uri,
+        fileName: selection.file.name,
+        mimeType: selection.file.mimeType,
+      });
+      if (!isMountedRef.current) return;
+      onRefresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({ title: t('detail.files.uploadSuccess'), variant: 'success' });
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.files.uploadError')), variant: 'danger' });
+    } finally {
+      finishMutation();
+      if (isMountedRef.current) setUploading(false);
+    }
+  }
 
   function openDownload(file: GroupFileItem) {
     /*
@@ -1736,6 +1775,16 @@ function GroupFilesPanel({
               </Text>
             </View>
           </View>
+          <HeroButton
+            variant="primary"
+            isDisabled={uploading}
+            onPress={() => void handleUpload()}
+            accessibilityLabel={t('detail.files.uploadLabel')}
+            accessibilityState={{ busy: uploading, disabled: uploading }}
+          >
+            {uploading ? <Spinner size="sm" /> : <AccentIcon name="cloud-upload-outline" size={18} />}
+            <HeroButton.Label>{uploading ? t('detail.files.uploading') : t('detail.files.upload')}</HeroButton.Label>
+          </HeroButton>
         </HeroCard.Body>
       </HeroCard>
 
@@ -1779,7 +1828,7 @@ function GroupFilesPanel({
                   <Ionicons name="download-outline" size={16} color={primary} />
                   <HeroButton.Label>{t('detail.files.download')}</HeroButton.Label>
                 </HeroButton>
-                {canManage ? (
+                {(file.capabilities?.can_delete ?? (canManage || file.uploaded_by === currentUserId)) ? (
                   <HeroButton
                     size="sm"
                     variant="danger-soft"

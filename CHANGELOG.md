@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native event organisers can now create and edit agenda sessions, manage speakers and secure resources, cancel sessions with reasons, and reorder the programme from a dedicated screen. Requests are saved encrypted before sending; interrupted requests retain their retry identity, and rejected edits retain their input for review against current versions.
 - Native course learners can share their completion certificate from the course player, with authenticated retrieval, account-change protection and retry after a failed export.
 
+- Group members can upload validated files from the native app, with translated size/type feedback and file-owner deletion controls matching the server permissions.
+
 ### Changed
 
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).

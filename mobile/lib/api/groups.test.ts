@@ -57,6 +57,7 @@ import {
   updateGroupAnnouncement,
   updateGroupTask,
   updateGroupWikiPage,
+  uploadGroupFile,
   uploadGroupMedia,
   voteGroupQA,
 } from './groups';
@@ -304,6 +305,30 @@ describe('group file helpers', () => {
     await deleteGroupFile(7, 31);
 
     expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/files/31');
+  });
+
+  it('uploads a group file as multipart form data', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({
+      data: {
+        id: 32,
+        group_id: 7,
+        file_name: 'group-notes.txt',
+        file_type: 'text/plain',
+        file_size: 1024,
+        uploaded_by: 10,
+        created_at: '2026-06-01T00:00:00Z',
+        capabilities: { can_download: true, can_delete: true },
+      },
+    });
+
+    const result = await uploadGroupFile(7, {
+      uri: 'file:///tmp/group-notes.txt',
+      fileName: 'group-notes.txt',
+      mimeType: 'text/plain',
+    });
+
+    expect(api.upload).toHaveBeenCalledWith('/api/v2/groups/7/files', expect.any(FormData));
+    expect(result.data.file_name).toBe('group-notes.txt');
   });
 });
 
