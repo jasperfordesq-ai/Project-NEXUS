@@ -33,6 +33,7 @@ import { getEventSafetyReviews } from '@/lib/api/eventSafetyManagement';
 import { searchEventInviteMembers as search } from '@/lib/api/eventPeople';
 import { loadSafetyOperation as load, executeSafetyOperation as execute, recoverSafetyOperation as recover, discardRejectedSafetyOperation as discard } from '@/lib/eventSafetyOperation';
 import { ApiResponseError } from '@/lib/api/client';
+import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 const event = { id: 7, organizer: { id: 3 }, permissions: { edit: true } };
 const permissions = { manage_requirements: true, review_participation: true, acknowledge_code_of_conduct: false, withdraw_code_of_conduct: false, request_guardian_consent: false, withdraw_guardian_consent: false };
@@ -271,4 +272,41 @@ it('keeps the end date shown on the iOS wheel when the organiser taps Done witho
   const sent = jest.mocked(execute).mock.calls[0][1] as { payload: { effective_until: string | null } };
   expect(sent.payload.effective_until).not.toBeNull();
   expect(Math.abs(Date.parse(sent.payload.effective_until as string) - shown.getTime())).toBeLessThan(5000);
+});
+
+it('preserves unsaved policy edits when an unrelated participation review succeeds', async () => {
+  const view = await ready();
+  const next = safety(); next.requirements.revision = 3;
+  jest.mocked(getEventSafety).mockResolvedValue({ data: next } as never);
+  fireEvent.changeText(view.getByDisplayValue('16'), '21');
+  fireEvent.press(view.getByText('Update decision'));
+  fireEvent.press(view.getByText('Save review decision'));
+  await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  await view.findByText('Revision 3, policy version 1');
+  expect(view.getByDisplayValue('21')).toBeTruthy();
+});
+
+it('preserves the unsaved review when the policy draft succeeds', async () => {
+  const view = await ready();
+  fireEvent.press(view.getByText('Update decision'));
+  fireEvent.press(view.getByLabelText('Conduct violation'));
+  await act(async () => { fireEvent.press(view.getByText('Save draft')); });
+  await waitFor(() => expect(getEventSafety).toHaveBeenCalledTimes(2));
+  expect(view.getByText('Update this decision')).toBeTruthy();
+  expect(view.getByRole('radio', { name: 'Conduct violation' }).props.accessibilityState.checked).toBe(true);
+});
+
+it('still guards unsaved policy edits when a review has durable pending recovery', async () => {
+  const view = await ready();
+  fireEvent.changeText(view.getByDisplayValue('16'), '21');
+  fireEvent.press(view.getByText('Update decision'));
+  jest.mocked(execute).mockImplementationOnce(async (_scope, intent) => {
+    jest.mocked(load).mockResolvedValue({ ...pendingReview, status: 'pending', intent } as never);
+    throw new Error('Lost response');
+  });
+  fireEvent.press(view.getByText('Save review decision'));
+  await act(async () => mockConfirm.mock.calls[0][0].onConfirm());
+  await view.findByText('Previous action needs recovery');
+  expect(jest.mocked(useUnsavedChangesGuard).mock.calls.at(-1)?.[0].isDirty).toBe(true);
+  expect(view.getByDisplayValue('21')).toBeTruthy();
 });

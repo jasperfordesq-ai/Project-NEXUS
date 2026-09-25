@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native event Safety saves now preserve unfinished edits in the other form: saving a participation review keeps policy edits, and saving a policy keeps the review draft. Pending recovery also keeps the navigation warning for unrelated unsaved work.
+
 - The scheduler and queue workers now use the same prerender snapshot volume as the web app, so drift detection and cache invalidation work after workers drop root privileges.
 - The post-deploy Sentry watch now shortens an explicitly pinned full commit to the 12-character release used by the running services, so it counts errors from that release correctly.
 - Prerender drift detection now identifies active jobs by tenant ID, allowing the platform master tenant's null slug without aborting scheduled sweeps.

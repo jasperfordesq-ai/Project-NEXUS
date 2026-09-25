@@ -151,8 +151,14 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
   const [untilError, setUntilError] = useState(false);
   const clearReview = () => { setQuery(''); setSubject(null); setResults([]); setDecision('deny'); setReason('safety_review'); setFrom(new Date()); setUntil(null); setExpectedVersion(null); setUntilError(false); setPicker(null); };
 
-  const operation = useSafetyOperations({ eventId, tenantId, userId }, permitted, active, () => {
-    resync.current = true; setSubmitted(false); clearReview(); state.refresh();
+  const operation = useSafetyOperations({ eventId, tenantId, userId }, permitted, active, (_response, intent) => {
+    // The policy and participation editor are independent. An accepted action
+    // must not erase unsaved work in the other editor, including on recovery.
+    if (intent.action === 'draft' || intent.action === 'publish' || intent.action === 'archive') {
+      resync.current = true; setSubmitted(false);
+    }
+    if (intent.action === 'review') clearReview();
+    state.refresh();
   });
   const blocked = !permitted || operation.blocked;
   const saved = operation.saved;
@@ -178,7 +184,8 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
     }, 300);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [query, subject, permitted, canReview]);
-  useUnsavedChangesGuard({ isDirty: operation.busy || (!saved || saved.status === 'acknowledged') && (formDirty || Boolean(query || subject)),
+  const durableAction = saved && saved.status !== 'acknowledged' ? saved.intent.action : null;
+  useUnsavedChangesGuard({ isDirty: operation.busy || (formDirty && durableAction !== 'draft') || (Boolean(query || subject) && durableAction !== 'review'),
     isSaving: operation.busy, confirm, title: t('common:unsavedChanges.title'), message: t('common:unsavedChanges.message'),
     discardLabel: t('common:unsavedChanges.discard'), cancelLabel: t('common:buttons.cancel') });
 

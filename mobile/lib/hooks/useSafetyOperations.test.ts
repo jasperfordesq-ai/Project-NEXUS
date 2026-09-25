@@ -24,7 +24,7 @@ it('loads pending work without resending, blocks new changes and permits explici
   expect(result.current.blocked).toBe(true); expect(recover).not.toHaveBeenCalled();
   await act(async () => result.current.submit(intent)); expect(execute).not.toHaveBeenCalled();
   await act(async () => result.current.recover());
-  expect(recover).toHaveBeenCalledWith(scope, expect.any(Function)); expect(accepted).toHaveBeenCalledTimes(1);
+  expect(recover).toHaveBeenCalledWith(scope, expect.any(Function)); expect(accepted).toHaveBeenCalledWith({ data: {} }, pending.intent);
 });
 it.each(['account', 'community', 'event', 'permission', 'background'] as const)('ignores a late receipt and old callbacks after %s changes', async change => {
   const accepted = jest.fn();
@@ -63,7 +63,7 @@ it('keeps recovery failure visible and retains the pending operation', async () 
   expect(result.current.operationFailed).toBe(true); expect(result.current.saved).toEqual(pending);
 });
 it('allows only explicit discard of a definitively rejected change', async () => {
-  jest.mocked(load).mockResolvedValue({ ...pending, status: 'rejected', code: 'EVENT_STAFF_FORBIDDEN' });
+  jest.mocked(load).mockResolvedValue({ ...pending, status: 'rejected', code: 'EVENT_SAFETY_CONFLICT' });
   const { result } = renderHook(() => useSafetyOperations(scope, true, true, jest.fn()));
   await waitFor(() => expect(result.current.ready).toBe(true));
   expect(discard).not.toHaveBeenCalled();

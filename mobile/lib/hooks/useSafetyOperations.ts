@@ -13,7 +13,7 @@ type State = { epoch: number; saved: SavedSafetyOperation | null; ready: boolean
 const empty = (epoch: number): State => ({ epoch, saved: null, ready: false, storageFailed: false, busy: false, operationFailed: false, errorStatus: null });
 
 /** active must represent both screen focus and foreground. Loading never replays work. */
-export function useSafetyOperations(scope: SafetyOperationScope, permitted: boolean, active: boolean, onAccepted: (acknowledgement: Acknowledgement) => void) {
+export function useSafetyOperations(scope: SafetyOperationScope, permitted: boolean, active: boolean, onAccepted: (acknowledgement: Acknowledgement, intent: SafetyOperationIntent) => void) {
   const { tenantId, userId, eventId } = scope;
   const valid = [tenantId, userId, eventId].every(id => Number.isSafeInteger(id) && id > 0);
   const identity = JSON.stringify([tenantId, userId, eventId, permitted, active]);
@@ -54,9 +54,11 @@ export function useSafetyOperations(scope: SafetyOperationScope, permitted: bool
         await discardRejectedSafetyOperation(owner, visible.saved!.key, isCurrent);
         return;
       }
-      const acknowledgement = kind === 'submit' ? await executeSafetyOperation(owner, intent!, isCurrent)
+      const acceptedIntent = kind === 'submit' ? intent! : visible.saved!.status === 'pending' ? visible.saved!.intent : null;
+      if (!acceptedIntent) return;
+      const acknowledgement = kind === 'submit' ? await executeSafetyOperation(owner, acceptedIntent, isCurrent)
           : await recoverSafetyOperation(owner, isCurrent);
-      if (isCurrent()) callback.current(acknowledgement);
+      if (isCurrent()) callback.current(acknowledgement, acceptedIntent);
     } catch (error) {
       if (isCurrent()) setState(previous => ({ ...previous, operationFailed: true, errorStatus: error instanceof ApiResponseError ? error.status : null }));
     } finally {
