@@ -144,6 +144,8 @@ services:
     volumes:
       - nexus-php-logs:/var/log
       - nexus-php-storage:/var/www/html/storage
+      # Workers and the web app must inspect and mutate the same snapshots.
+      - nexus-php-prerendered:/var/www/html/storage/prerendered:rw
     env_file:
       - ${NEXUS_ENV_FILE:-.env}
     environment:
@@ -206,6 +208,8 @@ services:
     volumes:
       - nexus-php-logs:/var/log
       - nexus-php-storage:/var/www/html/storage
+      # Drift detection must inspect the snapshots served by the web app.
+      - nexus-php-prerendered:/var/www/html/storage/prerendered:rw
       # Phase D backup:verify runs in THIS scheduler container (scheduled daily)
       # and must read the host nightly-backup dir to detect a missing/stale dump.
       # server-nightly-backup.sh writes nexus_db_*.sql.gz to ${DEPLOY_DIR}/backups
