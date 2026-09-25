@@ -136,6 +136,11 @@ class MunicipalSurveyControllerTest extends TestCase
 
     public function test_member_survey_reads_require_authentication(): void
     {
+        // With Caring Community off, its routes answer 403 FEATURE_DISABLED before
+        // authentication (E-034 off switch). Switch it on so this test proves that
+        // an ENABLED community still requires sign-in.
+        $this->setCaringCommunityFeature(true);
+
         $this->apiGet('/v2/caring-community/surveys')->assertUnauthorized();
         $this->apiGet('/v2/caring-community/surveys/1')->assertUnauthorized();
     }

@@ -184,7 +184,9 @@ class VolunteeringConfigurationService
     public static function set(string $key, mixed $value): void
     {
         if (self::isRetiredValue($key, $value)) {
-            throw new \InvalidArgumentException('guardian_consent_retired');
+            throw new \InvalidArgumentException(
+                __('api.guardian_consent_retired', ['age' => \App\Support\Authorization\MinimumAge::YEARS])
+            );
         }
 
         $tenantId = TenantContext::getId();

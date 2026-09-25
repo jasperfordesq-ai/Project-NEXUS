@@ -237,6 +237,9 @@ class StartingBalanceGrantTest extends TestCase
         // reads the starting balance — verification must still succeed.
         $settings = Mockery::mock(TenantSettingsService::class);
         $settings->shouldReceive('requiresAdminApproval')->andReturn(false);
+        // E-035 F-152: email verification also asks whether the registration
+        // policy holds the account (identity check / waitlist); none here.
+        $settings->shouldReceive('registrationActivationHold')->andReturn(null);
         $settings->shouldReceive('get')->andThrow(new \RuntimeException('settings backend down'));
         $settings->shouldReceive('clearCacheForTenant'); // tearDown cache bust
         $this->app->instance(TenantSettingsService::class, $settings);

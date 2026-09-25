@@ -57,10 +57,10 @@ class FederationV2InternalTransferTest extends TestCase
     {
         parent::setUp();
 
-        // Drive the 3-table federation gate to "allowed" for the SOURCE tenant — the
-        // only tenant whose gate sendTransaction() consults. With the system control,
-        // whitelist and tenant-federation flag seeded (and TENANT_TRANSACTIONS_ENABLED
-        // defaulting to true), isOperationAllowed('transactions') returns allowed.
+        // Drive the 3-table federation gate to "allowed" for the SOURCE tenant. With
+        // the system control, whitelist and tenant-federation flag seeded (and
+        // TENANT_TRANSACTIONS_ENABLED defaulting to true), isOperationAllowed
+        // ('transactions') returns allowed. The destination is enabled below.
         $this->enableFederationForTenant(self::SOURCE_TENANT_ID);
 
         // A second tenant to receive the cross-tenant transfer.
@@ -87,6 +87,10 @@ class FederationV2InternalTransferTest extends TestCase
                 'updated_at'           => now(),
             ]
         );
+
+        // E-035 F-156: a transfer is also refused unless the RECEIVING community
+        // permits federated transactions on its own side, so enable it there too.
+        $this->enableFederationForTenant($this->destinationTenantId);
 
         // FederationFeatureService caches the gate tables in-process; bust it so the
         // controller re-reads the rows we just seeded (DatabaseTransactions rolls them

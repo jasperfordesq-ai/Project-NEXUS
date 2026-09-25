@@ -2,16 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "route_source_change_review": "The only route-source change prepends BrowserRefreshCookie middleware in bootstrap/app.php; it does not register or remove routes. The CI E2E job compares this snapshot with route:list from the running candidate Laravel build.",
   "total_registered_routes": 2735,
   "api_route_rows": 2700,
   "distinct_api_paths": 2245,
   "route_source_fingerprint": {
-    "digest": "8d1f9861d8644d09c1921146ff660bca2f6f836a5ed1f9b158bbbd3805c5a86d",
+    "digest": "fb0f83c358ff6ac70fa66e660b096d7c959a5c867ebd385d82cf807bb1d758c8",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "b936d9a865b34b05ffc2460a61a8f830b4424f3b044b8e44ecb1c71aa235be4a"
+        "sha256": "eb9582dd5d598554f82a7176ebf56faef7581f560b86cb0da06adb1e8d2804a5"
       },
       {
         "file": "routes/channels.php",
@@ -19,7 +18,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "583e9d9f4b809b4ee2389dbba5ead6129685ed9623fcc8b00bd69ea0023115c4"
+        "sha256": "e508d68f1571ff7ee5cd1627268110ea968f0f462bec61b8e31a022e12ac632a"
       }
     ]
   },

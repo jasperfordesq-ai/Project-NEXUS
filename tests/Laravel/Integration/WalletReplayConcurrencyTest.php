@@ -137,6 +137,8 @@ final class WalletReplayConcurrencyTest extends TestCase
                             // actual settings, partnership and money queries still run.
                             $features = \Mockery::mock(\App\Services\FederationFeatureService::class);
                             $features->shouldReceive('isOperationAllowed')->with('transactions', $tenantId)->andReturn(['allowed' => true]);
+                            // E-035 F-156: the receiving community's own switch is checked too.
+                            $features->shouldReceive('isOperationAllowed')->with('transactions', $federationTenant->id)->andReturn(['allowed' => true]);
                             app()->instance(\App\Services\FederationFeatureService::class, $features);
                             auth()->setUser(\App\Models\User::findOrFail($users[0]));
                             app()->instance('request', \Illuminate\Http\Request::create('/api/v2/federation/transactions', 'POST', [
