@@ -24,6 +24,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { API_BASE, tokenManager } from '@/lib/api';
+import { ACCOUNT_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
 import {
   clearOAuthBrowserVerifier,
   getOAuthBrowserVerifier,
@@ -44,6 +45,17 @@ interface OAuthExchangeResponse {
   refresh_token?: string;
   tenant_id?: number | string;
   message?: string;
+}
+
+/**
+ * Adults-only decision 2026-09-25: the account behind this social sign-in is
+ * under 18. Carries the server's translated explanation when it sent one.
+ */
+class MinimumAgeRefusal extends Error {
+  constructor(readonly serverMessage?: string) {
+    super(ACCOUNT_UNDER_MINIMUM_AGE);
+    this.name = 'MinimumAgeRefusal';
+  }
 }
 
 // React StrictMode deliberately restarts effects during development. OAuth
@@ -71,6 +83,12 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
     const data = await response.json() as OAuthExchangeResponse;
 
     if (!response.ok || !data.success || (!data.token && !data.two_factor_token)) {
+      if (response.status === 403) {
+        const refused = data as { errors?: { code?: string; message?: string }[] };
+        if (refused.errors?.some((error) => error?.code === ACCOUNT_UNDER_MINIMUM_AGE)) {
+          throw new MinimumAgeRefusal(serverMessageFor(refused.errors, ACCOUNT_UNDER_MINIMUM_AGE));
+        }
+      }
       throw new Error(data.message || 'oauth_exchange_failed');
     }
 
@@ -90,6 +108,7 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
 
 export function OauthCallbackPage() {
   const { t } = useTranslation('common');
+  const { t: tAuth } = useTranslation('auth');
   usePageTitle(t('oauth.callback_signing_in'));
   const [params] = useSearchParams();
   const { tenantPath } = useTenant();
@@ -107,7 +126,9 @@ export function OauthCallbackPage() {
     if (errCode) {
       // The error code (oauth_failed, sso_failed, a provider's access_denied …)
       // only decides THAT sign-in failed; the wording is always ours.
-      setError(t('oauth.callback_failed'));
+      setError(errCode === ACCOUNT_UNDER_MINIMUM_AGE
+        ? tAuth('login.under_minimum_age')
+        : t('oauth.callback_failed'));
       return;
     }
 
@@ -150,9 +171,11 @@ export function OauthCallbackPage() {
         clearOAuthBrowserVerifier(flow);
         window.location.href = tenantPath('/dashboard');
       },
-      () => {
+      (failure: unknown) => {
         if (!cancelled) {
-          setError(t('oauth.callback_failed'));
+          setError(failure instanceof MinimumAgeRefusal
+            ? failure.serverMessage ?? tAuth('login.under_minimum_age')
+            : t('oauth.callback_failed'));
         }
       },
     );
@@ -160,7 +183,7 @@ export function OauthCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [params, tenantPath, t, beginTwoFactorChallenge, navigate]);
+  }, [params, tenantPath, t, tAuth, beginTwoFactorChallenge, navigate]);
 
   if (error) {
     return (

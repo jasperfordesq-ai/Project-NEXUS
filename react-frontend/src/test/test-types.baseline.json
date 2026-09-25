@@ -1157,9 +1157,6 @@
     "src/components/ui/useDisclosure.test.ts": {
       "TS7053": 1
     },
-    "src/components/volunteering/GuardianConsentModal.test.tsx": {
-      "TS2345": 10
-    },
     "src/components/wallet/DonateModal.test.tsx": {
       "TS2322": 1
     },
@@ -1860,9 +1857,6 @@
       "TS2345": 3,
       "TS2769": 1
     },
-    "src/pages/volunteering/GuardianConsentVerifyPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/volunteering/HoursReviewTab.test.tsx": {
       "TS2769": 1,
       "TS7006": 1
@@ -1923,9 +1917,6 @@
     "src/partners/components/PartnersSidebar.test.tsx": {
       "TS2322": 2
     },
-    "src/routes/sharedPublicFeatureRoutes.test.tsx": {
-      "TS18046": 2
-    },
     "src/super-admin/SuperAdminLayout.test.tsx": {
       "TS2769": 1
     },
@@ -1940,7 +1931,7 @@
     }
   },
   "totals": {
-    "fileCount": 573,
-    "errorCount": 1752
+    "fileCount": 570,
+    "errorCount": 1739
   }
 }

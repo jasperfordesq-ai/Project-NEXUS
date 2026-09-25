@@ -56,8 +56,7 @@
       "ticket_units": "確認されたチケット単位",
       "ticket_credit_value": "確認されたチケットクレジット額",
       "completed_credit_claims": "完了したクレジット請求",
-      "failed_credit_claims": "クレジット請求の失敗",
-      "guardian_consents": "保護者の同意"
+      "failed_credit_claims": "クレジット請求の失敗"
     }
   }
 }

@@ -56,8 +56,6 @@ type ReviewReason = ParticipationReviewRequest['reason_code'];
 
 interface RequirementForm {
   minimumAge: string;
-  guardianConsentRequired: boolean;
-  minorAgeThreshold: string;
   codeRequired: boolean;
   codeText: string;
   codeTextVersion: string;
@@ -90,10 +88,6 @@ function draftFromSafety(safety: EventSafety): RequirementForm {
     minimumAge: version?.minimum_age === null || version?.minimum_age === undefined
       ? ''
       : String(version.minimum_age),
-    guardianConsentRequired: version?.guardian_consent_required ?? false,
-    minorAgeThreshold: version?.minor_age_threshold === null || version?.minor_age_threshold === undefined
-      ? ''
-      : String(version.minor_age_threshold),
     codeRequired: version?.code_of_conduct.required ?? false,
     codeText: version?.code_of_conduct.text ?? '',
     codeTextVersion: version?.code_of_conduct.text_version ?? '',
@@ -227,10 +221,10 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
     if (!requirements || !safety) return;
     const draft: EventSafetyRequirementDraft = {
       minimum_age: optionalInteger(requirements.minimumAge),
-      guardian_consent_required: requirements.guardianConsentRequired,
-      minor_age_threshold: requirements.guardianConsentRequired
-        ? optionalInteger(requirements.minorAgeThreshold)
-        : null,
+      // Guardian consent is retired (adults-only decision 2026-09-25); the
+      // server refuses anything but these two values.
+      guardian_consent_required: false,
+      minor_age_threshold: null,
       code_of_conduct_required: requirements.codeRequired,
       code_of_conduct_text: requirements.codeRequired ? requirements.codeText.trim() : null,
       code_of_conduct_text_version: requirements.codeRequired
@@ -391,8 +385,6 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
 
   const current = safety.requirements;
   const formInvalid = (requirements.minimumAge !== '' && Number.isNaN(optionalInteger(requirements.minimumAge)))
-    || (requirements.guardianConsentRequired && (!requirements.minorAgeThreshold
-      || Number.isNaN(optionalInteger(requirements.minorAgeThreshold))))
     || (requirements.codeRequired && (!requirements.codeText.trim() || !requirements.codeTextVersion.trim()));
 
   return (
@@ -443,27 +435,6 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
                   value={requirements.minimumAge}
                   onValueChange={(value) => setRequirements((state) => state && ({ ...state, minimumAge: value }))}
                 />
-                <div className="rounded-xl border border-theme-default bg-theme-elevated p-4">
-                  <Checkbox
-                    isSelected={requirements.guardianConsentRequired}
-                    onValueChange={(value) => setRequirements((state) => state && ({ ...state, guardianConsentRequired: value }))}
-                  >
-                    {t('safety.requirements.guardian_required')}
-                  </Checkbox>
-                  <p className="mt-2 text-xs text-theme-muted">{t('safety.requirements.guardian_required_hint')}</p>
-                </div>
-                {requirements.guardianConsentRequired && (
-                  <Input
-                    type="number"
-                    min={1}
-                    max={150}
-                    isRequired
-                    label={t('safety.requirements.minor_threshold')}
-                    description={t('safety.requirements.minor_threshold_hint')}
-                    value={requirements.minorAgeThreshold}
-                    onValueChange={(value) => setRequirements((state) => state && ({ ...state, minorAgeThreshold: value }))}
-                  />
-                )}
                 <div className="rounded-xl border border-theme-default bg-theme-elevated p-4">
                   <Checkbox
                     isSelected={requirements.codeRequired}

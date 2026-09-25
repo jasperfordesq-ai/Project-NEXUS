@@ -760,8 +760,6 @@
     "option_volunteering_burnout_detection_label": "Aimsiú Burnout",
     "option_volunteering_burnout_detection_desc": "Cumasaigh scóráil riosca dóite amach agus moltaí",
     "option_category_wellbeing_safety": "Folláine & Sábháilteacht",
-    "option_volunteering_guardian_consent_required_label": "Cead Caomhnóra ag Teastáil",
-    "option_volunteering_guardian_consent_required_desc": "Toiliú caomhnóra a éileamh do mhionaoisigh",
     "option_volunteering_enable_qr_checkin_label": "Seiceáil isteach an Chóid QR",
     "option_volunteering_enable_qr_checkin_desc": "Cumasaigh cód QR le seiceáil isteach/amach le haghaidh sealanna",
     "option_volunteering_enable_recurring_shifts_label": "Aistrithe Athfhillteacha",

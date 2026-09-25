@@ -52,6 +52,7 @@ import {
 import type { SecurityConfirmationMethod } from '@/components/security/SecurityConfirmationModal';
 import { isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
+import { DATE_OF_BIRTH_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
 import { usePageTitle } from '@/hooks';
 import { useWebPush } from '@/hooks/useWebPush';
 import { PageMeta } from '@/components/seo';
@@ -177,6 +178,8 @@ export function SettingsPage() {
   const [isDirty, setIsDirty] = useState(false);
   const dirtyTab = useRef<SettingsTabKey | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  // The server's refusal of the date of birth, shown on that field.
+  const [dobError, setDobError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const profileSnapshot = useRef<ProfileFormData | null>(null);
   const notificationSnapshot = useRef<NotificationSettingsSnapshot | null>(null);
@@ -627,6 +630,7 @@ export function SettingsPage() {
       if (!isIdVerified) {
         payload.date_of_birth = profileData.date_of_birth || null;
       }
+      setDobError(null);
       const response = await api.put('/v2/users/me', payload);
       if (response.success) {
         const savedProfile = {
@@ -641,6 +645,15 @@ export function SettingsPage() {
         setIsDirty(false);
         toast.success(t('toasts.profile_updated'));
         if (refreshUser) await refreshUser();
+      } else if (
+        response.code === DATE_OF_BIRTH_UNDER_MINIMUM_AGE
+        || response.errors?.some((error) => error?.code === DATE_OF_BIRTH_UNDER_MINIMUM_AGE)
+      ) {
+        // Adults-only decision 2026-09-25: show the reason on the field.
+        const message = serverMessageFor(response.errors, DATE_OF_BIRTH_UNDER_MINIMUM_AGE)
+          ?? t('profile.dob_under_minimum_age');
+        setDobError(message);
+        toast.error(message);
       } else {
         toast.error(response.error || t('toasts.profile_save_failed'));
       }
@@ -1287,8 +1300,10 @@ export function SettingsPage() {
               isUploading={isUploading}
               isIdVerified={isIdVerified}
               isDirty={isDirty}
+              dobError={dobError}
               onProfileDataChange={(updater) => {
                 setProfileData(updater);
+                setDobError(null);
                 markDirty('profile');
               }}
               onSave={saveProfile}

@@ -760,8 +760,6 @@
     "option_volunteering_burnout_detection_label": "Détection d'épuisement professionnel",
     "option_volunteering_burnout_detection_desc": "Activer la notation des risques d'épuisement professionnel et les recommandations",
     "option_category_wellbeing_safety": "Bien-être et sécurité",
-    "option_volunteering_guardian_consent_required_label": "Consentement du tuteur requis",
-    "option_volunteering_guardian_consent_required_desc": "Exiger le consentement du tuteur pour les bénévoles mineurs",
     "option_volunteering_enable_qr_checkin_label": "Enregistrement par code QR",
     "option_volunteering_enable_qr_checkin_desc": "Activer l'enregistrement/départ par code QR pour les équipes",
     "option_volunteering_enable_recurring_shifts_label": "Changements récurrents",

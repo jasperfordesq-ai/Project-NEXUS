@@ -214,11 +214,6 @@ const startupImportBudgets = [
     message: 'VolunteeringPage.tsx must lazy-load signed-in/tab-specific volunteering modules so the public opportunities route stays light.',
   },
   {
-    file: 'src/pages/volunteering/VolunteeringPage.tsx',
-    pattern: /^import\s+(?!type\b).*from ['"]@\/components\/volunteering\/GuardianConsentModal['"]/m,
-    message: 'VolunteeringPage.tsx must lazy-load GuardianConsentModal only after guardian consent is actually requested.',
-  },
-  {
     file: 'src/pages/auth/ForgotPasswordPage.tsx',
     pattern: /from ['"]@\/components\/ui['"]/,
     message: 'ForgotPasswordPage.tsx must not import the full @/components/ui barrel on the auth startup path.',

@@ -496,6 +496,43 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     });
   });
 
+  // Adults-only decision 2026-09-25: a passkey sign-in refused because the
+  // account is under 18 is explained, not reported as a passkey failure.
+  it('explains an adults-only refusal of a passkey sign-in in the server words', async () => {
+    mockLoginWithBiometric.mockResolvedValue({
+      success: false,
+      error: 'Server: adults only.',
+      errorCode: 'ACCOUNT_UNDER_MINIMUM_AGE',
+    });
+    const user = userEvent.setup();
+
+    render(<LoginPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Sign in with a passkey')).toBeDefined();
+    });
+    await user.click(screen.getByText('Sign in with a passkey'));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Server: adults only.');
+    });
+    expect(mockToast.error).not.toHaveBeenCalledWith(expect.stringMatching(/passkey/i));
+  });
+
+  // A member whose session was ended for being under 18 is sent here with the
+  // explanation already in AuthContext. Arriving must not wipe it: only typing
+  // into the form clears a previous error.
+  it('keeps the explanation a member arrives with until they change the form', async () => {
+    authOverrides = { error: 'Server: adults only.' };
+
+    render(<LoginPage />);
+
+    expect(await screen.findByText('Server: adults only.')).toBeInTheDocument();
+    expect(mockClearError).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'someone@example.com' } });
+    await waitFor(() => expect(mockClearError).toHaveBeenCalled());
+  });
+
   // ─── 8. Successful passkey login navigates to dashboard ────────────────────
   it('navigates to dashboard on successful passkey login', async () => {
     mockLoginWithBiometric.mockResolvedValue({ success: true });

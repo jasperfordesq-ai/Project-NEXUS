@@ -27,6 +27,7 @@ import {
 import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, SESSION_REPLACED_EVENT, type SessionExpiredDetail, type SessionReplacedDetail } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import i18n from '@/i18n';
+import { ACCOUNT_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { loginResponseSchema, userSchema } from '@/lib/api-schemas';
 import { queueSentryAuthEvent, queueSentryUser } from '@/lib/telemetryQueue';
@@ -156,6 +157,17 @@ function isInvalidSessionCode(code: string | undefined): boolean {
   return Boolean(code && INVALID_SESSION_CODES.has(code));
 }
 
+/**
+ * Adults-only decision 2026-09-25: an account whose recorded date of birth is
+ * under 18 is refused sign-in and every request. The member is told why —
+ * in the server's own translated words when it sent them, otherwise ours.
+ */
+function minimumAgeRefusalMessage(errors?: { code?: string; message?: string }[], serverMessage?: string): string {
+  return serverMessageFor(errors, ACCOUNT_UNDER_MINIMUM_AGE)
+    ?? (serverMessage && serverMessage.trim() !== '' ? serverMessage : undefined)
+    ?? i18n.t('auth:login.under_minimum_age');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider
 // ─────────────────────────────────────────────────────────────────────────────
@@ -255,6 +267,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           twoFactorToken: null,
           twoFactorMethods: [],
         });
+      } else if (response.code === ACCOUNT_UNDER_MINIMUM_AGE) {
+        // The account is under the minimum age. The API client has already
+        // ended the session; say why instead of silently returning to idle.
+        tokenManager.clearSession(sessionGenerationAtStart);
+        setTelemetryUser(null);
+        setState({
+          user: null,
+          status: 'idle',
+          error: minimumAgeRefusalMessage(response.errors),
+          twoFactorToken: null,
+          twoFactorMethods: [],
+        });
       } else if (isInvalidSessionCode(response.code)) {
         // Only an explicit authentication-invalid response may destroy a
         // persisted session. The API client resolves transport failures rather
@@ -335,6 +359,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       tokenManager.getSessionGeneration() !== expectedGeneration
       || profileRes.code === 'AUTH_CONTEXT_CHANGED'
       || profileRes.code === 'TENANT_CONTEXT_CHANGED'
+      // The session was ended for being under the minimum age; the
+      // SESSION_EXPIRED handler has already explained it.
+      || profileRes.code === ACCOUNT_UNDER_MINIMUM_AGE
     ) return null;
     return profileRes?.success && profileRes.data ? profileRes.data : fallback;
   }, []);
@@ -354,7 +381,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     if (!response.success) {
-      const loginError = i18n.t('auth:login.failed');
+      const loginError = response.code === ACCOUNT_UNDER_MINIMUM_AGE
+        ? minimumAgeRefusalMessage(response.errors)
+        : i18n.t('auth:login.failed');
       captureTelemetryAuthEvent('failed_login', undefined, {
         error: response.error,
         code: response.code,
@@ -640,6 +669,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (tokenManager.getSessionGeneration() !== sessionGenerationAtStart) return false;
 
     if (!response.success) {
+      if (response.code === ACCOUNT_UNDER_MINIMUM_AGE) {
+        // The second factor was right, but the account cannot sign in at all.
+        setState({
+          user: null,
+          status: 'idle',
+          error: minimumAgeRefusalMessage(response.errors),
+          twoFactorToken: null,
+          twoFactorMethods: [],
+        });
+        return false;
+      }
       // Check if we need to restart login
       if (response.code === 'AUTH_2FA_TOKEN_EXPIRED' || response.code === 'AUTH_2FA_MAX_ATTEMPTS') {
         setState({
@@ -918,6 +958,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // That deserves its own words: "your session has expired" sends the member
       // hunting for a fault that is not there.
       const reason = detail?.reason;
+      if (reason === 'under_minimum_age') {
+        // Adults-only decision 2026-09-25. Always explained, even on a cold
+        // start: this member cannot simply sign in again, so silence would
+        // leave them retrying a sign-in that can never succeed.
+        setState({
+          user: null,
+          status: 'idle',
+          error: minimumAgeRefusalMessage(undefined, detail?.message),
+          twoFactorToken: null,
+          twoFactorMethods: [],
+        });
+        return;
+      }
       // Only set error message if user had an active session — stale tokens
       // on first visit should silently clear without showing "session expired"
       if (wasAuthenticated.current) {

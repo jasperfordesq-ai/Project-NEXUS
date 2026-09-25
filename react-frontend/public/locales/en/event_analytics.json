@@ -56,8 +56,7 @@
       "ticket_units": "Confirmed ticket units",
       "ticket_credit_value": "Confirmed ticket credit value",
       "completed_credit_claims": "Completed credit claims",
-      "failed_credit_claims": "Failed credit claims",
-      "guardian_consents": "Guardian consents"
+      "failed_credit_claims": "Failed credit claims"
     }
   }
 }

@@ -761,8 +761,6 @@
     "option_volunteering_burnout_detection_label": "كشف الإرهاق",
     "option_volunteering_burnout_detection_desc": "تمكين تسجيل مخاطر الإرهاق والتوصيات",
     "option_category_wellbeing_safety": "الرفاهية والسلامة",
-    "option_volunteering_guardian_consent_required_label": "موافقة الوصي مطلوبة",
-    "option_volunteering_guardian_consent_required_desc": "طلب موافقة ولي الأمر للمتطوعين القاصرين",
     "option_volunteering_enable_qr_checkin_label": "تسجيل الوصول إلى رمز الاستجابة السريعة",
     "option_volunteering_enable_qr_checkin_desc": "تمكين تسجيل الدخول/الخروج برمز الاستجابة السريعة للمناوبات",
     "option_volunteering_enable_recurring_shifts_label": "التحولات المتكررة",

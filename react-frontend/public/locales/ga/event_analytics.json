@@ -56,8 +56,7 @@
       "ticket_units": "Aonaid ticéad deimhnithe",
       "ticket_credit_value": "Luach creidmheas ticéad deimhnithe",
       "completed_credit_claims": "Éilimh chreidmheasa comhlánaithe",
-      "failed_credit_claims": "Éilimh chreidmheasa theipthe",
-      "guardian_consents": "Aontaíonn caomhnóir"
+      "failed_credit_claims": "Éilimh chreidmheasa theipthe"
     }
   }
 }

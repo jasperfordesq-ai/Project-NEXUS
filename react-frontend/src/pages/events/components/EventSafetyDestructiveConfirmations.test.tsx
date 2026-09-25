@@ -45,8 +45,8 @@ function safetyFixture(reviewParticipation = false): EventSafety {
       version: {
         number: 2,
         minimum_age: null,
-        guardian_consent_required: true,
-        minor_age_threshold: 18,
+        guardian_consent_required: false,
+        minor_age_threshold: null,
         code_of_conduct: {
           required: true,
           text: 'Treat everyone with respect.',

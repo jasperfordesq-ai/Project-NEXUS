@@ -762,8 +762,6 @@
     "option_volunteering_burnout_detection_label": "バーンアウトの検出",
     "option_volunteering_burnout_detection_desc": "燃え尽き症候群のリスクスコアリングと推奨事項を有効にする",
     "option_category_wellbeing_safety": "健康と安全",
-    "option_volunteering_guardian_consent_required_label": "保護者の同意が必要です",
-    "option_volunteering_guardian_consent_required_desc": "未成年のボランティアには保護者の同意が必要です",
     "option_volunteering_enable_qr_checkin_label": "QRコードチェックイン",
     "option_volunteering_enable_qr_checkin_desc": "シフトの QR コード チェックイン/チェックアウトを有効にする",
     "option_volunteering_enable_recurring_shifts_label": "定期的なシフト",

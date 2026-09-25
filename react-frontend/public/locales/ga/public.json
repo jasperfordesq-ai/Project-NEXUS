@@ -258,11 +258,6 @@
             "title": "Cnuasaigh agus Míreanna Sábháilte",
             "description": "Sábháil liostálacha, baill agus postálacha, agus grúpáil iad i gcnuasaigh is féidir leat a roinnt le baill eile."
           },
-          "guardian_consent": {
-            "title": "Toiliú Caomhnóra",
-            "description": "Ceadú caomhnóra do dhuine óg atá ag obair go deonach nó ag freastal ar imeacht: naisc toilithe aon-úsáide, sonraí caomhnóra criptithe, agus stair toilithe nach féidir ach cur léi, riamh a chur in eagar.",
-            "note": "Ardán do dhaoine fásta is é Project NEXUS — ní mór dearbhú go bhfuil tú 18 nó níos sine chun clárú. Tá sé seo do phobail a reáchtálann gníomhaíochtaí faoi mhaoirseacht le daoine óga, áit a gcuireann comhordaitheoir an cuntas ar bun. Tá sé múchta mura gcuireann pobal ar siúl é."
-          },
           "member_premium": {
             "title": "Síntiúis agus Tacaíocht",
             "description": "Is féidir le baill síntiús aonuaire a thabhairt nó síntiús rialta a shocrú chun tacú leis an bpobal a reáchtálann a mbanc ama, agus is féidir leo é a bhainistiú nó a stopadh am ar bith. Tugtar aitheantas dá lucht tacaíochta — ní leibhéal íoctha é seo, agus ní chuirtear aon chuid den ardán faoi ghlas taobh thiar de bhalla íocaíochta."

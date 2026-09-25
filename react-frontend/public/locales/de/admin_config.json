@@ -562,8 +562,6 @@
     "option_volunteering_burnout_detection_label": "Burnout-Erkennung",
     "option_volunteering_burnout_detection_desc": "Aktivieren Sie die Bewertung und Empfehlungen des Burnout-Risikos",
     "option_category_wellbeing_safety": "Wohlbefinden und Sicherheit",
-    "option_volunteering_guardian_consent_required_label": "Zustimmung des Erziehungsberechtigten erforderlich",
-    "option_volunteering_guardian_consent_required_desc": "Für minderjährige Freiwillige ist die Zustimmung des Erziehungsberechtigten erforderlich",
     "option_volunteering_enable_qr_checkin_label": "QR-Code-Check-in",
     "option_volunteering_enable_qr_checkin_desc": "Aktivieren Sie den QR-Code-Check-in/out für Schichten",
     "option_volunteering_enable_recurring_shifts_label": "Wiederkehrende Schichten",

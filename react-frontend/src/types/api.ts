@@ -1505,7 +1505,6 @@ export interface VolunteeringConfig {
   'volunteering.expense_max_amount': number;
   // Wellbeing & Safety
   'volunteering.burnout_detection': boolean;
-  'volunteering.guardian_consent_required': boolean;
   // Features
   'volunteering.enable_qr_checkin': boolean;
   'volunteering.enable_recurring_shifts': boolean;

@@ -565,8 +565,6 @@
     "option_volunteering_burnout_detection_label": "Detección de agotamiento",
     "option_volunteering_burnout_detection_desc": "Habilite la puntuación y las recomendaciones del riesgo de agotamiento",
     "option_category_wellbeing_safety": "Bienestar y Seguridad",
-    "option_volunteering_guardian_consent_required_label": "Se requiere el consentimiento del tutor",
-    "option_volunteering_guardian_consent_required_desc": "Requerir el consentimiento del tutor para los voluntarios menores",
     "option_volunteering_enable_qr_checkin_label": "Registro con código QR",
     "option_volunteering_enable_qr_checkin_desc": "Habilitar entrada/salida con código QR para turnos",
     "option_volunteering_enable_recurring_shifts_label": "Turnos recurrentes",

@@ -565,8 +565,6 @@
     "option_volunteering_burnout_detection_label": "Burn-out detectie",
     "option_volunteering_burnout_detection_desc": "Schakel burn-outrisicoscores en -aanbevelingen in",
     "option_category_wellbeing_safety": "Welzijn & Veiligheid",
-    "option_volunteering_guardian_consent_required_label": "Toestemming van voogd vereist",
-    "option_volunteering_guardian_consent_required_desc": "Toestemming van de voogd vereisen voor minderjarige vrijwilligers",
     "option_volunteering_enable_qr_checkin_label": "QR-code inchecken",
     "option_volunteering_enable_qr_checkin_desc": "Schakel in- en uitchecken met QR-code in voor ploegendiensten",
     "option_volunteering_enable_recurring_shifts_label": "Terugkerende verschuivingen",

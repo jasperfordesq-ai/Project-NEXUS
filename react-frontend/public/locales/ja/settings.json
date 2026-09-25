@@ -243,7 +243,8 @@
     "identity_verified_lock": "本人確認が完了しているため、お名前はロックされています。",
     "phone_invalid": "電話番号は国際形式で入力してください（例: +1 555 123 4567）",
     "date_of_birth": "生年月日",
-    "dob_description": "本人確認に必要です"
+    "dob_description": "本人確認に必要です",
+    "dob_under_minimum_age": "このプラットフォームを利用するには18歳以上である必要があります。入力した生年月日をご確認ください。"
   },
   "notification_prefs": {
     "new_messages": "新しいメッセージ",

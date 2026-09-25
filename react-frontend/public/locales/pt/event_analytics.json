@@ -56,8 +56,7 @@
       "ticket_units": "Unidades de ingressos confirmadas",
       "ticket_credit_value": "Valor de crédito do bilhete confirmado",
       "completed_credit_claims": "Reivindicações de crédito concluídas",
-      "failed_credit_claims": "Reivindicações de crédito falhadas",
-      "guardian_consents": "Consentimentos do tutor"
+      "failed_credit_claims": "Reivindicações de crédito falhadas"
     }
   }
 }

@@ -565,8 +565,6 @@
     "option_volunteering_burnout_detection_label": "Rilevamento del burnout",
     "option_volunteering_burnout_detection_desc": "Abilita punteggio e raccomandazioni sul rischio di burnout",
     "option_category_wellbeing_safety": "Benessere e Sicurezza",
-    "option_volunteering_guardian_consent_required_label": "È richiesto il consenso del tutore",
-    "option_volunteering_guardian_consent_required_desc": "Richiedere il consenso del tutore per i volontari minorenni",
     "option_volunteering_enable_qr_checkin_label": "Check-in tramite codice QR",
     "option_volunteering_enable_qr_checkin_desc": "Abilita il check-in/out tramite codice QR per i turni",
     "option_volunteering_enable_recurring_shifts_label": "Turni ricorrenti",

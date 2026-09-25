@@ -200,10 +200,16 @@ describe('App route feature gates', () => {
     expect(protectedRoutesSource).toContain('path="marketplace/my-offers"');
   });
 
-  it('keeps only the token verification route in the shared public feature registry', () => {
-    expect(publicRoutesSource).toContain('renderSharedPublicFeatureRoutes()');
+  it('keeps the retired guardian-consent routes out of both registries (adults-only decision 2026-09-25)', () => {
+    for (const source of [appSource, publicRoutesSource]) {
+      expect(source).not.toContain('guardian-consent');
+      expect(source).not.toContain('renderSharedPublicFeatureRoutes');
+    }
+    expect(tenantShellSource).not.toContain('guardian-consent');
+  });
+
+  it('keeps authenticated-only surfaces out of the public route registry patterns', () => {
     expect(publicRoutesSource).not.toContain('@/pages/explore/ExplorePage');
-    expect(tenantShellSource).toContain('^volunteering\\/guardian-consent\\/verify\\/[^/]+$');
     expect(tenantShellSource).not.toContain('timebanking-guide|explore|partner');
     expect(tenantShellSource).not.toContain('^marketplace$');
   });

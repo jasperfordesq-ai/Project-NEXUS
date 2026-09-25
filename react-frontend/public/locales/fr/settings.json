@@ -243,7 +243,8 @@
     "identity_verified_lock": "Votre nom est verrouillé car votre identité a été vérifiée.",
     "phone_invalid": "Le téléphone doit être au format international (p. ex. +1 555 123 4567)",
     "date_of_birth": "Date de naissance",
-    "dob_description": "Requise pour la vérification d'identité"
+    "dob_description": "Requise pour la vérification d'identité",
+    "dob_under_minimum_age": "Vous devez avoir 18 ans ou plus pour utiliser cette plateforme. Veuillez vérifier la date de naissance saisie."
   },
   "notification_prefs": {
     "new_messages": "Nouveaux messages",

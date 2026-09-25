@@ -8,6 +8,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ProfileTab } from './ProfileTab';
 import type { ProfileFormData } from './ProfileTab';
 import { AVATAR_UPLOAD_ACCEPT } from '@/lib/avatarUpload';
+import { latestAdultDateOfBirth } from '@/lib/minimum-age';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -83,6 +84,22 @@ const defaultProps = {
 describe('ProfileTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  // Adults-only decision 2026-09-25: the picker cannot offer a date of birth
+  // that would make the member under 18, and a refusal from the server is shown
+  // against the field itself.
+  it('limits the date of birth to adults', () => {
+    render(<ProfileTab {...defaultProps} />);
+    const dob = screen.getByLabelText('profile.date_of_birth') as HTMLInputElement;
+    expect(dob.max).toBe(latestAdultDateOfBirth());
+  });
+
+  it('shows a date-of-birth refusal against the field', () => {
+    render(<ProfileTab {...defaultProps} dobError="Server: must be 18." />);
+    const dob = screen.getByLabelText('profile.date_of_birth');
+    expect(dob).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('Server: must be 18.')).toBeInTheDocument();
   });
 
   it('renders profile section title', () => {

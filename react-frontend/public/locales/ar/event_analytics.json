@@ -56,8 +56,7 @@
       "ticket_units": "وحدات التذاكر المؤكدة",
       "ticket_credit_value": "تأكيد قيمة رصيد التذكرة",
       "completed_credit_claims": "مطالبات الائتمان المكتملة",
-      "failed_credit_claims": "مطالبات الائتمان الفاشلة",
-      "guardian_consents": "يوافق الوصي"
+      "failed_credit_claims": "مطالبات الائتمان الفاشلة"
     }
   }
 }

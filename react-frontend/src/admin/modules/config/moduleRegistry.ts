@@ -407,7 +407,6 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       { key: 'volunteering.expense_max_amount', type: 'number', defaultValue: 500, category: 'expenses', min: 1, max: 10000 },
       // Wellbeing & Safety
       { key: 'volunteering.burnout_detection', type: 'boolean', defaultValue: true, category: 'wellbeing_safety' },
-      { key: 'volunteering.guardian_consent_required', type: 'boolean', defaultValue: false, category: 'wellbeing_safety' },
       // Features
       { key: 'volunteering.enable_qr_checkin', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'volunteering.enable_recurring_shifts', type: 'boolean', defaultValue: true, category: 'features' },

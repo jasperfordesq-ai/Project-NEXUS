@@ -13,8 +13,6 @@
       "confirm_archive": "Arquivar agora",
       "acknowledge": "Reconheça o código",
       "withdraw_acknowledgement": "Retirar reconhecimento",
-      "request_guardian_consent": "Solicitar consentimento do responsável",
-      "withdraw_guardian_consent": "Retirar solicitação de consentimento",
       "change_member": "Alterar membro",
       "save_review": "Salvar decisão de revisão",
       "cancel_edit": "Cancelar edição",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Retirar a aceitação do código de conduta?",
       "withdraw_code_body": "Isto pode impedir a sua participação até aceitar novamente a versão atual.",
-      "withdraw_guardian_title": "Retirar o pedido de consentimento do responsável?",
-      "withdraw_guardian_body": "O pedido atual ficará inválido. Poderá ter de enviar um novo antes de participar.",
       "withdraw_review_title": "Retirar esta decisão de participação?",
       "withdraw_review_body": "Isto termina a decisão ativa de {{name}}, preservando o respetivo histórico de auditoria."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Ação é necessária",
       "success": {
         "acknowledge": "Código de conduta reconhecido.",
-        "withdraw_code": "Reconhecimento do código retirado.",
-        "request_guardian": "Solicitação de consentimento do responsável enviada.",
-        "withdraw_guardian": "Pedido de consentimento do responsável retirado."
+        "withdraw_code": "Reconhecimento do código retirado."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "As alterações de rascunho são privadas até serem publicadas. A publicação cria uma versão imutável para correspondência de evidências.",
       "minimum_age": "Idade mínima",
       "minimum_age_hint": "Deixar em branco quando o evento não tiver idade mínima.",
-      "guardian_required": "Exigir consentimento do tutor para menores",
-      "guardian_required_hint": "O consentimento está vinculado à versão exata do requisito publicado e à data do evento.",
-      "minor_threshold": "Limite de idade menor",
-      "minor_threshold_hint": "Membros abaixo dessa idade no evento precisam de consentimento.",
       "code_required": "Exigir reconhecimento do código de conduta",
       "code_required_hint": "Os participantes devem reconhecer o texto exato publicado antes de participar.",
       "code_version": "Versão do texto do código",
@@ -135,28 +125,6 @@
         "acknowledged": "Reconhecido"
       }
     },
-    "guardian": {
-      "title": "Consentimento do tutor",
-      "description": "O responsável recebe um link privado e por tempo limitado. Sua identidade e token de consentimento nunca são mostrados na lista do evento.",
-      "name_label": "Nome do guardião",
-      "email_label": "E-mail do responsável",
-      "relationship_label": "Relacionamento com o participante",
-      "privacy_notice": "O endereço é criptografado para entrega e removido do envelope de entrega após processamento.",
-      "relationships": {
-        "parent": "Pai/Mãe",
-        "guardian": "Responsável",
-        "legal_guardian": "Responsável legal",
-        "carer": "Cuidador"
-      },
-      "status": {
-        "not_required": "Não obrigatório",
-        "required": "É necessário consentimento",
-        "pending": "Aguardando guardião",
-        "active": "Consentimento concedido",
-        "withdrawn": "Retirada",
-        "expired": "Expirado"
-      }
-    },
     "decisions": {
       "deny": "Negar participação",
       "remove": "Remover do evento"
@@ -195,21 +163,6 @@
       "version": "Versão de decisão",
       "audit_history": "Histórico de auditoria (entradas {{count}})",
       "pagination": "Páginas de revisão de participação"
-    },
-    "guardian_grant": {
-      "page_title": "Consentimento do tutor",
-      "title": "Revise o consentimento do responsável",
-      "description": "Confirme o endereço de e-mail que recebeu este link privado e dê consentimento para que o participante participe de acordo com os requisitos de segurança publicados no evento.",
-      "email_label": "Endereço de e-mail do responsável",
-      "email_hint": "Insira o mesmo endereço que recebeu a solicitação de consentimento.",
-      "confirm_label": "Eu sou o pai, responsável ou responsável nomeado e autorizo ​​a participação deste participante.",
-      "privacy_notice": "O link é limitado por tempo e pode ser usado apenas para este evento e versão de requisito. A resposta não revela se um endereço de e-mail está registrado.",
-      "submit": "Dê consentimento",
-      "success_title": "Consentimento registrado",
-      "success_description": "O participante agora pode continuar assim que todos os outros requisitos do evento forem concluídos.",
-      "invalid_title": "Este link de consentimento não pode ser usado",
-      "invalid_description": "O link ou endereço de e-mail pode estar incorreto, expirado ou já preenchido. Peça ao participante para enviar uma nova solicitação.",
-      "browse_events": "Navegar por eventos"
     }
   },
   "govuk": {

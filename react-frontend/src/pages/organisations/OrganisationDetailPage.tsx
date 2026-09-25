@@ -50,7 +50,6 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
 import { extractCollectionItems } from '@/pages/volunteering/extractCollectionItems';
-import GuardianConsentModal from '@/components/volunteering/GuardianConsentModal';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -118,7 +117,6 @@ export function OrganisationDetailPage() {
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [applyMessage, setApplyMessage] = useState('');
   const [isApplying, setIsApplying] = useState(false);
-  const guardianModal = useDisclosure();
 
   // Review modal
   const reviewModal = useDisclosure();
@@ -219,9 +217,6 @@ export function OrganisationDetailPage() {
         setSelectedOpp(null);
         toast.success(t('applied_success', { ns: 'volunteering' }));
         loadData();
-      } else if (response.code === 'GUARDIAN_CONSENT_REQUIRED') {
-        applyModal.onClose();
-        guardianModal.onOpen();
       } else {
         toast.error(response.error || t('apply_error', { ns: 'volunteering' }));
       }
@@ -708,13 +703,6 @@ export function OrganisationDetailPage() {
         </ModalContent>
       </Modal>
       )}
-
-      <GuardianConsentModal
-        isOpen={guardianModal.isOpen}
-        onOpenChange={guardianModal.onOpenChange}
-        onClose={guardianModal.onClose}
-        opportunityId={selectedOpp?.id}
-      />
     </div>
   );
 }

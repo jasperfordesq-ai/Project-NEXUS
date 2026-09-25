@@ -258,11 +258,6 @@
             "title": "Collecties en opgeslagen items",
             "description": "Bewaar vermeldingen, leden en berichten en groepeer ze in collecties die u met andere leden kunt delen."
           },
-          "guardian_consent": {
-            "title": "Toestemming van de voogd",
-            "description": "Toestemming van de ouder of voogd voor een minderjarige vrijwilliger of deelnemer aan een evenement: eenmalige toestemmingslinks, versleutelde gegevens van de voogd en een toestemmingsgeschiedenis waaraan alleen kan worden toegevoegd, nooit gewijzigd.",
-            "note": "Project NEXUS is voor volwassenen — bij het aanmelden moet je bevestigen dat je 18 jaar of ouder bent. Dit is bedoeld voor gemeenschappen die begeleide activiteiten met jongeren organiseren, waarbij een coördinator het account aanmaakt. Het staat uit, tenzij een gemeenschap het aanzet."
-          },
           "member_premium": {
             "title": "Donaties en ondersteuning",
             "description": "Leden kunnen een eenmalige donatie geven, of een reguliere donatie opzetten, om de gemeenschap die hun tijdbank beheert te ondersteunen, en deze op elk gewenst moment zelf beheren of stopzetten. Supporters worden hiervoor erkend; dit is geen betaald niveau en geen enkel onderdeel van het platform wordt ooit achter een betaling geplaatst."

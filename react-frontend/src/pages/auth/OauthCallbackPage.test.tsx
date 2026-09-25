@@ -478,6 +478,45 @@ describe('OauthCallbackPage', () => {
     expect(matches.length).toBeGreaterThanOrEqual(2);
   });
 
+  // Adults-only decision 2026-09-25: social sign-in for an account under 18 is
+  // refused. The member is told why, in our words when the refusal arrives on
+  // the link (F-196: link text is never rendered) and in the server's own
+  // translated words when it arrives from the exchange.
+  it('explains an adults-only refusal redirected with ?error=ACCOUNT_UNDER_MINIMUM_AGE', () => {
+    vi.stubGlobal('fetch', vi.fn());
+    mockSearchParams.mockReturnValue(
+      makeParams('error=ACCOUNT_UNDER_MINIMUM_AGE&message=Call+0800+123+456'),
+    );
+
+    render(<OauthCallbackPage />);
+
+    expect(screen.getByText('login.under_minimum_age')).toBeInTheDocument();
+    expect(screen.queryByText(/0800/)).not.toBeInTheDocument();
+  });
+
+  it('shows the server explanation when the exchange refuses an account under the minimum age', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'Server: adults only.' }],
+          account_under_minimum_age: true,
+        }),
+      } as unknown as Response),
+    );
+    mockSearchParams.mockReturnValue(makeBoundCodeParams('minor-code'));
+
+    render(<OauthCallbackPage />);
+
+    expect(await screen.findByText('Server: adults only.')).toBeInTheDocument();
+    expect(mockAdoptSession).not.toHaveBeenCalled();
+    expect(capturedHref).toBe('');
+  });
+
   it('does not call fetch when ?error= is present', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);

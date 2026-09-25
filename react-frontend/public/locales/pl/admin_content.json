@@ -762,8 +762,6 @@
     "option_volunteering_burnout_detection_label": "Wykrywanie wypalenia zawodowego",
     "option_volunteering_burnout_detection_desc": "Włącz punktację i zalecenia dotyczące ryzyka wypalenia zawodowego",
     "option_category_wellbeing_safety": "Dobre samopoczucie i bezpieczeństwo",
-    "option_volunteering_guardian_consent_required_label": "Wymagana zgoda opiekuna",
-    "option_volunteering_guardian_consent_required_desc": "Wymagaj zgody opiekuna w przypadku nieletnich wolontariuszy",
     "option_volunteering_enable_qr_checkin_label": "Odprawa za pomocą kodu QR",
     "option_volunteering_enable_qr_checkin_desc": "Włącz rejestrację/wymeldowanie za pomocą kodu QR dla zmian",
     "option_volunteering_enable_recurring_shifts_label": "Powtarzające się zmiany",

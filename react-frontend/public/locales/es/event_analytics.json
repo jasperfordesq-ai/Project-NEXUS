@@ -56,8 +56,7 @@
       "ticket_units": "Unidades de ticket confirmadas",
       "ticket_credit_value": "Valor del crédito del billete confirmado",
       "completed_credit_claims": "Reclamaciones de crédito completadas",
-      "failed_credit_claims": "Reclamaciones de crédito fallidas",
-      "guardian_consents": "El tutor da su consentimiento"
+      "failed_credit_claims": "Reclamaciones de crédito fallidas"
     }
   }
 }

@@ -10,37 +10,24 @@ import Check from 'lucide-react/icons/check';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Undo2 from 'lucide-react/icons/undo-2';
-import UserRoundCheck from 'lucide-react/icons/user-round-check';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Chip } from '@/components/ui/Chip';
-import { Input } from '@/components/ui/Input';
-import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/contexts/ToastContext';
 import {
   eventSafetyApi,
   type EventSafety,
-  type GuardianConsentRequest,
 } from '@/lib/event-safety-api';
 import { logError } from '@/lib/logger';
-
-type RelationshipCode = GuardianConsentRequest['relationship_code'];
 
 interface EventSafetyAttendeeCardProps {
   eventId: number;
   onChanged?: (safety: EventSafety) => void;
 }
-
-const RELATIONSHIPS: readonly RelationshipCode[] = [
-  'parent',
-  'guardian',
-  'legal_guardian',
-  'carer',
-];
 
 function idempotencyKey(prefix: string): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
@@ -51,7 +38,7 @@ function idempotencyKey(prefix: string): string {
 }
 
 export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAttendeeCardProps) {
-  const { t, i18n } = useTranslation('event_safety');
+  const { t } = useTranslation('event_safety');
   const toast = useToast();
   const confirm = useConfirm();
   const [safety, setSafety] = useState<EventSafety | null>(null);
@@ -59,9 +46,6 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
   const [loadError, setLoadError] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [hasReadCode, setHasReadCode] = useState(false);
-  const [guardianName, setGuardianName] = useState('');
-  const [guardianEmail, setGuardianEmail] = useState('');
-  const [relationship, setRelationship] = useState<RelationshipCode>('parent');
 
   const apply = useCallback((next: EventSafety) => {
     setSafety(next);
@@ -140,42 +124,6 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
     ));
   };
 
-  const requestGuardianConsent = async () => {
-    if (!guardianName.trim() || !guardianEmail.trim()) return;
-    const completed = await complete('request_guardian', () => eventSafetyApi.requestGuardianConsent(
-      eventId,
-      {
-        guardian_name: guardianName.trim(),
-        guardian_email: guardianEmail.trim(),
-        relationship_code: relationship,
-        preferred_language: i18n.resolvedLanguage ?? i18n.language ?? 'en',
-      },
-      idempotencyKey('event-safety-guardian'),
-    ));
-    if (completed) {
-      setGuardianName('');
-      setGuardianEmail('');
-    }
-  };
-
-  const withdrawGuardianConsent = async () => {
-    const consentId = safety?.evidence.guardian_consent.consent_id;
-    if (!consentId) return;
-    const accepted = await confirm({
-      title: t('safety.confirmations.withdraw_guardian_title'),
-      body: t('safety.confirmations.withdraw_guardian_body'),
-      confirmLabel: t('safety.actions.withdraw_guardian_consent'),
-      cancelLabel: t('safety.actions.cancel'),
-      status: 'danger',
-    });
-    if (!accepted) return;
-    await complete('withdraw_guardian', () => eventSafetyApi.withdrawGuardianConsent(
-      eventId,
-      consentId,
-      idempotencyKey('event-safety-guardian-withdraw'),
-    ));
-  };
-
   if (isLoading) {
     return (
       <Card className="border border-theme-default bg-theme-surface">
@@ -213,7 +161,6 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
 
   const code = safety.requirements?.version.code_of_conduct;
   const codeEvidence = safety.evidence.code_of_conduct;
-  const guardianEvidence = safety.evidence.guardian_consent;
   const isBlocked = safety.eligibility.status === 'deny' || safety.eligibility.status === 'unavailable';
 
   return (
@@ -293,85 +240,6 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
                 onPress={() => void withdrawCode()}
               >
                 {t('safety.actions.withdraw_acknowledgement')}
-              </Button>
-            )}
-          </section>
-        )}
-
-        {guardianEvidence.status !== 'not_required' && (
-          <section aria-labelledby={`event-safety-${eventId}-guardian`} className="space-y-4 border-t border-theme-default pt-5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 id={`event-safety-${eventId}-guardian`} className="flex items-center gap-2 font-semibold text-theme-primary">
-                <UserRoundCheck className="h-5 w-5 text-accent" aria-hidden="true" />
-                {t('safety.guardian.title')}
-              </h3>
-              <Chip color={guardianEvidence.status === 'active' ? 'success' : 'warning'} size="sm" variant="flat">
-                {t(`safety.guardian.status.${guardianEvidence.status}`)}
-              </Chip>
-            </div>
-            <p className="text-sm text-theme-muted">{t('safety.guardian.description')}</p>
-
-            {safety.permissions.request_guardian_consent && (
-              <form
-                className="grid gap-4 sm:grid-cols-2"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void requestGuardianConsent();
-                }}
-              >
-                <Input
-                  label={t('safety.guardian.name_label')}
-                  value={guardianName}
-                  maxLength={191}
-                  isRequired
-                  onValueChange={setGuardianName}
-                />
-                <Input
-                  type="email"
-                  label={t('safety.guardian.email_label')}
-                  value={guardianEmail}
-                  maxLength={254}
-                  isRequired
-                  onValueChange={setGuardianEmail}
-                />
-                <Select
-                  label={t('safety.guardian.relationship_label')}
-                  selectedKeys={new Set([relationship])}
-                  disallowEmptySelection
-                  onSelectionChange={(keys) => {
-                    const selected = String(Array.from(keys as Iterable<string | number>)[0] ?? '');
-                    if (RELATIONSHIPS.includes(selected as RelationshipCode)) {
-                      setRelationship(selected as RelationshipCode);
-                    }
-                  }}
-                >
-                  {RELATIONSHIPS.map((value) => (
-                    <SelectItem key={value} id={value}>{t(`safety.guardian.relationships.${value}`)}</SelectItem>
-                  ))}
-                </Select>
-                <div className="flex items-end sm:col-span-2">
-                  <Button
-                    type="submit"
-                    color="primary"
-                    isDisabled={!guardianName.trim() || !guardianEmail.trim() || pendingAction !== null}
-                    isLoading={pendingAction === 'request_guardian'}
-                  >
-                    {t('safety.actions.request_guardian_consent')}
-                  </Button>
-                </div>
-                <p className="text-xs text-theme-muted sm:col-span-2">{t('safety.guardian.privacy_notice')}</p>
-              </form>
-            )}
-
-            {safety.permissions.withdraw_guardian_consent && (
-              <Button
-                color="danger"
-                variant="flat"
-                isDisabled={pendingAction !== null}
-                isLoading={pendingAction === 'withdraw_guardian'}
-                onPress={() => void withdrawGuardianConsent()}
-              >
-                {t('safety.actions.withdraw_guardian_consent')}
               </Button>
             )}
           </section>

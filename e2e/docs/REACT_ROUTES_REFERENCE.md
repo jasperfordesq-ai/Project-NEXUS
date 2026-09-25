@@ -11,7 +11,6 @@ This guide records how Playwright tests should resolve and exercise React routes
 | Member and public application | [`react-frontend/src/routes/AppRoutes.tsx`](../../react-frontend/src/routes/AppRoutes.tsx) |
 | Authentication entry points | [`react-frontend/src/routes/AuthRoutes.tsx`](../../react-frontend/src/routes/AuthRoutes.tsx) |
 | Public-only startup shell | [`react-frontend/src/routes/PublicAppRoutes.tsx`](../../react-frontend/src/routes/PublicAppRoutes.tsx) |
-| Shared public feature policies | [`react-frontend/src/routes/sharedPublicFeatureRoutes.tsx`](../../react-frontend/src/routes/sharedPublicFeatureRoutes.tsx) |
 | React administration | [`react-frontend/src/admin/routes.tsx`](../../react-frontend/src/admin/routes.tsx) |
 | Broker workspace | [`react-frontend/src/broker/routes.tsx`](../../react-frontend/src/broker/routes.tsx) |
 | Federation partner workspace | [`react-frontend/src/partners/routes.tsx`](../../react-frontend/src/partners/routes.tsx) |
@@ -43,7 +42,7 @@ Use the route registry to confirm the exact gate before adding an assertion. Rep
 | Role shells | `/admin/*`, `/super-admin/*`, `/broker/*` | Enforces the shell's role guard before rendering nested routes. |
 | Tenant-specific content | `/partner`, `/impact-report`, `/strategic-plan` | Available to `hour-timebank`; other tenants are redirected to their About page. |
 
-Do not infer public/protected status from a route name. Public module pages and protected create/manage pages can share a prefix, and route policies may be centralized in `sharedPublicFeatureRoutes.tsx`.
+Do not infer public/protected status from a route name. Public module pages and protected create/manage pages can share a prefix, so check which registry declares the path.
 
 ## Maintained page objects
 

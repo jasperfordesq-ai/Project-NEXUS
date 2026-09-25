@@ -258,11 +258,6 @@
             "title": "Sammlungen und gespeicherte Elemente",
             "description": "Speichern Sie Einträge, Mitglieder und Beiträge und gruppieren Sie sie in Sammlungen, die Sie mit anderen Mitgliedern teilen können."
           },
-          "guardian_consent": {
-            "title": "Einwilligung des Erziehungsberechtigten",
-            "description": "Zustimmung der Erziehungsberechtigten für minderjährige Freiwillige oder Veranstaltungsteilnehmende: Einmal-Zustimmungslinks, verschlüsselte Angaben der Erziehungsberechtigten und ein Zustimmungsverlauf, der nur ergänzt, aber nie bearbeitet werden kann.",
-            "note": "Project NEXUS ist für Erwachsene — bei der Registrierung muss bestätigt werden, dass man 18 Jahre oder älter ist. Dies richtet sich an Gemeinschaften, die betreute Angebote mit jungen Menschen durchführen, bei denen eine Koordinatorin oder ein Koordinator das Konto anlegt. Es ist ausgeschaltet, sofern eine Gemeinschaft es nicht aktiviert."
-          },
           "member_premium": {
             "title": "Spenden & Unterstützung",
             "description": "Mitglieder können eine einmalige Spende tätigen oder eine regelmäßige Spende einrichten, um die Community zu unterstützen, die ihre Zeitbank betreibt, und diese jederzeit selbst verwalten oder stoppen. Unterstützer werden dafür gewürdigt – es handelt sich hierbei nicht um eine kostenpflichtige Stufe, und kein Teil der Plattform wird jemals hinter einer Zahlung zurückgestellt."

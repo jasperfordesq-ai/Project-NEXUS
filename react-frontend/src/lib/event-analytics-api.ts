@@ -99,7 +99,9 @@ export const eventAnalyticsSummarySchema = z.object({
   }).strict(),
   safeguarding: z.object({
     available: z.boolean(),
-    guardian_consents: privacyCountSchema,
+    // Guardian consent is retired (adults-only decision 2026-09-25): the count
+    // is no longer displayed and the server may stop sending it.
+    guardian_consents: privacyCountSchema.optional(),
   }).strict(),
 }).strict();
 

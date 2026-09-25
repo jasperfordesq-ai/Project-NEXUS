@@ -243,7 +243,8 @@
     "identity_verified_lock": "Je naam is vergrendeld omdat je identiteit is geverifieerd.",
     "phone_invalid": "Telefoonnummer moet in internationaal formaat zijn (bijv. +1 555 123 4567)",
     "date_of_birth": "Geboortedatum",
-    "dob_description": "Vereist voor identiteitsverificatie"
+    "dob_description": "Vereist voor identiteitsverificatie",
+    "dob_under_minimum_age": "Je moet 18 jaar of ouder zijn om dit platform te gebruiken. Controleer de geboortedatum die je hebt ingevoerd."
   },
   "notification_prefs": {
     "new_messages": "Nieuwe berichten",

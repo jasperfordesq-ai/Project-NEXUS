@@ -605,6 +605,26 @@ describe('SettingsPage', () => {
     await waitFor(() => expect(webPushMocks.subscribe).toHaveBeenCalled());
   });
 
+  // Adults-only decision 2026-09-25: the server refuses a date of birth under
+  // 18 with 422 DATE_OF_BIRTH_UNDER_MINIMUM_AGE on field date_of_birth. The
+  // reason belongs on that field, not only in a toast that disappears.
+  it('shows a DATE_OF_BIRTH_UNDER_MINIMUM_AGE refusal against the date-of-birth field', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.put).mockResolvedValueOnce({
+      success: false,
+      code: 'DATE_OF_BIRTH_UNDER_MINIMUM_AGE',
+      error: 'Server: must be 18.',
+      errors: [{ code: 'DATE_OF_BIRTH_UNDER_MINIMUM_AGE', message: 'Server: must be 18.', field: 'date_of_birth' }],
+    });
+    render(<SettingsPage />, { wrapper: Wrapper });
+
+    const firstName = screen.getByLabelText('First Name') as HTMLInputElement;
+    await user.type(firstName, 'x');
+    await user.click(screen.getByText('Save Changes'));
+
+    expect(await screen.findByText('Server: must be 18.')).toBeInTheDocument();
+  });
+
   it('saves all notification groups through the atomic endpoint', async () => {
     const user = userEvent.setup();
     render(<SettingsPage />, { wrapper: Wrapper });

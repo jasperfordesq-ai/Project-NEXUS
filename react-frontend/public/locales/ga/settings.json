@@ -243,7 +243,8 @@
     "identity_verified_lock": "Tá d'ainm faoi ghlas ós rud é gur fíoraíodh d'aitheantas.",
     "phone_invalid": "Ní mór don uimhir theileafóin a bheith i bhformáid idirnáisiúnta (m.sh. +1 555 123 4567)",
     "date_of_birth": "Dáta Breithe",
-    "dob_description": "Riachtanach le haghaidh fíoraithe céannachta"
+    "dob_description": "Riachtanach le haghaidh fíoraithe céannachta",
+    "dob_under_minimum_age": "Caithfidh tú a bheith 18 mbliana d'aois nó níos sine chun an t-ardán seo a úsáid. Seiceáil an dáta breithe a chuir tú isteach."
   },
   "notification_prefs": {
     "new_messages": "Teachtaireachtaí Nua",

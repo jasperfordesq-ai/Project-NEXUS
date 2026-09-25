@@ -56,8 +56,7 @@
       "ticket_units": "Potwierdzone jednostki biletowe",
       "ticket_credit_value": "Potwierdzona wartość kredytu na bilet",
       "completed_credit_claims": "Gotowe wierzytelności kredytowe",
-      "failed_credit_claims": "Nieudane roszczenia kredytowe",
-      "guardian_consents": "Opiekun wyraża zgodę"
+      "failed_credit_claims": "Nieudane roszczenia kredytowe"
     }
   }
 }

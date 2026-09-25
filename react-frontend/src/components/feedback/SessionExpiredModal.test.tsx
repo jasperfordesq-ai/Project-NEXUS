@@ -26,6 +26,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act, within } from '@/test/test-utils';
 import { SessionExpiredModal } from './SessionExpiredModal';
 
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router-dom')>();
+  return { ...actual, useNavigate: () => mockNavigate };
+});
+
 vi.mock('@/lib/api', () => ({
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
   api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
@@ -106,5 +112,20 @@ describe('SessionExpiredModal', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Two-factor authentication now required')).toBeInTheDocument();
     expect(within(dialog).getByText(/Your account now requires two-factor authentication/)).toBeInTheDocument();
+  });
+
+  // Adults-only decision 2026-09-25: an account under 18 cannot sign in again,
+  // so offering "Log In" would be a dead end. The member is sent straight to the
+  // sign-in page, where AuthContext shows the explanation.
+  it('sends an under-minimum-age session straight to sign-in instead of offering to log in again', async () => {
+    mockNavigate.mockClear();
+    render(<SessionExpiredModal />);
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('nexus:session_expired', {
+        detail: { reason: 'under_minimum_age', message: 'Server: adults only.' },
+      }));
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('/test/login', { replace: true });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

@@ -434,7 +434,6 @@ describe('TenantShell', () => {
       '/about',
       '/blog',
       '/blog/community-update',
-      '/volunteering/guardian-consent/verify/test-token',
     ])('keeps identity-free route %s in the public registry', async (path) => {
       mockDetectTenantFromUrl.mockReturnValue({ slug: null, source: null });
 

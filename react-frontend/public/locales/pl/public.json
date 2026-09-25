@@ -258,11 +258,6 @@
             "title": "Kolekcje i zapisane elementy",
             "description": "Zapisuj oferty, członków i posty oraz grupuj je w kolekcje, które możesz udostępniać innym członkom."
           },
-          "guardian_consent": {
-            "title": "Zgoda opiekuna",
-            "description": "Zgoda opiekuna dla niepełnoletniego wolontariusza lub uczestnika wydarzenia: jednorazowe linki do wyrażenia zgody, zaszyfrowane dane opiekuna i historia zgód, do której można tylko dopisywać, nigdy jej nie edytować.",
-            "note": "Project NEXUS jest dla osób dorosłych — przy rejestracji trzeba potwierdzić, że ma się ukończone 18 lat. Ta funkcja jest przeznaczona dla społeczności prowadzących zajęcia z młodzieżą pod opieką, gdzie konto zakłada koordynator. Jest wyłączona, dopóki społeczność jej nie włączy."
-          },
           "member_premium": {
             "title": "Darowizny i wsparcie",
             "description": "Członkowie mogą przekazać jednorazową darowiznę lub ustawić regularną darowiznę, aby wesprzeć społeczność prowadzącą ich bank czasu i samodzielnie zarządzać nią lub ją zatrzymać w dowolnym momencie. Zwolennicy tego są doceniani — nie jest to poziom płatny i żadna część platformy nigdy nie jest obciążona płatnością."

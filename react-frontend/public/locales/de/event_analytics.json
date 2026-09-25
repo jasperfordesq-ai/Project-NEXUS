@@ -56,8 +56,7 @@
       "ticket_units": "Bestätigte Ticketeinheiten",
       "ticket_credit_value": "Bestätigter Ticket-Guthabenwert",
       "completed_credit_claims": "Abgeschlossene Kreditforderungen",
-      "failed_credit_claims": "Fehlgeschlagene Kreditforderungen",
-      "guardian_consents": "Der Erziehungsberechtigte stimmt zu"
+      "failed_credit_claims": "Fehlgeschlagene Kreditforderungen"
     }
   }
 }

@@ -397,6 +397,100 @@ describe('API Client', () => {
       expect(reasons).toEqual(['mfa_required']);
     });
 
+    // Adults-only decision 2026-09-25: the server refuses every authenticated
+    // request from an account whose recorded date of birth is under 18 with
+    // 403 ACCOUNT_UNDER_MINIMUM_AGE. The session cannot be recovered, so it ends
+    // with its own reason and carries the server's translated explanation.
+    it('ends the session with an under-minimum-age reason on 403 ACCOUNT_UNDER_MINIMUM_AGE', async () => {
+      tokenManager.setAccessToken('old-session');
+      tokenManager.setRefreshToken('old-refresh');
+      const details: unknown[] = [];
+      const listener = (event: Event) => details.push((event as CustomEvent).detail);
+      window.addEventListener('nexus:session_expired', listener);
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'Server: adults only.' }],
+        }),
+      } as Response);
+
+      const result = await api.get('/v2/listings');
+
+      window.removeEventListener('nexus:session_expired', listener);
+      expect(result.success).toBe(false);
+      expect(result.code).toBe('ACCOUNT_UNDER_MINIMUM_AGE');
+      expect(result.error).toBe('Server: adults only.');
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(tokenManager.getRefreshToken()).toBeNull();
+      expect(details).toEqual([expect.objectContaining({
+        reason: 'under_minimum_age',
+        message: 'Server: adults only.',
+      })]);
+    });
+
+    it('leaves a public (skipAuth) 403 ACCOUNT_UNDER_MINIMUM_AGE to the caller', async () => {
+      tokenManager.setAccessToken('unrelated-session');
+      const listener = vi.fn();
+      window.addEventListener('nexus:session_expired', listener);
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'Server: adults only.' }],
+          account_under_minimum_age: true,
+        }),
+      } as Response);
+
+      const result = await api.post('/auth/login', { email: 'a@example.test', password: 'x' }, { skipAuth: true });
+
+      window.removeEventListener('nexus:session_expired', listener);
+      expect(result.code).toBe('ACCOUNT_UNDER_MINIMUM_AGE');
+      expect(listener).not.toHaveBeenCalled();
+      expect(tokenManager.getAccessToken()).toBe('unrelated-session');
+    });
+
+    it('names the minimum-age reason when the token refresh itself is refused for it', async () => {
+      tokenManager.setAccessToken('expired-access');
+      tokenManager.setRefreshToken('old-refresh');
+      const details: unknown[] = [];
+      const listener = (event: Event) => details.push((event as CustomEvent).detail);
+      window.addEventListener('nexus:session_expired', listener);
+      vi.mocked(fetch)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          headers: new Headers(),
+          json: () => Promise.resolve({ error: 'Unauthorized' }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+          headers: new Headers(),
+          json: () => Promise.resolve({
+            success: false,
+            errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'Server: adults only.' }],
+            account_under_minimum_age: true,
+          }),
+        } as Response);
+
+      const result = await api.get('/v2/users/me');
+
+      window.removeEventListener('nexus:session_expired', listener);
+      expect(result.success).toBe(false);
+      expect(result.code).toBe('ACCOUNT_UNDER_MINIMUM_AGE');
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(details).toEqual([expect.objectContaining({
+        reason: 'under_minimum_age',
+        message: 'Server: adults only.',
+      })]);
+    });
+
     it('preserves application-level failure envelopes returned with HTTP 2xx', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,

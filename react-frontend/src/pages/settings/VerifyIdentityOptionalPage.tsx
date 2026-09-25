@@ -31,6 +31,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { api } from '@/lib/api';
+import { DATE_OF_BIRTH_UNDER_MINIMUM_AGE, latestAdultDateOfBirth, serverMessageFor } from '@/lib/minimum-age';
 import { getFormattingLocale } from '@/lib/helpers';
 
 const StripePaymentForm = lazy(() =>
@@ -87,6 +88,8 @@ export function VerifyIdentityOptionalPage() {
   const [feeCurrency, setFeeCurrency] = useState('EUR');
   const [dob, setDob] = useState('');
   const [isSavingDob, setIsSavingDob] = useState(false);
+  // The server's refusal of the date of birth itself, shown on the field.
+  const [dobError, setDobError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -172,9 +175,19 @@ export function VerifyIdentityOptionalPage() {
     if (!dob) { setErrorMessage(t('identity.error_missing_dob')); return; }
     setIsSavingDob(true);
     setErrorMessage('');
+    setDobError(null);
     try {
       const response = await api.post('/v2/identity/save-dob', { date_of_birth: dob });
       if (!response.success) {
+        if (
+          response.code === DATE_OF_BIRTH_UNDER_MINIMUM_AGE
+          || response.errors?.some((error) => error?.code === DATE_OF_BIRTH_UNDER_MINIMUM_AGE)
+        ) {
+          // Adults-only decision 2026-09-25: the reason belongs on the field.
+          setDobError(serverMessageFor(response.errors, DATE_OF_BIRTH_UNDER_MINIMUM_AGE)
+            ?? t('profile.dob_under_minimum_age'));
+          return;
+        }
         setErrorMessage(response.error || t('identity.error_save_dob'));
         return;
       }
@@ -371,9 +384,12 @@ export function VerifyIdentityOptionalPage() {
                 type="date"
                 label={t('identity.dob_label')}
                 value={dob}
-                onChange={(e) => setDob(e.target.value)}
+                onChange={(e) => { setDob(e.target.value); setDobError(null); }}
                 variant="secondary"
-                max={new Date().toISOString().split('T')[0]}
+                // Adults-only decision 2026-09-25: never offer an under-18 date.
+                max={latestAdultDateOfBirth()}
+                isInvalid={!!dobError}
+                errorMessage={dobError ?? undefined}
                 classNames={{ label: 'text-theme-primary' }} />
 
               <Button

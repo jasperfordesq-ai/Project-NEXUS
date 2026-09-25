@@ -134,10 +134,6 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
           ? t('analytics.suppressed')
           : percentage(summary.optional_funnel.start_to_registration_conversion.basis_points),
       },
-      {
-        label: t('analytics.metrics.guardian_consents'),
-        value: privacyCount(summary.safeguarding.guardian_consents),
-      },
     ];
     const finance: MetricRow[] = summary.tickets.redacted
       ? [{ label: t('analytics.metrics.finance'), value: t('analytics.finance_redacted') }]

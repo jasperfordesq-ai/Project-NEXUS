@@ -243,7 +243,8 @@
     "identity_verified_lock": "Twoje imię jest zablokowane, ponieważ Twoja tożsamość została zweryfikowana.",
     "phone_invalid": "Numer telefonu musi być w formacie międzynarodowym (np. +1 555 123 4567)",
     "date_of_birth": "Data urodzenia",
-    "dob_description": "Wymagana do weryfikacji tożsamości"
+    "dob_description": "Wymagana do weryfikacji tożsamości",
+    "dob_under_minimum_age": "Aby korzystać z tej platformy, musisz mieć ukończone 18 lat. Sprawdź wpisaną datę urodzenia."
   },
   "notification_prefs": {
     "new_messages": "Nowe wiadomości",

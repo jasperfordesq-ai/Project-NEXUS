@@ -56,8 +56,7 @@
       "ticket_units": "Bevestigde ticketeenheden",
       "ticket_credit_value": "Bevestigde tickettegoedwaarde",
       "completed_credit_claims": "Voltooide kredietclaims",
-      "failed_credit_claims": "Mislukte kredietclaims",
-      "guardian_consents": "Voogd stemt toe"
+      "failed_credit_claims": "Mislukte kredietclaims"
     }
   }
 }

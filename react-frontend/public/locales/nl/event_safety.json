@@ -13,8 +13,6 @@
       "confirm_archive": "Nu archiveren",
       "acknowledge": "Bevestig de code",
       "withdraw_acknowledgement": "Bevestiging intrekken",
-      "request_guardian_consent": "Vraag toestemming van de voogd",
-      "withdraw_guardian_consent": "Toestemmingsverzoek intrekken",
       "change_member": "Wijzig lid",
       "save_review": "Bewaar het beoordelingsbesluit",
       "cancel_edit": "Bewerking annuleren",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Uw instemming met de gedragscode intrekken?",
       "withdraw_code_body": "Dit kan uw deelname blokkeren totdat u opnieuw instemt met de huidige versie.",
-      "withdraw_guardian_title": "Het verzoek om toestemming van de voogd intrekken?",
-      "withdraw_guardian_body": "Het huidige verzoek wordt ongeldig. Mogelijk moet u vóór deelname een nieuw verzoek versturen.",
       "withdraw_review_title": "Dit deelnamebesluit intrekken?",
       "withdraw_review_body": "Hiermee eindigt het actieve besluit voor {{name}}, terwijl de auditgeschiedenis behouden blijft."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Actie is vereist",
       "success": {
         "acknowledge": "Gedragscode erkend.",
-        "withdraw_code": "Codebevestiging ingetrokken.",
-        "request_guardian": "Toestemmingsverzoek voogd verzonden.",
-        "withdraw_guardian": "Toestemmingsverzoek voogd ingetrokken."
+        "withdraw_code": "Codebevestiging ingetrokken."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Conceptwijzigingen zijn privé totdat ze worden gepubliceerd. Door te publiceren ontstaat een onveranderlijke versie voor het matchen van bewijsmateriaal.",
       "minimum_age": "Minimum leeftijd",
       "minimum_age_hint": "Laat dit veld leeg als het evenement geen minimumleeftijd kent.",
-      "guardian_required": "Toestemming van de voogd vereisen voor minderjarigen",
-      "guardian_required_hint": "Toestemming is gebonden aan de exacte gepubliceerde vereisteversie en gebeurtenisdatum.",
-      "minor_threshold": "Kleine leeftijdsgrens",
-      "minor_threshold_hint": "Leden die jonger zijn dan deze leeftijd op het evenement hebben toestemming nodig.",
       "code_required": "Vereist erkenning van de gedragscode",
       "code_required_hint": "Deelnemers moeten de exacte gepubliceerde tekst erkennen voordat ze deelnemen.",
       "code_version": "Codetekstversie",
@@ -135,28 +125,6 @@
         "acknowledged": "Bevestigd"
       }
     },
-    "guardian": {
-      "title": "Toestemming van de voogd",
-      "description": "De voogd ontvangt een persoonlijke, in de tijd beperkte link. Hun identiteit en toestemmingstoken worden nooit getoond in het evenementenrooster.",
-      "name_label": "Naam van de voogd",
-      "email_label": "E-mailadres van de Guardian",
-      "relationship_label": "Relatie met de deelnemer",
-      "privacy_notice": "Het adres wordt gecodeerd voor bezorging en na verwerking uit de bezorgenvelop verwijderd.",
-      "relationships": {
-        "parent": "Ouder",
-        "guardian": "Voogd",
-        "legal_guardian": "Wettelijke voogd",
-        "carer": "Verzorger"
-      },
-      "status": {
-        "not_required": "Niet vereist",
-        "required": "Toestemming vereist",
-        "pending": "Wachten op voogd",
-        "active": "Toestemming verleend",
-        "withdrawn": "Ingetrokken",
-        "expired": "Verlopen"
-      }
-    },
     "decisions": {
       "deny": "Deelname weigeren",
       "remove": "Verwijderen uit evenement"
@@ -195,21 +163,6 @@
       "version": "Beslissingsversie",
       "audit_history": "Auditgeschiedenis ({{count}} vermeldingen)",
       "pagination": "Beoordelingspagina's van deelname"
-    },
-    "guardian_grant": {
-      "page_title": "Toestemming van de voogd",
-      "title": "Controleer de toestemming van de voogd",
-      "description": "Bevestig het e-mailadres dat deze privélink heeft ontvangen en geef vervolgens toestemming aan de bezoeker om deel te nemen onder de gepubliceerde veiligheidseisen van het evenement.",
-      "email_label": "E-mailadres van Guardian",
-      "email_hint": "Voer hetzelfde adres in waarop het toestemmingsverzoek is ontvangen.",
-      "confirm_label": "Ik ben de genoemde ouder, voogd of verzorger en ik ga ermee akkoord dat deze deelnemer deelneemt.",
-      "privacy_notice": "De link is beperkt in de tijd en kan alleen worden gebruikt voor deze evenement- en vereisteversie. Uit de reactie blijkt niet of er een e-mailadres geregistreerd is.",
-      "submit": "Geef toestemming",
-      "success_title": "Toestemming vastgelegd",
-      "success_description": "De bezoeker kan nu doorgaan zodra aan alle andere evenementvereisten is voldaan.",
-      "invalid_title": "Deze toestemmingslink kan niet worden gebruikt",
-      "invalid_description": "Mogelijk is de link of het e-mailadres onjuist, verlopen of al ingevuld. Vraag de bezoeker om een ​​nieuw verzoek te sturen.",
-      "browse_events": "Blader door evenementen"
     }
   },
   "govuk": {

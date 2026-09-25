@@ -13,8 +13,6 @@
       "confirm_archive": "Archivar ahora",
       "acknowledge": "Reconocer el código",
       "withdraw_acknowledgement": "Retirar reconocimiento",
-      "request_guardian_consent": "Solicitar consentimiento del tutor",
-      "withdraw_guardian_consent": "Retirar la solicitud de consentimiento",
       "change_member": "Cambiar miembro",
       "save_review": "Guardar decisión de revisión",
       "cancel_edit": "Cancelar edición",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "¿Retirar tu aceptación del código de conducta?",
       "withdraw_code_body": "Esto puede impedir tu participación hasta que vuelvas a aceptar la versión actual.",
-      "withdraw_guardian_title": "¿Retirar la solicitud de consentimiento del tutor?",
-      "withdraw_guardian_body": "La solicitud actual dejará de ser válida. Puede que tengas que enviar una nueva antes de participar.",
       "withdraw_review_title": "¿Retirar esta decisión de participación?",
       "withdraw_review_body": "Esto finaliza la decisión activa para {{name}} y conserva su historial de auditoría."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Se requiere acción",
       "success": {
         "acknowledge": "Código de conducta reconocido.",
-        "withdraw_code": "Reconocimiento de código retirado.",
-        "request_guardian": "Solicitud de consentimiento del tutor enviada.",
-        "withdraw_guardian": "Solicitud de consentimiento del tutor retirada."
+        "withdraw_code": "Reconocimiento de código retirado."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Los borradores de cambios son privados hasta su publicación. La publicación crea una versión inmutable para la comparación de pruebas.",
       "minimum_age": "Edad mínima",
       "minimum_age_hint": "Dejar en blanco cuando el evento no tenga edad mínima.",
-      "guardian_required": "Requerir el consentimiento del tutor para menores",
-      "guardian_required_hint": "El consentimiento está vinculado a la versión exacta del requisito publicado y a la fecha del evento.",
-      "minor_threshold": "Umbral de edad menor",
-      "minor_threshold_hint": "Los miembros menores de esta edad en el evento necesitan consentimiento.",
       "code_required": "Requerir reconocimiento del código de conducta",
       "code_required_hint": "Los asistentes deben reconocer el texto exacto publicado antes de participar.",
       "code_version": "Versión de texto del código",
@@ -135,28 +125,6 @@
         "acknowledged": "Reconocida"
       }
     },
-    "guardian": {
-      "title": "Consentimiento del tutor",
-      "description": "El tutor recibe un enlace privado por tiempo limitado. Su identidad y token de consentimiento nunca se muestran en la lista del evento.",
-      "name_label": "Nombre del tutor",
-      "email_label": "Correo electrónico del tutor",
-      "relationship_label": "Relación con el asistente",
-      "privacy_notice": "La dirección se cifra para la entrega y se elimina del sobre de entrega después del procesamiento.",
-      "relationships": {
-        "parent": "Padre/Madre",
-        "guardian": "Tutor",
-        "legal_guardian": "tutor legal",
-        "carer": "Cuidador"
-      },
-      "status": {
-        "not_required": "No requerido",
-        "required": "Consentimiento requerido",
-        "pending": "Esperando tutor",
-        "active": "Consentimiento otorgado",
-        "withdrawn": "Retirado",
-        "expired": "Venció"
-      }
-    },
     "decisions": {
       "deny": "Negar participación",
       "remove": "Quitar del evento"
@@ -195,21 +163,6 @@
       "version": "Versión de decisión",
       "audit_history": "Historial de auditoría (entradas {{count}})",
       "pagination": "Páginas de revisión de participación"
-    },
-    "guardian_grant": {
-      "page_title": "Consentimiento del tutor",
-      "title": "Revisar el consentimiento del tutor",
-      "description": "Confirme la dirección de correo electrónico que recibió este enlace privado y luego dé su consentimiento para que el asistente participe según los requisitos de seguridad publicados del evento.",
-      "email_label": "Dirección de correo electrónico del tutor",
-      "email_hint": "Ingrese la misma dirección que recibió la solicitud de consentimiento.",
-      "confirm_label": "Soy el padre, tutor o cuidador designado y doy mi consentimiento para que este asistente participe.",
-      "privacy_notice": "El enlace tiene tiempo limitado y solo se puede utilizar para este evento y versión de requisitos. La respuesta no revela si una dirección de correo electrónico está registrada.",
-      "submit": "Dar consentimiento",
-      "success_title": "Consentimiento registrado",
-      "success_description": "El asistente ahora puede continuar una vez que se completen los demás requisitos del evento.",
-      "invalid_title": "Este enlace de consentimiento no se puede utilizar",
-      "invalid_description": "El enlace o la dirección de correo electrónico pueden ser incorrectos, estar caducados o ya estar completos. Pídale al asistente que envíe una nueva solicitud.",
-      "browse_events": "Explorar eventos"
     }
   },
   "govuk": {

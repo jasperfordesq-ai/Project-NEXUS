@@ -5,7 +5,6 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import {
-  eventGuardianConsentGrantSchema,
   eventSafetyReviewsSchema,
   eventSafetySchema,
   parseEventSafetyResponse,
@@ -28,8 +27,8 @@ const safety = {
     version: {
       number: 2,
       minimum_age: 14,
-      guardian_consent_required: true,
-      minor_age_threshold: 18,
+      guardian_consent_required: false,
+      minor_age_threshold: null,
       code_of_conduct: {
         required: true,
         text: 'Respect everyone.',
@@ -80,16 +79,31 @@ const safety = {
 } as const;
 
 describe('Event Safety API contract', () => {
-  it('accepts only the non-enumerating public guardian grant result', () => {
-    expect(eventGuardianConsentGrantSchema.safeParse({ status: 'granted' }).success).toBe(true);
-    expect(eventGuardianConsentGrantSchema.safeParse({
-      status: 'granted',
-      guardian_email: 'private@example.test',
-    }).success).toBe(false);
-  });
-
   it('accepts the strict privacy-minimised safety projection', () => {
     expect(eventSafetySchema.safeParse(safety).success).toBe(true);
+  });
+
+  it('accepts a projection with the retired guardian-consent fields left out', () => {
+    const { guardian_consent_required: _required, minor_age_threshold: _threshold, ...version } = safety.requirements.version;
+    const { guardian_consent: _evidence, ...evidence } = safety.evidence;
+    const {
+      request_guardian_consent: _request,
+      withdraw_guardian_consent: _withdraw,
+      ...permissions
+    } = safety.permissions;
+    const {
+      guardian_identity_redacted: _identity,
+      guardian_token_redacted: _token,
+      ...privacy
+    } = safety.privacy;
+
+    expect(eventSafetySchema.safeParse({
+      ...safety,
+      requirements: { ...safety.requirements, version },
+      evidence,
+      permissions,
+      privacy,
+    }).success).toBe(true);
   });
 
   it('rejects accidental secret-bearing response fields', () => {

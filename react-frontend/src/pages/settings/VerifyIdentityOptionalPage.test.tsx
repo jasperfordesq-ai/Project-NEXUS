@@ -196,6 +196,44 @@ describe('VerifyIdentityOptionalPage', () => {
     });
   });
 
+  // Adults-only decision 2026-09-25.
+  it('limits the date of birth to adults', async () => {
+    mockApi.get.mockResolvedValue(makeStatus({ user_has_dob: false, fee_cents: 0 }));
+    const { VerifyIdentityOptionalPage } = await import('./VerifyIdentityOptionalPage');
+    const { latestAdultDateOfBirth } = await import('@/lib/minimum-age');
+    render(<VerifyIdentityOptionalPage />);
+
+    await waitFor(() => expect(document.querySelector('input[type="date"]')).toBeTruthy());
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    expect(dateInput.max).toBe(latestAdultDateOfBirth());
+  });
+
+  it('shows a DATE_OF_BIRTH_UNDER_MINIMUM_AGE refusal against the date field', async () => {
+    mockApi.get.mockResolvedValue(makeStatus({ user_has_dob: false, fee_cents: 0 }));
+    mockApi.post.mockResolvedValue({
+      success: false,
+      code: 'DATE_OF_BIRTH_UNDER_MINIMUM_AGE',
+      error: 'Server: must be 18.',
+      errors: [{ code: 'DATE_OF_BIRTH_UNDER_MINIMUM_AGE', message: 'Server: must be 18.', field: 'date_of_birth' }],
+    });
+    const { VerifyIdentityOptionalPage } = await import('./VerifyIdentityOptionalPage');
+    render(<VerifyIdentityOptionalPage />);
+
+    await waitFor(() => expect(document.querySelector('input[type="date"]')).toBeTruthy());
+    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    fireEvent.change(dateInput, { target: { value: '2015-01-15' } });
+    const continueBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('continue') || b.textContent?.toLowerCase().includes('next')
+    );
+    expect(continueBtn).toBeDefined();
+    fireEvent.click(continueBtn as HTMLElement);
+
+    expect(await screen.findByText('Server: must be 18.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(document.querySelector('input[type="date"]')).toHaveAttribute('aria-invalid', 'true');
+    });
+  });
+
   it('shows payment step when fee is required and unpaid', async () => {
     mockApi.get.mockResolvedValue(makeStatus({ user_has_dob: true, fee_cents: 500, payment_completed: false }));
     const { VerifyIdentityOptionalPage } = await import('./VerifyIdentityOptionalPage');

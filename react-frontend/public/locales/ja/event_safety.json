@@ -13,8 +13,6 @@
       "confirm_archive": "今すぐアーカイブ",
       "acknowledge": "コードを確認する",
       "withdraw_acknowledgement": "承認の撤回",
-      "request_guardian_consent": "保護者の同意を求める",
-      "withdraw_guardian_consent": "同意リクエストの撤回",
       "change_member": "メンバー変更",
       "save_review": "レビューの決定を保存する",
       "cancel_edit": "編集をキャンセルする",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "行動規範への同意を取り消しますか？",
       "withdraw_code_body": "現行版に再度同意するまで、参加できなくなる場合があります。",
-      "withdraw_guardian_title": "保護者同意の依頼を取り消しますか？",
-      "withdraw_guardian_body": "現在の依頼は無効になります。参加前に新しい依頼が必要になる場合があります。",
       "withdraw_review_title": "この参加決定を取り消しますか？",
       "withdraw_review_body": "{{name}} に対する有効な決定を終了し、監査履歴は保持します。"
     },
@@ -57,9 +53,7 @@
       "attention_title": "アクションが必要です",
       "success": {
         "acknowledge": "行動規範が承認されました。",
-        "withdraw_code": "コード承認が取り消されました。",
-        "request_guardian": "保護者の同意リクエストが送信されました。",
-        "withdraw_guardian": "保護者の同意リクエストは取り下げられました。"
+        "withdraw_code": "コード承認が取り消されました。"
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "ドラフトの変更は公開されるまで非公開です。公開すると、証拠照合用の不変バージョンが作成されます。",
       "minimum_age": "最低年齢",
       "minimum_age_hint": "イベントに最低年齢がない場合は空白のままにします。",
-      "guardian_required": "未成年者の場合は保護者の同意が必要です",
-      "guardian_required_hint": "同意は、正確に公開された要件バージョンとイベント日付に拘束されます。",
-      "minor_threshold": "未成年者の年齢制限",
-      "minor_threshold_hint": "イベントにこの年齢未満のメンバーが参加する場合は同意が必要です。",
       "code_required": "行動規範の承認を要求する",
       "code_required_hint": "参加者は、参加する前に、公開されたテキストを正確に理解する必要があります。",
       "code_version": "コードテキストバージョン",
@@ -135,28 +125,6 @@
         "acknowledged": "確認済み"
       }
     },
-    "guardian": {
-      "title": "保護者の同意",
-      "description": "保護者は、期間限定のプライベートリンクを受け取ります。彼らの ID と同意トークンはイベント名簿には表示されません。",
-      "name_label": "守護者名",
-      "email_label": "保護者のメールアドレス",
-      "relationship_label": "出席者との関係",
-      "privacy_notice": "住所は配送のために暗号化され、処理後に配送封筒から削除されます。",
-      "relationships": {
-        "parent": "親",
-        "guardian": "保護者",
-        "legal_guardian": "法定後見人",
-        "carer": "介護者"
-      },
-      "status": {
-        "not_required": "不要",
-        "required": "同意が必要です",
-        "pending": "保護者を待っています",
-        "active": "同意が得られました",
-        "withdrawn": "取り下げ済み",
-        "expired": "期限切れ"
-      }
-    },
     "decisions": {
       "deny": "参加を拒否する",
       "remove": "イベントから削除"
@@ -195,21 +163,6 @@
       "version": "決定版",
       "audit_history": "監査履歴 ({{count}} エントリ)",
       "pagination": "参加レビューページ"
-    },
-    "guardian_grant": {
-      "page_title": "保護者の同意",
-      "title": "保護者の同意を確認する",
-      "description": "このプライベート リンクを受け取った電子メール アドレスを確認し、公開されているイベントの安全要件に従って出席者が参加することに同意します。",
-      "email_label": "保護者のメールアドレス",
-      "email_hint": "同意リクエストを受信したのと同じアドレスを入力します。",
-      "confirm_label": "私は指定された親、保護者、または介護者であり、この出席者が参加することに同意します。",
-      "privacy_notice": "リンクは時間制限があり、このイベントおよび要件バージョンにのみ使用できます。返信ではメールアドレスが登録されているかどうかはわかりません。",
-      "submit": "同意する",
-      "success_title": "同意が記録されています",
-      "success_description": "参加者は、他のイベント要件が完了したら続行できるようになります。",
-      "invalid_title": "この同意リンクは使用できません",
-      "invalid_description": "リンクまたは電子メール アドレスが間違っているか、有効期限が切れているか、すでに完了している可能性があります。出席者に新しいリクエストを送信するよう依頼します。",
-      "browse_events": "イベントを閲覧する"
     }
   },
   "govuk": {

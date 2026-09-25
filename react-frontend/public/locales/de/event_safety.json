@@ -13,8 +13,6 @@
       "confirm_archive": "Jetzt archivieren",
       "acknowledge": "Bestätigen Sie den Code",
       "withdraw_acknowledgement": "Bestätigung zurückziehen",
-      "request_guardian_consent": "Fordern Sie die Zustimmung des Erziehungsberechtigten an",
-      "withdraw_guardian_consent": "Einwilligungsanfrage zurückziehen",
       "change_member": "Mitglied wechseln",
       "save_review": "Bewertungsentscheidung speichern",
       "cancel_edit": "Bearbeitung abbrechen",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Bestätigung des Verhaltenskodex zurückziehen?",
       "withdraw_code_body": "Dies kann Ihre Teilnahme sperren, bis Sie die aktuelle Fassung erneut bestätigen.",
-      "withdraw_guardian_title": "Anfrage zur Zustimmung der Aufsichtsperson zurückziehen?",
-      "withdraw_guardian_body": "Die aktuelle Anfrage wird ungültig. Vor der Teilnahme müssen Sie möglicherweise eine neue Anfrage senden.",
       "withdraw_review_title": "Diese Teilnahmeentscheidung zurückziehen?",
       "withdraw_review_body": "Damit wird die aktive Entscheidung für {{name}} beendet; der Prüfverlauf bleibt erhalten."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Es besteht Handlungsbedarf",
       "success": {
         "acknowledge": "Verhaltenskodex anerkannt.",
-        "withdraw_code": "Codebestätigung zurückgezogen.",
-        "request_guardian": "Anfrage zur Einwilligung des Erziehungsberechtigten gesendet.",
-        "withdraw_guardian": "Antrag auf Einwilligung des Erziehungsberechtigten zurückgezogen."
+        "withdraw_code": "Codebestätigung zurückgezogen."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Entwurfsänderungen sind bis zur Veröffentlichung privat. Durch die Veröffentlichung wird eine unveränderliche Version für den Beweisabgleich erstellt.",
       "minimum_age": "Mindestalter",
       "minimum_age_hint": "Lassen Sie das Feld leer, wenn für die Veranstaltung kein Mindestalter gilt.",
-      "guardian_required": "Für Minderjährige ist die Zustimmung des Erziehungsberechtigten erforderlich",
-      "guardian_required_hint": "Die Zustimmung ist an die genaue veröffentlichte Anforderungsversion und das Veranstaltungsdatum gebunden.",
-      "minor_threshold": "Untere Altersgrenze",
-      "minor_threshold_hint": "Mitglieder unter diesem Alter benötigen bei der Veranstaltung eine Einwilligung.",
       "code_required": "Erfordern eine Anerkennung des Verhaltenskodex",
       "code_required_hint": "Teilnehmer müssen vor der Teilnahme den genauen veröffentlichten Text zur Kenntnis nehmen.",
       "code_version": "Codetextversion",
@@ -135,28 +125,6 @@
         "acknowledged": "Bestätigt"
       }
     },
-    "guardian": {
-      "title": "Zustimmung des Erziehungsberechtigten",
-      "description": "Der Erziehungsberechtigte erhält einen privaten, zeitlich begrenzten Link. Ihre Identität und ihr Einwilligungs-Token werden niemals in der Veranstaltungsliste angezeigt.",
-      "name_label": "Name des Wächters",
-      "email_label": "E-Mail des Erziehungsberechtigten",
-      "relationship_label": "Beziehung zum Teilnehmer",
-      "privacy_notice": "Die Adresse wird für den Versand verschlüsselt und nach der Verarbeitung aus dem Versandumschlag entfernt.",
-      "relationships": {
-        "parent": "Elternteil",
-        "guardian": "Erziehungsberechtigter",
-        "legal_guardian": "Erziehungsberechtigter",
-        "carer": "Betreuungsperson"
-      },
-      "status": {
-        "not_required": "Nicht erforderlich",
-        "required": "Einwilligung erforderlich",
-        "pending": "Warte auf den Vormund",
-        "active": "Einwilligung erteilt",
-        "withdrawn": "Zurückgezogen",
-        "expired": "Abgelaufen"
-      }
-    },
     "decisions": {
       "deny": "Teilnahme verweigern",
       "remove": "Aus der Veranstaltung entfernen"
@@ -195,21 +163,6 @@
       "version": "Entscheidungsversion",
       "audit_history": "Audit-Verlauf ({{count}}-Einträge)",
       "pagination": "Seiten zur Teilnahmeüberprüfung"
-    },
-    "guardian_grant": {
-      "page_title": "Zustimmung des Erziehungsberechtigten",
-      "title": "Überprüfen Sie die Einwilligung des Erziehungsberechtigten",
-      "description": "Bestätigen Sie die E-Mail-Adresse, die diesen privaten Link erhalten hat, und geben Sie dann Ihr Einverständnis, dass der Teilnehmer gemäß den veröffentlichten Sicherheitsanforderungen der Veranstaltung teilnimmt.",
-      "email_label": "E-Mail-Adresse des Erziehungsberechtigten",
-      "email_hint": "Geben Sie dieselbe Adresse ein, die die Einwilligungsanfrage erhalten hat.",
-      "confirm_label": "Ich bin der genannte Elternteil, Erziehungsberechtigte oder Betreuer und stimme der Teilnahme dieses Teilnehmers zu.",
-      "privacy_notice": "Der Link ist zeitlich begrenzt und kann nur für diese Veranstaltungs- und Anforderungsversion verwendet werden. Aus der Antwort geht nicht hervor, ob eine E-Mail-Adresse registriert ist.",
-      "submit": "Geben Sie Ihre Zustimmung",
-      "success_title": "Einwilligung erfasst",
-      "success_description": "Der Teilnehmer kann nun fortfahren, sobald alle anderen Veranstaltungsanforderungen erfüllt sind.",
-      "invalid_title": "Dieser Einwilligungslink kann nicht verwendet werden",
-      "invalid_description": "Der Link oder die E-Mail-Adresse ist möglicherweise falsch, abgelaufen oder bereits ausgefüllt. Bitten Sie den Teilnehmer, eine neue Anfrage zu senden.",
-      "browse_events": "Durchsuchen Sie Veranstaltungen"
     }
   },
   "govuk": {

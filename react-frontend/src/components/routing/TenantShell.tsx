@@ -404,7 +404,6 @@ const publicRuntimePrefixes = [
   'regional-analytics',
   'partner-analytics',
   'newsletter',
-  'volunteering/guardian-consent',
   'partner',
   'social-prescribing',
   'impact-summary',
@@ -444,7 +443,6 @@ const publicRegistryPatterns = [
   /^regional-analytics$/,
   /^partner-analytics\/dashboard$/,
   /^newsletter\/unsubscribe$/,
-  /^volunteering\/guardian-consent\/verify\/[^/]+$/,
   /^page\/[^/]+$/,
   /^blog(\/[^/]+)?$/,
   // Public events advertising. Numeric-only detail segment so this can never

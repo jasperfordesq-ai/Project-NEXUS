@@ -193,6 +193,70 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('errors:session_mfa_required_message'));
   });
 
+  // Adults-only decision 2026-09-25: the server refuses sign-in, and any request
+  // from an existing session, for an account whose date of birth is under 18.
+  // The member is told why — preferring the server's own translated words — and
+  // never shown the generic "check your details" failure.
+  describe('an account under the minimum age', () => {
+    const refusal = {
+      success: false,
+      code: 'ACCOUNT_UNDER_MINIMUM_AGE',
+      error: 'Server: adults only.',
+      errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'Server: adults only.' }],
+    };
+
+    it('shows the server explanation when password sign-in is refused', async () => {
+      vi.mocked(api.post).mockResolvedValue(refusal);
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent('Server: adults only.'));
+      expect(tokenManager.setAccessToken).not.toHaveBeenCalled();
+    });
+
+    it('falls back to its own adults-only wording when the server sends none', async () => {
+      vi.mocked(api.post).mockResolvedValue({ success: false, code: 'ACCOUNT_UNDER_MINIMUM_AGE', error: 'Request failed' });
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+      const expected = i18next.t('auth:login.under_minimum_age');
+      expect(expected).not.toBe('login.under_minimum_age');
+      await waitFor(() => expect(screen.getByTestId('error')).toHaveTextContent(expected));
+      expect(screen.getByTestId('error')).not.toHaveTextContent(i18next.t('auth:login.failed'));
+    });
+
+    it('shows the explanation and ends the challenge when two-factor completion is refused', async () => {
+      vi.mocked(api.post)
+        .mockResolvedValueOnce({ success: true, data: { requires_2fa: true, two_factor_token: '2fa-token', methods: ['totp'] } })
+        .mockResolvedValueOnce(refusal);
+      render(<AuthProvider><TestAuthActions /></AuthProvider>);
+      await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa'));
+      await userEvent.click(screen.getByRole('button', { name: 'Verify 2FA' }));
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('idle'));
+      expect(screen.getByTestId('error')).toHaveTextContent('Server: adults only.');
+    });
+
+    it('signs out an existing session refused on start-up and says why', async () => {
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get).mockResolvedValueOnce(refusal);
+      render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('idle'));
+      expect(screen.getByTestId('user')).toHaveTextContent('none');
+      expect(screen.getByTestId('error')).toHaveTextContent('Server: adults only.');
+      expect(tokenManager.clearSession).toHaveBeenCalled();
+    });
+
+    it('explains a session ended for this reason even when it was never shown as signed in', async () => {
+      render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('idle'));
+      await act(async () => {
+        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, {
+          detail: { reason: 'under_minimum_age', message: 'Server: adults only.' },
+        }));
+      });
+      expect(screen.getByTestId('error')).toHaveTextContent('Server: adults only.');
+    });
+  });
+
   describe('Provider initialization', () => {
     it('starts in loading state and checks for existing token', async () => {
       vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);

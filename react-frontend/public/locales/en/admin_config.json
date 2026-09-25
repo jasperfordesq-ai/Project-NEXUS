@@ -610,8 +610,6 @@
     "option_volunteering_burnout_detection_label": "Burnout Detection",
     "option_volunteering_burnout_detection_desc": "Enable burnout risk scoring and recommendations",
     "option_category_wellbeing_safety": "Wellbeing & Safety",
-    "option_volunteering_guardian_consent_required_label": "Guardian Consent Required",
-    "option_volunteering_guardian_consent_required_desc": "Require guardian consent for minor volunteers",
     "option_volunteering_enable_qr_checkin_label": "QR Code Check-in",
     "option_volunteering_enable_qr_checkin_desc": "Enable QR code check-in/out for shifts",
     "option_volunteering_enable_recurring_shifts_label": "Recurring Shifts",

@@ -243,7 +243,6 @@ const defaultVolunteeringConfig: VolunteeringConfig = {
   'volunteering.expense_require_receipt': false,
   'volunteering.expense_max_amount': 500,
   'volunteering.burnout_detection': true,
-  'volunteering.guardian_consent_required': false,
   'volunteering.enable_qr_checkin': true,
   'volunteering.enable_recurring_shifts': true,
   'volunteering.enable_reviews': true,

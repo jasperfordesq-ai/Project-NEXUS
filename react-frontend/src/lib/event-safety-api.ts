@@ -13,6 +13,9 @@ export const EVENT_SAFETY_CONTRACT_HEADER = 'X-Event-Safety-Contract' as const;
 const nullableTimestamp = z.string().nullable();
 const safetyRequirementStatusSchema = z.enum(['draft', 'published', 'archived']);
 const safetyEligibilityStatusSchema = z.enum(['allow', 'deny', 'unavailable', 'not_evaluated']);
+// Guardian consent is retired (adults-only decision 2026-09-25). The server may
+// still send the old guardian fields for a while, or may drop them, so every one
+// of them is optional here: the strict schemas must accept both shapes.
 const guardianConsentStatusSchema = z.enum([
   'not_required',
   'required',
@@ -36,8 +39,8 @@ const participationStatusSchema = z.enum(['active', 'withdrawn', 'expired']);
 const eventSafetyVersionSchema = z.object({
   number: z.number().int().positive(),
   minimum_age: z.number().int().min(0).max(150).nullable(),
-  guardian_consent_required: z.boolean(),
-  minor_age_threshold: z.number().int().min(1).max(150).nullable(),
+  guardian_consent_required: z.boolean().optional(),
+  minor_age_threshold: z.number().int().min(1).max(150).nullable().optional(),
   code_of_conduct: z.object({
     required: z.boolean(),
     text: z.string().nullable(),
@@ -84,7 +87,7 @@ export const eventSafetySchema = z.object({
       consent_version: z.number().int().positive().nullable(),
       expires_at: nullableTimestamp,
       granted_at: nullableTimestamp,
-    }).strict(),
+    }).strict().optional(),
     active_denial: z.object({
       id: z.number().int().positive(),
       decision: participationDecisionSchema,
@@ -100,12 +103,12 @@ export const eventSafetySchema = z.object({
     review_participation: z.boolean(),
     acknowledge_code_of_conduct: z.boolean(),
     withdraw_code_of_conduct: z.boolean(),
-    request_guardian_consent: z.boolean(),
-    withdraw_guardian_consent: z.boolean(),
+    request_guardian_consent: z.boolean().optional(),
+    withdraw_guardian_consent: z.boolean().optional(),
   }).strict(),
   privacy: z.object({
-    guardian_identity_redacted: z.literal(true),
-    guardian_token_redacted: z.literal(true),
+    guardian_identity_redacted: z.literal(true).optional(),
+    guardian_token_redacted: z.literal(true).optional(),
     safeguarding_policy_evidence_redacted: z.literal(true),
     free_text_review_notes_supported: z.literal(false),
   }).strict(),
@@ -153,13 +156,8 @@ export const eventSafetyReviewsSchema = z.object({
   per_page: z.number().int().positive(),
 }).strict();
 
-export const eventGuardianConsentGrantSchema = z.object({
-  status: z.literal('granted'),
-}).strict();
-
 export type EventSafety = z.infer<typeof eventSafetySchema>;
 export type EventSafetyReviews = z.infer<typeof eventSafetyReviewsSchema>;
-export type EventGuardianConsentGrant = z.infer<typeof eventGuardianConsentGrantSchema>;
 export type EventSafetyRequirementDraft = {
   minimum_age: number | null;
   guardian_consent_required: boolean;
@@ -167,12 +165,6 @@ export type EventSafetyRequirementDraft = {
   code_of_conduct_required: boolean;
   code_of_conduct_text: string | null;
   code_of_conduct_text_version: string | null;
-};
-export type GuardianConsentRequest = {
-  guardian_name: string;
-  guardian_email: string;
-  relationship_code: 'parent' | 'guardian' | 'legal_guardian' | 'carer';
-  preferred_language: string;
 };
 export type ParticipationReviewRequest = {
   user_id: number;
@@ -224,22 +216,6 @@ export function parseEventSafetyResponse<T>(
 }
 
 export const eventSafetyApi = {
-  async grantGuardianConsent(
-    token: string,
-    guardianEmail: string,
-    idempotencyKey: string,
-  ): Promise<ApiResponse<EventGuardianConsentGrant>> {
-    const endpoint = '/v2/events/safety/guardian-consents/grant';
-    return parseEventSafetyResponse(
-      endpoint,
-      await api.post(endpoint, {
-        token,
-        guardian_email: guardianEmail,
-      }, withContract({ skipAuth: true }, idempotencyKey)),
-      eventGuardianConsentGrantSchema,
-    );
-  },
-
   async get(eventId: number, options?: RequestOptions): Promise<ApiResponse<EventSafety>> {
     const endpoint = `/v2/events/${eventId}/safety`;
     return parseEventSafetyResponse(
@@ -320,32 +296,6 @@ export const eventSafetyApi = {
     idempotencyKey: string,
   ): Promise<ApiResponse<EventSafety>> {
     const endpoint = `/v2/events/${eventId}/safety/code-of-conduct/acknowledgements/${acknowledgementId}`;
-    return parseEventSafetyResponse(
-      endpoint,
-      await api.delete(endpoint, withContract(undefined, idempotencyKey)),
-      eventSafetySchema,
-    );
-  },
-
-  async requestGuardianConsent(
-    eventId: number,
-    payload: GuardianConsentRequest,
-    idempotencyKey: string,
-  ): Promise<ApiResponse<EventSafety>> {
-    const endpoint = `/v2/events/${eventId}/safety/guardian-consents`;
-    return parseEventSafetyResponse(
-      endpoint,
-      await api.post(endpoint, payload, withContract(undefined, idempotencyKey)),
-      eventSafetySchema,
-    );
-  },
-
-  async withdrawGuardianConsent(
-    eventId: number,
-    consentId: number,
-    idempotencyKey: string,
-  ): Promise<ApiResponse<EventSafety>> {
-    const endpoint = `/v2/events/${eventId}/safety/guardian-consents/${consentId}`;
     return parseEventSafetyResponse(
       endpoint,
       await api.delete(endpoint, withContract(undefined, idempotencyKey)),

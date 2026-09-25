@@ -258,11 +258,6 @@
             "title": "Coleções e itens salvos",
             "description": "Salve listagens, membros e postagens e agrupe-os em coleções que você pode compartilhar com outros membros."
           },
-          "guardian_consent": {
-            "title": "Consentimento do Guardião",
-            "description": "Autorização do responsável para um jovem voluntário ou participante num evento: ligações de consentimento de uso único, dados do responsável cifrados e um histórico de consentimentos ao qual só é possível acrescentar, nunca editar.",
-            "note": "O Project NEXUS é para adultos — para se registar é necessário confirmar que tem 18 anos ou mais. Isto destina-se a comunidades que realizam atividades supervisionadas com jovens, em que é um coordenador que cria a conta. Está desativado, a menos que uma comunidade o ative."
-          },
           "member_premium": {
             "title": "Doações e Apoio",
             "description": "Os membros podem fazer uma doação única ou fazer uma doação regular para apoiar a comunidade que administra seu banco de tempo e gerenciá-lo ou interrompê-lo a qualquer momento. Os apoiadores são reconhecidos por isso – este não é um nível pago e nenhuma parte da plataforma é submetida a pagamento."

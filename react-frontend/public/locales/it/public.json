@@ -258,11 +258,6 @@
             "title": "Raccolte ed elementi salvati",
             "description": "Salva elenchi, membri e post e raggruppali in raccolte che puoi condividere con altri membri."
           },
-          "guardian_consent": {
-            "title": "Consenso del tutore",
-            "description": "Consenso del tutore per un volontario o un partecipante minorenne: link di consenso monouso, dati del tutore cifrati e uno storico dei consensi a cui si può solo aggiungere, mai modificare.",
-            "note": "Project NEXUS è per adulti: per registrarsi bisogna confermare di avere almeno 18 anni. Questa funzione è pensata per le comunità che gestiscono attività supervisionate con ragazzi, dove è un coordinatore a creare l'account. È disattivata se una comunità non la abilita."
-          },
           "member_premium": {
             "title": "Donazioni e supporto",
             "description": "I membri possono fare una donazione una tantum, o impostarne una regolare, per sostenere la comunità che gestisce la loro banca del tempo e gestirla o interromperla da soli in qualsiasi momento. I sostenitori sono riconosciuti per questo: questo non è un livello a pagamento e nessuna parte della piattaforma è mai soggetta a un pagamento."

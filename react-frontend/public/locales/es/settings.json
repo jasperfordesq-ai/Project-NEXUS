@@ -243,7 +243,8 @@
     "identity_verified_lock": "Tu nombre está bloqueado porque tu identidad ha sido verificada.",
     "phone_invalid": "El teléfono debe estar en formato internacional (p. ej. +1 555 123 4567)",
     "date_of_birth": "Fecha de nacimiento",
-    "dob_description": "Requerida para la verificación de identidad"
+    "dob_description": "Requerida para la verificación de identidad",
+    "dob_under_minimum_age": "Debes tener 18 años o más para usar esta plataforma. Comprueba la fecha de nacimiento que has introducido."
   },
   "notification_prefs": {
     "new_messages": "Nuevos Mensajes",

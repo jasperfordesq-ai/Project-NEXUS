@@ -13,8 +13,6 @@
       "confirm_archive": "Archiwizuj teraz",
       "acknowledge": "Zatwierdź kod",
       "withdraw_acknowledgement": "Wycofaj potwierdzenie",
-      "request_guardian_consent": "Poproś o zgodę opiekuna",
-      "withdraw_guardian_consent": "Wycofaj prośbę o zgodę",
       "change_member": "Zmień członka",
       "save_review": "Zapisz decyzję dotyczącą przeglądu",
       "cancel_edit": "Anuluj edycję",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Wycofać akceptację kodeksu postępowania?",
       "withdraw_code_body": "Może to zablokować udział do czasu ponownej akceptacji bieżącej wersji.",
-      "withdraw_guardian_title": "Wycofać prośbę o zgodę opiekuna?",
-      "withdraw_guardian_body": "Bieżąca prośba stanie się nieważna. Przed udziałem może być konieczne wysłanie nowej.",
       "withdraw_review_title": "Wycofać tę decyzję dotyczącą udziału?",
       "withdraw_review_body": "Kończy to aktywną decyzję dla {{name}}, zachowując jej historię audytu."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Wymagane jest działanie",
       "success": {
         "acknowledge": "Zatwierdzono kodeks postępowania.",
-        "withdraw_code": "Potwierdzenie kodu zostało wycofane.",
-        "request_guardian": "Wysłano prośbę o zgodę opiekuna.",
-        "withdraw_guardian": "Wycofano prośbę o zgodę opiekuna."
+        "withdraw_code": "Potwierdzenie kodu zostało wycofane."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Zmiany w wersji roboczej są prywatne do czasu ich opublikowania. Publikowanie tworzy niezmienną wersję na potrzeby dopasowywania dowodów.",
       "minimum_age": "Minimalny wiek",
       "minimum_age_hint": "Pozostaw puste, jeśli wydarzenie nie ma minimalnego wieku.",
-      "guardian_required": "Wymagaj zgody opiekuna w przypadku osób niepełnoletnich",
-      "guardian_required_hint": "Zgoda jest powiązana z dokładną opublikowaną wersją wymagań i datą wydarzenia.",
-      "minor_threshold": "Niewielki próg wiekowy",
-      "minor_threshold_hint": "Członkowie poniżej tego wieku biorący udział w wydarzeniu muszą uzyskać zgodę.",
       "code_required": "Wymagaj potwierdzenia kodeksu postępowania",
       "code_required_hint": "Przed wzięciem udziału uczestnicy muszą zapoznać się z dokładnym opublikowanym tekstem.",
       "code_version": "Wersja tekstowa kodu",
@@ -135,28 +125,6 @@
         "acknowledged": "Potwierdzony"
       }
     },
-    "guardian": {
-      "title": "Zgoda opiekuna",
-      "description": "Opiekun otrzymuje prywatny, ograniczony czasowo link. Ich tożsamość i token zgody nigdy nie są widoczne na liście uczestników wydarzenia.",
-      "name_label": "Imię opiekuna",
-      "email_label": "E-mail opiekuna",
-      "relationship_label": "Stosunek do uczestnika",
-      "privacy_notice": "Adres jest szyfrowany na potrzeby dostawy i po przetworzeniu usuwany z koperty wysyłkowej.",
-      "relationships": {
-        "parent": "Rodzic",
-        "guardian": "Opiekun",
-        "legal_guardian": "Opiekun prawny",
-        "carer": "Opiekun faktyczny"
-      },
-      "status": {
-        "not_required": "Nie jest wymagane",
-        "required": "Wymagana zgoda",
-        "pending": "Oczekujący opiekun",
-        "active": "Zgoda udzielona",
-        "withdrawn": "Wycofany",
-        "expired": "Wygasły"
-      }
-    },
     "decisions": {
       "deny": "Odmów udziału",
       "remove": "Usuń z wydarzenia"
@@ -195,21 +163,6 @@
       "version": "Wersja decyzyjna",
       "audit_history": "Historia audytu (wpisy {{count}})",
       "pagination": "Strony z recenzjami uczestnictwa"
-    },
-    "guardian_grant": {
-      "page_title": "Zgoda opiekuna",
-      "title": "Sprawdź zgodę opiekuna",
-      "description": "Potwierdź adres e-mail, na który otrzymano ten prywatny link, a następnie wyraż zgodę na wzięcie przez uczestnika udziału zgodnie z opublikowanymi wymogami bezpieczeństwa dotyczącymi wydarzenia.",
-      "email_label": "Adres e-mail opiekuna",
-      "email_hint": "Wpisz ten sam adres, na który otrzymano prośbę o zgodę.",
-      "confirm_label": "Jestem wskazanym rodzicem, opiekunem lub opiekunem i wyrażam zgodę na udział tego uczestnika.",
-      "privacy_notice": "Link jest ograniczony czasowo i można go używać tylko w przypadku tej wersji wydarzenia i wymagań. Odpowiedź nie ujawnia, czy adres e-mail jest zarejestrowany.",
-      "submit": "Wyraź zgodę",
-      "success_title": "Zgoda zapisana",
-      "success_description": "Uczestnik może teraz kontynuować, gdy zostaną spełnione inne wymagania dotyczące wydarzenia.",
-      "invalid_title": "Nie można użyć tego linku do zgody",
-      "invalid_description": "Link lub adres e-mail może być nieprawidłowy, wygasł lub został już uzupełniony. Poproś uczestnika o przesłanie nowej prośby.",
-      "browse_events": "Przeglądaj wydarzenia"
     }
   },
   "govuk": {

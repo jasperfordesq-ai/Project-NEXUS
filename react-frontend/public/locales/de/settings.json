@@ -243,7 +243,8 @@
     "identity_verified_lock": "Ihr Name ist gesperrt, da Ihre Identität verifiziert wurde.",
     "phone_invalid": "Die Telefonnummer muss im internationalen Format eingegeben werden (z. B. +1 555 123 4567)",
     "date_of_birth": "Geburtsdatum",
-    "dob_description": "Erforderlich für die Identitätsverifizierung"
+    "dob_description": "Erforderlich für die Identitätsverifizierung",
+    "dob_under_minimum_age": "Sie müssen mindestens 18 Jahre alt sein, um diese Plattform zu nutzen. Bitte überprüfen Sie das eingegebene Geburtsdatum."
   },
   "notification_prefs": {
     "new_messages": "Neue Nachrichten",

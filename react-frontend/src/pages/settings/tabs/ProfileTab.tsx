@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTheme } from '@/contexts';
 import { AVATAR_UPLOAD_ACCEPT } from '@/lib/avatarUpload';
+import { latestAdultDateOfBirth } from '@/lib/minimum-age';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -57,6 +58,8 @@ interface ProfileTabProps {
   isUploading: boolean;
   isIdVerified?: boolean;
   isDirty?: boolean;
+  /** The server's refusal of the date of birth (e.g. under the minimum age). */
+  dobError?: string | null;
   onProfileDataChange: (updater: (prev: ProfileFormData) => ProfileFormData) => void;
   onSave: () => void;
   onAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -88,6 +91,7 @@ export function ProfileTab({
   isUploading,
   isIdVerified = false,
   isDirty = false,
+  dobError = null,
   onProfileDataChange,
   onSave,
   onAvatarUpload,
@@ -209,7 +213,11 @@ export function ProfileTab({
             value={profileData.date_of_birth || ''}
             onChange={(e) => onProfileDataChange((prev) => ({ ...prev, date_of_birth: e.target.value }))}
             classNames={inputClassNames}
-            max={new Date().toISOString().split('T')[0]}
+            // Adults-only decision 2026-09-25: never offer a date of birth
+            // that would make the member under 18.
+            max={latestAdultDateOfBirth()}
+            isInvalid={!!dobError}
+            errorMessage={dobError ?? undefined}
             isReadOnly={isIdVerified}
             isDisabled={isIdVerified}
             endContent={isIdVerified ? <Lock className="w-4 h-4 text-theme-subtle" aria-hidden="true" /> : undefined}

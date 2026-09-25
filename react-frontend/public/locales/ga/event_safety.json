@@ -13,8 +13,6 @@
       "confirm_archive": "Cartlann anois",
       "acknowledge": "Admhaigh an cód",
       "withdraw_acknowledgement": "Admháil a tharraingt siar",
-      "request_guardian_consent": "Iarr toiliú caomhnóra",
-      "withdraw_guardian_consent": "Iarratas ar thoiliú a tharraingt siar",
       "change_member": "Athrú ball",
       "save_review": "Sábháil cinneadh athbhreithnithe",
       "cancel_edit": "Cealaigh eagarthóireacht",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Tarraing siar d’admháil ar an gcód iompair?",
       "withdraw_code_body": "D’fhéadfadh sé seo bac a chur ar do rannpháirtíocht go dtí go n-admhóidh tú an leagan reatha arís.",
-      "withdraw_guardian_title": "Tarraing siar an t-iarratas ar thoiliú caomhnóra?",
-      "withdraw_guardian_body": "Beidh an t-iarratas reatha neamhbhailí. Seans go mbeidh ort iarratas nua a sheoladh sula nglacfaidh tú páirt.",
       "withdraw_review_title": "Tarraing siar an cinneadh rannpháirtíochta seo?",
       "withdraw_review_body": "Cuireann sé seo deireadh leis an gcinneadh gníomhach do {{name}} agus coinnítear stair an iniúchta."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Tá gníomh ag teastáil",
       "success": {
         "acknowledge": "Admhaítear an cód iompair.",
-        "withdraw_code": "Aitheantas cód tarraingthe siar.",
-        "request_guardian": "Iarratas um thoiliú caomhnóra seolta.",
-        "withdraw_guardian": "Iarratas ar thoiliú caomhnóra tarraingthe siar."
+        "withdraw_code": "Aitheantas cód tarraingthe siar."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Tá na dréacht-athruithe príobháideach go dtí go bhfoilsítear iad. Cruthaíonn an fhoilsitheoireacht leagan nach féidir a mhalartú le haghaidh meaitseáil fianaise.",
       "minimum_age": "Aois íosta",
       "minimum_age_hint": "Fág bán nuair nach bhfuil aois íosta ag an imeacht.",
-      "guardian_required": "Toiliú caomhnóra a éileamh do mhionaoisigh",
-      "guardian_required_hint": "Tá toiliú ceangailte leis an leagan ceanglais fhoilsithe chruinn agus dáta an imeachta.",
-      "minor_threshold": "Tairseach mionaoise",
-      "minor_threshold_hint": "Teastaíonn toiliú ó bhaill faoi bhun na haoise seo ag an imeacht.",
       "code_required": "Admháil cód iompair a éileamh",
       "code_required_hint": "Ní mór dóibh siúd atá i láthair an téacs cruinn foilsithe a admháil sula nglacfaidh siad páirt.",
       "code_version": "Leagan téacs cód",
@@ -135,28 +125,6 @@
         "acknowledged": "Admhaithe"
       }
     },
-    "guardian": {
-      "title": "Toiliú caomhnóra",
-      "description": "Faigheann an caomhnóir nasc príobháideach a bhfuil teorainn ama leis. Ní thaispeántar a n-aitheantas ná a n-chomhartha toilithe ar an uainchlár imeachtaí.",
-      "name_label": "Ainm caomhnóir",
-      "email_label": "Ríomhphost caomhnóra",
-      "relationship_label": "Gaol leis an lucht freastail",
-      "privacy_notice": "Criptítear an seoladh le seachadadh agus baintear é den chlúdach seachadta tar éis a phróiseáil.",
-      "relationships": {
-        "parent": "Tuismitheoir",
-        "guardian": "Caomhnóir",
-        "legal_guardian": "Caomhnóir dlíthiúil",
-        "carer": "Cúramóir"
-      },
-      "status": {
-        "not_required": "Ní gá",
-        "required": "Toiliú ag teastáil",
-        "pending": "Ag feitheamh le caomhnóir",
-        "active": "Toiliú tugtha",
-        "withdrawn": "Tarraingthe siar",
-        "expired": "imithe in éag"
-      }
-    },
     "decisions": {
       "deny": "Diúltaigh rannpháirtíocht",
       "remove": "Bain den imeacht"
@@ -195,21 +163,6 @@
       "version": "Leagan Cinnidh",
       "audit_history": "Stair iniúchta ({{count}} iontrálacha)",
       "pagination": "Leathanaigh athbhreithnithe rannpháirtíochta"
-    },
-    "guardian_grant": {
-      "page_title": "Toiliú caomhnóra",
-      "title": "Athbhreithnigh toiliú caomhnóra",
-      "description": "Deimhnigh an seoladh ríomhphoist a fuair an nasc príobháideach seo, ansin toiliú don lucht freastail páirt a ghlacadh faoi riachtanais sábháilteachta foilsithe na hócáide.",
-      "email_label": "Seoladh ríomhphoist caomhnóra",
-      "email_hint": "Cuir isteach an seoladh céanna a fuair an t-iarratas ar thoiliú.",
-      "confirm_label": "Is mise an tuismitheoir, caomhnóir nó cúramóir ainmnithe agus toilím go nglacfaidh an freastail seo páirt ann.",
-      "privacy_notice": "Tá teorainn ama leis an nasc agus ní féidir é a úsáid ach amháin don imeacht seo agus don leagan riachtanach. Ní nochtann an freagra cibé an bhfuil seoladh ríomhphoist cláraithe.",
-      "submit": "Tabhair toiliú",
-      "success_title": "Toiliú taifeadta",
-      "success_description": "Is féidir leis an lucht freastail leanúint ar aghaidh anois nuair a bheidh aon riachtanais imeachta eile críochnaithe.",
-      "invalid_title": "Ní féidir an nasc toilithe seo a úsáid",
-      "invalid_description": "Seans go bhfuil an nasc nó an seoladh ríomhphoist mícheart, go bhfuil sé imithe in éag nó críochnaithe cheana féin. Iarr ar an bhfreastalaí iarratas nua a sheoladh.",
-      "browse_events": "Brabhsáil imeachtaí"
     }
   },
   "govuk": {

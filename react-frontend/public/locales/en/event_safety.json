@@ -13,8 +13,6 @@
       "confirm_archive": "Archive now",
       "acknowledge": "Acknowledge the code",
       "withdraw_acknowledgement": "Withdraw acknowledgement",
-      "request_guardian_consent": "Request guardian consent",
-      "withdraw_guardian_consent": "Withdraw consent request",
       "change_member": "Change member",
       "save_review": "Save review decision",
       "cancel_edit": "Cancel edit",
@@ -24,8 +22,6 @@
     "confirmations": {
       "withdraw_code_title": "Withdraw your code-of-conduct acknowledgement?",
       "withdraw_code_body": "This may block your participation until you acknowledge the current version again.",
-      "withdraw_guardian_title": "Withdraw the guardian consent request?",
-      "withdraw_guardian_body": "The current request will become invalid. You may need to send a new request before participating.",
       "withdraw_review_title": "Withdraw this participation decision?",
       "withdraw_review_body": "This ends the active decision for {{name}} while preserving its audit history."
     },
@@ -57,9 +53,7 @@
       "attention_title": "Action is required",
       "success": {
         "acknowledge": "Code of conduct acknowledged.",
-        "withdraw_code": "Code acknowledgement withdrawn.",
-        "request_guardian": "Guardian consent request sent.",
-        "withdraw_guardian": "Guardian consent request withdrawn."
+        "withdraw_code": "Code acknowledgement withdrawn."
       }
     },
     "rollout": {
@@ -72,10 +66,6 @@
       "description": "Draft changes are private until published. Publishing creates an immutable version for evidence matching.",
       "minimum_age": "Minimum age",
       "minimum_age_hint": "Leave blank when the event has no minimum age.",
-      "guardian_required": "Require guardian consent for minors",
-      "guardian_required_hint": "Consent is bound to the exact published requirement version and event date.",
-      "minor_threshold": "Minor age threshold",
-      "minor_threshold_hint": "Members below this age at the event need consent.",
       "code_required": "Require code-of-conduct acknowledgement",
       "code_required_hint": "Attendees must acknowledge the exact published text before participating.",
       "code_version": "Code text version",
@@ -135,28 +125,6 @@
         "acknowledged": "Acknowledged"
       }
     },
-    "guardian": {
-      "title": "Guardian consent",
-      "description": "The guardian receives a private, time-limited link. Their identity and consent token are never shown in the event roster.",
-      "name_label": "Guardian name",
-      "email_label": "Guardian email",
-      "relationship_label": "Relationship to the attendee",
-      "privacy_notice": "The address is encrypted for delivery and removed from the delivery envelope after processing.",
-      "relationships": {
-        "parent": "Parent",
-        "guardian": "Guardian",
-        "legal_guardian": "Legal guardian",
-        "carer": "Carer"
-      },
-      "status": {
-        "not_required": "Not required",
-        "required": "Consent required",
-        "pending": "Awaiting guardian",
-        "active": "Consent granted",
-        "withdrawn": "Withdrawn",
-        "expired": "Expired"
-      }
-    },
     "decisions": {
       "deny": "Deny participation",
       "remove": "Remove from event"
@@ -195,21 +163,6 @@
       "version": "Decision version",
       "audit_history": "Audit history ({{count}} entries)",
       "pagination": "Participation review pages"
-    },
-    "guardian_grant": {
-      "page_title": "Guardian consent",
-      "title": "Review guardian consent",
-      "description": "Confirm the email address that received this private link, then give consent for the attendee to take part under the event's published safety requirements.",
-      "email_label": "Guardian email address",
-      "email_hint": "Enter the same address that received the consent request.",
-      "confirm_label": "I am the named parent, guardian or carer and I consent to this attendee taking part.",
-      "privacy_notice": "The link is time limited and can be used only for this event and requirement version. The response does not reveal whether an email address is registered.",
-      "submit": "Give consent",
-      "success_title": "Consent recorded",
-      "success_description": "The attendee can now continue once any other event requirements are complete.",
-      "invalid_title": "This consent link cannot be used",
-      "invalid_description": "The link or email address may be incorrect, expired or already completed. Ask the attendee to send a new request.",
-      "browse_events": "Browse events"
     }
   },
   "govuk": {

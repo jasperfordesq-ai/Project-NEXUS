@@ -47,6 +47,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { api, tokenManager } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { ACCOUNT_UNDER_MINIMUM_AGE } from '@/lib/minimum-age';
 
 interface Tenant {
   id: number;
@@ -316,6 +317,7 @@ export function LoginPage() {
     conditionalAbortRef.current = null;
     conditionalStartedRef.current = false;
     setSelectedTenantId(tenantId);
+    if (error) clearError();
     if (tenantId) {
       const expectedGeneration = tokenManager.getSessionGeneration();
       void tokenManager.runIfSessionCurrent(expectedGeneration, () => {
@@ -331,12 +333,22 @@ export function LoginPage() {
     }
   }, [isAuthenticated, navigate, from]);
 
-  // Clear error when form changes
+  // Clear error when form changes. Not on arrival: a member sent here after
+  // their session ended (for example, an account under the minimum age) must
+  // still be able to read why.
+  // Compared by value (not "skip the first run") so StrictMode's repeated
+  // mount effect cannot clear it either. The community picker is excluded
+  // because it is also filled in automatically on arrival; a member choosing a
+  // community clears the error in handleTenantChange instead.
+  const formSnapshot = JSON.stringify([email, password, twoFactorCode]);
+  const lastFormSnapshotRef = useRef(formSnapshot);
   useEffect(() => {
+    if (lastFormSnapshotRef.current === formSnapshot) return;
+    lastFormSnapshotRef.current = formSnapshot;
     if (error) {
       clearError();
     }
-  }, [email, password, twoFactorCode, selectedTenantId]); // eslint-disable-line react-hooks/exhaustive-deps -- clear validation error on input change; error/clearError excluded to avoid loop
+  }, [formSnapshot]); // eslint-disable-line react-hooks/exhaustive-deps -- clear validation error on input change; error/clearError excluded to avoid loop
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -427,6 +439,10 @@ export function LoginPage() {
         toast.error(t('passkey_error_domain'));
       } else if (result.errorCode === 'FEATURE_DISABLED') {
         toast.error(t('passkey_disabled'));
+      } else if (result.errorCode === ACCOUNT_UNDER_MINIMUM_AGE) {
+        // Adults-only decision 2026-09-25: the passkey was fine; the account
+        // cannot sign in. Say why, in the server's words when it sent them.
+        toast.error(result.error || t('login.under_minimum_age'));
       } else if (result.errorCode === 'AUTH_WEBAUTHN_CREDENTIAL_NOT_FOUND') {
         // Compatibility with older servers. Current public login normalises
         // this code to avoid account/passkey enumeration.

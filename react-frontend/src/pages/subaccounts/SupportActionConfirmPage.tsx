@@ -13,7 +13,8 @@
  * Deliberately does NOT confirm on page load: mail scanners prefetch links,
  * and approval must be a human act. The GET behind this page is a read-only
  * lookup; only the explicit button fires the confirming POST. (Same split as
- * the volunteering guardian-consent verify page this mirrors.)
+ * the volunteering guardian-consent verify page it was modelled on, retired
+ * with the adults-only decision of 2026-09-25.)
  *
  * There is no decline button here — declining requires a signed-in session
  * (Settings → Linked accounts). Doing nothing is always safe: the request

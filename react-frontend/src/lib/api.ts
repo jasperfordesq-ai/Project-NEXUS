@@ -24,6 +24,7 @@ import { recordApiDiagnostic } from '@/lib/supportDiagnostics';
 import { safeLocalStorageSet } from '@/lib/safeStorage';
 import { queueSentryApiCall, queueSentryBreadcrumb, queueSentryMessage } from '@/lib/telemetryQueue';
 import i18n, { SUPPORTED_LOCALE_CODES } from '@/i18n';
+import { ACCOUNT_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -60,11 +61,17 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID || null;
 
 // Custom events
 export const SESSION_EXPIRED_EVENT = 'nexus:session_expired';
-/** Why a session ended: plain expiry, or the server now requiring a second factor. */
-export type SessionEndReason = 'expired' | 'mfa_required';
+/**
+ * Why a session ended: plain expiry, the server now requiring a second factor,
+ * or the account being under the platform's minimum age (adults-only decision
+ * 2026-09-25) — which no sign-in can fix.
+ */
+export type SessionEndReason = 'expired' | 'mfa_required' | 'under_minimum_age';
 export interface SessionExpiredDetail {
   reason: SessionEndReason;
   sessionGeneration?: string | null;
+  /** The server's own translated explanation, when it sent one. */
+  message?: string;
 }
 export const SESSION_EXPIRING_EVENT = 'nexus:session_expiring';
 export const SESSION_REPLACED_EVENT = 'nexus:session_replaced';
@@ -768,6 +775,13 @@ export class ApiClient {
   private baseUrl: string;
   private isRefreshing = false;
   private refreshPromise: Promise<TokenRefreshOutcome> | null = null;
+  /**
+   * Set when the refresh endpoint refused the account as under the minimum
+   * age, so the session that then ends is explained rather than "expired".
+   * Reset at the start of every refresh; read by handleTokenRefresh and by
+   * request(), which hands the caller the refusal instead of "expired".
+   */
+  private minimumAgeRefusal: { message?: string } | null = null;
   private pendingRefreshWaiters = new Set<PendingRefreshWaiter>();
 
   // Request deduplication: track in-flight GET requests
@@ -885,9 +899,23 @@ export class ApiClient {
   private expireSession(
     reason: SessionEndReason = 'expired',
     expectedGeneration: string | null = tokenManager.getSessionGeneration(),
+    message?: string,
   ): void {
     tokenManager.clearSession(expectedGeneration);
-    this.dispatchSessionExpired(reason, expectedGeneration);
+    this.dispatchSessionExpired(reason, expectedGeneration, message);
+  }
+
+  /**
+   * The response a caller receives when the server refused the account as
+   * under the minimum age. It keeps the stable code so pages can recognise it.
+   */
+  private minimumAgeRefusalResponse<T>(message?: string): ApiResponse<T> {
+    return {
+      success: false,
+      error: message ?? i18n.t('login.under_minimum_age', { ns: 'auth' }),
+      code: ACCOUNT_UNDER_MINIMUM_AGE,
+      errors: [{ code: ACCOUNT_UNDER_MINIMUM_AGE, ...(message ? { message } : {}) }],
+    };
   }
 
   /**
@@ -1006,12 +1034,15 @@ export class ApiClient {
   private dispatchSessionExpired(
     reason: SessionEndReason = 'expired',
     sessionGeneration: string | null = tokenManager.getSessionGeneration(),
+    message?: string,
   ): void {
     const now = Date.now();
     if (now - lastSessionExpiredTime > 5000) {
       lastSessionExpiredTime = now;
       window.dispatchEvent(new CustomEvent<SessionExpiredDetail>(SESSION_EXPIRED_EVENT, {
-        detail: { reason, sessionGeneration },
+        detail: message === undefined
+          ? { reason, sessionGeneration }
+          : { reason, sessionGeneration, message },
       }));
     }
   }
@@ -1140,6 +1171,7 @@ export class ApiClient {
    * Attempt to refresh the access token
    */
   private async refreshAccessToken(signal?: AbortSignal): Promise<TokenRefreshOutcome> {
+    this.minimumAgeRefusal = null;
     const logoutGenerationAtStart = localStorage.getItem(ApiClient.LOGOUT_GENERATION_KEY);
     const authContextAtStart = this.captureAuthContext();
     if (this.isLogoutInProgress(authContextAtStart.sessionGeneration)) {
@@ -1187,6 +1219,12 @@ export class ApiClient {
             // the locally stored credentials; cross-tab generation checks stop
             // queued Web Lock owners from presenting the old token again.
             return 'transient';
+          }
+        }
+        if (response.status === 403) {
+          const refusal = await response.json().catch(() => null) as { errors?: ApiErrorDetail[] } | null;
+          if (hasApiErrorCode(refusal, ACCOUNT_UNDER_MINIMUM_AGE)) {
+            this.minimumAgeRefusal = { message: serverMessageFor(refusal?.errors, ACCOUNT_UNDER_MINIMUM_AGE) };
           }
         }
         if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) {
@@ -1427,7 +1465,12 @@ export class ApiClient {
         // get a fresh response with the new token rather than the cached 401.
         this.inflightRequests.clear();
       } else if (outcome === 'invalid') {
-        this.expireSession('expired', generationAtQueueTime.sessionGeneration);
+        const refusal = this.minimumAgeRefusal;
+        if (refusal) {
+          this.expireSession('under_minimum_age', generationAtQueueTime.sessionGeneration, refusal.message);
+        } else {
+          this.expireSession('expired', generationAtQueueTime.sessionGeneration);
+        }
       }
 
       return outcome;
@@ -1622,6 +1665,9 @@ export class ApiClient {
           if (outcome === 'transient') {
             return this.refreshUnavailableResponse<T>();
           }
+          if (this.minimumAgeRefusal) {
+            return this.minimumAgeRefusalResponse<T>(this.minimumAgeRefusal.message);
+          }
           return this.sessionExpiredResponse<T>();
         }
 
@@ -1747,6 +1793,21 @@ export class ApiClient {
       const firstError = errors && errors.length > 0 ? errors[0] : null;
       const errorMessage = data.error ?? firstError?.message ?? data.message ?? i18n.t('api.request_failed', { ns: 'errors' });
       const errorCode = data.code ?? firstError?.code ?? `HTTP_${response.status}`;
+
+      // Adults-only decision 2026-09-25: the server refuses every authenticated
+      // request from an account whose recorded date of birth is under 18. No
+      // refresh or retry can change that, so the session ends here, for every
+      // page at once, with the server's explanation. Sign-in calls (skipAuth)
+      // carry no session and are explained by their caller instead.
+      if (
+        response.status === 403
+        && !options.skipAuth
+        && (errorCode === ACCOUNT_UNDER_MINIMUM_AGE || hasApiErrorCode(data, ACCOUNT_UNDER_MINIMUM_AGE))
+      ) {
+        const message = serverMessageFor(errors, ACCOUNT_UNDER_MINIMUM_AGE);
+        this.expireSession('under_minimum_age', authContextAtRequestStart.sessionGeneration, message);
+        return this.minimumAgeRefusalResponse<T>(message);
+      }
 
       // Dispatch global error for server errors (5xx) so useApiErrorHandler can show toasts.
       // Client errors (4xx) are typically handled by the calling component.

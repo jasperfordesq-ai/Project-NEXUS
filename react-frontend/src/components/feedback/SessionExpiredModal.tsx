@@ -38,6 +38,12 @@ export function SessionExpiredModal() {
     }
   }, [status]);
 
+  // The handler is registered once; read the latest router helpers through refs.
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+  const tenantPathRef = useRef(tenantPath);
+  tenantPathRef.current = tenantPath;
+
   useEffect(() => {
     function handleSessionExpired(event: Event) {
       const detail = (event as CustomEvent<SessionExpiredDetail>).detail;
@@ -45,6 +51,14 @@ export function SessionExpiredModal() {
         detail?.sessionGeneration !== undefined
         && tokenManager.getSessionGeneration() !== detail.sessionGeneration
       ) return;
+      // Adults-only decision 2026-09-25: an account under 18 cannot sign in
+      // again, so a "Log in" prompt would be a dead end. Go straight to the
+      // sign-in page, where AuthContext shows why the session ended.
+      if (detail?.reason === 'under_minimum_age') {
+        setIsOpen(false);
+        navigateRef.current(tenantPathRef.current('/login'), { replace: true });
+        return;
+      }
       // Only show modal if user had an active session — not for stale tokens on first visit
       if (wasAuthenticated.current) {
         setReason(detail?.reason ?? 'expired');
