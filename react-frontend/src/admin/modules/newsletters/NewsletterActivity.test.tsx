@@ -408,7 +408,9 @@ describe('NewsletterActivity', () => {
     render(<NewsletterActivity />);
     await waitFor(() => screen.getByRole('heading', { level: 1 }));
 
-    fireEvent.click(screen.getAllByRole('tab')[1]);
+    const openersTab = screen.getAllByRole('tab')[1];
+    expect(openersTab).toBeDefined();
+    fireEvent.click(openersTab!);
     await waitFor(() => expect(mockAdminNewsletters.getOpeners).toHaveBeenCalled());
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
