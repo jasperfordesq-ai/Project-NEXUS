@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Production's blue/green browser gate now tests the exact candidate release over local HTTPS, so its sign-in checks use the same secure-cookie rules as the live site.
+
+- The Swiss AI consent notice now appears only after sign-in, when its consent choices can be saved, and dismissing it applies only to the current member and community.
+
 - Prepare Android 1.8.0 (build 18) for Internal testing: the organiser Safety screen, the iPhone lock, photo, date and location fixes, and the reconnect and large-text fixes from the mobile finish work.
 
 - In the mobile app, if location access has been refused for good (always the case on an iPhone after one refusal), the Listings "Near me" filter and the nearby marketplace map now offer an "Open settings" button, so the member can turn location back on. Before, they only saw a message with no way forward.
@@ -94,6 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.
 
 ### Security
+
+- Browser sign-in now keeps the 15-minute access credential in memory and the rotating refresh credential in a secure, host-only HttpOnly cookie. Existing readable browser token records are removed on startup, and the native app's token response remains available. Same-origin API routing, session continuity checks, and recoverable retry screens across protected panels protect custom communities and account switches. Browser gates now use distinct cookie sessions, test Safari's engine over HTTPS, and isolate synthetic MFA and accessibility runs under the existing rate limits. The mobile API route inventory is checked against the running Laravel build (F-149 / CodeQL #1778).
 
 - Community boundaries: an admin can no longer look up another community's members through data-protection requests, CRM tasks or deliverables; a federation partnership can no longer be made active without the other community agreeing; switching federation off now takes a community out of federation completely; secret groups and private-group events are no longer shared with partner communities; either side can no longer reactivate a credit agreement the other suspended; and the partner API respects each community's own switch.
 

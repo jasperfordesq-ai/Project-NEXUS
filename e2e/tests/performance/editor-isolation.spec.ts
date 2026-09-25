@@ -5,9 +5,9 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { dismissBlockingModals, tenantUrl } from '../../helpers/test-utils';
+import { primeApiAuth } from '../../helpers/browser-session';
 
 const EMPTY_STORAGE = { cookies: [], origins: [] };
-const USER_STORAGE = 'e2e/fixtures/.auth/user.json';
 const EDITOR_ASSET = /\/(?:vendor-(?:grapesjs|codemirror)|PageDesignBuilder|NewsletterBuilder|HtmlSourceEditor)-[^/?]+\.(?:js|css)(?:\?|$)/i;
 
 async function visitWithoutEditorAssets(
@@ -48,7 +48,8 @@ test.describe('editor bundle isolation', () => {
   });
 
   test.describe('ordinary member startup', () => {
-    test.use({ storageState: USER_STORAGE });
+    test.use({ storageState: EMPTY_STORAGE });
+    test.beforeEach(async ({ page }) => { await primeApiAuth(page, 'user'); });
 
     test('dashboard and listings do not fetch admin editors', async ({ page }) => {
       await visitWithoutEditorAssets(page, 'dashboard', { requireAuthenticatedRoute: true });

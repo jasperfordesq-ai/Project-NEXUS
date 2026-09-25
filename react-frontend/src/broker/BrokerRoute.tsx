@@ -13,6 +13,7 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, useTenant } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
+import { AuthUnavailableScreen } from '@/components/routing/AuthUnavailableScreen';
 import { hasBrokerPanelAccess } from '@/lib/access';
 
 export function BrokerRoute() {
@@ -23,6 +24,10 @@ export function BrokerRoute() {
 
   if (isLoading || status === 'loading') {
     return <LoadingScreen message={t('checking_permissions')} />;
+  }
+
+  if (status === 'unavailable') {
+    return <AuthUnavailableScreen />;
   }
 
   if (!isAuthenticated) {

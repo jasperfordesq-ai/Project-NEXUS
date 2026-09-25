@@ -83,6 +83,15 @@ describe('AdminRoute', () => {
     expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
+  it('keeps a temporarily unavailable admin session on a retry screen', async () => {
+    mockAuth.status = 'unavailable';
+    const { AdminRoute } = await import('./AdminRoute');
+    render(<AdminRoute />);
+    expect(screen.queryByTestId('redirect')).not.toBeInTheDocument();
+    screen.getByRole('button').click();
+    expect(mockAuth.refreshUser).toHaveBeenCalledOnce();
+  });
+
   it('redirects unauthenticated users to login', async () => {
     mockAuth.isAuthenticated = false;
     mockAuth.user = null;

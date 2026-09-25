@@ -78,16 +78,9 @@ export function TenantShell({ appRoutes }: TenantShellProps) {
   const [routeRegistryAttempt, setRouteRegistryAttempt] = useState(0);
 
   // Listen for impersonation handoff from the admin tab via BroadcastChannel.
-  // The proof is exchanged for a real access token, stored in this tab's
-  // sessionStorage (never the shared localStorage holding the admin's session),
-  // then the page reloads to pick up the member's auth state.
+  // The proof is exchanged for an access token in this document's memory.
+  // AuthProvider refreshes its user in the same document after handoff.
   const [impersonationFailed, setImpersonationFailed] = useState(false);
-  useEffect(() => {
-    return listenForImpersonationToken(
-      () => { window.location.reload(); },
-      () => { setImpersonationFailed(true); },
-    );
-  }, []);
 
   // Use detectTenantFromUrl() which correctly implements TRS-001 R1–R4:
   // - R1: Custom domain (e.g. hour-timebank.ie) → slug = null (backend resolves from Host)
@@ -167,6 +160,7 @@ export function TenantShell({ appRoutes }: TenantShellProps) {
   return (
     <TenantProvider tenantSlug={effectiveSlug}>
       <AuthProvider>
+        <ImpersonationHandoffListener setFailed={setImpersonationFailed} />
         {impersonationFailed && <ImpersonationHandoffFailed />}
         <TenantShellRuntime
           appRoutes={loadedRouteRegistry?.kind === desiredRouteRegistryKind ? loadedRouteRegistry.routes : null}
@@ -182,6 +176,15 @@ export function TenantShell({ appRoutes }: TenantShellProps) {
       </AuthProvider>
     </TenantProvider>
   );
+}
+
+function ImpersonationHandoffListener({ setFailed }: { setFailed: (failed: boolean) => void }) {
+  const { refreshUser } = useAuth();
+  useEffect(() => listenForImpersonationToken(
+    () => { void refreshUser(); },
+    () => { setFailed(true); },
+  ), [refreshUser, setFailed]);
+  return null;
 }
 
 function TenantShellRuntime({

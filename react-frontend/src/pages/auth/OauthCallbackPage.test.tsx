@@ -141,7 +141,7 @@ vi.mock('@/contexts/TenantContext', () => ({
 
 // ─── @/lib/api — tokenManager ─────────────────────────────────────────────────
 vi.mock('@/lib/api', () => ({
-  API_BASE: 'https://api.example.test/api',
+  API_BASE: '/api',
   tokenManager: {
     adoptSession: mockAdoptSession,
     adoptSessionIfCurrent: mockAdoptSession,
@@ -299,7 +299,7 @@ describe('OauthCallbackPage', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValueOnce(
-        makeResponse({ success: true, token: 'jwt-abc', tenant_id: 99 }),
+        makeResponse({ success: true, token: 'jwt-abc', tenant_id: 99, session_binding: 'binding' }),
       ),
     );
     mockSearchParams.mockReturnValue(makeBoundCodeParams('valid-code'));
@@ -307,13 +307,13 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', null, '99');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', null, '99', 'binding');
     });
     expect(mockGetOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
   });
 
-  it('stores the rotating refresh token returned by the exchange', async () => {
+  it('adopts the non-secret session binding returned by the exchange', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValueOnce(
@@ -321,7 +321,7 @@ describe('OauthCallbackPage', () => {
           success: true,
           access_token: 'jwt-abc',
           token: 'jwt-abc',
-          refresh_token: 'refresh-xyz',
+          session_binding: 'binding',
           tenant_id: 99,
         }),
       ),
@@ -331,7 +331,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', 'refresh-xyz', '99');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'jwt-abc', null, '99', 'binding');
     });
   });
 
@@ -341,7 +341,7 @@ describe('OauthCallbackPage', () => {
         success: true,
         access_token: 'strict-access',
         token: 'strict-access',
-        refresh_token: 'strict-refresh',
+        session_binding: 'binding',
         tenant_id: 99,
       }),
     );
@@ -359,7 +359,7 @@ describe('OauthCallbackPage', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'strict-access', 'strict-refresh', '99');
+    expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'strict-access', null, '99', 'binding');
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledTimes(1);
     expect(mockClearOAuthBrowserVerifier).toHaveBeenCalledWith(BROWSER_CHALLENGE);
   });
@@ -368,7 +368,7 @@ describe('OauthCallbackPage', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValueOnce(
-        makeResponse({ success: true, token: 'tok', tenant_id: 99 }),
+        makeResponse({ success: true, token: 'tok', tenant_id: 99, session_binding: 'binding' }),
       ),
     );
     mockSearchParams.mockReturnValue(makeBoundCodeParams('valid-code'));
@@ -376,7 +376,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, '99');
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, '99', 'binding');
     });
   });
 
@@ -407,7 +407,7 @@ describe('OauthCallbackPage', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.example.test/api/v2/auth/oauth/exchange',
+        '/api/v2/auth/oauth/exchange',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
@@ -424,7 +424,7 @@ describe('OauthCallbackPage', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValueOnce(
-        makeResponse({ success: true, token: 'tok' }),
+        makeResponse({ success: true, token: 'tok', session_binding: 'binding' }),
       ),
     );
     mockSearchParams.mockReturnValue(makeBoundCodeParams('no-tenant-code'));
@@ -432,7 +432,7 @@ describe('OauthCallbackPage', () => {
     render(<OauthCallbackPage />);
 
     await waitFor(() => {
-      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, undefined);
+      expect(mockAdoptSession).toHaveBeenCalledWith('test-session', 'tok', null, undefined, 'binding');
     });
     expect(mockSetTenantId).not.toHaveBeenCalled();
   });

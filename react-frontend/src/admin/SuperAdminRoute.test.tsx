@@ -82,6 +82,15 @@ describe('SuperAdminRoute', () => {
     expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
+  it('keeps an unavailable super-admin session on the retry screen', async () => {
+    mockAuth.status = 'unavailable';
+    const { SuperAdminRoute } = await import('./SuperAdminRoute');
+    render(<SuperAdminRoute />);
+    expect(screen.queryByTestId('redirect')).not.toBeInTheDocument();
+    screen.getByRole('button').click();
+    expect(mockAuth.refreshUser).toHaveBeenCalledOnce();
+  });
+
   it('redirects null user (unauthenticated) to /admin', async () => {
     mockAuth.user = null;
     const { SuperAdminRoute } = await import('./SuperAdminRoute');
@@ -209,6 +218,14 @@ describe('SuperAdminRoute', () => {
    * this is about refusing cleanly.
    */
   describe('PlatformOnlyRoute', () => {
+    it('keeps an unavailable platform session on the retry screen', async () => {
+      mockAuth.status = 'unavailable';
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      expect(screen.queryByTestId('redirect')).not.toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
+
     it('lets a platform super-admin through', async () => {
       mockAuth.user = { id: 30, is_super_admin: true, super_panel_level: 'master' };
       const { PlatformOnlyRoute } = await import('./SuperAdminRoute');

@@ -105,7 +105,8 @@ describe('safeLocalStorage quota eviction', () => {
   });
 
   it('wipes all non-critical keys on the second stage, preserving critical ones', () => {
-    localStorage.setItem('nexus_access_token', 'tok'); // critical — survives
+    localStorage.setItem('nexus_auth_binding:session', 'binding'); // non-secret continuity survives
+    localStorage.setItem('nexus_access_token', 'legacy-token'); // retired credential is wiped
     localStorage.setItem('some_draft', 'draft'); // non-critical — wiped
 
     vi.spyOn(Storage.prototype, 'setItem')
@@ -118,7 +119,8 @@ describe('safeLocalStorage quota eviction', () => {
     // third call falls through to the real implementation
 
     expect(safeLocalStorageSet('nexus_tenant_id', '2')).toBe(true);
-    expect(localStorage.getItem('nexus_access_token')).toBe('tok');
+    expect(localStorage.getItem('nexus_auth_binding:session')).toBe('binding');
+    expect(localStorage.getItem('nexus_access_token')).toBeNull();
     expect(localStorage.getItem('some_draft')).toBeNull();
   });
 

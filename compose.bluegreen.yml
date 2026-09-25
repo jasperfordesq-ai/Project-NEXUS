@@ -63,7 +63,7 @@ services:
       context: ./react-frontend
       dockerfile: Dockerfile.bluegreen
       args:
-        VITE_API_BASE: https://api.project-nexus.ie/api
+        VITE_API_BASE: /api
         VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
         VITE_GOOGLE_MAPS_MAP_ID: ${GOOGLE_MAPS_MAP_ID:-}
         VITE_SENTRY_DSN: ${SENTRY_DSN_REACT:-}

@@ -28,7 +28,7 @@ it('keeps credentials out of storage until the recovery codes are acknowledged',
   const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
   expect(screen.getByText('manual-key')).toBeInTheDocument();
   expect(mocks.post).toHaveBeenCalledWith('/v2/auth/2fa/setup', { two_factor_token: 'restricted-challenge' }, { skipAuth: true });
-  mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: ['recovery-one'], access_token: 'access', refresh_token: 'refresh', expires_in: 900 } });
+  mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: ['recovery-one'], access_token: 'access', session_binding: 'binding', expires_in: 900 } });
   fireEvent.change(code, { target: { value: '123456' } });
   fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
   await screen.findByText('recovery-one');
@@ -36,7 +36,7 @@ it('keeps credentials out of storage until the recovery codes are acknowledged',
   expect(mocks.refresh).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'I have saved my recovery codes' }));
   await waitFor(() => expect(mocks.user).toHaveBeenCalled());
-  expect(mocks.adopt).toHaveBeenCalledWith('test-session', 'access', 'refresh');
+  expect(mocks.adopt).toHaveBeenCalledWith('test-session', 'access', undefined, undefined, 'binding');
 });
 
 // Two-factor security review (E-004): cancelling forgets the challenge, and an
@@ -75,7 +75,7 @@ async function reachRecoveryCodes(codes: [string, ...string[]] = ['recovery-one'
   mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'manual-key' } });
   render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
   const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
-  mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: codes, access_token: 'access', refresh_token: 'refresh', expires_in: 900 } });
+  mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: codes, access_token: 'access', session_binding: 'binding', expires_in: 900 } });
   fireEvent.change(code, { target: { value: '123456' } });
   fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
   await screen.findByText(codes[0]);

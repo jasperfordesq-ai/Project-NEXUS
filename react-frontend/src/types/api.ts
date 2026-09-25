@@ -145,7 +145,8 @@ export interface LoginSuccessResponse {
   success: true;
   user: User;
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
+  session_binding?: string;
   expires_in: number;
   refresh_expires_in?: number;
   token_type: 'Bearer';
@@ -194,6 +195,7 @@ export interface RefreshTokenResponse {
   is_mobile?: boolean;
   token: string;
   refresh_token?: string;
+  session_binding?: string;
   refresh_expires_in?: number;
 }
 
@@ -226,6 +228,7 @@ export interface RegisterResponse {
   message?: string;
   access_token?: string;
   refresh_token?: string;
+  session_binding?: string;
   token_type?: 'Bearer';
   expires_in?: number;
   refresh_expires_in?: number;

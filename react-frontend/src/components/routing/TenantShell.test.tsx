@@ -19,8 +19,14 @@ let capturedTenantSlug: string | undefined;
 
 const mockUseTenant = vi.fn();
 const mockUseAuth = vi.fn();
+const mockRefreshUser = vi.fn(() => Promise.resolve());
 const mockRefreshTenant = vi.fn(() => Promise.resolve());
 const mockLoadRouteRegistry = vi.hoisted(() => vi.fn());
+const mockListenForImpersonation = vi.hoisted(() => vi.fn((_onReceived: () => void, _onFailed?: () => void) => () => {}));
+
+vi.mock('@/lib/impersonate', () => ({
+  listenForImpersonationToken: mockListenForImpersonation,
+}));
 
 vi.mock('@/routes/routeRegistryLoader', () => ({
   loadRouteRegistry: (kind: 'auth' | 'public' | 'app') => mockLoadRouteRegistry(kind),
@@ -208,6 +214,7 @@ function setupDefaultMocks(overrides: {
   });
   mockUseAuth.mockReturnValue({
     user: null,
+    refreshUser: mockRefreshUser,
     ...overrides.auth,
   });
 }
@@ -248,6 +255,14 @@ describe('TenantShell', () => {
         ),
       }),
     }));
+  });
+
+  it('hydrates an impersonated session in the same document after handoff', () => {
+    renderWithRouter('/dashboard');
+    const onReceived = mockListenForImpersonation.mock.calls[0]?.[0] as (() => void) | undefined;
+    expect(onReceived).toBeTypeOf('function');
+    act(() => { onReceived?.(); });
+    expect(mockRefreshUser).toHaveBeenCalledOnce();
   });
 
   describe('Tenant slug detection', () => {

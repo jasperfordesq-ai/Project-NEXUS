@@ -16,12 +16,12 @@
 //      the write succeed, instead of silently failing forever.
 //
 // This is the single source of truth for the eviction policy; `lib/api.ts`
-// (token writes) and `lib/helpers.ts` (the `storage` JSON helper) both delegate
+// (session coordination) and `lib/helpers.ts` (the `storage` JSON helper) both delegate
 // here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Keys/prefixes that are safe to evict first when storage is full — ordered
-// cheapest first. Auth tokens and tenant config are NOT here; they must survive.
+// cheapest first. Tenant config and non-secret session coordination are NOT here.
 // `i18n_` is this app's real i18next-localstorage-backend prefix (configured in
 // i18n.ts as `i18n_<buildCommit>_`); `i18next_res_` is the library default and
 // is kept only for safety. The translation cache is the largest evictable
@@ -35,12 +35,10 @@ const EVICTABLE_KEYS = [
 ];
 
 // Last-resort allowlist: anything NOT in this set is wiped if storage is still
-// full after the soft eviction above. Auth tokens, tenant identity, and a few
+// full after the soft eviction above. Tenant identity and a few
 // cheap user-preference keys survive; everything else (drafts, caches, UI
 // state) is sacrificed so the user can keep using the app.
 const CRITICAL_KEYS = new Set([
-  'nexus_access_token',
-  'nexus_refresh_token',
   'nexus_auth_session_generation',
   'nexus_tenant_id',
   'nexus_tenant_slug',
@@ -48,7 +46,7 @@ const CRITICAL_KEYS = new Set([
   'nexus_language_user_chosen',
   'userId',
 ]);
-const CRITICAL_PREFIXES = ['nexus_auth_session:'];
+const CRITICAL_PREFIXES = ['nexus_auth_binding:'];
 
 function isQuotaError(e: unknown): boolean {
   return e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22);

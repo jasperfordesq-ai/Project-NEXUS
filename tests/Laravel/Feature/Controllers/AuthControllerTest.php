@@ -9,6 +9,7 @@ namespace Tests\Laravel\Feature\Controllers;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use App\Core\TotpEncryption;
+use App\Http\Middleware\BrowserRefreshCookie;
 use App\Models\User;
 use App\Services\AuthenticationConfigurationService;
 use App\Services\TenantFeatureConfig;
@@ -619,6 +620,55 @@ class AuthControllerTest extends TestCase
         $this->assertNull($tokens->validateRefreshToken($refresh));
         $this->assertNotNull($tokens->validateRefreshToken($successor));
         $this->assertLessThanOrEqual(2592000, (int) $response->json('refresh_expires_in'));
+    }
+
+    public function test_browser_refresh_uses_only_its_bound_cookie_and_rotates_without_json_secret(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'email_verified_at' => now(),
+        ]);
+        $tokens = app(TokenService::class);
+        $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
+        $familyId = $tokens->inspectRefreshTokenForRotation($refresh)['family_id'];
+        $binding = hash('sha256', $familyId);
+        $headers = [
+            'Origin' => 'http://localhost',
+            'X-Nexus-Session-Binding' => $binding,
+        ];
+
+        // A script-supplied body cannot substitute for the HttpOnly credential.
+        $this->apiPost('/auth/refresh-token', ['refresh_token' => $refresh], $headers)
+            ->assertStatus(400);
+
+        $response = $this->withCredentials()->disableCookieEncryption()
+            ->withCookie(BrowserRefreshCookie::cookieName($binding), $refresh)
+            ->apiPost('/auth/refresh-token', ['refresh_token' => 'body-is-ignored'], $headers)
+            ->assertOk()
+            ->assertJsonPath('session_binding', $binding);
+
+        $this->assertArrayNotHasKey('refresh_token', $response->json());
+        $this->assertNotNull($response->headers->getCookies()[0] ?? null);
+        $this->assertSame(BrowserRefreshCookie::cookieName($binding), $response->headers->getCookies()[0]->getName());
+        $this->assertNull($tokens->validateRefreshToken($refresh));
+    }
+
+    public function test_browser_refresh_rejects_a_cookie_from_a_different_session_binding(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $tokens = app(TokenService::class);
+        $refresh = $tokens->generateRefreshToken((int) $user->id, $this->testTenantId);
+        $wrongBinding = hash('sha256', 'different-family');
+
+        $this->withCredentials()->disableCookieEncryption()
+            ->withCookie(BrowserRefreshCookie::cookieName($wrongBinding), $refresh)
+            ->apiPost('/auth/refresh-token', [], [
+                'Origin' => 'http://localhost',
+                'X-Nexus-Session-Binding' => $wrongBinding,
+            ])->assertStatus(401);
+
+        $this->assertNotNull($tokens->validateRefreshToken($refresh));
     }
 
     public function test_refresh_token_cannot_be_used_from_another_tenant_context(): void

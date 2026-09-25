@@ -500,9 +500,23 @@ class AuthController extends BaseApiController
         // token has already expired. TokenService validates the signed token
         // and persisted tenant/user binding before revoking its own family.
         $data = $this->getAllInput();
-        $refreshToken = $data['refresh_token'] ?? '';
+        $browserBinding = $request->attributes->get('nexus_browser_auth')
+            ? \App\Http\Middleware\BrowserRefreshCookie::requestBinding($request)
+            : null;
+        $refreshToken = $request->attributes->get('nexus_browser_auth')
+            ? ($browserBinding !== null
+                ? $request->cookie(\App\Http\Middleware\BrowserRefreshCookie::cookieName($browserBinding), '')
+                : '')
+            : ($data['refresh_token'] ?? '');
         if (!is_string($refreshToken)) {
             $refreshToken = '';
+        }
+        if ($browserBinding !== null && $refreshToken !== '') {
+            $payload = $this->tokenService->inspectRefreshTokenForRotation($refreshToken);
+            $familyId = $payload['family_id'] ?? null;
+            if (!is_string($familyId) || !hash_equals(hash('sha256', $familyId), $browserBinding)) {
+                $refreshToken = '';
+            }
         }
         $tokenRevoked = false;
         $accessTokenRevoked = false;
@@ -573,13 +587,20 @@ class AuthController extends BaseApiController
         }
 
         $data = $this->getAllInput();
-        $refreshToken = $data['refresh_token'] ?? '';
+        $browserBinding = request()->attributes->get('nexus_browser_auth')
+            ? \App\Http\Middleware\BrowserRefreshCookie::requestBinding(request())
+            : null;
+        $refreshToken = request()->attributes->get('nexus_browser_auth')
+            ? ($browserBinding !== null
+                ? request()->cookie(\App\Http\Middleware\BrowserRefreshCookie::cookieName($browserBinding), '')
+                : '')
+            : ($data['refresh_token'] ?? '');
         if (!is_string($refreshToken)) {
             $refreshToken = '';
         }
 
         // Also check Authorization header
-        if (empty($refreshToken)) {
+        if (empty($refreshToken) && !request()->attributes->get('nexus_browser_auth')) {
             $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
             if (preg_match('/Bearer\s+(.+)$/i', $authHeader, $matches)) {
                 $refreshToken = $matches[1];
@@ -605,6 +626,17 @@ class AuthController extends BaseApiController
                 ApiErrorCodes::AUTH_TOKEN_EXPIRED,
                 401
             );
+        }
+
+        if ($browserBinding !== null) {
+            $familyId = $payload['family_id'] ?? null;
+            if (!is_string($familyId) || !hash_equals(hash('sha256', $familyId), $browserBinding)) {
+                return $this->authError(
+                    __('api.invalid_or_expired_refresh_token'),
+                    ApiErrorCodes::AUTH_TOKEN_INVALID,
+                    401
+                );
+            }
         }
 
         $userId = $payload['user_id'] ?? null;
