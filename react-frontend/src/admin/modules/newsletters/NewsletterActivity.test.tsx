@@ -396,4 +396,21 @@ describe('NewsletterActivity', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     }
   });
+
+  it('ignores malformed subscriber rows without an email and keeps valid rows usable', async () => {
+    const invalidEmails = [null, undefined, '', '   '];
+    mockAdminNewsletters.getOpeners.mockResolvedValue(paginatedOf([
+      makeOpener(),
+      ...invalidEmails.map((email) => ({ ...makeOpener(), email })),
+    ]));
+
+    const { NewsletterActivity } = await import('./NewsletterActivity');
+    render(<NewsletterActivity />);
+    await waitFor(() => screen.getByRole('heading', { level: 1 }));
+
+    fireEvent.click(screen.getAllByRole('tab')[1]);
+    await waitFor(() => expect(mockAdminNewsletters.getOpeners).toHaveBeenCalled());
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+  });
 });

@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Newsletter subscriber activity tables now ignore malformed rows without an email instead of crashing when a row has no stable key.
+
 - Production's blue/green browser gate now tests the exact candidate release over local HTTPS, so its sign-in checks use the same secure-cookie rules as the live site.
 
 - The Swiss AI consent notice now appears only after sign-in, when its consent choices can be saved, and dismissing it applies only to the current member and community.
