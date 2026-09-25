@@ -39,12 +39,14 @@ final class AiProviderCallGateTest extends TestCase
     use DatabaseTransactions;
     use FederationIntegrationHarness;
 
-    private string $storage = '/tmp/e035-w8/storage';
+    private string $storage = '';
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        // A private, per-run storage root, removed in tearDown — never a fixed shared path.
+        $this->storage = sys_get_temp_dir() . '/nexus-ai-gate-test-' . bin2hex(random_bytes(6)) . '/storage';
         @mkdir($this->storage, 0777, true);
         $this->app->useStoragePath($this->storage);
 
@@ -71,7 +73,9 @@ final class AiProviderCallGateTest extends TestCase
 
     protected function tearDown(): void
     {
-        exec('rm -rf ' . escapeshellarg($this->storage . '/app'));
+        if ($this->storage !== '') {
+            exec('rm -rf ' . escapeshellarg(dirname($this->storage)));
+        }
         AIServiceFactory::clearCache();
         parent::tearDown();
     }
@@ -129,7 +133,7 @@ final class AiProviderCallGateTest extends TestCase
         // under PHPUnit (move_uploaded_file rejects test uploads), so the gated
         // helper it calls is exercised directly, and the wiring is pinned below.
         [$sender] = $this->pair();
-        $file = $this->storage . '/e035-w8-probe.wav';
+        $file = $this->storage . '/voice-probe.wav';
         file_put_contents($file, $this->wav());
 
         $this->setAiEnabled(false);
