@@ -31,6 +31,7 @@ jest.mock('@/lib/constants', () => ({
 
 import { ApiResponseError, api, authenticatedMediaRequest, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, registerTenantMismatchCallback, attemptTokenRefresh, clearApiSession, installApiSession, __resetRefreshStateForTests } from './client';
 import { storage } from '@/lib/storage';
+import i18n from 'i18next';
 import { updateRequiredStore } from '@/lib/updates/updateRequiredStore';
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
@@ -1463,5 +1464,55 @@ describe('\u{1F534} recovery levers still work AFTER a token renewal', () => {
     });
 
     jest.advanceTimersByTime(3000);
+  });
+});
+
+/**
+ * E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only. The server
+ * refuses an account recorded as under 18 with 403 `ACCOUNT_UNDER_MINIMUM_AGE` — on sign-in
+ * and on every authenticated request. The app must sign such a member out (a retry cannot
+ * clear it) and say why in the member's language; the server's sentence is not used because
+ * the app does not send its language before sign-in.
+ */
+describe('the adults-only refusal', () => {
+  const refusal = () => mockResponse(
+    { errors: [{ code: 'ACCOUNT_UNDER_MINIMUM_AGE', message: 'server sentence' }] },
+    { status: 403 },
+  );
+
+  it('signs the member out, without a token refresh, and explains why', async () => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+    fetchMock.mockResolvedValueOnce(refusal());
+
+    let caught: unknown;
+    try {
+      await api.get('/api/v2/notifications/counts');
+    } catch (err) {
+      caught = err;
+    }
+
+    expect(caught).toBeInstanceOf(ApiResponseError);
+    expect((caught as ApiResponseError).status).toBe(403);
+    expect((caught as ApiResponseError).code).toBe('ACCOUNT_UNDER_MINIMUM_AGE');
+    expect((caught as ApiResponseError).message).toBe(i18n.t('common:errors.accountUnderMinimumAge'));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockStorage.remove).toHaveBeenCalledWith('nexus_auth_token');
+    expect(mockStorage.remove).toHaveBeenCalledWith('nexus_refresh_token');
+    expect(onUnauthorized).toHaveBeenCalledTimes(1);
+
+    registerUnauthorizedCallback(() => {});
+  });
+
+  it('explains the refusal on an anonymous sign-in request without touching any session', async () => {
+    const onUnauthorized = jest.fn();
+    registerUnauthorizedCallback(onUnauthorized);
+    fetchMock.mockResolvedValueOnce(refusal());
+
+    await expect(api.post('/api/v2/auth/login', { email: 'a@b.test', password: 'x' }, { anonymous: true }))
+      .rejects.toHaveProperty('message', i18n.t('common:errors.accountUnderMinimumAge'));
+    expect(onUnauthorized).not.toHaveBeenCalled();
+
+    registerUnauthorizedCallback(() => {});
   });
 });

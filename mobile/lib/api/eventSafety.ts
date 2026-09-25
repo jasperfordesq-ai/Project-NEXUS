@@ -101,7 +101,6 @@ export const eventSafetySchema = z.object({
 const eventSafetyEnvelopeSchema = z.object({ data: eventSafetySchema }).passthrough();
 
 export type EventSafety = z.infer<typeof eventSafetySchema>;
-export type GuardianRelationship = 'parent' | 'guardian' | 'legal_guardian' | 'carer';
 
 export function eventSafetyRequestOptions(idempotencyKey?: string): RequestOptions {
   return {
@@ -158,33 +157,5 @@ export async function withdrawEventCode(
   idempotencyKey: string,
 ): Promise<{ data: EventSafety }> {
   const endpoint = `${API_V2}/events/${eventId}/safety/code-of-conduct/acknowledgements/${acknowledgementId}`;
-  return parseEventSafety(endpoint, await api.delete<unknown>(endpoint, eventSafetyRequestOptions(idempotencyKey)), eventId);
-}
-
-export async function requestEventGuardianConsent(
-  eventId: number,
-  input: {
-    guardianName: string;
-    guardianEmail: string;
-    relationship: GuardianRelationship;
-    preferredLanguage: string;
-  },
-  idempotencyKey: string,
-): Promise<{ data: EventSafety }> {
-  const endpoint = `${API_V2}/events/${eventId}/safety/guardian-consents`;
-  return parseEventSafety(endpoint, await api.post<unknown>(endpoint, {
-    guardian_name: input.guardianName,
-    guardian_email: input.guardianEmail,
-    relationship_code: input.relationship,
-    preferred_language: input.preferredLanguage,
-  }, eventSafetyRequestOptions(idempotencyKey)), eventId);
-}
-
-export async function withdrawEventGuardianConsent(
-  eventId: number,
-  consentId: number,
-  idempotencyKey: string,
-): Promise<{ data: EventSafety }> {
-  const endpoint = `${API_V2}/events/${eventId}/safety/guardian-consents/${consentId}`;
   return parseEventSafety(endpoint, await api.delete<unknown>(endpoint, eventSafetyRequestOptions(idempotencyKey)), eventId);
 }

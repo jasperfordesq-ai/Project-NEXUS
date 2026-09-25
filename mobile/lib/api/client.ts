@@ -729,6 +729,24 @@ async function request<T>(
       onLegalAcceptanceRequiredCallback?.();
     }
 
+    // E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only, and the
+    // server refuses an account recorded as under 18 on sign-in and on every authenticated
+    // request. No retry or refresh can clear that, so an existing session is ended here and
+    // the member is told why in their own language (the app sends no language before
+    // sign-in, so the server's sentence is not used).
+    if (code === 'ACCOUNT_UNDER_MINIMUM_AGE') {
+      if (!options.anonymous) {
+        await Promise.all([
+          storage.remove(STORAGE_KEYS.AUTH_TOKEN),
+          storage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+          storage.remove(STORAGE_KEYS.USER_DATA),
+        ]);
+        clearApiSession();
+        onUnauthorizedCallback?.();
+      }
+      throw new ApiResponseError(response.status, i18n.t('common:errors.accountUnderMinimumAge'), undefined, code);
+    }
+
     // Matched on the CODE, not the message: `TenantContext::respondWithTenantMismatchError`
     // sends an English sentence that is not translated and could be reworded at any time.
     if (code === 'TENANT_MISMATCH') {

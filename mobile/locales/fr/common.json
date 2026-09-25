@@ -70,6 +70,7 @@
     "retry": "Réessayer"
   },
   "errors": {
+    "accountUnderMinimumAge": "Cette application est réservée aux adultes de 18 ans et plus. Si vous pensez qu'il s'agit d'une erreur, contactez les organisateurs de votre communauté.",
     "boundaryTitle": "Une erreur s'est produite",
     "generic": "Une erreur s'est produite. Veuillez réessayer.",
     "loadFailedTitle": "Chargement impossible",

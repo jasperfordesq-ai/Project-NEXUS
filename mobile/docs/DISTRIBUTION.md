@@ -356,8 +356,8 @@ These two are settled, so nobody has to guess at submission time:
   `DELETE /v2/users/me` the web app calls, and performs a full GDPR Article 17 erasure
   rather than a deactivation. The Data Safety form's deletion question can be answered
   "users can request that their data be deleted" without qualification.
-- **Guardian consent is not a child-facing feature.** The app contains guardian-consent
-  screens for volunteering. They are for communities running supervised activity with young
-  people whose accounts a coordinator sets up, the tenant setting is off by default, and no
-  consent has ever been recorded in production. Describe it that way in the listing; do not
-  present the app as a service for under-18s.
+- **There is no under-18 journey (owner decision, 2026-09-25).** The whole platform is
+  adults-only: guardian consent is switched off, the app contains no guardian-consent
+  screens, and an account recorded as under 18 is refused sign-in. Never describe the app or
+  the platform as a service for under-18s. See
+  [STORE_AUDIENCE_POLICY.md](STORE_AUDIENCE_POLICY.md).

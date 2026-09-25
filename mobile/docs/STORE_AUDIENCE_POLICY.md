@@ -1,6 +1,6 @@
 # Native Store Audience Policy
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-09-25
 
 ## Decision fixed by the product owner
 
@@ -28,24 +28,25 @@ The canonical cross-client registration evidence is
 [`../../docs/PRODUCT-AUDIENCE.md`](../../docs/PRODUCT-AUDIENCE.md), guarded by
 `node scripts/check-age-declaration.mjs` at repository root.
 
-## Guardian consent does not create a native child journey
+## No under-18 journey anywhere (owner decision, 25 September 2026)
 
-The platform backend and staffed web surfaces contain guardian-consent records for unusual
-operator-managed situations such as a supervised event or volunteering activity. Those
-records are safeguarding infrastructure; they do not mean that a child may register for or
-use either native app.
+**The whole platform is adults-only, not just the native apps.** Guardian consent for
+volunteering and events is switched off platform-wide, and an account whose recorded date
+of birth is under 18 is refused on sign-in and on every authenticated request with HTTP 403
+`ACCOUNT_UNDER_MINIMUM_AGE`. The app signs such an account out and shows
+`common:errors.accountUnderMinimumAge` in the member's language (`lib/api/client.ts`).
+
+This replaced an earlier position (until 25 September 2026) under which the platform kept
+guardian-consent records for operator-managed supervised activity with young people.
 
 Therefore:
 
-- `events/:id/guardian-consent` is deliberately **out of native scope**, not an unfinished
-  mobile module.
-- Do not add a native guardian invitation, consent-token, parental-control, child-profile,
-  or under-18 onboarding route.
+- The native app has **no** guardian invitation, consent-token, consent request or
+  withdrawal, parental-control, child-profile or under-18 onboarding route, and no organiser
+  setting that requires guardian consent. `lib/api/eventSafety.ts` exports no
+  guardian-consent client; `EventSafetyCard` never renders one (both pinned by tests).
 - Do not describe staff-recorded safeguarding assignments as authority over an account.
 - Adult-to-adult linked-account support remains a separate consent-based capability.
-- If a tenant chooses to run supervised activity involving a minor, its authorised staff
-  handle the exceptional record through the maintained web/operator workflow. That does
-  not change the native audience.
 
 ## Care in Community is excluded from both native apps
 

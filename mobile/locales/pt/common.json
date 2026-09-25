@@ -70,6 +70,7 @@
     "retry": "Tentar novamente"
   },
   "errors": {
+    "accountUnderMinimumAge": "Esta aplicação destina-se a adultos com 18 ou mais anos. Se achar que se trata de um erro, contacte os organizadores da sua comunidade.",
     "boundaryTitle": "Algo correu mal",
     "generic": "Algo correu mal. Tente novamente.",
     "loadFailedTitle": "Não foi possível carregar",

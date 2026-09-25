@@ -31,8 +31,8 @@ import {
   acknowledgeEventCode,
   eventSafetySchema,
   getEventSafety,
-  requestEventGuardianConsent,
 } from './eventSafety';
+import * as eventSafetyModule from './eventSafety';
 
 const fixture: unknown = require('../../../contracts/events/v2/event-safety.json');
 const options = {
@@ -69,34 +69,24 @@ describe('mobile Event Safety contract', () => {
     expect(telemetry).toContain('/api/v2/events/{id}/safety');
   });
 
-  it('binds code acknowledgement and guardian delivery to idempotency keys', async () => {
+  it('binds code acknowledgement to its idempotency key', async () => {
     (api.post as jest.Mock).mockResolvedValue({ data: fixture });
     const textHash = '426bb49f31b7c15dfd91b62db039e1247633019cc53a970926f4bff91f549296';
 
     await acknowledgeEventCode(101, 'conduct-2026-07', textHash, 'code-key');
-    await requestEventGuardianConsent(101, {
-      guardianName: 'Private Guardian',
-      guardianEmail: 'private@example.test',
-      relationship: 'guardian',
-      preferredLanguage: 'ga',
-    }, 'guardian-key');
 
-    expect(api.post).toHaveBeenNthCalledWith(
-      1,
+    expect(api.post).toHaveBeenCalledWith(
       '/api/v2/events/101/safety/code-of-conduct/acknowledgements',
       { text_version: 'conduct-2026-07', text_hash: textHash },
       { headers: { ...options.headers, 'Idempotency-Key': 'code-key' } },
     );
-    expect(api.post).toHaveBeenNthCalledWith(
-      2,
-      '/api/v2/events/101/safety/guardian-consents',
-      {
-        guardian_name: 'Private Guardian',
-        guardian_email: 'private@example.test',
-        relationship_code: 'guardian',
-        preferred_language: 'ga',
-      },
-      { headers: { ...options.headers, 'Idempotency-Key': 'guardian-key' } },
-    );
+  });
+
+  // E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only; the app
+  // has no guardian-consent client at all, so no under-18 journey can be wired back in.
+  it('exposes no guardian-consent request or withdrawal client', () => {
+    const exported = eventSafetyModule as Record<string, unknown>;
+    expect(exported.requestEventGuardianConsent).toBeUndefined();
+    expect(exported.withdrawEventGuardianConsent).toBeUndefined();
   });
 });

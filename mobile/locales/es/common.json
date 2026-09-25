@@ -70,6 +70,7 @@
     "retry": "Reintentar"
   },
   "errors": {
+    "accountUnderMinimumAge": "Esta aplicación es para personas adultas de 18 años o más. Si crees que se trata de un error, ponte en contacto con quienes organizan tu comunidad.",
     "boundaryTitle": "Algo salió mal",
     "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
     "loadFailedTitle": "No se pudo cargar",

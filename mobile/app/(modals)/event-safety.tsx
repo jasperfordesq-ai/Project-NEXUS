@@ -42,14 +42,14 @@ type Decision = typeof safetyReviewDecisions[number];
 type Reason = typeof safetyReviewReasons[number];
 type ReviewItem = SafetyReviews['items'][number];
 type Subject = { id: number; name: string };
-export type RequirementForm = { minimumAge: string; guardian: boolean; threshold: string; codeRequired: boolean; codeText: string; codeVersion: string };
+// E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only, so the form
+// has no guardian-consent requirement or under-18 threshold; a draft always sends them off.
+export type RequirementForm = { minimumAge: string; codeRequired: boolean; codeText: string; codeVersion: string };
 
 export function formFromSafety(safety: EventSafety): RequirementForm {
   const version = safety.requirements?.version;
   return {
     minimumAge: version?.minimum_age == null ? '' : String(version.minimum_age),
-    guardian: version?.guardian_consent_required ?? false,
-    threshold: version?.minor_age_threshold == null ? '' : String(version.minor_age_threshold),
     codeRequired: version?.code_of_conduct.required ?? false,
     codeText: version?.code_of_conduct.text ?? '',
     codeVersion: version?.code_of_conduct.text_version ?? '',
@@ -67,13 +67,12 @@ export function parseAge(value: string, minimum: number): number | null | undefi
 
 export function draftFromForm(form: RequirementForm): SafetyRequirementDraft | null {
   const minimum = parseAge(form.minimumAge, 0);
-  const threshold = form.guardian ? parseAge(form.threshold, 1) : null;
-  if (minimum === undefined || threshold === undefined || (form.guardian && threshold === null)) return null;
+  if (minimum === undefined) return null;
   if (form.codeRequired && (!form.codeText.trim() || !form.codeVersion.trim())) return null;
   return {
     minimum_age: minimum,
-    guardian_consent_required: form.guardian,
-    minor_age_threshold: form.guardian ? threshold : null,
+    guardian_consent_required: false,
+    minor_age_threshold: null,
     code_of_conduct_required: form.codeRequired,
     code_of_conduct_text: form.codeRequired ? form.codeText.trim() : null,
     code_of_conduct_text_version: form.codeRequired ? form.codeVersion.trim() : null,
@@ -251,7 +250,6 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
   const reviews = state.data?.reviews ?? null;
   const pages = reviews ? Math.max(1, Math.ceil(reviews.total / reviews.per_page)) : 1;
   const minimumInvalid = !!form && parseAge(form.minimumAge, 0) === undefined;
-  const thresholdInvalid = !!form && form.guardian && !parseAge(form.threshold, 1);
   const codeInvalid = !!form && form.codeRequired && (!form.codeText.trim() || !form.codeVersion.trim());
   const update = (patch: Partial<RequirementForm>) => setForm(previous => previous && ({ ...previous, ...patch }));
 
@@ -292,10 +290,6 @@ export function SafetyWorkspace({ eventId, tenantId, userId }: { eventId: number
             {!canManage && <Text className="text-base text-foreground">{s('organizer.read_only')}</Text>}
             <Input label={s('requirements.minimum_age')} helper={s('requirements.minimum_age_hint')} keyboardType="number-pad" value={form.minimumAge} editable={canEdit && !blocked}
               onChangeText={value => update({ minimumAge: value })} error={submitted && minimumInvalid ? m('invalid_age') : undefined} />
-            <Toggle label={s('requirements.guardian_required')} value={form.guardian} disabled={!canEdit || blocked} onValueChange={value => update({ guardian: value })} />
-            <Text className="text-sm text-muted-foreground">{s('requirements.guardian_required_hint')}</Text>
-            {form.guardian && <Input label={s('requirements.minor_threshold')} helper={s('requirements.minor_threshold_hint')} keyboardType="number-pad" value={form.threshold} editable={canEdit && !blocked}
-              onChangeText={value => update({ threshold: value })} error={submitted && thresholdInvalid ? m('invalid_age') : undefined} />}
             <Toggle label={s('requirements.code_required')} value={form.codeRequired} disabled={!canEdit || blocked} onValueChange={value => update({ codeRequired: value })} />
             <Text className="text-sm text-muted-foreground">{s('requirements.code_required_hint')}</Text>
             {form.codeRequired && <>

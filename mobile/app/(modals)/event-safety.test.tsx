@@ -26,7 +26,7 @@ jest.mock('@/lib/api/eventSafety', () => ({ ...jest.requireActual('@/lib/api/eve
 jest.mock('@/lib/api/eventSafetyManagement', () => ({ ...jest.requireActual('@/lib/api/eventSafetyManagement'), getEventSafetyReviews: jest.fn() }));
 jest.mock('@/lib/api/eventPeople', () => ({ searchEventInviteMembers: jest.fn() }));
 jest.mock('@/lib/eventSafetyOperation', () => ({ loadSafetyOperation: jest.fn(), executeSafetyOperation: jest.fn(), recoverSafetyOperation: jest.fn(), discardRejectedSafetyOperation: jest.fn() }));
-import Screen, { draftFromForm, parseAge } from './event-safety';
+import Screen, { draftFromForm, formFromSafety, parseAge } from './event-safety';
 import { getEvent } from '@/lib/api/events';
 import { getEventSafety } from '@/lib/api/eventSafety';
 import { getEventSafetyReviews } from '@/lib/api/eventSafetyManagement';
@@ -86,12 +86,14 @@ describe('requirement form helpers', () => {
     expect(parseAge('', 0)).toBeNull(); expect(parseAge(' 18 ', 0)).toBe(18); expect(parseAge('0', 1)).toBeUndefined();
     expect(parseAge('1.5', 0)).toBeUndefined(); expect(parseAge('126', 0)).toBeUndefined(); expect(parseAge('-1', 0)).toBeUndefined();
   });
-  it('requires a threshold for guardian consent and complete code-of-conduct fields', () => {
-    const base = { minimumAge: '', guardian: false, threshold: '', codeRequired: false, codeText: '', codeVersion: '' };
-    expect(draftFromForm({ ...base, guardian: true })).toBeNull();
+  // E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only, so an
+  // organiser can never require guardian consent or set an under-18 threshold.
+  it('never requests guardian consent and requires complete code-of-conduct fields', () => {
+    const base = { minimumAge: '', codeRequired: false, codeText: '', codeVersion: '' };
     expect(draftFromForm({ ...base, codeRequired: true, codeText: 'Be kind' })).toBeNull();
-    expect(draftFromForm({ ...base, guardian: true, threshold: '18', codeRequired: true, codeText: ' Be kind ', codeVersion: ' v1 ' })).toEqual({
-      minimum_age: null, guardian_consent_required: true, minor_age_threshold: 18, code_of_conduct_required: true, code_of_conduct_text: 'Be kind', code_of_conduct_text_version: 'v1' });
+    expect(draftFromForm({ ...base, codeRequired: true, codeText: ' Be kind ', codeVersion: ' v1 ' })).toEqual({
+      minimum_age: null, guardian_consent_required: false, minor_age_threshold: null, code_of_conduct_required: true, code_of_conduct_text: 'Be kind', code_of_conduct_text_version: 'v1' });
+    expect(Object.keys(formFromSafety(safety() as never))).not.toContain('guardian');
   });
 });
 

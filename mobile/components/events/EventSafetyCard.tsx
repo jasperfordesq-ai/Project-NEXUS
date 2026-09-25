@@ -12,22 +12,16 @@ import { Button } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { useTranslation } from 'react-i18next';
 import Checkbox from '@/components/ui/Checkbox';
-import Input from '@/components/ui/Input';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import {
   acknowledgeEventCode,
   getEventSafety,
-  requestEventGuardianConsent,
   withdrawEventCode,
-  withdrawEventGuardianConsent,
   type EventSafety,
-  type GuardianRelationship,
 } from '@/lib/api/eventSafety';
 import { useApi } from '@/lib/hooks/useApi';
 import type { Theme } from '@/lib/hooks/useTheme';
-
-const RELATIONSHIPS: GuardianRelationship[] = ['parent', 'guardian', 'legal_guardian', 'carer'];
 
 function mutationKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -46,16 +40,13 @@ export default function EventSafetyCard({
   theme,
   refreshSignal = 0,
 }: EventSafetyCardProps) {
-  const { t, i18n } = useTranslation('eventSafety');
+  const { t } = useTranslation('eventSafety');
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const safetyApi = useApi(() => getEventSafety(eventId), [eventId], { enabled: eventId > 0 });
   const [safetyOverride, setSafetyOverride] = useState<EventSafety | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [hasReadCode, setHasReadCode] = useState(false);
-  const [guardianName, setGuardianName] = useState('');
-  const [guardianEmail, setGuardianEmail] = useState('');
-  const [relationship, setRelationship] = useState<GuardianRelationship>('parent');
 
   useEffect(() => {
     setSafetyOverride(null);
@@ -123,43 +114,6 @@ export default function EventSafetyCard({
     });
   }
 
-  async function requestGuardian() {
-    if (!guardianName.trim() || !guardianEmail.trim()) return;
-    const completed = await mutate('request_guardian', () => requestEventGuardianConsent(
-      eventId,
-      {
-        guardianName: guardianName.trim(),
-        guardianEmail: guardianEmail.trim(),
-        relationship,
-        preferredLanguage: i18n.resolvedLanguage ?? i18n.language ?? 'en',
-      },
-      mutationKey('event-safety-guardian'),
-    ));
-    if (completed) {
-      setGuardianName('');
-      setGuardianEmail('');
-    }
-  }
-
-  function withdrawGuardian() {
-    const consentId = safety?.evidence.guardian_consent.consent_id;
-    if (!consentId) return;
-    confirm({
-      title: t('safety.confirmations.withdraw_guardian_title'),
-      message: t('safety.confirmations.withdraw_guardian_body'),
-      confirmLabel: t('safety.actions.withdraw_guardian_consent'),
-      cancelLabel: t('common:buttons.cancel'),
-      variant: 'danger',
-      onConfirm: async () => {
-        await mutate('withdraw_guardian', () => withdrawEventGuardianConsent(
-          eventId,
-          consentId,
-          mutationKey('event-safety-guardian-withdraw'),
-        ));
-      },
-    });
-  }
-
   if (safetyApi.isLoading && !safety) {
     return (
       <Card variant="secondary">
@@ -193,7 +147,6 @@ export default function EventSafetyCard({
 
   const code = safety.requirements?.version.code_of_conduct;
   const codeEvidence = safety.evidence.code_of_conduct;
-  const guardianEvidence = safety.evidence.guardian_consent;
   const blocked = safety.eligibility.status === 'deny' || safety.eligibility.status === 'unavailable';
 
   return (
@@ -283,76 +236,8 @@ export default function EventSafetyCard({
           </View>
         ) : null}
 
-        {guardianEvidence.status !== 'not_required' ? (
-          <View className="gap-3 border-t border-border pt-4">
-            <View className="flex-row items-center justify-between gap-3">
-              <Text className="font-semibold" style={{ color: theme.text }}>{t('safety.guardian.title')}</Text>
-              <Chip size="sm" variant="soft" color={guardianEvidence.status === 'active' ? 'success' : 'warning'}>
-                <Chip.Label>{t(`safety.guardian.status.${guardianEvidence.status}`)}</Chip.Label>
-              </Chip>
-            </View>
-            <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-              {t('safety.guardian.description')}
-            </Text>
-            {safety.permissions.request_guardian_consent ? (
-              <View className="gap-1">
-                <Input
-                  label={t('safety.guardian.name_label')}
-                  value={guardianName}
-                  onChangeText={setGuardianName}
-                  maxLength={191}
-                  autoCapitalize="words"
-                />
-                <Input
-                  label={t('safety.guardian.email_label')}
-                  value={guardianEmail}
-                  onChangeText={setGuardianEmail}
-                  maxLength={254}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <Text className="mb-1 text-sm font-semibold" style={{ color: theme.text }}>
-                  {t('safety.guardian.relationship_label')}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {RELATIONSHIPS.map((value) => (
-                    <Button
-                      key={value}
-                      size="sm"
-                      variant={relationship === value ? 'primary' : 'secondary'}
-                      onPress={() => setRelationship(value)}
-                    >
-                      {t(`safety.guardian.relationships.${value}`)}
-                    </Button>
-                  ))}
-                </View>
-                <Text className="my-2 text-xs leading-4" style={{ color: theme.textMuted }}>
-                  {t('safety.guardian.privacy_notice')}
-                </Text>
-                <Button
-                  variant="primary"
-                  isDisabled={!guardianName.trim() || !guardianEmail.trim() || pendingAction !== null}
-                  onPress={() => void requestGuardian()}
-                  style={{ backgroundColor: primary }}
-                >
-                  {pendingAction === 'request_guardian' ? <Spinner size="sm" /> : null}
-                  <Button.Label>{t('safety.actions.request_guardian_consent')}</Button.Label>
-                </Button>
-              </View>
-            ) : null}
-            {safety.permissions.withdraw_guardian_consent ? (
-              <Button
-                variant="secondary"
-                isDisabled={pendingAction !== null}
-                onPress={withdrawGuardian}
-              >
-                {pendingAction === 'withdraw_guardian' ? <Spinner size="sm" /> : null}
-                <Button.Label>{t('safety.actions.withdraw_guardian_consent')}</Button.Label>
-              </Button>
-            ) : null}
-          </View>
-        ) : null}
+        {/* E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only,
+            so the app has no guardian-consent journey — no request, no withdrawal. */}
       </Card.Body>
     </Card>
     {confirmDialog}

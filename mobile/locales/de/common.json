@@ -70,6 +70,7 @@
     "retry": "Erneut versuchen"
   },
   "errors": {
+    "accountUnderMinimumAge": "Diese App ist für Erwachsene ab 18 Jahren. Wenn du glaubst, dass hier ein Fehler vorliegt, wende dich an die Organisatoren deiner Community.",
     "boundaryTitle": "Etwas ist schiefgelaufen",
     "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "loadFailedTitle": "Konnte nicht geladen werden",

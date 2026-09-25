@@ -70,6 +70,7 @@
     "retry": "Bain triail eile as"
   },
   "errors": {
+    "accountUnderMinimumAge": "Is do dhaoine fásta 18 mbliana d'aois agus níos sine an aip seo. Má cheapann tú gur botún é seo, déan teagmháil le heagraithe do phobail.",
     "boundaryTitle": "Chuaigh rud éigin mícheart",
     "generic": "Chuaigh rud éigin mícheart. Déan iarracht arís.",
     "loadFailedTitle": "Níorbh fhéidir é a lódáil",

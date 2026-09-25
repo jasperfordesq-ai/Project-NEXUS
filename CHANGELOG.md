@@ -119,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Accessible site: sign-in limits apply to each visitor instead of to shared Cloudflare addresses; file uploads keep the visitor's address and language; and sign-in and session cookies are locked to the site's own address. Existing sign-ins keep working through this release.
 
-- Mobile app: the appreciations and collections screens name members only from the server, and accepted-offer checkout shows the price the server holds rather than one taken from a link; and iPhone builds now pin the platform's certificates, as Android builds already do. The app no longer accepts over-the-air code updates: every change now arrives as a new version from the app store.
+- Mobile app: the appreciations and collections screens name members only from the server, and accepted-offer checkout shows the price the server holds rather than one taken from a link; and iPhone builds now pin the platform's certificates, as Android builds already do. The app no longer accepts over-the-air code updates: every change now arrives as a new version from the app store. The app no longer contains any guardian-consent screens or under-18 event settings, and if an account is recorded as under 18 it explains, in the member's language, that the platform is for adults.
 
 - A member's data export includes their recorded sign-in history again.
 

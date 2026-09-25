@@ -7,16 +7,17 @@ import React from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import EventSafetyCard from './EventSafetyCard';
 import { DARK } from '@/lib/hooks/useTheme';
-import { acknowledgeEventCode, requestEventGuardianConsent, withdrawEventCode } from '@/lib/api/eventSafety';
+import { acknowledgeEventCode, withdrawEventCode } from '@/lib/api/eventSafety';
 
 const mockSafetyFixture = require('../../../contracts/events/v2/event-safety.json');
+let mockSafetyData: typeof mockSafetyFixture = mockSafetyFixture;
 const mockRefresh = jest.fn();
 const mockShow = jest.fn();
 const mockConfirm = jest.fn();
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/lib/hooks/useApi', () => ({
-  useApi: () => ({ data: { data: mockSafetyFixture }, isLoading: false, error: null, refresh: mockRefresh }),
+  useApi: () => ({ data: { data: mockSafetyData }, isLoading: false, error: null, refresh: mockRefresh }),
 }));
 jest.mock('@/components/ui/AppToast', () => ({ useAppToast: () => ({ show: mockShow }) }));
 jest.mock('@/components/ui/useConfirm', () => ({
@@ -34,9 +35,7 @@ jest.mock('@/lib/api/eventSafety', () => ({
       permissions: { ...mockSafetyFixture.permissions, acknowledge_code_of_conduct: false, withdraw_code_of_conduct: true },
     },
   })),
-  requestEventGuardianConsent: jest.fn(),
   withdrawEventCode: jest.fn(),
-  withdrawEventGuardianConsent: jest.fn(),
   getEventSafety: jest.fn(),
 }));
 jest.mock('react-i18next', () => ({
@@ -63,7 +62,10 @@ jest.mock('react-i18next', () => ({
 }));
 
 describe('EventSafetyCard', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSafetyData = mockSafetyFixture;
+  });
 
   it('shows the exact published code and submits its version/hash only after confirmation', async () => {
     const { getByTestId, getByText } = render(
@@ -81,7 +83,31 @@ describe('EventSafetyCard', () => {
       '426bb49f31b7c15dfd91b62db039e1247633019cc53a970926f4bff91f549296',
       expect.stringContaining('event-safety-code-'),
     ));
-    expect(requestEventGuardianConsent).not.toHaveBeenCalled();
+  });
+
+  // E-035 F-160 (owner decision, 25 September 2026): the platform is adults-only, so the
+  // app offers no under-18 journey. Even if the server ever reported a guardian-consent
+  // requirement and permission, the card must not show a guardian form or action.
+  it('never offers a guardian-consent request or withdrawal', () => {
+    mockSafetyData = {
+      ...mockSafetyFixture,
+      evidence: {
+        ...mockSafetyFixture.evidence,
+        guardian_consent: { ...mockSafetyFixture.evidence.guardian_consent, status: 'required', consent_id: 7 },
+      },
+      permissions: { ...mockSafetyFixture.permissions, request_guardian_consent: true, withdraw_guardian_consent: true },
+    };
+    const { queryByText } = render(<EventSafetyCard eventId={101} primary="#6366f1" theme={DARK} />);
+
+    for (const key of [
+      'safety.guardian.title',
+      'safety.guardian.name_label',
+      'safety.guardian.email_label',
+      'safety.actions.request_guardian_consent',
+      'safety.actions.withdraw_guardian_consent',
+    ]) {
+      expect(queryByText(key)).toBeNull();
+    }
   });
 
   it('requires branded confirmation before withdrawing an acknowledgement', async () => {
