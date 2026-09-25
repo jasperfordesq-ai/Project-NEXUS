@@ -78,3 +78,18 @@ it('blocks callbacks retained after unmount', async () => {
   const submit = result.current.submit; unmount();
   await submit(intent); expect(execute).not.toHaveBeenCalled();
 });
+
+it('releases the busy lock before the accepted callback refreshes its screen', async () => {
+  let busyAtCallback = true;
+  let loadsAtCallback = 0;
+  let currentBusy = () => true;
+  const accepted = jest.fn(() => { busyAtCallback = currentBusy(); loadsAtCallback = jest.mocked(load).mock.calls.length; });
+  const { result } = renderHook(() => useSafetyOperations(scope, true, true, accepted));
+  currentBusy = () => result.current.busy;
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  await act(async () => result.current.submit(intent));
+  expect(accepted).toHaveBeenCalledTimes(1);
+  expect(loadsAtCallback).toBe(2);
+  expect(busyAtCallback).toBe(false);
+  expect(result.current.busy).toBe(false);
+});

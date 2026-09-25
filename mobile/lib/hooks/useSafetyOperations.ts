@@ -48,6 +48,7 @@ export function useSafetyOperations(scope: SafetyOperationScope, permitted: bool
     if (kind === 'discard' && visible.saved?.status !== 'rejected') return;
     current.current.locked = true;
     setState(previous => ({ ...previous, busy: true, operationFailed: false, errorStatus: null }));
+    let accepted: { acknowledgement: Acknowledgement; intent: SafetyOperationIntent } | null = null;
     try {
       const owner = { tenantId, userId, eventId };
       if (kind === 'discard') {
@@ -58,13 +59,17 @@ export function useSafetyOperations(scope: SafetyOperationScope, permitted: bool
       if (!acceptedIntent) return;
       const acknowledgement = kind === 'submit' ? await executeSafetyOperation(owner, acceptedIntent, isCurrent)
           : await recoverSafetyOperation(owner, isCurrent);
-      if (isCurrent()) callback.current(acknowledgement, acceptedIntent);
+      accepted = { acknowledgement, intent: acceptedIntent };
     } catch (error) {
       if (isCurrent()) setState(previous => ({ ...previous, operationFailed: true, errorStatus: error instanceof ApiResponseError ? error.status : null }));
     } finally {
       await reload();
       if (isCurrent()) { current.current.locked = false; setState(previous => ({ ...previous, busy: false })); }
     }
+    // Let the operation store settle and release its lock before the screen
+    // callback starts an API refresh. Native refresh timing must not strand the
+    // action controls in their busy state after an accepted mutation.
+    if (accepted && isCurrent()) callback.current(accepted.acknowledgement, accepted.intent);
   }
   return { ...visible, reload, submit: (intent: SafetyOperationIntent) => perform('submit', intent),
     recover: () => perform('recover'), discard: () => perform('discard'),

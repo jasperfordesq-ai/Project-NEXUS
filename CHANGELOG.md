@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Event organisers can now manage event safety in the mobile app: set the participation policy (minimum age, guardian consent for minors, code of conduct), save it as a draft, publish or archive it, and record, update or withdraw participation review decisions with controlled reasons and effective dates. Interrupted changes stay saved on the device and are only resent when the organiser chooses to. If someone else changed the policy first, the screen reloads the current values; an archived policy is shown as final and cannot be edited. Available in all seven app languages.
+- Event organisers can now manage event safety in the mobile app: set the participation policy (minimum age and code of conduct), save it as a draft, publish or archive it, and record, update or withdraw participation review decisions with controlled reasons and effective dates. Interrupted changes stay saved on the device and are only resent when the organiser chooses to. If someone else changed the policy first, the screen reloads the current values; an archived policy is shown as final and cannot be edited. Available in all seven app languages.
 
 - Added encrypted, account-scoped recovery for native organiser Safety requests, preserving exact changes across interrupted responses and preventing uncertain decisions from being replaced. The organiser screen is still being completed.
 
@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Native event Safety saves now preserve unfinished edits in the other form: saving a participation review keeps policy edits, and saving a policy keeps the review draft. Pending recovery also keeps the navigation warning for unrelated unsaved work.
+- Native event Safety saves now preserve unfinished edits in the other form: saving a participation review keeps policy edits, and saving a policy keeps the review draft. Pending recovery also keeps the navigation warning for unrelated unsaved work, and accepted changes release their busy state before the screen refreshes.
 
 - The scheduler and queue workers now use the same prerender snapshot volume as the web app, so drift detection and cache invalidation work after workers drop root privileges.
 - The post-deploy Sentry watch now shortens an explicitly pinned full commit to the 12-character release used by the running services, so it counts errors from that release correctly.
