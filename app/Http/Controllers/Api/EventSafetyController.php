@@ -18,6 +18,7 @@ use App\Services\EventParticipationDenialService;
 use App\Services\EventSafetyAcknowledgementService;
 use App\Services\EventSafetyProjectionService;
 use App\Services\EventSafetyRequirementService;
+use App\Support\Authorization\MinimumAge;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Throwable;
@@ -135,78 +136,38 @@ final class EventSafetyController extends BaseApiController
         }
     }
 
+    /*
+     * Adults-only platform (owner decision 2026-09-25, E-035 F-160): under-18
+     * participation is removed, not supervised, so event guardian consent is
+     * switched off. The request, withdraw and grant endpoints refuse with 410
+     * GUARDIAN_CONSENT_RETIRED. `event_guardian_consents`, its history table and
+     * their triggers are untouched, and EventGuardianConsentService still works
+     * underneath, so the switch-off is reversible and the evidence is kept.
+     */
     public function requestGuardianConsent(int $id): JsonResponse
     {
-        $idempotencyKey = $this->requiredIdempotencyKey();
-        $name = request()->input('guardian_name');
-        $email = request()->input('guardian_email');
-        $relationship = request()->input('relationship_code');
-        $locale = request()->input('preferred_language');
-        if ($idempotencyKey === false
-            || ! is_string($name)
-            || ! is_string($email)
-            || ! is_string($relationship)
-            || ! is_string($locale)) {
-            return $this->validationError($idempotencyKey === false ? 'idempotency_key' : 'guardian');
-        }
-        try {
-            $actor = $this->actor();
-            $this->guardianConsents->requestWithDelivery(
-                $id,
-                $actor,
-                $actor,
-                [
-                    'guardian_name' => $name,
-                    'guardian_email' => $email,
-                    'relationship_code' => $relationship,
-                ],
-                $locale,
-                $idempotencyKey,
-            );
-
-            return $this->safetyResponse($this->projection->read($id, $actor), 201);
-        } catch (EventSafetyException $exception) {
-            return $this->safetyError($exception);
-        }
+        return $this->guardianConsentRetired();
     }
 
     public function withdrawGuardianConsent(int $id, int $consentId): JsonResponse
     {
-        $idempotencyKey = $this->requiredIdempotencyKey();
-        if ($idempotencyKey === false) {
-            return $this->validationError('idempotency_key');
-        }
-        try {
-            $actor = $this->actor();
-            $this->guardianConsents->withdraw($id, $consentId, $actor, $idempotencyKey);
-
-            return $this->safetyResponse($this->projection->read($id, $actor));
-        } catch (EventSafetyException $exception) {
-            return $this->safetyError($exception);
-        }
+        return $this->guardianConsentRetired();
     }
 
-    /** Public capability-token endpoint; invalid inputs are deliberately non-enumerable. */
+    /** Public capability-token endpoint — retired with the rest of guardian consent. */
     public function grantGuardianConsent(): JsonResponse
     {
-        $idempotencyKey = $this->requiredIdempotencyKey();
-        $token = request()->input('token');
-        $email = request()->input('guardian_email');
-        if ($idempotencyKey === false || ! is_string($token) || ! is_string($email)) {
-            return $this->guardianGrantError();
-        }
-        try {
-            $this->guardianConsents->grant(
-                $token,
-                $email,
-                $this->getOptionalUserId(),
-                $idempotencyKey,
-            );
+        return $this->guardianConsentRetired();
+    }
 
-            return $this->privateResponse($this->respondWithData(['status' => 'granted']));
-        } catch (Throwable) {
-            return $this->guardianGrantError();
-        }
+    private function guardianConsentRetired(): JsonResponse
+    {
+        return $this->privateResponse($this->respondWithError(
+            'GUARDIAN_CONSENT_RETIRED',
+            __('api.guardian_consent_retired', ['age' => MinimumAge::YEARS]),
+            null,
+            410,
+        ));
     }
 
     public function reviews(int $id): JsonResponse
@@ -392,16 +353,6 @@ final class EventSafetyController extends BaseApiController
             $field,
             422,
         );
-    }
-
-    private function guardianGrantError(): JsonResponse
-    {
-        return $this->privateResponse($this->respondWithError(
-            'EVENT_GUARDIAN_CONSENT_INVALID',
-            __('api.invalid_input'),
-            null,
-            422,
-        ));
     }
 
     private function safetyError(EventSafetyException $exception): JsonResponse

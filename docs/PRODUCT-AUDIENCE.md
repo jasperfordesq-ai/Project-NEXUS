@@ -1,11 +1,14 @@
 # Who Project NEXUS Is For
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-09-25
 
 **Project NEXUS is a platform for adults. Signing up requires confirming you are 18 years
-of age or older.** That is a product decision taken on 2026-08-25, and this document
-records what it means in the code, what the code does *not* do, and how the guardian and
-safeguarding capabilities that exist should be described.
+of age or older.** That is a product decision taken on 2026-08-25. On 2026-09-25 it was
+tightened: **the platform is adults-only everywhere, and under-18 participation is removed,
+not supervised.** An account whose recorded date of birth is under 18 cannot sign in, nobody
+can record a date of birth under 18, and guardian consent for minors is switched off. This
+document records what that means in the code, what the code does *not* do, and how the
+guardian and safeguarding capabilities that exist should be described.
 
 It exists because the platform was describing itself two ways at once. Registration has
 always required an 18-or-older confirmation on the web app, while the public features page
@@ -44,16 +47,35 @@ against the specific document version in `user_legal_acceptances` via
 IP address and user agent. A member's agreement to the terms — which is where the age
 declaration lives — is therefore evidenced per version, not merely assumed.
 
-**Not enforced, deliberately.** No date of birth is collected at sign-up on any of the
-three doors, nothing verifies a stated age, and no age check gates general use of the
-platform. The declaration is a contractual statement by the member, in the same class as
-the terms acceptance beside it. Measured in production on 2026-08-25: **374 members, 9
-with a date of birth recorded, and no guardian consent has ever been recorded** (`0` rows).
+**Enforced since 2026-09-25 — the minimum age of 18.** One rule,
+`App\Support\Authorization\MinimumAge`, is applied at every door:
 
-**A member can still be recorded as a minor.** `users.date_of_birth` is a real column that
-staff-facing flows can populate, and `GuardianConsentService::isMinor()` reads it. With a
-null date of birth it returns `false`, which is the correct default for an adults-only
-platform: absent evidence, an account is an adult account.
+- **Sign-in.** An account whose recorded date of birth makes the member under 18 is refused
+  by the shared login gate (`TenantSettingsService::checkLoginGatesForUser()`), which every
+  sign-in path uses: password, token refresh, passkey, two-factor completion, social and SSO
+  sign-in, and session restore. The rule applies to every role, administrators included.
+- **Existing sessions.** A session or token such an account already holds — including an
+  administrator's impersonation session — is refused on every authenticated request by the
+  authentication middleware.
+- Both answer **HTTP 403** with error code **`ACCOUNT_UNDER_MINIMUM_AGE`** and a translated
+  message saying the platform is for adults aged 18 and over and to contact their community.
+  403, not 401, so clients do not try to refresh the session and then show a generic
+  "session expired" message.
+- **Recording a date of birth.** No one can store a date of birth under 18: the member's
+  profile (`PUT /v2/users/me`) and the identity-verification date-of-birth step
+  (`POST /v2/identity/save-dob`, which used to accept 16 and over) refuse it with **422**
+  and error code **`DATE_OF_BIRTH_UNDER_MINIMUM_AGE`**. No administrator screen writes a
+  member's date of birth. Re-sending the value already on the account is accepted, because
+  profile forms send the whole profile.
+
+**Not enforced, deliberately.** No date of birth is collected at sign-up on any of the three
+doors and nothing verifies a stated age. **An account with no date of birth is an adult
+account** — the platform does not start requiring one. An unreadable or future date on an
+existing account is treated as bad data, not as evidence of a minor, so it locks no one out.
+Nobody is deleted or deactivated by this rule: an under-18 account and its data stay exactly
+as they are; the account simply cannot be used. Measured in production on 2026-08-25:
+**374 members, 9 with a date of birth recorded, and no guardian consent has ever been
+recorded** (`0` rows).
 
 ## The guardian and safeguarding capabilities that exist
 
@@ -61,18 +83,18 @@ These are real, and several are among the best-built code in the repository. Non
 turns the platform into a service for under-18s, and none should be described as though it
 does. Full technical detail is in [SAFEGUARDING-AND-CONSENT.md](SAFEGUARDING-AND-CONSENT.md).
 
-| Capability | What it actually is | Default |
+| Capability | What it actually is | State |
 | --- | --- | --- |
-| Volunteering guardian consent | The one place a minor check gates an action. Three endpoints (`VolunteerCommunityController`, `VolunteerController` ×2) refuse a sign-up with `GUARDIAN_CONSENT_REQUIRED` when the member's recorded date of birth is under 18 and no active consent exists. | **Off.** Tenant setting `volunteering.guardian_consent_required`, default `false`. |
-| Event guardian consent | `event_guardian_consents`: encrypted guardian identity, single-use token, append-only history enforced by a database trigger. It *records* consent; nothing requires it before attendance. | Recorded only |
+| Volunteering guardian consent | Guardian approval for a minor volunteer. | **Switched off 2026-09-25.** Every endpoint returns `410 GUARDIAN_CONSENT_RETIRED`; the gate never demands consent or a date of birth; the setting `volunteering.guardian_consent_required` always reads `false` and cannot be turned on. Table and records kept. |
+| Event guardian consent | `event_guardian_consents`: encrypted guardian identity, single-use token, append-only history enforced by a database trigger. | **Switched off 2026-09-25.** Request, grant and withdraw return `410 GUARDIAN_CONSENT_RETIRED`; organisers cannot require it; a policy published earlier that still requires it blocks nobody. Tables, triggers and history kept. |
 | Safeguarding assignments | A staff record pairing a supported member with a guardian. Confers **no** capability over the member's account. | Record only |
 | Account relationships | Carer permissions between adult accounts (view activity, manage listings, transact). Unrelated to age. | Per-relationship |
 
-**How to describe it.** "Guardian approval for a minor volunteer or event attendee, for
-communities that run supervised activity with young people, where a coordinator sets the
-account up. Off unless a community turns it on." That is what the public features page now
-says, in all eleven languages, including the caveat that the platform itself is for
-adults. Do not reintroduce copy that offers under-18 membership.
+**How to describe it.** Do not describe guardian approval, parental consent or supervised
+participation for young people as something the platform offers: it does not. The public
+features page no longer lists it. Do not reintroduce copy that offers under-18 membership or
+participation. The safeguarding assignments and account relationships above are for adults
+and are unaffected.
 
 ## Open gaps
 

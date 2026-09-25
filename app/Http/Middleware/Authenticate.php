@@ -8,6 +8,7 @@ namespace App\Http\Middleware;
 
 use App\Core\ApiErrorCodes;
 use App\Services\TokenService;
+use App\Support\Authorization\MinimumAge;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -117,6 +118,10 @@ class Authenticate
                     ], 403, ['API-Version' => '2.0']);
                 }
 
+                if ($refusal = $this->underMinimumAgeRefusal($user)) {
+                    return $refusal;
+                }
+
                 auth()->shouldUse($guard);
                 if ($user) {
                     Log::shareContext(['user_id' => (int) $user->id]);
@@ -144,6 +149,9 @@ class Authenticate
                 // shouldUse AFTER setUser (setUser happens inside validateLegacyToken)
                 auth()->shouldUse('sanctum');
                 $user = auth()->guard('sanctum')->user();
+                if ($refusal = $this->underMinimumAgeRefusal($user)) {
+                    return $refusal;
+                }
                 if ($user) {
                     Log::shareContext(['user_id' => (int) $user->id]);
                 }
@@ -162,6 +170,28 @@ class Authenticate
         ], 401, [
             'API-Version' => '2.0',
         ]);
+    }
+
+    /**
+     * Adults-only platform (owner decision 2026-09-25, E-035 F-160): a session
+     * or token an under-18 account already holds is refused on every
+     * authenticated request, with the same code the sign-in gates return.
+     * 403, not 401 — a 401 makes clients attempt a token refresh and then show a
+     * generic "session expired". A null date of birth is an adult account.
+     */
+    private function underMinimumAgeRefusal(mixed $user): ?Response
+    {
+        if (! is_object($user) || ! MinimumAge::userIsUnder($user)) {
+            return null;
+        }
+        $refusal = MinimumAge::accountRefusal();
+
+        return response()->json([
+            'errors' => [
+                ['code' => $refusal['code'], 'message' => $refusal['message']],
+            ],
+            'success' => false,
+        ], 403, ['API-Version' => '2.0']);
     }
 
     /**

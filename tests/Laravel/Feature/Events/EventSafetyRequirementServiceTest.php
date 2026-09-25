@@ -34,8 +34,8 @@ final class EventSafetyRequirementServiceTest extends TestCase
             $owner,
             [
                 'minimum_age' => 12,
-                'guardian_consent_required' => true,
-                'minor_age_threshold' => 18,
+                'guardian_consent_required' => false,
+                'minor_age_threshold' => null,
                 'code_of_conduct_required' => true,
                 'code_of_conduct_text' => $code,
                 'code_of_conduct_text_version' => '2026.07-a',
@@ -187,13 +187,29 @@ final class EventSafetyRequirementServiceTest extends TestCase
         $foreignEventId = $this->event((int) $foreign->id, [], 999);
         $service = new EventSafetyRequirementService();
 
+        // Adults-only platform (2026-09-25): guardian consent is switched off,
+        // so requiring it is refused, and a minor-age threshold without it is
+        // still refused by the existing minor-policy rule.
         $this->assertReason(
             fn () => $service->saveDraft(
                 $eventId,
                 $owner,
-                array_replace($this->configuration(), ['minor_age_threshold' => null]),
+                array_replace($this->configuration(), [
+                    'guardian_consent_required' => true,
+                    'minor_age_threshold' => 18,
+                ]),
                 0,
-                'requirements-missing-minor-threshold',
+                'requirements-guardian-retired',
+            ),
+            'event_guardian_consent_retired',
+        );
+        $this->assertReason(
+            fn () => $service->saveDraft(
+                $eventId,
+                $owner,
+                array_replace($this->configuration(), ['minor_age_threshold' => 18]),
+                0,
+                'requirements-threshold-without-guardian',
             ),
             'event_safety_minor_policy_invalid',
         );
@@ -270,8 +286,8 @@ final class EventSafetyRequirementServiceTest extends TestCase
     {
         return [
             'minimum_age' => null,
-            'guardian_consent_required' => true,
-            'minor_age_threshold' => 18,
+            'guardian_consent_required' => false,
+            'minor_age_threshold' => null,
             'code_of_conduct_required' => true,
             'code_of_conduct_text' => 'Respect the event conduct policy.',
             'code_of_conduct_text_version' => 'v1',

@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\ApiErrorCodes;
+use App\Support\Authorization\MinimumAge;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -245,6 +246,22 @@ class TenantSettingsService
                 'code' => ApiErrorCodes::AUTH_ACCOUNT_SUSPENDED,
                 'message' => __('api.account_suspended'),
                 'extra' => ['account_suspended' => true],
+            ];
+        }
+
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): an
+        // account whose recorded date of birth is under 18 cannot sign in by
+        // any door — password, refresh, passkey, 2FA completion, social sign-in
+        // and session restore all route through this gate. Deliberately BEFORE
+        // the admin bypass below: the minimum age applies to every role. A null
+        // date of birth is an adult account (MinimumAge::isUnder).
+        if (MinimumAge::userIsUnder($user)) {
+            $refusal = MinimumAge::accountRefusal();
+
+            return [
+                'code' => $refusal['code'],
+                'message' => $refusal['message'],
+                'extra' => ['account_under_minimum_age' => true],
             ];
         }
 

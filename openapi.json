@@ -24968,6 +24968,9 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "410": {
+            "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
+          },
           "422": {
             "description": "Validation or state-transition failure"
           },
@@ -24986,7 +24989,8 @@
               "minimum": 1
             }
           }
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/api/v2/events/{id}/safety/guardian-consents/{consentId}": {
@@ -25015,6 +25019,9 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "410": {
+            "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
+          },
           "422": {
             "description": "Validation or state-transition failure"
           },
@@ -25042,7 +25049,8 @@
               "minimum": 1
             }
           }
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/api/v2/events/{id}/safety/requirements": {
@@ -26426,6 +26434,9 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "410": {
+            "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
+          },
           "422": {
             "description": "Validation or state-transition failure"
           },
@@ -26470,7 +26481,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/v2/federation/ingest/events": {

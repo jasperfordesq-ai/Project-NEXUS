@@ -355,6 +355,14 @@ final class EventSafetyRequirementService
         $minimumAge = $this->nullableAge($attributes['minimum_age']);
         $guardianRequired = $this->boolean($attributes['guardian_consent_required']);
         $minorThreshold = $this->nullableAge($attributes['minor_age_threshold']);
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): guardian
+        // consent is switched off, so an organiser can no longer require it. A
+        // minor-age threshold only ever made sense with it, and is refused by
+        // the existing rule below whenever guardian consent is off. The minimum
+        // age is deliberately unchanged.
+        if ($guardianRequired) {
+            throw new EventSafetyException('event_guardian_consent_retired');
+        }
         if (($guardianRequired && ($minorThreshold === null || $minorThreshold < 1))
             || (! $guardianRequired && $minorThreshold !== null)) {
             throw new EventSafetyException('event_safety_minor_policy_invalid');

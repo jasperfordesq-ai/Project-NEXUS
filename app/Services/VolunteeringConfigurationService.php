@@ -161,6 +161,12 @@ class VolunteeringConfigurationService
      */
     public static function get(string $key, mixed $default = null): mixed
     {
+        if ($key === self::CONFIG_GUARDIAN_CONSENT_REQUIRED) {
+            // Pinned off: see isRetiredValue(). A value stored before the
+            // switch-off is ignored rather than deleted.
+            return false;
+        }
+
         $tenantId = TenantContext::getId();
         $allStored = self::getStoredValues($tenantId);
 
@@ -177,6 +183,10 @@ class VolunteeringConfigurationService
 
     public static function set(string $key, mixed $value): void
     {
+        if (self::isRetiredValue($key, $value)) {
+            throw new \InvalidArgumentException('guardian_consent_retired');
+        }
+
         $tenantId = TenantContext::getId();
         $storedValue = is_bool($value) ? ($value ? 'true' : 'false') : (string) $value;
         $settingType = self::detectType($value);
@@ -223,7 +233,23 @@ class VolunteeringConfigurationService
         $tenantId = TenantContext::getId();
         $stored = self::getStoredValues($tenantId);
 
-        return array_merge(self::DEFAULTS, $stored);
+        $all = array_merge(self::DEFAULTS, $stored);
+        $all[self::CONFIG_GUARDIAN_CONSENT_REQUIRED] = false;
+
+        return $all;
+    }
+
+    /**
+     * Adults-only platform (owner decision 2026-09-25, E-035 F-160): guardian
+     * consent is switched off, so `volunteering.guardian_consent_required` can
+     * no longer be turned on. Reading it always returns false; storing a truthy
+     * value is refused. Storing false stays allowed so an admin screen that
+     * re-saves every setting keeps working.
+     */
+    public static function isRetiredValue(string $key, mixed $value): bool
+    {
+        return $key === self::CONFIG_GUARDIAN_CONSENT_REQUIRED
+            && filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     // =========================================================================

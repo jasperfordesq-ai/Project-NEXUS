@@ -18,7 +18,6 @@ use App\Services\EventGuardianConsentDeliveryEnvelopeService;
 use App\Services\EventGuardianConsentService;
 use App\Services\EventGuardianLocaleResolver;
 use App\Services\EventNotificationOutboxActionHandler;
-use App\Services\EventSafetyRequirementService;
 use App\Support\Events\EventSafetyFoundationSupport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Migrations\Migration;
@@ -26,11 +25,13 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Laravel\Support\PublishesLegacyGuardianPolicy;
 use Tests\Laravel\TestCase;
 
 final class EventSafetyGuardianDeliveryBoundaryTest extends TestCase
 {
     use DatabaseTransactions;
+    use PublishesLegacyGuardianPolicy;
 
     protected function setUp(): void
     {
@@ -207,22 +208,14 @@ final class EventSafetyGuardianDeliveryBoundaryTest extends TestCase
         $eventId = $this->event((int) $owner->id, $start);
         DB::table('events')->where('id', $eventId)->update(['group_id' => (int) $group->id]);
 
-        $requirements = new EventSafetyRequirementService();
-        $draft = $requirements->saveDraft($eventId, $owner, [
+        // Guardian consent was switched off on 2026-09-25 (adults-only
+        // platform); organisers can no longer create this policy, so the
+        // retained service is exercised against a legacy published one.
+        $this->publishLegacyGuardianPolicy($eventId, $owner, [
             'minimum_age' => null,
-            'guardian_consent_required' => true,
             'minor_age_threshold' => 18,
             'code_of_conduct_required' => false,
-            'code_of_conduct_text' => null,
-            'code_of_conduct_text_version' => null,
-        ], 0, 'private-guardian-policy-draft-' . bin2hex(random_bytes(6)));
-        $requirements->publish(
-            $eventId,
-            $owner,
-            (int) $draft['requirements']->revision,
-            (int) $draft['version']->version_number,
-            'private-guardian-policy-publish-' . bin2hex(random_bytes(6)),
-        );
+        ], 'private-guardian-policy-' . bin2hex(random_bytes(6)));
 
         $exception = null;
         try {
@@ -448,22 +441,14 @@ final class EventSafetyGuardianDeliveryBoundaryTest extends TestCase
             'preferred_language' => 'en',
         ]);
         $eventId = $this->event((int) $owner->id, $start);
-        $requirements = new EventSafetyRequirementService();
-        $draft = $requirements->saveDraft($eventId, $owner, [
+        // Guardian consent was switched off on 2026-09-25 (adults-only
+        // platform); organisers can no longer create this policy, so the
+        // retained service is exercised against a legacy published one.
+        $this->publishLegacyGuardianPolicy($eventId, $owner, [
             'minimum_age' => null,
-            'guardian_consent_required' => true,
             'minor_age_threshold' => 18,
             'code_of_conduct_required' => false,
-            'code_of_conduct_text' => null,
-            'code_of_conduct_text_version' => null,
-        ], 0, 'guardian-delivery-policy-draft-' . bin2hex(random_bytes(6)));
-        $requirements->publish(
-            $eventId,
-            $owner,
-            (int) $draft['requirements']->revision,
-            (int) $draft['version']->version_number,
-            'guardian-delivery-policy-publish-' . bin2hex(random_bytes(6)),
-        );
+        ], 'guardian-delivery-policy-' . bin2hex(random_bytes(6)));
 
         $support = new EventSafetyFoundationSupport();
         $secrets = [

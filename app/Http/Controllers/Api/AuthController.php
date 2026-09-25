@@ -654,6 +654,8 @@ class AuthController extends BaseApiController
                     'tenant_id',
                     'email_verified_at',
                     'is_approved',
+                    // Read by the minimum-age login gate (adults-only, 18+).
+                    'date_of_birth',
                 ]);
             if ($userRow === null) {
                 return ['status' => 'user_not_found'];

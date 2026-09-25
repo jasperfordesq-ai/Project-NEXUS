@@ -342,6 +342,12 @@ class VolunteerService
      */
     public static function guardianConsentError(int $userId, int $opportunityId): ?array
     {
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): there
+        // are no minors to gate — an under-18 account cannot sign in at all —
+        // so the volunteering guardian-consent gate never demands consent (or a
+        // date of birth). The setting behind it is pinned off in
+        // VolunteeringConfigurationService. The branches below are kept, not
+        // deleted, so the switch-off is a one-line revert if it is ever reversed.
         if (! VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)) {
             return null;
         }

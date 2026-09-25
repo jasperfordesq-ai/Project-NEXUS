@@ -13,6 +13,7 @@ use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Models\User;
 use App\Scopes\TenantScope;
+use App\Support\Authorization\MinimumAge;
 use App\Services\OnboardingConfigService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -409,6 +410,29 @@ class UserService
 
             if ($hasIdBadge) {
                 unset($data['first_name'], $data['last_name'], $data['date_of_birth']);
+            }
+        }
+
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): a date
+        // of birth under 18 can never be recorded. Re-sending the value already
+        // on the account is accepted (clients post the whole profile), an empty
+        // value is stored as NULL, and a valid adult date is normalised to Y-m-d.
+        // An under-18 account never reaches this point: the authentication
+        // middleware refuses its session before the controller runs.
+        if (array_key_exists('date_of_birth', $data)) {
+            $currentDob = User::withoutGlobalScope(TenantScope::class)
+                ->whereKey($userId)
+                ->value('date_of_birth');
+            $dobError = MinimumAge::dateOfBirthError($data['date_of_birth'], $currentDob);
+            if ($dobError !== null) {
+                self::$errors = [$dobError];
+                return false;
+            }
+            $newDob = $data['date_of_birth'];
+            if ($newDob === null || (is_string($newDob) && trim($newDob) === '')) {
+                $data['date_of_birth'] = null;
+            } else {
+                $data['date_of_birth'] = MinimumAge::normalise($newDob);
             }
         }
 

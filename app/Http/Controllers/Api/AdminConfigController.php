@@ -3034,6 +3034,20 @@ class AdminConfigController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'settings']), 'settings', 422);
         }
 
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): guardian
+        // consent is switched off and cannot be turned back on here. Checked
+        // before anything is written so a refused request changes nothing.
+        foreach ($settings as $key => $value) {
+            if (is_string($key) && VolunteeringConfigurationService::isRetiredValue($key, $value)) {
+                return $this->respondWithError(
+                    'GUARDIAN_CONSENT_RETIRED',
+                    __('api.guardian_consent_retired', ['age' => \App\Support\Authorization\MinimumAge::YEARS]),
+                    $key,
+                    422
+                );
+            }
+        }
+
         $updated = [];
         foreach ($settings as $key => $value) {
             if (!is_string($key) || !array_key_exists($key, VolunteeringConfigurationService::DEFAULTS)) {

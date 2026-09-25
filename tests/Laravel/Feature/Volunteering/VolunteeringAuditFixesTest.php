@@ -220,22 +220,30 @@ class VolunteeringAuditFixesTest extends TestCase
         $this->assertSame('confirmed', $row->status);
     }
 
-    public function test_group_reservation_rejects_member_without_dob_when_guardian_gate_enabled(): void
+    /**
+     * Adults-only platform (2026-09-25): the guardian-consent gate is switched
+     * off and its setting can no longer be turned on, so a member without a
+     * date of birth is no longer refused a place in a group reservation.
+     */
+    public function test_group_reservation_no_longer_requires_a_dob_because_guardian_gate_is_retired(): void
     {
-        VolunteeringConfigurationService::set(
-            VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED,
-            true
-        );
+        try {
+            VolunteeringConfigurationService::set(
+                VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED,
+                true
+            );
+            $this->fail('the retired guardian-consent setting was turned on');
+        } catch (\InvalidArgumentException) {
+            // expected
+        }
         $leader = User::factory()->forTenant($this->testTenantId)->create();
         $member = User::factory()->forTenant($this->testTenantId)->create(['date_of_birth' => null]);
         $reservationId = $this->createReservation((int) $leader->id);
 
-        $this->assertFalse(
+        $this->assertTrue(
             ShiftGroupReservationService::addMember($reservationId, (int) $member->id, (int) $leader->id)
         );
-        $this->assertSame('VALIDATION_REQUIRED_FIELD', ShiftGroupReservationService::getErrors()[0]['code'] ?? null);
-        $this->assertSame('date_of_birth', ShiftGroupReservationService::getErrors()[0]['field'] ?? null);
-        $this->assertDatabaseMissing('vol_shift_group_members', [
+        $this->assertDatabaseHas('vol_shift_group_members', [
             'tenant_id' => $this->testTenantId,
             'reservation_id' => $reservationId,
             'user_id' => $member->id,

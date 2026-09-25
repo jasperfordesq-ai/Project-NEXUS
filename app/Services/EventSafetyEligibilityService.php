@@ -82,7 +82,13 @@ final class EventSafetyEligibilityService
 
             $age = null;
             $minor = null;
-            if ($version->minimum_age !== null || (bool) $version->guardian_consent_required) {
+            // Adults-only platform (owner decision 2026-09-25, E-035 F-160):
+            // guardian consent is switched off. A policy published before the
+            // switch-off may still say `guardian_consent_required`; that flag is
+            // now ignored — it neither demands a date of birth nor blocks anyone
+            // (an under-18 account cannot sign in at all). The minimum age and
+            // the code of conduct still apply exactly as published.
+            if ($version->minimum_age !== null) {
                 $dateOfBirth = $participant->getRawOriginal('date_of_birth');
                 if (! is_string($dateOfBirth) || trim($dateOfBirth) === '') {
                     return $this->unavailable(
@@ -116,37 +122,6 @@ final class EventSafetyEligibilityService
                             ? $age < (int) $version->minor_age_threshold
                             : null,
                     );
-                }
-                if ((bool) $version->guardian_consent_required) {
-                    if ($version->minor_age_threshold === null) {
-                        return $this->unavailable(
-                            $eventId,
-                            (int) $participant->id,
-                            (int) $version->version_number,
-                            ['event_safety_minor_policy_unavailable'],
-                            ['event_safety_contact_organizer'],
-                            $age,
-                        );
-                    }
-                    $minor = $age < (int) $version->minor_age_threshold;
-                    if ($minor && ! $this->hasValidGuardianConsent(
-                        $tenantId,
-                        $event,
-                        $requirements,
-                        $version,
-                        $participant,
-                        $start['start_utc']->format('Y-m-d H:i:s'),
-                    )) {
-                        return $this->deny(
-                            $eventId,
-                            (int) $participant->id,
-                            (int) $version->version_number,
-                            ['event_safety_guardian_consent_required'],
-                            ['event_safety_request_guardian_consent'],
-                            $age,
-                            true,
-                        );
-                    }
                 }
             }
             if ((bool) $version->code_of_conduct_required
@@ -378,6 +353,11 @@ final class EventSafetyEligibilityService
         return $reason;
     }
 
+    /**
+     * Not called since guardian consent was switched off (2026-09-25). Kept so
+     * re-enabling it is a revert of the evaluate() change, not a rewrite of the
+     * integrity checks below.
+     */
     private function hasValidGuardianConsent(
         int $tenantId,
         Event $event,

@@ -8,14 +8,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\EventGuardianConsentStatus;
 use App\Enums\EventParticipationDenialStatus;
 use App\Enums\EventSafetyCodeEvidenceAction;
 use App\Enums\EventSafetyEnforcementMode;
 use App\Enums\EventSafetyRequirementStatus;
 use App\Exceptions\EventSafetyException;
 use App\Models\Event;
-use App\Models\EventGuardianConsent;
 use App\Models\EventParticipationDenial;
 use App\Models\EventSafetyCodeAcknowledgement;
 use App\Models\EventSafetyRequirement;
@@ -323,14 +321,11 @@ final class EventSafetyProjectionService
                 $requirements,
                 $version,
             ),
-            'guardian_consent' => $this->guardianEvidence(
-                $tenantId,
-                (int) $event->id,
-                (int) $actor->id,
-                $requirements,
-                $version,
-                $decision,
-            ),
+            // Adults-only platform (owner decision 2026-09-25, E-035 F-160):
+            // guardian consent is switched off, so no member is ever asked for
+            // it, even under a legacy policy that still says it is required.
+            // The contract mapper renders null as status `not_required`.
+            'guardian_consent' => null,
             'active_denial' => $this->activeDenial($tenantId, $event, (int) $actor->id),
         ];
     }
@@ -380,51 +375,6 @@ final class EventSafetyProjectionService
     }
 
     /** @return array<string,mixed>|null */
-    private function guardianEvidence(
-        int $tenantId,
-        int $eventId,
-        int $userId,
-        EventSafetyRequirement $requirements,
-        EventSafetyRequirementVersion $version,
-        ?EventSafetyEligibilityDecision $decision,
-    ): ?array {
-        if (! (bool) $version->guardian_consent_required
-            || $decision?->minorAtEvent !== true) {
-            return null;
-        }
-        $consent = EventGuardianConsent::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('event_id', $eventId)
-            ->where('minor_user_id', $userId)
-            ->where('requirements_id', (int) $requirements->id)
-            ->where('requirements_version_id', (int) $version->id)
-            ->where('active_slot', 1)
-            ->first();
-        if ($consent === null) {
-            return [
-                'status' => 'required',
-                'consent_id' => null,
-                'consent_version' => null,
-                'expires_at' => null,
-                'granted_at' => null,
-            ];
-        }
-        $status = self::enum($consent->status);
-        if ($consent->expires_at !== null
-            && CarbonImmutable::instance($consent->expires_at)->isPast()) {
-            $status = EventGuardianConsentStatus::Expired->value;
-        }
-
-        return [
-            'status' => $status,
-            'consent_id' => (int) $consent->id,
-            'consent_version' => (int) $consent->consent_version,
-            'expires_at' => $consent->expires_at,
-            'granted_at' => $consent->granted_at,
-        ];
-    }
-
-    /** @return array<string,mixed>|null */
     private function activeDenial(int $tenantId, Event $event, int $userId): ?array
     {
         $eventStart = $this->support->eventStartContext($event)['start_utc']->format('Y-m-d H:i:s');
@@ -465,8 +415,6 @@ final class EventSafetyProjectionService
         array $evidence,
     ): array {
         $code = $evidence['code_of_conduct'] ?? null;
-        $guardian = $evidence['guardian_consent'] ?? null;
-        $guardianStatus = is_array($guardian) ? ($guardian['status'] ?? null) : null;
 
         return [
             'manage_requirements' => $canManage,
@@ -477,15 +425,9 @@ final class EventSafetyProjectionService
                 && ($code['status'] ?? null) === 'required',
             'withdraw_code_of_conduct' => is_array($code)
                 && ($code['status'] ?? null) === 'acknowledged',
-            'request_guardian_consent' => $version !== null
-                && (bool) $version->guardian_consent_required
-                && $decision?->minorAtEvent === true
-                && in_array($guardianStatus, [null, 'required', 'expired', 'withdrawn'], true),
-            'withdraw_guardian_consent' => in_array(
-                $guardianStatus,
-                [EventGuardianConsentStatus::Pending->value, EventGuardianConsentStatus::Active->value],
-                true,
-            ),
+            // Guardian consent is switched off (2026-09-25): never offered.
+            'request_guardian_consent' => false,
+            'withdraw_guardian_consent' => false,
         ];
     }
 

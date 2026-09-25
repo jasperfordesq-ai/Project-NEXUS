@@ -212,7 +212,7 @@ class OptionalIdentityVerificationController extends BaseApiController
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api_controllers_2.identity.dob_required'), 'date_of_birth', 422);
         }
 
-        $dob = date('Y-m-d', strtotime($dobRaw));
+        $dob = is_string($dobRaw) ? date('Y-m-d', (int) strtotime($dobRaw)) : '';
         if (!$dob || $dob === '1970-01-01') {
             return $this->respondWithError('VALIDATION_INVALID_FORMAT', __('api_controllers_2.identity.dob_invalid'), 'date_of_birth', 422);
         }
@@ -222,10 +222,14 @@ class OptionalIdentityVerificationController extends BaseApiController
             return $this->respondWithError('VALIDATION_INVALID_FORMAT', __('api_controllers_2.identity.dob_must_be_past'), 'date_of_birth', 422);
         }
 
-        // Must be at least 16 years old
-        $age = (int) date_diff(date_create($dob), date_create('today'))->y;
-        if ($age < 16) {
-            return $this->respondWithError('VALIDATION_INVALID_FORMAT', __('api_controllers_2.identity.must_be_16'), 'date_of_birth', 422);
+        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): the
+        // minimum age is 18 for everyone. This endpoint used to accept 16+.
+        $currentDob = DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->value('date_of_birth');
+        if ($dobError = \App\Support\Authorization\MinimumAge::dateOfBirthError($dob, $currentDob)) {
+            return $this->respondWithError($dobError['code'], $dobError['message'], $dobError['field'], 422);
         }
 
         DB::table('users')

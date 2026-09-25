@@ -1084,101 +1084,57 @@ class VolunteerCommunityController extends BaseApiController
     }
 
     // ========================================
-    // GUARDIAN CONSENTS
+    // GUARDIAN CONSENTS — RETIRED
     // ========================================
+    //
+    // Adults-only platform (owner decision 2026-09-25, E-035 F-160): under-18
+    // participation is removed, not supervised, so guardian consent has no
+    // purpose. Every endpoint refuses with 410 GUARDIAN_CONSENT_RETIRED. The
+    // `vol_guardian_consents` table, its rows and GuardianConsentService are
+    // deliberately left in place so the switch-off is reversible and the
+    // historical records stay available to GDPR export and retention.
 
     public function myGuardianConsents(): JsonResponse
     {
-        $this->ensureFeature();
-        $userId = $this->getUserId();
-        $this->rateLimit('vol_guardian_consents', 30, 60);
-
-        $consents = $this->guardianConsentService->getConsentsForMinor($userId);
-        return $this->respondWithData($consents);
+        return $this->guardianConsentRetired();
     }
 
     public function requestGuardianConsent(): JsonResponse
     {
-        $this->ensureFeature();
-        $userId = $this->getUserId();
-        $this->rateLimit('vol_guardian_consent_request', 5, 60);
-
-        $data = $this->getAllInput();
-        $opportunityId = isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null;
-
-        try {
-            $result = $this->guardianConsentService->requestConsent($userId, $data, $opportunityId);
-            return $this->respondWithData($result, null, 201);
-        } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
-        }
+        return $this->guardianConsentRetired();
     }
 
-    /**
-     * Public endpoint -- no auth required.
-     *
-     * Read-only token lookup for the GET verify route. Deliberately does NOT
-     * grant: the pending → active state change happens only via the POST route
-     * (verifyGuardianConsent), so mail scanners prefetching the emailed link
-     * can never record legal consent.
-     */
+    /** Public endpoint -- no auth required. */
     public function showGuardianConsentVerification($token): JsonResponse
     {
-        $this->ensureFeature();
-        $this->rateLimit('guardian_consent_verify_lookup', 20, 300);
-
-        $status = $this->guardianConsentService->getConsentStatusByToken($token);
-
-        if ($status === null) {
-            return $this->respondWithError('INVALID_TOKEN', __('api.vol_consent_invalid_token'), null, 400);
-        }
-
-        return $this->respondWithData($status);
+        return $this->guardianConsentRetired();
     }
 
-    /** Public endpoint -- no auth required. POST only: grants the consent. */
+    /** Public endpoint -- no auth required. */
     public function verifyGuardianConsent($token): JsonResponse
     {
-        $this->ensureFeature();
-        $this->rateLimit('guardian_consent_verify', 10, 300);
-
-        $ip = request()->ip() ?? '0.0.0.0';
-        $result = $this->guardianConsentService->grantConsent($token, $ip);
-
-        if (!$result) {
-            return $this->respondWithError('INVALID_TOKEN', __('api.vol_consent_invalid_token'), null, 400);
-        }
-
-        return $this->respondWithData(['success' => true, 'message' => __('api_controllers_2.volunteer_community.guardian_consent_granted')]);
+        return $this->guardianConsentRetired();
     }
 
     public function withdrawGuardianConsent($id): JsonResponse
     {
-        $this->ensureFeature();
-        $userId = $this->getUserId();
-        $this->rateLimit('vol_guardian_consent_withdraw', 10, 60);
-
-        $result = $this->guardianConsentService->withdrawConsent((int) $id, $userId);
-        if (!$result) {
-            return $this->respondWithError('NOT_FOUND', __('api.vol_consent_not_found'), null, 404);
-        }
-
-        return $this->respondWithData(['success' => true]);
+        return $this->guardianConsentRetired();
     }
 
     public function adminGuardianConsents(): JsonResponse
     {
-        $this->ensureFeature();
         $this->requireAdmin();
 
-        $filters = [
-            'status' => $this->query('status'),
-            'search' => $this->query('search'),
-            'cursor' => $this->query('cursor'),
-            'limit'  => $this->query('limit'),
-        ];
+        return $this->guardianConsentRetired();
+    }
 
-        $consents = $this->guardianConsentService->getConsentsForAdmin($filters);
-        return $this->respondWithData($consents);
+    private function guardianConsentRetired(): JsonResponse
+    {
+        return $this->respondWithError(
+            'GUARDIAN_CONSENT_RETIRED',
+            __('api.guardian_consent_retired', ['age' => \App\Support\Authorization\MinimumAge::YEARS]),
+            null,
+            410
+        );
     }
 }

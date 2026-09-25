@@ -22,11 +22,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Laravel\Support\PublishesLegacyGuardianPolicy;
 use Tests\Laravel\TestCase;
 
 final class EventSafetyConsentEvidenceTest extends TestCase
 {
     use DatabaseTransactions;
+    use PublishesLegacyGuardianPolicy;
 
     public function test_code_acknowledgements_are_append_only_replaced_and_withdrawable(): void
     {
@@ -420,6 +422,13 @@ final class EventSafetyConsentEvidenceTest extends TestCase
         int $expectedRevision,
         string $key,
     ): array {
+        // Guardian consent was switched off on 2026-09-25 (adults-only
+        // platform) and organisers can no longer create a policy that requires
+        // it. These tests pin the integrity of the retained guardian-consent
+        // service, so they publish a legacy guardian policy directly.
+        if (($configuration['guardian_consent_required'] ?? false) === true && $expectedRevision === 0) {
+            return $this->publishLegacyGuardianPolicy($eventId, $owner, $configuration, $key) + ['changed' => true];
+        }
         $draft = $service->saveDraft(
             $eventId,
             $owner,

@@ -11,7 +11,6 @@ namespace Tests\Laravel\Feature\Events;
 use App\Enums\EventParticipationDecision;
 use App\Enums\EventParticipationDenialReason;
 use App\Models\User;
-use App\Services\EventGuardianConsentService;
 use App\Services\EventParticipationDenialService;
 use App\Services\EventSafetyAcknowledgementService;
 use App\Services\EventSafetyEligibilityService;
@@ -23,11 +22,13 @@ use App\Support\SafeguardingInteractionDecision;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Support\PublishesLegacyGuardianPolicy;
 use Tests\Laravel\TestCase;
 
 final class EventSafetyEligibilityServiceTest extends TestCase
 {
     use DatabaseTransactions;
+    use PublishesLegacyGuardianPolicy;
 
     public function test_evaluator_fails_closed_for_unpublished_inactive_cross_tenant_and_unbound_users(): void
     {
@@ -66,26 +67,32 @@ final class EventSafetyEligibilityServiceTest extends TestCase
         );
     }
 
-    public function test_event_local_age_guardian_consent_and_exact_code_acknowledgement_compose(): void
+    /**
+     * Adults-only platform (2026-09-25): guardian consent is switched off. A
+     * policy published before then may still carry `guardian_consent_required`;
+     * that flag is now inert, so a member below the old minor threshold is only
+     * asked for the code of conduct, like everyone else. The event-local age
+     * rule (minimum age on the event's own calendar date) still applies.
+     */
+    public function test_event_local_age_and_exact_code_acknowledgement_compose_and_legacy_guardian_flag_is_inert(): void
     {
-        $token = 'nxeg1_' . str_repeat('C', 43);
         $owner = $this->user();
         $start = CarbonImmutable::parse('2030-01-01 12:30:00', 'UTC');
         $localEventDate = '2030-01-02';
         $adult = $this->user(['date_of_birth' => '2012-01-02']);
-        $minor = $this->user([
-            'email' => 'eligibility-minor@example.test',
+        $young = $this->user([
+            'email' => 'eligibility-young@example.test',
             'date_of_birth' => '2014-01-03',
         ]);
+        $tooYoung = $this->user(['date_of_birth' => '2018-06-01']);
         $eventId = $this->event((int) $owner->id, $start, 'Pacific/Auckland');
-        $policy = $this->publish($eventId, $owner, [
+        $policy = $this->publishLegacyGuardianPolicy($eventId, $owner, [
             'minimum_age' => 12,
-            'guardian_consent_required' => true,
             'minor_age_threshold' => 18,
             'code_of_conduct_required' => true,
             'code_of_conduct_text' => 'Exact eligibility conduct policy.',
             'code_of_conduct_text_version' => 'eligibility-coc-v1',
-        ]);
+        ], 'eligibility-legacy:' . $eventId);
         $service = new EventSafetyEligibilityService(
             new EventSafetyFoundationSupport(),
             $this->policy(SafeguardingInteractionDecision::ALLOW),
@@ -101,77 +108,45 @@ final class EventSafetyEligibilityServiceTest extends TestCase
         $adultNeedsCode = $service->evaluate($eventId, $adult);
         self::assertTrue($adultNeedsCode->isDenied());
         self::assertSame(18, $adultNeedsCode->ageAtEvent);
-        self::assertFalse($adultNeedsCode->minorAtEvent);
         self::assertSame(
             ['event_safety_code_of_conduct_acknowledgement_required'],
             $adultNeedsCode->reasonCodes,
         );
 
-        $acknowledgements = new EventSafetyAcknowledgementService();
-        $acknowledgements->acknowledge(
-            $eventId,
-            $adult,
-            (string) $policy['version']->code_of_conduct_text_version,
-            (string) $policy['version']->code_of_conduct_text_hash,
-            'eligibility-adult-ack',
+        // The minimum age is measured on the event's local date and still applies.
+        $tooYoungDecision = $service->evaluate($eventId, $tooYoung);
+        self::assertTrue($tooYoungDecision->isDenied());
+        self::assertSame(['event_safety_minimum_age_not_met'], $tooYoungDecision->reasonCodes);
+
+        // Below the legacy minor threshold: NOT asked for guardian consent.
+        $youngNeedsCodeOnly = $service->evaluate($eventId, $young);
+        self::assertTrue($youngNeedsCodeOnly->isDenied());
+        self::assertSame(15, $youngNeedsCodeOnly->ageAtEvent);
+        self::assertSame(
+            ['event_safety_code_of_conduct_acknowledgement_required'],
+            $youngNeedsCodeOnly->reasonCodes,
         );
+        self::assertNotContains('event_safety_request_guardian_consent', $youngNeedsCodeOnly->requiredActions);
+
+        $acknowledgements = new EventSafetyAcknowledgementService();
+        foreach ([[$adult, 'eligibility-adult-ack'], [$young, 'eligibility-young-ack']] as [$member, $key]) {
+            $acknowledgements->acknowledge(
+                $eventId,
+                $member,
+                (string) $policy['version']->code_of_conduct_text_version,
+                (string) $policy['version']->code_of_conduct_text_hash,
+                $key,
+            );
+        }
         $adultAllowed = $service->evaluate($eventId, $adult);
         self::assertTrue($adultAllowed->isAllowed());
         self::assertSame(18, $adultAllowed->ageAtEvent);
-        self::assertFalse($adultAllowed->minorAtEvent);
 
-        $minorNeedsGuardian = $service->evaluate($eventId, $minor);
-        self::assertTrue($minorNeedsGuardian->isDenied());
-        self::assertSame(15, $minorNeedsGuardian->ageAtEvent);
-        self::assertTrue($minorNeedsGuardian->minorAtEvent);
-        self::assertSame(
-            ['event_safety_guardian_consent_required'],
-            $minorNeedsGuardian->reasonCodes,
-        );
-
-        $guardian = new EventGuardianConsentService(
-            new EventSafetyFoundationSupport(),
-            static fn (): string => $token,
-        );
-        $guardian->request(
-            $eventId,
-            $minor,
-            $owner,
-            [
-                'guardian_name' => 'Eligibility Guardian',
-                'guardian_email' => 'eligibility-guardian@example.test',
-                'relationship_code' => 'guardian',
-            ],
-            'Consent for the exact eligibility policy.',
-            'eligibility-consent-v1',
-            $start->addDays(2),
-            'eligibility-consent-request',
-        );
-        $guardian->grant(
-            $token,
-            'eligibility-guardian@example.test',
-            null,
-            'eligibility-consent-grant',
-        );
-        $minorNeedsCode = $service->evaluate($eventId, $minor);
-        self::assertSame(
-            ['event_safety_code_of_conduct_acknowledgement_required'],
-            $minorNeedsCode->reasonCodes,
-        );
-
-        $acknowledgements->acknowledge(
-            $eventId,
-            $minor,
-            (string) $policy['version']->code_of_conduct_text_version,
-            (string) $policy['version']->code_of_conduct_text_hash,
-            'eligibility-minor-ack',
-        );
-        $minorAllowed = $service->evaluate($eventId, $minor);
-        self::assertTrue($minorAllowed->isAllowed());
-        self::assertSame(15, $minorAllowed->ageAtEvent);
-        self::assertTrue($minorAllowed->minorAtEvent);
-        self::assertSame('SAFEGUARDING_ALLOWED', $minorAllowed->safeguardingPolicy['code']);
-        self::assertArrayNotHasKey('required_attestation_labels', $minorAllowed->safeguardingPolicy);
+        $youngAllowed = $service->evaluate($eventId, $young);
+        self::assertTrue($youngAllowed->isAllowed());
+        self::assertSame(15, $youngAllowed->ageAtEvent);
+        self::assertSame('SAFEGUARDING_ALLOWED', $youngAllowed->safeguardingPolicy['code']);
+        self::assertArrayNotHasKey('required_attestation_labels', $youngAllowed->safeguardingPolicy);
     }
 
     public function test_blocks_reviewed_denials_and_existing_safeguarding_policy_all_fail_closed(): void

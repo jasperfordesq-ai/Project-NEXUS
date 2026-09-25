@@ -1,6 +1,6 @@
 # Safeguarding & Consent
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-09-25
 
 This page maps the safeguarding, guardian and consent subsystems as they exist in
 code. It was written by reading the services, controllers, routes and the ~30
@@ -11,10 +11,12 @@ did not exist. The source code remains authoritative.
 Everything here is tenant-scoped unless stated otherwise.
 
 🔴 **Read [PRODUCT-AUDIENCE.md](PRODUCT-AUDIENCE.md) first if the question is about age.**
-Project NEXUS is a platform for adults: all three sign-up forms require confirming you are
-18 or older, no date of birth is collected at sign-up, and the volunteering guardian-consent
-gate — the only place a minor check refuses an action — is off by default. The capabilities
-below are real and should not be described as offering under-18 membership.
+Project NEXUS is a platform for adults aged 18 and over. Since 25 September 2026 that is
+enforced, not just declared: an account whose recorded date of birth is under 18 cannot sign
+in, nobody can record a date of birth under 18, and **guardian consent for minors is switched
+off** for both volunteering and events. Under-18 participation is removed, not supervised.
+The two guardian-consent subsystems below are kept in the code and database so the decision
+is reversible and their records survive, but nothing uses them.
 
 ---
 
@@ -134,6 +136,17 @@ staff-only. That is not consent, and withdrawal was impossible.
 
 ### 2. `event_guardian_consents` — parental consent for minors at events
 
+> **Switched off on 2026-09-25 (adults-only platform).** The request, withdraw and
+> grant endpoints return `410` with error code `GUARDIAN_CONSENT_RETIRED`. Organisers
+> can no longer set `guardian_consent_required` or a `minor_age_threshold` on an
+> event's safety requirements (a minimum age is unchanged). A safety policy published
+> before the switch-off that still says guardian consent is required is treated as if
+> it did not: the flag neither asks for a date of birth nor blocks anyone; the minimum
+> age and code of conduct still apply as published. The tables, their triggers and the
+> append-only history are untouched, and `EventGuardianConsentService` still works
+> underneath, so re-enabling is a revert rather than a rebuild. The description below
+> is kept because the design remains the model to copy.
+
 The most rigorous consent implementation in the platform, and the model to copy.
 
 - Guardian email and identity are stored **encrypted**, with a separate blind hash
@@ -155,17 +168,26 @@ The most rigorous consent implementation in the platform, and the model to copy.
   consent.
 - An event manager may request or withdraw consent **on behalf of** a minor;
   every such action is attributed in the history table.
-- Eligibility is genuinely gated — `EventSafetyEligibilityService` denies
-  participation with `event_safety_guardian_consent_required`.
+- While it was switched on, eligibility was genuinely gated —
+  `EventSafetyEligibilityService` denied participation with
+  `event_safety_guardian_consent_required`. It no longer does (see the note above).
 
 ### 3. `vol_guardian_consents` — parental consent for volunteering
 
-Simpler, and also genuinely enforced. The guardian here is an **external person,
+> **Switched off on 2026-09-25 (adults-only platform).** Every guardian-consent
+> endpoint (the minor's list/request/withdraw, the public verify link, the admin list)
+> returns `410 GUARDIAN_CONSENT_RETIRED`. `VolunteerService::guardianConsentError()`
+> never demands consent or a date of birth, and the tenant setting
+> `volunteering.guardian_consent_required` always reads as `false` and cannot be
+> turned on (the admin configuration API refuses it). The table and its rows are kept
+> for GDPR export and retention. The text below describes how it worked.
+
+Simpler, and it was genuinely enforced. The guardian here is an **external person,
 not a platform user** (`guardian_name`, `guardian_email`, `guardian_phone`,
-`relationship`). The minor requests consent themselves; the token is emailed to the
-guardian and never returned to the requester. `VolunteerController` blocks minors
+`relationship`). The minor requested consent themselves; the token was emailed to the
+guardian and never returned to the requester. `VolunteerController` blocked minors
 without active consent from applying, signing up for shifts, or joining a waitlist.
-Expiry is swept by a scheduled command.
+Expiry is still swept by a scheduled command.
 
 ---
 
@@ -386,8 +408,8 @@ product/legal decision, not a refactor.
 | Mechanism | Who initiates | Who consents | Can act for them? |
 |---|---|---|---|
 | `safeguarding_assignments` | broker / admin | the **ward**, via `POST /v2/safeguarding/consent-to-guardian` | **No** — record only |
-| `event_guardian_consents` | minor, or an event manager | external guardian, via token | **Yes**, within events |
-| `vol_guardian_consents` | the minor | external guardian, via token | Gates the minor; no proxy action |
+| `event_guardian_consents` | — switched off 2026-09-25 | — | **No** — retired |
+| `vol_guardian_consents` | — switched off 2026-09-25 | — | **No** — retired |
 | `account_relationships` | any member | the dependent | **Yes** — listings and transfers (attributed + audited); messages not offered |
 | `caring_caregiver_links` | the proposed caregiver (`pending`) | the care recipient confirms, then authorised staff verifies consent | **Yes**, after activation — Caring requests, schedule and cover care only |
 | Paper onboarding intake | admin | the member, offline on paper | **Yes** — creates the account |

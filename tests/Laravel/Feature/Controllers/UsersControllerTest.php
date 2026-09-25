@@ -130,7 +130,8 @@ class UsersControllerTest extends TestCase
 
     public function test_verified_member_cannot_clear_date_of_birth_with_json_null(): void
     {
-        $dateOfBirth = now()->subYears(17)->toDateString();
+        // An adult date: under-18 accounts cannot hold a session (adults-only, 2026-09-25).
+        $dateOfBirth = now()->subYears(30)->toDateString();
         $user = $this->authenticatedUser([
             'date_of_birth' => $dateOfBirth,
             'bio' => 'Before',
@@ -156,7 +157,8 @@ class UsersControllerTest extends TestCase
 
     public function test_verified_member_lock_uses_home_tenant_while_browsing_another_tenant(): void
     {
-        $dateOfBirth = now()->subYears(17)->toDateString();
+        // An adult date: under-18 accounts cannot hold a session (adults-only, 2026-09-25).
+        $dateOfBirth = now()->subYears(30)->toDateString();
         $user = $this->authenticatedUser(['date_of_birth' => $dateOfBirth]);
         DB::table('member_verification_badges')->insert([
             'user_id' => $user->id,
