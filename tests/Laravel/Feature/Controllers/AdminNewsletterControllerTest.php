@@ -301,6 +301,67 @@ class AdminNewsletterControllerTest extends TestCase
             ->assertJsonPath('data.0.click_count', 1);
     }
 
+    public function test_subscriber_lists_exclude_blank_emails_before_counting_and_pagination(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $newsletterId = DB::table('newsletters')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'name' => 'Malformed activity rows',
+            'subject' => 'Malformed activity rows',
+            'content' => '<p>Hello</p>',
+            'status' => 'sent',
+            'total_recipients' => 2,
+            'total_sent' => 2,
+            'target_audience' => 'all_members',
+            'created_by' => $admin->id,
+            'sent_at' => now()->subHour(),
+            'created_at' => now()->subHours(2),
+            'updated_at' => now()->subHour(),
+        ]);
+
+        DB::table('newsletter_opens')->insert([
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => ' ', 'opened_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => 'opened@example.test', 'opened_at' => now()->subMinute()],
+        ]);
+        DB::table('newsletter_clicks')->insert([
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => ' ', 'url' => 'https://example.test/',
+                'link_id' => hash('sha256', 'https://example.test/'), 'clicked_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => 'clicked@example.test', 'url' => 'https://example.test/',
+                'link_id' => hash('sha256', 'https://example.test/'), 'clicked_at' => now()->subMinute()],
+        ]);
+
+        $this->apiGet("/v2/admin/newsletters/{$newsletterId}/openers")
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.email', 'opened@example.test');
+        $this->apiGet("/v2/admin/newsletters/{$newsletterId}/clickers")
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.email', 'clicked@example.test');
+
+        // Without a blank click, the blank open must still be excluded from this list.
+        DB::table('newsletter_clicks')->where('newsletter_id', $newsletterId)->where('email', ' ')->delete();
+        $this->apiGet("/v2/admin/newsletters/{$newsletterId}/openers-no-click")
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.email', 'opened@example.test');
+
+        // An empty opens table leaves both queue rows eligible before filtering.
+        DB::table('newsletter_opens')->where('newsletter_id', $newsletterId)->delete();
+        DB::table('newsletter_queue')->insert([
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => ' ', 'status' => 'sent', 'sent_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'newsletter_id' => $newsletterId,
+                'email' => 'nonopener@example.test', 'status' => 'sent', 'sent_at' => now()->subMinute()],
+        ]);
+        $this->apiGet("/v2/admin/newsletters/{$newsletterId}/non-openers")
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.email', 'nonopener@example.test');
+    }
+
     // ================================================================
     // BOUNCES - GET /v2/admin/newsletters/bounces
     // ================================================================

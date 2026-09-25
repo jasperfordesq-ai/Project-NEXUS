@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Newsletter subscriber activity tables now ignore malformed rows without an email instead of crashing when a row has no stable key.
+- Newsletter subscriber activity tables now ignore malformed rows without an email instead of crashing when a row has no stable key. The API also excludes blank emails before counting and paging these lists, so totals match the rows shown.
 
 - Production's blue/green browser gate now tests the exact candidate release over local HTTPS, so its sign-in checks use the same secure-cookie rules as the live site.
 
