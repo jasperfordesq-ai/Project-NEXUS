@@ -13,6 +13,10 @@ import StaticPageRoute from './static-page';
 
 let mockSearchParams: Record<string, string> = {};
 let mockTenant: { slug: string; contact?: Record<string, string> | null } = { slug: 'hour-timebank' };
+const mockReserveContactSubmission = jest.fn().mockResolvedValue({
+  storageKey: 'contact-operation', key: 'mobile-contact-key', createdAt: 1,
+});
+const mockCompleteContactSubmission = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -25,6 +29,11 @@ jest.mock('@/lib/api/staticPages', () => ({
   ...jest.requireActual('@/lib/api/staticPages'),
   getStaticPageContent: jest.fn(),
   submitContactMessage: jest.fn(),
+}));
+
+jest.mock('@/lib/contactMessageSubmissionOperation', () => ({
+  reserveContactMessageSubmissionOperation: (...args: unknown[]) => mockReserveContactSubmission(...args),
+  completeContactMessageSubmissionOperation: (...args: unknown[]) => mockCompleteContactSubmission(...args),
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
@@ -112,6 +121,11 @@ describe('StaticPageRoute', () => {
     mockTenant = { slug: 'hour-timebank' };
     mockGetPage.mockResolvedValue(ABOUT_PAGE);
     mockSubmit.mockResolvedValue({ data: { message: 'Sent' } });
+    mockReserveContactSubmission.mockClear();
+    mockCompleteContactSubmission.mockClear();
+    mockReserveContactSubmission.mockResolvedValue({
+      storageKey: 'contact-operation', key: 'mobile-contact-key', createdAt: 1,
+    });
   });
 
   /*
@@ -211,7 +225,7 @@ describe('StaticPageRoute', () => {
         // The human-readable label, exactly as the website posts it.
         subject: 'Account Help',
         message: 'Can you help me find a gardener?',
-      });
+      }, 'mobile-contact-key');
       expect(showToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }));
       expect(view.getByTestId('contact-form-sent')).toBeTruthy();
     });
@@ -222,7 +236,7 @@ describe('StaticPageRoute', () => {
 
       await fillAndSubmit(view);
 
-      expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({ subject: 'General Inquiry' }));
+      expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({ subject: 'General Inquiry' }), 'mobile-contact-key');
     });
 
     it('sends the message once when Send is pressed twice in the same frame', async () => {
@@ -235,7 +249,7 @@ describe('StaticPageRoute', () => {
       fireEvent.changeText(view.getByLabelText('Message'), 'Can you help me find a gardener?');
       const send = view.getByLabelText('Send message');
       act(() => { fireEvent.press(send); fireEvent.press(send); });
-      expect(mockSubmit).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
       await act(async () => { finish(undefined); });
     });
 

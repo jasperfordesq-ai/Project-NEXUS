@@ -124,13 +124,17 @@ interface ContactSubmitResponse {
  * code and tells the member to write to their organisers directly rather than
  * showing a generic failure. Do not paper over it with a fake token.
  */
-export function submitContactMessage(payload: ContactMessagePayload): Promise<ContactSubmitResponse> {
-  return api.post<ContactSubmitResponse>(`${API_V2}/contact`, {
+export function submitContactMessage(payload: ContactMessagePayload, idempotencyKey?: string): Promise<ContactSubmitResponse> {
+  const body = {
     name: payload.name.trim(),
     email: payload.email.trim(),
     subject: payload.subject.trim(),
     message: payload.message.trim(),
-  });
+  };
+  return api.post<ContactSubmitResponse>(`${API_V2}/contact`, {
+    ...body,
+    ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}),
+  }, idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined);
 }
 
 /** The API's code when the Turnstile bot check refuses a submission. */

@@ -6,6 +6,9 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Services\EmailDispatchService;
+use Illuminate\Support\Facades\DB;
+use Mockery;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Sanctum\Sanctum;
@@ -51,6 +54,98 @@ class CoreControllerTest extends TestCase
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 201, 422]);
+    }
+
+    public function test_contact_form_replays_one_submission_without_sending_email_twice(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['contact_email' => 'contact@project-nexus.ie']);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->once()->andReturnTrue();
+        $this->app->instance(EmailDispatchService::class, $mailer);
+
+        $key = 'mobile-contact-replay-key-1';
+        $payload = [
+            'name' => 'Aoife Ryan',
+            'email' => 'aoife@example.org',
+            'subject' => 'Account Help',
+            'message' => 'Please help with my account.',
+            'idempotency_key' => $key,
+        ];
+
+        $first = $this->apiPost('/v2/contact', $payload, ['Idempotency-Key' => $key]);
+        $second = $this->apiPost('/v2/contact', $payload, ['Idempotency-Key' => $key]);
+
+        $first->assertOk();
+        $second->assertOk();
+        $this->assertSame(1, DB::table('contact_submissions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('idempotency_key_hash', hash('sha256', $key))
+            ->count());
+        $this->assertSame(1, (int) DB::table('contact_submissions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('idempotency_key_hash', hash('sha256', $key))
+            ->value('email_sent'));
+    }
+
+    public function test_contact_form_rejects_changed_request_for_same_key(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['contact_email' => 'contact@project-nexus.ie']);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->once()->andReturnTrue();
+        $this->app->instance(EmailDispatchService::class, $mailer);
+
+        $key = 'mobile-contact-conflict-key-1';
+        $payload = [
+            'name' => 'Aoife Ryan',
+            'email' => 'aoife@example.org',
+            'subject' => 'Account Help',
+            'message' => 'Original request.',
+            'idempotency_key' => $key,
+        ];
+        $this->apiPost('/v2/contact', $payload, ['Idempotency-Key' => $key])->assertOk();
+
+        $response = $this->apiPost('/v2/contact', [
+            ...$payload,
+            'message' => 'Changed request.',
+        ], ['Idempotency-Key' => $key]);
+
+        $response->assertStatus(409);
+        $response->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        $this->assertSame(1, DB::table('contact_submissions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('idempotency_key_hash', hash('sha256', $key))
+            ->count());
+    }
+
+    public function test_contact_form_replay_keeps_failed_email_at_most_once_while_preserving_submission(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['contact_email' => 'contact@project-nexus.ie']);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->once()->andThrow(new \RuntimeException('Provider response unavailable'));
+        $this->app->instance(EmailDispatchService::class, $mailer);
+
+        $key = 'mobile-contact-provider-boundary-1';
+        $payload = [
+            'name' => 'Aoife Ryan',
+            'email' => 'aoife@example.org',
+            'subject' => 'General Inquiry',
+            'message' => 'Please preserve this submission.',
+            'idempotency_key' => $key,
+        ];
+
+        $this->apiPost('/v2/contact', $payload, ['Idempotency-Key' => $key])->assertOk();
+        $this->apiPost('/v2/contact', $payload, ['Idempotency-Key' => $key])->assertOk();
+
+        $row = DB::table('contact_submissions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('idempotency_key_hash', hash('sha256', $key))
+            ->first();
+        $this->assertNotNull($row);
+        $this->assertSame(0, (int) $row->email_sent);
+        $this->assertNotNull($row->delivery_started_at);
     }
 
     // ------------------------------------------------------------------

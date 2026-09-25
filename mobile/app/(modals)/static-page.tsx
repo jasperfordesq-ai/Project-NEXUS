@@ -41,6 +41,10 @@ import {
   type StaticPageContent,
   type StaticPageItem,
 } from '@/lib/api/staticPages';
+import {
+  completeContactMessageSubmissionOperation,
+  reserveContactMessageSubmissionOperation,
+} from '@/lib/contactMessageSubmissionOperation';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -310,7 +314,10 @@ function ContactPanel({ page }: { page: StaticPageContent }) {
     sendingRef.current = true;
     setIsSending(true);
     try {
-      await submitContactMessage({ name, email, subject, message });
+      const payload = { name: name.trim(), email: email.trim(), subject, message: message.trim() };
+      const operation = await reserveContactMessageSubmissionOperation(JSON.stringify(payload));
+      await submitContactMessage(payload, operation.key);
+      await completeContactMessageSubmissionOperation(operation);
       setIsSent(true);
       setMessage('');
       showToast({

@@ -40,48 +40,99 @@ class CoreController extends BaseApiController
             return $this->respondWithError(\App\Core\ApiErrorCodes::TURNSTILE_FAILED, __('api.turnstile_failed'), null, 422);
         }
 
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $allInput['idempotency_key'] ?? null;
+        if (($headerKey !== null && ! is_string($headerKey))
+            || ($bodyKey !== null && ! is_string($bodyKey))
+            || ($headerKey !== null && $bodyKey !== null && ! hash_equals(trim($headerKey), trim($bodyKey)))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $idempotencyKey = trim((string) ($headerKey ?: $bodyKey ?: ''));
+        if ($idempotencyKey !== '' && (strlen($idempotencyKey) < 8 || strlen($idempotencyKey) > 191)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+
         $name = trim($this->input('name', ''));
         $email = trim($this->input('email', ''));
-        $subject = trim($this->input('subject', 'General Inquiry'));
+        $subject = trim($this->input('subject', __('govuk_alpha.contact.form.subjects.general')));
         $message = trim($this->input('message', ''));
 
         $errors = [];
-        if (empty($name)) $errors[] = 'Name is required.';
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email address is required.';
-        if (empty($message)) $errors[] = 'Message is required.';
+        if (empty($name)) $errors[] = __('govuk_alpha.contact.errors.name_required');
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = __('govuk_alpha.contact.errors.email_required');
+        if (empty($message)) $errors[] = __('govuk_alpha.contact.errors.message_required');
 
         if (!empty($errors)) {
             return $this->respondWithError('VALIDATION_ERROR', implode(' ', $errors), null, 400);
         }
 
         $tenant = TenantContext::get();
-        $tenantName = $tenant['name'] ?? 'Project NEXUS';
+        $tenantName = $tenant['name'] ?? config('app.name');
         $tenantEmail = $tenant['contact_email'] ?? '';
 
         if (empty($tenantEmail)) {
             return $this->respondWithError('SERVER_ERROR', __('api.no_contact_email_configured'), null, 500);
         }
 
-        $emailSubject = "[{$tenantName}] Contact Form: {$subject}";
-        $emailBody = "Name: {$name}\nEmail: {$email}\nSubject: {$subject}\n\nMessage:\n{$message}";
+        $emailSubject = "[{$tenantName}] {$subject}";
+        $emailBody = __('govuk_alpha.contact.form.name_label') . ": {$name}\n"
+            . __('govuk_alpha.contact.form.email_label') . ": {$email}\n"
+            . __('govuk_alpha.contact.form.subject_label') . ": {$subject}\n\n"
+            . __('govuk_alpha.contact.form.message_label') . ":\n{$message}";
+
+        $tenantId = TenantContext::getId();
+        $requestHash = hash('sha256', json_encode([$name, mb_strtolower($email), $subject, $message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        $submission = DB::transaction(function () use ($tenantId, $name, $email, $subject, $message, $idempotencyKey, $requestHash): array {
+            if ($idempotencyKey !== '') {
+                DB::table('tenants')->where('id', $tenantId)->lockForUpdate()->exists();
+                $keyHash = hash('sha256', $idempotencyKey);
+                $existing = DB::table('contact_submissions')
+                    ->where('tenant_id', $tenantId)
+                    ->where('idempotency_key_hash', $keyHash)
+                    ->first();
+                if ($existing !== null) {
+                    return hash_equals((string) $existing->request_hash, $requestHash)
+                        ? ['id' => (int) $existing->id, 'replayed' => true, 'sent' => (bool) $existing->email_sent]
+                        : ['error' => 'IDEMPOTENCY_CONFLICT'];
+                }
+            }
+
+            $id = (int) DB::table('contact_submissions')->insertGetId([
+                'tenant_id' => $tenantId,
+                'name' => $name,
+                'email' => $email,
+                'subject' => $subject,
+                'message' => $message,
+                'email_sent' => 0,
+                'idempotency_key_hash' => $idempotencyKey !== '' ? hash('sha256', $idempotencyKey) : null,
+                'request_hash' => $idempotencyKey !== '' ? $requestHash : null,
+                'delivery_started_at' => now(),
+                'created_at' => now(),
+            ]);
+            return ['id' => $id, 'replayed' => false, 'sent' => false];
+        });
+
+        if (isset($submission['error'])) {
+            return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('event_registration.idempotency_conflict'), 'idempotency_key', 409);
+        }
+        if ($submission['replayed']) {
+            return $this->respondWithData(['message' => $submission['sent']
+                ? __('api_controllers_1.contact_form.sent_successfully')
+                : __('api_controllers_1.contact_form.received_fallback')]);
+        }
 
         $sent = false;
         try {
             $replyTo = "{$name} <{$email}>";
-            $sent = EmailDispatchService::sendRaw($tenantEmail, $emailSubject, $emailBody, null, $replyTo, null, 'contact_form', ['tenant_id' => TenantContext::getId()]);
+            $sent = EmailDispatchService::sendRaw($tenantEmail, $emailSubject, $emailBody, null, $replyTo, null, 'contact_form', [
+                'tenant_id' => $tenantId,
+                'idempotency_key' => $idempotencyKey !== '' ? $idempotencyKey : null,
+            ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("Contact form email error: " . $e->getMessage());
         }
 
-        // Log submission
-        try {
-            DB::insert(
-                "INSERT INTO contact_submissions (tenant_id, name, email, subject, message, email_sent, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-                [TenantContext::getId(), $name, $email, $subject, $message, $sent ? 1 : 0]
-            );
-        } catch (\Throwable $e) {
-            // Table may not exist — non-critical
-        }
+        DB::table('contact_submissions')->where('id', $submission['id'])->update(['email_sent' => $sent ? 1 : 0]);
 
         return $this->respondWithData(['message' => $sent ? __('api_controllers_1.contact_form.sent_successfully') : __('api_controllers_1.contact_form.received_fallback')]);
     }

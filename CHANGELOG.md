@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Contact messages sent from the mobile app now keep the same protected request after an interrupted response or app restart. Retrying preserves one stored submission and does not repeat the organiser email attempt; reusing the key for changed content is rejected.
+
 - Federated messages sent between communities from the mobile app now keep the same protected request after an interrupted response or app restart. Retrying returns the original message and does not repeat email, realtime, in-app or push delivery; reusing the key for changed content is rejected.
 
 - Creating a group exchange in the mobile app now keeps the same protected request after an interrupted response or app restart, so an explicit retry returns the original exchange instead of creating a duplicate. Reusing the request after changing its title, hours, split or participants is rejected.
