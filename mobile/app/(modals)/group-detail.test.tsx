@@ -74,6 +74,8 @@ jest.mock('react-i18next', () => ({
         'detail.publishDiscussion': 'Publish discussion',
         'detail.discussionRequired': 'Add a title and message.',
         'detail.discussionCreateError': 'Could not create discussion.',
+        'detail.discussionRecoveryError': 'Could not restore the unfinished discussion.',
+        'detail.discussionRecoveryNotice': 'An unfinished discussion was restored. Retry it before starting another discussion.',
         'detail.replies': opts ? `${String(opts.count ?? 0)} replies` : '0 replies',
         'detail.tabs.overview': 'Overview',
         'detail.tabs.discussion': 'Discussions',
@@ -493,6 +495,21 @@ jest.mock('@/lib/groupTaskCreationOperation', () => ({
   discardGroupTaskCreationOperation: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/lib/groupContentCreationOperation', () => ({
+  loadGroupContentCreationOperation: jest.fn().mockResolvedValue(null),
+  reserveGroupContentCreationOperation: jest.fn().mockImplementation(async (groupId, kind, payload) => ({
+    storageKey: 'saved-group-content',
+    key: 'group-content-operation-key',
+    groupId,
+    kind,
+    intent: JSON.stringify(payload),
+    payload,
+    createdAt: 1,
+  })),
+  completeGroupContentCreationOperation: jest.fn().mockResolvedValue(undefined),
+  discardGroupContentCreationOperation: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
@@ -582,6 +599,12 @@ import {
   loadGroupTaskCreationOperation,
   reserveGroupTaskCreationOperation,
 } from '@/lib/groupTaskCreationOperation';
+import {
+  completeGroupContentCreationOperation,
+  discardGroupContentCreationOperation,
+  loadGroupContentCreationOperation,
+  reserveGroupContentCreationOperation,
+} from '@/lib/groupContentCreationOperation';
 
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
 
@@ -608,6 +631,22 @@ beforeEach(() => {
   });
   jest.mocked(completeGroupTaskCreationOperation).mockResolvedValue(undefined);
   jest.mocked(discardGroupTaskCreationOperation).mockResolvedValue(undefined);
+  jest.mocked(loadGroupContentCreationOperation).mockReset();
+  jest.mocked(reserveGroupContentCreationOperation).mockReset();
+  jest.mocked(completeGroupContentCreationOperation).mockReset();
+  jest.mocked(discardGroupContentCreationOperation).mockReset();
+  jest.mocked(loadGroupContentCreationOperation).mockResolvedValue(null);
+  jest.mocked(reserveGroupContentCreationOperation).mockImplementation(async (groupId, kind, payload) => ({
+    storageKey: 'saved-group-content',
+    key: 'group-content-operation-key',
+    groupId,
+    kind,
+    intent: JSON.stringify(payload),
+    payload,
+    createdAt: 1,
+  }) as never);
+  jest.mocked(completeGroupContentCreationOperation).mockResolvedValue(undefined);
+  jest.mocked(discardGroupContentCreationOperation).mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -1022,7 +1061,7 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByPlaceholderText, getByText, getByTestId } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Announcements'));
     fireEvent.press(getByText('Create'));
@@ -1084,9 +1123,12 @@ describe('GroupDetailScreen', () => {
 
     fireEvent.press(getByText('Discussions'));
 
+    await waitFor(() => expect(loadGroupContentCreationOperation).toHaveBeenCalledWith(1, 'discussion'));
+    await waitFor(() => expect(getByTestId('group-discussion-composer-open').props.accessibilityState.disabled).toBe(false));
+
     // The composer sheet is closed until the trigger button opens it.
     expect(queryByTestId('group-discussion-sheet')).toBeNull();
-    fireEvent.press(getByText('New'));
+    fireEvent.press(getByTestId('group-discussion-composer-open'));
     expect(getByTestId('group-discussion-sheet')).toBeTruthy();
 
     // Validation: publishing with empty fields never calls the API.
@@ -1112,8 +1154,8 @@ describe('GroupDetailScreen', () => {
       expect(getByTestId('group-discussion-sheet')).toBeTruthy();
       expect(getByPlaceholderText('Discussion title').props.value).toBe('Compost rota');
       expect(getByPlaceholderText('Write a message').props.value).toBe('Who can take the Friday slot?');
-      expect(getByPlaceholderText('Discussion title').props.editable).toBe(true);
-      expect(getByPlaceholderText('Write a message').props.editable).toBe(true);
+      expect(getByPlaceholderText('Discussion title').props.editable).toBe(false);
+      expect(getByPlaceholderText('Write a message').props.editable).toBe(false);
       expect(refreshDiscussions).not.toHaveBeenCalled();
       fireEvent.press(getByText('Publish discussion'));
     }
@@ -1130,6 +1172,107 @@ describe('GroupDetailScreen', () => {
       // The sheet closes and fields reset after a successful publish.
       expect(queryByTestId('group-discussion-sheet')).toBeNull();
     });
+  });
+
+  it('discards a definitely rejected discussion operation and unlocks the draft', async () => {
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+    jest.mocked(createGroupDiscussion).mockRejectedValueOnce(new ApiResponseError(422, 'Please shorten the title.'));
+
+    const { getByPlaceholderText, getByTestId, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Discussions'));
+    await waitFor(() => expect(getByTestId('group-discussion-composer-open').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(getByTestId('group-discussion-composer-open'));
+    fireEvent.changeText(getByPlaceholderText('Discussion title'), 'A title the server rejects');
+    fireEvent.changeText(getByPlaceholderText('Write a message'), 'The member can correct this after rejection.');
+    fireEvent.press(getByText('Publish discussion'));
+
+    await waitFor(() => expect(discardGroupContentCreationOperation).toHaveBeenCalledTimes(1));
+    expect(getByPlaceholderText('Discussion title').props.editable).toBe(true);
+    expect(getByPlaceholderText('Write a message').props.editable).toBe(true);
+  });
+
+  it('restores an unfinished discussion and retries its exact durable key', async () => {
+    const pending = {
+      storageKey: 'saved-group-content',
+      key: 'restored-discussion-key',
+      groupId: 1,
+      kind: 'discussion' as const,
+      intent: JSON.stringify({ title: 'Saved title', content: 'Saved opening message' }),
+      payload: { title: 'Saved title', content: 'Saved opening message' },
+      createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
+
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const { getByPlaceholderText, getByText, getByTestId } = render(<GroupDetailScreen />);
+
+    fireEvent.press(getByText('Discussions'));
+    await waitFor(() => expect(getByTestId('group-discussion-sheet')).toBeTruthy());
+    expect(getByText('An unfinished discussion was restored. Retry it before starting another discussion.')).toBeTruthy();
+    expect(getByPlaceholderText('Discussion title').props.value).toBe('Saved title');
+    expect(getByPlaceholderText('Discussion title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Write a message').props.value).toBe('Saved opening message');
+
+    fireEvent.press(getByText('Publish discussion'));
+
+    await waitFor(() => expect(createGroupDiscussion).toHaveBeenCalledWith(1, pending.payload, pending.key));
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
+  });
+
+  it('fails closed and offers retry when discussion recovery is unavailable', async () => {
+    jest.mocked(loadGroupContentCreationOperation)
+      .mockRejectedValueOnce(new Error('secure storage unavailable'))
+      .mockResolvedValueOnce(null);
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const { getByText, getByTestId } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Discussions'));
+
+    await waitFor(() => expect(getByTestId('group-discussion-recovery-error')).toBeTruthy());
+    expect(createGroupDiscussion).not.toHaveBeenCalled();
+    fireEvent.press(getByText('common:buttons.retry'));
+    await waitFor(() => expect(loadGroupContentCreationOperation).toHaveBeenCalledTimes(2));
   });
 
   it('lets group admins toggle announcement pinning', async () => {

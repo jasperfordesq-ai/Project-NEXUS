@@ -70,6 +70,8 @@
     "publishDiscussion": "Publier la discussion",
     "discussionRequired": "Ajoutez un titre et un message avant de publier.",
     "discussionCreateError": "Impossible de créer la discussion.",
+    "discussionRecoveryError": "Impossible de restaurer la discussion inachevée.",
+    "discussionRecoveryNotice": "Une discussion inachevée a été restaurée. Réessayez avant d'en commencer une autre.",
     "replies": "{{count}} réponse",
     "replies_one": "{{count}} réponse",
     "replies_other": "{{count}} réponses",

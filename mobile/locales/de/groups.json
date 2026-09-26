@@ -70,6 +70,8 @@
     "publishDiscussion": "Diskussion veröffentlichen",
     "discussionRequired": "Füge vor dem Veröffentlichen einen Titel und eine Nachricht hinzu.",
     "discussionCreateError": "Die Diskussion konnte nicht erstellt werden.",
+    "discussionRecoveryError": "Die nicht abgeschlossene Diskussion konnte nicht wiederhergestellt werden.",
+    "discussionRecoveryNotice": "Eine nicht abgeschlossene Diskussion wurde wiederhergestellt. Versuche sie erneut, bevor du eine andere Diskussion beginnst.",
     "replies": "{{count}} Antwort",
     "replies_one": "{{count}} Antwort",
     "replies_other": "{{count}} Antworten",

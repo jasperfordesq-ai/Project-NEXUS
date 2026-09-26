@@ -303,6 +303,8 @@
     "publishDiscussion": "Foilsigh an plé",
     "discussionRequired": "Cuir teideal agus teachtaireacht leis roimh fhoilsiú.",
     "discussionCreateError": "Níorbh fhéidir an plé a chruthú.",
+    "discussionRecoveryError": "Níorbh fhéidir an plé neamhchríochnaithe a athbhunú.",
+    "discussionRecoveryNotice": "Athbhunaíodh plé neamhchríochnaithe. Bain triail eile as sula dtosaíonn tú plé eile.",
     "replies": "{{count}} freagra",
     "replies_one": "{{count}} freagra",
     "replies_other": "{{count}} freagra",

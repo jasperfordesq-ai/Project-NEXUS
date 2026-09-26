@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Starting a group discussion in the mobile app now stores the exact draft and protected request in encrypted device storage before sending. After a lost response or app restart, the member must explicitly retry the restored discussion; changed content cannot replace the unresolved request, and unavailable recovery blocks a new post.
+
 - Pending group invitations in the mobile app now show their expiry date in the language chosen in the app, rather than US English. The committed database schema snapshot now includes the group-exchange, federation-message and group join-decision retry tables, the contact-form retry columns and the quiz-attempt retry columns, so the schema-reference check passes again.
 
 - Deleting a group announcement, wiki page, question or answer now removes its creation-replay receipt in the same transaction, so a later retry cannot resolve to content that has already been deleted.

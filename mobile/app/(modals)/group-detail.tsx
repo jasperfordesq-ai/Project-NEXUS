@@ -16,6 +16,13 @@ import {
   reserveGroupTaskCreationOperation,
   type GroupTaskCreationOperation,
 } from '@/lib/groupTaskCreationOperation';
+import {
+  completeGroupContentCreationOperation,
+  discardGroupContentCreationOperation,
+  loadGroupContentCreationOperation,
+  reserveGroupContentCreationOperation,
+  type GroupContentCreationOperation,
+} from '@/lib/groupContentCreationOperation';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -404,6 +411,9 @@ function GroupDetailScreenInner() {
   const [discussionTitle, setDiscussionTitle] = useState('');
   const [discussionContent, setDiscussionContent] = useState('');
   const [creatingDiscussion, setCreatingDiscussion] = useState(false);
+  const [isRestoringDiscussion, setIsRestoringDiscussion] = useState(false);
+  const [discussionRecoveryError, setDiscussionRecoveryError] = useState<string | null>(null);
+  const [pendingDiscussionOperation, setPendingDiscussionOperation] = useState<GroupContentCreationOperation<'discussion'> | null>(null);
   const [showAnnouncementComposer, setShowAnnouncementComposer] = useState(false);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
@@ -414,7 +424,6 @@ function GroupDetailScreenInner() {
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [creatingQuestion, setCreatingQuestion] = useState(false);
-  const discussionCreateAttemptRef = useRef<MutationAttempt | null>(null);
   const announcementCreateAttemptRef = useRef<MutationAttempt | null>(null);
   const questionCreateAttemptRef = useRef<MutationAttempt | null>(null);
   // 🔴 Deliberately NOT another useApi in this screen. group-detail.test.tsx stubs
@@ -423,6 +432,7 @@ function GroupDetailScreenInner() {
   const [busyMemberId, setBusyMemberId] = useState<number | null>(null);
   const actionPendingRef = useRef(false);
   const isMountedRef = useRef(true);
+  const discussionRestoreVersionRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -536,6 +546,39 @@ function GroupDetailScreenInner() {
       setRefreshing(false);
     }
   }, [announcementsApi.isLoading, discussionsApi.isLoading, eventsApi.isLoading, filesApi.isLoading, isLoading, membersApi.isLoading, questionsApi.isLoading]);
+
+  const restoreDiscussionDraft = useCallback(async () => {
+    const version = ++discussionRestoreVersionRef.current;
+    setIsRestoringDiscussion(true);
+    setDiscussionRecoveryError(null);
+    setPendingDiscussionOperation(null);
+    if (!discussionsEnabled || visibleTab !== 'discussion') {
+      setIsRestoringDiscussion(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(safeGroupId, 'discussion');
+      if (!isMountedRef.current || version !== discussionRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingDiscussionOperation(operation);
+        setDiscussionTitle(operation.payload.title);
+        setDiscussionContent(operation.payload.content);
+        setShowDiscussionComposer(true);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== discussionRestoreVersionRef.current) return;
+      setDiscussionRecoveryError(describeApiError(err, t('detail.discussionRecoveryError')));
+    } finally {
+      if (isMountedRef.current && version === discussionRestoreVersionRef.current) setIsRestoringDiscussion(false);
+    }
+  // The encrypted operation store owns identity scoping. Avoid restarting recovery when i18n changes function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discussionsEnabled, safeGroupId, visibleTab]);
+
+  useEffect(() => {
+    void restoreDiscussionDraft();
+    return () => { discussionRestoreVersionRef.current += 1; };
+  }, [restoreDiscussionDraft]);
 
   /*
     🔴 A group admin on the phone could see the member list and change nothing about
@@ -785,13 +828,16 @@ function GroupDetailScreenInner() {
     }
 
     if (!beginAction()) return;
-    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, content });
-    discussionCreateAttemptRef.current = mutationAttemptFor(discussionCreateAttemptRef.current, fingerprint, 'group-discussion');
     setCreatingDiscussion(true);
+    let operation: GroupContentCreationOperation<'discussion'> | null = null;
     try {
-      await createGroupDiscussion(loadedGroup.id, { title, content }, discussionCreateAttemptRef.current.key);
+      operation = await reserveGroupContentCreationOperation(loadedGroup.id, 'discussion', { title, content });
       if (!isMountedRef.current) return;
-      discussionCreateAttemptRef.current = null;
+      setPendingDiscussionOperation(operation);
+      await createGroupDiscussion(loadedGroup.id, operation.payload, operation.key);
+      await completeGroupContentCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingDiscussionOperation(null);
       setDiscussionTitle('');
       setDiscussionContent('');
       setShowDiscussionComposer(false);
@@ -799,9 +845,21 @@ function GroupDetailScreenInner() {
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupContentCreationOperation(operation);
+          if (isMountedRef.current) setPendingDiscussionOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.discussionCreateError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.discussionCreateError')), variant: 'danger' });
     } finally {
       finishAction();
       if (isMountedRef.current) setCreatingDiscussion(false);
@@ -1159,8 +1217,10 @@ function GroupDetailScreenInner() {
                         </Text>
                       </View>
                       <HeroButton
+                        testID="group-discussion-composer-open"
                         size="sm"
                         variant="primary"
+                        isDisabled={isRestoringDiscussion || Boolean(discussionRecoveryError)}
                         onPress={() => setShowDiscussionComposer(true)}
                       >
                         <HeroButton.Label>{t('detail.newDiscussion')}</HeroButton.Label>
@@ -1168,6 +1228,19 @@ function GroupDetailScreenInner() {
                     </View>
                   </HeroCard.Body>
                 </HeroCard>
+
+                {discussionRecoveryError ? (
+                  <HeroCard className="rounded-panel p-0" testID="group-discussion-recovery-error">
+                    <HeroCard.Body className="gap-2 p-4">
+                      <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>
+                        {discussionRecoveryError}
+                      </Text>
+                      <HeroButton size="sm" variant="secondary" isDisabled={isRestoringDiscussion} onPress={() => void restoreDiscussionDraft()}>
+                        {isRestoringDiscussion ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+                      </HeroButton>
+                    </HeroCard.Body>
+                  </HeroCard>
+                ) : null}
 
                 {discussionsApi.isLoading ? (
               <HeroCard className="rounded-panel p-0">
@@ -1522,9 +1595,14 @@ function GroupDetailScreenInner() {
           <Text key={fontScale} className="text-sm leading-5" style={{ color: theme.textSecondary }}>
             {t('detail.startDiscussionHint')}
           </Text>
+          {pendingDiscussionOperation ? (
+            <Text accessibilityRole="alert" className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+              {t('detail.discussionRecoveryNotice')}
+            </Text>
+          ) : null}
           <Input
             value={discussionTitle}
-            editable={!creatingDiscussion}
+            editable={!creatingDiscussion && !pendingDiscussionOperation}
             onChangeText={setDiscussionTitle}
             placeholder={t('detail.discussionTitlePlaceholder')}
             placeholderTextColor={theme.textMuted}
@@ -1535,7 +1613,7 @@ function GroupDetailScreenInner() {
           />
           <TextArea
             value={discussionContent}
-            editable={!creatingDiscussion}
+            editable={!creatingDiscussion && !pendingDiscussionOperation}
             onChangeText={setDiscussionContent}
             placeholder={t('detail.discussionContentPlaceholder')}
             placeholderTextColor={theme.textMuted}

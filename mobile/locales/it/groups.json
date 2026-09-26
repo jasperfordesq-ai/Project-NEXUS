@@ -70,6 +70,8 @@
     "publishDiscussion": "Pubblica discussione",
     "discussionRequired": "Aggiungi un titolo e un messaggio prima di pubblicare.",
     "discussionCreateError": "Impossibile creare la discussione.",
+    "discussionRecoveryError": "Impossibile ripristinare la discussione non completata.",
+    "discussionRecoveryNotice": "È stata ripristinata una discussione non completata. Riprova prima di avviarne un'altra.",
     "replies": "{{count}} risposta",
     "replies_one": "{{count}} risposta",
     "replies_other": "{{count}} risposte",

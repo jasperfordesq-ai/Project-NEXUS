@@ -70,6 +70,8 @@
     "publishDiscussion": "Publish discussion",
     "discussionRequired": "Add a title and message before publishing.",
     "discussionCreateError": "Could not create the discussion.",
+    "discussionRecoveryError": "Could not restore the unfinished discussion.",
+    "discussionRecoveryNotice": "An unfinished discussion was restored. Retry it before starting another discussion.",
     "replies": "{{count}} reply",
     "replies_one": "{{count}} reply",
     "replies_other": "{{count}} replies",

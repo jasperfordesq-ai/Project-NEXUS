@@ -70,6 +70,8 @@
     "publishDiscussion": "Publicar debate",
     "discussionRequired": "Añade un título y un mensaje antes de publicar.",
     "discussionCreateError": "No se pudo crear el debate.",
+    "discussionRecoveryError": "No se pudo restaurar el debate sin terminar.",
+    "discussionRecoveryNotice": "Se restauró un debate sin terminar. Vuelve a intentarlo antes de iniciar otro debate.",
     "replies": "{{count}} respuesta",
     "replies_one": "{{count}} respuesta",
     "replies_other": "{{count}} respuestas",
