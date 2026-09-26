@@ -56,7 +56,8 @@
       "announcements": "Fógraí",
       "marketplace": "Áit mhargaidh",
       "feed": "Fotha",
-      "challenges": "Dúshláin"
+      "challenges": "Dúshláin",
+      "subgroups": "Foghrúpaí"
     },
     "chatrooms": {
       "title": "Cainéil an ghrúpa",
@@ -505,6 +506,11 @@
         "expired": "Imithe in éag",
         "cancelled": "Curtha ar ceal"
       }
+    },
+    "subgroups": {
+      "title": "Foghrúpaí",
+      "subtitle": "Déan iniúchadh ar ghrúpaí laistigh den phobal seo.",
+      "open": "Oscail {{name}}"
     }
   },
   "create": {
@@ -556,7 +562,15 @@
     "failedDescription": "Níorbh fhéidir linn an grúpa a chruthú. Bain triail eile as.",
     "unsavedTitle": "An grúpa seo a chaitheamh i dtraipisí?",
     "unsavedMessage": "Tá sonraí neamhshábháilte agat. Má imíonn tú anois, caillfear iad.",
-    "discard": "Caith i dtraipisí"
+    "discard": "Caith i dtraipisí",
+    "parentLabel": "Máthairghrúpa",
+    "parentHint": "Cuir an grúpa seo taobh istigh de ghrúpa eile atá á bhainistiú agat.",
+    "parentSelected": "Roghnaithe: {{name}}",
+    "parentLoadFailed": "Níorbh fhéidir na máthairghrúpaí a lódáil.",
+    "parentSearchLabel": "Cuardaigh máthairghrúpaí",
+    "parentSearchPlaceholder": "Cuardaigh grúpaí atá á mbainistiú agat",
+    "noParent": "Gan mháthairghrúpa",
+    "parentEmpty": "Níl aon mháthairghrúpa meaitseála ann."
   },
   "filter": {
     "all": "Gach ceann",

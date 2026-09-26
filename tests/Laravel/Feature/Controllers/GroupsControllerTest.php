@@ -175,6 +175,69 @@ class GroupsControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_show_returns_only_visible_immediate_children_for_an_active_member(): void
+    {
+        $user = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $parent = $this->createGroup(['owner_id' => $user->id, 'visibility' => 'public']);
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $parent->id,
+            'user_id' => $user->id,
+            'role' => 'owner',
+            'status' => 'active',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $visible = $this->createGroup([
+            'owner_id' => $other->id,
+            'parent_id' => $parent->id,
+            'visibility' => 'public',
+            'name' => 'Visible child',
+        ]);
+        $this->createGroup([
+            'owner_id' => $other->id,
+            'parent_id' => $parent->id,
+            'visibility' => 'private',
+            'name' => 'Hidden child',
+        ]);
+        $grandchild = $this->createGroup([
+            'owner_id' => $other->id,
+            'parent_id' => $visible->id,
+            'visibility' => 'public',
+            'name' => 'Grandchild',
+        ]);
+
+        $response = $this->apiGet("/v2/groups/{$parent->id}")->assertOk();
+
+        $this->assertSame([$visible->id], array_column($response->json('data.sub_groups'), 'id'));
+        $this->assertNotContains($grandchild->id, array_column($response->json('data.sub_groups'), 'id'));
+        $response->assertJsonPath('data.sub_groups.0.parent_id', $parent->id);
+    }
+
+    public function test_form_capabilities_scope_parents_and_update_refuses_hierarchy_cycles(): void
+    {
+        $user = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $parent = $this->createGroup(['owner_id' => $user->id, 'name' => 'Managed parent']);
+        $child = $this->createGroup(['owner_id' => $user->id, 'parent_id' => $parent->id, 'name' => 'Managed child']);
+        $unmanaged = $this->createGroup(['owner_id' => $other->id, 'name' => 'Unmanaged group']);
+        $foreign = Group::factory()->forTenant(999)->create(['owner_id' => $user->id, 'name' => 'Foreign group']);
+
+        $capabilities = $this->apiGet('/v2/groups/form-capabilities')->assertOk();
+        $ids = array_column($capabilities->json('data.parent_candidates'), 'id');
+        $this->assertContains($parent->id, $ids);
+        $this->assertContains($child->id, $ids);
+        $this->assertNotContains($unmanaged->id, $ids);
+        $this->assertNotContains($foreign->id, $ids);
+
+        $this->apiPut("/v2/groups/{$parent->id}", ['parent_id' => $child->id])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'parent_id');
+        $this->assertNull($parent->fresh()->parent_id);
+    }
+
     // ------------------------------------------------------------------
     //  CREATE
     // ------------------------------------------------------------------

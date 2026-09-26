@@ -8,7 +8,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockCreateGroup = jest.fn().mockResolvedValue({ data: { id: 484 } });
 const mockGetGroup = jest.fn();
-const mockGetGroupTemplates = jest.fn();
+const mockGetGroupFormCapabilities = jest.fn();
 const mockUpdateGroup = jest.fn();
 const mockUploadGroupImage = jest.fn();
 const mockReserveGroupCreationOperation = jest.fn();
@@ -49,7 +49,7 @@ jest.mock('@/components/ui/AccentIcon', () => {
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
+    t: (key: string, options?: Record<string, unknown>) => {
       const map: Record<string, string> = {
         'create.eyebrow': 'New group',
         'create.loadFailedTitle': "Couldn't open this group",
@@ -87,6 +87,14 @@ jest.mock('react-i18next', () => ({
         'create.longitudeLabel': 'Longitude',
         'create.longitudePlaceholder': '-0.1246',
         'create.templateLabel': 'Group template',
+        'create.parentLabel': 'Parent group',
+        'create.parentHint': 'Place this group inside another group you manage.',
+        'create.parentSelected': `Selected: ${String(options?.name ?? '')}`,
+        'create.parentLoadFailed': 'Parent groups could not be loaded.',
+        'create.parentSearchLabel': 'Search parent groups',
+        'create.parentSearchPlaceholder': 'Search groups you manage',
+        'create.noParent': 'No parent group',
+        'create.parentEmpty': 'No matching parent groups.',
         'create.visibilityLabel': 'Visibility',
         'create.federated': 'List in federation',
         'create.reviewTitle': 'Ready to publish?',
@@ -125,7 +133,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 jest.mock('@/lib/api/groups', () => ({
   createGroup: (...args: unknown[]) => mockCreateGroup(...args),
   getGroup: (...args: unknown[]) => mockGetGroup(...args),
-  getGroupTemplates: (...args: unknown[]) => mockGetGroupTemplates(...args),
+  getGroupFormCapabilities: (...args: unknown[]) => mockGetGroupFormCapabilities(...args),
   updateGroup: (...args: unknown[]) => mockUpdateGroup(...args),
   uploadGroupImage: (...args: unknown[]) => mockUploadGroupImage(...args),
 }));
@@ -216,7 +224,7 @@ describe('NewGroupRoute', () => {
   beforeEach(() => {
     mockCreateGroup.mockClear();
     mockGetGroup.mockReset();
-    mockGetGroupTemplates.mockReset().mockResolvedValue({ data: [] });
+    mockGetGroupFormCapabilities.mockReset().mockResolvedValue({ templates: [], parentCandidates: [], canSelectParent: false });
     mockUpdateGroup.mockReset();
     mockUpdateGroup.mockResolvedValue({ data: { id: 484 } });
     mockUploadGroupImage.mockReset().mockResolvedValue({ data: { image_url: '/uploads/groups/group.jpg' } });
@@ -324,10 +332,12 @@ describe('NewGroupRoute', () => {
   });
 
   it('loads group templates for new groups and applies default visibility', async () => {
-    mockGetGroupTemplates.mockResolvedValueOnce({
-      data: [
+    mockGetGroupFormCapabilities.mockResolvedValueOnce({
+      templates: [
         { id: 12, name: 'Private circle', icon: 'lock', default_visibility: 'private' },
       ],
+      parentCandidates: [],
+      canSelectParent: false,
     });
 
     const { getByPlaceholderText, getByText } = render(<NewGroupRoute />);
@@ -343,6 +353,30 @@ describe('NewGroupRoute', () => {
         visibility: 'private',
       }), 'mobile-group-create-stable');
     });
+  });
+
+  it('selects a searchable authorised parent and binds it to the durable create intent', async () => {
+    mockGetGroupFormCapabilities.mockResolvedValueOnce({
+      templates: [],
+      parentCandidates: [
+        { id: 21, name: 'Repair network', parent_id: null },
+        { id: 22, name: 'Garden network', parent_id: null },
+      ],
+      canSelectParent: true,
+    });
+    const screen = render(<NewGroupRoute />);
+    await waitFor(() => expect(screen.getByText('Repair network')).toBeTruthy());
+    fireEvent.changeText(screen.getByPlaceholderText('Search groups you manage'), 'repair');
+    expect(screen.queryByText('Garden network')).toBeNull();
+    fireEvent.press(screen.getByText('Repair network'));
+    fillValidGroup(screen);
+    fireEvent.press(screen.getByText('Create group'));
+
+    await waitFor(() => expect(mockCreateGroup).toHaveBeenCalledWith(
+      expect.objectContaining({ parent_id: 21 }),
+      'mobile-group-create-stable',
+    ));
+    expect(mockReserveGroupCreationOperation).toHaveBeenCalledWith(expect.stringContaining('"parent_id":21'));
   });
 
   it('requires paired valid coordinates when coordinates are provided', async () => {
@@ -437,7 +471,7 @@ describe('NewGroupRoute', () => {
       expect(getByDisplayValue('Garden crew')).toBeTruthy();
     });
 
-    expect(mockGetGroupTemplates).not.toHaveBeenCalled();
+    expect(mockGetGroupFormCapabilities).toHaveBeenCalled();
     expect(getByDisplayValue('A group for coordinating seasonal planting and shared gardening days.')).toBeTruthy();
     expect(getByDisplayValue('Community garden')).toBeTruthy();
     expect(getByDisplayValue('52.1')).toBeTruthy();
@@ -462,6 +496,42 @@ describe('NewGroupRoute', () => {
     });
     expect(mockCreateGroup).not.toHaveBeenCalled();
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/group-detail', params: { id: '9' } }));
+  });
+
+  it('excludes the edited group and its descendants and keeps the parent after a refused edit', async () => {
+    mockSearchParams = { id: '9' };
+    mockGetGroup.mockResolvedValue({
+      data: {
+        id: 9,
+        name: 'Garden crew',
+        description: 'A group for coordinating seasonal planting and shared gardening days.',
+        visibility: 'public',
+        federated_visibility: 'none',
+        parent_id: 20,
+      },
+    });
+    mockGetGroupFormCapabilities.mockResolvedValueOnce({
+      templates: [],
+      parentCandidates: [
+        { id: 9, name: 'Garden crew', parent_id: 20 },
+        { id: 11, name: 'Child group', parent_id: 9 },
+        { id: 12, name: 'Grandchild group', parent_id: 11 },
+        { id: 20, name: 'Regional network', parent_id: null },
+        { id: 30, name: 'City network', parent_id: null },
+      ],
+      canSelectParent: true,
+    });
+    mockUpdateGroup.mockRejectedValueOnce(new Error('Parent changed elsewhere'));
+    const screen = render(<NewGroupRoute />);
+
+    await waitFor(() => expect(screen.getByText('Selected: Regional network')).toBeTruthy());
+    expect(screen.queryByText('Child group')).toBeNull();
+    expect(screen.queryByText('Grandchild group')).toBeNull();
+    fireEvent.press(screen.getByText('City network'));
+    fireEvent.press(screen.getByText('Update group'));
+    await waitFor(() => expect(mockUpdateGroup).toHaveBeenCalledWith(9, expect.objectContaining({ parent_id: 30 })));
+    expect(screen.getByText('Selected: City network')).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('shows an existing group image and uploads a replacement in edit mode', async () => {

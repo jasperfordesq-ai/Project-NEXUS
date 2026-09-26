@@ -137,6 +137,7 @@ import GroupFeedPanel from '@/components/groups/GroupFeedPanel';
 import GroupNotificationPreferencesCard from '@/components/groups/GroupNotificationPreferencesCard';
 import GroupChatroomsPanel from '@/components/groups/GroupChatroomsPanel';
 import GroupChallengesPanel from '@/components/groups/GroupChallengesPanel';
+import GroupSubgroupsPanel, { hasValidSubgroups } from '@/components/groups/GroupSubgroupsPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -169,12 +170,13 @@ import RemoteImage from '@/components/ui/RemoteImage';
 const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'challenges' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
-const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'challenges', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'challenges' | 'subgroups' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
+const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'challenges', 'subgroups', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
 const GROUP_TAB_CONFIG_KEYS = {
   discussion: 'tab_discussion',
   chatrooms: 'tab_chatrooms',
   challenges: 'tab_challenges',
+  subgroups: 'tab_subgroups',
   members: 'tab_members',
   events: 'tab_events',
   announcements: 'tab_announcements',
@@ -485,6 +487,9 @@ function GroupDetailScreenInner() {
     if (key === 'marketplace') return hasFeature('marketplace');
     if (key === 'analytics' && !canManageGroup) return false;
     if (key === 'events' && !hasFeature('events')) return false;
+    if (key === 'subgroups') {
+      return hasGroupTab('tab_subgroups') && (group === null ? isLoading : hasValidSubgroups(group.sub_groups, group.id));
+    }
     const configKey = GROUP_TAB_CONFIG_KEYS[key as keyof typeof GROUP_TAB_CONFIG_KEYS];
     return configKey ? hasGroupTab(configKey) : false;
   };
@@ -1108,6 +1113,7 @@ function GroupDetailScreenInner() {
     ...(hasGroupTab('tab_discussion') ? [{ key: 'discussion' as const, label: t('detail.tabs.discussion'), icon: 'chatbubble-ellipses-outline' as const }] : []),
     ...(hasGroupTab('tab_chatrooms') ? [{ key: 'chatrooms' as const, label: t('detail.tabs.chatrooms'), icon: 'chatbubbles-outline' as const }] : []),
     ...(hasGroupTab('tab_challenges') ? [{ key: 'challenges' as const, label: t('detail.tabs.challenges'), icon: 'trophy-outline' as const }] : []),
+    ...(hasGroupTab('tab_subgroups') && hasValidSubgroups(loadedGroup.sub_groups, loadedGroup.id) ? [{ key: 'subgroups' as const, label: t('detail.tabs.subgroups'), icon: 'git-branch-outline' as const }] : []),
     ...(hasGroupTab('tab_members') ? [{ key: 'members' as const, label: t('detail.tabs.members'), icon: 'people-outline' as const }] : []),
     ...(hasFeature('events') && hasGroupTab('tab_events') ? [{ key: 'events' as const, label: t('detail.tabs.events'), icon: 'calendar-outline' as const }] : []),
     ...(hasGroupTab('tab_announcements') ? [{ key: 'announcements' as const, label: t('detail.tabs.announcements'), icon: 'megaphone-outline' as const }] : []),
@@ -1354,6 +1360,14 @@ function GroupDetailScreenInner() {
             canManage={canManageGroup}
             canView={userCanSeeMemberContent}
             refreshToken={challengesRefreshToken}
+          />
+        ) : null}
+
+        {visibleTab === 'subgroups' ? (
+          <GroupSubgroupsPanel
+            key={`subgroups-${loadedGroup.id}`}
+            groupId={loadedGroup.id}
+            subgroups={loadedGroup.sub_groups}
           />
         ) : null}
 

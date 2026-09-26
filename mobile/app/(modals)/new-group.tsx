@@ -15,7 +15,7 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import * as Haptics from '@/lib/haptics';
 import { useTranslation } from 'react-i18next';
 
-import { createGroup, getGroup, getGroupTemplates, updateGroup, uploadGroupImage, type GroupDetail, type GroupTemplate } from '@/lib/api/groups';
+import { createGroup, getGroup, getGroupFormCapabilities, updateGroup, uploadGroupImage, type GroupDetail, type GroupParentCandidate, type GroupTemplate } from '@/lib/api/groups';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
@@ -71,6 +71,13 @@ function NewGroupScreen() {
   const [isFederated, setIsFederated] = useState(false);
   const hydratedFederatedVisibilityRef = useRef<string | null>(null);
   const [templates, setTemplates] = useState<GroupTemplate[]>([]);
+  const [parentCandidates, setParentCandidates] = useState<GroupParentCandidate[]>([]);
+  const [canSelectParent, setCanSelectParent] = useState(false);
+  const [parentId, setParentId] = useState<number | null>(null);
+  const initialParentIdRef = useRef<number | null>(null);
+  const [parentSearch, setParentSearch] = useState('');
+  const [capabilitiesLoadFailed, setCapabilitiesLoadFailed] = useState(false);
+  const [capabilitiesRetryToken, setCapabilitiesRetryToken] = useState(0);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<string | null>(null);
@@ -123,23 +130,27 @@ function NewGroupScreen() {
   }, [editRetryToken, groupId, hasHydratedEdit, isEditing]);
 
   useEffect(() => {
-    if (isEditing) return;
-
     let isMounted = true;
-    getGroupTemplates()
+    setCapabilitiesLoadFailed(false);
+    getGroupFormCapabilities()
       .then((response) => {
         if (!isMounted) return;
-        const items = Array.isArray(response) ? response : response.data;
-        setTemplates(Array.isArray(items) ? items : []);
+        setTemplates(response.templates);
+        setParentCandidates(response.parentCandidates);
+        setCanSelectParent(response.canSelectParent);
       })
       .catch(() => {
-        if (isMounted) setTemplates([]);
+        if (!isMounted) return;
+        setTemplates([]);
+        setParentCandidates([]);
+        setCanSelectParent(false);
+        setCapabilitiesLoadFailed(true);
       });
 
     return () => {
       isMounted = false;
     };
-  }, [isEditing]);
+  }, [capabilitiesRetryToken]);
 
   function hydrateFromGroup(group: GroupDetail) {
     setName(group.name ?? '');
@@ -149,6 +160,9 @@ function NewGroupScreen() {
     setLongitude(group.longitude !== null && group.longitude !== undefined ? String(group.longitude) : '');
     setVisibility(group.visibility === 'private' ? 'private' : 'public');
     setIsFederated(group.federated_visibility === 'listed' || group.federated_visibility === 'joinable');
+    const hydratedParentId = Number.isInteger(group.parent_id) && Number(group.parent_id) > 0 ? Number(group.parent_id) : null;
+    initialParentIdRef.current = hydratedParentId;
+    setParentId(hydratedParentId);
     // Remember the exact level so an unrelated edit does not turn "joinable" into "listed"
     // (audit 2026-09-07, C/F-10). The toggle only decides between federated and not.
     hydratedFederatedVisibilityRef.current = group.federated_visibility ?? null;
@@ -158,7 +172,7 @@ function NewGroupScreen() {
 
   // Everything the member can type or choose, compared with the form as first shown.
   const formFingerprint = JSON.stringify([
-    name, description, location, latitude, longitude, visibility, isFederated, selectedTemplateId, selectedImageUri,
+    name, description, location, latitude, longitude, visibility, isFederated, parentId, selectedTemplateId, selectedImageUri,
   ]);
   const baselineRef = useRef<string | null>(null);
   if (!isEditing && baselineRef.current === null) baselineRef.current = formFingerprint;
@@ -272,6 +286,9 @@ function NewGroupScreen() {
         federated_visibility: isFederated
           ? (hydratedFederatedVisibilityRef.current === 'joinable' ? 'joinable' : 'listed')
           : 'none',
+        ...(parentId !== null && !isEditing
+          ? { parent_id: parentId }
+          : (isEditing && parentId !== initialParentIdRef.current ? { parent_id: parentId } : {})),
       } as const;
       const creationOperation = isEditing
         ? null
@@ -478,6 +495,22 @@ function NewGroupScreen() {
               </View>
             ) : null}
 
+            {canSelectParent || parentId !== null || capabilitiesLoadFailed ? (
+              <ParentGroupSelector
+                candidates={parentCandidates}
+                currentGroupId={isEditing ? groupId : null}
+                selectedId={parentId}
+                search={parentSearch}
+                loadFailed={capabilitiesLoadFailed}
+                onSearch={setParentSearch}
+                onSelect={setParentId}
+                onRetry={() => setCapabilitiesRetryToken((value) => value + 1)}
+                t={t}
+                theme={theme}
+                primary={primary}
+              />
+            ) : null}
+
             <View className="gap-2">
               <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }}>{t('create.visibilityLabel')}</Text>
               <View className="flex-row gap-2">
@@ -536,6 +569,102 @@ function NewGroupScreen() {
       )}
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+function ParentGroupSelector({
+  candidates,
+  currentGroupId,
+  selectedId,
+  search,
+  loadFailed,
+  onSearch,
+  onSelect,
+  onRetry,
+  t,
+  theme,
+  primary,
+}: {
+  candidates: GroupParentCandidate[];
+  currentGroupId: number | null;
+  selectedId: number | null;
+  search: string;
+  loadFailed: boolean;
+  onSearch: (value: string) => void;
+  onSelect: (value: number | null) => void;
+  onRetry: () => void;
+  t: ReturnType<typeof useTranslation>['t'];
+  theme: ReturnType<typeof useTheme>;
+  primary: string;
+}) {
+  const excluded = new Set<number>();
+  if (currentGroupId !== null) {
+    excluded.add(currentGroupId);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const candidate of candidates) {
+        if (candidate.parent_id !== null && excluded.has(candidate.parent_id) && !excluded.has(candidate.id)) {
+          excluded.add(candidate.id);
+          changed = true;
+        }
+      }
+    }
+  }
+  const needle = search.trim().toLocaleLowerCase();
+  const choices = candidates.filter((candidate) => !excluded.has(candidate.id)
+    && (needle === '' || candidate.name.toLocaleLowerCase().includes(needle)));
+  const selected = candidates.find((candidate) => candidate.id === selectedId) ?? null;
+
+  return (
+    <View className="gap-3 rounded-panel-inner border p-3" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
+      <View className="gap-1">
+        <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('create.parentLabel')}</Text>
+        <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('create.parentHint')}</Text>
+      </View>
+      {selected ? (
+        <Text testID="selected-parent-group" className="text-sm font-semibold" style={{ color: primary }}>
+          {t('create.parentSelected', { name: selected.name })}
+        </Text>
+      ) : null}
+      {loadFailed ? (
+        <View className="gap-2">
+          <Text className="text-sm" style={{ color: theme.error }}>{t('create.parentLoadFailed')}</Text>
+          <HeroButton variant="secondary" onPress={onRetry}><HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label></HeroButton>
+        </View>
+      ) : (
+        <>
+          <Input
+            label={t('create.parentSearchLabel')}
+            value={search}
+            onChangeText={onSearch}
+            placeholder={t('create.parentSearchPlaceholder')}
+            placeholderTextColor={theme.textMuted}
+            style={{ color: theme.text }}
+          />
+          <HeroButton
+            variant={selectedId === null ? 'primary' : 'secondary'}
+            accessibilityState={{ selected: selectedId === null }}
+            onPress={() => onSelect(null)}
+          >
+            <HeroButton.Label>{t('create.noParent')}</HeroButton.Label>
+          </HeroButton>
+          {choices.map((candidate) => (
+            <HeroButton
+              key={candidate.id}
+              variant={selectedId === candidate.id ? 'primary' : 'secondary'}
+              accessibilityState={{ selected: selectedId === candidate.id }}
+              onPress={() => onSelect(candidate.id)}
+            >
+              <HeroButton.Label>{candidate.name}</HeroButton.Label>
+            </HeroButton>
+          ))}
+          {choices.length === 0 ? (
+            <Text className="text-sm" style={{ color: theme.textMuted }}>{t('create.parentEmpty')}</Text>
+          ) : null}
+        </>
+      )}
+    </View>
   );
 }
 

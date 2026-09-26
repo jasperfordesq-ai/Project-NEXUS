@@ -30,6 +30,8 @@ export interface Group {
   latitude?: number | null;
   longitude?: number | null;
   federated_visibility?: 'none' | 'listed' | 'joinable' | string | null;
+  parent_id?: number | null;
+  has_children?: boolean;
   created_at: string;
   recent_members: GroupMember[];
 }
@@ -51,6 +53,18 @@ export interface GroupDetail extends Group {
     role?: string | null;
     is_admin?: boolean;
   } | null;
+  sub_groups?: GroupSubgroup[];
+}
+
+export interface GroupSubgroup {
+  id: number;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  visibility: 'public' | 'private';
+  member_count: number;
+  type_id: number | null;
+  parent_id: number;
 }
 
 export type GroupNotificationFrequency = 'instant' | 'digest' | 'muted';
@@ -393,6 +407,18 @@ export interface GroupTemplate {
   default_visibility?: 'public' | 'private' | string | null;
 }
 
+export interface GroupParentCandidate {
+  id: number;
+  name: string;
+  parent_id: number | null;
+}
+
+export interface GroupFormCapabilities {
+  templates: GroupTemplate[];
+  parentCandidates: GroupParentCandidate[];
+  canSelectParent: boolean;
+}
+
 export interface GroupsResponse {
   data: Group[];
   meta: {
@@ -462,6 +488,7 @@ export interface CreateGroupPayload {
   latitude?: number | null;
   longitude?: number | null;
   federated_visibility?: 'none' | 'listed' | 'joinable';
+  parent_id?: number | null;
   idempotency_key?: string;
 }
 
@@ -485,6 +512,46 @@ export function getGroups(
  */
 export function getGroup(id: number): Promise<{ data: GroupDetail }> {
   return api.get<{ data: GroupDetail }>(`${API_V2}/groups/${id}`);
+}
+
+function parseGroupFormCapabilities(value: unknown): GroupFormCapabilities {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid group form capabilities response');
+  const root = value as Record<string, unknown>;
+  const payload = root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+    ? root.data as Record<string, unknown>
+    : root;
+  const fields = payload.fields && typeof payload.fields === 'object' && !Array.isArray(payload.fields)
+    ? payload.fields as Record<string, unknown>
+    : null;
+  if (!Array.isArray(payload.templates) || !Array.isArray(payload.parent_candidates) || !fields) {
+    throw new Error('Invalid group form capabilities response');
+  }
+  const templates = payload.templates.map((raw): GroupTemplate => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Invalid group form capabilities response');
+    const item = raw as Record<string, unknown>;
+    if (typeof item.id !== 'number' || !Number.isInteger(item.id) || typeof item.name !== 'string' || item.name.trim() === '') throw new Error('Invalid group form capabilities response');
+    return {
+      id: item.id as number,
+      name: item.name,
+      description: typeof item.description === 'string' ? item.description : null,
+      icon: typeof item.icon === 'string' ? item.icon : null,
+      default_visibility: typeof item.default_visibility === 'string' ? item.default_visibility : null,
+    };
+  });
+  const parentCandidates = payload.parent_candidates.map((raw): GroupParentCandidate => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Invalid group form capabilities response');
+    const item = raw as Record<string, unknown>;
+    if (typeof item.id !== 'number' || !Number.isInteger(item.id) || typeof item.name !== 'string' || item.name.trim() === ''
+      || (item.parent_id !== null && (typeof item.parent_id !== 'number' || !Number.isInteger(item.parent_id)))) {
+      throw new Error('Invalid group form capabilities response');
+    }
+    return { id: item.id as number, name: item.name, parent_id: item.parent_id as number | null };
+  });
+  return { templates, parentCandidates, canSelectParent: fields.parent === true };
+}
+
+export async function getGroupFormCapabilities(): Promise<GroupFormCapabilities> {
+  return parseGroupFormCapabilities(await api.get<unknown>(`${API_V2}/groups/form-capabilities`));
 }
 
 function parseGroupNotificationPreferences(value: unknown): GroupNotificationPreferences {

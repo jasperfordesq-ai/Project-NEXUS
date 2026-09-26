@@ -39,6 +39,7 @@ import {
   handleGroupJoinRequest,
   getGroups,
   getGroup,
+  getGroupFormCapabilities,
   getGroupNotificationPreferences,
   getGroupAnalytics,
   getGroupAnalyticsComparative,
@@ -186,6 +187,34 @@ describe('getGroupTemplates', () => {
 
     expect(api.get).toHaveBeenCalledWith('/api/v2/group-templates');
     expect(Array.isArray('data' in result ? result.data : result)).toBe(true);
+  });
+});
+
+describe('getGroupFormCapabilities', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('normalizes authoritative templates and manageable parent candidates', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: {
+      templates: [{ id: 1, name: 'Club', description: null, icon: 'people', default_visibility: 'private' }],
+      parent_candidates: [{ id: 8, name: 'Regional network', parent_id: null }],
+      fields: { parent: true },
+    } });
+
+    await expect(getGroupFormCapabilities()).resolves.toEqual({
+      templates: [{ id: 1, name: 'Club', description: null, icon: 'people', default_visibility: 'private' }],
+      parentCandidates: [{ id: 8, name: 'Regional network', parent_id: null }],
+      canSelectParent: true,
+    });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/groups/form-capabilities');
+  });
+
+  it('rejects malformed parent candidates instead of exposing them', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: {
+      templates: [],
+      parent_candidates: [{ id: 8, name: '', parent_id: 'outside' }],
+      fields: { parent: true },
+    } });
+    await expect(getGroupFormCapabilities()).rejects.toThrow('Invalid group form capabilities response');
   });
 });
 

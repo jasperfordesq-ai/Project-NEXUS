@@ -98,7 +98,8 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Feed",
-      "challenges": "Herausforderungen"
+      "challenges": "Herausforderungen",
+      "subgroups": "Untergruppen"
     },
     "chatrooms": {
       "title": "Gruppenkanäle",
@@ -514,6 +515,11 @@
         "expired": "Abgelaufen",
         "cancelled": "Abgebrochen"
       }
+    },
+    "subgroups": {
+      "title": "Untergruppen",
+      "subtitle": "Entdecke Gruppen innerhalb dieser Gemeinschaft.",
+      "open": "{{name}} öffnen"
     }
   },
   "filter": {
@@ -571,7 +577,15 @@
     "failedDescription": "Die Gruppe konnte nicht erstellt werden. Versuche es erneut.",
     "unsavedTitle": "Diese Gruppe verwerfen?",
     "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
-    "discard": "Verwerfen"
+    "discard": "Verwerfen",
+    "parentLabel": "Übergeordnete Gruppe",
+    "parentHint": "Ordne diese Gruppe einer anderen von dir verwalteten Gruppe unter.",
+    "parentSelected": "Ausgewählt: {{name}}",
+    "parentLoadFailed": "Übergeordnete Gruppen konnten nicht geladen werden.",
+    "parentSearchLabel": "Übergeordnete Gruppen suchen",
+    "parentSearchPlaceholder": "Verwaltete Gruppen durchsuchen",
+    "noParent": "Keine übergeordnete Gruppe",
+    "parentEmpty": "Keine passenden übergeordneten Gruppen."
   },
   "invite_manage": {
     "title": "Einladungen verwalten",

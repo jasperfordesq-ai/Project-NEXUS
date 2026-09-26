@@ -436,6 +436,17 @@ jest.mock('@/components/groups/GroupChallengesPanel', () => {
   );
 });
 
+jest.mock('@/components/groups/GroupSubgroupsPanel', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ groupId }: { groupId: number }) => <View testID="group-subgroups-panel" accessibilityLabel={String(groupId)} />,
+    hasValidSubgroups: (value: unknown, parentId: number) => Array.isArray(value)
+      && value.length > 0
+      && value.every((item) => item && typeof item === 'object' && (item as { parent_id?: number }).parent_id === parentId),
+  };
+});
+
 jest.mock('@/lib/api/groups', () => ({
   getGroup: jest.fn(),
   getGroupJoinRequests: jest.fn().mockResolvedValue({ data: [] }),
@@ -728,6 +739,32 @@ const mockGroupDetail = {
 };
 
 describe('GroupDetailScreen', () => {
+  it('opens a configured subgroup tab only when the server returned children for this parent', () => {
+    mockRouteParams = { id: '1', tab: 'subgroups' };
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true, sub_groups: [{ id: 2, parent_id: 1, name: 'North' }] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, emptyListState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[(call++) % states.length] ?? emptyListState);
+
+    const screen = render(<GroupDetailScreen />);
+    expect(screen.getByTestId('group-subgroups-panel')).toBeTruthy();
+  });
+
+  it('resolves a malformed subgroup deep link to overview', () => {
+    mockRouteParams = { id: '1', tab: 'subgroups' };
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true, sub_groups: [{ id: 2, parent_id: 99, name: 'Wrong parent' }] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, emptyListState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[(call++) % states.length] ?? emptyListState);
+
+    const screen = render(<GroupDetailScreen />);
+    expect(screen.queryByTestId('group-subgroups-panel')).toBeNull();
+    expect(screen.getByTestId('group-tab-overview')).toBeTruthy();
+    expect(screen.queryByTestId('group-tab-subgroups')).toBeNull();
+  });
+
   it('opens the configured native challenges tab from a deep link', () => {
     mockRouteParams = { id: '1', tab: 'challenges' };
     const groupState = { data: { data: { ...mockGroupDetail, is_member: true, current_user_role: 'owner' } }, isLoading: false, error: null, refresh: jest.fn() };
@@ -763,6 +800,7 @@ describe('GroupDetailScreen', () => {
       tab_discussion: true,
       tab_chatrooms: false,
       tab_challenges: false,
+      tab_subgroups: false,
       tab_members: false,
       tab_events: false,
       tab_announcements: false,
@@ -787,7 +825,7 @@ describe('GroupDetailScreen', () => {
 
     expect(queryByTestId('group-tab-files')).toBeNull();
     expect(getByTestId('group-tab-discussion')).toBeTruthy();
-    for (const hidden of ['chatrooms', 'challenges', 'members', 'events', 'announcements', 'media', 'qa', 'wiki', 'tasks', 'analytics']) {
+    for (const hidden of ['chatrooms', 'challenges', 'subgroups', 'members', 'events', 'announcements', 'media', 'qa', 'wiki', 'tasks', 'analytics']) {
       expect(queryByTestId(`group-tab-${hidden}`)).toBeNull();
     }
     expect(queryByText('Group files')).toBeNull();

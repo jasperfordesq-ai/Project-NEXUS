@@ -98,7 +98,8 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Fil",
-      "challenges": "Défis"
+      "challenges": "Défis",
+      "subgroups": "Sous-groupes"
     },
     "chatrooms": {
       "title": "Canaux du groupe",
@@ -514,6 +515,11 @@
         "expired": "Expiré",
         "cancelled": "Annulé"
       }
+    },
+    "subgroups": {
+      "title": "Sous-groupes",
+      "subtitle": "Explorez les groupes de cette communauté.",
+      "open": "Ouvrir {{name}}"
     }
   },
   "filter": {
@@ -571,7 +577,15 @@
     "failedDescription": "Impossible de créer le groupe. Réessayez.",
     "unsavedTitle": "Abandonner ce groupe ?",
     "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
-    "discard": "Abandonner"
+    "discard": "Abandonner",
+    "parentLabel": "Groupe parent",
+    "parentHint": "Placez ce groupe dans un autre groupe que vous gérez.",
+    "parentSelected": "Sélectionné : {{name}}",
+    "parentLoadFailed": "Impossible de charger les groupes parents.",
+    "parentSearchLabel": "Rechercher des groupes parents",
+    "parentSearchPlaceholder": "Rechercher parmi vos groupes",
+    "noParent": "Aucun groupe parent",
+    "parentEmpty": "Aucun groupe parent correspondant."
   },
   "invite_manage": {
     "title": "Gérer les invitations",
