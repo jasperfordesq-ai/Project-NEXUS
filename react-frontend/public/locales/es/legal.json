@@ -729,7 +729,7 @@
     },
     "trust_safety": {
       "title": "Confianza y seguridad",
-      "description": "Cómo funcionan los intercambios en {{name}}, qué hacemos para mantener segura a la comunidad, qué no hacemos y cómo informar una inquietud. Confianza y salvaguardia en inglés sencillo."
+      "description": "Cómo funcionan los intercambios en {{name}}, qué hacemos para mantener segura a la comunidad, qué no hacemos y cómo informar una inquietud. Confianza y protección en inglés sencillo."
     }
   },
   "trust_safety": {
@@ -737,11 +737,11 @@
     "what_we_dont_vetting_item": "No examinamos ni almacenamos de forma independiente certificados de antecedentes penales, no acreditamos a ningún miembro para ejercer una profesión ni convertimos una confirmación de política de contacto en una habilitación general para desempeñar funciones.",
     "precautions_vetting_item": "Para actividades con menores o adultos vulnerables, consulta al coordinador de tu comunidad sobre las normas aplicables. No pidas a otro miembro que envíe un certificado DBS, Garda Vetting, AccessNI, PVG o equivalente a través de Project NEXUS.",
     "page_title": "Confianza y seguridad",
-    "meta_description": "Cómo funcionan los intercambios en {{name}}, qué hacemos para mantener segura a la comunidad, qué no hacemos y cómo informar una inquietud. Confianza y salvaguardia en inglés sencillo.",
+    "meta_description": "Cómo funcionan los intercambios en {{name}}, qué hacemos para mantener segura a la comunidad, qué no hacemos y cómo informar una inquietud. Confianza y protección en inglés sencillo.",
     "heading": "Confianza y seguridad",
     "subtitle": "{{name}} conecta a los vecinos para que puedan compartir habilidades utilizando créditos de tiempo. Esta página explica cómo funciona en la práctica: qué hace la plataforma, qué no y cómo puede mantenerse seguro.",
     "safeguarding_title": "Informar un problema de protección",
-    "safeguarding_body": "Si estás preocupado por un miembro, un intercambio o algo que hayas visto en la plataforma, dínoslo. Respondemos a los informes de salvaguardia en el plazo de un día laborable.",
+    "safeguarding_body": "Si estás preocupado por un miembro, un intercambio o algo que hayas visto en la plataforma, dínoslo. Respondemos a los informes de protección en el plazo de un día laborable.",
     "safeguarding_step_1": "Utilice el botón Informar en el listado, mensaje o perfil correspondiente.",
     "safeguarding_step_2": "O envíenos un correo electrónico a través de la página de Contacto; marque el asunto como \"Protección\".",
     "safeguarding_step_3": "If anyone is in immediate danger, contact An Garda Síochána on 999 or 112 first.",
@@ -881,7 +881,7 @@
     "reporting_button": "Abrir el formulario de denuncia de protección de la infancia",
     "response_title": "Cómo respondemos",
     "response_items": {
-      "0": "Las denuncias de protección de la infancia se priorizan para su revisión humana y los informes de salvaguarda suelen acusarse de recibo en un día laborable.",
+      "0": "Las denuncias de protección de la infancia se priorizan para su revisión humana y los informes de protección suelen acusarse de recibo en un día laborable.",
       "1": "Restringimos el acceso al contenido denunciado mientras lo evaluamos cuando es necesario para proteger a personas o preservar pruebas.",
       "2": "El contenido prohibido confirmado se elimina y las cuentas implicadas pueden ser suspendidas o eliminadas de forma permanente.",
       "3": "Conservamos únicamente las pruebas necesarias para una investigación lícita y protegemos la confidencialidad de quien denuncia en la medida en que la ley lo permita.",

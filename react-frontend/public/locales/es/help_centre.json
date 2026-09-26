@@ -19,7 +19,7 @@
       "description": "Unirte, ofrecer ayuda, intercambiar tiempo y mantenerte a salvo."
     },
     "brokers": {
-      "title": "Para brókeres y coordinadores",
+      "title": "Para intermediarios y coordinadores",
       "description": "Aprobar miembros, organizar intercambios, protección y actividades de grupo."
     },
     "admins": {
@@ -46,11 +46,11 @@
   "not_found_body": "Puede que se haya movido, o que esta función no esté activada en tu comunidad.",
   "not_found_button": "Volver al Centro de Ayuda",
   "broker_panel": {
-    "title": "Guía para brókeres y coordinadores",
-    "subtitle": "Guías en lenguaje sencillo sobre cada parte del Panel de Corredor y sobre el trabajo de organizar intercambios.",
+    "title": "Guía para intermediarios y coordinadores",
+    "subtitle": "Guías en lenguaje sencillo sobre cada parte del Panel del intermediario y sobre el trabajo de organizar intercambios.",
     "open_full": "Abrir la guía completa",
     "view_in_help_centre": "Abrir en el Centro de Ayuda",
-    "back": "Todas las guías para brókeres"
+    "back": "Todas las guías para intermediarios"
   },
   "admin_panel": {
     "title": "Guía completa para administradores",

@@ -88,7 +88,7 @@
     },
     "reasons": {
       "unknown": "Un requisito de participación aún necesita atención.",
-      "safeguarding_policy": "Decisión de política de salvaguardia",
+      "safeguarding_policy": "Decisión de política de protección",
       "minimum_age": "Requisito de edad mínima",
       "guardian_consent": "Requisito de consentimiento del tutor",
       "code_of_conduct": "Requisito del código de conducta",
@@ -108,13 +108,13 @@
       "event_safety_guardian_consent_required": "Se requiere el consentimiento válido del tutor.",
       "event_safety_code_of_conduct_acknowledgement_required": "Reconocer el código de conducta vigente.",
       "event_safety_active_participation_denial": "Una decisión de seguridad activa impide la participación.",
-      "event_safety_safeguarding_policy_denied": "La política de salvaguardia no permite actualmente la participación.",
-      "event_safety_safeguarding_policy_invalid": "La decisión de salvaguardia no pudo verificarse.",
+      "event_safety_safeguarding_policy_denied": "La política de protección no permite actualmente la participación.",
+      "event_safety_safeguarding_policy_invalid": "La decisión de protección no pudo verificarse.",
       "event_safety_safeguarding_policy_unavailable": "La verificación de protección no está disponible temporalmente.",
       "event_safety_schema_unavailable": "La verificación de seguridad no está disponible temporalmente.",
       "event_safety_evaluation_unavailable": "La verificación de seguridad no está disponible temporalmente.",
       "event_safety_organizer_not_active": "El organizador del evento no está activo actualmente.",
-      "event_safety_denial_safeguarding_policy": "Una decisión política de salvaguardia impide la participación."
+      "event_safety_denial_safeguarding_policy": "Una decisión política de protección impide la participación."
     },
     "code": {
       "title": "Código de conducta",
@@ -152,7 +152,7 @@
       "effective_from": "Efectivo desde",
       "effective_until": "Efectivo hasta",
       "effective_until_hint": "Dejar en blanco cuando la decisión no tenga final previsto.",
-      "no_notes_notice": "Por motivos de privacidad, este libro mayor acepta únicamente códigos de motivo controlados. Registrar incidentes y evidencia sensible en el sistema de salvaguardia aprobado.",
+      "no_notes_notice": "Por motivos de privacidad, este libro mayor acepta únicamente códigos de motivo controlados. Registrar incidentes y evidencia sensible en el sistema de protección aprobado.",
       "saved": "Revisión de participación guardada.",
       "withdrawn": "Revisión de participación retirada.",
       "action_error": "La revisión de participación no se pudo cambiar. Actualiza e inténtalo de nuevo.",
@@ -247,7 +247,7 @@
     "review_reason": "razón controlada",
     "reasons": {
       "unknown": "Un requisito de participación aún necesita atención.",
-      "safeguarding_policy": "Decisión de política de salvaguardia",
+      "safeguarding_policy": "Decisión de política de protección",
       "minimum_age": "Requisito de edad mínima",
       "guardian_consent": "Requisito de consentimiento del tutor",
       "code_of_conduct": "Requisito del código de conducta",
@@ -258,7 +258,7 @@
     "effective_from": "Efectivo desde",
     "effective_until": "Efectivo hasta",
     "effective_until_hint": "Dejar en blanco cuando la decisión no tenga final previsto.",
-    "no_notes": "Por motivos de privacidad, utilice únicamente motivos controlados. Mantener los incidentes y evidencia sensible en el sistema de salvaguarda aprobado.",
+    "no_notes": "Por motivos de privacidad, utilice únicamente motivos controlados. Mantener los incidentes y evidencia sensible en el sistema de protección aprobado.",
     "save_review": "Guardar decisión de revisión",
     "no_people": "No hay participantes del evento disponibles para una nueva revisión.",
     "open_people": "Abrir el espacio de trabajo de personas del evento",

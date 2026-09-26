@@ -294,7 +294,7 @@
         "success-stories": "Historias de éxito",
         "feedback": "Bandeja de entrada de comentarios",
         "verification": "Verificación Municipal",
-        "safeguarding": "Informes de salvaguardia",
+        "safeguarding": "Informes de protección",
         "trust-tier": "Niveles de confianza",
         "launch-readiness": "Preparación para el lanzamiento",
         "pilot-scoreboard": "Marcador piloto",
@@ -354,7 +354,7 @@
         "success_stories": "Historias de éxito",
         "feedback": "Bandeja de entrada de comentarios",
         "verification": "Verificación Municipal",
-        "safeguarding": "Informes de salvaguardia",
+        "safeguarding": "Informes de protección",
         "trust_tier": "Niveles de confianza",
         "launch_readiness": "Preparación para el lanzamiento",
         "pilot_scoreboard": "Marcador piloto",
@@ -927,15 +927,15 @@
       "loading": "Cargando círculo de destinatarios...",
       "member_since": "Miembro desde {{date}}",
       "member_id_value": "ID{{id}}",
-      "safeguarding_flags_one": "Bandera de salvaguardia {{count}}",
-      "safeguarding_flags_other": "{{count}} salvaguardando banderas",
+      "safeguarding_flags_one": "{{count}} indicador de protección",
+      "safeguarding_flags_other": "{{count}} indicadores de protección",
       "about": {
         "title": "Acerca de esta página",
         "body": "Un círculo de destinatarios de atención es un grupo de apoyo privado en torno a una persona que recibe atención. Esta vista muestra su red de soporte completa: todos los ayudantes, el total de horas recibidas, las solicitudes de ayuda abiertas y cualquier indicador de protección. Ingrese la identificación de usuario del miembro para buscar su círculo.",
         "trust_tiers_label": "Niveles de confianza:",
         "trust_tiers_body": "Recién llegado, Miembro, Confiable, Verificado, Coordinador: se muestra para el destinatario y cada partidario.",
-        "safeguarding_label": "Banderas de salvaguardia:",
-        "safeguarding_body": "Un recuento de banderas distinto de cero indica preocupaciones de salvaguardia activas registradas contra este miembro. Revíselos en la sección Protección.",
+        "safeguarding_label": "Indicadores de protección:",
+        "safeguarding_body": "Un recuento de banderas distinto de cero indica preocupaciones de protección activas registradas contra este miembro. Revíselos en la sección Protección.",
         "privacy_label": "Privacidad:",
         "privacy_body": "Los datos del círculo solo son visibles para los miembros del círculo y los administradores de inquilinos. No está incluido en los informes de toda la comunidad ni en el directorio de miembros."
       },
@@ -986,11 +986,11 @@
       "errors": {
         "load": "No se pudo cargar el círculo de destinatarios. Verifique el ID de miembro y vuelva a intentarlo."
       },
-      "safeguarding_flags_many": "{{count}} salvaguardando banderas"
+      "safeguarding_flags_many": "{{count}} indicadores de protección"
     },
     "safeguarding_reports": {
       "meta_title": "Informes de protección: administrador",
-      "title": "Informes de salvaguardia",
+      "title": "Informes de protección",
       "subtitle": "Revisar, asignar y resolver inquietudes de protección planteadas por los miembros.",
       "empty_dash": "-",
       "actor_id": "#{{id}}",
@@ -1017,7 +1017,7 @@
         "triaged": "clasificado",
         "investigating": "investigando",
         "resolved": "Resuelto",
-        "dismissed": "Despedido"
+        "dismissed": "Descartado"
       },
       "severity_legend": {
         "title": "Niveles de gravedad",
@@ -1039,7 +1039,7 @@
         "severity": "Gravedad"
       },
       "table": {
-        "aria": "Informes de salvaguardia",
+        "aria": "Informes de protección",
         "severity": "Gravedad",
         "category": "Categoría",
         "reporter": "Reportero",

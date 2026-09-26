@@ -49,7 +49,7 @@
   "general_desc": "Elija quién puede crear Eventos y la política de publicación predeterminada.",
   "creation_role": "¿Quién puede crear eventos?",
   "creation_role_members": "Todos los miembros activos",
-  "creation_role_staff": "Corredores y administradores",
+  "creation_role_staff": "Intermediarios y administradores",
   "creation_role_admins": "Sólo administradores",
   "default_visibility": "Visibilidad predeterminada",
   "visibility_public": "Público",

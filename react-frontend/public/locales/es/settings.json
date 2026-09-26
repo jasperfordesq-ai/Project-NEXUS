@@ -318,15 +318,15 @@
     "availability": "Disponibilidad",
     "linked": "Vinculados",
     "connected_accounts": "Conectado",
-    "safeguarding": "Salvaguardia",
+    "safeguarding": "Protección",
     "translation": "Traducción",
     "linked-accounts": "Cuentas vinculadas",
     "connected-accounts": "Cuentas conectadas"
   },
   "safeguarding": {
-    "page_title": "Preferencias de salvaguarda",
-    "intro": "Revisa o revoca las preferencias de salvaguarda que estableciste durante la incorporación. Tus coordinadores pueden verlas, pero otros miembros no.",
-    "no_preferences": "No tienes preferencias de salvaguarda activas. Puedes establecerlas en cualquier momento desde la página de ayuda de salvaguarda.",
+    "page_title": "Preferencias de protección",
+    "intro": "Revisa o revoca las preferencias de protección que estableciste durante la incorporación. Tus coordinadores pueden verlas, pero otros miembros no.",
+    "no_preferences": "No tienes preferencias de protección activas. Puedes establecerlas en cualquier momento desde la página de ayuda de protección.",
     "selected_on": "Seleccionado el {{date}}",
     "revoke_button": "Revocar",
     "revoke_confirm_title": "¿Revocar esta preferencia?",
@@ -351,14 +351,14 @@
       "status_review_requested": "Revisión solicitada",
       "status_unavailable": "No se pudo cargar su estado de investigación.",
       "confirmed_on": "Su comunidad confirmó que cumple con este requisito de contacto de protección en {{date}}.",
-      "review_pending_body": "Se le ha pedido a su corredor que revise la confirmación de su comunidad.",
+      "review_pending_body": "Se le ha pedido a su intermediario que revise la confirmación de su comunidad.",
       "not_confirmed_body": "Su comunidad no ha confirmado que cumpla con este requisito de contacto de protección.",
       "policy_unavailable_body": "Esta comunidad no ha configurado una política de contacto de protección compatible para su jurisdicción.",
       "no_documents": "No cargue ni envíe un documento DBS, control policial, investigación de Garda, AccessNI o PVG a través de NEXUS. Su comunidad se encargará de cualquier control legal fuera de la plataforma.",
-      "request_review_button": "Solicitar revisión del corredor",
+      "request_review_button": "Solicitar revisión del intermediario",
       "review_requested_button": "Revisión solicitada",
       "review_requested_toast": "Se solicita revisión del agente inmobiliario.",
-      "review_error": "No se pudo solicitar la revisión del corredor. Por favor inténtalo de nuevo."
+      "review_error": "No se pudo solicitar la revisión del intermediario. Por favor inténtalo de nuevo."
     },
     "guardians": {
       "title": "Arreglos de tutor",
@@ -657,7 +657,7 @@
       "option_represent": "Actuar por su cuenta — todo queda registrado",
       "tier_aria": "Nivel de soporte para {{capability}} de {{name}}",
       "co_decide_explainer": "\"Solo preparar\" significa que el ayudante configura las cosas y no sucede nada hasta que el propietario de la cuenta lo apruebe, con un toque aquí o desde un enlace en su correo electrónico. Es el nivel recomendado para la mayoría de familias.",
-      "set_by_member": "{{name}} eligió estos niveles. Sólo ellos pueden cambiarlos, desde sus propios entornos de salvaguardia."
+      "set_by_member": "{{name}} eligió estos niveles. Sólo ellos pueden cambiarlos, desde sus propios entornos de protección."
     },
     "approve": "Aprobar",
     "decline": "Rechazar",

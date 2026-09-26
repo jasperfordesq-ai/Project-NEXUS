@@ -51,7 +51,7 @@
         "items": {
           "timebanking_engine": {
             "title": "Motor de banco de tiempo",
-            "description": "Sistema completo de intercambio de créditos con monedero, transacciones y controles de bróker."
+            "description": "Sistema completo de intercambio de créditos con monedero, transacciones y controles de intermediario."
           },
           "multi_tenancy": {
             "title": "Multi-tenant",
@@ -151,7 +151,7 @@
           },
           "exchange_workflow": {
             "title": "Flujo de intercambio",
-            "description": "Ciclo de vida estructurado para el intercambio de servicios con aprobación del bróker y gestión de disputas."
+            "description": "Ciclo de vida estructurado para el intercambio de servicios con aprobación del intermediario y gestión de disputas."
           },
           "group_exchanges": {
             "title": "Intercambios grupales",
@@ -350,9 +350,9 @@
             "description": "Gestión de contactos desde admin con notas, tareas, etiquetas, líneas de tiempo de actividad y exportación."
           },
           "broker_application": {
-            "title": "Solicitud de corredor y coordinador",
-            "description": "Una aplicación separada para los coordinadores y corredores que intervienen entre los miembros cuando surge una inquietud sobre salvaguardia o cumplimiento. Mantiene la supervisión del intercambio y la aprobación de coincidencias, registros de miembros y progreso de incorporación, colas de moderación para el feed, comentarios y revisiones, etiquetas de riesgo y listas de vigilancia, revisión de mensajes para los miembros bajo monitoreo, seguimiento de certificados de seguro e informes.",
-            "note": "Un corredor es una función operativa por derecho propio, no un administrador junior: los corredores obtienen esta solicitud y se les niega deliberadamente el panel de administración general."
+            "title": "Aplicación para intermediarios y coordinadores",
+            "description": "Una aplicación separada para los coordinadores y intermediarios que intervienen entre los miembros cuando surge una inquietud sobre protección o cumplimiento. Mantiene la supervisión del intercambio y la aprobación de coincidencias, registros de miembros y progreso de incorporación, colas de moderación para el feed, comentarios y revisiones, etiquetas de riesgo y listas de vigilancia, revisión de mensajes para los miembros bajo monitoreo, seguimiento de certificados de seguro e informes.",
+            "note": "Un intermediario es una función operativa por derecho propio, no un administrador junior: los intermediarios obtienen esta solicitud y se les niega deliberadamente el panel de administración general."
           },
           "two_factor_and_passkeys": {
             "title": "Inicio de sesión de dos factores y claves de acceso",

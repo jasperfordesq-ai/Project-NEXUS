@@ -201,8 +201,8 @@
       "title": "Crear Intercambio en Grupo"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver",
+  "role_provider": "Proveedor",
+  "role_receiver": "Receptor",
   "participants_count_many": "{{count}} participantes",
   "hours_count_many": "{{count}} horas"
 }

@@ -218,7 +218,7 @@
     "loading": "Cargando evento...",
     "unable_to_load": "No se Pudo Cargar el Evento",
     "creation_restricted_title": "Aquí solo el personal puede crear eventos",
-    "creation_restricted_body": "Esta comunidad ha decidido que solo sus corredores y administradores puedan crear eventos. Si quieres que se organice un evento, pídeselo a un administrador de la comunidad.",
+    "creation_restricted_body": "Esta comunidad ha decidido que solo sus intermediarios y administradores puedan crear eventos. Si quieres que se organice un evento, pídeselo a un administrador de la comunidad.",
     "back_to_events": "Volver a Eventos",
     "try_again": "Intentar de Nuevo",
     "nav_new": "Nuevo Evento",
@@ -528,7 +528,7 @@
       "export_excluded_fields": {
         "contact_details": "Direcciones de correo electrónico, números de teléfono, direcciones postales y otros datos de contacto",
         "form_answers": "Respuestas del formulario de registro y respuestas a preguntas personalizadas",
-        "incident_records": "Registros de incidentes, salvaguardia y gestión de casos.",
+        "incident_records": "Registros de incidentes, protección y gestión de casos.",
         "support_notes": "Notas de salud, accesibilidad, alojamiento y apoyo privado.",
         "audit_metadata": "Metadatos de auditoría interna, motivos del personal y notas operativas"
       },

@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Eliminar",
-    "feature": "Característica",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "En progreso",
     "in_review": "En revisión",
@@ -15,7 +15,7 @@
     "refresh": "Actualizar",
     "unexpected_error": "error inesperado",
     "unknown": "Desconocido",
-    "unfeature": "no característica",
+    "unfeature": "Dejar de destacar",
     "actions": "Acciones",
     "active": "Activo",
     "all": "Todos",
@@ -47,7 +47,7 @@
     "yes": "si"
   },
   "shared": {
-    "broker_actions": "Acciones del corredor",
+    "broker_actions": "Acciones del intermediario",
     "content": "Contenido",
     "core_module": "Módulo principal",
     "document_details": "Detalles del documento",
@@ -60,7 +60,7 @@
     "loading": "Cargando",
     "no_data": "Sin datos",
     "no_data_available": "No hay datos disponibles",
-    "no_recent_broker_activity": "No se encontró actividad reciente del corredor",
+    "no_recent_broker_activity": "No se encontró actividad reciente del intermediario",
     "open_page_help": "Abrir página de ayuda",
     "help": "Ayuda",
     "quick_access": "Acceso rápido",
@@ -151,7 +151,7 @@
       "revoke_reason_label": "¿Por qué?",
       "reason_authority_ended": "La autoridad ha terminado",
       "reason_superseded": "Reemplazado por una autoridad más nueva",
-      "reason_entered_in_error": "Grabado por error",
+      "reason_entered_in_error": "Registrado por error",
       "reason_expired": "La autoridad expiró",
       "reason_other_documented": "Otra razón, documentada en otro lugar.",
       "revoke_confirm_button": "Marcar como ya no válido",
@@ -215,7 +215,7 @@
         "manual_monitoring_title": "Monitoreo manual",
         "manual_monitoring_prefix": "tu abres",
         "user_monitoring": "Monitoreo de usuarios",
-        "manual_monitoring_suffix": "en Controles de corredores y colocar a un miembro bajo supervisión con un motivo y una fecha de vencimiento opcional. Se utiliza para revisiones de cumplimiento, investigaciones de quejas o períodos de prueba después de un incidente."
+        "manual_monitoring_suffix": "en Controles de intermediarios y colocar a un miembro bajo supervisión con un motivo y una fecha de vencimiento opcional. Se utiliza para revisiones de cumplimiento, investigaciones de quejas o períodos de prueba después de un incidente."
       },
       "triggers": {
         "aria": "Qué activa cada disparador",
@@ -227,13 +227,13 @@
         "col_trigger_key": "Tecla de disparo",
         "effects": {
           "notify_admin_on_selection": "Recibe una notificación en tiempo real en el momento en que se marca la opción.",
-          "requires_broker_approval": "Todos los mensajes salientes copiados para revisión del corredor; Los partidos necesitan aprobación.",
+          "requires_broker_approval": "Todos los mensajes salientes copiados para revisión del intermediario; Los partidos necesitan aprobación.",
           "requires_vetted_interaction": "Los miembros no examinados están ocultos del feed de descubrimiento del miembro.",
           "restricts_matching": "El flujo de trabajo de aprobación de coincidencias se activa, sin presentaciones automáticas.",
           "restricts_messaging": "Marca al miembro bajo seguimiento; comienzan las copias de los mensajes.",
           "vetting_type_required": "Especifica qué verificación debe realizar un miembro de contacto, por ejemplo garda_vetting."
         },
-        "table_aria": "Salvaguardar los efectos desencadenantes",
+        "table_aria": "Efectos de los desencadenantes de protección",
         "merge_note": "Cuando un miembro selecciona varias opciones, se activa la combinación OR: gana la combinación más protectora. Revocar una opción puede liberar algunas protecciones pero mantener otras activas: el sistema reevalúa desde cero cada vez."
       },
       "vetting": {
@@ -252,7 +252,7 @@
         "group_label": "Intercambios grupales",
         "group_body": "- Agregar un participante falla si el organizador o el participante requiere una investigación y el otro no lo acepta.",
         "staff_bypass_label": "Bypass de personal:",
-        "staff_bypass_body": "Los administradores, administradores de inquilinos, corredores y superadministradores ven el grupo completo en el descubrimiento (para fines de asignación). Las puertas de mensajería, envío de coincidencias e intercambio grupal aún se aplican a todos; no existe una omisión a nivel de administrador para estos."
+        "staff_bypass_body": "Los administradores, administradores de inquilinos, intermediarios y superadministradores ven el grupo completo en el descubrimiento (para fines de asignación). Las puertas de mensajería, envío de coincidencias e intercambio grupal aún se aplican a todos; no existe una omisión a nivel de administrador para estos."
       },
       "assignments": {
         "aria": "Asignaciones de tutor",
@@ -260,7 +260,7 @@
         "intro": "Una asignación de tutor empareja a un miembro apoyado con un tutor (una persona coordinadora de confianza o un familiar). Úsela cuando un miembro necesite que una persona concreta medie en sus interacciones, en lugar del grupo general de mediadores.",
         "create_label": "Crear",
         "create_prefix": "desde la pestaña Tareas o navegando a",
-        "assign_guardian_path": "corredor/seguimiento -> Asignar tutor",
+        "assign_guardian_path": "intermediario/seguimiento -> Asignar tutor",
         "create_suffix": "Ambas partes reciben un correo electrónico y una notificación de campana en la aplicación.",
         "consent_label": "Consentir",
         "consent_prefix": "- el miembro apoyado debe aceptar; su aceptación queda registrada en",
@@ -270,7 +270,7 @@
         "revoke_label": "Revocar",
         "revoke_prefix": "- el administrador o el miembro apoyado puede revocarla. La revocación es suave (establece",
         "revoke_suffix": ") para conservar el rastro de auditoría.",
-        "queue_note": "Las asignaciones de guardián no reemplazan la cola de revisión del corredor: los mensajes monitoreados aún fluyen allí. Un guardián es una capa más confiable, no un sustituto de la supervisión de la plataforma."
+        "queue_note": "Las asignaciones de guardián no reemplazan la cola de revisión del intermediario: los mensajes monitoreados aún fluyen allí. Un guardián es una capa más confiable, no un sustituto de la supervisión de la plataforma."
       },
       "preferences": {
         "aria": "Pestaña de preferencias de miembros",
@@ -288,7 +288,7 @@
         "aria": "Principio de autonomía del adulto",
         "title": "Principio de autonomía del adulto",
         "rule_label": "La regla:",
-        "rule_prefix": "Un adulto que se ha identificado a sí mismo como alguien que requiere protecciones de salvaguardia tiene el derecho absoluto de ver",
+        "rule_prefix": "Un adulto que se ha identificado a sí mismo como alguien que requiere protecciones de protección tiene el derecho absoluto de ver",
         "and": "y",
         "rule_middle": "revocar esas protecciones sin preguntarle a un administrador. Administradores",
         "cannot": "no puedo",
@@ -297,7 +297,7 @@
         "guidance": "Guía de autonomía para adultos de Safeguarding Ireland",
         "grounded_suffix": "(y la guía legal UK equivalente: \"Making Safeguarding Personal\"). Revocar una bandera desencadena:",
         "trigger_reevaluation": "Reevaluación de los factores desencadenantes -> los requisitos de seguimiento/aprobación pueden eliminarse.",
-        "admin_notification": "Una campana de notificación en la aplicación para administradores/corredores: se le informa, pero no puede vetar.",
+        "admin_notification": "Una campana de notificación en la aplicación para administradores/intermediarios: se le informa, pero no puede vetar.",
         "audit_log_prefix": "Una entrada del registro de auditoría con",
         "coercion_note": "Si cree que la revocación fue coaccionada por un tercero, la respuesta correcta es una conversación de protección con el miembro (y, si es necesario, una derivación a los servicios legales), sin volver a aplicar la marca a través de los controles administrativos."
       },
@@ -308,7 +308,7 @@
         "intro_suffix": "El comando se ejecuta automáticamente. Para cualquier preferencia con más de 365 días sin una revisión reciente,:",
         "step_reminder": "Envía al miembro un correo electrónico y una campana pidiéndole que revise - sellos",
         "step_wait": "Espera 30 días.",
-        "step_escalate": "Si no hay respuesta, notifica a los administradores/corredores mediante campana + correo electrónico - sellos",
+        "step_escalate": "Si no hay respuesta, notifica a los administradores/intermediarios mediante campana + correo electrónico - sellos",
         "flag_stays_active": "La bandera permanece activa independientemente.",
         "escalation_note": "La escalada es una señal para que un coordinador se comunique personalmente, no es una señal para retirar la protección. El silencio no es consentimiento para eliminar salvaguardias.",
         "settings_prefix": "Visita",
@@ -318,7 +318,7 @@
       "audit": {
         "aria": "Registro de auditoría y exportación de CSV",
         "title": "Registro de auditoría y exportación de CSV",
-        "intro_prefix": "Cada acción relacionada con la salvaguardia está escrita para",
+        "intro_prefix": "Cada acción relacionada con la protección está escrita para",
         "intro_middle": "con",
         "intro_suffix": "El punto final de actividad por miembro combina tres fuentes en una línea de tiempo más reciente:",
         "activity_log_label": "Registro de actividad",
@@ -346,7 +346,7 @@
     "label_guardian_email": "Correo electrónico del tutor",
     "label_help_url": "URL de ayuda",
     "label_is_required": "es requerido",
-    "label_option_key": "Tecla de opción",
+    "label_option_key": "Clave de la opción",
     "label_option_type": "Tipo de opción",
     "label_required_vetting_type": "Tipo de verificación requerida",
     "label_review_notes": "Notas de revisión",
@@ -383,7 +383,7 @@
     "option_key_is_required": "Se requiere clave de opción",
     "option_updated": "Opción actualizada",
     "options_page_title": "Opciones de protección",
-    "page_title": "Salvaguardia",
+    "page_title": "Protección",
     "pending": "Pendiente",
     "placeholder_description_help": "Descripción Ayuda...",
     "placeholder_display_label": "p.ej. Es posible que necesite apoyo adicional durante los intercambios.",
@@ -438,6 +438,6 @@
     "vetting_international": "Investigación internacional",
     "vetting_other": "Investigación de otros",
     "vetting_pvg_scotland": "Investigación de investigación de Pvg Escocia",
-    "tabs_aria": "Secciones de salvaguardia"
+    "tabs_aria": "Secciones de protección"
   }
 }

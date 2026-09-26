@@ -231,7 +231,7 @@
   },
   "safeguarding_contact_restricted": {
     "title": "Hace falta coordinacion",
-    "body": "Esta persona no esta disponible para mensajes directos porque sus preferencias de salvaguarda requieren contacto mediado por un coordinador.",
+    "body": "Esta persona no esta disponible para mensajes directos porque sus preferencias de protección requieren contacto mediado por un coordinador.",
     "contact_broker": "Puedes pedir a un intermediario, administrador o coordinador que ayude a gestionar el contacto. Usa el botón de abajo — se pondrán en contacto contigo.",
     "action": "Abrir ayuda",
     "dismiss": "Descartar aviso de proteccion"
@@ -241,7 +241,7 @@
     "body": "La mensajería directa está pausada porque la política de protección de la comunidad no se pudo verificar de manera segura.",
     "contact_broker": "Vuelva a comprobarlo en breve. Si esto continúa, pídale ayuda a un coordinador comunitario.",
     "action": "comprobar de nuevo",
-    "dismiss": "Descartar aviso de salvaguardia"
+    "dismiss": "Descartar aviso de protección"
   },
   "coordinator_request": {
     "button": "Solicitar ayuda de un coordinador",

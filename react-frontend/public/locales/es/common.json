@@ -68,7 +68,7 @@
     "timebanking": "Banco de tiempo",
     "explore": "Explorar",
     "marketplace": "Mercado",
-    "premium": "De primera calidad",
+    "premium": "Donar",
     "verify_identity": "Verifica tu identidad",
     "accessibility_alpha": "Accesibilidad (alfa)",
     "accessibility_alpha_tooltip": "Versión accesible mejorada: compatible con WCAG 2.2 AA. Se abre en una nueva pestaña.",
@@ -556,7 +556,7 @@
       "hour_transfer": "Transferir horas",
       "hour_transfer_sub": "Mueve horas acumuladas a otra cooperativa Caring Community.",
       "safeguarding_report": "Reportar una preocupación",
-      "safeguarding_report_sub": "Reporta inquietudes de salvaguardia de forma confidencial.",
+      "safeguarding_report_sub": "Reporta inquietudes de protección de forma confidencial.",
       "projects": "Proyectos comunitarios",
       "projects_sub": "Sigue las actualizaciones de municipios y barrios."
     },
@@ -1707,7 +1707,7 @@
     }
   },
   "premium": {
-    "pricing_title": "De primera calidad",
+    "pricing_title": "Donar",
     "pricing_subtitle": "Desbloquea funciones premium para sacar más partido a tu comunidad.",
     "monthly": "Mensual",
     "yearly": "Anual",
@@ -2695,7 +2695,7 @@
     "action_edit": "Editar",
     "action_approve": "Aprobar",
     "action_suspend": "suspender",
-    "action_ban": "Prohibición",
+    "action_ban": "Vetar",
     "action_reactivate": "Reactivar",
     "action_reset_2fa": "Restablecer 2FA",
     "action_permissions": "Permisos",

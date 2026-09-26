@@ -146,7 +146,7 @@
       "tips": [
         "Las promociones de nivel no son automáticas de forma predeterminada: un coordinador debe aprobar cada promoción. Puede habilitar la promoción automática para el Nivel 0→1 en Configuración de nivel.",
         "Los miembros no pueden ver su puntuación de nivel numérico; en su lugar, ven una insignia con nombre (por ejemplo, \"Miembro de confianza\").",
-        "El nivel de coordinador (4) debería ser poco común y otorgarse solo a personas que se encargan de la salvaguardia o los intercambios de alto valor."
+        "El nivel de coordinador (4) debería ser poco común y otorgarse solo a personas que se encargan de la protección o los intercambios de alto valor."
       ],
       "caution": "Degradar a un miembro de confianza (nivel 2 → 1) invalida inmediatamente su Warmth Pass en todos los sitios cooperativos de Caring Community. Notifique al miembro antes de degradarlo.",
       "relatedPaths": [
@@ -186,7 +186,7 @@
         "Los pases emitidos a miembros que posteriormente son degradados por debajo del Nivel 2 se revocan automáticamente; no es necesario que lo haga manualmente.",
         "El código QR del pase está disponible en el perfil del miembro como PDF descargable."
       ],
-      "caution": "No emita pases a miembros con informes de salvaguardia no resueltos, incluso si su nivel los califica técnicamente.",
+      "caution": "No emita pases a miembros con informes de protección no resueltos, incluso si su nivel los califica técnicamente.",
       "relatedPaths": [
         {
           "label": "Niveles de confianza",
@@ -200,7 +200,7 @@
     },
     "/caring/safeguarding": {
       "title": "Protección: informes de incidentes y acuerdos de nivel de servicio",
-      "summary": "Esta página gestiona todos los informes de incidentes de salvaguardia generados dentro de su cooperativa. Los informes se clasifican por gravedad: Crítico (responder dentro de 1 hora), Alto (24 horas), Medio (72 horas), Bajo (próxima reunión programada). Los coordinadores deben reconocer y actuar cada informe dentro de la ventana del SLA.",
+      "summary": "Esta página gestiona todos los informes de incidentes de protección generados dentro de su cooperativa. Los informes se clasifican por gravedad: Crítico (responder dentro de 1 hora), Alto (24 horas), Medio (72 horas), Bajo (próxima reunión programada). Los coordinadores deben reconocer y actuar cada informe dentro de la ventana del SLA.",
       "steps": [
         {
           "label": "Revisar la cola de incidentes abiertos",
@@ -775,7 +775,7 @@
     },
     "/caring/emergency-alerts": {
       "title": "Alertas de emergencia: transmitidas a todos los miembros",
-      "summary": "Envíe alertas inmediatas y de alta prioridad a todos los miembros de su cooperativa. Úselo solo para emergencias genuinas: condiciones climáticas severas que afecten los viajes a las bolsas, salvaguardia de avisos públicos o consejos urgentes de salud comunitaria. Todas las alertas se registran y tienen marca de tiempo.",
+      "summary": "Envíe alertas inmediatas y de alta prioridad a todos los miembros de su cooperativa. Úselo solo para emergencias genuinas: condiciones climáticas severas que afecten los viajes a las bolsas, protección de avisos públicos o consejos urgentes de salud comunitaria. Todas las alertas se registran y tienen marca de tiempo.",
       "steps": [
         {
           "label": "Elija el tipo de alerta",

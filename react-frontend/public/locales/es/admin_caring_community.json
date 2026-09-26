@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Eliminar",
-    "feature": "Característica",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "En progreso",
     "in_review": "En revisión",
@@ -15,7 +15,7 @@
     "refresh": "Actualizar",
     "unexpected_error": "error inesperado",
     "unknown": "Desconocido",
-    "unfeature": "no característica",
+    "unfeature": "Dejar de destacar",
     "actions": "Acciones",
     "active": "Activo",
     "all": "Todos",
@@ -47,7 +47,7 @@
     "ok": "OK"
   },
   "shared": {
-    "broker_actions": "Acciones del corredor",
+    "broker_actions": "Acciones del intermediario",
     "content": "Contenido",
     "core_module": "Módulo principal",
     "document_details": "Detalles del documento",
@@ -59,7 +59,7 @@
     "no_members_found": "No se encontraron miembros encontrados.",
     "no_data": "Sin datos",
     "no_data_available": "No hay datos disponibles",
-    "no_recent_broker_activity": "No se encontró actividad reciente del corredor",
+    "no_recent_broker_activity": "No se encontró actividad reciente del intermediario",
     "open_page_help": "Abrir página de ayuda",
     "help": "Ayuda",
     "quick_access": "Acceso rápido",
@@ -410,7 +410,7 @@
       "last_updated": "Última actualización {{date}}",
       "meta": {
         "title": "Política operativa",
-        "description": "Configurar reglas de aprobación, salvaguarda, SLA y política de valor social para el programa de atención."
+        "description": "Configurar reglas de aprobación, protección, SLA y política de valor social para el programa de atención."
       },
       "actions": {
         "refresh": "Refrescar",
@@ -428,7 +428,7 @@
         "approvals": "Aprobaciones y confianza",
         "sla": "Ventanas SLA",
         "hours": "Gestión de horas",
-        "safeguarding": "Salvaguardia",
+        "safeguarding": "Protección",
         "social_value": "metodología de valor social",
         "appendix": "Apéndice de política piloto"
       },
@@ -661,7 +661,7 @@
       "sent": "Enviado",
       "expires": "Vence",
       "push": "empujar",
-      "dismissed": "Despedido",
+      "dismissed": "Descartado",
       "status": "Estado",
       "actions": "Acciones"
     },
@@ -812,13 +812,13 @@
       }
     },
     "safeguarding": {
-      "title": "Informes de salvaguardia",
+      "title": "Informes de protección",
       "description": "Preocupaciones planteadas por los miembros sobre otros miembros, coordinadores u organizaciones.",
       "view_all": "Ver todo",
       "no_data": "Aún no hay datos de protección disponibles.",
       "overdue": "Atrasado",
       "no_reports": "Aún no hay informes.",
-      "table_aria": "Informes de salvaguardia recientes",
+      "table_aria": "Informes de protección recientes",
       "open": "Abierto",
       "org_subject": "Organización #{{id}}",
       "age_hours": "{{count}}h",
@@ -842,7 +842,7 @@
         "triaged": "clasificado",
         "investigating": "investigando",
         "resolved": "Resuelto",
-        "dismissed": "Despedido"
+        "dismissed": "Descartado"
       },
       "age_hours_many": "{{count}}h",
       "age_hours_one": "{{count}}h",
@@ -1402,8 +1402,8 @@
       },
       "safeguarding_reports": {
         "notes": "",
-        "label": "Informes de salvaguardia",
-        "description": "Un flujo de trabajo de preocupación de salvaguardia de miembro a coordinador con un registro de auditoría y enrutamiento de escalamiento."
+        "label": "Informes de protección",
+        "description": "Un flujo de trabajo de preocupación de protección de miembro a coordinador con un registro de auditoría y enrutamiento de escalamiento."
       },
       "trust_tier_system": {
         "notes": "",
@@ -1771,7 +1771,7 @@
         "inactive_account_data": "Datos de cuenta inactiva",
         "transactions": "Transacciones",
         "help_requests": "Solicitudes de ayuda",
-        "safeguarding_reports": "Informes de salvaguardia",
+        "safeguarding_reports": "Informes de protección",
         "research_datasets": "Conjuntos de datos de investigación",
         "access": "Acceso",
         "export": "Exportar",
