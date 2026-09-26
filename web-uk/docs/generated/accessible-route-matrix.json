@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-09-25T06:55:43.523Z",
+  "generatedAt": "2026-09-26T18:17:53.795Z",
   "provenance": {
-    "generatedAt": "2026-09-25T06:55:43.523Z",
+    "generatedAt": "2026-09-26T18:17:53.795Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "12b33dbb60e61b8feaf870a241c0a8b0f158e6e0",
+    "laravelCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "12b33dbb60e61b8feaf870a241c0a8b0f158e6e0",
+    "webUkRepositoryCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-09-25T06:55:43.523Z",
+    "generatedAt": "2026-09-26T18:17:53.795Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 747,
+    "webUkRoutes": 748,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 37,
+    "extraWebUkRoutes": 38,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -56,6 +56,12 @@
         "matched": 94,
         "missing": 0,
         "extraWebUk": 2,
+        "ignoredInfrastructure": 0
+      },
+      "goals": {
+        "matched": 27,
+        "missing": 0,
+        "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
       "group-exchanges": {
@@ -288,12 +294,6 @@
       },
       "feed": {
         "matched": 22,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "goals": {
-        "matched": 27,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -839,6 +839,27 @@
       "webUkPath": "/events/{param}/rsvp/remove",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/goals/{param}/buddy-requests/{param}/{param}",
+      "family": "goals",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/goals/{param}/buddy-requests/{param}/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/goals.js",
       "webUkRouteKind": ""
     },
     {

@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-09-25T06:55:44.339Z
-- Laravel commit SHA: `12b33dbb60e61b8feaf870a241c0a8b0f158e6e0`
-- Web UK repository commit SHA: `12b33dbb60e61b8feaf870a241c0a8b0f158e6e0`
+- Generated: 2026-09-26T18:17:54.544Z
+- Laravel commit SHA: `eb3c9ce1a1437368acd8b92d5fe29011a8138c03`
+- Web UK repository commit SHA: `eb3c9ce1a1437368acd8b92d5fe29011a8138c03`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 712
+- Contracts: 715
 - Laravel OpenAPI matches: 470
-- Missing OpenAPI matches: 242
-- Direct Laravel route declarations omitted from OpenAPI: 242
+- Missing OpenAPI matches: 245
+- Direct Laravel route declarations omitted from OpenAPI: 245
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 391
+- State-changing contracts: 393
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
@@ -25,7 +25,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
 - API source SHA-256: `16712f486d5f9e43b7a2c02fee983938dc7ba17f8d996f1ad64231049826c273`
 - Laravel OpenAPI SHA-256: `e60992f5ac21058988b49e3c96375ebc43f3d570d1b52b18d699aaa4e2b3ba7b`
-- Laravel API routes SHA-256: `eb9582dd5d598554f82a7176ebf56faef7581f560b86cb0da06adb1e8d2804a5`
+- Laravel API routes SHA-256: `3a6ef24849368cc8ad306bf65278dbf97fb8b04919c63758b67f93e28043fc2b`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -306,6 +306,9 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/goals/{param}` | `getGoal` | documented | read-only by HTTP method<br>not applicable | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/shared-accessible-shell.test.js |
 | PUT | `/api/v2/goals/{param}` | `callGoalApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/goals/{param}/buddy` | `callGoalApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/gds-component-conformance.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/goals/{param}/buddy-requests` | `callGoalApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/goals/{param}/buddy-requests/{param}/accept` | `callGoalApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/goals/{param}/buddy-requests/{param}/decline` | `callGoalApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/goals/{param}/buddy/nudge` | `callGoalApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/goals/{param}/checkins` | `callGoalApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/goals/{param}/checkins?limit=20` | `callGoalApi` | documented | read-only by HTTP method<br>not applicable | src/routes/goals.js | tests/api.test.js<br>tests/form-input-preserved-on-error.test.js<br>tests/goal-deadline-not-silently-dropped.test.js<br>tests/runtime/goals-mutation.spec.js<br>tests/shared-accessible-shell.test.js |

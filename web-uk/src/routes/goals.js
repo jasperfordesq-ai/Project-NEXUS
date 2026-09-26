@@ -1205,7 +1205,13 @@ router.post('/:id(\\d+)/buddy-requests/:requestId(\\d+)/:decision(accept|decline
   const requestId = Number(req.params.requestId);
   const decision = req.params.decision === 'accept' ? 'accept' : 'decline';
   try {
-    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy-requests/${encodeURIComponent(requestId)}/${encodeURIComponent(decision)}`);
+    // Literal paths (not a templated action segment) so the API consumer
+    // ledger can match each call to its Laravel route.
+    if (decision === 'accept') {
+      await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy-requests/${encodeURIComponent(requestId)}/accept`);
+    } else {
+      await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy-requests/${encodeURIComponent(requestId)}/decline`);
+    }
     return redirectTo(res, goalRedirect(id, decision === 'accept' ? 'buddy-request-accepted' : 'buddy-request-declined', '#buddy-section'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
