@@ -15,12 +15,12 @@
     "refresh": "Vernieuwen",
     "unexpected_error": "Onverwachte fout",
     "unknown": "Onbekend",
-    "unfeature": "Uitgelicht",
+    "unfeature": "Niet meer uitlichten",
     "actions": "Acties",
     "active": "Actief",
     "all": "Allemaal",
     "approved": "Goedgekeurd",
-    "clear": "Duidelijk",
+    "clear": "Wissen",
     "clear_filters": "Filters wissen",
     "clear_selection": "Selectie wissen",
     "close": "Sluiten",
@@ -73,12 +73,12 @@
     "select_row": "Selecteer rij {{id}}"
   },
   "diagnostics": {
-    "avg_match_score": "Gem. wedstrijdscore",
+    "avg_match_score": "Gem. matchscore",
     "cache_entries": "Cache-invoer",
     "diagnose_listing_matches": "Diagnose van overeenkomsten tussen vermeldingen",
     "diagnose_listing_matches_desc": "Voer een vermeldings-ID in om te zien welke gebruikers zijn gematcht en waarom.",
     "diagnose_user_matches": "Diagnose van gebruikersmatches",
-    "diagnose_user_matches_desc": "Voer een gebruikers-ID in om hun wedstrijdresultaten, scores en de factoren die bijdragen aan elke wedstrijd te bekijken.",
+    "diagnose_user_matches_desc": "Voer een gebruikers-ID in om hun matchresultaten, scores en de factoren die bijdragen aan elke match te bekijken.",
     "engine_status": "Motorstatus",
     "factor_community_participation": "Deelname van de gemeenschap",
     "factor_login_frequency": "Inlogfrequentie",
@@ -94,9 +94,9 @@
     "label_avg_nexus_score": "Gemiddelde NEXUS-score",
     "label_listing_i_d": "Advertentie-ID",
     "label_user_i_d": "Gebruikers-ID",
-    "matching_diagnostic_desc": "Voer een diagnose uit voor specifieke gebruikers of vermeldingen om de wedstrijdscores te begrijpen",
+    "matching_diagnostic_desc": "Voer een diagnose uit voor specifieke gebruikers of vermeldingen om de matchscores te begrijpen",
     "matching_diagnostic_title": "Matchende diagnose",
-    "matches_today": "Wedstrijden vandaag",
+    "matches_today": "Matches vandaag",
     "nexus_score_analytics_desc": "Bekijk analyses voor NEXUS-scores voor uw ledenbestand",
     "nexus_score_analytics_title": "NEXUS-scoreanalyse",
     "no_diagnostic_data_found_for_this_listin": "Er zijn geen diagnostische gegevens gevonden voor deze vermelding",
@@ -114,11 +114,11 @@
     "diagnose": "Diagnose"
   },
   "diagnostics_matching": {
-    "avg_match_score": "Gem. wedstrijdscore",
+    "avg_match_score": "Gem. matchscore",
     "cache_entries": "Cache-invoer",
     "diagnose_listing_matches": "Diagnose van overeenkomsten tussen vermeldingen",
     "diagnose_user_matches": "Diagnose van gebruikersmatches",
     "engine_status": "Motorstatus",
-    "matches_today": "Wedstrijden vandaag"
+    "matches_today": "Matches vandaag"
   }
 }

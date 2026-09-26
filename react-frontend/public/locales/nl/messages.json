@@ -241,7 +241,7 @@
     "body": "Directe berichtenuitwisseling is onderbroken omdat het gemeenschapsbeschermingsbeleid niet veilig kon worden gecontroleerd.",
     "contact_broker": "Controleer binnenkort opnieuw. Als dit aanhoudt, vraag dan een gemeenschapscoördinator om hulp.",
     "action": "Controleer opnieuw",
-    "dismiss": "Beveiligingsmelding afwijzen"
+    "dismiss": "Beschermingsmelding afwijzen"
   },
   "coordinator_request": {
     "button": "Hulp van coördinator aanvragen",
@@ -266,7 +266,7 @@
     "garda_vetting": "Garda-keuring"
   },
   "composer_blocked_safeguarding": "Directe berichten zijn niet beschikbaar met dit lid. Gebruik de optie hierboven om een coördinator te vragen het contact te helpen regelen.",
-  "composer_blocked_safeguarding_unavailable": "Directe berichtenuitwisseling wordt onderbroken terwijl het beveiligingsbeleid wordt gecontroleerd. Gebruik Controleer hierboven opnieuw.",
+  "composer_blocked_safeguarding_unavailable": "Directe berichtenuitwisseling wordt onderbroken terwijl het beschermingsbeleid wordt gecontroleerd. Gebruik Controleer hierboven opnieuw.",
   "aria_conversation_unread_one": "Gesprek met {{name}}, {{count}} ongelezen",
   "aria_conversation_unread_other": "Gesprek met {{name}}, {{count}} ongelezen",
   "selected_members_one": "Geselecteerd ({{count}})",

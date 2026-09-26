@@ -79,13 +79,13 @@
     "remove": "Verwijderen",
     "archive": "Archief",
     "archive_confirm": "Deze locatie archiveren? Leden zien het niet meer en bezoeken kunnen niet worden geregistreerd.",
-    "save": "Redden",
+    "save": "Opslaan",
     "cancel": "Annuleren",
     "export_csv": "Bezoeken exporteren (CSV)",
     "total_visits": "Totaal geregistreerde bezoeken",
     "empty": "Nog geen locaties. Voeg de eerste toe om aan de slag te gaan.",
     "saved": "Locatie opgeslagen.",
-    "save_failed": "We konden deze locatie niet redden.",
+    "save_failed": "We konden deze locatie niet opslaan.",
     "archived": "Locatie gearchiveerd.",
     "staff_added": "Staflid toegevoegd.",
     "staff_add_failed": "We kunnen dat lid niet toevoegen.",
@@ -105,6 +105,6 @@
     "staff_member": "Lid",
     "staff_member_placeholder": "Zoek leden op naam…",
     "staff_no_matches": "Geen overeenkomende leden",
-    "staff_clear": "Duidelijk"
+    "staff_clear": "Wissen"
   }
 }

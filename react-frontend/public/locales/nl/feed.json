@@ -69,8 +69,8 @@
     "like_failed": "Vind-ik-leuk bijwerken mislukt"
   },
   "realtime": {
-    "new_posts_one": "1 new post",
-    "new_posts_other": "{{count}} new posts"
+    "new_posts_one": "1 nieuw bericht",
+    "new_posts_other": "{{count}} nieuwe berichten"
   },
   "compose": {
     "create_title": "Maak {{type}}",

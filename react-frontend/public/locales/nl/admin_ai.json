@@ -15,12 +15,12 @@
     "refresh": "Vernieuwen",
     "unexpected_error": "Onverwachte fout",
     "unknown": "Onbekend",
-    "unfeature": "Uitgelicht",
+    "unfeature": "Niet meer uitlichten",
     "actions": "Acties",
     "active": "Actief",
     "all": "Allemaal",
     "approved": "Goedgekeurd",
-    "clear": "Duidelijk",
+    "clear": "Wissen",
     "clear_filters": "Filters wissen",
     "clear_selection": "Selectie wissen",
     "close": "Sluiten",
@@ -286,7 +286,7 @@
         "edit_title": "Bewerk \"{{title}}\"",
         "fields": {
           "active": "Actief",
-          "body": "Lichaam",
+          "body": "Inhoud",
           "keywords": "Triggerzoekwoorden (door komma's gescheiden)",
           "module_slug": "Module-slug",
           "title": "Titel"

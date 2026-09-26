@@ -15,12 +15,12 @@
     "refresh": "Vernieuwen",
     "unexpected_error": "Onverwachte fout",
     "unknown": "Onbekend",
-    "unfeature": "Uitgelicht",
+    "unfeature": "Niet meer uitlichten",
     "actions": "Acties",
     "active": "Actief",
     "all": "Allemaal",
     "approved": "Goedgekeurd",
-    "clear": "Duidelijk",
+    "clear": "Wissen",
     "clear_filters": "Filters wissen",
     "clear_selection": "Selectie wissen",
     "close": "Sluiten",
@@ -259,7 +259,7 @@
       "settings": {
         "accept_time_credits": "Accepteer tijdskredieten",
         "accept_time_credits_hint": "Sta deze verkoper toe tijdskredieten te accepteren als betaling voor een deel van elke aankoop.",
-        "clear": "Duidelijk",
+        "clear": "Wissen",
         "description": "Configureer het beleid aan de verkoperszijde en het maximale kortingsbeleid voor het loyaliteitsprogramma.",
         "exchange_rate": "Wisselkoers",
         "exchange_rate_description": "Hoeveel valuta een enkel tijdskredietuur waard is op het verkooppunt van de verkoper.",
@@ -384,7 +384,7 @@
           "4": {
             "name": "Coördinator",
             "description": "Zeer actief met geverifieerde identiteit.",
-            "unlocks": "Komt in aanmerking om uren goed te keuren en wedstrijden te coördineren.",
+            "unlocks": "Komt in aanmerking om uren goed te keuren en matches te coördineren.",
             "color": "Amber"
           }
         }
@@ -427,7 +427,7 @@
         "approvals": "Goedkeuringen en vertrouwen",
         "sla": "SLA-ramen",
         "hours": "Uurbeheer",
-        "safeguarding": "Beveiliging",
+        "safeguarding": "Bescherming",
         "social_value": "methodologie op het gebied van sociale waarden",
         "appendix": "Bijlage pilotbeleid"
       },
@@ -457,7 +457,7 @@
           "help": "Wanneer de onevenwichtigheid van geven/ontvangen bij een lid een check-in door de coördinator activeert."
         },
         "safeguarding_escalation_user_id": {
-          "label": "Beveiliging van escalatie-eigenaar (gebruiker ID)",
+          "label": "Eigenaar escalatie bescherming (gebruikers-ID)",
           "help": "Gebruiker ID ontvangt veiligheidsescalaties. Laat dit leeg als u beheerders als groep wilt gebruiken."
         },
         "chf_hourly_rate": {
@@ -660,7 +660,7 @@
       "sent": "Verzonden",
       "expires": "Verloopt",
       "push": "Duwen",
-      "dismissed": "Ontslagen",
+      "dismissed": "Weggeklikt",
       "status": "Status",
       "actions": "Acties"
     },
@@ -677,7 +677,7 @@
     "form": {
       "title": "Titel",
       "title_placeholder": "bijv. Waarschuwing voor zwaar weer",
-      "body": "Lichaam",
+      "body": "Inhoud",
       "body_placeholder": "Beschrijf de noodsituatie en eventuele acties die leden moeten ondernemen...",
       "severity": "Ernst",
       "expires_at": "Verloopt op (optioneel)",
@@ -807,13 +807,13 @@
       }
     },
     "safeguarding": {
-      "title": "Beveiligingsrapporten",
+      "title": "Beschermingsrapporten",
       "description": "Door leden geuite zorgen over andere leden, coördinatoren of organisaties.",
       "view_all": "Bekijk alles",
-      "no_data": "Er zijn nog geen beveiligingsgegevens beschikbaar.",
+      "no_data": "Er zijn nog geen beschermingsgegevens beschikbaar.",
       "overdue": "Verlopen",
       "no_reports": "Nog geen rapporten.",
-      "table_aria": "Recente beveiligingsrapporten",
+      "table_aria": "Recente beschermingsrapporten",
       "open": "Openen",
       "org_subject": "Organisatie #{{id}}",
       "age_hours": "{{count}}h",
@@ -1168,7 +1168,7 @@
       "recipient": "Ontvanger",
       "recipient_placeholder": "Zoek de ontvanger",
       "no_members": "Geen leden gevonden",
-      "clear": "Duidelijk",
+      "clear": "Wissen",
       "relationship_title": "Titel van de relatie",
       "frequency_label": "Frequentie",
       "expected_hours_per_visit": "Verwachte uren per bezoek",
@@ -1221,7 +1221,7 @@
     },
     "actions": {
       "refresh_aria": "Categoriecoëfficiënten vernieuwen",
-      "save": "Redden"
+      "save": "Opslaan"
     },
     "about": {
       "title": "Over deze pagina",
@@ -2467,7 +2467,7 @@
       "mark_unsubscribed": "Markeer als afgemeld",
       "unsubscribe_aria": "Afmelden contactpersoon",
       "cancel": "Annuleren",
-      "save": "Redden"
+      "save": "Opslaan"
     },
     "about": {
       "title": "Over deze pagina",
@@ -2926,7 +2926,7 @@
       },
       "operating_policy": {
         "not_started": "Het beleid gebruikt nog steeds de standaardinstellingen van het platform. Plan de beleidsworkshop.",
-        "needs_review": "De workshop is voltooid, maar de URL van de bijlage of de verantwoordelijke voor beveiliging ontbreekt.",
+        "needs_review": "De workshop is voltooid, maar de URL van de bijlage of de verantwoordelijke voor bescherming ontbreekt.",
         "ready": "Het beleidsworkshop is voltooid, de bijlage is gekoppeld en een verantwoordelijke voor bescherming is toegewezen."
       },
       "commercial_boundary": {

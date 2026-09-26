@@ -90,7 +90,7 @@
     "pending_review": "In afwachting van beoordeling",
     "enrollments": "Inschrijvingen",
     "completions": "Voltooiingen",
-    "save": "Redden",
+    "save": "Opslaan",
     "saved": "Opgeslagen",
     "title_label": "Titel",
     "summary_label": "Korte samenvatting",
@@ -152,7 +152,7 @@
   "discussion": {
     "title": "Discussie",
     "placeholder": "Stel een vraag of deel een gedachte…",
-    "post": "Na",
+    "post": "Plaatsen",
     "reply": "Antwoord",
     "replying": "Beantwoorden…",
     "cancel": "Annuleren",

@@ -105,7 +105,7 @@
     "assigned": "Vervanger afgestemd",
     "empty": "Nog geen dekkingsaanvragen",
     "find_candidates": "Zoek vervangers",
-    "assign": "Wedstrijdvervanger",
+    "assign": "Vervanger koppelen",
     "matched_with": "Matched met{{name}}",
     "location_unknown": "Locatie niet ingesteld",
     "skill_matches": "{{count}}-matchingvaardigheden",
@@ -224,7 +224,7 @@
   },
   "data_export": {
     "title": "Mijn gegevensexport",
-    "intro": "Download een volledige kopie van uw persoonlijke gegevens die door deze zorgzame gemeenschap worden bewaard, in overeenstemming met de Zwitserse federale wet op gegevensbescherming (FADP) en AVG. De export omvat uw profiel, geregistreerde uren, ondersteuningsrelaties, uurgeschenken en -overdrachten, loyaliteitsinwisselingen, regionale punten, beveiligingsrapporten die u heeft ingediend en uw civic digest-voorkeuren.",
+    "intro": "Download een volledige kopie van uw persoonlijke gegevens die door deze zorgzame gemeenschap worden bewaard, in overeenstemming met de Zwitserse federale wet op gegevensbescherming (FADP) en AVG. De export omvat uw profiel, geregistreerde uren, ondersteuningsrelaties, uurgeschenken en -overdrachten, loyaliteitsinwisselingen, regionale punten, beschermingsrapporten die u heeft ingediend en uw civic digest-voorkeuren.",
     "download_button": "Mijn gegevens downloaden (JSON)",
     "format_note": "Uw export zal een JSON-bestand zijn. Neem contact op met uw communitycoördinator als u een ander formaat wenst.",
     "privacy_note": "Uw export bevat alleen gegevens die u heeft ingediend of acties die u heeft ondernomen. Het bevat geen persoonlijke gegevens van andere leden.",
@@ -293,7 +293,7 @@
         "success-stories": "Succesverhalen",
         "feedback": "Feedback-inbox",
         "verification": "Gemeentelijke Verificatie",
-        "safeguarding": "Beveiligingsrapporten",
+        "safeguarding": "Beschermingsrapporten",
         "trust-tier": "Vertrouwensniveaus",
         "launch-readiness": "Start gereedheid",
         "pilot-scoreboard": "Scorebord van de piloot",
@@ -320,7 +320,7 @@
       "nav_label": "Zorgzame gemeenschapsnavigatie",
       "search_aria": "Search caring community navigation",
       "search_placeholder": "Search navigation...",
-      "clear_search": "Duidelijke zoekopdracht",
+      "clear_search": "Zoekopdracht wissen",
       "no_search_results": "No matching pages found",
       "sections": {
         "overview": "Overzicht",
@@ -353,7 +353,7 @@
         "success_stories": "Succesverhalen",
         "feedback": "Feedback-inbox",
         "verification": "Gemeentelijke Verificatie",
-        "safeguarding": "Beveiligingsrapporten",
+        "safeguarding": "Beschermingsrapporten",
         "trust_tier": "Vertrouwensniveaus",
         "launch_readiness": "Start gereedheid",
         "pilot_scoreboard": "Scorebord van de piloot",
@@ -406,7 +406,7 @@
         "title": "Over deze pagina",
         "body": "Zorgaanbieders zijn externe organisaties die naast individuele vrijwilligers deelnemen aan het gemeenschapszorgnetwerk. Er kunnen hulpverzoeken aan hen worden toegewezen, ze kunnen tijdskredieten ontvangen en ze verschijnen in de ledenlijst.",
         "verification_label": "Verificatie",
-        "verification_body": "Geverifieerde providers geven een badge weer in de directory. Controleer het registratie-, verzekerings- en beveiligingsbeleid voordat u een aanbieder als geverifieerd markeert.",
+        "verification_body": "Geverifieerde providers geven een badge weer in de directory. Controleer het registratie-, verzekerings- en beschermingsbeleid voordat u een aanbieder als geverifieerd markeert.",
         "types_label": "Soorten aanbieders",
         "types_body": "Gebruik de velden type en omschrijving om de aangeboden zorg weer te geven, zodat leden en coördinatoren voor elke aanvraag de juiste aanbieder kunnen vinden."
       },
@@ -464,7 +464,7 @@
         "email_match": "E-mailovereenkomst",
         "name_match": "Naamovereenkomst",
         "name_similar": "Naam vergelijkbaar",
-        "phone_match": "Telefoon wedstrijd",
+        "phone_match": "Telefoonnummer komt overeen",
         "website_match": "Website-match",
         "unknown": "Onbekend signaal: {{signal}}"
       },
@@ -511,7 +511,7 @@
         "seller_label": "Verkoper (lid)",
         "seller_placeholder": "Zoek op naam of e-mailadres",
         "no_matching_members": "Geen overeenkomende leden",
-        "clear": "Duidelijk",
+        "clear": "Wissen",
         "accept_time_credits": "Accepteer tijdskredieten",
         "accept_time_credits_hint": "Indien ingeschakeld, tonen de vermeldingen van deze verkoper leden bij het afrekenen een optie voor tijdskrediet.",
         "exchange_rate": "Wisselkoers (CHF per uur)",
@@ -811,7 +811,7 @@
         "sub_region": "Subregio",
         "public_visible": "Publiek zichtbaar",
         "timestamps": "{{created}}ingediend ·{{updated}}bijgewerkt",
-        "body": "Lichaam"
+        "body": "Inhoud"
       },
       "fields": {
         "assigned_user_id": "Toegewezen gebruikers-ID",
@@ -930,7 +930,7 @@
         "trust_tiers_label": "Vertrouwensniveaus:",
         "trust_tiers_body": "Nieuwkomer, Lid, Vertrouwd, Geverifieerd, Coördinator - weergegeven voor de ontvanger en elke supporter.",
         "safeguarding_label": "Vlaggen beveiligen:",
-        "safeguarding_body": "Een vlagtelling die niet nul is, duidt op actieve beveiligingsproblemen die tegen dit lid zijn geregistreerd. Bekijk ze in het gedeelte Beveiliging.",
+        "safeguarding_body": "Een vlagtelling die niet nul is, duidt op actieve beschermingsproblemen die tegen dit lid zijn geregistreerd. Bekijk ze in het gedeelte Bescherming.",
         "privacy_label": "Privacyinstelling:",
         "privacy_body": "Kringgegevens zijn alleen zichtbaar voor kringleden en tenantbeheerders. Het is niet opgenomen in rapporten voor de hele gemeenschap of in de ledenlijst."
       },
@@ -984,8 +984,8 @@
     },
     "safeguarding_reports": {
       "meta_title": "Rapporten beveiligen - Beheerder",
-      "title": "Beveiligingsrapporten",
-      "subtitle": "Beoordelen, toewijzen en oplossen van door leden geuite beveiligingsproblemen.",
+      "title": "Beschermingsrapporten",
+      "subtitle": "Beoordelen, toewijzen en oplossen van door leden geuite beschermingsproblemen.",
       "empty_dash": "-",
       "actor_id": "#{{id}}",
       "subject_org": "Organisatie #{{id}}",
@@ -993,12 +993,12 @@
       "escalated": "Geëscaleerd",
       "open": "Openen",
       "report_title": "Rapporteer #{{id}}",
-      "empty": "Er zijn geen beveiligingsrapporten die overeenkomen met deze filters.",
-      "loading": "Beveiligingsrapporten laden",
-      "loading_detail": "Beveiligingsrapportdetails laden",
+      "empty": "Er zijn geen beschermingsrapporten die overeenkomen met deze filters.",
+      "loading": "Beschermingsrapporten laden",
+      "loading_detail": "Beschermingsrapportdetails laden",
       "about": {
         "title": "Over deze pagina",
-        "body": "Op deze pagina worden formele beveiligingsincidenten beheerd: situaties waarin het welzijn, de veiligheid of de waardigheid van een lid in gevaar kan komen. Rapporten worden ingediend door leden, coördinatoren of beheerders. Alle rapporten moeten worden beoordeeld binnen de SLA die is geconfigureerd in Operating Policy. Kritieke en zeer ernstige rapporten vereisen onmiddellijke aandacht. Rapporten zijn huurdergericht en kunnen niet door andere community's worden gezien."
+        "body": "Op deze pagina worden formele beschermingsincidenten beheerd: situaties waarin het welzijn, de veiligheid of de waardigheid van een lid in gevaar kan komen. Rapporten worden ingediend door leden, coördinatoren of beheerders. Alle rapporten moeten worden beoordeeld binnen de SLA die is geconfigureerd in Operating Policy. Kritieke en zeer ernstige rapporten vereisen onmiddellijke aandacht. Rapporten zijn huurdergericht en kunnen niet door andere community's worden gezien."
       },
       "severity": {
         "critical": "Kritisch",
@@ -1033,7 +1033,7 @@
         "severity": "Ernst"
       },
       "table": {
-        "aria": "Beveiliging van rapporten",
+        "aria": "Beschermingsmeldingen",
         "severity": "Ernst",
         "category": "Categorie",
         "reporter": "Verslaggever",
@@ -1172,7 +1172,7 @@
         "member": "Lid",
         "member_placeholder": "Zoek op naam of e-mailadres",
         "no_matching_members": "Geen overeenkomende leden",
-        "clear": "Duidelijk",
+        "clear": "Wissen",
         "tabs_aria": "Regionale puntensaldo-acties",
         "issue_tab": "Punten uitgeven",
         "points_to_issue": "Punten om uit te geven",

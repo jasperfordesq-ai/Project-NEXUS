@@ -58,7 +58,7 @@
     "polls": "Peilingen",
     "jobs": "Vacatures",
     "ideation": "Ideewedstrijden",
-    "matches": "Wedstrijden",
+    "matches": "Matches",
     "connections": "Verbindingen",
     "ai_chat": "AI-assistent",
     "skills": "Vaardigheden",
@@ -68,7 +68,7 @@
     "timebanking": "Tijdbank",
     "explore": "Ontdekken",
     "marketplace": "Marktplaats",
-    "premium": "Premie",
+    "premium": "Doneren",
     "verify_identity": "Verifieer uw identiteit",
     "accessibility_alpha": "Toegankelijkheid (alfa)",
     "accessibility_alpha_tooltip": "Verbeterde toegankelijke versie — WCAG 2.2 AA-compatibel. Opent in een nieuw tabblad.",
@@ -231,7 +231,7 @@
     "legacy_admin": "Oud beheerpaneel"
   },
   "account": {
-    "section": "Rekening",
+    "section": "Account",
     "settings": "Instellingen",
     "log_out": "Uitloggen"
   },
@@ -251,7 +251,7 @@
     "support": "Ondersteuning",
     "legal": "Juridisch",
     "admin": "Beheer",
-    "account": "Rekening",
+    "account": "Account",
     "language": "Taal",
     "engage": "Meedoen",
     "progress": "Voortgang",
@@ -1696,7 +1696,7 @@
     }
   },
   "premium": {
-    "pricing_title": "Premie",
+    "pricing_title": "Doneren",
     "pricing_subtitle": "Ontgrendel premium-functies om meer uit uw gemeenschap te halen.",
     "monthly": "Maandelijks",
     "yearly": "Jaarlijks",
@@ -2561,7 +2561,7 @@
   "biometric": {
     "label_builtin": "Ingebouwde authenticator",
     "label_external": "Externe authenticator",
-    "label_passkey": "Wachtwoord",
+    "label_passkey": "Passkey",
     "platform_windows_title": "Instellen op Windows",
     "platform_windows_step1": "Klik op \"Deze pc\" om een passkey aan te maken die op deze computer is opgeslagen. Je bevestigt met je Windows Hello-pincode, vingerafdruk of gezicht.",
     "platform_windows_step2": "Vereiste: Je moet Windows Hello eerst instellen. Ga naar Windows-instellingen > Accounts > Aanmeldopties > Pincode om dit in te stellen.",

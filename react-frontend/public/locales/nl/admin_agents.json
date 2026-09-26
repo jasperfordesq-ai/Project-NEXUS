@@ -15,12 +15,12 @@
     "refresh": "Vernieuwen",
     "unexpected_error": "Onverwachte fout",
     "unknown": "Onbekend",
-    "unfeature": "Uitgelicht",
+    "unfeature": "Niet meer uitlichten",
     "actions": "Acties",
     "active": "Actief",
     "all": "Allemaal",
     "approved": "Goedgekeurd",
-    "clear": "Duidelijk",
+    "clear": "Wissen",
     "clear_filters": "Filters wissen",
     "clear_selection": "Selectie wissen",
     "close": "Sluiten",
@@ -76,7 +76,7 @@
     "actions": {
       "cancel": "Annuleren",
       "refresh": "Vernieuwen",
-      "save": "Redden"
+      "save": "Opslaan"
     },
     "common": {
       "empty_dash": "-"

@@ -31,9 +31,9 @@
     "no_data": "Geen trendgegevens beschikbaar"
   },
   "safeguarding_banner": {
-    "title": "De beveiligingsstap is UITGESCHAKELD in uw onboardingwizard",
-    "body": "Leden kunnen bij toetreding geen kwetsbaarheid of doorlichtingsbehoeften melden. Beheerderswaarschuwingen worden niet geactiveerd. Schakel de beveiligingsstap in en pas een landvoorinstelling toe, zodat uw gemeenschap wordt beschermd.",
-    "cta": "Beveiliging inschakelen"
+    "title": "De beschermingsstap is UITGESCHAKELD in uw onboardingwizard",
+    "body": "Leden kunnen bij toetreding geen kwetsbaarheid of doorlichtingsbehoeften melden. Beheerderswaarschuwingen worden niet geactiveerd. Schakel de beschermingsstap in en pas een landvoorinstelling toe, zodat uw gemeenschap wordt beschermd.",
+    "cta": "Bescherming inschakelen"
   },
   "alerts": {
     "pending_approvals": "Leden wachten op goedkeuring",

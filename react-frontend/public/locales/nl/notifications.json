@@ -7,7 +7,7 @@
   "mark_all_read": "Markeer alles als gelezen",
   "settings_label": "Instellingen",
   "settings_aria": "Notificatie-instellingen",
-  "filter_all": "All",
+  "filter_all": "Alle",
   "filter_unread": "Ongelezen ({{count}})",
   "empty_title": "Geen notificaties",
   "empty_desc": "Je ziet hier nieuwe notificaties",
@@ -47,7 +47,7 @@
     "default": "Notification"
   },
   "load_more": "Laad meer",
-  "undo": "Undo",
+  "undo": "Ongedaan maken",
   "toast": {
     "mark_read_failed": "Mislukt om notificatie als gelezen te markeren",
     "all_read": "Alle notificaties gemarkeerd als gelezen",

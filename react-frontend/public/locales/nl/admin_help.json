@@ -2,7 +2,7 @@
   "articles": {
     "/caring": {
       "title": "Zorgzame gemeenschap — Module Hub",
-      "summary": "De Caring Community-module is het toegangspunt op het hoogste niveau voor alle coöperatieve functies van Caring Community. Vanaf hier kunt u naar elke subsectie navigeren: vertrouwensniveaus van leden, beveiliging, ROI-rapportage, gereedheid voor piloten en meer.",
+      "summary": "De Caring Community-module is het toegangspunt op het hoogste niveau voor alle coöperatieve functies van Caring Community. Vanaf hier kunt u naar elke subsectie navigeren: vertrouwensniveaus van leden, bescherming, ROI-rapportage, gereedheid voor piloten en meer.",
       "steps": [
         {
           "label": "Bekijk de modulestatus in één oogopslag",
@@ -10,7 +10,7 @@
         },
         {
           "label": "Gebruik het snelkoppelingenraster",
-          "detail": "Elke kaart linkt rechtstreeks naar zijn functionele gebied. Kaarten met een rode badge vereisen onmiddellijke aandacht (bijvoorbeeld een achterstallige SLA, een kritisch beveiligingsrapport)."
+          "detail": "Elke kaart linkt rechtstreeks naar zijn functionele gebied. Kaarten met een rode badge vereisen onmiddellijke aandacht (bijvoorbeeld een achterstallige SLA, een kritisch beschermingsrapport)."
         },
         {
           "label": "Controleer de aankondigingsbalk",
@@ -140,13 +140,13 @@
         },
         {
           "label": "Beoordeel degradatiekandidaten",
-          "detail": "Leden die zijn gemarkeerd vanwege langdurige inactiviteit of beveiligingsincidenten kunnen verschijnen voor niveaubeoordeling. Controleer de context voordat u degradeert."
+          "detail": "Leden die zijn gemarkeerd vanwege langdurige inactiviteit of beschermingsincidenten kunnen verschijnen voor niveaubeoordeling. Controleer de context voordat u degradeert."
         }
       ],
       "tips": [
         "Niveaupromoties zijn niet standaard automatisch; een coördinator moet elke promotie goedkeuren. U kunt automatische promotie inschakelen voor Niveau 0 → 1 in Niveau-instellingen.",
         "Leden kunnen hun numerieke niveauscore niet zien; in plaats daarvan zien ze een benoemde badge (bijvoorbeeld 'Vertrouwd lid').",
-        "Coördinatorniveau (4) zou zeldzaam moeten zijn en alleen moeten worden gegeven aan mensen die zich bezighouden met beveiligings- of hoogwaardige uitwisselingen."
+        "Coördinatorniveau (4) zou zeldzaam moeten zijn en alleen moeten worden gegeven aan mensen die zich bezighouden met beschermings- of hoogwaardige uitwisselingen."
       ],
       "caution": "Als u een vertrouwd lid degradeert (niveau 2 → 1), wordt de Warmtepas bij alle coöperatieve locaties van Caring Community onmiddellijk ongeldig. Breng het lid op de hoogte voordat u degradeert.",
       "relatedPaths": [
@@ -186,7 +186,7 @@
         "Passen die zijn uitgegeven aan leden die vervolgens zijn gedegradeerd tot niveau 2, worden automatisch ingetrokken. U hoeft dit niet handmatig te doen.",
         "De QR-code van de pas is beschikbaar in het profiel van het lid als downloadbare PDF."
       ],
-      "caution": "Geef geen pasjes uit aan leden met onopgeloste beveiligingsrapporten, zelfs als hun niveau hen technisch kwalificeert.",
+      "caution": "Geef geen pasjes uit aan leden met onopgeloste beschermingsrapporten, zelfs als hun niveau hen technisch kwalificeert.",
       "relatedPaths": [
         {
           "label": "Vertrouwensniveaus",
@@ -199,7 +199,7 @@
       ]
     },
     "/caring/safeguarding": {
-      "title": "Beveiliging — Incidentrapporten en SLA's",
+      "title": "Bescherming — Incidentrapporten en SLA's",
       "summary": "Op deze pagina worden alle meldingen van veiligheidsincidenten beheerd die binnen uw coöperatie zijn ingediend. Rapporten worden gesorteerd op ernst: Kritiek (reageer binnen 1 uur), Hoog (24 uur), Gemiddeld (72 uur), Laag (volgende geplande vergadering). Coördinatoren moeten elke melding binnen het SLA-venster bevestigen en actie ondernemen.",
       "steps": [
         {
@@ -225,10 +225,10 @@
       ],
       "tips": [
         "Incidenten met kritieke ernst genereren ook een onmiddellijke pushmelding voor alle leden op coördinatorniveau.",
-        "Als u niet zeker bent van de ernst, kies dan standaard Hoog. Het is beter om te overdreven te reageren dan een echt beveiligingsprobleem te missen.",
+        "Als u niet zeker bent van de ernst, kies dan standaard Hoog. Het is beter om te overdreven te reageren dan een echt beschermingsprobleem te missen.",
         "Alle incidentgegevens zijn uitgesloten van het Public Impact Report; het is alleen bestemd voor de coördinator."
       ],
-      "caution": "Sluit nooit een beveiligingsrapport af zonder een schriftelijke oplossingssamenvatting. Blanco afsluitingen worden tijdens de datakwaliteitsaudit gemarkeerd.",
+      "caution": "Sluit nooit een beschermingsrapport af zonder een schriftelijke oplossingssamenvatting. Blanco afsluitingen worden tijdens de datakwaliteitsaudit gemarkeerd.",
       "relatedPaths": [
         {
           "label": "SLA-dashboard",
@@ -406,7 +406,7 @@
         },
         {
           "label": "Stel bewaartermijnen in",
-          "detail": "Controleer de standaard bewaartermijnen voor elke gegevenscategorie (bijvoorbeeld uitwisselingsgegevens: 7 jaar voor financiële audit; beveiligingsrapporten: 10 jaar). Pas het aan als uw kantonnale regels verschillen."
+          "detail": "Controleer de standaard bewaartermijnen voor elke gegevenscategorie (bijvoorbeeld uitwisselingsgegevens: 7 jaar voor financiële audit; beschermingsrapporten: 10 jaar). Pas het aan als uw kantonnale regels verschillen."
         },
         {
           "label": "Genereer het volledige pakket",
@@ -633,7 +633,7 @@
       ],
       "tips": [
         "Voer de kwaliteitscontrole uit als onderdeel van uw maandelijkse coördinatorroutine, niet alleen voordat u rapporten genereert.",
-        "Ontbrekende samenvattingen van beveiligingsoplossingen worden altijd gemarkeerd als Kritiek. Zie de pagina Beveiliging om ze toe te voegen."
+        "Ontbrekende samenvattingen van beschermingsoplossingen worden altijd gemarkeerd als Kritiek. Zie de pagina Bescherming om ze toe te voegen."
       ],
       "relatedPaths": [
         {
@@ -1283,7 +1283,7 @@
         },
         {
           "label": "Een peer-verbinding onderbreken",
-          "detail": "Als een coöperatie niet langer actief is of een beveiligingsprobleem heeft gehad, gebruikt u 'Opschorten' om de federatiekoppeling te onderbreken zonder deze permanent te verwijderen."
+          "detail": "Als een coöperatie niet langer actief is of een beschermingsprobleem heeft gehad, gebruikt u 'Opschorten' om de federatiekoppeling te onderbreken zonder deze permanent te verwijderen."
         }
       ],
       "tips": [
@@ -1363,7 +1363,7 @@
         },
         {
           "label": "Controleer de kringactiviteit",
-          "detail": "De activiteitentijdlijn toont recente uitwisselingen, aantekeningen en eventuele beveiligingsvlaggen met betrekking tot deze ontvanger."
+          "detail": "De activiteitentijdlijn toont recente uitwisselingen, aantekeningen en eventuele beschermingsvlaggen met betrekking tot deze ontvanger."
         }
       ],
       "tips": [

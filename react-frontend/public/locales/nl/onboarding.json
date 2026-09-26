@@ -105,7 +105,7 @@
     "try_again": "Probeer het opnieuw.",
     "required": "Vereiste opties",
     "required_respond": "Reageer alstublieft op: {{items}}",
-    "empty": "Er zijn geen beveiligingsopties geconfigureerd voor deze community.",
+    "empty": "Er zijn geen beschermingsopties geconfigureerd voor deze community.",
     "save_failed": "Opslaan mislukt",
     "save_continue": "Opslaan en doorgaan",
     "required_fields": "Verplichte velden",
@@ -113,10 +113,10 @@
     "or_separator": "of",
     "learn_more": "Meer informatie",
     "confirmation": {
-      "title": "Uw beveiligingsvoorkeuren zijn opgeslagen",
+      "title": "Uw beschermingsvoorkeuren zijn opgeslagen",
       "intro": "Bedankt voor het delen. Hier is een overzicht van wat u heeft gekozen, wie het kan zien en wat er als gevolg wordt geactiveerd.",
       "your_selections": "Uw selecties",
-      "no_selections": "U heeft geen beveiligingsopties geselecteerd.",
+      "no_selections": "U heeft geen beschermingsopties geselecteerd.",
       "who_can_see_heading": "Wie dit kan zien",
       "who_can_see_body": "Alleen gemeenschapscoördinatoren en beheerders kunnen deze voorkeuren zien. Andere leden niet. Alle toegang wordt geregistreerd.",
       "what_activates_heading": "Wat er als gevolg wordt geactiveerd",
@@ -127,14 +127,14 @@
       "activation_none": "Er worden geen automatische beschermingen geactiveerd door deze selecties. Uw voorkeuren worden geregistreerd voor het bewustzijn van coördinatoren.",
       "revoke_heading": "Hoe u deze op elk moment kunt wijzigen of intrekken",
       "revoke_body": "U kunt deze voorkeuren op elk moment bekijken of intrekken via uw profielinstellingen. U hoeft hier geen beheerder voor te vragen.",
-      "revoke_cta": "Ga naar beveiligingsinstellingen",
+      "revoke_cta": "Ga naar beschermingsinstellingen",
       "continue_cta": "Doorgaan",
       "declination_title": "Genoteerd — uw reactie is geregistreerd",
       "declination_intro": "Bedankt voor het beoordelen van deze opties. Uw reactie is opgeslagen zodat coördinatoren weten dat u deze stap heeft gezien en overwogen."
     }
   },
   "page_meta": {
-    "title": "Aan boord"
+    "title": "Onboarding"
   },
   "bio_char_count_one": "{{count}} tekens",
   "bio_char_count_other": "{{count}} tekens",

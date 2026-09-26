@@ -351,7 +351,7 @@
           },
           "broker_application": {
             "title": "Aanvraag makelaar en coördinator",
-            "description": "Een aparte applicatie voor de coördinatoren en makelaars die tussen de leden in stappen wanneer er sprake is van een beveiligings- of nalevingsprobleem. Het houdt toezicht op de uitwisselingen en goedkeuring van wedstrijden, ledengegevens en voortgang van de onboarding, moderatiewachtrijen voor de feed, opmerkingen en beoordelingen, risicotags en volglijsten, berichtbeoordeling voor leden die onder toezicht staan, bijhouden van verzekeringscertificaten en rapportage.",
+            "description": "Een aparte applicatie voor de coördinatoren en makelaars die tussen de leden in stappen wanneer er sprake is van een beschermings- of nalevingsprobleem. Het houdt toezicht op de uitwisselingen en goedkeuring van matches, ledengegevens en voortgang van de onboarding, moderatiewachtrijen voor de feed, opmerkingen en beoordelingen, risicotags en volglijsten, berichtbeoordeling voor leden die onder toezicht staan, bijhouden van verzekeringscertificaten en rapportage.",
             "note": "Een makelaar is op zichzelf een operationele rol, geen junior beheerder: makelaars krijgen deze aanvraag en worden bewust geweigerd in het algemene adminpanel."
           },
           "two_factor_and_passkeys": {
@@ -460,7 +460,7 @@
           },
           "safeguarding_reporting": {
             "title": "Rapporteren van zorgen",
-            "description": "Leden kunnen zelf een beveiligingsprobleem melden, en het personeel kan het beoordelen, toewijzen en oplossen aan de hand van een actielogboek dat alleen kan worden toegevoegd en nooit kan worden herschreven."
+            "description": "Leden kunnen zelf een beschermingsprobleem melden, en het personeel kan het beoordelen, toewijzen en oplossen aan de hand van een actielogboek dat alleen kan worden toegevoegd en nooit kan worden herschreven."
           },
           "surveys_and_projects": {
             "title": "Enquêtes en gemeenschapsprojecten",
@@ -587,7 +587,7 @@
     "results_summary": "Toont {{shown}} van {{total}} vermeldingen",
     "no_results_title": "Niets komt overeen met die zoekopdracht",
     "no_results_body": "Probeer een korter woord of kies Alles om de hele lijst terug te brengen.",
-    "clear_filters": "Duidelijk zoeken en filters"
+    "clear_filters": "Zoekopdracht en filters wissen"
   },
   "changelog_page": {
     "title": "Wijzigingslog",

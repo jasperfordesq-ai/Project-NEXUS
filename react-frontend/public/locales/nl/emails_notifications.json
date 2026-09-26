@@ -6,7 +6,7 @@
     "km_away": "{{distance}} km afstand"
   },
   "mutual_match": {
-    "heading": "Wederzijdse wedstrijd!",
+    "heading": "Wederzijdse match!",
     "subheading": "Een perfecte uitwisselingsmogelijkheid",
     "exchange_with": "Uitwisselen met {{name}}",
     "they_help_you": "Zij kunnen u helpen met:",
@@ -14,33 +14,33 @@
   },
   "match_digest": {
     "heading": "Uw {{period}}-matchoverzicht",
-    "matches_waiting": "{{count}} nieuwe wedstrijden wachten op je",
-    "top_matches": "Topwedstrijden",
+    "matches_waiting": "{{count}} nieuwe matches wachten op je",
+    "top_matches": "Topmatches",
     "by_poster": "door {{name}}",
     "hot_badge": "{{count}} Heet",
     "mutual_badge": "{{count}} wederzijds"
   },
   "match_approval": {
     "heading": "Match heeft goedkeuring nodig",
-    "body": "Er wacht een nieuwe wedstrijd op uw goedkeuring:",
+    "body": "Er wacht een nieuwe match op uw goedkeuring:",
     "label_member": "Lid:",
     "label_matched_listing": "Komt overeen met aanbieding:",
     "review_note": "Controleer deze match om er zeker van te zijn dat het lid geschikt is (mobiliteit, gezondheidsoverwegingen) en dat de activiteit binnen de dekking van de verzekering valt.",
-    "btn_review": "Beoordelingswedstrijd"
+    "btn_review": "Match beoordelen"
   },
   "match_approved": {
     "heading": "Je bent gematcht!",
     "body": "Geweldig nieuws! Een coördinator heeft een match voor u goedgekeurd:",
     "view_note": "Klik hieronder om de lijst te bekijken en contact op te nemen met het lid.",
-    "btn_view": "Bekijk wedstrijd",
+    "btn_view": "Bekijk match",
     "score_text": "({{score}}% overeenkomst)"
   },
   "match_rejected": {
-    "heading": "Wedstrijdupdate",
-    "body": "Helaas heeft een coördinator vastgesteld dat de volgende wedstrijd op dit moment niet geschikt was:",
+    "heading": "Matchupdate",
+    "body": "Helaas heeft een coördinator vastgesteld dat de volgende match op dit moment niet geschikt was:",
     "label_reason": "Reden:",
-    "encouragement": "Maak je geen zorgen: er zijn genoeg andere mogelijkheden in jouw gemeenschap! Blader door meer wedstrijden om een ​​goede pasvorm te vinden.",
-    "btn_browse": "Blader door wedstrijden"
+    "encouragement": "Maak je geen zorgen: er zijn genoeg andere mogelijkheden in jouw gemeenschap! Blader door meer matches om een ​​goede pasvorm te vinden.",
+    "btn_browse": "Blader door matches"
   },
   "credit_received": {
     "footer_tagline": "{{community}} — Tijdkredieten die gemeenschappen versterken"

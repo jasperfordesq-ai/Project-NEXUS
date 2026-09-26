@@ -15,12 +15,12 @@
     "refresh": "Vernieuwen",
     "unexpected_error": "Onverwachte fout",
     "unknown": "Onbekend",
-    "unfeature": "Uitgelicht",
+    "unfeature": "Niet meer uitlichten",
     "actions": "Acties",
     "active": "Actief",
     "all": "Allemaal",
     "approved": "Goedgekeurd",
-    "clear": "Duidelijk",
+    "clear": "Wissen",
     "clear_filters": "Filters wissen",
     "clear_selection": "Selectie wissen",
     "close": "Sluiten",
@@ -118,7 +118,7 @@
     "content_type_comment": "Opmerking",
     "content_type_event": "Evenement",
     "content_type_listing": "Lijst",
-    "content_type_post": "Na",
+    "content_type_post": "Bericht",
     "content_approved": "Inhoud goedgekeurd",
     "content_rejected": "Inhoud afgewezen",
     "days_count": "{{count}} dagen",
@@ -356,7 +356,7 @@
       "date_from": "Van",
       "date_to": "Naar",
       "apply": "Datums toepassen",
-      "clear": "Duidelijk"
+      "clear": "Wissen"
     },
     "readiness": {
       "municipal_value": "Gemeentelijke waarde",

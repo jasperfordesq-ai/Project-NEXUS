@@ -85,7 +85,7 @@
     "final_hours": "Einduren",
     "created": "Aangemaakt",
     "message_from_requester": "Bericht van aanvrager",
-    "broker_notes": "Broker Notities",
+    "broker_notes": "Brokernotities",
     "accept_request": "Accepteer Verzoek",
     "decline": "Weigeren",
     "start_exchange": "Start Uitwisseling",
@@ -178,5 +178,39 @@
       "title": "Uitwisselingsdetails"
     }
   },
-  "hours_count_one": "{{count}} uur"
+  "hours_count_one": "{{count}} uur",
+  "status_config": {
+    "pending_provider": {
+      "label": "Wacht op aanbieder",
+      "description": "We wachten tot de aanbieder dit verzoek accepteert of weigert."
+    },
+    "pending_broker": {
+      "label": "Wacht op goedkeuring broker",
+      "description": "Deze uitwisseling moet eerst door een broker worden goedgekeurd."
+    },
+    "accepted": {
+      "label": "Geaccepteerd",
+      "description": "De uitwisseling is geaccepteerd. De aanbieder kan beginnen wanneer het uitkomt."
+    },
+    "in_progress": {
+      "label": "In uitvoering",
+      "description": "De dienst wordt nu verleend."
+    },
+    "pending_confirmation": {
+      "label": "Bevestig Uren",
+      "description": "Beide partijen moeten de gewerkte uren bevestigen om de uitwisseling af te ronden."
+    },
+    "completed": {
+      "label": "Voltooid",
+      "description": "De uitwisseling is voltooid en de tijdcredits zijn overgemaakt."
+    },
+    "disputed": {
+      "label": "Betwist",
+      "description": "Er is onenigheid over de uren. Een broker gaat dit bekijken."
+    },
+    "cancelled": {
+      "label": "Geannuleerd",
+      "description": "Deze uitwisseling is geannuleerd."
+    }
+  }
 }

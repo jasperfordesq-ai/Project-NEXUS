@@ -133,7 +133,7 @@
         "ready_description": "De server heeft de huidige versie, de veilige toelatingslijst, het schema, de federatie-instelling en de canonieke schrijver geverifieerd.",
         "preview_event": "Nieuw evenement",
         "publication_state": "Publicatie staat",
-        "draft": "Diepgang",
+        "draft": "Concept",
         "overrides_applied": "Overschrijvingen toegepast",
         "override_count": "Overschrijvingen: {{count}}",
         "back": "Gegevens wijzigen",

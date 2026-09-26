@@ -11,7 +11,7 @@
     "section_records": "Dossiers",
     "section_settings": "Instellingen",
     "nav_label": "Makelaar navigatie",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderatie"
   },
   "header": {
     "toggle_sidebar": "Zijbalk in- of uitschakelen",
@@ -35,7 +35,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "members": "Leden",
-    "onboarding": "Aan boord",
+    "onboarding": "Onboarding",
     "safeguarding": "Bescherming",
     "vetting": "Bevestigingen doorlichten",
     "exchanges": "Uitwisselingen",
@@ -58,7 +58,7 @@
     "aria_label": "Broodkruimelnavigatie",
     "dashboard": "Broker Paneel",
     "members": "Leden",
-    "onboarding": "Aan boord",
+    "onboarding": "Onboarding",
     "safeguarding": "Bescherming",
     "vetting": "Bevestigingen doorlichten",
     "exchanges": "Uitwisselingen",
@@ -205,7 +205,7 @@
     "bulk_selected": "{{count}} geselecteerd",
     "bulk_approve": "Geselecteerd goedkeuren",
     "bulk_suspend": "Onderbreken geselecteerd",
-    "bulk_clear": "Duidelijke selectie",
+    "bulk_clear": "Selectie wissen",
     "bulk_approved_success": "Goedgekeurde {{count}} lid(s).",
     "bulk_suspended_success": "{{count}} lid(s) geschorst.",
     "col_status": "Status",
@@ -287,7 +287,7 @@
     "bulk_selected_other": "{{count}} geselecteerd"
   },
   "onboarding": {
-    "title": "Aan boord",
+    "title": "Onboarding",
     "page_title": "Onboarding - Makelaar",
     "description": "Volg de voortgang van nieuwe leden en keur wachtende registraties goed.",
     "funnel_title": "Onboarding Trechter",
@@ -378,7 +378,7 @@
     "policy_attestation": "Vereiste bevestiging",
     "policy_purpose": "Doel beschermen",
     "purpose_safeguarded_contact": "Beveiligd ledencontact",
-    "policy_load_error": "Het beveiligingsbeleid kan niet worden geladen. Beslissingen worden uitgeschakeld totdat deze beschikbaar zijn.",
+    "policy_load_error": "Het beschermingsbeleid kan niet worden geladen. Beslissingen worden uitgeschakeld totdat deze beschikbaar zijn.",
     "policy_unconfigured": "Een beheerder moet het beschermende rechtsgebied selecteren voordat bevestigingen kunnen worden vastgelegd.",
     "policy_not_available": "Dit rechtsgebied beschikt nog niet over een ondersteund beleid voor contactcontrole. Beslissingen zijn uitgeschakeld.",
     "jurisdiction_label": "Beleidspakket waarborgen",
@@ -409,10 +409,10 @@
     "empty_hint": "Leden verschijnen hier wanneer ze lid worden van deze community.",
     "empty_review_title": "Geen beoordelingsverzoeken",
     "empty_filtered_hint": "Probeer een andere status of zoekterm.",
-    "confirm_title": "Bevestig de beveiligingscertificering",
+    "confirm_title": "Bevestig de beschermingscertificering",
     "confirm_body": "Leg het gemeenschapsbesluit voor {{name}} vast onder de toepasselijke Britse beschermingsregeling(en). NEXUS verifieert of bewaart geen certificaten.",
     "confirm_acknowledgement": "Ik bevestig dat de community de juiste controles heeft uitgevoerd en dat de reikwijdte en datums die hier zijn vastgelegd nauwkeurig de veiligheidsmachtiging van {{name}} beschrijven.",
-    "confirm_button": "Bevestig de beveiligingscertificering",
+    "confirm_button": "Bevestig de beschermingscertificering",
     "certification_codes_label": "Onderliggende certificatieschema('s)",
     "certification_codes_help": "Selecteer elk schema dat dit gemeenschapsbesluit ondersteunt: Enhanced DBS, PVG en/of AccessNI.",
     "scope_summary_label": "Gecertificeerd bereik",
@@ -429,7 +429,7 @@
     "not_applicable": "Niet van toepassing",
     "close": "Close",
     "revoke_title": "Bevestiging intrekken",
-    "revoke_body": "Trek de huidige beveiligingsbevestiging van de community voor {{name}} in.",
+    "revoke_body": "Trek de huidige beschermingsbevestiging van de community voor {{name}} in.",
     "reason_label": "Reden van intrekking",
     "reason_community_decision_withdrawn": "Communautair besluit ingetrokken",
     "reason_member_requested_correction": "Het lid heeft om een ​​correctie verzocht",
@@ -1297,11 +1297,11 @@
   "help": {
     "page_title": "Hulp - Makelaar",
     "title": "Begeleiding & referentie",
-    "subtitle": "Hoe het broker- en beveiligingssysteem werkt — voor admins en coördinatoren. Elke sectie staat los — open wat u nodig heeft.",
+    "subtitle": "Hoe het broker- en beschermingssysteem werkt — voor admins en coördinatoren. Elke sectie staat los — open wat u nodig heeft.",
     "overview": {
       "aria": "Wat Broker Controls beheert",
       "title": "Wat deze module beheert",
-      "intro": "Broker Controls is het operationele knooppunt voor coördinatoren, brokers en admins die bemiddelen tussen leden bij beveiligings- of compliance-zorgen. Het verenigt zes submodules:",
+      "intro": "Broker Controls is het operationele knooppunt voor coördinatoren, brokers en admins die bemiddelen tussen leden bij beschermings- of compliance-zorgen. Het verenigt zes submodules:",
       "bullet_exchange": "<b>Uitwisselingsbeheer</b> — keur uitwisselingen die brokergoedkeuring vereisen goed of af.",
       "bullet_risk_tags": "<b>Risicotags</b> — markeer handmatig advertenties die u wilt volgen.",
       "bullet_message_review": "<b>Berichtbeoordeling</b> — sorteer berichten die naar de brokerwachtrij zijn gekopieerd.",
@@ -1316,7 +1316,7 @@
       "intro": "Een aanbevolen dagelijkse check-in-routine voor coördinatoren:",
       "step_unreviewed": "<b>Niet beoordeelde berichten</b> — open Berichtbeoordeling en handel eerst alles af wat rood is gemarkeerd (hoge ernst). Streef naar een SLA van 24 uur voor gemarkeerde items.",
       "step_pending": "<b>Openstaande uitwisselingen</b> — keur uitwisselingen die wachten op brokergoedkeuring goed of af. Een niet-goedgekeurde uitwisseling blokkeert beide partijen.",
-      "step_alerts": "<b>Beveiligingswaarschuwingen</b> — als de rode teller op de beveiligingstegel niet nul is, ga dan naar het Safeguarding-dashboard om te triëren.",
+      "step_alerts": "<b>Beschermingswaarschuwingen</b> — als de rode teller op de beschermingstegel niet nul is, ga dan naar het Safeguarding-dashboard om te triëren.",
       "step_vetting_reviews": "<b>Beoordelingsverzoeken doorlichten</b>: beslis of de community het attest voor vaste contacten kan bevestigen, of het verzoek kan sluiten zonder documenten te verzamelen.",
       "step_activity": "<b>Recente activiteit</b> — scan de activiteitenlijst om patronen op te merken: herhalende afzenders, ongebruikelijke volumes, nieuw gemonitorde gebruikers.",
       "tip": "De statistiektegels linken allemaal direct door naar het juiste filter — één klik van overzicht naar actiegerichte lijst."
@@ -1333,21 +1333,21 @@
       "action_open": "Open het bericht uit de wachtrij.",
       "action_read": "Lees de volledige uitwisseling — eerdere berichten geven context.",
       "action_mark": "Klik op <i>Markeren als beoordeeld</i> met optionele notities, of escaleer.",
-      "action_escalate": "Als het bericht een beveiligingszorg betreft, maak of werk dan ook een guardian-toewijzing bij in het Safeguarding-dashboard.",
+      "action_escalate": "Als het bericht een beschermingszorg betreft, maak of werk dan ook een guardian-toewijzing bij in het Safeguarding-dashboard.",
       "retention": "Beoordeelde kopieën blijven 180 dagen in het archief en worden daarna automatisch verwijderd (configureerbaar in het submodule Configuratie)."
     },
     "monitoring": {
       "aria": "Gebruikersmonitoring en risicotags",
       "title": "Gebruikersmonitoring & risicotags",
       "intro": "Er zijn twee manieren waarop een lid op een waarschuwingslijst kan komen:",
-      "automatic": "<b>Automatisch (zelfgeïdentificeerd)</b> — tijdens onboarding heeft het lid een beveiligingsoptie aangevinkt met triggers <code>restricts_messaging</code> of <code>requires_broker_approval</code>. Deze worden geschreven naar <code>user_messaging_restrictions</code> met reden <i>\"Safeguarding: self-identified during onboarding\"</i>.",
+      "automatic": "<b>Automatisch (zelfgeïdentificeerd)</b> — tijdens onboarding heeft het lid een beschermingsoptie aangevinkt met triggers <code>restricts_messaging</code> of <code>requires_broker_approval</code>. Deze worden geschreven naar <code>user_messaging_restrictions</code> met reden <i>\"Safeguarding: self-identified during onboarding\"</i>.",
       "manual": "<b>Handmatig (door admin)</b> — u opent Gebruikersmonitoring en voegt een lid toe met een reden en een optionele vervaldatum. De reden wordt opgeslagen zodat elke toekomstige beoordelaar weet waarom.",
       "expiry": "Monitoring kan <i>tijdelijk</i> zijn — stel <code>monitoring_expires_at</code> in en de dagelijkse opdracht <code>safeguarding:clear-expired-monitoring</code> verwijdert de markering geruisloos zodra de datum is verstreken.",
       "risk_tags": "<b>Risicotags</b> zijn een markering op advertentie-niveau, niet op lid-niveau. Tag een advertentie als u het verloop wilt volgen zonder het lid te beperken."
     },
     "vetting": {
-      "metadata_aria": "Beveiliging van contactattesten",
-      "metadata_title": "Beveiliging van contactattesten",
+      "metadata_aria": "Contactattesten voor bescherming",
+      "metadata_title": "Contactattesten voor bescherming",
       "intro": "Een verificatierecord legt één ingediende achtergrondcheckreferentie vast. Ondersteunde types:",
       "jurisdiction_heading": "Grens van jurisdictie",
       "jurisdiction_england_wales": "<b>Engeland en Wales:</b> het ondersteunde contactbeleid maakt gebruik van een vaste verbeterde DBS-attest. Een makelaar bevestigt alleen dat de community haar eigen controles op beveiligd ledencontact heeft uitgevoerd; NEXUS inspecteert of verifieert een certificaat niet.",
@@ -1360,11 +1360,11 @@
       "messaging": "De messenger-poort gaat alleen open als de afzender het exacte bevestigde attest heeft dat vereist is door het actieve gemeenschapsbeleid van de ontvanger. Ontbrekende, ingetrokken of niet-beschikbare beleidsgegevens kunnen niet worden gesloten."
     },
     "alerts": {
-      "aria": "Beveiligingswaarschuwingen",
-      "title": "Beveiligingswaarschuwingen & escalatie",
-      "intro": "De tegel beveiligingswaarschuwingen telt:",
+      "aria": "Beschermingswaarschuwingen",
+      "title": "Beschermingswaarschuwingen & escalatie",
+      "intro": "De tegel beschermingswaarschuwingen telt:",
       "counts_messages": "Niet beoordeelde gemarkeerde berichtkopieën (inhoudelijke match).",
-      "counts_incidents": "Open vrijwilligersbeveiligingsincidenten van hoge of kritieke ernst.",
+      "counts_incidents": "Open vrijwilligersbeschermingsincidenten van hoge of kritieke ernst.",
       "escalate_heading": "Wanneer escaleren",
       "escalate_abuse": "<b>Vermoeden van misbruik of uitbuiting:</b> stop, documenteer en neem contact op met uw Designated Safeguarding Lead (DSL) voordat u een naar de gebruiker zichtbare actie onderneemt. Waarschuw het lid niet; verwijder geen berichten. Het auditspoor is bewijs.",
       "escalate_child": "<b>Zorg over kinderbescherming:</b> meld in Ierland aan Tusla; in het VK aan de jeugdzorg van de lokale autoriteit. De wet vereist dit, ongeacht het interne proces van het platform.",
@@ -1373,7 +1373,7 @@
     "legal": {
       "aria": "Wettelijk kader",
       "title": "Wettelijk kader en compliance",
-      "scope_disclaimer": "De geschiktheid en het hergebruik van controles zijn afhankelijk van het rechtsgebied, de rol, de activiteit, het personeelsbestand en de organisatie. Dit panel is een operationeel hulpmiddel, geen juridisch advies; uw beveiligingsleider of juridisch adviseur moet het gemeenschapsproces goedkeuren.",
+      "scope_disclaimer": "De geschiktheid en het hergebruik van controles zijn afhankelijk van het rechtsgebied, de rol, de activiteit, het personeelsbestand en de organisatie. Dit panel is een operationeel hulpmiddel, geen juridisch advies; uw beschermingsleider of juridisch adviseur moet het gemeenschapsproces goedkeuren.",
       "current_scope": "<b>Huidige ondersteunde reikwijdte:</b> de geautomatiseerde contactpoort ondersteunt de Engelse en Wales Enhanced DBS-gemeenschapsattestatie met het vaste doel van beveiligd ledencontact.",
       "jurisdiction_limits": "<b>Andere rechtsgebieden:</b> Schotland, Noord-Ierland, Ierland en buitenlandse regelingen hebben hun eigen beleids- en rol- of reikwijdtemodel nodig. Het selecteren van een landlabel mag nooit stilletjes een niet-ondersteund programma gelijkwaardig maken.",
       "data_minimisation": "<b>Gegevensminimalisatie:</b> NEXUS registreert alleen de beslissingen van de gemeenschap en gecontroleerde auditmetagegevens. Certificaten, openbaarmakingsinhoud, identificatiegegevens en vrije-tekstbewijs mogen niet op het platform worden opgeslagen."
@@ -1385,7 +1385,7 @@
       "message_copies": "<b>Berichtkopieën</b>: <code>broker_message_copies</code>. Automatische verwijdering na 180 dagen via wekelijks geplande opdracht.",
       "vetting_confirmations": "<b>Gemeenschapsattesten</b>: <code>member_vetting_attestations</code>. Slaat het vaste doel, de reikwijdte, de beleidsversie, het besluit, de actoren, tijdstempels en gecontroleerde redencodes op – certificeer nooit bewijsmateriaal.",
       "vetting_review_requests": "<b>Beoordelingsverzoeken</b>: <code>safeguarding_vetting_review_requests</code>. Slaat alleen de metagegevens van het lid, het vaste doel, de status en de resolutie op.",
-      "user_prefs": "<b>Beveiligingsvoorkeuren van het lid</b>: <code>user_safeguarding_preferences</code>. Door het lid in de instellingen ingetrokken; als tombstone gemarkeerd, niet verwijderd.",
+      "user_prefs": "<b>Beschermingsvoorkeuren van het lid</b>: <code>user_safeguarding_preferences</code>. Door het lid in de instellingen ingetrokken; als tombstone gemarkeerd, niet verwijderd.",
       "guardian_assignments": "<b>Guardian-toewijzingen</b>: <code>safeguarding_assignments</code>. Intrekking is soft — het auditspoor blijft behouden.",
       "attestation_audit": "<b>Geschiedenis van attestbeslissingen</b>: <code>member_vetting_attestation_events</code>. Het is opzettelijk gescheiden van de algemene activiteitenfeed en bevat gecontroleerde metagegevens over beslissingen, geen documenten of makelaarsnotities."
     },
@@ -1393,14 +1393,14 @@
       "aria": "Wie u moet contacteren",
       "title": "Wie en wanneer contacteren",
       "technical": "<b>Technisch probleem met dit paneel</b> — open een ticket bij uw platformbeheerder; vermeld de URL en het geschatte tijdstip.",
-      "safeguarding": "<b>Beveiligingszorg over een lid</b> — de Designated Safeguarding Lead (DSL) van uw community, niet het platform. De DSL beslist over escalatie naar wettelijke diensten.",
+      "safeguarding": "<b>Beschermingszorg over een lid</b> — de Designated Safeguarding Lead (DSL) van uw community, niet het platform. De DSL beslist over escalatie naar wettelijke diensten.",
       "criminality": "<b>Vermoeden van strafbaar feit</b> — politie (999 / 112 bij onmiddellijk gevaar). Het auditspoor van het platform ondersteunt elk vervolgonderzoek.",
-      "policy_scope": "<b>Beleidsvraag</b>: neem contact op met uw huurderbeheerder, beveiligingsleider of nalevingsfunctionaris. Een landlabel maakt geen contactpoort mogelijk; alleen een afzonderlijk ondersteund en goedgekeurd jurisdictiebeleid kan dat doen."
+      "policy_scope": "<b>Beleidsvraag</b>: neem contact op met uw huurderbeheerder, beschermingsleider of nalevingsfunctionaris. Een landlabel maakt geen contactpoort mogelijk; alleen een afzonderlijk ondersteund en goedgekeurd jurisdictiebeleid kan dat doen."
     },
     "troubleshooting": {
       "aria": "Probleemoplossing",
       "title": "Veelvoorkomende situaties oplossen",
-      "cant_message_attestation": "<b>'Een lid zegt dat hij of zij geen bericht kan sturen naar iemand'</b>: controleer de beveiligingsvoorkeur van de ontvanger, het jurisdictiebeleid van de gemeenschap en de huidige contactverklaring van de afzender. De poort blijft gesloten tenzij het beleid expliciet een toegestane beslissing retourneert.",
+      "cant_message_attestation": "<b>'Een lid zegt dat hij of zij geen bericht kan sturen naar iemand'</b>: controleer de beschermingsvoorkeur van de ontvanger, het jurisdictiebeleid van de gemeenschap en de huidige contactverklaring van de afzender. De poort blijft gesloten tenzij het beleid expliciet een toegestane beslissing retourneert.",
       "wrong_member": "<b>\"Het verkeerde lid is gemarkeerd\"</b> — open Gebruikersmonitoring en verwijder ze handmatig. Was het de automatische onboarding-markering, dan kan het lid zijn voorkeur ook intrekken via <i>Instellingen → Safeguarding</i>.",
       "vetting_review": "<b>'Er is nog een controlebeoordeling in behandeling'</b>: open Contactattesten en bevestig het vastgestelde gemeenschapsbesluit, trek het in met een gecontroleerde reden, of los het verzoek op zonder het attest te wijzigen. Vraag het lid niet om documenten in NEXUS.",
       "no_copies": "<b>\"Berichten worden niet gekopieerd\"</b> — bevestig dat het lid <code>under_monitoring = 1</code> heeft in <code>user_messaging_restrictions</code>. Ontbreekt de rij, voeg het lid dan via Gebruikersmonitoring toe met een reden."

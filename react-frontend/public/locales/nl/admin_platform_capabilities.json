@@ -3,7 +3,7 @@
   "description": "Schakel platformbrede mogelijkheden in of uit zonder een ontwikkelaar. Elke community beheert nog steeds zijn eigen instellingen eronder.",
   "loading": "Laadplatformschakelaars",
   "load_failed": "De platformschakelaars konden niet worden geladen.",
-  "save_failed": "Die verandering was niet meer te redden.",
+  "save_failed": "Die wijziging kon niet worden opgeslagen.",
   "retry": "Probeer het opnieuw",
   "saved": "Platformschakelaar bijgewerkt.",
   "reverted": "Teruggezet naar de serverinstelling.",

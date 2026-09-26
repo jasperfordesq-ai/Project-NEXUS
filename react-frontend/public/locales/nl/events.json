@@ -437,7 +437,7 @@
       "invite_error": "De uitnodigingen konden niet worden verwerkt.",
       "search_label": "Zoek mensen",
       "search_placeholder": "Zoek op naam",
-      "clear_search": "Duidelijk zoeken naar mensen",
+      "clear_search": "Zoekopdracht naar mensen wissen",
       "registration_filter": "Registratie",
       "waitlist_filter": "Wachtlijst",
       "attendance_filter": "Aanwezigheid",
@@ -519,7 +519,7 @@
       "export_excluded_fields": {
         "contact_details": "E-mailadressen, telefoonnummers, postadressen en andere contactgegevens",
         "form_answers": "Antwoorden op registratieformulieren en antwoorden op aangepaste vragen",
-        "incident_records": "Documenten over incidenten, beveiliging en casemanagement",
+        "incident_records": "Documenten over incidenten, bescherming en casemanagement",
         "support_notes": "Gezondheid, toegankelijkheid, accommodatie en persoonlijke ondersteuningsnotities",
         "audit_metadata": "Metagegevens van de interne audit, personeelsredenen en operationele aantekeningen"
       },

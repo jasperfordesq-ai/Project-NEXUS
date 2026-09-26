@@ -4,7 +4,7 @@
   "messages_region": "Chatberichten",
   "header_title": "AI Assistent",
   "header_subtitle": "Aangedreven door AI",
-  "limits_left_today": "{{count}} is vandaag vertrokken",
+  "limits_left_today": "Nog {{count}} over vandaag",
   "new_conversation_aria": "Start een nieuw gesprek",
   "typing_aria": "AI is aan het typen",
   "sources_label": "Bronnen",
@@ -43,6 +43,6 @@
   },
   "card_wallet_transactions_one": "{{count}} transacties in de afgelopen 30 dagen",
   "card_wallet_transactions_other": "{{count}} transacties in de afgelopen 30 dagen",
-  "limits_left_today_one": "{{count}} is vandaag vertrokken",
-  "limits_left_today_other": "{{count}} is vandaag vertrokken"
+  "limits_left_today_one": "Nog {{count}} over vandaag",
+  "limits_left_today_other": "Nog {{count}} over vandaag"
 }
