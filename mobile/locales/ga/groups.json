@@ -177,6 +177,8 @@
       "dueDatePlaceholder": "Spriocdháta, mar shampla 2026-06-30",
       "priorityLabel": "Tosaíocht",
       "assigneeLabel": "Sann do",
+      "assigneeSearchPlaceholder": "Cuardaigh baill an ghrúpa",
+      "assigneeSearchError": "Níorbh fhéidir baill an ghrúpa a chuardach.",
       "quickPriority": "Tosaíocht",
       "quickAssignee": "Sannaí",
       "unassigned": "Gan sannadh",

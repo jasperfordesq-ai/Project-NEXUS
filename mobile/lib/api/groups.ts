@@ -577,9 +577,11 @@ export async function uploadGroupImage(id: number, uri: string): Promise<{ data:
 export function getGroupMembers(
   id: number,
   cursor: string | null = null,
+  options: { query?: string; perPage?: number } = {},
 ): Promise<GroupCollectionResponse<GroupMemberListItem>> {
-  const query: Record<string, string> = { per_page: '20' };
+  const query: Record<string, string> = { per_page: String(options.perPage ?? 20) };
   if (cursor) query['cursor'] = cursor;
+  if (options.query?.trim()) query['q'] = options.query.trim();
   return api.get<GroupCollectionResponse<GroupMemberListItem>>(`${API_V2}/groups/${id}/members`, query);
 }
 

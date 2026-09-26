@@ -217,6 +217,8 @@
       "dueDatePlaceholder": "Fälligkeitsdatum, zum Beispiel 2026-06-30",
       "priorityLabel": "Priority",
       "assigneeLabel": "Zuordnen zu",
+      "assigneeSearchPlaceholder": "Gruppenmitglieder suchen",
+      "assigneeSearchError": "Gruppenmitglieder konnten nicht durchsucht werden.",
       "quickPriority": "Priority",
       "quickAssignee": "Assignee",
       "unassigned": "Unassigned",

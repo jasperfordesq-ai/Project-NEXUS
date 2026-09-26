@@ -44,6 +44,7 @@ import {
   getGroupQuestion,
   getGroupQuestions,
   getGroupMedia,
+  getGroupMembers,
   getGroupTasks,
   getGroupTask,
   getGroupTaskStats,
@@ -576,6 +577,20 @@ describe('group wiki helpers', () => {
     await deleteGroupWikiPage(7, 13);
 
     expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/wiki/13');
+  });
+});
+
+describe('group member helpers', () => {
+  it('passes a scoped search, cursor and page size to the member endpoint', async () => {
+    jest.mocked(api.get).mockResolvedValueOnce({ data: [], meta: { has_more: false, cursor: null } });
+
+    await getGroupMembers(7, 'member-cursor', { query: '  Riley  ', perPage: 12 });
+
+    expect(api.get).toHaveBeenCalledWith('/api/v2/groups/7/members', {
+      per_page: '12',
+      cursor: 'member-cursor',
+      q: 'Riley',
+    });
   });
 });
 

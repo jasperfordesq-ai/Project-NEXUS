@@ -525,6 +525,7 @@ import {
   getGroupAnalyticsComparative,
   getGroupAnalyticsRetention,
   getGroupMedia,
+  getGroupMembers,
   getGroupWikiPage,
   getGroupWikiPages,
   getGroupWikiRevisions,
@@ -2325,6 +2326,98 @@ describe('GroupDetailScreen', () => {
     await waitFor(() => {
       expect(updateGroupTask).toHaveBeenCalledWith(70, { assigned_to: 11 });
     });
+  });
+
+  it('searches and pages task assignees beyond the initially loaded members', async () => {
+    const member = (id: number, name: string) => ({ id, name, role: 'member', joined_at: '2026-06-01T00:00:00Z', avatar_url: null });
+    let finishOlderSearch!: (value: Awaited<ReturnType<typeof getGroupMembers>>) => void;
+    let finishCurrentSearch!: (value: Awaited<ReturnType<typeof getGroupMembers>>) => void;
+    jest.mocked(getGroupTasks).mockResolvedValue({
+      data: [{
+        id: 70,
+        group_id: 1,
+        title: 'Water seedlings',
+        description: null,
+        status: 'todo',
+        priority: 'medium',
+        assigned_to: 99,
+        assignee: { id: 99, name: 'Off-page Assignee', avatar_url: null },
+        due_date: null,
+        created_at: '2026-06-01T00:00:00Z',
+        can_update_status: true,
+        can_edit: true,
+        can_delete: true,
+      }],
+      meta: { has_more: false, cursor: null },
+    });
+    jest.mocked(getGroupTaskStats).mockResolvedValue({ data: { total: 1, todo: 1, in_progress: 0, done: 0, overdue: 0 } });
+    jest.mocked(getGroupMembers)
+      .mockImplementationOnce(() => new Promise(resolve => { finishOlderSearch = resolve; }))
+      .mockImplementationOnce(() => new Promise(resolve => { finishCurrentSearch = resolve; }))
+      .mockResolvedValueOnce({ data: [member(22, 'Zara Member')], meta: { has_more: false, cursor: null } });
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } }, isLoading: false, error: null, refresh: jest.fn() };
+    const membersState = { data: { data: Array.from({ length: 9 }, (_, index) => member(index + 1, `Member ${index + 1}`)) }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyList = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyPaged = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, membersState, emptyList, emptyPaged, emptyPaged, emptyPaged, emptyList];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[call++ % states.length]);
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await screen.findByText('Water seedlings');
+    expect(screen.getByText('Member 9')).toBeTruthy();
+    expect(screen.getByText('Off-page Assignee')).toBeTruthy();
+
+    fireEvent.changeText(screen.getByTestId('group-task-assignee-70-search'), 'old');
+    fireEvent.press(screen.getByTestId('group-task-assignee-70-search-button'));
+    fireEvent.changeText(screen.getByTestId('group-task-assignee-70-search'), 'zo');
+    fireEvent.press(screen.getByTestId('group-task-assignee-70-search-button'));
+    await waitFor(() => expect(getGroupMembers).toHaveBeenCalledTimes(2));
+    await act(async () => { finishOlderSearch({ data: [member(20, 'Obsolete Member')], meta: { has_more: false, cursor: null } }); });
+    expect(screen.queryByText('Obsolete Member')).toBeNull();
+    await act(async () => { finishCurrentSearch({ data: [member(21, 'Zoe Member')], meta: { has_more: true, cursor: 'next-members' } }); });
+    await screen.findByText('Zoe Member');
+    expect(getGroupMembers).toHaveBeenLastCalledWith(1, null, { query: 'zo' });
+    fireEvent.press(screen.getByTestId('group-task-assignee-70-load-more'));
+    await screen.findByText('Zara Member');
+    expect(getGroupMembers).toHaveBeenLastCalledWith(1, 'next-members', { query: 'zo' });
+    fireEvent.press(screen.getByTestId('group-task-assignee-70-member-22'));
+    await waitFor(() => expect(updateGroupTask).toHaveBeenCalledWith(70, { assigned_to: 22 }));
+  });
+
+  it('keeps the current task assignee when member search fails', async () => {
+    jest.mocked(getGroupTasks).mockResolvedValue({
+      data: [{
+        id: 70,
+        group_id: 1,
+        title: 'Water seedlings',
+        description: null,
+        status: 'todo',
+        priority: 'medium',
+        assigned_to: 99,
+        assignee: { id: 99, name: 'Off-page Assignee', avatar_url: null },
+        due_date: null,
+        created_at: '2026-06-01T00:00:00Z',
+        can_update_status: true,
+        can_edit: true,
+        can_delete: false,
+      }],
+      meta: { has_more: false, cursor: null },
+    });
+    jest.mocked(getGroupTaskStats).mockResolvedValue({ data: { total: 1, todo: 1, in_progress: 0, done: 0, overdue: 0 } });
+    jest.mocked(getGroupMembers).mockRejectedValueOnce(new Error('Search unavailable'));
+    mockUseApi.mockReturnValue({ data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await screen.findByText('Off-page Assignee');
+    fireEvent.changeText(screen.getByTestId('group-task-assignee-70-search'), 'zo');
+    fireEvent.press(screen.getByTestId('group-task-assignee-70-search-button'));
+    await screen.findByTestId('group-task-assignee-70-error');
+
+    expect(screen.getByText('Off-page Assignee')).toBeTruthy();
+    expect(updateGroupTask).not.toHaveBeenCalled();
   });
 
   it('renders each task action from its server capabilities and fails closed when they are absent', async () => {

@@ -3031,6 +3031,141 @@ function GroupWikiPanel({
   );
 }
 
+function GroupTaskAssigneePicker({
+  groupId,
+  initialMembers,
+  selectedId,
+  selectedMember,
+  disabled,
+  testIDPrefix,
+  onSelect,
+}: {
+  groupId: number;
+  initialMembers: GroupMemberListItem[];
+  selectedId: number | null;
+  selectedMember?: { id: number; name: string } | null;
+  disabled: boolean;
+  testIDPrefix: string;
+  onSelect: (memberId: number | null) => void;
+}) {
+  const { t } = useTranslation(['groups', 'common']);
+  const theme = useTheme();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<GroupMemberListItem[]>([]);
+  const [chosenMember, setChosenMember] = useState<{ id: number; name: string } | null>(selectedMember ?? null);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const requestVersionRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => () => { mountedRef.current = false; }, []);
+  useEffect(() => {
+    if (selectedId === null) setChosenMember(null);
+    else if (selectedMember?.id === selectedId) setChosenMember(selectedMember);
+  }, [selectedId, selectedMember]);
+
+  const search = async (append = false) => {
+    const cleanQuery = query.trim();
+    if (cleanQuery.length < 2 || (append && (!hasMore || !cursor || isSearching))) return;
+    const requestVersion = append ? requestVersionRef.current : ++requestVersionRef.current;
+    setIsSearching(true);
+    if (!append) {
+      setHasSearched(true);
+      setSearchError(null);
+    }
+    try {
+      const response = await getGroupMembers(groupId, append ? cursor : null, { query: cleanQuery });
+      if (!mountedRef.current || requestVersion !== requestVersionRef.current) return;
+      const page = response.data ?? [];
+      setResults((current) => append
+        ? Array.from(new Map([...current, ...page].map((member) => [member.id, member])).values())
+        : page);
+      setCursor(response.meta?.cursor ?? null);
+      setHasMore(Boolean(response.meta?.has_more));
+    } catch (err) {
+      if (!mountedRef.current || requestVersion !== requestVersionRef.current) return;
+      setSearchError(describeApiError(err, t('detail.tasks.assigneeSearchError')));
+    } finally {
+      if (mountedRef.current && requestVersion === requestVersionRef.current) setIsSearching(false);
+    }
+  };
+
+  const changeQuery = (value: string) => {
+    requestVersionRef.current += 1;
+    setQuery(value);
+    setResults([]);
+    setCursor(null);
+    setHasMore(false);
+    setHasSearched(false);
+    setSearchError(null);
+    setIsSearching(false);
+  };
+  const choose = (member: { id: number; name: string } | null) => {
+    setChosenMember(member);
+    onSelect(member?.id ?? null);
+  };
+  const baseMembers = hasSearched ? results : initialMembers;
+  const visibleMembers = chosenMember && !baseMembers.some((member) => member.id === chosenMember.id)
+    ? [chosenMember, ...baseMembers]
+    : baseMembers;
+
+  return (
+    <View className="gap-2">
+      <View className="flex-row flex-wrap gap-2">
+        <HeroButton size="sm" variant={selectedId === null ? 'primary' : 'secondary'} isDisabled={disabled} onPress={() => choose(null)}>
+          <HeroButton.Label>{t('detail.tasks.unassigned')}</HeroButton.Label>
+        </HeroButton>
+        {visibleMembers.map((member) => (
+          <HeroButton
+            key={member.id}
+            size="sm"
+            variant={selectedId === member.id ? 'primary' : 'secondary'}
+            isDisabled={disabled}
+            testID={`${testIDPrefix}-member-${member.id}`}
+            onPress={() => choose(member)}
+          >
+            <HeroButton.Label>{member.name}</HeroButton.Label>
+          </HeroButton>
+        ))}
+      </View>
+      <Input
+        value={query}
+        onChangeText={changeQuery}
+        placeholder={t('detail.tasks.assigneeSearchPlaceholder')}
+        accessibilityLabel={t('detail.tasks.assigneeSearchPlaceholder')}
+        returnKeyType="search"
+        editable={!disabled}
+        testID={`${testIDPrefix}-search`}
+        onSubmitEditing={() => void search()}
+      />
+      <HeroButton
+        size="sm"
+        variant="secondary"
+        isDisabled={disabled || isSearching || query.trim().length < 2}
+        testID={`${testIDPrefix}-search-button`}
+        onPress={() => void search()}
+      >
+        {isSearching ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:search')}</HeroButton.Label>}
+      </HeroButton>
+      {searchError ? (
+        <View className="gap-2" testID={`${testIDPrefix}-error`}>
+          <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{searchError}</Text>
+          <HeroButton size="sm" variant="secondary" isDisabled={disabled || isSearching} onPress={() => void search()}>
+            <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+          </HeroButton>
+        </View>
+      ) : null}
+      {hasSearched && !isSearching && !searchError && results.length === 0 ? (
+        <Text className="text-sm" style={{ color: theme.textMuted }}>{t('common:noResults')}</Text>
+      ) : null}
+      <LoadMoreRow hasMore={hasMore} isLoadingMore={isSearching} onPress={() => void search(true)} testID={`${testIDPrefix}-load-more`} />
+    </View>
+  );
+}
+
 function GroupTasksPanel({
   groupId,
   canView,
@@ -3056,6 +3191,7 @@ function GroupTasksPanel({
   const [dueDate, setDueDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
+  const memberOptions = Array.isArray(members) ? members : [];
   /* 🔴 Fifty tasks and then nothing, though the endpoint answers with a cursor.
      Audit 2026-09-07. */
   const [cursor, setCursor] = useState<string | null>(null);
@@ -3355,29 +3491,20 @@ function GroupTasksPanel({
                   ))}
                 </View>
               </View>
-              {members.length > 0 ? (
-                <View className="gap-2">
-                  <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>
-                    {t('detail.tasks.assigneeLabel')}
-                  </Text>
-                  <View className="flex-row flex-wrap gap-2">
-                    <HeroButton size="sm" variant={assignedTo === null ? 'primary' : 'secondary'} isDisabled={creating} onPress={() => setAssignedTo(null)}>
-                      <HeroButton.Label>{t('detail.tasks.unassigned')}</HeroButton.Label>
-                    </HeroButton>
-                    {members.slice(0, 8).map((member) => (
-                      <HeroButton
-                        key={member.id}
-                        size="sm"
-                        variant={assignedTo === member.id ? 'primary' : 'secondary'}
-                        isDisabled={creating}
-                        onPress={() => setAssignedTo(member.id)}
-                      >
-                        <HeroButton.Label>{member.name}</HeroButton.Label>
-                      </HeroButton>
-                    ))}
-                  </View>
-                </View>
-              ) : null}
+              <View className="gap-2">
+                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>
+                  {t('detail.tasks.assigneeLabel')}
+                </Text>
+                <GroupTaskAssigneePicker
+                  groupId={groupId}
+                  initialMembers={memberOptions}
+                  selectedId={assignedTo}
+                  selectedMember={memberOptions.find((member) => member.id === assignedTo) ?? null}
+                  disabled={creating}
+                  testIDPrefix="group-task-create-assignee"
+                  onSelect={setAssignedTo}
+                />
+              </View>
               <HeroButton isDisabled={creating} onPress={() => void createTask()}>
                 {creating ? <Spinner size="sm" /> : <HeroButton.Label>{t('detail.tasks.create')}</HeroButton.Label>}
               </HeroButton>
@@ -3471,34 +3598,20 @@ function GroupTasksPanel({
                       ))}
                     </View>
                   </View>
-                  {members.length > 0 ? (
-                    <View className="gap-2">
-                      <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>
-                        {t('detail.tasks.quickAssignee')}
-                      </Text>
-                      <View className="flex-row flex-wrap gap-2">
-                        <HeroButton
-                          size="sm"
-                          variant={task.assigned_to === null ? 'primary' : 'secondary'}
-                          isDisabled={updatingTaskId === task.id}
-                          onPress={() => void updateTaskFields(task, { assigned_to: null })}
-                        >
-                          <HeroButton.Label>{t('detail.tasks.unassigned')}</HeroButton.Label>
-                        </HeroButton>
-                        {members.slice(0, 8).map((member) => (
-                          <HeroButton
-                            key={member.id}
-                            size="sm"
-                            variant={task.assigned_to === member.id ? 'primary' : 'secondary'}
-                            isDisabled={updatingTaskId === task.id}
-                            onPress={() => void updateTaskFields(task, { assigned_to: member.id })}
-                          >
-                            <HeroButton.Label>{member.name}</HeroButton.Label>
-                          </HeroButton>
-                        ))}
-                      </View>
-                    </View>
-                  ) : null}
+                  <View className="gap-2">
+                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>
+                      {t('detail.tasks.quickAssignee')}
+                    </Text>
+                    <GroupTaskAssigneePicker
+                      groupId={groupId}
+                      initialMembers={memberOptions}
+                      selectedId={task.assigned_to}
+                      selectedMember={task.assignee ?? memberOptions.find((member) => member.id === task.assigned_to) ?? null}
+                      disabled={updatingTaskId === task.id}
+                      testIDPrefix={`group-task-assignee-${task.id}`}
+                      onSelect={(memberId) => void updateTaskFields(task, { assigned_to: memberId })}
+                    />
+                  </View>
                 </Surface>
               ) : null}
             </HeroCard.Body>

@@ -217,6 +217,8 @@
       "dueDatePlaceholder": "Due date, for example 2026-06-30",
       "priorityLabel": "Priority",
       "assigneeLabel": "Assign to",
+      "assigneeSearchPlaceholder": "Search group members",
+      "assigneeSearchError": "Could not search group members.",
       "quickPriority": "Priority",
       "quickAssignee": "Assignee",
       "unassigned": "Unassigned",
