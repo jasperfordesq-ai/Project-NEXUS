@@ -1323,7 +1323,7 @@
         "submit": "Invia segnalazione",
         "submitting": "Invio..."
       },
-      "confidentiality": "La tua segnalazione viene inviata solo ai coordinatori di tutela designati della tua comunità. La persona segnalata non vedrà la tua identità a meno che tu non scelga di rivelarla.",
+      "confidentiality": "La tua segnalazione viene letta dalle persone che si occupano della tutela nella tua comunità: coordinatori, intermediari e amministratori. Possono vedere il tuo nome per poterti ricontattare. La persona segnalata non può vedere la tua segnalazione e non conoscerà la tua identità a meno che tu non scelga di condividerla.",
       "success": {
         "title": "Segnalazione inviata",
         "body": "Grazie. Un coordinatore di tutela esaminerà questa segnalazione entro {{hours}} ore.",

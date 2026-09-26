@@ -1323,7 +1323,7 @@
         "submit": "Soumettre le signalement",
         "submitting": "Soumission..."
       },
-      "confidentiality": "Votre signalement est envoyé uniquement aux coordinateurs de protection désignés de votre communauté. La personne signalée ne verra pas votre identité, sauf si vous choisissez de la révéler.",
+      "confidentiality": "Votre signalement est lu par les personnes chargées de la protection dans votre communauté : ses coordinateurs, courtiers et administrateurs. Elles voient votre nom afin de pouvoir assurer le suivi avec vous. La personne signalée ne peut pas voir votre signalement et ne connaîtra pas votre identité, sauf si vous choisissez de la partager.",
       "success": {
         "title": "Signalement soumis",
         "body": "Merci. Un coordinateur de protection examinera ceci sous {{hours}} heures.",

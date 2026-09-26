@@ -1314,7 +1314,7 @@
         "submit": "Submit Report",
         "submitting": "Submitting..."
       },
-      "confidentiality": "Your report is sent only to designated safeguarding coordinators in your community. The person you report will not see your identity unless you choose to disclose it.",
+      "confidentiality": "Your report is read by the people who look after safeguarding in your community: its coordinators, brokers and administrators. They can see your name so they can follow up with you. The person you report cannot see your report, and will not learn your identity unless you choose to share it.",
       "success": {
         "title": "Report Submitted",
         "body": "Thank you. A safeguarding coordinator will review this within {{hours}} hours.",

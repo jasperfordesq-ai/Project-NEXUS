@@ -1314,7 +1314,7 @@
         "submit": "Rapport indienen",
         "submitting": "Bezig met indienen..."
       },
-      "confidentiality": "Uw rapport wordt alleen verzonden naar aangewezen beschermingscoördinatoren in uw gemeenschap. De persoon die u rapporteert ziet uw identiteit niet, tenzij u ervoor kiest deze bekend te maken.",
+      "confidentiality": "Je melding wordt gelezen door de mensen die in je gemeenschap verantwoordelijk zijn voor bescherming: de coördinatoren, brokers en beheerders. Zij zien je naam, zodat ze contact met je kunnen opnemen. De persoon die je meldt kan je melding niet zien en komt niet te weten wie je bent, tenzij je dat zelf deelt.",
       "success": {
         "title": "Rapport ingediend",
         "body": "Bedankt. Een beschermingscoördinator zal dit binnen {{hours}} uur beoordelen.",

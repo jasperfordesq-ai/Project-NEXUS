@@ -1332,7 +1332,7 @@
         "submit": "Wyślij zgłoszenie",
         "submitting": "Wysyłanie..."
       },
-      "confidentiality": "Twoje zgłoszenie jest wysyłane wyłącznie do wyznaczonych koordynatorów ochrony w Twojej społeczności. Osoba, którą zgłaszasz, nie zobaczy Twojej tożsamości, chyba że zdecydujesz się ją ujawnić.",
+      "confidentiality": "Twoje zgłoszenie czytają osoby, które odpowiadają za ochronę w Twojej społeczności: koordynatorzy, brokerzy i administratorzy. Widzą Twoje imię i nazwisko, aby móc się z Tobą skontaktować. Osoba, którą zgłaszasz, nie może zobaczyć Twojego zgłoszenia i nie dowie się, kim jesteś, chyba że sam(a) zdecydujesz się to ujawnić.",
       "success": {
         "title": "Zgłoszenie wysłane",
         "body": "Dziękujemy. Koordynator ochrony rozpatrzy to w ciągu {{hours}} godzin.",

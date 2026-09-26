@@ -1341,7 +1341,7 @@
         "submit": "Cuir Tuairisc Isteach",
         "submitting": "Á chur isteach..."
       },
-      "confidentiality": "Seoltar do thuairisc chuig comhordaitheoirí cosanta ainmnithe i do phobal amháin. Ní fheicfidh an duine a thuairiscíonn tú do chéannacht mura roghnaíonn tú í a nochtadh.",
+      "confidentiality": "Léann na daoine atá freagrach as cosaint agus sábháilteacht i do phobal do thuairisc: a comhordaitheoirí, a bróicéirí agus a riarthóirí. Feiceann siad d’ainm ionas gur féidir leo teagmháil a dhéanamh leat. Ní féidir leis an duine a thuairiscíonn tú do thuairisc a fheiceáil, agus ní bheidh a fhios aige cé thú mura roghnaíonn tú é sin a roinnt.",
       "success": {
         "title": "Tuairisc Curtha Isteach",
         "body": "Go raibh maith agat. Déanfaidh comhordaitheoir cosanta athbhreithniú air seo laistigh de {{hours}} uair an chloig.",

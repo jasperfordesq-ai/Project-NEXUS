@@ -1323,7 +1323,7 @@
         "submit": "Enviar informe",
         "submitting": "Enviando..."
       },
-      "confidentiality": "Tu informe se envía únicamente a los coordinadores de protección designados de tu comunidad. La persona a la que reportas no verá tu identidad a menos que decidas revelarla.",
+      "confidentiality": "Tu informe lo leen las personas que se encargan de la protección en tu comunidad: sus coordinadores, intermediarios y administradores. Pueden ver tu nombre para poder hacer un seguimiento contigo. La persona a la que reportas no puede ver tu informe y no sabrá quién eres a menos que decidas compartirlo.",
       "success": {
         "title": "Informe enviado",
         "body": "Gracias. Un coordinador de protección revisará esto en un plazo de {{hours}} horas.",

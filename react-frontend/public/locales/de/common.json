@@ -1314,7 +1314,7 @@
         "submit": "Meldung absenden",
         "submitting": "Wird gesendet …"
       },
-      "confidentiality": "Ihre Meldung geht ausschliesslich an die beauftragten Schutz und Sicherheits-Koordinatorinnen Ihrer Gemeinschaft. Die gemeldete Person erfährt Ihren Namen nur, wenn Sie sich aktiv dafür entscheiden.",
+      "confidentiality": "Ihre Meldung wird von den Personen gelesen, die sich in Ihrer Gemeinschaft um Schutz und Sicherheit kümmern: Koordinatorinnen und Koordinatoren, Broker und Administratoren. Sie sehen Ihren Namen, damit sie sich bei Ihnen melden können. Die gemeldete Person kann Ihre Meldung nicht sehen und erfährt Ihren Namen nur, wenn Sie ihn selbst teilen.",
       "success": {
         "title": "Meldung eingegangen",
         "body": "Vielen Dank. Eine Koordinatorin meldet sich innerhalb von {{hours}} Stunden bei Ihnen.",

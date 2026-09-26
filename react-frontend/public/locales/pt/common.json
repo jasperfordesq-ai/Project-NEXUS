@@ -1323,7 +1323,7 @@
         "submit": "Submeter relatório",
         "submitting": "A submeter..."
       },
-      "confidentiality": "O seu relatório é enviado apenas aos coordenadores de proteção designados da sua comunidade. A pessoa que reporta não verá a sua identidade a menos que opte por a revelar.",
+      "confidentiality": "Seu relato é lido pelas pessoas que cuidam da proteção na sua comunidade: coordenadores, corretores e administradores. Elas veem seu nome para poder entrar em contato com você. A pessoa que você reporta não pode ver seu relato e não saberá quem você é, a menos que você decida compartilhar.",
       "success": {
         "title": "Relatório submetido",
         "body": "Obrigado. Um(a) coordenador(a) de proteção irá analisar isto no prazo de {{hours}} horas.",

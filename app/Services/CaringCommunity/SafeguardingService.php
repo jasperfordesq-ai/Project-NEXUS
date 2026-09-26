@@ -221,7 +221,10 @@ class SafeguardingService
         // any) plus every safeguarding.view holder. Previously an SLA breach
         // escalated silently and nobody was told. Best-effort.
         try {
-            $recipients = $this->resolveSafeguardingViewers($tenantId);
+            $recipients = $this->resolveSafeguardingViewers(
+                $tenantId,
+                isset($report->subject_user_id) ? (int) $report->subject_user_id : null,
+            );
             if (!empty($report->assigned_to_user_id)) {
                 $recipients[] = (int) $report->assigned_to_user_id;
             }
@@ -318,7 +321,7 @@ class SafeguardingService
      *
      * @return array<int,array<string,mixed>>
      */
-    public function listReports(?string $status = null, ?string $severity = null): array
+    public function listReports(?string $status = null, ?string $severity = null, ?int $viewerId = null): array
     {
         $tenantId = (int) TenantContext::getId();
 
@@ -341,6 +344,10 @@ class SafeguardingService
             })
             ->where('r.tenant_id', $tenantId);
 
+        // F-213: nobody may read a report about themselves.
+        if ($viewerId !== null) {
+            $q->where(fn ($w) => $w->whereNull('r.subject_user_id')->orWhere('r.subject_user_id', '!=', $viewerId));
+        }
         if ($status !== null && $status !== '' && in_array($status, self::STATUSES, true)) {
             $q->where('r.status', $status);
         }
@@ -369,9 +376,20 @@ class SafeguardingService
      *
      * @return array<string,mixed>|null
      */
-    public function reportDetail(int $reportId): ?array
+    public function reportDetail(int $reportId, ?int $viewerId = null): ?array
     {
         $tenantId = (int) TenantContext::getId();
+
+        // F-213: nobody may read a report about themselves.
+        if ($viewerId !== null) {
+            $subjectId = DB::table('safeguarding_reports')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $reportId)
+                ->value('subject_user_id');
+            if ($subjectId !== null && (int) $subjectId === $viewerId) {
+                return null;
+            }
+        }
 
         $row = DB::table('safeguarding_reports as r')
             ->leftJoin('users as reporter', function ($j) {
@@ -436,7 +454,7 @@ class SafeguardingService
      *
      * @return array<string,mixed>
      */
-    public function dashboardSummary(): array
+    public function dashboardSummary(?int $viewerId = null): array
     {
         $tenantId = (int) TenantContext::getId();
 
@@ -481,7 +499,7 @@ class SafeguardingService
             $openTotal += (int) ($statusCounts[$s] ?? 0);
         }
 
-        $recent = $this->listReports();
+        $recent = $this->listReports(null, null, $viewerId);
         $recent = array_slice($recent, 0, 10);
 
         return [
@@ -563,25 +581,50 @@ class SafeguardingService
      *
      * @return int[]
      */
-    private function resolveSafeguardingViewers(int $tenantId): array
+    private function resolveSafeguardingViewers(int $tenantId, ?int $excludeUserId = null): array
     {
-        if (!Schema::hasTable('user_permissions') || !Schema::hasTable('permissions')) {
-            return [];
-        }
-
+        // F-213: alert the people who can actually open reports —
+        // AdminCaringCommunityController::guardSafeguarding('view') admits
+        // admins, tenant admins, network admins, brokers and coordinators — plus
+        // anyone given `safeguarding.view` individually. The individual grant
+        // alone matched nobody in practice (O-040), so reports alerted no one.
+        $ids = [];
         try {
-            return DB::table('user_permissions as up')
-                ->join('permissions as p', 'p.id', '=', 'up.permission_id')
-                ->where('p.name', 'safeguarding.view')
-                ->where('up.tenant_id', $tenantId)
-                ->distinct()
-                ->pluck('up.user_id')
+            $ids = DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->where(function ($q) {
+                    $q->whereIn('role', ['admin', 'tenant_admin', 'broker', 'coordinator'])
+                      ->orWhere('is_tenant_super_admin', 1);
+                })
+                ->pluck('id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
         } catch (\Throwable $e) {
-            Log::info('[Safeguarding] viewer resolve skipped — permissions layout differs: ' . $e->getMessage());
-            return [];
+            Log::warning('[Safeguarding] staff resolve failed: ' . $e->getMessage());
         }
+
+        if (Schema::hasTable('user_permissions') && Schema::hasTable('permissions')) {
+            try {
+                $granted = DB::table('user_permissions as up')
+                    ->join('permissions as p', 'p.id', '=', 'up.permission_id')
+                    ->where('p.name', 'safeguarding.view')
+                    ->where('up.tenant_id', $tenantId)
+                    ->distinct()
+                    ->pluck('up.user_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+                $ids = array_merge($ids, $granted);
+            } catch (\Throwable $e) {
+                Log::info('[Safeguarding] viewer resolve skipped — permissions layout differs: ' . $e->getMessage());
+            }
+        }
+
+        // The person a report is about must never be alerted to it.
+        return array_values(array_filter(
+            array_unique($ids),
+            fn (int $id) => $excludeUserId === null || $id !== $excludeUserId,
+        ));
     }
 
     /**
@@ -695,25 +738,17 @@ class SafeguardingService
      */
     private function fanOutCriticalNotification(int $reportId, int $tenantId): void
     {
-        if (!Schema::hasTable('notifications') || !Schema::hasTable('user_permissions')) {
+        if (!Schema::hasTable('notifications')) {
             return;
         }
 
-        // Resolve user IDs that hold safeguarding.view in this tenant.
-        // Schema differs across installs; use a defensive query that only
-        // touches columns we know exist.
-        $reviewerIds = collect();
-        try {
-            $reviewerIds = DB::table('user_permissions as up')
-                ->join('permissions as p', 'p.id', '=', 'up.permission_id')
-                ->where('p.name', 'safeguarding.view')
-                ->where('up.tenant_id', $tenantId)
-                ->distinct()
-                ->pluck('up.user_id');
-        } catch (\Throwable $e) {
-            Log::info('[Safeguarding] Fan-out skipped — permissions table layout differs: ' . $e->getMessage());
-            return;
-        }
+        // F-213: the staff who can open reports (not only individual grants),
+        // never the person the report is about.
+        $subjectId = DB::table('safeguarding_reports')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $reportId)
+            ->value('subject_user_id');
+        $reviewerIds = collect($this->resolveSafeguardingViewers($tenantId, $subjectId !== null ? (int) $subjectId : null));
 
         if ($reviewerIds->isEmpty()) {
             return;

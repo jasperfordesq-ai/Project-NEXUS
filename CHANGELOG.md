@@ -189,6 +189,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- "Report a Concern" (Caring Community) now tells members truthfully who reads their report: the community's coordinators, brokers and administrators, who can see the reporter's name. It previously said reports went only to designated safeguarding coordinators. Critical reports now alert those staff (they used to reach almost nobody, because only people with a rarely granted individual permission were alerted), overdue reports of any urgency are escalated to them, and nobody can see or be alerted about a report made about themselves (F-213).
+
 - When a broker or coordinator opens a copied message for review, they now see only the conversation up to that message (the latest 50 messages before it), and every opening is recorded in the audit log. Previously opening one copy showed the first 200 messages the two members had ever exchanged, including everything written afterwards that was never copied or flagged, and only review decisions were recorded (F-212).
 
 - When a community reviews job ads before they appear, a job saved as a draft and then published now goes to review instead of straight onto the public jobs list. Previously "save as draft, then publish" skipped the review step. Jobs that were already approved can still be reopened without a second review, and admins can publish directly (F-211).

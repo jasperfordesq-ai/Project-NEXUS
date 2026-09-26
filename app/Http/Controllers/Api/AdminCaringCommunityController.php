@@ -95,6 +95,7 @@ class AdminCaringCommunityController extends BaseApiController
             'items' => $this->safeguardingService->listReports(
                 $status !== '' ? $status : null,
                 $severity !== '' ? $severity : null,
+                $this->requireAuth(),
             ),
         ]);
     }
@@ -107,7 +108,7 @@ class AdminCaringCommunityController extends BaseApiController
         $disabled = $this->guardSafeguarding('view');
         if ($disabled) return $disabled;
 
-        $detail = $this->safeguardingService->reportDetail($id);
+        $detail = $this->safeguardingService->reportDetail($id, $this->requireAuth());
         if ($detail === null) {
             return $this->respondWithError('NOT_FOUND', __('api.not_found'), null, 404);
         }
@@ -216,7 +217,7 @@ class AdminCaringCommunityController extends BaseApiController
         $disabled = $this->guardSafeguarding('view');
         if ($disabled) return $disabled;
 
-        return $this->respondWithData($this->safeguardingService->dashboardSummary());
+        return $this->respondWithData($this->safeguardingService->dashboardSummary($this->requireAuth()));
     }
 
     /**
