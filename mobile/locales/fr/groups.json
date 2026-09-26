@@ -156,6 +156,8 @@
       "publish": "Publier la question",
       "validation": "Ajoutez un titre et des précisions avant de publier la question.",
       "createError": "Impossible de créer la question.",
+      "recoveryError": "Impossible de restaurer la question inachevée.",
+      "recoveryNotice": "Une question inachevée a été restaurée. Réessayez avant d’en poser une autre.",
       "loadError": "Impossible de charger cette question.",
       "answerPlaceholder": "Rédigez une réponse…",
       "postAnswer": "Publier la réponse",

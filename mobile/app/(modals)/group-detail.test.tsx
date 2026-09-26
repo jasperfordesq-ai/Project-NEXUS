@@ -138,6 +138,8 @@ jest.mock('react-i18next', () => ({
         'detail.qa.publish': 'Publish question',
         'detail.qa.validation': 'Add a question title and details.',
         'detail.qa.createError': 'Could not create question.',
+        'detail.qa.recoveryError': 'Could not restore the unfinished question.',
+        'detail.qa.recoveryNotice': 'An unfinished question was restored. Retry it before asking another question.',
         'detail.qa.loadError': 'Could not load question.',
         'detail.qa.answerPlaceholder': 'Write an answer...',
         'detail.qa.postAnswer': 'Post answer',
@@ -1813,14 +1815,15 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Q&A'));
     expect(getByText('Group Q&A')).toBeTruthy();
     expect(getByText('How do we compost safely?')).toBeTruthy();
     expect(getByText('Answered')).toBeTruthy();
 
-    fireEvent.press(getByText('Ask'));
+    await waitFor(() => expect(getByTestId('group-question-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(getByTestId('group-question-composer-toggle'));
     fireEvent.changeText(getByPlaceholderText('Question title'), 'Which compost bin works best?');
     fireEvent.changeText(getByPlaceholderText('Add context...'), 'We need a lidded bin for the shared garden.');
     if (rejectFirst) jest.mocked(createGroupQuestion).mockRejectedValueOnce(new Error('Rejected'));
@@ -1831,8 +1834,8 @@ describe('GroupDetailScreen', () => {
       await waitFor(() => expect(getByText('Publish question')).toBeTruthy());
       expect(getByPlaceholderText('Question title').props.value).toBe('Which compost bin works best?');
       expect(getByPlaceholderText('Add context...').props.value).toBe('We need a lidded bin for the shared garden.');
-      expect(getByPlaceholderText('Question title').props.editable).toBe(true);
-      expect(getByPlaceholderText('Add context...').props.editable).toBe(true);
+      expect(getByPlaceholderText('Question title').props.editable).toBe(false);
+      expect(getByPlaceholderText('Add context...').props.editable).toBe(false);
       expect(refreshQuestions).not.toHaveBeenCalled();
       fireEvent.press(getByText('Publish question'));
     }
@@ -1847,6 +1850,34 @@ describe('GroupDetailScreen', () => {
       }
       expect(refreshQuestions).toHaveBeenCalled();
     });
+  });
+
+  it('restores an unfinished question and retries its exact durable key', async () => {
+    const pending = {
+      storageKey: 'saved-group-content', key: 'restored-question-key', groupId: 1, kind: 'question' as const,
+      intent: JSON.stringify({ title: 'Saved question', body: 'Which tools should we bring?' }),
+      payload: { title: 'Saved question', body: 'Which tools should we bring?' }, createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length]; apiCall += 1; return state;
+    });
+
+    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Q&A'));
+    await waitFor(() => expect(getByText('An unfinished question was restored. Retry it before asking another question.')).toBeTruthy());
+    expect(getByPlaceholderText('Question title').props.value).toBe('Saved question');
+    expect(getByPlaceholderText('Question title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Add context...').props.value).toBe('Which tools should we bring?');
+    fireEvent.press(getByText('Publish question'));
+
+    await waitFor(() => expect(createGroupQuestion).toHaveBeenCalledWith(1, pending.payload, pending.key));
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
   });
 
   it.each(['success', 'failed-read', 'changed-question'])('posts an answer with subsequent outcome: %s', async (outcome) => {

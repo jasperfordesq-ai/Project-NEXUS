@@ -114,6 +114,8 @@
       "publish": "Foilsigh an cheist",
       "validation": "Cuir teideal agus sonraí na ceiste leis roimh fhoilsiú.",
       "createError": "Níorbh fhéidir an cheist a chruthú.",
+      "recoveryError": "Níorbh fhéidir an cheist neamhchríochnaithe a athbhunú.",
+      "recoveryNotice": "Athbhunaíodh ceist neamhchríochnaithe. Bain triail eile aisti sula gcuireann tú ceist eile.",
       "loadError": "Níorbh fhéidir an cheist seo a luchtú.",
       "answerPlaceholder": "Scríobh freagra...",
       "postAnswer": "Foilsigh an freagra",

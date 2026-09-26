@@ -156,6 +156,8 @@
       "publish": "Publish question",
       "validation": "Add a question title and details before publishing.",
       "createError": "Could not create the question.",
+      "recoveryError": "Could not restore the unfinished question.",
+      "recoveryNotice": "An unfinished question was restored. Retry it before asking another question.",
       "loadError": "Could not load this question.",
       "answerPlaceholder": "Write an answer...",
       "postAnswer": "Post answer",

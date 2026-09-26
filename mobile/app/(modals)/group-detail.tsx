@@ -427,7 +427,9 @@ function GroupDetailScreenInner() {
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [creatingQuestion, setCreatingQuestion] = useState(false);
-  const questionCreateAttemptRef = useRef<MutationAttempt | null>(null);
+  const [isRestoringQuestion, setIsRestoringQuestion] = useState(false);
+  const [questionRecoveryError, setQuestionRecoveryError] = useState<string | null>(null);
+  const [pendingQuestionOperation, setPendingQuestionOperation] = useState<GroupContentCreationOperation<'question'> | null>(null);
   // 🔴 Deliberately NOT another useApi in this screen. group-detail.test.tsx stubs
   // useApi positionally, so a seventh call shifts every later result by one on each
   // re-render. The join-request queue loads inside its own component for that reason.
@@ -436,6 +438,7 @@ function GroupDetailScreenInner() {
   const isMountedRef = useRef(true);
   const discussionRestoreVersionRef = useRef(0);
   const announcementRestoreVersionRef = useRef(0);
+  const questionRestoreVersionRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -616,6 +619,39 @@ function GroupDetailScreenInner() {
     void restoreAnnouncementDraft();
     return () => { announcementRestoreVersionRef.current += 1; };
   }, [restoreAnnouncementDraft]);
+
+  const restoreQuestionDraft = useCallback(async () => {
+    const version = ++questionRestoreVersionRef.current;
+    setIsRestoringQuestion(true);
+    setQuestionRecoveryError(null);
+    setPendingQuestionOperation(null);
+    if (!questionsEnabled || visibleTab !== 'qa') {
+      setIsRestoringQuestion(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(safeGroupId, 'question');
+      if (!isMountedRef.current || version !== questionRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingQuestionOperation(operation);
+        setQuestionTitle(operation.payload.title);
+        setQuestionBody(operation.payload.body);
+        setShowQuestionComposer(true);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== questionRestoreVersionRef.current) return;
+      setQuestionRecoveryError(describeApiError(err, t('detail.qa.recoveryError')));
+    } finally {
+      if (isMountedRef.current && version === questionRestoreVersionRef.current) setIsRestoringQuestion(false);
+    }
+  // The encrypted operation store owns identity scoping. Avoid restarting recovery when i18n changes function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionsEnabled, safeGroupId, visibleTab]);
+
+  useEffect(() => {
+    void restoreQuestionDraft();
+    return () => { questionRestoreVersionRef.current += 1; };
+  }, [restoreQuestionDraft]);
 
   /*
     🔴 A group admin on the phone could see the member list and change nothing about
@@ -1010,22 +1046,37 @@ function GroupDetailScreenInner() {
     }
 
     if (!beginAction()) return;
-    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, body });
-    questionCreateAttemptRef.current = mutationAttemptFor(questionCreateAttemptRef.current, fingerprint, 'group-question');
     setCreatingQuestion(true);
+    let operation: GroupContentCreationOperation<'question'> | null = null;
     try {
-      await createGroupQuestion(loadedGroup.id, { title, body }, questionCreateAttemptRef.current.key);
+      operation = await reserveGroupContentCreationOperation(loadedGroup.id, 'question', { title, body });
       if (!isMountedRef.current) return;
-      questionCreateAttemptRef.current = null;
+      setPendingQuestionOperation(operation);
+      await createGroupQuestion(loadedGroup.id, operation.payload, operation.key);
+      await completeGroupContentCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingQuestionOperation(null);
       setQuestionTitle('');
       setQuestionBody('');
       setShowQuestionComposer(false);
       questionsApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupContentCreationOperation(operation);
+          if (isMountedRef.current) setPendingQuestionOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.createError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.qa.createError')), variant: 'danger' });
     } finally {
       finishAction();
       if (isMountedRef.current) setCreatingQuestion(false);
@@ -1625,6 +1676,10 @@ function GroupDetailScreenInner() {
             body={questionBody}
             setBody={setQuestionBody}
             creating={creatingQuestion}
+            isRestoring={isRestoringQuestion}
+            recoveryError={questionRecoveryError}
+            pendingOperation={pendingQuestionOperation}
+            onRetryRecovery={() => void restoreQuestionDraft()}
             onCreate={() => void handleCreateQuestion()}
             onRefresh={questionsApi.refresh}
           />
@@ -2324,6 +2379,10 @@ function GroupQAPanel({
   body,
   setBody,
   creating,
+  isRestoring,
+  recoveryError,
+  pendingOperation,
+  onRetryRecovery,
   onCreate,
   onRefresh,
 }: {
@@ -2343,6 +2402,10 @@ function GroupQAPanel({
   body: string;
   setBody: (value: string) => void;
   creating: boolean;
+  isRestoring: boolean;
+  recoveryError: string | null;
+  pendingOperation: GroupContentCreationOperation<'question'> | null;
+  onRetryRecovery: () => void;
   onCreate: () => void;
   onRefresh: () => void;
 }) {
@@ -2546,18 +2609,23 @@ function GroupQAPanel({
                 {t('detail.qa.subtitle')}
               </Text>
             </View>
-            <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} onPress={() => setShowComposer((value) => !value)}>
+            <HeroButton testID="group-question-composer-toggle" size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={isRestoring || Boolean(recoveryError) || Boolean(pendingOperation)} onPress={() => setShowComposer((value) => !value)}>
               <HeroButton.Label>{showComposer ? t('common:buttons.cancel') : t('detail.qa.ask')}</HeroButton.Label>
             </HeroButton>
           </View>
 
           {showComposer ? (
             <View className="gap-3">
+              {pendingOperation ? (
+                <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.textSecondary }}>
+                  {t('detail.qa.recoveryNotice')}
+                </Text>
+              ) : null}
               <Input
                 value={title}
                 onChangeText={setTitle}
                 placeholder={t('detail.qa.titlePlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingOperation}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -2567,7 +2635,7 @@ function GroupQAPanel({
                 value={body}
                 onChangeText={setBody}
                 placeholder={t('detail.qa.bodyPlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingOperation}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[104px] text-base"
@@ -2581,6 +2649,17 @@ function GroupQAPanel({
           ) : null}
         </HeroCard.Body>
       </HeroCard>
+
+      {recoveryError ? (
+        <HeroCard className="rounded-panel p-0" testID="group-question-recovery-error">
+          <HeroCard.Body className="gap-2 p-4">
+            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{recoveryError}</Text>
+            <HeroButton size="sm" variant="secondary" isDisabled={isRestoring} onPress={onRetryRecovery}>
+              {isRestoring ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
 
       {isLoading ? (
         <HeroCard className="rounded-panel p-0">

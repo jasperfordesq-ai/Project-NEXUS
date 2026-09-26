@@ -156,6 +156,8 @@
       "publish": "Frage veröffentlichen",
       "validation": "Füge vor dem Veröffentlichen einen Fragentitel und Einzelheiten hinzu.",
       "createError": "Die Frage konnte nicht erstellt werden.",
+      "recoveryError": "Die nicht abgeschlossene Frage konnte nicht wiederhergestellt werden.",
+      "recoveryNotice": "Eine nicht abgeschlossene Frage wurde wiederhergestellt. Versuche sie erneut, bevor du eine andere Frage stellst.",
       "loadError": "Diese Frage konnte nicht geladen werden.",
       "answerPlaceholder": "Schreibe eine Antwort ...",
       "postAnswer": "Antwort veröffentlichen",

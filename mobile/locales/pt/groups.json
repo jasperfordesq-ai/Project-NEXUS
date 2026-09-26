@@ -156,6 +156,8 @@
       "publish": "Publicar pergunta",
       "validation": "Acrescente um título e detalhes à pergunta antes de a publicar.",
       "createError": "Não foi possível criar a pergunta.",
+      "recoveryError": "Não foi possível restaurar a pergunta inacabada.",
+      "recoveryNotice": "Foi restaurada uma pergunta inacabada. Tente novamente antes de fazer outra pergunta.",
       "loadError": "Não foi possível carregar esta pergunta.",
       "answerPlaceholder": "Escreva uma resposta…",
       "postAnswer": "Publicar resposta",

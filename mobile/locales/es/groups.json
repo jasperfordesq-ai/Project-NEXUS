@@ -156,6 +156,8 @@
       "publish": "Publicar pregunta",
       "validation": "Añade un título y detalles a la pregunta antes de publicarla.",
       "createError": "No se pudo crear la pregunta.",
+      "recoveryError": "No se pudo restaurar la pregunta sin terminar.",
+      "recoveryNotice": "Se restauró una pregunta sin terminar. Vuelve a intentarlo antes de hacer otra pregunta.",
       "loadError": "No se pudo cargar esta pregunta.",
       "answerPlaceholder": "Escribe una respuesta…",
       "postAnswer": "Publicar respuesta",

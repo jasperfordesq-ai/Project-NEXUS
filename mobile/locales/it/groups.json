@@ -156,6 +156,8 @@
       "publish": "Pubblica domanda",
       "validation": "Aggiungi un titolo e i dettagli della domanda prima di pubblicarla.",
       "createError": "Impossibile creare la domanda.",
+      "recoveryError": "Impossibile ripristinare la domanda non completata.",
+      "recoveryNotice": "È stata ripristinata una domanda non completata. Riprova prima di porne un’altra.",
       "loadError": "Impossibile caricare questa domanda.",
       "answerPlaceholder": "Scrivi una risposta…",
       "postAnswer": "Pubblica risposta",
