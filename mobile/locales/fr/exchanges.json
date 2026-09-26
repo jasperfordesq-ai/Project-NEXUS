@@ -110,6 +110,7 @@
       "searchError": "Impossible de rechercher des membres pour le moment. Réessayez.",
       "addProvider": "Ajouter un fournisseur",
       "addReceiver": "Ajouter une personne bénéficiaire",
+      "addYourself": "Vous ajouter en tant que",
       "providers": "{{count}} personne contributrice",
       "providers_one": "{{count}} personne contributrice",
       "providers_other": "{{count}} personnes contributrices",

@@ -110,6 +110,7 @@
       "searchError": "Não foi possível pesquisar membros neste momento. Tente novamente.",
       "addProvider": "Adicionar provedor",
       "addReceiver": "Adicionar pessoa recetora",
+      "addYourself": "Adicionar-se como",
       "providers": "{{count}} pessoa prestadora",
       "providers_one": "{{count}} pessoa prestadora",
       "providers_other": "{{count}} pessoas prestadoras",

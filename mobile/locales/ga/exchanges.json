@@ -110,6 +110,7 @@
       "searchError": "Níorbh fhéidir linn baill a chuardach faoi láthair. Bain triail eile as.",
       "addProvider": "Cuir soláthraí leis",
       "addReceiver": "Cuir faighteoir leis",
+      "addYourself": "Cuir tú féin leis mar",
       "providers": "{{count}} soláthraí",
       "providers_one": "{{count}} soláthraí",
       "providers_other": "{{count}} soláthraithe",

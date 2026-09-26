@@ -110,6 +110,7 @@
       "searchError": "Mitglieder konnten gerade nicht durchsucht werden. Versuche es erneut.",
       "addProvider": "Anbieter hinzufügen",
       "addReceiver": "Empfangende Person hinzufügen",
+      "addYourself": "Sich selbst hinzufügen als",
       "providers": "{{count}} gebende Person",
       "providers_one": "{{count}} gebende Person",
       "providers_other": "{{count}} gebende Personen",

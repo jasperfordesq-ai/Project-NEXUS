@@ -21,6 +21,7 @@ import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { createGroupExchange, type CreateGroupExchangePayload, type GroupExchange } from '@/lib/api/groupExchanges';
 import { getMembers, type Member } from '@/lib/api/members';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -47,6 +48,17 @@ function memberName(member: Member) {
   return member.name || [member.first_name, member.last_name].filter(Boolean).join(' ') || String(member.id);
 }
 
+type SignedInUser = NonNullable<ReturnType<typeof useAuth>['user']>;
+
+/**
+ * The signed-in user shaped as a participant draft. `LoginUser` (the shape cached straight
+ * after sign-in) has no computed `name`, so the name falls back to first + last.
+ */
+function selfAsParticipant(user: SignedInUser, role: ParticipantDraft['role']): ParticipantDraft {
+  const name = ('name' in user && user.name) || [user.first_name, user.last_name].filter(Boolean).join(' ') || String(user.id);
+  return { user_id: user.id, name, avatar: user.avatar_url ?? null, role, hours: '', weight: '1' };
+}
+
 function NewGroupExchangeRoute() {
   return (
     <ModalErrorBoundary>
@@ -67,6 +79,7 @@ function NewGroupExchangeScreen() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [totalHours, setTotalHours] = useState('');
@@ -139,6 +152,12 @@ function NewGroupExchangeScreen() {
       },
     ]);
     setMemberResults((current) => current.filter((result) => result.id !== member.id));
+  }
+
+  function addSelf(role: ParticipantDraft['role']) {
+    if (!user?.id || selectedIds.has(user.id)) return;
+    setParticipants((current) => [...current, selfAsParticipant(user, role)]);
+    setMemberResults((current) => current.filter((result) => result.id !== user.id));
   }
 
   function updateParticipant(userId: number, values: Partial<Pick<ParticipantDraft, 'hours' | 'weight'>>) {
@@ -349,6 +368,28 @@ function NewGroupExchangeScreen() {
                   </View>
                 ))}
               </View>
+
+              {/*
+                The member directory (/v2/users) never returns the viewer, so an organiser who
+                is also taking part (a workshop leader delivering the session, say) could not
+                add themselves at all. The API accepts the organiser as a participant, so offer
+                it explicitly. Mirrors the web app's CreateGroupExchangePage.
+              */}
+              {user?.id && !selectedIds.has(user.id) ? (
+                <View className="gap-2 rounded-panel-inner bg-surface-secondary p-3">
+                  <Text className="text-sm" style={{ color: theme.textSecondary }}>
+                    {t('groupExchanges.create.addYourself')}
+                  </Text>
+                  <View className="flex-row gap-2">
+                    <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => addSelf('provider')}>
+                      <HeroButton.Label>{t('groupExchanges.detail.roles.provider')}</HeroButton.Label>
+                    </HeroButton>
+                    <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => addSelf('receiver')}>
+                      <HeroButton.Label>{t('groupExchanges.detail.roles.receiver')}</HeroButton.Label>
+                    </HeroButton>
+                  </View>
+                </View>
+              ) : null}
 
               {participants.length > 0 ? (
                 <View className="gap-2">

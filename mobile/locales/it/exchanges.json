@@ -110,6 +110,7 @@
       "searchError": "Impossibile cercare membri in questo momento. Riprova.",
       "addProvider": "Aggiungi fornitore",
       "addReceiver": "Aggiungi persona ricevente",
+      "addYourself": "Aggiungiti come",
       "providers": "{{count}} persona offerente",
       "providers_one": "{{count}} persona offerente",
       "providers_other": "{{count}} persone offerenti",

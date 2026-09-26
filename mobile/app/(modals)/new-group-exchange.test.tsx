@@ -12,6 +12,11 @@ const mockRouterReplace = jest.fn();
 const mockReserveCreation = jest.fn();
 const mockCompleteCreation = jest.fn();
 const mockShowToast = jest.fn();
+// The signed-in organiser. The member directory never returns the viewer, so the
+// screen has to offer "add yourself" from the auth context instead.
+type MockAuthUser = { id: number; first_name: string | null; last_name: string | null; avatar_url: string | null };
+const mockOrganiser: MockAuthUser = { id: 42, first_name: 'Olive', last_name: 'Organiser', avatar_url: null };
+let mockAuthUser: MockAuthUser | null = mockOrganiser;
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -41,6 +46,7 @@ jest.mock('react-i18next', () => ({
         'groupExchanges.create.searchError': 'Could not search members.',
         'groupExchanges.create.addProvider': 'Add provider',
         'groupExchanges.create.addReceiver': 'Add receiver',
+        'groupExchanges.create.addYourself': 'Add yourself as',
         'groupExchanges.create.providers': `${String(opts?.count ?? 0)} providers`,
         'groupExchanges.create.receivers': `${String(opts?.count ?? 0)} receivers`,
         'groupExchanges.create.summaryHours': `${String(opts?.count ?? 0)} hours planned`,
@@ -79,6 +85,9 @@ jest.mock('@/components/ui/useConfirm', () => ({
 jest.mock('@expo/vector-icons', () => ({ Ionicons: 'View' }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ isAuthenticated: mockAuthUser !== null, user: mockAuthUser }),
+}));
 jest.mock('@/lib/hooks/useTenant', () => ({
   useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -154,6 +163,7 @@ beforeEach(() => {
   });
   mockCompleteCreation.mockReset().mockResolvedValue(undefined);
   mockShowToast.mockReset();
+  mockAuthUser = mockOrganiser;
 });
 
 describe('NewGroupExchangeRoute', () => {
@@ -286,5 +296,50 @@ describe('NewGroupExchangeRoute', () => {
       pathname: '/(modals)/group-exchange-detail',
       params: { id: '55' },
     });
+  });
+
+  // The member directory deliberately never returns the viewer, so an organiser who is
+  // also delivering the activity (a workshop leader, say) could not add themselves.
+  it('lets the organiser add themselves as a provider, then hides the offer', async () => {
+    const screen = render(<NewGroupExchangeRoute />);
+
+    expect(screen.getByText('Add yourself as')).toBeTruthy();
+    fireEvent.press(screen.getByText('Provider'));
+
+    expect(screen.queryByText('Add yourself as')).toBeNull();
+    expect(screen.getByText('Olive Organiser')).toBeTruthy();
+    expect(screen.getByText('1 providers')).toBeTruthy();
+
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. Community garden workday'), 'Pottery workshop');
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. 6'), '3');
+    fireEvent.press(screen.getByText('Create exchange'));
+
+    await waitFor(() => {
+      expect(mockCreateGroupExchange).toHaveBeenCalledWith({
+        title: 'Pottery workshop',
+        description: null,
+        split_type: 'equal',
+        total_hours: 3,
+        participants: [
+          { user_id: 42, role: 'provider', hours: 0, weight: 1 },
+        ],
+      }, 'mobile-group-exchange-create-123');
+    });
+  });
+
+  it('brings the offer back when the organiser removes themselves', () => {
+    const screen = render(<NewGroupExchangeRoute />);
+
+    fireEvent.press(screen.getByText('Receiver'));
+    expect(screen.queryByText('Add yourself as')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Remove Olive Organiser'));
+    expect(screen.getByText('Add yourself as')).toBeTruthy();
+  });
+
+  it('offers nothing when there is no signed-in user', () => {
+    mockAuthUser = null;
+    const screen = render(<NewGroupExchangeRoute />);
+
+    expect(screen.queryByText('Add yourself as')).toBeNull();
   });
 });

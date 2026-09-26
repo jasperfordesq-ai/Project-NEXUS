@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The mobile app's "Create group exchange" screen now offers "Add yourself as" Provider or Receiver, matching the website, so an organiser who is also taking part can include themselves. The member search never lists the person searching, so this was impossible in the app before. Available in all seven app languages.
+
 - Signing in on a local development machine works again. The browser-origin check added with the move of refresh credentials out of browser storage allowed plain `http://localhost` only when the environment was named `local` or `testing`, but the documented local stack runs as `development`, so every local browser sign-in was refused with `AUTH_BROWSER_ORIGIN_INVALID` before the password was checked. `development` is now included, matching the other loopback allowances; production and staging are unchanged.
 
 - The AI assistant now describes group exchanges correctly: Providers and Receivers, the three ways to share hours, and how everyone confirms. Its built-in text described a "beneficiary", payment "from a community pool" and per-person actual hours, none of which exist. Communities already using the old default text are updated by a migration; a community whose admin edited that text keeps their own version.

@@ -110,6 +110,7 @@
       "searchError": "We could not search members right now. Please try again.",
       "addProvider": "Add provider",
       "addReceiver": "Add receiver",
+      "addYourself": "Add yourself as",
       "providers": "{{count}} provider",
       "providers_one": "{{count}} provider",
       "providers_other": "{{count}} providers",
