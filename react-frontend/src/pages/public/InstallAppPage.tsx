@@ -31,6 +31,7 @@ import Globe from 'lucide-react/icons/globe';
 import HelpCircle from 'lucide-react/icons/help-circle';
 import Laptop from 'lucide-react/icons/laptop';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
+import ShieldCheck from 'lucide-react/icons/shield-check';
 import Smartphone from 'lucide-react/icons/smartphone';
 import Store from 'lucide-react/icons/store';
 // Imported from the focused modules rather than the '@/components/ui' barrel:
@@ -227,9 +228,26 @@ export function InstallAppPage() {
             >
               {t('install_app.play_live_title')}
             </h2>
-            <Chip size="sm" variant="flat" color="success">
+            <Chip size="sm" variant="flat" color="warning">
               {t('install_app.play_live_tag')}
             </Chip>
+          </div>
+
+          {/* Sits directly under the heading, before the download button, so
+              nobody reaches the store link without reading that the app is
+              still in development. It used to follow the QR code, where it
+              read as small print. */}
+          <div
+            className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4"
+            data-testid="install-play-early-notice"
+          >
+            <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-theme-warning">
+              <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t('install_app.play_live_early_title')}
+            </p>
+            <p className="text-sm leading-relaxed text-theme-secondary">
+              {t('install_app.play_live_early_body')}
+            </p>
           </div>
 
           <div className="grid items-start gap-6 sm:grid-cols-[1fr_auto]">
@@ -273,17 +291,7 @@ export function InstallAppPage() {
             </figure>
           </div>
 
-          <div className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-            <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-theme-warning">
-              <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {t('install_app.play_live_early_title')}
-            </p>
-            <p className="text-sm leading-relaxed text-theme-secondary">
-              {t('install_app.play_live_early_body')}
-            </p>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-accent/10 p-4">
+          <div className="mt-5 rounded-xl bg-accent/10 p-4">
             <p className="mb-1.5 text-sm font-semibold text-theme-primary">
               {t('install_app.play_live_feedback_title')}
             </p>
@@ -309,29 +317,78 @@ export function InstallAppPage() {
         </GlassCard>
       </motion.section>
 
-      {/* One-tap install, only where the browser actually offered us a prompt. */}
-      {install.isInstalled ? (
-        <motion.div variants={itemVariants}>
-          <Alert
-            color="success"
-            title={t('install_app.already_installed_title')}
-            description={t('install_app.already_installed_body')}
-          />
-        </motion.div>
-      ) : install.canPrompt ? (
-        <motion.div variants={itemVariants} className="flex flex-col items-center gap-2">
-          <Button
-            size="lg"
-            className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto sm:px-10"
-            startContent={<Download className="h-5 w-5" aria-hidden="true" />}
-            onPress={() => { void install.promptInstall(); }}
-            data-testid="install-app-prompt"
+      {/* The web version is the recommendation for phones: it IS the website,
+          so it is always current and it is the surface we maintain first. The
+          native app above is an early release, so this says plainly which of
+          the two is the stable choice. Shown on every device; only the action
+          at the bottom varies (one-tap install where the browser offered a
+          prompt, a confirmation if already installed, otherwise the steps). */}
+      <motion.section variants={itemVariants} aria-labelledby="install-web-stable-heading">
+        <GlassCard
+          className="!border-2 !border-emerald-500/50 p-5 sm:p-6"
+          data-testid="install-web-stable"
+        >
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <div className="inline-flex rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 p-2.5">
+              <ShieldCheck className="h-5 w-5 text-emerald-500" aria-hidden="true" />
+            </div>
+            <Chip size="sm" variant="flat" color="success">
+              {t('install_app.web_stable_tag')}
+            </Chip>
+          </div>
+          <h2
+            id="install-web-stable-heading"
+            className="mb-3 text-xl font-bold text-theme-primary sm:text-2xl"
           >
-            {t('install_app.install_now')}
-          </Button>
-          <p className="text-sm text-theme-muted">{t('install_app.install_now_hint')}</p>
-        </motion.div>
-      ) : null}
+            {t('install_app.web_stable_title', { name: appName })}
+          </h2>
+          <p className="mb-4 text-base font-medium leading-relaxed text-theme-primary">
+            {t('install_app.web_stable_lead')}
+          </p>
+          <ul className="mb-4 space-y-2">
+            {['web_stable_point_1', 'web_stable_point_2', 'web_stable_point_3'].map((key) => (
+              <li key={key} className="flex items-start gap-2 text-sm text-theme-secondary sm:text-base">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+                <span>{t(`install_app.${key}`)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mb-5 text-sm leading-relaxed text-theme-secondary">
+            {t('install_app.web_stable_install_note')}
+          </p>
+
+          {install.isInstalled ? (
+            <Alert
+              color="success"
+              title={t('install_app.already_installed_title')}
+              description={t('install_app.already_installed_body')}
+            />
+          ) : install.canPrompt ? (
+            <div className="flex flex-col items-center gap-2">
+              <Button
+                size="lg"
+                className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto sm:px-10"
+                startContent={<Download className="h-5 w-5" aria-hidden="true" />}
+                onPress={() => { void install.promptInstall(); }}
+                data-testid="install-app-prompt"
+              >
+                {t('install_app.install_now')}
+              </Button>
+              <p className="text-sm text-theme-muted">{t('install_app.install_now_hint')}</p>
+            </div>
+          ) : (
+            <Button
+              as="a"
+              href="#install-steps"
+              variant="flat"
+              className="w-full bg-accent/10 text-accent hover:bg-accent/20 sm:w-auto"
+              data-testid="install-web-stable-steps"
+            >
+              {t('install_app.web_stable_steps_cta')}
+            </Button>
+          )}
+        </GlassCard>
+      </motion.section>
 
       {/* Honest status — what works, what does not. */}
       <motion.section variants={itemVariants} aria-labelledby="install-status-heading">

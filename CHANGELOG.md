@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The "Get the app" page now labels the Android app as an early release that is still in development, with that notice placed directly under its heading and before the download button, and says plainly that the core features are solid but some less common situations may not work yet. A new "Most stable" section above the one-tap install button recommends the browser version on phones: it is the same as the full website, always current, and fully maintained, with the Apple home-screen limitation restated. Available in all eleven languages.
+
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed

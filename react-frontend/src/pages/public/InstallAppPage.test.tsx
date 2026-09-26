@@ -151,13 +151,48 @@ describe('InstallAppPage', () => {
 
     // Early-release honesty and the invitation to give feedback both have to
     // survive: they are the reason this is framed as an early release at all.
-    expect(screen.getByText(/This is an early release, and we are still working on it/)).toBeInTheDocument();
-    expect(screen.getByText(/first public release and the app is still being built/)).toBeInTheDocument();
+    expect(screen.getByText('Early release · in development')).toBeInTheDocument();
+    expect(screen.getByText('Early release — still in development')).toBeInTheDocument();
+    expect(screen.getByText(/The core of the app is solid/)).toBeInTheDocument();
+    expect(screen.getByText(/some less common situations may not work quite right yet/)).toBeInTheDocument();
+    // The notice must come BEFORE the download button in reading order, so it
+    // cannot be skipped on the way to the store link.
+    const notice = screen.getByTestId('install-play-early-notice');
+    expect(
+      notice.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(screen.getByText(/Be one of the first/)).toBeInTheDocument();
     expect(screen.getByTestId('install-play-feedback-cta')).toHaveAttribute('href', '/test/contact');
 
     // iPhone/iPad is stated as nearly ready but deliberately without a date.
     expect(screen.getByText(/An iPhone and iPad version is built from the same app/)).toBeInTheDocument();
+  });
+
+  it('recommends the web version as the most stable way to use the platform on a phone', () => {
+    render(<InstallAppPage />);
+
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: 'The most stable way to use Test Community on your phone',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Most stable')).toBeInTheDocument();
+    expect(screen.getByText(/exactly the same as the full website/)).toBeInTheDocument();
+    expect(screen.getByText(/the most reliable option we offer today/)).toBeInTheDocument();
+    // The Apple limitation is restated here, not only further down.
+    expect(screen.getByText(/saving it as an app icon is not reliable yet/)).toBeInTheDocument();
+    // With no browser prompt available, the section still gives an action.
+    expect(screen.getByTestId('install-web-stable-steps')).toHaveAttribute('href', '#install-steps');
+  });
+
+  it('puts the one-tap install button inside the most-stable section', () => {
+    mockUseInstallPrompt.mockReturnValue(promptState({ canPrompt: true }));
+    render(<InstallAppPage />);
+
+    const section = screen.getByTestId('install-web-stable');
+    expect(section).toContainElement(screen.getByTestId('install-app-prompt'));
+    expect(screen.queryByTestId('install-web-stable-steps')).toBeNull();
   });
 
   it('no longer claims there is no download link, now that Android has shipped', () => {
