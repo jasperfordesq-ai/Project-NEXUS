@@ -17,60 +17,62 @@ import type { LucideIcon } from 'lucide-react';
 import type { ExchangeStatus } from '@/types/api';
 
 export interface ExchangeStatusConfig {
+  /** Translation key in the `exchanges` namespace — render with t(). */
   label: string;
   color: 'warning' | 'primary' | 'success' | 'danger' | 'secondary' | 'default';
   icon: LucideIcon;
+  /** Translation key in the `exchanges` namespace — render with t(). */
   description: string;
 }
 
 export const EXCHANGE_STATUS_CONFIG: Record<ExchangeStatus, ExchangeStatusConfig> = {
   pending_provider: {
-    label: 'Awaiting Provider',
+    label: 'status_config.pending_provider.label',
     color: 'warning',
     icon: Clock,
-    description: 'Waiting for the service provider to accept or decline this request.',
+    description: 'status_config.pending_provider.description',
   },
   pending_broker: {
-    label: 'Awaiting Broker',
+    label: 'status_config.pending_broker.label',
     color: 'secondary',
     icon: Clock,
-    description: 'This exchange requires broker approval before it can proceed.',
+    description: 'status_config.pending_broker.description',
   },
   accepted: {
-    label: 'Accepted',
+    label: 'status_config.accepted.label',
     color: 'primary',
     icon: CheckCircle,
-    description: 'The exchange has been accepted. The provider can start when ready.',
+    description: 'status_config.accepted.description',
   },
   in_progress: {
-    label: 'In Progress',
+    label: 'status_config.in_progress.label',
     color: 'primary',
     icon: ArrowRightLeft,
-    description: 'The service is currently being provided.',
+    description: 'status_config.in_progress.description',
   },
   pending_confirmation: {
-    label: 'Confirm Hours',
+    label: 'status_config.pending_confirmation.label',
     color: 'warning',
     icon: AlertTriangle,
-    description: 'Both parties need to confirm the hours worked to complete the exchange.',
+    description: 'status_config.pending_confirmation.description',
   },
   completed: {
-    label: 'Completed',
+    label: 'status_config.completed.label',
     color: 'success',
     icon: CheckCircle,
-    description: 'The exchange has been completed and credits have been transferred.',
+    description: 'status_config.completed.description',
   },
   disputed: {
-    label: 'Disputed',
+    label: 'status_config.disputed.label',
     color: 'danger',
     icon: AlertTriangle,
-    description: 'There is a disagreement about the hours. A broker will review this.',
+    description: 'status_config.disputed.description',
   },
   cancelled: {
-    label: 'Cancelled',
+    label: 'status_config.cancelled.label',
     color: 'default',
     icon: XCircle,
-    description: 'This exchange was cancelled.',
+    description: 'status_config.cancelled.description',
   },
 };
 

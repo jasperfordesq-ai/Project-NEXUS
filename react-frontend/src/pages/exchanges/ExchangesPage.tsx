@@ -397,7 +397,7 @@ export function ExchangesPage() {
                   <Link key={exchange.id} to={tenantPath(`/exchanges/${exchange.id}`)}>
                     <article
                       className="block"
-                      aria-label={t('card.aria_label', { title: exchange.listing?.title || t('service_exchange'), status: statusConfig.label })}
+                      aria-label={t('card.aria_label', { title: exchange.listing?.title || t('service_exchange'), status: t(statusConfig.label) })}
                     >
                       <GlassCard className="p-4 sm:p-6 hover:border-accent/30 transition-colors cursor-pointer">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -421,7 +421,7 @@ export function ExchangesPage() {
                                 variant="flat"
                                 startContent={<StatusIcon className="w-3 h-3" aria-hidden="true" />}
                               >
-                                {statusConfig.label}
+                                {t(statusConfig.label)}
                               </Chip>
                             </div>
 

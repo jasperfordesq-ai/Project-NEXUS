@@ -437,9 +437,9 @@ export function ExchangeDetailPage() {
               variant="flat"
               size="lg"
             >
-              {statusConfig.label}
+              {t(statusConfig.label)}
             </Chip>
-            <p className="text-sm text-theme-muted mt-1">{statusConfig.description}</p>
+            <p className="text-sm text-theme-muted mt-1">{t(statusConfig.description)}</p>
           </div>
         </div>
       </GlassCard>

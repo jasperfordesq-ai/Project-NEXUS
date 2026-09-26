@@ -178,5 +178,39 @@
       "title": "Exchange Details"
     }
   },
-  "hours_count_one": "{{count}} hour"
+  "hours_count_one": "{{count}} hour",
+  "status_config": {
+    "pending_provider": {
+      "label": "Awaiting Provider",
+      "description": "Waiting for the service provider to accept or decline this request."
+    },
+    "pending_broker": {
+      "label": "Awaiting Broker",
+      "description": "This exchange requires broker approval before it can proceed."
+    },
+    "accepted": {
+      "label": "Accepted",
+      "description": "The exchange has been accepted. The provider can start when ready."
+    },
+    "in_progress": {
+      "label": "In Progress",
+      "description": "The service is currently being provided."
+    },
+    "pending_confirmation": {
+      "label": "Confirm Hours",
+      "description": "Both parties need to confirm the hours worked to complete the exchange."
+    },
+    "completed": {
+      "label": "Completed",
+      "description": "The exchange has been completed and credits have been transferred."
+    },
+    "disputed": {
+      "label": "Disputed",
+      "description": "There is a disagreement about the hours. A broker will review this."
+    },
+    "cancelled": {
+      "label": "Cancelled",
+      "description": "This exchange was cancelled."
+    }
+  }
 }
