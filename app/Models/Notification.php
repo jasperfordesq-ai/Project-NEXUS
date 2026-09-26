@@ -135,6 +135,7 @@ class Notification extends Model
      * @param int|null $tenantId    Explicit tenant ID for cross-tenant notifications (e.g. federation).
      *                              When null, uses the recipient user's tenant.
      * @param string|null $idempotencyKey Stable per-recipient business-event key.
+     * @param bool|null $created Receives whether this call inserted the notification.
      */
     public static function createNotification(
         int $userId,
@@ -144,6 +145,7 @@ class Notification extends Model
         bool $isImportant = false,
         ?int $tenantId = null,
         ?string $idempotencyKey = null,
+        ?bool &$created = null,
     ): int {
         $tenantId = self::resolveTenantIdForRecipient($userId, $tenantId, 'Notification::createNotification');
 
@@ -159,7 +161,7 @@ class Notification extends Model
         $idempotencyKey = trim((string) ($idempotencyKey ?? ''));
         if ($idempotencyKey !== '') {
             $row['idempotency_key'] = mb_substr($idempotencyKey, 0, 191);
-            DB::table('notifications')->insertOrIgnore($row);
+            $created = DB::table('notifications')->insertOrIgnore($row) === 1;
             return (int) DB::table('notifications')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
@@ -168,6 +170,7 @@ class Notification extends Model
         }
 
         $id = DB::table('notifications')->insertGetId($row);
+        $created = true;
 
         return (int) $id;
     }

@@ -30,6 +30,7 @@ import Avatar from '@/components/ui/Avatar';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { ApiResponseError } from '@/lib/api/client';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import {
@@ -39,6 +40,13 @@ import {
 } from '@/lib/api/groups';
 import { useApi } from '@/lib/hooks/useApi';
 import { useTheme } from '@/lib/hooks/useTheme';
+import {
+  completeGroupJoinRequestDecisionOperation,
+  discardGroupJoinRequestDecisionOperation,
+  loadGroupJoinRequestDecisionOperation,
+  reserveGroupJoinRequestDecisionOperation,
+  type GroupJoinRequestDecisionOperation,
+} from '@/lib/groupJoinRequestDecisionOperation';
 
 /*
   🔴 `dateLocale()`, never a bare `toLocaleDateString()`. With no argument, Intl uses
@@ -68,8 +76,13 @@ export default function GroupJoinRequestsCard({
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [busyUserId, setBusyUserId] = useState<number | null>(null);
+  const [savedOperation, setSavedOperation] = useState<GroupJoinRequestDecisionOperation | null>(null);
+  const [recoveryState, setRecoveryState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [recoveryNonce, setRecoveryNonce] = useState(0);
+  const [authorityRefused, setAuthorityRefused] = useState(false);
   const pendingRef = useRef(false);
   const mountedRef = useRef(true);
+  const recoveryEpochRef = useRef(0);
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
@@ -88,33 +101,79 @@ export default function GroupJoinRequestsCard({
   }
   const scope = scopeRef.current;
   useEffect(() => {
+    const recoveryEpoch = ++recoveryEpochRef.current;
     // A returned group/permission is a new interaction, not authority to reuse
     // a confirmation or completion retained from an earlier visit.
     pendingRef.current = false;
     setBusyUserId(null);
-  }, [scope]);
+    setSavedOperation(null);
+    setAuthorityRefused(false);
+    if (!scope.allowed || scope.groupId <= 0) {
+      setRecoveryState('ready');
+      return;
+    }
+    setRecoveryState('loading');
+    void loadGroupJoinRequestDecisionOperation(scope.groupId).then((operation) => {
+      if (mountedRef.current && recoveryEpochRef.current === recoveryEpoch && scopeRef.current === scope && scope.allowed) {
+        setSavedOperation(operation);
+        setRecoveryState('ready');
+      }
+    }).catch(() => {
+      if (mountedRef.current && recoveryEpochRef.current === recoveryEpoch && scopeRef.current === scope && scope.allowed) {
+        setRecoveryState('failed');
+      }
+    });
+  }, [scope, recoveryNonce]);
 
-  async function answer(request: GroupJoinRequest, action: 'accept' | 'reject') {
+  function isDefiniteRejection(error: unknown): boolean {
+    return error instanceof ApiResponseError
+      && error.status >= 400
+      && error.status < 500
+      && error.status !== 408
+      && error.status !== 429;
+  }
+
+  async function runOperation(operation: GroupJoinRequestDecisionOperation) {
     const isCurrent = () => mountedRef.current && scopeRef.current === scope && scope.allowed;
     if (!isCurrent() || pendingRef.current) return;
     pendingRef.current = true;
-    setBusyUserId(request.user_id);
+    setBusyUserId(operation.requesterId);
+    setSavedOperation(operation);
     try {
-      await handleGroupJoinRequest(groupId, request.user_id, action);
+      await handleGroupJoinRequest(
+        operation.groupId,
+        operation.requesterId,
+        operation.action,
+        operation.key,
+      );
+      await completeGroupJoinRequestDecisionOperation(operation);
       if (!isCurrent()) return;
+      setSavedOperation(null);
       showToast({
-        title: action === 'accept' ? t('detail.manage.accepted') : t('detail.manage.declined'),
+        title: operation.action === 'accept' ? t('detail.manage.accepted') : t('detail.manage.declined'),
         variant: 'success',
       });
       requestsApi.refresh();
-      if (action === 'accept') onAccepted();
+      if (operation.action === 'accept') onAccepted();
     } catch (err) {
+      if (isDefiniteRejection(err)) {
+        if (isCurrent() && err instanceof ApiResponseError && isRefusalStatus(err.status)) {
+          setAuthorityRefused(true);
+        }
+        try {
+          await discardGroupJoinRequestDecisionOperation(operation);
+          if (isCurrent()) setSavedOperation(null);
+        } catch {
+          if (isCurrent()) setRecoveryState('failed');
+        }
+        if (isCurrent()) requestsApi.refresh();
+      }
       if (!isCurrent()) return;
       showToast({
         title: t('common:errors.alertTitle'),
-        // The server's own words: a full group answers 409 and says so, and "please
-        // try again" would be wrong for that.
-        description: describeApiError(err, t('detail.manage.actionFailed')),
+        description: isDefiniteRejection(err)
+          ? describeApiError(err, t('detail.manage.actionFailed'))
+          : t('detail.manage.decisionPending'),
         variant: 'danger',
       });
     } finally {
@@ -123,6 +182,32 @@ export default function GroupJoinRequestsCard({
         setBusyUserId(null);
       }
     }
+  }
+
+  async function answer(request: GroupJoinRequest, action: 'accept' | 'reject') {
+    const isCurrent = () => mountedRef.current && scopeRef.current === scope && scope.allowed;
+    if (!isCurrent() || pendingRef.current) return;
+    pendingRef.current = true;
+    setBusyUserId(request.user_id);
+    let operation: GroupJoinRequestDecisionOperation;
+    try {
+      operation = await reserveGroupJoinRequestDecisionOperation(groupId, request.user_id, action);
+    } catch (err) {
+      if (!isCurrent()) return;
+      pendingRef.current = false;
+      setBusyUserId(null);
+      setRecoveryState('failed');
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: t('detail.manage.recoveryUnavailable'),
+        variant: 'danger',
+      });
+      return;
+    }
+    if (!isCurrent()) return;
+    pendingRef.current = false;
+    setBusyUserId(null);
+    await runOperation(operation);
   }
 
   function confirmDecline(request: GroupJoinRequest) {
@@ -144,6 +229,54 @@ export default function GroupJoinRequestsCard({
   // Not an admin after all — the server is the authority, not the group payload. Show
   // nothing rather than an error the member can do nothing about; the tab still works.
   if (isRefusalStatus(requestsApi.errorStatus)) return null;
+  if (authorityRefused) return null;
+
+  if (recoveryState === 'loading') {
+    return (
+      <HeroCard className="rounded-panel p-0">
+        <HeroCard.Body className="min-h-[96px] items-center justify-center">
+          <Spinner size="sm" />
+        </HeroCard.Body>
+      </HeroCard>
+    );
+  }
+
+  if (recoveryState === 'failed') {
+    return (
+      <HeroCard className="rounded-panel p-0" testID="group-join-decision-recovery-error">
+        <HeroCard.Body className="gap-3 p-4">
+          <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>
+            {t('detail.manage.recoveryUnavailable')}
+          </Text>
+          <HeroButton size="sm" variant="secondary" onPress={() => setRecoveryNonce(value => value + 1)}>
+            <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+          </HeroButton>
+        </HeroCard.Body>
+      </HeroCard>
+    );
+  }
+
+  if (savedOperation) {
+    return (
+      <HeroCard className="rounded-panel p-0" testID="group-join-decision-pending">
+        <HeroCard.Body className="gap-3 p-4">
+          <Text accessibilityRole="alert" accessibilityLiveRegion="polite" className="text-sm" style={{ color: theme.text }}>
+            {t('detail.manage.decisionPending')}
+          </Text>
+          <HeroButton
+            size="sm"
+            isDisabled={busyUserId !== null}
+            testID="group-join-decision-retry"
+            onPress={() => void runOperation(savedOperation)}
+          >
+            <HeroButton.Label>
+              {busyUserId !== null ? t('detail.manage.working') : t('detail.manage.retryDecision')}
+            </HeroButton.Label>
+          </HeroButton>
+        </HeroCard.Body>
+      </HeroCard>
+    );
+  }
 
   if (requestsApi.isLoading) {
     return (

@@ -381,7 +381,10 @@
       "removeTitle": "¿Expulsar del grupo?",
       "removeMessage": "{{name}} perderá el acceso a este grupo y a todo lo compartido en él.",
       "removed": "Expulsado del grupo",
-      "actionFailed": "No ha funcionado. Inténtalo de nuevo."
+      "actionFailed": "No ha funcionado. Inténtalo de nuevo.",
+      "decisionPending": "No pudimos confirmar si se guardó la decisión. Reinténtalo para comprobarlo de forma segura.",
+      "retryDecision": "Reintentar decisión",
+      "recoveryUnavailable": "No se pudo restaurar la decisión pendiente sobre la solicitud. Reinténtalo antes de tomar otra decisión."
     }
   },
   "filter": {

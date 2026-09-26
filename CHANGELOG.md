@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group join-request decisions in the mobile app are now stored before sending and can be retried safely after a lost response or app restart. The server replays the original accept or reject result without repeating XP or in-app notifications, rejects changed intent, and prevents a second manager from overwriting a completed decision.
+
 - Group managers can now create and share expiring invitation links, send validated email invitations, review pending invitations and revoke them from the mobile app. Interrupted requests refresh authoritative pending state before another mutation is allowed, and refused email work remains editable.
 
 - Group tasks now offer every loaded member and a searchable, paginated assignee picker for creation and reassignment, preserving an off-page current assignee and ignoring obsolete or failed searches.

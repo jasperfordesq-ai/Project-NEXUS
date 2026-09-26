@@ -36,6 +36,7 @@ import {
   createGroupQuestion,
   createGroupInviteLink,
   getGroupInvites,
+  handleGroupJoinRequest,
   getGroups,
   getGroup,
   getGroupAnalytics,
@@ -746,5 +747,21 @@ describe('group manager invitations', () => {
     await expect(createGroupInviteLink(7, 14)).rejects.toThrow('Invalid group invitation response');
     (api.post as jest.Mock).mockResolvedValueOnce({ data: [{ email: 'member@example.test', status: 'mystery' }] });
     await expect(sendGroupEmailInvites(7, ['member@example.test'], '')).rejects.toThrow('Invalid group invitation response');
+  });
+});
+
+describe('group join request decisions', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('sends the stable decision key in both the body and header', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { user_id: 21, action: 'accept', result: 'approved' } });
+
+    await handleGroupJoinRequest(7, 21, 'accept', 'mobile-group-join-decision-1');
+
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/groups/7/requests/21',
+      { action: 'accept', idempotency_key: 'mobile-group-join-decision-1' },
+      { headers: { 'Idempotency-Key': 'mobile-group-join-decision-1' } },
+    );
   });
 });

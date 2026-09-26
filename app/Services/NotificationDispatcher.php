@@ -61,6 +61,7 @@ class NotificationDispatcher
      * @param array{frequency?: string, in_app_enabled?: bool, email_enabled?: bool, push_enabled?: bool}|null $deliveryPolicy
      *        Optional resolved per-context channel policy. Group notifications
      *        use this to consume group_notification_preferences directly.
+     * @param string|null $idempotencyKey Stable per-recipient business-event key.
      */
     public static function dispatch(
         $userId,
@@ -73,6 +74,7 @@ class NotificationDispatcher
         $isOrganizer = false,
         ?int $fromUserId = null,
         ?array $deliveryPolicy = null,
+        ?string $idempotencyKey = null,
     ): bool
     {
         $recipientTenantId = self::resolveTenantIdForQueue((int) $userId);
@@ -84,8 +86,8 @@ class NotificationDispatcher
             return false;
         }
 
-        return TenantContext::runForTenant($recipientTenantId, function () use ($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy): bool {
-            return self::dispatchForResolvedTenant($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy);
+        return TenantContext::runForTenant($recipientTenantId, function () use ($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey): bool {
+            return self::dispatchForResolvedTenant($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey);
         });
     }
 
@@ -100,6 +102,7 @@ class NotificationDispatcher
         $isOrganizer = false,
         ?int $fromUserId = null,
         ?array $deliveryPolicy = null,
+        ?string $idempotencyKey = null,
     ): bool
     {
         // 1. Create In-App Notification (The "Bell") with 60-second deduplication window
@@ -150,8 +153,24 @@ class NotificationDispatcher
             $isDuplicateBell = true;
         } else {
             try {
-                $bellId = Notification::createNotification((int) $userId, $content, $link, $activityType);
-                $bellCreated = true;
+                if ($idempotencyKey !== null && trim($idempotencyKey) !== '') {
+                    $bellCreated = false;
+                    $bellId = Notification::createNotification(
+                        (int) $userId,
+                        $content,
+                        $link,
+                        $activityType,
+                        false,
+                        $tenantId,
+                        $idempotencyKey,
+                        $bellCreated,
+                    );
+                    $isDuplicateBell = ! $bellCreated;
+                } else {
+                    // Preserve the established call shape for ordinary dispatches.
+                    $bellId = Notification::createNotification((int) $userId, $content, $link, $activityType);
+                    $bellCreated = true;
+                }
             } catch (\Throwable $e) {
                 Log::warning('NotificationDispatcher: bell creation failed', [
                     'user_id' => (int) $userId,
@@ -159,6 +178,10 @@ class NotificationDispatcher
                     'error' => $e->getMessage(),
                 ]);
             }
+        }
+
+        if ($idempotencyKey !== null && trim($idempotencyKey) !== '' && $isDuplicateBell) {
+            return true;
         }
 
         // 2. CHECK Notification Settings Hierarchy

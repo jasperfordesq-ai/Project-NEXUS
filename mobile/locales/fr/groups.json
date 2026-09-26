@@ -381,7 +381,10 @@
       "removeTitle": "Retirer du groupe ?",
       "removeMessage": "{{name}} perdra l'accès à ce groupe et à tout ce qui y est partagé.",
       "removed": "Retiré du groupe",
-      "actionFailed": "Cela n'a pas fonctionné. Veuillez réessayer."
+      "actionFailed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+      "decisionPending": "Nous n'avons pas pu confirmer si cette décision a été enregistrée. Réessayez pour le vérifier sans risque.",
+      "retryDecision": "Réessayer la décision",
+      "recoveryUnavailable": "Votre décision inachevée concernant la demande d'adhésion n'a pas pu être restaurée. Réessayez avant de prendre une autre décision."
     }
   },
   "filter": {

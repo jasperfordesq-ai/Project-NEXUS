@@ -627,13 +627,30 @@ class GroupsController extends BaseApiController
         $this->rateLimit('groups_handle_request', 30, 60);
 
         $action = $this->input('action');
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $this->input('idempotency_key');
 
-        if (empty($action)) {
+        if (! is_string($action) || trim($action) === '') {
             return $this->respondWithError('VALIDATION_ERROR', __('api.action_required'), 'action', 400);
         }
-
+        if (($headerKey !== null && ! is_string($headerKey)) || ($bodyKey !== null && ! is_string($bodyKey))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $headerKey = trim((string) ($headerKey ?? ''));
+        $bodyKey = trim((string) ($bodyKey ?? ''));
+        if ($headerKey !== '' && $bodyKey !== '' && ! hash_equals($headerKey, $bodyKey)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $idempotencyKey = $headerKey !== '' ? $headerKey : ($bodyKey !== '' ? $bodyKey : null);
+        $effectIdentity = $idempotencyKey === null ? null : hash('sha256', $idempotencyKey);
         try {
-            $success = $this->groupService->handleJoinRequest($id, $requesterId, $userId, $action);
+            $success = $this->groupService->handleJoinRequest(
+                $id,
+                $requesterId,
+                $userId,
+                $action,
+                $idempotencyKey,
+            );
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -650,7 +667,7 @@ class GroupsController extends BaseApiController
                     $status = 403;
                     break;
                 }
-                if (in_array($error['code'], ['CAPACITY_FULL', 'MEMBERSHIP_LIMIT_REACHED', 'GROUP_UNAVAILABLE'], true)) {
+                if (in_array($error['code'], ['CAPACITY_FULL', 'MEMBERSHIP_LIMIT_REACHED', 'GROUP_UNAVAILABLE', 'IDEMPOTENCY_CONFLICT'], true)) {
                     $status = 409;
                     break;
                 }
@@ -661,9 +678,17 @@ class GroupsController extends BaseApiController
         // Notify requester
         try {
             if ($action === 'accept') {
-                $this->groupNotificationService->notifyJoined($id, $requesterId);
+                $this->groupNotificationService->notifyJoined(
+                    $id,
+                    $requesterId,
+                    $effectIdentity === null ? null : "group-join-request-decision:{$effectIdentity}",
+                );
             } else {
-                $this->groupNotificationService->notifyJoinRejected($id, $requesterId);
+                $this->groupNotificationService->notifyJoinRejected(
+                    $id,
+                    $requesterId,
+                    $effectIdentity === null ? null : "group-join-request-decision:{$effectIdentity}",
+                );
             }
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Group request notification error: " . $e->getMessage());
@@ -672,7 +697,13 @@ class GroupsController extends BaseApiController
         // Award XP to the requester when their join request is accepted
         if ($action === 'accept') {
             try {
-                \App\Services\GamificationService::awardXP($requesterId, \App\Services\GamificationService::XP_VALUES['join_group'], 'join_group', __('api.group_joined'));
+                \App\Services\GamificationService::awardXP(
+                    $requesterId,
+                    \App\Services\GamificationService::XP_VALUES['join_group'],
+                    'join_group',
+                    __('api.group_joined'),
+                    $effectIdentity === null ? null : "group-join-request:{$effectIdentity}",
+                );
             } catch (\Throwable $e) {
                 \Log::warning('Gamification XP award failed', ['action' => 'join_group', 'user' => $requesterId, 'error' => $e->getMessage()]);
             }

@@ -622,14 +622,23 @@ export function getGroupJoinRequests(id: number): Promise<{ data: GroupJoinReque
  *
  * The server accepts exactly `accept` and `reject`; anything else is a 400. It can
  * also answer 409 when the group is full or the member has hit a membership limit,
- * which is a real answer and not something to retry.
+ * which is a real answer and not something to retry. A persisted key is carried in
+ * both locations so the server rejects mismatched intermediaries and replays exactly.
  */
 export function handleGroupJoinRequest(
   id: number,
   userId: number,
   action: 'accept' | 'reject',
+  idempotencyKey?: string,
 ): Promise<unknown> {
-  return api.post<unknown>(`${API_V2}/groups/${id}/requests/${userId}`, { action });
+  if (!idempotencyKey) {
+    return api.post<unknown>(`${API_V2}/groups/${id}/requests/${userId}`, { action });
+  }
+  return api.post<unknown>(
+    `${API_V2}/groups/${id}/requests/${userId}`,
+    { action, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
 }
 
 /**

@@ -381,7 +381,10 @@
       "removeTitle": "Aus der Gruppe entfernen?",
       "removeMessage": "{{name}} verliert den Zugang zu dieser Gruppe und zu allem, was dort geteilt wird.",
       "removed": "Aus der Gruppe entfernt",
-      "actionFailed": "Das hat nicht funktioniert. Bitte versuchen Sie es erneut."
+      "actionFailed": "Das hat nicht funktioniert. Bitte versuchen Sie es erneut.",
+      "decisionPending": "Wir konnten nicht bestätigen, ob diese Entscheidung gespeichert wurde. Wiederholen Sie den Vorgang, um dies sicher zu prüfen.",
+      "retryDecision": "Entscheidung wiederholen",
+      "recoveryUnavailable": "Ihre nicht abgeschlossene Beitrittsentscheidung konnte nicht wiederhergestellt werden. Versuchen Sie es erneut, bevor Sie eine andere Entscheidung treffen."
     }
   },
   "filter": {

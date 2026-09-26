@@ -459,6 +459,15 @@ jest.mock('@/lib/api/groups', () => ({
   joinGroup: jest.fn().mockResolvedValue({}),
   leaveGroup: jest.fn().mockResolvedValue({}),
 }));
+jest.mock('@/lib/groupJoinRequestDecisionOperation', () => ({
+  // The recovery contract has its own focused component suite. Keep this parent-screen
+  // harness at the loading boundary so its positional useApi stub remains stable without
+  // leaking an unawaited child state update into otherwise unrelated tests.
+  loadGroupJoinRequestDecisionOperation: jest.fn(() => new Promise(() => {})),
+  reserveGroupJoinRequestDecisionOperation: jest.fn(),
+  completeGroupJoinRequestDecisionOperation: jest.fn(),
+  discardGroupJoinRequestDecisionOperation: jest.fn(),
+}));
 
 jest.mock('@/lib/media/pickGroupFile', () => ({
   pickGroupFile: jest.fn(),

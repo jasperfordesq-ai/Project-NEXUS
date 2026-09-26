@@ -381,7 +381,10 @@
       "removeTitle": "Remove from the group?",
       "removeMessage": "{{name}} will lose access to this group and everything shared in it.",
       "removed": "Removed from the group",
-      "actionFailed": "That did not work. Please try again."
+      "actionFailed": "That did not work. Please try again.",
+      "decisionPending": "We could not confirm whether that decision was saved. Retry to check safely.",
+      "retryDecision": "Retry decision",
+      "recoveryUnavailable": "Your unfinished join-request decision could not be restored. Retry before making another decision."
     }
   },
   "filter": {

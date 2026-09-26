@@ -64,6 +64,45 @@ class GroupsControllerTest extends TestCase
         return Group::factory()->forTenant($this->testTenantId)->create($overrides);
     }
 
+    /** @return array{0:User,1:User,2:Group} */
+    private function pendingJoinRequest(): array
+    {
+        $owner = $this->authenticatedUser();
+        $requester = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $group = $this->createGroup([
+            'owner_id' => $owner->id,
+            'visibility' => 'private',
+            'cached_member_count' => 1,
+        ]);
+        DB::table('group_members')->insert([
+            [
+                'tenant_id' => $this->testTenantId,
+                'group_id' => $group->id,
+                'user_id' => $owner->id,
+                'role' => 'owner',
+                'status' => 'active',
+                'joined_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'tenant_id' => $this->testTenantId,
+                'group_id' => $group->id,
+                'user_id' => $requester->id,
+                'role' => 'member',
+                'status' => 'pending',
+                'joined_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        return [$owner, $requester, $group];
+    }
+
     // ------------------------------------------------------------------
     //  INDEX
     // ------------------------------------------------------------------
@@ -451,6 +490,180 @@ class GroupsControllerTest extends TestCase
         $response = $this->apiGet("/v2/groups/{$group->id}/requests");
 
         $response->assertStatus(401);
+    }
+
+    public function test_join_request_acceptance_replays_the_original_result_and_effects_once(): void
+    {
+        [$owner, $requester, $group] = $this->pendingJoinRequest();
+        $key = 'mobile-group-join-decision-accept-1';
+        $payload = ['action' => 'accept', 'idempotency_key' => $key];
+        $headers = ['Idempotency-Key' => $key];
+
+        $first = $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", $payload, $headers)->assertOk();
+        $second = $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", $payload, $headers)->assertOk();
+
+        $this->assertSame($first->json('data'), $second->json('data'));
+        $this->assertDatabaseHas('group_members', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $requester->id,
+            'status' => 'active',
+        ]);
+        $this->assertSame(1, DB::table('group_join_request_decision_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('manager_user_id', $owner->id)
+            ->where('idempotency_key_hash', hash('sha256', $key))
+            ->count());
+        $this->assertSame(1, DB::table('user_xp_log')
+            ->where('user_id', $requester->id)
+            ->where('action', 'join_group')
+            ->where('source_reference', 'group-join-request:' . hash('sha256', $key))
+            ->count());
+        $this->assertSame(1, DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $requester->id)
+            ->where('type', 'group_join')
+            ->count());
+    }
+
+    public function test_join_request_rejection_replays_without_recreating_or_renotifying(): void
+    {
+        [$owner, $requester, $group] = $this->pendingJoinRequest();
+        $key = 'mobile-group-join-decision-reject-1';
+        $payload = ['action' => 'reject', 'idempotency_key' => $key];
+        $headers = ['Idempotency-Key' => $key];
+
+        $first = $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", $payload, $headers)->assertOk();
+        $second = $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", $payload, $headers)->assertOk();
+
+        $this->assertSame($first->json('data'), $second->json('data'));
+        $this->assertDatabaseMissing('group_members', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $requester->id,
+        ]);
+        $this->assertSame(1, DB::table('group_join_request_decision_receipts')
+            ->where('manager_user_id', $owner->id)
+            ->where('action', 'reject')
+            ->count());
+        $this->assertSame(1, DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $requester->id)
+            ->where('type', 'group_join_rejected')
+            ->count());
+    }
+
+    public function test_join_request_decision_rejects_changed_action_reuse(): void
+    {
+        [, $requester, $group] = $this->pendingJoinRequest();
+        $key = 'mobile-group-join-decision-conflict-1';
+        $headers = ['Idempotency-Key' => $key];
+
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'accept', 'idempotency_key' => $key,
+        ], $headers)->assertOk();
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'reject', 'idempotency_key' => $key,
+        ], $headers)->assertConflict()->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+    }
+
+    public function test_join_request_decision_rejects_mismatched_idempotency_sources(): void
+    {
+        [, $requester, $group] = $this->pendingJoinRequest();
+
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'accept', 'idempotency_key' => 'mobile-group-join-body-key',
+        ], ['Idempotency-Key' => 'mobile-group-join-header-key'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+    }
+
+    public function test_second_manager_cannot_overwrite_a_completed_join_request_decision(): void
+    {
+        [$owner, $requester, $group] = $this->pendingJoinRequest();
+        $secondManager = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $secondManager->id,
+            'role' => 'admin',
+            'status' => 'active',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $firstKey = 'mobile-group-join-owner-decision';
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'accept', 'idempotency_key' => $firstKey,
+        ], ['Idempotency-Key' => $firstKey])->assertOk();
+
+        Sanctum::actingAs($secondManager, ['*']);
+        $secondKey = 'mobile-group-join-second-manager';
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'reject', 'idempotency_key' => $secondKey,
+        ], ['Idempotency-Key' => $secondKey])->assertNotFound();
+
+        $this->assertDatabaseHas('group_members', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $requester->id,
+            'status' => 'active',
+        ]);
+        $this->assertSame(1, DB::table('group_join_request_decision_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('group_id', $group->id)
+            ->where('requester_user_id', $requester->id)
+            ->count());
+        $this->assertDatabaseHas('group_join_request_decision_receipts', [
+            'manager_user_id' => $owner->id,
+            'action' => 'accept',
+        ]);
+    }
+
+    public function test_manager_authority_loss_refuses_join_request_decision_without_receipt(): void
+    {
+        [, $requester, $group] = $this->pendingJoinRequest();
+        $manager = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $manager->id,
+            'role' => 'admin',
+            'status' => 'active',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($manager, ['*']);
+        DB::table('group_members')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('group_id', $group->id)
+            ->where('user_id', $manager->id)
+            ->delete();
+
+        $key = 'mobile-group-join-authority-loss';
+        $this->apiPost("/v2/groups/{$group->id}/requests/{$requester->id}", [
+            'action' => 'accept', 'idempotency_key' => $key,
+        ], ['Idempotency-Key' => $key])->assertForbidden();
+
+        $this->assertDatabaseHas('group_members', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $group->id,
+            'user_id' => $requester->id,
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseMissing('group_join_request_decision_receipts', [
+            'tenant_id' => $this->testTenantId,
+            'manager_user_id' => $manager->id,
+            'idempotency_key_hash' => hash('sha256', $key),
+        ]);
     }
 
     // ------------------------------------------------------------------

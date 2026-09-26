@@ -2260,7 +2260,13 @@ class GroupService
     /**
      * Handle a join request (accept/reject).
      */
-    public static function handleJoinRequest(int $groupId, int $requesterId, int $adminUserId, string $action): bool
+    public static function handleJoinRequest(
+        int $groupId,
+        int $requesterId,
+        int $adminUserId,
+        string $action,
+        ?string $idempotencyKey = null,
+    ): bool
     {
         self::$errors = [];
 
@@ -2270,6 +2276,19 @@ class GroupService
         }
 
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupJoinRequestDecisionReceiptService::identity($idempotencyKey, [
+            'action' => $action,
+            'group_id' => $groupId,
+            'requester_user_id' => $requesterId,
+        ]);
+        if ($identity === false) {
+            self::$errors[] = [
+                'code' => 'IDEMPOTENCY_INVALID',
+                'message' => __('event_registration.idempotency_invalid'),
+                'field' => 'idempotency_key',
+            ];
+            return false;
+        }
         $activated = false;
 
         $success = DB::transaction(function () use (
@@ -2278,8 +2297,29 @@ class GroupService
             $adminUserId,
             $action,
             $tenantId,
+            $identity,
             &$activated,
         ): bool {
+            if (is_array($identity)) {
+                GroupJoinRequestDecisionReceiptService::lockManager($tenantId, $adminUserId);
+                $receipt = GroupJoinRequestDecisionReceiptService::find(
+                    $tenantId,
+                    $adminUserId,
+                    $identity['key_hash'],
+                );
+                if ($receipt !== null) {
+                    if (! GroupJoinRequestDecisionReceiptService::matches($receipt, $identity['request_hash'])) {
+                        self::$errors[] = [
+                            'code' => 'IDEMPOTENCY_CONFLICT',
+                            'message' => __('event_registration.idempotency_conflict'),
+                            'field' => 'idempotency_key',
+                        ];
+                        return false;
+                    }
+                    return true;
+                }
+            }
+
             $group = self::lockJoinableMembershipGroup($groupId, $tenantId);
             if ($group === null) {
                 return false;
@@ -2320,6 +2360,17 @@ class GroupService
                         'previous_status' => 'pending',
                     ],
                 );
+                if (is_array($identity)) {
+                    GroupJoinRequestDecisionReceiptService::store(
+                        $tenantId,
+                        $adminUserId,
+                        $groupId,
+                        $requesterId,
+                        $action,
+                        $identity,
+                        ['user_id' => $requesterId, 'action' => $action, 'result' => 'rejected'],
+                    );
+                }
                 return true;
             }
 
@@ -2368,6 +2419,17 @@ class GroupService
                 GroupWebhookService::EVENT_MEMBER_JOINED,
                 ['user_id' => $requesterId, 'approved_by' => $adminUserId],
             );
+            if (is_array($identity)) {
+                GroupJoinRequestDecisionReceiptService::store(
+                    $tenantId,
+                    $adminUserId,
+                    $groupId,
+                    $requesterId,
+                    $action,
+                    $identity,
+                    ['user_id' => $requesterId, 'action' => $action, 'result' => 'approved'],
+                );
+            }
             return true;
         }, 3);
 

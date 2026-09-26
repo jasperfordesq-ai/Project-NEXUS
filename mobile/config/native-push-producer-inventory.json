@@ -1941,9 +1941,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupNotificationService.php:162:NotificationDispatcher::dispatch",
+            "id": "app/Services/GroupNotificationService.php:163:NotificationDispatcher::dispatch",
             "file": "app/Services/GroupNotificationService.php",
-            "line": 162,
+            "line": 163,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -1954,9 +1954,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupNotificationService.php:222:NotificationDispatcher::dispatch",
+            "id": "app/Services/GroupNotificationService.php:224:NotificationDispatcher::dispatch",
             "file": "app/Services/GroupNotificationService.php",
-            "line": 222,
+            "line": 224,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "(int) $member->user_id",
@@ -1967,9 +1967,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupNotificationService.php:284:NotificationDispatcher::dispatch",
+            "id": "app/Services/GroupNotificationService.php:286:NotificationDispatcher::dispatch",
             "file": "app/Services/GroupNotificationService.php",
-            "line": 284,
+            "line": 286,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "(int) $member->user_id",
@@ -2500,9 +2500,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/NotificationDispatcher.php:562:FCMPushService::sendToUser",
+            "id": "app/Services/NotificationDispatcher.php:585:FCMPushService::sendToUser",
             "file": "app/Services/NotificationDispatcher.php",
-            "line": 562,
+            "line": 585,
             "transport": "FCMPushService::sendToUser",
             "role": "transport_boundary",
             "recipient_expression": "$uid",

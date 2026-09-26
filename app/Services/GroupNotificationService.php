@@ -92,7 +92,7 @@ class GroupNotificationService
     /**
      * Notify a user that they have been accepted into a group.
      */
-    public function notifyJoined(int $groupId, int $userId): void
+    public function notifyJoined(int $groupId, int $userId, ?string $idempotencyKey = null): void
     {
         $tenantId = TenantContext::getId();
 
@@ -107,7 +107,7 @@ class GroupNotificationService
         $safeActionUrl = htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8');
         $deliveryPolicy = GroupNotificationPreferenceService::get($userId, $groupId);
 
-        LocaleContext::withLocale($recipientLocale, function () use ($userId, $groupId, $group, $safeGroupName, $link, $safeActionUrl, $deliveryPolicy) {
+        LocaleContext::withLocale($recipientLocale, function () use ($userId, $groupId, $group, $safeGroupName, $link, $safeActionUrl, $deliveryPolicy, $idempotencyKey) {
             $message = __('notifications.group_joined', ['group' => $group->name]);
             $htmlContent = "<p>" . __('notifications.group_joined', ['group' => "<strong>{$safeGroupName}</strong>"]) . "</p>"
                 . "<p><a href=\"{$safeActionUrl}\">" . __('notifications.group_joined_visit') . "</a></p>";
@@ -124,6 +124,7 @@ class GroupNotificationService
                     false,
                     null,
                     $deliveryPolicy,
+                    $idempotencyKey,
                 );
             } catch (\Throwable $e) {
                 Log::error('GroupNotification: failed to dispatch joined notification', [
@@ -138,7 +139,7 @@ class GroupNotificationService
     /**
      * Notify a user that their join request was rejected.
      */
-    public function notifyJoinRejected(int $groupId, int $userId): void
+    public function notifyJoinRejected(int $groupId, int $userId, ?string $idempotencyKey = null): void
     {
         $tenantId = TenantContext::getId();
 
@@ -153,7 +154,7 @@ class GroupNotificationService
         $safeActionUrl = htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8');
         $deliveryPolicy = GroupNotificationPreferenceService::get($userId, $groupId);
 
-        LocaleContext::withLocale($recipientLocale, function () use ($userId, $groupId, $group, $safeGroupName, $link, $safeActionUrl, $deliveryPolicy) {
+        LocaleContext::withLocale($recipientLocale, function () use ($userId, $groupId, $group, $safeGroupName, $link, $safeActionUrl, $deliveryPolicy, $idempotencyKey) {
             $message = __('notifications.group_join_rejected', ['group' => $group->name]);
             $htmlContent = "<p>" . __('notifications.group_join_rejected', ['group' => "<strong>{$safeGroupName}</strong>"]) . "</p>"
                 . "<p><a href=\"{$safeActionUrl}\">" . __('notifications.group_browse_others') . "</a></p>";
@@ -170,6 +171,7 @@ class GroupNotificationService
                     false,
                     null,
                     $deliveryPolicy,
+                    $idempotencyKey,
                 );
             } catch (\Throwable $e) {
                 Log::error('GroupNotification: failed to dispatch join rejected notification', [

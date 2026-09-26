@@ -381,7 +381,10 @@
       "removeTitle": "Rimuovere dal gruppo?",
       "removeMessage": "{{name}} perderà l’accesso a questo gruppo e a tutto ciò che vi è condiviso.",
       "removed": "Rimosso dal gruppo",
-      "actionFailed": "Non ha funzionato. Riprova."
+      "actionFailed": "Non ha funzionato. Riprova.",
+      "decisionPending": "Non è stato possibile confermare se la decisione è stata salvata. Riprova per verificarlo in sicurezza.",
+      "retryDecision": "Riprova decisione",
+      "recoveryUnavailable": "Non è stato possibile ripristinare la decisione incompleta sulla richiesta di adesione. Riprova prima di prendere un'altra decisione."
     }
   },
   "filter": {

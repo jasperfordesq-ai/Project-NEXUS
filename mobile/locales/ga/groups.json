@@ -372,7 +372,10 @@
       "removeTitle": "Bain amach as an ngrúpa?",
       "removeMessage": "Caillfidh {{name}} rochtain ar an ngrúpa seo agus ar gach rud a roinntear ann.",
       "removed": "Baineadh amach as an ngrúpa é",
-      "actionFailed": "Níor éirigh leis sin. Bain triail eile as."
+      "actionFailed": "Níor éirigh leis sin. Bain triail eile as.",
+      "decisionPending": "Níorbh fhéidir linn a dheimhniú ar sábháladh an cinneadh sin. Bain triail eile as chun é a sheiceáil go sábháilte.",
+      "retryDecision": "Bain triail eile as an gcinneadh",
+      "recoveryUnavailable": "Níorbh fhéidir do chinneadh neamhchríochnaithe faoin iarratas ballraíochta a athchóiriú. Bain triail eile as sula ndéanfaidh tú cinneadh eile."
     }
   },
   "create": {
