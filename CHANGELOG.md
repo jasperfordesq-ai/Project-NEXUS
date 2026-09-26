@@ -207,6 +207,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **F-035 (E-038): unrecognised hostnames are now refused.** An API request arriving on a hostname that is not a community's domain, a community's accessible domain, a configured platform host or an internal address now gets a plain 404 instead of being answered as the master community. Extra platform hostnames go in `TENANT_PLATFORM_HOSTS`; `TENANT_REFUSE_UNKNOWN_HOSTS=false` restores the old behaviour in an emergency. Regression test: `tests/Laravel/Feature/Security/E038/UnrecognisedHostRefusalTest.php`.
+
 - **O-068 (E-038): the pen-test staging mail viewer receives platform email again.** Since 17 September the platform refused every recipient on a reserved domain such as `.local`, so password resets, invitations and notifications to the staging test accounts (`@pentest.project-nexus.local`) never reached the capture inbox. A non-production server can now name its capture domains in `MAIL_CAPTURE_RECIPIENT_DOMAINS`; production ignores the setting, and a bare suffix or `anonymized.local` is never exempted. Regression tests in `tests/Laravel/Unit/Services/EmailDispatchServiceTest.php`.
 
 - "Report a Concern" (Caring Community) now tells members truthfully who reads their report: the community's coordinators, brokers and administrators, who can see the reporter's name. It previously said reports went only to designated safeguarding coordinators. Critical reports now alert those staff (they used to reach almost nobody, because only people with a rarely granted individual permission were alerted), overdue reports of any urgency are escalated to them, and nobody can see or be alerted about a report made about themselves (F-213).

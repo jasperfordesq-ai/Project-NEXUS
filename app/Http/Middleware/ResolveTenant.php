@@ -10,6 +10,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\Support\Tenancy\PlatformHostPolicy;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveTenant
@@ -36,6 +37,24 @@ class ResolveTenant
 
         TenantContext::reset();
         $this->syncTenantServerVariables($request);
+
+        // E-038 / F-035: an unrecognised Host used to be served the MASTER tenant,
+        // so a deleted community's domain (or any name pointed at this origin)
+        // kept answering as Project NEXUS. Refuse it with a plain not-found. The
+        // policy only refuses public-looking names that are neither a community's
+        // domain nor a platform host; internal callers are untouched.
+        if (PlatformHostPolicy::shouldRefuse($request->getHost())) {
+            Log::notice('Refused API request for an unrecognised host', [
+                'host' => mb_substr($request->getHost(), 0, 255),
+            ]);
+
+            return response()->json([
+                'errors' => [
+                    ['code' => 'not_found', 'message' => 'Not found'],
+                ],
+                'success' => false,
+            ], 404, ['API-Version' => '2.0']);
+        }
 
         try {
             TenantContext::resolve();
