@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => '編集できるのは自分のメッセージのみです',
     'message_edit_window_expired' => 'メッセージを編集できるのは送信から24時間以内です',
     'message_not_participant' => 'この会話の参加者ではありません',
+    'message_delete_everyone_own_only' => '全員に対して削除できるのは、ご自身が送信したメッセージだけです。このメッセージをご自身の画面から削除することはできます。',
     'message_cannot_react' => 'このメッセージにはリアクションできません',
     'subaccount_self_relationship' => '自分自身との関係は作成できません',
     'subaccount_invalid_type' => '無効な関係タイプです',

@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => 'Solo puede editar sus propios mensajes',
     'message_edit_window_expired' => 'Los mensajes solo se pueden editar dentro de las 24 horas posteriores a su envío',
     'message_not_participant' => 'No es participante de esta conversación',
+    'message_delete_everyone_own_only' => 'Solo puedes eliminar para todos los mensajes que has enviado tú. Aun así, puedes quitar este mensaje de tu propia vista.',
     'message_cannot_react' => 'No puede reaccionar a este mensaje',
     'subaccount_self_relationship' => 'No se puede crear una relación consigo mismo',
     'subaccount_invalid_type' => 'Tipo de relación no válido',

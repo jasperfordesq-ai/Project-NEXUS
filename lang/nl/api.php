@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => 'U kunt alleen uw eigen berichten bewerken',
     'message_edit_window_expired' => 'Berichten kunnen alleen binnen 24 uur na verzending worden bewerkt',
     'message_not_participant' => 'U bent geen deelnemer aan dit gesprek',
+    'message_delete_everyone_own_only' => 'Je kunt alleen je eigen berichten voor iedereen verwijderen. Je kunt dit bericht wel uit je eigen weergave verwijderen.',
     'message_cannot_react' => 'U kunt niet op dit bericht reageren',
     'subaccount_self_relationship' => 'U kunt geen relatie met uzelf aanmaken',
     'subaccount_invalid_type' => 'Ongeldig relatietype',

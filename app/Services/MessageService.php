@@ -1659,6 +1659,14 @@ class MessageService
             return false;
         }
 
+        // F-210: only the author may delete a message for everyone. The receiver
+        // may hide it from their own view (`self`), but must never be able to
+        // erase what the other person wrote — that would destroy evidence.
+        if ($scope !== 'self' && ! $isSender) {
+            self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.message_delete_everyone_own_only')];
+            return false;
+        }
+
         $tenantId = app('tenant.id');
 
         if ($scope === 'self') {

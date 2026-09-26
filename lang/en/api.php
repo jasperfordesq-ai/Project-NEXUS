@@ -3067,6 +3067,7 @@ return [
     'message_edit_own_only' => 'You can only edit your own messages',
     'message_edit_window_expired' => 'Messages can only be edited within 24 hours of sending',
     'message_not_participant' => 'You are not a participant in this conversation',
+    'message_delete_everyone_own_only' => 'You can only delete your own messages for everyone. You can still remove this message from your own view.',
     'message_cannot_react' => 'You cannot react to this message',
     'subaccount_self_relationship' => 'Cannot create a relationship with yourself',
     'subaccount_invalid_type' => 'Invalid relationship type',

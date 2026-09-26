@@ -374,7 +374,8 @@ class MessageAttachmentsTest extends TestCase
             $this->apiGet($attachmentUrl)->assertOk();
             $this->apiGet($voiceUrl)->assertOk();
 
-            self::assertTrue(MessageService::deleteMessage((int) $message['id'], (int) $receiver->id, 'everyone'));
+            // F-210: only the author may delete for everyone.
+            self::assertTrue(MessageService::deleteMessage((int) $message['id'], (int) $sender->id, 'everyone'));
             self::assertTrue((bool) DB::table('messages')->where('id', (int) $message['id'])->value('is_deleted'));
 
             Sanctum::actingAs($sender, ['*']);

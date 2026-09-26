@@ -167,6 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Only the person who sent a message can now delete it for everyone. Either participant could previously choose "Delete for everyone" on the other person's message, which replaced it with "[Message deleted]" for both people, so a member could erase what someone else had written to them. The other person can still remove a message from their own view, and the website no longer offers the option on other people's messages (F-210).
+
 - Browser sign-in now keeps the 15-minute access credential in memory and the rotating refresh credential in a secure, host-only HttpOnly cookie. Existing readable browser token records are removed on startup, and the native app's token response remains available. Same-origin API routing, session continuity checks, and recoverable retry screens across protected panels protect custom communities and account switches. Browser gates now use distinct cookie sessions, test Safari's engine over HTTPS, and isolate synthetic MFA and accessibility runs under the existing rate limits. The mobile API route inventory is checked against the running Laravel build (F-149 / CodeQL #1778).
 
 - Community boundaries: an admin can no longer look up another community's members through data-protection requests, CRM tasks or deliverables; a federation partnership can no longer be made active without the other community agreeing; switching federation off now takes a community out of federation completely; secret groups and private-group events are no longer shared with partner communities; either side can no longer reactivate a credit agreement the other suspended; and the partner API respects each community's own switch.

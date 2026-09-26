@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => 'Sie können nur Ihre eigenen Nachrichten bearbeiten',
     'message_edit_window_expired' => 'Nachrichten können nur innerhalb von 24 Stunden nach dem Senden bearbeitet werden',
     'message_not_participant' => 'Sie sind kein Teilnehmer dieser Unterhaltung',
+    'message_delete_everyone_own_only' => 'Sie können nur Ihre eigenen Nachrichten für alle löschen. Sie können diese Nachricht aber aus Ihrer eigenen Ansicht entfernen.',
     'message_cannot_react' => 'Sie können auf diese Nachricht nicht reagieren',
     'subaccount_self_relationship' => 'Sie können keine Beziehung mit sich selbst erstellen',
     'subaccount_invalid_type' => 'Ungültiger Beziehungstyp',

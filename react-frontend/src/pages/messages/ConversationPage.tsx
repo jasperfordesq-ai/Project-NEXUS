@@ -2742,9 +2742,12 @@ export function ConversationPage() {
             <p className="text-theme-muted text-sm">{t('delete_message_body')}</p>
           </ModalBody>
           <ModalFooter className="flex-col gap-2">
-            <Button variant="danger-soft" fullWidth onPress={() => executeDelete('everyone')}>
-              {t('delete_for_everyone')}
-            </Button>
+            {/* F-210: only the author may delete a message for everyone; the server refuses it otherwise. */}
+            {messages.find((m) => m.id === pendingDeleteId)?.sender_id === user?.id && (
+              <Button variant="danger-soft" fullWidth onPress={() => executeDelete('everyone')}>
+                {t('delete_for_everyone')}
+              </Button>
+            )}
             <Button variant="secondary" fullWidth onPress={() => executeDelete('self')}>
               {t('delete_for_me')}
             </Button>

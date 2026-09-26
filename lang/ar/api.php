@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => 'يمكنك تعديل رسائلك فقط',
     'message_edit_window_expired' => 'لا يمكن تعديل الرسائل إلا خلال 24 ساعة من إرسالها',
     'message_not_participant' => 'أنت لست مشاركًا في هذه المحادثة',
+    'message_delete_everyone_own_only' => 'يمكنك حذف رسائلك أنت فقط لدى الجميع. لا يزال بإمكانك إزالة هذه الرسالة من عرضك أنت.',
     'message_cannot_react' => 'لا يمكنك التفاعل مع هذه الرسالة',
     'subaccount_self_relationship' => 'لا يمكن إنشاء علاقة مع نفسك',
     'subaccount_invalid_type' => 'نوع العلاقة غير صالح',

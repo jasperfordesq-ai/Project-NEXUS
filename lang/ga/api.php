@@ -2416,6 +2416,7 @@ return [
     'message_edit_own_only' => 'Ní féidir leat ach do theachtaireachtaí féin a chur in eagar',
     'message_edit_window_expired' => 'Ní féidir teachtaireachtaí a chur in eagar ach laistigh de 24 uair an chloig ón seoladh',
     'message_not_participant' => 'Ní rannpháirtí sa chomhrá seo thú',
+    'message_delete_everyone_own_only' => 'Ní féidir leat ach do theachtaireachtaí féin a scriosadh do chách. Is féidir leat an teachtaireacht seo a bhaint ó d’amharc féin, áfach.',
     'message_cannot_react' => 'Ní féidir leat imoibriú leis an teachtaireacht seo',
     'subaccount_self_relationship' => 'Ní féidir caidreamh a chruthú leat féin',
     'subaccount_invalid_type' => 'Cineál caidrimh neamhbhailí',
