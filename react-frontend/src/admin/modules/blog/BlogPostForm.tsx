@@ -31,7 +31,7 @@ import { PageHeader } from '../../components/PageHeader';
 import type { AdminBlogPost, AdminCategory } from '../../api/types';
 import { useTranslation } from 'react-i18next';
 import { resolveUploadedUrl } from '../../components/builderImage';
-import { resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
+import { getFormattingLocale, resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { readImageDimensions } from '@/lib/compress-image';
 
@@ -85,7 +85,7 @@ function resolveBlogFeaturedImageValue(res: FeaturedImageUploadResult): string |
 }
 
 export function BlogPostForm() {
-  const { t, i18n } = useTranslation('admin_blog');
+  const { t } = useTranslation('admin_blog');
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const { tenantPath } = useTenant();
@@ -294,7 +294,7 @@ export function BlogPostForm() {
 
     if (file.size > MAX_FEATURED_IMAGE_BYTES) {
       refuseImage(t('blog.featured_image_too_large_file', {
-        size: new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+        size: new Intl.NumberFormat(getFormattingLocale(), { maximumFractionDigits: 1 })
           .format(file.size / (1024 * 1024)),
         max: MAX_FEATURED_IMAGE_MB,
       }));
