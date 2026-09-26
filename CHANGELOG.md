@@ -207,6 +207,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **O-068 (E-038): the pen-test staging mail viewer receives platform email again.** Since 17 September the platform refused every recipient on a reserved domain such as `.local`, so password resets, invitations and notifications to the staging test accounts (`@pentest.project-nexus.local`) never reached the capture inbox. A non-production server can now name its capture domains in `MAIL_CAPTURE_RECIPIENT_DOMAINS`; production ignores the setting, and a bare suffix or `anonymized.local` is never exempted. Regression tests in `tests/Laravel/Unit/Services/EmailDispatchServiceTest.php`.
+
 - "Report a Concern" (Caring Community) now tells members truthfully who reads their report: the community's coordinators, brokers and administrators, who can see the reporter's name. It previously said reports went only to designated safeguarding coordinators. Critical reports now alert those staff (they used to reach almost nobody, because only people with a rarely granted individual permission were alerted), overdue reports of any urgency are escalated to them, and nobody can see or be alerted about a report made about themselves (F-213).
 
 - When a broker or coordinator opens a copied message for review, they now see only the conversation up to that message (the latest 50 messages before it), and every opening is recorded in the audit log. Previously opening one copy showed the first 200 messages the two members had ever exchanged, including everything written afterwards that was never copied or flagged, and only review decisions were recorded (F-212).

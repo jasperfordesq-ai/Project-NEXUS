@@ -573,4 +573,61 @@ class EmailDispatchServiceTest extends TestCase
             EmailDispatchService::UNROUTABLE_RECIPIENT_SUFFIXES
         );
     }
+
+    // ── capture-inbox exemption (E-038) ───────────────────────────────────────
+    //
+    // The pen-test staging server's accounts live on @pentest.project-nexus.local
+    // and every message is captured by a local mail viewer, never delivered. The
+    // guard above silently dropped all of them, so no password reset or
+    // invitation ever reached the viewer the testers are told to use.
+
+    public function test_named_capture_domain_is_deliverable_outside_production(): void
+    {
+        config(['mail.capture_recipient_domains' => ['pentest.project-nexus.local']]);
+
+        $this->assertFalse(EmailDispatchService::isUnroutableRecipient('member.a@pentest.project-nexus.local'));
+        $this->assertFalse(EmailDispatchService::isUnroutableRecipient('Broker@PENTEST.project-nexus.local.'));
+    }
+
+    public function test_capture_domain_reaches_the_mailer_outside_production(): void
+    {
+        config(['mail.capture_recipient_domains' => ['pentest.project-nexus.local']]);
+        $email = 'e038.' . uniqid('', true) . '@pentest.project-nexus.local';
+
+        EmailDispatchService::sendRaw($email, 'Captured', '<p>Body</p>', null, null, null, 'unit_test', ['tenant_id' => self::TENANT_ID]);
+
+        $this->assertSame(
+            1,
+            DB::table('email_log')->where('recipient_email', $email)->count(),
+            'An exempted capture domain must reach the mailer (a delivery attempt is logged).'
+        );
+    }
+
+    public function test_capture_domain_is_ignored_in_production(): void
+    {
+        config(['mail.capture_recipient_domains' => ['pentest.project-nexus.local']]);
+        $this->app['env'] = 'production';
+
+        try {
+            $this->assertTrue(EmailDispatchService::isUnroutableRecipient('member.a@pentest.project-nexus.local'));
+        } finally {
+            $this->app['env'] = 'testing';
+        }
+    }
+
+    public function test_capture_exemption_cannot_widen_beyond_the_named_domain(): void
+    {
+        config(['mail.capture_recipient_domains' => ['pentest.project-nexus.local', 'local', '.test', 'anonymized.local']]);
+
+        $this->assertTrue(EmailDispatchService::isUnroutableRecipient('someone@other.local'), 'A bare suffix entry must be ignored.');
+        $this->assertTrue(EmailDispatchService::isUnroutableRecipient('someone@partner-demo.test'), 'A dotted bare suffix must be ignored.');
+        $this->assertTrue(EmailDispatchService::isUnroutableRecipient('deleted_1_ab@anonymized.local'), 'Erased-member addresses are never exempt.');
+        $this->assertTrue(EmailDispatchService::isUnroutableRecipient('x@evilpentest.project-nexus.local'), 'Only the domain itself or its subdomains match.');
+    }
+
+    public function test_no_capture_domains_by_default(): void
+    {
+        $this->assertSame([], config('mail.capture_recipient_domains'));
+        $this->assertTrue(EmailDispatchService::isUnroutableRecipient('member.a@pentest.project-nexus.local'));
+    }
 }

@@ -63,8 +63,37 @@ class EmailDispatchService
             return true;
         }
 
+        if (self::isCaptureRecipientDomain($domain)) {
+            return false;
+        }
+
         foreach (self::UNROUTABLE_RECIPIENT_SUFFIXES as $suffix) {
             if ($domain === $suffix || str_ends_with($domain, '.' . $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * True when a non-production server has named this domain as one whose mail
+     * goes to a local capture inbox (config mail.capture_recipient_domains).
+     * Never true in production, for a bare suffix (an entry needs at least two
+     * labels) or for anonymized.local, which erased members are rewritten to.
+     */
+    private static function isCaptureRecipientDomain(string $domain): bool
+    {
+        if (app()->environment('production')) {
+            return false;
+        }
+
+        foreach ((array) config('mail.capture_recipient_domains', []) as $entry) {
+            $entry = mb_strtolower(trim(trim((string) $entry), '.'));
+            if (substr_count($entry, '.') < 1 || $entry === 'anonymized.local') {
+                continue;
+            }
+            if ($domain === $entry || str_ends_with($domain, '.' . $entry)) {
                 return true;
             }
         }

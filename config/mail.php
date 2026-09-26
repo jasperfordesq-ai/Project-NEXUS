@@ -35,6 +35,25 @@ return [
 
     'platform_provider' => env('MAIL_PLATFORM_PROVIDER', 'postmark'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Capture-inbox recipient domains (non-production only)
+    |--------------------------------------------------------------------------
+    |
+    | EmailDispatchService refuses reserved domains (.local, .test, …) because
+    | they can only bounce. A server whose outgoing mail goes to a local capture
+    | inbox (the pen-test staging server's mail viewer) can name its test
+    | domains here so their messages are sent to that inbox. Comma-separated,
+    | exact domain or its subdomains. Ignored entirely in production; bare
+    | suffixes and anonymized.local are never honoured.
+    |
+    */
+
+    'capture_recipient_domains' => array_values(array_filter(array_map(
+        static fn (string $d): string => strtolower(trim(rtrim(trim($d), '.'))),
+        explode(',', (string) env('MAIL_CAPTURE_RECIPIENT_DOMAINS', ''))
+    ))),
+
     'mailers' => [
 
         'smtp' => [
