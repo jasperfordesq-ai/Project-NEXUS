@@ -122,6 +122,29 @@ export interface GroupChallenge {
   updated_at: string;
 }
 
+export type GroupScheduledPostType = 'discussion' | 'announcement';
+export type GroupScheduledPostRecurrence = 'daily' | 'weekly' | 'monthly';
+
+export interface GroupScheduledPost {
+  id: number;
+  tenant_id: number;
+  group_id: number;
+  user_id: number;
+  post_type: GroupScheduledPostType;
+  title: string;
+  content: string;
+  scheduled_at: string;
+  is_recurring: boolean | 0 | 1;
+  recurrence_pattern: GroupScheduledPostRecurrence | null;
+  status: 'scheduled' | 'processing';
+  author_name: string;
+}
+
+export interface GroupWelcomeConfig {
+  enabled: boolean;
+  message: string;
+}
+
 export interface GroupMemberListItem extends GroupMember {
   role: 'owner' | 'admin' | 'member' | string;
   joined_at: string | null;
@@ -834,6 +857,41 @@ export function cancelGroupChallenge(
   return api.delete<{ data: { challenge: GroupChallenge; changed: boolean; message: string } }>(
     `${API_V2}/groups/${groupId}/challenges/${challengeId}`,
   );
+}
+
+export function getGroupScheduledPosts(groupId: number): Promise<{ data: GroupScheduledPost[] }> {
+  return api.get<{ data: GroupScheduledPost[] }>(`${API_V2}/groups/${groupId}/scheduled-posts`);
+}
+
+export function createGroupScheduledPost(
+  groupId: number,
+  payload: {
+    post_type: GroupScheduledPostType;
+    title: string;
+    content: string;
+    scheduled_at: string;
+    is_recurring: boolean;
+    recurrence_pattern: GroupScheduledPostRecurrence | null;
+  },
+  idempotencyKey: string,
+): Promise<{ data: { id: number } }> {
+  return api.post<{ data: { id: number } }>(
+    `${API_V2}/groups/${groupId}/scheduled-posts`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
+}
+
+export function cancelGroupScheduledPost(groupId: number, postId: number): Promise<{ data: { message: string } }> {
+  return api.delete<{ data: { message: string } }>(`${API_V2}/groups/${groupId}/scheduled-posts/${postId}`);
+}
+
+export function getGroupWelcomeConfig(groupId: number): Promise<{ data: GroupWelcomeConfig }> {
+  return api.get<{ data: GroupWelcomeConfig }>(`${API_V2}/groups/${groupId}/welcome`);
+}
+
+export function updateGroupWelcomeConfig(groupId: number, config: GroupWelcomeConfig): Promise<{ data: GroupWelcomeConfig }> {
+  return api.put<{ data: GroupWelcomeConfig }>(`${API_V2}/groups/${groupId}/welcome`, config);
 }
 
 /**

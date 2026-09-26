@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Feed",
       "challenges": "Challenges",
+      "automation": "Automation",
       "subgroups": "Subgroups"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "Failed to cancel challenge",
       "hideHistory": "Hide challenge history",
       "showHistory": "Show challenge history ({{count}})",
+      "showHistory_one": "Show challenge history ({{count}})",
+      "showHistory_other": "Show challenge history ({{count}})",
       "metric": {
         "posts": "Posts",
         "discussions": "Discussions",
@@ -514,6 +517,52 @@
         "completed": "Completed",
         "expired": "Expired",
         "cancelled": "Cancelled"
+      }
+    },
+    "automation": {
+      "title": "Scheduled publishing",
+      "subtitle": "Plan discussions and announcements for the group.",
+      "create": "Schedule post",
+      "loadError": "Scheduled posts could not be loaded.",
+      "noTypesTitle": "Scheduled publishing is unavailable",
+      "noTypesSubtitle": "Enable Discussions or Announcements in the group configuration to schedule content.",
+      "typeLabel": "Post type",
+      "titleLabel": "Title",
+      "contentLabel": "Content",
+      "timezone": "Times use your device timezone: {{timezone}}",
+      "dateAction": "Choose date",
+      "timeAction": "Choose time",
+      "recurring": "Repeat this post",
+      "validationError": "Add a title, content, and a valid future date and time.",
+      "created": "Post scheduled",
+      "createError": "Post not scheduled",
+      "retryHint": "Your scheduled post is saved on this device. Retry it when the connection is ready.",
+      "recoveryTitle": "Unfinished scheduled post",
+      "recoveryNotice": "Your unfinished scheduled post was restored. Retry it before scheduling different content.",
+      "recoveryError": "The saved scheduled post could not be restored safely.",
+      "discard": "Discard saved post",
+      "emptyTitle": "Nothing scheduled",
+      "emptySubtitle": "Future discussions and announcements will appear here.",
+      "cancelTitle": "Cancel scheduled post?",
+      "cancelMessage": "Stop “{{title}}” from being published?",
+      "cancelAction": "Cancel scheduled post",
+      "cancelled": "Scheduled post cancelled",
+      "cancelError": "The cancellation could not be confirmed.",
+      "welcomeTitle": "Welcome message",
+      "welcomeEnabled": "Send a welcome message to new members",
+      "welcomeMessageLabel": "Message",
+      "welcomeHint": "You can use {name} and {group_name}.",
+      "welcomeLoadError": "The welcome message could not be loaded.",
+      "welcomeSaved": "Welcome message saved",
+      "welcomeSaveError": "The welcome message save could not be confirmed.",
+      "type": {
+        "discussion": "Discussion",
+        "announcement": "Announcement"
+      },
+      "recurrence": {
+        "daily": "Every day",
+        "weekly": "Every week",
+        "monthly": "Every month"
       }
     },
     "subgroups": {

@@ -90,6 +90,7 @@ jest.mock('react-i18next', () => ({
         'detail.tabs.wiki': 'Wiki',
         'detail.tabs.tasks': 'Tasks',
         'detail.tabs.analytics': 'Analytics',
+        'detail.tabs.automation': 'Automation',
         'detail.tabs.marketplace': 'Marketplace',
         'detail.files.title': 'Group files',
         'detail.files.subtitle': 'Documents and resources.',
@@ -447,6 +448,13 @@ jest.mock('@/components/groups/GroupSubgroupsPanel', () => {
   };
 });
 
+jest.mock('@/components/groups/GroupAutomationPanel', () => {
+  const { View } = require('react-native');
+  return ({ groupId, discussionEnabled, announcementsEnabled }: { groupId: number; discussionEnabled: boolean; announcementsEnabled: boolean }) => (
+    <View testID="group-automation-panel" accessibilityLabel={`${groupId}:${discussionEnabled}:${announcementsEnabled}`} />
+  );
+});
+
 jest.mock('@/lib/api/groups', () => ({
   getGroup: jest.fn(),
   getGroupJoinRequests: jest.fn().mockResolvedValue({ data: [] }),
@@ -771,10 +779,26 @@ describe('GroupDetailScreen', () => {
     const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
     const states = [groupState, emptyListState, emptyListState, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, emptyListState];
     let call = 0;
-    mockUseApi.mockImplementation(() => states[call++] ?? emptyListState);
+    mockUseApi.mockImplementation(() => states[(call++) % states.length] ?? emptyListState);
 
     const screen = render(<GroupDetailScreen />);
     expect(screen.getByTestId('group-challenges-panel')).toBeTruthy();
+  });
+
+  it('opens manager automation and passes the enabled content types', () => {
+    mockRouteParams = { id: '1', tab: 'automation' };
+    mockGroupTabs = { tab_discussion: true, tab_announcements: false };
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, emptyListState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[(call++) % states.length] ?? emptyListState);
+
+    const screen = render(<GroupDetailScreen />);
+    expect(screen.getByTestId('group-automation-panel').props.accessibilityLabel).toBe('1:true:false');
   });
 
   it('opens the tab named by a notification deep link', () => {

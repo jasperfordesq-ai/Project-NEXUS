@@ -57,6 +57,7 @@
       "marketplace": "Áit mhargaidh",
       "feed": "Fotha",
       "challenges": "Dúshláin",
+      "automation": "Uathoibriú",
       "subgroups": "Foghrúpaí"
     },
     "chatrooms": {
@@ -484,7 +485,7 @@
       "recoveryNotice": "Athchóiríodh do dhúshlán neamhchríochnaithe. Bain triail eile as sula gcruthaíonn tú ceann eile.",
       "recoveryError": "Níorbh fhéidir an dúshlán sábháilte a athchóiriú go sábháilte.",
       "discard": "Caith an dúshlán sábháilte uait",
-      "progress": "{{current}} / {{target}} {{metric}}",
+      "progress": "{{current}} as {{target}} {{metric}}",
       "ends": "Críochnaíonn {{date}}",
       "reward": "{{xp}} pointe XP",
       "cancelTitle": "An dúshlán a chealú?",
@@ -494,6 +495,8 @@
       "cancelError": "Níorbh fhéidir an dúshlán a chealú",
       "hideHistory": "Folaigh stair na ndúshlán",
       "showHistory": "Taispeáin stair na ndúshlán ({{count}})",
+      "showHistory_one": "Taispeáin stair an dúshláin ({{count}})",
+      "showHistory_other": "Taispeáin stair na ndúshlán ({{count}})",
       "metric": {
         "posts": "Postálacha",
         "discussions": "Pléití",
@@ -505,6 +508,52 @@
         "completed": "Críochnaithe",
         "expired": "Imithe in éag",
         "cancelled": "Curtha ar ceal"
+      }
+    },
+    "automation": {
+      "title": "Foilsiú sceidealaithe",
+      "subtitle": "Pleanáil plé agus fógraí don ghrúpa.",
+      "create": "Sceidealaigh postáil",
+      "loadError": "Níorbh fhéidir na postálacha sceidealaithe a lódáil.",
+      "noTypesTitle": "Níl foilsiú sceidealaithe ar fáil",
+      "noTypesSubtitle": "Cumasaigh Plé nó Fógraí i gcumraíocht an ghrúpa.",
+      "typeLabel": "Cineál postála",
+      "titleLabel": "Teideal",
+      "contentLabel": "Ábhar",
+      "timezone": "Úsáideann na hamanna crios ama do ghléis: {{timezone}}",
+      "dateAction": "Roghnaigh dáta",
+      "timeAction": "Roghnaigh am",
+      "recurring": "Déan an phostáil seo arís",
+      "validationError": "Cuir teideal, ábhar, agus dáta agus am bailí amach anseo leis.",
+      "created": "Postáil sceidealaithe",
+      "createError": "Níor sceidealaíodh an phostáil",
+      "retryHint": "Tá do phostáil sceidealaithe sábháilte ar an ngléas seo. Bain triail eile as nuair atá an ceangal réidh.",
+      "recoveryTitle": "Postáil sceidealaithe neamhchríochnaithe",
+      "recoveryNotice": "Athchóiríodh do phostáil neamhchríochnaithe. Bain triail eile aisti sula sceidealaíonn tú ábhar eile.",
+      "recoveryError": "Níorbh fhéidir an phostáil shábháilte a athchóiriú go sábháilte.",
+      "discard": "Caith an phostáil shábháilte amach",
+      "emptyTitle": "Níl aon rud sceidealaithe",
+      "emptySubtitle": "Beidh plé agus fógraí amach anseo le feiceáil anseo.",
+      "cancelTitle": "Cealaigh an phostáil sceidealaithe?",
+      "cancelMessage": "Cosc ar “{{title}}” a fhoilsiú?",
+      "cancelAction": "Cealaigh an phostáil",
+      "cancelled": "Cealaíodh an phostáil sceidealaithe",
+      "cancelError": "Níorbh fhéidir an cealú a dheimhniú.",
+      "welcomeTitle": "Teachtaireacht fáilte",
+      "welcomeEnabled": "Seol teachtaireacht fáilte chuig baill nua",
+      "welcomeMessageLabel": "Teachtaireacht",
+      "welcomeHint": "Is féidir {name} agus {group_name} a úsáid.",
+      "welcomeLoadError": "Níorbh fhéidir an teachtaireacht fáilte a lódáil.",
+      "welcomeSaved": "Sábháladh an teachtaireacht fáilte",
+      "welcomeSaveError": "Níorbh fhéidir sábháil na teachtaireachta fáilte a dheimhniú.",
+      "type": {
+        "discussion": "Plé",
+        "announcement": "Fógra"
+      },
+      "recurrence": {
+        "daily": "Gach lá",
+        "weekly": "Gach seachtain",
+        "monthly": "Gach mí"
       }
     },
     "subgroups": {

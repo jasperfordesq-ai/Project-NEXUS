@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use App\Services\GroupAccessService;
 use App\Services\GroupScheduledPostService;
+use DomainException;
 use InvalidArgumentException;
 
 class GroupScheduledPostController extends BaseApiController
@@ -35,6 +36,7 @@ class GroupScheduledPostController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.group_admin_required'), null, 403);
         }
         $data = request()->only(['post_type', 'title', 'content', 'scheduled_at', 'is_recurring', 'recurrence_pattern']);
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? request()->input('idempotency_key');
         if (empty($data['content']) || empty($data['scheduled_at'])) {
             return $this->errorResponse(__('api.group_scheduled_content_date_required'), 400);
         }
@@ -45,7 +47,25 @@ class GroupScheduledPostController extends BaseApiController
         } catch (AuthorizationException $e) {
             return $this->respondWithError('FORBIDDEN', $e->getMessage(), null, 403);
         } catch (InvalidArgumentException $e) {
+            if ($e->getMessage() === GroupScheduledPostService::ERROR_IDEMPOTENCY_INVALID) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('event_registration.idempotency_invalid'),
+                    null,
+                    422,
+                );
+            }
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (DomainException $e) {
+            if ($e->getMessage() !== GroupScheduledPostService::ERROR_IDEMPOTENCY_CONFLICT) {
+                throw $e;
+            }
+            return $this->respondWithError(
+                'IDEMPOTENCY_CONFLICT',
+                __('event_registration.idempotency_conflict'),
+                null,
+                409,
+            );
         }
         return $this->successResponse(['id' => $postId], 201);
     }

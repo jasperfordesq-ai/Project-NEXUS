@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Feed",
       "challenges": "Sfide",
+      "automation": "Automazione",
       "subgroups": "Sottogruppi"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "Impossibile annullare la sfida",
       "hideHistory": "Nascondi cronologia sfide",
       "showHistory": "Mostra cronologia sfide ({{count}})",
+      "showHistory_one": "Mostra cronologia della sfida ({{count}})",
+      "showHistory_other": "Mostra cronologia delle sfide ({{count}})",
       "metric": {
         "posts": "Post",
         "discussions": "Discussioni",
@@ -514,6 +517,52 @@
         "completed": "Completata",
         "expired": "Scaduta",
         "cancelled": "Annullata"
+      }
+    },
+    "automation": {
+      "title": "Pubblicazione programmata",
+      "subtitle": "Pianifica discussioni e annunci per il gruppo.",
+      "create": "Programma post",
+      "loadError": "Impossibile caricare i post programmati.",
+      "noTypesTitle": "La pubblicazione programmata non è disponibile",
+      "noTypesSubtitle": "Attiva Discussioni o Annunci nella configurazione del gruppo.",
+      "typeLabel": "Tipo di post",
+      "titleLabel": "Titolo",
+      "contentLabel": "Contenuto",
+      "timezone": "Gli orari usano il fuso del dispositivo: {{timezone}}",
+      "dateAction": "Scegli data",
+      "timeAction": "Scegli ora",
+      "recurring": "Ripeti questo post",
+      "validationError": "Aggiungi titolo, contenuto e una data e ora future valide.",
+      "created": "Post programmato",
+      "createError": "Post non programmato",
+      "retryHint": "Il post programmato è salvato su questo dispositivo. Riprova quando la connessione è disponibile.",
+      "recoveryTitle": "Post programmato incompleto",
+      "recoveryNotice": "Il post incompleto è stato ripristinato. Riprova prima di programmare contenuti diversi.",
+      "recoveryError": "Il post salvato non è stato ripristinato in modo sicuro.",
+      "discard": "Elimina post salvato",
+      "emptyTitle": "Nessun post programmato",
+      "emptySubtitle": "Le discussioni e gli annunci futuri appariranno qui.",
+      "cancelTitle": "Annullare il post programmato?",
+      "cancelMessage": "Impedire la pubblicazione di “{{title}}”?",
+      "cancelAction": "Annulla post",
+      "cancelled": "Post programmato annullato",
+      "cancelError": "Impossibile confermare l’annullamento.",
+      "welcomeTitle": "Messaggio di benvenuto",
+      "welcomeEnabled": "Invia un messaggio di benvenuto ai nuovi membri",
+      "welcomeMessageLabel": "Messaggio",
+      "welcomeHint": "Puoi usare {name} e {group_name}.",
+      "welcomeLoadError": "Impossibile caricare il messaggio di benvenuto.",
+      "welcomeSaved": "Messaggio di benvenuto salvato",
+      "welcomeSaveError": "Impossibile confermare il salvataggio del messaggio di benvenuto.",
+      "type": {
+        "discussion": "Discussione",
+        "announcement": "Annuncio"
+      },
+      "recurrence": {
+        "daily": "Ogni giorno",
+        "weekly": "Ogni settimana",
+        "monthly": "Ogni mese"
       }
     },
     "subgroups": {

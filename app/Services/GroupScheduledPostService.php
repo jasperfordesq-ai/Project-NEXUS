@@ -12,12 +12,14 @@ use App\Core\TenantContext;
 use App\Enums\GroupStatus;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Exceptions\ScheduledPublicationRejected;
+use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -25,6 +27,9 @@ use Throwable;
  */
 final class GroupScheduledPostService
 {
+    public const ERROR_IDEMPOTENCY_INVALID = 'idempotency_invalid';
+    public const ERROR_IDEMPOTENCY_CONFLICT = 'idempotency_conflict';
+
     private const MAX_ATTEMPTS = 5;
     private const LEASE_SECONDS = 180;
     private const MAX_BATCH = 100;
@@ -87,6 +92,44 @@ final class GroupScheduledPostService
             $recurrencePattern = null;
         }
 
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'content' => $content,
+            'group_id' => $groupId,
+            'is_recurring' => $isRecurring,
+            'post_type' => $postType,
+            'recurrence_pattern' => $recurrencePattern,
+            'scheduled_at' => $scheduledAt->toIso8601String(),
+            'title' => $title,
+        ]);
+        if ($identity === false) {
+            throw new InvalidArgumentException(self::ERROR_IDEMPOTENCY_INVALID);
+        }
+
+        if ($identity !== null) {
+            $replayedId = DB::transaction(static function () use ($tenantId, $userId, $identity): int|null {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $userId,
+                    'scheduled_post',
+                    $identity['key_hash'],
+                );
+                if ($receipt === null) {
+                    return null;
+                }
+                if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                    throw new DomainException(self::ERROR_IDEMPOTENCY_CONFLICT);
+                }
+                return (int) $receipt->result_id;
+            }, 3);
+            if ($replayedId !== null) {
+                if (! self::exists($groupId, $replayedId)) {
+                    throw new RuntimeException('Scheduled post replay target is unavailable.');
+                }
+                return $replayedId;
+            }
+        }
+
         GroupService::assertSafeguardingBroadcastAllowed(
             $groupId,
             $userId,
@@ -95,21 +138,73 @@ final class GroupScheduledPostService
             $title . ' ' . $content,
         );
 
-        return (int) DB::table('group_scheduled_posts')->insertGetId([
-            'tenant_id' => $tenantId,
-            'group_id' => $groupId,
-            'user_id' => $userId,
-            'post_type' => $postType,
-            'title' => $title,
-            'content' => $content,
-            'is_recurring' => $isRecurring,
-            'recurrence_pattern' => $recurrencePattern,
-            'scheduled_at' => $scheduledAt,
-            'status' => 'scheduled',
-            'attempt_count' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        return DB::transaction(static function () use (
+            $tenantId,
+            $groupId,
+            $userId,
+            $postType,
+            $title,
+            $content,
+            $isRecurring,
+            $recurrencePattern,
+            $scheduledAt,
+            $identity,
+        ): int {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $userId,
+                    'scheduled_post',
+                    $identity['key_hash'],
+                );
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        throw new DomainException(self::ERROR_IDEMPOTENCY_CONFLICT);
+                    }
+                    return (int) $receipt->result_id;
+                }
+            }
+
+            $postId = (int) DB::table('group_scheduled_posts')->insertGetId([
+                'tenant_id' => $tenantId,
+                'group_id' => $groupId,
+                'user_id' => $userId,
+                'post_type' => $postType,
+                'title' => $title,
+                'content' => $content,
+                'is_recurring' => $isRecurring,
+                'recurrence_pattern' => $recurrencePattern,
+                'scheduled_at' => $scheduledAt,
+                'status' => 'scheduled',
+                'attempt_count' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'scheduled_post',
+                    $identity,
+                    $postId,
+                    ['id' => $postId],
+                );
+            }
+
+            return $postId;
+        }, 3);
+    }
+
+    private static function exists(int $groupId, int $postId): bool
+    {
+        return DB::table('group_scheduled_posts')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('group_id', $groupId)
+            ->where('id', $postId)
+            ->exists();
     }
 
     public static function getScheduled(int $groupId): array

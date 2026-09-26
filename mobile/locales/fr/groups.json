@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Fil",
       "challenges": "Défis",
+      "automation": "Automatisation",
       "subgroups": "Sous-groupes"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "Impossible d’annuler le défi",
       "hideHistory": "Masquer l’historique des défis",
       "showHistory": "Afficher l’historique des défis ({{count}})",
+      "showHistory_one": "Afficher l’historique des défis ({{count}})",
+      "showHistory_other": "Afficher l’historique des défis ({{count}})",
       "metric": {
         "posts": "Publications",
         "discussions": "Discussions",
@@ -514,6 +517,52 @@
         "completed": "Terminé",
         "expired": "Expiré",
         "cancelled": "Annulé"
+      }
+    },
+    "automation": {
+      "title": "Publication programmée",
+      "subtitle": "Planifiez des discussions et des annonces pour le groupe.",
+      "create": "Programmer une publication",
+      "loadError": "Impossible de charger les publications programmées.",
+      "noTypesTitle": "La publication programmée est indisponible",
+      "noTypesSubtitle": "Activez Discussions ou Annonces dans la configuration du groupe.",
+      "typeLabel": "Type de publication",
+      "titleLabel": "Titre",
+      "contentLabel": "Contenu",
+      "timezone": "Les heures utilisent le fuseau de votre appareil : {{timezone}}",
+      "dateAction": "Choisir la date",
+      "timeAction": "Choisir l’heure",
+      "recurring": "Répéter cette publication",
+      "validationError": "Ajoutez un titre, du contenu et une date et heure futures valides.",
+      "created": "Publication programmée",
+      "createError": "Publication non programmée",
+      "retryHint": "Votre publication est enregistrée sur cet appareil. Réessayez lorsque la connexion est disponible.",
+      "recoveryTitle": "Publication programmée inachevée",
+      "recoveryNotice": "Votre publication inachevée a été restaurée. Réessayez avant de programmer un autre contenu.",
+      "recoveryError": "La publication enregistrée n’a pas pu être restaurée en toute sécurité.",
+      "discard": "Supprimer la publication enregistrée",
+      "emptyTitle": "Aucune publication programmée",
+      "emptySubtitle": "Les futures discussions et annonces apparaîtront ici.",
+      "cancelTitle": "Annuler la publication programmée ?",
+      "cancelMessage": "Empêcher la publication de « {{title}} » ?",
+      "cancelAction": "Annuler la publication",
+      "cancelled": "Publication programmée annulée",
+      "cancelError": "L’annulation n’a pas pu être confirmée.",
+      "welcomeTitle": "Message de bienvenue",
+      "welcomeEnabled": "Envoyer un message de bienvenue aux nouveaux membres",
+      "welcomeMessageLabel": "Message",
+      "welcomeHint": "Vous pouvez utiliser {name} et {group_name}.",
+      "welcomeLoadError": "Impossible de charger le message de bienvenue.",
+      "welcomeSaved": "Message de bienvenue enregistré",
+      "welcomeSaveError": "L’enregistrement du message de bienvenue n’a pas pu être confirmé.",
+      "type": {
+        "discussion": "Discussion",
+        "announcement": "Annonce"
+      },
+      "recurrence": {
+        "daily": "Chaque jour",
+        "weekly": "Chaque semaine",
+        "monthly": "Chaque mois"
       }
     },
     "subgroups": {

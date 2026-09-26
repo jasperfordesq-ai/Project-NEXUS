@@ -138,6 +138,7 @@ import GroupNotificationPreferencesCard from '@/components/groups/GroupNotificat
 import GroupChatroomsPanel from '@/components/groups/GroupChatroomsPanel';
 import GroupChallengesPanel from '@/components/groups/GroupChallengesPanel';
 import GroupSubgroupsPanel, { hasValidSubgroups } from '@/components/groups/GroupSubgroupsPanel';
+import GroupAutomationPanel from '@/components/groups/GroupAutomationPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -170,8 +171,8 @@ import RemoteImage from '@/components/ui/RemoteImage';
 const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'challenges' | 'subgroups' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
-const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'challenges', 'subgroups', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'challenges' | 'subgroups' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'automation' | 'analytics' | 'marketplace';
+const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'challenges', 'subgroups', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'automation', 'analytics', 'marketplace'];
 const GROUP_TAB_CONFIG_KEYS = {
   discussion: 'tab_discussion',
   chatrooms: 'tab_chatrooms',
@@ -485,6 +486,7 @@ function GroupDetailScreenInner() {
     if (key === 'overview') return true;
     if (key === 'feed') return hasModule('feed');
     if (key === 'marketplace') return hasFeature('marketplace');
+    if (key === 'automation') return canManageGroup;
     if (key === 'analytics' && !canManageGroup) return false;
     if (key === 'events' && !hasFeature('events')) return false;
     if (key === 'subgroups') {
@@ -1126,6 +1128,9 @@ function GroupDetailScreenInner() {
   if (canManageGroup && hasGroupTab('tab_analytics')) {
     tabs.push({ key: 'analytics', label: t('detail.tabs.analytics'), icon: 'analytics-outline' });
   }
+  if (canManageGroup) {
+    tabs.push({ key: 'automation', label: t('detail.tabs.automation'), icon: 'calendar-outline' });
+  }
   if (hasFeature('marketplace')) {
     tabs.push({ key: 'marketplace', label: t('detail.tabs.marketplace'), icon: 'bag-handle-outline' });
   }
@@ -1368,6 +1373,15 @@ function GroupDetailScreenInner() {
             key={`subgroups-${loadedGroup.id}`}
             groupId={loadedGroup.id}
             subgroups={loadedGroup.sub_groups}
+          />
+        ) : null}
+
+        {visibleTab === 'automation' ? (
+          <GroupAutomationPanel
+            key={`automation-${loadedGroup.id}`}
+            groupId={loadedGroup.id}
+            discussionEnabled={hasGroupTab('tab_discussion')}
+            announcementsEnabled={hasGroupTab('tab_announcements')}
           />
         ) : null}
 

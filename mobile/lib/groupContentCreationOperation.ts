@@ -14,7 +14,7 @@ import {
 } from '@/lib/creationDraftStore';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
-export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media' | 'chatroom-message' | 'chatroom' | 'challenge';
+export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media' | 'chatroom-message' | 'chatroom' | 'challenge' | 'scheduled-post';
 
 export interface GroupContentCreationPayloads {
   discussion: { title: string; content: string };
@@ -39,6 +39,14 @@ export interface GroupContentCreationPayloads {
     targetValue: number;
     rewardXp: 0 | 25 | 50 | 100;
     endsAt: string;
+  };
+  'scheduled-post': {
+    postType: 'discussion' | 'announcement';
+    title: string;
+    content: string;
+    scheduledAt: string;
+    isRecurring: boolean;
+    recurrencePattern: 'daily' | 'weekly' | 'monthly' | null;
   };
 }
 
@@ -142,6 +150,27 @@ function normalizePayload<K extends GroupContentCreationKind>(
         targetValue,
         rewardXp: rewardXp as GroupContentCreationPayloads['challenge']['rewardXp'],
         endsAt,
+      };
+      break;
+    }
+    case 'scheduled-post': {
+      const postType = requiredText(raw.postType);
+      const scheduledAt = requiredText(raw.scheduledAt);
+      const recurrencePattern = raw.recurrencePattern === null ? null : requiredText(raw.recurrencePattern);
+      if (!['discussion', 'announcement'].includes(postType)
+        || !Number.isFinite(Date.parse(scheduledAt))
+        || typeof raw.isRecurring !== 'boolean'
+        || (raw.isRecurring && !['daily', 'weekly', 'monthly'].includes(String(recurrencePattern)))
+        || (!raw.isRecurring && recurrencePattern !== null)) {
+        throw new Error('Invalid group content creation payload');
+      }
+      normalized = {
+        postType: postType as GroupContentCreationPayloads['scheduled-post']['postType'],
+        title: requiredText(raw.title),
+        content: requiredText(raw.content),
+        scheduledAt,
+        isRecurring: raw.isRecurring,
+        recurrencePattern: recurrencePattern as GroupContentCreationPayloads['scheduled-post']['recurrencePattern'],
       };
       break;
     }

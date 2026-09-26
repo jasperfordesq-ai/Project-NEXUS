@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Feed",
       "challenges": "Herausforderungen",
+      "automation": "Automatisierung",
       "subgroups": "Untergruppen"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "Herausforderung konnte nicht abgebrochen werden",
       "hideHistory": "Verlauf ausblenden",
       "showHistory": "Herausforderungsverlauf anzeigen ({{count}})",
+      "showHistory_one": "Herausforderungsverlauf anzeigen ({{count}})",
+      "showHistory_other": "Herausforderungsverlauf anzeigen ({{count}})",
       "metric": {
         "posts": "Beiträge",
         "discussions": "Diskussionen",
@@ -514,6 +517,52 @@
         "completed": "Abgeschlossen",
         "expired": "Abgelaufen",
         "cancelled": "Abgebrochen"
+      }
+    },
+    "automation": {
+      "title": "Geplante Veröffentlichungen",
+      "subtitle": "Plane Diskussionen und Ankündigungen für die Gruppe.",
+      "create": "Beitrag planen",
+      "loadError": "Geplante Beiträge konnten nicht geladen werden.",
+      "noTypesTitle": "Geplante Veröffentlichung ist nicht verfügbar",
+      "noTypesSubtitle": "Aktiviere Diskussionen oder Ankündigungen in der Gruppenkonfiguration.",
+      "typeLabel": "Beitragstyp",
+      "titleLabel": "Titel",
+      "contentLabel": "Inhalt",
+      "timezone": "Zeiten verwenden die Zeitzone deines Geräts: {{timezone}}",
+      "dateAction": "Datum wählen",
+      "timeAction": "Uhrzeit wählen",
+      "recurring": "Diesen Beitrag wiederholen",
+      "validationError": "Füge Titel, Inhalt sowie ein gültiges zukünftiges Datum und eine Uhrzeit hinzu.",
+      "created": "Beitrag geplant",
+      "createError": "Beitrag nicht geplant",
+      "retryHint": "Dein geplanter Beitrag ist auf diesem Gerät gespeichert. Versuche es erneut, wenn die Verbindung bereit ist.",
+      "recoveryTitle": "Unfertiger geplanter Beitrag",
+      "recoveryNotice": "Dein unfertiger geplanter Beitrag wurde wiederhergestellt. Wiederhole ihn, bevor du andere Inhalte planst.",
+      "recoveryError": "Der gespeicherte geplante Beitrag konnte nicht sicher wiederhergestellt werden.",
+      "discard": "Gespeicherten Beitrag verwerfen",
+      "emptyTitle": "Nichts geplant",
+      "emptySubtitle": "Zukünftige Diskussionen und Ankündigungen werden hier angezeigt.",
+      "cancelTitle": "Geplanten Beitrag abbrechen?",
+      "cancelMessage": "Veröffentlichung von „{{title}}“ stoppen?",
+      "cancelAction": "Geplanten Beitrag abbrechen",
+      "cancelled": "Geplanter Beitrag abgebrochen",
+      "cancelError": "Der Abbruch konnte nicht bestätigt werden.",
+      "welcomeTitle": "Willkommensnachricht",
+      "welcomeEnabled": "Willkommensnachricht an neue Mitglieder senden",
+      "welcomeMessageLabel": "Nachricht",
+      "welcomeHint": "Du kannst {name} und {group_name} verwenden.",
+      "welcomeLoadError": "Die Willkommensnachricht konnte nicht geladen werden.",
+      "welcomeSaved": "Willkommensnachricht gespeichert",
+      "welcomeSaveError": "Das Speichern der Willkommensnachricht konnte nicht bestätigt werden.",
+      "type": {
+        "discussion": "Diskussion",
+        "announcement": "Ankündigung"
+      },
+      "recurrence": {
+        "daily": "Jeden Tag",
+        "weekly": "Jede Woche",
+        "monthly": "Jeden Monat"
       }
     },
     "subgroups": {

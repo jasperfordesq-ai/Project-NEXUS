@@ -14,8 +14,8 @@ use App\Http\Controllers\Api\GroupChallengeController;
 use App\Http\Controllers\Api\GroupFilesController;
 use App\Http\Controllers\Api\GroupMediaController;
 use App\Http\Controllers\Api\GroupQAController;
-use App\Http\Controllers\Api\GroupsController;
 use App\Http\Controllers\Api\GroupScheduledPostController;
+use App\Http\Controllers\Api\GroupsController;
 use App\Http\Controllers\Api\GroupWikiController;
 use App\Http\Controllers\Api\IdeationChallengesController;
 use App\Models\User;
@@ -73,7 +73,22 @@ final class GroupTabFeatureBoundaryTest extends TestCase
             );
         }
 
-        self::assertCount(66, $protected, 'The configurable Groups tab route inventory changed.');
+        self::assertCount(63, $protected, 'The configurable Groups tab route inventory changed.');
+    }
+
+    public function test_scheduled_routes_delegate_dynamic_content_tab_policy_to_the_service(): void
+    {
+        $routes = collect(Route::getRoutes())
+            ->filter(static fn (LaravelRoute $route): bool => str_starts_with(
+                $route->getActionName(),
+                GroupScheduledPostController::class . '@',
+            ));
+
+        self::assertCount(3, $routes);
+        foreach ($routes as $route) {
+            self::assertNotContains('group.tab:announcements', $route->middleware());
+            self::assertNotContains('group.tab:discussion', $route->middleware());
+        }
     }
 
     public static function disabledTabRepresentatives(): iterable
@@ -122,7 +137,6 @@ final class GroupTabFeatureBoundaryTest extends TestCase
             GroupWikiController::class => 'wiki',
             GroupMediaController::class => 'media',
             GroupChallengeController::class => 'challenges',
-            GroupScheduledPostController::class => 'announcements',
         ];
         if (isset($controllerTabs[$controller])) {
             return $controllerTabs[$controller];

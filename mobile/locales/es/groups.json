@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Actividad",
       "challenges": "Retos",
+      "automation": "Automatización",
       "subgroups": "Subgrupos"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "No se pudo cancelar el reto",
       "hideHistory": "Ocultar historial de retos",
       "showHistory": "Mostrar historial de retos ({{count}})",
+      "showHistory_one": "Mostrar historial de retos ({{count}})",
+      "showHistory_other": "Mostrar historial de retos ({{count}})",
       "metric": {
         "posts": "Publicaciones",
         "discussions": "Debates",
@@ -514,6 +517,52 @@
         "completed": "Completado",
         "expired": "Caducado",
         "cancelled": "Cancelado"
+      }
+    },
+    "automation": {
+      "title": "Publicación programada",
+      "subtitle": "Planifica debates y anuncios para el grupo.",
+      "create": "Programar publicación",
+      "loadError": "No se pudieron cargar las publicaciones programadas.",
+      "noTypesTitle": "La publicación programada no está disponible",
+      "noTypesSubtitle": "Activa Debates o Anuncios en la configuración del grupo.",
+      "typeLabel": "Tipo de publicación",
+      "titleLabel": "Título",
+      "contentLabel": "Contenido",
+      "timezone": "Las horas usan la zona horaria del dispositivo: {{timezone}}",
+      "dateAction": "Elegir fecha",
+      "timeAction": "Elegir hora",
+      "recurring": "Repetir esta publicación",
+      "validationError": "Añade un título, contenido y una fecha y hora futuras válidas.",
+      "created": "Publicación programada",
+      "createError": "Publicación no programada",
+      "retryHint": "La publicación programada está guardada en este dispositivo. Reinténtalo cuando haya conexión.",
+      "recoveryTitle": "Publicación programada sin terminar",
+      "recoveryNotice": "Se restauró la publicación sin terminar. Reinténtala antes de programar otro contenido.",
+      "recoveryError": "La publicación guardada no se pudo restaurar de forma segura.",
+      "discard": "Descartar publicación guardada",
+      "emptyTitle": "Nada programado",
+      "emptySubtitle": "Los futuros debates y anuncios aparecerán aquí.",
+      "cancelTitle": "¿Cancelar la publicación programada?",
+      "cancelMessage": "¿Impedir que se publique «{{title}}»?",
+      "cancelAction": "Cancelar publicación",
+      "cancelled": "Publicación programada cancelada",
+      "cancelError": "No se pudo confirmar la cancelación.",
+      "welcomeTitle": "Mensaje de bienvenida",
+      "welcomeEnabled": "Enviar un mensaje de bienvenida a los nuevos miembros",
+      "welcomeMessageLabel": "Mensaje",
+      "welcomeHint": "Puedes usar {name} y {group_name}.",
+      "welcomeLoadError": "No se pudo cargar el mensaje de bienvenida.",
+      "welcomeSaved": "Mensaje de bienvenida guardado",
+      "welcomeSaveError": "No se pudo confirmar el guardado del mensaje de bienvenida.",
+      "type": {
+        "discussion": "Debate",
+        "announcement": "Anuncio"
+      },
+      "recurrence": {
+        "daily": "Cada día",
+        "weekly": "Cada semana",
+        "monthly": "Cada mes"
       }
     },
     "subgroups": {

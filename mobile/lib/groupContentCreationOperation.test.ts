@@ -80,6 +80,19 @@ describe('group content creation operation', () => {
     await expect(loadGroupContentCreationOperation(9, 'challenge')).resolves.toEqual(challenge);
   });
 
+  it('normalizes and restores the exact scheduled post intent', async () => {
+    const scheduled = await reserveGroupContentCreationOperation(9, 'scheduled-post', {
+      postType: 'announcement', title: '  Weekly update  ', content: '  News for everyone.  ',
+      scheduledAt: '2026-11-01T10:30:00.000Z', isRecurring: true, recurrencePattern: 'weekly',
+    });
+    expect(scheduled.payload).toEqual({
+      postType: 'announcement', title: 'Weekly update', content: 'News for everyone.',
+      scheduledAt: '2026-11-01T10:30:00.000Z', isRecurring: true, recurrencePattern: 'weekly',
+    });
+    jest.mocked(loadCreationDraft).mockResolvedValue(scheduled);
+    await expect(loadGroupContentCreationOperation(9, 'scheduled-post')).resolves.toEqual(scheduled);
+  });
+
   it('does not replace unresolved work with changed content', async () => {
     const first = await reserveGroupContentCreationOperation(9, 'discussion', discussion);
     jest.mocked(loadCreationDraft).mockResolvedValue(first);

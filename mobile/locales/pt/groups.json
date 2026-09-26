@@ -99,6 +99,7 @@
       "marketplace": "Marketplace",
       "feed": "Feed",
       "challenges": "Desafios",
+      "automation": "Automação",
       "subgroups": "Subgrupos"
     },
     "chatrooms": {
@@ -503,6 +504,8 @@
       "cancelError": "Não foi possível cancelar o desafio",
       "hideHistory": "Ocultar histórico de desafios",
       "showHistory": "Mostrar histórico de desafios ({{count}})",
+      "showHistory_one": "Mostrar histórico do desafio ({{count}})",
+      "showHistory_other": "Mostrar histórico dos desafios ({{count}})",
       "metric": {
         "posts": "Publicações",
         "discussions": "Discussões",
@@ -514,6 +517,52 @@
         "completed": "Concluído",
         "expired": "Expirado",
         "cancelled": "Cancelado"
+      }
+    },
+    "automation": {
+      "title": "Publicação agendada",
+      "subtitle": "Planeie discussões e anúncios para o grupo.",
+      "create": "Agendar publicação",
+      "loadError": "Não foi possível carregar as publicações agendadas.",
+      "noTypesTitle": "A publicação agendada não está disponível",
+      "noTypesSubtitle": "Ative Discussões ou Anúncios na configuração do grupo.",
+      "typeLabel": "Tipo de publicação",
+      "titleLabel": "Título",
+      "contentLabel": "Conteúdo",
+      "timezone": "As horas usam o fuso do dispositivo: {{timezone}}",
+      "dateAction": "Escolher data",
+      "timeAction": "Escolher hora",
+      "recurring": "Repetir esta publicação",
+      "validationError": "Adicione um título, conteúdo e uma data e hora futuras válidas.",
+      "created": "Publicação agendada",
+      "createError": "Publicação não agendada",
+      "retryHint": "A publicação está guardada neste dispositivo. Tente novamente quando houver ligação.",
+      "recoveryTitle": "Publicação agendada inacabada",
+      "recoveryNotice": "A publicação inacabada foi restaurada. Tente novamente antes de agendar outro conteúdo.",
+      "recoveryError": "A publicação guardada não pôde ser restaurada em segurança.",
+      "discard": "Descartar publicação guardada",
+      "emptyTitle": "Nada agendado",
+      "emptySubtitle": "As futuras discussões e anúncios aparecerão aqui.",
+      "cancelTitle": "Cancelar a publicação agendada?",
+      "cancelMessage": "Impedir a publicação de “{{title}}”?",
+      "cancelAction": "Cancelar publicação",
+      "cancelled": "Publicação agendada cancelada",
+      "cancelError": "Não foi possível confirmar o cancelamento.",
+      "welcomeTitle": "Mensagem de boas-vindas",
+      "welcomeEnabled": "Enviar uma mensagem de boas-vindas aos novos membros",
+      "welcomeMessageLabel": "Mensagem",
+      "welcomeHint": "Pode usar {name} e {group_name}.",
+      "welcomeLoadError": "Não foi possível carregar a mensagem de boas-vindas.",
+      "welcomeSaved": "Mensagem de boas-vindas guardada",
+      "welcomeSaveError": "Não foi possível confirmar que a mensagem foi guardada.",
+      "type": {
+        "discussion": "Discussão",
+        "announcement": "Anúncio"
+      },
+      "recurrence": {
+        "daily": "Todos os dias",
+        "weekly": "Todas as semanas",
+        "monthly": "Todos os meses"
       }
     },
     "subgroups": {

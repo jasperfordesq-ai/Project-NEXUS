@@ -34,6 +34,8 @@ import {
   deleteGroupAnnouncement,
   deleteGroupWikiPage,
   createGroupQuestion,
+  createGroupScheduledPost,
+  cancelGroupScheduledPost,
   createGroupInviteLink,
   getGroupInvites,
   handleGroupJoinRequest,
@@ -41,6 +43,8 @@ import {
   getGroup,
   getGroupFormCapabilities,
   getGroupNotificationPreferences,
+  getGroupScheduledPosts,
+  getGroupWelcomeConfig,
   getGroupAnalytics,
   getGroupAnalyticsComparative,
   getGroupAnalyticsRetention,
@@ -64,6 +68,7 @@ import {
   sendGroupEmailInvites,
   updateGroup,
   updateGroupNotificationPreferences,
+  updateGroupWelcomeConfig,
   updateGroupAnnouncement,
   updateGroupTask,
   updateGroupWikiPage,
@@ -843,5 +848,37 @@ describe('group join request decisions', () => {
       { action: 'accept', idempotency_key: 'mobile-group-join-decision-1' },
       { headers: { 'Idempotency-Key': 'mobile-group-join-decision-1' } },
     );
+  });
+});
+
+describe('group manager automation', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('uses the durable key in both scheduled-post transports', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 31 } });
+    const payload = {
+      post_type: 'discussion' as const, title: 'Next meeting', content: 'Agenda and updates',
+      scheduled_at: '2026-11-01T10:30:00.000Z', is_recurring: true, recurrence_pattern: 'weekly' as const,
+    };
+    await createGroupScheduledPost(7, payload, 'mobile-scheduled-key');
+    expect(api.post).toHaveBeenCalledWith(
+      '/api/v2/groups/7/scheduled-posts',
+      { ...payload, idempotency_key: 'mobile-scheduled-key' },
+      { headers: { 'Idempotency-Key': 'mobile-scheduled-key' } },
+    );
+  });
+
+  it('uses the manager readback and cancellation endpoints', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [] });
+    (api.delete as jest.Mock).mockResolvedValue({ data: { message: 'ok' } });
+    (api.put as jest.Mock).mockResolvedValue({ data: { enabled: true, message: 'Welcome' } });
+    await getGroupScheduledPosts(7);
+    await cancelGroupScheduledPost(7, 31);
+    await getGroupWelcomeConfig(7);
+    await updateGroupWelcomeConfig(7, { enabled: true, message: 'Welcome' });
+    expect(api.get).toHaveBeenNthCalledWith(1, '/api/v2/groups/7/scheduled-posts');
+    expect(api.get).toHaveBeenNthCalledWith(2, '/api/v2/groups/7/welcome');
+    expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/scheduled-posts/31');
+    expect(api.put).toHaveBeenCalledWith('/api/v2/groups/7/welcome', { enabled: true, message: 'Welcome' });
   });
 });

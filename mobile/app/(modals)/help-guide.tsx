@@ -15,7 +15,7 @@
  */
 
 import { useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -143,7 +143,17 @@ function HelpGuideScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
       <AppTopBar title={title} backLabel={t('common:back')} fallbackHref="/(modals)/help-faqs" />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 12 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 12 }}
+        refreshControl={(
+          <RefreshControl
+            refreshing={isLoading && Boolean(guide)}
+            onRefresh={refresh}
+            tintColor={primary}
+            colors={[primary]}
+          />
+        )}
+      >
         {content}
         {guide ? (
           <Text className="px-1 text-xs leading-5" style={{ color: theme.textSecondary }}>

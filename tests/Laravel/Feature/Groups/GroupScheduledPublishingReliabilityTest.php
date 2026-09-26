@@ -17,12 +17,15 @@ use App\Services\GroupConfigurationService;
 use App\Services\GroupScheduledPostService;
 use App\Services\GroupWebhookService;
 use App\Services\TenantFeatureConfig;
+use DomainException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 final class GroupScheduledPublishingReliabilityTest extends TestCase
@@ -65,6 +68,88 @@ final class GroupScheduledPublishingReliabilityTest extends TestCase
     {
         Cache::forget('group_config:' . $this->testTenantId);
         parent::tearDown();
+    }
+
+    public function test_scheduled_creation_replays_the_exact_intent_once(): void
+    {
+        $payload = [
+            'post_type' => 'discussion',
+            'title' => 'Durable scheduled discussion',
+            'content' => 'This should only be scheduled once.',
+            'scheduled_at' => now()->addDay()->startOfMinute()->toIso8601String(),
+            'is_recurring' => true,
+            'recurrence_pattern' => 'weekly',
+            'idempotency_key' => 'scheduled-post-replay-key',
+        ];
+
+        $first = GroupScheduledPostService::schedule($this->group->id, $this->owner->id, $payload);
+        $second = GroupScheduledPostService::schedule($this->group->id, $this->owner->id, $payload);
+
+        self::assertSame($first, $second);
+        self::assertSame(1, DB::table('group_scheduled_posts')->where('id', $first)->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'scheduled_post')
+            ->where('result_id', $first)
+            ->count());
+    }
+
+    public function test_scheduled_creation_rejects_changed_intent_for_the_same_key(): void
+    {
+        $payload = [
+            'post_type' => 'announcement',
+            'title' => 'Original announcement',
+            'content' => 'The original scheduled content.',
+            'scheduled_at' => now()->addDay()->startOfMinute()->toIso8601String(),
+            'is_recurring' => false,
+            'recurrence_pattern' => null,
+            'idempotency_key' => 'scheduled-post-conflict-key',
+        ];
+        GroupScheduledPostService::schedule($this->group->id, $this->owner->id, $payload);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage(GroupScheduledPostService::ERROR_IDEMPOTENCY_CONFLICT);
+        GroupScheduledPostService::schedule($this->group->id, $this->owner->id, [
+            ...$payload,
+            'content' => 'Changed content must not reuse the key.',
+        ]);
+    }
+
+    public function test_scheduled_creation_honours_the_selected_content_tab(): void
+    {
+        GroupConfigurationService::set(GroupConfigurationService::CONFIG_TAB_ANNOUNCEMENTS, false);
+
+        $this->expectException(AuthorizationException::class);
+        GroupScheduledPostService::schedule($this->group->id, $this->owner->id, [
+            'post_type' => 'announcement',
+            'title' => 'Disabled announcement',
+            'content' => 'This tab is disabled.',
+            'scheduled_at' => now()->addDay()->toIso8601String(),
+        ]);
+    }
+
+    public function test_scheduled_creation_api_maps_changed_intent_to_conflict(): void
+    {
+        Sanctum::actingAs($this->owner, ['*']);
+        $payload = [
+            'post_type' => 'discussion',
+            'title' => 'API replay contract',
+            'content' => 'Original API content.',
+            'scheduled_at' => now()->addDay()->startOfMinute()->toIso8601String(),
+            'is_recurring' => false,
+            'recurrence_pattern' => null,
+        ];
+
+        $this->withHeader('Idempotency-Key', 'scheduled-api-conflict-key')
+            ->apiPost('/v2/groups/' . $this->group->id . '/scheduled-posts', $payload)
+            ->assertCreated();
+
+        $this->withHeader('Idempotency-Key', 'scheduled-api-conflict-key')
+            ->apiPost('/v2/groups/' . $this->group->id . '/scheduled-posts', [
+                ...$payload,
+                'content' => 'Changed API content.',
+            ])
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
     }
 
     public function test_canonical_discussion_publication_and_retry_are_exactly_once(): void
