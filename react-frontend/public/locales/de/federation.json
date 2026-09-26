@@ -5,7 +5,7 @@
   "external": "Extern",
   "hub": {
     "page_title": "Föderationszentrum",
-    "breadcrumb_dashboard": "Armaturenbrett",
+    "breadcrumb_dashboard": "Dashboard",
     "breadcrumb_federation": "Föderation",
     "title": "Föderationsnetzwerk",
     "subtitle_opted_in": "Sie sind mit dem Verbundnetzwerk verbunden.",
@@ -82,7 +82,7 @@
     "quick_link_7_title": "Föderationseinstellungen",
     "quick_link_7_description": "Konfigurieren Sie die Datenschutz- und Kommunikationseinstellungen Ihres Verbunds.",
     "quick_link_6_title": "Föderationsverbindungen",
-    "quick_link_6_description": "Verwalte deine Verbindungsanfragen über Partnergemeinschaften hinweg.",
+    "quick_link_6_description": "Verwalten Sie Ihre Verbindungsanfragen über Partnergemeinschaften hinweg.",
     "view_all_one": "Alle anzeigen ({{count}})",
     "view_all_other": "Alle anzeigen ({{count}})",
     "member_count_one": "{{count}}-Mitglieder",
@@ -191,7 +191,7 @@
     "compose_message": "Nachricht verfassen",
     "search_placeholder": "Konversationen suchen...",
     "no_conversations_match": "Keine Konversationen entsprechen Ihrer Suche.",
-    "you_prefix": "Du:",
+    "you_prefix": "Sie: ",
     "select_conversation": "Wählen Sie eine Konversation aus",
     "select_conversation_description": "Wählen Sie eine Konversation aus der Liste aus, die Sie lesen und beantworten möchten.",
     "auto_translate_tooltip_on": "Automatische Übersetzung ein – zum Deaktivieren klicken",
@@ -592,7 +592,7 @@
   },
   "optin_notice": {
     "title": "Föderations-Opt-In erforderlich",
-    "description": "Du musst der Föderation beitreten, um Inhalte von Partnergemeinschaften zu sehen.",
+    "description": "Sie müssen der Föderation beitreten, um Inhalte von Partnergemeinschaften zu sehen.",
     "cta": "Föderation einrichten"
   }
 }

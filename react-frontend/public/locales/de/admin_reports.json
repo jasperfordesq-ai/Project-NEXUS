@@ -20,7 +20,7 @@
     "active": "Aktiv",
     "all": "Alle",
     "approved": "Genehmigt",
-    "clear": "Klar",
+    "clear": "Zurücksetzen",
     "clear_filters": "Filter löschen",
     "clear_selection": "Auswahl löschen",
     "close": "Schließen",
@@ -195,7 +195,7 @@
     "label_social_value": "Sozialer Wert",
     "label_sort_by": "Sortieren nach",
     "label_status_filter": "Statusfilter",
-    "label_to_date": "Bis heute",
+    "label_to_date": "Bis Datum",
     "label_top_contributors": "Top-Mitwirkende",
     "label_total_flagged": "Insgesamt markiert",
     "label_total_hours": "Gesamtstunden",
@@ -356,7 +356,7 @@
       "date_from": "Aus",
       "date_to": "Zu",
       "apply": "Termine anwenden",
-      "clear": "Klar"
+      "clear": "Zurücksetzen"
     },
     "readiness": {
       "municipal_value": "Kommunaler Wert",

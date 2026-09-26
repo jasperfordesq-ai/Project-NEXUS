@@ -7,7 +7,7 @@
   "not_available": "Nicht verfügbar",
   "error_title": "Etwas ist schief gelaufen",
   "nav": {
-    "dashboard": "Armaturenbrett",
+    "dashboard": "Dashboard",
     "feed": "Feed",
     "listings": "Inserate",
     "messages": "Nachrichten",
@@ -68,7 +68,7 @@
     "timebanking": "Zeitbank",
     "explore": "Entdecken",
     "marketplace": "Marktplatz",
-    "premium": "Prämie",
+    "premium": "Spenden",
     "verify_identity": "Identität verifizieren",
     "accessibility_alpha": "Barrierefreiheit (Alpha)",
     "accessibility_alpha_tooltip": "Erweiterte barrierefreie Version – WCAG 2.2 AA-konform. Öffnet in einem neuen Tab.",
@@ -139,7 +139,7 @@
     "timebanking_listings": "Angebote & Gesuche",
     "messages": "Ihre Nachrichten",
     "marketplace": "Kaufen & Verkaufen in Ihrer Gemeinschaft",
-    "premium": "Premium-Mitgliedschaftsstufen",
+    "premium": "Unterstützen Sie diese Gemeinschaft",
     "accessibility_alpha": "Öffnen Sie das barrierefreiheits-orientierte Alpha-Frontend",
     "features": "Alle Funktionen von Project NEXUS mit ehrlichen Reifegradkennzeichnungen",
     "dashboard": "Ihre persönliche Hausübersicht",
@@ -470,27 +470,27 @@
     "badge": "Integriertes Modul",
     "title": "Fürsorgliche Gemeinschaft",
     "subtitle": "Zeitvorsorge, verifizierte Freiwilligenarbeit, vertrauenswürdige Organisationen, Gruppen, Veranstaltungen, Ressourcen und Wirkungsdaten – alles in einem koordinierten Sorge-Workflow.",
-    "welcome_banner": "Willkommen! Hier kannst du um Hilfe bitten, deine Zeit anbieten oder einfach eine nachbarschaftliche Gefälligkeit festhalten. Jeder Beitrag – ob gross oder klein – stärkt deine Gemeinschaft.",
+    "welcome_banner": "Willkommen! Hier können Sie um Hilfe bitten, Ihre Zeit anbieten oder einfach eine nachbarschaftliche Gefälligkeit festhalten. Jeder Beitrag – ob gross oder klein – stärkt Ihre Gemeinschaft.",
     "alpha": {
       "badge": "Neu · Früher Zugang"
     },
     "preview_tag": "Vorschau",
     "hero": {
       "title": "Fürsorgliche Gemeinschaft",
-      "intro": "Die Fürsorgliche Gemeinschaft ist ein Ort, an dem sich Nachbarinnen und Nachbarn im Alltag gegenseitig unterstützen – eine Fahrt zum Termin, ein paar Einkäufe oder einfach Gesellschaft an einem Nachmittag. Bitte um Hilfe, wenn du sie brauchst, und biete Hilfe an, wenn du kannst.",
-      "timebank_note": "Sie arbeitet Hand in Hand mit der Zeitbank: Wenn du deine Zeit gibst, wird sie als Stunden erfasst, die du später nutzen kannst – dieselben Stunden, in einem gemeinsamen Guthaben.",
+      "intro": "Die Fürsorgliche Gemeinschaft ist ein Ort, an dem sich Nachbarinnen und Nachbarn im Alltag gegenseitig unterstützen – eine Fahrt zum Termin, ein paar Einkäufe oder einfach Gesellschaft an einem Nachmittag. Bitten Sie um Hilfe, wenn Sie sie brauchen, und bieten Sie Hilfe an, wenn Sie können.",
+      "timebank_note": "Sie arbeitet Hand in Hand mit der Zeitbank: Wenn Sie Ihre Zeit geben, wird sie als Stunden erfasst, die Sie später nutzen können – dieselben Stunden, in einem gemeinsamen Guthaben.",
       "cta_get_help": "Ich brauche Hilfe",
       "cta_give_help": "Ich möchte helfen"
     },
     "new_notice": {
       "title": "Das ist brandneu.",
-      "body": "Die Fürsorgliche Gemeinschaft ist hier gerade erst gestartet und wir bauen sie noch auf. Einige Funktionen sind frühe Vorschauen, und sie funktioniert nicht von allein – sie lebt davon, dass Nachbarinnen und Nachbarn freiwillig Fürsorge leisten. Danke, dass du von Anfang an dabei bist."
+      "body": "Die Fürsorgliche Gemeinschaft ist hier gerade erst gestartet und wir bauen sie noch auf. Einige Funktionen sind frühe Vorschauen, und sie funktioniert nicht von allein – sie lebt davon, dass Nachbarinnen und Nachbarn freiwillig Fürsorge leisten. Danke, dass Sie von Anfang an dabei sind."
     },
     "how": {
       "title": "So funktioniert es",
       "subtitle": "Drei einfache Schritte.",
       "step1_title": "Um Hilfe bitten",
-      "step1_desc": "Sag uns mit eigenen Worten, was du brauchst. Deine Anfrage geht an vertrauenswürdige Mitglieder in der Nähe.",
+      "step1_desc": "Sagen Sie uns mit eigenen Worten, was Sie brauchen. Ihre Anfrage geht an vertrauenswürdige Mitglieder in der Nähe.",
       "step2_title": "Eine Nachbarin bietet Hilfe an",
       "step2_desc": "Jemand aus der Gemeinschaft bietet Hilfe an, und ihr vereinbart eine Zeit, die euch beiden passt.",
       "step3_title": "Stunden werden erfasst",
@@ -498,22 +498,22 @@
     },
     "recruit": {
       "title": "Wir suchen unsere ersten Pflegenden",
-      "body": "Die Fürsorgliche Gemeinschaft funktioniert nur, wenn Menschen bereit sind zu helfen. Wir haben noch kein fertiges Team von Pflegenden – wir bauen es gerade auf. Wenn du ein wenig Zeit erübrigen kannst, könntest du eine:r der Ersten sein.",
+      "body": "Die Fürsorgliche Gemeinschaft funktioniert nur, wenn Menschen bereit sind zu helfen. Wir haben noch kein fertiges Team von Pflegenden – wir bauen es gerade auf. Wenn Sie ein wenig Zeit erübrigen können, könnten Sie eine:r der Ersten sein.",
       "cta": "Hilfe anbieten"
     },
     "your_hours_note": "Das sind dieselben Zeitgutschriften wie in der Zeitbank – ein gemeinsames Guthaben, keine separate Währung der Fürsorglichen Gemeinschaft.",
     "groups": {
       "get_help": {
         "title": "Hilfe erhalten",
-        "desc": "Bitte um Unterstützung und behalte den Überblick über die Menschen, die dir helfen."
+        "desc": "Bitten Sie um Unterstützung und behalten Sie den Überblick über die Menschen, die Ihnen helfen."
       },
       "give_help": {
         "title": "Hilfe geben",
-        "desc": "Biete Nachbarinnen und Nachbarn, die Unterstützung brauchen, deine Zeit und Fähigkeiten an."
+        "desc": "Bieten Sie Nachbarinnen und Nachbarn, die Unterstützung brauchen, Ihre Zeit und Fähigkeiten an."
       },
       "your_hours": {
-        "title": "Deine Stunden",
-        "desc": "Sieh dir die verdienten Zeitgutschriften an und nutze sie."
+        "title": "Ihre Stunden",
+        "desc": "Sehen Sie Ihre verdienten Zeitgutschriften ein und nutzen Sie sie."
       },
       "caregiver_tools": {
         "title": "Werkzeuge für Pflegende",
@@ -526,15 +526,15 @@
     },
     "actions": {
       "request_help": "Hilfe anfragen",
-      "request_help_sub": "Bitte deine Gemeinschaft um praktische Unterstützung",
+      "request_help_sub": "Bitten Sie Ihre Gemeinschaft um praktische Unterstützung",
       "offer_favour": "Gefälligkeit erfassen",
       "offer_favour_sub": "Eine informelle Hilfe festhalten – ohne Zeitgutschrift",
       "offer_time": "Zeit anbieten",
-      "offer_time_sub": "Einen Dienst oder eine Fähigkeit anbieten, die du teilen möchtest",
+      "offer_time_sub": "Einen Dienst oder eine Fähigkeit anbieten, die Sie teilen möchten",
       "log_hours": "Stunden erfassen",
       "log_hours_sub": "Geleistete Freiwilligenstunden zur Genehmigung erfassen",
       "coordinate_org": "Organisation koordinieren",
-      "coordinate_org_sub": "Deine Freiwilligen-Organisationen verwalten",
+      "coordinate_org_sub": "Ihre Freiwilligen-Organisationen verwalten",
       "my_relationships": "Meine Unterstützungsbeziehungen",
       "my_relationships_sub": "Laufende Unterstützungsbeziehungen ansehen",
       "markt": "Marktplatz",
@@ -542,13 +542,13 @@
       "loyalty_history": "Meine Einlösungen",
       "loyalty_history_sub": "So haben Sie Ihre verdienten Stunden bei lokalen Händlern eingesetzt.",
       "future_care_fund": "Zeitvorsorge-Fonds",
-      "future_care_fund_sub": "Deine gesparten Stunden als Zukunftsvorsorge sehen.",
+      "future_care_fund_sub": "Ihre gesparten Stunden als Zukunftsvorsorge sehen.",
       "cover_care": "Vertretung für Pflegende",
-      "cover_care_sub": "Für Pflegende: organisiere vertrauenswürdige Vertretung, wenn du eine Pause brauchst. Wird nützlicher, je grösser das Netzwerk wird.",
+      "cover_care_sub": "Für Pflegende: Organisieren Sie vertrauenswürdige Vertretung, wenn Sie eine Pause brauchen. Wird nützlicher, je grösser das Netzwerk wird.",
       "become_caregiver": "Pflegende:r werden",
-      "become_caregiver_sub": "Sag uns, dass du regelmässig Fürsorge leisten möchtest, und hilf uns, das Team aufzubauen.",
+      "become_caregiver_sub": "Sagen Sie uns, dass Sie regelmässig Fürsorge leisten möchten, und helfen Sie uns, das Team aufzubauen.",
       "hour_gift": "Stunden schenken",
-      "hour_gift_sub": "Schenke deine gesparten Stunden an Familie oder Freund:innen.",
+      "hour_gift_sub": "Schenken Sie Ihre gesparten Stunden an Familie oder Freund:innen.",
       "hour_transfer": "Stunden übertragen",
       "hour_transfer_sub": "Gesparte Stunden zu einer anderen cooperative übertragen.",
       "safeguarding_report": "Anliegen melden",
@@ -643,41 +643,41 @@
   "request_help": {
     "meta": {
       "title": "Hilfe anfragen",
-      "description": "Bitte deine Gemeinschaft um Unterstützung"
+      "description": "Bitten Sie Ihre Gemeinschaft um Unterstützung"
     },
-    "subtitle": "Deine Nachbarinnen und Nachbarn sind für dich da. Sag uns, was du brauchst – wir geben unser Bestes.",
+    "subtitle": "Ihre Nachbarinnen und Nachbarn sind für Sie da. Sagen Sie uns, was Sie brauchen – wir geben unser Bestes.",
     "on_behalf_notice": "Sie erstellen diese Anfrage für jemanden, den Sie als Pflegeperson unterstützen.",
     "form": {
-      "what_label": "Welche Art von Hilfe brauchst du?",
+      "what_label": "Welche Art von Hilfe brauchen Sie?",
       "what_placeholder": "z. B. Hilfe beim Einkaufen, eine Fahrt zum Arzt, Begleitung bei einem Spaziergang...",
-      "when_label": "Wann brauchst du die Hilfe?",
+      "when_label": "Wann brauchen Sie die Hilfe?",
       "when_placeholder": "z. B. dienstags nachmittags, so bald wie möglich...",
-      "contact_label": "Wie sollen wir dich kontaktieren?",
+      "contact_label": "Wie sollen wir Sie kontaktieren?",
       "contact_phone": "Telefonisch",
       "contact_message": "Per Nachricht",
       "contact_either": "Beides ist in Ordnung",
       "submit": "Hilfe anfragen",
       "submitting": "Anfrage wird gesendet...",
-      "what_too_long": "Bitte halte deine Anfrage unter 500 Zeichen."
+      "what_too_long": "Bitte halten Sie Ihre Anfrage unter 500 Zeichen."
     },
     "success": {
       "title": "Anfrage erhalten",
-      "body": "Deine Anfrage ist eingegangen. Eine Koordinatorin oder ein Koordinator wird sich bald bei dir melden.",
+      "body": "Ihre Anfrage ist eingegangen. Eine Koordinatorin oder ein Koordinator wird sich bald bei Ihnen melden.",
       "back": "Zurück zur Caring Community",
       "toast": "Ihre Hilfeanfrage wurde gesendet."
     },
     "errors": {
-      "submit_failed": "Deine Anfrage konnte nicht gesendet werden. Bitte versuche es erneut.",
+      "submit_failed": "Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
       "voice_unsupported": "Sprachaufzeichnung wird in diesem Browser nicht unterstützt.",
       "voice_permission_denied": "Mikrofon-Berechtigung wurde verweigert.",
-      "voice_failed": "Wir konnten deine Aufnahme nicht verstehen. Bitte versuche es erneut oder fülle das Formular aus."
+      "voice_failed": "Wir konnten Ihre Aufnahme nicht verstehen. Bitte versuchen Sie es erneut oder füllen Sie das Formular aus."
     },
     "voice": {
-      "start": "Tippen, um deine Anfrage zu sprechen",
+      "start": "Tippen, um Ihre Anfrage zu sprechen",
       "stop": "Aufnahme beenden",
       "recording": "Nimmt auf... {{seconds}}s",
       "processing": "Höre zu...",
-      "filled_hint": "Wir haben das Formular aus deiner Aufnahme befüllt. Bitte prüfe es vor dem Absenden.",
+      "filled_hint": "Wir haben das Formular aus Ihrer Aufnahme befüllt. Bitte prüfen Sie es vor dem Absenden.",
       "transcript_label": "Was wir gehört haben"
     },
     "back": "Zurück zur Caring Community"
@@ -685,9 +685,9 @@
   "hour_gift": {
     "meta": {
       "title": "Stunden schenken",
-      "description": "Schenke deine angesparten Stunden einem anderen Genossenschaftsmitglied"
+      "description": "Schenken Sie Ihre angesparten Stunden einem anderen Genossenschaftsmitglied"
     },
-    "title": "Schenke deine Stunden",
+    "title": "Schenken Sie Ihre Stunden",
     "subtitle": "Angesparte Stunden lassen sich an Familie, Freunde oder jeden weitergeben, der sie braucht.",
     "tabs": {
       "send": "Senden",
@@ -695,15 +695,15 @@
       "sent": "Gesendet"
     },
     "send": {
-      "recipient_label": "Wem möchtest du Stunden schenken?",
+      "recipient_label": "Wem möchten Sie Stunden schenken?",
       "recipient_placeholder": "Nach Name suchen...",
       "hours_label": "Wie viele Stunden?",
-      "hours_balance_helper": "Du hast {{balance}} Stunden zur Verfügung",
+      "hours_balance_helper": "Sie haben {{balance}} Stunden zur Verfügung",
       "message_label": "Persönliche Nachricht hinzufügen (optional)",
-      "message_placeholder": "Warum du diese Stunden schenkst...",
+      "message_placeholder": "Warum Sie diese Stunden schenken...",
       "submit": "Stunden schenken",
       "confirm_title": "{{hours}} Stunden an {{name}} schenken?",
-      "confirm_body": "Deine Stunden werden jetzt abgebucht und gutgeschrieben, sobald die Person das Geschenk annimmt.",
+      "confirm_body": "Ihre Stunden werden jetzt abgebucht und gutgeschrieben, sobald die Person das Geschenk annimmt.",
       "confirm_button": "Ja, Stunden schenken",
       "cancel": "Abbrechen",
       "recipient_hint": "Geben Sie für die Suche mindestens zwei Buchstaben ein",
@@ -719,7 +719,7 @@
       "decline_button": "Geschenk ablehnen"
     },
     "sent": {
-      "empty": "Du hast noch keine Geschenke gesendet.",
+      "empty": "Sie haben noch keine Geschenke gesendet.",
       "to": "An {{name}}",
       "status": {
         "pending": "Wartet auf Annahme",
@@ -731,11 +731,11 @@
     },
     "success": {
       "sent": "Geschenk gesendet. {{name}} wird benachrichtigt.",
-      "accepted": "Geschenk angenommen. Die Stunden sind jetzt in deinem Konto.",
+      "accepted": "Geschenk angenommen. Die Stunden sind jetzt in Ihrem Konto.",
       "declined": "Geschenk abgelehnt. Stunden wurden zurückerstattet."
     },
     "errors": {
-      "insufficient_balance": "Du hast nicht genug Stunden in deinem Konto.",
+      "insufficient_balance": "Sie haben nicht genug Stunden in Ihrem Konto.",
       "send_failed": "Das Geschenk konnte nicht gesendet werden. Bitte versuche es nochmals."
     },
     "back": "Zurück zum Community-Hub"
@@ -747,10 +747,10 @@
   "hour_transfer": {
     "meta": {
       "title": "Gutgeschriebene Stunden übertragen",
-      "description": "Übertrag deiner gutgeschriebenen Stunden an eine andere cooperative"
+      "description": "Übertrag Ihrer gutgeschriebenen Stunden an eine andere Genossenschaft"
     },
-    "title": "Deine gutgeschriebenen Stunden übertragen",
-    "subtitle": "Du ziehst in eine andere Gemeinde? Deine gutgeschriebenen Stunden gehen mit.",
+    "title": "Ihre gutgeschriebenen Stunden übertragen",
+    "subtitle": "Sie ziehen in eine andere Gemeinde? Ihre gutgeschriebenen Stunden gehen mit.",
     "success_message": "Übertragungsanfrage gesendet. Eine Koordinatorin oder ein Koordinator prüft sie vor der Stundenübertragung.",
     "form": {
       "destination_label": "Ziel-Genossenschaft",
@@ -764,7 +764,7 @@
       "submitting": "Wird beantragt..."
     },
     "history": {
-      "title": "Deine bisherigen Überträge",
+      "title": "Ihre bisherigen Überträge",
       "aria": "Verlauf der Stundenübertragungen",
       "date": "Datum",
       "destination": "Ziel",
@@ -781,25 +781,25 @@
       "completed": "Abgeschlossen",
       "rejected": "Abgelehnt"
     },
-    "disclaimer": "Sobald die Koordination den Übertrag freigibt, werden die Stunden hier von deinem Konto abgezogen. In der Ziel-Genossenschaft erscheinen sie unmittelbar danach.",
+    "disclaimer": "Sobald die Koordination den Übertrag freigibt, werden die Stunden hier von Ihrem Konto abgezogen. In der Ziel-Genossenschaft erscheinen sie unmittelbar danach.",
     "back": "Zurück zur Gemeinschaftsseite",
     "errors": {
       "submit_failed": "Der Übertrag konnte nicht beantragt werden. Bitte versuche es erneut.",
       "destination_not_found": "Diese Ziel-Genossenschaft konnten wir nicht finden.",
-      "no_matching_email": "Deine E-Mail-Adresse ist bei der Ziel-Genossenschaft nicht registriert — bitte melde dich dort zuerst an.",
-      "insufficient_hours": "Du hast nicht genug gutgeschriebene Stunden."
+      "no_matching_email": "Ihre E-Mail-Adresse ist bei der Ziel-Genossenschaft nicht registriert — bitte melden Sie sich dort zuerst an.",
+      "insufficient_hours": "Sie haben nicht genug gutgeschriebene Stunden."
     }
   },
   "my_support_relationships": {
     "meta": {
       "title": "Meine Unterstützungsbeziehungen",
-      "description": "Deine laufenden Unterstützungsbeziehungen ansehen"
+      "description": "Ihre laufenden Unterstützungsbeziehungen ansehen"
     },
-    "subtitle": "Deine Unterstützungsbeziehungen – Menschen, denen du hilfst, und solche, die dir helfen.",
-    "loading": "Deine Informationen werden geladen...",
+    "subtitle": "Ihre Unterstützungsbeziehungen – Menschen, denen Sie helfen, und solche, die Ihnen helfen.",
+    "loading": "Ihre Informationen werden geladen...",
     "empty": {
       "title": "Keine Unterstützungsbeziehungen",
-      "body": "Du hast keine aktiven Unterstützungsbeziehungen."
+      "body": "Sie haben keine aktiven Unterstützungsbeziehungen."
     },
     "role": {
       "supporter": "Unterstützer:in",
@@ -830,17 +830,17 @@
     "no_recent_logs": "Noch keine Stunden erfasst",
     "back": "Zurück zur Caring Community",
     "errors": {
-      "load_failed": "Deine Unterstützungsbeziehungen konnten nicht geladen werden."
+      "load_failed": "Ihre Unterstützungsbeziehungen konnten nicht geladen werden."
     }
   },
   "future_care_fund": {
     "meta": {
-      "title": "Dein Zeitvorsorge-Fonds",
-      "description": "Stunden, die du für deine zukünftige Betreuung gespart hast"
+      "title": "Ihr Zeitvorsorge-Fonds",
+      "description": "Stunden, die Sie für Ihre zukünftige Betreuung gespart haben"
     },
-    "title": "Dein Zeitvorsorge-Fonds",
-    "subhead": "Im Wert von etwa CHF {{value}} — Betreuung, auf die du zählen kannst, wenn du sie brauchst",
-    "intro": "Das sind nicht nur Stunden. Das ist die Fürsorge, die du in deiner Gemeinschaft gespart hast — abrufbar für Einkäufe, Arztbesuche oder einfach Gesellschaft, wann immer du sie brauchst.",
+    "title": "Ihr Zeitvorsorge-Fonds",
+    "subhead": "Im Wert von etwa CHF {{value}} — Betreuung, auf die Sie zählen können, wenn Sie sie brauchen",
+    "intro": "Das sind nicht nur Stunden. Das ist die Fürsorge, die Sie in Ihrer Gemeinschaft gespart haben — abrufbar für Einkäufe, Arztbesuche oder einfach Gesellschaft, wann immer Sie sie brauchen.",
     "hours_short": "Stunden",
     "stats": {
       "lifetime_given": "Insgesamt geleistet",
@@ -851,12 +851,12 @@
       "partner_orgs": "Partner­organisationen unterstützt"
     },
     "reciprocity": {
-      "title": "Deine Bilanz",
+      "title": "Ihre Bilanz",
       "given_label": "Geleistet",
       "received_label": "Erhalten",
-      "strong_giver": "Du hast weit mehr gegeben als erhalten — dein Zeitvorsorge-Fonds steht stark da.",
-      "balanced": "Deine Bilanz ist im Gleichgewicht.",
-      "strong_receiver": "Du hast grosszügig Hilfe erhalten — wenn du bereit bist, gib deiner Gemeinschaft zurück."
+      "strong_giver": "Sie haben weit mehr gegeben als erhalten — Ihr Zeitvorsorge-Fonds steht stark da.",
+      "balanced": "Ihre Bilanz ist im Gleichgewicht.",
+      "strong_receiver": "Sie haben grosszügig Hilfe erhalten — wenn Sie bereit sind, geben Sie Ihrer Gemeinschaft etwas zurück."
     },
     "by_year": {
       "title": "Jahr für Jahr",
@@ -864,25 +864,25 @@
       "received": "Erhalten"
     },
     "how_it_works": {
-      "title": "So funktioniert dein Zeitvorsorge-Fonds",
-      "step1": "Hilf deinen Nachbarinnen und Nachbarn und sammle Stunden",
-      "step2": "Deine Stunden werden sicher in deinem Gemeinschafts-Fonds gespart",
-      "step3": "Wenn du Hilfe brauchst, löst du Stunden aus deinem Fonds ein",
+      "title": "So funktioniert Ihr Zeitvorsorge-Fonds",
+      "step1": "Helfen Sie Ihren Nachbarinnen und Nachbarn und sammeln Sie Stunden",
+      "step2": "Ihre Stunden werden sicher in Ihrem Gemeinschafts-Fonds gespart",
+      "step3": "Wenn Sie Hilfe brauchen, lösen Sie Stunden aus Ihrem Fonds ein",
       "cta_offer": "Jetzt Hilfe anbieten",
       "cta_browse": "Anfragen entdecken",
       "cta_relationships": "Meine Betreuungs­beziehungen ansehen"
     },
     "first_contribution": "Erster Beitrag: {{date}}",
     "back": "Zurück zur Gemeinschafts-Übersicht",
-    "loading": "Dein Fonds wird berechnet …",
+    "loading": "Ihr Fonds wird berechnet …",
     "errors": {
-      "load_failed": "Dein Zeitvorsorge-Fonds konnte nicht geladen werden."
+      "load_failed": "Ihr Zeitvorsorge-Fonds konnte nicht geladen werden."
     }
   },
   "reciprocity": {
-    "title": "Deine gegenseitige Bilanz",
-    "given": "Du hast {{hours}} Stunden geleistet",
-    "received": "Du hast {{hours}} Stunden erhalten",
+    "title": "Ihre gegenseitige Bilanz",
+    "given": "Sie haben {{hours}} Stunden geleistet",
+    "received": "Sie haben {{hours}} Stunden erhalten",
     "net_positive": "Netto: +{{hours}} Stunden gespart",
     "net_negative": "Netto: {{hours}} Stunden eingelöst",
     "view_fund": "Zeitvorsorge-Fonds ansehen"
@@ -1063,9 +1063,9 @@
       "title": "Gefälligkeit erfassen",
       "description": "Eine informelle nachbarschaftliche Hilfe festhalten"
     },
-    "subtitle": "Keine Zeitgutschrift nötig – halte einfach eine Gefälligkeit für deine Gemeinschaft fest.",
+    "subtitle": "Keine Zeitgutschrift nötig – halten Sie einfach eine Gefälligkeit für Ihre Gemeinschaft fest.",
     "form": {
-      "what_label": "Wobei hast du geholfen?",
+      "what_label": "Wobei haben Sie geholfen?",
       "what_placeholder": "z. B. Einkäufe getragen, jemanden mitgenommen, eine Mahlzeit geteilt...",
       "category_label": "Kategorie",
       "categories": {
@@ -1077,7 +1077,7 @@
         "meals": "Mahlzeiten",
         "other": "Sonstiges"
       },
-      "recipient_label": "Wem hast du geholfen? (optional)",
+      "recipient_label": "Wem haben Sie geholfen? (optional)",
       "recipient_placeholder": "Name, oder leer lassen für anonym",
       "date_label": "Wann?",
       "what_too_long": "Bitte halten Sie Ihre Beschreibung unter 500 Zeichen.",
@@ -1086,27 +1086,27 @@
     },
     "success": {
       "title": "Vielen Dank!",
-      "body": "Jede Gefälligkeit stärkt deine Gemeinschaft. Deine Hilfe wurde erfasst.",
+      "body": "Jede Gefälligkeit stärkt Ihre Gemeinschaft. Ihre Hilfe wurde erfasst.",
       "back": "Zurück zur Caring Community"
     },
     "errors": {
-      "submit_failed": "Deine Gefälligkeit konnte nicht erfasst werden. Bitte versuche es erneut."
+      "submit_failed": "Ihre Gefälligkeit konnte nicht erfasst werden. Bitte versuchen Sie es erneut."
     },
     "back": "Zurück zur Caring Community"
   },
   "invite": {
     "valid": {
-      "title": "Du bist eingeladen",
-      "body": "Du wurdest eingeladen, der Caring Community von {{community}} beizutreten. Mach mit und tausche Zeit, Fähigkeiten und Unterstützung mit deinen Nachbar:innen.",
+      "title": "Sie sind eingeladen",
+      "body": "Sie wurden eingeladen, der Caring Community von {{community}} beizutreten. Machen Sie mit und tauschen Sie Zeit, Fähigkeiten und Unterstützung mit Ihren Nachbar:innen.",
       "cta": "Jetzt beitreten"
     },
     "expired": {
       "title": "Diese Einladung ist abgelaufen",
-      "body": "Dieser Einladungslink ist abgelaufen. Bitte deine Koordinatorin oder deinen Koordinator um eine neue Einladung."
+      "body": "Dieser Einladungslink ist abgelaufen. Bitten Sie Ihre Koordinatorin oder Ihren Koordinator um eine neue Einladung."
     },
     "used": {
       "title": "Einladung bereits verwendet",
-      "body": "Dieser Einladungslink wurde bereits verwendet. Wende dich bei Fragen an deine Koordinatorin oder deinen Koordinator."
+      "body": "Dieser Einladungslink wurde bereits verwendet. Wenden Sie sich bei Fragen an Ihre Koordinatorin oder Ihren Koordinator."
     },
     "invalid": {
       "title": "Ungültige Einladung",
@@ -1122,9 +1122,9 @@
   "markt": {
     "meta": {
       "title": "Marktplatz",
-      "description": "Dienste, Waren und Gemeinschaftsangebote in deiner Nähe finden"
+      "description": "Dienste, Waren und Gemeinschaftsangebote in Ihrer Nähe finden"
     },
-    "subtitle": "Entdecke Zeitgutschrift-Dienste und lokale Waren aus deiner Gemeinschaft – alles an einem Ort.",
+    "subtitle": "Entdecken Sie Zeitgutschrift-Dienste und lokale Waren aus Ihrer Gemeinschaft – alles an einem Ort.",
     "tabs": {
       "all": "Alle",
       "listings": "Zeitgutschriften",
@@ -1173,9 +1173,9 @@
   "clubs": {
     "meta": {
       "title": "Vereine",
-      "description": "Lokale Vereine in deiner Gemeinschaft entdecken"
+      "description": "Lokale Vereine in Ihrer Gemeinschaft entdecken"
     },
-    "subtitle": "Finde lokale Vereine und Gruppen, die deine Gemeinschaft zusammenbringen.",
+    "subtitle": "Finden Sie lokale Vereine und Gruppen, die Ihre Gemeinschaft zusammenbringen.",
     "search_placeholder": "Vereine suchen...",
     "member_count": "{{count}} Mitglieder",
     "meeting_schedule": "Treffen: {{schedule}}",
@@ -1249,35 +1249,35 @@
   },
   "data_export": {
     "meta": {
-      "title": "Deine Daten herunterladen",
-      "description": "Dein persönliches Datenarchiv exportieren"
+      "title": "Ihre Daten herunterladen",
+      "description": "Ihr persönliches Datenarchiv exportieren"
     },
-    "title": "Deine Daten herunterladen",
-    "subtitle": "Dein Recht, alle Daten einzusehen und zu exportieren, die wir über dich gespeichert haben.",
-    "intro": "Dieses Archiv enthält alle Daten, die wir in dieser Gemeinschaft über dich speichern: dein Profil, geleistete und erhaltene Stunden, Unterstützungsbeziehungen, Transaktionen, Gefallen, Inserate, Anlässe und mehr.",
+    "title": "Ihre Daten herunterladen",
+    "subtitle": "Ihr Recht, alle Daten einzusehen und zu exportieren, die wir über Sie gespeichert haben.",
+    "intro": "Dieses Archiv enthält alle Daten, die wir in dieser Gemeinschaft über Sie speichern: Ihr Profil, geleistete und erhaltene Stunden, Unterstützungsbeziehungen, Transaktionen, Gefallen, Inserate, Anlässe und mehr.",
     "format": {
       "label": "Format",
       "json": "JSON (für Entwickler:innen)",
-      "json_help": "Eine einzelne strukturierte Datei mit all deinen Daten.",
+      "json_help": "Eine einzelne strukturierte Datei mit all Ihren Daten.",
       "zip": "ZIP-Archiv (lesefreundlich)",
       "zip_help": "Enthält die JSON-Datei plus ein README.md, das jeden Bereich erklärt."
     },
     "download_button": "Meine Daten herunterladen",
-    "downloading": "Dein Archiv wird vorbereitet...",
-    "warning": "Dein Archiv enthält persönliche Informationen. Bewahre es privat auf.",
+    "downloading": "Ihr Archiv wird vorbereitet...",
+    "warning": "Ihr Archiv enthält persönliche Informationen. Bewahren Sie es privat auf.",
     "history": {
       "title": "Letzte Exporte",
       "date": "Angefragt",
       "format": "Format",
       "size": "Grösse",
       "count": "{{count}} Exporte",
-      "empty": "Du hast deine Daten noch nicht exportiert.",
+      "empty": "Sie haben Ihre Daten noch nicht exportiert.",
       "count_one": "{{count}} Exporte",
       "count_other": "{{count}} Exporte"
     },
     "errors": {
-      "rate_limit": "Du kannst pro Tag 5 Exporte anfordern. Bitte versuche es morgen wieder.",
-      "build_failed": "Dein Archiv konnte nicht erstellt werden. Bitte versuche es nochmals oder kontaktiere den Support."
+      "rate_limit": "Sie können pro Tag 5 Exporte anfordern. Bitte versuchen Sie es morgen wieder.",
+      "build_failed": "Ihr Archiv konnte nicht erstellt werden. Bitte versuchen Sie es nochmals oder kontaktieren Sie den Support."
     }
   },
   "safeguarding_reports": {
@@ -1696,61 +1696,61 @@
     }
   },
   "premium": {
-    "pricing_title": "Prämie",
-    "pricing_subtitle": "Schalten Sie Premium-Funktionen frei und holen Sie mehr aus Ihrer Gemeinschaft heraus.",
+    "pricing_title": "Spenden",
+    "pricing_subtitle": "Unterstützen Sie diese Gemeinschaft",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
     "toggle_billing": "Abrechnungsintervall umschalten",
     "free": "Kostenlos",
     "per_month": "pro Monat",
     "per_year": "pro Jahr",
-    "subscribe_cta": "Abonnieren",
-    "no_tiers": "Noch keine Premium-Stufen verfügbar.",
-    "no_features_listed": "Noch keine Funktionen aufgeführt",
-    "cancel_anytime": "Jederzeit kündbar",
+    "subscribe_cta": "Regelmäßig spenden",
+    "no_tiers": "Es sind noch keine Stufen für regelmäßige Spenden verfügbar.",
+    "no_features_listed": "Noch keine Anerkennungshinweise aufgeführt",
+    "cancel_anytime": "Regelmäßige Spenden jederzeit ändern oder beenden",
     "checkout_no_url": "Bezahlung konnte nicht gestartet werden",
-    "checkout_failed": "Bezahlung fehlgeschlagen",
-    "unavailable_title": "Premium-Stufen sind in dieser Gemeinschaft noch nicht verfügbar",
-    "return_title": "Abonnement wird aktiviert",
-    "return_pending": "Ihr Abonnement wird aktiviert…",
+    "checkout_failed": "Spendenvorgang fehlgeschlagen",
+    "unavailable_title": "Spenden sind in dieser Gemeinschaft noch nicht verfügbar",
+    "return_title": "Unterstützung wird aktiviert",
+    "return_pending": "Ihre Unterstützung wird aktiviert…",
     "return_pending_body": "Dies dauert in der Regel nur wenige Sekunden.",
     "return_success_title": "Alles bereit!",
-    "return_success_body": "Ihr Abonnement ist jetzt aktiv.",
-    "return_success_with_tier": "Sie haben jetzt {{tier}} abonniert.",
+    "return_success_body": "Ihre regelmäßige Spende ist jetzt aktiv.",
+    "return_success_with_tier": "Sie unterstützen diese Gemeinschaft jetzt mit {{tier}}.",
     "return_cancelled_title": "Bezahlung abgebrochen",
     "return_cancelled_body": "Sie können es jederzeit erneut versuchen.",
-    "back_to_pricing": "Zurück zu den Preisen",
+    "back_to_pricing": "Zurück zu den Unterstützungsstufen",
     "return_timeout_title": "Wird noch verarbeitet…",
-    "return_timeout_body": "Ihre Zahlung wird verarbeitet. Es kann einen Moment dauern, bis das Abonnement erscheint.",
+    "return_timeout_body": "Ihre Zahlung wird verarbeitet. Es kann einen Moment dauern, bis Ihre Unterstützung erscheint.",
     "check_status": "Status prüfen",
-    "manage_cta": "Abonnement verwalten",
+    "manage_cta": "Regelmäßige Spende verwalten",
     "go_to_dashboard": "Zum Dashboard",
-    "manage_title": "Mein Abonnement",
+    "manage_title": "Meine Unterstützung",
     "billed_yearly": "Jährliche Abrechnung",
     "billed_monthly": "Monatliche Abrechnung",
     "status_label": "Status",
     "ends_on": "Endet am",
     "next_billing": "Nächste Abrechnung",
     "manage_in_stripe": "In Stripe verwalten",
-    "cancel_subscription": "Abonnement kündigen",
-    "cancel_confirm": "Abonnement zum Ende der aktuellen Abrechnungsperiode kündigen?",
-    "cancel_scheduled": "Das Abonnement endet zum Periodenende",
-    "cancel_failed": "Kündigung fehlgeschlagen",
-    "change_plan": "Plan ändern",
-    "no_subscription_title": "Kein aktives Abonnement",
-    "no_subscription_body": "Stöbern Sie in den Premium-Stufen, um die passende zu finden.",
-    "view_pricing_cta": "Preise ansehen",
+    "cancel_subscription": "Regelmäßige Spende beenden",
+    "cancel_confirm": "Regelmäßige Spende zum Ende der aktuellen Abrechnungsperiode beenden?",
+    "cancel_scheduled": "Die regelmäßige Spende endet zum Periodenende",
+    "cancel_failed": "Beenden fehlgeschlagen",
+    "change_plan": "Unterstützungsstufe ändern",
+    "no_subscription_title": "Keine aktive regelmäßige Spende",
+    "no_subscription_body": "Sehen Sie sich die Unterstützungsstufen an und wählen Sie, wie Sie helfen möchten.",
+    "view_pricing_cta": "Unterstützungsstufen ansehen",
     "portal_failed": "Abrechnungsportal konnte nicht geöffnet werden",
-    "grace_period_notice": "Zahlung fehlgeschlagen — bitte aktualisieren Sie Ihre Karte vor {{date}}, um Premium aktiv zu halten.",
-    "gate_title": "Premium-Funktion",
-    "gate_body": "Abonnieren Sie eine Premium-Stufe, um diese Funktion freizuschalten.",
-    "gate_cta": "Premium-Stufen anzeigen",
+    "grace_period_notice": "Zahlung fehlgeschlagen — bitte aktualisieren Sie Ihre Karte vor {{date}}, damit Ihre regelmäßige Unterstützung aktiv bleibt.",
+    "gate_title": "Anerkennung für Unterstützende",
+    "gate_body": "Dieser Bereich ist der Anerkennung von Unterstützenden vorbehalten, nicht zusätzlichen kostenpflichtigen Funktionen.",
+    "gate_cta": "Unterstützungsstufen ansehen",
     "status": {
       "active": "Aktiv",
       "trialing": "Testphase",
       "past_due": "Überfällig",
       "grace": "Kulanzfrist",
-      "canceled": "Gekündigt",
+      "canceled": "Beendet",
       "incomplete": "Unvollständig",
       "unknown": "Unbekannt"
     },
@@ -1760,8 +1760,8 @@
       "advanced_search": "Erweiterte Suche",
       "ad_free": "Werbefrei"
     },
-    "return_meta_description": "Sichere Rückkehrseite nach dem Checkout zum Aktivieren, Bestätigen oder Verwalten Ihres Premium-Abonnements.",
-    "one_off_cta": "Machen Sie eine einmalige Spende"
+    "return_meta_description": "Sichere Rückkehrseite nach dem Checkout zum Aktivieren, Bestätigen oder Verwalten Ihrer regelmäßigen Spende.",
+    "one_off_cta": "Einmalig spenden"
   },
   "developers": {
     "page_title": "Entwickler",
@@ -2122,7 +2122,7 @@
     "invite_target_label": "Verein auswählen",
     "invite_target_search": "Clubs suchen",
     "invite_message_label": "Persönliche Nachricht (optional)",
-    "invite_message_placeholder": "Hallo! Ich dachte, dieser Verein könnte dir auch gefallen.",
+    "invite_message_placeholder": "Hallo! Ich dachte, dieser Verein könnte Ihnen auch gefallen.",
     "invite_send": "Einladung senden",
     "invite_sent": "Einladung gesendet.",
     "invite_failed": "Einladung konnte nicht gesendet werden.",
@@ -2830,7 +2830,7 @@
     "days_ago_other": "vor {{count}} Tagen"
   },
   "config": {
-    "module_name_dashboard": "Armaturenbrett",
+    "module_name_dashboard": "Dashboard",
     "module_name_feed": "Feed",
     "module_name_listings": "Einträge",
     "module_name_messages": "Nachrichten",

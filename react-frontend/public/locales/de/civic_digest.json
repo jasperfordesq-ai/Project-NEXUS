@@ -49,11 +49,11 @@
   "transparency": {
     "why_button": "Warum sehe ich das?",
     "match_score_label": "Übereinstimmung",
-    "global_note": "Elemente werden nach Relevanz für deine Unterregion, Interessen und jüngste Aktivität sortiert. Tippe auf «Warum?» bei einem Element für Details.",
-    "reason_sub_region": "Entspricht deiner Unterregion",
+    "global_note": "Elemente werden nach Relevanz für Ihre Unterregion, Interessen und jüngste Aktivität sortiert. Tippen Sie auf «Warum?» bei einem Element für Details.",
+    "reason_sub_region": "Entspricht Ihrer Unterregion",
     "reason_priority": "Als prioritär/dringend markiert",
     "reason_recency": "Kürzlich veröffentlicht",
-    "reason_category_match": "Entspricht deinen Interessen",
+    "reason_category_match": "Entspricht Ihren Interessen",
     "reason_safety": "Sicherheitswarnung",
     "reason_announcement": "Offizielle Ankündigung",
     "no_reasons": "Standardsortierung"

@@ -526,7 +526,7 @@
     "sections": {
       "kind": {
         "title": "1. Sei freundlich und respektvoll",
-        "body": "Behandle andere Mitglieder so, wie du eine Nachbarin oder einen Nachbarn behandeln würdest. Meinungsverschiedenheiten sind in Ordnung; Verachtung, Beleidigungen, Spott und persönliche Angriffe nicht.",
+        "body": "Behandeln Sie andere Mitglieder so, wie Sie eine Nachbarin oder einen Nachbarn behandeln würden. Meinungsverschiedenheiten sind in Ordnung; Verachtung, Beleidigungen, Spott und persönliche Angriffe nicht.",
         "items": {
           "0": "Keine Belästigung, kein Mobbing, kein Stalking, keine Einschüchterung.",
           "1": "Keine Hassrede, keine Beleidigungen und keine Inhalte, die Menschen aufgrund ihrer Identität herabwürdigen, einschließlich Herkunft, Ethnie, Nationalität, Religion, Geschlecht, Sexualität, Behinderung, Alter oder sozialem Hintergrund.",
@@ -537,9 +537,9 @@
         "title": "2. Sei ehrlich",
         "body": "Vertrauen ist die Grundlage einer funktionierenden Zeitbank. Wer sich selbst oder das eigene Angebot falsch darstellt, schadet der gesamten Community.",
         "items": {
-          "0": "Verwende deinen echten Namen und ein echtes Foto in deinem Profil.",
-          "1": "Beschreibe Fähigkeiten, Angebote und Anfragen wahrheitsgemäß. Übertreibe nicht, was du kannst oder wie lange etwas dauert.",
-          "2": "Erfasse Stunden ehrlich. Buche keine Zeit, die du nicht geleistet hast.",
+          "0": "Verwenden Sie Ihren echten Namen und ein echtes Foto in Ihrem Profil.",
+          "1": "Beschreiben Sie Fähigkeiten, Angebote und Anfragen wahrheitsgemäß. Übertreiben Sie nicht, was Sie können oder wie lange etwas dauert.",
+          "2": "Erfassen Sie Stunden ehrlich. Buchen Sie keine Zeit, die Sie nicht geleistet haben.",
           "3": "Eine Person, ein Konto."
         }
       },
@@ -564,24 +564,24 @@
       },
       "in_person": {
         "title": "5. Achtet aufeinander bei persönlichen Treffen",
-        "body": "Austausche finden oft persönlich statt, manchmal in der Wohnung einer anderen Person. Nutze deinen gesunden Menschenverstand.",
+        "body": "Austausche finden oft persönlich statt, manchmal in der Wohnung einer anderen Person. Nutzen Sie Ihren gesunden Menschenverstand.",
         "items": {
           "0": "Lies vor dem ersten Austausch das Profil und die Bewertungen des Mitglieds.",
-          "1": "Triff dich beim ersten Austausch nach Möglichkeit an einem öffentlichen Ort.",
-          "2": "Sag einer Vertrauensperson, wohin du gehst und wann du voraussichtlich zurück bist.",
-          "3": "Brich den Austausch ab und geh, wenn sich etwas falsch anfühlt. Du schuldest niemandem eine Erklärung in dem Moment.",
-          "4": "Wenn jemand gefährdet ist, selbst oder durch andere, findest du im Bereich Vertrauen & Sicherheit Informationen zur Meldung. In einem Notfall wende dich zuerst an die örtlichen Notdienste."
+          "1": "Treffen Sie sich beim ersten Austausch nach Möglichkeit an einem öffentlichen Ort.",
+          "2": "Sagen Sie einer Vertrauensperson, wohin Sie gehen und wann Sie voraussichtlich zurück sind.",
+          "3": "Brechen Sie den Austausch ab und gehen Sie, wenn sich etwas falsch anfühlt. Sie schulden niemandem in dem Moment eine Erklärung.",
+          "4": "Wenn jemand gefährdet ist, selbst oder durch andere, finden Sie im Bereich Vertrauen & Sicherheit Informationen zur Meldung. In einem Notfall wenden Sie sich zuerst an die örtlichen Notdienste."
         }
       },
       "report": {
         "title": "6. Bedenken melden",
-        "body_before": "Wenn du etwas siehst, das gegen diese Richtlinien verstößt oder dich beunruhigt, sag es uns. Du kannst:",
+        "body_before": "Wenn Sie etwas sehen, das gegen diese Richtlinien verstößt oder Sie beunruhigt, sagen Sie es uns. Sie können:",
         "items": {
           "0": "den Melde-Button bei jedem Profil, Angebot, jeder Nachricht, jedem Beitrag oder jeder Veranstaltung nutzen.",
           "1": "das Community-Team per E-Mail über die Kontaktseite erreichen.",
-          "2": "Bei Schutzbedenken, etwa wenn ein Kind oder eine schutzbedürftige erwachsene Person in Gefahr ist, findest du auf der Seite Vertrauen & Sicherheit den dafür vorgesehenen Meldeweg."
+          "2": "Bei Schutzbedenken, etwa wenn ein Kind oder eine schutzbedürftige erwachsene Person in Gefahr ist, finden Sie auf der Seite Vertrauen & Sicherheit den dafür vorgesehenen Meldeweg."
         },
-        "body_after": "Meldungen werden von Moderatorinnen und Moderatoren geprüft und vertraulich behandelt. Deine Identität wird der gemeldeten Person nicht offengelegt, es sei denn, du wünschst es oder das Gesetz verlangt es."
+        "body_after": "Meldungen werden von Moderatorinnen und Moderatoren geprüft und vertraulich behandelt. Ihre Identität wird der gemeldeten Person nicht offengelegt, es sei denn, Sie wünschen es oder das Gesetz verlangt es."
       },
       "enforcement": {
         "title": "7. Was passiert, wenn Richtlinien verletzt werden",
@@ -594,7 +594,7 @@
           "4": "Endgültiger Ausschluss bei Belästigung, Verletzungen von Schutzpflichten, Betrug, Drohungen, Hassrede oder wiederholten Sperrungen."
         },
         "body_serious": "Schwere Vorfälle, darunter Missbrauch, Drohungen, Betrug oder Ausbeutung, können unabhängig von der plattformseitigen Maßnahme den zuständigen Strafverfolgungs- oder anderen Behörden gemeldet werden.",
-        "body_appeal": "Wenn du eine Entscheidung für falsch hältst, kannst du über die Kontaktseite Widerspruch einlegen. Sie wird von einer Moderationsperson überprüft, die an der ursprünglichen Entscheidung nicht beteiligt war."
+        "body_appeal": "Wenn Sie eine Entscheidung für falsch halten, können Sie über die Kontaktseite Widerspruch einlegen. Er wird von einer Moderationsperson überprüft, die an der ursprünglichen Entscheidung nicht beteiligt war."
       },
       "changes": {
         "title": "Änderungen dieser Richtlinien",
@@ -615,10 +615,10 @@
       },
       "illegal": {
         "title": "2. Keine rechtswidrigen Aktivitäten",
-        "body": "Du darfst die Plattform nicht nutzen, um:",
+        "body": "Sie dürfen die Plattform nicht nutzen, um:",
         "items": {
           "0": "etwas Rechtswidriges auszuführen, zu planen oder zu fördern, gleich ob am Ort der handelnden Person, der anderen Person oder der Aktivität.",
-          "1": "Leistungen anzubieten oder anzufragen, die eine berufliche Zulassung oder Regulierung erfordern, über die du nicht verfügst, wie unlizenzierte medizinische, rechtliche, finanzielle, elektrische, gastechnische oder Kinderbetreuungsleistungen.",
+          "1": "Leistungen anzubieten oder anzufragen, die eine berufliche Zulassung oder Regulierung erfordern, über die Sie nicht verfügen, wie unlizenzierte medizinische, rechtliche, finanzielle, elektrische, gastechnische oder Kinderbetreuungsleistungen.",
           "2": "mit regulierten oder verbotenen Waren zu handeln, darunter Alkohol, Tabak, verschreibungspflichtige Arzneimittel, Schusswaffen, kontrollierte Drogen oder ähnliche eingeschränkte Güter.",
           "3": "Geld zu waschen oder steuerliche Pflichten zu umgehen."
         }
@@ -626,9 +626,9 @@
       "fraud": {
         "title": "3. Kein Betrug, keine Identitätsanmaßung",
         "items": {
-          "0": "Gib dich nicht als andere Person, Organisation oder offizielle Stelle aus.",
+          "0": "Geben Sie sich nicht als andere Person, Organisation oder offizielle Stelle aus.",
           "1": "Erstelle keine gefälschten Konten, keine Strohmann-Konten und keine Mehrfachkonten, um Bewertungen, Rezensionen, Umfragen oder das Matching zu manipulieren.",
-          "2": "Stelle deine Identität, Qualifikationen oder Prüfstatus nicht falsch dar.",
+          "2": "Stellen Sie Ihre Identität, Qualifikationen oder Ihren Prüfstatus nicht falsch dar.",
           "3": "Manipuliere keine Zeitguthaben durch Scheinaustausche, Absprachen oder konstruierte Transaktionen."
         }
       },
@@ -640,7 +640,7 @@
           "2": "Keine Drohungen, keine Anstachelung und keine Verherrlichung von Gewalt.",
           "3": "Keine Inhalte, die Kinder in irgendeiner Form sexualisieren.",
           "4": "Keine sexuellen Inhalte ohne Einwilligung, kein Missbrauch intimer Aufnahmen und keine Inhalte, die zur Demütigung oder Erpressung veröffentlicht werden.",
-          "5": "Keine Verherrlichung von Selbstverletzung oder Suizid. Wenn du oder eine dir bekannte Person in einer Krise ist, wende dich an die örtlichen Notdienste oder eine anerkannte Beratungsstelle."
+          "5": "Keine Verherrlichung von Selbstverletzung oder Suizid. Wenn Sie oder eine Ihnen bekannte Person in einer Krise sind, wenden Sie sich an die örtlichen Notdienste oder eine anerkannte Beratungsstelle."
         }
       },
       "content": {
@@ -648,7 +648,7 @@
         "items": {
           "0": "Sexuell explizite Inhalte, übermäßige Gewaltdarstellungen oder Schockinhalte.",
           "1": "Inhalte, die das Urheberrecht, Markenrecht oder andere Schutzrechte Dritter verletzen.",
-          "2": "Vertrauliche Informationen, zu deren Weitergabe du nicht berechtigt bist, etwa Betriebsgeheimnisse oder geschützte Gesundheitsdaten.",
+          "2": "Vertrauliche Informationen, zu deren Weitergabe Sie nicht berechtigt sind, etwa Betriebsgeheimnisse oder geschützte Gesundheitsdaten.",
           "3": "Personenbezogene Daten anderer, die ohne deren Einwilligung veröffentlicht werden."
         }
       },
@@ -675,20 +675,20 @@
       "account": {
         "title": "8. Konto-Hygiene",
         "items": {
-          "0": "Gib deine Anmeldedaten nicht weiter. Du bist für die Aktivitäten unter deinem Konto verantwortlich.",
-          "1": "Informiere uns umgehend, wenn du den Verdacht hast, dass dein Konto kompromittiert wurde.",
-          "2": "Übertrage oder verkaufe dein Konto nicht an andere.",
-          "3": "Nutze die Werkzeuge der Plattform, um deine Daten zu löschen oder zu exportieren; versuche nicht, sie automatisiert auszulesen."
+          "0": "Geben Sie Ihre Anmeldedaten nicht weiter. Sie sind für die Aktivitäten unter Ihrem Konto verantwortlich.",
+          "1": "Informieren Sie uns umgehend, wenn Sie den Verdacht haben, dass Ihr Konto kompromittiert wurde.",
+          "2": "Übertragen oder verkaufen Sie Ihr Konto nicht an andere.",
+          "3": "Nutzen Sie die Werkzeuge der Plattform, um Ihre Daten zu löschen oder zu exportieren; versuchen Sie nicht, sie automatisiert auszulesen."
         }
       },
       "enforcement": {
         "title": "9. Durchsetzung",
         "body": "Verstöße können zur Entfernung von Inhalten, zu Verwarnungen, vorübergehenden Sperrungen oder zum dauerhaften Entzug des Zugangs führen, jeweils im Verhältnis zur Schwere und Vorgeschichte. Schwere Verstöße können den zuständigen Strafverfolgungsbehörden, der zuständigen Datenschutzaufsicht oder anderen Behörden gemeldet werden, und wir können dazu gesetzlich verpflichtet sein.",
-        "appeal": "Du kannst eine Durchsetzungsentscheidung über die Kontaktseite anfechten. Widersprüche werden von einer Person geprüft, die an der ursprünglichen Entscheidung nicht beteiligt war."
+        "appeal": "Sie können eine Durchsetzungsentscheidung über die Kontaktseite anfechten. Widersprüche werden von einer Person geprüft, die an der ursprünglichen Entscheidung nicht beteiligt war."
       },
       "reporting": {
         "title": "10. Verstöße melden",
-        "body": "Wenn dir etwas auffällt, das gegen diese Richtlinie verstößt, nutze die produktinterne Meldefunktion beim betreffenden Profil, Angebot, der Nachricht, dem Beitrag oder der Veranstaltung, oder schreibe dem Team über die Kontaktseite. Bei Schutzbedenken betreffend ein Kind oder eine schutzbedürftige erwachsene Person folge dem dafür vorgesehenen Weg auf der Seite Vertrauen & Sicherheit."
+        "body": "Wenn Ihnen etwas auffällt, das gegen diese Richtlinie verstößt, nutzen Sie die produktinterne Meldefunktion beim betreffenden Profil, Angebot, der Nachricht, dem Beitrag oder der Veranstaltung, oder schreiben Sie dem Team über die Kontaktseite. Bei Schutzbedenken betreffend ein Kind oder eine schutzbedürftige erwachsene Person folgen Sie dem dafür vorgesehenen Weg auf der Seite Vertrauen & Sicherheit."
       },
       "changes": {
         "title": "11. Änderungen",

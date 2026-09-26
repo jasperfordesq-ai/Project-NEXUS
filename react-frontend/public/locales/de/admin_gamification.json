@@ -20,7 +20,7 @@
     "active": "Aktiv",
     "all": "Alle",
     "approved": "Genehmigt",
-    "clear": "Klar",
+    "clear": "Zurücksetzen",
     "clear_filters": "Filter löschen",
     "clear_selection": "Auswahl löschen",
     "close": "Schließen",
@@ -221,7 +221,7 @@
     "badges": {
       "vol_1h": {
         "name": "Erste Schritte",
-        "description": "Protokolliere deine erste Freiwilligenstunde"
+        "description": "Protokollieren Sie Ihre erste Freiwilligenstunde"
       },
       "vol_10h": {
         "name": "Hilfreiche Hand",
@@ -245,7 +245,7 @@
       },
       "offer_1": {
         "name": "Erstes Angebot",
-        "description": "Veröffentliche dein erstes Angebot"
+        "description": "Veröffentlichen Sie Ihr erstes Angebot"
       },
       "offer_5": {
         "name": "Großzügige Seele",
@@ -261,7 +261,7 @@
       },
       "request_1": {
         "name": "Erste Anfrage",
-        "description": "Veröffentliche deine erste Anfrage"
+        "description": "Veröffentlichen Sie Ihre erste Anfrage"
       },
       "request_5": {
         "name": "Community-Suchender",
@@ -273,7 +273,7 @@
       },
       "earn_1": {
         "name": "Erste Einnahme",
-        "description": "Verdiene dein erstes Zeitguthaben"
+        "description": "Verdienen Sie Ihr erstes Zeitguthaben"
       },
       "earn_10": {
         "name": "Ehrgeiziger",
@@ -293,7 +293,7 @@
       },
       "spend_1": {
         "name": "Erste Ausgabe",
-        "description": "Gib dein erstes Zeitguthaben aus"
+        "description": "Geben Sie Ihr erstes Zeitguthaben aus"
       },
       "spend_10": {
         "name": "Aktiver Ausgeber",
@@ -305,7 +305,7 @@
       },
       "transaction_1": {
         "name": "Erster Austausch",
-        "description": "Schließe deine erste Transaktion ab"
+        "description": "Schließen Sie Ihre erste Transaktion ab"
       },
       "transaction_10": {
         "name": "Aktiver Händler",
@@ -329,7 +329,7 @@
       },
       "connect_1": {
         "name": "Erster Freund",
-        "description": "Stelle deine erste Verbindung her"
+        "description": "Stellen Sie Ihre erste Verbindung her"
       },
       "connect_10": {
         "name": "Soziales Schmetterling",
@@ -345,7 +345,7 @@
       },
       "msg_1": {
         "name": "Gesprächsstarter",
-        "description": "Sende deine erste Nachricht"
+        "description": "Senden Sie Ihre erste Nachricht"
       },
       "msg_50": {
         "name": "Aktiver Kommunikator",
@@ -357,7 +357,7 @@
       },
       "review_1": {
         "name": "Erstes Feedback",
-        "description": "Hinterlasse deine erste Bewertung"
+        "description": "Hinterlassen Sie Ihre erste Bewertung"
       },
       "review_10": {
         "name": "Vertrauenswürdiger Bewerter",
@@ -381,7 +381,7 @@
       },
       "event_attend_1": {
         "name": "Erstes Ereignis",
-        "description": "Nehme an deinem ersten Event teil"
+        "description": "Nehmen Sie an Ihrer ersten Veranstaltung teil"
       },
       "event_attend_10": {
         "name": "Regelmäßiger Teilnehmer",
@@ -393,7 +393,7 @@
       },
       "event_host_1": {
         "name": "Event-Gastgeber",
-        "description": "Veranstalte dein erstes Event"
+        "description": "Richten Sie Ihre erste Veranstaltung aus"
       },
       "event_host_5": {
         "name": "Veranstalter",
@@ -401,7 +401,7 @@
       },
       "group_join_1": {
         "name": "Teamspieler",
-        "description": "Tritt deiner ersten Gruppe bei"
+        "description": "Treten Sie Ihrer ersten Gruppe bei"
       },
       "group_join_5": {
         "name": "Gemeinschaftsmitglied",
@@ -409,11 +409,11 @@
       },
       "group_create": {
         "name": "Gruppenbegründer",
-        "description": "Erstelle deine erste Gruppe"
+        "description": "Erstellen Sie Ihre erste Gruppe"
       },
       "post_1": {
         "name": "Erster Beitrag",
-        "description": "Erstelle deinen ersten Beitrag"
+        "description": "Erstellen Sie Ihren ersten Beitrag"
       },
       "post_25": {
         "name": "Inhaltsersteller",
@@ -433,7 +433,7 @@
       },
       "profile_complete": {
         "name": "Profil-Profi",
-        "description": "Vervollständige dein Profil"
+        "description": "Vervollständigen Sie Ihr Profil"
       },
       "member_30d": {
         "name": "Monatsmitglied",

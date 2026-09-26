@@ -47,7 +47,7 @@
     "default": "Benachrichtigung"
   },
   "load_more": "Mehr laden",
-  "undo": "Undo",
+  "undo": "Rückgängig",
   "toast": {
     "mark_read_failed": "Benachrichtigung konnte nicht als gelesen markiert werden",
     "all_read": "Alle Benachrichtigungen als gelesen markiert",

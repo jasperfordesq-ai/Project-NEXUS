@@ -46,6 +46,10 @@ const NO_TRANSLATE_VALUES = new Set([
   'Community Caring',
   'Spitex',
   'member@example.com',
+  // The official name of Ireland's national child-protection guidance, offered as
+  // a volunteer safeguarding training type. A proper name, not copy: a locale
+  // that "translates" it names a programme that does not exist. Added 2026-09-26.
+  'Children First',
   // The published data-protection / child-safety contact address on the Google
   // Play compliance pages. A mailbox is an identifier, not copy: a locale that
   // "translated" it would publish an address that does not deliver, and Play

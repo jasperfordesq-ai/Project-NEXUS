@@ -197,6 +197,6 @@
       "title": "Gruppenaustausch erstellen"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver"
+  "role_provider": "Anbietend",
+  "role_receiver": "Empfangend"
 }

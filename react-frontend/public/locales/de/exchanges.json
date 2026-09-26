@@ -178,5 +178,39 @@
       "title": "Austauschdetails"
     }
   },
-  "hours_count_one": "{{count}} Stunde"
+  "hours_count_one": "{{count}} Stunde",
+  "status_config": {
+    "pending_provider": {
+      "label": "Warten auf Anbieter",
+      "description": "Warten darauf, dass die anbietende Person diese Anfrage annimmt oder ablehnt."
+    },
+    "pending_broker": {
+      "label": "Warten auf Vermittler",
+      "description": "Dieses Tauschgeschäft muss von einem Vermittler genehmigt werden, bevor es fortfahren kann."
+    },
+    "accepted": {
+      "label": "Angenommen",
+      "description": "Das Tauschgeschäft wurde angenommen. Die anbietende Person kann beginnen, sobald sie bereit ist."
+    },
+    "in_progress": {
+      "label": "In Bearbeitung",
+      "description": "Die Leistung wird gerade erbracht."
+    },
+    "pending_confirmation": {
+      "label": "Stunden bestätigen",
+      "description": "Beide Seiten müssen die geleisteten Stunden bestätigen, um das Tauschgeschäft abzuschließen."
+    },
+    "completed": {
+      "label": "Abgeschlossen",
+      "description": "Das Tauschgeschäft wurde abgeschlossen und die Guthaben wurden übertragen."
+    },
+    "disputed": {
+      "label": "Angefochten",
+      "description": "Es gibt Uneinigkeit über die Stunden. Ein Vermittler wird dies prüfen."
+    },
+    "cancelled": {
+      "label": "Storniert",
+      "description": "Dieses Tauschgeschäft wurde storniert."
+    }
+  }
 }

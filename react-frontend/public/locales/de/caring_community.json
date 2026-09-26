@@ -272,7 +272,7 @@
     "breadcrumbs": {
       "aria": "Paniermehl",
       "segments": {
-        "caring": "Armaturenbrett",
+        "caring": "Dashboard",
         "workflow": "Arbeitsablauf",
         "projects": "Projekte",
         "loyalty": "Treueprogramm",
@@ -511,7 +511,7 @@
         "seller_label": "Verkäufer (Mitglied)",
         "seller_placeholder": "Suchen Sie nach Name oder E-Mail",
         "no_matching_members": "Keine passenden Mitglieder",
-        "clear": "Klar",
+        "clear": "Zurücksetzen",
         "accept_time_credits": "Akzeptieren Sie Zeitgutschriften",
         "accept_time_credits_hint": "Wenn diese Option aktiviert ist, wird den Mitgliedern in den Angeboten dieses Verkäufers an der Kasse eine Zeitgutschriftsoption angezeigt.",
         "exchange_rate": "Wechselkurs (CHF pro Stunde)",
@@ -929,7 +929,7 @@
         "body": "Ein Care Recipient Circle ist eine private Selbsthilfegruppe rund um eine Person, die Pflege erhält. Diese Ansicht zeigt ihr gesamtes Support-Netzwerk: alle Helfer, insgesamt erhaltene Stunden, offene Hilfeanfragen und alle Sicherheitsmarkierungen. Geben Sie die Benutzer-ID des Mitglieds ein, um seinen Kreis zu suchen.",
         "trust_tiers_label": "Vertrauensstufen:",
         "trust_tiers_body": "Neuling, Mitglied, Vertrauenswürdig, Verifiziert, Koordinator – wird für den Empfänger und jeden Unterstützer angezeigt.",
-        "safeguarding_label": "Fahnensicherung:",
+        "safeguarding_label": "Schutzhinweise:",
         "safeguarding_body": "Eine Flag-Zählung ungleich Null weist auf aktive Schutzbedenken hin, die gegen dieses Mitglied registriert wurden. Sehen Sie sich diese im Abschnitt „Schutz“ an.",
         "privacy_label": "Datenschutz:",
         "privacy_body": "Kreisdaten sind nur für Kreismitglieder und Mandantenadministratoren sichtbar. Es ist nicht in gemeinschaftsweiten Berichten oder im Mitgliederverzeichnis enthalten."
@@ -1011,7 +1011,7 @@
         "triaged": "Triagiert",
         "investigating": "Untersuchen",
         "resolved": "Gelöst",
-        "dismissed": "Entlassen"
+        "dismissed": "Verworfen"
       },
       "severity_legend": {
         "title": "Schweregrade",
@@ -1172,7 +1172,7 @@
         "member": "Mitglied",
         "member_placeholder": "Suchen Sie nach Name oder E-Mail",
         "no_matching_members": "Keine passenden Mitglieder",
-        "clear": "Klar",
+        "clear": "Zurücksetzen",
         "tabs_aria": "Aktionen zum regionalen Punkteausgleich",
         "issue_tab": "Problempunkte",
         "points_to_issue": "Punkte zur Ausgabe",

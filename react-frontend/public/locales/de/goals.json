@@ -24,7 +24,7 @@
     "history": "Verlauf",
     "no_checkins": "Noch keine Eincheck-Einträge. Erfassen Sie Ihren ersten!",
     "progress_label": "Fortschritt",
-    "progress_help": "Setze dies auf den tatsächlichen Fortschritt, den du beim Ziel anzeigen möchtest. Das Aufzeichnen eines Check-ins aktualisiert den Zielbalken und die Zeitleiste.",
+    "progress_help": "Setzen Sie dies auf den tatsächlichen Fortschritt, den Sie beim Ziel anzeigen möchten. Das Aufzeichnen eines Check-ins aktualisiert den Zielbalken und die Zeitleiste.",
     "progress_value": "{{percent}}%",
     "progress_unknown": "Fortschritt nicht aufgezeichnet",
     "mood_label": "Wie fühlen Sie sich?",

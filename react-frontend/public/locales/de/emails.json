@@ -152,10 +152,10 @@
     "unsubscribe": "Zum Abmelden {{link}}."
   },
   "gamification_digest": {
-    "subject": "Ihre wöchentliche Fortschrittszusammenfassung",
-    "title": "Ihr wöchentlicher Fortschritt",
+    "subject": "Ihre monatliche Fortschrittszusammenfassung",
+    "title": "Ihr monatlicher Fortschritt",
     "preview": "Sie haben diese Woche {{xp}} XP auf {{community}} verdient",
-    "intro": "Hier ist Ihr wöchentliches Fortschritts-Update von <strong>{{community}}</strong>.",
+    "intro": "Hier ist Ihr monatliches Fortschritts-Update von <strong>{{community}}</strong>.",
     "xp_earned": "Verdiente XP",
     "level": "Stufe",
     "rank": "Rang",
@@ -219,9 +219,9 @@
     "transaction_confirmed_preview": "Ihre Überweisung von {{amount}} Stunde(n) an {{recipient}} ist bestätigt",
     "transaction_confirmed_body": "Ihre gemeinschaftsübergreifende Zeitguthaben-Überweisung wurde erfolgreich verarbeitet.",
     "view_wallet": "Ihr Zeitkonto ansehen",
-    "digest_subject": "Wöchentliche Föderationszusammenfassung — {{community}}",
-    "digest_title": "Wöchentliche Föderationszusammenfassung",
-    "digest_preview": "Ihre wöchentliche Föderationsaktivität für {{community}}",
+    "digest_subject": "Monatliche Föderationszusammenfassung — {{community}}",
+    "digest_title": "Monatliche Föderationszusammenfassung",
+    "digest_preview": "Ihre monatliche Föderationsaktivität für {{community}}",
     "digest_body": "Hier ist Ihre gemeinschaftsübergreifende Aktivitätszusammenfassung der letzten Woche.",
     "digest_quiet": "Es war eine ruhige Woche — keine gemeinschaftsübergreifende Aktivität zu berichten.",
     "explore_federation": "Föderation entdecken",
@@ -247,10 +247,10 @@
     "subject": "{{heading}} – {{tenant}}"
   },
   "group_digest": {
-    "subject": "Wöchentliche Zusammenfassung: {{group}}",
-    "title": "Wöchentliche Gruppenzusammenfassung",
+    "subject": "Monatliche Zusammenfassung: {{group}}",
+    "title": "Monatliche Gruppenzusammenfassung",
     "preview": "Diese Woche in „{{group}}“ auf {{community}}",
-    "intro": "Hier ist Ihre wöchentliche Zusammenfassung für <strong>&ldquo;{{group}}&rdquo;</strong> auf <strong>{{community}}</strong>.",
+    "intro": "Hier ist Ihre monatliche Zusammenfassung für <strong>&ldquo;{{group}}&rdquo;</strong> auf <strong>{{community}}</strong>.",
     "stat_new_members": "Neue Mitglieder",
     "stat_new_discussions": "Neue Diskussionen",
     "stat_new_posts": "Neue Beiträge",
@@ -288,10 +288,10 @@
     "manage_notifications": "Benachrichtigungen verwalten"
   },
   "weekly_digest": {
-    "title": "Community-Puls – Wöchentliche Zusammenfassung",
+    "title": "Community-Puls – Monatliche Zusammenfassung",
     "heading": "Community-Puls",
-    "subheading": "Ihre wöchentliche Zusammenfassung",
-    "preview_text": "Wöchentliche Highlights aus Ihrer Gemeinschaft – neue Angebote, Gesuche und kommende Veranstaltungen",
+    "subheading": "Ihre monatliche Zusammenfassung",
+    "preview_text": "Monatliche Highlights aus Ihrer Gemeinschaft – neue Angebote, Gesuche und kommende Veranstaltungen",
     "greeting": "Hallo {{name}},",
     "intro": "Hier ist, was diese Woche in Ihrer Gemeinschaft passiert.",
     "new_offers": "Neue Angebote",
@@ -299,7 +299,7 @@
     "upcoming_events": "Kommende Veranstaltungen",
     "by_author": "von {{name}}",
     "visit_platform": "Plattform besuchen",
-    "opted_in_notice": "Sie erhalten diese E-Mail, weil Sie wöchentliche Zusammenfassungen abonniert haben.",
+    "opted_in_notice": "Sie erhalten diese E-Mail, weil Sie monatliche Zusammenfassungen abonniert haben.",
     "unsubscribe": "Abmelden"
   },
   "match_digest": {

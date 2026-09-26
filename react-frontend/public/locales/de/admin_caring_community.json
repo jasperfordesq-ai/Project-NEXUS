@@ -20,7 +20,7 @@
     "active": "Aktiv",
     "all": "Alle",
     "approved": "Genehmigt",
-    "clear": "Klar",
+    "clear": "Zurücksetzen",
     "clear_filters": "Filter löschen",
     "clear_selection": "Auswahl löschen",
     "close": "Schließen",
@@ -259,7 +259,7 @@
       "settings": {
         "accept_time_credits": "Akzeptieren Sie Zeitgutschriften",
         "accept_time_credits_hint": "Erlauben Sie diesem Händler, Zeitgutschriften als Zahlung für einen Teil jedes Kaufs zu akzeptieren.",
-        "clear": "Klar",
+        "clear": "Zurücksetzen",
         "description": "Konfigurieren Sie den händlerseitigen Tarif und die maximale Rabattrichtlinie für das Treueprogramm.",
         "exchange_rate": "Wechselkurs",
         "exchange_rate_description": "Wie viel Währung ist eine einzelne Zeitguthabenstunde am Händlerverkaufspunkt wert?",
@@ -427,7 +427,7 @@
         "approvals": "Zustimmung und Vertrauen",
         "sla": "SLA-Fenster",
         "hours": "Stundenmanagement",
-        "safeguarding": "Sicherung",
+        "safeguarding": "Schutzmaßnahmen",
         "social_value": "Sozialwertmethodik",
         "appendix": "Anhang zur Pilotpolitik"
       },
@@ -660,7 +660,7 @@
       "sent": "Gesendet",
       "expires": "Läuft ab",
       "push": "Drücken",
-      "dismissed": "Entlassen",
+      "dismissed": "Verworfen",
       "status": "Status",
       "actions": "Aktionen"
     },
@@ -837,7 +837,7 @@
         "triaged": "Triagiert",
         "investigating": "Untersuchen",
         "resolved": "Gelöst",
-        "dismissed": "Entlassen"
+        "dismissed": "Verworfen"
       },
       "age_hours_one": "{{count}}h",
       "age_hours_other": "{{count}}h",
@@ -1168,7 +1168,7 @@
       "recipient": "Empfänger",
       "recipient_placeholder": "Suchen Sie nach dem Empfänger",
       "no_members": "Keine Mitglieder gefunden",
-      "clear": "Klar",
+      "clear": "Zurücksetzen",
       "relationship_title": "Beziehungstitel",
       "frequency_label": "Frequenz",
       "expected_hours_per_visit": "Erwartete Stunden pro Besuch",
@@ -2216,7 +2216,7 @@
         "tenant_aggregate": "Lese ein Mieter-Aggregat"
       },
       "verification_notes": {
-        "webhook_signature": "Überprüfe den X-NEXUS-Signature-Header, indem du HMAC-SHA256 über den gesamten Anforderungskörper mit dem Abonnement-Geheimnis berechnest, und vergleiche dann die Signaturen in konstanter Zeit. Weigere Nutzlasten, die älter als das konfigurierte Wiederholungsfenster sind, das standardmäßig fünf Minuten beträgt."
+        "webhook_signature": "Überprüfen Sie den X-NEXUS-Signature-Header, indem Sie HMAC-SHA256 über den gesamten Anforderungskörper mit dem Abonnement-Geheimnis berechnen, und vergleichen Sie dann die Signaturen in konstanter Zeit. Weisen Sie Nutzlasten zurück, die älter als das konfigurierte Wiederholungsfenster sind, das standardmäßig fünf Minuten beträgt."
       },
       "samples": {
         "federation_aggregate": "Föderations-Aggregat — signiertes JSON-Beispiel",

@@ -760,7 +760,7 @@
       "tips": [
         "Beginnen Sie mit einer niedrigen Frequenz – ein Anstoß alle zwei Wochen reicht normalerweise aus. Übermäßiges Nudging führt zu Opt-outs.",
         "Nudges sind am effektivsten für Mitglieder der Stufen 0–1, die ihren ersten Austausch noch nicht abgeschlossen haben.",
-        "Verwenden Sie niemals Stupser, um die Folgemaßnahmen abzusichern – nutzen Sie dazu das Modul „Absicherung“."
+        "Verwenden Sie Stupser niemals für die Nachverfolgung von Schutzanliegen – nutzen Sie dazu das Modul „Schutzmaßnahmen“."
       ],
       "relatedPaths": [
         {
@@ -1564,7 +1564,7 @@
         }
       ],
       "tips": [
-        "Das Modell „Vorschlagen und dann genehmigen“ ist ein bewusster Sicherheitsmechanismus – deaktivieren Sie ihn nicht für Folgemaßnahmen (z. B. zur Absicherung von Eskalationen, großen Überweisungen).",
+        "Das Modell „Vorschlagen und dann genehmigen“ ist ein bewusster Sicherheitsmechanismus – deaktivieren Sie ihn nicht für folgenreiche Aktionen (z. B. Eskalationen bei Schutzanliegen, große Überweisungen).",
         "Agenten lernen im Laufe der Zeit aus Ihren Genehmigungs-/Ablehnungsentscheidungen. Ständige Ablehnungen eines bestimmten Agententyps sind ein Signal, seine Konfiguration zu überprüfen."
       ],
       "caution": "Erhöhen Sie niemals den Schwellenwert für die automatische Bewerbung für Agenten, die Finanztransfers, Schutzeskalationen oder Änderungen der Mitgliedsstufe veranlassen können. Diese müssen immer einer menschlichen Überprüfung bedürfen.",

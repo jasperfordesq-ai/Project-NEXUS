@@ -76,7 +76,7 @@
   "report_export.no_data": "No data found for the selected report and filters.",
   "transaction_export.failed": "Failed to generate statement. Please try again.",
   "streak.already_recorded": "Already recorded today",
-  "safeguarding.assignment_created": "Safeguarding assignment created",
+  "safeguarding.assignment_created": "Schutzzuweisung erstellt",
   "review.submitted_successfully": "Review submitted successfully",
   "event.added_to_waitlist": "This event is full. You have been added to the waitlist.",
   "event.reminder_tomorrow": "Reminder: \"{{title}}\" is tomorrow — {{when}}",
@@ -85,7 +85,7 @@
   "event.cancelled_reason_suffix": " Reason: {{reason}}",
   "event.rsvp_cancelled": "This event has been cancelled",
   "event.rsvp_ended": "This event has already ended",
-  "event.rsvp_confirmed_going": "You're going to \"{{title}}\"!",
+  "event.rsvp_confirmed_going": "Sie nehmen an „{{title}}“ teil!",
   "event.rsvp_confirmed_interested": "You've shown interest in \"{{title}}\"",
   "comment.deleted": "Comment deleted",
   "webhook.test_delivery": "This is a test webhook delivery.",
@@ -196,7 +196,7 @@
     "already_recorded": "Heute schon aufgenommen"
   },
   "safeguarding": {
-    "assignment_created": "Sicherungsauftrag erstellt"
+    "assignment_created": "Schutzzuweisung erstellt"
   },
   "review": {
     "submitted_successfully": "Bewertung erfolgreich eingereicht"
@@ -209,7 +209,7 @@
     "cancelled_reason_suffix": "Grund: {{reason}}",
     "rsvp_cancelled": "Diese Veranstaltung wurde abgesagt",
     "rsvp_ended": "Diese Veranstaltung ist bereits beendet",
-    "rsvp_confirmed_going": "Du gehst zu „{{title}}“!",
+    "rsvp_confirmed_going": "Sie nehmen an „{{title}}“ teil!",
     "rsvp_confirmed_interested": "Sie haben Interesse an „{{title}}“ gezeigt"
   },
   "comment": {

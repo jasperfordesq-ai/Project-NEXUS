@@ -20,7 +20,7 @@
     "active": "Aktiv",
     "all": "Alle",
     "approved": "Genehmigt",
-    "clear": "Klar",
+    "clear": "Zurücksetzen",
     "clear_filters": "Filter löschen",
     "clear_selection": "Auswahl löschen",
     "close": "Schließen",
@@ -74,33 +74,33 @@
   },
   "member_premium_admin": {
     "meta": {
-      "title": "Premium-Stufen für Mitglieder",
-      "description": "Definieren Sie kostenpflichtige Premium-Stufen, die Mitglieder abonnieren können. Jede Stufe schaltet bestimmte Funktionsschlüssel frei."
+      "title": "Spenden & Unterstützung",
+      "description": "Erstellen Sie Stufen für regelmäßige Spenden von Unterstützenden der Gemeinschaft. Verwenden Sie nur Anerkennungshinweise; verkaufen Sie keine zusätzlichen Mitgliederfunktionen."
     },
     "actions": {
-      "subscribers": "Abonnenten",
-      "new_tier": "Neue Stufe",
+      "subscribers": "Regelmäßig Unterstützende",
+      "new_tier": "Neue Unterstützungsstufe",
       "edit": "Bearbeiten",
       "sync_stripe": "Mit Stripe synchronisieren",
       "delete": "Löschen",
       "cancel": "Stornieren",
       "save_changes": "Änderungen speichern",
-      "create_tier": "Stufe erstellen"
+      "create_tier": "Unterstützungsstufe erstellen"
     },
     "empty": {
-      "tiers": "Noch keine Stufen. Erstellen Sie oben Ihre erste Premium-Stufe.",
+      "tiers": "Noch keine Unterstützungsstufen. Erstellen Sie oben die erste Stufe für regelmäßige Spenden.",
       "value": "-"
     },
     "subscribers_page": {
-      "title": "Premium-Abonnenten",
-      "description": "Mitglieder haben derzeit ein Premium-Abonnement.",
-      "failed_load": "Abonnenten konnten nicht geladen werden",
+      "title": "Regelmäßig Unterstützende",
+      "description": "Mitglieder, die derzeit monatlich oder jährlich spenden.",
+      "failed_load": "Unterstützende konnten nicht geladen werden",
       "status_filter": "Statusfilter",
       "all": "Alle",
       "total": "{{count}} insgesamt",
       "refresh": "Aktualisieren",
-      "empty": "Keine Abonnenten entsprechen dem Filter.",
-      "table_aria": "Abonnenten",
+      "empty": "Keine Unterstützenden entsprechen dem Filter.",
+      "table_aria": "Regelmäßig Unterstützende",
       "user_fallback": "Benutzer #{{id}}",
       "columns": {
         "member": "Mitglied",
@@ -114,7 +114,7 @@
       "status": {
         "active": "Aktiv",
         "past_due": "Überfällig",
-        "canceled": "Abgesagt",
+        "canceled": "Beendet",
         "trialing": "Versuch",
         "incomplete": "Unvollständig"
       },
@@ -129,15 +129,15 @@
       "total_other": "{{count}} insgesamt"
     },
     "table": {
-      "aria": "Premium-Stufen",
+      "aria": "Spenden-Unterstützungsstufen",
       "name": "NAME",
       "slug": "SLUG",
       "price_month": "PREIS / MONAT",
       "price_year": "PREIS / JAHR",
-      "features": "MERKMALE",
+      "features": "ANERKENNUNG",
       "status": "STATUS",
-      "subscribers": "ABONNENTEN",
-      "stripe": "STREIFEN",
+      "subscribers": "UNTERSTÜTZENDE",
+      "stripe": "STRIPE",
       "actions": "AKTIONEN"
     },
     "status": {
@@ -160,8 +160,8 @@
       "description": "Beschreibung",
       "price_month": "Preis / Monat",
       "price_year": "Preis / Jahr",
-      "features": "Funktionstasten (durch Kommas getrennt)",
-      "features_description": "z.B. Verifiziertes_Badge, Priority_Matching, Advanced_Search, Ad_Free",
+      "features": "Anerkennungshinweise",
+      "features_description": "Optionale, durch Kommas getrennte Anerkennungshinweise, die bei der Unterstützungsstufe angezeigt werden. Verwenden Sie diese nicht als Sperre für kostenpflichtige Funktionen.",
       "sort_order": "Sortierreihenfolge"
     },
     "validation": {
@@ -212,7 +212,7 @@
     "finance": {
       "title": "Finanzoperationen",
       "description": "Verfolgen Sie die Route des Mieters Connect, die Plattform-Fallback-Haftung, die Gift Aid-Bereitschaft, Streitigkeiten und die Nachverfolgung von Quittungen für diesen Mieter.",
-      "completed_volume": "Abgeschlossener Band",
+      "completed_volume": "Abgeschlossenes Volumen",
       "platform_fallback_volume": "Plattform-Fallback-Volumen",
       "tenant_connect_volume": "Tenant Connect-Volume",
       "open_disputes": "Offene Streitigkeiten",

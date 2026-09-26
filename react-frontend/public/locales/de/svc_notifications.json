@@ -1,6 +1,6 @@
 {
   "badge_collection": {
-    "collection_complete": "Sammlung komplett! Du hast „{{name}}“ abgeschlossen und {{xp}}-Bonus-XP erhalten! {{icon}}"
+    "collection_complete": "Sammlung komplett! Sie haben „{{name}}“ abgeschlossen und {{xp}} Bonus-XP erhalten! {{icon}}"
   },
   "broker": {
     "message_for_review": "Neue Nachricht zur Überprüfung von {{sender}}"
@@ -42,12 +42,12 @@
     "added_to_group": "Sie wurden zu {{group}} hinzugefügt"
   },
   "challenge": {
-    "complete_claim": "Herausforderung abgeschlossen! Du hast „{{title}}“ abgeschlossen – hol dir deine Belohnung!",
-    "complete_earned": "Herausforderung abgeschlossen! Du hast „{{title}}“ abgeschlossen und {{xp}} XP verdient!"
+    "complete_claim": "Herausforderung abgeschlossen! Sie haben „{{title}}“ abgeschlossen – holen Sie sich Ihre Belohnung!",
+    "complete_earned": "Herausforderung abgeschlossen! Sie haben „{{title}}“ abgeschlossen und {{xp}} XP verdient!"
   },
   "gamification": {
-    "badge_earned": "Du hast dir das „{{name}}“-Abzeichen verdient! {{icon}}",
-    "level_up": "Glückwunsch! Du hast Level {{level}} erreicht!"
+    "badge_earned": "Sie haben sich das „{{name}}“-Abzeichen verdient! {{icon}}",
+    "level_up": "Glückwunsch! Sie haben Level {{level}} erreicht!"
   },
   "job_offer": {
     "received_bell": "Sie haben ein Stellenangebot für {{title}} erhalten",

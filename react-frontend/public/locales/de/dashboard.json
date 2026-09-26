@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Armaturenbrett",
+    "title": "Dashboard",
     "description": "Ihr persönliches Dashboard. Zeigen Sie Ihr Guthaben, Inserate und Aktivitäten an."
   },
   "fallback_name": "dort",
@@ -66,7 +66,7 @@
     "request": "Gesuch",
     "user_fallback": "Benutzer",
     "empty": "Keine aktuellen Inserate",
-    "empty_description": "Erstelle ein Gesuch oder Angebot, um Übereinstimmungen mit Menschen in deiner Nähe zu finden.",
+    "empty_description": "Erstellen Sie ein Gesuch oder Angebot, um Übereinstimmungen mit Menschen in Ihrer Nähe zu finden.",
     "create_first": "Erstellen Sie Ihr erstes Inserat"
   },
   "activity": {
@@ -89,7 +89,7 @@
   "groups": {
     "members_count": "{{count}} Mitglieder",
     "empty": "Sie sind noch keiner Gruppe beigetreten",
-    "empty_description": "Gruppen helfen dir, gemeinsamen Interessen, Projekten und lokalen Kreisen zu folgen.",
+    "empty_description": "Gruppen helfen Ihnen, gemeinsamen Interessen, Projekten und lokalen Kreisen zu folgen.",
     "discover": "Gruppen entdecken",
     "members_count_one": "{{count}} Mitglieder",
     "members_count_other": "{{count}} Mitglieder"
@@ -97,7 +97,7 @@
   "events": {
     "online_event": "Online-Veranstaltung",
     "empty": "Keine bevorstehenden Veranstaltungen",
-    "empty_description": "Veranstaltungen aus deiner Community erscheinen hier, sobald sie geplant sind.",
+    "empty_description": "Veranstaltungen aus Ihrer Community erscheinen hier, sobald sie geplant sind.",
     "browse": "Veranstaltungen suchen"
   },
   "gamification": {

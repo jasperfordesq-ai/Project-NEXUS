@@ -20,10 +20,10 @@
       "days_one": "1 Tag",
       "days_other": "{{count}} Tage",
       "urgent_note": "Handeln Sie schnell, damit Ihr Eintrag sichtbar bleibt!",
-      "expired_subject": "Dein Eintrag \"{{title}}\" ist abgelaufen",
+      "expired_subject": "Ihr Eintrag \"{{title}}\" ist abgelaufen",
       "expired_title": "Eintrag abgelaufen",
       "expired_preview": "Ihr Eintrag ist abgelaufen. Erneuern Sie ihn, um sichtbar zu bleiben",
-      "expired_body": "Dein Eintrag <strong>\"{{title}}\"</strong> ist abgelaufen. Erneuere ihn jetzt, um weiterhin Antworten von Community-Mitgliedern zu erhalten.",
+      "expired_body": "Ihr Eintrag <strong>\"{{title}}\"</strong> ist abgelaufen. Erneuern Sie ihn jetzt, um weiterhin Antworten von Community-Mitgliedern zu erhalten.",
       "expired_cta": "Eintrag erneuern"
     },
     "approved": {

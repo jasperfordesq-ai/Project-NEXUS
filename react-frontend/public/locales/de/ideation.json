@@ -2,7 +2,7 @@
   "page_title": "Ideenwettbewerbe",
   "title": "Ideenwettbewerbe",
   "subtitle": "Teilen Sie Ideen, stimmen Sie ab und gestalten Sie Ihre Gemeinschaft mit",
-  "page_description": "Durchstöbere die Herausforderungen der Gemeinschaft, reiche Ideen ein und stimme über Lösungen ab. Hilf mit, die Zukunft deiner Gemeinschaft zu gestalten.",
+  "page_description": "Durchstöbern Sie die Herausforderungen der Gemeinschaft, reichen Sie Ideen ein und stimmen Sie über Lösungen ab. Helfen Sie mit, die Zukunft Ihrer Gemeinschaft zu gestalten.",
   "loading": "Wird geladen...",
   "tabs_filter_aria": "Herausforderungen filtern",
   "actions": {
@@ -326,7 +326,7 @@
     "confirm_unlink_label": "Trennung bestätigen",
     "fallback_title": "Kampagne",
     "feature_not_available": "Ideensammlung nicht verfügbar",
-    "feature_not_available_desc": "Die Ideensammlungsfunktion ist für diese Community nicht aktiviert. Wende dich an deinen Zeitbank-Administrator, um mehr zu erfahren.",
+    "feature_not_available_desc": "Die Ideensammlungsfunktion ist für diese Community nicht aktiviert. Wenden Sie sich an Ihren Zeitbank-Administrator, um mehr zu erfahren.",
     "retry": "Erneut versuchen",
     "challenges_count_other": "{{count}} Wettbewerbe"
   },

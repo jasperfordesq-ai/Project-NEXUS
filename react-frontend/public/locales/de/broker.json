@@ -33,7 +33,7 @@
     "close_key": "esc"
   },
   "nav": {
-    "dashboard": "Armaturenbrett",
+    "dashboard": "Dashboard",
     "members": "Mitglieder",
     "onboarding": "Onboarding",
     "safeguarding": "Schutzmaßnahmen",
@@ -80,7 +80,7 @@
   },
   "dashboard": {
     "title": "Broker-Dashboard",
-    "description": "Überblick über ausstehende Börsen, Schutz von Bewertungsanfragen, Versicherungen und überwachte Benutzer",
+    "description": "Überblick über ausstehende Austausche, Anfragen zur Schutzprüfung, Versicherungen und überwachte Benutzer",
     "refresh": "Aktualisieren",
     "load_failed": "Broker-Dashboard konnte nicht geladen werden",
     "pending_members": "Ausstehende Mitglieder",
@@ -204,7 +204,7 @@
     "filter_role_all": "Alle Rollen",
     "bulk_selected": "{{count}} ausgewählt",
     "bulk_approve": "Ausgewählte genehmigen",
-    "bulk_suspend": "Suspend ausgewählt",
+    "bulk_suspend": "Ausgewählte sperren",
     "bulk_clear": "Klare Auswahl",
     "bulk_approved_success": "Genehmigte {{count}}-Mitglieder.",
     "bulk_suspended_success": "{{count}}-Mitglied(er) gesperrt.",
@@ -373,15 +373,15 @@
     "list_error_title": "Kontaktbescheinigungen konnten nicht geladen werden",
     "list_error_body": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "refresh": "Prüfbestätigungen aktualisieren",
-    "policy_title": "Wahrung der Kontaktpolitik",
+    "policy_title": "Schutzrichtlinie für Kontakte",
     "policy_jurisdiction": "Richtlinienpaket",
     "policy_attestation": "Erforderliche Bestätigung",
-    "policy_purpose": "Sicherungszweck",
+    "policy_purpose": "Schutzzweck",
     "purpose_safeguarded_contact": "Gesicherter Mitgliederkontakt",
     "policy_load_error": "Die Schutzrichtlinie konnte nicht geladen werden. Entscheidungen sind deaktiviert, bis sie verfügbar sind.",
     "policy_unconfigured": "Ein Administrator muss die schützende Gerichtsbarkeit auswählen, bevor Bestätigungen aufgezeichnet werden können.",
     "policy_not_available": "In dieser Gerichtsbarkeit gibt es noch keine unterstützte Richtlinie zur Kontaktüberprüfung. Entscheidungen sind deaktiviert.",
-    "jurisdiction_label": "Sicherungspaket",
+    "jurisdiction_label": "Schutzrichtlinienpaket",
     "save_jurisdiction": "Policenpaket speichern",
     "privacy_title": "Laden Sie keine Überprüfungsdokumente hoch",
     "privacy_body": "Erfassen Sie nur den operativen Umfang und die interne Entscheidung. Laden Sie keine Zertifikate, Zertifikatsnummern, Offenlegungsergebnisse, Ausweisdokumente oder Strafregisterinformationen in NEXUS hoch oder fügen Sie sie nicht ein.",
@@ -401,7 +401,7 @@
     "stat_confirmed": "Bestätigte Bescheinigungen",
     "stat_expired": "Abgelaufene Bestätigungen",
     "stat_revoked": "Widerrufte Bescheinigungen",
-    "action_confirm": "Bestätigen Sie die Beglaubigung",
+    "action_confirm": "Bescheinigung bestätigen",
     "action_renew": "Bestätigung erneuern",
     "action_details": "Details anzeigen",
     "action_revoke": "Bescheinigung widerrufen",
@@ -410,7 +410,7 @@
     "empty_review_title": "Keine Bewertungsanfragen",
     "empty_filtered_hint": "Versuchen Sie es mit einem anderen Status oder Suchbegriff.",
     "confirm_title": "Bestätigen Sie die Sicherheitszertifizierung",
-    "confirm_body": "Notieren Sie die Gemeinschaftsentscheidung für {{name}} im Rahmen des geltenden britischen Sicherungssystems bzw. der geltenden Sicherungssysteme. NEXUS führt keine Überprüfung oder Aufbewahrung von Zertifikaten durch.",
+    "confirm_body": "Erfassen Sie die Entscheidung der Gemeinschaft für {{name}} nach dem bzw. den geltenden britischen Schutzverfahren. NEXUS überprüft oder speichert keine Zertifikate.",
     "confirm_acknowledgement": "Ich bestätige, dass die Community die entsprechenden Prüfungen durchgeführt hat und dass der hier aufgezeichnete Umfang und die Daten die Sicherheitsfreigabe von {{name}} genau beschreiben.",
     "confirm_button": "Bestätigen Sie die Sicherheitszertifizierung",
     "certification_codes_label": "Zugrunde liegende(s) Zertifizierungssystem(e)",
@@ -457,7 +457,7 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Garda-Überprüfung",
     "attestation_uk_safeguarding_clearance": "Sicherheitsfreigabe für das Vereinigte Königreich",
-    "attestation_other": "Sicherungsbestätigung"
+    "attestation_other": "Schutzbestätigung"
   },
   "member_detail": {
     "load_failed": "Mitglied konnte nicht geladen werden.",
@@ -1346,8 +1346,8 @@
       "risk_tags": "<b>Risiko-Tags</b> sind eine Markierung auf Anzeigenebene, nicht auf Mitgliedsebene. Markieren Sie eine Anzeige, wenn Sie deren Verlauf beobachten möchten, ohne das Mitglied einzuschränken."
     },
     "vetting": {
-      "metadata_aria": "Sicherung von Kontaktbescheinigungen",
-      "metadata_title": "Sicherung von Kontaktbescheinigungen",
+      "metadata_aria": "Schutzbescheinigungen für Kontakte",
+      "metadata_title": "Schutzbescheinigungen für Kontakte",
       "intro": "Ein Überprüfungsdatensatz erfasst eine eingereichte Hintergrundprüfungs-Referenz. Unterstützte Typen:",
       "jurisdiction_heading": "Zuständigkeitsgrenze",
       "jurisdiction_england_wales": "<b>England und Wales:</b> Die unterstützte Kontaktrichtlinie verwendet eine feste Enhanced DBS-Bescheinigung. Ein Broker bestätigt lediglich, dass die Community ihre eigenen Prüfungen für den sicheren Mitgliederkontakt durchgeführt hat; NEXUS prüft oder verifiziert ein Zertifikat nicht.",

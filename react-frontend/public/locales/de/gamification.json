@@ -49,7 +49,7 @@
       "likes_received": "Gefällt mir",
       "profile": "Profil",
       "membership": "Mitgliedschaft",
-      "streak": "Streifen",
+      "streak": "Serien",
       "level": "Ebenen",
       "special": "Besonders",
       "vol_org": "Organisationen",
@@ -409,7 +409,7 @@
     "title": "NexusScore",
     "subtitle": "Ihr Community-Reputations-Score",
     "points_to_next": "{{count}} points to {{tier}}",
-    "max_tier": "Du hast die höchste Stufe erreicht!",
+    "max_tier": "Sie haben die höchste Stufe erreicht!",
     "breakdown_title": "Punkteaufschlüsselung",
     "insights_title": "Wie man sich verbessert",
     "remaining": "übrig",
@@ -451,7 +451,7 @@
     },
     "leaderboard": {
       "title": "Bestenliste",
-      "description": "Community-Rangliste — sieh dir die besten Mitwirkenden und aktivsten Mitglieder an."
+      "description": "Community-Rangliste — sehen Sie sich die besten Mitwirkenden und aktivsten Mitglieder an."
     },
     "goals": {
       "title": "Ziele"

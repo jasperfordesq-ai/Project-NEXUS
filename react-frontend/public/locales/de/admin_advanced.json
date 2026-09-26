@@ -20,7 +20,7 @@
     "active": "Aktiv",
     "all": "Alle",
     "approved": "Genehmigt",
-    "clear": "Klar",
+    "clear": "Zurücksetzen",
     "clear_filters": "Filter löschen",
     "clear_selection": "Auswahl löschen",
     "close": "Schließen",
@@ -128,8 +128,8 @@
     "desc_when_visitors_hit_missing_pages_they_wi": "Wenn Besucher auf fehlende Seiten stoßen, wird ihnen hier ein 404-Fehler angezeigt",
     "desc_your_a_i_provider_a_p_i_key_stored_encrypt": "Der API-Schlüssel Ihres KI-Anbieters, verschlüsselt gespeichert",
     "disabled": "Deaktiviert",
-    "dismiss": "Entlassen",
-    "dismiss_404_entry": "Entlassen",
+    "dismiss": "Verwerfen",
+    "dismiss_404_entry": "Verwerfen",
     "dismiss_404_message": "404 verwerfen",
     "dismiss_404_title": "404 verwerfen",
     "direct_referrer": "Direkt",
@@ -497,7 +497,7 @@
         }
       },
       "workflows": {
-        "title": "Was versuchst du zu tun?",
+        "title": "Was möchten Sie tun?",
         "description": "Beginnen Sie mit der einfachen Aufgabe und verwenden Sie dann die Registerkarte, die geöffnet wird. Dies hält Routinearbeiten von den riskanten Kontrollen fern.",
         "refresh_one_tenant": {
           "title": "Aktualisieren Sie einen Mandanten",

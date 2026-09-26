@@ -310,7 +310,7 @@
   "duration_1_3h": "1–3h",
   "duration_3_6h": "3–6h",
   "duration_6h_plus": "6h+",
-  "service_remote_short": "Fernbedienung",
+  "service_remote_short": "Remote",
   "service_in_person_short": "Persönlich",
   "sheet_show_results": "{{count}}-Einträge anzeigen",
   "sheet_show_results_one": "{{count}}-Eintrag anzeigen",

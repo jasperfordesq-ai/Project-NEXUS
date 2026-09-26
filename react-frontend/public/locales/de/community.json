@@ -24,7 +24,7 @@
     "type_police_check": "Polizeiliches Führungszeugnis",
     "type_first_aid": "Erste Hilfe",
     "type_background_check": "Hintergrundüberprüfung",
-    "type_safeguarding": "Kinderschutz",
+    "type_safeguarding": "Schutzmaßnahmen",
     "type_manual_handling": "Manuelle Handhabung",
     "type_food_hygiene": "Lebensmittelhygiene",
     "type_driving_licence": "Führerschein",
@@ -214,7 +214,7 @@
     "active_opportunities": "Aktive Einsätze",
     "no_active_opportunities": "Keine aktiven Einsätze",
     "no_opportunities_description": "Diese Organisation hat derzeit keine offenen Freiwilligeneinsätze",
-    "remote": "Fernbedienung",
+    "remote": "Remote",
     "applied": "Beworben",
     "apply": "Bewerben",
     "reviews": "Bewertungen",
@@ -305,7 +305,7 @@
     "load_failed": "Zertifikate konnten nicht geladen werden",
     "load_error": "Fehler beim Laden der Zertifikate"
   },
-  "remote": "Fernbedienung",
+  "remote": "Remote",
   "closes_date": "Schließt {{date}}",
   "page_meta": {
     "register_organisation": {

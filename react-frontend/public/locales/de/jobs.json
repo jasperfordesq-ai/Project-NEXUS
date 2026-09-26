@@ -51,7 +51,7 @@
   },
   "views": "{{count}} Aufrufe",
   "applications": "{{count}} Bewerbungen",
-  "remote": "Fernbedienung",
+  "remote": "Remote",
   "deadline_label": "Frist",
   "deadline_passed": "Frist abgelaufen",
   "hours_per_week": "{{count}} Std./Woche",
@@ -175,7 +175,7 @@
   },
   "bulk": {
     "select_action": "In Phase verschieben...",
-    "apply": "Bewerben",
+    "apply": "Anwenden",
     "clear": "Auswahl löschen",
     "success": "Bewerbungen aktualisiert",
     "error": "Massenaktualisierung fehlgeschlagen",
@@ -986,8 +986,8 @@
     "email": "Per E-Mail teilen",
     "copied": "Link kopiert!",
     "native": "Teilen...",
-    "email_body": "Sieh dir diese Stelle an: {{title}}\n\n{{url}}",
-    "native_text": "Sieh dir diese {{type}}-Gelegenheit an: {{title}}"
+    "email_body": "Sehen Sie sich diese Stelle an: {{title}}\n\n{{url}}",
+    "native_text": "Sehen Sie sich diese {{type}}-Gelegenheit an: {{title}}"
   },
   "already_applied": "Sie haben sich bereits beworben",
   "application_status_label": "Bewerbungsstatus",
@@ -1042,7 +1042,7 @@
     "send": "Nachricht senden",
     "title": "Frag die KI zu diesem Job",
     "hint": "Frag mich alles zu diesem Job – Qualifikationen, Gehalt, wie man sich bewirbt, Interviewtipps...",
-    "placeholder": "Tippe deine Frage ein...",
+    "placeholder": "Geben Sie Ihre Frage ein...",
     "error_response": "Leider konnte ich Ihre Anfrage nicht verarbeiten.",
     "error_generic": "Leider ist etwas schiefgelaufen."
   },

@@ -169,22 +169,22 @@
     "translating_all": "Nachrichten werden übersetzt...",
     "tooltip_off": "Alle Nachrichten automatisch übersetzen",
     "tooltip_on": "Automatische Übersetzung ist aktiv — zum Ausschalten klicken",
-    "active_banner": "Nachrichten in dieser Unterhaltung werden automatisch in deine Sprache übersetzt.",
+    "active_banner": "Nachrichten in dieser Unterhaltung werden automatisch in Ihre Sprache übersetzt.",
     "turn_off": "Ausschalten",
     "menu_enable": "Nachrichten automatisch übersetzen",
     "menu_disable": "Deaktivieren Sie die automatische Übersetzung"
   },
   "translate_hint": {
     "title": "Übersetzung verfügbar",
-    "body": "Du und diese Person könnt jeweils in eurer eigenen Sprache schreiben. Tippe bei einer Nachricht auf \"Übersetzen\", um sie in deiner Sprache zu lesen, oder nutze die Übersetzungsschaltfläche in der Kopfzeile, um alles automatisch zu übersetzen.",
+    "body": "Sie und diese Person können jeweils in Ihrer eigenen Sprache schreiben. Tippen Sie bei einer Nachricht auf \"Übersetzen\", um sie in Ihrer Sprache zu lesen, oder nutzen Sie die Übersetzungsschaltfläche in der Kopfzeile, um alles automatisch zu übersetzen.",
     "dismiss": "Übersetzungshinweis ausblenden"
   },
   "translate_hint.title": "Übersetzung verfügbar",
-  "translate_hint.body": "Du und diese Person könnt jeweils in eurer eigenen Sprache schreiben. Tippe bei einer Nachricht auf \"Übersetzen\", um sie in deiner Sprache zu lesen, oder nutze die Übersetzungsschaltfläche in der Kopfzeile, um alles automatisch zu übersetzen.",
+  "translate_hint.body": "Sie und diese Person können jeweils in Ihrer eigenen Sprache schreiben. Tippen Sie bei einer Nachricht auf \"Übersetzen\", um sie in Ihrer Sprache zu lesen, oder nutzen Sie die Übersetzungsschaltfläche in der Kopfzeile, um alles automatisch zu übersetzen.",
   "translate_hint.dismiss": "Übersetzungshinweis ausblenden",
   "auto_translate.tooltip_off": "Alle Nachrichten automatisch übersetzen",
   "auto_translate.tooltip_on": "Automatische Übersetzung ist aktiv — zum Ausschalten klicken",
-  "auto_translate.active_banner": "Nachrichten in dieser Unterhaltung werden automatisch in deine Sprache übersetzt.",
+  "auto_translate.active_banner": "Nachrichten in dieser Unterhaltung werden automatisch in Ihre Sprache übersetzt.",
   "auto_translate.turn_off": "Ausschalten",
   "new_group": "Neue Gruppe",
   "create_group": "Gruppe erstellen",
@@ -209,7 +209,7 @@
   "group_name_updated": "Gruppenname aktualisiert",
   "group_member_added": "Mitglied zur Gruppe hinzugefügt",
   "group_member_removed": "Mitglied aus der Gruppe entfernt",
-  "group_left": "Du hast die Gruppe verlassen",
+  "group_left": "Sie haben die Gruppe verlassen",
   "group_tab": "Gruppen",
   "page_meta": {
     "list": {
@@ -223,8 +223,8 @@
   "loading_older": "Ältere Nachrichten werden geladen",
   "safeguarding_vetting_required": {
     "title": "Schutzpruefung erforderlich",
-    "body": "Dieses Gespraech wurde pausiert, weil eine Schutzregel der Community eine bestaetigte Ueberpruefung verlangt, bevor du diesem Mitglied schreiben kannst.",
-    "contact_broker": "Wende dich an deine vermittelnde Person oder Community-Administration, um deinen Pruefstatus zu klaeren oder den naechsten sicheren Schritt zu vereinbaren.",
+    "body": "Dieses Gespräch wurde pausiert, weil eine Schutzregel der Community eine bestätigte Überprüfung verlangt, bevor Sie diesem Mitglied schreiben können.",
+    "contact_broker": "Wenden Sie sich an Ihre vermittelnde Person oder die Community-Administration, um Ihren Prüfstatus zu klären oder den nächsten sicheren Schritt zu vereinbaren.",
     "required_checks": "Erforderliche Pruefungen",
     "action": "Hilfe oeffnen",
     "dismiss": "Schutzhinweis schliessen"
@@ -237,7 +237,7 @@
     "dismiss": "Schutzhinweis schliessen"
   },
   "safeguarding_policy_unavailable": {
-    "title": "Sicherungsscheck vorübergehend nicht verfügbar",
+    "title": "Schutzprüfung vorübergehend nicht verfügbar",
     "body": "Direktnachrichten wurden pausiert, da die Community-Schutzrichtlinie nicht sicher überprüft werden konnte.",
     "contact_broker": "Schauen Sie in Kürze noch einmal vorbei. Wenn dies weiterhin der Fall ist, bitten Sie einen Community-Koordinator um Hilfe.",
     "action": "Überprüfen Sie es noch einmal",
@@ -254,7 +254,7 @@
   "vetting_review_request": {
     "button": "Fordern Sie eine Überprüfung an",
     "success_title": "Rezension angefordert",
-    "success_body": "Ihr Community-Broker wurde gebeten, Ihre private Sicherungsbestätigung zu überprüfen.",
+    "success_body": "Ihr Community-Broker wurde gebeten, Ihre private Schutzbestätigung zu überprüfen.",
     "sent": "Überprüfung angefordert. Ihre Community wird Sie bezüglich des Prozesses kontaktieren.",
     "error": "Wir konnten im Moment keine Sicherheitsüberprüfung anfordern. Bitte versuchen Sie es in Kürze noch einmal."
   },
