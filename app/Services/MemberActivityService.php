@@ -49,17 +49,30 @@ class MemberActivityService
 
     /**
      * Get comprehensive dashboard data (full version with all sections).
+     *
+     * F-002 (E-038): exchange detail — who the member exchanged with, the hours
+     * of each exchange, monthly hours and the net balance — is private to the
+     * member and to their community's admins and brokers. Pass
+     * $includeExchangeDetail = false for any other viewer: the timeline then
+     * carries no exchange entries, and `hours_summary` / `monthly_hours` are
+     * omitted rather than zeroed, so a client cannot mistake "hidden" for
+     * "no activity".
      */
-    public function getDashboardData(int $userId): array
+    public function getDashboardData(int $userId, bool $includeExchangeDetail = true): array
     {
-        return [
-            'timeline'         => $this->getRecentTimeline($userId, null, 30),
-            'hours_summary'    => $this->getHoursSummary($userId),
+        $data = [
+            'timeline'         => $this->getRecentTimeline($userId, null, 30, $includeExchangeDetail),
             'skills_breakdown' => $this->getSkillsBreakdown($userId),
             'connection_stats' => $this->getConnectionStats($userId),
             'engagement'       => $this->getEngagementMetrics($userId),
-            'monthly_hours'    => $this->getMonthlyHours($userId),
         ];
+
+        if ($includeExchangeDetail) {
+            $data['hours_summary'] = $this->getHoursSummary($userId);
+            $data['monthly_hours'] = $this->getMonthlyHours($userId);
+        }
+
+        return $data;
     }
 
     /**
@@ -102,7 +115,7 @@ class MemberActivityService
     /**
      * Get recent activity timeline (full version with comments, connections, events).
      */
-    public function getRecentTimeline(int $userId, ?int $tenantId = null, int $limit = 30): array
+    public function getRecentTimeline(int $userId, ?int $tenantId = null, int $limit = 30, bool $includeExchanges = true): array
     {
         $items = collect();
 
@@ -116,34 +129,37 @@ class MemberActivityService
             ->get();
         $items = $items->merge($posts);
 
-        // Transactions with user names
+        // Transactions with user names — exchange partners and hours, so only
+        // for the member themselves or staff (F-002).
         $activityTenantId = \App\Core\TenantContext::getId();
-        $txns = Transaction::query()
-            ->leftJoin('users as s', function ($join) use ($activityTenantId) {
-                $join->on('transactions.sender_id', '=', 's.id')->where('s.tenant_id', $activityTenantId);
-            })
-            ->leftJoin('users as r', function ($join) use ($activityTenantId) {
-                $join->on('transactions.receiver_id', '=', 'r.id')->where('r.tenant_id', $activityTenantId);
-            })
-            ->where(fn (Builder $q) => $q->where('transactions.sender_id', $userId)->orWhere('transactions.receiver_id', $userId))
-            ->where('transactions.status', 'completed')
-            ->selectRaw(
-                "transactions.id,
-                 CASE WHEN transactions.sender_id = ? THEN 'gave_hours' ELSE 'received_hours' END as activity_type,
-                 CONCAT(
-                     CASE WHEN transactions.sender_id = ? THEN 'Gave ' ELSE 'Received ' END,
-                     transactions.amount, ' hour(s)',
-                     CASE WHEN transactions.sender_id = ? THEN CONCAT(' to ', COALESCE(r.first_name, ''), ' ', COALESCE(r.last_name, ''))
-                          ELSE CONCAT(' from ', COALESCE(s.first_name, ''), ' ', COALESCE(s.last_name, ''))
-                     END
-                 ) as description,
-                 transactions.created_at",
-                [$userId, $userId, $userId]
-            )
-            ->orderByDesc('transactions.created_at')
-            ->limit($limit)
-            ->get();
-        $items = $items->merge($txns);
+        if ($includeExchanges) {
+            $txns = Transaction::query()
+                ->leftJoin('users as s', function ($join) use ($activityTenantId) {
+                    $join->on('transactions.sender_id', '=', 's.id')->where('s.tenant_id', $activityTenantId);
+                })
+                ->leftJoin('users as r', function ($join) use ($activityTenantId) {
+                    $join->on('transactions.receiver_id', '=', 'r.id')->where('r.tenant_id', $activityTenantId);
+                })
+                ->where(fn (Builder $q) => $q->where('transactions.sender_id', $userId)->orWhere('transactions.receiver_id', $userId))
+                ->where('transactions.status', 'completed')
+                ->selectRaw(
+                    "transactions.id,
+                     CASE WHEN transactions.sender_id = ? THEN 'gave_hours' ELSE 'received_hours' END as activity_type,
+                     CONCAT(
+                         CASE WHEN transactions.sender_id = ? THEN 'Gave ' ELSE 'Received ' END,
+                         transactions.amount, ' hour(s)',
+                         CASE WHEN transactions.sender_id = ? THEN CONCAT(' to ', COALESCE(r.first_name, ''), ' ', COALESCE(r.last_name, ''))
+                              ELSE CONCAT(' from ', COALESCE(s.first_name, ''), ' ', COALESCE(s.last_name, ''))
+                         END
+                     ) as description,
+                     transactions.created_at",
+                    [$userId, $userId, $userId]
+                )
+                ->orderByDesc('transactions.created_at')
+                ->limit($limit)
+                ->get();
+            $items = $items->merge($txns);
+        }
 
         // Comments
         try {

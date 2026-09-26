@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use App\Services\MemberActivityService;
+use App\Support\Authorization\AdminTier;
 
 /**
  * MemberActivityController -- Member activity dashboard.
@@ -82,8 +83,38 @@ class MemberActivityController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 
-        $data = $this->memberActivityService->getDashboardData($id);
+        $data = $this->memberActivityService->getDashboardData($id, $this->canSeeExchangeDetail($id));
 
         return $this->respondWithData($data);
+    }
+
+    /**
+     * F-002 (E-038, owner decision 26 Sep 2026): exchange partners, the hours of
+     * each exchange and the net balance are visible only to the member
+     * themselves and to this community's admins and brokers/coordinators.
+     *
+     * AdminTier deliberately refuses broker/coordinator, so the operational
+     * roles are checked separately, as requireBrokerOrAdmin() does. A
+     * tenant-level staff account must belong to the community being viewed;
+     * only platform-wide super admins cross communities.
+     */
+    private function canSeeExchangeDetail(int $memberId): bool
+    {
+        if ($this->requireAuth() === $memberId) {
+            return true;
+        }
+
+        $viewer = $this->resolveUser();
+        $role = (string) (data_get($viewer, 'role') ?? 'member');
+        $platformWide = in_array($role, ['super_admin', 'god'], true)
+            || (bool) data_get($viewer, 'is_super_admin', false)
+            || (bool) data_get($viewer, 'is_god', false);
+
+        if (! $platformWide && (int) data_get($viewer, 'tenant_id', 0) !== $this->getTenantId()) {
+            return false;
+        }
+
+        return AdminTier::allows($viewer)
+            || in_array($role, AdminTier::OPERATIONAL_ROLES, true);
     }
 }
