@@ -314,7 +314,7 @@ let mockGroupTabs: Record<string, boolean> = {};
 const mockHasGroupTab = jest.fn((key: string) => mockGroupTabs[key] ?? true);
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true, hasGroupTab: (key: string) => mockHasGroupTab(key), tenant: { id: 2, slug: 'hour-timebank' } }),
+  useTenant: () => ({ hasFeature: () => true, hasModule: () => true, hasGroupTab: (key: string) => mockHasGroupTab(key), tenant: { id: 2, slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({

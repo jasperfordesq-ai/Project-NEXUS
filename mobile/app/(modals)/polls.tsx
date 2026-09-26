@@ -82,7 +82,7 @@ function extractPollsPage(response: FeedResponse) {
   };
 }
 
-function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
+function PollsScreen({ draftScope, groupId, invalidGroupId }: { draftScope: CreationDraftScope; groupId: number | null; invalidGroupId: boolean }) {
   const { t } = useTranslation(['home', 'common']);
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -91,7 +91,7 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
   const scaleKey = isLargeText ? 'large' : 'compact';
   const { show: showToast } = useAppToast();
   const { confirm: confirmDraftLeave, confirmDialog: draftLeaveDialog } = useConfirm();
-  const params = useLocalSearchParams<{ create?: string | string[] }>();
+  const params = useLocalSearchParams<{ create?: string | string[]; group_id?: string | string[] }>();
   const createParam = Array.isArray(params.create) ? params.create[0] : params.create;
   const shouldOpenCreate = createParam === '1' || createParam === 'true';
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -185,13 +185,13 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
   const fetchPolls = useCallback(
     (cursor: string | null) => {
       requestedCursor.current = cursor;
-      return getFeed(1, cursor, { filter: 'polls', mode: 'recent', perPage: 20 });
+      return getFeed(1, cursor, { filter: 'polls', mode: 'recent', perPage: 20, ...(groupId ? { groupId } : {}) });
     },
-    [],
+    [groupId],
   );
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
-    usePaginatedApi<FeedItem, FeedResponse>(fetchPolls, extractPollsPage, []);
+    usePaginatedApi<FeedItem, FeedResponse>(fetchPolls, extractPollsPage, [groupId, invalidGroupId], { enabled: !invalidGroupId });
 
   /*
     🔴 Voting used to call `refresh()`, which resets the paginated list to page one.
@@ -236,7 +236,7 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
   }, [shouldOpenCreate]);
 
   async function handleCreatePoll() {
-    if (creatingRef.current) return;
+    if (creatingRef.current || invalidGroupId) return;
     const trimmedQuestion = question.trim();
     const validOptions = options.map((option) => option.trim()).filter(Boolean);
 
@@ -258,6 +258,7 @@ function PollsScreen({ draftScope }: { draftScope: CreationDraftScope }) {
         options: validOptions,
         poll_type: pollType,
         is_anonymous: isAnonymous,
+        ...(groupId ? { group_id: groupId } : {}),
       } as const;
       const operation = await reservePollCreationOperation(JSON.stringify(payload));
       await createPoll(payload, operation.key);
@@ -658,14 +659,20 @@ function PollFeedCard({
 function PollsRoute() {
   const { tenant } = useTenant();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ group_id?: string | string[] }>();
+  const rawGroupId = Array.isArray(params.group_id) ? params.group_id[0] : params.group_id;
+  const parsedGroupId = rawGroupId === undefined ? null : Number(rawGroupId);
+  const groupId = parsedGroupId !== null && Number.isInteger(parsedGroupId) && parsedGroupId > 0 ? parsedGroupId : null;
+  const invalidGroupId = rawGroupId !== undefined && groupId === null;
   const tenantIdentity = tenant?.id ?? tenant?.slug ?? 'no-tenant';
   const userIdentity = user?.id ?? 'no-user';
   const draftScope = useMemo<CreationDraftScope>(() => ({
     kind: 'poll',
     tenantId: tenantIdentity,
     userId: userIdentity,
-  }), [tenantIdentity, userIdentity]);
-  return <PollsScreen key={`${tenantIdentity}:${userIdentity}`} draftScope={draftScope} />;
+    ...(groupId ? { contextId: `group:${groupId}` } : {}),
+  }), [groupId, tenantIdentity, userIdentity]);
+  return <PollsScreen key={`${tenantIdentity}:${userIdentity}:${groupId ?? 'community'}`} draftScope={draftScope} groupId={groupId} invalidGroupId={invalidGroupId} />;
 }
 
 export default withRouteGate(PollsRoute, 'polls');

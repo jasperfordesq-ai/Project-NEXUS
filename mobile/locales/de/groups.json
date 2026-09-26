@@ -95,7 +95,8 @@
       "wiki": "Wiki",
       "tasks": "Tasks",
       "analytics": "Analytics",
-      "marketplace": "Marketplace"
+      "marketplace": "Marketplace",
+      "feed": "Feed"
     },
     "files": {
       "title": "Gruppendateien",
@@ -404,6 +405,16 @@
       "decisionPending": "Wir konnten nicht bestätigen, ob diese Entscheidung gespeichert wurde. Wiederholen Sie den Vorgang, um dies sicher zu prüfen.",
       "retryDecision": "Entscheidung wiederholen",
       "recoveryUnavailable": "Ihre nicht abgeschlossene Beitrittsentscheidung konnte nicht wiederhergestellt werden. Versuchen Sie es erneut, bevor Sie eine andere Entscheidung treffen."
+    },
+    "feed": {
+      "title": "Gruppen-Feed",
+      "subtitle": "Beiträge und Umfragen, die in dieser Gruppe geteilt wurden.",
+      "joinTitle": "Beitreten, um den Gruppen-Feed zu sehen",
+      "joinSubtitle": "Gruppenbeiträge und Umfragen sind für aktive Mitglieder verfügbar.",
+      "createPost": "Beitrag erstellen",
+      "createPoll": "Umfrage erstellen",
+      "emptyTitle": "Noch keine Gruppenbeiträge",
+      "emptySubtitle": "Beginne die Unterhaltung mit einem Beitrag oder einer Umfrage."
     }
   },
   "filter": {

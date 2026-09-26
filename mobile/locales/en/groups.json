@@ -95,7 +95,8 @@
       "wiki": "Wiki",
       "tasks": "Tasks",
       "analytics": "Analytics",
-      "marketplace": "Marketplace"
+      "marketplace": "Marketplace",
+      "feed": "Feed"
     },
     "files": {
       "title": "Group files",
@@ -404,6 +405,16 @@
       "decisionPending": "We could not confirm whether that decision was saved. Retry to check safely.",
       "retryDecision": "Retry decision",
       "recoveryUnavailable": "Your unfinished join-request decision could not be restored. Retry before making another decision."
+    },
+    "feed": {
+      "title": "Group feed",
+      "subtitle": "Posts and polls shared with this group.",
+      "joinTitle": "Join to see the group feed",
+      "joinSubtitle": "Group posts and polls are available to active members.",
+      "createPost": "Create post",
+      "createPoll": "Create poll",
+      "emptyTitle": "No group posts yet",
+      "emptySubtitle": "Start the conversation with a post or poll."
     }
   },
   "filter": {

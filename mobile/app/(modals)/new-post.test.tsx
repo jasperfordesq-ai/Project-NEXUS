@@ -19,6 +19,12 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockRouterReplace = jest.fn();
 const mockRouterBack = jest.fn();
+let mockSearchParams: Record<string, string | string[]> = {};
+const mockLoadCreationDraft = jest.fn();
+const mockSaveCreationDraft = jest.fn();
+const mockClearCreationDraft = jest.fn();
+const mockReservePostOperation = jest.fn();
+const mockCompletePostOperation = jest.fn();
 
 /*
   🔴 Every member of this mock is a lazy arrow, not a direct reference to the spy.
@@ -31,6 +37,7 @@ const mockRouterBack = jest.fn();
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
+  useLocalSearchParams: () => mockSearchParams,
   router: {
     replace: (...args: unknown[]) => mockRouterReplace(...args),
     push: (...args: unknown[]) => mockRouterReplace(...args),
@@ -65,7 +72,17 @@ jest.mock('react-i18next', () => ({
 const mockHasModule = jest.fn(() => true);
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#006FEE',
-  useTenant: () => ({ hasModule: mockHasModule }),
+  useTenant: () => ({ hasModule: mockHasModule, tenant: { id: 2, slug: 'hour-timebank' } }),
+}));
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 7 } }) }));
+jest.mock('@/lib/creationDraftStore', () => ({
+  loadCreationDraft: (...args: unknown[]) => mockLoadCreationDraft(...args),
+  saveCreationDraft: (...args: unknown[]) => mockSaveCreationDraft(...args),
+  clearCreationDraft: (...args: unknown[]) => mockClearCreationDraft(...args),
+}));
+jest.mock('@/lib/postCreationOperation', () => ({
+  reservePostCreationOperation: (...args: unknown[]) => mockReservePostOperation(...args),
+  completePostCreationOperation: (...args: unknown[]) => mockCompletePostOperation(...args),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -129,8 +146,14 @@ const created201 = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSearchParams = {};
   mockHasModule.mockReturnValue(true);
   mockCreatePost.mockResolvedValue(created201);
+  mockLoadCreationDraft.mockResolvedValue(null);
+  mockSaveCreationDraft.mockResolvedValue(true);
+  mockClearCreationDraft.mockResolvedValue(true);
+  mockReservePostOperation.mockResolvedValue({ storageKey: 'post-operation', key: 'post-key', createdAt: 1 });
+  mockCompletePostOperation.mockResolvedValue(undefined);
 });
 
 describe('NewPostRoute', () => {
@@ -143,7 +166,7 @@ describe('NewPostRoute', () => {
       fireEvent.press(screen.getByText('Post'));
       fireEvent.press(screen.getByText('Post'));
     });
-    expect(mockCreatePost).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockCreatePost).toHaveBeenCalledTimes(1));
     await act(async () => { finish(created201); });
   });
 
@@ -153,6 +176,7 @@ describe('NewPostRoute', () => {
     const screen = render(<NewPostRoute />);
     fireEvent.changeText(screen.getByPlaceholderText("What's on your mind?"), 'A pending community post');
     fireEvent.press(screen.getByText('Post'));
+    await waitFor(() => expect(mockCreatePost).toHaveBeenCalledTimes(1));
     screen.unmount();
     await act(async () => { finish(created201); await new Promise(resolve => setTimeout(resolve, 10)); });
     expect(mockRouterReplace).not.toHaveBeenCalled();
@@ -173,7 +197,7 @@ describe('NewPostRoute', () => {
     fireEvent.press(getByText('Post'));
 
     await waitFor(() => {
-      expect(mockCreatePost).toHaveBeenCalledWith({ content: 'Hello neighbours' });
+      expect(mockCreatePost).toHaveBeenCalledWith({ content: 'Hello neighbours' }, 'post-key');
     });
     // The id comes from the server's body, so the member lands on the real post.
     await waitFor(() => {
@@ -185,6 +209,48 @@ describe('NewPostRoute', () => {
     expect(mockShowToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Post created!', variant: 'success' }),
     );
+  });
+
+  it('keeps a group post bound to the group from the route', async () => {
+    mockSearchParams = { group_id: '23' };
+    const { getByPlaceholderText, getByText } = render(<NewPostRoute />);
+
+    fireEvent.changeText(getByPlaceholderText("What's on your mind?"), 'Group-only update');
+    fireEvent.press(getByText('Post'));
+
+    await waitFor(() => expect(mockCreatePost).toHaveBeenCalledWith({ content: 'Group-only update', group_id: 23 }, 'post-key'));
+  });
+
+  it('restores only the current group draft after a restart', async () => {
+    mockSearchParams = { group_id: '23' };
+    mockLoadCreationDraft.mockResolvedValue({ content: 'Recovered group update' });
+    const screen = render(<NewPostRoute />);
+
+    await waitFor(() => expect(screen.getByPlaceholderText("What's on your mind?").props.value).toBe('Recovered group update'));
+    expect(mockLoadCreationDraft).toHaveBeenCalledWith({
+      kind: 'post', tenantId: 2, userId: 7, contextId: 'group:23',
+    }, { required: true });
+  });
+
+  it('keeps the replay identity and draft when accepted content cannot be cleared', async () => {
+    mockClearCreationDraft.mockResolvedValue(false);
+    const screen = render(<NewPostRoute />);
+    fireEvent.changeText(screen.getByPlaceholderText("What's on your mind?"), 'Accepted but not cleared');
+    fireEvent.press(screen.getByText('Post'));
+
+    await waitFor(() => expect(mockCreatePost).toHaveBeenCalledWith({ content: 'Accepted but not cleared' }, 'post-key'));
+    expect(mockCompletePostOperation).not.toHaveBeenCalled();
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText("What's on your mind?").props.value).toBe('Accepted but not cleared');
+  });
+
+  it('does not silently turn an invalid group route into a community post', () => {
+    mockSearchParams = { group_id: 'invalid' };
+    const { queryByPlaceholderText, getByText } = render(<NewPostRoute />);
+
+    expect(queryByPlaceholderText("What's on your mind?")).toBeNull();
+    expect(getByText('Not found')).toBeTruthy();
+    expect(mockCreatePost).not.toHaveBeenCalled();
   });
 
   it('marks the feed stale so the list the member returns to re-reads', async () => {

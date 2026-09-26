@@ -64,6 +64,26 @@ class SocialControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_create_post_replay_returns_one_post_and_rejects_changed_intent(): void
+    {
+        $user = $this->authenticatedUser();
+        $payload = ['content' => 'A durable mobile group update'];
+        $headers = ['Idempotency-Key' => 'feed-post-operation-123'];
+
+        $first = $this->apiPost('/v2/feed/posts', $payload, $headers);
+        $replay = $this->apiPost('/v2/feed/posts', $payload, $headers);
+
+        $first->assertCreated();
+        $replay->assertOk();
+        $this->assertSame($first->json('data.id'), $replay->json('data.id'));
+        $this->assertSame(1, DB::table('feed_posts')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->where('content', 'A durable mobile group update')->count());
+        $this->assertSame(1, DB::table('feed_post_creation_receipts')->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $user->id)->count());
+
+        $this->apiPost('/v2/feed/posts', ['content' => 'Changed content'], $headers)->assertStatus(409);
+    }
+
     public function test_legacy_mention_search_returns_username_for_resolvable_mentions(): void
     {
         $this->authenticatedUser();

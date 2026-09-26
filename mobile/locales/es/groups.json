@@ -95,7 +95,8 @@
       "wiki": "Wiki",
       "tasks": "Tasks",
       "analytics": "Analytics",
-      "marketplace": "Marketplace"
+      "marketplace": "Marketplace",
+      "feed": "Actividad"
     },
     "files": {
       "title": "Archivos del grupo",
@@ -404,6 +405,16 @@
       "decisionPending": "No pudimos confirmar si se guardó la decisión. Reinténtalo para comprobarlo de forma segura.",
       "retryDecision": "Reintentar decisión",
       "recoveryUnavailable": "No se pudo restaurar la decisión pendiente sobre la solicitud. Reinténtalo antes de tomar otra decisión."
+    },
+    "feed": {
+      "title": "Actividad del grupo",
+      "subtitle": "Publicaciones y encuestas compartidas con este grupo.",
+      "joinTitle": "Únete para ver la actividad del grupo",
+      "joinSubtitle": "Las publicaciones y encuestas del grupo están disponibles para miembros activos.",
+      "createPost": "Crear publicación",
+      "createPoll": "Crear encuesta",
+      "emptyTitle": "Aún no hay publicaciones",
+      "emptySubtitle": "Inicia la conversación con una publicación o encuesta."
     }
   },
   "filter": {

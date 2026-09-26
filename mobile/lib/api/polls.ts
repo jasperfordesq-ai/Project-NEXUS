@@ -14,6 +14,8 @@ export interface CreatePollPayload {
   is_anonymous?: boolean;
   category?: string;
   expires_at?: string;
+  /** Create the poll in a group rather than the community-wide feed. */
+  group_id?: number;
 }
 
 export interface RankedPollResults {

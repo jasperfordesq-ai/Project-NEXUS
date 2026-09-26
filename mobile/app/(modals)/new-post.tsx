@@ -26,10 +26,10 @@
 
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useConfirm } from '@/components/ui/useConfirm';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, type Href } from 'expo-router';
+import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Card as HeroCard, Text } from 'heroui-native';
 import { useTranslation } from 'react-i18next';
 
@@ -38,44 +38,115 @@ import { Ionicons } from '@/components/ui/Icon';
 import { useAppToast } from '@/components/ui/AppToast';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import EmptyState from '@/components/ui/EmptyState';
+import DraftStorageWarning from '@/components/ui/DraftStorageWarning';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import { createPost, MAX_POST_LENGTH } from '@/lib/api/feed';
 import { markFeedStale } from '@/lib/feedRefreshSignal';
 import * as Haptics from '@/lib/haptics';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withAlpha } from '@/lib/utils/color';
 import { withRouteGate } from '@/components/withRouteGate';
+import { clearCreationDraft, loadCreationDraft, saveCreationDraft, type CreationDraftScope } from '@/lib/creationDraftStore';
+import { completePostCreationOperation, reservePostCreationOperation } from '@/lib/postCreationOperation';
 
 /** The counter is noise until a post is genuinely long, so it appears near the limit. */
 const COUNTER_VISIBLE_FROM = Math.floor(MAX_POST_LENGTH * 0.9);
 
 function NewPostRoute() {
+  const { tenant } = useTenant();
+  const { user } = useAuth();
+  const params = useLocalSearchParams<{ group_id?: string | string[] }>();
+  const routeGroupId = Array.isArray(params.group_id) ? params.group_id[0] : params.group_id;
   return (
     <ModalErrorBoundary>
-      <NewPostScreen />
+      <NewPostScreen key={`${tenant?.id ?? tenant?.slug ?? 'no-tenant'}:${user?.id ?? 'no-user'}:${routeGroupId ?? 'community'}`} />
     </ModalErrorBoundary>
   );
 }
 
 function NewPostScreen() {
   const { t } = useTranslation(['home', 'common']);
-  const { hasModule } = useTenant();
+  const { hasModule, tenant } = useTenant();
+  const { user } = useAuth();
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
+  const params = useLocalSearchParams<{ group_id?: string | string[] }>();
+  const rawGroupId = Array.isArray(params.group_id) ? params.group_id[0] : params.group_id;
+  const parsedGroupId = rawGroupId === undefined ? null : Number(rawGroupId);
+  const groupId = parsedGroupId !== null && Number.isInteger(parsedGroupId) && parsedGroupId > 0 ? parsedGroupId : null;
+  const invalidGroupId = rawGroupId !== undefined && groupId === null;
+  const draftScope = useMemo<CreationDraftScope>(() => ({
+    kind: 'post',
+    tenantId: tenant?.id ?? tenant?.slug ?? 'no-tenant',
+    userId: user?.id ?? 'no-user',
+    ...(groupId ? { contextId: `group:${groupId}` } : {}),
+  }), [groupId, tenant?.id, tenant?.slug, user?.id]);
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasPosted, setHasPosted] = useState(false);
+  const [draftStorageFailed, setDraftStorageFailed] = useState(false);
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
+  const draftHydratedRef = useRef(false);
+  const draftEditedRef = useRef(false);
+  const draftSaveEnabledRef = useRef(false);
+  const contentRef = useRef('');
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
   const { confirm, confirmDialog } = useConfirm();
+
+  contentRef.current = content;
+  const persistDraft = useCallback(async () => {
+    const saved = await saveCreationDraft(draftScope, { content: contentRef.current });
+    if (mountedRef.current) setDraftStorageFailed(!saved);
+    return saved;
+  }, [draftScope]);
+  const clearDraft = useCallback(async () => {
+    const cleared = await clearCreationDraft(draftScope);
+    if (mountedRef.current) setDraftStorageFailed(!cleared);
+    return cleared;
+  }, [draftScope]);
+
+  useEffect(() => {
+    let active = true;
+    draftHydratedRef.current = false;
+    setDraftStorageFailed(false);
+    void loadCreationDraft<{ content?: unknown }>(draftScope, { required: true }).then(restored => {
+      if (!active || draftEditedRef.current || typeof restored?.content !== 'string') return;
+      if (restored.content.trim()) {
+        draftSaveEnabledRef.current = true;
+        setContent(restored.content);
+      }
+    }).catch(() => {
+      if (active) setDraftStorageFailed(true);
+    }).finally(() => {
+      if (active) draftHydratedRef.current = true;
+    });
+    return () => { active = false; };
+  }, [draftScope]);
+
+  useEffect(() => {
+    if (!draftHydratedRef.current) return;
+    const timer = setTimeout(() => {
+      if (content.trim() && draftSaveEnabledRef.current) void persistDraft();
+      else void clearDraft();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [clearDraft, content, persistDraft]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active' && draftHydratedRef.current && draftSaveEnabledRef.current && contentRef.current.trim()) void persistDraft();
+    });
+    return () => subscription.remove();
+  }, [persistDraft]);
 
   const trimmed = content.trim();
 
@@ -90,6 +161,12 @@ function NewPostScreen() {
     message: t('newPost.unsavedMessage'),
     discardLabel: t('newPost.discard'),
     cancelLabel: t('common:buttons.cancel'),
+    onDiscard: async () => {
+      draftSaveEnabledRef.current = false;
+      const cleared = await clearDraft();
+      if (!cleared) draftSaveEnabledRef.current = true;
+      return cleared ? undefined : false;
+    },
   });
   const isTooLong = content.length > MAX_POST_LENGTH;
   const counter = useMemo(() => {
@@ -103,7 +180,7 @@ function NewPostScreen() {
   const feedEnabled = hasModule('feed');
 
   async function submit() {
-    if (submittingRef.current || !mountedRef.current || !feedEnabled) return;
+    if (submittingRef.current || !mountedRef.current || !feedEnabled || invalidGroupId) return;
     if (!trimmed) {
       showToast({ title: t('home:newPost.empty'), variant: 'warning' });
       return;
@@ -114,7 +191,17 @@ function NewPostScreen() {
     setIsSubmitting(true);
     let destination: Parameters<typeof router.push>[0] | null = null;
     try {
-      const created = await createPost({ content: trimmed });
+      const payload = { content: trimmed, ...(groupId ? { group_id: groupId } : {}) };
+      const operation = await reservePostCreationOperation(JSON.stringify(payload));
+      const created = await createPost(payload, operation.key);
+      draftSaveEnabledRef.current = false;
+      const cleared = await clearDraft();
+      if (!cleared) {
+        draftSaveEnabledRef.current = true;
+        showToast({ title: t('common:draftStorage.title'), description: t('common:draftStorage.message'), variant: 'warning' });
+        return;
+      }
+      await completePostCreationOperation(operation);
       if (!mountedRef.current) return;
       const id = created?.data?.id;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
@@ -159,9 +246,11 @@ function NewPostScreen() {
       <AppTopBar
         title={t('home:newPost.title')}
         backLabel={t('common:buttons.back')}
-        fallbackHref={'/(tabs)/home' as Href}
+        fallbackHref={groupId
+          ? ({ pathname: '/(modals)/group-detail', params: { id: String(groupId), tab: 'feed' } } as Href)
+          : ('/(tabs)/home' as Href)}
       />
-      {!feedEnabled ? (
+      {!feedEnabled || invalidGroupId ? (
         <View className="flex-1 px-4 py-8" style={{ flex: 1 }}>
           <EmptyState
             icon="create-outline"
@@ -204,10 +293,11 @@ function NewPostScreen() {
 
           <HeroCard variant="secondary" className="rounded-panel p-0">
             <HeroCard.Body className="gap-2 p-4">
+              <DraftStorageWarning visible={draftStorageFailed} testID="post-draft-storage-warning" />
               <TextArea
                 testID="new-post-content"
                 value={content}
-                onChangeText={setContent}
+                onChangeText={(value) => { draftEditedRef.current = true; draftSaveEnabledRef.current = true; setContent(value); }}
                 placeholder={t('home:newPost.placeholder')}
                 accessibilityLabel={t('home:newPost.placeholder')}
                 numberOfLines={8}
@@ -241,7 +331,7 @@ function NewPostScreen() {
             with a toast — the same convention as the other create screens, and it tells
             the member something rather than presenting an inert control.
           */
-          isDisabled={isTooLong}
+          isDisabled={isTooLong || invalidGroupId}
           onSubmit={() => void submit()}
           onSecondary={() => router.back()}
         />

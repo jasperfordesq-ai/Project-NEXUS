@@ -133,6 +133,7 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import GroupJoinRequestsCard from '@/components/groups/GroupJoinRequestsCard';
+import GroupFeedPanel from '@/components/groups/GroupFeedPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -165,8 +166,8 @@ import RemoteImage from '@/components/ui/RemoteImage';
 const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-type TabKey = 'overview' | 'discussion' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
-const TAB_KEYS: readonly TabKey[] = ['overview', 'discussion', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+type TabKey = 'overview' | 'feed' | 'discussion' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
+const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
 const GROUP_TAB_CONFIG_KEYS = {
   discussion: 'tab_discussion',
   members: 'tab_members',
@@ -385,7 +386,7 @@ function GroupDetailScreenInner() {
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation(['groups', 'common', 'marketplace']);
   const { user } = useAuth();
-  const { hasFeature, hasGroupTab, tenant } = useTenant();
+  const { hasFeature, hasGroupTab, hasModule, tenant } = useTenant();
   const { id, tab } = useLocalSearchParams<{ id: string; tab?: string | string[] }>();
   const primary = usePrimaryColor();
   const theme = useTheme();
@@ -411,6 +412,7 @@ function GroupDetailScreenInner() {
   const [joinRequested, setJoinRequested] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [feedRefreshToken, setFeedRefreshToken] = useState(0);
   const [showDiscussionComposer, setShowDiscussionComposer] = useState(false);
   const [discussionTitle, setDiscussionTitle] = useState('');
   const [discussionContent, setDiscussionContent] = useState('');
@@ -471,6 +473,7 @@ function GroupDetailScreenInner() {
   const canManageGroup = group?.viewer_membership?.is_admin === true;
   const isTabAvailable = (key: TabKey): boolean => {
     if (key === 'overview') return true;
+    if (key === 'feed') return hasModule('feed');
     if (key === 'marketplace') return hasFeature('marketplace');
     if (key === 'analytics' && !canManageGroup) return false;
     if (key === 'events' && !hasFeature('events')) return false;
@@ -543,13 +546,14 @@ function GroupDetailScreenInner() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     refresh();
+    if (visibleTab === 'feed') setFeedRefreshToken(value => value + 1);
     if (membersEnabled) membersApi.refresh();
     if (discussionsEnabled) discussionsApi.refresh();
     if (announcementsEnabled) announcementsApi.refresh();
     if (filesEnabled) filesApi.refresh();
     if (questionsEnabled) questionsApi.refresh();
     if (eventsEnabled) eventsApi.refresh();
-  }, [announcementsApi, announcementsEnabled, discussionsApi, discussionsEnabled, eventsApi, eventsEnabled, filesApi, filesEnabled, membersApi, membersEnabled, questionsApi, questionsEnabled, refresh]);
+  }, [announcementsApi, announcementsEnabled, discussionsApi, discussionsEnabled, eventsApi, eventsEnabled, filesApi, filesEnabled, membersApi, membersEnabled, questionsApi, questionsEnabled, refresh, visibleTab]);
 
   useEffect(() => {
     if (!isLoading && !membersApi.isLoading && !discussionsApi.isLoading && !announcementsApi.isLoading && !filesApi.isLoading && !questionsApi.isLoading && !eventsApi.isLoading) {
@@ -1089,6 +1093,7 @@ function GroupDetailScreenInner() {
 
   const tabs: { key: TabKey; label: string; icon: IoniconName }[] = [
     { key: 'overview', label: t('detail.tabs.overview'), icon: 'newspaper-outline' },
+    ...(hasModule('feed') ? [{ key: 'feed' as const, label: t('detail.tabs.feed'), icon: 'pulse-outline' as const }] : []),
     ...(hasGroupTab('tab_discussion') ? [{ key: 'discussion' as const, label: t('detail.tabs.discussion'), icon: 'chatbubble-ellipses-outline' as const }] : []),
     ...(hasGroupTab('tab_members') ? [{ key: 'members' as const, label: t('detail.tabs.members'), icon: 'people-outline' as const }] : []),
     ...(hasFeature('events') && hasGroupTab('tab_events') ? [{ key: 'events' as const, label: t('detail.tabs.events'), icon: 'calendar-outline' as const }] : []),
@@ -1304,6 +1309,10 @@ function GroupDetailScreenInner() {
               </HeroCard>
             ) : null}
           </View>
+        ) : null}
+
+        {visibleTab === 'feed' ? (
+          <GroupFeedPanel groupId={loadedGroup.id} canView={userCanSeeMemberContent} refreshToken={feedRefreshToken} />
         ) : null}
 
         {visibleTab === 'discussion' ? (

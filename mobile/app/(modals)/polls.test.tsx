@@ -358,6 +358,26 @@ describe('PollsScreen', () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it('scopes the group poll draft, read and creation to the requested group', async () => {
+    mockPollSearchParams = { create: '1', group_id: '23' };
+    const { getFeed } = require('@/lib/api/feed');
+    mockRealRead = true;
+    getFeed.mockResolvedValue({ data: [], meta: { cursor: null, has_more: false } });
+    const { getByPlaceholderText, getByText } = render(<PollsScreen />);
+
+    await waitFor(() => expect(getFeed).toHaveBeenCalledWith(1, null, expect.objectContaining({ groupId: 23 })));
+    await waitFor(() => expect(mockLoadCreationDraft).toHaveBeenCalledWith(expect.objectContaining({ contextId: 'group:23' })));
+    fireEvent.changeText(getByPlaceholderText('Ask a question'), 'Which project comes first?');
+    fireEvent.changeText(getByPlaceholderText('Option 1'), 'Garden');
+    fireEvent.changeText(getByPlaceholderText('Option 2'), 'Transport');
+    fireEvent.press(getByText('Publish poll'));
+
+    await waitFor(() => expect(createPoll).toHaveBeenCalledWith(expect.objectContaining({
+      question: 'Which project comes first?',
+      group_id: 23,
+    }), 'poll-key'));
+  });
+
   it('creates ranked anonymous polls instead of silently forcing standard named voting', async () => {
     const { getByPlaceholderText, getByText } = render(<PollsScreen />);
     fireEvent.press(getByText('Create poll'));

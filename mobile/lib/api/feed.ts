@@ -205,6 +205,8 @@ export interface FeedQueryOptions {
   mode?: FeedMode;
   subtype?: string | null;
   perPage?: number;
+  /** Restrict results to one group. The server verifies the viewer's access. */
+  groupId?: number;
 }
 
 export interface FeedResponse {
@@ -267,6 +269,9 @@ export function getFeed(page = 1, cursor?: string | null, options: Omit<FeedQuer
   }
   if (options.subtype) {
     params['subtype'] = options.subtype;
+  }
+  if (options.groupId && Number.isInteger(options.groupId) && options.groupId > 0) {
+    params['group_id'] = String(options.groupId);
   }
   if (cursor) {
     params['cursor'] = cursor;
@@ -465,9 +470,11 @@ export interface CreatedPost {
  * feed. It is only withheld when the server's spam check flags it, in which case it goes
  * to the moderation queue — so a caller must not promise the member it is visible.
  */
-export function createPost(input: CreatePostInput): Promise<{ data: CreatedPost }> {
+export function createPost(input: CreatePostInput, idempotencyKey?: string): Promise<{ data: CreatedPost }> {
   const body: Record<string, unknown> = { content: input.content };
   if (input.visibility) body['visibility'] = input.visibility;
   if (input.group_id) body['group_id'] = input.group_id;
-  return api.post<{ data: CreatedPost }>(`${API_V2}/feed/posts`, body);
+  if (idempotencyKey) body['idempotency_key'] = idempotencyKey;
+  if (!idempotencyKey) return api.post<{ data: CreatedPost }>(`${API_V2}/feed/posts`, body);
+  return api.post<{ data: CreatedPost }>(`${API_V2}/feed/posts`, body, { headers: { 'Idempotency-Key': idempotencyKey } });
 }

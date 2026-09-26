@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Group pages in the mobile app now include their own Feed, with member-only, paginated posts and polls plus group-bound post and poll creation.
+
 - The mobile app's Help centre now includes the full step-by-step members' guides, read inside the app rather than in a browser. Topics for features a community has switched off are hidden, search covers the guides as well as the community's own questions, and links to a members' guide on the website open the same guide in the app. The guide text comes from the website, so it is in the member's language (English where a translation is missing) and stays up to date without an app release. A short note explains that the guides describe the website, where some buttons sit in different places. Needs an app release to reach members.
 
 - A complete Help Centre is now built into the app, written in plain English: three guides with 295 step-by-step articles, for members (31 topics), for brokers and coordinators (8 topics) and for community admins (10 topics). Guides for features a community has switched off are hidden, search works in every language (including Japanese, which is written without spaces), and each article links straight to the page it describes. The Broker Panel's help page now shows the broker guide, replacing the old page, which wrongly said that every view of a member's messages is logged; the admin panel's help page now links to the admin guide. Available in all eleven languages. The ten non-English versions were drafted by AI and have not yet been reviewed by a native speaker; where the app's own button labels are mistranslated, the guides quote them as they appear on screen so readers can find them.
@@ -35,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed
+
+- Creating a feed post in the mobile app now preserves the exact account, community, group and text across a lost response or app restart. An exact retry returns the original post instead of creating a duplicate, while changed content under the same protected request is rejected.
 
 - Starting a group discussion in the mobile app now stores the exact draft and protected request in encrypted device storage before sending. After a lost response or app restart, the member must explicitly retry the restored discussion; changed content cannot replace the unresolved request, and unavailable recovery blocks a new post.
 

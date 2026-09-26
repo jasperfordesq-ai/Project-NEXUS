@@ -95,7 +95,8 @@
       "wiki": "Wiki",
       "tasks": "Tasks",
       "analytics": "Analytics",
-      "marketplace": "Marketplace"
+      "marketplace": "Marketplace",
+      "feed": "Feed"
     },
     "files": {
       "title": "File del gruppo",
@@ -404,6 +405,16 @@
       "decisionPending": "Non è stato possibile confermare se la decisione è stata salvata. Riprova per verificarlo in sicurezza.",
       "retryDecision": "Riprova decisione",
       "recoveryUnavailable": "Non è stato possibile ripristinare la decisione incompleta sulla richiesta di adesione. Riprova prima di prendere un'altra decisione."
+    },
+    "feed": {
+      "title": "Feed del gruppo",
+      "subtitle": "Post e sondaggi condivisi con questo gruppo.",
+      "joinTitle": "Unisciti per vedere il feed del gruppo",
+      "joinSubtitle": "I post e i sondaggi del gruppo sono disponibili per i membri attivi.",
+      "createPost": "Crea post",
+      "createPoll": "Crea sondaggio",
+      "emptyTitle": "Ancora nessun post del gruppo",
+      "emptySubtitle": "Avvia la conversazione con un post o un sondaggio."
     }
   },
   "filter": {

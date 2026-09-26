@@ -11,6 +11,7 @@ use App\Services\CommentService;
 use App\Services\FeedActivityService;
 use App\Services\FeedRankingService;
 use App\Services\FeedService;
+use App\Services\FeedPostCreationReceiptService;
 use App\Services\LinkPreviewService;
 use App\Services\PersonalisedFeedService;
 use App\Services\PollService;
@@ -452,6 +453,13 @@ class SocialController extends BaseApiController
         $this->rateLimit('feed_create', 20, 60);
 
         $data = $this->getAllInput();
+        $identity = $this->postCreationIdentity($data);
+        if ($identity === false) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
+        if ($identity !== null && (request()->hasFile('image') || request()->hasFile('media'))) {
+            return $this->respondWithError('VALIDATION_FAILED', __('api.invalid_input'), 'idempotency_key', 422);
+        }
 
         try {
             FeedService::assertMentionContactsAllowed(
@@ -471,9 +479,17 @@ class SocialController extends BaseApiController
         }
 
         try {
-            $postObj = $this->feedService->createPost($userId, $data);
+            $creation = $identity === null
+                ? ['post' => $this->feedService->createPost($userId, $data), 'replayed' => false]
+                : FeedPostCreationReceiptService::create($userId, $identity, fn () => $this->feedService->createPost($userId, $data));
+            $postObj = $creation['post'];
         } catch (\InvalidArgumentException $e) {
+            if (str_contains($e->getMessage(), 'Idempotency')) {
+                return $this->respondWithError('IDEMPOTENCY_CONFLICT', __('api.invalid_input'), 'idempotency_key', 409);
+            }
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\DomainException) {
+            return $this->respondWithError('IDEMPOTENCY_RESULT_GONE', __('api.invalid_input'), 'idempotency_key', 409);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -500,7 +516,7 @@ class SocialController extends BaseApiController
 
         // Handle multi-image uploads (media[] or image_0, image_1, etc.)
         $mediaFiles = $this->collectMediaFiles();
-        if (!empty($mediaFiles)) {
+        if (! $creation['replayed'] && !empty($mediaFiles)) {
             $altTexts = request()->input('alt_texts', []);
             $this->postMediaService->attachMedia($postId, $mediaFiles, is_array($altTexts) ? $altTexts : []);
         }
@@ -509,7 +525,7 @@ class SocialController extends BaseApiController
         $linkPreviews = [];
         try {
             $content = $data['content'] ?? '';
-            if ($content) {
+            if (! $creation['replayed'] && $content) {
                 $linkPreviewService = app(LinkPreviewService::class);
                 $linkPreviews = $linkPreviewService->processPostUrls($postId, $content);
             }
@@ -531,7 +547,19 @@ class SocialController extends BaseApiController
             $post['link_previews'] = $linkPreviews;
         }
 
-        return $this->respondWithData($post, null, 201);
+        return $this->respondWithData($post, null, $creation['replayed'] ? 200 : 201);
+    }
+
+    /** @return array{key_hash:string,request_hash:string}|null|false */
+    private function postCreationIdentity(array $intent): array|null|false
+    {
+        $header = request()->header('Idempotency-Key');
+        $body = $intent['idempotency_key'] ?? request()->input('idempotency_key');
+        if ($header !== null && $body !== null && ! hash_equals(trim((string) $header), trim((string) $body))) {
+            return false;
+        }
+        unset($intent['idempotency_key']);
+        return FeedPostCreationReceiptService::identity($header ?? $body, $intent);
     }
 
     /**

@@ -53,7 +53,8 @@
       "members": "Baill",
       "events": "Imeachtaí",
       "announcements": "Fógraí",
-      "marketplace": "Áit mhargaidh"
+      "marketplace": "Áit mhargaidh",
+      "feed": "Fotha"
     },
     "files": {
       "title": "Comhaid an ghrúpa",
@@ -395,6 +396,16 @@
       "decisionPending": "Níorbh fhéidir linn a dheimhniú ar sábháladh an cinneadh sin. Bain triail eile as chun é a sheiceáil go sábháilte.",
       "retryDecision": "Bain triail eile as an gcinneadh",
       "recoveryUnavailable": "Níorbh fhéidir do chinneadh neamhchríochnaithe faoin iarratas ballraíochta a athchóiriú. Bain triail eile as sula ndéanfaidh tú cinneadh eile."
+    },
+    "feed": {
+      "title": "Fotha an ghrúpa",
+      "subtitle": "Postálacha agus pobalbhreitheanna a roinneadh leis an ngrúpa seo.",
+      "joinTitle": "Glac páirt chun fotha an ghrúpa a fheiceáil",
+      "joinSubtitle": "Tá postálacha agus pobalbhreitheanna an ghrúpa ar fáil do bhaill ghníomhacha.",
+      "createPost": "Cruthaigh postáil",
+      "createPoll": "Cruthaigh pobalbhreith",
+      "emptyTitle": "Níl aon phostálacha grúpa fós",
+      "emptySubtitle": "Cuir tús leis an gcomhrá le postáil nó pobalbhreith."
     }
   },
   "create": {

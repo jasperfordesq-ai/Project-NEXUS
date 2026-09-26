@@ -20,7 +20,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import { api } from '@/lib/api/client';
-import { getFeed, getFeedAuthor, toggleBookmark, toggleLike } from './feed';
+import { createPost, getFeed, getFeedAuthor, toggleBookmark, toggleLike } from './feed';
 import type { FeedResponse, FeedItem } from './feed';
 
 const mockFeedItem: FeedItem = {
@@ -88,6 +88,17 @@ describe('getFeed', () => {
     expect(params).not.toHaveProperty('cursor');
   });
 
+  it('sends the exact group filter for a group feed read', async () => {
+    (api.get as jest.Mock).mockResolvedValue(mockFeedResponse);
+    await getFeed(1, 'group-cursor', { groupId: 23, mode: 'recent' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/feed', expect.objectContaining({
+      group_id: '23',
+      cursor: 'group-cursor',
+      mode: 'chronological',
+      personalised: 'false',
+    }));
+  });
+
   it('returns the correct meta cursor from the response', async () => {
     (api.get as jest.Mock).mockResolvedValue(mockFeedResponse);
     const result = await getFeed();
@@ -139,6 +150,18 @@ describe('getFeedAuthor', () => {
       name: 'Nora Blake',
       avatar: '/avatars/nora.png',
     });
+  });
+});
+
+describe('createPost', () => {
+  it('sends the durable key in the body and header with the group intent', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 88 } });
+    await createPost({ content: 'Group update', group_id: 23 }, 'post-operation-123');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/feed/posts', {
+      content: 'Group update',
+      group_id: 23,
+      idempotency_key: 'post-operation-123',
+    }, { headers: { 'Idempotency-Key': 'post-operation-123' } });
   });
 });
 
