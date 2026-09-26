@@ -208,6 +208,18 @@
       "status": "native",
       "mobile": "support"
     },
+    "help/:audience": {
+      "status": "native",
+      "mobile": "help-faqs"
+    },
+    "help/:audience/:sectionId": {
+      "status": "native",
+      "mobile": "help-guide"
+    },
+    "help/:audience/:sectionId/:articleId": {
+      "status": "native",
+      "mobile": "help-guide"
+    },
     "ideation": {
       "status": "native",
       "mobile": "ideation"
