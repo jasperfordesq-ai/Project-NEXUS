@@ -135,6 +135,9 @@
       "uploadPhoto": "Subir foto",
       "uploadVideo": "Subir vídeo",
       "uploadError": "No se pudo subir el contenido multimedia.",
+      "recoveryError": "No se pudo restaurar la carga multimedia sin terminar.",
+      "recoveryNotice": "Se restauró una carga multimedia sin terminar. Vuelve a intentarlo antes de seleccionar otro archivo.",
+      "retryUpload": "Reintentar carga",
       "permissionTitle": "Se necesita acceso a la fototeca",
       "permissionMessage": "Permite el acceso a la fototeca para compartir contenido multimedia con el grupo.",
       "filters": {

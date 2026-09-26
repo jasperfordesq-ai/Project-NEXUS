@@ -93,6 +93,9 @@
       "uploadPhoto": "Uaslódáil grianghraf",
       "uploadVideo": "Uaslódáil físeán",
       "uploadError": "Níorbh fhéidir na meáin a uaslódáil.",
+      "recoveryError": "Níorbh fhéidir an t-uaslódáil meán neamhchríochnaithe a athbhunú.",
+      "recoveryNotice": "Athbhunaíodh uaslódáil meán neamhchríochnaithe. Bain triail eile as sula roghnaíonn tú comhad eile.",
+      "retryUpload": "Bain triail eile as an uaslódáil",
       "permissionTitle": "Tá rochtain ar an leabharlann grianghraf ag teastáil",
       "permissionMessage": "Ceadaigh rochtain ar an leabharlann grianghraf chun meáin a roinnt leis an ngrúpa.",
       "filters": {

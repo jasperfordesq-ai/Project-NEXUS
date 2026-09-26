@@ -135,6 +135,9 @@
       "uploadPhoto": "Upload photo",
       "uploadVideo": "Upload video",
       "uploadError": "Could not upload media.",
+      "recoveryError": "Could not restore the unfinished media upload.",
+      "recoveryNotice": "An unfinished media upload was restored. Retry it before selecting another file.",
+      "retryUpload": "Retry upload",
       "permissionTitle": "Photo library access needed",
       "permissionMessage": "Allow photo library access to share group media.",
       "filters": {

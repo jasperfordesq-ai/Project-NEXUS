@@ -135,6 +135,9 @@
       "uploadPhoto": "Importer une photo",
       "uploadVideo": "Importer une vidéo",
       "uploadError": "Impossible d’importer le média.",
+      "recoveryError": "Impossible de restaurer l’importation de média inachevée.",
+      "recoveryNotice": "Une importation de média inachevée a été restaurée. Réessayez avant de sélectionner un autre fichier.",
+      "retryUpload": "Réessayer l’importation",
       "permissionTitle": "Accès à la photothèque requis",
       "permissionMessage": "Autorisez l’accès à la photothèque pour partager des médias avec le groupe.",
       "filters": {

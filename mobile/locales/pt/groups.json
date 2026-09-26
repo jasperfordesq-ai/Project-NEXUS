@@ -135,6 +135,9 @@
       "uploadPhoto": "Carregar fotografia",
       "uploadVideo": "Carregar vídeo",
       "uploadError": "Não foi possível carregar o conteúdo multimédia.",
+      "recoveryError": "Não foi possível restaurar o carregamento multimédia inacabado.",
+      "recoveryNotice": "Foi restaurado um carregamento multimédia inacabado. Tente novamente antes de selecionar outro ficheiro.",
+      "retryUpload": "Tentar carregar novamente",
       "permissionTitle": "É necessário acesso à biblioteca de fotografias",
       "permissionMessage": "Permita o acesso à biblioteca de fotografias para partilhar conteúdos multimédia no grupo.",
       "filters": {

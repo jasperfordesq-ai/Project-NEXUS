@@ -135,6 +135,9 @@
       "uploadPhoto": "Foto hochladen",
       "uploadVideo": "Video hochladen",
       "uploadError": "Das Medium konnte nicht hochgeladen werden.",
+      "recoveryError": "Der nicht abgeschlossene Medien-Upload konnte nicht wiederhergestellt werden.",
+      "recoveryNotice": "Ein nicht abgeschlossener Medien-Upload wurde wiederhergestellt. Versuche ihn erneut, bevor du eine andere Datei auswählst.",
+      "retryUpload": "Upload erneut versuchen",
       "permissionTitle": "Zugriff auf die Fotomediathek erforderlich",
       "permissionMessage": "Erlaube den Zugriff auf die Fotomediathek, um Gruppenmedien zu teilen.",
       "filters": {

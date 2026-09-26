@@ -123,6 +123,9 @@ jest.mock('react-i18next', () => ({
         'detail.media.uploadPhoto': 'Upload photo',
         'detail.media.uploadVideo': 'Upload video',
         'detail.media.uploadError': 'Could not upload media.',
+        'detail.media.recoveryError': 'Could not restore the unfinished media upload.',
+        'detail.media.recoveryNotice': 'An unfinished media upload was restored. Retry it before selecting another file.',
+        'detail.media.retryUpload': 'Retry upload',
         'detail.media.permissionTitle': 'Photo library access needed',
         'detail.media.permissionMessage': 'Allow photo library access.',
         'detail.media.filters.all': 'All',
@@ -520,6 +523,12 @@ jest.mock('@/lib/groupContentCreationOperation', () => ({
   discardGroupContentCreationOperation: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/lib/groupMediaDraftAsset', () => ({
+  retainGroupMediaDraftAsset: jest.fn(),
+  verifyGroupMediaDraftAsset: jest.fn().mockResolvedValue(undefined),
+  removeGroupMediaDraftAsset: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
@@ -615,6 +624,11 @@ import {
   loadGroupContentCreationOperation,
   reserveGroupContentCreationOperation,
 } from '@/lib/groupContentCreationOperation';
+import {
+  removeGroupMediaDraftAsset,
+  retainGroupMediaDraftAsset,
+  verifyGroupMediaDraftAsset,
+} from '@/lib/groupMediaDraftAsset';
 
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
 
@@ -657,6 +671,16 @@ beforeEach(() => {
   }) as never);
   jest.mocked(completeGroupContentCreationOperation).mockResolvedValue(undefined);
   jest.mocked(discardGroupContentCreationOperation).mockResolvedValue(undefined);
+  jest.mocked(retainGroupMediaDraftAsset).mockResolvedValue({
+    type: 'image',
+    uri: 'file:///documents/group-media-operations-v1/group-media.jpg',
+    fileName: 'group-media.jpg',
+    mimeType: 'image/jpeg',
+    size: 123,
+    md5: 'a'.repeat(32),
+  });
+  jest.mocked(verifyGroupMediaDraftAsset).mockResolvedValue(undefined);
+  jest.mocked(removeGroupMediaDraftAsset).mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -1755,6 +1779,8 @@ describe('GroupDetailScreen', () => {
     const { getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Media'));
+    await waitFor(() => expect(loadGroupContentCreationOperation).toHaveBeenCalledWith(1, 'gallery-media'));
+    await act(async () => {});
     act(() => {
       fireEvent.press(getByText('Upload photo'));
       fireEvent.press(getByText('Upload photo'));
@@ -1765,7 +1791,7 @@ describe('GroupDetailScreen', () => {
         mediaTypes: ['images'],
       }));
       expect(uploadGroupMedia).toHaveBeenCalledWith(1, expect.objectContaining({
-        uri: 'file:///tmp/group-media.jpg',
+        uri: 'file:///documents/group-media-operations-v1/group-media.jpg',
         fileName: 'group-media.jpg',
         mimeType: 'image/jpeg',
       }), expect.any(String));
@@ -1773,6 +1799,51 @@ describe('GroupDetailScreen', () => {
       expect(uploadGroupMedia).toHaveBeenCalledTimes(1);
     });
     expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
+  });
+
+  it('restores an unfinished gallery upload and retries its exact managed snapshot and key', async () => {
+    const pending = {
+      storageKey: 'saved-group-content',
+      key: 'restored-gallery-key',
+      groupId: 1,
+      kind: 'gallery-media' as const,
+      intent: 'saved-gallery-intent',
+      payload: {
+        type: 'video' as const,
+        uri: 'file:///documents/group-media-operations-v1/saved-video.mp4',
+        fileName: 'saved-video.mp4',
+        mimeType: 'video/mp4',
+        size: 456,
+        md5: 'b'.repeat(32),
+      },
+      createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockImplementation(async (_groupId, kind) => (
+      kind === 'gallery-media' ? pending : null
+    ) as never);
+    jest.mocked(getGroupMedia).mockResolvedValue({ data: { items: [], cursor: null, has_more: false } });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Media'));
+    await screen.findByText('An unfinished media upload was restored. Retry it before selecting another file.');
+    expect(screen.getByText('saved-video.mp4')).toBeTruthy();
+    fireEvent.press(screen.getByText('Retry upload'));
+
+    await waitFor(() => expect(uploadGroupMedia).toHaveBeenCalledWith(1, {
+      uri: pending.payload.uri,
+      fileName: pending.payload.fileName,
+      mimeType: pending.payload.mimeType,
+    }, pending.key));
+    expect(verifyGroupMediaDraftAsset).toHaveBeenCalledWith(pending.payload);
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
+    expect(removeGroupMediaDraftAsset).toHaveBeenCalledWith(pending.payload.uri);
+    expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
   });
 
   it.each([false, true])('publishes questions with an initial rejection: %s', async (rejectFirst) => {

@@ -63,6 +63,25 @@ describe('group content creation operation', () => {
     })).rejects.toThrow('pending group discussion');
   });
 
+  it('binds gallery recovery to the exact managed file metadata and digest', async () => {
+    const media = {
+      type: 'image' as const,
+      uri: 'file:///documents/group-media-operations-v1/photo.jpg',
+      fileName: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      size: 123,
+      md5: 'A'.repeat(32),
+    };
+    const first = await reserveGroupContentCreationOperation(9, 'gallery-media', media);
+    expect(first.payload.md5).toBe('a'.repeat(32));
+    jest.mocked(loadCreationDraft).mockResolvedValue(first);
+
+    await expect(reserveGroupContentCreationOperation(9, 'gallery-media', {
+      ...media,
+      md5: 'b'.repeat(32),
+    })).rejects.toThrow('pending group gallery-media');
+  });
+
   it('blocks transport when encrypted persistence fails', async () => {
     jest.mocked(saveCreationDraft).mockResolvedValueOnce(false);
     await expect(reserveGroupContentCreationOperation(9, 'discussion', discussion))

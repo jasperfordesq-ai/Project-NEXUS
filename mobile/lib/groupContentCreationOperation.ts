@@ -14,7 +14,7 @@ import {
 } from '@/lib/creationDraftStore';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
-export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page';
+export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media';
 
 export interface GroupContentCreationPayloads {
   discussion: { title: string; content: string };
@@ -22,6 +22,14 @@ export interface GroupContentCreationPayloads {
   question: { title: string; body: string };
   answer: { questionId: number; body: string };
   'wiki-page': { title: string; content: string; parent_id: number | null };
+  'gallery-media': {
+    type: 'image' | 'video';
+    uri: string;
+    fileName: string;
+    mimeType: string | null;
+    size: number;
+    md5: string | null;
+  };
 }
 
 export interface GroupContentCreationOperation<K extends GroupContentCreationKind = GroupContentCreationKind> {
@@ -78,6 +86,25 @@ function normalizePayload<K extends GroupContentCreationKind>(
         throw new Error('Invalid group content creation payload');
       }
       normalized = { title: requiredText(raw.title), content: requiredText(raw.content), parent_id: parentId };
+      break;
+    }
+    case 'gallery-media': {
+      const size = Number(raw.size);
+      const mimeType = raw.mimeType === null || raw.mimeType === undefined ? null : requiredText(raw.mimeType);
+      const md5 = raw.md5 === null || raw.md5 === undefined ? null : requiredText(raw.md5).toLowerCase();
+      if ((raw.type !== 'image' && raw.type !== 'video')
+        || !Number.isFinite(size) || size < 0
+        || (md5 !== null && !/^[a-f0-9]{32}$/.test(md5))) {
+        throw new Error('Invalid group content creation payload');
+      }
+      normalized = {
+        type: raw.type,
+        uri: requiredText(raw.uri),
+        fileName: requiredText(raw.fileName),
+        mimeType,
+        size,
+        md5,
+      };
       break;
     }
   }

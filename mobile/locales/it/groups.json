@@ -135,6 +135,9 @@
       "uploadPhoto": "Carica foto",
       "uploadVideo": "Carica video",
       "uploadError": "Impossibile caricare il contenuto multimediale.",
+      "recoveryError": "Impossibile ripristinare il caricamento multimediale non completato.",
+      "recoveryNotice": "È stato ripristinato un caricamento multimediale non completato. Riprova prima di selezionare un altro file.",
+      "retryUpload": "Riprova il caricamento",
       "permissionTitle": "È necessario accedere alla libreria foto",
       "permissionMessage": "Consenti l’accesso alla libreria foto per condividere contenuti multimediali nel gruppo.",
       "filters": {

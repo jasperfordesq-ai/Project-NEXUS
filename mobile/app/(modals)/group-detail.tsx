@@ -23,6 +23,11 @@ import {
   reserveGroupContentCreationOperation,
   type GroupContentCreationOperation,
 } from '@/lib/groupContentCreationOperation';
+import {
+  removeGroupMediaDraftAsset,
+  retainGroupMediaDraftAsset,
+  verifyGroupMediaDraftAsset,
+} from '@/lib/groupMediaDraftAsset';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -156,7 +161,6 @@ import { formatDecimal } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
-import { mutationAttemptFor, type MutationAttempt } from '@/lib/utils/idempotencyKey';
 
 const CARD_MIN_HEIGHT = 118;
 
@@ -2134,6 +2138,9 @@ function GroupMediaPanel({
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [uploadingMediaType, setUploadingMediaType] = useState<GroupMediaType | null>(null);
+  const [isRestoringUpload, setIsRestoringUpload] = useState(false);
+  const [uploadRecoveryError, setUploadRecoveryError] = useState<string | null>(null);
+  const [pendingUploadOperation, setPendingUploadOperation] = useState<GroupContentCreationOperation<'gallery-media'> | null>(null);
   /* 🔴 The gallery showed the first twenty items and stopped, though the endpoint has
      always answered with a cursor. Audit 2026-09-07. */
   const [cursor, setCursor] = useState<string | null>(null);
@@ -2142,7 +2149,7 @@ function GroupMediaPanel({
   const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
   const loadVersionRef = useRef(0);
   const loadMorePendingRef = useRef(false);
-  const uploadAttemptRef = useRef<MutationAttempt | null>(null);
+  const uploadRestoreVersionRef = useRef(0);
   const [mediaLoadError, setMediaLoadError] = useState<string | null>(null);
   const mediaPageRef = useRef({ cursor, hasMore, filter, isLoading });
   mediaPageRef.current = { cursor, hasMore, filter, isLoading };
@@ -2186,6 +2193,38 @@ function GroupMediaPanel({
     void loadMedia();
   }, [loadMedia]);
 
+  const restoreUploadOperation = useCallback(async () => {
+    const version = ++uploadRestoreVersionRef.current;
+    setIsRestoringUpload(true);
+    setUploadRecoveryError(null);
+    setPendingUploadOperation(null);
+    if (!canView) {
+      setIsRestoringUpload(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(groupId, 'gallery-media');
+      if (!isMountedRef.current || version !== uploadRestoreVersionRef.current) return;
+      if (operation) {
+        await verifyGroupMediaDraftAsset(operation.payload);
+        if (!isMountedRef.current || version !== uploadRestoreVersionRef.current) return;
+        setPendingUploadOperation(operation);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== uploadRestoreVersionRef.current) return;
+      setUploadRecoveryError(describeApiError(err, t('detail.media.recoveryError')));
+    } finally {
+      if (isMountedRef.current && version === uploadRestoreVersionRef.current) setIsRestoringUpload(false);
+    }
+  // Recovery is scoped by the encrypted operation store; i18n identity must not restart it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView, groupId]);
+
+  useEffect(() => {
+    void restoreUploadOperation();
+    return () => { uploadRestoreVersionRef.current += 1; };
+  }, [restoreUploadOperation]);
+
   function openMedia(item: GroupMediaItem) {
     const url = item.url ?? item.thumbnail_url;
     void openExternal(resolveImageUrl(url) ?? url);
@@ -2219,8 +2258,49 @@ function GroupMediaPanel({
     });
   }
 
+  async function performMediaUpload(operation: GroupContentCreationOperation<'gallery-media'>) {
+    setUploadingMediaType(operation.payload.type);
+    await verifyGroupMediaDraftAsset(operation.payload);
+    await uploadGroupMedia(groupId, {
+      uri: operation.payload.uri,
+      fileName: operation.payload.fileName,
+      mimeType: operation.payload.mimeType ?? undefined,
+    }, operation.key);
+    await completeGroupContentCreationOperation(operation);
+    if (isMountedRef.current) setPendingUploadOperation(null);
+    await removeGroupMediaDraftAsset(operation.payload.uri).catch(() => undefined);
+    if (!isMountedRef.current) return;
+    await loadMedia();
+    if (!isMountedRef.current) return;
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }
+
+  async function handleMediaUploadError(
+    err: unknown,
+    operation: GroupContentCreationOperation<'gallery-media'> | null,
+  ) {
+    let displayError = err;
+    const definitelyRejected = err instanceof ApiResponseError
+      && (err.operationOutcome === 'not_applied'
+        || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+    if (operation && definitelyRejected) {
+      try {
+        await discardGroupContentCreationOperation(operation);
+        await removeGroupMediaDraftAsset(operation.payload.uri).catch(() => undefined);
+        if (isMountedRef.current) setPendingUploadOperation(null);
+      } catch (cleanupError) {
+        displayError = cleanupError;
+      }
+    }
+    if (!isMountedRef.current) return;
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.media.uploadError')), variant: 'danger' });
+  }
+
   async function pickMedia(type: GroupMediaType) {
     if (!beginMutation()) return;
+    let retainedUri: string | null = null;
+    let operation: GroupContentCreationOperation<'gallery-media'> | null = null;
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: type === 'video' ? ['videos'] : ['images'],
@@ -2236,28 +2316,32 @@ function GroupMediaPanel({
       // Photos are shrunk before upload; a video is passed through untouched.
       const prepared = type === 'video' ? asset : await prepareImageForUpload(asset);
       if (!isMountedRef.current) return;
-      const fingerprint = JSON.stringify({
-        groupId,
+      const retained = await retainGroupMediaDraftAsset({
         type,
-        uri: prepared.uri,
-        fileName: asset.fileName ?? null,
-        mimeType: asset.mimeType ?? null,
-      });
-      uploadAttemptRef.current = mutationAttemptFor(uploadAttemptRef.current, fingerprint, 'group-media');
-      await uploadGroupMedia(groupId, {
         uri: prepared.uri,
         fileName: asset.fileName,
         mimeType: asset.mimeType,
-      }, uploadAttemptRef.current.key);
+      });
+      retainedUri = retained.uri;
+      operation = await reserveGroupContentCreationOperation(groupId, 'gallery-media', retained);
       if (!isMountedRef.current) return;
-      uploadAttemptRef.current = null;
-      await loadMedia();
-      if (!isMountedRef.current) return;
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setPendingUploadOperation(operation);
+      await performMediaUpload(operation);
     } catch (err) {
-      if (!isMountedRef.current) return;
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.media.uploadError')), variant: 'danger' });
+      if (retainedUri && !operation) await removeGroupMediaDraftAsset(retainedUri).catch(() => undefined);
+      await handleMediaUploadError(err, operation);
+    } finally {
+      finishMutation();
+      if (isMountedRef.current) setUploadingMediaType(null);
+    }
+  }
+
+  async function retryPendingUpload() {
+    if (!pendingUploadOperation || !beginMutation()) return;
+    try {
+      await performMediaUpload(pendingUploadOperation);
+    } catch (err) {
+      await handleMediaUploadError(err, pendingUploadOperation);
     } finally {
       finishMutation();
       if (isMountedRef.current) setUploadingMediaType(null);
@@ -2298,17 +2382,37 @@ function GroupMediaPanel({
             ))}
           </View>
           <View className="flex-row flex-wrap gap-2">
-            <HeroButton size="sm" variant="secondary" isDisabled={uploadingMediaType !== null} onPress={() => void pickMedia('image')}>
+            <HeroButton size="sm" variant="secondary" isDisabled={uploadingMediaType !== null || isRestoringUpload || Boolean(uploadRecoveryError) || Boolean(pendingUploadOperation)} onPress={() => void pickMedia('image')}>
               {uploadingMediaType === 'image' ? <Spinner size="sm" /> : <Ionicons name="image-outline" size={16} color={primary} />}
               <HeroButton.Label>{t('detail.media.uploadPhoto')}</HeroButton.Label>
             </HeroButton>
-            <HeroButton size="sm" variant="secondary" isDisabled={uploadingMediaType !== null} onPress={() => void pickMedia('video')}>
+            <HeroButton size="sm" variant="secondary" isDisabled={uploadingMediaType !== null || isRestoringUpload || Boolean(uploadRecoveryError) || Boolean(pendingUploadOperation)} onPress={() => void pickMedia('video')}>
               {uploadingMediaType === 'video' ? <Spinner size="sm" /> : <Ionicons name="film-outline" size={16} color={primary} />}
               <HeroButton.Label>{t('detail.media.uploadVideo')}</HeroButton.Label>
             </HeroButton>
           </View>
+          {pendingUploadOperation ? (
+            <View className="gap-2" testID="group-media-recovery-card">
+              <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.textSecondary }}>{t('detail.media.recoveryNotice')}</Text>
+              <Text className="text-sm font-semibold" style={{ color: theme.text }}>{pendingUploadOperation.payload.fileName}</Text>
+              <HeroButton size="sm" variant="primary" isDisabled={uploadingMediaType !== null} onPress={() => void retryPendingUpload()}>
+                {uploadingMediaType ? <Spinner size="sm" /> : <HeroButton.Label>{t('detail.media.retryUpload')}</HeroButton.Label>}
+              </HeroButton>
+            </View>
+          ) : null}
         </HeroCard.Body>
       </HeroCard>
+
+      {uploadRecoveryError ? (
+        <HeroCard className="rounded-panel p-0" testID="group-media-recovery-error">
+          <HeroCard.Body className="gap-2 p-4">
+            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{uploadRecoveryError}</Text>
+            <HeroButton size="sm" variant="secondary" isDisabled={isRestoringUpload} onPress={() => void restoreUploadOperation()}>
+              {isRestoringUpload ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
 
       {isLoading ? (
         <HeroCard className="rounded-panel p-0">
