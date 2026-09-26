@@ -406,6 +406,17 @@
       "retryDecision": "Retry decision",
       "recoveryUnavailable": "Your unfinished join-request decision could not be restored. Retry before making another decision."
     },
+    "notifications": {
+      "title": "Notification preferences",
+      "frequencyLabel": "Notification frequency",
+      "instant": "Instant",
+      "digest": "Digest",
+      "muted": "Muted",
+      "email": "Email notifications",
+      "push": "Push notifications",
+      "saved": "Notification preferences saved",
+      "saveFailed": "Could not save notification preferences."
+    },
     "feed": {
       "title": "Group feed",
       "subtitle": "Posts and polls shared with this group.",

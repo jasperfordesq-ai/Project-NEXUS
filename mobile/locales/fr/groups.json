@@ -406,6 +406,17 @@
       "retryDecision": "Réessayer la décision",
       "recoveryUnavailable": "Votre décision inachevée concernant la demande d'adhésion n'a pas pu être restaurée. Réessayez avant de prendre une autre décision."
     },
+    "notifications": {
+      "title": "Préférences de notifications",
+      "frequencyLabel": "Fréquence des notifications",
+      "instant": "Instantané",
+      "digest": "Résumé",
+      "muted": "Muet",
+      "email": "Notifications par e-mail",
+      "push": "Notifications push",
+      "saved": "Préférences de notifications enregistrées",
+      "saveFailed": "Impossible d’enregistrer les préférences de notifications."
+    },
     "feed": {
       "title": "Fil du groupe",
       "subtitle": "Publications et sondages partagés avec ce groupe.",

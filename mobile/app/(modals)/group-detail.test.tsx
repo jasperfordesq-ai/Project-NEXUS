@@ -422,6 +422,13 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
 }));
 
+jest.mock('@/components/groups/GroupNotificationPreferencesCard', () => {
+  const { View } = require('react-native');
+  return ({ groupId, refreshToken }: { groupId: number; refreshToken: number }) => (
+    <View testID="group-notification-preferences" accessibilityLabel={`${groupId}:${refreshToken}`} />
+  );
+});
+
 jest.mock('@/lib/api/groups', () => ({
   getGroup: jest.fn(),
   getGroupJoinRequests: jest.fn().mockResolvedValue({ data: [] }),
@@ -774,6 +781,27 @@ describe('GroupDetailScreen', () => {
     ]);
     expect(mockUseApi.mock.calls.some((call) => call[2]?.enabled === false)).toBe(true);
   });
+
+  it('shows per-group notification controls only to an active member', () => {
+    mockRouteParams = { id: '1', tab: 'overview' };
+    const renderForMembership = (isMember: boolean) => {
+      mockUseApi.mockReturnValue({
+        data: { data: { ...mockGroupDetail, is_member: isMember } },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      });
+      return render(<GroupDetailScreen />);
+    };
+
+    const member = renderForMembership(true);
+    expect(member.getByTestId('group-notification-preferences')).toBeTruthy();
+    member.unmount();
+
+    const outsider = renderForMembership(false);
+    expect(outsider.queryByTestId('group-notification-preferences')).toBeNull();
+  });
+
   it('names who runs the group, from the creator the server actually sends', () => {
     // 🔴 The load-bearing case. `GroupDetail.admin` was declared required and is not in the
     // response, so `group.admin ? …` was always false and this whole card vanished — a

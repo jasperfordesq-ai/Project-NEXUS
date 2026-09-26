@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Group members can now control group-specific notification frequency, email delivery and push delivery from the native app. Failed reads do not expose guessed defaults, and failed saves keep edited choices available for retry.
+
 - Group pages in the mobile app now include their own Feed, with member-only, paginated posts and polls plus group-bound post and poll creation.
 
 - The mobile app's Help centre now includes the full step-by-step members' guides, read inside the app rather than in a browser. Topics for features a community has switched off are hidden, search covers the guides as well as the community's own questions, and links to a members' guide on the website open the same guide in the app. The guide text comes from the website, so it is in the member's language (English where a translation is missing) and stays up to date without an app release. A short note explains that the guides describe the website, where some buttons sit in different places. Needs an app release to reach members.

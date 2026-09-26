@@ -53,6 +53,15 @@ export interface GroupDetail extends Group {
   } | null;
 }
 
+export type GroupNotificationFrequency = 'instant' | 'digest' | 'muted';
+
+export interface GroupNotificationPreferences {
+  frequency: GroupNotificationFrequency;
+  email_enabled: boolean;
+  push_enabled: boolean;
+  updated_at: string | null;
+}
+
 export interface GroupMemberListItem extends GroupMember {
   role: 'owner' | 'admin' | 'member' | string;
   joined_at: string | null;
@@ -430,6 +439,43 @@ export function getGroups(
  */
 export function getGroup(id: number): Promise<{ data: GroupDetail }> {
   return api.get<{ data: GroupDetail }>(`${API_V2}/groups/${id}`);
+}
+
+function parseGroupNotificationPreferences(value: unknown): GroupNotificationPreferences {
+  if (!value || typeof value !== 'object') throw new Error('Invalid group notification preferences response');
+  const preferences = value as Record<string, unknown>;
+  if (!['instant', 'digest', 'muted'].includes(String(preferences.frequency))
+    || typeof preferences.email_enabled !== 'boolean'
+    || typeof preferences.push_enabled !== 'boolean'
+    || (preferences.updated_at !== null
+      && (typeof preferences.updated_at !== 'string' || !Number.isFinite(Date.parse(preferences.updated_at))))) {
+    throw new Error('Invalid group notification preferences response');
+  }
+  return preferences as unknown as GroupNotificationPreferences;
+}
+
+export async function getGroupNotificationPreferences(groupId: number): Promise<GroupNotificationPreferences> {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error('Invalid group');
+  const response = await api.get<{ data: GroupNotificationPreferences } | GroupNotificationPreferences>(
+    `${API_V2}/groups/${groupId}/notification-prefs`,
+  );
+  const data = response && typeof response === 'object' && 'data' in response ? response.data : response;
+  return parseGroupNotificationPreferences(data);
+}
+
+export async function updateGroupNotificationPreferences(
+  groupId: number,
+  preferences: Pick<GroupNotificationPreferences, 'frequency' | 'email_enabled' | 'push_enabled'>,
+): Promise<GroupNotificationPreferences> {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error('Invalid group');
+  const response = await api.put<
+    { data: { preferences: GroupNotificationPreferences } } | { preferences: GroupNotificationPreferences }
+  >(`${API_V2}/groups/${groupId}/notification-prefs`, preferences);
+  const data = response && typeof response === 'object' && 'data' in response ? response.data : response;
+  if (!data || typeof data !== 'object' || !('preferences' in data)) {
+    throw new Error('Invalid group notification preferences response');
+  }
+  return parseGroupNotificationPreferences(data.preferences);
 }
 
 /**

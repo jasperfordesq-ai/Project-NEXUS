@@ -406,6 +406,17 @@
       "retryDecision": "Tentar decisão novamente",
       "recoveryUnavailable": "Não foi possível restaurar a decisão inacabada sobre o pedido de adesão. Tente novamente antes de tomar outra decisão."
     },
+    "notifications": {
+      "title": "Preferências de notificações",
+      "frequencyLabel": "Frequência de notificações",
+      "instant": "Instantâneo",
+      "digest": "Resumo",
+      "muted": "Silenciado",
+      "email": "Notificações por e-mail",
+      "push": "Notificações push",
+      "saved": "Preferências de notificações guardadas",
+      "saveFailed": "Não foi possível guardar as preferências de notificações."
+    },
     "feed": {
       "title": "Feed do grupo",
       "subtitle": "Publicações e sondagens partilhados com este grupo.",

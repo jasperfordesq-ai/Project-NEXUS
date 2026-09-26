@@ -39,6 +39,7 @@ import {
   handleGroupJoinRequest,
   getGroups,
   getGroup,
+  getGroupNotificationPreferences,
   getGroupAnalytics,
   getGroupAnalyticsComparative,
   getGroupAnalyticsRetention,
@@ -61,6 +62,7 @@ import {
   revokeGroupInvite,
   sendGroupEmailInvites,
   updateGroup,
+  updateGroupNotificationPreferences,
   updateGroupAnnouncement,
   updateGroupTask,
   updateGroupWikiPage,
@@ -696,6 +698,43 @@ describe('leaveGroup', () => {
     (api.delete as jest.Mock).mockResolvedValue(undefined);
     await leaveGroup(7);
     expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/membership');
+  });
+});
+
+describe('group notification preferences', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  const preferences = {
+    frequency: 'digest' as const,
+    email_enabled: false,
+    push_enabled: true,
+    updated_at: '2026-09-26T12:00:00Z',
+  };
+
+  it('reads and writes the exact group-scoped preference contract', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: preferences });
+    (api.put as jest.Mock).mockResolvedValue({ data: { message: 'Saved', preferences } });
+
+    await expect(getGroupNotificationPreferences(7)).resolves.toEqual(preferences);
+    await expect(updateGroupNotificationPreferences(7, {
+      frequency: 'digest',
+      email_enabled: false,
+      push_enabled: true,
+    })).resolves.toEqual(preferences);
+
+    expect(api.get).toHaveBeenCalledWith('/api/v2/groups/7/notification-prefs');
+    expect(api.put).toHaveBeenCalledWith('/api/v2/groups/7/notification-prefs', {
+      frequency: 'digest',
+      email_enabled: false,
+      push_enabled: true,
+    });
+  });
+
+  it('rejects malformed preference responses and invalid group ids', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: { ...preferences, push_enabled: 'yes' } });
+    await expect(getGroupNotificationPreferences(7)).rejects.toThrow('Invalid group notification preferences response');
+    await expect(getGroupNotificationPreferences(0)).rejects.toThrow('Invalid group');
+    await expect(updateGroupNotificationPreferences(0, preferences)).rejects.toThrow('Invalid group');
   });
 });
 

@@ -406,6 +406,17 @@
       "retryDecision": "Riprova decisione",
       "recoveryUnavailable": "Non è stato possibile ripristinare la decisione incompleta sulla richiesta di adesione. Riprova prima di prendere un'altra decisione."
     },
+    "notifications": {
+      "title": "Preferenze notifiche",
+      "frequencyLabel": "Frequenza notifiche",
+      "instant": "Istantanea",
+      "digest": "Riepilogo",
+      "muted": "Silenziata",
+      "email": "Notifiche via e-mail",
+      "push": "Notifiche push",
+      "saved": "Preferenze notifiche salvate",
+      "saveFailed": "Impossibile salvare le preferenze delle notifiche."
+    },
     "feed": {
       "title": "Feed del gruppo",
       "subtitle": "Post e sondaggi condivisi con questo gruppo.",

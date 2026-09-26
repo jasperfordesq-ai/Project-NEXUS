@@ -406,6 +406,17 @@
       "retryDecision": "Reintentar decisión",
       "recoveryUnavailable": "No se pudo restaurar la decisión pendiente sobre la solicitud. Reinténtalo antes de tomar otra decisión."
     },
+    "notifications": {
+      "title": "Preferencias de notificaciones",
+      "frequencyLabel": "Frecuencia de notificaciones",
+      "instant": "Instantáneo",
+      "digest": "Resumen",
+      "muted": "Silenciado",
+      "email": "Notificaciones por correo",
+      "push": "Notificaciones push",
+      "saved": "Preferencias de notificaciones guardadas",
+      "saveFailed": "No se pudieron guardar las preferencias de notificaciones."
+    },
     "feed": {
       "title": "Actividad del grupo",
       "subtitle": "Publicaciones y encuestas compartidas con este grupo.",

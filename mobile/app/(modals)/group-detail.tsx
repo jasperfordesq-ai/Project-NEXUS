@@ -134,6 +134,7 @@ import { useApi } from '@/lib/hooks/useApi';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import GroupJoinRequestsCard from '@/components/groups/GroupJoinRequestsCard';
 import GroupFeedPanel from '@/components/groups/GroupFeedPanel';
+import GroupNotificationPreferencesCard from '@/components/groups/GroupNotificationPreferencesCard';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -413,6 +414,7 @@ function GroupDetailScreenInner() {
   const [leaving, setLeaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [feedRefreshToken, setFeedRefreshToken] = useState(0);
+  const [notificationPreferencesRefreshToken, setNotificationPreferencesRefreshToken] = useState(0);
   const [showDiscussionComposer, setShowDiscussionComposer] = useState(false);
   const [discussionTitle, setDiscussionTitle] = useState('');
   const [discussionContent, setDiscussionContent] = useState('');
@@ -547,13 +549,14 @@ function GroupDetailScreenInner() {
     setRefreshing(true);
     refresh();
     if (visibleTab === 'feed') setFeedRefreshToken(value => value + 1);
+    if (visibleTab === 'overview' && currentIsMember) setNotificationPreferencesRefreshToken(value => value + 1);
     if (membersEnabled) membersApi.refresh();
     if (discussionsEnabled) discussionsApi.refresh();
     if (announcementsEnabled) announcementsApi.refresh();
     if (filesEnabled) filesApi.refresh();
     if (questionsEnabled) questionsApi.refresh();
     if (eventsEnabled) eventsApi.refresh();
-  }, [announcementsApi, announcementsEnabled, discussionsApi, discussionsEnabled, eventsApi, eventsEnabled, filesApi, filesEnabled, membersApi, membersEnabled, questionsApi, questionsEnabled, refresh, visibleTab]);
+  }, [announcementsApi, announcementsEnabled, currentIsMember, discussionsApi, discussionsEnabled, eventsApi, eventsEnabled, filesApi, filesEnabled, membersApi, membersEnabled, questionsApi, questionsEnabled, refresh, visibleTab]);
 
   useEffect(() => {
     if (!isLoading && !membersApi.isLoading && !discussionsApi.isLoading && !announcementsApi.isLoading && !filesApi.isLoading && !questionsApi.isLoading && !eventsApi.isLoading) {
@@ -1307,6 +1310,14 @@ function GroupDetailScreenInner() {
                   </View>
                 </HeroCard.Body>
               </HeroCard>
+            ) : null}
+
+            {currentIsMember ? (
+              <GroupNotificationPreferencesCard
+                key={loadedGroup.id}
+                groupId={loadedGroup.id}
+                refreshToken={notificationPreferencesRefreshToken}
+              />
             ) : null}
           </View>
         ) : null}
