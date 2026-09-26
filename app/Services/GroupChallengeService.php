@@ -58,6 +58,8 @@ final class GroupChallengeService
     public const ERROR_DATES = 'dates';
     public const ERROR_IMMUTABLE = 'CHALLENGE_IMMUTABLE';
     public const ERROR_ACTIVE_LIMIT = 'CHALLENGE_LIMIT_REACHED';
+    public const ERROR_IDEMPOTENCY_INVALID = 'idempotency_invalid';
+    public const ERROR_IDEMPOTENCY_CONFLICT = 'idempotency_conflict';
 
     /** @return list<array<string, mixed>> */
     public static function getActive(int $groupId): array
@@ -116,6 +118,48 @@ final class GroupChallengeService
 
         $normalized = self::normalizeCreateData($data);
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'description' => $normalized['description'],
+            'ends_at' => $normalized['ends_at']->toIso8601String(),
+            'group_id' => $groupId,
+            'metric' => $normalized['metric'],
+            'reward_xp' => $normalized['reward_xp'],
+            'starts_at' => isset($data['starts_at']) && $data['starts_at'] !== ''
+                ? $normalized['starts_at']->toIso8601String()
+                : null,
+            'target_value' => $normalized['target_value'],
+            'title' => $normalized['title'],
+        ]);
+        if ($identity === false) {
+            throw new InvalidArgumentException(self::ERROR_IDEMPOTENCY_INVALID);
+        }
+
+        if ($identity !== null) {
+            $replayedId = DB::transaction(static function () use ($tenantId, $createdBy, $identity): int|null {
+                GroupContentCreationReceiptService::lockActor($tenantId, $createdBy);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $createdBy,
+                    'challenge',
+                    $identity['key_hash'],
+                );
+                if ($receipt === null) {
+                    return null;
+                }
+                if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                    throw new DomainException(self::ERROR_IDEMPOTENCY_CONFLICT);
+                }
+                return (int) $receipt->result_id;
+            }, 3);
+            if ($replayedId !== null) {
+                $replayed = self::getById($groupId, $replayedId);
+                if ($replayed === null) {
+                    throw new RuntimeException('Group challenge replay target is unavailable.');
+                }
+                $replayed['_idempotent_replay'] = true;
+                return $replayed;
+            }
+        }
 
         GroupService::assertSafeguardingBroadcastAllowed(
             $groupId,
@@ -125,7 +169,23 @@ final class GroupChallengeService
             $normalized['title'] . ' ' . $normalized['description'],
         );
 
-        $challenge = DB::transaction(static function () use ($tenantId, $groupId, $createdBy, $normalized): GroupChallenge {
+        [$challengeId, $wasReplay] = DB::transaction(static function () use ($tenantId, $groupId, $createdBy, $normalized, $identity): array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $createdBy);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $createdBy,
+                    'challenge',
+                    $identity['key_hash'],
+                );
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        throw new DomainException(self::ERROR_IDEMPOTENCY_CONFLICT);
+                    }
+                    return [(int) $receipt->result_id, true];
+                }
+            }
+
             // Serialise creations per group so concurrent requests cannot
             // both pass the live-challenge ceiling.
             Group::query()->whereKey($groupId)->lockForUpdate()->first();
@@ -166,12 +226,29 @@ final class GroupChallengeService
                 ],
             );
 
-            return $challenge;
-        });
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $createdBy,
+                    $groupId,
+                    'challenge',
+                    $identity,
+                    (int) $challenge->id,
+                    ['id' => (int) $challenge->id],
+                );
+            }
 
-        $challenge->load('creator:id,name,first_name,last_name,profile_type,organization_name,avatar_url');
+            return [(int) $challenge->id, false];
+        }, 3);
 
-        return self::toDto($challenge);
+        $result = self::getById($groupId, $challengeId);
+        if ($result === null) {
+            throw new RuntimeException('Created group challenge is unavailable.');
+        }
+        if ($wasReplay) {
+            $result['_idempotent_replay'] = true;
+        }
+        return $result;
     }
 
     /**

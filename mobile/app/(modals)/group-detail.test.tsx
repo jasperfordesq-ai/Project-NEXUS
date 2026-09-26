@@ -429,6 +429,13 @@ jest.mock('@/components/groups/GroupNotificationPreferencesCard', () => {
   );
 });
 
+jest.mock('@/components/groups/GroupChallengesPanel', () => {
+  const { View } = require('react-native');
+  return ({ groupId, canManage, canView }: { groupId: number; canManage: boolean; canView: boolean }) => (
+    <View testID="group-challenges-panel" accessibilityLabel={`${groupId}:${canManage}:${canView}`} />
+  );
+});
+
 jest.mock('@/lib/api/groups', () => ({
   getGroup: jest.fn(),
   getGroupJoinRequests: jest.fn().mockResolvedValue({ data: [] }),
@@ -721,6 +728,18 @@ const mockGroupDetail = {
 };
 
 describe('GroupDetailScreen', () => {
+  it('opens the configured native challenges tab from a deep link', () => {
+    mockRouteParams = { id: '1', tab: 'challenges' };
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true, current_user_role: 'owner' } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, { ...emptyListState, data: { data: { items: [] } } }, emptyListState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[call++] ?? emptyListState);
+
+    const screen = render(<GroupDetailScreen />);
+    expect(screen.getByTestId('group-challenges-panel')).toBeTruthy();
+  });
+
   it('opens the tab named by a notification deep link', () => {
     mockRouteParams = { id: '1', tab: 'discussion' };
     const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
@@ -742,6 +761,8 @@ describe('GroupDetailScreen', () => {
     mockRouteParams = { id: '1', tab: 'files' };
     mockGroupTabs = {
       tab_discussion: true,
+      tab_chatrooms: false,
+      tab_challenges: false,
       tab_members: false,
       tab_events: false,
       tab_announcements: false,
@@ -766,7 +787,7 @@ describe('GroupDetailScreen', () => {
 
     expect(queryByTestId('group-tab-files')).toBeNull();
     expect(getByTestId('group-tab-discussion')).toBeTruthy();
-    for (const hidden of ['members', 'events', 'announcements', 'media', 'qa', 'wiki', 'tasks', 'analytics']) {
+    for (const hidden of ['chatrooms', 'challenges', 'members', 'events', 'announcements', 'media', 'qa', 'wiki', 'tasks', 'analytics']) {
       expect(queryByTestId(`group-tab-${hidden}`)).toBeNull();
     }
     expect(queryByText('Group files')).toBeNull();

@@ -76,6 +76,7 @@ final class GroupChallengeController extends BaseApiController
             'ends_at',
             'end_date',
         ]);
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? request()->input('idempotency_key');
 
         try {
             $challenge = GroupChallengeService::create($id, $userId, $data);
@@ -86,6 +87,14 @@ final class GroupChallengeController extends BaseApiController
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         } catch (DomainException $e) {
+            if ($e->getMessage() === GroupChallengeService::ERROR_IDEMPOTENCY_CONFLICT) {
+                return $this->respondWithError(
+                    'IDEMPOTENCY_CONFLICT',
+                    __('event_registration.idempotency_conflict'),
+                    null,
+                    409,
+                );
+            }
             if ($e->getMessage() !== GroupChallengeService::ERROR_ACTIVE_LIMIT) {
                 throw $e;
             }
@@ -173,6 +182,7 @@ final class GroupChallengeController extends BaseApiController
             ],
             GroupChallengeService::ERROR_REWARD => ['api.invalid_input', 'reward_xp', []],
             GroupChallengeService::ERROR_DATES => ['api.invalid_date', 'ends_at', []],
+            GroupChallengeService::ERROR_IDEMPOTENCY_INVALID => ['event_registration.idempotency_invalid', null, []],
             default => ['api.validation_failed', null, []],
         };
 

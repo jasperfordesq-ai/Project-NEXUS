@@ -136,6 +136,7 @@ import GroupJoinRequestsCard from '@/components/groups/GroupJoinRequestsCard';
 import GroupFeedPanel from '@/components/groups/GroupFeedPanel';
 import GroupNotificationPreferencesCard from '@/components/groups/GroupNotificationPreferencesCard';
 import GroupChatroomsPanel from '@/components/groups/GroupChatroomsPanel';
+import GroupChallengesPanel from '@/components/groups/GroupChallengesPanel';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -168,11 +169,12 @@ import RemoteImage from '@/components/ui/RemoteImage';
 const CARD_MIN_HEIGHT = 118;
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
-const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+type TabKey = 'overview' | 'feed' | 'discussion' | 'chatrooms' | 'challenges' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
+const TAB_KEYS: readonly TabKey[] = ['overview', 'feed', 'discussion', 'chatrooms', 'challenges', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
 const GROUP_TAB_CONFIG_KEYS = {
   discussion: 'tab_discussion',
   chatrooms: 'tab_chatrooms',
+  challenges: 'tab_challenges',
   members: 'tab_members',
   events: 'tab_events',
   announcements: 'tab_announcements',
@@ -417,6 +419,7 @@ function GroupDetailScreenInner() {
   const [refreshing, setRefreshing] = useState(false);
   const [feedRefreshToken, setFeedRefreshToken] = useState(0);
   const [chatroomsRefreshToken, setChatroomsRefreshToken] = useState(0);
+  const [challengesRefreshToken, setChallengesRefreshToken] = useState(0);
   const [notificationPreferencesRefreshToken, setNotificationPreferencesRefreshToken] = useState(0);
   const [showDiscussionComposer, setShowDiscussionComposer] = useState(false);
   const [discussionTitle, setDiscussionTitle] = useState('');
@@ -553,6 +556,7 @@ function GroupDetailScreenInner() {
     refresh();
     if (visibleTab === 'feed') setFeedRefreshToken(value => value + 1);
     if (visibleTab === 'chatrooms') setChatroomsRefreshToken(value => value + 1);
+    if (visibleTab === 'challenges') setChallengesRefreshToken(value => value + 1);
     if (visibleTab === 'overview' && currentIsMember) setNotificationPreferencesRefreshToken(value => value + 1);
     if (membersEnabled) membersApi.refresh();
     if (discussionsEnabled) discussionsApi.refresh();
@@ -1103,6 +1107,7 @@ function GroupDetailScreenInner() {
     ...(hasModule('feed') ? [{ key: 'feed' as const, label: t('detail.tabs.feed'), icon: 'pulse-outline' as const }] : []),
     ...(hasGroupTab('tab_discussion') ? [{ key: 'discussion' as const, label: t('detail.tabs.discussion'), icon: 'chatbubble-ellipses-outline' as const }] : []),
     ...(hasGroupTab('tab_chatrooms') ? [{ key: 'chatrooms' as const, label: t('detail.tabs.chatrooms'), icon: 'chatbubbles-outline' as const }] : []),
+    ...(hasGroupTab('tab_challenges') ? [{ key: 'challenges' as const, label: t('detail.tabs.challenges'), icon: 'trophy-outline' as const }] : []),
     ...(hasGroupTab('tab_members') ? [{ key: 'members' as const, label: t('detail.tabs.members'), icon: 'people-outline' as const }] : []),
     ...(hasFeature('events') && hasGroupTab('tab_events') ? [{ key: 'events' as const, label: t('detail.tabs.events'), icon: 'calendar-outline' as const }] : []),
     ...(hasGroupTab('tab_announcements') ? [{ key: 'announcements' as const, label: t('detail.tabs.announcements'), icon: 'megaphone-outline' as const }] : []),
@@ -1339,6 +1344,16 @@ function GroupDetailScreenInner() {
             canManage={canManageGroup}
             canView={userCanSeeMemberContent}
             refreshToken={chatroomsRefreshToken}
+          />
+        ) : null}
+
+        {visibleTab === 'challenges' ? (
+          <GroupChallengesPanel
+            key={`challenges-${loadedGroup.id}`}
+            groupId={loadedGroup.id}
+            canManage={canManageGroup}
+            canView={userCanSeeMemberContent}
+            refreshToken={challengesRefreshToken}
           />
         ) : null}
 

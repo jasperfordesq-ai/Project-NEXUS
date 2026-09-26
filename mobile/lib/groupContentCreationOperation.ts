@@ -14,7 +14,7 @@ import {
 } from '@/lib/creationDraftStore';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
-export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media' | 'chatroom-message' | 'chatroom';
+export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media' | 'chatroom-message' | 'chatroom' | 'challenge';
 
 export interface GroupContentCreationPayloads {
   discussion: { title: string; content: string };
@@ -32,6 +32,14 @@ export interface GroupContentCreationPayloads {
   };
   'chatroom-message': { chatroomId: number; body: string };
   chatroom: { name: string };
+  challenge: {
+    title: string;
+    description: string;
+    metric: 'posts' | 'discussions' | 'members' | 'files';
+    targetValue: number;
+    rewardXp: 0 | 25 | 50 | 100;
+    endsAt: string;
+  };
 }
 
 export interface GroupContentCreationOperation<K extends GroupContentCreationKind = GroupContentCreationKind> {
@@ -118,6 +126,25 @@ function normalizePayload<K extends GroupContentCreationKind>(
     case 'chatroom':
       normalized = { name: requiredText(raw.name) };
       break;
+    case 'challenge': {
+      const metric = requiredText(raw.metric);
+      const targetValue = Number(raw.targetValue);
+      const rewardXp = Number(raw.rewardXp);
+      const endsAt = requiredText(raw.endsAt);
+      if (!['posts', 'discussions', 'members', 'files'].includes(metric)
+        || !Number.isSafeInteger(targetValue) || targetValue < 1 || targetValue > 1_000_000
+        || ![0, 25, 50, 100].includes(rewardXp)
+        || !Number.isFinite(Date.parse(endsAt))) throw new Error('Invalid group content creation payload');
+      normalized = {
+        title: requiredText(raw.title),
+        description: typeof raw.description === 'string' ? raw.description.trim() : '',
+        metric: metric as GroupContentCreationPayloads['challenge']['metric'],
+        targetValue,
+        rewardXp: rewardXp as GroupContentCreationPayloads['challenge']['rewardXp'],
+        endsAt,
+      };
+      break;
+    }
   }
   return normalized as GroupContentCreationPayloads[K];
 }

@@ -173,6 +173,35 @@ final class GroupChallengeControllerTest extends TestCase
         self::assertNotNull($response->json('data.ends_at'));
     }
 
+    public function test_create_replays_exact_mobile_request_and_conflicts_changed_intent(): void
+    {
+        Sanctum::actingAs($this->owner, ['*']);
+        $payload = $this->validPayload();
+        $headers = ['Idempotency-Key' => 'mobile-group-challenge-create-1'];
+
+        $first = $this->apiPost("/v2/groups/{$this->activeGroupId}/challenges", $payload, $headers);
+        $replay = $this->apiPost("/v2/groups/{$this->activeGroupId}/challenges", $payload, $headers);
+
+        $first->assertCreated();
+        $replay->assertCreated()
+            ->assertJsonPath('data.id', $first->json('data.id'))
+            ->assertJsonPath('data._idempotent_replay', true);
+        self::assertSame(1, DB::table('group_challenges')
+            ->where('group_id', $this->activeGroupId)
+            ->where('title', $payload['title'])
+            ->count());
+        self::assertSame(1, DB::table('group_audit_log')
+            ->where('group_id', $this->activeGroupId)
+            ->where('action', 'challenge_created')
+            ->count());
+
+        $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/challenges",
+            [...$payload, 'target_value' => $payload['target_value'] + 1],
+            $headers,
+        )->assertStatus(409)->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+    }
+
     public function test_invalid_values_return_translated_validation_errors_and_write_nothing(): void
     {
         Sanctum::actingAs($this->owner, ['*']);

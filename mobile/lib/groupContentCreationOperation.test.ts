@@ -67,6 +67,19 @@ describe('group content creation operation', () => {
     await expect(loadGroupContentCreationOperation(9, 'chatroom')).resolves.toEqual(channel);
   });
 
+  it('normalizes and restores the exact group challenge intent', async () => {
+    const challenge = await reserveGroupContentCreationOperation(9, 'challenge', {
+      title: '  Helpful posts  ', description: '  Share useful local updates.  ', metric: 'posts',
+      targetValue: 12, rewardXp: 25, endsAt: '2026-10-15T00:00:00.000Z',
+    });
+    expect(challenge.payload).toEqual({
+      title: 'Helpful posts', description: 'Share useful local updates.', metric: 'posts',
+      targetValue: 12, rewardXp: 25, endsAt: '2026-10-15T00:00:00.000Z',
+    });
+    jest.mocked(loadCreationDraft).mockResolvedValue(challenge);
+    await expect(loadGroupContentCreationOperation(9, 'challenge')).resolves.toEqual(challenge);
+  });
+
   it('does not replace unresolved work with changed content', async () => {
     const first = await reserveGroupContentCreationOperation(9, 'discussion', discussion);
     jest.mocked(loadCreationDraft).mockResolvedValue(first);

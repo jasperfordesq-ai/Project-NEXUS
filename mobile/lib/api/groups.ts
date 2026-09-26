@@ -85,6 +85,29 @@ export interface GroupChatroomMessage {
 
 export interface GroupChatroomMessagesResponse extends GroupCollectionResponse<GroupChatroomMessage> {}
 
+export type GroupChallengeMetric = 'posts' | 'discussions' | 'members' | 'files';
+export type GroupChallengeReward = 0 | 25 | 50 | 100;
+export type GroupChallengeStatus = 'active' | 'completed' | 'expired' | 'cancelled';
+
+export interface GroupChallenge {
+  id: number;
+  group_id: number;
+  title: string;
+  description: string;
+  metric: GroupChallengeMetric;
+  target_value: number;
+  current_value: number;
+  reward_xp: GroupChallengeReward;
+  status: GroupChallengeStatus;
+  progress_percentage: number;
+  starts_at: string;
+  ends_at: string;
+  completed_at: string | null;
+  creator: { id: number; name: string; avatar_url: string | null };
+  created_at: string;
+  updated_at: string;
+}
+
 export interface GroupMemberListItem extends GroupMember {
   role: 'owner' | 'admin' | 'member' | string;
   joined_at: string | null;
@@ -712,6 +735,38 @@ export function pinGroupChatroomMessage(groupId: number, chatroomId: number, mes
 
 export function unpinGroupChatroomMessage(groupId: number, chatroomId: number, messageId: number): Promise<void> {
   return api.delete<void>(`${API_V2}/groups/${groupId}/chatrooms/${chatroomId}/pin/${messageId}`);
+}
+
+export function getGroupChallenges(groupId: number): Promise<{ data: GroupChallenge[] }> {
+  return api.get<{ data: GroupChallenge[] }>(`${API_V2}/groups/${groupId}/challenges`, { all: '1' });
+}
+
+export function createGroupChallenge(
+  groupId: number,
+  payload: {
+    title: string;
+    description: string;
+    metric: GroupChallengeMetric;
+    target_value: number;
+    reward_xp: GroupChallengeReward;
+    ends_at: string;
+  },
+  idempotencyKey: string,
+): Promise<{ data: GroupChallenge & { _idempotent_replay?: boolean } }> {
+  return api.post<{ data: GroupChallenge & { _idempotent_replay?: boolean } }>(
+    `${API_V2}/groups/${groupId}/challenges`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
+}
+
+export function cancelGroupChallenge(
+  groupId: number,
+  challengeId: number,
+): Promise<{ data: { challenge: GroupChallenge; changed: boolean; message: string } }> {
+  return api.delete<{ data: { challenge: GroupChallenge; changed: boolean; message: string } }>(
+    `${API_V2}/groups/${groupId}/challenges/${challengeId}`,
+  );
 }
 
 /**
