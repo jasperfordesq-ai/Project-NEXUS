@@ -5,7 +5,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getTenantConfig, type TenantConfig } from '@/lib/api/tenant';
+import { getTenantConfig, type GroupTabKey, type TenantConfig } from '@/lib/api/tenant';
 import { DEFAULT_TENANT, STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import { themeStore } from '@/lib/theme/themeStore';
@@ -22,6 +22,8 @@ interface TenantContextValue {
   hasFeature: (feature: string) => boolean;
   /** Check if a module is enabled for the current tenant */
   hasModule: (module: string) => boolean;
+  /** Check the server-authoritative visibility of a group section. Missing config fails closed. */
+  hasGroupTab: (tab: GroupTabKey) => boolean;
   /** Switch the active tenant (persists to storage) */
   setTenantSlug: (slug: string) => Promise<void>;
 }
@@ -286,6 +288,11 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     [tenant],
   );
 
+  const hasGroupTab = useCallback(
+    (tab: GroupTabKey): boolean => tenant?.group_tabs?.[tab] === true,
+    [tenant],
+  );
+
   // Use the resolved slug once storage has been read, otherwise fall back
   // to DEFAULT_TENANT for the public context value type (string, not null).
   const resolvedSlug = tenantSlug ?? DEFAULT_TENANT;
@@ -300,6 +307,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       isLoading: isLoading || tenantSlug === null || hasSelectedTenant === null,
       hasFeature,
       hasModule,
+      hasGroupTab,
       setTenantSlug,
     }),
     [
@@ -310,6 +318,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       tenantSlug,
       hasFeature,
       hasModule,
+      hasGroupTab,
       setTenantSlug,
     ],
   );

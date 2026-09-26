@@ -292,9 +292,11 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+let mockGroupTabs: Record<string, boolean> = {};
+const mockHasGroupTab = jest.fn((key: string) => mockGroupTabs[key] ?? true);
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#6366f1',
-  useTenant: () => ({ hasFeature: () => true, tenant: { id: 2, slug: 'hour-timebank' } }),
+  useTenant: () => ({ hasFeature: () => true, hasGroupTab: (key: string) => mockHasGroupTab(key), tenant: { id: 2, slug: 'hour-timebank' } }),
 }));
 
 jest.mock('@/lib/hooks/useTheme', () => ({
@@ -331,6 +333,7 @@ jest.mock('@/lib/hooks/useApi', () => ({
 type PaginatedExtract = { items: unknown[]; cursor: string | null; hasMore: boolean };
 /** Every `loadMore` handed out this render, so a test can prove a button is wired to one. */
 const mockLoadMoreCalls: jest.Mock[] = [];
+const mockPaginatedOptions: ({ enabled?: boolean } | undefined)[] = [];
 const mockWithPaginationDefaults = (response: unknown): unknown => {
   if (!response || typeof response !== 'object') return response;
   const body = response as Record<string, unknown>;
@@ -344,7 +347,13 @@ const mockWithPaginationDefaults = (response: unknown): unknown => {
   };
 };
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
-  usePaginatedApi: (_fetchFn: unknown, extractor: (response: unknown) => PaginatedExtract) => {
+  usePaginatedApi: (
+    _fetchFn: unknown,
+    extractor: (response: unknown) => PaginatedExtract,
+    _deps: unknown,
+    options?: { enabled?: boolean },
+  ) => {
+    mockPaginatedOptions.push(options);
     const state = mockUseApi() as { data?: unknown; isLoading?: boolean; error?: string | null; refresh?: () => void } | undefined;
     const extracted = state?.data
       ? extractor(mockWithPaginationDefaults(state.data))
@@ -539,6 +548,8 @@ const defaultApiState = { data: null, isLoading: true, error: null, refresh: jes
 
 beforeEach(() => {
   mockRouteParams = { id: '1' };
+  mockGroupTabs = {};
+  mockPaginatedOptions.length = 0;
   mockAuthUser = { id: 99, name: 'Current User' };
   mockUseApi.mockReturnValue(defaultApiState);
   mockRouterPush.mockClear();
@@ -591,6 +602,50 @@ describe('GroupDetailScreen', () => {
     const { getByText } = render(<GroupDetailScreen />);
 
     expect(getByText('Join to discuss.')).toBeTruthy();
+  });
+
+  it('hides disabled group sections, disables their read and resolves a disabled deep link to overview', () => {
+    mockRouteParams = { id: '1', tab: 'files' };
+    mockGroupTabs = {
+      tab_discussion: true,
+      tab_members: false,
+      tab_events: false,
+      tab_announcements: false,
+      tab_files: false,
+      tab_media: false,
+      tab_qa: false,
+      tab_wiki: false,
+      tab_tasks: false,
+      tab_analytics: false,
+    };
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyAnnouncementsState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyFilesState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyQuestionsState = { data: { data: { items: [] } }, isLoading: false, error: null, refresh: jest.fn() };
+    const eventsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = [groupState, emptyListState, emptyListState, emptyAnnouncementsState, emptyFilesState, emptyQuestionsState, eventsState];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states[call++] ?? emptyListState);
+
+    const { getByText, getByTestId, queryByTestId, queryByText } = render(<GroupDetailScreen />);
+
+    expect(queryByTestId('group-tab-files')).toBeNull();
+    expect(getByTestId('group-tab-discussion')).toBeTruthy();
+    for (const hidden of ['members', 'events', 'announcements', 'media', 'qa', 'wiki', 'tasks', 'analytics']) {
+      expect(queryByTestId(`group-tab-${hidden}`)).toBeNull();
+    }
+    expect(queryByText('Group files')).toBeNull();
+    expect(getByText('No description.')).toBeTruthy();
+    expect(getByTestId('group-tab-overview')).toBeTruthy();
+    expect(mockPaginatedOptions.slice(0, 5).map((options) => options?.enabled)).toEqual([
+      false,
+      true,
+      false,
+      false,
+      false,
+    ]);
+    expect(mockUseApi.mock.calls.some((call) => call[2]?.enabled === false)).toBe(true);
   });
   it('names who runs the group, from the creator the server actually sends', () => {
     // 🔴 The load-bearing case. `GroupDetail.admin` was declared required and is not in the

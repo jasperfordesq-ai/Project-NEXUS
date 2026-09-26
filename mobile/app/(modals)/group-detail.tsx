@@ -149,6 +149,18 @@ const CARD_MIN_HEIGHT = 118;
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type TabKey = 'overview' | 'discussion' | 'members' | 'events' | 'announcements' | 'files' | 'media' | 'qa' | 'wiki' | 'tasks' | 'analytics' | 'marketplace';
 const TAB_KEYS: readonly TabKey[] = ['overview', 'discussion', 'members', 'events', 'announcements', 'files', 'media', 'qa', 'wiki', 'tasks', 'analytics', 'marketplace'];
+const GROUP_TAB_CONFIG_KEYS = {
+  discussion: 'tab_discussion',
+  members: 'tab_members',
+  events: 'tab_events',
+  announcements: 'tab_announcements',
+  files: 'tab_files',
+  media: 'tab_media',
+  qa: 'tab_qa',
+  wiki: 'tab_wiki',
+  tasks: 'tab_tasks',
+  analytics: 'tab_analytics',
+} as const;
 const resolveGroupTab = (raw: string | undefined): TabKey | null =>
   TAB_KEYS.includes(raw as TabKey) ? raw as TabKey : null;
 type ApiGroupDetail = GroupDetail & {
@@ -355,10 +367,9 @@ function GroupDetailScreenInner() {
   const { fontScale } = useWindowDimensions();
   const { t } = useTranslation(['groups', 'common', 'marketplace']);
   const { user } = useAuth();
-  const { hasFeature } = useTenant();
+  const { hasFeature, hasGroupTab, tenant } = useTenant();
   const { id, tab } = useLocalSearchParams<{ id: string; tab?: string | string[] }>();
   const primary = usePrimaryColor();
-  const { tenant } = useTenant();
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -430,6 +441,20 @@ function GroupDetailScreenInner() {
 
   const currentIsMember = group ? (isMember ?? isGroupMember(group)) : false;
   const joinPending = !currentIsMember && Boolean(group && (joinRequested || hasPendingJoinRequest(group)));
+  const canManageGroup = group?.viewer_membership?.is_admin === true;
+  const isTabAvailable = (key: TabKey): boolean => {
+    if (key === 'overview') return true;
+    if (key === 'marketplace') return hasFeature('marketplace');
+    if (key === 'analytics' && !canManageGroup) return false;
+    if (key === 'events' && !hasFeature('events')) return false;
+    const configKey = GROUP_TAB_CONFIG_KEYS[key as keyof typeof GROUP_TAB_CONFIG_KEYS];
+    return configKey ? hasGroupTab(configKey) : false;
+  };
+  const visibleTab = isTabAvailable(activeTab) ? activeTab : 'overview';
+
+  useEffect(() => {
+    if (activeTab !== visibleTab) setActiveTab(visibleTab);
+  }, [activeTab, setActiveTab, visibleTab]);
   /*
     🔴 Five of this screen's tabs asked the server for twenty rows and stopped: members,
     discussions, announcements, files and Q&A. Only the marketplace tab paged. Every one
@@ -441,39 +466,44 @@ function GroupDetailScreenInner() {
     `onEndReached` on, so each list ends in a "Load more" button. That is the same choice
     the ideation list made, for the same reason.
   */
-  const listEnabled = { enabled: safeGroupId > 0 && currentIsMember };
+  const membersEnabled = safeGroupId > 0 && currentIsMember && hasGroupTab('tab_members');
+  const discussionsEnabled = safeGroupId > 0 && currentIsMember && hasGroupTab('tab_discussion');
+  const announcementsEnabled = safeGroupId > 0 && currentIsMember && hasGroupTab('tab_announcements');
+  const filesEnabled = safeGroupId > 0 && currentIsMember && hasGroupTab('tab_files');
+  const questionsEnabled = safeGroupId > 0 && currentIsMember && hasGroupTab('tab_qa');
+  const eventsEnabled = safeGroupId > 0 && hasFeature('events') && hasGroupTab('tab_events');
   const membersApi = usePaginatedApi<GroupMemberListItem, GroupCollectionResponse<GroupMemberListItem>>(
     (cursor) => getGroupMembers(safeGroupId, cursor),
     (response) => ({ items: response.data, cursor: response.meta.cursor, hasMore: response.meta.has_more }),
-    [safeGroupId, currentIsMember],
-    listEnabled,
+    [safeGroupId, currentIsMember, membersEnabled],
+    { enabled: membersEnabled },
   );
   const discussionsApi = usePaginatedApi<GroupDiscussion, GroupCollectionResponse<GroupDiscussion>>(
     (cursor) => getGroupDiscussions(safeGroupId, cursor),
     (response) => ({ items: response.data, cursor: response.meta.cursor, hasMore: response.meta.has_more }),
-    [safeGroupId, currentIsMember],
-    listEnabled,
+    [safeGroupId, currentIsMember, discussionsEnabled],
+    { enabled: discussionsEnabled },
   );
   const announcementsApi = usePaginatedApi<GroupAnnouncement, GroupAnnouncementsResponse>(
     (cursor) => getGroupAnnouncements(safeGroupId, cursor),
     (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
-    [safeGroupId, currentIsMember],
-    listEnabled,
+    [safeGroupId, currentIsMember, announcementsEnabled],
+    { enabled: announcementsEnabled },
   );
   const filesApi = usePaginatedApi<GroupFileItem, GroupFilesResponse>(
     (cursor) => getGroupFiles(safeGroupId, cursor),
     (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
-    [safeGroupId, currentIsMember],
-    listEnabled,
+    [safeGroupId, currentIsMember, filesEnabled],
+    { enabled: filesEnabled },
   );
   const questionsApi = usePaginatedApi<GroupQuestion, GroupQuestionsResponse>(
     (cursor) => getGroupQuestions(safeGroupId, cursor),
     (response) => ({ items: response.data.items, cursor: response.data.cursor, hasMore: response.data.has_more }),
-    [safeGroupId, currentIsMember],
-    listEnabled,
+    [safeGroupId, currentIsMember, questionsEnabled],
+    { enabled: questionsEnabled },
   );
   const eventsApi = useApi(() => getEvents('upcoming', null, 20, { groupId: safeGroupId }), [safeGroupId], {
-    enabled: safeGroupId > 0,
+    enabled: eventsEnabled,
   });
 
   const members = membersApi.items;
@@ -486,13 +516,13 @@ function GroupDetailScreenInner() {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     refresh();
-    membersApi.refresh();
-    discussionsApi.refresh();
-    announcementsApi.refresh();
-    filesApi.refresh();
-    questionsApi.refresh();
-    eventsApi.refresh();
-  }, [announcementsApi, discussionsApi, eventsApi, filesApi, membersApi, questionsApi, refresh]);
+    if (membersEnabled) membersApi.refresh();
+    if (discussionsEnabled) discussionsApi.refresh();
+    if (announcementsEnabled) announcementsApi.refresh();
+    if (filesEnabled) filesApi.refresh();
+    if (questionsEnabled) questionsApi.refresh();
+    if (eventsEnabled) eventsApi.refresh();
+  }, [announcementsApi, announcementsEnabled, discussionsApi, discussionsEnabled, eventsApi, eventsEnabled, filesApi, filesEnabled, membersApi, membersEnabled, questionsApi, questionsEnabled, refresh]);
 
   useEffect(() => {
     if (!isLoading && !membersApi.isLoading && !discussionsApi.isLoading && !announcementsApi.isLoading && !filesApi.isLoading && !questionsApi.isLoading && !eventsApi.isLoading) {
@@ -629,7 +659,6 @@ function GroupDetailScreenInner() {
   const displayDescription = loadedGroup.long_description ?? loadedGroup.description;
   const image = groupImage(loadedGroup);
   const userCanSeeMemberContent = currentIsMember;
-  const canManageGroup = loadedGroup.viewer_membership?.is_admin === true;
 
   function openEditGroup() {
     router.push({ pathname: '/(modals)/edit-group', params: { id: String(loadedGroup.id) } } as unknown as Href);
@@ -659,12 +688,12 @@ function GroupDetailScreenInner() {
       setJoinRequested(false);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refresh();
-      membersApi.refresh();
-      discussionsApi.refresh();
-      announcementsApi.refresh();
-      filesApi.refresh();
-      questionsApi.refresh();
-      eventsApi.refresh();
+      if (membersEnabled) membersApi.refresh();
+      if (discussionsEnabled) discussionsApi.refresh();
+      if (announcementsEnabled) announcementsApi.refresh();
+      if (filesEnabled) filesApi.refresh();
+      if (questionsEnabled) questionsApi.refresh();
+      if (eventsEnabled) eventsApi.refresh();
     } catch (err) {
       if (err instanceof ApiResponseError && err.status === 0) {
         try {
@@ -884,17 +913,17 @@ function GroupDetailScreenInner() {
 
   const tabs: { key: TabKey; label: string; icon: IoniconName }[] = [
     { key: 'overview', label: t('detail.tabs.overview'), icon: 'newspaper-outline' },
-    { key: 'discussion', label: t('detail.tabs.discussion'), icon: 'chatbubble-ellipses-outline' },
-    { key: 'members', label: t('detail.tabs.members'), icon: 'people-outline' },
-    { key: 'events', label: t('detail.tabs.events'), icon: 'calendar-outline' },
-    { key: 'announcements', label: t('detail.tabs.announcements'), icon: 'megaphone-outline' },
-    { key: 'files', label: t('detail.tabs.files'), icon: 'folder-open-outline' },
-    { key: 'media', label: t('detail.tabs.media'), icon: 'images-outline' },
-    { key: 'qa', label: t('detail.tabs.qa'), icon: 'help-circle-outline' },
-    { key: 'wiki', label: t('detail.tabs.wiki'), icon: 'book-outline' },
-    { key: 'tasks', label: t('detail.tabs.tasks'), icon: 'checkbox-outline' },
+    ...(hasGroupTab('tab_discussion') ? [{ key: 'discussion' as const, label: t('detail.tabs.discussion'), icon: 'chatbubble-ellipses-outline' as const }] : []),
+    ...(hasGroupTab('tab_members') ? [{ key: 'members' as const, label: t('detail.tabs.members'), icon: 'people-outline' as const }] : []),
+    ...(hasFeature('events') && hasGroupTab('tab_events') ? [{ key: 'events' as const, label: t('detail.tabs.events'), icon: 'calendar-outline' as const }] : []),
+    ...(hasGroupTab('tab_announcements') ? [{ key: 'announcements' as const, label: t('detail.tabs.announcements'), icon: 'megaphone-outline' as const }] : []),
+    ...(hasGroupTab('tab_files') ? [{ key: 'files' as const, label: t('detail.tabs.files'), icon: 'folder-open-outline' as const }] : []),
+    ...(hasGroupTab('tab_media') ? [{ key: 'media' as const, label: t('detail.tabs.media'), icon: 'images-outline' as const }] : []),
+    ...(hasGroupTab('tab_qa') ? [{ key: 'qa' as const, label: t('detail.tabs.qa'), icon: 'help-circle-outline' as const }] : []),
+    ...(hasGroupTab('tab_wiki') ? [{ key: 'wiki' as const, label: t('detail.tabs.wiki'), icon: 'book-outline' as const }] : []),
+    ...(hasGroupTab('tab_tasks') ? [{ key: 'tasks' as const, label: t('detail.tabs.tasks'), icon: 'checkbox-outline' as const }] : []),
   ];
-  if (canManageGroup) {
+  if (canManageGroup && hasGroupTab('tab_analytics')) {
     tabs.push({ key: 'analytics', label: t('detail.tabs.analytics'), icon: 'analytics-outline' });
   }
   if (hasFeature('marketplace')) {
@@ -1014,7 +1043,7 @@ function GroupDetailScreenInner() {
         <Surface variant="secondary" className="rounded-panel p-1">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-1">
             {tabs.map((tab) => {
-              const selected = activeTab === tab.key;
+              const selected = visibleTab === tab.key;
               return (
                 <HeroButton
                   key={tab.key}
@@ -1038,7 +1067,7 @@ function GroupDetailScreenInner() {
           </ScrollView>
         </Surface>
 
-        {activeTab === 'overview' ? (
+        {visibleTab === 'overview' ? (
           <View className="gap-4">
             {displayDescription ? (
               <HeroCard className="rounded-panel p-0">
@@ -1097,7 +1126,7 @@ function GroupDetailScreenInner() {
           </View>
         ) : null}
 
-        {activeTab === 'discussion' ? (
+        {visibleTab === 'discussion' ? (
           <View className="gap-3">
             {!userCanSeeMemberContent ? (
               <EmptyCard icon="lock-closed-outline" message={t('detail.joinToDiscuss')} />
@@ -1187,7 +1216,7 @@ function GroupDetailScreenInner() {
           </View>
         ) : null}
 
-        {activeTab === 'members' ? (
+        {visibleTab === 'members' ? (
           <View className="gap-3">
             <GroupJoinRequestsCard
               groupId={loadedGroup.id}
@@ -1257,11 +1286,11 @@ function GroupDetailScreenInner() {
           </View>
         ) : null}
 
-        {activeTab === 'events' ? (
+        {visibleTab === 'events' ? (
           <GroupEventsPanel groupId={loadedGroup.id} events={events} isLoading={eventsApi.isLoading} canCreate={userCanSeeMemberContent} />
         ) : null}
 
-        {activeTab === 'announcements' ? (
+        {visibleTab === 'announcements' ? (
           <View className="gap-3">
             {!userCanSeeMemberContent ? (
               <EmptyCard icon="lock-closed-outline" message={t('detail.joinToSeeAnnouncements')} />
@@ -1391,7 +1420,7 @@ function GroupDetailScreenInner() {
           </View>
         ) : null}
 
-        {activeTab === 'files' ? (
+        {visibleTab === 'files' ? (
           <GroupFilesPanel
             groupId={loadedGroup.id}
             files={files}
@@ -1406,7 +1435,7 @@ function GroupDetailScreenInner() {
           />
         ) : null}
 
-        {activeTab === 'media' ? (
+        {visibleTab === 'media' ? (
           <GroupMediaPanel
             groupId={loadedGroup.id}
             canView={userCanSeeMemberContent}
@@ -1414,7 +1443,7 @@ function GroupDetailScreenInner() {
           />
         ) : null}
 
-        {activeTab === 'qa' ? (
+        {visibleTab === 'qa' ? (
           <GroupQAPanel
             groupId={loadedGroup.id}
             questions={questions}
@@ -1437,7 +1466,7 @@ function GroupDetailScreenInner() {
           />
         ) : null}
 
-        {activeTab === 'wiki' ? (
+        {visibleTab === 'wiki' ? (
           <GroupWikiPanel
             groupId={loadedGroup.id}
             canView={userCanSeeMemberContent}
@@ -1446,7 +1475,7 @@ function GroupDetailScreenInner() {
           />
         ) : null}
 
-        {activeTab === 'tasks' ? (
+        {visibleTab === 'tasks' ? (
           <GroupTasksPanel
             groupId={loadedGroup.id}
             canView={userCanSeeMemberContent}
@@ -1455,11 +1484,11 @@ function GroupDetailScreenInner() {
           />
         ) : null}
 
-        {activeTab === 'analytics' ? (
+        {visibleTab === 'analytics' ? (
           <GroupAnalyticsPanel groupId={loadedGroup.id} canView={canManageGroup} />
         ) : null}
 
-        {activeTab === 'marketplace' ? (
+        {visibleTab === 'marketplace' ? (
           <GroupMarketplacePanel groupId={loadedGroup.id} canView={userCanSeeMemberContent} />
         ) : null}
       </ScrollView>

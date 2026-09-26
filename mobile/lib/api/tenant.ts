@@ -19,6 +19,24 @@ export interface JobConfig {
   'jobs.default_currency'?: string;
 }
 
+export type GroupTabKey =
+  | 'tab_feed'
+  | 'tab_discussion'
+  | 'tab_members'
+  | 'tab_events'
+  | 'tab_files'
+  | 'tab_announcements'
+  | 'tab_qa'
+  | 'tab_wiki'
+  | 'tab_media'
+  | 'tab_chatrooms'
+  | 'tab_tasks'
+  | 'tab_challenges'
+  | 'tab_analytics'
+  | 'tab_subgroups';
+
+export type GroupTabConfig = Partial<Record<GroupTabKey, boolean>>;
+
 export interface TenantConfig {
   /**
    * The community's numeric id.
@@ -40,6 +58,8 @@ export interface TenantConfig {
   modules: Record<string, boolean>;
   volunteering_config?: Record<string, unknown>;
   job_config?: JobConfig;
+  /** Server-authoritative visibility for configured group sections. */
+  group_tabs?: GroupTabConfig;
   config: {
     time_unit: string;
     time_unit_plural: string;

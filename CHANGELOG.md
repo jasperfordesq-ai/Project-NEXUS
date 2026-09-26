@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Native group pages now honour each community's configured sections: disabled tabs are hidden, their guarded endpoints are not read or refreshed, and a disabled deep link safely opens the group overview.
+
 - Group file uploads from the mobile app now keep the same protected request after an interrupted response or app restart. Retrying the same selected file returns the original upload instead of storing a duplicate, while changed content under that request is rejected.
 
 - Contact messages sent from the mobile app now keep the same protected request after an interrupted response or app restart. Retrying preserves one stored submission and does not repeat the organiser email attempt; reusing the key for changed content is rejected.

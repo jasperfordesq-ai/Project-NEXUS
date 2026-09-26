@@ -52,6 +52,7 @@ const mockTenant = {
   branding: { primary_color: '#4CAF50', logo_url: null },
   features: { events: true, marketplace: false, blog: true },
   modules: { wallet: true, blog: false },
+  group_tabs: { tab_discussion: true, tab_files: false },
 };
 
 // --- Tests ---
@@ -91,6 +92,16 @@ describe('TenantContext', () => {
     expect(result.current.tenantSlug).toBe('my-community');
     expect(result.current.hasSelectedTenant).toBe(true);
     expect(mockStorageSet).toHaveBeenCalledWith('tenant_slug', 'my-community');
+  });
+
+  it('uses the bootstrap group-tab contract and fails closed for missing keys', async () => {
+    const { result } = renderHook(() => useTenantContext(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasGroupTab('tab_discussion')).toBe(true);
+    expect(result.current.hasGroupTab('tab_files')).toBe(false);
+    expect(result.current.hasGroupTab('tab_members')).toBe(false);
   });
 
   it('keeps selection busy until the previous community has been restored in storage', async () => {
