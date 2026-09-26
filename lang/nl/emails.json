@@ -671,7 +671,7 @@
   "vetting_renewal": {
     "subject": "Herbeoordeling beschermingscertificering voor :name vereist",
     "title": "Beschermingscertificering vernieuwen",
-    "body": "De beschermingscertificering van :name in :community moet v??r :date worden herbeoordeeld (nog :days dagen)."
+    "body": "De beschermingscertificering van :name in :community moet vóór :date worden herbeoordeeld (nog :days dagen)."
   },
   "vetting_expired": {
     "subject": "Beschermingscertificering van :name verlopen",

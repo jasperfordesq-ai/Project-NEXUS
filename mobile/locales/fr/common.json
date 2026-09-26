@@ -120,17 +120,17 @@
   "aria": {
     "actionButton": "Bouton d'action",
     "carouselImage": "Image {{current}} sur {{total}}",
-    "verification_badges": "Labels de v?rification"
+    "verification_badges": "Labels de vérification"
   },
   "verification": {
-    "not_id_verified": "Identit? non v?rifi?e",
+    "not_id_verified": "Identité non vérifiée",
     "badge": {
-      "email_verified": "E-mail v?rifi?",
-      "phone_verified": "T?l?phone v?rifi?",
-      "id_verified": "Identit? v?rifi?e",
-      "dbs_checked": "DBS v?rifi?",
-      "admin_verified": "V?rifi? par l'administration",
-      "unknown": "V?rifi?"
+      "email_verified": "E-mail vérifié",
+      "phone_verified": "Téléphone vérifié",
+      "id_verified": "Identité vérifiée",
+      "dbs_checked": "DBS vérifié",
+      "admin_verified": "Vérifié par l'administration",
+      "unknown": "Vérifié"
     }
   },
   "unknown": "Inconnu",

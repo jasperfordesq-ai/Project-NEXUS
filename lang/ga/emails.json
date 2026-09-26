@@ -272,7 +272,7 @@
   },
   "vetting": {
     "subject": "{{heading}} - {{tenant}}",
-    "review_action": "Athbhreithnigh an deimhni? cosanta"
+    "review_action": "Athbhreithnigh an deimhniú cosanta"
   },
   "group_digest": {
     "subject": "Achoimre Míosúil: {{group}}",
@@ -669,14 +669,14 @@
     "accept_button": "Athbhreithnigh an cuireadh"
   },
   "vetting_renewal": {
-    "subject": "Athbhreithni? deimhnithe cosanta dlite do :name",
-    "title": "Deimhni? cosanta a athnuachan",
-    "body": "N? m?r deimhni? cosanta pobail :name in :community a athbhreithni? faoi :date (:days l? f?gtha)."
+    "subject": "Athbhreithniú deimhnithe cosanta dlite do :name",
+    "title": "Deimhniú cosanta a athnuachan",
+    "body": "Ní mór deimhniú cosanta pobail :name in :community a athbhreithniú faoi :date (:days lá fágtha)."
   },
   "vetting_expired": {
-    "subject": "Deimhni? cosanta :name imithe in ?ag",
-    "title": "Deimhni? cosanta imithe in ?ag",
-    "body": "Chuaigh deimhni? cosanta pobail :name in :community in ?ag ar :date. Fanann teagmh?il chosanta bactha go dt? go nd?anann ball foirne ?daraithe ? a athnuachan."
+    "subject": "Deimhniú cosanta :name imithe in éag",
+    "title": "Deimhniú cosanta imithe in éag",
+    "body": "Chuaigh deimhniú cosanta pobail :name in :community in éag ar :date. Fanann teagmháil chosanta bactha go dtí go ndéanann ball foirne údaraithe é a athnuachan."
   },
   "mfa_changed": {
     "subject": "Athraíodh slándáil do chuntais",

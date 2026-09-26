@@ -174,8 +174,8 @@
     "fallback_group": "un groupe",
     "push_body": "Ouvrez l’application pour lire le nouveau message du groupe."
   },
-  "vetting_renewal": "R?vision de la certification de protection requise pour :name",
-  "vetting_expired": "Certification de protection de :name expir?e ; contact prot?g? bloqu?",
+  "vetting_renewal": "Révision de la certification de protection requise pour :name",
+  "vetting_expired": "Certification de protection de :name expirée ; contact protégé bloqué",
   "support_action": {
     "pending": "{{name}} préparé {{what}} pour que vous l'approuviez",
     "confirmed": "{{name}} approuvé {{what}} vous avez préparé",

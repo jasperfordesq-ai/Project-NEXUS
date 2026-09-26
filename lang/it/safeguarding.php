@@ -48,7 +48,7 @@ return [
     ],
     'jurisdictions' => [
         'unconfigured' => 'Giurisdizione di salvaguardia non configurata',
-        'united_kingdom' => 'United Kingdom ? national policy package',
+        'united_kingdom' => 'Regno Unito — pacchetto di politiche nazionali',
         'england_wales' => 'Inghilterra e Galles',
         'scotland' => 'Scozia',
         'northern_ireland' => 'Irlanda del Nord',

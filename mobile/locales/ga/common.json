@@ -120,17 +120,17 @@
   "aria": {
     "actionButton": "Cnaipe gnímh",
     "carouselImage": "Iomha {{current}} as {{total}}",
-    "verification_badges": "Lip?id f?oraithe"
+    "verification_badges": "Lipéid fíoraithe"
   },
   "verification": {
-    "not_id_verified": "N?l ID f?oraithe",
+    "not_id_verified": "Níl ID fíoraithe",
     "badge": {
-      "email_verified": "R?omhphost f?oraithe",
-      "phone_verified": "F?n f?oraithe",
-      "id_verified": "ID f?oraithe",
-      "dbs_checked": "DBS seice?ilte",
-      "admin_verified": "F?oraithe ag riarth?ir",
-      "unknown": "F?oraithe"
+      "email_verified": "Ríomhphost fíoraithe",
+      "phone_verified": "Fón fíoraithe",
+      "id_verified": "ID fíoraithe",
+      "dbs_checked": "DBS seiceáilte",
+      "admin_verified": "Fíoraithe ag riarthóir",
+      "unknown": "Fíoraithe"
     }
   },
   "unknown": "Anaithnid",

@@ -109,7 +109,7 @@
   },
   "credit_donation": {
     "transaction_description": "التبرع: :message",
-    "no_message": "(?? ????)",
+    "no_message": "(لا يوجد)",
     "community_fund": "صندوق المجتمع"
   },
   "course.enrolled": "أنت الآن مسجل في {{title}}.",

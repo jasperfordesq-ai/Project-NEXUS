@@ -65,10 +65,10 @@
       "message": "We've missed you lately — would you like a warmth pass with a fellow helper?"
     },
     "unfulfilled_help_request": {
-      "message": "La richiesta di aiuto di :name ? in attesa da pi? di :days giorni. Possiamo ampliare la ricerca?"
+      "message": "La richiesta di aiuto di :name è in attesa da più di :days giorni. Possiamo ampliare la ricerca?"
     },
     "low_coverage_subregion": {
-      "message": ":name ? al momento poco coperta. Valuta di reclutare pi? aiutanti l?."
+      "message": ":name è al momento poco coperta. Valuta di reclutare più aiutanti lì."
     }
   },
   "requests": {

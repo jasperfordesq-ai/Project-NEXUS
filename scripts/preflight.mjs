@@ -321,6 +321,8 @@ if (areas.i18n.length) {
   sh('php-lang untranslated ratchet', 'node scripts/check-php-lang-untranslated.mjs');
   sh('php-lang JSON untranslated ratchet', 'node scripts/check-php-lang-json-untranslated.mjs');
   sh('locale JSON integrity', 'node scripts/check-i18n-json-integrity.mjs');
+  // Exit 2 = lang/*.php could not be read (no PHP on the host and no container).
+  sh('locale "?" damage', 'node scripts/check-i18n-question-mark-damage.mjs', { unavailableExit: 2 });
 } else {
   record('i18n checks', 'SKIP', 'no lang/locale changes');
 }

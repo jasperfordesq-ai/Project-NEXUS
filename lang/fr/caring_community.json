@@ -65,7 +65,7 @@
       "message": "We've missed you lately — would you like a warmth pass with a fellow helper?"
     },
     "unfulfilled_help_request": {
-      "message": "La demande d'aide de :name attend depuis plus de :days jours. Pourrions-nous ?largir la recherche ?"
+      "message": "La demande d'aide de :name attend depuis plus de :days jours. Pourrions-nous élargir la recherche ?"
     },
     "low_coverage_subregion": {
       "message": ":name manque actuellement de soutien. Envisagez d'y recruter davantage d'aidants."

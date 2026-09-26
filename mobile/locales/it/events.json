@@ -735,7 +735,7 @@
       "empty": "Nessuna persona corrisponde a questi filtri.",
       "load_error_title": "Impossibile caricare le persone dell'evento",
       "load_error_desc": "Impossibile caricare l'area di lavoro Persone. Per favore riprova.",
-      "pagination_summary": "{{start}}?{{end}} di {{total}}",
+      "pagination_summary": "{{start}}–{{end}} di {{total}}",
       "pagination_aria": "Pagine delle persone che partecipano all'evento",
       "history_title": "Cronologia di {{name}}",
       "history_loading": "Caricamento cronologia...",

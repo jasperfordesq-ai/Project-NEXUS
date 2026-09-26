@@ -174,8 +174,8 @@
     "fallback_group": "grúpa",
     "push_body": "Oscail an aip chun an teachtaireacht ghrúpa nua a léamh."
   },
-  "vetting_renewal": "Athbhreithni? deimhnithe cosanta dlite do :name",
-  "vetting_expired": "Deimhni? cosanta :name imithe in ?ag; teagmh?il chosanta bactha",
+  "vetting_renewal": "Athbhreithniú deimhnithe cosanta dlite do :name",
+  "vetting_expired": "Deimhniú cosanta :name imithe in éag; teagmháil chosanta bactha",
   "support_action": {
     "pending": "{{name}} ullmhaithe {{what}} chun tú a cheadú",
     "confirmed": "{{name}} ceadaithe {{what}} a d’ullmhaigh tú",

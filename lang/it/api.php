@@ -2502,7 +2502,7 @@ return [
     'partner_webhook_subscription_invalid' => 'Impossibile creare la sottoscrizione webhook con i tipi di evento o l’URL di destinazione forniti.',
     'member_premium_invalid_interval' => 'Scegli donazioni mensili o annuali.',
     'member_premium_no_subscription' => 'Non esiste una donazione ricorrente attiva da annullare.',
-    'member_premium_connect_account_invalid' => 'L?ID account Stripe Connect deve essere vuoto o iniziare con acct_.',
+    'member_premium_connect_account_invalid' => 'L’ID account Stripe Connect deve essere vuoto o iniziare con acct_.',
     'member_premium_tier_not_found' => 'Livello di supporto non trovato.',
     'member_premium_invalid_slug' => 'Usa lettere minuscole, numeri, trattini o underscore per lo slug del livello di supporto.',
     'member_premium_features_array' => 'Le note di riconoscimento devono essere inviate come array di stringhe.',

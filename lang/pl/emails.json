@@ -272,7 +272,7 @@
   },
   "vetting": {
     "subject": "{{heading}} - {{tenant}}",
-    "review_action": "Sprawd? certyfikacj? ochronn?"
+    "review_action": "Sprawdź certyfikację ochronną"
   },
   "group_digest": {
     "subject": "Miesięczne podsumowanie: {{group}}",
@@ -669,14 +669,14 @@
     "accept_button": "Sprawdź zaproszenie"
   },
   "vetting_renewal": {
-    "subject": "Wymagany przegl?d certyfikacji ochronnej dla :name",
+    "subject": "Wymagany przegląd certyfikacji ochronnej dla :name",
     "title": "Odnowienie certyfikacji ochronnej",
-    "body": "Certyfikacja ochronna spo?eczno?ci dla :name w :community musi zosta? sprawdzona do :date (pozosta?o :days dni)."
+    "body": "Certyfikacja ochronna społeczności dla :name w :community musi zostać sprawdzona do :date (pozostało :days dni)."
   },
   "vetting_expired": {
-    "subject": "Certyfikacja ochronna dla :name wygas?a",
-    "title": "Certyfikacja ochronna wygas?a",
-    "body": "Certyfikacja ochronna spo?eczno?ci dla :name w :community wygas?a :date. Chroniony kontakt pozostaje zablokowany do czasu odnowienia przez upowa?niony personel."
+    "subject": "Certyfikacja ochronna dla :name wygasła",
+    "title": "Certyfikacja ochronna wygasła",
+    "body": "Certyfikacja ochronna społeczności dla :name w :community wygasła :date. Chroniony kontakt pozostaje zablokowany do czasu odnowienia przez upoważniony personel."
   },
   "mfa_changed": {
     "subject": "Zmieniono zabezpieczenia Twojego konta",

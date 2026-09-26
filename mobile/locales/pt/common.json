@@ -120,16 +120,16 @@
   "aria": {
     "actionButton": "Botão de ação",
     "carouselImage": "Imagem {{current}} de {{total}}",
-    "verification_badges": "Etiquetas de verifica??o"
+    "verification_badges": "Etiquetas de verificação"
   },
   "verification": {
-    "not_id_verified": "ID n?o verificado",
+    "not_id_verified": "ID não verificado",
     "badge": {
       "email_verified": "Email verificado",
       "phone_verified": "Telefone verificado",
       "id_verified": "ID verificado",
       "dbs_checked": "DBS verificado",
-      "admin_verified": "Verificado pela administra??o",
+      "admin_verified": "Verificado pela administração",
       "unknown": "Verificado"
     }
   },

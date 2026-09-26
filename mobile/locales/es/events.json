@@ -347,21 +347,21 @@
       "not_checked_in": "No registrado",
       "checked_in": "Registrado",
       "checked_out": "comprobado",
-      "no_show": "No asisti?"
+      "no_show": "No asistió"
     },
     "metricsLabel": "Resumen de asistencia",
     "metrics": {
       "confirmed": "Confirmado",
       "checked_in": "Registrado",
       "checked_out": "comprobado",
-      "no_show": "No asisti?"
+      "no_show": "No asistió"
     },
     "states": {
       "not_checked_in": "No registrado",
       "checked_in": "Registrado",
       "checked_out": "comprobado",
-      "attended": "Asisti?",
-      "no_show": "No asisti?"
+      "attended": "Asistió",
+      "no_show": "No asistió"
     },
     "actions": {
       "check_in": "Registrar",
@@ -625,8 +625,8 @@
         "waitlisted": "En lista de espera",
         "checked_in": "Registrado",
         "checked_out": "comprobado",
-        "no_show": "No asisti?",
-        "attended": "Asisti?"
+        "no_show": "No asistió",
+        "attended": "Asistió"
       },
       "invite_title": "Invitar miembros",
       "invite_description": "Busque en el directorio de miembros e invite hasta 100 miembros en una sola operación.",
@@ -672,8 +672,8 @@
         "not_checked_in": "No registrado",
         "checked_in": "Registrado",
         "checked_out": "comprobado",
-        "attended": "Asisti?",
-        "no_show": "No asisti?",
+        "attended": "Asistió",
+        "no_show": "No asistió",
         "interested": "Interesado"
       },
       "selected_count": "{{count}} seleccionado",
@@ -735,7 +735,7 @@
       "empty": "Ninguna persona coincide con estos filtros.",
       "load_error_title": "No se pueden cargar personas del evento",
       "load_error_desc": "No se pudo cargar el espacio de trabajo Personas. Por favor inténtalo de nuevo.",
-      "pagination_summary": "{{start}}?{{end}} de {{total}}",
+      "pagination_summary": "{{start}}–{{end}} de {{total}}",
       "pagination_aria": "Páginas de personas del evento",
       "history_title": "Historial de {{name}}",
       "history_loading": "Cargando historial...",
@@ -774,8 +774,8 @@
           "not_checked_in": "No registrado",
           "checked_in": "Registrado",
           "checked_out": "comprobado",
-          "attended": "Asisti?",
-          "no_show": "No asisti?"
+          "attended": "Asistió",
+          "no_show": "No asistió"
         }
       },
       "outcome_errors": {

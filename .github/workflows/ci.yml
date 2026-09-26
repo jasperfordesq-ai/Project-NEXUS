@@ -1110,6 +1110,20 @@ jobs:
       - name: "BLOCKING: PHP lang/ JSON untranslated value ratchet"
         run: node scripts/check-php-lang-json-untranslated.mjs
 
+      # Added 2026-09-26. Translations saved through a non-UTF-8 pipe have every
+      # accented or non-Latin character turned into a literal "?" — Arabic and
+      # Japanese values become "????", "ausgewählt" becomes "ausgew?hlt". The
+      # file stays valid UTF-8 with every key present, so parity, drift and the
+      # mojibake check in check-i18n-json-integrity.mjs are all green. It arrived
+      # in ordinary feature commits from May to July 2026 and was repaired twice
+      # (52212f51c, ~1,100 strings; 0a4dfe6d7 and the commit adding this, ~470),
+      # reaching members, admins' safeguarding emails and API error messages in
+      # between. Scans the React, mobile and lang/ (JSON and PHP) catalogues.
+      - name: "BLOCKING: Characters replaced by question marks in translations"
+        run: |
+          node --test scripts/test/check-i18n-question-mark-damage.test.mjs
+          node scripts/check-i18n-question-mark-damage.mjs
+
       # Added 2026-08-25, and the same blind spot one level up: every sign-up key
       # was present in every locale, so both parity gates were green while the
       # three sign-up forms disagreed about who the platform is for. The web app

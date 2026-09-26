@@ -174,8 +174,8 @@
     "fallback_group": "grupa",
     "push_body": "Otwórz aplikację, aby przeczytać nową wiadomość grupową."
   },
-  "vetting_renewal": "Wymagany przegl?d certyfikacji ochronnej dla :name",
-  "vetting_expired": "Certyfikacja ochronna dla :name wygas?a; chroniony kontakt zablokowany",
+  "vetting_renewal": "Wymagany przegląd certyfikacji ochronnej dla :name",
+  "vetting_expired": "Certyfikacja ochronna dla :name wygasła; chroniony kontakt zablokowany",
   "support_action": {
     "pending": "{{name}} przygotował {{what}} do zatwierdzenia",
     "confirmed": "{{name}} zatwierdzono {{what}}, które przygotowałeś",

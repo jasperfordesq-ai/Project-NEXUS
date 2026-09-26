@@ -247,6 +247,14 @@ i18n:
   - 'scripts/check-age-declaration.mjs'
   - 'web-uk/src/views/register.njk'
   - 'scripts/php/dump-lang.php'
+  # The question-mark damage gate also scans the native app's catalogues, which
+  # nothing else in this job reads; without this line a commit that damaged
+  # only mobile/locales would wake the mobile job alone, and it does not run
+  # the gate. The shared PHP loader and the gate's own test are listed so a
+  # change to either re-runs it.
+  - 'mobile/locales/**'
+  - 'scripts/lib/load-php-array.mjs'
+  - 'scripts/test/check-i18n-question-mark-damage.test.mjs'
   - '.github/i18n-gap-baseline.json'
   - '.github/php-lang-untranslated-baseline.json'
   - '.github/workflows/ci.yml'

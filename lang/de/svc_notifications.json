@@ -174,8 +174,8 @@
     "fallback_group": "eine Gruppe",
     "push_body": "Öffnen Sie die App, um die neue Gruppennachricht zu lesen."
   },
-  "vetting_renewal": "?berpr?fung der Schutzbescheinigung f?r :name f?llig",
-  "vetting_expired": "Schutzbescheinigung f?r :name abgelaufen; gesch?tzter Kontakt gesperrt",
+  "vetting_renewal": "Überprüfung der Schutzbescheinigung für :name fällig",
+  "vetting_expired": "Schutzbescheinigung für :name abgelaufen; geschützter Kontakt gesperrt",
   "support_action": {
     "pending": "{{name}} hat {{what}} für Ihre Genehmigung vorbereitet",
     "confirmed": "{{name}} genehmigt {{what}}, das Sie vorbereitet haben",

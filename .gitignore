@@ -149,6 +149,7 @@ CLAUDE.md
 !/scripts/check-i18n.sh
 !/scripts/check-i18n-literals.mjs
 !/scripts/check-i18n-json-integrity.mjs
+!/scripts/check-i18n-question-mark-damage.mjs
 !/scripts/check-admin-ui-literals.mjs
 !/scripts/check-admin-api-literals.mjs
 !/scripts/check-admin-i18n-token-integrity.mjs

@@ -48,7 +48,7 @@ return [
     ],
     'jurisdictions' => [
         'unconfigured' => 'لم يتم تكوين اختصاص الحماية',
-        'united_kingdom' => 'United Kingdom ? national policy package',
+        'united_kingdom' => 'المملكة المتحدة — حزمة السياسات الوطنية',
         'england_wales' => 'إنجلترا وويلز',
         'scotland' => 'اسكتلندا',
         'northern_ireland' => 'أيرلندا الشمالية',

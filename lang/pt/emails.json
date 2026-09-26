@@ -272,7 +272,7 @@
   },
   "vetting": {
     "subject": "{{heading}} - {{tenant}}",
-    "review_action": "Rever certifica??o de prote??o"
+    "review_action": "Rever certificação de proteção"
   },
   "group_digest": {
     "subject": "Resumo mensal: {{group}}",
@@ -669,14 +669,14 @@
     "accept_button": "Consultar convite"
   },
   "vetting_renewal": {
-    "subject": "Revis?o da certifica??o de prote??o pendente para :name",
-    "title": "Renova??o da certifica??o de prote??o",
-    "body": "A certifica??o comunit?ria de prote??o de :name em :community deve ser revista at? :date (faltam :days dias)."
+    "subject": "Revisão da certificação de proteção pendente para :name",
+    "title": "Renovação da certificação de proteção",
+    "body": "A certificação comunitária de proteção de :name em :community deve ser revista até :date (faltam :days dias)."
   },
   "vetting_expired": {
-    "subject": "A certifica??o de prote??o de :name expirou",
-    "title": "Certifica??o de prote??o expirada",
-    "body": "A certifica??o comunit?ria de prote??o de :name em :community expirou em :date. O contacto protegido permanece bloqueado at? ser renovado por pessoal autorizado."
+    "subject": "A certificação de proteção de :name expirou",
+    "title": "Certificação de proteção expirada",
+    "body": "A certificação comunitária de proteção de :name em :community expirou em :date. O contacto protegido permanece bloqueado até ser renovado por pessoal autorizado."
   },
   "mfa_changed": {
     "subject": "A segurança da sua conta foi alterada",

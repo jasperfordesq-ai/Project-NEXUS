@@ -48,7 +48,7 @@ return [
     ],
     'jurisdictions' => [
         'unconfigured' => '保護管轄区域が構成されていません',
-        'united_kingdom' => 'United Kingdom ? national policy package',
+        'united_kingdom' => 'イギリス — 国の方針パッケージ',
         'england_wales' => 'イングランドとウェールズ',
         'scotland' => 'スコットランド',
         'northern_ireland' => '北アイルランド',

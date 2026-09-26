@@ -109,7 +109,7 @@
   },
   "credit_donation": {
     "transaction_description": "寄付: :message",
-    "no_message": "????",
+    "no_message": "(なし)",
     "community_fund": "コミュニティ基金"
   },
   "course.enrolled": "これで {{title}} に登録されました。",

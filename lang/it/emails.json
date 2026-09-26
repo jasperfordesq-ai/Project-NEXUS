@@ -674,9 +674,9 @@
     "body": "La certificazione comunitaria di tutela di :name in :community deve essere riesaminata entro il :date (mancano :days giorni)."
   },
   "vetting_expired": {
-    "subject": "La certificazione di tutela di :name ? scaduta",
+    "subject": "La certificazione di tutela di :name è scaduta",
     "title": "Certificazione di tutela scaduta",
-    "body": "La certificazione comunitaria di tutela di :name in :community ? scaduta il :date. Il contatto protetto rimane bloccato finch? il personale autorizzato non la rinnova."
+    "body": "La certificazione comunitaria di tutela di :name in :community è scaduta il :date. Il contatto protetto rimane bloccato finché il personale autorizzato non la rinnova."
   },
   "mfa_changed": {
     "subject": "La sicurezza del tuo account è cambiata",

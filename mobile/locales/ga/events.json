@@ -235,7 +235,7 @@
     "moreAttendees": "+ {{count}} níos mó",
     "waitlistCount": "{{count}} ar an liosta feithimh",
     "onWaitlistPosition": "Tá tú ar an liosta feithimh: #{{position}}",
-    "checkInProgress": "{{checked}} / {{total}} seice?ilte isteach",
+    "checkInProgress": "{{checked}} / {{total}} seiceáilte isteach",
     "attendanceLoadError": "Níorbh fhéidir freastal a lódáil.",
     "noCheckInAttendeesTitle": "Níl aon seiceáil isteach go fóill",
     "noCheckInAttendees": "Níl aon lucht freastail réidh le seiceáil isteach go fóill.",
@@ -245,7 +245,7 @@
     "checkIn": "Seiceáil Isteach",
     "checkingIn": "Ag seiceáil isteach",
     "checkInError": "Níorbh fhéidir an freastail a sheiceáil.",
-    "checkInAttendeeLabel": "Seice?il {{name}} isteach",
+    "checkInAttendeeLabel": "Seiceáil {{name}} isteach",
     "joinWaitlist": "Glac páirt sa liosta feithimh",
     "leaveWaitlist": "Fág liosta feithimh",
     "joinWaitlistError": "Níorbh fhéidir páirt a ghlacadh sa liosta feithimh.",
@@ -347,21 +347,21 @@
       "not_checked_in": "Gan seiceáil isteach",
       "checked_in": "Seiceáilte Isteach",
       "checked_out": "Seiceáilte amach",
-      "no_show": "As l?thair"
+      "no_show": "As láthair"
     },
     "metricsLabel": "Achoimre ar thinreamh",
     "metrics": {
       "confirmed": "Deimhnithe",
       "checked_in": "Seiceáilte Isteach",
       "checked_out": "Seiceáilte amach",
-      "no_show": "As l?thair"
+      "no_show": "As láthair"
     },
     "states": {
       "not_checked_in": "Gan seiceáil isteach",
       "checked_in": "Seiceáilte Isteach",
       "checked_out": "Seiceáilte amach",
       "attended": "D'fhreastail",
-      "no_show": "As l?thair"
+      "no_show": "As láthair"
     },
     "actions": {
       "check_in": "Seiceáil Isteach",
@@ -377,7 +377,7 @@
     "loadErrorTitle": "Níl an tseiceáil isteach ar fáil",
     "loadErrorDescription": "Níorbh fhéidir an t-uainchlár beo seiceáil isteach a luchtú.",
     "empty": "Níl aon lucht freastail deimhnithe ag teacht leis an gcuardach agus leis an scagaire seo.",
-    "resultCount": "{{count}} freastala?",
+    "resultCount": "{{count}} freastalaí",
     "resultCount_one": "{{count}} freastalaí",
     "resultCount_other": "{{count}} freastalaithe",
     "noActions": "Níl aon ghníomh tinrimh ar fáil faoi láthair.",

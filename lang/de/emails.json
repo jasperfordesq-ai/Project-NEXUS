@@ -272,7 +272,7 @@
   },
   "vetting": {
     "subject": "{{heading}} – {{tenant}}",
-    "review_action": "Schutzbescheinigung pr?fen"
+    "review_action": "Schutzbescheinigung prüfen"
   },
   "group_digest": {
     "subject": "Monatlicher Bericht: {{group}}",
@@ -669,14 +669,14 @@
     "accept_button": "Einladung prüfen"
   },
   "vetting_renewal": {
-    "subject": "?berpr?fung der Schutzbescheinigung f?r :name f?llig",
+    "subject": "Überprüfung der Schutzbescheinigung für :name fällig",
     "title": "Schutzbescheinigung erneuern",
-    "body": "Die Schutzbescheinigung der Community f?r :name in :community muss bis :date ?berpr?ft werden (:days Tage verbleibend)."
+    "body": "Die Schutzbescheinigung der Community für :name in :community muss bis :date überprüft werden (:days Tage verbleibend)."
   },
   "vetting_expired": {
-    "subject": "Schutzbescheinigung f?r :name abgelaufen",
+    "subject": "Schutzbescheinigung für :name abgelaufen",
     "title": "Schutzbescheinigung abgelaufen",
-    "body": "Die Schutzbescheinigung der Community f?r :name in :community ist am :date abgelaufen. Gesch?tzter Kontakt bleibt gesperrt, bis autorisiertes Personal sie erneuert."
+    "body": "Die Schutzbescheinigung der Community für :name in :community ist am :date abgelaufen. Geschützter Kontakt bleibt gesperrt, bis autorisiertes Personal sie erneuert."
   },
   "mfa_changed": {
     "subject": "Ihre Kontosicherheit wurde geändert",

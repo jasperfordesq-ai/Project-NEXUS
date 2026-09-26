@@ -48,7 +48,7 @@ return [
     ],
     'jurisdictions' => [
         'unconfigured' => 'Schutzgerichtsbarkeit nicht konfiguriert',
-        'united_kingdom' => 'United Kingdom ? national policy package',
+        'united_kingdom' => 'Vereinigtes Königreich — nationales Richtlinienpaket',
         'england_wales' => 'England und Wales',
         'scotland' => 'Schottland',
         'northern_ireland' => 'Nordirland',
