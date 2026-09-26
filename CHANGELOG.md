@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The AI assistant now describes group exchanges correctly: Providers and Receivers, the three ways to share hours, and how everyone confirms. Its built-in text described a "beneficiary", payment "from a community pool" and per-person actual hours, none of which exist. Communities already using the old default text are updated by a migration; a community whose admin edited that text keeps their own version.
+
 - The group exchange setup screen now offers "Add yourself as" Provider or Receiver, so an organiser who is also taking part, such as a workshop leader, can include themselves. The member search never lists the person searching, so this was impossible on the website before. Available in all eleven languages.
 
 - Completing a group exchange now records who paid whom. Each receiver's wallet history shows the hours they gave, paid to the providers who earned them, and every participant's records now add up to their balance change. Previously only providers got a record, and it named the organiser as the payer even though the organiser's balance never moved, so receivers could not see what they had given and the organiser's totals in admin reports were inflated. Exchanges completed before this change keep their old records (`GroupExchangeService::complete()`).
