@@ -77,7 +77,12 @@ final class GroupInviteController extends BaseApiController
             );
         }
 
-        $message = request()->input('message', '');
+        // Laravel converts an empty JSON string to null before the controller runs.
+        // The invitation message is optional, so a blank field must stay equivalent to omission.
+        $message = request()->input('message');
+        if ($message === null) {
+            $message = '';
+        }
         if (! is_string($message)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'message', 422);
         }

@@ -832,6 +832,8 @@ describe('group manager invitations', () => {
     await expect(createGroupInviteLink(7, 14)).rejects.toThrow('Invalid group invitation response');
     (api.post as jest.Mock).mockResolvedValueOnce({ data: [{ email: 'member@example.test', status: 'mystery' }] });
     await expect(sendGroupEmailInvites(7, ['member@example.test'], '')).rejects.toThrow('Invalid group invitation response');
+    (api.post as jest.Mock).mockResolvedValueOnce({ data: [{ email: 'member@example.test', status: 'sent' }] });
+    await expect(sendGroupEmailInvites(7, ['member@example.test'], '')).rejects.toThrow('Invalid group invitation response');
   });
 });
 

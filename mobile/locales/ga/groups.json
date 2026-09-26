@@ -666,6 +666,7 @@
     "revoke_message": "Stopfaidh an cuireadh seo ag obair láithreach.",
     "status": {
       "sent": "Seolta",
+      "delivery_failed": "Cruthaíodh an cuireadh, ach níor seachadadh an ríomhphost",
       "invalid": "Seoladh neamhbhailí",
       "already_member": "Ina bhall cheana",
       "already_invited": "Tugadh cuireadh cheana",

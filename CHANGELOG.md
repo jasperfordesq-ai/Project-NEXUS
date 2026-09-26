@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group invitation emails can now be sent from the mobile app when the optional message is left blank. Laravel previously converted the empty field to `null` and then rejected it. Results also distinguish a durable invitation whose email delivery failed from one that was actually sent, instead of reporting both as “Sent”, and malformed delivery results fail closed.
+
 - When a group manager loses management authority while the mobile Automation screen is open, a refused manager-only read or write now refreshes the group immediately. Stale scheduling and welcome-message controls disappear, the screen returns to Overview, and a definitively refused schedule is not retained for retry or created on the server.
 
 - A scheduled group post refused by safeguarding or another definite client-side rule now releases its encrypted retry lock while keeping the manager's entered text available to correct. Connection failures still retain the protected request for an exact retry, and the app explains safeguarding refusals in all seven mobile languages instead of claiming the post is waiting for a connection.

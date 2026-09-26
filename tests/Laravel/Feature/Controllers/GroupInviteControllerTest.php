@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
 
@@ -60,5 +61,34 @@ class GroupInviteControllerTest extends TestCase
         $this->authenticatedUser();
         $response = $this->apiGet('/v2/groups/1/invites');
         $this->assertNotEquals(401, $response->status(), 'Auth should have passed');
+    }
+
+    public function test_send_emails_accepts_a_blank_optional_message_after_middleware_normalizes_it_to_null(): void
+    {
+        $owner = $this->authenticatedUser();
+        $groupId = DB::table('groups')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'owner_id' => $owner->id,
+            'name' => 'Blank invitation message group',
+            'visibility' => 'public',
+            'status' => 'active',
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $groupId,
+            'user_id' => $owner->id,
+            'role' => 'owner',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->apiPost("/v2/groups/{$groupId}/invites/email", [
+            'emails' => [$owner->email],
+            'message' => '',
+        ])->assertOk()->assertJsonPath('data.0.status', 'already_member');
     }
 }

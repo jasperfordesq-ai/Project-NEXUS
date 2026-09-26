@@ -666,6 +666,7 @@
     "revoke_message": "Diese Einladung funktioniert dann sofort nicht mehr.",
     "status": {
       "sent": "Gesendet",
+      "delivery_failed": "Einladung erstellt, aber die E-Mail wurde nicht zugestellt",
       "invalid": "Ungültige Adresse",
       "already_member": "Bereits Mitglied",
       "already_invited": "Bereits eingeladen",

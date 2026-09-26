@@ -666,6 +666,7 @@
     "revoke_message": "Este convite deixará de funcionar imediatamente.",
     "status": {
       "sent": "Enviado",
+      "delivery_failed": "Convite criado, mas o e-mail não foi entregue",
       "invalid": "Endereço inválido",
       "already_member": "Já é membro",
       "already_invited": "Já convidado",

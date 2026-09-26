@@ -666,6 +666,7 @@
     "revoke_message": "This invitation will stop working immediately.",
     "status": {
       "sent": "Sent",
+      "delivery_failed": "Invitation created, but the email was not delivered",
       "invalid": "Invalid address",
       "already_member": "Already a member",
       "already_invited": "Already invited",

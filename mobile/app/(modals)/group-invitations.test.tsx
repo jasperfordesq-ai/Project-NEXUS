@@ -29,6 +29,7 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) =>
   'groups:invite_manage.pending_empty': 'No pending invitations', 'groups:invite_manage.share_link': 'Share link',
   'groups:invite_manage.expires': 'Expires soon', 'groups:invite_manage.share': 'Share', 'groups:invite_manage.revoke': 'Revoke',
   'groups:invite_manage.uncertain': 'Check the refreshed list before trying again.',
+  'groups:invite_manage.status.sent': 'Sent', 'groups:invite_manage.status.delivery_failed': 'Invitation created, but the email was not delivered',
   'groups:invite_manage.access_denied': 'Invitation access denied', 'groups:invite_manage.load_error': 'Could not load invitations',
   'common:loading': 'Loading', 'common:back': 'Back', 'common:errors.generic': 'Something went wrong',
 }[key] ?? key) }) }));
@@ -116,6 +117,18 @@ describe('group invitation manager', () => {
     fireEvent.press(view.getByText('Send invitations'));
     expect(await view.findByText('Invitation refused')).toBeTruthy();
     expect(view.getByTestId('group-invite-emails').props.value).toBe('member@example.test');
+  });
+
+  it('does not describe a created invitation as sent when email delivery failed', async () => {
+    jest.mocked(sendGroupEmailInvites).mockResolvedValue([{
+      email: 'member@example.test', status: 'sent', email_delivered: false,
+    }]);
+    const view = render(<Screen />);
+    await waitFor(() => expect(view.getByText('No pending invitations')).toBeTruthy());
+    fireEvent.changeText(view.getByTestId('group-invite-emails'), 'member@example.test');
+    fireEvent.press(view.getByText('Send invitations'));
+    expect(await view.findByText('member@example.test: Invitation created, but the email was not delivered')).toBeTruthy();
+    expect(view.queryByText('member@example.test: Sent')).toBeNull();
   });
 
   it('confirms revocation and removes the confirmed pending invitation', async () => {

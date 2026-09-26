@@ -1418,7 +1418,9 @@ function parseEmailInviteResult(value: unknown): GroupEmailInviteResult {
   if (!value || typeof value !== 'object') throw new Error('Invalid group invitation response');
   const result = value as Record<string, unknown>;
   if (typeof result.email !== 'string'
-    || !['sent', 'invalid', 'already_member', 'already_invited', 'limit_reached'].includes(String(result.status))) {
+    || !['sent', 'invalid', 'already_member', 'already_invited', 'limit_reached'].includes(String(result.status))
+    || (result.status === 'sent' && typeof result.email_delivered !== 'boolean')
+    || (result.email_delivered !== undefined && result.email_delivered !== null && typeof result.email_delivered !== 'boolean')) {
     throw new Error('Invalid group invitation response');
   }
   return value as GroupEmailInviteResult;

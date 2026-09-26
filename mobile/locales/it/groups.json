@@ -666,6 +666,7 @@
     "revoke_message": "Questo invito smetterà di funzionare immediatamente.",
     "status": {
       "sent": "Inviato",
+      "delivery_failed": "Invito creato, ma l’e-mail non è stata consegnata",
       "invalid": "Indirizzo non valido",
       "already_member": "Già membro",
       "already_invited": "Già invitato",

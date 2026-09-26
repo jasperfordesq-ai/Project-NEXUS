@@ -151,7 +151,10 @@ function Workspace({ groupId }: { groupId: number }) {
           <Input testID="group-invite-emails" label={t('groups:invite_manage.email_label')} value={emails} onChangeText={setEmails} autoCapitalize="none" keyboardType="email-address" editable={!busy} multiline />
           <Input testID="group-invite-message" label={t('groups:invite_manage.message_label')} value={message} onChangeText={setMessage} editable={!busy} multiline maxLength={10000} />
           <Button isDisabled={busy || !emails.trim()} onPress={() => void sendEmails()}>{t('groups:invite_manage.send')}</Button>
-          {results.map(result => <Text key={`${result.email}:${result.status}`} className="text-foreground">{result.email}: {t(`groups:invite_manage.status.${result.status}`)}</Text>)}
+          {results.map(result => {
+            const status = result.status === 'sent' && result.email_delivered === false ? 'delivery_failed' : result.status;
+            return <Text key={`${result.email}:${result.status}`} className="text-foreground">{result.email}: {t(`groups:invite_manage.status.${status}`)}</Text>;
+          })}
         </Card.Body></Card>
         <Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{t('groups:invite_manage.pending_title')}</Text>
         {!invites.length ? <Text className="text-muted-foreground">{t('groups:invite_manage.pending_empty')}</Text> : invites.map(invite => <Card key={invite.id}><Card.Body className="gap-2 p-4">
