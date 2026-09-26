@@ -1,0 +1,60 @@
+{
+  "page_title": "Centre d'aide",
+  "meta_description": "Des guides simples et clairs sur tout ce qui concerne {{name}} : bien démarrer, échanger du temps, rester en sécurité et faire vivre votre communauté.",
+  "hero_eyebrow": "Centre d'aide",
+  "heading": "Comment pouvons-nous vous aider ?",
+  "subtitle": "Des guides pas à pas sur tout ce qui concerne {{name}}, écrits en termes simples.",
+  "search_label": "Rechercher dans le Centre d'aide",
+  "search_placeholder": "Recherchez dans les guides, par exemple « envoyer des heures »",
+  "search_results_heading": "Guides correspondant à « {{query}} »",
+  "search_results_count_one": "{{count}} guide trouvé",
+  "search_results_count_many": "{{count}} guides trouvés",
+  "search_results_count_other": "{{count}} guides trouvés",
+  "search_no_results_title": "Aucun guide ne correspond à votre recherche",
+  "search_no_results_body": "Essayez un autre mot, ou un mot plus court. Vous pouvez aussi parcourir les thèmes, ou nous contacter : une personne vous aidera.",
+  "audience_nav_label": "Choisissez un guide",
+  "audience": {
+    "members": {
+      "title": "Utiliser la plateforme",
+      "description": "S'inscrire, proposer son aide, échanger du temps et rester en sécurité."
+    },
+    "brokers": {
+      "title": "Pour les courtiers et les coordinateurs",
+      "description": "Approuver les membres, organiser les échanges, assurer la protection et animer les activités de groupe."
+    },
+    "admins": {
+      "title": "Pour les administrateurs de communauté",
+      "description": "Configurer votre communauté, gérer les membres et choisir les fonctionnalités."
+    }
+  },
+  "popular_heading": "La plupart des gens commencent ici",
+  "sections_heading": "Parcourir par thème",
+  "articles_count_one": "{{count}} guide",
+  "articles_count_many": "{{count}} guides",
+  "articles_count_other": "{{count}} guides",
+  "community_faqs_heading": "Questions de votre communauté",
+  "community_faqs_description": "Des réponses rédigées par les personnes qui gèrent {{name}}.",
+  "contact_heading": "Besoin d'aide supplémentaire ?",
+  "contact_body": "Si vous ne trouvez pas ce qu'il vous faut, contactez-nous : une personne vous aidera.",
+  "contact_button": "Nous contacter",
+  "open_page": "Aller à cette page",
+  "in_this_section": "Autres guides sur ce thème",
+  "pager_label": "Autres guides sur ce thème",
+  "previous_article": "Précédent",
+  "next_article": "Suivant",
+  "not_found_title": "Nous n'avons pas trouvé ce guide",
+  "not_found_body": "Il a peut-être été déplacé, ou cette fonctionnalité n'est peut-être pas activée dans votre communauté.",
+  "not_found_button": "Retour au Centre d'aide",
+  "broker_panel": {
+    "title": "Guide des courtiers et des coordinateurs",
+    "subtitle": "Des guides simples et clairs sur chaque partie du Panneau du courtier et sur l'organisation des échanges.",
+    "open_full": "Ouvrir le guide complet",
+    "view_in_help_centre": "Ouvrir dans le Centre d'aide",
+    "back": "Tous les guides des courtiers"
+  },
+  "admin_panel": {
+    "title": "Guide complet des administrateurs",
+    "subtitle": "Des guides pas à pas pour configurer votre communauté, gérer les membres, la protection et toutes les fonctions d’administration, en langage simple.",
+    "open_full": "Ouvrir le guide des administrateurs"
+  }
+}

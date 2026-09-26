@@ -1,0 +1,60 @@
+{
+  "page_title": "Centro de Ayuda",
+  "meta_description": "Guías en lenguaje sencillo sobre todo lo que ofrece {{name}}: cómo empezar, intercambiar tiempo, mantenerse a salvo y gestionar tu comunidad.",
+  "hero_eyebrow": "Centro de Ayuda",
+  "heading": "¿Cómo podemos ayudarte?",
+  "subtitle": "Guías paso a paso sobre todo lo que ofrece {{name}}, escritas en lenguaje sencillo.",
+  "search_label": "Buscar en el Centro de Ayuda",
+  "search_placeholder": "Busca en las guías, por ejemplo \"enviar horas\"",
+  "search_results_heading": "Guías que coinciden con \"{{query}}\"",
+  "search_results_count_one": "{{count}} guía encontrada",
+  "search_results_count_many": "{{count}} guías encontradas",
+  "search_results_count_other": "{{count}} guías encontradas",
+  "search_no_results_title": "Ninguna guía coincide con tu búsqueda",
+  "search_no_results_body": "Prueba con otra palabra o con una más corta. También puedes explorar los temas, o contactarnos y una persona te ayudará.",
+  "audience_nav_label": "Elige una guía",
+  "audience": {
+    "members": {
+      "title": "Uso de la plataforma",
+      "description": "Unirte, ofrecer ayuda, intercambiar tiempo y mantenerte a salvo."
+    },
+    "brokers": {
+      "title": "Para brókeres y coordinadores",
+      "description": "Aprobar miembros, organizar intercambios, protección y actividades de grupo."
+    },
+    "admins": {
+      "title": "Para administradores de la comunidad",
+      "description": "Configurar tu comunidad, gestionar a los miembros y elegir las funciones."
+    }
+  },
+  "popular_heading": "La mayoría de la gente empieza aquí",
+  "sections_heading": "Explorar por tema",
+  "articles_count_one": "{{count}} guía",
+  "articles_count_many": "{{count}} guías",
+  "articles_count_other": "{{count}} guías",
+  "community_faqs_heading": "Preguntas de tu comunidad",
+  "community_faqs_description": "Respuestas escritas por las personas que gestionan {{name}}.",
+  "contact_heading": "¿Todavía necesitas ayuda?",
+  "contact_body": "Si no encuentras lo que necesitas, ponte en contacto y una persona te ayudará.",
+  "contact_button": "Contáctanos",
+  "open_page": "Ir a esta página",
+  "in_this_section": "Más guías sobre este tema",
+  "pager_label": "Otras guías sobre este tema",
+  "previous_article": "Anterior",
+  "next_article": "Siguiente",
+  "not_found_title": "No hemos encontrado esa guía",
+  "not_found_body": "Puede que se haya movido, o que esta función no esté activada en tu comunidad.",
+  "not_found_button": "Volver al Centro de Ayuda",
+  "broker_panel": {
+    "title": "Guía para brókeres y coordinadores",
+    "subtitle": "Guías en lenguaje sencillo sobre cada parte del Panel de Corredor y sobre el trabajo de organizar intercambios.",
+    "open_full": "Abrir la guía completa",
+    "view_in_help_centre": "Abrir en el Centro de Ayuda",
+    "back": "Todas las guías para brókeres"
+  },
+  "admin_panel": {
+    "title": "Guía completa para administradores",
+    "subtitle": "Guías paso a paso para configurar tu comunidad, gestionar a los miembros, la protección y todas las funciones de administración, en lenguaje sencillo.",
+    "open_full": "Abrir la guía para administradores"
+  }
+}

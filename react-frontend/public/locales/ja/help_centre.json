@@ -1,0 +1,56 @@
+{
+  "page_title": "ヘルプセンター",
+  "meta_description": "{{name}} のすべてをわかりやすく説明するガイドです。はじめ方、時間の交換、安全に使うためのヒント、コミュニティの運営について。",
+  "hero_eyebrow": "ヘルプセンター",
+  "heading": "どのようなことでお困りですか?",
+  "subtitle": "{{name}} のすべてを、わかりやすい言葉で一つずつ説明するガイドです。",
+  "search_label": "ヘルプセンターを検索",
+  "search_placeholder": "ガイドを検索(例:「時間を送る」)",
+  "search_results_heading": "「{{query}}」に一致するガイド",
+  "search_results_count_other": "{{count}} 件のガイドが見つかりました",
+  "search_no_results_title": "検索に一致するガイドはありませんでした",
+  "search_no_results_body": "別の言葉や、より短い言葉でお試しください。トピックから探すこともできます。また、お問い合わせいただければ担当者がお手伝いします。",
+  "audience_nav_label": "ガイドを選ぶ",
+  "audience": {
+    "members": {
+      "title": "プラットフォームの使い方",
+      "description": "参加、手助けの提供、時間の交換、安全に使うためのヒント。"
+    },
+    "brokers": {
+      "title": "ブローカーとコーディネーター向け",
+      "description": "メンバーの承認、交換の手配、セーフガーディング、グループ活動。"
+    },
+    "admins": {
+      "title": "コミュニティ管理者向け",
+      "description": "コミュニティの設定、メンバーの管理、機能の選択。"
+    }
+  },
+  "popular_heading": "まずはここから",
+  "sections_heading": "トピックから探す",
+  "articles_count_other": "{{count}} 件のガイド",
+  "community_faqs_heading": "コミュニティからの質問",
+  "community_faqs_description": "{{name}} の運営者が書いた回答です。",
+  "contact_heading": "まだお困りですか?",
+  "contact_body": "必要な情報が見つからない場合は、お問い合わせください。担当者がお手伝いします。",
+  "contact_button": "お問い合わせ",
+  "open_page": "このページへ移動",
+  "in_this_section": "このトピックのほかのガイド",
+  "pager_label": "このトピックのほかのガイドへ移動",
+  "previous_article": "前へ",
+  "next_article": "次へ",
+  "not_found_title": "ガイドが見つかりませんでした",
+  "not_found_body": "移動したか、あなたのコミュニティではこの機能が有効になっていない可能性があります。",
+  "not_found_button": "ヘルプセンターに戻る",
+  "broker_panel": {
+    "title": "ブローカーとコーディネーターのガイド",
+    "subtitle": "ブローカーパネルのすべての機能と、交換の運営についてわかりやすく説明するガイドです。",
+    "open_full": "ガイド全体を開く",
+    "view_in_help_centre": "ヘルプセンターで開く",
+    "back": "すべてのブローカー向けガイド"
+  },
+  "admin_panel": {
+    "title": "管理者向け完全ガイド",
+    "subtitle": "コミュニティの設定、メンバーの管理、セーフガーディング、すべての管理機能について、わかりやすい言葉で手順を説明します。",
+    "open_full": "管理者ガイドを開く"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "page_title": "Ionad Cabhrach",
+  "meta_description": "Treoracha i nGaeilge shimplí ar gach rud ar {{name}}: tosú amach, am a mhalartú, fanacht slán agus do phobal a reáchtáil.",
+  "hero_eyebrow": "Ionad Cabhrach",
+  "heading": "Conas is féidir linn cabhrú leat?",
+  "subtitle": "Treoracha céim ar chéim ar gach rud ar {{name}}, scríofa i nGaeilge shimplí.",
+  "search_label": "Cuardaigh san Ionad Cabhrach",
+  "search_placeholder": "Cuardaigh sna treoracha, mar shampla \"uaireanta a sheoladh\"",
+  "search_results_heading": "Treoracha a mheaitseálann \"{{query}}\"",
+  "search_results_count_one": "Aimsíodh {{count}} treoir",
+  "search_results_count_two": "Aimsíodh {{count}} threoir",
+  "search_results_count_few": "Aimsíodh {{count}} threoir",
+  "search_results_count_many": "Aimsíodh {{count}} dtreoir",
+  "search_results_count_other": "Aimsíodh {{count}} treoir",
+  "search_no_results_title": "Níor mheaitseáil aon treoir do chuardach",
+  "search_no_results_body": "Bain triail as focal eile, nó focal níos giorra. Is féidir leat na topaicí a bhrabhsáil freisin, nó teagmháil a dhéanamh linn agus cabhróidh duine leat.",
+  "audience_nav_label": "Roghnaigh treoir",
+  "audience": {
+    "members": {
+      "title": "An t-ardán a úsáid",
+      "description": "Clárú, cabhair a thairiscint, am a mhalartú agus fanacht slán."
+    },
+    "brokers": {
+      "title": "Do bhróicéirí agus do chomhordaitheoirí",
+      "description": "Baill a cheadú, malartuithe a shocrú, cosaint agus gníomhaíochtaí grúpa."
+    },
+    "admins": {
+      "title": "Do riarthóirí pobail",
+      "description": "Do phobal a bhunú, baill a bhainistiú agus gnéithe a roghnú."
+    }
+  },
+  "popular_heading": "Tosaíonn formhór na ndaoine anseo",
+  "sections_heading": "Brabhsáil de réir topaice",
+  "articles_count_one": "{{count}} treoir",
+  "articles_count_two": "{{count}} threoir",
+  "articles_count_few": "{{count}} threoir",
+  "articles_count_many": "{{count}} dtreoir",
+  "articles_count_other": "{{count}} treoir",
+  "community_faqs_heading": "Ceisteanna ó do phobal",
+  "community_faqs_description": "Freagraí scríofa ag na daoine a reáchtálann {{name}}.",
+  "contact_heading": "An bhfuil cabhair uait fós?",
+  "contact_body": "Mura bhfaigheann tú an rud atá uait, déan teagmháil linn agus cabhróidh duine leat.",
+  "contact_button": "Déan teagmháil linn",
+  "open_page": "Téigh chuig an leathanach seo",
+  "in_this_section": "Tuilleadh treoracha sa topaic seo",
+  "pager_label": "Treoracha eile sa topaic seo",
+  "previous_article": "Roimhe seo",
+  "next_article": "Ar aghaidh",
+  "not_found_title": "Níorbh fhéidir linn an treoir sin a aimsiú",
+  "not_found_body": "B'fhéidir gur bogadh í, nó b'fhéidir nach bhfuil an ghné seo curtha ar siúl i do phobal.",
+  "not_found_button": "Ar ais chuig an Ionad Cabhrach",
+  "broker_panel": {
+    "title": "Treoir do bhróicéirí agus do chomhordaitheoirí",
+    "subtitle": "Treoracha i nGaeilge shimplí ar gach cuid den Phainéal Bróicéara agus ar an obair a bhaineann le malartuithe a reáchtáil.",
+    "open_full": "Oscail an treoir iomlán",
+    "view_in_help_centre": "Oscail san Ionad Cabhrach",
+    "back": "Gach treoir do bhróicéirí"
+  },
+  "admin_panel": {
+    "title": "Treoir iomlán do riarthóirí",
+    "subtitle": "Treoracha céim ar chéim chun do phobal a shocrú, baill a bhainistiú, cosaint agus sábháilteacht, agus gach gné riaracháin, i dteanga shimplí.",
+    "open_full": "Oscail an treoir do riarthóirí"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "page_title": "مركز المساعدة",
+  "meta_description": "أدلة بلغة بسيطة وواضحة لكل ما في {{name}}: البدء، وتبادل الوقت، والبقاء في أمان، وإدارة مجتمعك.",
+  "hero_eyebrow": "مركز المساعدة",
+  "heading": "كيف يمكننا مساعدتك؟",
+  "subtitle": "أدلة خطوة بخطوة لكل ما في {{name}}، مكتوبة بلغة بسيطة وواضحة.",
+  "search_label": "البحث في مركز المساعدة",
+  "search_placeholder": "ابحث في الأدلة، مثلًا «إرسال الساعات»",
+  "search_results_heading": "الأدلة المطابقة لـ «{{query}}»",
+  "search_results_count_zero": "لم يُعثر على أي دليل",
+  "search_results_count_one": "تم العثور على دليل واحد",
+  "search_results_count_two": "تم العثور على دليلين",
+  "search_results_count_few": "تم العثور على {{count}} أدلة",
+  "search_results_count_many": "تم العثور على {{count}} دليلًا",
+  "search_results_count_other": "تم العثور على {{count}} دليل",
+  "search_no_results_title": "لا توجد أدلة تطابق بحثك",
+  "search_no_results_body": "جرّب كلمة مختلفة أو أقصر. يمكنك أيضًا تصفح المواضيع، أو التواصل معنا وسيساعدك شخص من فريقنا.",
+  "audience_nav_label": "اختر دليلًا",
+  "audience": {
+    "members": {
+      "title": "استخدام المنصة",
+      "description": "الانضمام، وتقديم المساعدة، وتبادل الوقت، والبقاء في أمان."
+    },
+    "brokers": {
+      "title": "للوسطاء والمنسقين",
+      "description": "الموافقة على الأعضاء، وترتيب التبادلات، والحماية، والأنشطة الجماعية."
+    },
+    "admins": {
+      "title": "لمشرفي المجتمع",
+      "description": "إعداد مجتمعك، وإدارة الأعضاء، واختيار الميزات."
+    }
+  },
+  "popular_heading": "يبدأ معظم الناس من هنا",
+  "sections_heading": "تصفح حسب الموضوع",
+  "articles_count_zero": "لا توجد أدلة",
+  "articles_count_one": "دليل واحد",
+  "articles_count_two": "دليلان",
+  "articles_count_few": "{{count}} أدلة",
+  "articles_count_many": "{{count}} دليلًا",
+  "articles_count_other": "{{count}} دليل",
+  "community_faqs_heading": "أسئلة من مجتمعك",
+  "community_faqs_description": "إجابات كتبها القائمون على {{name}}.",
+  "contact_heading": "هل ما زلت بحاجة إلى مساعدة؟",
+  "contact_body": "إذا لم تجد ما تحتاجه، فتواصل معنا وسيساعدك شخص من فريقنا.",
+  "contact_button": "اتصل بنا",
+  "open_page": "انتقل إلى هذه الصفحة",
+  "in_this_section": "المزيد من الأدلة في هذا الموضوع",
+  "pager_label": "أدلة أخرى في هذا الموضوع",
+  "previous_article": "السابق",
+  "next_article": "التالي",
+  "not_found_title": "لم نتمكن من العثور على هذا الدليل",
+  "not_found_body": "ربما نُقل إلى مكان آخر، أو ربما هذه الميزة غير مفعّلة في مجتمعك.",
+  "not_found_button": "العودة إلى مركز المساعدة",
+  "broker_panel": {
+    "title": "دليل الوسطاء والمنسقين",
+    "subtitle": "أدلة بلغة بسيطة وواضحة لكل جزء من لوحة الوسيط ولعمل إدارة التبادلات.",
+    "open_full": "افتح الدليل كاملًا",
+    "view_in_help_centre": "افتحه في مركز المساعدة",
+    "back": "جميع أدلة الوسطاء"
+  },
+  "admin_panel": {
+    "title": "دليل المشرفين الكامل",
+    "subtitle": "أدلة خطوة بخطوة لإعداد مجتمعك وإدارة الأعضاء والحماية وكل ميزات الإدارة، بلغة بسيطة وواضحة.",
+    "open_full": "افتح دليل المشرفين"
+  }
+}

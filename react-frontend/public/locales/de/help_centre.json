@@ -1,0 +1,58 @@
+{
+  "page_title": "Hilfezentrum",
+  "meta_description": "Leicht verständliche Anleitungen zu allem auf {{name}}: die ersten Schritte, Zeit tauschen, sicher bleiben und Ihre Gemeinschaft organisieren.",
+  "hero_eyebrow": "Hilfezentrum",
+  "heading": "Wie können wir Ihnen helfen?",
+  "subtitle": "Schritt-für-Schritt-Anleitungen zu allem auf {{name}}, in einfacher Sprache.",
+  "search_label": "Im Hilfezentrum suchen",
+  "search_placeholder": "Anleitungen durchsuchen, zum Beispiel „Stunden senden“",
+  "search_results_heading": "Anleitungen zu „{{query}}“",
+  "search_results_count_one": "{{count}} Anleitung gefunden",
+  "search_results_count_other": "{{count}} Anleitungen gefunden",
+  "search_no_results_title": "Keine Anleitung passt zu Ihrer Suche",
+  "search_no_results_body": "Versuchen Sie ein anderes oder kürzeres Wort. Sie können auch die Themen durchblättern oder uns kontaktieren – dann hilft Ihnen ein Mensch weiter.",
+  "audience_nav_label": "Anleitung auswählen",
+  "audience": {
+    "members": {
+      "title": "Die Plattform nutzen",
+      "description": "Mitglied werden, Hilfe anbieten, Zeit tauschen und sicher bleiben."
+    },
+    "brokers": {
+      "title": "Für Broker und Koordinatoren",
+      "description": "Mitglieder freischalten, Austausche vermitteln, Schutzmaßnahmen und Gruppenaktivitäten."
+    },
+    "admins": {
+      "title": "Für Admins der Gemeinschaft",
+      "description": "Ihre Gemeinschaft einrichten, Mitglieder verwalten und Funktionen auswählen."
+    }
+  },
+  "popular_heading": "Hier fangen die meisten an",
+  "sections_heading": "Nach Thema stöbern",
+  "articles_count_one": "{{count}} Anleitung",
+  "articles_count_other": "{{count}} Anleitungen",
+  "community_faqs_heading": "Fragen aus Ihrer Gemeinschaft",
+  "community_faqs_description": "Antworten von den Menschen, die {{name}} betreiben.",
+  "contact_heading": "Brauchen Sie noch Hilfe?",
+  "contact_body": "Wenn Sie nicht finden, was Sie suchen, melden Sie sich bei uns. Ein Mensch hilft Ihnen dann weiter.",
+  "contact_button": "Kontaktieren Sie uns",
+  "open_page": "Zu dieser Seite",
+  "in_this_section": "Weitere Anleitungen zu diesem Thema",
+  "pager_label": "Andere Anleitungen zu diesem Thema",
+  "previous_article": "Zurück",
+  "next_article": "Weiter",
+  "not_found_title": "Wir konnten diese Anleitung nicht finden",
+  "not_found_body": "Vielleicht wurde sie verschoben, oder diese Funktion ist in Ihrer Gemeinschaft nicht eingeschaltet.",
+  "not_found_button": "Zurück zum Hilfezentrum",
+  "broker_panel": {
+    "title": "Anleitung für Broker und Koordinatoren",
+    "subtitle": "Leicht verständliche Anleitungen zu allen Bereichen des Broker-Panels und zur Vermittlung von Austauschen.",
+    "open_full": "Die vollständige Anleitung öffnen",
+    "view_in_help_centre": "Im Hilfezentrum öffnen",
+    "back": "Alle Anleitungen für Broker"
+  },
+  "admin_panel": {
+    "title": "Vollständiger Leitfaden für Admins",
+    "subtitle": "Schritt-für-Schritt-Anleitungen zum Einrichten Ihrer Community, zur Mitgliederverwaltung, zum Schutz und zu jeder Admin-Funktion – in einfacher Sprache.",
+    "open_full": "Admin-Leitfaden öffnen"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "page_title": "Helpcentrum",
+  "meta_description": "Handleidingen in gewone taal voor alles op {{name}}: aan de slag gaan, tijd uitwisselen, veilig blijven en je gemeenschap draaiende houden.",
+  "hero_eyebrow": "Helpcentrum",
+  "heading": "Waarmee kunnen we je helpen?",
+  "subtitle": "Stap-voor-staphandleidingen voor alles op {{name}}, in gewone taal.",
+  "search_label": "Zoeken in het Helpcentrum",
+  "search_placeholder": "Zoek in de handleidingen, bijvoorbeeld \"uren sturen\"",
+  "search_results_heading": "Handleidingen voor \"{{query}}\"",
+  "search_results_count_one": "{{count}} handleiding gevonden",
+  "search_results_count_other": "{{count}} handleidingen gevonden",
+  "search_no_results_title": "Er zijn geen handleidingen gevonden",
+  "search_no_results_body": "Probeer een ander of korter woord. Je kunt ook de onderwerpen doorbladeren, of contact met ons opnemen. Dan helpt iemand je persoonlijk verder.",
+  "audience_nav_label": "Kies een handleiding",
+  "audience": {
+    "members": {
+      "title": "Het platform gebruiken",
+      "description": "Lid worden, hulp aanbieden, tijd uitwisselen en veilig blijven."
+    },
+    "brokers": {
+      "title": "Voor makelaars en coördinatoren",
+      "description": "Leden goedkeuren, uitwisselingen regelen, bescherming en groepsactiviteiten."
+    },
+    "admins": {
+      "title": "Voor beheerders van de gemeenschap",
+      "description": "Je gemeenschap inrichten, leden beheren en functies kiezen."
+    }
+  },
+  "popular_heading": "De meeste mensen beginnen hier",
+  "sections_heading": "Bladeren per onderwerp",
+  "articles_count_one": "{{count}} handleiding",
+  "articles_count_other": "{{count}} handleidingen",
+  "community_faqs_heading": "Vragen uit je gemeenschap",
+  "community_faqs_description": "Antwoorden geschreven door de mensen die {{name}} runnen.",
+  "contact_heading": "Nog steeds hulp nodig?",
+  "contact_body": "Kun je niet vinden wat je zoekt? Neem contact op, dan helpt iemand je persoonlijk verder.",
+  "contact_button": "Neem contact op",
+  "open_page": "Ga naar deze pagina",
+  "in_this_section": "Meer handleidingen over dit onderwerp",
+  "pager_label": "Andere handleidingen over dit onderwerp",
+  "previous_article": "Vorige",
+  "next_article": "Volgende",
+  "not_found_title": "We konden die handleiding niet vinden",
+  "not_found_body": "Misschien is hij verplaatst, of staat deze functie niet aan in je gemeenschap.",
+  "not_found_button": "Terug naar het Helpcentrum",
+  "broker_panel": {
+    "title": "Handleiding voor makelaars en coördinatoren",
+    "subtitle": "Handleidingen in gewone taal voor elk onderdeel van het makelaarspaneel en het regelen van uitwisselingen.",
+    "open_full": "Open de volledige handleiding",
+    "view_in_help_centre": "Openen in het Helpcentrum",
+    "back": "Alle handleidingen voor makelaars"
+  },
+  "admin_panel": {
+    "title": "Volledige handleiding voor beheerders",
+    "subtitle": "Stap-voor-stap handleidingen voor het inrichten van je gemeenschap, het beheren van leden, veiligheid en elke beheerfunctie, in eenvoudige taal.",
+    "open_full": "Open de handleiding voor beheerders"
+  }
+}

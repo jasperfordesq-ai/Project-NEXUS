@@ -1,0 +1,60 @@
+{
+  "page_title": "Centro assistenza",
+  "meta_description": "Guide semplici e chiare a tutto ciò che trovi su {{name}}: come iniziare, scambiare tempo, restare al sicuro e gestire la tua comunità.",
+  "hero_eyebrow": "Centro assistenza",
+  "heading": "Come possiamo aiutarti?",
+  "subtitle": "Guide passo per passo a tutto ciò che trovi su {{name}}, scritte in parole semplici.",
+  "search_label": "Cerca nel Centro assistenza",
+  "search_placeholder": "Cerca nelle guide, ad esempio \"inviare ore\"",
+  "search_results_heading": "Guide che corrispondono a \"{{query}}\"",
+  "search_results_count_one": "{{count}} guida trovata",
+  "search_results_count_many": "{{count}} guide trovate",
+  "search_results_count_other": "{{count}} guide trovate",
+  "search_no_results_title": "Nessuna guida corrisponde alla tua ricerca",
+  "search_no_results_body": "Prova con una parola diversa o più breve. Puoi anche sfogliare gli argomenti, oppure contattarci e una persona ti aiuterà.",
+  "audience_nav_label": "Scegli una guida",
+  "audience": {
+    "members": {
+      "title": "Usare la piattaforma",
+      "description": "Iscriversi, offrire aiuto, scambiare tempo e restare al sicuro."
+    },
+    "brokers": {
+      "title": "Per broker e coordinatori",
+      "description": "Approvare i membri, organizzare gli scambi, la tutela e le attività di gruppo."
+    },
+    "admins": {
+      "title": "Per gli amministratori della comunità",
+      "description": "Configurare la tua comunità, gestire i membri e scegliere le funzioni."
+    }
+  },
+  "popular_heading": "La maggior parte delle persone inizia da qui",
+  "sections_heading": "Sfoglia per argomento",
+  "articles_count_one": "{{count}} guida",
+  "articles_count_many": "{{count}} guide",
+  "articles_count_other": "{{count}} guide",
+  "community_faqs_heading": "Domande dalla tua comunità",
+  "community_faqs_description": "Risposte scritte dalle persone che gestiscono {{name}}.",
+  "contact_heading": "Ti serve ancora aiuto?",
+  "contact_body": "Se non trovi ciò che ti serve, contattaci e una persona ti aiuterà.",
+  "contact_button": "Contattaci",
+  "open_page": "Vai a questa pagina",
+  "in_this_section": "Altre guide su questo argomento",
+  "pager_label": "Altre guide di questo argomento",
+  "previous_article": "Precedente",
+  "next_article": "Successiva",
+  "not_found_title": "Non abbiamo trovato questa guida",
+  "not_found_body": "Potrebbe essere stata spostata, oppure questa funzione potrebbe non essere attiva nella tua comunità.",
+  "not_found_button": "Torna al Centro assistenza",
+  "broker_panel": {
+    "title": "Guida per broker e coordinatori",
+    "subtitle": "Guide semplici e chiare a ogni parte del Pannello Broker e al lavoro di gestione degli scambi.",
+    "open_full": "Apri la guida completa",
+    "view_in_help_centre": "Apri nel Centro assistenza",
+    "back": "Tutte le guide per broker"
+  },
+  "admin_panel": {
+    "title": "Guida completa per gli amministratori",
+    "subtitle": "Guide passo passo per configurare la tua comunità, gestire i membri, la tutela e tutte le funzioni di amministrazione, in un linguaggio semplice.",
+    "open_full": "Apri la guida per gli amministratori"
+  }
+}
