@@ -2174,6 +2174,9 @@ describe('GroupDetailScreen', () => {
         assigned_to: null,
         due_date: '2026-06-30',
         created_at: '2026-06-01T00:00:00Z',
+        can_update_status: true,
+        can_edit: false,
+        can_delete: false,
       }],
       meta: { has_more: false, cursor: null },
     });
@@ -2228,6 +2231,9 @@ describe('GroupDetailScreen', () => {
         assigned_to: null,
         due_date: null,
         created_at: '2026-06-01T00:00:00Z',
+        can_update_status: true,
+        can_edit: true,
+        can_delete: true,
       }],
       meta: { has_more: false, cursor: null },
     });
@@ -2270,6 +2276,9 @@ describe('GroupDetailScreen', () => {
         assigned_to: null,
         due_date: null,
         created_at: '2026-06-01T00:00:00Z',
+        can_update_status: true,
+        can_edit: true,
+        can_delete: true,
       }],
       meta: { has_more: false, cursor: null },
     });
@@ -2316,6 +2325,56 @@ describe('GroupDetailScreen', () => {
     await waitFor(() => {
       expect(updateGroupTask).toHaveBeenCalledWith(70, { assigned_to: 11 });
     });
+  });
+
+  it('renders each task action from its server capabilities and fails closed when they are absent', async () => {
+    const task = (id: number, title: string, capabilities: Partial<{
+      can_update_status: boolean;
+      can_edit: boolean;
+      can_delete: boolean;
+    }> = {}) => ({
+      id,
+      group_id: 1,
+      title,
+      description: null,
+      status: 'todo' as const,
+      priority: 'medium' as const,
+      assigned_to: null,
+      due_date: null,
+      created_at: '2026-06-01T00:00:00Z',
+      ...capabilities,
+    });
+    jest.mocked(getGroupTasks).mockResolvedValue({
+      data: [
+        task(71, 'Creator task', { can_update_status: true, can_edit: true, can_delete: true }),
+        task(72, 'Assignee task', { can_update_status: true, can_edit: false, can_delete: false }),
+        task(73, 'Unrelated task'),
+      ],
+      meta: { has_more: false, cursor: null },
+    });
+    jest.mocked(getGroupTaskStats).mockResolvedValue({
+      data: { total: 3, todo: 3, in_progress: 0, done: 0, overdue: 0 },
+    });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await screen.findByText('Creator task');
+
+    expect(screen.getByTestId('group-task-status-71')).toBeTruthy();
+    expect(screen.getByTestId('group-task-edit-71')).toBeTruthy();
+    expect(screen.getByTestId('group-task-delete-71')).toBeTruthy();
+    expect(screen.getByTestId('group-task-status-72')).toBeTruthy();
+    expect(screen.queryByTestId('group-task-edit-72')).toBeNull();
+    expect(screen.queryByTestId('group-task-delete-72')).toBeNull();
+    expect(screen.queryByTestId('group-task-status-73')).toBeNull();
+    expect(screen.queryByTestId('group-task-edit-73')).toBeNull();
+    expect(screen.queryByTestId('group-task-delete-73')).toBeNull();
   });
 
   it('lets members create native group tasks', async () => {
@@ -2528,7 +2587,14 @@ describe('GroupDetailScreen', () => {
     return { screen, membersState, groupState };
   }
 
-  const otherMember = { id: 21, name: 'Bea Member', avatar_url: null, role: 'member', joined_at: '2026-05-01T00:00:00Z' };
+  const otherMember = {
+    id: 21,
+    name: 'Bea Member',
+    avatar_url: null,
+    role: 'member',
+    joined_at: '2026-05-01T00:00:00Z',
+    capabilities: { can_change_role: true, can_remove: true },
+  };
 
   it('lets a group admin promote a member', async () => {
     const { updateGroupMemberRole } = require('@/lib/api/groups');
@@ -2584,6 +2650,20 @@ describe('GroupDetailScreen', () => {
     expect(screen.queryByTestId('group-member-remove-99')).toBeNull();
     // …but the ordinary member still has them.
     expect(screen.getByTestId('group-member-role-21')).toBeTruthy();
+  });
+
+  it('renders member actions independently from exact capabilities and fails closed when they are absent', () => {
+    const roleOnly = { ...otherMember, id: 22, name: 'Role Only', capabilities: { can_change_role: true, can_remove: false } };
+    const removeOnly = { ...otherMember, id: 23, name: 'Remove Only', capabilities: { can_change_role: false, can_remove: true } };
+    const missingCapabilities = { id: 24, name: 'Read Only', avatar_url: null, role: 'member', joined_at: null };
+    const { screen } = renderMembersTabAsAdmin([roleOnly, removeOnly, missingCapabilities]);
+
+    expect(screen.getByTestId('group-member-role-22')).toBeTruthy();
+    expect(screen.queryByTestId('group-member-remove-22')).toBeNull();
+    expect(screen.queryByTestId('group-member-role-23')).toBeNull();
+    expect(screen.getByTestId('group-member-remove-23')).toBeTruthy();
+    expect(screen.queryByTestId('group-member-role-24')).toBeNull();
+    expect(screen.queryByTestId('group-member-remove-24')).toBeNull();
   });
 
   /**

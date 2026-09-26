@@ -56,6 +56,10 @@ export interface GroupDetail extends Group {
 export interface GroupMemberListItem extends GroupMember {
   role: 'owner' | 'admin' | 'member' | string;
   joined_at: string | null;
+  capabilities?: {
+    can_change_role: boolean;
+    can_remove: boolean;
+  };
 }
 
 export interface GroupDiscussion {
@@ -210,6 +214,9 @@ export interface GroupTask {
   due_date: string | null;
   created_at: string | null;
   updated_at?: string | null;
+  can_update_status?: boolean;
+  can_edit?: boolean;
+  can_delete?: boolean;
   assignee?: {
     id: number;
     name: string;

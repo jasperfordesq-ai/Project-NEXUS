@@ -1254,28 +1254,32 @@ function GroupDetailScreenInner() {
                       server refuses both, and an admin who demoted themselves would lock
                       themselves out of the screen they are standing on.
                     */}
-                    {canManageGroup && member.role !== 'owner' && member.id !== user?.id ? (
+                    {member.capabilities?.can_change_role || member.capabilities?.can_remove ? (
                       <View className="gap-2">
-                        <HeroButton
-                          size="sm"
-                          variant="secondary"
-                          isDisabled={busyMemberId !== null}
-                          testID={`group-member-role-${member.id}`}
-                          onPress={() => void applyMemberRole(member, member.role === 'admin' ? 'member' : 'admin')}
-                        >
-                          <HeroButton.Label>
-                            {member.role === 'admin' ? t('detail.manage.demote') : t('detail.manage.promote')}
-                          </HeroButton.Label>
-                        </HeroButton>
-                        <HeroButton
-                          size="sm"
-                          variant="danger"
-                          isDisabled={busyMemberId !== null}
-                          testID={`group-member-remove-${member.id}`}
-                          onPress={() => confirmRemoveMember(member)}
-                        >
-                          <HeroButton.Label>{t('detail.manage.remove')}</HeroButton.Label>
-                        </HeroButton>
+                        {member.capabilities?.can_change_role ? (
+                          <HeroButton
+                            size="sm"
+                            variant="secondary"
+                            isDisabled={busyMemberId !== null}
+                            testID={`group-member-role-${member.id}`}
+                            onPress={() => void applyMemberRole(member, member.role === 'admin' ? 'member' : 'admin')}
+                          >
+                            <HeroButton.Label>
+                              {member.role === 'admin' ? t('detail.manage.demote') : t('detail.manage.promote')}
+                            </HeroButton.Label>
+                          </HeroButton>
+                        ) : null}
+                        {member.capabilities?.can_remove ? (
+                          <HeroButton
+                            size="sm"
+                            variant="danger"
+                            isDisabled={busyMemberId !== null}
+                            testID={`group-member-remove-${member.id}`}
+                            onPress={() => confirmRemoveMember(member)}
+                          >
+                            <HeroButton.Label>{t('detail.manage.remove')}</HeroButton.Label>
+                          </HeroButton>
+                        ) : null}
                       </View>
                     ) : null}
                   </HeroCard.Body>
@@ -1479,7 +1483,6 @@ function GroupDetailScreenInner() {
           <GroupTasksPanel
             groupId={loadedGroup.id}
             canView={userCanSeeMemberContent}
-            canManage={canManageGroup}
             members={members}
           />
         ) : null}
@@ -3031,12 +3034,10 @@ function GroupWikiPanel({
 function GroupTasksPanel({
   groupId,
   canView,
-  canManage,
   members,
 }: {
   groupId: number;
   canView: boolean;
-  canManage: boolean;
   members: GroupMemberListItem[];
 }) {
   const { t } = useTranslation(['groups', 'common']);
@@ -3400,15 +3401,22 @@ function GroupTasksPanel({
           <HeroCard key={task.id} className="rounded-panel p-0">
             <HeroCard.Body className="gap-3 p-4">
               <View className="flex-row items-start gap-3">
-                <HeroButton
-                  size="sm"
-                  variant={task.status === 'done' ? 'primary' : 'secondary'}
-                  isDisabled={updatingTaskId === task.id}
-                  onPress={() => void cycleStatus(task)}
-                  accessibilityLabel={t(`detail.tasks.status.${task.status}`)}
-                >
-                  {updatingTaskId === task.id ? <Spinner size="sm" /> : <Ionicons name={task.status === 'done' ? 'checkmark-outline' : task.status === 'in_progress' ? 'time-outline' : 'ellipse-outline'} size={16} color={theme.text} />}
-                </HeroButton>
+                {task.can_update_status ? (
+                  <HeroButton
+                    size="sm"
+                    variant={task.status === 'done' ? 'primary' : 'secondary'}
+                    isDisabled={updatingTaskId === task.id}
+                    testID={`group-task-status-${task.id}`}
+                    onPress={() => void cycleStatus(task)}
+                    accessibilityLabel={t(`detail.tasks.status.${task.status}`)}
+                  >
+                    {updatingTaskId === task.id ? <Spinner size="sm" /> : <Ionicons name={task.status === 'done' ? 'checkmark-outline' : task.status === 'in_progress' ? 'time-outline' : 'ellipse-outline'} size={16} color={theme.text} />}
+                  </HeroButton>
+                ) : (
+                  <View className="size-10 items-center justify-center" accessible={false}>
+                    <Ionicons name={task.status === 'done' ? 'checkmark-outline' : task.status === 'in_progress' ? 'time-outline' : 'ellipse-outline'} size={16} color={theme.textMuted} />
+                  </View>
+                )}
                 <View className="min-w-0 flex-1 gap-2">
                   <View className="flex-row flex-wrap items-center gap-2">
                     <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: task.status === 'done' ? theme.textMuted : theme.text }}>
@@ -3431,14 +3439,20 @@ function GroupTasksPanel({
                     ].filter(Boolean).join(' - ')}
                   </Text>
                 </View>
-                {canManage ? (
-                  <HeroButton size="sm" variant="danger-soft" isDisabled={updatingTaskId === task.id} onPress={() => confirmDelete(task)}>
+                {task.can_delete ? (
+                  <HeroButton
+                    size="sm"
+                    variant="danger-soft"
+                    isDisabled={updatingTaskId === task.id}
+                    testID={`group-task-delete-${task.id}`}
+                    onPress={() => confirmDelete(task)}
+                  >
                     <HeroButton.Label>{t('detail.tasks.delete')}</HeroButton.Label>
                   </HeroButton>
                 ) : null}
               </View>
-              {canManage ? (
-                <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3">
+              {task.can_edit ? (
+                <Surface variant="secondary" className="gap-3 rounded-panel-inner p-3" testID={`group-task-edit-${task.id}`}>
                   <View className="gap-2">
                     <Text className="text-xs font-semibold uppercase" style={{ color: theme.textMuted }}>
                       {t('detail.tasks.quickPriority')}
