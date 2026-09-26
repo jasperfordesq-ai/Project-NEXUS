@@ -57,6 +57,8 @@
     "publishAnnouncement": "Publier l’annonce",
     "announcementRequired": "Ajoutez un titre et un message avant de publier.",
     "announcementCreateError": "Impossible de créer l’annonce.",
+    "announcementRecoveryError": "Impossible de restaurer l’annonce inachevée.",
+    "announcementRecoveryNotice": "Une annonce inachevée a été restaurée. Réessayez avant d’en créer une autre.",
     "announcementUpdateError": "Impossible de mettre à jour l’annonce.",
     "announcementDeleteError": "Impossible de supprimer l’annonce.",
     "deleteAnnouncement": "Delete",

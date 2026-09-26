@@ -34,6 +34,8 @@
     "publishAnnouncement": "Foilsigh an fógra",
     "announcementRequired": "Cuir teideal agus teachtaireacht leis roimh fhoilsiú.",
     "announcementCreateError": "Níorbh fhéidir an fógra a chruthú.",
+    "announcementRecoveryError": "Níorbh fhéidir an fógra neamhchríochnaithe a athbhunú.",
+    "announcementRecoveryNotice": "Athbhunaíodh fógra neamhchríochnaithe. Bain triail eile as sula gcruthaíonn tú fógra eile.",
     "announcementUpdateError": "Níorbh fhéidir an fógra a nuashonrú.",
     "announcementDeleteError": "Níorbh fhéidir an fógra a scriosadh.",
     "deleteAnnouncement": "Scrios",

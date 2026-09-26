@@ -57,6 +57,8 @@
     "publishAnnouncement": "Publish announcement",
     "announcementRequired": "Add a title and message before publishing.",
     "announcementCreateError": "Could not create the announcement.",
+    "announcementRecoveryError": "Could not restore the unfinished announcement.",
+    "announcementRecoveryNotice": "An unfinished announcement was restored. Retry it before creating another announcement.",
     "announcementUpdateError": "Could not update the announcement.",
     "announcementDeleteError": "Could not delete the announcement.",
     "deleteAnnouncement": "Delete",

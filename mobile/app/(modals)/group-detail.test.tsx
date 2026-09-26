@@ -59,6 +59,8 @@ jest.mock('react-i18next', () => ({
         'detail.pinAnnouncement': 'Pin announcement',
         'detail.unpinAnnouncement': 'Unpin',
         'detail.publishAnnouncement': 'Publish announcement',
+        'detail.announcementRecoveryError': 'Could not restore the unfinished announcement.',
+        'detail.announcementRecoveryNotice': 'An unfinished announcement was restored. Retry it before creating another announcement.',
         'detail.announcementRequired': 'Add a title and message.',
         'detail.announcementCreateError': 'Could not create announcement.',
         'detail.announcementUpdateError': 'Could not update announcement.',
@@ -1061,10 +1063,11 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByTestId, getByText } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Announcements'));
-    fireEvent.press(getByText('Create'));
+    await waitFor(() => expect(getByTestId('group-announcement-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(getByTestId('group-announcement-composer-toggle'));
     fireEvent.changeText(getByPlaceholderText('Announcement title'), 'Spring update');
     fireEvent.changeText(getByPlaceholderText('Write the announcement...'), 'Seeds arrive Friday.');
     fireEvent.press(getByText('Pin announcement'));
@@ -1076,7 +1079,7 @@ describe('GroupDetailScreen', () => {
       await waitFor(() => expect(getByText('Publish announcement')).toBeTruthy());
       expect(getByPlaceholderText('Announcement title').props.value).toBe('Spring update');
       expect(getByPlaceholderText('Write the announcement...').props.value).toBe('Seeds arrive Friday.');
-      expect(getByPlaceholderText('Announcement title').props.editable).toBe(true);
+      expect(getByPlaceholderText('Announcement title').props.editable).toBe(false);
       expect(refreshAnnouncements).not.toHaveBeenCalled();
       fireEvent.press(getByText('Publish announcement'));
     }
@@ -1092,6 +1095,76 @@ describe('GroupDetailScreen', () => {
       }
       expect(refreshAnnouncements).toHaveBeenCalled();
     });
+  });
+
+  it('restores an unfinished announcement and retries its exact durable key', async () => {
+    const pending = {
+      storageKey: 'saved-group-content',
+      key: 'restored-announcement-key',
+      groupId: 1,
+      kind: 'announcement' as const,
+      intent: JSON.stringify({ title: 'Saved notice', content: 'Meet by the greenhouse.', is_pinned: true }),
+      payload: { title: 'Saved notice', content: 'Meet by the greenhouse.', is_pinned: true },
+      createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+
+    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Announcements'));
+
+    await waitFor(() => expect(getByText('An unfinished announcement was restored. Retry it before creating another announcement.')).toBeTruthy());
+    expect(getByPlaceholderText('Announcement title').props.value).toBe('Saved notice');
+    expect(getByPlaceholderText('Announcement title').props.editable).toBe(false);
+    expect(getByPlaceholderText('Write the announcement...').props.value).toBe('Meet by the greenhouse.');
+    fireEvent.press(getByText('Publish announcement'));
+
+    await waitFor(() => expect(createGroupAnnouncement).toHaveBeenCalledWith(1, pending.payload, pending.key));
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
+  });
+
+  it('discards a definitely rejected announcement operation and unlocks the draft', async () => {
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+    jest.mocked(createGroupAnnouncement).mockRejectedValueOnce(new ApiResponseError(422, 'Please shorten the title.'));
+
+    const { getByPlaceholderText, getByTestId, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Announcements'));
+    await waitFor(() => expect(getByTestId('group-announcement-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(getByTestId('group-announcement-composer-toggle'));
+    fireEvent.changeText(getByPlaceholderText('Announcement title'), 'A title the server rejects');
+    fireEvent.changeText(getByPlaceholderText('Write the announcement...'), 'The manager can correct this.');
+    fireEvent.press(getByText('Publish announcement'));
+
+    await waitFor(() => expect(discardGroupContentCreationOperation).toHaveBeenCalledTimes(1));
+    expect(getByPlaceholderText('Announcement title').props.editable).toBe(true);
+    expect(getByPlaceholderText('Write the announcement...').props.editable).toBe(true);
   });
 
   it.each([false, true])('lets members publish a discussion with an initial rejection: %s', async (rejectFirst) => {

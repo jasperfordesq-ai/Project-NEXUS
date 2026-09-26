@@ -57,6 +57,8 @@
     "publishAnnouncement": "Publicar anúncio",
     "announcementRequired": "Acrescente um título e uma mensagem antes de publicar.",
     "announcementCreateError": "Não foi possível criar o anúncio.",
+    "announcementRecoveryError": "Não foi possível restaurar o anúncio inacabado.",
+    "announcementRecoveryNotice": "Foi restaurado um anúncio inacabado. Tente novamente antes de criar outro anúncio.",
     "announcementUpdateError": "Não foi possível atualizar o anúncio.",
     "announcementDeleteError": "Não foi possível eliminar o anúncio.",
     "deleteAnnouncement": "Delete",

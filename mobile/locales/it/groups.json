@@ -57,6 +57,8 @@
     "publishAnnouncement": "Pubblica annuncio",
     "announcementRequired": "Aggiungi un titolo e un messaggio prima di pubblicare.",
     "announcementCreateError": "Impossibile creare l’annuncio.",
+    "announcementRecoveryError": "Impossibile ripristinare l’annuncio non completato.",
+    "announcementRecoveryNotice": "È stato ripristinato un annuncio non completato. Riprova prima di crearne un altro.",
     "announcementUpdateError": "Impossibile aggiornare l’annuncio.",
     "announcementDeleteError": "Impossibile eliminare l’annuncio.",
     "deleteAnnouncement": "Delete",

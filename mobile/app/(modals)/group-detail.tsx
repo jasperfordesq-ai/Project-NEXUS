@@ -419,12 +419,14 @@ function GroupDetailScreenInner() {
   const [announcementContent, setAnnouncementContent] = useState('');
   const [announcementPinned, setAnnouncementPinned] = useState(false);
   const [creatingAnnouncement, setCreatingAnnouncement] = useState(false);
+  const [isRestoringAnnouncement, setIsRestoringAnnouncement] = useState(false);
+  const [announcementRecoveryError, setAnnouncementRecoveryError] = useState<string | null>(null);
+  const [pendingAnnouncementOperation, setPendingAnnouncementOperation] = useState<GroupContentCreationOperation<'announcement'> | null>(null);
   const [updatingAnnouncementId, setUpdatingAnnouncementId] = useState<number | null>(null);
   const [showQuestionComposer, setShowQuestionComposer] = useState(false);
   const [questionTitle, setQuestionTitle] = useState('');
   const [questionBody, setQuestionBody] = useState('');
   const [creatingQuestion, setCreatingQuestion] = useState(false);
-  const announcementCreateAttemptRef = useRef<MutationAttempt | null>(null);
   const questionCreateAttemptRef = useRef<MutationAttempt | null>(null);
   // 🔴 Deliberately NOT another useApi in this screen. group-detail.test.tsx stubs
   // useApi positionally, so a seventh call shifts every later result by one on each
@@ -433,6 +435,7 @@ function GroupDetailScreenInner() {
   const actionPendingRef = useRef(false);
   const isMountedRef = useRef(true);
   const discussionRestoreVersionRef = useRef(0);
+  const announcementRestoreVersionRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -579,6 +582,40 @@ function GroupDetailScreenInner() {
     void restoreDiscussionDraft();
     return () => { discussionRestoreVersionRef.current += 1; };
   }, [restoreDiscussionDraft]);
+
+  const restoreAnnouncementDraft = useCallback(async () => {
+    const version = ++announcementRestoreVersionRef.current;
+    setIsRestoringAnnouncement(true);
+    setAnnouncementRecoveryError(null);
+    setPendingAnnouncementOperation(null);
+    if (!announcementsEnabled || !canManageGroup || visibleTab !== 'announcements') {
+      setIsRestoringAnnouncement(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(safeGroupId, 'announcement');
+      if (!isMountedRef.current || version !== announcementRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingAnnouncementOperation(operation);
+        setAnnouncementTitle(operation.payload.title);
+        setAnnouncementContent(operation.payload.content);
+        setAnnouncementPinned(operation.payload.is_pinned);
+        setShowAnnouncementComposer(true);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== announcementRestoreVersionRef.current) return;
+      setAnnouncementRecoveryError(describeApiError(err, t('detail.announcementRecoveryError')));
+    } finally {
+      if (isMountedRef.current && version === announcementRestoreVersionRef.current) setIsRestoringAnnouncement(false);
+    }
+  // The encrypted operation store owns identity scoping. Avoid restarting recovery when i18n changes function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [announcementsEnabled, canManageGroup, safeGroupId, visibleTab]);
+
+  useEffect(() => {
+    void restoreAnnouncementDraft();
+    return () => { announcementRestoreVersionRef.current += 1; };
+  }, [restoreAnnouncementDraft]);
 
   /*
     🔴 A group admin on the phone could see the member list and change nothing about
@@ -875,17 +912,20 @@ function GroupDetailScreenInner() {
     }
 
     if (!beginAction()) return;
-    const fingerprint = JSON.stringify({ groupId: loadedGroup.id, title, content, isPinned: announcementPinned });
-    announcementCreateAttemptRef.current = mutationAttemptFor(announcementCreateAttemptRef.current, fingerprint, 'group-announcement');
     setCreatingAnnouncement(true);
+    let operation: GroupContentCreationOperation<'announcement'> | null = null;
     try {
-      await createGroupAnnouncement(loadedGroup.id, {
+      operation = await reserveGroupContentCreationOperation(loadedGroup.id, 'announcement', {
         title,
         content,
         is_pinned: announcementPinned,
-      }, announcementCreateAttemptRef.current.key);
+      });
       if (!isMountedRef.current) return;
-      announcementCreateAttemptRef.current = null;
+      setPendingAnnouncementOperation(operation);
+      await createGroupAnnouncement(loadedGroup.id, operation.payload, operation.key);
+      await completeGroupContentCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingAnnouncementOperation(null);
       setAnnouncementTitle('');
       setAnnouncementContent('');
       setAnnouncementPinned(false);
@@ -894,9 +934,21 @@ function GroupDetailScreenInner() {
       refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupContentCreationOperation(operation);
+          if (isMountedRef.current) setPendingAnnouncementOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.announcementCreateError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.announcementCreateError')), variant: 'danger' });
     } finally {
       finishAction();
       if (isMountedRef.current) setCreatingAnnouncement(false);
@@ -1401,8 +1453,10 @@ function GroupDetailScreenInner() {
                           </Text>
                         </View>
                         <HeroButton
+                          testID="group-announcement-composer-toggle"
                           size="sm"
                           variant={showAnnouncementComposer ? 'secondary' : 'primary'}
+                          isDisabled={isRestoringAnnouncement || Boolean(announcementRecoveryError) || Boolean(pendingAnnouncementOperation)}
                           onPress={() => setShowAnnouncementComposer((value) => !value)}
                         >
                           <HeroButton.Label>
@@ -1413,9 +1467,14 @@ function GroupDetailScreenInner() {
 
                       {showAnnouncementComposer ? (
                         <View className="gap-3">
+                          {pendingAnnouncementOperation ? (
+                            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.textSecondary }}>
+                              {t('detail.announcementRecoveryNotice')}
+                            </Text>
+                          ) : null}
                           <Input
                             value={announcementTitle}
-                            editable={!creatingAnnouncement}
+                            editable={!creatingAnnouncement && !pendingAnnouncementOperation}
                             onChangeText={setAnnouncementTitle}
                             placeholder={t('detail.announcementTitlePlaceholder')}
                             placeholderTextColor={theme.textMuted}
@@ -1425,7 +1484,7 @@ function GroupDetailScreenInner() {
                           />
                           <Input
                             value={announcementContent}
-                            editable={!creatingAnnouncement}
+                            editable={!creatingAnnouncement && !pendingAnnouncementOperation}
                             onChangeText={setAnnouncementContent}
                             placeholder={t('detail.announcementContentPlaceholder')}
                             placeholderTextColor={theme.textMuted}
@@ -1437,7 +1496,7 @@ function GroupDetailScreenInner() {
                           <HeroButton
                             size="sm"
                             variant={announcementPinned ? 'primary' : 'secondary'}
-                            isDisabled={creatingAnnouncement}
+                            isDisabled={creatingAnnouncement || Boolean(pendingAnnouncementOperation)}
                             onPress={() => setAnnouncementPinned((value) => !value)}
                           >
                             {announcementPinned ? <AccentIcon name="pin-outline" size={16} /> : <Ionicons name="pin-outline" size={16} color={primary} />}
@@ -1448,6 +1507,19 @@ function GroupDetailScreenInner() {
                           </HeroButton>
                         </View>
                       ) : null}
+                    </HeroCard.Body>
+                  </HeroCard>
+                ) : null}
+
+                {announcementRecoveryError ? (
+                  <HeroCard className="rounded-panel p-0" testID="group-announcement-recovery-error">
+                    <HeroCard.Body className="gap-2 p-4">
+                      <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>
+                        {announcementRecoveryError}
+                      </Text>
+                      <HeroButton size="sm" variant="secondary" isDisabled={isRestoringAnnouncement} onPress={() => void restoreAnnouncementDraft()}>
+                        {isRestoringAnnouncement ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+                      </HeroButton>
                     </HeroCard.Body>
                   </HeroCard>
                 ) : null}

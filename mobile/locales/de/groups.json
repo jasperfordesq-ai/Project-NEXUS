@@ -57,6 +57,8 @@
     "publishAnnouncement": "Ankündigung veröffentlichen",
     "announcementRequired": "Füge vor dem Veröffentlichen einen Titel und eine Nachricht hinzu.",
     "announcementCreateError": "Die Ankündigung konnte nicht erstellt werden.",
+    "announcementRecoveryError": "Die nicht abgeschlossene Ankündigung konnte nicht wiederhergestellt werden.",
+    "announcementRecoveryNotice": "Eine nicht abgeschlossene Ankündigung wurde wiederhergestellt. Versuche sie erneut, bevor du eine andere Ankündigung erstellst.",
     "announcementUpdateError": "Die Ankündigung konnte nicht aktualisiert werden.",
     "announcementDeleteError": "Die Ankündigung konnte nicht gelöscht werden.",
     "deleteAnnouncement": "Delete",
