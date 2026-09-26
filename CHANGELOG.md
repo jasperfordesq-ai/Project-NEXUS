@@ -167,6 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- When a broker or coordinator opens a copied message for review, they now see only the conversation up to that message (the latest 50 messages before it), and every opening is recorded in the audit log. Previously opening one copy showed the first 200 messages the two members had ever exchanged, including everything written afterwards that was never copied or flagged, and only review decisions were recorded (F-212).
+
 - When a community reviews job ads before they appear, a job saved as a draft and then published now goes to review instead of straight onto the public jobs list. Previously "save as draft, then publish" skipped the review step. Jobs that were already approved can still be reopened without a second review, and admins can publish directly (F-211).
 
 - Only the person who sent a message can now delete it for everyone. Either participant could previously choose "Delete for everyone" on the other person's message, which replaced it with "[Message deleted]" for both people, so a member could erase what someone else had written to them. The other person can still remove a message from their own view, and the website no longer offers the option on other people's messages (F-210).

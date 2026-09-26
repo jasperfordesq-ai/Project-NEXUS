@@ -1095,7 +1095,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/messages/{id} */
     public function showMessage(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
 
@@ -1127,10 +1127,14 @@ class AdminBrokerController extends BaseApiController
             // A copy of a group-conversation message (F-086) names one
             // recipient, but its context is the group thread, not that
             // pair's one-to-one history.
-            $groupConversationId = (int) (DB::table('messages')
+            $original = DB::table('messages')
                 ->where('id', (int) $copy['original_message_id'])
                 ->where('tenant_id', $copyTenantId)
-                ->value('conversation_id') ?? 0);
+                ->first(['conversation_id', 'created_at']);
+            $groupConversationId = (int) ($original->conversation_id ?? 0);
+            // F-212: show the context needed to review THIS message — what was
+            // said up to it — not everything the members wrote afterwards.
+            $cutoff = $original->created_at ?? $copy['sent_at'] ?? $copy['created_at'];
             $threadWhere = $groupConversationId > 0
                 ? 'm.conversation_id = ?'
                 : '((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))';
@@ -1144,10 +1148,20 @@ class AdminBrokerController extends BaseApiController
                 FROM messages m LEFT JOIN users u ON m.sender_id = u.id
                 WHERE m.tenant_id = ?
                   AND {$threadWhere}
-                ORDER BY m.created_at ASC LIMIT 200",
-                array_merge([$copyTenantId], $threadParams)
+                  AND m.created_at <= ?
+                ORDER BY m.created_at DESC, m.id DESC LIMIT 50",
+                array_merge([$copyTenantId], $threadParams, [$cutoff])
             );
-            $thread = array_map(fn($r) => (array)$r, $thread);
+            $thread = array_reverse(array_map(fn($r) => (array)$r, $thread));
+
+            // F-212: reading members' messages is itself recorded, not only the
+            // review decisions that may follow.
+            $this->auditLogService->log('broker_message_viewed', null, $viewerId, [
+                'copy_id' => $id,
+                'original_message_id' => (int) $copy['original_message_id'],
+                'messages_shown' => count($thread),
+                'actor_role' => $this->resolveActorRole(),
+            ]);
 
             foreach ($thread as &$msg) {
                 if (!empty($msg['is_deleted'])) {
