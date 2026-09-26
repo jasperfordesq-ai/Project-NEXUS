@@ -203,6 +203,8 @@
       "loadError": "Die Wiki-Seiten konnten nicht geladen werden.",
       "pageLoadError": "Diese Wiki-Seite konnte nicht geladen werden.",
       "createError": "Die Wiki-Seite konnte nicht erstellt werden.",
+      "recoveryError": "Die nicht abgeschlossene Wiki-Seite konnte nicht wiederhergestellt werden.",
+      "recoveryNotice": "Eine nicht abgeschlossene Wiki-Seite wurde wiederhergestellt. Versuche sie erneut, bevor du eine andere Seite erstellst.",
       "saveError": "Die Wiki-Seite konnte nicht gespeichert werden.",
       "deleteError": "Die Wiki-Seite konnte nicht gelöscht werden.",
       "revisionsError": "Die Wiki-Überarbeitungen konnten nicht geladen werden.",

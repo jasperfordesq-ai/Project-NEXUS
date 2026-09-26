@@ -2907,6 +2907,9 @@ function GroupWikiPanel({
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [creating, setCreating] = useState(false);
+  const [isRestoringCreate, setIsRestoringCreate] = useState(false);
+  const [createRecoveryError, setCreateRecoveryError] = useState<string | null>(null);
+  const [pendingCreateOperation, setPendingCreateOperation] = useState<GroupContentCreationOperation<'wiki-page'> | null>(null);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [changeSummary, setChangeSummary] = useState('');
@@ -2918,7 +2921,7 @@ function GroupWikiPanel({
   const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
   const pageRequestVersionRef = useRef(0);
   const pagesRequestVersionRef = useRef(0);
-  const createAttemptRef = useRef<MutationAttempt | null>(null);
+  const createRestoreVersionRef = useRef(0);
 
   async function loadPage(slug: string) {
     const requestVersion = ++pageRequestVersionRef.current;
@@ -2970,6 +2973,39 @@ function GroupWikiPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, groupId]);
 
+  const restoreCreateOperation = useCallback(async () => {
+    const version = ++createRestoreVersionRef.current;
+    setIsRestoringCreate(true);
+    setCreateRecoveryError(null);
+    setPendingCreateOperation(null);
+    if (!canEdit) {
+      setIsRestoringCreate(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(groupId, 'wiki-page');
+      if (!isMountedRef.current || version !== createRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingCreateOperation(operation);
+        setNewTitle(operation.payload.title);
+        setNewContent(operation.payload.content);
+        setShowComposer(true);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== createRestoreVersionRef.current) return;
+      setCreateRecoveryError(describeApiError(err, t('detail.wiki.recoveryError')));
+    } finally {
+      if (isMountedRef.current && version === createRestoreVersionRef.current) setIsRestoringCreate(false);
+    }
+  // The encrypted operation store owns identity scoping. Avoid restarting recovery when i18n changes function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canEdit, groupId]);
+
+  useEffect(() => {
+    void restoreCreateOperation();
+    return () => { createRestoreVersionRef.current += 1; };
+  }, [restoreCreateOperation]);
+
   async function createPage() {
     const title = newTitle.trim();
     const content = newContent.trim();
@@ -2979,14 +3015,21 @@ function GroupWikiPanel({
     }
 
     if (!beginMutation()) return;
-    const fingerprint = JSON.stringify({ groupId, title, content });
-    createAttemptRef.current = mutationAttemptFor(createAttemptRef.current, fingerprint, 'group-wiki-page');
     const selectionVersion = pageRequestVersionRef.current;
+    let operation: GroupContentCreationOperation<'wiki-page'> | null = null;
     setCreating(true);
     try {
-      const response = await createGroupWikiPage(groupId, { title, content }, createAttemptRef.current.key);
+      operation = await reserveGroupContentCreationOperation(groupId, 'wiki-page', { title, content, parent_id: null });
       if (!isMountedRef.current) return;
-      createAttemptRef.current = null;
+      setPendingCreateOperation(operation);
+      const response = await createGroupWikiPage(groupId, {
+        title: operation.payload.title,
+        content: operation.payload.content,
+        ...(operation.payload.parent_id === null ? {} : { parent_id: operation.payload.parent_id }),
+      }, operation.key);
+      await completeGroupContentCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingCreateOperation(null);
       setNewTitle('');
       setNewContent('');
       setShowComposer(false);
@@ -3003,9 +3046,21 @@ function GroupWikiPanel({
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupContentCreationOperation(operation);
+          if (isMountedRef.current) setPendingCreateOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.wiki.createError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.wiki.createError')), variant: 'danger' });
     } finally {
       finishMutation();
       if (isMountedRef.current) setCreating(false);
@@ -3155,7 +3210,7 @@ function GroupWikiPanel({
               </Text>
             </View>
             {canEdit ? (
-              <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating} onPress={() => setShowComposer((value) => !value)}>
+              <HeroButton testID="group-wiki-composer-toggle" size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating || isRestoringCreate || Boolean(createRecoveryError) || Boolean(pendingCreateOperation)} onPress={() => setShowComposer((value) => !value)}>
                 <HeroButton.Label>{showComposer ? t('common:buttons.cancel') : t('detail.wiki.newPage')}</HeroButton.Label>
               </HeroButton>
             ) : null}
@@ -3163,11 +3218,14 @@ function GroupWikiPanel({
 
           {showComposer ? (
             <View className="gap-3">
+              {pendingCreateOperation ? (
+                <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.textSecondary }}>{t('detail.wiki.recoveryNotice')}</Text>
+              ) : null}
               <Input
                 value={newTitle}
                 onChangeText={setNewTitle}
                 placeholder={t('detail.wiki.titlePlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingCreateOperation}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -3177,7 +3235,7 @@ function GroupWikiPanel({
                 value={newContent}
                 onChangeText={setNewContent}
                 placeholder={t('detail.wiki.contentPlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingCreateOperation}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[120px] text-base"
@@ -3191,6 +3249,17 @@ function GroupWikiPanel({
           ) : null}
         </HeroCard.Body>
       </HeroCard>
+
+      {createRecoveryError ? (
+        <HeroCard className="rounded-panel p-0" testID="group-wiki-recovery-error">
+          <HeroCard.Body className="gap-2 p-4">
+            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{createRecoveryError}</Text>
+            <HeroButton size="sm" variant="secondary" isDisabled={isRestoringCreate} onPress={() => void restoreCreateOperation()}>
+              {isRestoringCreate ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
 
       {pagesError ? <ErrorState subtitle={pagesError} onRetry={() => void loadPages(!selectedPageRef.current)} /> : null}
       {isLoading && pages.length === 0 ? (

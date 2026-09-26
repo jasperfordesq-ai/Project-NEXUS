@@ -203,6 +203,8 @@
       "loadError": "Impossibile caricare le pagine del wiki.",
       "pageLoadError": "Impossibile caricare questa pagina del wiki.",
       "createError": "Impossibile creare la pagina del wiki.",
+      "recoveryError": "Impossibile ripristinare la pagina wiki non completata.",
+      "recoveryNotice": "È stata ripristinata una pagina wiki non completata. Riprova prima di crearne un’altra.",
       "saveError": "Impossibile salvare la pagina del wiki.",
       "deleteError": "Impossibile eliminare la pagina del wiki.",
       "revisionsError": "Impossibile caricare le revisioni del wiki.",

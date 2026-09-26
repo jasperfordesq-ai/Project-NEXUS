@@ -203,6 +203,8 @@
       "loadError": "Impossible de charger les pages du wiki.",
       "pageLoadError": "Impossible de charger cette page du wiki.",
       "createError": "Impossible de créer la page du wiki.",
+      "recoveryError": "Impossible de restaurer la page du wiki inachevée.",
+      "recoveryNotice": "Une page du wiki inachevée a été restaurée. Réessayez avant d’en créer une autre.",
       "saveError": "Impossible d’enregistrer la page du wiki.",
       "deleteError": "Impossible de supprimer la page du wiki.",
       "revisionsError": "Impossible de charger les révisions du wiki.",

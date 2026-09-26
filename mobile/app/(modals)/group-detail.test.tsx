@@ -179,6 +179,8 @@ jest.mock('react-i18next', () => ({
         'detail.wiki.loadError': 'Could not load wiki pages.',
         'detail.wiki.pageLoadError': 'Could not load this wiki page.',
         'detail.wiki.createError': 'Could not create the wiki page.',
+        'detail.wiki.recoveryError': 'Could not restore the unfinished wiki page.',
+        'detail.wiki.recoveryNotice': 'An unfinished wiki page was restored. Retry it before creating another page.',
         'detail.wiki.saveError': 'Could not save the wiki page.',
         'detail.wiki.deleteError': 'Could not delete wiki page.',
         'detail.wiki.revisionsError': 'Could not load revisions.',
@@ -2386,6 +2388,37 @@ describe('GroupDetailScreen', () => {
       }
     });
     expect(screen.getByText(second.content)).toBeTruthy();
+  });
+
+  it('restores an unfinished wiki page and retries its exact durable key', async () => {
+    const pending = {
+      storageKey: 'saved-group-content', key: 'restored-wiki-key', groupId: 1, kind: 'wiki-page' as const,
+      intent: JSON.stringify({ title: 'Saved wiki page', content: 'Keep these instructions.', parent_id: null }),
+      payload: { title: 'Saved wiki page', content: 'Keep these instructions.', parent_id: null }, createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockImplementation(async (_groupId, kind) => (
+      kind === 'wiki-page' ? pending : null
+    ) as never);
+    jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    jest.mocked(getGroupWikiPages).mockResolvedValue({ data: [] });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false, error: null, refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Wiki'));
+    await screen.findByText('An unfinished wiki page was restored. Retry it before creating another page.');
+    expect(screen.getByPlaceholderText('Page title').props.value).toBe('Saved wiki page');
+    expect(screen.getByPlaceholderText('Page title').props.editable).toBe(false);
+    expect(screen.getByPlaceholderText('Write the page content...').props.value).toBe('Keep these instructions.');
+    fireEvent.press(screen.getByText('Create page'));
+
+    await waitFor(() => expect(createGroupWikiPage).toHaveBeenCalledWith(1, {
+      title: pending.payload.title,
+      content: pending.payload.content,
+    }, pending.key));
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
   });
 
   it.each([false, true])('saves wiki edits with a changed page selection: %s', async (changeSelection) => {

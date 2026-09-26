@@ -161,6 +161,8 @@
       "loadError": "Níorbh fhéidir na leathanaigh vicí a luchtú.",
       "pageLoadError": "Níorbh fhéidir an leathanach vicí seo a luchtú.",
       "createError": "Níorbh fhéidir an leathanach vicí a chruthú.",
+      "recoveryError": "Níorbh fhéidir an leathanach vicí neamhchríochnaithe a athbhunú.",
+      "recoveryNotice": "Athbhunaíodh leathanach vicí neamhchríochnaithe. Bain triail eile as sula gcruthaíonn tú leathanach eile.",
       "saveError": "Níorbh fhéidir an leathanach vicí a shábháil.",
       "deleteError": "Níorbh fhéidir an leathanach vicí a scriosadh.",
       "revisionsError": "Níorbh fhéidir leaganacha an leathanaigh vicí a luchtú.",

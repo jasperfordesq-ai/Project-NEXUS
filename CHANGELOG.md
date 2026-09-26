@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Posting an answer in group Q&A now preserves the exact answer and protected request across a lost response or app restart. The recovery card remains usable even when the original question is outside the first loaded page.
 
+- Creating a group wiki page in the mobile app now preserves the exact title, content and protected request across a lost response or app restart. Restored pages remain locked for explicit retry, and unavailable recovery blocks replacement work.
+
 - Pending group invitations in the mobile app now show their expiry date in the language chosen in the app, rather than US English. The committed database schema snapshot now includes the group-exchange, federation-message and group join-decision retry tables, the contact-form retry columns and the quiz-attempt retry columns, so the schema-reference check passes again.
 
 - Deleting a group announcement, wiki page, question or answer now removes its creation-replay receipt in the same transaction, so a later retry cannot resolve to content that has already been deleted.

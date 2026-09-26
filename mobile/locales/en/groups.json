@@ -203,6 +203,8 @@
       "loadError": "Could not load wiki pages.",
       "pageLoadError": "Could not load this wiki page.",
       "createError": "Could not create the wiki page.",
+      "recoveryError": "Could not restore the unfinished wiki page.",
+      "recoveryNotice": "An unfinished wiki page was restored. Retry it before creating another page.",
       "saveError": "Could not save the wiki page.",
       "deleteError": "Could not delete the wiki page.",
       "revisionsError": "Could not load wiki revisions.",
