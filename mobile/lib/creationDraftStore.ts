@@ -7,7 +7,7 @@ import { storage } from '@/lib/storage';
 import { Platform } from 'react-native';
 import { loadEncryptedDraftFile, saveEncryptedDraftFile } from './encryptedDraftFile';
 
-export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'group-task' | 'group-join-decision' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings' | 'event-registration-form' | 'event-guest-attendance' | 'event-invitation-campaign' | 'event-retention' | 'event-invitation-revoke' | 'event-agenda' | 'event-staff' | 'event-safety';
+export type CreationDraftKind = 'goal' | 'poll' | 'message' | 'quiz-attempt' | 'group-task' | 'group-join-decision' | 'group-discussion-reply' | 'event-communication' | 'event-people' | 'event-session-registration' | 'event-registration-settings' | 'event-registration-form' | 'event-guest-attendance' | 'event-invitation-campaign' | 'event-retention' | 'event-invitation-revoke' | 'event-agenda' | 'event-staff' | 'event-safety';
 
 export interface CreationDraftScope {
   kind: CreationDraftKind;
@@ -58,7 +58,7 @@ function splitUnicode(value: string): string[] {
 function maxChunks(scope: CreationDraftScope): number {
   return scope.kind === 'event-communication' || scope.kind === 'event-people' ? EVENT_COMMUNICATION_MAX_CHUNKS : MAX_CHUNKS;
 }
-const usesDraftFile = (scope: CreationDraftScope) => (scope.kind === 'group-task' || scope.kind === 'event-registration-form' || scope.kind === 'event-invitation-campaign' || scope.kind === 'event-agenda' || scope.kind === 'event-safety') && Platform.OS !== 'web';
+const usesDraftFile = (scope: CreationDraftScope) => (scope.kind === 'group-task' || scope.kind === 'group-discussion-reply' || scope.kind === 'event-registration-form' || scope.kind === 'event-invitation-campaign' || scope.kind === 'event-agenda' || scope.kind === 'event-safety') && Platform.OS !== 'web';
 
 async function readManifest(base: string, required = false, limit = MAX_CHUNKS): Promise<DraftManifest | null> {
   let manifest: DraftManifest | null;

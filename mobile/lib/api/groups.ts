@@ -970,11 +970,18 @@ export function postGroupDiscussionMessage(
   id: number,
   discussionId: number,
   payload: { content: string },
+  idempotencyKey?: string,
 ): Promise<{ data: GroupDiscussionMessage }> {
-  return api.post<{ data: GroupDiscussionMessage }>(
-    `${API_V2}/groups/${id}/discussions/${discussionId}/messages`,
-    payload,
-  );
+  return idempotencyKey
+    ? api.post<{ data: GroupDiscussionMessage }>(
+        `${API_V2}/groups/${id}/discussions/${discussionId}/messages`,
+        { ...payload, idempotency_key: idempotencyKey },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    : api.post<{ data: GroupDiscussionMessage }>(
+        `${API_V2}/groups/${id}/discussions/${discussionId}/messages`,
+        payload,
+      );
 }
 
 /**

@@ -57,6 +57,7 @@ import {
   getGroupWikiRevisions,
   joinGroup,
   leaveGroup,
+  postGroupDiscussionMessage,
   revokeGroupInvite,
   sendGroupEmailInvites,
   updateGroup,
@@ -261,6 +262,17 @@ describe('group announcement helpers', () => {
     expect(api.post).toHaveBeenNthCalledWith(6, '/api/v2/groups/7/tasks', {
       title: 'Water seedlings', status: 'todo', idempotency_key: 'task-key-1',
     }, { headers: { 'Idempotency-Key': 'task-key-1' } });
+  });
+
+  it('sends the same durable operation identity for a discussion reply', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { id: 10 } });
+
+    await postGroupDiscussionMessage(7, 9, { content: 'I can help.' }, 'reply-key-1');
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/groups/7/discussions/9/messages', {
+      content: 'I can help.',
+      idempotency_key: 'reply-key-1',
+    }, { headers: { 'Idempotency-Key': 'reply-key-1' } });
   });
 
   it('sends durable operation identity with group creation', async () => {

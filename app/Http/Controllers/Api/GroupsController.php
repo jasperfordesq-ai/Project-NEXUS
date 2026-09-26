@@ -830,6 +830,17 @@ class GroupsController extends BaseApiController
         $this->rateLimit("groups_post_to_discussion_{$id}", 30, 60);
 
         $data = $this->getAllInput();
+        $headerKey = request()->header('Idempotency-Key');
+        $bodyKey = $data['idempotency_key'] ?? null;
+        if (($headerKey !== null && ! is_string($headerKey)) || ($bodyKey !== null && ! is_string($bodyKey))) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $headerKey = trim((string) ($headerKey ?? ''));
+        $bodyKey = trim((string) ($bodyKey ?? ''));
+        if ($headerKey !== '' && $bodyKey !== '' && ! hash_equals($headerKey, $bodyKey)) {
+            return $this->respondWithError('IDEMPOTENCY_INVALID', __('event_registration.idempotency_invalid'), 'idempotency_key', 422);
+        }
+        $data['idempotency_key'] = $headerKey !== '' ? $headerKey : ($bodyKey !== '' ? $bodyKey : null);
 
         try {
             $message = $this->groupService->postToDiscussion($id, $discussionId, $userId, $data);

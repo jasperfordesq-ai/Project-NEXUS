@@ -31,10 +31,23 @@ jest.mock('expo-router', () => ({
 
 const mockGetThread = jest.fn();
 const mockPostMessage = jest.fn();
+const mockLoadReplyOperation = jest.fn();
+const mockReserveReplyOperation = jest.fn();
+const mockCompleteReplyOperation = jest.fn();
+const mockDiscardReplyOperation = jest.fn();
+let mockReplyKey = 0;
 
 jest.mock('@/lib/api/groups', () => ({
   getGroupDiscussionThread: (...a: unknown[]) => mockGetThread(...a),
   postGroupDiscussionMessage: (...a: unknown[]) => mockPostMessage(...a),
+}));
+
+jest.mock('@/lib/groupDiscussionReplyOperation', () => ({
+  loadGroupDiscussionReplyOperation: (...a: unknown[]) => mockLoadReplyOperation(...a),
+  reserveGroupDiscussionReplyOperation: (...a: unknown[]) => mockReserveReplyOperation(...a),
+  completeGroupDiscussionReplyOperation: (...a: unknown[]) => mockCompleteReplyOperation(...a),
+  discardGroupDiscussionReplyOperation: (...a: unknown[]) => mockDiscardReplyOperation(...a),
+  isGroupDiscussionReplyContentValid: (content: string) => new TextEncoder().encode(content.trim()).length <= 60000,
 }));
 
 jest.mock('@/lib/hooks/useTenant', () => ({
@@ -78,6 +91,18 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockParams = { id: '7', discussionId: '42' };
   mockGetThread.mockResolvedValue(THREAD);
+  mockReplyKey = 0;
+  mockLoadReplyOperation.mockResolvedValue(null);
+  mockReserveReplyOperation.mockImplementation(async (groupId: number, discussionId: number, content: string) => ({
+    storageKey: `reply:${groupId}:${discussionId}`,
+    key: `reply-key-${++mockReplyKey}`,
+    groupId,
+    discussionId,
+    content: content.trim(),
+    createdAt: '2026-09-02T09:59:00.000Z',
+  }));
+  mockCompleteReplyOperation.mockResolvedValue(undefined);
+  mockDiscardReplyOperation.mockResolvedValue(undefined);
   mockPostMessage.mockResolvedValue({
     data: {
       id: 901,
@@ -101,18 +126,89 @@ describe('GroupDiscussionScreen', () => {
     }
   });
 
-  it('retains a failed reply draft and allows an explicit retry', async () => {
-    mockPostMessage.mockRejectedValueOnce(new ApiResponseError(422, 'Reply unavailable'));
+  it('retains an uncertain reply operation and retries with the same key', async () => {
+    mockPostMessage.mockRejectedValueOnce(new ApiResponseError(503, 'Reply status unknown'));
     const screen = render(<GroupDiscussionScreen />);
     await screen.findByText('I can do Tuesday morning.');
     fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Thank you, that would be great.');
     await act(async () => fireEvent.press(screen.getByTestId('group-discussion-reply-send')));
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Reply unavailable' }));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'Your reply may already have been posted. Retry the saved reply to confirm it without posting twice.',
+    }));
     expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('Thank you, that would be great.');
     fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
     await screen.findByText('Thank you, that would be great.');
     expect(mockPostMessage).toHaveBeenCalledTimes(2);
+    expect(mockPostMessage).toHaveBeenNthCalledWith(
+      1, 7, 42, { content: 'Thank you, that would be great.' }, 'reply-key-1',
+    );
+    expect(mockPostMessage).toHaveBeenNthCalledWith(
+      2, 7, 42, { content: 'Thank you, that would be great.' }, 'reply-key-1',
+    );
+    expect(mockReserveReplyOperation).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('group-discussion-reply-input').props.value).toBe('');
+  });
+
+  it('restores a saved reply without replaying it until the member chooses Retry', async () => {
+    mockLoadReplyOperation.mockResolvedValue({
+      storageKey: 'reply:7:42',
+      key: 'saved-reply-key',
+      groupId: 7,
+      discussionId: 42,
+      content: 'Saved after a lost response',
+      createdAt: '2026-09-02T09:59:00.000Z',
+    });
+
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByDisplayValue('Saved after a lost response');
+    expect(mockPostMessage).not.toHaveBeenCalled();
+    expect(screen.getByText('Retry saved reply')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    await waitFor(() => expect(mockPostMessage).toHaveBeenCalledWith(
+      7,
+      42,
+      { content: 'Saved after a lost response' },
+      'saved-reply-key',
+    ));
+    expect(mockReserveReplyOperation).not.toHaveBeenCalled();
+  });
+
+  it('blocks transport when the reply cannot be saved durably', async () => {
+    mockReserveReplyOperation.mockRejectedValueOnce(new Error('The reply could not be saved.'));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'Do not send without recovery');
+
+    await act(async () => fireEvent.press(screen.getByTestId('group-discussion-reply-send')));
+
+    expect(mockPostMessage).not.toHaveBeenCalled();
+    expect(screen.getByTestId('group-discussion-reply-recovery-error')).toBeTruthy();
+  });
+
+  it('rejects an oversized multibyte reply before persistence or transport', async () => {
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByText('I can do Tuesday morning.');
+    fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), '😀'.repeat(15001));
+
+    fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'This reply is too long. Shorten it before posting.',
+    })));
+    expect(mockReserveReplyOperation).not.toHaveBeenCalled();
+    expect(mockPostMessage).not.toHaveBeenCalled();
+  });
+
+  it('blocks transport until failed saved-reply recovery succeeds', async () => {
+    mockLoadReplyOperation.mockRejectedValueOnce(new Error('Unreadable saved operation'));
+    const screen = render(<GroupDiscussionScreen />);
+    await screen.findByTestId('group-discussion-reply-recovery-error');
+    expect(mockPostMessage).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText('Retry'));
+    await screen.findByTestId('group-discussion-reply-input');
+    expect(mockLoadReplyOperation).toHaveBeenCalledTimes(2);
   });
 
   it('reconciles a posted reply with the refreshed server page without duplicates', async () => {
@@ -189,7 +285,7 @@ describe('GroupDiscussionScreen', () => {
     while (!button.props.onPress && button.parent) button = button.parent;
     const send = button.props.onPress;
     act(() => { void send(); void send(); });
-    expect(mockPostMessage).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockPostMessage).toHaveBeenCalledTimes(1));
     // A native edit queued before the disabled state reached the input may arrive late.
     act(() => screen.getByTestId('group-discussion-reply-input').props.onChangeText('Next reply draft'));
     await act(async () => { resolveSend({ data: { ...THREAD.data.messages[0], id: 901, content: 'First reply' } }); });
@@ -204,6 +300,7 @@ describe('GroupDiscussionScreen', () => {
     await screen.findByText('I can do Tuesday morning.');
     fireEvent.changeText(screen.getByTestId('group-discussion-reply-input'), 'First reply');
     fireEvent.press(screen.getByTestId('group-discussion-reply-send'));
+    await waitFor(() => expect(mockPostMessage).toHaveBeenCalledTimes(1));
     screen.unmount();
     await act(async () => { rejectSend(new Error('Delayed failure')); });
     expect(mockToast).not.toHaveBeenCalled();
@@ -228,7 +325,12 @@ describe('GroupDiscussionScreen', () => {
     fireEvent.press(getByTestId('group-discussion-reply-send'));
 
     await waitFor(() =>
-      expect(mockPostMessage).toHaveBeenCalledWith(7, 42, { content: 'Thank you, that would be great.' }),
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        7,
+        42,
+        { content: 'Thank you, that would be great.' },
+        'reply-key-1',
+      ),
     );
     await waitFor(() => expect(getByText('Thank you, that would be great.')).toBeTruthy());
   });
@@ -249,6 +351,7 @@ describe('GroupDiscussionScreen', () => {
         expect.objectContaining({ description: 'This discussion has been closed by an admin.' }),
       ),
     );
+    expect(mockDiscardReplyOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'reply-key-1' }));
   });
 
   it('offers a way back rather than a Retry when access is refused', async () => {

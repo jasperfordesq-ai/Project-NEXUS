@@ -360,6 +360,10 @@
       "openLabel": "Diskussion {{title}} öffnen",
       "showEarlier": "Frühere Antworten anzeigen",
       "posting": "Wird gesendet…",
+      "replyPending": "Deine Antwort wurde möglicherweise bereits gesendet. Wiederhole die gespeicherte Antwort, um sie zu bestätigen, ohne sie doppelt zu senden.",
+      "retryReply": "Gespeicherte Antwort erneut senden",
+      "recoveryUnavailable": "Die Wiederherstellung der gespeicherten Antwort ist nicht verfügbar. Versuche es vor dem Senden erneut.",
+      "tooLong": "Diese Antwort ist zu lang. Kürze sie vor dem Senden.",
       "unavailable": "Diese Diskussion ist nicht mehr verfügbar.",
       "noAccess": "Du hast keinen Zugriff auf diese Diskussion."
     },

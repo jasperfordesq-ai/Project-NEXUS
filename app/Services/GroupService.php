@@ -2998,8 +2998,39 @@ class GroupService
             return null;
         }
         $tenantId = (int) TenantContext::getId();
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'content' => $content,
+            'discussion_id' => $discussionId,
+            'group_id' => $groupId,
+        ]);
+        if ($identity === false) {
+            self::$errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
 
-        $post = DB::transaction(function () use ($groupId, $discussionId, $userId, $content, $tenantId): ?GroupPost {
+        $outcome = DB::transaction(function () use ($groupId, $discussionId, $userId, $content, $tenantId, $identity): ?array {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $userId,
+                    'discussion_reply',
+                    $identity['key_hash'],
+                );
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        self::$errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                        return null;
+                    }
+                    $payload = GroupContentCreationReceiptService::payload($receipt);
+                    if ($payload === null) {
+                        self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.generic_error')];
+                        return null;
+                    }
+                    return ['payload' => $payload, 'replayed' => true];
+                }
+            }
+
             if (! self::lockWritableDiscussionGroup($groupId, $userId, $tenantId)) {
                 return null;
             }
@@ -3036,32 +3067,48 @@ class GroupService
                 'discussion_id' => $discussionId,
             ]);
 
-            return $post;
+            $post->load('user:id,first_name,last_name,profile_type,organization_name,avatar_url');
+            $user = $post->user;
+            $payload = [
+                'id'         => (int) $post->id,
+                'content'    => (string) $post->content,
+                'author'     => [
+                    'id'         => (int) $post->user_id,
+                    'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
+                    'avatar_url' => $user?->avatar_url,
+                ],
+                'is_own'     => true,
+                'created_at' => $post->created_at?->toISOString(),
+            ];
+
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    $groupId,
+                    'discussion_reply',
+                    $identity,
+                    (int) $post->id,
+                    $payload,
+                );
+            }
+
+            return ['payload' => $payload, 'replayed' => false];
         });
 
-        if ($post === null) {
+        if ($outcome === null) {
             return null;
         }
 
-        // Fire integrations
-        try { GroupAuditService::log(GroupAuditService::ACTION_POST_CREATED, $groupId, $userId, ['post_id' => $post->id]); } catch (\Throwable $e) { \Log::warning('GroupService: failed to log post_created audit', ['group_id' => $groupId, 'post_id' => $post->id, 'error' => $e->getMessage()]); }
-        try { GroupChallengeService::incrementProgress($groupId, 'posts'); } catch (\Throwable $e) { \Log::warning('GroupService: failed to increment challenge progress for posts', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
-        try { GroupMentionService::notifyMentioned($groupId, $userId, $content, 'post', $post->id); } catch (\Throwable $e) { \Log::warning('GroupService: failed to notify mentioned users in post', ['group_id' => $groupId, 'post_id' => $post->id, 'error' => $e->getMessage()]); }
+        $payload = $outcome['payload'];
+        if (! $outcome['replayed']) {
+            $postId = (int) $payload['id'];
+            try { GroupAuditService::log(GroupAuditService::ACTION_POST_CREATED, $groupId, $userId, ['post_id' => $postId]); } catch (\Throwable $e) { \Log::warning('GroupService: failed to log post_created audit', ['group_id' => $groupId, 'post_id' => $postId, 'error' => $e->getMessage()]); }
+            try { GroupChallengeService::incrementProgress($groupId, 'posts'); } catch (\Throwable $e) { \Log::warning('GroupService: failed to increment challenge progress for posts', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
+            try { GroupMentionService::notifyMentioned($groupId, $userId, $content, 'post', $postId); } catch (\Throwable $e) { \Log::warning('GroupService: failed to notify mentioned users in post', ['group_id' => $groupId, 'post_id' => $postId, 'error' => $e->getMessage()]); }
+        }
 
-        $post->load('user:id,first_name,last_name,profile_type,organization_name,avatar_url');
-        $user = $post->user;
-
-        return [
-            'id'         => (int) $post->id,
-            'content'    => (string) $post->content,
-            'author'     => [
-                'id'         => (int) $post->user_id,
-                'name'       => $user ? UserDisplayName::resolve($user) : __('api.unknown_user'),
-                'avatar_url' => $user?->avatar_url,
-            ],
-            'is_own'     => true,
-            'created_at' => $post->created_at?->toISOString(),
-        ];
+        return $payload;
     }
 
     private static function requireDiscussionAccess(

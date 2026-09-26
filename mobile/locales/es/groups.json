@@ -360,6 +360,10 @@
       "openLabel": "Abrir la discusión {{title}}",
       "showEarlier": "Mostrar respuestas anteriores",
       "posting": "Publicando…",
+      "replyPending": "Es posible que tu respuesta ya se haya publicado. Reintenta la respuesta guardada para confirmarla sin publicarla dos veces.",
+      "retryReply": "Reintentar respuesta guardada",
+      "recoveryUnavailable": "La recuperación de la respuesta guardada no está disponible. Inténtalo de nuevo antes de publicar.",
+      "tooLong": "Esta respuesta es demasiado larga. Acórtala antes de publicarla.",
       "unavailable": "Esta discusión ya no está disponible.",
       "noAccess": "No tienes acceso a esta discusión."
     },

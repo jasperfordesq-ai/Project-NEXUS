@@ -360,6 +360,10 @@
       "openLabel": "Open discussion {{title}}",
       "showEarlier": "Show earlier replies",
       "posting": "Posting…",
+      "replyPending": "Your reply may already have been posted. Retry the saved reply to confirm it without posting twice.",
+      "retryReply": "Retry saved reply",
+      "recoveryUnavailable": "Saved reply recovery is unavailable. Retry before posting.",
+      "tooLong": "This reply is too long. Shorten it before posting.",
       "unavailable": "This discussion is no longer available.",
       "noAccess": "You do not have access to this discussion."
     },

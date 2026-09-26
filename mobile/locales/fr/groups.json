@@ -360,6 +360,10 @@
       "openLabel": "Ouvrir la discussion {{title}}",
       "showEarlier": "Afficher les réponses précédentes",
       "posting": "Publication en cours…",
+      "replyPending": "Votre réponse a peut-être déjà été publiée. Réessayez la réponse enregistrée pour la confirmer sans la publier deux fois.",
+      "retryReply": "Réessayer la réponse enregistrée",
+      "recoveryUnavailable": "La récupération de la réponse enregistrée est indisponible. Réessayez avant de publier.",
+      "tooLong": "Cette réponse est trop longue. Raccourcissez-la avant de la publier.",
       "unavailable": "Cette discussion n'est plus disponible.",
       "noAccess": "Vous n'avez pas accès à cette discussion."
     },

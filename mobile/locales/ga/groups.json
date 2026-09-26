@@ -351,6 +351,10 @@
       "openLabel": "Oscail an plé {{title}}",
       "showEarlier": "Taispeáin freagraí níos luaithe",
       "posting": "Á phostáil…",
+      "replyPending": "Seans gur postáladh do fhreagra cheana. Bain triail eile as an bhfreagra sábháilte chun é a dheimhniú gan é a phostáil faoi dhó.",
+      "retryReply": "Bain triail eile as an bhfreagra sábháilte",
+      "recoveryUnavailable": "Níl aisghabháil an fhreagra shábháilte ar fáil. Bain triail eile as sula bpostálann tú.",
+      "tooLong": "Tá an freagra seo rófhada. Giorraigh é sula bpostálann tú.",
       "unavailable": "Níl an plé seo ar fáil a thuilleadh.",
       "noAccess": "Níl rochtain agat ar an bplé seo."
     },

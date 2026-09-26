@@ -35,6 +35,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import {
@@ -45,6 +46,14 @@ import {
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import {
+  completeGroupDiscussionReplyOperation,
+  discardGroupDiscussionReplyOperation,
+  isGroupDiscussionReplyContentValid,
+  loadGroupDiscussionReplyOperation,
+  reserveGroupDiscussionReplyOperation,
+  type GroupDiscussionReplyOperation,
+} from '@/lib/groupDiscussionReplyOperation';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { toPlainText } from '@/lib/utils/plainText';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -127,7 +136,12 @@ function GroupDiscussionScreenInner() {
   const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [pendingOperation, setPendingOperation] = useState<GroupDiscussionReplyOperation | null>(null);
+  const [recoveryState, setRecoveryState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [recoveryNonce, setRecoveryNonce] = useState(0);
   const sendingRef = useRef(false);
+  const recoveryEpochRef = useRef(0);
+  const replyScopeRef = useRef('');
   const pageRequestRef = useRef(0);
   const pagePendingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -135,6 +149,37 @@ function GroupDiscussionScreenInner() {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
+
+  useEffect(() => {
+    const epoch = ++recoveryEpochRef.current;
+    const scope = `${safeGroupId}:${safeThreadId}`;
+    if (replyScopeRef.current !== scope) {
+      replyScopeRef.current = scope;
+      sendingRef.current = false;
+      setSending(false);
+      setDraft('');
+      setEarlier([]);
+      setPosted([]);
+      setPagedCursor(undefined);
+      pageRequestRef.current += 1;
+      pagePendingRef.current = false;
+      setLoadingEarlier(false);
+    }
+    setPendingOperation(null);
+    if (!isValidId) {
+      setRecoveryState('ready');
+      return;
+    }
+    setRecoveryState('loading');
+    void loadGroupDiscussionReplyOperation(safeGroupId, safeThreadId).then((operation) => {
+      if (!mountedRef.current || recoveryEpochRef.current !== epoch) return;
+      setPendingOperation(operation);
+      if (operation) setDraft(operation.content);
+      setRecoveryState('ready');
+    }).catch(() => {
+      if (mountedRef.current && recoveryEpochRef.current === epoch) setRecoveryState('failed');
+    });
+  }, [isValidId, recoveryNonce, safeGroupId, safeThreadId]);
 
   const discussion = data?.data?.discussion ?? null;
   const firstPage = useMemo(() => data?.data?.messages ?? [], [data]);
@@ -188,9 +233,9 @@ function GroupDiscussionScreenInner() {
   }
 
   async function handleSend() {
-    if (!mountedRef.current || sendingRef.current) return;
-    const submittedDraft = draft;
-    const content = draft.trim();
+    if (!mountedRef.current || sendingRef.current || recoveryState !== 'ready') return;
+    const submittedDraft = pendingOperation?.content ?? draft;
+    const content = submittedDraft.trim();
     if (!content) {
       showToast({
         title: t('common:errors.alertTitle'),
@@ -199,26 +244,68 @@ function GroupDiscussionScreenInner() {
       });
       return;
     }
-    sendingRef.current = true;
-    setSending(true);
-    try {
-      const created = await postGroupDiscussionMessage(safeGroupId, safeThreadId, { content });
-      if (!mountedRef.current) return;
-      setPosted((prev) => [...prev, created.data]);
-      setDraft((current) => current === submittedDraft ? '' : current);
-    } catch (err) {
-      if (!mountedRef.current) return;
-      // The server's own reason has to reach the member here: a closed discussion (409),
-      // a membership that ended (403) and a deleted thread (404) all need different
-      // actions from them, and a fixed sentence would hide which happened.
+    if (!isGroupDiscussionReplyContentValid(content)) {
       showToast({
         title: t('common:errors.alertTitle'),
-        description: describeApiError(err, t('detail.discussionReplies.postError')),
+        description: t('detail.discussionReplies.tooLong'),
+        variant: 'warning',
+      });
+      return;
+    }
+    sendingRef.current = true;
+    setSending(true);
+    const sendEpoch = recoveryEpochRef.current;
+    let operation = pendingOperation;
+    try {
+      if (!operation) {
+        operation = await reserveGroupDiscussionReplyOperation(safeGroupId, safeThreadId, content);
+        if (!mountedRef.current || recoveryEpochRef.current !== sendEpoch) return;
+        setPendingOperation(operation);
+        setDraft(operation.content);
+      }
+      const created = await postGroupDiscussionMessage(
+        operation.groupId,
+        operation.discussionId,
+        { content: operation.content },
+        operation.key,
+      );
+      await completeGroupDiscussionReplyOperation(operation);
+      if (!mountedRef.current || recoveryEpochRef.current !== sendEpoch) return;
+      setPendingOperation(null);
+      setPosted((prev) => [...prev, created.data]);
+      setDraft((current) => current.trim() === content ? '' : current);
+    } catch (err) {
+      if (!mountedRef.current || recoveryEpochRef.current !== sendEpoch) return;
+      const definite = err instanceof ApiResponseError
+        && err.status >= 400
+        && err.status < 500
+        && err.status !== 408
+        && err.status !== 429;
+      if (operation && definite) {
+        try {
+          await discardGroupDiscussionReplyOperation(operation);
+          if (mountedRef.current) setPendingOperation(null);
+        } catch {
+          if (mountedRef.current) setRecoveryState('failed');
+        }
+        if (mountedRef.current) refresh();
+      } else if (!operation) {
+        setRecoveryState('failed');
+      }
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: definite
+          ? describeApiError(err, t('detail.discussionReplies.postError'))
+          : operation
+            ? t('detail.discussionReplies.replyPending')
+            : t('detail.discussionReplies.recoveryUnavailable'),
         variant: 'danger',
       });
     } finally {
-      sendingRef.current = false;
-      if (mountedRef.current) setSending(false);
+      if (recoveryEpochRef.current === sendEpoch) {
+        sendingRef.current = false;
+        if (mountedRef.current) setSending(false);
+      }
     }
   }
 
@@ -422,24 +509,46 @@ function GroupDiscussionScreenInner() {
           className="gap-2 border-t px-4 pb-4 pt-3"
           style={{ borderTopColor: theme.borderSubtle, backgroundColor: theme.bg }}
         >
-          <TextArea
-            value={draft}
-            onChangeText={setDraft}
-            placeholder={t('detail.discussionReplies.placeholder')}
-            numberOfLines={3}
-            editable={!sending}
-            containerClassName="mb-0"
-            testID="group-discussion-reply-input"
-          />
-          <HeroButton
-            isDisabled={sending || draft.trim().length === 0}
-            onPress={handleSend}
-            testID="group-discussion-reply-send"
-          >
-            <HeroButton.Label>
-              {sending ? t('detail.discussionReplies.posting') : t('detail.discussionReplies.post')}
-            </HeroButton.Label>
-          </HeroButton>
+          {recoveryState === 'failed' ? (
+            <View className="gap-2" testID="group-discussion-reply-recovery-error">
+              <Text accessibilityRole="alert" style={{ color: theme.error }}>
+                {t('detail.discussionReplies.recoveryUnavailable')}
+              </Text>
+              <HeroButton variant="secondary" onPress={() => setRecoveryNonce((value) => value + 1)}>
+                <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+              </HeroButton>
+            </View>
+          ) : (
+            <>
+              {pendingOperation ? (
+                <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: theme.text }}>
+                  {t('detail.discussionReplies.replyPending')}
+                </Text>
+              ) : null}
+              <TextArea
+                value={draft}
+                onChangeText={setDraft}
+                placeholder={t('detail.discussionReplies.placeholder')}
+                numberOfLines={3}
+                editable={!sending && recoveryState === 'ready' && !pendingOperation}
+                containerClassName="mb-0"
+                testID="group-discussion-reply-input"
+              />
+              <HeroButton
+                isDisabled={sending || recoveryState !== 'ready' || draft.trim().length === 0}
+                onPress={handleSend}
+                testID="group-discussion-reply-send"
+              >
+                <HeroButton.Label>
+                  {sending
+                    ? t('detail.discussionReplies.posting')
+                    : pendingOperation
+                      ? t('detail.discussionReplies.retryReply')
+                      : t('detail.discussionReplies.post')}
+                </HeroButton.Label>
+              </HeroButton>
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
     </DiscussionShell>

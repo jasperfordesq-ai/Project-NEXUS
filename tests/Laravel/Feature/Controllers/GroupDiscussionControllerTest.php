@@ -183,6 +183,62 @@ final class GroupDiscussionControllerTest extends TestCase
         ], $headers)->assertConflict();
     }
 
+    public function test_discussion_reply_replays_one_committed_result_and_effects_once(): void
+    {
+        $discussion = $this->discussion($this->activeGroupId, $this->member);
+        $this->authenticate($this->member);
+        $payload = [
+            'content' => 'This exact reply must be committed once.',
+            'idempotency_key' => 'group-discussion-reply-replay-1',
+        ];
+        $headers = ['Idempotency-Key' => $payload['idempotency_key']];
+        $uri = "/v2/groups/{$this->activeGroupId}/discussions/{$discussion['id']}/messages";
+
+        $first = $this->apiPost($uri, $payload, $headers)->assertCreated();
+        $replay = $this->apiPost($uri, $payload, $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $replay->json('data.id'));
+        self::assertSame(2, DB::table('group_posts')->where('discussion_id', $discussion['id'])->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $this->member->id)
+            ->where('operation_type', 'discussion_reply')
+            ->count());
+        self::assertSame(1, DB::table('group_audit_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('group_id', $this->activeGroupId)
+            ->where('user_id', $this->member->id)
+            ->where('action', 'post_created')
+            ->count());
+
+        $this->apiPost($uri, [
+            ...$payload,
+            'content' => 'Changed text cannot reuse the operation.',
+        ], $headers)->assertConflict()->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
+        self::assertSame(2, DB::table('group_posts')->where('discussion_id', $discussion['id'])->count());
+    }
+
+    public function test_discussion_reply_rejects_mismatched_operation_identity_before_writing(): void
+    {
+        $discussion = $this->discussion($this->activeGroupId, $this->member);
+        $this->authenticate($this->member);
+        $uri = "/v2/groups/{$this->activeGroupId}/discussions/{$discussion['id']}/messages";
+
+        $this->apiPost($uri, [
+            'content' => 'This must not be written.',
+            'idempotency_key' => 'body-operation-key',
+        ], ['Idempotency-Key' => 'header-operation-key'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_INVALID');
+
+        self::assertSame(1, DB::table('group_posts')->where('discussion_id', $discussion['id'])->count());
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('actor_user_id', $this->member->id)
+            ->where('operation_type', 'discussion_reply')
+            ->count());
+    }
+
     public function test_pinned_discussion_composite_cursor_never_skips_or_duplicates_equal_timestamps(): void
     {
         $createdAt = now()->subDay()->format('Y-m-d H:i:s');
