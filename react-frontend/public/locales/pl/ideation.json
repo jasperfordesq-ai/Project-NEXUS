@@ -301,7 +301,7 @@
     "type_image": "Obraz",
     "type_video": "Wideo",
     "type_document": "Dokument",
-    "type_link": "Połączyć",
+    "type_link": "Link",
     "delete_confirm": "Usunąć ten załącznik?",
     "empty": "Brak załączników"
   },

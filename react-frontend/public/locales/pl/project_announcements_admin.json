@@ -39,11 +39,11 @@
     "actions": "Działania"
   },
   "actions": {
-    "publish": "Publikować",
+    "publish": "Opublikuj",
     "add_update": "Dodaj aktualizację",
     "pause": "Pauza",
     "complete": "Kompletny",
-    "cancel": "Anulować"
+    "cancel": "Anuluj"
   },
   "fields": {
     "title": "Tytuł",
@@ -60,7 +60,7 @@
   },
   "create_modal": {
     "title": "Utwórz projekt społecznościowy",
-    "submit": "Tworzyć"
+    "submit": "Utwórz"
   },
   "update_modal": {
     "title": "Dodaj aktualizację projektu",
@@ -73,5 +73,5 @@
     "publish": "Nie udało się opublikować projektu.",
     "status": "Nie można zmienić stanu projektu."
   },
-  "loading": "Loading"
+  "loading": "Ładowanie"
 }

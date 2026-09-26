@@ -68,7 +68,7 @@
     "timebanking": "Bank czasu",
     "explore": "Odkrywaj",
     "marketplace": "Rynek",
-    "premium": "Premia",
+    "premium": "Wesprzyj",
     "verify_identity": "Zweryfikuj swoją tożsamość",
     "accessibility_alpha": "Dostępność (alfa)",
     "accessibility_alpha_tooltip": "Enhanced accessible version — WCAG 2.2 AA compliant. Otwiera się w nowej karcie.",
@@ -959,7 +959,7 @@
     "user_menu_trigger": "Menu użytkownika dla {{name}}",
     "feed_sidebar": "Pasek boczny społeczności",
     "filter_panel": "Panel filtrów",
-    "remove": "Remove",
+    "remove": "Usuń",
     "location_results_one": "Dostępne są sugestie adresów {{count}}",
     "location_results_other": "Dostępne są sugestie adresów {{count}}",
     "search_results_one": "Dostępne wyniki {{count}}",
@@ -1069,9 +1069,9 @@
   "verify_identity": "Zweryfikuj tożsamość",
   "level_short": "Pz. {{level}}",
   "cancel": "Anuluj",
-  "confirm": "Confirm",
+  "confirm": "Potwierdź",
   "save": "Zapisz",
-  "delete": "Delete",
+  "delete": "Usuń",
   "offer_favour": {
     "meta": {
       "title": "Zaoferuj przysługę",
@@ -1718,7 +1718,7 @@
     }
   },
   "premium": {
-    "pricing_title": "Premia",
+    "pricing_title": "Wesprzyj",
     "pricing_subtitle": "Odblokuj funkcje premium, aby w pełni wykorzystać swoją społeczność.",
     "monthly": "Miesięcznie",
     "yearly": "Rocznie",
@@ -2457,16 +2457,16 @@
   "level_named": "Poziom {{level}} - {{name}}",
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Postęp poziomu {{level}}: {{percentage}}%",
-  "user_fallback": "User",
+  "user_fallback": "Użytkownik",
   "release_stage": "Ogólnie dostępne (v2.1.0)",
   "theme_picker": {
-    "title": "Appearance",
+    "title": "Wygląd",
     "subtitle": "Dostosuj schemat kolorów, akcent i gęstość.",
     "open_label": "Otwórz selektor motywów",
     "color_scheme": "Schemat kolorów",
-    "scheme_light": "Light",
-    "scheme_dark": "Dark",
-    "scheme_system": "System"
+    "scheme_light": "Jasny",
+    "scheme_dark": "Ciemny",
+    "scheme_system": "Systemowy"
   },
   "alpha_badge": "Alfa",
   "beta_badge": "Beta",
@@ -2491,7 +2491,7 @@
   },
   "submit_error": "Nie udało się przesłać. Spróbuj ponownie.",
   "submitting": "Przedkładający…",
-  "submit": "Składać",
+  "submit": "Wyślij",
   "caregiver": {
     "hours_short": "{{hours}}godz",
     "burnout_high": "Duże obciążenie opiekunów: godziny{{hours}}w tym tygodniu",
@@ -2522,7 +2522,7 @@
   "application_status": {
     "applied": "Stosowany",
     "pending": "Oczekujący",
-    "screening": "Ekranizacja",
+    "screening": "Wstępna selekcja",
     "reviewed": "Recenzja",
     "interview": "Rozmowa kwalifikacyjna",
     "offer": "Oferta",
@@ -2627,7 +2627,7 @@
     "platform_unknown_step2": "Lub kliknij \"Telefon, tablet lub klucz zabezpieczeń\", aby zarejestrować inne urządzenie."
   },
   "discussion": {
-    "delete": "Usuwać",
+    "delete": "Usuń",
     "reply": "Odpowiedź"
   },
   "page_builder": {
@@ -2721,7 +2721,7 @@
     "action_reactivate": "Aktywuj ponownie",
     "action_reset_2fa": "Zresetuj 2FA",
     "action_permissions": "Uprawnienia",
-    "action_impersonate": "Podszywać się",
+    "action_impersonate": "Zaloguj jako",
     "action_delete": "Usuń",
     "actions_menu": "Menu akcji"
   },
@@ -2746,7 +2746,7 @@
     "action_view": "Zobacz",
     "disable_hub": "Wyłącz koncentrator",
     "enable_hub": "Włącz koncentrator",
-    "deactivate": "Dezaktywować",
+    "deactivate": "Dezaktywuj",
     "reactivate": "Aktywuj ponownie",
     "status_active_label": "Active Label",
     "status_inactive_label": "Inactive Label",
@@ -2847,7 +2847,7 @@
     "config_digest_frequency": "Częstotliwość podsumowania",
     "config_digest_frequency_desc": "Jak często wysyłany jest e-mail z podsumowaniem aktywności.",
     "config_digest_daily": "Codziennie",
-    "config_digest_weekly": "Tygodnik",
+    "config_digest_weekly": "Co tydzień",
     "config_digest_monthly": "Miesięczny",
     "config_digest_never": "Nigdy",
     "config_group_limits": "Granice",
@@ -3004,7 +3004,7 @@
       "now": "Teraz"
     },
     "actions": {
-      "close": "Zamknąć"
+      "close": "Zamknij"
     },
     "empty": {
       "no_data": "Brak dostępnych danych"

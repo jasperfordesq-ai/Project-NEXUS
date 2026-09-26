@@ -67,8 +67,8 @@
     "code_hint": "Kod zaczyna się od nqx2_.",
     "operation": "Akcja obecności",
     "operations": {
-      "check_in": "Zameldować się",
-      "check_out": "Wymeldować się",
+      "check_in": "Zamelduj",
+      "check_out": "Wymelduj",
       "no_show": "Zaznacz, że się nie pojawił",
       "undo": "Cofnij ostatnią akcję dotyczącą obecności"
     },
@@ -92,7 +92,7 @@
     "clear_synced": "Usuń ukończone elementy",
     "empty": "Na tym urządzeniu nie są przechowywane żadne działania związane z obecnością.",
     "states": {
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "synced": "Zsynchronizowane",
       "conflict": "Konflikt",
       "rejected": "Odrzucony"

@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -74,9 +74,9 @@
   },
   "agents": {
     "actions": {
-      "cancel": "Anulować",
-      "refresh": "Odświeżać",
-      "save": "Ratować"
+      "cancel": "Anuluj",
+      "refresh": "Odśwież",
+      "save": "Zapisz"
     },
     "common": {
       "empty_dash": "-"
@@ -89,12 +89,12 @@
     "run_status": {
       "completed": "Zakończony",
       "failed": "Przegrany",
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "running": "Działanie"
     },
     "proposal_status": {
       "approved": "Zatwierdzony",
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "pending_review": "Oczekuje na recenzję",
       "rejected": "Odrzucony"
     },
@@ -183,9 +183,9 @@
         "description": "Przeglądaj, edytuj, zatwierdzaj lub odrzucaj propozycje agentów autonomicznych, zanim wpłyną one na dane najemcy."
       },
       "actions": {
-        "approve": "Zatwierdzić",
+        "approve": "Zatwierdź",
         "edit_approve": "Edytuj i zatwierdź",
-        "reject": "Odrzucić",
+        "reject": "Odrzuć",
         "save_approve": "Zapisz i zatwierdź"
       },
       "empty": {
@@ -207,7 +207,7 @@
       "tabs": {
         "all": "Wszystko",
         "approved": "Zatwierdzony",
-        "pending": "Aż do",
+        "pending": "Oczekujące",
         "rejected": "Odrzucony"
       },
       "toasts": {

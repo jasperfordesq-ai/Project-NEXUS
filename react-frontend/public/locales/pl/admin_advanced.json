@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -183,7 +183,7 @@
     "feed_ranking_weights": "Wagi rankingu pasz",
     "fulltext_indexes_title": "Indeksy pełnotekstowe",
     "gmail_api_configuration": "Konfiguracja API Gmaila",
-    "generate_embeddings_hint_prefix": "Uruchomić",
+    "generate_embeddings_hint_prefix": "Uruchom",
     "generate_embeddings_hint_suffix": "do generowania osadzania.",
     "health_unavailable": "Dane dotyczące zdrowia są niedostępne",
     "include_events": "Uwzględnij wydarzenia",
@@ -250,7 +250,7 @@
     "meilisearch_online": "Meilisearch w Internecie",
     "member_transactions": "Transakcje członkowskie",
     "meta_tags_heading": "Metatagi",
-    "missing_indexes_hint_prefix": "Uruchomić",
+    "missing_indexes_hint_prefix": "Uruchom",
     "missing_indexes_hint_suffix": "do tworzenia brakujących indeksów.",
     "no_404_errors": "Nie znaleziono błędów 404",
     "no_audit_results": "Brak wyników audytu",
@@ -529,7 +529,7 @@
       },
       "analytics": {
         "actions": {
-          "reload": "Przeładować"
+          "reload": "Załaduj ponownie"
         },
         "columns": {
           "ip": "IP",
@@ -593,7 +593,7 @@
       "coverage": {
         "actions": {
           "open_in_inventory": "Otwórz w ekwipunku",
-          "refresh": "Odświeżać",
+          "refresh": "Odśwież",
           "refresh_all_stale": "Odśwież wszystkie nieaktualne ({{count}})",
           "refresh_all_stale_one": "Odśwież wszystkie nieaktualne ({{count}})",
           "refresh_all_stale_other": "Odśwież wszystkie nieaktualne ({{count}})",
@@ -643,7 +643,7 @@
       },
       "freshness": {
         "actions": {
-          "apply": "Stosować",
+          "apply": "Uruchom teraz",
           "dry_run": "Praca na sucho"
         },
         "auto_recache": {
@@ -698,11 +698,11 @@
       },
       "health_banner": {
         "actions": {
-          "cancel": "Anulować",
+          "cancel": "Anuluj",
           "close_breaker_now": "Zamknij teraz wyłącznik",
           "details": "Bliższe dane",
           "emergency_reset": "Reset awaryjny",
-          "hide": "Ukrywać",
+          "hide": "Ukryj",
           "hide_details": "Ukryj szczegóły",
           "reset_queue": "Zresetuj kolejkę"
         },
@@ -758,12 +758,12 @@
         "unknown_tenant": "Nieznany tenant",
         "actions": {
           "open_live_url": "Otwórz stronę online (nie zapisaną migawkę)",
-          "close": "Zamknąć",
-          "inspect": "Sprawdzać",
+          "close": "Zamknij",
+          "inspect": "Sprawdź",
           "inspect_snapshot": "Sprawdź {{path}}",
           "open_rendered_url": "Otwórz wyrenderowany URL",
           "recache_selected": "Wybrano pamięć podręczną ({{count}})",
-          "reload": "Przeładować",
+          "reload": "Załaduj ponownie",
           "select_all_visible": "Wybierz wszystkie widoczne",
           "select_snapshot": "Wybierz {{path}}",
           "recache_selected_one": "Wybrano pamięć podręczną ({{count}})",
@@ -877,8 +877,8 @@
       "jobs": {
         "actions": {
           "cancel_job": "Anuluj zadanie #{{id}}",
-          "close": "Zamknąć",
-          "reload": "Przeładować",
+          "close": "Zamknij",
+          "reload": "Załaduj ponownie",
           "retry_job": "Ponów zadanie #{{id}}",
           "retry_same_parameters": "Spróbuj ponownie z tymi samymi parametrami",
           "view_details": "Wyświetl szczegóły zadania #{{id}}"
@@ -966,10 +966,10 @@
       },
       "events": {
         "actions": {
-          "reload": "Przeładować"
+          "reload": "Załaduj ponownie"
         },
         "columns": {
-          "commit": "Popełniać",
+          "commit": "Commit",
           "details": "Bliższe dane",
           "event": "Wydarzenie",
           "time": "Czas"
@@ -987,7 +987,7 @@
           "fail": "Ponieść porażkę",
           "partial": "Częściowy",
           "success": "Sukces",
-          "supersede": "Zastąpić",
+          "supersede": "Zastąpienie",
           "unknown": "Nieznane zdarzenie: {{event}}"
         },
         "summary_one": "Wydarzenia {{count}}",
@@ -1031,7 +1031,7 @@
         },
         "buttons": {
           "export_csv": "Eksportuj CSV",
-          "refresh": "Odświeżać"
+          "refresh": "Odśwież"
         },
         "columns": {
           "action": "Działanie",
@@ -1068,7 +1068,7 @@
         "actions": {
           "download_metrics": "Pobierz metryki",
           "queue_job": "Praca w kolejce",
-          "refresh": "Odświeżać"
+          "refresh": "Odśwież"
         },
         "empty_summary": "Brak podsumowania.",
         "errors": {
@@ -1216,7 +1216,7 @@
       },
       "ttl_inspector": {
         "actions": {
-          "inspect": "Sprawdzać"
+          "inspect": "Sprawdź"
         },
         "description_prefix": "Zobacz które",
         "description_suffix": "wzorzec jest właścicielem trasy i tego, co otrzymuje TTL, bez konfiguracji grepowania. Służy do dostrojenia polityki świeżości.",
@@ -1260,7 +1260,7 @@
       },
       "sitemap_explorer": {
         "actions": {
-          "explore": "Badać"
+          "explore": "Przeglądaj"
         },
         "counts": {
           "dynamic": "{{count}} dynamiczny",
@@ -1424,9 +1424,9 @@
     "source_listing": "Wymienianie kolejno",
     "source_volunteering": "Zgłaszanie się na ochotnika",
     "status_fail": "Ponieść porażkę",
-    "status_pass": "Przechodzić",
+    "status_pass": "Zaliczono",
     "status_warning": "Ostrzeżenie",
-    "sync_search_hint_prefix": "Uruchomić",
+    "sync_search_hint_prefix": "Uruchom",
     "sync_search_hint_suffix": "po uruchomieniu Meilisearch.",
     "unable_to_load_sitemap_stats": "Nie można załadować statystyk mapy witryny",
     "usage_limits_heading": "Limity użytkowania",
@@ -1915,8 +1915,8 @@
     "trigger_score": "Wynik wyzwalacza",
     "trigger_coverage": "Problemy z {{issues}} w monitorowanych przepływach {{count}}",
     "actions": {
-      "refresh": "Odświeżać",
-      "reset": "Nastawić",
+      "refresh": "Odśwież",
+      "reset": "Resetuj",
       "search": "Szukaj"
     },
     "windows": {
@@ -1960,7 +1960,7 @@
       "bounced": "Odbił się",
       "delivered": "Dostarczony",
       "failed": "Przegrany",
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "processing": "Przetwarzanie",
       "queued": "W kolejce",
       "sent": "Wysłano",
@@ -2074,7 +2074,7 @@
       },
       "reasons": {
         "block": "Blok",
-        "bounce": "Odbić się",
+        "bounce": "Odbicie",
         "invalid": "Nieważny",
         "spam_report": "Raport o spamie",
         "unsubscribe": "Zrezygnuj z subskrypcji",

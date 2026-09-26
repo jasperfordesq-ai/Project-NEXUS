@@ -4,7 +4,7 @@
   "messages_region": "Wiadomości na czacie",
   "header_title": "Asystent AI",
   "header_subtitle": "Zasilane przez AI",
-  "limits_left_today": "{{count}} opuścił dzisiaj",
+  "limits_left_today": "Pozostało dziś: {{count}}",
   "new_conversation_aria": "Rozpocznij nową rozmowę",
   "typing_aria": "AI pisze",
   "sources_label": "Źródła",
@@ -45,8 +45,8 @@
   "card_wallet_transactions_many": "{{count}} transakcji w ciągu ostatnich 30 dni",
   "card_wallet_transactions_one": "{{count}} transakcji w ciągu ostatnich 30 dni",
   "card_wallet_transactions_other": "{{count}} transakcji w ciągu ostatnich 30 dni",
-  "limits_left_today_few": "{{count}} opuścił dzisiaj",
-  "limits_left_today_many": "{{count}} opuścił dzisiaj",
-  "limits_left_today_one": "{{count}} opuścił dzisiaj",
-  "limits_left_today_other": "{{count}} opuścił dzisiaj"
+  "limits_left_today_few": "Pozostało dziś: {{count}}",
+  "limits_left_today_many": "Pozostało dziś: {{count}}",
+  "limits_left_today_one": "Pozostało dziś: {{count}}",
+  "limits_left_today_other": "Pozostało dziś: {{count}}"
 }

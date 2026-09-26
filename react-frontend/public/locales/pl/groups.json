@@ -1,5 +1,5 @@
 {
-  "member_fallback": "User",
+  "member_fallback": "Użytkownik",
   "title": "Grupy",
   "discover": "Odkryj grupy",
   "create_group": "Utwórz grupę",
@@ -41,18 +41,18 @@
   "recommended": {
     "title": "Polecane dla Ciebie",
     "joined": "Dołączyła do grupy",
-    "view": "View",
-    "join": "Join",
+    "view": "Zobacz",
+    "join": "Dołącz",
     "score_chip": "Dopasowanie: {{score}}%"
   },
   "welcome": {
-    "title": "Wiadomosc powitalna",
-    "toggle_label": "Wlacz wiadomosc powitalna",
-    "message_label": "Szablon wiadomosci",
-    "message_placeholder": "Witamy w naszej grupie, {member_name}! Cieszymy sie, ze jestes z nami.",
-    "variables_hint": "Dostepne zmienne: {member_name}, {group_name}, {admin_name}",
-    "saved": "Wiadomosc powitalna zapisana",
-    "save_failed": "Nie udalo sie zapisac wiadomosci powitalnej"
+    "title": "Wiadomość powitalna",
+    "toggle_label": "Włącz wiadomość powitalną",
+    "message_label": "Szablon wiadomości",
+    "message_placeholder": "Witamy w naszej grupie, {member_name}! Cieszymy się, że jesteś z nami.",
+    "variables_hint": "Dostępne zmienne: {member_name}, {group_name}, {admin_name}",
+    "saved": "Wiadomość powitalna zapisana",
+    "save_failed": "Nie udało się zapisać wiadomości powitalnej"
   },
   "members_count_label": "{{count}} członków",
   "posts_count_label": "{{count}} postów",

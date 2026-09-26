@@ -62,7 +62,7 @@
     "start_date_label": "Rozpoczęła się pielęgnacja",
     "notes_label": "Notatki",
     "notes_placeholder": "Opcjonalny kontekst dla koordynatorów lub zaufanych zastępców",
-    "cancel": "Anulować",
+    "cancel": "Anuluj",
     "upcoming_care": "Nadchodząca opieka",
     "recent_care": "Niedawna pielęgnacja",
     "no_upcoming_care": "Nie ma jeszcze zaplanowanego wsparcia",
@@ -170,7 +170,7 @@
   },
   "emergency_alert": {
     "region_label": "Alerty awaryjne",
-    "dismiss": "Odrzucać",
+    "dismiss": "Odrzuć",
     "severity_info": "Informacja",
     "severity_warning": "Ostrzeżenie",
     "severity_danger": "Nagły wypadek"
@@ -181,8 +181,8 @@
     "browse_button": "Przeglądaj społeczności",
     "selected_label": "Wybrany:",
     "no_selection": "Nie wybrano społeczności",
-    "select_button": "Wybierać",
-    "cancel_button": "Anulować",
+    "select_button": "Wybierz",
+    "cancel_button": "Anuluj",
     "empty": "Obecnie nie można odkryć żadnych społeczności stowarzyszonych. Nadal możesz ręcznie wprowadzić slug społeczności.",
     "fallback_label": "Możesz też ręcznie wprowadzić slug społeczności",
     "member_count_label": "członkowie"
@@ -205,7 +205,7 @@
     "actions": {
       "pause": "Pauza",
       "end": "Zakończ związek",
-      "resume": "Wznawiać"
+      "resume": "Wznów"
     },
     "pause_modal": {
       "title": "Wstrzymaj tę relację wsparcia",
@@ -327,7 +327,7 @@
       "sections": {
         "overview": "Przegląd",
         "operations": "Operacje",
-        "engagement": "Zaręczyny",
+        "engagement": "Zaangażowanie",
         "trust_safety": "Zaufanie i bezpieczeństwo",
         "pilot_governance": "Zarządzanie pilotażowe",
         "partnerships": "Partnerstwa",
@@ -376,10 +376,10 @@
   },
   "admin": {
     "common": {
-      "refresh": "Odświeżać",
-      "cancel": "Anulować",
+      "refresh": "Odśwież",
+      "cancel": "Anuluj",
       "all": "Wszystko",
-      "close": "Zamknąć",
+      "close": "Zamknij",
       "empty_dash": "-"
     },
     "providers": {
@@ -394,8 +394,8 @@
       "confirm_deactivate": "Oznaczyć „{{name}}” jako nieaktywny? Możesz go ponownie aktywować później.",
       "actions": {
         "add_provider": "Dodaj dostawcę",
-        "cancel": "Anulować",
-        "close": "Zamknąć",
+        "cancel": "Anuluj",
+        "close": "Zamknij",
         "create_provider": "Utwórz dostawcę",
         "deactivate_named": "Dezaktywuj „{{name}}”",
         "delete_provider": "Usuń dostawcę",
@@ -493,7 +493,7 @@
     "loyalty": {
       "title": "Program lojalnościowy",
       "description": "Kredyt czasowy do mostu rynkowego. Członkowie zarabiają godziny, a sprzedawcy wyrażają zgodę na akceptowanie ich jako zniżki w CHF na swoich aukcjach.",
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "about": {
         "title": "O tej stronie",
         "body": "Program lojalnościowy nagradza członków za ciągłe uczestnictwo wykraczające poza bezpośrednią wymianę opieki, w tym wydarzenia, szkolenia, ankiety i kamienie milowe. Nagrody są finansowane z kredytów czasowych wymienianych u uczestniczących sprzedawców na rynku. Tutaj możesz skonfigurować ustawienia poszczególnych sprzedawców i przeglądać historię realizacji. Program jest opcjonalny i można go wyłączyć bez wpływu na podstawową funkcjonalność banku czasu.",
@@ -536,7 +536,7 @@
         "discount": "Rabat",
         "status": "Stan",
         "actions": "Działania",
-        "reverse": "Odwracać",
+        "reverse": "Cofnij",
         "empty_value": "-",
         "aria": "Ostatnie odkupy lojalnościowe"
       },
@@ -549,7 +549,7 @@
         "redeemed": "Wykorzystano:{{date}}",
         "reason": "Powód (opcjonalnie)",
         "reason_placeholder": "np. Zwrócone zamówienie, prośba członka, korekta błędu",
-        "cancel": "Anulować",
+        "cancel": "Anuluj",
         "confirm": "Potwierdź odwrócenie"
       },
       "messages": {
@@ -565,7 +565,7 @@
         "reverse": "Nie udało się cofnąć wykupu"
       },
       "status": {
-        "pending": "Aż do",
+        "pending": "Oczekujące",
         "applied": "Stosowany",
         "reversed": "Wywrócony"
       },
@@ -607,14 +607,14 @@
       "status": {
         "approved_by_source": "Zatwierdzone przez źródło",
         "completed": "Zakończony",
-        "pending": "Aż do",
+        "pending": "Oczekujące",
         "received": "Otrzymane",
         "rejected": "Odrzucony",
         "sent": "Wysłano"
       },
       "actions": {
-        "approve": "Zatwierdzić",
-        "reject": "Odrzucić"
+        "approve": "Zatwierdź",
+        "reject": "Odrzuć"
       },
       "reject_modal": {
         "title": "Odrzuć przelew",
@@ -677,16 +677,16 @@
       },
       "actions": {
         "create": "Utwórz ankietę",
-        "publish": "Publikować",
-        "close": "Zamknąć",
+        "publish": "Opublikuj",
+        "close": "Zamknij",
         "analytics": "Analityka",
         "csv": "CSV",
-        "remove": "Usunąć",
+        "remove": "Usuń",
         "add_question": "Dodaj pytanie",
         "back": "Z powrotem",
-        "cancel": "Anulować",
+        "cancel": "Anuluj",
         "next_questions": "Dalej: pytania",
-        "close_modal": "Zamknąć"
+        "close_modal": "Zamknij"
       },
       "fields": {
         "title": "Tytuł ankiety",
@@ -743,12 +743,12 @@
         "workflow": "Status przepływu pracy: otrzymano nowe środki, które nie zostały jeszcze sprawdzone; triaging oznacza przegląd i przypisanie właścicielowi; w toku oznacza aktywną pracę nad; rozwiązany oznacza zamknięty udokumentowanym postanowieniem; zamknięte oznacza zamknięte bez rozwiązania."
       },
       "actions": {
-        "refresh": "Odświeżać",
+        "refresh": "Odśwież",
         "export_csv": "Eksportuj plik CSV",
         "view": "Pogląd",
-        "cancel": "Anulować",
+        "cancel": "Anuluj",
         "close_no_resolution": "Zamknij (brak rozdzielczości)",
-        "resolve": "Rozstrzygać",
+        "resolve": "Rozwiąż",
         "save_triage": "Zapisz segregację"
       },
       "stats": {
@@ -813,7 +813,7 @@
         "sub_region": "Podregion",
         "public_visible": "Publiczne widoczne",
         "timestamps": "Przesłano{{created}}· Zaktualizowano{{updated}}",
-        "body": "Ciało"
+        "body": "Treść"
       },
       "fields": {
         "assigned_user_id": "Przypisany identyfikator użytkownika",
@@ -875,7 +875,7 @@
       "title": "Kadencja Przeglądu Obywatelskiego",
       "subtitle": "Skonfiguruj domyślną częstotliwość dostarczania spersonalizowanego podsumowania obywatelskiego otrzymywanego przez członków. Podsumowanie gromadzi odpowiednią zawartość społeczności – alerty dotyczące bezpieczeństwa, aktualizacje projektu, powiadomienia o wydarzeniach i ogłoszenia – w jednym podsumowaniu.",
       "preview_member_view": "Podgląd widoku członka",
-      "reset": "Nastawić",
+      "reset": "Resetuj",
       "save": "Zapisz rytm",
       "member_override": "Członkowie mogą zastąpić rytm i zrezygnować z poszczególnych źródeł na własnej stronie preferencji podsumowania.",
       "about": {
@@ -1068,9 +1068,9 @@
       "actions": {
         "title": "Działania",
         "assignee_user_id": "Identyfikator użytkownika przypisanego",
-        "assign": "Przydzielać",
+        "assign": "Przydziel",
         "escalation_note": "Notatka dotycząca eskalacji (opcjonalnie)",
-        "escalate": "Wzmagać",
+        "escalate": "Eskaluj",
         "set_status": "Ustaw stan",
         "notes": "Notatki (opcjonalnie)",
         "update": "Aktualizacja",
@@ -1203,7 +1203,7 @@
         "type": "Typ",
         "description": "Opis",
         "points": "Zwrotnica",
-        "balance": "Balansować",
+        "balance": "Saldo",
         "user_fallback": "#{{id}}"
       },
       "messages": {

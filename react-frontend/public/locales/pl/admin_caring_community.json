@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -236,7 +236,7 @@
         "member": "Członek",
         "merchant": "Kupiec",
         "rate": "Oceń",
-        "reverse": "Odwróć",
+        "reverse": "Cofnij",
         "status": "Stan",
         "title": "Księga wykupów"
       },
@@ -247,7 +247,7 @@
       "reverse_modal": {
         "body": "Cofnięcie wykupu spowoduje zwrot środków czasowych członkowi.",
         "cancel": "Anuluj",
-        "confirm": "Odwróć",
+        "confirm": "Cofnij",
         "discount": "Rabat",
         "member_fallback": "Członek",
         "merchant": "Kupiec",
@@ -414,7 +414,7 @@
         "description": "Skonfiguruj zasady zatwierdzania, zabezpieczania, SLA i polityki wartości społecznych dla programu opieki."
       },
       "actions": {
-        "refresh": "Odświeżać",
+        "refresh": "Odśwież",
         "save": "Zapisz zmiany"
       },
       "about": {
@@ -487,7 +487,7 @@
         },
         "legacy_hour_settlement": {
           "donate_to_pool": "Przekaż darowiznę na basen",
-          "expire": "Wygasać",
+          "expire": "Wygaśnięcie",
           "transfer_to_nominee": "Przeniesienie do nominowanego"
         },
         "statement_cadence": {
@@ -679,7 +679,7 @@
     "form": {
       "title": "Tytuł",
       "title_placeholder": "np. Ostrzeżenie o trudnych warunkach pogodowych",
-      "body": "Ciało",
+      "body": "Treść",
       "body_placeholder": "Opisz sytuację awaryjną i wszelkie działania, które członkowie powinni podjąć...",
       "severity": "Dotkliwość",
       "expires_at": "Wygasa o (opcjonalnie)",
@@ -700,9 +700,9 @@
       "retry": "Spróbować ponownie",
       "open_hour_review": "Przegląd w godzinach otwartych",
       "open_report_pack": "Otwórz pakiet raportów",
-      "approve": "Zatwierdzić",
-      "decline": "Spadek",
-      "escalate": "Wzmagać",
+      "approve": "Zatwierdź",
+      "decline": "Odrzuć",
+      "escalate": "Eskaluj",
       "re_escalate": "Ponowna eskalacja"
     },
     "loading": {
@@ -803,7 +803,7 @@
       "availability_overlap": "Nakładanie się dostępności",
       "shared_interests": "Wspólne zainteresowania",
       "score": "Wynik {{value}}%",
-      "dismiss": "Odrzucać",
+      "dismiss": "Odrzuć",
       "create": "Utwórz Tandem",
       "reason_join": "{{previous}}; {{next}}",
       "reasons": {
@@ -1197,7 +1197,7 @@
       "started": "Uruchomiono {{date}}",
       "next_check_in": "Następne zameldowanie {{date}}",
       "pause": "Pauza",
-      "resume": "Wznawiać",
+      "resume": "Wznów",
       "log_date": "Data",
       "log_hours": "Godziny",
       "log_note": "Uwaga (opcjonalnie)",
@@ -1212,7 +1212,7 @@
       "log_success": "Zarejestrowane godziny wsparcia.",
       "log_failed": "Nie udało się zarejestrować godzin pomocy technicznej.",
       "frequency": {
-        "weekly": "Tygodnik",
+        "weekly": "Co tydzień",
         "fortnightly": "Dwutygodniowy",
         "monthly": "Miesięczny",
         "ad_hoc": "Doraźnie"
@@ -1239,7 +1239,7 @@
     },
     "actions": {
       "refresh_aria": "Odśwież współczynniki kategorii",
-      "save": "Ratować"
+      "save": "Zapisz"
     },
     "about": {
       "title": "O tej stronie",
@@ -1527,7 +1527,7 @@
       "refresh_checks": "Odśwież kontrole",
       "refresh_aria": "Odśwież kontrole jakości danych",
       "view_affected_rows": "Wyświetl wiersze, których to dotyczy",
-      "close": "Zamknąć"
+      "close": "Zamknij"
     },
     "about": {
       "title": "O tej stronie",
@@ -1668,7 +1668,7 @@
       "subtitle": "AG80 – pilotażowy dokument ujawniający szwajcarskie prawo o ochronie danych"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież pakiet informacyjny",
       "export_markdown": "Eksportuj przecenę",
       "save_changes": "Zapisz zmiany"
@@ -1838,16 +1838,16 @@
       "subtitle": "AG87 - integracje zależne od partnera oczekujące na zewnętrznego właściciela / DSA / sandbox"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "add": "Dodaj integrację",
       "seed": "Domyślny zaległości w początkowej fazie",
       "open": "Otwarte",
-      "edit": "Redagować",
-      "delete": "Usuwać",
-      "cancel": "Anulować",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "cancel": "Anuluj",
       "save_changes": "Zapisz zmiany",
       "create": "Stwórz integrację",
-      "remove": "Usunąć"
+      "remove": "Usuń"
     },
     "about": {
       "title": "O tej stronie",
@@ -1971,12 +1971,12 @@
       "subtitle": "Połącz się z innymi spółdzielniami, aby członkowie mogli wysyłać godziny między społecznościami."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież kolegów z federacji",
       "add_peer": "Dodaj partnera",
       "rotate_secret": "Obróć udostępniony sekret",
       "delete_peer": "Usuń partnera",
-      "cancel": "Anulować",
+      "cancel": "Anuluj",
       "create_reveal_secret": "Utwórz i odkryj sekret",
       "copy_secret": "Skopiuj sekret",
       "copy_peer_slug": "Skopiuj Peer Slug",
@@ -2005,7 +2005,7 @@
       "actions": "Działania"
     },
     "status": {
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "active": "Aktywny",
       "suspended": "Zawieszony"
     },
@@ -2063,7 +2063,7 @@
     },
     "actions": {
       "edit_policy": "Edytuj zasady",
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież panel SLA"
     },
     "about": {
@@ -2088,7 +2088,7 @@
       "first_response_at_risk": "Pierwsza reakcja zagrożona",
       "resolution_breached": "Naruszona uchwała",
       "resolution_at_risk": "Rozwiązanie zagrożone",
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "in_progress": "W toku",
       "resolved_24h": "Rozwiązano <24h (ostatnie)"
     },
@@ -2158,7 +2158,7 @@
       "generated": "Raport wygenerowano {{date}}.",
       "proxy_prefix": "proxy: pierwsza odpowiedź = status zostaje przeniesiony z",
       "proxy_middle": "rozdzielczość = stan osiągnięty",
-      "proxy_suffix": "Regulować",
+      "proxy_suffix": "Dostosuj",
       "proxy_end": "Windows w AG81 zasadach operacyjnych."
     },
     "empty": {
@@ -2181,7 +2181,7 @@
       "subtitle": "Jednostronicowe odniesienie do każdego publicznego interfejsu API, webhooka, federacyjnego punktu końcowego i powierzchni OAuth dostępnych w tym wdrożeniu — gotowe do przekazania partnerowi zajmującemu się integracją techniczną."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież prezentację integracyjną"
     },
     "about": {
@@ -2275,10 +2275,10 @@
       "subtitle": "AG85 — lista kontrolna gotowości do wdrożenia kontrolowanego przez kanton"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież bramkę decyzyjną izolowanego węzła",
-      "edit": "Redagować",
-      "cancel": "Anulować",
+      "edit": "Edytuj",
+      "cancel": "Anuluj",
       "save_changes": "Zapisz zmiany"
     },
     "about": {
@@ -2294,7 +2294,7 @@
       "body_suffix": "zespół techniczny. Nie zmieniaj tego ustawienia bez zgody swojego kantonalnego inspektora ochrony danych."
     },
     "status": {
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "in_progress": "W toku",
       "decided": "Zdecydowany",
       "blocked": "Zablokowany"
@@ -2423,14 +2423,14 @@
       "subtitle_suffix": "uderzenie"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież KPI linie bazowe",
       "capture_now": "Przechwyć teraz linię bazową",
       "capture_now_short": "Przechwytuj teraz",
       "capture_first": "Uchwyć swoją pierwszą linię bazową",
-      "compare": "Porównywać",
-      "close": "Zamknąć",
-      "cancel": "Anulować"
+      "compare": "Porównaj",
+      "close": "Zamknij",
+      "cancel": "Anuluj"
     },
     "about": {
       "title": "O tej stronie",
@@ -2483,7 +2483,7 @@
       "actions": "Działania"
     },
     "modal": {
-      "title_prefix": "Schwytać",
+      "title_prefix": "Zapisz",
       "title_suffix": "Linia bazowa",
       "body": "Spowoduje to wykonanie aktualnej migawki wskaźników Twojej społeczności i zapisanie jej jako nazwanej linii bazowej na potrzeby przyszłych porównań.",
       "metrics_captured": "Przechwycone wskaźniki: liczba aktywnych członków, godziny zatwierdzonych wolontariatów (ostatnie 90 dni), relacje aktywnego wsparcia, różni odbiorcy i łączna liczba wymian."
@@ -2502,14 +2502,14 @@
       "subtitle": "Śledź i wspieraj potencjalnych partnerów — gminy, inwestorów, firmy, mieszkańców i organizacje społeczne — od pierwszego kontaktu po wdrożenie."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież kontakty w zakresie pielęgnacji leadów",
       "export_csv": "Eksportuj CSV",
-      "edit": "Redagować",
+      "edit": "Edytuj",
       "mark_unsubscribed": "Oznacz jako anulowane",
       "unsubscribe_aria": "Wypisz kontakt",
-      "cancel": "Anulować",
-      "save": "Ratować"
+      "cancel": "Anuluj",
+      "save": "Zapisz"
     },
     "about": {
       "title": "O tej stronie",
@@ -2594,12 +2594,12 @@
       "subtitle": "Przygotuj projekty oficjalnych ogłoszeń, poproś o ich dopracowanie do AI, sprawdź ton i przejrzystość, a następnie opublikuj. Przeznaczony dla koordynatorów, którzy potrzebują komunikować się z mieszkańcami i kontaktami gminnymi spójnym, przystępnym głosem."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "generate_proposal": "Wygeneruj propozycję",
-      "accept": "Przyjąć",
-      "reject": "Odrzucić",
+      "accept": "Akceptuj",
+      "reject": "Odrzuć",
       "view": "Pogląd",
-      "cancel": "Anulować",
+      "cancel": "Anuluj",
       "reject_proposal": "Odrzuć propozycję",
       "publish": "Opublikuj"
     },
@@ -2774,11 +2774,11 @@
       "description": "Oznacz tę gminę jako zweryfikowanego partnera miejskiego. Dodaje do raportów publicznych plakietkę „Zweryfikowana gmina”."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "generate_dns_token": "Wygeneruj token DNS",
       "apply_attestation": "Zastosuj zaświadczenie",
-      "revoke": "Unieważnić",
-      "cancel": "Anulować"
+      "revoke": "Unieważnij",
+      "cancel": "Anuluj"
     },
     "about": {
       "title": "O tej stronie",
@@ -2855,12 +2855,12 @@
     },
     "actions": {
       "launch_pilot": "Uruchom pilota",
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież raport gotowości do startu",
       "retry": "Spróbować ponownie",
       "open": "Otwarte",
       "acknowledge_default_matrix": "Potwierdź domyślną macierz",
-      "cancel": "Anulować",
+      "cancel": "Anuluj",
       "confirm_launch": "Tak, uruchom pilota"
     },
     "about": {
@@ -3033,12 +3033,12 @@
       "subtitle": "AG83 – wartość bazowa przed pilotażem + 90-dniowe wskaźniki kroczące z częstotliwością kwartalnych przeglądów"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "pre_set": "Zestaw bazowy przed pilotażem",
       "capture_pre": "Przechwyć linię bazową przed pilotażem",
       "capture_quarterly": "Przechwytuj kwartalny przegląd",
       "capture_baseline": "Przechwytywanie linii bazowej",
-      "cancel": "Anulować"
+      "cancel": "Anuluj"
     },
     "about": {
       "title": "O tej stronie",
@@ -3129,20 +3129,20 @@
       "subtitle": "Zarządzaj partnerami badawczymi zapewniającymi ochronę prywatności, eksportem zbiorczych zbiorów danych i historią odwołań"
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "refresh_aria": "Odśwież partnerstwa badawcze",
       "generate_export": "Generuj eksport",
       "add_partner": "Dodaj partnera",
       "view": "Pogląd",
       "open": "Otwarte",
-      "revoke": "Unieważnić",
-      "cancel": "Anulować",
-      "create": "Tworzyć",
-      "close": "Zamknąć",
+      "revoke": "Unieważnij",
+      "cancel": "Anuluj",
+      "create": "Utwórz",
+      "close": "Zamknij",
       "download_markdown": "Pobierz Markdown",
-      "render": "Oddać",
+      "render": "Wyrenderuj",
       "rerender": "Renderuj ponownie",
-      "generate": "Spowodować"
+      "generate": "Wygeneruj"
     },
     "about": {
       "title": "O tej stronie",
@@ -3255,12 +3255,12 @@
       "description": "Zautomatyzowane sugestie, które skłaniają członków do wybierania partnerów w tandemie o dobrej kondycji. Konserwatywne ustawienia domyślne – działają z dziennym limitem."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "dry_run": "Praca na sucho",
       "dispatch_now": "Wyślij teraz",
       "save_configuration": "Zapisz konfigurację",
-      "cancel": "Anulować",
-      "dispatch": "Załatwić"
+      "cancel": "Anuluj",
+      "dispatch": "Wyślij"
     },
     "about": {
       "title": "O tej stronie",
@@ -3360,7 +3360,7 @@
       "add": "Dodaj podregion",
       "edit_aria": "Edytuj podregion",
       "mark_inactive": "Oznacz jako nieaktywne",
-      "cancel": "Anulować",
+      "cancel": "Anuluj",
       "save_changes": "Zapisz zmiany",
       "create": "Utwórz podregion"
     },
@@ -3441,16 +3441,16 @@
       "body": "Karty dowodów to ustrukturyzowane historie wpływu powiązane z bieżącymi wskaźnikami z platformy. Każda karta przedstawia porównanie przed/po z cytowanym źródłem dowodów i uwagą metodologiczną. Karty oznaczone jako „Demo” mają charakter wyłącznie poglądowy; po zweryfikowaniu danych oznacz kartę jako „Prawdziwy dowód”. Opublikowane karty pojawiają się w Raporcie oddziaływania na gminę i na stronie wpływu dostępnej publicznie."
     },
     "actions": {
-      "refresh": "Odświeżać",
+      "refresh": "Odśwież",
       "new_story": "Nowa historia",
       "seed_demo": "Załóż 3 karty demonstracyjne",
       "refresh_live": "Odśwież na podstawie danych bieżących",
-      "edit": "Redagować",
-      "delete": "Usuwać",
-      "cancel": "Anulować",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "cancel": "Anuluj",
       "save_changes": "Zapisz zmiany",
       "create_story": "Stwórz historię",
-      "remove": "Usunąć"
+      "remove": "Usuń"
     },
     "empty": {
       "title": "Nie ma jeszcze żadnych historii sukcesu",

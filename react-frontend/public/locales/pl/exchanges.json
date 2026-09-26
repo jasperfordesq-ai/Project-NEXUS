@@ -182,5 +182,39 @@
   },
   "hours_count_one": "{{count}} godzina",
   "hours_count_few": "{{count}} godzina",
-  "hours_count_many": "{{count}} godzina"
+  "hours_count_many": "{{count}} godzina",
+  "status_config": {
+    "pending_provider": {
+      "label": "Oczekuje na dostawcę",
+      "description": "Czekamy, aż dostawca usługi zaakceptuje lub odrzuci tę prośbę."
+    },
+    "pending_broker": {
+      "label": "Oczekuje na brokera",
+      "description": "Ta wymiana wymaga zatwierdzenia przez brokera, zanim będzie mogła być kontynuowana."
+    },
+    "accepted": {
+      "label": "Zaakceptowana",
+      "description": "Wymiana została zaakceptowana. Dostawca może zacząć, gdy będzie gotowy."
+    },
+    "in_progress": {
+      "label": "W toku",
+      "description": "Usługa jest obecnie świadczona."
+    },
+    "pending_confirmation": {
+      "label": "Potwierdź godziny",
+      "description": "Obie strony muszą potwierdzić przepracowane godziny, aby zakończyć wymianę."
+    },
+    "completed": {
+      "label": "Zakończona",
+      "description": "Wymiana została zakończona, a kredyty zostały przekazane."
+    },
+    "disputed": {
+      "label": "Sporna",
+      "description": "Istnieje spór dotyczący godzin. Broker go rozpatrzy."
+    },
+    "cancelled": {
+      "label": "Anulowana",
+      "description": "Ta wymiana została anulowana."
+    }
+  }
 }

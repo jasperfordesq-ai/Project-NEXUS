@@ -87,7 +87,7 @@
   },
   "tabs_aria": "Filtr typu wyniku wyszukiwania",
   "results_count_announcement": "Znaleziono {{count}} wyników",
-  "form_aria": "Search",
+  "form_aria": "Szukaj",
   "delete_confirm": "Usunąć to zapisane wyszukiwanie? Tego nie można cofnąć.",
   "results_count_announcement_few": "Znaleziono {{count}} wyniki",
   "results_count_announcement_many": "Znaleziono {{count}} wyników",

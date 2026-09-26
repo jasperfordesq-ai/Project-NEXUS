@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -82,7 +82,7 @@
       "description": "Międzykooperacyjny widok superadministratora dla każdej Caring Community spółdzielni na platformie. Liczbę członków podaje się w nawiasach chroniących prywatność."
     },
     "actions": {
-      "refresh": "Odświeżać"
+      "refresh": "Odśwież"
     },
     "about": {
       "title": "Informacje o tym panelu",

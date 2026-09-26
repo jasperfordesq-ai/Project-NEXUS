@@ -532,7 +532,7 @@
     "frequency_daily": "Codziennie",
     "frequency_weekly": "Co tydzień",
     "channel_email": "E-mail",
-    "channel_push": "Naciskać",
+    "channel_push": "Push",
     "channel_both": "E-mail i push"
   },
   "promotions": {
@@ -879,7 +879,7 @@
     "title": "Bezpieczna płatność",
     "order_summary": "Podsumowanie zamówienia",
     "shipping": "Dostawa",
-    "discount": "Discount",
+    "discount": "Rabat",
     "total": "Łącznie",
     "secure_notice": "Płatności są bezpiecznie przetwarzane przez Stripe. Dane Twojej karty nigdy nie są przechowywane na naszych serwerach.",
     "cancel": "Anuluj",

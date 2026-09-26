@@ -205,8 +205,8 @@
       "title": "Utwórz Wymianę Grupową"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver",
+  "role_provider": "Dostawca",
+  "role_receiver": "Odbiorca",
   "participants_count_few": "{{count}} uczestników",
   "participants_count_many": "{{count}} uczestników",
   "hours_count_few": "{{count}} godziny",

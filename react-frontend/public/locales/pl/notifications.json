@@ -1,13 +1,13 @@
 {
-  "page_title": "Notifications",
-  "title": "Notifications",
+  "page_title": "Powiadomienia",
+  "title": "Powiadomienia",
   "subtitle": "Bądź na bieżąco ze swoją aktywnością",
   "unread_badge": "{{count}} nowe",
   "caught_up_badge": "Na bieżąco",
   "mark_all_read": "Oznacz wszystkie jako przeczytane",
   "settings_label": "Ustawienia",
   "settings_aria": "Ustawienia powiadomień",
-  "filter_all": "All",
+  "filter_all": "Wszystkie",
   "filter_unread": "Nieprzeczytane ({{count}})",
   "empty_title": "Brak powiadomień",
   "empty_desc": "Nowe powiadomienia pojawią się tutaj",
@@ -25,31 +25,31 @@
   "error_load": "Coś poszło nie tak podczas ładowania powiadomień",
   "try_again": "Spróbuj ponownie",
   "flyout": {
-    "bell_aria": "Notifications",
+    "bell_aria": "Powiadomienia",
     "bell_unread_aria": "Powiadomienia, {{count}} nieprzeczytane",
     "unread_count": "nieprzeczytane",
     "empty": "Brak powiadomień jak na razie",
     "view_all": "Zobacz wszystkie powiadomienia",
     "close": "Zamknij powiadomienia",
-    "unread_dot_aria": "Unread",
+    "unread_dot_aria": "Nieprzeczytane",
     "bell_unread_aria_few": "Powiadomienia, {{count}} nieprzeczytane",
     "bell_unread_aria_many": "Powiadomienia, {{count}} nieprzeczytane",
     "bell_unread_aria_one": "Powiadomienia, {{count}} nieprzeczytane",
     "bell_unread_aria_other": "Powiadomienia, {{count}} nieprzeczytane"
   },
   "type": {
-    "message": "Message",
-    "listing": "Listing",
-    "transaction": "Transaction",
-    "connection": "Connection",
-    "event": "Event",
-    "group": "Group",
-    "achievement": "Achievement",
+    "message": "Wiadomość",
+    "listing": "Ogłoszenie",
+    "transaction": "Transakcja",
+    "connection": "Połączenie",
+    "event": "Wydarzenie",
+    "group": "Grupa",
+    "achievement": "Osiągnięcie",
     "system": "System",
-    "default": "Notification"
+    "default": "Powiadomienie"
   },
   "load_more": "Załaduj więcej",
-  "undo": "Undo",
+  "undo": "Cofnij",
   "toast": {
     "mark_read_failed": "Nie udało się oznaczyć powiadomienia jako przeczytane",
     "all_read": "Wszystkie powiadomienia oznaczone jako przeczytane",
@@ -65,7 +65,7 @@
     "transaction_amount": "{{sign}}{{amount}} kredyty czasowe",
     "toast_message": "Nowa wiadomość",
     "toast_listing": "Aktualizacja ogłoszenia",
-    "toast_transaction": "Transaction",
+    "toast_transaction": "Transakcja",
     "toast_connection": "Prośba o połączenie",
     "toast_event": "Aktualizacja wydarzenia",
     "toast_group": "Powiadomienie grupowe",
@@ -96,10 +96,10 @@
     "toast_job_alert_match": "Nowe dopasowanie pracy",
     "toast_job_interview_reminder": "Przypomnienie o rozmowie",
     "toast_job_completion_credits": "Zdobyto kredyty czasu!",
-    "toast_default": "Notification"
+    "toast_default": "Powiadomienie"
   },
   "page_meta": {
-    "title": "Notifications"
+    "title": "Powiadomienia"
   },
   "unread_badge_few": "{{count}} nowe",
   "unread_badge_many": "{{count}} nowe",

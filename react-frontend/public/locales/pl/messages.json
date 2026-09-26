@@ -9,8 +9,8 @@
   "send": "Wyślij",
   "you": "Ty",
   "unread": "{{count}} nieprzeczytane",
-  "aria_read_receipt_read": "Read",
-  "aria_read_receipt_sent": "Sent",
+  "aria_read_receipt_read": "Przeczytano",
+  "aria_read_receipt_sent": "Wysłano",
   "page_subtitle": "Twoje rozmowy z członkami społeczności",
   "disabled_title": "Wiadomości bezpośrednie wyłączone",
   "disabled_subtitle": "Wiadomości bezpośrednie nie są włączone w tej społeczności. Aby zorganizować usługi, proszę skorzystać z systemu zgłoszeń wymiany.",
@@ -224,7 +224,7 @@
   "safeguarding_vetting_required": {
     "title": "Wymagana kontrola ochronna",
     "body": "Ta rozmowa jest wstrzymana, poniewaz zasada ochrony spolecznosci wymaga potwierdzonej weryfikacji, zanim mozesz napisac do tego czlonka.",
-    "contact_broker": "Skontaktuj sie ze swoim posrednikiem lub administratorem spolecznosci, aby sprawdzic status weryfikacji albo ustalic kolejny bezpieczny krok.",
+    "contact_broker": "Poproś poniżej o prywatną weryfikację przez brokera. Nie wysyłaj przez NEXUS zaświadczenia DBS ani informacji o karalności.",
     "required_checks": "Wymagane kontrole",
     "action": "Otworz pomoc",
     "dismiss": "Zamknij powiadomienie o ochronie"

@@ -16,7 +16,7 @@
     "tab_challenges": "Wyzwania",
     "tab_collections": "Kolekcje",
     "tab_journeys": "Podróże",
-    "tab_engagement": "Zaręczyny",
+    "tab_engagement": "Zaangażowanie",
     "tab_shop": "Sklep XP",
     "engagement": {
       "title": "Miesięczne zaangażowanie",
@@ -152,7 +152,7 @@
       "xp_reward": "Nagroda XP",
       "xp_value": "{{xp}} PD",
       "tier": "Szczebel",
-      "close": "Zamknąć",
+      "close": "Zamknij",
       "rarity_common": "Wspólny",
       "rarity_uncommon": "Niezwykły",
       "rarity_rare": "Rzadki",
@@ -168,7 +168,7 @@
       "select_badges": "Wybierz maksymalnie 5 odznak, które chcesz zaprezentować w swoim profilu. (wybrano {{count}}/5)",
       "no_badges_earned": "Nie zdobyłeś jeszcze żadnych odznak.",
       "showcase_badge": "Prezentacja {{name}}",
-      "cancel": "Anulować",
+      "cancel": "Anuluj",
       "saving": "Oszczędność...",
       "save": "Zapisz prezentację",
       "updated": "Prezentacja zaktualizowana",
@@ -203,7 +203,7 @@
     "from_template": "Z szablonu",
     "load_error": "Nie udało się załadować celów. Spróbuj ponownie.",
     "tab_my": "Moje cele",
-    "tab_discover": "Odkryć",
+    "tab_discover": "Odkrywaj",
     "tab_buddying": "Przyjaciele celu",
     "unable_to_load": "Nie można wczytać celów",
     "try_again": "Spróbuj ponownie",
@@ -223,9 +223,9 @@
     "mark_complete": "Oznacz jako ukończone",
     "become_buddy": "Zostań kolegą",
     "actions_aria": "Działania celowe",
-    "action_edit": "Redagować",
-    "action_delete": "Usuwać",
-    "action_nudge": "Szturchać",
+    "action_edit": "Edytuj",
+    "action_delete": "Usuń",
+    "action_nudge": "Przypomnij",
     "status": {
       "completed": "Zakończony",
       "active": "Aktywny"
@@ -264,8 +264,8 @@
       "deadline_label": "Termin (opcjonalnie)",
       "make_public": "Upublicznij",
       "make_public_desc": "Inni mogą zobaczyć i wesprzeć Twój cel",
-      "cancel": "Anulować",
-      "close": "Zamknąć",
+      "cancel": "Anuluj",
+      "close": "Zamknij",
       "save_changes": "Zapisz zmiany",
       "delete_goal": "Usuń cel",
       "delete_confirm": "Czy na pewno chcesz usunąć „{{title}}”?",
@@ -295,7 +295,7 @@
   "frequency": {
     "none": "Brak rytmu",
     "daily": "Codziennie",
-    "weekly": "Tygodnik",
+    "weekly": "Co tydzień",
     "biweekly": "Co 2 tygodnie",
     "monthly": "Miesięczny"
   },
@@ -431,7 +431,7 @@
     "my_profile": "Mój profil",
     "load_error": "Nie można załadować Twojego NexusScore. Spróbuj ponownie.",
     "refresh_error": "Odświeżanie nie powiodło się",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "try_again": "Spróbuj ponownie",
     "top_percent": "Górny {{percent}}%",
     "remaining_count": "Pozostało {{count}}",
@@ -460,7 +460,7 @@
     "remaining_count_other": "Pozostało {{count}}"
   },
   "common": {
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "try_again": "Spróbuj ponownie"
   },
   "page_meta": {

@@ -69,10 +69,10 @@
     "like_failed": "Nie udało się zaktualizować polubienia"
   },
   "realtime": {
-    "new_posts_one": "1 new post",
-    "new_posts_other": "{{count}} new posts",
-    "new_posts_few": "{{count}} new posts",
-    "new_posts_many": "{{count}} new posts"
+    "new_posts_one": "1 nowy post — dotknij, aby zobaczyć",
+    "new_posts_other": "{{count}} nowych postów — dotknij, aby zobaczyć",
+    "new_posts_few": "{{count}} nowe posty — dotknij, aby zobaczyć",
+    "new_posts_many": "{{count}} nowych postów — dotknij, aby zobaczyć"
   },
   "compose": {
     "create_title": "Utwórz {{type}}",
@@ -131,7 +131,7 @@
     "target_value_label": "Wartość docelowa",
     "target_value_placeholder": "np. 10",
     "deadline_label": "Termin (opcjonalnie)",
-    "make_public": "Upublicznić",
+    "make_public": "Upublicznij",
     "make_public_desc": "Inni mogą zobaczyć i wspierać twój cel",
     "goal_created": "Cel utworzony!",
     "goal_failed": "Nie udało się utworzyć celu.",
@@ -606,7 +606,7 @@
     "create_your_story": "Utwórz swoją historię",
     "view_story_from": "Zobacz historię od {{name}}",
     "load_failed": "Nie udało się wczytać historii",
-    "retry": "Retry"
+    "retry": "Spróbuj ponownie"
   },
   "fab": {
     "create": "Utwórz post"

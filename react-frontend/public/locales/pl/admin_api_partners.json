@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -81,12 +81,12 @@
       "description": "Daj zatwierdzonym systemom zewnętrznym — takim jak system bankowy lub samorządowy — bezpieczne klucze dostępu do danych NEXUSA. Aby połączyć się z inną platformą banku czasu, użyj zamiast tego partnerów protokołu zewnętrznego."
     },
     "actions": {
-      "activate": "Aktywować",
-      "cancel": "Anulować",
-      "close": "Zamknąć",
+      "activate": "Aktywuj",
+      "cancel": "Anuluj",
+      "close": "Zamknij",
       "new_partner": "Nowy partner",
       "regenerate_credentials": "Wygeneruj ponownie dane uwierzytelniające",
-      "suspend": "Wstrzymać",
+      "suspend": "Zawieś",
       "view_call_log": "Wyświetl rejestr połączeń"
     },
     "call_log": {
@@ -158,7 +158,7 @@
     },
     "status": {
       "active": "Aktywny",
-      "pending": "Aż do",
+      "pending": "Oczekujące",
       "suspended": "Zawieszony"
     },
     "toasts": {

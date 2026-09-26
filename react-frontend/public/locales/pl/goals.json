@@ -77,7 +77,7 @@
     "progress_aria": "Postęp: {{percent}}%",
     "event": {
       "progress_update": "Aktualizacja postępu",
-      "checkin": "Zameldować się",
+      "checkin": "Zameldowanie",
       "milestone": "Kamień milowy",
       "buddy_joined": "Dołączył partner",
       "buddy_action": "Wsparcie partnera",

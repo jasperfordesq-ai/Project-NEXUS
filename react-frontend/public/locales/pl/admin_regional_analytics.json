@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -81,11 +81,11 @@
       "new_subscription": "Nowa subskrypcja",
       "generate_report_now": "Wygeneruj raport teraz",
       "view_access_log": "Wyświetl dziennik dostępu",
-      "suspend": "Wstrzymać",
-      "resume": "Wznawiać",
-      "close": "Zamknąć",
-      "cancel": "Anulować",
-      "create": "Tworzyć"
+      "suspend": "Zawieś",
+      "resume": "Wznów",
+      "close": "Zamknij",
+      "cancel": "Anuluj",
+      "create": "Utwórz"
     },
     "tables": {
       "subscriptions_aria": "Subskrypcje analiz regionalnych",

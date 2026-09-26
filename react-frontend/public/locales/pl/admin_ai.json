@@ -64,7 +64,7 @@
     "help": "Pomoc",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
     "data_table": "Dane",
@@ -74,8 +74,8 @@
   },
   "ai": {
     "common": {
-      "cancel": "Anulować",
-      "close": "Zamknąć",
+      "cancel": "Anuluj",
+      "close": "Zamknij",
       "empty_dash": "-",
       "loading": "Załadunek...",
       "save_changes": "Zapisz zmiany"
@@ -126,7 +126,7 @@
         "completed": "Zakończony",
         "expired": "Wygasły",
         "failed": "Przegrany",
-        "pending": "Aż do",
+        "pending": "Oczekujące",
         "pending_review": "Oczekuje na recenzję",
         "rejected": "Odrzucony",
         "running": "Działanie"
@@ -155,10 +155,10 @@
         "notification_email_placeholder": "admin@example.org"
       },
       "actions": {
-        "approve": "Zatwierdzić",
+        "approve": "Zatwierdź",
         "approve_all_eligible": "Zatwierdź wszystkie kwalifikujące się",
         "details": "Bliższe dane",
-        "reject": "Odrzucić",
+        "reject": "Odrzuć",
         "save_config": "Zapisz konfigurację",
         "trigger": "Spust"
       },
@@ -265,8 +265,8 @@
       },
       "actions": {
         "create_doc": "Utwórz dokument",
-        "delete": "Usuwać",
-        "edit": "Redagować",
+        "delete": "Usuń",
+        "edit": "Edytuj",
         "new_doc": "Nowy dokument",
         "seed_defaults": "Domyślne ustawienia nasion"
       },
@@ -292,7 +292,7 @@
         "edit_title": "Edytuj „{{title}}”",
         "fields": {
           "active": "Aktywny",
-          "body": "Ciało",
+          "body": "Treść",
           "keywords": "Wyzwalające słowa kluczowe (oddzielone przecinkami)",
           "module_slug": "Slug modułu",
           "title": "Tytuł"

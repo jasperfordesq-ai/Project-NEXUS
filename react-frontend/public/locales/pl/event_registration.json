@@ -2,13 +2,13 @@
   "title": "Rejestracja, zaproszenia i goście",
   "description": "Projektuj wersjonowane formularze rejestracyjne, przeglądaj zgłoszenia, zapraszaj odbiorców, zarządzaj gośćmi i stosuj mechanizmy kontroli zachowania prywatności.",
   "common": {
-    "cancel": "Anulować",
-    "close": "Zamknąć",
+    "cancel": "Anuluj",
+    "close": "Zamknij",
     "loading": "Ładowanie obszaru roboczego rejestracji",
     "not_recorded": "Nie nagrano",
-    "refresh": "Odświeżać",
+    "refresh": "Odśwież",
     "retry": "Spróbuj ponownie",
-    "save": "Ratować"
+    "save": "Zapisz"
   },
   "load_error": {
     "title": "Nie można załadować obszaru roboczego rejestracji",
@@ -59,7 +59,7 @@
     "question_count_other": "{{count}} pytania",
     "published_at": "Opublikowano {{date}}",
     "edit": "Edytuj wersję roboczą",
-    "publish": "Publikować",
+    "publish": "Opublikuj",
     "create_revision": "Utwórz nową wersję",
     "settings_missing_title": "Ustawienia rejestracji nie są gotowe",
     "settings_missing_description": "Zapisz ustawienia rejestracji na wydarzenie przed utworzeniem formularza.",
@@ -215,8 +215,8 @@
     "no_ticket": "Żadne uprawnienia do biletów nie są powiązane",
     "notifications_allowed": "Powiadomienia gości zostały wyrażone",
     "notifications_not_allowed": "Brak zgody na powiadomienia gości",
-    "check_in": "Zameldować się",
-    "check_out": "Wymeldować się",
+    "check_in": "Zamelduj",
+    "check_out": "Wymelduj",
     "no_show": "Zaznacz, że się nie pojawił",
     "undo": "Cofnij ostatnią zmianę",
     "cancel": "Anuluj gościa",

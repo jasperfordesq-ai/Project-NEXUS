@@ -11,7 +11,7 @@
     "section_records": "Rekordy",
     "section_settings": "Ustawienia",
     "nav_label": "Nawigacja brokera",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderacja"
   },
   "header": {
     "toggle_sidebar": "Przełącz pasek boczny",
@@ -191,7 +191,7 @@
     "tab_pending": "Oczekujący",
     "tab_active": "Aktywni",
     "tab_suspended": "Zawieszeni",
-    "tab_never_logged_in": "Nigdy się nie logowałem",
+    "tab_never_logged_in": "Brak logowania",
     "tab_onboarding_incomplete": "Wdrożenie niekompletne",
     "search_placeholder": "Szukaj członków...",
     "col_name": "Członek",
@@ -443,7 +443,7 @@
     "details_title": "Szczegóły certyfikacji — {{name}}",
     "no_private_notes": "Nie zapisano żadnych prywatnych notatek.",
     "not_applicable": "Nie dotyczy",
-    "close": "Close",
+    "close": "Zamknij",
     "revoke_title": "Odwołaj potwierdzenie",
     "revoke_body": "Cofnij obecne potwierdzenie bezpieczeństwa społeczności dla {{name}}.",
     "reason_label": "Powód odwołania",
