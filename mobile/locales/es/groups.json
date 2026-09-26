@@ -86,6 +86,7 @@
     "tabs": {
       "overview": "Overview",
       "discussion": "Discussions",
+      "chatrooms": "Canales",
       "members": "Members",
       "events": "Events",
       "announcements": "Announcements",
@@ -97,6 +98,14 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Actividad"
+    },
+    "chatrooms": {
+      "title": "Canales del grupo", "subtitle": "Conversaciones privadas para miembros activos del grupo.", "create": "Nuevo canal", "nameLabel": "Nombre del canal",
+      "loadError": "No se pudieron cargar los canales del grupo.", "messagesLoadError": "No se pudieron cargar los mensajes del canal.", "emptyChannelsTitle": "Aún no hay canales", "emptyChannelsSubtitle": "Un administrador del grupo puede crear el primer canal.",
+      "openChannel": "Abrir {{name}}", "emptyTitle": "Aún no hay mensajes", "emptySubtitle": "Inicia la conversación.", "messageLabel": "Mensaje", "messagePlaceholder": "Escribe un mensaje…", "send": "Enviar", "sent": "Mensaje enviado.",
+      "sendError": "Mensaje no enviado", "retryHint": "Tu mensaje está guardado en este dispositivo. Reinténtalo cuando haya conexión.", "recoveryTitle": "Mensaje sin terminar", "recoveryNotice": "Se restauró tu mensaje sin terminar. Reinténtalo antes de escribir otro.", "recoveryError": "No se pudo restaurar de forma segura el mensaje guardado.", "discard": "Descartar mensaje guardado",
+      "joinTitle": "Los canales son para miembros del grupo", "joinSubtitle": "Únete al grupo para leer y enviar mensajes del canal.", "deleteChannelTitle": "Eliminar canal", "deleteChannelMessage": "¿Eliminar {{name}} y todos sus mensajes?", "deleteChannelError": "No se pudo eliminar el canal.", "deleteMessageTitle": "Eliminar mensaje", "deleteMessageMessage": "¿Eliminar este mensaje?", "deleteMessageError": "No se pudo eliminar el mensaje.",
+      "createError": "No se pudo crear el canal.", "channelRecoveryNotice": "Tu canal sin terminar está guardado. Reinténtalo antes de crear otro.", "discardChannel": "Descartar canal guardado", "pin": "Fijar", "unpin": "Desfijar", "pinned": "Fijado", "pinError": "No se pudo actualizar el mensaje fijado."
     },
     "files": {
       "title": "Archivos del grupo",

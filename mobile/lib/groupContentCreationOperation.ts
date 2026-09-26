@@ -14,7 +14,7 @@ import {
 } from '@/lib/creationDraftStore';
 import { mutationIdempotencyKey } from '@/lib/utils/idempotencyKey';
 
-export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media';
+export type GroupContentCreationKind = 'discussion' | 'announcement' | 'question' | 'answer' | 'wiki-page' | 'gallery-media' | 'chatroom-message' | 'chatroom';
 
 export interface GroupContentCreationPayloads {
   discussion: { title: string; content: string };
@@ -30,6 +30,8 @@ export interface GroupContentCreationPayloads {
     size: number;
     md5: string | null;
   };
+  'chatroom-message': { chatroomId: number; body: string };
+  chatroom: { name: string };
 }
 
 export interface GroupContentCreationOperation<K extends GroupContentCreationKind = GroupContentCreationKind> {
@@ -107,6 +109,15 @@ function normalizePayload<K extends GroupContentCreationKind>(
       };
       break;
     }
+    case 'chatroom-message': {
+      const chatroomId = Number(raw.chatroomId);
+      if (!Number.isInteger(chatroomId) || chatroomId <= 0) throw new Error('Invalid group content creation payload');
+      normalized = { chatroomId, body: requiredText(raw.body) };
+      break;
+    }
+    case 'chatroom':
+      normalized = { name: requiredText(raw.name) };
+      break;
   }
   return normalized as GroupContentCreationPayloads[K];
 }

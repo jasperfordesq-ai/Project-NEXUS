@@ -86,6 +86,7 @@
     "tabs": {
       "overview": "Overview",
       "discussion": "Discussions",
+      "chatrooms": "Channels",
       "members": "Members",
       "events": "Events",
       "announcements": "Announcements",
@@ -97,6 +98,14 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Feed"
+    },
+    "chatrooms": {
+      "title": "Group channels", "subtitle": "Private conversations for active group members.", "create": "New channel", "nameLabel": "Channel name",
+      "loadError": "Could not load the group channels.", "messagesLoadError": "Could not load the channel messages.", "emptyChannelsTitle": "No channels yet", "emptyChannelsSubtitle": "A group manager can create the first channel.",
+      "openChannel": "Open {{name}}", "emptyTitle": "No messages yet", "emptySubtitle": "Start the conversation.", "messageLabel": "Message", "messagePlaceholder": "Write a message…", "send": "Send", "sent": "Message sent.",
+      "sendError": "Message not sent", "retryHint": "Your message is saved on this device. Retry it when the connection is ready.", "recoveryTitle": "Unfinished message", "recoveryNotice": "Your unfinished message was restored. Retry it before writing a different message.", "recoveryError": "The saved message could not be restored safely.", "discard": "Discard saved message",
+      "joinTitle": "Channels are for group members", "joinSubtitle": "Join this group to read and send channel messages.", "deleteChannelTitle": "Delete channel", "deleteChannelMessage": "Delete {{name}} and all of its messages?", "deleteChannelError": "Could not delete the channel.", "deleteMessageTitle": "Delete message", "deleteMessageMessage": "Delete this message?", "deleteMessageError": "Could not delete the message.",
+      "createError": "Could not create the channel.", "channelRecoveryNotice": "Your unfinished channel is saved. Retry it before creating a different channel.", "discardChannel": "Discard saved channel", "pin": "Pin", "unpin": "Unpin", "pinned": "Pinned", "pinError": "Could not update the pinned message."
     },
     "files": {
       "title": "Group files",

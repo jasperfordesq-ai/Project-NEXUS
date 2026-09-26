@@ -22,6 +22,8 @@ class GroupChatroomService
     /** @var array<int, array{code: string, message: string, field?: string}> */
     private array $errors = [];
 
+    private bool $lastOperationWasReplay = false;
+
     public function __construct()
     {
     }
@@ -32,6 +34,11 @@ class GroupChatroomService
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    public function lastOperationWasReplay(): bool
+    {
+        return $this->lastOperationWasReplay;
     }
 
     /**
@@ -112,6 +119,7 @@ class GroupChatroomService
     public function create(int $groupId, int $userId, array $data): ?int
     {
         $this->errors = [];
+        $this->lastOperationWasReplay = false;
         $tenantId = TenantContext::getId();
 
         if (!$this->authorizeParent($groupId, $userId, true)) {
@@ -158,21 +166,58 @@ class GroupChatroomService
 
         $isPrivate = (bool) ($data['is_private'] ?? false);
         $permissions = isset($data['permissions']) ? json_encode($data['permissions']) : null;
-
-        $id = DB::table('group_chatrooms')->insertGetId([
-            'group_id'    => $groupId,
-            'tenant_id'   => $tenantId,
-            'name'        => $name,
-            'description' => trim($data['description'] ?? '') ?: null,
-            'category'    => $category ?: null,
-            'is_private'  => $isPrivate ? 1 : 0,
-            'permissions' => $permissions,
-            'created_by'  => $userId,
-            'is_default'  => 0,
-            'created_at'  => now(),
+        $description = trim($data['description'] ?? '') ?: null;
+        $identity = GroupContentCreationReceiptService::identity($data['idempotency_key'] ?? null, [
+            'category' => $category ?: null,
+            'description' => $description,
+            'group_id' => $groupId,
+            'is_private' => $isPrivate,
+            'name' => $name,
         ]);
+        if ($identity === false) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
 
-        return (int) $id;
+        return DB::transaction(function () use ($groupId, $userId, $tenantId, $name, $description, $category, $isPrivate, $permissions, $identity): ?int {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor((int) $tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find((int) $tenantId, $userId, 'chatroom', $identity['key_hash']);
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                        return null;
+                    }
+                    $this->lastOperationWasReplay = true;
+                    return (int) $receipt->result_id;
+                }
+            }
+
+            $id = (int) DB::table('group_chatrooms')->insertGetId([
+                'group_id'    => $groupId,
+                'tenant_id'   => $tenantId,
+                'name'        => $name,
+                'description' => $description,
+                'category'    => $category ?: null,
+                'is_private'  => $isPrivate ? 1 : 0,
+                'permissions' => $permissions,
+                'created_by'  => $userId,
+                'is_default'  => 0,
+                'created_at'  => now(),
+            ]);
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    (int) $tenantId,
+                    $userId,
+                    $groupId,
+                    'chatroom',
+                    $identity,
+                    $id,
+                    ['id' => $id],
+                );
+            }
+            return $id;
+        }, 3);
     }
 
     private function setSafeguardingError(SafeguardingInteractionDecision $decision): void
@@ -363,9 +408,10 @@ class GroupChatroomService
     /**
      * Post a message to a chatroom.
      */
-    public function postMessage(int $chatroomId, int $userId, string $body): ?int
+    public function postMessage(int $chatroomId, int $userId, string $body, ?string $idempotencyKey = null): ?int
     {
         $this->errors = [];
+        $this->lastOperationWasReplay = false;
         $tenantId = (int) TenantContext::getId();
 
         $chatroom = $this->findAccessibleChatroom($chatroomId, $userId, true);
@@ -377,6 +423,43 @@ class GroupChatroomService
         if (empty($body)) {
             $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.message_body_required'), 'field' => 'body'];
             return null;
+        }
+
+        $identity = GroupContentCreationReceiptService::identity($idempotencyKey, [
+            'body' => $body,
+            'chatroom_id' => $chatroomId,
+            'group_id' => (int) $chatroom->group_id,
+        ]);
+        if ($identity === false) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid')];
+            return null;
+        }
+
+        if ($identity !== null) {
+            $replayedId = DB::transaction(function () use ($tenantId, $userId, $identity): ?int {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $userId,
+                    'chatroom_message',
+                    $identity['key_hash'],
+                );
+                if ($receipt === null) {
+                    return null;
+                }
+                if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                    $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+                    return -1;
+                }
+                return (int) $receipt->result_id;
+            }, 3);
+            if ($replayedId === -1) {
+                return null;
+            }
+            if ($replayedId !== null) {
+                $this->lastOperationWasReplay = true;
+                return $replayedId;
+            }
         }
 
         // A group chatroom post is delivered to every other active group
@@ -402,12 +485,51 @@ class GroupChatroomService
             return null;
         }
 
-        $id = DB::table('group_chatroom_messages')->insertGetId([
-            'chatroom_id' => $chatroomId,
-            'user_id'     => $userId,
-            'body'        => $body,
-            'created_at'  => now(),
-        ]);
+        $id = DB::transaction(function () use ($chatroomId, $userId, $body, $tenantId, $chatroom, $identity): int {
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                $receipt = GroupContentCreationReceiptService::find(
+                    $tenantId,
+                    $userId,
+                    'chatroom_message',
+                    $identity['key_hash'],
+                );
+                if ($receipt !== null) {
+                    if (! GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])) {
+                        return -1;
+                    }
+                    $this->lastOperationWasReplay = true;
+                    return (int) $receipt->result_id;
+                }
+            }
+
+            $messageId = (int) DB::table('group_chatroom_messages')->insertGetId([
+                'chatroom_id' => $chatroomId,
+                'user_id'     => $userId,
+                'body'        => $body,
+                'created_at'  => now(),
+            ]);
+            if ($identity !== null) {
+                GroupContentCreationReceiptService::store(
+                    $tenantId,
+                    $userId,
+                    (int) $chatroom->group_id,
+                    'chatroom_message',
+                    $identity,
+                    $messageId,
+                    ['id' => $messageId],
+                );
+            }
+            return $messageId;
+        }, 3);
+
+        if ($id === -1) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict')];
+            return null;
+        }
+        if ($this->lastOperationWasReplay) {
+            return $id;
+        }
 
         // Broadcast via Pusher. The realtime channel is the whole GROUP's
         // channel, so a private chatroom's messages are not broadcast on it

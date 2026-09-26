@@ -17,7 +17,7 @@
     "app/Listeners/NotifyAdminOfNewVolunteerOrganisation.php": { "routes": [{ "input": "/admin/volunteering/organizations", "expected": "suppressed" }] },
     "app/Listeners/NotifyConnectionAccepted.php": { "routes": [{ "input": "/connections", "expected": "native", "native_href": "/(modals)/connections" }] },
     "app/Listeners/NotifyConnectionRequest.php": { "routes": [{ "input": "/connections", "expected": "native", "native_href": "/(modals)/connections" }] },
-    "app/Listeners/NotifyGroupChatroomMessage.php": { "routes": [{ "input": "/groups/1/chat", "type": "group_chatroom_message", "expected": "suppressed" }] },
+    "app/Listeners/NotifyGroupChatroomMessage.php": { "routes": [{ "input": "/groups/1/chat?chatroom_id=7", "type": "group_chatroom_message", "expected": "native", "native_href": "/(modals)/group-detail?id=1&tab=chatrooms&chatroom_id=7" }] },
     "app/Listeners/NotifyGroupMemberJoined.php": { "routes": [{ "input": "/groups/1", "expected": "native", "native_href": "/(modals)/group-detail?id=1" }] },
     "app/Listeners/NotifyMessageReceived.php": { "routes": [{ "input": "/messages/1", "expected": "native", "native_href": "/(modals)/thread?id=1" }] },
     "app/Listeners/NotifyOwnerOfVolunteerOrganisationDecision.php": { "routes": [{ "input": "/organisations/1", "expected": "native", "native_href": "/(modals)/organisation-detail?id=1" }, { "input": "/volunteering", "expected": "native", "native_href": "/(modals)/volunteering" }] },

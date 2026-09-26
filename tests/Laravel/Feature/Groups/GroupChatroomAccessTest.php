@@ -227,6 +227,42 @@ final class GroupChatroomAccessTest extends TestCase
             ->count());
     }
 
+    public function test_http_creation_replays_chatrooms_and_messages_from_the_idempotency_header(): void
+    {
+        $this->authenticateAs($this->groupAdmin);
+
+        $roomHeaders = ['Idempotency-Key' => 'mobile-chatroom-http-replay-1'];
+        $firstRoom = $this->apiPost("/v2/groups/{$this->activeGroupId}/chatrooms", [
+            'name' => 'Release planning',
+        ], $roomHeaders)->assertCreated();
+        $roomId = (int) $firstRoom->json('data.id');
+
+        $this->apiPost("/v2/groups/{$this->activeGroupId}/chatrooms", [
+            'name' => 'Release planning',
+        ], $roomHeaders)->assertOk()
+            ->assertJsonPath('data.id', $roomId)
+            ->assertJsonPath('data._idempotent_replay', true);
+
+        $messageHeaders = ['Idempotency-Key' => 'mobile-chatroom-message-http-replay-1'];
+        $firstMessage = $this->apiPost("/v2/group-chatrooms/{$roomId}/messages", [
+            'body' => 'Android build is ready.',
+        ], $messageHeaders)->assertCreated();
+        $messageId = (int) $firstMessage->json('data.id');
+
+        $this->apiPost("/v2/group-chatrooms/{$roomId}/messages", [
+            'body' => 'Android build is ready.',
+        ], $messageHeaders)->assertOk()
+            ->assertJsonPath('data.id', $messageId)
+            ->assertJsonPath('data._idempotent_replay', true);
+
+        $this->apiPost("/v2/group-chatrooms/{$roomId}/messages", [
+            'body' => 'Changed intent',
+        ], $messageHeaders)->assertConflict();
+
+        $this->assertSame(1, DB::table('group_chatrooms')->where('id', $roomId)->count());
+        $this->assertSame(1, DB::table('group_chatroom_messages')->where('id', $messageId)->count());
+    }
+
     private function authenticateAs(User $user): void
     {
         Sanctum::actingAs($user, ['*']);

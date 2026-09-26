@@ -101,7 +101,7 @@ class NotifyGroupChatroomMessage implements ShouldQueue
             $groupRealName = $group->name ?? null;
 
             $previewBody = mb_substr(strip_tags($messageBody), 0, 120);
-            $link    = '/groups/' . $event->groupId . '/chat';
+            $link    = '/groups/' . $event->groupId . '/chat?chatroom_id=' . $event->chatroomId;
 
             // All active group members EXCEPT the sender and anyone who muted
             // the sender are eligible. group_members has `joined_at` and a

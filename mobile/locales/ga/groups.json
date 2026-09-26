@@ -50,11 +50,20 @@
       "analytics": "Anailísíocht",
       "overview": "Forbhreathnú",
       "discussion": "Plé",
+      "chatrooms": "Cainéil",
       "members": "Baill",
       "events": "Imeachtaí",
       "announcements": "Fógraí",
       "marketplace": "Áit mhargaidh",
       "feed": "Fotha"
+    },
+    "chatrooms": {
+      "title": "Cainéil an ghrúpa", "subtitle": "Comhráite príobháideacha do bhaill ghníomhacha an ghrúpa.", "create": "Cainéal nua", "nameLabel": "Ainm an chainéil",
+      "loadError": "Níorbh fhéidir cainéil an ghrúpa a lódáil.", "messagesLoadError": "Níorbh fhéidir teachtaireachtaí an chainéil a lódáil.", "emptyChannelsTitle": "Níl aon chainéal fós", "emptyChannelsSubtitle": "Is féidir le bainisteoir grúpa an chéad chainéal a chruthú.",
+      "openChannel": "Oscail {{name}}", "emptyTitle": "Níl aon teachtaireacht fós", "emptySubtitle": "Cuir tús leis an gcomhrá.", "messageLabel": "Teachtaireacht", "messagePlaceholder": "Scríobh teachtaireacht…", "send": "Seol", "sent": "Seoladh an teachtaireacht.",
+      "sendError": "Níor seoladh an teachtaireacht", "retryHint": "Tá do theachtaireacht sábháilte ar an ngléas seo. Bain triail eile as nuair atá an nasc réidh.", "recoveryTitle": "Teachtaireacht neamhchríochnaithe", "recoveryNotice": "Athchóiríodh do theachtaireacht neamhchríochnaithe. Bain triail eile aisti sula scríobhann tú ceann eile.", "recoveryError": "Níorbh fhéidir an teachtaireacht shábháilte a athchóiriú go sábháilte.", "discard": "Caith an teachtaireacht shábháilte uait",
+      "joinTitle": "Is do bhaill an ghrúpa na cainéil", "joinSubtitle": "Glac páirt sa ghrúpa chun teachtaireachtaí a léamh agus a sheoladh.", "deleteChannelTitle": "Scrios an cainéal", "deleteChannelMessage": "Scrios {{name}} agus a theachtaireachtaí ar fad?", "deleteChannelError": "Níorbh fhéidir an cainéal a scriosadh.", "deleteMessageTitle": "Scrios an teachtaireacht", "deleteMessageMessage": "Scrios an teachtaireacht seo?", "deleteMessageError": "Níorbh fhéidir an teachtaireacht a scriosadh.",
+      "createError": "Níorbh fhéidir an cainéal a chruthú.", "channelRecoveryNotice": "Tá do chainéal neamhchríochnaithe sábháilte. Bain triail eile as sula gcruthaíonn tú ceann eile.", "discardChannel": "Caith an cainéal sábháilte uait", "pin": "Bioráin", "unpin": "Díbioráin", "pinned": "Bioráilte", "pinError": "Níorbh fhéidir an teachtaireacht bhioráilte a nuashonrú."
     },
     "files": {
       "title": "Comhaid an ghrúpa",

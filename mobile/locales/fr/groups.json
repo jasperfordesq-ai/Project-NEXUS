@@ -86,6 +86,7 @@
     "tabs": {
       "overview": "Overview",
       "discussion": "Discussions",
+      "chatrooms": "Canaux",
       "members": "Members",
       "events": "Events",
       "announcements": "Announcements",
@@ -97,6 +98,14 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Fil"
+    },
+    "chatrooms": {
+      "title": "Canaux du groupe", "subtitle": "Conversations privées pour les membres actifs du groupe.", "create": "Nouveau canal", "nameLabel": "Nom du canal",
+      "loadError": "Impossible de charger les canaux du groupe.", "messagesLoadError": "Impossible de charger les messages du canal.", "emptyChannelsTitle": "Aucun canal", "emptyChannelsSubtitle": "Un responsable du groupe peut créer le premier canal.",
+      "openChannel": "Ouvrir {{name}}", "emptyTitle": "Aucun message", "emptySubtitle": "Lancez la conversation.", "messageLabel": "Message", "messagePlaceholder": "Écrivez un message…", "send": "Envoyer", "sent": "Message envoyé.",
+      "sendError": "Message non envoyé", "retryHint": "Votre message est enregistré sur cet appareil. Réessayez lorsque la connexion sera disponible.", "recoveryTitle": "Message inachevé", "recoveryNotice": "Votre message inachevé a été restauré. Réessayez avant d'en écrire un autre.", "recoveryError": "Le message enregistré n'a pas pu être restauré en toute sécurité.", "discard": "Supprimer le message enregistré",
+      "joinTitle": "Les canaux sont réservés aux membres", "joinSubtitle": "Rejoignez ce groupe pour lire et envoyer des messages.", "deleteChannelTitle": "Supprimer le canal", "deleteChannelMessage": "Supprimer {{name}} et tous ses messages ?", "deleteChannelError": "Impossible de supprimer le canal.", "deleteMessageTitle": "Supprimer le message", "deleteMessageMessage": "Supprimer ce message ?", "deleteMessageError": "Impossible de supprimer le message.",
+      "createError": "Impossible de créer le canal.", "channelRecoveryNotice": "Votre canal inachevé est enregistré. Réessayez avant d'en créer un autre.", "discardChannel": "Supprimer le canal enregistré", "pin": "Épingler", "unpin": "Désépingler", "pinned": "Épinglé", "pinError": "Impossible de mettre à jour le message épinglé."
     },
     "files": {
       "title": "Fichiers du groupe",

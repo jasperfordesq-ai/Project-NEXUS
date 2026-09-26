@@ -145,7 +145,7 @@ class NotifyGroupChatroomMessageTest extends TestCase
                     && $type === 'group_chatroom_message'
                     && $body === 'Open the app to read the new group message.'
                     && ! str_contains($body, 'Hello group!')
-                    && $link === '/groups/' . $this->groupId . '/chat';
+                    && $link === '/groups/' . $this->groupId . '/chat?chatroom_id=1';
             });  // once per non-sender member, without private message content
 
         $event = new GroupChatroomMessagePosted(
@@ -166,7 +166,7 @@ class NotifyGroupChatroomMessageTest extends TestCase
         $notifCount = DB::table('notifications')
             ->where('tenant_id', 2)
             ->where('type', 'group_chatroom_message')
-            ->where('link', '/groups/' . $this->groupId . '/chat')
+            ->where('link', '/groups/' . $this->groupId . '/chat?chatroom_id=1')
             ->whereIn('user_id', [$this->member1Id, $this->member2Id])
             ->count();
 
@@ -254,7 +254,7 @@ class NotifyGroupChatroomMessageTest extends TestCase
 
     public function test_handle_deduplicates_notifications_within_five_minutes(): void
     {
-        $link = '/groups/' . $this->groupId . '/chat';
+        $link = '/groups/' . $this->groupId . '/chat?chatroom_id=1';
 
         // Pre-insert a recent chatroom notification for member1.
         DB::table('notifications')->insert([
@@ -449,7 +449,7 @@ class NotifyGroupChatroomMessageTest extends TestCase
             ->where('user_id', $this->member1Id)
             ->value('link');
 
-        $this->assertSame('/groups/' . $this->groupId . '/chat', $link);
+        $this->assertSame('/groups/' . $this->groupId . '/chat?chatroom_id=1', $link);
     }
 
     public function test_handle_marks_handled_cache_key_after_successful_fanout(): void

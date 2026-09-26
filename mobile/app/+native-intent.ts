@@ -140,7 +140,6 @@ export function isBrowserOnlyPath(rawPath: string | null): boolean {
   // ordinary App/Universal Links remain in the browser; push taps fail closed to
   // the notification centre instead of opening an unrelated native screen.
   if (segments[0] === 'marketplace' && segments[1] === 'reports') return true;
-  if (segments[0] === 'groups' && segments.length >= 3 && segments[2] === 'chat') return true;
   // `join/:code` is the Care in Community invite redemption route, which is
   // deliberately absent from both adults-only native apps. Support-action tokens
   // are public, side-effecting linked-account confirmations and must finish on web.
@@ -269,7 +268,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     case 'groups':
       if (id === 'invite' && detail) return appendParams('/(modals)/group-invite', { ...params, token: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-group', params);
-      if (id && detail === 'chat') return null;
+      if (id && detail === 'chat') return appendParams('/(modals)/group-detail', { id, tab: 'chatrooms', ...params });
       return id ? appendParams('/(modals)/group-detail', { ...params, id }) : '/(modals)/groups';
 
     case 'members':

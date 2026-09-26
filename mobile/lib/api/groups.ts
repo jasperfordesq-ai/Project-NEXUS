@@ -62,6 +62,29 @@ export interface GroupNotificationPreferences {
   updated_at: string | null;
 }
 
+export interface GroupChatroom {
+  id: number;
+  group_id: number;
+  name: string;
+  description: string | null;
+  category: string | null;
+  is_default: boolean;
+  is_private: boolean;
+  created_by: number;
+  created_at: string | null;
+}
+
+export interface GroupChatroomMessage {
+  id: number;
+  body: string;
+  user_id: number;
+  author: GroupMember;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface GroupChatroomMessagesResponse extends GroupCollectionResponse<GroupChatroomMessage> {}
+
 export interface GroupMemberListItem extends GroupMember {
   role: 'owner' | 'admin' | 'member' | string;
   joined_at: string | null;
@@ -629,6 +652,66 @@ export function getGroupMembers(
   if (cursor) query['cursor'] = cursor;
   if (options.query?.trim()) query['q'] = options.query.trim();
   return api.get<GroupCollectionResponse<GroupMemberListItem>>(`${API_V2}/groups/${id}/members`, query);
+}
+
+export function getGroupChatrooms(groupId: number): Promise<{ data: GroupChatroom[] }> {
+  return api.get<{ data: GroupChatroom[] }>(`${API_V2}/groups/${groupId}/chatrooms`);
+}
+
+export function createGroupChatroom(
+  groupId: number,
+  payload: { name: string; description?: string; is_private?: boolean },
+  idempotencyKey: string,
+): Promise<{ data: GroupChatroom }> {
+  return api.post<{ data: GroupChatroom }>(
+    `${API_V2}/groups/${groupId}/chatrooms`,
+    { ...payload, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
+}
+
+export function deleteGroupChatroom(chatroomId: number): Promise<void> {
+  return api.delete<void>(`${API_V2}/group-chatrooms/${chatroomId}`);
+}
+
+export function getGroupChatroomMessages(
+  chatroomId: number,
+  cursor: string | null = null,
+): Promise<GroupChatroomMessagesResponse> {
+  const query: Record<string, string> = { per_page: '50' };
+  if (cursor) query.cursor = cursor;
+  return api.get<GroupChatroomMessagesResponse>(`${API_V2}/group-chatrooms/${chatroomId}/messages`, query);
+}
+
+export function postGroupChatroomMessage(
+  chatroomId: number,
+  body: string,
+  idempotencyKey: string,
+): Promise<{ data: { id: number; _idempotent_replay: boolean } }> {
+  return api.post<{ data: { id: number; _idempotent_replay: boolean } }>(
+    `${API_V2}/group-chatrooms/${chatroomId}/messages`,
+    { body, idempotency_key: idempotencyKey },
+    { headers: { 'Idempotency-Key': idempotencyKey } },
+  );
+}
+
+export function deleteGroupChatroomMessage(messageId: number): Promise<void> {
+  return api.delete<void>(`${API_V2}/group-chatroom-messages/${messageId}`);
+}
+
+export function getPinnedGroupChatroomMessages(
+  groupId: number,
+  chatroomId: number,
+): Promise<{ data: GroupChatroomMessage[] }> {
+  return api.get<{ data: GroupChatroomMessage[] }>(`${API_V2}/groups/${groupId}/chatrooms/${chatroomId}/pinned`);
+}
+
+export function pinGroupChatroomMessage(groupId: number, chatroomId: number, messageId: number): Promise<void> {
+  return api.post<void>(`${API_V2}/groups/${groupId}/chatrooms/${chatroomId}/pin/${messageId}`, {});
+}
+
+export function unpinGroupChatroomMessage(groupId: number, chatroomId: number, messageId: number): Promise<void> {
+  return api.delete<void>(`${API_V2}/groups/${groupId}/chatrooms/${chatroomId}/pin/${messageId}`);
 }
 
 /**

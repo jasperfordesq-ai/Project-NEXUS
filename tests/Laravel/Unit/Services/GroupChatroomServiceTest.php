@@ -123,6 +123,60 @@ class GroupChatroomServiceTest extends TestCase
         self::assertSame((int) $owner->id, (int) $messageDetails['target_user_id']);
     }
 
+    public function test_chatroom_and_message_creation_replay_the_original_result_without_duplicates(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $group = Group::factory()->forTenant($this->testTenantId)->create([
+            'owner_id' => $owner->id,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $roomKey = 'mobile-chatroom-' . bin2hex(random_bytes(8));
+        $firstRoomId = $this->service->create((int) $group->id, (int) $owner->id, [
+            'name' => 'Planning',
+            'idempotency_key' => $roomKey,
+        ]);
+        self::assertNotNull($firstRoomId);
+        self::assertFalse($this->service->lastOperationWasReplay());
+
+        $secondRoomId = $this->service->create((int) $group->id, (int) $owner->id, [
+            'name' => 'Planning',
+            'idempotency_key' => $roomKey,
+        ]);
+        self::assertSame($firstRoomId, $secondRoomId);
+        self::assertTrue($this->service->lastOperationWasReplay());
+        self::assertSame(1, DB::table('group_chatrooms')->where('id', $firstRoomId)->count());
+
+        $messageKey = 'mobile-chat-message-' . bin2hex(random_bytes(8));
+        $firstMessageId = $this->service->postMessage((int) $firstRoomId, (int) $owner->id, 'Status update', $messageKey);
+        self::assertNotNull($firstMessageId);
+        self::assertFalse($this->service->lastOperationWasReplay());
+
+        $secondMessageId = $this->service->postMessage((int) $firstRoomId, (int) $owner->id, 'Status update', $messageKey);
+        self::assertSame($firstMessageId, $secondMessageId);
+        self::assertTrue($this->service->lastOperationWasReplay());
+        self::assertSame(1, DB::table('group_chatroom_messages')->where('id', $firstMessageId)->count());
+    }
+
+    public function test_chatroom_message_idempotency_key_cannot_be_reused_for_changed_content(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $group = Group::factory()->forTenant($this->testTenantId)->create([
+            'owner_id' => $owner->id,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $chatroomId = $this->service->create((int) $group->id, (int) $owner->id, ['name' => 'General']);
+        self::assertNotNull($chatroomId);
+
+        $key = 'mobile-chat-message-' . bin2hex(random_bytes(8));
+        self::assertNotNull($this->service->postMessage((int) $chatroomId, (int) $owner->id, 'Original', $key));
+        self::assertNull($this->service->postMessage((int) $chatroomId, (int) $owner->id, 'Changed', $key));
+        self::assertSame('IDEMPOTENCY_CONFLICT', $this->service->getErrors()[0]['code']);
+        self::assertSame(1, DB::table('group_chatroom_messages')->where('chatroom_id', $chatroomId)->count());
+    }
+
     public function test_getErrors_returns_array(): void
     {
         $this->assertIsArray($this->service->getErrors());

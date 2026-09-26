@@ -86,6 +86,7 @@
     "tabs": {
       "overview": "Overview",
       "discussion": "Discussions",
+      "chatrooms": "Canali",
       "members": "Members",
       "events": "Events",
       "announcements": "Announcements",
@@ -97,6 +98,14 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Feed"
+    },
+    "chatrooms": {
+      "title": "Canali del gruppo", "subtitle": "Conversazioni private per i membri attivi del gruppo.", "create": "Nuovo canale", "nameLabel": "Nome del canale",
+      "loadError": "Impossibile caricare i canali del gruppo.", "messagesLoadError": "Impossibile caricare i messaggi del canale.", "emptyChannelsTitle": "Nessun canale", "emptyChannelsSubtitle": "Un responsabile del gruppo può creare il primo canale.",
+      "openChannel": "Apri {{name}}", "emptyTitle": "Nessun messaggio", "emptySubtitle": "Inizia la conversazione.", "messageLabel": "Messaggio", "messagePlaceholder": "Scrivi un messaggio…", "send": "Invia", "sent": "Messaggio inviato.",
+      "sendError": "Messaggio non inviato", "retryHint": "Il messaggio è salvato su questo dispositivo. Riprova quando la connessione è disponibile.", "recoveryTitle": "Messaggio incompleto", "recoveryNotice": "Il messaggio incompleto è stato ripristinato. Riprova prima di scriverne un altro.", "recoveryError": "Non è stato possibile ripristinare in sicurezza il messaggio salvato.", "discard": "Elimina messaggio salvato",
+      "joinTitle": "I canali sono riservati ai membri", "joinSubtitle": "Unisciti al gruppo per leggere e inviare messaggi.", "deleteChannelTitle": "Elimina canale", "deleteChannelMessage": "Eliminare {{name}} e tutti i messaggi?", "deleteChannelError": "Impossibile eliminare il canale.", "deleteMessageTitle": "Elimina messaggio", "deleteMessageMessage": "Eliminare questo messaggio?", "deleteMessageError": "Impossibile eliminare il messaggio.",
+      "createError": "Impossibile creare il canale.", "channelRecoveryNotice": "Il canale incompleto è salvato. Riprova prima di crearne un altro.", "discardChannel": "Elimina canale salvato", "pin": "Fissa", "unpin": "Rimuovi", "pinned": "Fissato", "pinError": "Impossibile aggiornare il messaggio fissato."
     },
     "files": {
       "title": "File del gruppo",

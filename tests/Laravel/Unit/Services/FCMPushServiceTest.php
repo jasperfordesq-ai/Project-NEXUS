@@ -391,7 +391,6 @@ class FCMPushServiceTest extends TestCase
             ['type' => 'caring_emergency', 'link' => '/caring-community/emergency-alerts?alert_id=91'],
             ['type' => 'story_reaction', 'link' => '/feed'],
             ['type' => 'new_story', 'link' => '/feed'],
-            ['type' => 'group_chatroom_message', 'link' => '/groups/42/chat'],
             ['type' => 'support_action_pending', 'link' => '/support-actions/confirm/secret'],
         ] as $payload) {
             $this->assertTrue($method->invoke(null, $payload));
@@ -399,6 +398,7 @@ class FCMPushServiceTest extends TestCase
 
         foreach ([
             ['type' => 'new_message', 'link' => '/messages/1'],
+            ['type' => 'group_chatroom_message', 'link' => '/groups/42/chat?chatroom_id=7'],
             ['campaign_type' => 'paid_push', 'cta_url' => 'https://community.example.org/offer'],
         ] as $payload) {
             $this->assertFalse($method->invoke(null, $payload));

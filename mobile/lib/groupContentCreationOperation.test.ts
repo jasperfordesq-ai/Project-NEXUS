@@ -53,6 +53,20 @@ describe('group content creation operation', () => {
     expect(operation.intent).toBe(JSON.stringify(discussion));
   });
 
+  it('scopes chatroom messages to the exact room and restores channel creation', async () => {
+    const message = await reserveGroupContentCreationOperation(9, 'chatroom-message', {
+      chatroomId: 17,
+      body: '  Status update  ',
+    });
+    expect(message.payload).toEqual({ chatroomId: 17, body: 'Status update' });
+
+    jest.mocked(loadCreationDraft).mockResolvedValue(null);
+    const channel = await reserveGroupContentCreationOperation(9, 'chatroom', { name: '  Planning  ' });
+    expect(channel.payload).toEqual({ name: 'Planning' });
+    jest.mocked(loadCreationDraft).mockResolvedValue(channel);
+    await expect(loadGroupContentCreationOperation(9, 'chatroom')).resolves.toEqual(channel);
+  });
+
   it('does not replace unresolved work with changed content', async () => {
     const first = await reserveGroupContentCreationOperation(9, 'discussion', discussion);
     jest.mocked(loadCreationDraft).mockResolvedValue(first);

@@ -127,11 +127,11 @@ describe('push notification links', () => {
     expect(getNotificationLink({ type: 'new_story', link: '/feed' })).toBe('/notifications');
   });
 
-  it('keeps group chatroom pushes in the inbox until the native app has a group chat screen', () => {
+  it('opens group chatroom pushes on the exact native Channels tab', () => {
     expect(getNotificationLink({
       type: 'group_chatroom_message',
-      link: '/groups/42/chat',
-    })).toBe('/notifications');
+      link: '/groups/42/chat?chatroom_id=7',
+    })).toBe('/groups/42/chat?chatroom_id=7');
   });
 
   it('fails every Care in Community destination closed at the native store boundary', () => {
@@ -162,7 +162,6 @@ describe('push notification links', () => {
 
   it.each([
     '/marketplace/reports/42',
-    '/groups/42/chat',
   ])('fails closed for a real web page with no native equivalent: %s', (link) => {
     expect(getNotificationLink({ type: 'audit', link })).toBe('/notifications');
   });

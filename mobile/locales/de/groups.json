@@ -86,6 +86,7 @@
     "tabs": {
       "overview": "Overview",
       "discussion": "Discussions",
+      "chatrooms": "Kanäle",
       "members": "Members",
       "events": "Events",
       "announcements": "Announcements",
@@ -97,6 +98,14 @@
       "analytics": "Analytics",
       "marketplace": "Marketplace",
       "feed": "Feed"
+    },
+    "chatrooms": {
+      "title": "Gruppenkanäle", "subtitle": "Private Unterhaltungen für aktive Gruppenmitglieder.", "create": "Neuer Kanal", "nameLabel": "Kanalname",
+      "loadError": "Die Gruppenkanäle konnten nicht geladen werden.", "messagesLoadError": "Die Kanalnachrichten konnten nicht geladen werden.", "emptyChannelsTitle": "Noch keine Kanäle", "emptyChannelsSubtitle": "Eine Gruppenleitung kann den ersten Kanal erstellen.",
+      "openChannel": "{{name}} öffnen", "emptyTitle": "Noch keine Nachrichten", "emptySubtitle": "Beginnen Sie die Unterhaltung.", "messageLabel": "Nachricht", "messagePlaceholder": "Nachricht schreiben…", "send": "Senden", "sent": "Nachricht gesendet.",
+      "sendError": "Nachricht nicht gesendet", "retryHint": "Ihre Nachricht ist auf diesem Gerät gespeichert. Versuchen Sie es erneut, wenn die Verbindung bereit ist.", "recoveryTitle": "Unfertige Nachricht", "recoveryNotice": "Ihre unfertige Nachricht wurde wiederhergestellt. Wiederholen Sie sie, bevor Sie eine andere Nachricht schreiben.", "recoveryError": "Die gespeicherte Nachricht konnte nicht sicher wiederhergestellt werden.", "discard": "Gespeicherte Nachricht verwerfen",
+      "joinTitle": "Kanäle sind für Gruppenmitglieder", "joinSubtitle": "Treten Sie der Gruppe bei, um Kanalnachrichten zu lesen und zu senden.", "deleteChannelTitle": "Kanal löschen", "deleteChannelMessage": "{{name}} und alle Nachrichten löschen?", "deleteChannelError": "Der Kanal konnte nicht gelöscht werden.", "deleteMessageTitle": "Nachricht löschen", "deleteMessageMessage": "Diese Nachricht löschen?", "deleteMessageError": "Die Nachricht konnte nicht gelöscht werden.",
+      "createError": "Der Kanal konnte nicht erstellt werden.", "channelRecoveryNotice": "Ihr unfertiger Kanal ist gespeichert. Wiederholen Sie ihn, bevor Sie einen anderen erstellen.", "discardChannel": "Gespeicherten Kanal verwerfen", "pin": "Anheften", "unpin": "Lösen", "pinned": "Angeheftet", "pinError": "Die angeheftete Nachricht konnte nicht aktualisiert werden."
     },
     "files": {
       "title": "Gruppendateien",

@@ -735,7 +735,7 @@ class FCMPushService
         // Native has no story viewer yet. Opening the general feed does not expose
         // the referenced story, so keep these in the in-app inbox until an exact
         // native destination exists instead of sending a misleading device alert.
-        if (str_contains($type, 'story') || $type === 'group_chatroom_message') {
+        if (str_contains($type, 'story')) {
             return true;
         }
 

@@ -173,15 +173,18 @@ describe('the routes this outage actually broke', () => {
     expect(isBrowserOnlyPath('https://app.project-nexus.ie/marketplace/reports/42')).toBe(true);
   });
 
-  it('maps reviewed legacy settings/review routes and declines absent native group chat', () => {
+  it('maps reviewed legacy settings/review routes and native group chat', () => {
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/profile/42/reviews'))
       .toBe('/(modals)/reviews');
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/settings?tab=linked-accounts'))
       .toBe('/(modals)/settings-linked-accounts?tab=linked-accounts');
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/settings/verification'))
       .toBe('/(modals)/verify-identity');
-    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/groups/42/chat')).toBeNull();
-    expect(isBrowserOnlyPath('https://app.project-nexus.ie/groups/42/chat')).toBe(true);
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/groups/42/chat?chatroom_id=7'))
+      .toBe('/(modals)/group-detail?id=42&tab=chatrooms&chatroom_id=7');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/groups/42/chat'))
+      .toBe('/(modals)/group-detail?id=42&tab=chatrooms');
+    expect(isBrowserOnlyPath('https://app.project-nexus.ie/groups/42/chat')).toBe(false);
   });
 
   it('distinguishes the two seller onboarding routes, which differ by one letter', () => {

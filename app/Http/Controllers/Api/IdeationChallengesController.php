@@ -1082,6 +1082,7 @@ class IdeationChallengesController extends BaseApiController
         $this->rateLimit('group_chatroom', 10, 60);
 
         $data = $this->getAllInput();
+        $data['idempotency_key'] = request()->header('Idempotency-Key') ?? ($data['idempotency_key'] ?? null);
         $chatroomId = $this->groupChatroomService->create((int) $id, $userId, $data);
 
         if ($chatroomId === null) {
@@ -1095,7 +1096,15 @@ class IdeationChallengesController extends BaseApiController
             return $this->respondWithErrors($errors, $this->resolveErrorStatus($errors));
         }
 
-        return $this->respondWithData($chatroom, null, 201);
+        if ($this->groupChatroomService->lastOperationWasReplay()) {
+            $chatroom['_idempotent_replay'] = true;
+        }
+
+        return $this->respondWithData(
+            $chatroom,
+            null,
+            $this->groupChatroomService->lastOperationWasReplay() ? 200 : 201,
+        );
     }
 
     /** DELETE /api/v2/group-chatrooms/{id} */
@@ -1143,14 +1152,19 @@ class IdeationChallengesController extends BaseApiController
         $this->rateLimit('chatroom_message', 30, 60);
 
         $body = $this->input('body', '');
-        $messageId = $this->groupChatroomService->postMessage((int) $id, $userId, $body);
+        $idempotencyKey = request()->header('Idempotency-Key') ?? $this->input('idempotency_key');
+        $messageId = $this->groupChatroomService->postMessage((int) $id, $userId, $body, $idempotencyKey);
 
         if ($messageId === null) {
             $errors = $this->groupChatroomService->getErrors();
             return $this->respondWithErrors($errors, $this->resolveErrorStatus($errors));
         }
 
-        return $this->respondWithData(['id' => $messageId], null, 201);
+        return $this->respondWithData(
+            ['id' => $messageId, '_idempotent_replay' => $this->groupChatroomService->lastOperationWasReplay()],
+            null,
+            $this->groupChatroomService->lastOperationWasReplay() ? 200 : 201,
+        );
     }
 
     /** DELETE /api/v2/group-chatroom-messages/{id} */

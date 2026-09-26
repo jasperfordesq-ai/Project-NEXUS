@@ -64,7 +64,6 @@ export function getNotificationLink(data: unknown): string | null {
   if (typeof record.type === 'string' && record.type.toLowerCase().includes('story')) {
     return '/notifications';
   }
-  if (record.type === 'group_chatroom_message') return '/notifications';
   for (const key of ['link', 'url', 'cta_url'] as const) {
     const value = record[key];
     if (typeof value !== 'string' || value.trim() === '') continue;
