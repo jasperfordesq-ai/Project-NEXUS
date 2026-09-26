@@ -1,7 +1,7 @@
 {
   "page_title": "Notifiche",
   "title": "Notifiche",
-  "subtitle": "Rimanga aggiornato sulle Sue attività",
+  "subtitle": "Resta aggiornato sulle tue attività",
   "unread_badge": "{{count}} nuove",
   "caught_up_badge": "Tutto letto",
   "mark_all_read": "Segna tutte come lette",
@@ -12,7 +12,7 @@
   "empty_title": "Nessuna notifica",
   "empty_desc": "Le nuove notifiche appariranno qui",
   "empty_caught_up": "Tutto letto!",
-  "empty_caught_up_desc": "Ha letto tutte le Sue notifiche",
+  "empty_caught_up_desc": "Hai letto tutte le tue notifiche",
   "mark_read_aria": "Segna come letta",
   "mark_group_read_aria": "Segna gruppo come letto",
   "delete_aria": "Elimina notifica",
@@ -48,7 +48,7 @@
     "default": "Notifica"
   },
   "load_more": "Carica di più",
-  "undo": "Undo",
+  "undo": "Annulla",
   "toast": {
     "mark_read_failed": "Impossibile segnare la notifica come letta",
     "all_read": "Tutte le notifiche segnate come lette",

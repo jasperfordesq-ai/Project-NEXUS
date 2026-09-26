@@ -610,7 +610,7 @@
     "cta_dashboard": "Vai alla dashboard",
     "cta_feed": "Vai al feed",
     "cta_get_started": "Inizia gratuitamente",
-    "cta_learn_more": "Scopra di più",
+    "cta_learn_more": "Scopri di più",
     "features": {
       "0": {
         "title": "Crediti di tempo",
@@ -654,14 +654,14 @@
     },
     "how_it_works": {
       "title": "Come funziona",
-      "subtitle": "Inizi in quattro semplici passaggi",
+      "subtitle": "Inizia in quattro semplici passaggi",
       "steps": {
         "0": {
           "title": "Si registri gratuitamente",
           "description": "Crei il Suo profilo in pochi minuti e elenchi le competenze che può offrire."
         },
         "1": {
-          "title": "Esplori e si connetta",
+          "title": "Esplora e connettiti",
           "description": "Trovi i servizi di cui ha bisogno e si connetta con i membri locali della comunità."
         },
         "2": {
@@ -695,7 +695,7 @@
     "cta_section": {
       "title": "Pronto per iniziare?",
       "description": "Unisciti a una comunità in crescita che già scambia competenze e crea connessioni significative.",
-      "button": "Crei il Suo account gratuito"
+      "button": "Crea il tuo account gratuito"
     }
   },
   "about": {
@@ -708,11 +708,11 @@
       "subtitle": "Iniziare è semplice. Quattro passaggi per iscriversi e iniziare a scambiare competenze nella Sua comunità.",
       "steps": {
         "0": {
-          "title": "Crei il Suo profilo",
+          "title": "Crea il tuo profilo",
           "description": "Si iscriva gratuitamente e elenchi le competenze che può offrire alla Sua comunità."
         },
         "1": {
-          "title": "Trovi ciò che Le serve",
+          "title": "Trova ciò che ti serve",
           "description": "Esplori gli annunci per scoprire i servizi offerti dai membri vicino a Lei."
         },
         "2": {
@@ -783,10 +783,10 @@
     "success_title": "Messaggio inviato!",
     "success_message": "Le risponderemo il prima possibile.",
     "back_to_help": "Torna al centro assistenza",
-    "error_fallback": "Invio del messaggio non riuscito. La preghiamo di riprovare.",
+    "error_fallback": "Invio del messaggio non riuscito. Riprova.",
     "form": {
       "name_label": "Nome",
-      "name_placeholder": "Il Suo nome",
+      "name_placeholder": "Il tuo nome",
       "email_label": "E-mail",
       "email_placeholder": "you@example.com",
       "subject_label": "Oggetto",
@@ -808,7 +808,7 @@
       },
       "submit": "Invia messaggio",
       "login_prompt_before": "Ha già un account?",
-      "login_link": "Acceda",
+      "login_link": "Accedi",
       "login_prompt_after": "per un supporto più rapido."
     },
     "turnstile_error": "Impossibile caricare il controllo di sicurezza. Aggiorna la pagina e riprova."
@@ -824,7 +824,7 @@
     "no_results": "Nessuna domanda corrispondente trovata. Provi con un termine di ricerca diverso.",
     "cta_title": "Ha ancora domande?",
     "cta_description": "Il nostro team di supporto è qui per aiutarLa.",
-    "cta_button": "Contatti il supporto",
+    "cta_button": "Contatta il supporto",
     "categories": {
       "getting_started": {
         "title": "Per iniziare",
@@ -841,16 +841,16 @@
         "q3": {
           "question": "Come si inizia?",
           "answer_intro": "Ecco come iniziare:",
-          "step1_bold": "Completi il Suo profilo",
-          "step1_text": "Aggiunga una foto, una biografia e le Sue competenze",
-          "step2_bold": "Esplori il marketplace",
+          "step1_bold": "Completa il tuo profilo",
+          "step1_text": "Aggiungi una foto, una biografia e le tue competenze",
+          "step2_bold": "Esplora il marketplace",
           "step2_text": "Veda quali servizi sono offerti e richiesti",
           "step3_bold": "Pubblichi un'offerta",
-          "step3_text": "Condivida in cosa può aiutare gli altri",
+          "step3_text": "Condividi in cosa puoi aiutare gli altri",
           "step4_bold": "Faccia una richiesta",
-          "step4_text": "Chieda qualcosa di cui ha bisogno",
+          "step4_text": "Chiedi qualcosa di cui hai bisogno",
           "step5_bold": "Si connetta con i membri",
-          "step5_text": "Costruisca la Sua rete"
+          "step5_text": "Costruisci la tua rete"
         },
         "q4": {
           "question": "Quali competenze posso offrire?",
@@ -889,7 +889,7 @@
           "answer_intro": "Sì! Può:",
           "option1": "Trasferire crediti a qualsiasi altro membro",
           "option2": "Donare al fondo comunitario (aiuta i membri che hanno bisogno di supporto aggiuntivo)",
-          "answer_link_before": "Vada al Suo ",
+          "answer_link_before": "Vai al tuo ",
           "wallet_link": "Portafoglio",
           "answer_link_after": " per inviare crediti."
         },
@@ -923,7 +923,7 @@
           "tip1": "Si incontri in luoghi pubblici per i primi scambi",
           "tip2": "Controlli il profilo e le recensioni del membro",
           "tip3": "Dica a qualcuno dove sta andando",
-          "tip4": "Si fidi del Suo istinto — se qualcosa non va, se ne vada",
+          "tip4": "Fidati del tuo istinto — se qualcosa non va, vattene",
           "tip5": "Inizi con scambi più piccoli e a basso rischio",
           "answer_outro": "Segnali qualsiasi comportamento preoccupante al nostro team di supporto."
         },
@@ -931,7 +931,7 @@
           "question": "Cosa succede se qualcuno non si presenta o non completa il servizio?",
           "answer_intro": "La comunicazione è fondamentale. Se c'è un problema:",
           "step1": "Invii un messaggio al membro per discutere l'accaduto",
-          "step2": "Cerchi di trovare una soluzione insieme",
+          "step2": "Cerca di trovare una soluzione insieme",
           "step3": "Se non riesce a risolvere, contatti il supporto",
           "answer_outro": "Le assenze ripetute o il cattivo comportamento possono comportare restrizioni dell'account."
         },
@@ -976,7 +976,7 @@
         "title": "Account e privacy",
         "q1": {
           "question": "Come si cambia la password?",
-          "answer_before_link": "Vada in ",
+          "answer_before_link": "Vai in ",
           "settings_link": "Impostazioni",
           "answer_after_link": " > Sicurezza per cambiare la Sua password. Dovrà prima inserire la Sua password attuale. Se ha dimenticato la password, utilizzi il link \"Password dimenticata\" nella pagina di accesso."
         },
@@ -985,25 +985,25 @@
           "answer_intro": "Per impostazione predefinita, il Suo profilo è visibile agli altri membri della comunità. Può controllare:",
           "item1": "Quali informazioni di contatto vengono visualizzate",
           "item2": "Se appare nelle classifiche",
-          "item3": "La visibilità della Sua posizione generale",
-          "answer_link_before": "Regoli queste impostazioni nelle Sue ",
+          "item3": "La visibilità della tua posizione generale",
+          "answer_link_before": "Regola queste impostazioni nelle tue ",
           "settings_link": "Impostazioni",
           "answer_link_after": "."
         },
         "q3": {
           "question": "Come si elimina l'account?",
           "answer_intro": "Se desidera lasciare la comunità:",
-          "step1": "Vada in Impostazioni > Account",
-          "step2": "Clicchi su \"Elimina account\"",
-          "step3": "Confermi la Sua decisione",
+          "step1": "Vai in Impostazioni > Account",
+          "step2": "Clicca su \"Elimina account\"",
+          "step3": "Conferma la tua decisione",
           "answer_outro": "Nota: La cronologia delle transazioni verrà conservata per la documentazione, ma le Sue informazioni personali verranno rimosse."
         },
         "q4": {
           "question": "Come vengono protetti i miei dati?",
           "answer_intro": "Prendiamo la privacy seriamente:",
-          "item1": "I Suoi dati sono crittografati e archiviati in modo sicuro",
-          "item2": "Non vendiamo mai le Sue informazioni",
-          "item3": "Può richiedere una copia dei Suoi dati in qualsiasi momento",
+          "item1": "I tuoi dati sono crittografati e archiviati in modo sicuro",
+          "item2": "Non vendiamo mai le tue informazioni",
+          "item3": "Puoi richiedere una copia dei tuoi dati in qualsiasi momento",
           "item4": "Rispettiamo il GDPR e le normative sulla protezione dei dati"
         }
       }
@@ -1013,7 +1013,7 @@
     "title": "Torneremo presto!",
     "description": "è attualmente in manutenzione programmata per migliorare la Sua esperienza.",
     "apology": "Ci scusiamo per l'inconveniente. La preghiamo di tornare tra poco.",
-    "thanks": "Grazie per la Sua pazienza!",
+    "thanks": "Grazie per la tua pazienza!",
     "admin_login": "Accesso amministratore",
     "deploy_notice": "Questa piattaforma è ancora in fase di sviluppo attivo, quindi potrebbero esserci fasi di distribuzione rapida. Durante questi periodi, il server entra automaticamente in modalità manutenzione. Questo normalmente dura solo circa cinque minuti mentre vengono applicati i nuovi aggiornamenti."
   },

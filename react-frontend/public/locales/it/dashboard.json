@@ -12,7 +12,7 @@
     "loading": "Caricamento"
   },
   "onboarding": {
-    "banner_title": "Completi la configurazione del Suo profilo",
+    "banner_title": "Completa la configurazione del tuo profilo",
     "banner_subtitle": "Ci dica i Suoi interessi e le Sue competenze per ottenere corrispondenze personalizzate",
     "get_started": "Inizia"
   },
@@ -37,10 +37,10 @@
     "recent_listings": "Annunci Recenti",
     "recent_activity": "Attività Recente",
     "quick_actions": "Azioni Rapide",
-    "suggested_for_you": "Suggeriti per Lei",
+    "suggested_for_you": "Suggeriti per te",
     "my_groups": "I Miei Gruppi",
     "upcoming_events": "Prossimi Eventi",
-    "your_progress": "Il Suo Progresso",
+    "your_progress": "I tuoi progressi",
     "pending_reviews": "Recensioni in Attesa",
     "endorsements": "Referenze",
     "exchanges_attention": "Richiede la tua attenzione"
@@ -67,7 +67,7 @@
     "user_fallback": "Utente",
     "empty": "Nessun annuncio recente",
     "empty_description": "Crea una richiesta o un'offerta per iniziare a trovare corrispondenze con persone vicine.",
-    "create_first": "Crei il Suo primo annuncio"
+    "create_first": "Crea il tuo primo annuncio"
   },
   "activity": {
     "action_listing": "ha condiviso un annuncio",
@@ -77,7 +77,7 @@
     "action_post": "ha condiviso un post",
     "empty": "Nessuna attività recente",
     "empty_description": "Gli aggiornamenti della community appariranno qui quando le persone inizieranno a pubblicare.",
-    "check_feed": "Consulti il Feed"
+    "check_feed": "Consulta il Feed"
   },
   "suggestions": {
     "empty": "Ancora nessun suggerimento",

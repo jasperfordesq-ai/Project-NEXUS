@@ -386,7 +386,7 @@
       "title": "Elenco dei fornitori di servizi sanitari",
       "subtitle": "Gestire servizi di assistenza domiciliare, centri diurni, associazioni e gruppi di volontariato",
       "verified": "Verificato",
-      "yes": "SÌ",
+      "yes": "Sì",
       "no": "NO",
       "empty": "Ancora nessun fornitore di servizi sanitari: aggiungine uno per iniziare.",
       "confirm_delete": "Eliminare \"{{name}}\"? Verrà nascosto dalla directory.",
@@ -512,7 +512,7 @@
         "seller_label": "Venditore (membro)",
         "seller_placeholder": "Cerca per nome o email",
         "no_matching_members": "Nessun membro corrispondente",
-        "clear": "Chiaro",
+        "clear": "Cancella",
         "accept_time_credits": "Accetta crediti di tempo",
         "accept_time_credits_hint": "Se abilitate, le inserzioni di questo venditore mostrano un'opzione di credito temporale per i membri al momento del pagamento.",
         "exchange_rate": "Tasso di cambio (CHF all'ora)",
@@ -719,7 +719,7 @@
         "option_percentage_aria": "{{option}}: {{percentage}}"
       },
       "common": {
-        "yes": "SÌ",
+        "yes": "Sì",
         "no": "NO",
         "date_unknown": "Non impostato"
       },
@@ -832,7 +832,7 @@
         "user": "Utente n.{{id}}"
       },
       "common": {
-        "yes": "SÌ",
+        "yes": "Sì",
         "no": "NO",
         "date_unknown": "Non impostato"
       },
@@ -1017,7 +1017,7 @@
         "triaged": "Triage",
         "investigating": "Indagando",
         "resolved": "Risolto",
-        "dismissed": "Licenziato"
+        "dismissed": "Respinto"
       },
       "severity_legend": {
         "title": "Livelli di gravità",
@@ -1178,7 +1178,7 @@
         "member": "Membro",
         "member_placeholder": "Cerca per nome o email",
         "no_matching_members": "Nessun membro corrispondente",
-        "clear": "Chiaro",
+        "clear": "Cancella",
         "tabs_aria": "Azioni di saldo punti regionali",
         "issue_tab": "Punti problematici",
         "points_to_issue": "Punti al problema",

@@ -1,7 +1,7 @@
 {
   "page_title": "Sfide di Ideazione",
   "title": "Sfide di Ideazione",
-  "subtitle": "Condividi idee, vota e contribuisci a plasmare la tua comunita",
+  "subtitle": "Condividi idee, vota e contribuisci a plasmare la tua comunità",
   "page_description": "Esplora le sfide della comunità, invia idee e vota le soluzioni. Aiuta a plasmare il futuro della tua comunità.",
   "loading": "Caricamento...",
   "tabs_filter_aria": "Filtra le sfide",
@@ -67,8 +67,8 @@
     "empty_description": "Sii il primo a condividere la tua idea per questa sfida!",
     "submit": "Invia Idea",
     "submit_title": "Invia la Tua Idea",
-    "sort_votes": "Piu Votate",
-    "sort_newest": "Piu Recenti",
+    "sort_votes": "Più Votate",
+    "sort_newest": "Più Recenti",
     "vote": "Vota",
     "unvote": "Rimuovi Voto",
     "votes": "{{count}} voti",
@@ -80,7 +80,7 @@
     "your_ideas": "Le tue idee: {{count}}/{{max}}",
     "edit": "Modifica Idea",
     "delete": "Elimina Idea",
-    "delete_confirm": "Sei sicuro di voler eliminare questa idea? Questa azione non puo essere annullata.",
+    "delete_confirm": "Sei sicuro di voler eliminare questa idea? Questa azione non può essere annullata.",
     "load_error": "Impossibile caricare le idee",
     "save_draft": "Salva Bozza",
     "publish_draft": "Pubblica Idea",
@@ -124,11 +124,11 @@
     "title_placeholder": "Inserisci un titolo chiaro e descrittivo",
     "description_label": "Descrizione",
     "description_placeholder": "Descrivi la sfida o la tua idea in dettaglio",
-    "description_helper": "Descrivi il problema chiaramente, includendo chi e coinvolto, perche e importante e come appare una soluzione di successo",
+    "description_helper": "Descrivi il problema chiaramente, includendo chi è coinvolto, perché è importante e come appare una soluzione di successo",
     "category_label": "Categoria",
     "category_placeholder": "Seleziona una categoria",
     "category_free_label": "Categoria (testo libero)",
-    "category_free_placeholder": "es. Ambiente, Tecnologia, Comunita",
+    "category_free_placeholder": "es. Ambiente, Tecnologia, Comunità",
     "prize_label": "Descrizione del Premio",
     "prize_placeholder": "Descrivi cosa riceve il vincitore (opzionale)",
     "prize_helper": "Gli incentivi aumentano la partecipazione — considera crediti tempo, riconoscimento o supporto all'implementazione",
@@ -136,7 +136,7 @@
     "voting_deadline_label": "Scadenza Votazione",
     "max_ideas_label": "Max Idee per Utente",
     "max_ideas_placeholder": "Lascia vuoto per illimitato",
-    "max_ideas_helper": "Limitare le idee per persona incoraggia invii di qualita superiore",
+    "max_ideas_helper": "Limitare le idee per persona incoraggia invii di qualità superiore",
     "status_label": "Stato Iniziale",
     "evaluation_criteria_label": "Criteri di Valutazione",
     "evaluation_criteria_placeholder": "Aggiungi un criterio (premi Invio)",
@@ -154,7 +154,7 @@
   "create_page": {
     "page_title": "Crea Sfida",
     "title": "Crea Sfida di Ideazione",
-    "subtitle": "Pubblica un problema da risolvere per la tua comunita"
+    "subtitle": "Pubblica un problema da risolvere per la tua comunità"
   },
   "edit_page": {
     "page_title": "Modifica Sfida",
@@ -206,16 +206,16 @@
     "template_updated": "Modello aggiornato",
     "template_deleted": "Modello eliminato",
     "outcome_saved": "Risultato salvato",
-    "task_created": "Attivita creata",
-    "task_updated": "Attivita aggiornata",
-    "task_deleted": "Attivita eliminata",
+    "task_created": "Attività creata",
+    "task_updated": "Attività aggiornata",
+    "task_deleted": "Attività eliminata",
     "document_uploaded": "Documento caricato",
     "document_deleted": "Documento eliminato",
     "chatroom_created": "Canale creato",
     "chatroom_deleted": "Canale eliminato",
     "message_posted": "Messaggio pubblicato",
     "template_applied": "Modello applicato con successo",
-    "error_generic": "Qualcosa e andato storto. Riprova."
+    "error_generic": "Qualcosa è andato storto. Riprova."
   },
   "favorites": {
     "add": "Aggiungi ai preferiti",
@@ -252,7 +252,7 @@
     "tips": {
       "clear_problem": {
         "title": "🎯 Definisci un Problema Chiaro",
-        "description": "Indica il problema specifico che vuoi che la comunita affronti. Evita dichiarazioni vaghe o troppo ampie."
+        "description": "Indica il problema specifico che vuoi che la comunità affronti. Evita dichiarazioni vaghe o troppo ampie."
       },
       "scope": {
         "title": "📏 Imposta un Ambito Realistico",
@@ -260,7 +260,7 @@
       },
       "criteria": {
         "title": "⚖️ Spiega i Criteri di Valutazione",
-        "description": "Comunica ai partecipanti come verranno giudicate le idee — fattibilita, creativita, impatto o rapporto costo-efficacia."
+        "description": "Comunica ai partecipanti come verranno giudicate le idee — fattibilità, creatività, impatto o rapporto costo-efficacia."
       },
       "engagement": {
         "title": "💡 Incoraggia la Partecipazione",
@@ -270,7 +270,7 @@
     "examples_toggle": "Mostra esempi di sfide forti vs. deboli ▸",
     "example_good": {
       "label": "✅ Sfida forte:",
-      "text": "Come potremmo ridurre lo spreco alimentare nella nostra comunita del 25% nel prossimo anno? Cerchiamo idee pratiche e a basso costo che le imprese locali e i residenti possano implementare insieme."
+      "text": "Come potremmo ridurre lo spreco alimentare nella nostra comunità del 25% nel prossimo anno? Cerchiamo idee pratiche e a basso costo che le imprese locali e i residenti possano implementare insieme."
     },
     "example_weak": {
       "label": "❌ Sfida debole:",
@@ -304,17 +304,17 @@
   "convert_to_group": {
     "button": "Crea Team",
     "title": "Crea Team di Progetto dall'Idea",
-    "description": "Trasforma questa idea vincente in un team di progetto dove i membri possono collaborare, gestire attivita, condividere documenti e chattare.",
+    "description": "Trasforma questa idea vincente in un team di progetto dove i membri possono collaborare, gestire attività, condividere documenti e chattare.",
     "name_label": "Nome del Team",
     "description_label": "Descrizione del Team",
-    "visibility_label": "Visibilita",
+    "visibility_label": "Visibilità",
     "visibility_public": "Pubblico",
     "visibility_private": "Privato",
     "confirm": "Crea Team",
     "creating": "Creazione...",
     "success": "Team di progetto creato con successo! Reindirizzamento...",
     "error": "Impossibile creare il team",
-    "already_converted": "Questa idea e gia stata convertita in un team"
+    "already_converted": "Questa idea è già stata convertita in un team"
   },
   "campaigns": {
     "title": "Campagne",
@@ -366,12 +366,12 @@
     "edit": "Modifica risultati"
   },
   "tasks": {
-    "title": "Attivita",
+    "title": "Attività",
     "status_label": "Stato",
-    "priority_label": "Priorita",
-    "create": "Aggiungi Attivita",
-    "empty_title": "Nessuna Attivita Ancora",
-    "empty_description": "Crea attivita per organizzare il lavoro del tuo team.",
+    "priority_label": "Priorità",
+    "create": "Aggiungi Attività",
+    "empty_title": "Nessuna Attività Ancora",
+    "empty_description": "Crea attività per organizzare il lavoro del tuo team.",
     "status_todo": "Da Fare",
     "status_in_progress": "In Corso",
     "status_done": "Completata",
@@ -383,7 +383,7 @@
     "unassigned": "Non assegnata",
     "due_date": "Data di scadenza",
     "overdue": "In ritardo",
-    "stats": "Statistiche Attivita"
+    "stats": "Statistiche Attività"
   },
   "documents": {
     "title": "Documenti",
@@ -418,12 +418,12 @@
     "delete_confirm": "Eliminare questa categoria?"
   },
   "validation": {
-    "title_required": "Il titolo e obbligatorio",
-    "description_required": "La descrizione e obbligatoria",
-    "comment_required": "Il commento non puo essere vuoto",
-    "url_required": "L'URL e obbligatorio",
-    "name_required": "Il nome e obbligatorio",
-    "file_required": "Il file e obbligatorio"
+    "title_required": "Il titolo è obbligatorio",
+    "description_required": "La descrizione è obbligatoria",
+    "comment_required": "Il commento non può essere vuoto",
+    "url_required": "L'URL è obbligatorio",
+    "name_required": "Il nome è obbligatorio",
+    "file_required": "Il file è obbligatorio"
   },
   "page_meta": {
     "outcomes": {

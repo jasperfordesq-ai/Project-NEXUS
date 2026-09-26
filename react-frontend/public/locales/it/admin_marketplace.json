@@ -20,7 +20,7 @@
     "active": "Attivo",
     "all": "Tutto",
     "approved": "Approvato",
-    "clear": "Chiaro",
+    "clear": "Cancella",
     "clear_filters": "Cancella filtri",
     "clear_selection": "Cancella selezione",
     "close": "Chiudi",
@@ -101,7 +101,7 @@
     "col_total_sales": "Vendite",
     "col_sales": "Saldi",
     "col_rating": "Valutazione",
-    "col_type": "Digitare",
+    "col_type": "Tipo",
     "coupons": {
       "page_title": "Buoni commerciante",
       "description": "Supervisione dei buoni sconto emessi dai commercianti per tutti i venditori.",

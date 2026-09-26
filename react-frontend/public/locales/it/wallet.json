@@ -76,7 +76,7 @@
   "error": {
     "load_balance": "Impossibile caricare il saldo del portafoglio",
     "load_wallet": "Impossibile caricare i dati del portafoglio. La preghiamo di riprovare.",
-    "session_expired": "La Sua sessione è scaduta. Effettui nuovamente l'accesso.",
+    "session_expired": "La tua sessione è scaduta. Accedi di nuovo.",
     "load_community_fund": "Impossibile caricare il fondo comunitario",
     "transfer_failed": "Trasferimento non riuscito. Riprova.",
     "unexpected": "Si è verificato un errore imprevisto. Riprova."

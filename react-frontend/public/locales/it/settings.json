@@ -75,7 +75,7 @@
   "privacy_load_failed": "Impossibile caricare le impostazioni sulla privacy",
   "privacy_loading": "Caricamento delle impostazioni sulla privacy...",
   "language_preference": "Preferenza Lingua",
-  "select_language": "Scelga la lingua preferita per l'interfaccia",
+  "select_language": "Scegli la lingua preferita per l'interfaccia",
   "theme": {
     "title": "Tema",
     "light": "Chiaro",
@@ -255,7 +255,7 @@
     "new_reviews": "Nuove Recensioni",
     "gamification_digest": "Riepilogo Gamification",
     "achievement_milestones": "Traguardi",
-    "weekly_digest": "Riepilogo Settimanale",
+    "weekly_digest": "Riepilogo mensile",
     "payment_notifications": "Notifiche Pagamento",
     "transfer_notifications": "Notifiche Trasferimento",
     "membership_updates": "Aggiornamenti Iscrizione",
@@ -318,7 +318,7 @@
     "availability": "Disponibilità",
     "linked": "Collegati",
     "connected_accounts": "Collegato",
-    "safeguarding": "Salvaguardia",
+    "safeguarding": "Tutela e supporto",
     "translation": "Traduzione",
     "linked-accounts": "Account collegati",
     "connected-accounts": "Conti collegati"
@@ -451,7 +451,7 @@
     "new_reviews": "Nuove recensioni ricevute sul tuo profilo o annunci",
     "gamification_digest": "Riepilogo periodico della tua attività e progressi di gamification",
     "achievement_milestones": "Sblocco badge, avanzamenti di livello e notifiche traguardi",
-    "weekly_digest": "Un riepilogo settimanale dell'attività della comunità",
+    "weekly_digest": "Un riepilogo mensile dell'attività della comunità",
     "payment_notifications": "Notifiche per attività di pagamento dell'organizzazione",
     "transfer_notifications": "Notifiche per trasferimenti di crediti",
     "membership_updates": "Iscrizioni, uscite e modifiche di appartenenza",
@@ -853,7 +853,7 @@
     "title": "Impostazioni"
   },
   "identity_auth": {
-    "please_login": "Acceda per verificare la sua identità.",
+    "please_login": "Accedi per verificare la tua identità.",
     "go_to_login": "Vai al Login"
   },
   "unsaved_changes": {

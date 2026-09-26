@@ -1,6 +1,6 @@
 {
   "title": "Sondaggi",
-  "subtitle": "Vota e scopri cosa pensa la comunita",
+  "subtitle": "Vota e scopri cosa pensa la comunità",
   "page_title": "Sondaggi",
   "create_poll": "Crea Sondaggio",
   "question": "Domanda",
@@ -37,7 +37,7 @@
   },
   "empty": {
     "title": "Nessun sondaggio ancora",
-    "description": "Sii il primo a creare un sondaggio e a raccogliere l'opinione della comunita.",
+    "description": "Sii il primo a creare un sondaggio e a raccogliere l'opinione della comunità.",
     "description_closed": "Nessun sondaggio chiuso da mostrare.",
     "description_mine": "Non hai ancora creato nessun sondaggio."
   },
@@ -47,7 +47,7 @@
   "delete_poll": "Elimina Sondaggio",
   "confirm_delete": {
     "title": "Elimina Sondaggio",
-    "message": "Sei sicuro di voler eliminare questo sondaggio? Questa azione non puo essere annullata.",
+    "message": "Sei sicuro di voler eliminare questo sondaggio? Questa azione non può essere annullata.",
     "confirm": "Elimina",
     "cancel": "Annulla"
   },

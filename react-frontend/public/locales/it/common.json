@@ -2695,7 +2695,7 @@
     "action_edit": "Modifica",
     "action_approve": "Approvare",
     "action_suspend": "Sospendere",
-    "action_ban": "Divieto",
+    "action_ban": "Escludi",
     "action_reactivate": "Riattivare",
     "action_reset_2fa": "Reimposta 2FA",
     "action_permissions": "Autorizzazioni",
@@ -2882,7 +2882,7 @@
     "module_name_achievements": "Risultati"
   },
   "menu_builder": {
-    "group_core": "Nucleo",
+    "group_core": "Base",
     "group_community": "Comunità",
     "group_features": "Caratteristiche",
     "group_gamification": "Ludicizzazione",

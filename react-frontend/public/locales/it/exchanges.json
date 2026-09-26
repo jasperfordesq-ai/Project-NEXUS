@@ -1,7 +1,7 @@
 {
   "page_title": "Scambi",
   "title": "I miei scambi",
-  "subtitle": "Segua le Sue richieste di scambio servizi e le conferme",
+  "subtitle": "Segui le tue richieste di scambio servizi e le conferme",
   "browse_listings": "Sfoglia annunci",
   "load_more": "Carica altri",
   "try_again": "Riprova",
@@ -25,7 +25,7 @@
     "filter_button_aria": "Filtra per stato della piattaforma: {{status}}"
   },
   "error": {
-    "load_failed": "Impossibile caricare gli scambi. La preghiamo di riprovare.",
+    "load_failed": "Impossibile caricare gli scambi. Riprova.",
     "unable_to_load": "Impossibile caricare gli scambi"
   },
   "empty": {
@@ -37,8 +37,8 @@
     "aria_label": "Scambio: {{title}} – {{status}}",
     "with_party": "Con {{name}}",
     "from_party": "Da {{name}}",
-    "you_requested": "Lei ha richiesto",
-    "you_providing": "Lei sta fornendo",
+    "you_requested": "Hai richiesto",
+    "you_providing": "Stai fornendo",
     "confirm_hours": "Conferma ore",
     "waiting_for_other": "In attesa dell'altra parte",
     "respond": "Rispondi"
@@ -57,7 +57,7 @@
     "start_failed": "Impossibile avviare lo scambio",
     "completed": "Scambio contrassegnato come completato. La preghiamo di confermare le ore.",
     "complete_failed": "Impossibile completare lo scambio",
-    "invalid_hours": "La preghiamo di inserire ore valide",
+    "invalid_hours": "Inserisci ore valide",
     "max_hours": "Massimo {{max}} ore per scambio",
     "hours_confirmed": "Ore confermate!",
     "confirm_failed": "Impossibile confermare le ore",
@@ -77,7 +77,7 @@
     "service": "Servizio",
     "requester": "Richiedente",
     "provider": "Fornitore",
-    "you": "Lei",
+    "you": "Tu",
     "other_party": "Altra parte",
     "confirmed_hours": "Confermato {{hours}}h",
     "message_party": "Invia messaggio a {{name}}",
@@ -118,13 +118,13 @@
   "modal": {
     "decline_title": "Rifiuta richiesta di scambio",
     "decline_reason_label": "Motivazione (facoltativo)",
-    "decline_reason_placeholder": "Comunichi il motivo del Suo rifiuto…",
+    "decline_reason_placeholder": "Spiega il motivo del tuo rifiuto…",
     "decline_confirm": "Rifiuta richiesta",
     "cancel": "Annulla",
     "confirm_title": "Conferma ore lavorate",
     "confirm_description": "Quante ore sono state effettivamente lavorate per questo scambio?",
     "hours_label": "Ore",
-    "hours_placeholder": "Inserisca le ore",
+    "hours_placeholder": "Inserisci le ore",
     "hours_unit": "ore",
     "originally_proposed": "Inizialmente proposte: {{hours}} ore (max: {{max}})",
     "cancel_title": "Annullare lo scambio?",
@@ -141,7 +141,7 @@
     "load_failed": "Impossibile caricare l'annuncio",
     "cannot_request": "Impossibile richiedere uno scambio",
     "not_available": "Questo annuncio non è disponibile per le richieste di scambio.",
-    "own_listing_title": "Questo è il Suo annuncio",
+    "own_listing_title": "Questo è il tuo annuncio",
     "own_listing_description": "Non è possibile richiedere uno scambio per il proprio annuncio.",
     "view_listing": "Vedi annuncio",
     "breadcrumb_listings": "Annunci",
@@ -156,7 +156,7 @@
     "hours_unit": "ore",
     "message_label": "Messaggio (facoltativo)",
     "message_placeholder": "Aggiunga un messaggio al fornitore del servizio…",
-    "message_description": "Spieghi le Sue esigenze o ponga le Sue domande",
+    "message_description": "Spiega le tue esigenze o fai le tue domande",
     "broker_approval_title": "Approvazione del coordinatore necessaria",
     "broker_approval_description": "Questo scambio dovrà essere approvato da un coordinatore della comunità prima di poter procedere.",
     "cancel": "Annulla",
@@ -180,5 +180,39 @@
     }
   },
   "hours_count_one": "{{count}} ora",
-  "hours_count_many": "{{count}} ora"
+  "hours_count_many": "{{count}} ora",
+  "status_config": {
+    "pending_provider": {
+      "label": "In attesa del fornitore",
+      "description": "In attesa che il fornitore del servizio accetti o rifiuti questa richiesta."
+    },
+    "pending_broker": {
+      "label": "In attesa del broker",
+      "description": "Questo scambio richiede l'approvazione di un broker prima di poter procedere."
+    },
+    "accepted": {
+      "label": "Accettato",
+      "description": "Lo scambio è stato accettato. Il fornitore può iniziare quando è pronto."
+    },
+    "in_progress": {
+      "label": "In corso",
+      "description": "Il servizio è attualmente in corso."
+    },
+    "pending_confirmation": {
+      "label": "Conferma le ore",
+      "description": "Entrambe le parti devono confermare le ore svolte per completare lo scambio."
+    },
+    "completed": {
+      "label": "Completato",
+      "description": "Lo scambio è stato completato e i crediti sono stati trasferiti."
+    },
+    "disputed": {
+      "label": "Contestato",
+      "description": "Le ore sono contestate. Un broker esaminerà la situazione."
+    },
+    "cancelled": {
+      "label": "Annullato",
+      "description": "Questo scambio è stato annullato."
+    }
+  }
 }

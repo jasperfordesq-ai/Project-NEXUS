@@ -20,7 +20,7 @@
     "active": "Attivo",
     "all": "Tutto",
     "approved": "Approvato",
-    "clear": "Chiaro",
+    "clear": "Cancella",
     "clear_filters": "Cancella filtri",
     "clear_selection": "Cancella selezione",
     "close": "Chiudi",
@@ -137,8 +137,8 @@
     "failed_to_save_configuration": "Impossibile salvare la configurazione",
     "failed_to_update_settings": "Impossibile aggiornare le impostazioni",
     "flag_all_types": "Tutti i tipi",
-    "flag_at_risk": "Bandiera a rischio",
-    "flag_dormant": "Bandiera dormiente",
+    "flag_at_risk": "Segnala come a rischio",
+    "flag_dormant": "Segnala come inattivo",
     "flag_inactive": "Segnala inattivo",
     "feed_posts": "Feed post",
     "group_by_daily": "Raggruppa per quotidiano",
@@ -262,7 +262,7 @@
     "chart_category_distribution": "Distribuzione della categoria del grafico",
     "chart_hours_by_category": "Orari del grafico per categoria",
     "chart_monthly_hours_trend": "Andamento delle ore mensili del grafico",
-    "col_balance": "Equilibrio",
+    "col_balance": "Saldo",
     "col_total": "Totale",
     "failed_to_load_inactive_members": "Impossibile caricare i membri inattivi",
     "no_category_data": "Nessun dato di categoria trovato",
@@ -358,7 +358,7 @@
       "date_from": "Da",
       "date_to": "A",
       "apply": "Applicare le date",
-      "clear": "Chiaro"
+      "clear": "Cancella"
     },
     "readiness": {
       "municipal_value": "Valore comunale",

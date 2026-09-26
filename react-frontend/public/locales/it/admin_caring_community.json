@@ -20,7 +20,7 @@
     "active": "Attivo",
     "all": "Tutto",
     "approved": "Approvato",
-    "clear": "Chiaro",
+    "clear": "Cancella",
     "clear_filters": "Cancella filtri",
     "clear_selection": "Cancella selezione",
     "close": "Chiudi",
@@ -128,7 +128,7 @@
         "name": "Nome",
         "phone": "Telefono",
         "status": "Stato",
-        "type": "Digitare",
+        "type": "Tipo",
         "website": "Sito web"
       },
       "messages": {
@@ -161,7 +161,7 @@
         "aria": "Fornitori di cure",
         "name": "Nome",
         "status": "Stato",
-        "type": "Digitare",
+        "type": "Tipo",
         "verified": "Verificato"
       }
     },
@@ -259,7 +259,7 @@
       "settings": {
         "accept_time_credits": "Accetta crediti di tempo",
         "accept_time_credits_hint": "Consenti a questo commerciante di accettare crediti di tempo come pagamento per una parte di ciascun acquisto.",
-        "clear": "Chiaro",
+        "clear": "Cancella",
         "description": "Configura la tariffa per il commerciante e la politica di sconto massimo per il programma fedeltà.",
         "exchange_rate": "Tasso di cambio",
         "exchange_rate_description": "Quanta valuta vale una singola ora di credito presso il punto vendita del commerciante.",
@@ -428,7 +428,7 @@
         "approvals": "Approvazioni e fiducia",
         "sla": "Finestre SLA",
         "hours": "Gestione delle ore",
-        "safeguarding": "Salvaguardia",
+        "safeguarding": "Tutela",
         "social_value": "metodologia del valore sociale",
         "appendix": "Appendice sulla politica pilota"
       },
@@ -661,7 +661,7 @@
       "sent": "Inviato",
       "expires": "Scade",
       "push": "Spingi",
-      "dismissed": "Licenziato",
+      "dismissed": "Ignorato",
       "status": "Stato",
       "actions": "Azioni"
     },
@@ -798,7 +798,7 @@
       "availability_overlap": "La disponibilità si sovrappone",
       "shared_interests": "Interessi condivisi",
       "score": "Punteggio {{value}}%",
-      "dismiss": "Congedare",
+      "dismiss": "Ignora",
       "create": "Crea Tandem",
       "reason_join": "{{previous}}; {{next}}",
       "reasons": {
@@ -842,7 +842,7 @@
         "triaged": "Triage",
         "investigating": "Indagando",
         "resolved": "Risolto",
-        "dismissed": "Licenziato"
+        "dismissed": "Respinto"
       },
       "age_hours_one": "{{count}}h",
       "age_hours_other": "{{count}}h",
@@ -1177,7 +1177,7 @@
       "recipient": "Destinatario",
       "recipient_placeholder": "Cerca il destinatario",
       "no_members": "Nessun membro trovato",
-      "clear": "Chiaro",
+      "clear": "Cancella",
       "relationship_title": "Titolo della relazione",
       "frequency_label": "Frequenza",
       "expected_hours_per_visit": "Ore previste per visita",
@@ -2135,7 +2135,7 @@
       "resolution": "Risoluzione"
     },
     "answers": {
-      "yes": "SÌ",
+      "yes": "Sì",
       "no": "NO"
     },
     "footer": {

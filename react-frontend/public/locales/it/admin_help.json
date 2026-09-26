@@ -1198,7 +1198,7 @@
           "detail": "Nella sezione \"Catalogo riscatto\", aggiungi articoli per i quali i membri possono riscattare i punti (ad esempio \"Buono per panetteria locale - 50 punti\"). Ogni articolo necessita di un conteggio delle scorte o di un'attivazione illimitata."
         },
         {
-          "label": "Esaminare le richieste di riscatto",
+          "label": "Esamina le richieste di riscatto",
           "detail": "Le richieste di riscatto in sospeso vengono visualizzate in coda. Approvarli o rifiutarli ciascuno, indicando il motivo del rifiuto."
         },
         {

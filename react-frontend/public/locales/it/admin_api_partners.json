@@ -20,7 +20,7 @@
     "active": "Attivo",
     "all": "Tutto",
     "approved": "Approvato",
-    "clear": "Chiaro",
+    "clear": "Cancella",
     "clear_filters": "Cancella filtri",
     "clear_selection": "Cancella selezione",
     "close": "Chiudi",
@@ -114,7 +114,7 @@
       "milliseconds": "{{value}}ms",
       "no": "NO",
       "per_minute": "{{value}}/min",
-      "yes": "SÌ"
+      "yes": "Sì"
     },
     "confirm": {
       "regenerate_credentials": "Creare nuove chiavi di accesso per questo partner? Le vecchie chiavi smettono di funzionare immediatamente: dovrai condividere quelle nuove con il partner."

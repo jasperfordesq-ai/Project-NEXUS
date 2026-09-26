@@ -305,10 +305,10 @@
       "all_day_end_date_required": "Scegli l’ultimo giorno dell’evento di un giorno intero",
       "end_date_before_start": "La data di fine deve essere successiva alla data di inizio",
       "max_attendees_range": "Deve essere compreso tra 1 e 10.000",
-      "select_day": "La preghiamo di selezionare almeno un giorno della settimana",
+      "select_day": "Seleziona almeno un giorno della settimana",
       "occurrences_range": "Le occorrenze devono essere comprese tra 2 e {{max}}",
       "recurrence_unavailable": "Questa opzione di ricorrenza non è attualmente disponibile per questa comunità.",
-      "select_end_date": "La preghiamo di selezionare una data di fine per la serie"
+      "select_end_date": "Seleziona una data di fine per la serie"
     },
     "toast": {
       "image_type": "Seleziona un'immagine JPEG, PNG, WebP o GIF",
@@ -926,7 +926,7 @@
     "hosted_by": "Organizzato da {{name}}",
     "join_prompt": "I membri possono prenotare un posto, ospitare le proprie sessioni e condividere competenze.",
     "register_prompt": "Accedi per prenotare un posto a questo evento.",
-    "login_cta": "Registrazione",
+    "login_cta": "Accedi",
     "back_to_events": "Torna a tutti gli eventi",
     "not_found_title": "Evento non disponibile",
     "not_found_body": "Questo evento potrebbe essere terminato, essere stato annullato o essere visibile solo ai membri.",

@@ -55,7 +55,7 @@
     "active_button": "Esplora la tua comunità"
   },
   "verification": {
-    "subject": "Verifichi il Suo indirizzo email",
+    "subject": "Verifica il tuo indirizzo email",
     "greeting": "Gentile {{name}},",
     "body": "Verifichi il Suo indirizzo email cliccando sul pulsante in basso.",
     "cta": "Verifica Email",
@@ -220,7 +220,7 @@
     "transaction_confirmed_body": "Il tuo trasferimento di crediti tempo inter-comunità è stato elaborato con successo.",
     "view_wallet": "Vedi il tuo portafoglio",
     "digest_subject": "Weekly Federation Digest — {{community}}",
-    "digest_title": "Federation Weekly Digest",
+    "digest_title": "Riepilogo mensile della federazione",
     "digest_preview": "Your weekly federation activity summary for {{community}}",
     "digest_body": "Here's your cross-community activity summary for the past week.",
     "digest_quiet": "It was a quiet week — no cross-community activity to report.",
@@ -247,7 +247,7 @@
     "subject": "{{heading}} - {{tenant}}"
   },
   "group_digest": {
-    "subject": "Weekly Digest: {{group}}",
+    "subject": "Riepilogo mensile: {{group}}",
     "title": "Group Weekly Summary",
     "preview": "This week in \"{{group}}\" on {{community}}",
     "intro": "Here's your weekly summary for <strong>&ldquo;{{group}}&rdquo;</strong> on <strong>{{community}}</strong>.",
@@ -288,9 +288,9 @@
     "manage_notifications": "Gestisci notifiche"
   },
   "weekly_digest": {
-    "title": "Community Pulse - Weekly Digest",
+    "title": "Community Pulse - Riepilogo mensile",
     "heading": "Polso della comunità",
-    "subheading": "Your Weekly Digest",
+    "subheading": "Il tuo riepilogo mensile",
     "preview_text": "Your weekly community highlights - new offers, requests, and upcoming events",
     "greeting": "Ciao {{name}},",
     "intro": "Here's what's happening in your community this week.",
