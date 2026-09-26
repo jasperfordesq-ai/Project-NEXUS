@@ -167,6 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- When a community reviews job ads before they appear, a job saved as a draft and then published now goes to review instead of straight onto the public jobs list. Previously "save as draft, then publish" skipped the review step. Jobs that were already approved can still be reopened without a second review, and admins can publish directly (F-211).
+
 - Only the person who sent a message can now delete it for everyone. Either participant could previously choose "Delete for everyone" on the other person's message, which replaced it with "[Message deleted]" for both people, so a member could erase what someone else had written to them. The other person can still remove a message from their own view, and the website no longer offers the option on other people's messages (F-210).
 
 - Browser sign-in now keeps the 15-minute access credential in memory and the rotating refresh credential in a secure, host-only HttpOnly cookie. Existing readable browser token records are removed on startup, and the native app's token response remains available. Same-origin API routing, session continuity checks, and recoverable retry screens across protected panels protect custom communities and account switches. Browser gates now use distinct cookie sessions, test Safari's engine over HTTPS, and isolate synthetic MFA and accessibility runs under the existing rate limits. The mobile API route inventory is checked against the running Laravel build (F-149 / CodeQL #1778).

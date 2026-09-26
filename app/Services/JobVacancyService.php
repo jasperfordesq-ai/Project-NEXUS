@@ -1110,6 +1110,22 @@ class JobVacancyService
             return false;
         }
 
+        // F-211: under moderation, a job may only become publicly open once it has
+        // been approved. A draft is stored with no moderation status, so without
+        // this "save as draft, then publish" skipped review entirely. Admins are
+        // the moderators and may publish directly.
+        if (
+            array_key_exists('status', $updates)
+            && $updates['status'] === 'open'
+            && $vacancy->status !== 'open'
+            && $vacancy->moderation_status !== 'approved'
+            && !$this->isAdminUser($userId)
+            && JobModerationService::isModerationEnabled(TenantContext::getId())
+        ) {
+            $updates['status'] = 'draft';
+            $updates['moderation_status'] = 'pending_review';
+        }
+
         // EU Pay Transparency Directive (June 2026) compliance — salary range required unless negotiable
         // Only validate when salary fields or type are being touched in this update
         $salaryFieldsTouched = array_key_exists('salary_min', $updates) || array_key_exists('salary_max', $updates)
