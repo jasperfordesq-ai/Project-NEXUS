@@ -127,6 +127,80 @@ class BrowserRefreshCookieTest extends TestCase
         }
     }
 
+    /**
+     * Run $fn with the application environment temporarily set to $env.
+     * The suite always boots as "testing" (tests/bootstrap.php), which is on
+     * every loopback allow-list, so the environment has to be switched to
+     * exercise the gate at all.
+     */
+    private function inEnvironment(string $env, callable $fn): mixed
+    {
+        $previous = $this->app['env'];
+        $this->app['env'] = $env;
+        try {
+            return $fn();
+        } finally {
+            $this->app['env'] = $previous;
+        }
+    }
+
+    private function loopbackLogin(string $origin, string $host): \Symfony\Component\HttpFoundation\Response
+    {
+        $request = Request::create("http://{$host}/api/auth/login", 'POST', [], [], [], [
+            'HTTP_HOST' => $host,
+            'HTTP_ORIGIN' => $origin,
+        ]);
+
+        // A refused login (no credential issued) keeps this about the origin
+        // gate alone — the cookie-issuing path is covered above.
+        return (new BrowserRefreshCookie())->handle(
+            $request,
+            fn () => response()->json(['success' => false], 401)
+        );
+    }
+
+    /**
+     * E-036 / F-209: the documented local stack runs APP_ENV=development.
+     * The plain-HTTP loopback allowance listed only local/testing, so every
+     * browser sign-in on a developer's machine was refused with 403
+     * AUTH_BROWSER_ORIGIN_INVALID before the password was checked.
+     */
+    public function test_development_environment_allows_plain_http_loopback_sign_in(): void
+    {
+        foreach ([
+            ['http://localhost:5173', 'localhost:5173'],
+            ['http://127.0.0.1:5173', '127.0.0.1:5173'],
+        ] as [$origin, $host]) {
+            $response = $this->inEnvironment('development', fn () => $this->loopbackLogin($origin, $host));
+
+            $this->assertNotSame(403, $response->getStatusCode(), "{$origin} must reach the controller");
+            $this->assertSame(401, $response->getStatusCode());
+        }
+    }
+
+    public function test_plain_http_loopback_stays_refused_outside_developer_environments(): void
+    {
+        foreach (['production', 'staging'] as $env) {
+            $response = $this->inEnvironment(
+                $env,
+                fn () => $this->loopbackLogin('http://localhost:5173', 'localhost:5173')
+            );
+
+            $this->assertSame(403, $response->getStatusCode(), "{$env} must not accept plain HTTP");
+            $this->assertStringContainsString('AUTH_BROWSER_ORIGIN_INVALID', $response->getContent());
+        }
+    }
+
+    public function test_development_allowance_is_loopback_only(): void
+    {
+        $response = $this->inEnvironment(
+            'development',
+            fn () => $this->loopbackLogin('http://community.example.test', 'community.example.test')
+        );
+
+        $this->assertSame(403, $response->getStatusCode());
+    }
+
     public function test_logout_clears_only_the_bound_browser_cookie(): void
     {
         $binding = hash('sha256', 'family-123');

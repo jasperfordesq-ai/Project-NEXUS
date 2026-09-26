@@ -143,7 +143,11 @@ final class BrowserRefreshCookie
         }
         $scheme = $parts['scheme'] ?? '';
         $host = strtolower((string) ($parts['host'] ?? ''));
-        $local = app()->environment(['local', 'testing'])
+        // Plain HTTP only on a developer's own loopback. 'development' is the
+        // documented local stack's APP_ENV; omitting it refused every local
+        // browser sign-in (E-036 / F-209). Same list as the other loopback
+        // allowances in app/ (WebAuthn, AuthenticationMethodGuard).
+        $local = app()->environment(['local', 'development', 'testing'])
             && in_array($host, ['localhost', '127.0.0.1'], true);
         if ($scheme !== 'https' && !($local && $scheme === 'http')) {
             return false;
