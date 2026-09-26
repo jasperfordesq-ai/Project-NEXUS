@@ -1,0 +1,62 @@
+{
+  "page_title": "Centrum pomocy",
+  "meta_description": "Proste przewodniki po wszystkim, co oferuje {{name}}: pierwsze kroki, wymiana czasu, bezpieczeństwo i prowadzenie społeczności.",
+  "hero_eyebrow": "Centrum pomocy",
+  "heading": "W czym możemy pomóc?",
+  "subtitle": "Przewodniki krok po kroku po wszystkim, co oferuje {{name}}, napisane prostym językiem.",
+  "search_label": "Przeszukaj Centrum pomocy",
+  "search_placeholder": "Przeszukaj przewodniki, na przykład „wyślij godziny”",
+  "search_results_heading": "Przewodniki pasujące do „{{query}}”",
+  "search_results_count_one": "Znaleziono {{count}} przewodnik",
+  "search_results_count_few": "Znaleziono {{count}} przewodniki",
+  "search_results_count_many": "Znaleziono {{count}} przewodników",
+  "search_results_count_other": "Znaleziono {{count}} przewodnika",
+  "search_no_results_title": "Żaden przewodnik nie pasuje do wyszukiwania",
+  "search_no_results_body": "Spróbuj innego lub krótszego słowa. Możesz też przejrzeć tematy albo skontaktować się z nami, a ktoś Ci pomoże.",
+  "audience_nav_label": "Wybierz przewodnik",
+  "audience": {
+    "members": {
+      "title": "Korzystanie z platformy",
+      "description": "Dołączanie, oferowanie pomocy, wymiana czasu i bezpieczeństwo."
+    },
+    "brokers": {
+      "title": "Dla brokerów i koordynatorów",
+      "description": "Zatwierdzanie członków, organizowanie wymian, ochrona i działania grupowe."
+    },
+    "admins": {
+      "title": "Dla administratorów społeczności",
+      "description": "Konfiguracja społeczności, zarządzanie członkami i wybór funkcji."
+    }
+  },
+  "popular_heading": "Od tego zaczyna większość osób",
+  "sections_heading": "Przeglądaj według tematu",
+  "articles_count_one": "{{count}} przewodnik",
+  "articles_count_few": "{{count}} przewodniki",
+  "articles_count_many": "{{count}} przewodników",
+  "articles_count_other": "{{count}} przewodnika",
+  "community_faqs_heading": "Pytania od Twojej społeczności",
+  "community_faqs_description": "Odpowiedzi napisane przez osoby, które prowadzą {{name}}.",
+  "contact_heading": "Nadal potrzebujesz pomocy?",
+  "contact_body": "Jeśli nie możesz znaleźć tego, czego potrzebujesz, skontaktuj się z nami, a ktoś Ci pomoże.",
+  "contact_button": "Skontaktuj się z nami",
+  "open_page": "Przejdź do tej strony",
+  "in_this_section": "Więcej przewodników w tym temacie",
+  "pager_label": "Inne przewodniki w tym temacie",
+  "previous_article": "Poprzedni",
+  "next_article": "Następny",
+  "not_found_title": "Nie znaleźliśmy tego przewodnika",
+  "not_found_body": "Mógł zostać przeniesiony albo ta funkcja nie jest włączona w Twojej społeczności.",
+  "not_found_button": "Powrót do Centrum pomocy",
+  "broker_panel": {
+    "title": "Przewodnik dla brokerów i koordynatorów",
+    "subtitle": "Proste przewodniki po każdej części Panelu brokera i pracy przy organizowaniu wymian.",
+    "open_full": "Otwórz pełny przewodnik",
+    "view_in_help_centre": "Otwórz w Centrum pomocy",
+    "back": "Wszystkie przewodniki dla brokerów"
+  },
+  "admin_panel": {
+    "title": "Pełny przewodnik dla administratorów",
+    "subtitle": "Instrukcje krok po kroku dotyczące konfiguracji społeczności, zarządzania członkami, ochrony i wszystkich funkcji administracyjnych, napisane prostym językiem.",
+    "open_full": "Otwórz przewodnik dla administratorów"
+  }
+}
