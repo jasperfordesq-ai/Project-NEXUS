@@ -68,7 +68,7 @@
     "timebanking": "بنك الوقت",
     "explore": "استكشاف",
     "marketplace": "السوق",
-    "premium": "المميز",
+    "premium": "تبرّع",
     "verify_identity": "تحقّق من هويتك",
     "accessibility_alpha": "إمكانية الوصول (ألفا)",
     "accessibility_alpha_tooltip": "نسخة محسنة يمكن الوصول إليها — متوافقة مع WCAG 2.2 AA. يفتح في علامة تبويب جديدة.",
@@ -210,7 +210,7 @@
     "show_results_one": "عرض نتيجة {{count}}",
     "show_results_other": "عرض نتائج {{count}}",
     "show_results_unknown": "عرض النتائج",
-    "search": "يبحث",
+    "search": "بحث",
     "filter_form": "المرشحات",
     "back": "خلف"
   },
@@ -1740,55 +1740,55 @@
     }
   },
   "premium": {
-    "pricing_title": "المميز",
-    "pricing_subtitle": "افتح الميزات المميزة للاستفادة أكثر من مجتمعك.",
+    "pricing_title": "تبرّع",
+    "pricing_subtitle": "ادعم هذا المجتمع",
     "monthly": "شهري",
     "yearly": "سنوي",
     "toggle_billing": "تبديل فترة الفوترة",
     "free": "مجاني",
     "per_month": "شهريًا",
     "per_year": "سنويًا",
-    "subscribe_cta": "اشترك",
-    "no_tiers": "لا تتوفر باقات مميزة بعد.",
-    "no_features_listed": "لم تُدرج ميزات بعد",
-    "cancel_anytime": "إلغاء في أي وقت",
+    "subscribe_cta": "تبرّع بانتظام",
+    "no_tiers": "لا تتوفر مستويات تبرّع منتظم بعد.",
+    "no_features_listed": "لم تُدرج ملاحظات تقدير بعد",
+    "cancel_anytime": "يمكنك تغيير التبرعات المنتظمة أو إلغاؤها في أي وقت",
     "checkout_no_url": "تعذّر بدء عملية الدفع",
-    "checkout_failed": "فشل الدفع",
-    "unavailable_title": "الباقات المميزة غير متاحة بعد في هذا المجتمع",
-    "return_title": "جارٍ تفعيل الاشتراك",
-    "return_pending": "جارٍ تفعيل اشتراكك…",
+    "checkout_failed": "تعذّر إتمام الدفع للتبرّع",
+    "unavailable_title": "التبرعات غير متاحة بعد في هذا المجتمع",
+    "return_title": "جارٍ تفعيل الدعم",
+    "return_pending": "جارٍ تفعيل دعمك…",
     "return_pending_body": "عادةً ما يستغرق ذلك بضع ثوانٍ.",
     "return_success_title": "كل شيء جاهز!",
-    "return_success_body": "اشتراكك مفعّل الآن.",
-    "return_success_with_tier": "أنت الآن مشترك في {{tier}}.",
+    "return_success_body": "أصبح تبرّعك المنتظم نشطًا الآن.",
+    "return_success_with_tier": "أنت الآن تدعم هذا المجتمع بمستوى {{tier}}.",
     "return_cancelled_title": "تم إلغاء الدفع",
     "return_cancelled_body": "يمكنك المحاولة مرة أخرى عندما تكون مستعدًا.",
-    "back_to_pricing": "العودة إلى الأسعار",
+    "back_to_pricing": "العودة إلى مستويات الدعم",
     "return_timeout_title": "ما زالت المعالجة جارية…",
-    "return_timeout_body": "دفعتك قيد المعالجة. قد يستغرق ظهور الاشتراك بعض الوقت.",
+    "return_timeout_body": "دفعتك قيد المعالجة. قد يستغرق ظهور دعمك بعض الوقت.",
     "check_status": "تحقّق من الحالة",
-    "manage_cta": "إدارة الاشتراك",
+    "manage_cta": "إدارة التبرّع المنتظم",
     "go_to_dashboard": "الذهاب إلى لوحة التحكم",
-    "manage_title": "اشتراكي",
+    "manage_title": "دعمي",
     "billed_yearly": "فوترة سنوية",
     "billed_monthly": "فوترة شهرية",
     "status_label": "الحالة",
     "ends_on": "ينتهي في",
     "next_billing": "الفوترة التالية",
     "manage_in_stripe": "الإدارة في Stripe",
-    "cancel_subscription": "إلغاء الاشتراك",
-    "cancel_confirm": "هل تريد إلغاء الاشتراك في نهاية فترة الفوترة الحالية؟",
-    "cancel_scheduled": "سينتهي الاشتراك في نهاية الفترة",
+    "cancel_subscription": "إلغاء التبرّع المنتظم",
+    "cancel_confirm": "هل تريد إلغاء التبرّع المنتظم في نهاية فترة الفوترة الحالية؟",
+    "cancel_scheduled": "سينتهي التبرّع المنتظم في نهاية الفترة",
     "cancel_failed": "فشل الإلغاء",
-    "change_plan": "تغيير الخطة",
-    "no_subscription_title": "لا يوجد اشتراك نشط",
-    "no_subscription_body": "تصفّح الباقات المميزة لإيجاد ما يناسبك.",
-    "view_pricing_cta": "عرض الأسعار",
+    "change_plan": "تغيير مستوى الدعم",
+    "no_subscription_title": "لا يوجد تبرّع منتظم نشط",
+    "no_subscription_body": "تصفّح مستويات الدعم لتختار الطريقة التي تودّ المساعدة بها.",
+    "view_pricing_cta": "عرض مستويات الدعم",
     "portal_failed": "تعذّر فتح بوابة الفوترة",
-    "grace_period_notice": "فشل الدفع — يرجى تحديث بطاقتك قبل {{date}} للحفاظ على الاشتراك المميز.",
-    "gate_title": "ميزة مميزة",
-    "gate_body": "اشترك في باقة مميزة لفتح هذه الميزة.",
-    "gate_cta": "عرض الباقات المميزة",
+    "grace_period_notice": "فشل الدفع — يرجى تحديث بطاقتك قبل {{date}} ليبقى دعمك المنتظم نشطًا.",
+    "gate_title": "تقدير الداعمين",
+    "gate_body": "هذا القسم مخصّص لتقدير الداعمين، وليس لميزات مدفوعة إضافية.",
+    "gate_cta": "عرض مستويات الدعم",
     "status": {
       "active": "نشط",
       "trialing": "تجريبي",
@@ -1804,7 +1804,7 @@
       "advanced_search": "بحث متقدم",
       "ad_free": "تجربة خالية من الإعلانات"
     },
-    "return_meta_description": "صفحة العودة الآمنة بعد الدفع لتفعيل أو تأكيد أو إدارة اشتراكك المميز.",
+    "return_meta_description": "صفحة العودة الآمنة بعد الدفع لتفعيل تبرّعك المنتظم أو تأكيده أو إدارته.",
     "one_off_cta": "قم بالتبرع لمرة واحدة"
   },
   "developers": {
@@ -2121,9 +2121,9 @@
     "someone": "شخص ما",
     "unknown_user": "مستخدم",
     "not_available": "غير متاح",
-    "edit": "يحرر",
-    "collapse": "ينهار",
-    "expand": "يوسع"
+    "edit": "تعديل",
+    "collapse": "طيّ",
+    "expand": "توسيع"
   },
   "verein_federation": {
     "panel_title": "الاتحاد مع نوادٍ أخرى",
@@ -2213,7 +2213,7 @@
     "callback_signing_in": "جارٍ تسجيل دخولك…",
     "callback_failed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
     "provider_google": "جوجل",
-    "provider_apple": "تفاحة",
+    "provider_apple": "Apple",
     "provider_facebook": "فيسبوك",
     "connect": "ربط",
     "disconnect": "فصل",
@@ -2663,7 +2663,7 @@
     "platform_unknown_step2": "أو انقر على «الهاتف أو الجهاز اللوحي أو مفتاح الأمان» لتسجيل جهاز مختلف."
   },
   "discussion": {
-    "delete": "يمسح",
+    "delete": "حذف",
     "reply": "رد"
   },
   "page_builder": {
@@ -2758,15 +2758,15 @@
     "time_days_ago_zero": "{{count}}منذ يوم واحد"
   },
   "users": {
-    "action_edit": "يحرر",
-    "action_approve": "يعتمد",
+    "action_edit": "تعديل",
+    "action_approve": "اعتماد",
     "action_suspend": "تعليق",
     "action_ban": "حظر",
     "action_reactivate": "إعادة التنشيط",
     "action_reset_2fa": "إعادة تعيين 2FA",
     "action_permissions": "الأذونات",
     "action_impersonate": "انتحال شخصية",
-    "action_delete": "يمسح",
+    "action_delete": "حذف",
     "actions_menu": "قائمة الإجراءات"
   },
   "system": {
@@ -2815,11 +2815,11 @@
   },
   "gamification": {
     "label_campaign_actions": "إجراءات الحملة",
-    "edit": "يحرر",
+    "edit": "تعديل",
     "activate": "فعل",
-    "pause": "يوقف",
+    "pause": "إيقاف مؤقت",
     "resume": "سيرة ذاتية",
-    "delete": "يمسح"
+    "delete": "حذف"
   },
   "federation": {
     "event_type_message_sent": "تم إرسال الرسالة",
@@ -2979,7 +2979,7 @@
     "route_about": "عن",
     "group_info": "معلومات",
     "route_faq": "FAQ",
-    "route_explore": "يستكشف",
+    "route_explore": "استكشاف",
     "location_header_main": "الرأس الرئيسي",
     "location_header_secondary": "رأس ثانوي",
     "location_footer": "تذييل",
@@ -3068,7 +3068,7 @@
       "now": "الآن"
     },
     "actions": {
-      "close": "يغلق"
+      "close": "إغلاق"
     },
     "empty": {
       "no_data": "لا توجد بيانات متاحة"
@@ -3087,7 +3087,7 @@
       "capability": "القدرة",
       "classification": "تصنيف",
       "agpl_module": "الوحدة النمطية AGPL",
-      "default": "تقصير",
+      "default": "افتراضي",
       "overridden": "تم تجاوزه",
       "notes": "ملحوظات",
       "yes": "نعم",
@@ -3168,7 +3168,7 @@
       "value": "-"
     },
     "actions": {
-      "refresh": "ينعش",
+      "refresh": "تحديث",
       "retry": "أعد المحاولة"
     }
   },

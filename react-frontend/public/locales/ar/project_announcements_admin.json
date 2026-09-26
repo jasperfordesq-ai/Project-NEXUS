@@ -41,9 +41,9 @@
   "actions": {
     "publish": "نشر",
     "add_update": "إضافة التحديث",
-    "pause": "يوقف",
+    "pause": "إيقاف مؤقت",
     "complete": "مكتمل",
-    "cancel": "يلغي"
+    "cancel": "إلغاء"
   },
   "fields": {
     "title": "عنوان",
@@ -60,7 +60,7 @@
   },
   "create_modal": {
     "title": "إنشاء مشروع مجتمعي",
-    "submit": "يخلق"
+    "submit": "إنشاء"
   },
   "update_modal": {
     "title": "إضافة تحديث المشروع",

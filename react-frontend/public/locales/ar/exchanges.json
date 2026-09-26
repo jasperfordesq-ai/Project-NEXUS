@@ -186,5 +186,39 @@
   "hours_count_few": "{{count}} ساعة",
   "hours_count_many": "{{count}} ساعة",
   "hours_count_two": "{{count}} ساعة",
-  "hours_count_zero": "{{count}} ساعة"
+  "hours_count_zero": "{{count}} ساعة",
+  "status_config": {
+    "pending_provider": {
+      "label": "بانتظار المزود",
+      "description": "بانتظار أن يقبل مقدّم الخدمة هذا الطلب أو يرفضه."
+    },
+    "pending_broker": {
+      "label": "بانتظار الوسيط",
+      "description": "يتطلب هذا التبادل موافقة الوسيط قبل أن يتمكن من المتابعة."
+    },
+    "accepted": {
+      "label": "مقبول",
+      "description": "تم قبول التبادل. يمكن لمقدّم الخدمة البدء عندما يكون مستعدًا."
+    },
+    "in_progress": {
+      "label": "قيد التنفيذ",
+      "description": "يجري تقديم الخدمة حاليًا."
+    },
+    "pending_confirmation": {
+      "label": "تأكيد الساعات",
+      "description": "يجب على الطرفين تأكيد الساعات المنجزة لإكمال التبادل."
+    },
+    "completed": {
+      "label": "مكتمل",
+      "description": "اكتمل التبادل وتم تحويل الأرصدة."
+    },
+    "disputed": {
+      "label": "متنازع عليه",
+      "description": "هناك خلاف حول الساعات. سيراجع وسيط هذا الأمر."
+    },
+    "cancelled": {
+      "label": "ملغى",
+      "description": "تم إلغاء هذا التبادل."
+    }
+  }
 }

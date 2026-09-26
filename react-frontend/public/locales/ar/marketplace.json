@@ -723,7 +723,7 @@
     "radius_option": "{{km}} كم",
     "radius_chip": "{{km}} كم نطاق",
     "results_count": "{{count}} قوائم وجدت بالقرب",
-    "refresh": "ينعش",
+    "refresh": "تحديث",
     "map_view": "عرض الخريطة",
     "list_view": "عرض القائمة",
     "location_required": "حدد موقعك في ملفك الشخصي لاستخدام هذه الميزة",

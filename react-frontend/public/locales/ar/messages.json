@@ -147,7 +147,7 @@
     "translation_failed": "فشلت الترجمة. يرجى المحاولة مرة أخرى."
   },
   "translate": {
-    "translate": "يترجم",
+    "translate": "ترجمة",
     "translate_to": "ترجمة إلى",
     "view_original": "عرض النص الأصلي",
     "show_translation": "عرض الترجمة",
@@ -222,19 +222,19 @@
   "character_count": "{{current}}/{{max}}",
   "loading_older": "تحميل الرسائل القديمة",
   "safeguarding_vetting_required": {
-    "title": "Yalzam fahs himaya",
-    "body": "Tum iyqaf hadhihi almuhadatha muakkatan lianna qaida himaya almujtama tatlub tahqiqan muwathaqan qabla irsal risala ila hadha aludw.",
-    "contact_broker": "Tawasul maa alwasit aw mudir almujtama liltahaqquq min halat altahqiq aw tartib alkhutwa alamna altaliya.",
-    "required_checks": "Alfuhusat almatluba",
-    "action": "Iftah almusaada",
-    "dismiss": "Aghliq ishara alhimaya"
+    "title": "يلزم تأكيد من المجتمع",
+    "body": "لم يؤكد مجتمعك بعد أنك تستوفي متطلب فحص DBS المعزّز الخاص بالتواصل مع الأعضاء المشمولين بالحماية.",
+    "contact_broker": "اطلب مراجعة خاصة من وسيط أدناه. لا ترسل شهادة DBS أو أي معلومات عن السجل الجنائي عبر NEXUS.",
+    "required_checks": "الفحوصات المطلوبة",
+    "action": "فتح المساعدة",
+    "dismiss": "إغلاق إشعار الحماية"
   },
   "safeguarding_contact_restricted": {
-    "title": "Yalzam tartib min almunasiq",
-    "body": "Hatha aludw ghayr mutah lirasail mubashara lianna tafdilat alsalama tatlubu tawasulan biwasatat almunasiq.",
+    "title": "يلزم ترتيب من المنسق",
+    "body": "هذا العضو غير متاح للرسائل المباشرة لأن تفضيلات الحماية الخاصة به تتطلب التواصل عبر منسق.",
     "contact_broker": "يمكنك طلب مساعدة وسيط أو مسؤول أو منسق لترتيب التواصل. استخدم الزر أدناه — وسيتواصلون معك.",
-    "action": "Iftah almusaada",
-    "dismiss": "Aghliq ishara alhimaya"
+    "action": "فتح المساعدة",
+    "dismiss": "إغلاق إشعار الحماية"
   },
   "safeguarding_policy_unavailable": {
     "title": "التحقق من الحماية غير متاح مؤقتًا",

@@ -11,7 +11,7 @@
     "activate": "تفعيل",
     "pause": "وقفة",
     "archive": "أرشيف",
-    "reserve": "تذكرة احتياطية",
+    "reserve": "حجز تذكرة",
     "reconcile": "تشغيل المصالحة",
     "reconciliation_clear": "التوفيق بين جرد التذاكر وسجلات دفتر الأستاذ.",
     "reconciliation_warnings": "{{count}} تحذير المصالحة",

@@ -4,7 +4,7 @@
   "actions": {
     "back_to_podcasts": "العودة إلى البودكاست",
     "back_to_show": "العودة للعرض",
-    "cancel": "يلغي",
+    "cancel": "إلغاء",
     "close": "إغلاق"
   },
   "browse": {

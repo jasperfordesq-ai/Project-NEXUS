@@ -68,7 +68,7 @@
   },
   "job_alert": {
     "match_bell": "وظيفة جديدة تطابق تنبيهك: {{title}}",
-    "match_push_title": "مباراة وظيفية جديدة",
+    "match_push_title": "مطابقة وظيفية جديدة",
     "match_push_message": "وظيفة جديدة تطابق تنبيهك: {{title}}"
   },
   "legal": {

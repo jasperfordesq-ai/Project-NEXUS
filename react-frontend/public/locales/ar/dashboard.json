@@ -82,7 +82,7 @@
   "suggestions": {
     "empty": "لا توجد اقتراحات بعد",
     "empty_description": "تتحسن المطابقة كلما تمت إضافة المزيد من الإعلانات وتفاصيل الملف الشخصي.",
-    "see_all_matches": "شاهد جميع المباريات",
+    "see_all_matches": "شاهد جميع المطابقات",
     "score_chip": "{{score}}%",
     "distance_chip": "{{value}} km"
   },
