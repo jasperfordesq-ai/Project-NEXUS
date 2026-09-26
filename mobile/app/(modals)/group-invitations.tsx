@@ -18,6 +18,7 @@ import { withRouteGate } from '@/components/withRouteGate';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
+import { dateLocale } from '@/lib/utils/dateLocale';
 import {
   createGroupInviteLink,
   getGroupInvites,
@@ -155,7 +156,7 @@ function Workspace({ groupId }: { groupId: number }) {
         <Text accessibilityRole="header" className="text-lg font-semibold text-foreground">{t('groups:invite_manage.pending_title')}</Text>
         {!invites.length ? <Text className="text-muted-foreground">{t('groups:invite_manage.pending_empty')}</Text> : invites.map(invite => <Card key={invite.id}><Card.Body className="gap-2 p-4">
           <Text className="font-semibold text-foreground">{invite.email ?? t('groups:invite_manage.share_link')}</Text>
-          <Text className="text-muted-foreground">{t('groups:invite_manage.expires', { date: new Date(invite.expires_at).toLocaleDateString() })}</Text>
+          <Text className="text-muted-foreground">{t('groups:invite_manage.expires', { date: new Date(invite.expires_at).toLocaleDateString(dateLocale()) })}</Text>
           {invite.invite_url ? <Button variant="secondary" isDisabled={busy} onPress={() => void shareInvite(invite.invite_url!)}>{t('groups:invite_manage.share')}</Button> : null}
           {invite.capabilities?.can_revoke ? <Button variant="danger" isDisabled={busy} onPress={() => askRevoke(invite)}>{t('groups:invite_manage.revoke')}</Button> : null}
         </Card.Body></Card>)}

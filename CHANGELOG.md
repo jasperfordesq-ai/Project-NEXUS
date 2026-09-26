@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Pending group invitations in the mobile app now show their expiry date in the language chosen in the app, rather than US English. The committed database schema snapshot now includes the group-exchange, federation-message and group join-decision retry tables, the contact-form retry columns and the quiz-attempt retry columns, so the schema-reference check passes again.
+
 - Deleting a group announcement, wiki page, question or answer now removes its creation-replay receipt in the same transaction, so a later retry cannot resolve to content that has already been deleted.
 
 - The mobile app's "Create group exchange" screen now offers "Add yourself as" Provider or Receiver, matching the website, so an organiser who is also taking part can include themselves. The member search never lists the person searching, so this was impossible in the app before. Available in all seven app languages.
