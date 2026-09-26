@@ -2418,11 +2418,46 @@ function GroupQAPanel({
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [answerBody, setAnswerBody] = useState('');
   const [answering, setAnswering] = useState(false);
+  const [isRestoringAnswer, setIsRestoringAnswer] = useState(false);
+  const [answerRecoveryError, setAnswerRecoveryError] = useState<string | null>(null);
+  const [pendingAnswerOperation, setPendingAnswerOperation] = useState<GroupContentCreationOperation<'answer'> | null>(null);
   const [votingTarget, setVotingTarget] = useState<string | null>(null);
   const [acceptingAnswerId, setAcceptingAnswerId] = useState<number | null>(null);
   const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
   const detailRequestVersionRef = useRef(0);
-  const answerAttemptRef = useRef<MutationAttempt | null>(null);
+  const answerRestoreVersionRef = useRef(0);
+
+  const restoreAnswerOperation = useCallback(async () => {
+    const version = ++answerRestoreVersionRef.current;
+    setIsRestoringAnswer(true);
+    setAnswerRecoveryError(null);
+    setPendingAnswerOperation(null);
+    if (!canView) {
+      setIsRestoringAnswer(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupContentCreationOperation(groupId, 'answer');
+      if (!isMountedRef.current || version !== answerRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingAnswerOperation(operation);
+        setAnswerBody(operation.payload.body);
+        setExpandedId(operation.payload.questionId);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== answerRestoreVersionRef.current) return;
+      setAnswerRecoveryError(describeApiError(err, t('detail.qa.answerRecoveryError')));
+    } finally {
+      if (isMountedRef.current && version === answerRestoreVersionRef.current) setIsRestoringAnswer(false);
+    }
+  // The encrypted operation store owns identity scoping. Avoid restarting recovery when i18n changes function identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView, groupId]);
+
+  useEffect(() => {
+    void restoreAnswerOperation();
+    return () => { answerRestoreVersionRef.current += 1; };
+  }, [restoreAnswerOperation]);
 
   async function toggleQuestion(questionId: number) {
     if (expandedId === questionId) {
@@ -2452,23 +2487,26 @@ function GroupQAPanel({
   }
 
   async function submitAnswer() {
-    const content = answerBody.trim();
-    if (!expandedId || !content) {
+    const questionId = pendingAnswerOperation?.payload.questionId ?? expandedId;
+    const content = pendingAnswerOperation?.payload.body ?? answerBody.trim();
+    if (!questionId || !content) {
       showToast({ title: t('common:errors.alertTitle'), description: t('detail.qa.answerValidation'), variant: 'warning' });
       return;
     }
 
     if (!beginMutation()) return;
-    const questionId = expandedId;
     const selectionVersion = detailRequestVersionRef.current;
     const isCurrentQuestion = () => isMountedRef.current && selectionVersion === detailRequestVersionRef.current;
-    const fingerprint = JSON.stringify({ groupId, questionId, body: content });
-    answerAttemptRef.current = mutationAttemptFor(answerAttemptRef.current, fingerprint, 'group-answer');
+    let operation: GroupContentCreationOperation<'answer'> | null = null;
     setAnswering(true);
     try {
-      await answerGroupQuestion(groupId, questionId, { body: content }, answerAttemptRef.current.key);
+      operation = await reserveGroupContentCreationOperation(groupId, 'answer', { questionId, body: content });
       if (!isMountedRef.current) return;
-      answerAttemptRef.current = null;
+      setPendingAnswerOperation(operation);
+      await answerGroupQuestion(groupId, questionId, { body: operation.payload.body }, operation.key);
+      await completeGroupContentCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingAnswerOperation(null);
       if (isCurrentQuestion()) setAnswerBody('');
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -2482,27 +2520,21 @@ function GroupQAPanel({
         showToast({ title: t('common:errors.refreshFailedTitle'), description: t('common:errors.refreshFailedSubtitle'), variant: 'warning' });
       }
     } catch (err) {
-      if (err instanceof ApiResponseError && err.status === 0) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
         try {
-          const latest = (await getGroupQuestion(groupId, questionId)).data;
-          if (!isMountedRef.current) return;
-          const accepted = latest.answers.some((answer) => answer.author.id === currentUserId && answer.body.trim() === content);
-          if (accepted) {
-            answerAttemptRef.current = null;
-            if (isCurrentQuestion()) {
-              setAnswerBody('');
-              setDetail(latest);
-            }
-            onRefresh();
-            return;
-          }
-        } catch {
-          // Both the response and authoritative readback remain unknown.
+          await discardGroupContentCreationOperation(operation);
+          if (isMountedRef.current) setPendingAnswerOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
         }
       }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.qa.answerError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.qa.answerError')), variant: 'danger' });
     } finally {
       finishMutation();
       if (isMountedRef.current) setAnswering(false);
@@ -2661,6 +2693,30 @@ function GroupQAPanel({
         </HeroCard>
       ) : null}
 
+      {answerRecoveryError ? (
+        <HeroCard className="rounded-panel p-0" testID="group-answer-recovery-error">
+          <HeroCard.Body className="gap-2 p-4">
+            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{answerRecoveryError}</Text>
+            <HeroButton size="sm" variant="secondary" isDisabled={isRestoringAnswer} onPress={() => void restoreAnswerOperation()}>
+              {isRestoringAnswer ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
+
+      {pendingAnswerOperation ? (
+        <HeroCard className="rounded-panel p-0" testID="group-answer-recovery">
+          <HeroCard.Body className="gap-3 p-4">
+            <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.textSecondary }}>{t('detail.qa.answerRecoveryNotice')}</Text>
+            <Text className="text-xs font-semibold" style={{ color: theme.textMuted }}>{t('detail.qa.answerRecoveryQuestion', { id: pendingAnswerOperation.payload.questionId })}</Text>
+            <Text className="text-sm leading-5" style={{ color: theme.text }}>{pendingAnswerOperation.payload.body}</Text>
+            <HeroButton isDisabled={answering} onPress={() => void submitAnswer()}>
+              {answering ? <Spinner size="sm" /> : <HeroButton.Label>{t('detail.qa.retryAnswer')}</HeroButton.Label>}
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
+
       {isLoading ? (
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="min-h-[140px] items-center justify-center">
@@ -2795,20 +2851,24 @@ function GroupQAPanel({
                         </Surface>
                       ))
                     )}
-                    <Input
-                      value={answerBody}
-                      editable={!answering}
-                      onChangeText={setAnswerBody}
-                      placeholder={t('detail.qa.answerPlaceholder')}
-                      placeholderTextColor={theme.textMuted}
-                      multiline
-                      className="min-h-[86px] text-base"
-                      style={{ color: theme.text, textAlignVertical: 'top' }}
-                      accessibilityLabel={t('detail.qa.answerPlaceholder')}
-                    />
-                    <HeroButton isDisabled={answering} onPress={() => void submitAnswer()}>
-                      {answering ? <Spinner size="sm" /> : <HeroButton.Label>{t('detail.qa.postAnswer')}</HeroButton.Label>}
-                    </HeroButton>
+                    {!pendingAnswerOperation ? (
+                      <>
+                        <Input
+                          value={answerBody}
+                          editable={!answering}
+                          onChangeText={setAnswerBody}
+                          placeholder={t('detail.qa.answerPlaceholder')}
+                          placeholderTextColor={theme.textMuted}
+                          multiline
+                          className="min-h-[86px] text-base"
+                          style={{ color: theme.text, textAlignVertical: 'top' }}
+                          accessibilityLabel={t('detail.qa.answerPlaceholder')}
+                        />
+                        <HeroButton isDisabled={answering} onPress={() => void submitAnswer()}>
+                          {answering ? <Spinner size="sm" /> : <HeroButton.Label>{t('detail.qa.postAnswer')}</HeroButton.Label>}
+                        </HeroButton>
+                      </>
+                    ) : null}
                   </View>
                 ) : null}
               </HeroCard.Body>

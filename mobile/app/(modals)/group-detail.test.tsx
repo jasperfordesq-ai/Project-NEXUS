@@ -145,6 +145,10 @@ jest.mock('react-i18next', () => ({
         'detail.qa.postAnswer': 'Post answer',
         'detail.qa.answerValidation': 'Write an answer.',
         'detail.qa.answerError': 'Could not post answer.',
+        'detail.qa.answerRecoveryError': 'Could not restore the unfinished answer.',
+        'detail.qa.answerRecoveryNotice': 'An unfinished answer was restored. Retry it before writing another answer.',
+        'detail.qa.answerRecoveryQuestion': opts ? `Question #${String(opts.id ?? '')}` : 'Question',
+        'detail.qa.retryAnswer': 'Retry answer',
         'detail.qa.voteError': 'Could not vote.',
         'detail.qa.acceptError': 'Could not accept answer.',
         'detail.qa.empty': 'No questions yet.',
@@ -1858,7 +1862,9 @@ describe('GroupDetailScreen', () => {
       intent: JSON.stringify({ title: 'Saved question', body: 'Which tools should we bring?' }),
       payload: { title: 'Saved question', body: 'Which tools should we bring?' }, createdAt: 1,
     };
-    jest.mocked(loadGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    jest.mocked(loadGroupContentCreationOperation).mockImplementation(async (_groupId, kind) => (
+      kind === 'question' ? pending : null
+    ) as never);
     jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
     const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
     const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
@@ -1994,6 +2000,35 @@ describe('GroupDetailScreen', () => {
         description: 'Could not post answer.',
       }));
     }
+  });
+
+  it('restores and retries an answer when its question is outside the loaded page', async () => {
+    const pending = {
+      storageKey: 'saved-group-content', key: 'restored-answer-key', groupId: 1, kind: 'answer' as const,
+      intent: JSON.stringify({ questionId: 987, body: 'Use the tools stored in the north shed.' }),
+      payload: { questionId: 987, body: 'Use the tools stored in the north shed.' }, createdAt: 1,
+    };
+    jest.mocked(loadGroupContentCreationOperation).mockImplementation(async (_groupId, kind) => (
+      kind === 'answer' ? pending : null
+    ) as never);
+    jest.mocked(reserveGroupContentCreationOperation).mockResolvedValueOnce(pending);
+    const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length]; apiCall += 1; return state;
+    });
+
+    const { getByTestId, getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Q&A'));
+    await waitFor(() => expect(getByTestId('group-answer-recovery')).toBeTruthy());
+    expect(getByText('Question #987')).toBeTruthy();
+    expect(getByText('Use the tools stored in the north shed.')).toBeTruthy();
+    fireEvent.press(getByText('Retry answer'));
+
+    await waitFor(() => expect(answerGroupQuestion).toHaveBeenCalledWith(1, 987, { body: pending.payload.body }, pending.key));
+    expect(completeGroupContentCreationOperation).toHaveBeenCalledWith(pending);
   });
 
   it.each([
