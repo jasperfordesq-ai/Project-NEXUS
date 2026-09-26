@@ -11,7 +11,7 @@
     "section_records": "記録",
     "section_settings": "設定",
     "nav_label": "ブローカーのナビゲーション",
-    "section_moderation": "Moderation"
+    "section_moderation": "モデレーション"
   },
   "header": {
     "toggle_sidebar": "サイドバーを切り替え",
@@ -37,7 +37,7 @@
     "members": "メンバー",
     "onboarding": "オンボーディング",
     "safeguarding": "セーフガーディング",
-    "vetting": "確認の審査",
+    "vetting": "審査確認",
     "exchanges": "交換",
     "match_approvals": "マッチ承認",
     "messages": "メッセージ",
@@ -60,7 +60,7 @@
     "members": "メンバー",
     "onboarding": "オンボーディング",
     "safeguarding": "セーフガーディング",
-    "vetting": "確認の審査",
+    "vetting": "審査確認",
     "exchanges": "交換",
     "match_approvals": "マッチ承認",
     "messages": "メッセージ",
@@ -121,7 +121,7 @@
       "messages_desc": "フラグが付けられた会話のブローカーコピーをレビューします。",
       "monitoring_title": "ユーザーモニタリング",
       "monitoring_desc": "ブローカーの監督下にあるメンバーを追跡します。",
-      "vetting_title": "確認の審査",
+      "vetting_title": "審査確認",
       "vetting_desc": "メンバーのリクエストを確認し、コミュニティを保護するための決定を記録します。",
       "configuration_title": "設定",
       "configuration_desc": "ブローカー管理設定を構成します。"
@@ -358,7 +358,7 @@
     "retry": "再試行"
   },
   "vetting": {
-    "title": "確認の審査",
+    "title": "審査確認",
     "description": "証明書や犯罪歴情報を保存せずに、英国全体のコミュニティ保護証明書を記録します。",
     "back": "戻る",
     "stats_error_title": "ベッティング統計を読み込めませんでした",
@@ -369,8 +369,8 @@
     "search_placeholder": "メンバー名で検索...",
     "empty_title": "ベッティング記録がありません",
     "cancel": "キャンセル",
-    "toast_load_failed": "連絡先証明書をロードできませんでした。",
-    "list_error_title": "連絡先証明書をロードできませんでした",
+    "toast_load_failed": "連絡証明記録を読み込めませんでした。",
+    "list_error_title": "連絡証明記録を読み込めませんでした",
     "list_error_body": "接続を確認して、もう一度お試しください。",
     "refresh": "審査確認を更新する",
     "policy_title": "連絡先の保護ポリシー",
@@ -419,7 +419,7 @@
     "scope_summary_help": "この決定がどのような内容をカバーするのかを正確に述べてください。たとえば、大人の労働者が子供たちと友達になったり、監督下で活動したりすることなどです。",
     "private_notes_label": "プライベートブローカーのメモ",
     "private_notes_help": "認可されたブローカーと管理者のみに表示されます。証明書番号、開示結果、犯罪歴情報などは入力しないでください。",
-    "review_due_label": "コミュニティレビューの期限が迫っています",
+    "review_due_label": "コミュニティレビューの期日",
     "review_due_help": "この日、NEXUS の接触許可は、更新されるまで保護された接触の許可を停止します。",
     "authority_expiry_label": "当局のメンバーシップの有効期限",
     "authority_expiry_help": "法定有効期限のないスキームの場合はオプションです。",
@@ -468,7 +468,7 @@
     "label_joined": "参加日",
     "label_last_active": "最終アクティブ",
     "label_onboarding": "オンボーディング",
-    "label_contact_attestation": "連絡先証明書",
+    "label_contact_attestation": "連絡証明記録",
     "label_insurance": "保険",
     "onboarding_complete": "完了",
     "onboarding_incomplete": "未完了",
@@ -496,7 +496,7 @@
     "edit_bio": "自己紹介",
     "edit_save": "変更を保存",
     "edit_success": "プロフィールを更新しました。",
-    "contact_attestations_title": "連絡先証明書",
+    "contact_attestations_title": "連絡証明記録",
     "contact_attestations_none": "接触証明書は記録されていません。",
     "insurance_title": "保険証明書",
     "insurance_none": "保険証明書はありません。",
@@ -1306,7 +1306,7 @@
       "bullet_risk_tags": "<b>リスクタグ</b> — 観察したいリスティングを手動でフラグ付けします。",
       "bullet_message_review": "<b>メッセージレビュー</b> — ブローカー・キューにコピーされたメッセージをトリアージします。",
       "bullet_user_monitoring": "<b>ユーザー監視</b> — メンバーのコミュニケーションをブローカーの監督下に置きます。",
-      "bullet_attestations": "<b>連絡先証明書</b> — 証明書や開示の詳細を収集せずに、コミュニティ保護に関する決定を記録します。",
+      "bullet_attestations": "<b>連絡証明記録</b> — 証明書や開示の詳細を集めずに、コミュニティのセーフガーディングに関する決定を記録します。",
       "bullet_configuration": "<b>設定</b> — システムが何をコピーするかを判断するしきい値を調整します。",
       "access_note": "アクセスは<code>admin</code>、<code>tenant_admin</code>、<code>broker</code>、または<code>super_admin</code>ロールのユーザーに制限されます。すべての閲覧と操作は監査ログに記録されます。"
     },
@@ -1317,7 +1317,7 @@
       "step_unreviewed": "<b>未レビューのメッセージ</b> — メッセージレビューを開き、まず赤くフラグ付けされたもの（重大度高）から処理してください。フラグ付き項目は24時間以内のSLAを目指します。",
       "step_pending": "<b>保留中の交換</b> — ブローカーの承認待ちの交換を承認または却下してください。未承認の交換は双方をブロックします。",
       "step_alerts": "<b>セーフガーディング・アラート</b> — セーフガーディング・タイルの赤いカウンターがゼロ以外の場合、セーフガーディング・ダッシュボードに移動してトリアージしてください。",
-      "step_vetting_reviews": "<b>レビュー リクエストの精査</b> — コミュニティが固定連絡先証明書を確認できるか、文書を収集せずにリクエストを終了できるかを決定します。",
+      "step_vetting_reviews": "<b>審査レビューのリクエスト</b> — コミュニティが確定済みの連絡証明記録を確認できるか、書類を集めずにリクエストを終了するかを決定します。",
       "step_activity": "<b>最近のアクティビティフィード</b> — アクティビティリストをざっと見てパターンを把握します: 繰り返しの送信者、異常な量、新規監視対象ユーザーなど。",
       "tip": "統計タイルはすべて該当するフィルターへ直接ディープリンクします — 概観から実行可能なリストへワンクリックで遷移できます。"
     },
@@ -1346,8 +1346,8 @@
       "risk_tags": "<b>リスクタグ</b>はメンバー単位ではなく、リスティング単位のフラグです。メンバーを制限せずにリスティングの動向を観察したい場合にタグ付けします。"
     },
     "vetting": {
-      "metadata_aria": "連絡先証明書の保護",
-      "metadata_title": "連絡先証明書の保護",
+      "metadata_aria": "セーフガーディング連絡証明記録",
+      "metadata_title": "セーフガーディング連絡証明記録",
       "intro": "身元確認記録は、提出された1件の身元調査リファレンスを記録します。対応する種別:",
       "jurisdiction_heading": "管轄境界",
       "jurisdiction_england_wales": "<b>イングランドおよびウェールズ:</b> サポートされている連絡先ポリシーでは、固定の拡張 DBS 証明書が使用されます。ブローカーは、コミュニティが安全に保護されたメンバーとの接触について独自のチェックを完了したことのみを確認します。 NEXUS は証明書の検査や検証を行いません。",
@@ -1402,7 +1402,7 @@
       "title": "よくある状況のトラブルシューティング",
       "cant_message_attestation": "<b>「メンバーが誰かにメッセージを送信できないと言っています」</b> — 受信者の保護設定、コミュニティの管轄ポリシー、送信者の現在の連絡先証明を確認してください。ポリシーが明示的に許可された決定を返さない限り、ゲートは閉じられたままになります。",
       "wrong_member": "<b>「間違ったメンバーがフラグ付けされている」</b> — ユーザー監視を開いて手動で削除してください。オンボーディング時の自動フラグが原因の場合、メンバー自身が<i>設定 → セーフガーディング</i>から設定を撤回することもできます。",
-      "vetting_review": "<b>「審査レビューはまだ保留中です」</b> - 連絡先証明書を開いて、修正されたコミュニティの決定を確認するか、制御された理由で決定を取り消すか、証明書を変更せずにリクエストを解決します。 NEXUS内でメンバーに書類の提出を求めないでください。",
+      "vetting_review": "<b>「審査レビューがまだ保留中です」</b> — 連絡証明記録を開き、確定済みのコミュニティの決定を確認するか、所定の理由で取り消すか、証明記録を変更せずにリクエストを解決します。NEXUS内でメンバーに書類の提出を求めないでください。",
       "no_copies": "<b>「メッセージがコピーされない」</b> — メンバーの<code>user_messaging_restrictions</code>に<code>under_monitoring = 1</code>があるか確認してください。行が無い場合は、ユーザー監視から理由を付けて追加してください。"
     },
     "search_placeholder": "ヘルプトピックを検索...",

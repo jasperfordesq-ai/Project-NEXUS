@@ -19,11 +19,11 @@
     "active_listings": "アクティブなリスト",
     "transactions": "取引",
     "hours_exchanged": "交換時間",
-    "hours": "営業時間",
+    "hours": "時間",
     "new_users_this_month": "今月の新規ユーザー",
     "active_users": "アクティブユーザー",
     "total_listings": "総出品数",
-    "new_listings_this_month": "今月の新規物件"
+    "new_listings_this_month": "今月の新規リスティング"
   },
   "trends": {
     "card_title": "取引動向",

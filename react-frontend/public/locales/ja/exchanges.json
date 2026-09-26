@@ -178,5 +178,39 @@
       "title": "交換の詳細"
     }
   },
-  "hours_count_one": "{{count}} 時間"
+  "hours_count_one": "{{count}} 時間",
+  "status_config": {
+    "pending_provider": {
+      "label": "提供者の対応待ち",
+      "description": "サービス提供者がこのリクエストを承諾または辞退するのを待っています。"
+    },
+    "pending_broker": {
+      "label": "ブローカーの承認待ち",
+      "description": "この交換を進めるには、ブローカーの承認が必要です。"
+    },
+    "accepted": {
+      "label": "承諾済み",
+      "description": "交換が承諾されました。提供者は準備ができ次第、開始できます。"
+    },
+    "in_progress": {
+      "label": "進行中",
+      "description": "現在、サービスが提供されています。"
+    },
+    "pending_confirmation": {
+      "label": "時間を確認",
+      "description": "交換を完了するには、双方が作業時間を確認する必要があります。"
+    },
+    "completed": {
+      "label": "完了",
+      "description": "交換が完了し、クレジットが移転されました。"
+    },
+    "disputed": {
+      "label": "異議あり",
+      "description": "時間について意見の相違があります。ブローカーが確認します。"
+    },
+    "cancelled": {
+      "label": "キャンセル済み",
+      "description": "この交換はキャンセルされました。"
+    }
+  }
 }

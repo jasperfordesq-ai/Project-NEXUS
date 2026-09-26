@@ -1,5 +1,5 @@
 {
-  "title": "Podcasts",
+  "title": "ポッドキャスト",
   "subtitle": "コミュニティ ショー、オーディオ ストーリー、インタビュー、メンバーからの地元の知識。",
   "actions": {
     "back_to_podcasts": "ポッドキャストに戻る",
@@ -42,7 +42,7 @@
     "subscribed": "ショーが続きました。",
     "unsubscribed": "フォローされていない人を表示します。",
     "subscribe_failed": "フォロー設定を更新できませんでした。",
-    "episodes": "Episodes",
+    "episodes": "エピソード",
     "no_episodes": "公開されたエピソードはまだありません。"
   },
   "episode": {
@@ -51,15 +51,15 @@
     "title": "ポッドキャストのエピソード",
     "not_found": "ポッドキャストのエピソードが見つかりません",
     "no_summary": "まだ概要はありません。",
-    "listen": "Listen",
+    "listen": "聴く",
     "from_show": "{{title}}より",
-    "description": "Description",
-    "transcript": "Transcript",
+    "description": "説明",
+    "transcript": "文字起こし",
     "download_transcript": "トランスクリプトをダウンロードする",
-    "chapters": "Chapters",
-    "explicit": "Explicit",
-    "react": "React",
-    "reacted": "Reacted",
+    "chapters": "チャプター",
+    "explicit": "成人向け表現あり",
+    "react": "リアクション",
+    "reacted": "リアクション済み",
     "reaction_failed": "反応を更新できませんでした。",
     "reactions_count_one": "{{count}}件のリアクション",
     "reactions_count_other": "{{count}}件のリアクション",
@@ -78,8 +78,8 @@
     },
     "type": {
       "full": "エピソード全体",
-      "trailer": "Trailer",
-      "bonus": "Bonus"
+      "trailer": "予告編",
+      "bonus": "ボーナス"
     }
   },
   "player": {
@@ -223,10 +223,10 @@
     "cover_image_url": "エピソード画像のURL",
     "transcript_language": "文字起こしの言語",
     "explicit_episode": "このエピソードを成人向けとしてマーク",
-    "show": "Show",
+    "show": "番組",
     "show_title": "番組タイトル",
     "episode_title": "エピソードのタイトル",
-    "category": "Category",
+    "category": "カテゴリー",
     "author_name": "ディレクトリ作成者名",
     "owner_email": "ディレクトリ所有者の電子メール",
     "copyright": "著作権表示",
@@ -238,31 +238,31 @@
     "audio_file_hint": "プライベート NEXUS ホスティング用にオーディオをアップロードするか、外部オーディオ URL を使用します。",
     "audio_url_disabled_file_selected": "選択したホスト済みファイルを使用しています。外部音声URLを使うにはクリアしてください。",
     "clear_audio_file": "選択したファイルをクリア",
-    "visibility": "Visibility",
-    "summary": "Summary",
-    "description": "Description",
+    "visibility": "公開範囲",
+    "summary": "概要",
+    "description": "説明",
     "duration_seconds": "秒単位の継続時間",
     "scheduled_for": "出版スケジュール",
     "episode_type": "エピソードの種類",
-    "transcript": "Transcript",
-    "chapters": "Chapters",
+    "transcript": "文字起こし",
+    "chapters": "チャプター",
     "chapters_hint": "1 行に 1 章、例: 00:30 はじめに"
   },
   "visibility": {
-    "public": "Public",
-    "members": "Members",
-    "private": "Private",
+    "public": "公開",
+    "members": "メンバー限定",
+    "private": "非公開",
     "inherit": "ショーの可視性を継承する"
   },
   "status": {
-    "draft": "Draft",
-    "published": "Published",
-    "archived": "Archived"
+    "draft": "下書き",
+    "published": "公開済み",
+    "archived": "アーカイブ済み"
   },
   "moderation": {
     "pending": "審査待ち",
-    "approved": "Approved",
-    "rejected": "Rejected",
-    "flagged": "Flagged"
+    "approved": "承認済み",
+    "rejected": "却下済み",
+    "flagged": "報告済み"
   }
 }

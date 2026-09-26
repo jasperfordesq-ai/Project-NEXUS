@@ -16,7 +16,7 @@
     "tab_challenges": "課題",
     "tab_collections": "コレクション",
     "tab_journeys": "旅",
-    "tab_engagement": "婚約",
+    "tab_engagement": "エンゲージメント",
     "tab_shop": "XPショップ",
     "engagement": {
       "title": "毎月のエンゲージメント",
@@ -49,7 +49,7 @@
       "likes_received": "いいね！",
       "profile": "プロフィール",
       "membership": "メンバーシップ",
-      "streak": "縞模様",
+      "streak": "連続記録",
       "level": "レベル",
       "special": "特別",
       "vol_org": "組織",
@@ -376,7 +376,7 @@
     "total_connections": "接続",
     "total_reviews": "レビュー",
     "badges_awarded": "獲得したバッジ",
-    "new_listings": "新規物件",
+    "new_listings": "新規リスティング",
     "new_posts": "新しい投稿",
     "load_error": "コミュニティデータのロードに失敗しました",
     "no_change": "変化なし"

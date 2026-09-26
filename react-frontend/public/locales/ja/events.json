@@ -157,7 +157,7 @@
     "keep_event": "キープイベント",
     "cancel_event": "イベントのキャンセル",
     "join_waitlist": "ウェイティングリストに参加する",
-    "leave_waitlist": "順番待ちリストを残す",
+    "leave_waitlist": "順番待ちリストから外れる",
     "other_series_events": "このシリーズの他のイベント",
     "view_all_series": "すべての {{count}} イベントをシリーズで表示する",
     "no_other_series_events": "このシリーズには他のイベントが見つかりません。",
@@ -441,7 +441,7 @@
       "registration_filter": "登録",
       "waitlist_filter": "キャンセル待ち",
       "attendance_filter": "出席",
-      "engagement_filter": "婚約",
+      "engagement_filter": "エンゲージメント",
       "sort_label": "人を並べ替える",
       "sorts": {
         "name_asc": "名前、A から Z",

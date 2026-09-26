@@ -5,7 +5,7 @@
     "cancel": "キャンセル",
     "critical": "クリティカル",
     "delete": "削除",
-    "feature": "特徴",
+    "feature": "注目に設定",
     "high": "高",
     "in_progress": "進行中",
     "in_review": "レビュー中",
@@ -15,7 +15,7 @@
     "refresh": "リフレッシュ",
     "unexpected_error": "予期しないエラー",
     "unknown": "未知",
-    "unfeature": "特徴がない",
+    "unfeature": "注目を解除",
     "actions": "アクション",
     "active": "アクティブ",
     "all": "すべて",
@@ -95,7 +95,7 @@
     "cancel": "キャンセル",
     "close": "近い",
     "col_actions": "アクション",
-    "col_balance": "バランス",
+    "col_balance": "残高",
     "col_email_activation": "メールの有効化",
     "col_joined": "参加しました",
     "col_role": "役割",
@@ -227,7 +227,7 @@
   },
   "user_edit": {
     "actions": {
-      "adjust_balance": "バランスを調整する",
+      "adjust_balance": "残高を調整する",
       "apply_adjustment": "調整を適用する",
       "back_to_users": "ユーザーに戻る",
       "cancel": "キャンセル",
@@ -283,7 +283,7 @@
     },
     "fields": {
       "amount": "額",
-      "balance": "バランス",
+      "balance": "残高",
       "bio": "バイオ",
       "current_balance": "現在の残高",
       "email": "電子メール",
@@ -328,7 +328,7 @@
     },
     "placeholders": {
       "balance_amount": "例えば2 または -1.5",
-      "balance_reason": "なぜこのバランスを調整するのでしょうか？",
+      "balance_reason": "この残高を調整する理由を入力してください",
       "bio": "このユーザーの簡単な経歴...",
       "email": "user@example.com",
       "first_name": "名を入力してください...",
@@ -365,7 +365,7 @@
       "safeguarding": "保護",
       "super_admin_access": "スーパー管理者アクセス",
       "time_credits": "タイムクレジット",
-      "contact_attestation": "連絡先証明書の保護",
+      "contact_attestation": "セーフガーディング連絡証明記録",
       "vetting_status": "審査ステータス"
     },
     "statuses": {
@@ -386,8 +386,8 @@
       "announcer_failed": "市政アナウンサーの役割を更新できませんでした",
       "announcer_granted": "市アナウンサーの役割が付与されました",
       "announcer_revoked": "市アナウンサーの職を剥奪される",
-      "balance_adjusted": "バランス調整済み",
-      "balance_failed": "バランスに失敗しました",
+      "balance_adjusted": "残高調整済み",
+      "balance_failed": "残高の調整に失敗しました",
       "balance_invalid": "残高が無効です",
       "email_already_activated": "メールはすでに有効化されています",
       "generic_error": "発生したエラー",
@@ -501,7 +501,7 @@
     "content": "コンテンツ",
     "community": "コミュニティ",
     "intelligence": "知能",
-    "engagement": "婚約",
+    "engagement": "エンゲージメント",
     "system": "システム"
   },
   "loading": "読み込み中"

@@ -519,7 +519,7 @@
     "proposed": "面接がリクエストされました",
     "declined": "面接が辞退されました",
     "accept": "受け入れる",
-    "decline": "衰退",
+    "decline": "辞退",
     "minutes": "分",
     "download_ics": ".ics をダウンロード"
   },
@@ -528,7 +528,7 @@
     "salary": "提示給与",
     "start_date": "入社予定日",
     "accept": "オファーを承諾",
-    "reject": "衰退",
+    "reject": "辞退",
     "accepted": "オファー承諾済み",
     "rejected": "オファーが辞退されました",
     "send": "オファーを送信する",

@@ -1,13 +1,13 @@
 {
-  "page_title": "Notifications",
-  "title": "Notifications",
+  "page_title": "通知",
+  "title": "通知",
   "subtitle": "アクティビティの最新情報を受け取る",
   "unread_badge": "{{count}} 件の新着",
   "caught_up_badge": "すべて確認済み",
   "mark_all_read": "すべて既読にする",
   "settings_label": "設定",
   "settings_aria": "通知設定",
-  "filter_all": "All",
+  "filter_all": "すべて",
   "filter_unread": "未読 ({{count}})",
   "empty_title": "通知はありません",
   "empty_desc": "ここに新しい通知が表示されます",
@@ -25,29 +25,29 @@
   "error_load": "通知の読み込み中に問題が発生しました",
   "try_again": "再試行",
   "flyout": {
-    "bell_aria": "Notifications",
+    "bell_aria": "通知",
     "bell_unread_aria": "通知、{{count}} 件の未読",
     "unread_count": "未読",
     "empty": "まだ通知はありません",
     "view_all": "すべての通知を見る",
     "close": "通知を閉じる",
-    "unread_dot_aria": "Unread",
+    "unread_dot_aria": "未読",
     "bell_unread_aria_other": "通知、{{count}} 件の未読",
     "bell_unread_aria_one": "通知、{{count}} 未読"
   },
   "type": {
-    "message": "Message",
-    "listing": "Listing",
-    "transaction": "Transaction",
-    "connection": "Connection",
-    "event": "Event",
-    "group": "Group",
-    "achievement": "Achievement",
-    "system": "System",
-    "default": "Notification"
+    "message": "メッセージ",
+    "listing": "リスティング",
+    "transaction": "取引",
+    "connection": "つながり",
+    "event": "イベント",
+    "group": "グループ",
+    "achievement": "実績",
+    "system": "システム",
+    "default": "通知"
   },
   "load_more": "さらにロードする",
-  "undo": "Undo",
+  "undo": "元に戻す",
   "toast": {
     "mark_read_failed": "通知を既読にするのに失敗しました",
     "all_read": "すべての通知が既読にマークされました",
@@ -63,7 +63,7 @@
     "transaction_amount": "{{sign}}{{amount}} タイムクレジット",
     "toast_message": "新しいメッセージ",
     "toast_listing": "リストの更新",
-    "toast_transaction": "Transaction",
+    "toast_transaction": "取引",
     "toast_connection": "接続リクエスト",
     "toast_event": "イベントの更新",
     "toast_group": "グループ通知",
@@ -94,10 +94,10 @@
     "toast_job_alert_match": "新しい求人マッチ",
     "toast_job_interview_reminder": "面接のリマインダー",
     "toast_job_completion_credits": "タイムクレジットを獲得しました!",
-    "toast_default": "Notification"
+    "toast_default": "通知"
   },
   "page_meta": {
-    "title": "Notifications"
+    "title": "通知"
   },
   "unread_badge_other": "{{count}} 件の新着",
   "filter_unread_other": "未読 ({{count}})",

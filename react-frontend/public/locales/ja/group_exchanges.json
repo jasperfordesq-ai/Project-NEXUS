@@ -93,7 +93,7 @@
     "participants_heading_other": "参加者 ({{count}})",
     "hours_amount_other": "{{count}}時間",
     "participants_heading_one": "参加者 ({{count}})",
-    "hours_amount_one": "{{count}}h"
+    "hours_amount_one": "{{count}}時間"
   },
   "create": {
     "page_title": "グループ交換を作成",
@@ -197,6 +197,6 @@
       "title": "グループ交換を作成"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver"
+  "role_provider": "提供者",
+  "role_receiver": "受取人"
 }

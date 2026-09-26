@@ -9,8 +9,8 @@
   "send": "送信",
   "you": "あなた",
   "unread": "{{count}} 未読",
-  "aria_read_receipt_read": "Read",
-  "aria_read_receipt_sent": "Sent",
+  "aria_read_receipt_read": "既読",
+  "aria_read_receipt_sent": "送信済み",
   "page_subtitle": "コミュニティメンバーとの会話",
   "disabled_title": "ダイレクトメッセージが無効です",
   "disabled_subtitle": "このコミュニティではダイレクトメッセージが有効ではありません。サービスを手配するには、交換リクエストシステムをご利用ください。",
@@ -222,19 +222,19 @@
   "character_count": "{{current}}/{{max}}",
   "loading_older": "古いメッセージを読み込む",
   "safeguarding_vetting_required": {
-    "title": "Anzen kakunin ga hitsuyo desu",
-    "body": "Kono kaiwa wa, kono menba ni messeji o okuru mae ni kakunin-zumi no shinsa ga hitsuyo na tame, komyuniti no anzen ruuru ni yori ichiji teishi sareteimasu.",
-    "contact_broker": "Shinsa jokyo no kakunin ya tsugi no anzen na tetsuzuki ni tsuite, buroka mata wa komyuniti kanrisha ni renraku shite kudasai.",
-    "required_checks": "Hitsuyo na kakunin",
-    "action": "Herupu o hiraku",
-    "dismiss": "Anzen oshirase o tojiru"
+    "title": "コミュニティによる確認が必要です",
+    "body": "あなたのコミュニティは、保護対象メンバーへの連絡に必要な拡張DBS要件をあなたが満たしていることをまだ確認していません。",
+    "contact_broker": "下のボタンから、ブローカーによる非公開の審査を依頼してください。DBS証明書や犯罪歴に関する情報をNEXUS経由で送らないでください。",
+    "required_checks": "必要な確認",
+    "action": "ヘルプを開く",
+    "dismiss": "セーフガーディングのお知らせを閉じる"
   },
   "safeguarding_contact_restricted": {
-    "title": "Koordineeta no tehai ga hitsuyo desu",
-    "body": "Kono menba wa anzen hogo settei ni yori koordineeta kaizai no renraku ga hitsuyo na tame, chokusetsu messeji wa dekimasen.",
+    "title": "コーディネーターによる手配が必要です",
+    "body": "このメンバーのセーフガーディング設定ではコーディネーターを介した連絡が必要なため、ダイレクトメッセージは利用できません。",
     "contact_broker": "ブローカー、管理者、またはコーディネーターに連絡の調整をご依頼いただけます。下のボタンをご利用ください — 担当者よりご連絡いたします。",
-    "action": "Herupu o hiraku",
-    "dismiss": "Anzen oshirase o tojiru"
+    "action": "ヘルプを開く",
+    "dismiss": "セーフガーディングのお知らせを閉じる"
   },
   "safeguarding_policy_unavailable": {
     "title": "保護チェックは一時的に利用できません",

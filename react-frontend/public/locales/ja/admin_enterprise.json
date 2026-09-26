@@ -5,7 +5,7 @@
     "cancel": "キャンセル",
     "critical": "クリティカル",
     "delete": "削除",
-    "feature": "特徴",
+    "feature": "注目に設定",
     "high": "高",
     "in_progress": "進行中",
     "in_review": "レビュー中",
@@ -15,7 +15,7 @@
     "refresh": "リフレッシュ",
     "unexpected_error": "予期しないエラー",
     "unknown": "未知",
-    "unfeature": "特徴がない",
+    "unfeature": "注目を解除",
     "actions": "アクション",
     "active": "アクティブ",
     "all": "すべて",
@@ -356,7 +356,7 @@
     "caring_role_presets": {
       "national_admin": {
         "name": "KISS全国財団管理",
-        "description": "プログラム横断の監督、報告基準、連邦の可視性、およびネットワークガバナンス。"
+        "description": "プログラム横断の監督、報告基準、フェデレーションの可視性、およびネットワークガバナンス。"
       },
       "canton_admin": {
         "name": "KISS州管理",
@@ -1039,7 +1039,7 @@
       "caring": "思いやりのあるコミュニティ",
       "content": "コンテンツ",
       "events": "イベント",
-      "federation": "連邦",
+      "federation": "フェデレーション",
       "gamification": "ゲーミフィケーション",
       "gdpr": "GDPR",
       "groups": "グループ",

@@ -40,7 +40,7 @@
   "sidebar": {
     "section_overview": "概要",
     "section_tenants": "テナント",
-    "section_federation": "連邦",
+    "section_federation": "フェデレーション",
     "section_commercial": "商業",
     "expand": "サイドバーを展開する",
     "collapse": "サイドバーを折りたたむ",
@@ -55,7 +55,7 @@
     "edit": "編集",
     "hierarchy": "階層",
     "users": "ユーザー",
-    "federation": "連邦",
+    "federation": "フェデレーション",
     "whitelist": "ホワイトリスト",
     "partnerships": "パートナーシップ",
     "tenant": "テナント",

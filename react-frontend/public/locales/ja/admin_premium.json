@@ -5,7 +5,7 @@
     "cancel": "キャンセル",
     "critical": "クリティカル",
     "delete": "削除",
-    "feature": "特徴",
+    "feature": "注目に設定",
     "high": "高",
     "in_progress": "進行中",
     "in_review": "レビュー中",
@@ -15,7 +15,7 @@
     "refresh": "リフレッシュ",
     "unexpected_error": "予期しないエラー",
     "unknown": "未知",
-    "unfeature": "特徴がない",
+    "unfeature": "注目を解除",
     "actions": "アクション",
     "active": "アクティブ",
     "all": "すべて",
@@ -74,33 +74,33 @@
   },
   "member_premium_admin": {
     "meta": {
-      "title": "メンバーのプレミアム層",
-      "description": "メンバーが購読できる有料のプレミアム層を定義します。各段階では、特定の機能キーのロックが解除されます。"
+      "title": "寄付と支援",
+      "description": "コミュニティの支援者向けに定期寄付のレベルを作成します。表彰の記載のみを使い、追加のメンバー機能は販売しないでください。"
     },
     "actions": {
-      "subscribers": "購読者",
-      "new_tier": "新しい階層",
+      "subscribers": "定期支援者",
+      "new_tier": "新しい支援レベル",
       "edit": "編集",
       "sync_stripe": "Stripe に同期",
       "delete": "消去",
       "cancel": "キャンセル",
       "save_changes": "変更を保存する",
-      "create_tier": "階層の作成"
+      "create_tier": "支援レベルを作成"
     },
     "empty": {
-      "tiers": "まだ階層はありません。上記で最初のプレミアム層を作成します。",
+      "tiers": "支援レベルはまだありません。上で最初の定期寄付レベルを作成してください。",
       "value": "-"
     },
     "subscribers_page": {
-      "title": "プレミアム購読者",
-      "description": "現在プレミアム層に加入しているメンバー。",
+      "title": "定期支援者",
+      "description": "現在、毎月または毎年寄付しているメンバー。",
       "failed_load": "購読者のロードに失敗しました",
       "status_filter": "ステータスフィルター",
       "all": "全て",
       "total": "{{count}} 合計",
       "refresh": "リフレッシュ",
       "empty": "フィルタに一致する加入者がいません。",
-      "table_aria": "購読者",
+      "table_aria": "定期支援者",
       "user_fallback": "ユーザー番号{{id}}",
       "columns": {
         "member": "会員",
@@ -129,14 +129,14 @@
       "total_one": "{{count}} 合計"
     },
     "table": {
-      "aria": "プレミアム層",
+      "aria": "寄付の支援レベル",
       "name": "名前",
       "slug": "スラッグ",
       "price_month": "料金/月",
       "price_year": "価格/年",
-      "features": "特徴",
+      "features": "表彰",
       "status": "状態",
-      "subscribers": "購読者",
+      "subscribers": "支援者",
       "stripe": "ストライプ",
       "actions": "アクション"
     },
@@ -160,8 +160,8 @@
       "description": "説明",
       "price_month": "料金/月",
       "price_year": "価格/年",
-      "features": "機能キー (カンマ区切り)",
-      "features_description": "例えば検証済みバッジ、優先順位マッチング、高度な検索、広告なし",
+      "features": "表彰の記載",
+      "features_description": "支援レベルに表示される表彰の記載（任意、カンマ区切り）。有料機能の制限には使わないでください。",
       "sort_order": "並べ替え順序"
     },
     "validation": {

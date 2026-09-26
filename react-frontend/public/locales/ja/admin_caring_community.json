@@ -5,7 +5,7 @@
     "cancel": "キャンセル",
     "critical": "クリティカル",
     "delete": "削除",
-    "feature": "特徴",
+    "feature": "注目に設定",
     "high": "高",
     "in_progress": "進行中",
     "in_review": "レビュー中",
@@ -15,7 +15,7 @@
     "refresh": "リフレッシュ",
     "unexpected_error": "予期しないエラー",
     "unknown": "未知",
-    "unfeature": "特徴がない",
+    "unfeature": "注目を解除",
     "actions": "アクション",
     "active": "アクティブ",
     "all": "すべて",
@@ -231,7 +231,7 @@
         "date": "日付",
         "discount": "割引",
         "empty": "まだ償還はありません。",
-        "hours": "営業時間",
+        "hours": "時間",
         "item": "アイテム",
         "member": "メンバー",
         "merchant": "商人",
@@ -597,7 +597,7 @@
       "trust": "信頼と口コミ"
     },
     "capability_type": {
-      "feature": "特徴",
+      "feature": "機能",
       "module": "モジュール"
     },
     "reporting": {
@@ -660,7 +660,7 @@
       "sent": "送信済み",
       "expires": "有効期限が切れます",
       "push": "プッシュ",
-      "dismissed": "解雇されました",
+      "dismissed": "却下済み",
       "status": "ステータス",
       "actions": "アクション"
     },
@@ -696,10 +696,10 @@
     "actions": {
       "refresh": "リフレッシュ",
       "retry": "リトライ",
-      "open_hour_review": "営業時間のレビュー",
+      "open_hour_review": "時間のレビューを開く",
       "open_report_pack": "レポートパックを開く",
       "approve": "承認する",
-      "decline": "衰退",
+      "decline": "拒否",
       "escalate": "エスカレート",
       "re_escalate": "再エスカレーション"
     },
@@ -837,7 +837,7 @@
         "triaged": "トリアージ",
         "investigating": "調査中",
         "resolved": "解決済み",
-        "dismissed": "解雇されました"
+        "dismissed": "却下済み"
       },
       "age_hours_other": "{{count}}h",
       "age_days_other": "{{count}}日",
@@ -1181,7 +1181,7 @@
       "pause": "一時停止",
       "resume": "再開する",
       "log_date": "日付",
-      "log_hours": "営業時間",
+      "log_hours": "時間",
       "log_note": "注記 (オプション)",
       "log_hours_action": "時間を記録する",
       "load_failed": "サポート関係を読み込めませんでした。",
@@ -2229,7 +2229,7 @@
         "webhook_subscription": "ウェブフックのサブスクリプション、HMACシークレット、およびエンドポイントURLの許可リスト",
         "openapi_spec": "JSONまたはYAML形式のOpenAPI仕様URL",
         "sandbox_tenant": "統合テスト用のサンドボックステナントスラッグ",
-        "federation_public_key": "パートナーが連邦に参加する際の、連邦集約署名公開鍵",
+        "federation_public_key": "パートナーがフェデレーションに参加する際の、フェデレーション集約署名公開鍵",
         "rate_limit_headers": "X-RateLimit-Limit および X-RateLimit-Remaining ヘッダーのドキュメント",
         "data_sharing_agreement": "ドラフトデータ共有契約および指定データ保護担当者",
         "incident_runbook": "AG80 開示パックのインシデント対応マニュアル URL"
@@ -2514,7 +2514,7 @@
     "stages": {
       "captured": "捕らえられた",
       "contacted": "連絡済み",
-      "engaged": "婚約中",
+      "engaged": "関与中",
       "qualified": "資格のある",
       "converted": "変換された",
       "dormant": "睡眠状態",
@@ -2712,7 +2712,7 @@
       "description": "サブ地域の内訳は、どの地域が最も多くのケア活動を行っているかを示します。これを使用して、コーディネーターのサポートやボランティアの募集がさらに必要な分野を特定します。",
       "aria": "サブリージョンの内訳",
       "sub_region": "サブリージョン",
-      "hours": "営業時間",
+      "hours": "時間",
       "weighted_hours": "加重時間数",
       "formal_care_offset": "フォーマルケアオフセット"
     },

@@ -325,7 +325,7 @@
       "sections": {
         "overview": "概要",
         "operations": "運営",
-        "engagement": "婚約",
+        "engagement": "エンゲージメント",
         "trust_safety": "信頼と安全",
         "pilot_governance": "パイロットガバナンス",
         "partnerships": "パートナーシップ",
@@ -529,7 +529,7 @@
         "member": "メンバー",
         "merchant": "商人",
         "item": "アイテム",
-        "hours": "営業時間",
+        "hours": "時間",
         "rate": "レート",
         "discount": "割引",
         "status": "状態",
@@ -595,7 +595,7 @@
         "actions": "アクション",
         "date": "日付",
         "destination": "行き先",
-        "hours": "営業時間",
+        "hours": "時間",
         "member": "メンバー",
         "member_credited": "メンバーがクレジットされました",
         "reason": "理由",
@@ -1011,7 +1011,7 @@
         "triaged": "トリアージ",
         "investigating": "調査中",
         "resolved": "解決済み",
-        "dismissed": "解雇された"
+        "dismissed": "却下済み"
       },
       "severity_legend": {
         "title": "重大度レベル",
@@ -1168,12 +1168,12 @@
         "save": "設定の保存"
       },
       "member_balance": {
-        "title": "メンバーバランスの発行・調整",
+        "title": "メンバー残高の発行・調整",
         "member": "メンバー",
         "member_placeholder": "名前またはメールアドレスで検索",
         "no_matching_members": "一致するメンバーがいません",
         "clear": "クリア",
-        "tabs_aria": "地域ポイントバランスアクション",
+        "tabs_aria": "地域ポイント残高の操作",
         "issue_tab": "論点",
         "points_to_issue": "発行するポイント",
         "description": "説明",
@@ -1191,7 +1191,7 @@
         "type": "タイプ",
         "description": "説明",
         "points": "ポイント",
-        "balance": "バランス",
+        "balance": "残高",
         "user_fallback": "#{{id}}"
       },
       "messages": {

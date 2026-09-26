@@ -69,8 +69,8 @@
     "like_failed": "いいねの更新に失敗しました"
   },
   "realtime": {
-    "new_posts_one": "1 new post",
-    "new_posts_other": "{{count}} new posts"
+    "new_posts_one": "新着投稿1件 — タップして表示",
+    "new_posts_other": "新着投稿{{count}}件 — タップして表示"
   },
   "compose": {
     "create_title": "作成する {{type}}",
@@ -582,7 +582,7 @@
     "create_your_story": "あなたのストーリーを作成",
     "view_story_from": "{{name}} からのストーリーを見る",
     "load_failed": "ストーリーを読み込めませんでした",
-    "retry": "Retry"
+    "retry": "再試行"
   },
   "fab": {
     "create": "投稿を作成"
