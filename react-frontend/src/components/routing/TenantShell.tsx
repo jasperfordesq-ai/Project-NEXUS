@@ -440,6 +440,8 @@ const publicRegistryPatterns = [
   /^$/,
   /^(features|changelog|development-status|about|faq|contact|pilot-inquiry|pilot-apply|help|terms|privacy|accessibility|cookies|community-guidelines|trust-and-safety|account-deletion|child-safety|acceptable-use|legal|timebanking-guide|partner|social-prescribing|impact-summary|impact-report|strategic-plan|pricing)$/,
   /^pilot-apply\/status\/[^/]+$/,
+  // Help Centre guides: /help/<audience>[/<section>[/<article>]].
+  /^help\/(members|brokers|admins)(\/[a-z0-9_]+){0,2}$/,
   /^(terms|privacy|accessibility|cookies|community-guidelines|acceptable-use)\/versions$/,
   /^platform\/(terms|privacy|disclaimer)$/,
   /^developers(\/(auth|endpoints|webhooks))?$/,

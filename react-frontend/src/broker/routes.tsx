@@ -154,6 +154,7 @@ export function BrokerRoutes() {
       {/* Settings & help */}
       <Route path="configuration" element={<Lazy><BrokerConfigurationPage /></Lazy>} />
       <Route path="help" element={<Lazy><BrokerHelpPage /></Lazy>} />
+      <Route path="help/:sectionId/:articleId" element={<Lazy><BrokerHelpPage /></Lazy>} />
 
       {/* Unknown sub-route under /broker → bounce back to the broker dashboard. */}
       <Route path="*" element={<BrokerNotFoundRedirect />} />

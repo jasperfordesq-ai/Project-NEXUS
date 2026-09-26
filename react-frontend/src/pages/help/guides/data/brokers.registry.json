@@ -1,0 +1,256 @@
+[
+  {
+    "id": "broker_role",
+    "icon": "briefcase",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_what_is_a_broker",
+        "link": "/broker",
+        "popular": true
+      },
+      {
+        "id": "broker_can_and_cannot",
+        "link": "/broker"
+      },
+      {
+        "id": "broker_becoming_a_broker"
+      },
+      {
+        "id": "broker_finding_your_way",
+        "link": "/broker"
+      },
+      {
+        "id": "broker_dashboard",
+        "link": "/broker"
+      },
+      {
+        "id": "broker_configuration",
+        "link": "/broker/configuration"
+      }
+    ]
+  },
+  {
+    "id": "broker_members",
+    "icon": "users",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_approve_new_members",
+        "link": "/broker/members",
+        "popular": true
+      },
+      {
+        "id": "broker_members_list",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_member_details",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_member_notes",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_suspend_member",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_account_help",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_adjust_balance",
+        "link": "/broker/members"
+      },
+      {
+        "id": "broker_supporting_members"
+      }
+    ]
+  },
+  {
+    "id": "broker_exchanges",
+    "icon": "handshake",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_exchange_when_approval",
+        "link": "/broker/exchanges",
+        "gate": {
+          "feature": "exchange_workflow"
+        }
+      },
+      {
+        "id": "broker_approve_exchange",
+        "link": "/broker/exchanges",
+        "gate": {
+          "feature": "exchange_workflow"
+        },
+        "popular": true
+      },
+      {
+        "id": "broker_exchange_list",
+        "link": "/broker/exchanges",
+        "gate": {
+          "feature": "exchange_workflow"
+        }
+      },
+      {
+        "id": "broker_exchange_problems",
+        "link": "/broker/exchanges",
+        "gate": {
+          "feature": "exchange_workflow"
+        }
+      },
+      {
+        "id": "broker_risk_tags",
+        "link": "/broker/risk-tags"
+      },
+      {
+        "id": "broker_insurance",
+        "link": "/broker/insurance"
+      }
+    ]
+  },
+  {
+    "id": "broker_safeguarding",
+    "icon": "shield",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_safeguarding_overview",
+        "link": "/broker"
+      },
+      {
+        "id": "broker_member_safeguarding_choices",
+        "link": "/broker/safeguarding-options"
+      },
+      {
+        "id": "broker_safeguarding_options",
+        "link": "/broker/safeguarding-options"
+      },
+      {
+        "id": "broker_coordinator_help"
+      },
+      {
+        "id": "broker_message_review",
+        "link": "/broker/messages"
+      },
+      {
+        "id": "broker_review_message",
+        "link": "/broker/messages"
+      },
+      {
+        "id": "broker_review_archive",
+        "link": "/broker/archives"
+      },
+      {
+        "id": "broker_user_monitoring",
+        "link": "/broker/monitoring"
+      },
+      {
+        "id": "broker_vetting_confirm",
+        "link": "/broker/vetting"
+      },
+      {
+        "id": "broker_vetting_revoke_review",
+        "link": "/broker/vetting"
+      },
+      {
+        "id": "broker_safeguarding_page",
+        "link": "/broker/safeguarding"
+      },
+      {
+        "id": "broker_worried_about_member"
+      }
+    ]
+  },
+  {
+    "id": "broker_moderation",
+    "icon": "flag",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_content_queue",
+        "link": "/broker/moderation/queue"
+      },
+      {
+        "id": "broker_feed_posts",
+        "link": "/broker/moderation/feed",
+        "gate": {
+          "module": "feed"
+        }
+      },
+      {
+        "id": "broker_comments_reviews",
+        "link": "/broker/moderation/comments"
+      },
+      {
+        "id": "broker_reports",
+        "link": "/broker/moderation/reports"
+      }
+    ]
+  },
+  {
+    "id": "broker_group_activities",
+    "icon": "calendar",
+    "gate": {
+      "feature": "group_exchanges"
+    },
+    "articles": [
+      {
+        "id": "broker_group_exchange_basics",
+        "link": "/group-exchanges"
+      },
+      {
+        "id": "broker_create_group_exchange",
+        "link": "/group-exchanges/create"
+      },
+      {
+        "id": "broker_community_pot",
+        "link": "/group-exchanges/create"
+      }
+    ]
+  },
+  {
+    "id": "broker_reports",
+    "icon": "chart",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_onboarding_funnel",
+        "link": "/broker/onboarding"
+      },
+      {
+        "id": "broker_figures_and_records",
+        "link": "/broker"
+      }
+    ]
+  },
+  {
+    "id": "broker_good_practice",
+    "icon": "heart",
+    "gate": null,
+    "articles": [
+      {
+        "id": "broker_daily_routine",
+        "link": "/broker"
+      },
+      {
+        "id": "broker_fair_exchanges"
+      },
+      {
+        "id": "broker_safe_exchanges",
+        "link": "/broker/risk-tags"
+      },
+      {
+        "id": "broker_privacy_records"
+      },
+      {
+        "id": "broker_welcoming_members",
+        "link": "/broker/members"
+      }
+    ]
+  }
+]

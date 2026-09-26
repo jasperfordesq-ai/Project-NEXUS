@@ -1,0 +1,58 @@
+{
+  "page_title": "Help Centre",
+  "meta_description": "Plain-English guides to everything on {{name}}: getting started, exchanging time, staying safe and running your community.",
+  "hero_eyebrow": "Help Centre",
+  "heading": "How can we help?",
+  "subtitle": "Step-by-step guides to everything on {{name}}, written in plain English.",
+  "search_label": "Search the Help Centre",
+  "search_placeholder": "Search the guides, for example \"send hours\"",
+  "search_results_heading": "Guides matching \"{{query}}\"",
+  "search_results_count_one": "{{count}} guide found",
+  "search_results_count_other": "{{count}} guides found",
+  "search_no_results_title": "No guides matched your search",
+  "search_no_results_body": "Try a different or shorter word. You can also browse the topics, or contact us and a person will help.",
+  "audience_nav_label": "Choose a guide",
+  "audience": {
+    "members": {
+      "title": "Using the platform",
+      "description": "Joining, offering help, exchanging time and staying safe."
+    },
+    "brokers": {
+      "title": "For brokers and coordinators",
+      "description": "Approving members, arranging exchanges, safeguarding and group activities."
+    },
+    "admins": {
+      "title": "For community admins",
+      "description": "Setting up your community, managing members and choosing features."
+    }
+  },
+  "popular_heading": "Most people start here",
+  "sections_heading": "Browse by topic",
+  "articles_count_one": "{{count}} guide",
+  "articles_count_other": "{{count}} guides",
+  "community_faqs_heading": "Questions from your community",
+  "community_faqs_description": "Answers written by the people who run {{name}}.",
+  "contact_heading": "Still need help?",
+  "contact_body": "If you can't find what you need, get in touch and a person will help you.",
+  "contact_button": "Contact us",
+  "open_page": "Go to this page",
+  "in_this_section": "More guides in this topic",
+  "pager_label": "Other guides in this topic",
+  "previous_article": "Previous",
+  "next_article": "Next",
+  "not_found_title": "We couldn't find that guide",
+  "not_found_body": "It may have moved, or this feature may not be switched on in your community.",
+  "not_found_button": "Back to the Help Centre",
+  "broker_panel": {
+    "title": "Broker and coordinator guide",
+    "subtitle": "Plain-English guides to every part of the Broker Panel and the work of running exchanges.",
+    "open_full": "Open the full guide",
+    "view_in_help_centre": "Open in the Help Centre",
+    "back": "All broker guides"
+  },
+  "admin_panel": {
+    "title": "Complete admin guide",
+    "subtitle": "Step-by-step guides to setting up your community, managing members, safeguarding and every admin feature, in plain English.",
+    "open_full": "Open the admin guide"
+  }
+}

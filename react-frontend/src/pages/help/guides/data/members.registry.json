@@ -1,0 +1,1189 @@
+[
+  {
+    "id": "getting_started",
+    "icon": "rocket",
+    "gate": null,
+    "articles": [
+      {
+        "id": "what_is_timebanking",
+        "link": "/timebanking-guide",
+        "popular": true
+      },
+      {
+        "id": "how_time_credits_work",
+        "link": "/wallet",
+        "gate": {
+          "module": "wallet"
+        }
+      },
+      {
+        "id": "joining_your_community",
+        "link": "/register"
+      },
+      {
+        "id": "email_confirmation_and_approval",
+        "link": "/login"
+      },
+      {
+        "id": "first_time_setup"
+      },
+      {
+        "id": "finding_your_way_around",
+        "link": "/dashboard"
+      },
+      {
+        "id": "using_on_your_phone",
+        "link": "/install-app"
+      },
+      {
+        "id": "accessible_version"
+      },
+      {
+        "id": "language_and_appearance",
+        "link": "/settings"
+      }
+    ]
+  },
+  {
+    "id": "account_profile",
+    "icon": "user",
+    "gate": null,
+    "articles": [
+      {
+        "id": "editing_your_profile",
+        "link": "/settings",
+        "gate": {
+          "module": "profile"
+        }
+      },
+      {
+        "id": "what_other_members_see",
+        "link": "/profile",
+        "gate": {
+          "module": "profile"
+        }
+      },
+      {
+        "id": "skills_and_availability",
+        "link": "/settings"
+      },
+      {
+        "id": "why_you_are_not_listed",
+        "link": "/members",
+        "gate": {
+          "feature": "connections"
+        }
+      },
+      {
+        "id": "identity_verification",
+        "link": "/verify-identity-optional",
+        "gate": {
+          "feature": "identity_verification"
+        }
+      }
+    ]
+  },
+  {
+    "id": "security_signin",
+    "icon": "key",
+    "gate": null,
+    "articles": [
+      {
+        "id": "signing_in",
+        "link": "/login"
+      },
+      {
+        "id": "forgotten_password",
+        "link": "/password/forgot",
+        "popular": true
+      },
+      {
+        "id": "changing_password",
+        "link": "/settings"
+      },
+      {
+        "id": "changing_email",
+        "link": "/contact"
+      },
+      {
+        "id": "two_step_verification",
+        "link": "/settings",
+        "gate": {
+          "feature": "two_factor_authentication"
+        }
+      },
+      {
+        "id": "passkeys",
+        "link": "/settings",
+        "gate": {
+          "feature": "biometric_login"
+        }
+      },
+      {
+        "id": "someone_got_into_account",
+        "link": "/settings"
+      }
+    ]
+  },
+  {
+    "id": "privacy_safety",
+    "icon": "shield",
+    "gate": null,
+    "articles": [
+      {
+        "id": "contact_details_private",
+        "link": "/messages",
+        "popular": true
+      },
+      {
+        "id": "who_can_see_profile",
+        "link": "/settings"
+      },
+      {
+        "id": "blocking_members",
+        "link": "/settings/blocked"
+      },
+      {
+        "id": "reporting_content"
+      },
+      {
+        "id": "safeguarding_preferences",
+        "link": "/settings"
+      },
+      {
+        "id": "coordinator_message_review",
+        "link": "/messages",
+        "gate": {
+          "module": "messages"
+        }
+      },
+      {
+        "id": "staying_safe"
+      },
+      {
+        "id": "adults_only"
+      }
+    ]
+  },
+  {
+    "id": "notifications",
+    "icon": "bell",
+    "gate": {
+      "module": "notifications"
+    },
+    "articles": [
+      {
+        "id": "notification_bell",
+        "link": "/notifications"
+      },
+      {
+        "id": "email_notification_settings",
+        "link": "/settings"
+      },
+      {
+        "id": "email_digests",
+        "link": "/settings"
+      },
+      {
+        "id": "push_notifications",
+        "link": "/settings"
+      }
+    ]
+  },
+  {
+    "id": "your_data",
+    "icon": "file",
+    "gate": null,
+    "articles": [
+      {
+        "id": "download_your_data",
+        "link": "/settings/data-export"
+      },
+      {
+        "id": "data_rights_requests",
+        "link": "/settings"
+      },
+      {
+        "id": "deleting_your_account",
+        "link": "/settings"
+      },
+      {
+        "id": "cookie_settings",
+        "link": "/cookies"
+      },
+      {
+        "id": "legal_documents",
+        "link": "/legal"
+      }
+    ]
+  },
+  {
+    "id": "troubleshooting",
+    "icon": "lifebuoy",
+    "gate": null,
+    "articles": [
+      {
+        "id": "cant_sign_in",
+        "link": "/login"
+      },
+      {
+        "id": "not_receiving_emails"
+      },
+      {
+        "id": "something_not_working"
+      },
+      {
+        "id": "report_a_problem"
+      },
+      {
+        "id": "contacting_your_community",
+        "link": "/contact"
+      }
+    ]
+  },
+  {
+    "id": "ai_assistant",
+    "icon": "bot",
+    "gate": {
+      "feature": "ai_chat"
+    },
+    "articles": [
+      {
+        "id": "about_ai_assistant",
+        "link": "/chat"
+      },
+      {
+        "id": "ai_assistant_limits",
+        "link": "/chat"
+      }
+    ]
+  },
+  {
+    "id": "listings",
+    "icon": "list",
+    "gate": {
+      "module": "listings"
+    },
+    "articles": [
+      {
+        "id": "offers_and_requests",
+        "link": "/listings"
+      },
+      {
+        "id": "create_listing",
+        "link": "/listings/create",
+        "popular": true
+      },
+      {
+        "id": "listing_ai_help",
+        "link": "/listings/create"
+      },
+      {
+        "id": "listing_details",
+        "link": "/listings/create"
+      },
+      {
+        "id": "listing_photo",
+        "link": "/listings/create"
+      },
+      {
+        "id": "manage_listing",
+        "link": "/profile"
+      },
+      {
+        "id": "browse_listings",
+        "link": "/listings"
+      },
+      {
+        "id": "listing_map",
+        "link": "/listings",
+        "gate": {
+          "feature": "maps"
+        }
+      },
+      {
+        "id": "respond_to_listing",
+        "link": "/listings"
+      },
+      {
+        "id": "report_listing",
+        "link": "/listings"
+      }
+    ]
+  },
+  {
+    "id": "finding_people",
+    "icon": "search",
+    "gate": null,
+    "articles": [
+      {
+        "id": "member_directory",
+        "link": "/members",
+        "gate": {
+          "feature": "connections"
+        }
+      },
+      {
+        "id": "connections",
+        "link": "/connections",
+        "gate": {
+          "feature": "connections"
+        }
+      },
+      {
+        "id": "search",
+        "link": "/search",
+        "gate": {
+          "feature": "search"
+        }
+      },
+      {
+        "id": "explore_page",
+        "link": "/explore"
+      },
+      {
+        "id": "matches",
+        "link": "/matches",
+        "gate": {
+          "module": "listings"
+        }
+      },
+      {
+        "id": "match_preferences",
+        "link": "/matches/preferences",
+        "gate": {
+          "module": "listings"
+        }
+      },
+      {
+        "id": "skills_and_endorsements",
+        "link": "/skills"
+      }
+    ]
+  },
+  {
+    "id": "messages",
+    "icon": "message",
+    "gate": {
+      "module": "messages"
+    },
+    "articles": [
+      {
+        "id": "start_conversation",
+        "link": "/messages"
+      },
+      {
+        "id": "voice_and_attachments",
+        "link": "/messages"
+      },
+      {
+        "id": "edit_delete_messages",
+        "link": "/messages"
+      },
+      {
+        "id": "archive_delete_conversations",
+        "link": "/messages"
+      },
+      {
+        "id": "message_translation",
+        "link": "/messages",
+        "gate": {
+          "feature": "message_translation"
+        }
+      },
+      {
+        "id": "coordinator_review_notice",
+        "link": "/messages"
+      },
+      {
+        "id": "coordinator_arrangement_needed",
+        "link": "/messages"
+      },
+      {
+        "id": "blocking_members",
+        "link": "/settings/blocked"
+      }
+    ]
+  },
+  {
+    "id": "exchanges",
+    "icon": "handshake",
+    "gate": {
+      "feature": "exchange_workflow"
+    },
+    "articles": [
+      {
+        "id": "how_exchanges_work",
+        "link": "/exchanges",
+        "popular": true
+      },
+      {
+        "id": "request_exchange",
+        "link": "/exchanges"
+      },
+      {
+        "id": "respond_to_request",
+        "link": "/exchanges"
+      },
+      {
+        "id": "start_and_complete",
+        "link": "/exchanges"
+      },
+      {
+        "id": "confirm_hours",
+        "link": "/exchanges"
+      },
+      {
+        "id": "broker_approval",
+        "link": "/exchanges"
+      },
+      {
+        "id": "cancel_exchange",
+        "link": "/exchanges"
+      },
+      {
+        "id": "exchange_disputes",
+        "link": "/exchanges"
+      },
+      {
+        "id": "rate_exchange",
+        "link": "/exchanges"
+      }
+    ]
+  },
+  {
+    "id": "reviews",
+    "icon": "heart",
+    "gate": {
+      "feature": "reviews"
+    },
+    "articles": [
+      {
+        "id": "leave_review",
+        "link": "/reviews"
+      },
+      {
+        "id": "manage_reviews",
+        "link": "/reviews"
+      }
+    ]
+  },
+  {
+    "id": "wallet",
+    "icon": "wallet",
+    "gate": {
+      "module": "wallet"
+    },
+    "articles": [
+      {
+        "id": "wallet_overview",
+        "link": "/wallet"
+      },
+      {
+        "id": "send_hours",
+        "link": "/wallet",
+        "popular": true
+      },
+      {
+        "id": "transaction_history",
+        "link": "/wallet"
+      },
+      {
+        "id": "starting_balance",
+        "link": "/wallet"
+      },
+      {
+        "id": "insufficient_balance",
+        "link": "/wallet"
+      },
+      {
+        "id": "donate_hours",
+        "link": "/wallet"
+      },
+      {
+        "id": "hours_without_exchange_requests",
+        "link": "/wallet"
+      }
+    ]
+  },
+  {
+    "id": "group_exchanges",
+    "icon": "users",
+    "gate": {
+      "feature": "group_exchanges"
+    },
+    "articles": [
+      {
+        "id": "what_is_group_exchange",
+        "link": "/group-exchanges"
+      },
+      {
+        "id": "create_group_exchange",
+        "link": "/group-exchanges/create"
+      },
+      {
+        "id": "providers_receivers",
+        "link": "/group-exchanges/create"
+      },
+      {
+        "id": "split_options",
+        "link": "/group-exchanges/create"
+      },
+      {
+        "id": "confirm_and_complete",
+        "link": "/group-exchanges"
+      },
+      {
+        "id": "cancel_group_exchange",
+        "link": "/group-exchanges"
+      },
+      {
+        "id": "workshop_community_pot",
+        "link": "/group-exchanges/create"
+      }
+    ]
+  },
+  {
+    "id": "feed",
+    "icon": "newspaper",
+    "gate": {
+      "module": "feed"
+    },
+    "articles": [
+      {
+        "id": "feed_post_update",
+        "link": "/feed",
+        "popular": true
+      },
+      {
+        "id": "feed_photos_links",
+        "link": "/feed"
+      },
+      {
+        "id": "feed_edit_schedule",
+        "link": "/feed"
+      },
+      {
+        "id": "feed_reactions_comments",
+        "link": "/feed"
+      },
+      {
+        "id": "feed_sharing",
+        "link": "/feed"
+      },
+      {
+        "id": "feed_saving",
+        "link": "/saved"
+      },
+      {
+        "id": "feed_filters",
+        "link": "/feed"
+      },
+      {
+        "id": "feed_hide_mute_report",
+        "link": "/feed"
+      }
+    ]
+  },
+  {
+    "id": "events",
+    "icon": "calendar",
+    "gate": {
+      "feature": "events"
+    },
+    "articles": [
+      {
+        "id": "events_finding",
+        "link": "/events"
+      },
+      {
+        "id": "events_rsvp",
+        "link": "/events",
+        "popular": true
+      },
+      {
+        "id": "events_calendar",
+        "link": "/events"
+      },
+      {
+        "id": "events_reminders",
+        "link": "/events"
+      },
+      {
+        "id": "events_on_the_day",
+        "link": "/events"
+      },
+      {
+        "id": "events_attendance_credits",
+        "link": "/events",
+        "gate": {
+          "feature": "event_attendance_credits"
+        }
+      },
+      {
+        "id": "events_who_can_create",
+        "link": "/events/create"
+      },
+      {
+        "id": "events_create",
+        "link": "/events/create"
+      },
+      {
+        "id": "events_manage",
+        "link": "/events"
+      }
+    ]
+  },
+  {
+    "id": "groups",
+    "icon": "users",
+    "gate": {
+      "feature": "groups"
+    },
+    "articles": [
+      {
+        "id": "groups_finding",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_joining",
+        "link": "/groups",
+        "popular": true
+      },
+      {
+        "id": "groups_invitations",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_sections",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_discussions",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_files_gallery_wiki",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_qa_tasks_channels",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_notifications_leaving",
+        "link": "/groups"
+      },
+      {
+        "id": "groups_create",
+        "link": "/groups/create"
+      },
+      {
+        "id": "groups_managing",
+        "link": "/groups"
+      }
+    ]
+  },
+  {
+    "id": "blog_resources",
+    "icon": "book",
+    "gate": {
+      "any": [
+        {
+          "feature": "blog"
+        },
+        {
+          "feature": "resources"
+        }
+      ]
+    },
+    "articles": [
+      {
+        "id": "blog_reading",
+        "link": "/blog",
+        "gate": {
+          "feature": "blog"
+        }
+      },
+      {
+        "id": "resources_library",
+        "link": "/resources",
+        "gate": {
+          "feature": "resources"
+        }
+      },
+      {
+        "id": "resources_upload",
+        "link": "/resources",
+        "gate": {
+          "feature": "resources"
+        }
+      },
+      {
+        "id": "knowledge_base",
+        "link": "/kb",
+        "gate": {
+          "feature": "resources"
+        }
+      },
+      {
+        "id": "community_newsletter",
+        "link": "/settings",
+        "gate": {
+          "feature": "newsletter"
+        }
+      }
+    ]
+  },
+  {
+    "id": "polls_ideas",
+    "icon": "sparkles",
+    "gate": {
+      "any": [
+        {
+          "feature": "polls"
+        },
+        {
+          "feature": "ideation_challenges"
+        }
+      ]
+    },
+    "articles": [
+      {
+        "id": "polls_voting",
+        "link": "/polls",
+        "gate": {
+          "feature": "polls"
+        }
+      },
+      {
+        "id": "polls_create",
+        "link": "/polls",
+        "gate": {
+          "feature": "polls"
+        }
+      },
+      {
+        "id": "ideation_challenges_about",
+        "link": "/ideation",
+        "gate": {
+          "feature": "ideation_challenges"
+        }
+      },
+      {
+        "id": "ideation_submit_vote",
+        "link": "/ideation",
+        "gate": {
+          "feature": "ideation_challenges"
+        }
+      }
+    ]
+  },
+  {
+    "id": "goals",
+    "icon": "flag",
+    "gate": {
+      "feature": "goals"
+    },
+    "articles": [
+      {
+        "id": "goals_create",
+        "link": "/goals"
+      },
+      {
+        "id": "goals_progress",
+        "link": "/goals"
+      },
+      {
+        "id": "goals_buddies",
+        "link": "/goals"
+      }
+    ]
+  },
+  {
+    "id": "recognition",
+    "icon": "trophy",
+    "gate": {
+      "feature": "gamification"
+    },
+    "articles": [
+      {
+        "id": "recognition_xp_levels",
+        "link": "/achievements"
+      },
+      {
+        "id": "recognition_badges",
+        "link": "/achievements"
+      },
+      {
+        "id": "recognition_challenges_shop",
+        "link": "/achievements"
+      },
+      {
+        "id": "recognition_leaderboard",
+        "link": "/leaderboard"
+      },
+      {
+        "id": "recognition_nexus_score",
+        "link": "/nexus-score"
+      }
+    ]
+  },
+  {
+    "id": "other_communities",
+    "icon": "globe",
+    "gate": {
+      "feature": "federation"
+    },
+    "articles": [
+      {
+        "id": "federation_what_is_it",
+        "link": "/federation"
+      },
+      {
+        "id": "federation_join",
+        "link": "/federation"
+      },
+      {
+        "id": "federation_privacy",
+        "link": "/federation/settings"
+      },
+      {
+        "id": "federation_browse_message",
+        "link": "/federation/members"
+      },
+      {
+        "id": "federation_send_credits",
+        "link": "/federation/members"
+      }
+    ]
+  },
+  {
+    "id": "volunteering",
+    "icon": "heart",
+    "gate": {
+      "feature": "volunteering"
+    },
+    "articles": [
+      {
+        "id": "how_volunteering_works",
+        "link": "/volunteering"
+      },
+      {
+        "id": "finding_volunteer_opportunities",
+        "link": "/volunteering"
+      },
+      {
+        "id": "applying_to_volunteer",
+        "link": "/volunteering",
+        "popular": true
+      },
+      {
+        "id": "logging_volunteer_hours",
+        "link": "/volunteering",
+        "popular": true
+      },
+      {
+        "id": "volunteer_hours_and_certificates",
+        "link": "/volunteering"
+      },
+      {
+        "id": "volunteer_wellbeing",
+        "link": "/volunteering"
+      },
+      {
+        "id": "volunteer_training_and_incidents",
+        "link": "/volunteering"
+      },
+      {
+        "id": "community_projects",
+        "link": "/volunteering"
+      },
+      {
+        "id": "volunteering_donations",
+        "link": "/volunteering"
+      }
+    ]
+  },
+  {
+    "id": "organisations",
+    "icon": "building",
+    "gate": {
+      "feature": "volunteering"
+    },
+    "articles": [
+      {
+        "id": "browsing_organisations",
+        "link": "/organisations",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "reviewing_an_organisation",
+        "link": "/organisations",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "registering_an_organisation",
+        "link": "/organisations/register",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "managing_your_organisation",
+        "link": "/volunteering/my-organisations",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "posting_a_volunteer_opportunity",
+        "link": "/volunteering/create",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "approving_volunteers_and_hours",
+        "link": "/volunteering/my-organisations",
+        "gate": {
+          "feature": "organisations"
+        }
+      },
+      {
+        "id": "organisation_wallet",
+        "link": "/volunteering/my-organisations",
+        "gate": {
+          "feature": "organisations"
+        }
+      }
+    ]
+  },
+  {
+    "id": "jobs",
+    "icon": "briefcase",
+    "gate": {
+      "feature": "job_vacancies"
+    },
+    "articles": [
+      {
+        "id": "finding_jobs",
+        "link": "/jobs"
+      },
+      {
+        "id": "job_details_and_saving",
+        "link": "/jobs"
+      },
+      {
+        "id": "applying_for_a_job",
+        "link": "/jobs",
+        "popular": true
+      },
+      {
+        "id": "tracking_job_applications",
+        "link": "/jobs/my-applications"
+      },
+      {
+        "id": "job_interviews_and_offers",
+        "link": "/jobs/my-applications"
+      },
+      {
+        "id": "job_alerts",
+        "link": "/jobs/alerts"
+      },
+      {
+        "id": "posting_a_job_vacancy",
+        "link": "/jobs/create"
+      },
+      {
+        "id": "managing_your_vacancy",
+        "link": "/jobs"
+      },
+      {
+        "id": "reviewing_job_applicants",
+        "link": "/jobs"
+      }
+    ]
+  },
+  {
+    "id": "marketplace",
+    "icon": "store",
+    "gate": {
+      "feature": "marketplace"
+    },
+    "articles": [
+      {
+        "id": "browsing_the_marketplace",
+        "link": "/marketplace"
+      },
+      {
+        "id": "looking_at_a_listing",
+        "link": "/marketplace"
+      },
+      {
+        "id": "selling_an_item",
+        "link": "/marketplace/sell"
+      },
+      {
+        "id": "managing_your_listings",
+        "link": "/marketplace/my-listings"
+      },
+      {
+        "id": "making_an_offer",
+        "link": "/marketplace/my-offers"
+      },
+      {
+        "id": "buying_an_item",
+        "link": "/marketplace"
+      },
+      {
+        "id": "marketplace_orders",
+        "link": "/marketplace/orders"
+      },
+      {
+        "id": "reporting_a_listing",
+        "link": "/marketplace/reports"
+      }
+    ]
+  },
+  {
+    "id": "courses",
+    "icon": "graduation",
+    "gate": {
+      "feature": "courses"
+    },
+    "articles": [
+      {
+        "id": "finding_courses",
+        "link": "/courses"
+      },
+      {
+        "id": "enrolling_in_a_course",
+        "link": "/courses"
+      },
+      {
+        "id": "course_lessons_and_progress",
+        "link": "/courses/my-learning"
+      },
+      {
+        "id": "course_quizzes",
+        "link": "/courses/my-learning"
+      },
+      {
+        "id": "course_certificate",
+        "link": "/courses/my-learning"
+      },
+      {
+        "id": "creating_a_course",
+        "link": "/courses/instructor"
+      }
+    ]
+  },
+  {
+    "id": "podcasts",
+    "icon": "book",
+    "gate": {
+      "feature": "podcasts"
+    },
+    "articles": [
+      {
+        "id": "listening_to_podcasts",
+        "link": "/podcasts"
+      },
+      {
+        "id": "following_and_reporting_podcasts",
+        "link": "/podcasts"
+      },
+      {
+        "id": "creating_a_podcast",
+        "link": "/podcasts/studio"
+      }
+    ]
+  },
+  {
+    "id": "caring_community",
+    "icon": "handshake",
+    "gate": {
+      "feature": "caring_community"
+    },
+    "articles": [
+      {
+        "id": "what_is_caring_community",
+        "link": "/caring-community"
+      },
+      {
+        "id": "requesting_care_help",
+        "link": "/caring-community/request-help"
+      },
+      {
+        "id": "offering_a_favour",
+        "link": "/caring-community/offer-favour"
+      },
+      {
+        "id": "support_relationships",
+        "link": "/caring-community/my-relationships"
+      },
+      {
+        "id": "report_a_concern",
+        "link": "/caring-community/safeguarding/report"
+      },
+      {
+        "id": "my_safeguarding_reports",
+        "link": "/caring-community/safeguarding/my-reports"
+      },
+      {
+        "id": "linking_a_care_receiver",
+        "link": "/caring-community/caregiver/link"
+      },
+      {
+        "id": "caregiver_dashboard",
+        "link": "/caring-community/caregiver"
+      },
+      {
+        "id": "gifting_hours",
+        "link": "/caring-community/hour-gift"
+      }
+    ]
+  },
+  {
+    "id": "premium_offers",
+    "icon": "sparkles",
+    "gate": {
+      "any": [
+        {
+          "feature": "member_premium"
+        },
+        {
+          "feature": "partner_venues"
+        }
+      ]
+    },
+    "articles": [
+      {
+        "id": "donating_to_your_community",
+        "link": "/premium",
+        "gate": {
+          "feature": "member_premium"
+        }
+      },
+      {
+        "id": "managing_regular_donation",
+        "link": "/premium/manage",
+        "gate": {
+          "feature": "member_premium"
+        }
+      },
+      {
+        "id": "partner_venue_pass",
+        "link": "/venues/pass",
+        "gate": {
+          "feature": "partner_venues"
+        }
+      }
+    ]
+  }
+]

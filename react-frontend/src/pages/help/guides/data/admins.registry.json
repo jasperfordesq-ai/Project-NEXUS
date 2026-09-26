@@ -1,0 +1,311 @@
+[
+  {
+    "id": "admin_getting_started",
+    "icon": "rocket",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_open_panel",
+        "link": "/admin"
+      },
+      {
+        "id": "admin_dashboard",
+        "link": "/admin"
+      },
+      {
+        "id": "admin_find_your_way",
+        "link": "/admin"
+      },
+      {
+        "id": "admin_roles_explained",
+        "link": "/broker"
+      }
+    ]
+  },
+  {
+    "id": "admin_setup",
+    "icon": "settings",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_community_details",
+        "link": "/admin/settings"
+      },
+      {
+        "id": "admin_logo_branding",
+        "link": "/admin/settings"
+      },
+      {
+        "id": "admin_switch_features",
+        "link": "/admin/module-configuration",
+        "popular": true
+      },
+      {
+        "id": "admin_feature_settings",
+        "link": "/admin/module-configuration"
+      },
+      {
+        "id": "admin_languages",
+        "link": "/admin/module-configuration"
+      },
+      {
+        "id": "admin_legal_documents",
+        "link": "/admin/legal-documents"
+      },
+      {
+        "id": "admin_legal_updates",
+        "link": "/admin/legal-documents"
+      },
+      {
+        "id": "admin_registration_policy",
+        "link": "/admin/settings/registration-policy"
+      },
+      {
+        "id": "admin_invite_codes",
+        "link": "/admin/settings/registration-policy"
+      }
+    ]
+  },
+  {
+    "id": "admin_members",
+    "icon": "users",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_find_member",
+        "link": "/admin/users"
+      },
+      {
+        "id": "admin_approve_members",
+        "link": "/admin/users",
+        "popular": true
+      },
+      {
+        "id": "admin_change_role",
+        "link": "/admin/users",
+        "popular": true
+      },
+      {
+        "id": "admin_suspend_ban",
+        "link": "/admin/users"
+      },
+      {
+        "id": "admin_delete_member",
+        "link": "/admin/users"
+      },
+      {
+        "id": "admin_add_members",
+        "link": "/admin/users/create"
+      },
+      {
+        "id": "admin_sign_in_help",
+        "link": "/admin/users"
+      },
+      {
+        "id": "admin_onboarding_steps",
+        "link": "/admin/onboarding-settings"
+      },
+      {
+        "id": "admin_identity_verification",
+        "link": "/admin/module-configuration"
+      },
+      {
+        "id": "admin_crm_notes",
+        "link": "/admin/crm"
+      },
+      {
+        "id": "admin_data_requests",
+        "link": "/admin/enterprise/gdpr/requests"
+      }
+    ]
+  },
+  {
+    "id": "admin_timebanking",
+    "icon": "wallet",
+    "gate": {
+      "module": "wallet"
+    },
+    "articles": [
+      {
+        "id": "admin_timebanking_overview",
+        "link": "/admin/timebanking"
+      },
+      {
+        "id": "admin_starting_balance",
+        "link": "/admin/timebanking/starting-balances"
+      },
+      {
+        "id": "admin_adjust_balance",
+        "link": "/admin/users"
+      },
+      {
+        "id": "admin_community_fund",
+        "link": "/admin/timebanking/community-fund"
+      }
+    ]
+  },
+  {
+    "id": "admin_content",
+    "icon": "newspaper",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_listings",
+        "link": "/admin/listings",
+        "gate": {
+          "module": "listings"
+        }
+      },
+      {
+        "id": "admin_categories",
+        "link": "/admin/categories"
+      },
+      {
+        "id": "admin_blog",
+        "link": "/admin/blog",
+        "gate": {
+          "feature": "blog"
+        }
+      },
+      {
+        "id": "admin_pages",
+        "link": "/admin/pages"
+      },
+      {
+        "id": "admin_resources",
+        "link": "/admin/resources",
+        "gate": {
+          "feature": "resources"
+        }
+      },
+      {
+        "id": "admin_events",
+        "link": "/admin/events",
+        "gate": {
+          "feature": "events"
+        }
+      },
+      {
+        "id": "admin_event_rewards",
+        "link": "/admin/events/settings",
+        "gate": {
+          "feature": "event_attendance_credits"
+        }
+      },
+      {
+        "id": "admin_groups",
+        "link": "/admin/groups",
+        "gate": {
+          "feature": "groups"
+        }
+      },
+      {
+        "id": "admin_moderation",
+        "link": "/broker/moderation/queue"
+      }
+    ]
+  },
+  {
+    "id": "admin_help",
+    "icon": "lifebuoy",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_help_faqs",
+        "link": "/admin/help/faqs"
+      },
+      {
+        "id": "admin_ai_docs",
+        "link": "/admin/ai/module-docs",
+        "gate": {
+          "feature": "ai_chat"
+        }
+      },
+      {
+        "id": "admin_support_reports",
+        "link": "/admin/support-reports"
+      }
+    ]
+  },
+  {
+    "id": "admin_communication",
+    "icon": "mail",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_newsletter_send",
+        "link": "/admin/newsletters",
+        "gate": {
+          "feature": "newsletter"
+        }
+      },
+      {
+        "id": "admin_newsletter_subscribers",
+        "link": "/admin/newsletters/subscribers",
+        "gate": {
+          "feature": "newsletter"
+        }
+      },
+      {
+        "id": "admin_inactive_members",
+        "link": "/admin/reports/inactive-members"
+      }
+    ]
+  },
+  {
+    "id": "admin_safeguarding",
+    "icon": "shield",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_safeguarding_setup",
+        "link": "/broker/vetting"
+      },
+      {
+        "id": "admin_safeguarding_options",
+        "link": "/broker/safeguarding-options"
+      },
+      {
+        "id": "admin_vetted_contact",
+        "link": "/broker/vetting"
+      }
+    ]
+  },
+  {
+    "id": "admin_reports",
+    "icon": "chart",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_community_analytics",
+        "link": "/admin/community-analytics"
+      },
+      {
+        "id": "admin_member_hours_reports",
+        "link": "/admin/reports/members"
+      },
+      {
+        "id": "admin_impact_report",
+        "link": "/admin/impact-report"
+      }
+    ]
+  },
+  {
+    "id": "admin_federation",
+    "icon": "globe",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_federation_switch_on",
+        "link": "/admin/module-configuration"
+      },
+      {
+        "id": "admin_federation_partnerships",
+        "link": "/partner-timebanks/partnerships",
+        "gate": {
+          "feature": "federation"
+        }
+      }
+    ]
+  }
+]

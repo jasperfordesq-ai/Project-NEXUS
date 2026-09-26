@@ -4,457 +4,211 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * BrokerControlsHelp — collapsible guidance panel for the Broker Controls.
+ * The broker and coordinator guide, inside the Broker Panel.
  *
- * Used in two places:
- *   1. Embedded at the bottom of BrokerDashboardPage (no page-title side effect)
- *   2. As the standalone /broker/help route via the BrokerHelpPage default export
+ * The guide itself is the Help Centre's "brokers" audience (registry in
+ * `src/pages/help/guides/data/brokers.registry.json`, text in the
+ * `help_brokers` namespace), so the Broker Panel and the public Help Centre
+ * show the same checked, translated articles. This file only frames them in
+ * the Broker Panel:
  *
- * The presentational `BrokerControlsHelp` component does NOT call usePageTitle —
- * if it did, embedding it on the dashboard would clobber the dashboard's title.
- * The standalone wrapper `BrokerHelpPage` owns the title for the /broker/help
- * route and adds a searchable, on-brand help-center frame around the same
- * section content (client-side filter over the translated section text).
+ *   /broker/help                          every topic, with search
+ *   /broker/help/:sectionId/:articleId    one article
  *
- * All section content is data-driven from HELP_SECTIONS so the embedded panel,
- * the standalone page, and the search index can never drift apart.
+ * `BrokerControlsHelp` is the short "guide" card on the broker dashboard.
  */
 
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Trans, useTranslation } from 'react-i18next';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Accordion,
-  AccordionItem,
-  Button,
-  Input,
-  Separator,
-} from '@/components/ui';
-import { usePageTitle } from '@/hooks';
-import type { LucideIcon } from 'lucide-react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import BookOpen from 'lucide-react/icons/book-open';
-import Workflow from 'lucide-react/icons/workflow';
-import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import Eye from 'lucide-react/icons/eye';
-import ShieldCheck from 'lucide-react/icons/shield-check';
-import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import Scale from 'lucide-react/icons/scale';
-import Phone from 'lucide-react/icons/phone';
-import Database from 'lucide-react/icons/database';
+import ArrowLeft from 'lucide-react/icons/arrow-left';
+import ArrowRight from 'lucide-react/icons/arrow-right';
+import ArrowUpRight from 'lucide-react/icons/arrow-up-right';
 import Search from 'lucide-react/icons/search';
 import SearchX from 'lucide-react/icons/search-x';
-import { BrokerPageShell, BrokerEmptyState, type BrokerStatColor } from '../components';
+import { Button, Card, CardBody, CardHeader, Input, Separator } from '@/components/ui';
+import { useTenant } from '@/contexts';
+import { usePageTitle } from '@/hooks';
+import { HelpBody } from '@/pages/help/guides/HelpBody';
+import { HelpIcon } from '@/pages/help/guides/HelpParts';
+import { articleKey, helpPath, sectionKey } from '@/pages/help/guides/registry';
+import { useHelpGuides } from '@/pages/help/guides/useHelpGuides';
+import { BrokerEmptyState, BrokerPageShell } from '../components';
 
-const richComponents = {
-  b: <strong />,
-  i: <em />,
-  code: <code />,
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section content model — every block references the existing broker.json
-// help.* keys, so restructuring the presentation never touches the copy.
-// ─────────────────────────────────────────────────────────────────────────────
-
-type HelpBlock =
-  | { type: 'p'; key: string; rich?: boolean; italic?: boolean }
-  | { type: 'heading'; key: string }
-  | { type: 'list'; ordered?: boolean; items: ReadonlyArray<{ key: string; rich?: boolean }> };
-
-interface HelpSectionDef {
-  key: string;
-  titleKey?: string;
-  ariaKey?: string;
-  icon: LucideIcon;
-  tone: BrokerStatColor;
-  blocks: ReadonlyArray<HelpBlock>;
+function brokerHelpPath(sectionId?: string, articleId?: string): string {
+  return ['/broker/help', sectionId, articleId].filter(Boolean).join('/');
 }
 
-const HELP_SECTIONS: ReadonlyArray<HelpSectionDef> = [
-  {
-    key: 'overview',
-    icon: BookOpen,
-    tone: 'accent',
-    blocks: [
-      { type: 'p', key: 'help.overview.intro' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.overview.bullet_exchange', rich: true },
-          { key: 'help.overview.bullet_risk_tags', rich: true },
-          { key: 'help.overview.bullet_message_review', rich: true },
-          { key: 'help.overview.bullet_user_monitoring', rich: true },
-          { key: 'help.overview.bullet_attestations', rich: true },
-          { key: 'help.overview.bullet_configuration', rich: true },
-        ],
-      },
-      { type: 'p', key: 'help.overview.access_note', rich: true },
-    ],
-  },
-  {
-    key: 'workflow',
-    icon: Workflow,
-    tone: 'accent',
-    blocks: [
-      { type: 'p', key: 'help.workflow.intro' },
-      {
-        type: 'list',
-        ordered: true,
-        items: [
-          { key: 'help.workflow.step_unreviewed', rich: true },
-          { key: 'help.workflow.step_pending', rich: true },
-          { key: 'help.workflow.step_alerts', rich: true },
-          { key: 'help.workflow.step_vetting_reviews', rich: true },
-          { key: 'help.workflow.step_activity', rich: true },
-        ],
-      },
-      { type: 'p', key: 'help.workflow.tip', italic: true },
-    ],
-  },
-  {
-    key: 'messages',
-    icon: MessageSquareWarning,
-    tone: 'warning',
-    blocks: [
-      { type: 'p', key: 'help.messages.intro' },
-      { type: 'heading', key: 'help.messages.severity_heading' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.messages.severity_high', rich: true },
-          { key: 'help.messages.severity_medium', rich: true },
-          { key: 'help.messages.severity_low', rich: true },
-        ],
-      },
-      { type: 'heading', key: 'help.messages.action_heading' },
-      {
-        type: 'list',
-        ordered: true,
-        items: [
-          { key: 'help.messages.action_open' },
-          { key: 'help.messages.action_read' },
-          { key: 'help.messages.action_mark', rich: true },
-          { key: 'help.messages.action_escalate' },
-        ],
-      },
-      { type: 'p', key: 'help.messages.retention' },
-    ],
-  },
-  {
-    key: 'monitoring',
-    icon: Eye,
-    tone: 'accent',
-    blocks: [
-      { type: 'p', key: 'help.monitoring.intro' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.monitoring.automatic', rich: true },
-          { key: 'help.monitoring.manual', rich: true },
-        ],
-      },
-      { type: 'p', key: 'help.monitoring.expiry', rich: true },
-      { type: 'p', key: 'help.monitoring.risk_tags', rich: true },
-    ],
-  },
-  {
-    key: 'vetting',
-    titleKey: 'help.vetting.metadata_title',
-    ariaKey: 'help.vetting.metadata_aria',
-    icon: ShieldCheck,
-    tone: 'success',
-    blocks: [
-      { type: 'p', key: 'help.vetting.intro' },
-      { type: 'heading', key: 'help.vetting.jurisdiction_heading' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.vetting.jurisdiction_england_wales', rich: true },
-          { key: 'help.vetting.jurisdiction_elsewhere', rich: true },
-        ],
-      },
-      { type: 'heading', key: 'help.vetting.workflow_heading' },
-      {
-        type: 'list',
-        ordered: true,
-        items: [
-          { key: 'help.vetting.workflow_review', rich: true },
-          { key: 'help.vetting.workflow_confirm', rich: true },
-          { key: 'help.vetting.workflow_revoke', rich: true },
-        ],
-      },
-      { type: 'p', key: 'help.vetting.privacy', rich: true },
-      { type: 'p', key: 'help.vetting.messaging', rich: true, italic: true },
-    ],
-  },
-  {
-    key: 'alerts',
-    icon: AlertTriangle,
-    tone: 'danger',
-    blocks: [
-      { type: 'p', key: 'help.alerts.intro' },
-      {
-        type: 'list',
-        items: [{ key: 'help.alerts.counts_messages' }, { key: 'help.alerts.counts_incidents' }],
-      },
-      { type: 'heading', key: 'help.alerts.escalate_heading' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.alerts.escalate_abuse', rich: true },
-          { key: 'help.alerts.escalate_child', rich: true },
-          { key: 'help.alerts.escalate_attestation', rich: true },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'legal',
-    icon: Scale,
-    tone: 'neutral',
-    blocks: [
-      { type: 'p', key: 'help.legal.scope_disclaimer' },
-      {
-        type: 'list',
-        items: [
-          { key: 'help.legal.current_scope', rich: true },
-          { key: 'help.legal.jurisdiction_limits', rich: true },
-          { key: 'help.legal.data_minimisation', rich: true },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'data',
-    icon: Database,
-    tone: 'neutral',
-    blocks: [
-      {
-        type: 'list',
-        items: [
-          { key: 'help.data.monitoring_status', rich: true },
-          { key: 'help.data.message_copies', rich: true },
-          { key: 'help.data.vetting_confirmations', rich: true },
-          { key: 'help.data.vetting_review_requests', rich: true },
-          { key: 'help.data.user_prefs', rich: true },
-          { key: 'help.data.guardian_assignments', rich: true },
-          { key: 'help.data.attestation_audit', rich: true },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'contacts',
-    icon: Phone,
-    tone: 'accent',
-    blocks: [
-      {
-        type: 'list',
-        items: [
-          { key: 'help.contacts.technical', rich: true },
-          { key: 'help.contacts.safeguarding', rich: true },
-          { key: 'help.contacts.criminality', rich: true },
-          { key: 'help.contacts.policy_scope', rich: true },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'troubleshooting',
-    icon: ShieldAlert,
-    tone: 'warning',
-    blocks: [
-      {
-        type: 'list',
-        items: [
-          { key: 'help.troubleshooting.cant_message_attestation', rich: true },
-          { key: 'help.troubleshooting.wrong_member', rich: true },
-          { key: 'help.troubleshooting.vetting_review', rich: true },
-          { key: 'help.troubleshooting.no_copies', rich: true },
-        ],
-      },
-    ],
-  },
-];
-
-/** i18n keys whose translated text makes up a section's search haystack. */
-function sectionSearchKeys(section: HelpSectionDef): string[] {
-  const keys = [
-    section.titleKey ?? `help.${section.key}.title`,
-    section.ariaKey ?? `help.${section.key}.aria`,
-  ];
-  for (const block of section.blocks) {
-    if (block.type === 'list') {
-      keys.push(...block.items.map((item) => item.key));
-    } else {
-      keys.push(block.key);
-    }
-  }
-  return keys;
-}
-
-// Tailwind JIT needs full class names at build time — no dynamic `bg-${tone}/10`.
-const toneTileClass: Record<BrokerStatColor, string> = {
-  accent: 'text-accent bg-accent/10',
-  success: 'text-success bg-success/10',
-  warning: 'text-warning bg-warning/10',
-  danger: 'text-danger bg-danger/10',
-  neutral: 'text-muted bg-surface-tertiary',
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Renderers shared by the embedded panel and the standalone page
-// ─────────────────────────────────────────────────────────────────────────────
-
-function HelpBlocks({ blocks }: { blocks: ReadonlyArray<HelpBlock> }) {
-  const { t } = useTranslation('broker');
-
+function ArticleLink({ sectionId, articleId, title, summary }: { sectionId: string; articleId: string; title: string; summary?: string }) {
+  const { tenantPath } = useTenant();
   return (
-    <div className="space-y-3 text-sm leading-relaxed text-muted">
-      {blocks.map((block) => {
-        if (block.type === 'heading') {
-          return (
-            <p key={block.key} className="font-medium text-foreground">
-              {t(block.key)}
-            </p>
-          );
-        }
-        if (block.type === 'p') {
-          return (
-            <p key={block.key} className={block.italic ? 'italic text-muted' : undefined}>
-              {block.rich ? <Trans t={t} i18nKey={block.key} components={richComponents} /> : t(block.key)}
-            </p>
-          );
-        }
-        const ListTag = block.ordered ? 'ol' : 'ul';
-        return (
-          <ListTag
-            key={block.items.map((item) => item.key).join('|')}
-            className={`${block.ordered ? 'list-decimal' : 'list-disc'} space-y-1.5 pl-5`}
-          >
-            {block.items.map((item) => (
-              <li key={item.key}>
-                {item.rich ? <Trans t={t} i18nKey={item.key} components={richComponents} /> : t(item.key)}
-              </li>
-            ))}
-          </ListTag>
-        );
-      })}
-    </div>
+    <Link
+      to={tenantPath(brokerHelpPath(sectionId, articleId))}
+      className="group flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      <span className="min-w-0">
+        <span className="block font-medium text-foreground group-hover:text-accent">{title}</span>
+        {summary && <span className="mt-0.5 block text-sm text-muted">{summary}</span>}
+      </span>
+      <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted rtl:rotate-180" aria-hidden="true" />
+    </Link>
   );
 }
 
-function HelpAccordion({ sections }: { sections: ReadonlyArray<HelpSectionDef> }) {
-  const { t } = useTranslation('broker');
-
-  return (
-    <Accordion variant="splitted" selectionMode="multiple">
-      {sections.map((section) => {
-        const Icon = section.icon;
-        return (
-          <AccordionItem
-            key={section.key}
-            id={section.key}
-            aria-label={t(section.ariaKey ?? `help.${section.key}.aria`)}
-            startContent={
-              <span
-                aria-hidden="true"
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ring-current/10 ${toneTileClass[section.tone]}`}
-              >
-                <Icon size={15} />
-              </span>
-            }
-            title={<span className="font-medium text-foreground">{t(section.titleKey ?? `help.${section.key}.title`)}</span>}
-          >
-            <HelpBlocks blocks={section.blocks} />
-          </AccordionItem>
-        );
-      })}
-    </Accordion>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Embedded guidance panel (dashboard) — export name and collapsible behaviour
-// are load-bearing: BrokerDashboardPage imports { BrokerControlsHelp }.
-// ─────────────────────────────────────────────────────────────────────────────
-
+/** Dashboard card: the most-needed broker guides and a link to the rest. */
 export function BrokerControlsHelp() {
-  const { t } = useTranslation('broker');
+  const { t, guideText, sectionsFor } = useHelpGuides();
+  const { tenantPath } = useTenant();
+  const popular = sectionsFor('brokers')
+    .flatMap((section) => section.articles.filter((a) => a.popular).map((article) => ({ section, article })))
+    .slice(0, 4);
 
   return (
-    <section className="mt-10">
+    <section aria-labelledby="broker-guide-card-heading">
       <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-        <CardHeader className="flex items-center gap-3 pb-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-current/10">
-            <BookOpen size={20} aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">{t('help.title')}</h2>
-            <p className="text-xs text-muted">{t('help.subtitle')}</p>
-          </div>
+        <CardHeader className="flex flex-col items-start gap-1">
+          <h2 id="broker-guide-card-heading" className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <BookOpen size={18} className="text-accent" aria-hidden="true" />
+            {t('broker_panel.title')}
+          </h2>
+          <p className="text-sm text-muted">{t('broker_panel.subtitle')}</p>
         </CardHeader>
         <Separator />
-        <CardBody className="pt-4">
-          <HelpAccordion sections={HELP_SECTIONS} />
+        <CardBody className="space-y-1 pt-3">
+          {popular.map(({ section, article }) => (
+            <ArticleLink
+              key={`${section.id}.${article.id}`}
+              sectionId={section.id}
+              articleId={article.id}
+              title={guideText('brokers', articleKey(section.id, article.id, 'title'))}
+            />
+          ))}
+          <div className="px-3 pt-2">
+            <Button as={Link} to={tenantPath('/broker/help')} size="sm" variant="secondary">
+              {t('broker_panel.open_full')}
+            </Button>
+          </div>
         </CardBody>
       </Card>
     </section>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Standalone /broker/help route — searchable help center
-// ─────────────────────────────────────────────────────────────────────────────
+function BrokerHelpArticle({ sectionId, articleId }: { sectionId: string; articleId: string }) {
+  const { t, guideText, sectionsFor } = useHelpGuides();
+  const { tenantPath } = useTenant();
+  const section = sectionsFor('brokers').find((s) => s.id === sectionId);
+  const index = section ? section.articles.findIndex((a) => a.id === articleId) : -1;
+  const article = section && index >= 0 ? section.articles[index] : undefined;
+  const title = section && article ? guideText('brokers', articleKey(section.id, article.id, 'title')) : t('not_found_title');
+  usePageTitle(title);
 
-export default function BrokerHelpPage() {
-  const { t } = useTranslation('broker');
-  usePageTitle(t('help.page_title'));
+  if (!section || !article) {
+    return (
+      <BrokerPageShell title={t('broker_panel.title')} icon={BookOpen} color="neutral">
+        <BrokerEmptyState
+          icon={SearchX}
+          color="neutral"
+          title={t('not_found_title')}
+          hint={t('not_found_body')}
+          action={<Button as={Link} to={tenantPath('/broker/help')} size="sm" variant="tertiary">{t('broker_panel.back')}</Button>}
+        />
+      </BrokerPageShell>
+    );
+  }
 
-  // Deep-linkable search (?q=…) so a filtered help view can be shared/bookmarked.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get('q') ?? '';
-  const setQuery = (next: string) => {
-    setSearchParams(next ? { q: next } : {}, { replace: true });
-  };
-
-  // Full-text haystack per section, built from the same i18n keys the panel
-  // renders — the search can never drift from the visible copy. Tags from
-  // rich strings (<b>/<code>…) are stripped before matching.
-  const haystacks = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const section of HELP_SECTIONS) {
-      const text = sectionSearchKeys(section)
-        .map((key) => t(key))
-        .join(' ')
-        .replace(/<[^>]+>/g, ' ')
-        .toLowerCase();
-      map.set(section.key, text);
-    }
-    return map;
-  }, [t]);
-
-  const normalized = query.trim().toLowerCase();
-  const visibleSections = normalized
-    ? HELP_SECTIONS.filter((section) => (haystacks.get(section.key) ?? '').includes(normalized))
-    : HELP_SECTIONS;
+  const previous = index > 0 ? section.articles[index - 1] : undefined;
+  const next = index < section.articles.length - 1 ? section.articles[index + 1] : undefined;
 
   return (
     <BrokerPageShell
-      title={t('help.title')}
-      description={t('help.subtitle')}
+      title={title}
+      description={guideText('brokers', articleKey(section.id, article.id, 'summary'))}
+      icon={<HelpIcon name={section.icon} className="h-5 w-5" />}
+      color="accent"
+      actions={
+        <Button as={Link} to={tenantPath('/broker/help')} size="sm" variant="tertiary" startContent={<ArrowLeft size={14} className="rtl:rotate-180" aria-hidden="true" />}>
+          {t('broker_panel.back')}
+        </Button>
+      }
+    >
+      <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+        <CardBody className="p-5 sm:p-8">
+          <p className="mb-4 text-sm font-medium text-accent">{guideText('brokers', sectionKey(section.id, 'title'))}</p>
+          <HelpBody body={guideText('brokers', articleKey(section.id, article.id, 'body'))} />
+          <div className="mt-8 flex flex-wrap gap-2">
+            {article.link && (
+              <Button as={Link} to={tenantPath(article.link)} color="primary" size="sm">
+                {t('open_page')}
+              </Button>
+            )}
+            <Button
+              as={Link}
+              to={tenantPath(helpPath('brokers', section.id, article.id))}
+              size="sm"
+              variant="tertiary"
+              endContent={<ArrowUpRight size={14} aria-hidden="true" />}
+            >
+              {t('broker_panel.view_in_help_centre')}
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      {(previous || next) && (
+        <nav aria-label={t('pager_label')} className="mt-4 grid gap-3 sm:grid-cols-2">
+          {previous ? (
+            <ArticleLink
+              sectionId={section.id}
+              articleId={previous.id}
+              title={guideText('brokers', articleKey(section.id, previous.id, 'title'))}
+              summary={t('previous_article')}
+            />
+          ) : <span />}
+          {next && (
+            <ArticleLink
+              sectionId={section.id}
+              articleId={next.id}
+              title={guideText('brokers', articleKey(section.id, next.id, 'title'))}
+              summary={t('next_article')}
+            />
+          )}
+        </nav>
+      )}
+    </BrokerPageShell>
+  );
+}
+
+export default function BrokerHelpPage() {
+  const { sectionId, articleId } = useParams<{ sectionId?: string; articleId?: string }>();
+  const { t, guideText, sectionsFor, search } = useHelpGuides();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') ?? '';
+  const setQuery = (next: string) => setSearchParams(next ? { q: next } : {}, { replace: true });
+
+  const sections = sectionsFor('brokers');
+  const results = useMemo(
+    () => search(query).filter((result) => result.audience === 'brokers'),
+    [search, query],
+  );
+  const searching = query.trim().length >= 2;
+
+  usePageTitle(t('broker_panel.title'));
+
+  if (sectionId && articleId) return <BrokerHelpArticle sectionId={sectionId} articleId={articleId} />;
+
+  return (
+    <BrokerPageShell
+      title={t('broker_panel.title')}
+      description={t('broker_panel.subtitle')}
       icon={BookOpen}
       color="neutral"
       toolbar={
         <div className="flex flex-col gap-2 p-1 sm:flex-row sm:items-center sm:justify-between">
           <Input
             className="w-full sm:max-w-sm"
-            placeholder={t('help.search_placeholder')}
-            aria-label={t('help.search_aria')}
+            placeholder={t('search_placeholder')}
+            aria-label={t('search_label')}
             startContent={<Search size={16} className="text-muted" aria-hidden="true" />}
             value={query}
             onValueChange={setQuery}
@@ -463,33 +217,65 @@ export default function BrokerHelpPage() {
             isClearable
             onClear={() => setQuery('')}
           />
-          <p className="px-1 text-xs tabular-nums text-muted" aria-live="polite">
-            {t('help.search_count', {
-              shown: visibleSections.length,
-              total: HELP_SECTIONS.length,
-            })}
-          </p>
+          {searching && (
+            <p className="px-1 text-xs tabular-nums text-muted" aria-live="polite">
+              {t('search_results_count', { count: results.length })}
+            </p>
+          )}
         </div>
       }
     >
-      {visibleSections.length === 0 ? (
-        <BrokerEmptyState
-          icon={SearchX}
-          color="neutral"
-          title={t('help.search_empty_title')}
-          hint={t('help.search_empty_hint')}
-          action={
-            <Button size="sm" variant="tertiary" onPress={() => setQuery('')}>
-              {t('help.search_clear')}
-            </Button>
-          }
-        />
+      {searching ? (
+        results.length === 0 ? (
+          <BrokerEmptyState
+            icon={SearchX}
+            color="neutral"
+            title={t('search_no_results_title')}
+            hint={t('search_no_results_body')}
+            action={<Button size="sm" variant="tertiary" onPress={() => setQuery('')}>{t('broker_panel.back')}</Button>}
+          />
+        ) : (
+          <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+            <CardBody className="space-y-1 p-2 sm:p-3">
+              {results.map((result) => (
+                <ArticleLink
+                  key={`${result.sectionId}.${result.articleId}`}
+                  sectionId={result.sectionId}
+                  articleId={result.articleId}
+                  title={result.title}
+                  summary={result.summary}
+                />
+              ))}
+            </CardBody>
+          </Card>
+        )
       ) : (
-        <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-          <CardBody className="p-3 sm:p-4">
-            <HelpAccordion sections={visibleSections} />
-          </CardBody>
-        </Card>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {sections.map((section) => (
+            <Card key={section.id} className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+              <CardHeader className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <HelpIcon name={section.icon} className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="font-semibold text-foreground">{guideText('brokers', sectionKey(section.id, 'title'))}</h2>
+                  <p className="mt-0.5 text-sm text-muted">{guideText('brokers', sectionKey(section.id, 'summary'))}</p>
+                </div>
+              </CardHeader>
+              <Separator />
+              <CardBody className="space-y-0.5 p-2">
+                {section.articles.map((article) => (
+                  <ArticleLink
+                    key={article.id}
+                    sectionId={section.id}
+                    articleId={article.id}
+                    title={guideText('brokers', articleKey(section.id, article.id, 'title'))}
+                  />
+                ))}
+              </CardBody>
+            </Card>
+          ))}
+        </div>
       )}
     </BrokerPageShell>
   );

@@ -1,12 +1,13 @@
 import { Card, CardBody, CardHeader, Button, Input, Chip } from '@/components/ui';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import BookOpen from 'lucide-react/icons/book-open';
 import SearchIcon from 'lucide-react/icons/search';
 import HelpCircle from 'lucide-react/icons/help-circle';
+import LifeBuoy from 'lucide-react/icons/life-buoy';
 import { PageHeader } from '../../components/PageHeader';
 import { getHelpContent, type HelpArticle } from '../../data/helpContent';
 // Copyright © 2024–2026 Jasper Ford
@@ -57,6 +58,7 @@ function categoryKey(category: Category): string {
 
 export default function AdminHelpCenterPage() {
   const { t } = useTranslation(['admin_help_module', 'admin_help']);
+  const { t: tGuide } = useTranslation('help_centre');
   usePageTitle(t('admin_help.page_title'));
   const { tenantPath } = useTenant();
   const navigate = useNavigate();
@@ -100,6 +102,22 @@ export default function AdminHelpCenterPage() {
         title={t('admin_help.title')}
         description={t('admin_help.description')}
       />
+
+      {/* The full, plain-English admin guide lives in the Help Centre. */}
+      <Card className="border border-accent/30 bg-accent/5">
+        <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <LifeBuoy size={22} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
+            <div>
+              <h2 className="text-base font-semibold text-foreground">{tGuide('admin_panel.title')}</h2>
+              <p className="text-sm text-muted">{tGuide('admin_panel.subtitle')}</p>
+            </div>
+          </div>
+          <Button as={Link} to={tenantPath('/help/admins')} color="primary" size="sm" className="shrink-0">
+            {tGuide('admin_panel.open_full')}
+          </Button>
+        </CardBody>
+      </Card>
 
       {/* Search bar */}
       <div className="max-w-lg">

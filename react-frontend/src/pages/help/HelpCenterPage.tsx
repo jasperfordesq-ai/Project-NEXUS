@@ -4,36 +4,31 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Help Center Page - FAQ and support resources
+ * Help Centre home — /help and /help/:audience
  *
- * Displays common questions, guides, and links to contact support.
- * FAQs are loaded dynamically from /api/v2/help/faqs (tenant-specific
- * with fallback to global defaults). Uses HeroUI Accordion component
- * for expand/collapse.
+ * Built-in, translated guides for three audiences (members, brokers and
+ * coordinators, community admins), filtered to the features this community
+ * has switched on, plus the community's own questions and answers written by
+ * its admins (Admin → Help FAQs, loaded from /v2/help/faqs).
  */
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from '@/lib/motion';import { SafeHtml } from '@/components/ui/SafeHtml';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import HelpCircle from 'lucide-react/icons/circle-help';
-import MessageSquare from 'lucide-react/icons/message-square';
-import BookOpen from 'lucide-react/icons/book-open';
-import Search from 'lucide-react/icons/search';
-import Wallet from 'lucide-react/icons/wallet';
-import Calendar from 'lucide-react/icons/calendar';
-import { useTranslation } from 'react-i18next';
+import Star from 'lucide-react/icons/star';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
-import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { SafeHtml } from '@/components/ui/SafeHtml';
 import { SearchField } from '@/components/ui/SearchField';
-import { Spinner } from '@/components/ui/Spinner';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { PageMeta } from '@/components/seo/PageMeta';
-import { useTenant, useFeature, useModule } from '@/contexts';
+import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
-
-/* ───────────────────────── Types ───────────────────────── */
+import { AUDIENCE_ICON, HelpCardLink, HelpContactPanel, HelpIcon } from './guides/HelpParts';
+import { articleKey, helpPath, sectionKey } from './guides/registry';
+import { HELP_AUDIENCES, type HelpAudience } from './guides/types';
+import { useHelpGuides } from './guides/useHelpGuides';
 
 interface Faq {
   id: number;
@@ -46,257 +41,208 @@ interface FaqGroup {
   faqs: Faq[];
 }
 
-/* ───────────────────────── Main Component ───────────────────────── */
+function isAudience(value: string | undefined): value is HelpAudience {
+  return !!value && (HELP_AUDIENCES as readonly string[]).includes(value);
+}
 
 export function HelpCenterPage() {
-  const { t } = useTranslation('utility');
+  const params = useParams<{ audience?: string }>();
   const { branding, tenantPath } = useTenant();
-  usePageTitle(t('help.page_title'));
+  const { t, guideText, sectionsFor, search } = useHelpGuides();
+  usePageTitle(t('page_title'));
 
-  // QuickLinks must respect this tenant's enabled modules/features — otherwise
-  // members hit dead links to features their tenant has turned off.
-  const hasListings = useModule('listings');
-  const hasWallet = useModule('wallet');
-  const hasEvents = useFeature('events');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') ?? '';
+  const setQuery = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set('q', value);
+    else next.delete('q');
+    setSearchParams(next, { replace: true });
+  };
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const audience: HelpAudience = isAudience(params.audience) ? params.audience : 'members';
+  const sections = sectionsFor(audience);
+  const results = useMemo(() => search(query), [search, query]);
+
+  const popular = sections.flatMap((section) =>
+    section.articles.filter((article) => article.popular).map((article) => ({ section, article })),
+  ).slice(0, 6);
+
+  // The community's own questions, written by its admins.
   const [faqGroups, setFaqGroups] = useState<FaqGroup[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-
-  // Fetch FAQ groups from API on mount
   useEffect(() => {
     let cancelled = false;
-
-    async function loadFaqs() {
-      setLoading(true);
-      setLoadError(false);
-
-      const result = await api.get<FaqGroup[]>('/v2/help/faqs');
-
-      if (cancelled) return;
-
-      if (result.success && Array.isArray(result.data)) {
-        setFaqGroups(result.data);
-      } else {
-        setLoadError(true);
-      }
-
-      setLoading(false);
-    }
-
-    void loadFaqs();
-
+    void api.get<FaqGroup[]>('/v2/help/faqs').then((result) => {
+      if (!cancelled && result.success && Array.isArray(result.data)) setFaqGroups(result.data);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // Filter FAQ groups by search query (client-side after load)
-  const filteredGroups = searchQuery.trim()
+  const matchingFaqGroups = query.trim()
     ? faqGroups
         .map((group) => ({
           ...group,
-          faqs: group.faqs.filter(
-            (faq) =>
-              faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+          faqs: group.faqs.filter((faq) =>
+            `${faq.question} ${faq.answer}`.toLowerCase().includes(query.trim().toLowerCase()),
           ),
         }))
         .filter((group) => group.faqs.length > 0)
     : faqGroups;
 
+  if (params.audience !== undefined && !isAudience(params.audience)) {
+    return <Navigate to={tenantPath('/help')} replace />;
+  }
+
+  const searching = query.trim().length >= 2;
+
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-1 sm:px-0">
-      <PageMeta title={t('help.page_title')} description={t('help.meta_description')} />
+    <div className="mx-auto max-w-5xl space-y-8 px-1 sm:px-0">
+      <PageMeta title={t('page_title')} description={t('meta_description', { name: branding.name })} />
       <PublicPageHero
-        eyebrow={t('help.hero_eyebrow')}
-        title={t('help.heading')}
-        description={t('help.subtitle', { name: branding.name })}
+        eyebrow={t('hero_eyebrow')}
+        title={t('heading')}
+        description={t('subtitle', { name: branding.name })}
         icon={<HelpCircle className="h-6 w-6" aria-hidden="true" />}
         accent="blue"
-        action={
-          <Button
-            as={Link}
-            to={tenantPath('/contact')}
-            color="primary"
-            startContent={<MessageSquare className="h-4 w-4" aria-hidden="true" />}
-          >
-            {t('help.contact_support')}
-          </Button>
-        }
       />
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Search */}
-        <div className="max-w-md mx-auto mb-8">
-          <SearchField
-            placeholder={t('help.search_placeholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label={t('help.search_placeholder')}
-            size="lg"
-            classNames={{
-              input: 'bg-transparent text-theme-primary',
-              inputWrapper: 'bg-theme-elevated border-theme-default',
-            }}
-          />
-        </div>
-      </motion.div>
+      <div className="mx-auto max-w-2xl">
+        <SearchField
+          placeholder={t('search_placeholder')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label={t('search_label')}
+          size="lg"
+          classNames={{
+            input: 'bg-transparent text-theme-primary',
+            inputWrapper: 'bg-theme-elevated border-theme-default',
+          }}
+        />
+      </div>
 
-      {/* Quick Links */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-      >
-        {hasListings && <QuickLink to={tenantPath('/listings')} icon={<BookOpen aria-hidden="true" />} label={t('help.quick_browse_listings')} />}
-        {hasWallet && <QuickLink to={tenantPath('/wallet')} icon={<Wallet aria-hidden="true" />} label={t('help.quick_my_wallet')} />}
-        {hasEvents && <QuickLink to={tenantPath('/events')} icon={<Calendar aria-hidden="true" />} label={t('help.quick_events')} />}
-        <QuickLink to={tenantPath('/contact')} icon={<MessageSquare aria-hidden="true" />} label={t('help.quick_contact_us')} />
-      </motion.div>
-
-      {/* FAQ Categories */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-4"
-      >
-        {/* Loading state */}
-        {loading && (
-          <GlassCard className="p-12 text-center" role="status" aria-label={t('help.loading')}>
-            <Spinner size="lg" className="mx-auto" aria-hidden="true" />
-            <p className="text-theme-muted mt-4 text-sm">{t('help.loading')}</p>
-          </GlassCard>
-        )}
-
-        {/* Error state */}
-        {!loading && loadError && (
-          <GlassCard className="p-8 text-center" role="alert">
-            <HelpCircle className="w-12 h-12 text-theme-subtle mx-auto mb-4 opacity-50" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-theme-primary mb-2">
-              {t('help.load_error_title')}
+      {searching ? (
+        <section aria-labelledby="help-search-heading" className="space-y-4">
+          <div>
+            <h2 id="help-search-heading" className="text-xl font-semibold text-theme-primary">
+              {t('search_results_heading', { query: query.trim() })}
             </h2>
-            <p className="text-theme-muted">
-              {t('help.load_error_description')}
+            <p className="mt-1 text-sm text-theme-muted" role="status">
+              {t('search_results_count', { count: results.length })}
             </p>
-          </GlassCard>
-        )}
-
-        {/* Empty state (loaded, no results) */}
-        {!loading && !loadError && filteredGroups.length === 0 && (
-          <GlassCard className="p-8 text-center">
-            <Search className="w-12 h-12 text-theme-subtle mx-auto mb-4 opacity-50" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('help.no_results_found')}</h2>
-            <p className="text-theme-muted mb-4">
-              {t('help.no_results_description_before')}{' '}
-              <Link to={tenantPath('/contact')} className="text-accent hover:underline">
-                {t('help.no_results_contact_link')}
-              </Link>{' '}
-              {t('help.no_results_description_after')}
-            </p>
-          </GlassCard>
-        )}
-
-        {/* FAQ Accordion */}
-        {!loading && !loadError && filteredGroups.length > 0 && (
-          <Accordion
-            selectionMode="multiple"
-            variant="splitted"
-            defaultExpandedKeys={['0']}
-            itemClasses={{
-              base: 'bg-theme-elevated/50 backdrop-blur-md border border-theme-default/30 shadow-sm',
-              title: 'font-semibold text-theme-primary',
-              subtitle: 'text-xs text-theme-subtle',
-              trigger: 'p-5 hover:bg-theme-hover/30 data-[hover=true]:bg-theme-hover/30',
-              indicator: 'text-theme-muted',
-              content: 'px-5 pb-2',
-            }}
-          >
-            {filteredGroups.map((group, catIdx) => (
-              <AccordionItem
-                key={String(catIdx)} id={String(catIdx)}
-                aria-label={group.category}
-                title={group.category}
-                subtitle={t('help.articles_count', { count: group.faqs.length })}
-                startContent={
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 text-accent dark:text-accent">
-                    <HelpCircle className="w-5 h-5" aria-hidden="true" />
-                  </div>
-                }
-              >
-                <Accordion
-                  selectionMode="multiple"
-                  variant="light"
-                  itemClasses={{
-                    base: 'border-b border-theme-default/50 last:border-b-0',
-                    title: 'text-sm font-medium text-theme-primary',
-                    trigger: 'px-2 py-3 hover:bg-theme-hover/20 data-[hover=true]:bg-theme-hover/20',
-                    content: 'px-2 pb-3 text-sm text-theme-muted leading-relaxed',
-                    indicator: 'text-theme-muted',
-                  }}
-                >
-                  {group.faqs.map((faq) => (
-                    <AccordionItem
-                      key={String(faq.id)} id={String(faq.id)}
-                      aria-label={faq.question}
-                      title={faq.question}
+          </div>
+          {results.length > 0 ? (
+            <div className="grid gap-3">
+              {results.slice(0, 30).map((result) => (
+                <HelpCardLink
+                  key={`${result.audience}.${result.sectionId}.${result.articleId}`}
+                  to={helpPath(result.audience, result.sectionId, result.articleId)}
+                  title={result.title}
+                  description={result.summary}
+                  meta={`${t(`audience.${result.audience}.title`)} · ${result.sectionTitle}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <GlassCard className="p-8 text-center">
+              <h3 className="text-lg font-semibold text-theme-primary">{t('search_no_results_title')}</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-theme-muted">{t('search_no_results_body')}</p>
+            </GlassCard>
+          )}
+        </section>
+      ) : (
+        <>
+          <nav aria-label={t('audience_nav_label')}>
+            <ul className="grid gap-3 sm:grid-cols-3">
+              {HELP_AUDIENCES.map((option) => {
+                const active = option === audience;
+                return (
+                  <li key={option}>
+                    <Link
+                      to={tenantPath(option === 'members' ? '/help' : helpPath(option))}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex h-full items-start gap-3 rounded-2xl border p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                        active
+                          ? 'border-accent bg-accent/10'
+                          : 'border-theme-default bg-theme-elevated/60 hover:border-accent/40'
+                      }`}
                     >
-                      <SafeHtml content={faq.answer} className="text-sm text-theme-muted leading-relaxed" />
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        )}
-      </motion.div>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${active ? 'bg-accent text-white' : 'bg-accent/12 text-accent'}`}>
+                        <HelpIcon name={AUDIENCE_ICON[option]} className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-theme-primary">{t(`audience.${option}.title`)}</span>
+                        <span className="mt-1 block text-sm leading-5 text-theme-muted">{t(`audience.${option}.description`)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-      {/* Still Need Help */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <GlassCard className="p-6 text-center">
-          <h2 className="text-lg font-semibold text-theme-primary mb-2">{t('help.still_need_help')}</h2>
-          <p className="text-sm text-theme-muted mb-4">
-            {t('help.still_need_help_description')}
-          </p>
-          <Button
-            as={Link}
-            to={tenantPath('/contact')}
-            className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
-            startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
-          >
-            {t('help.contact_support')}
-          </Button>
-        </GlassCard>
-      </motion.div>
+          {popular.length > 0 && (
+            <section aria-labelledby="help-popular-heading" className="space-y-3">
+              <h2 id="help-popular-heading" className="flex items-center gap-2 text-xl font-semibold text-theme-primary">
+                <Star className="h-5 w-5 text-amber-500" aria-hidden="true" />
+                {t('popular_heading')}
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {popular.map(({ section, article }) => (
+                  <HelpCardLink
+                    key={`${section.id}.${article.id}`}
+                    to={helpPath(audience, section.id, article.id)}
+                    title={guideText(audience, articleKey(section.id, article.id, 'title'))}
+                    description={guideText(audience, articleKey(section.id, article.id, 'summary'))}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section aria-labelledby="help-sections-heading" className="space-y-3">
+            <h2 id="help-sections-heading" className="text-xl font-semibold text-theme-primary">
+              {t('sections_heading')}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {sections.map((section) => (
+                <HelpCardLink
+                  key={section.id}
+                  to={helpPath(audience, section.id)}
+                  icon={section.icon}
+                  title={guideText(audience, sectionKey(section.id, 'title'))}
+                  description={guideText(audience, sectionKey(section.id, 'summary'))}
+                  meta={t('articles_count', { count: section.articles.length })}
+                />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      {matchingFaqGroups.length > 0 && (audience === 'members' || searching) && (
+        <section aria-labelledby="help-faqs-heading" className="space-y-3">
+          <div>
+            <h2 id="help-faqs-heading" className="text-xl font-semibold text-theme-primary">{t('community_faqs_heading')}</h2>
+            <p className="mt-1 text-sm text-theme-muted">{t('community_faqs_description', { name: branding.name })}</p>
+          </div>
+          <GlassCard className="p-2 sm:p-4">
+            <Accordion variant="light" selectionMode="multiple">
+              {matchingFaqGroups.flatMap((group) =>
+                group.faqs.map((faq) => (
+                  <AccordionItem key={String(faq.id)} id={String(faq.id)} aria-label={faq.question} title={faq.question} subtitle={group.category}>
+                    <SafeHtml content={faq.answer} className="text-sm leading-relaxed text-theme-muted" />
+                  </AccordionItem>
+                )),
+              )}
+            </Accordion>
+          </GlassCard>
+        </section>
+      )}
+
+      <HelpContactPanel />
     </div>
-  );
-}
-
-/* ───────────────────────── Quick Link ───────────────────────── */
-
-interface QuickLinkProps {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-}
-
-function QuickLink({ to, icon, label }: QuickLinkProps) {
-  return (
-    <Link to={to}>
-      <GlassCard className="p-4 text-center hover:scale-[1.02] transition-transform">
-        <div className="inline-flex p-2 rounded-lg bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 text-accent dark:text-accent mb-2">
-          {icon}
-        </div>
-        <p className="text-sm font-medium text-theme-primary">{label}</p>
-      </GlassCard>
-    </Link>
   );
 }
 

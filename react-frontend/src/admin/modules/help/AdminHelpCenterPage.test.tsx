@@ -44,6 +44,13 @@ describe('AdminHelpCenterPage', () => {
     expect(searchInput).toBeInTheDocument();
   });
 
+  it('links prominently to the full admin guide in the Help Centre', () => {
+    render(<AdminHelpCenterPage />);
+    const link = screen.getByRole('link', { name: /open the admin guide/i });
+    expect(link).toHaveAttribute('href', '/test/help/admins');
+    expect(screen.getByRole('heading', { level: 2, name: /complete admin guide/i })).toBeInTheDocument();
+  });
+
   it('renders at least one article card', () => {
     render(<AdminHelpCenterPage />);
     // HELP_CONTENT has many articles; each renders a "View help" button

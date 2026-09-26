@@ -259,6 +259,8 @@ const LegalVersionHistoryPage = lazyWithRetry(() => import('@/pages/public/Legal
 const FaqPage = lazyWithRetry(() => import('@/pages/public/FaqPage'));
 const InstallAppPage = lazyWithRetry(() => import('@/pages/public/InstallAppPage'));
 const HelpCenterPage = lazyWithRetry(() => import('@/pages/help/HelpCenterPage'));
+const HelpSectionPage = lazyWithRetry(() => import('@/pages/help/HelpSectionPage'));
+const HelpArticlePage = lazyWithRetry(() => import('@/pages/help/HelpArticlePage'));
 const PilotInquiryPage = lazyWithRetry(() => import('@/pages/public/PilotInquiryPage'));
 const PilotApplyPage = lazyWithRetry(() => import('@/pages/public/PilotApplyPage'));
 const PilotApplyStatusPage = lazyWithRetry(() => import('@/pages/public/PilotApplyStatusPage'));
@@ -320,6 +322,9 @@ export function AppRoutes() {
         <Route path="pilot-apply" element={<ErrorBoundary><PilotApplyPage /></ErrorBoundary>} />
         <Route path="pilot-apply/status/:token" element={<ErrorBoundary><PilotApplyStatusPage /></ErrorBoundary>} />
         <Route path="help" element={<ErrorBoundary><HelpCenterPage /></ErrorBoundary>} />
+        <Route path="help/:audience" element={<ErrorBoundary><HelpCenterPage /></ErrorBoundary>} />
+        <Route path="help/:audience/:sectionId" element={<ErrorBoundary><HelpSectionPage /></ErrorBoundary>} />
+        <Route path="help/:audience/:sectionId/:articleId" element={<ErrorBoundary><HelpArticlePage /></ErrorBoundary>} />
         {/* Linked from the profile menu and the mobile drawer. Must exist here
             as well as in PublicAppRoutes — TenantShell selects the registry by
             path, so a signed-in member would otherwise get a 404. */}
