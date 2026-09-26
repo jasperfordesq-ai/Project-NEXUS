@@ -201,8 +201,10 @@ test.describe('Smoke Tests @smoke', () => {
       await dismissBlockingModals(page);
       await waitForTenantHydration(page);
 
-      await expect(page.getByRole('heading', { name: /Help Center|FAQ/i, level: 1 }))
+      // The Help Centre landing page (heading "How can we help?") with its guide search.
+      await expect(page.getByRole('heading', { name: /How can we help|Help Cent(er|re)|FAQ/i, level: 1 }))
         .toBeVisible({ timeout: 20000 });
+      await expect(page.getByRole('searchbox')).toBeVisible();
 
       expect(consoleErrors).toHaveLength(0);
     });
