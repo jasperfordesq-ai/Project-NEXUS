@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -101,7 +101,7 @@
     "col_total_sales": "Ventes",
     "col_sales": "Ventes",
     "col_rating": "Notation",
-    "col_type": "Tapez",
+    "col_type": "Type",
     "coupons": {
       "page_title": "Coupons marchands",
       "description": "Surveillance des coupons de réduction émis par les commerçants pour tous les vendeurs.",

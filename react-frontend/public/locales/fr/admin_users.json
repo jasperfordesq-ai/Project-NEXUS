@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -74,7 +74,7 @@
   },
   "users": {
     "action_approve": "Approuver",
-    "action_ban": "Interdiction",
+    "action_ban": "Bannir",
     "action_delete": "Supprimer",
     "action_edit": "Modifier",
     "action_impersonate": "Usurper l'identité",
@@ -362,10 +362,10 @@
       "global_super_admin": "Super administrateur mondial",
       "insurance_certificates": "Certificats d'assurance",
       "municipal_announcer": "Annonceur municipal",
-      "safeguarding": "Sauvegarde",
+      "safeguarding": "Protection",
       "super_admin_access": "Accès super-administrateur",
       "time_credits": "Crédits de temps",
-      "contact_attestation": "Sauvegarde de l’attestation de contact",
+      "contact_attestation": "Attestation de contact (protection)",
       "vetting_status": "Statut de vérification"
     },
     "statuses": {
@@ -431,7 +431,7 @@
       "attestation_pvg_scotland": "Schéma PVG",
       "attestation_access_ni": "AccessNI (Irlande du Nord)",
       "attestation_garda_vetting": "Vérification Garda",
-      "safeguarding_confirmation": "Confirmation de sauvegarde",
+      "safeguarding_confirmation": "Confirmation de protection",
       "confirmed_on": "Attestation communautaire confirmée sur {{date}}",
       "not_confirmed": "Aucune attestation communautaire n'est confirmée",
       "decision_confirmed": "Attestation confirmée",
@@ -501,7 +501,7 @@
     "content": "Contenu",
     "community": "Communauté",
     "intelligence": "Renseignement",
-    "engagement": "Fiançailles",
+    "engagement": "Engagement",
     "system": "Système"
   },
   "loading": "Chargement"

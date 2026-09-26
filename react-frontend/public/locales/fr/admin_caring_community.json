@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -128,7 +128,7 @@
         "name": "Nom",
         "phone": "Téléphone",
         "status": "Statut",
-        "type": "Tapez",
+        "type": "Type",
         "website": "Site Web"
       },
       "messages": {
@@ -161,7 +161,7 @@
         "aria": "Prestataires de soins",
         "name": "Nom",
         "status": "Statut",
-        "type": "Tapez",
+        "type": "Type",
         "verified": "Vérifié"
       }
     },
@@ -410,7 +410,7 @@
       "last_updated": "Dernière mise à jour {{date}}",
       "meta": {
         "title": "Politique de fonctionnement",
-        "description": "Configurez les règles d'approbation, de sauvegarde, de SLA et de politique de valeur sociale pour le programme de soins."
+        "description": "Configurez les règles d'approbation, de protection, de SLA et de politique de valeur sociale pour le programme de soins."
       },
       "actions": {
         "refresh": "Rafraîchir",
@@ -428,7 +428,7 @@
         "approvals": "Approbations et confiance",
         "sla": "Fenêtres SLA",
         "hours": "Gestion des heures",
-        "safeguarding": "Sauvegarde",
+        "safeguarding": "Protection",
         "social_value": "méthodologie de la valeur sociale",
         "appendix": "Annexe sur la politique pilote"
       },
@@ -459,7 +459,7 @@
         },
         "safeguarding_escalation_user_id": {
           "label": "Propriétaire de l’escalade de protection (utilisateur ID)",
-          "help": "L'utilisateur ID reçoit des escalades de sauvegarde. Laissez vide pour utiliser les administrateurs en tant que groupe."
+          "help": "ID de l'utilisateur qui reçoit les escalades de protection. Laissez vide pour utiliser les administrateurs en tant que groupe."
         },
         "chf_hourly_rate": {
           "label": "CHF valeur sociale par heure",
@@ -812,13 +812,13 @@
       }
     },
     "safeguarding": {
-      "title": "Rapports de sauvegarde",
+      "title": "Signalements de protection",
       "description": "Préoccupations soulevées par les membres concernant d’autres membres, coordinateurs ou organisations.",
       "view_all": "Voir tout",
-      "no_data": "Aucune donnée de sauvegarde disponible pour l'instant.",
+      "no_data": "Aucune donnée de protection disponible pour l'instant.",
       "overdue": "En retard",
       "no_reports": "Aucun rapport pour l'instant.",
-      "table_aria": "Rapports récents sur la sauvegarde",
+      "table_aria": "Signalements de protection récents",
       "open": "Ouvrir",
       "org_subject": "Organisation #{{id}}",
       "age_hours": "{{count}}h",
@@ -1187,7 +1187,7 @@
       "pair": "{{supporter}} prenant en charge {{recipient}}",
       "started": "{{date}} démarré",
       "next_check_in": "Prochain enregistrement {{date}}",
-      "resume": "CV",
+      "resume": "Reprendre",
       "log_date": "Date",
       "log_hours": "Heures",
       "log_note": "Remarque (facultatif)",
@@ -1319,7 +1319,7 @@
       "agpl_module": "Module AGPL",
       "default": "Défaut",
       "overridden": "Remplacé",
-      "notes": "Remarques",
+      "notes": "Notes",
       "yes": "Oui",
       "no": "Non",
       "generated": "Généré {{date}} à partir du panneau d'administration NEXUS."
@@ -1906,7 +1906,7 @@
       "dsa_status": "Accord de partage de données",
       "sandbox_url": "Bac à sable URL",
       "sandbox_placeholder": "https://sandbox.partner.example",
-      "notes": "Remarques",
+      "notes": "Notes",
       "notes_placeholder": "Questions ouvertes, bloqueurs, dépendances, notes contractuelles..."
     },
     "delete_modal": {
@@ -2011,7 +2011,7 @@
       "base_url": "URL de base",
       "base_url_description": "HTTPS URL de la télécommande NEXUS API. Le chemin /v2/federation/hour-transfer/inbound est automatiquement ajouté.",
       "base_url_placeholder": "https://api.bern-cooperative.ch",
-      "notes": "Remarques",
+      "notes": "Notes",
       "notes_placeholder": "Notes internes - contact partenaire, référence de l'accord...",
       "status_hint_prefix": "Le statut commence comme",
       "status_hint_middle": "Une fois que le côté distant a enregistré le même secret partagé, définissez les deux côtés sur"
@@ -2314,7 +2314,7 @@
     "fields": {
       "value": "Valeur",
       "owner": "Propriétaire",
-      "notes": "Remarques",
+      "notes": "Notes",
       "status": "Statut",
       "url_placeholder": "https://...",
       "owner_description": "Personne ou organisation responsable de cette décision",
@@ -2545,7 +2545,7 @@
     "fields": {
       "follow_up_date": "Date de suivi (ISO 8601)",
       "follow_up_placeholder": "2026-05-15",
-      "notes": "Remarques"
+      "notes": "Notes"
     },
     "modal": {
       "title": "Modifier le contact",
@@ -2801,7 +2801,7 @@
       "publish_record": "Publiez cet enregistrement TXT sur votre DNS, puis attendez la propagation:",
       "record_name": "Nom de l'enregistrement",
       "value": "Valeur",
-      "type_label": "Taper",
+      "type_label": "Type",
       "ttl_label": "TTL",
       "txt_type": "TXT",
       "ttl_value": "300"
@@ -3057,8 +3057,8 @@
       "label": "Étiquette",
       "captured": "Capturé",
       "period": "Période",
-      "type": "Taper",
-      "notes": "Remarques",
+      "type": "Type",
+      "notes": "Notes",
       "pre_pilot": "Pré-pilote",
       "quarterly": "Trimestriel"
     },
@@ -3341,7 +3341,7 @@
     "table": {
       "aria": "Tableau des sous-régions",
       "name": "Nom",
-      "type": "Taper",
+      "type": "Type",
       "postal_codes": "Codes postaux",
       "coordinates": "Coordonnées",
       "status": "Statut",
@@ -3370,7 +3370,7 @@
       "slug": "Slug (généré automatiquement si vide)",
       "slug_placeholder": "par ex. lorzenhof",
       "slug_description": "Identifiant minuscule avec trait d'union utilisé dans les URL et les filtres.",
-      "type": "Taper",
+      "type": "Type",
       "description": "Descriptif",
       "description_placeholder": "Brève description de cette zone...",
       "postal_codes": "Codes postaux",

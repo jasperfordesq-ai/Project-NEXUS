@@ -10,7 +10,7 @@
         },
         {
           "label": "Utiliser la grille de liens rapides",
-          "detail": "Chaque carte est directement liée à son domaine fonctionnel. Les cartes avec un badge rouge nécessitent une attention immédiate (par exemple, SLA en retard, rapport de sauvegarde critique)."
+          "detail": "Chaque carte est directement liée à son domaine fonctionnel. Les cartes avec un badge rouge nécessitent une attention immédiate (par exemple, SLA en retard, signalement de protection critique)."
         },
         {
           "label": "Vérifiez la barre d'annonce",
@@ -140,13 +140,13 @@
         },
         {
           "label": "Examiner les candidats à la rétrogradation",
-          "detail": "Les membres signalés pour une inactivité prolongée ou des incidents de sauvegarde peuvent apparaître pour un examen de niveau. Vérifiez le contexte avant de rétrograder."
+          "detail": "Les membres signalés pour une inactivité prolongée ou des incidents de protection peuvent apparaître pour un examen de niveau. Vérifiez le contexte avant de rétrograder."
         }
       ],
       "tips": [
         "Les promotions de niveau ne sont pas automatiques par défaut : un coordinateur doit approuver chaque promotion. Vous pouvez activer la promotion automatique pour le niveau 0 → 1 dans les paramètres du niveau.",
         "Les membres ne peuvent pas voir leur score numérique : ils voient à la place un badge nommé (par exemple « Membre de confiance »).",
-        "Le niveau de coordinateur (4) doit être rare et attribué uniquement aux personnes chargées de la sauvegarde ou des échanges de grande valeur."
+        "Le niveau de coordinateur (4) doit être rare et attribué uniquement aux personnes chargées de la protection ou des échanges de grande valeur."
       ],
       "caution": "La rétrogradation d'un membre de confiance (niveau 2 → 1) invalide immédiatement son Warmth Pass sur tous les sites coopératifs de Caring Community. Informez le membre avant de rétrograder.",
       "relatedPaths": [
@@ -186,7 +186,7 @@
         "Les laissez-passer délivrés aux membres qui sont ensuite rétrogradés en dessous du niveau 2 sont automatiquement révoqués – vous n'avez pas besoin de le faire manuellement.",
         "Le QR code du pass est disponible dans le profil du membre sous forme de PDF téléchargeable."
       ],
-      "caution": "Ne délivrez pas de laissez-passer aux membres dont les rapports de sauvegarde ne sont pas résolus, même si leur niveau les qualifie techniquement.",
+      "caution": "Ne délivrez pas de laissez-passer aux membres dont des signalements de protection ne sont pas résolus, même si leur niveau les qualifie techniquement.",
       "relatedPaths": [
         {
           "label": "Niveaux de confiance",
@@ -199,7 +199,7 @@
       ]
     },
     "/caring/safeguarding": {
-      "title": "Sauvegarde – Rapports d'incidents et SLA",
+      "title": "Protection – Signalements d'incidents et SLA",
       "summary": "Cette page gère tous les signalements d'incidents de sécurisation relevés au sein de votre coopérative. Les rapports sont triés par gravité : Critique (réponse dans l'heure), Élevé (24 heures), Moyen (72 heures), Faible (prochaine réunion programmée). Les coordinateurs doivent accuser réception et donner suite à chaque rapport dans la fenêtre SLA.",
       "steps": [
         {
@@ -228,7 +228,7 @@
         "Si vous n’êtes pas sûr de la gravité, choisissez par défaut Élevé : il est préférable de réagir de manière excessive plutôt que de passer à côté d’un véritable problème de protection.",
         "Toutes les données d'incident sont exclues du rapport d'impact public - il est réservé au coordinateur."
       ],
-      "caution": "Ne clôturez jamais un rapport de sauvegarde sans un résumé écrit de la résolution. Les fermetures en blanc sont signalées lors de l'audit de la qualité des données.",
+      "caution": "Ne clôturez jamais un signalement de protection sans un résumé écrit de la résolution. Les fermetures en blanc sont signalées lors de l'audit de la qualité des données.",
       "relatedPaths": [
         {
           "label": "Tableau de bord SLA",
@@ -406,7 +406,7 @@
         },
         {
           "label": "Définir des périodes de conservation",
-          "detail": "Examinez les périodes de conservation par défaut pour chaque catégorie de données (par exemple, enregistrements d'échange : 7 ans pour l'audit financier ; rapports de sauvegarde : 10 ans). Ajustez si vos règles cantonales diffèrent."
+          "detail": "Examinez les périodes de conservation par défaut pour chaque catégorie de données (par exemple, enregistrements d'échange : 7 ans pour l'audit financier ; signalements de protection : 10 ans). Ajustez si vos règles cantonales diffèrent."
         },
         {
           "label": "Générer le pack complet",
@@ -633,7 +633,7 @@
       ],
       "tips": [
         "Exécutez le contrôle qualité dans le cadre de votre routine mensuelle de coordinateur, et pas seulement avant de générer des rapports.",
-        "Les résumés de résolution de sauvegarde manquants sont toujours signalés comme critiques – consultez la page Sauvegarde pour les ajouter."
+        "Les résumés de résolution de protection manquants sont toujours signalés comme critiques – consultez la page Protection pour les ajouter."
       ],
       "relatedPaths": [
         {
@@ -694,7 +694,7 @@
     },
     "/caring/pilot-scoreboard": {
       "title": "Tableau de bord du projet pilote de communauté bienveillante",
-      "summary": "Le tableau de bord en direct de votre projet pilote Caring Community, qui suit les progrès par rapport aux mesures de la méthodologie Caring Community. Les mesures incluent le volume d'échange, la fidélisation des membres, le taux de réciprocité (les aides qui sont également des bénéficiaires), le temps de réponse du coordinateur et le taux de conformité en matière de sauvegarde.",
+      "summary": "Le tableau de bord en direct de votre projet pilote Caring Community, qui suit les progrès par rapport aux mesures de la méthodologie Caring Community. Les mesures incluent le volume d'échange, la fidélisation des membres, le taux de réciprocité (les aides qui sont également des bénéficiaires), le temps de réponse du coordinateur et le taux de conformité en matière de protection.",
       "steps": [
         {
           "label": "Examinez le score principal",
@@ -760,7 +760,7 @@
       "tips": [
         "Commencez par une faible fréquence : un coup de pouce tous les quinze jours suffit généralement. Un coup de pouce excessif conduit à des retraits.",
         "Les nudges sont plus efficaces pour les membres de niveau 0 à 1 qui n’ont pas encore effectué leur premier échange.",
-        "N’utilisez jamais de nudges pour assurer le suivi – utilisez le module Sauvegarde pour cela."
+        "N’utilisez jamais de nudges pour le suivi de protection – utilisez le module Protection pour cela."
       ],
       "relatedPaths": [
         {
@@ -1283,7 +1283,7 @@
         },
         {
           "label": "Suspendre une connexion homologue",
-          "detail": "Si une coopérative n'est plus active ou a rencontré un problème de sauvegarde, utilisez « Suspendre » pour suspendre le lien de la fédération sans le supprimer définitivement."
+          "detail": "Si une coopérative n'est plus active ou a rencontré un problème de protection, utilisez « Suspendre » pour suspendre le lien de la fédération sans le supprimer définitivement."
         }
       ],
       "tips": [
@@ -1363,7 +1363,7 @@
         },
         {
           "label": "Activité du cercle de révision",
-          "detail": "La chronologie des activités affiche les échanges récents, les notes et tous les indicateurs de sauvegarde liés à ce destinataire."
+          "detail": "La chronologie des activités affiche les échanges récents, les notes et tous les indicateurs de protection liés à ce destinataire."
         }
       ],
       "tips": [
@@ -1564,7 +1564,7 @@
         }
       ],
       "tips": [
-        "Le modèle « proposer puis approuver » est un mécanisme de sécurité délibéré : ne le désactivez pas pour des actions consécutives (par exemple, sauvegarde des escalades, transferts de crédits importants).",
+        "Le modèle « proposer puis approuver » est un mécanisme de sécurité délibéré : ne le désactivez pas pour des actions lourdes de conséquences (par exemple, escalades de protection, transferts de crédits importants).",
         "Les agents apprennent de vos décisions d’approbation/rejet au fil du temps. Les rejets cohérents d’un type d’agent spécifique sont un signal pour revoir sa configuration."
       ],
       "caution": "N'augmentez jamais le seuil d'application automatique pour les agents pouvant initier des transferts financiers, protéger les escalades ou modifier le niveau de membre. Ceux-ci doivent toujours nécessiter un examen humain.",

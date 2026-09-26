@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -180,7 +180,7 @@
           "status": "Statut",
           "subject_user": "Utilisateur concerné",
           "target_user": "Utilisateur cible",
-          "type": "Taper"
+          "type": "Type"
         }
       },
       "legend": {
@@ -265,7 +265,7 @@
         "delete": "Supprimer",
         "edit": "Modifier",
         "new_doc": "Nouveau document",
-        "seed_defaults": "Valeurs par défaut des semences"
+        "seed_defaults": "Charger les valeurs par défaut"
       },
       "about": {
         "body": "Lorsque le message de discussion d'un membre contient l'un des mots-clés d'un document, le corps de ce document est ajouté à l'invite système de l'IA en tant que fondement canonique. Jusqu'à 4 documents sont injectés par tour, classés par force de correspondance des mots clés. Écrivez en langage simple : ce que fait la fonctionnalité, comment l'utiliser et ce qui n'est pas possible. Ajoutez la terminologie, les politiques et les FAQ spécifiques à votre communauté.",

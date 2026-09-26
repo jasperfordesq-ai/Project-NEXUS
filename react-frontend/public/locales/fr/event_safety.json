@@ -88,7 +88,7 @@
     },
     "reasons": {
       "unknown": "Une condition de participation doit encore être étudiée.",
-      "safeguarding_policy": "Sauvegarder la décision politique",
+      "safeguarding_policy": "Décision de la politique de protection",
       "minimum_age": "Âge minimum requis",
       "guardian_consent": "Exigence de consentement du tuteur",
       "code_of_conduct": "Exigence du code de conduite",
@@ -108,13 +108,13 @@
       "event_safety_guardian_consent_required": "Le consentement valide du tuteur est requis.",
       "event_safety_code_of_conduct_acknowledgement_required": "Reconnaissez le code de conduite actuel.",
       "event_safety_active_participation_denial": "Une décision de sécurité active empêche la participation.",
-      "event_safety_safeguarding_policy_denied": "La politique de sauvegarde n’autorise actuellement pas la participation.",
-      "event_safety_safeguarding_policy_invalid": "La décision de sauvegarde n'a pas pu être vérifiée.",
-      "event_safety_safeguarding_policy_unavailable": "La vérification de la sauvegarde est temporairement indisponible.",
+      "event_safety_safeguarding_policy_denied": "La politique de protection n’autorise actuellement pas la participation.",
+      "event_safety_safeguarding_policy_invalid": "La décision de protection n'a pas pu être vérifiée.",
+      "event_safety_safeguarding_policy_unavailable": "La vérification de protection est temporairement indisponible.",
       "event_safety_schema_unavailable": "La vérification de sécurité est temporairement indisponible.",
       "event_safety_evaluation_unavailable": "La vérification de sécurité est temporairement indisponible.",
       "event_safety_organizer_not_active": "L'organisateur de l'événement n'est pas actif actuellement.",
-      "event_safety_denial_safeguarding_policy": "Une décision politique de sauvegarde empêche la participation."
+      "event_safety_denial_safeguarding_policy": "Une décision de la politique de protection empêche la participation."
     },
     "code": {
       "title": "Code de conduite",
@@ -152,7 +152,7 @@
       "effective_from": "En vigueur à partir de",
       "effective_until": "En vigueur jusqu'à",
       "effective_until_hint": "Laissez vide lorsque la décision n’a pas de fin programmée.",
-      "no_notes_notice": "Pour des raisons de confidentialité, ce grand livre accepte uniquement les codes de motif contrôlés. Enregistrez les incidents et les preuves sensibles dans le système de sauvegarde approuvé.",
+      "no_notes_notice": "Pour des raisons de confidentialité, ce registre accepte uniquement des codes de motif contrôlés. Enregistrez les incidents et les preuves sensibles dans le système de protection approuvé.",
       "saved": "Bilan de participation enregistré.",
       "withdrawn": "Examen de la participation retiré.",
       "action_error": "L'examen de la participation n'a pas pu être modifié. Actualisez et réessayez.",
@@ -247,7 +247,7 @@
     "review_reason": "Raison contrôlée",
     "reasons": {
       "unknown": "Une condition de participation doit encore être étudiée.",
-      "safeguarding_policy": "Sauvegarder la décision politique",
+      "safeguarding_policy": "Décision de la politique de protection",
       "minimum_age": "Âge minimum requis",
       "guardian_consent": "Exigence de consentement du tuteur",
       "code_of_conduct": "Exigence du code de conduite",
@@ -258,7 +258,7 @@
     "effective_from": "En vigueur à partir de",
     "effective_until": "En vigueur jusqu'à",
     "effective_until_hint": "Laissez vide lorsque la décision n’a pas de fin programmée.",
-    "no_notes": "Pour des raisons de confidentialité, utilisez uniquement des motifs contrôlés. Conservez les incidents et les preuves sensibles dans le système de sauvegarde approuvé.",
+    "no_notes": "Pour des raisons de confidentialité, utilisez uniquement des motifs contrôlés. Conservez les incidents et les preuves sensibles dans le système de protection approuvé.",
     "save_review": "Enregistrer la décision de révision",
     "no_people": "Aucun participant à l'événement n'est disponible pour un nouvel avis.",
     "open_people": "Ouvrir l'espace de travail des personnes chargées de l'événement",

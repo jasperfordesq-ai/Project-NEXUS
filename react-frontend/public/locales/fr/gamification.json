@@ -16,7 +16,7 @@
     "tab_challenges": "Défis",
     "tab_collections": "Collections",
     "tab_journeys": "Parcours",
-    "tab_engagement": "Fiançailles",
+    "tab_engagement": "Engagement",
     "tab_shop": "Boutique XP",
     "engagement": {
       "title": "Engagement mensuel",
@@ -313,7 +313,7 @@
     "your_rank": "Votre rang : #{{position}} sur {{total}} membres",
     "you": "(Vous)",
     "level": "Niveau {{level}}",
-    "type_placeholder": "Taper",
+    "type_placeholder": "Type",
     "type_aria": "Type de classement",
     "period_placeholder": "Période",
     "period_aria": "Période du classement",

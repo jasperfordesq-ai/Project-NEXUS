@@ -318,7 +318,7 @@
     "availability": "Disponibilité",
     "linked": "Lié",
     "connected_accounts": "Connecté",
-    "safeguarding": "Sauvegarde",
+    "safeguarding": "Protection et soutien",
     "translation": "Traduction",
     "linked-accounts": "Comptes liés",
     "connected-accounts": "Comptes connectés"
@@ -352,7 +352,7 @@
       "status_unavailable": "Votre statut de vérification n'a pas pu être chargé.",
       "confirmed_on": "Votre communauté a confirmé que vous répondez à cette exigence de contact de protection sur {{date}}.",
       "review_pending_body": "Votre courtier a été invité à examiner votre confirmation de communauté.",
-      "not_confirmed_body": "Votre communauté n’a pas confirmé que vous répondez à cette exigence de contact de sauvegarde.",
+      "not_confirmed_body": "Votre communauté n’a pas confirmé que vous répondez à cette exigence de contact liée à la protection.",
       "policy_unavailable_body": "Cette communauté n'a pas configuré de stratégie de contact de protection prise en charge pour sa juridiction.",
       "no_documents": "Ne téléchargez pas et n'envoyez pas de document DBS, contrôle de police, contrôle Garda, AccessNI ou PVG via NEXUS. Votre communauté organisera toute vérification légale en dehors de la plateforme.",
       "request_review_button": "Demander un examen au courtier",
@@ -657,7 +657,7 @@
       "option_represent": "Agir seul — entièrement consigné",
       "tier_aria": "Niveau de prise en charge pour {{capability}} sur {{name}}",
       "co_decide_explainer": "« Préparer uniquement » signifie que l'assistant configure les choses et que rien ne se passe jusqu'à ce que le propriétaire du compte l'approuve - en un seul clic ici ou à partir d'un lien dans son e-mail. C'est le niveau recommandé pour la plupart des familles.",
-      "set_by_member": "{{name}} a choisi ces niveaux. Eux seuls peuvent les modifier, depuis leurs propres paramètres de sauvegarde."
+      "set_by_member": "{{name}} a choisi ces niveaux. Eux seuls peuvent les modifier, depuis leurs propres paramètres de protection."
     },
     "approve": "Approuver",
     "decline": "Refuser",
@@ -677,7 +677,7 @@
     "add_failed": "Impossible d'ajouter le compte lié",
     "remove_failed": "Échec de la suppression",
     "approve_failed": "Échec de l'approbation",
-    "scope_note": "Ce sont des liens que vous créez vous-même et que l’autre personne approuve. Les arrangements enregistrés par vos coordinateurs sont affichés séparément, sous vos paramètres de sauvegarde.",
+    "scope_note": "Ce sont des liens que vous créez vous-même et que l’autre personne approuve. Les arrangements enregistrés par vos coordinateurs sont affichés séparément, dans vos paramètres de protection.",
     "messages": {
       "label": "Ses messages",
       "state_active": "Accord donné — vous pouvez consulter",

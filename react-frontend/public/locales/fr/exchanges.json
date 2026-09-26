@@ -180,5 +180,39 @@
     }
   },
   "hours_count_one": "{{count}} heure",
-  "hours_count_many": "{{count}} heure"
+  "hours_count_many": "{{count}} heure",
+  "status_config": {
+    "pending_provider": {
+      "label": "En attente du prestataire",
+      "description": "En attente de l’acceptation ou du refus de cette demande par le prestataire."
+    },
+    "pending_broker": {
+      "label": "En attente du courtier",
+      "description": "Cet échange doit être approuvé par un courtier avant de pouvoir continuer."
+    },
+    "accepted": {
+      "label": "Accepté",
+      "description": "L’échange a été accepté. Le prestataire peut commencer dès qu’il est prêt."
+    },
+    "in_progress": {
+      "label": "En cours",
+      "description": "Le service est en cours de réalisation."
+    },
+    "pending_confirmation": {
+      "label": "Confirmer les heures",
+      "description": "Les deux parties doivent confirmer les heures effectuées pour terminer l’échange."
+    },
+    "completed": {
+      "label": "Terminé",
+      "description": "L’échange est terminé et les crédits ont été transférés."
+    },
+    "disputed": {
+      "label": "Contesté",
+      "description": "Il y a un désaccord sur les heures. Un courtier va examiner la situation."
+    },
+    "cancelled": {
+      "label": "Annulé",
+      "description": "Cet échange a été annulé."
+    }
+  }
 }

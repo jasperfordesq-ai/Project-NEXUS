@@ -31,9 +31,9 @@
     "no_data": "Aucune donnée de tendance disponible"
   },
   "safeguarding_banner": {
-    "title": "L'étape de sauvegarde est désactivée dans votre assistant d'intégration",
-    "body": "Les membres ne peuvent pas déclarer de vulnérabilité ou de besoins de vérification lors de leur adhésion. Les alertes d'administrateur ne se déclenchent pas. Activez l'étape de sauvegarde et appliquez un pays prédéfini pour que votre communauté soit protégée.",
-    "cta": "Activer la sauvegarde"
+    "title": "L'étape de protection est désactivée dans votre assistant d'intégration",
+    "body": "Les membres ne peuvent pas déclarer de vulnérabilité ou de besoins de vérification lors de leur adhésion. Les alertes d'administrateur ne se déclenchent pas. Activez l'étape de protection et appliquez un pays prédéfini pour que votre communauté soit protégée.",
+    "cta": "Activer la protection"
   },
   "alerts": {
     "pending_approvals": "Membres en attente d'approbation",

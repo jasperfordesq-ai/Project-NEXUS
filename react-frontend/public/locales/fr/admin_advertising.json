@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -129,7 +129,7 @@
       "fields": {
         "advertiser_type": "Type d'annonceur",
         "campaign_name": "Nom de la campagne",
-        "type": "Taper"
+        "type": "Type"
       }
     },
     "ad": {

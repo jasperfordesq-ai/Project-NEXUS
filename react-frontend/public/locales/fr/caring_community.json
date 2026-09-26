@@ -60,7 +60,7 @@
     "select_member_error": "Choisissez un membre avant de lier un bénéficiaire de soins.",
     "relationship_label": "Relation",
     "start_date_label": "Accompagnement commencé le",
-    "notes_label": "Remarques",
+    "notes_label": "Notes",
     "notes_placeholder": "Contexte facultatif pour les coordinateur·trices ou les remplaçant·es de confiance",
     "cancel": "Annuler",
     "upcoming_care": "Accompagnement à venir",
@@ -204,7 +204,7 @@
     "actions": {
       "pause": "Mettre en pause",
       "end": "Mettre fin à la relation",
-      "resume": "CV"
+      "resume": "Reprendre"
     },
     "pause_modal": {
       "title": "Suspendre cette relation d'assistance",
@@ -225,7 +225,7 @@
   },
   "data_export": {
     "title": "Mon export de données",
-    "intro": "Téléchargez une copie complète de vos données personnelles détenues par cette communauté bienveillante, conformément à la loi fédérale suisse sur la protection des données (LPD) et au RGPD. L'exportation comprend votre profil, les heures enregistrées, les relations de soutien, les cadeaux et transferts d'heures, les échanges de fidélité, les points régionaux, les rapports de sauvegarde que vous avez déposés et vos préférences de résumé civique.",
+    "intro": "Téléchargez une copie complète de vos données personnelles détenues par cette communauté bienveillante, conformément à la loi fédérale suisse sur la protection des données (LPD) et au RGPD. L'exportation comprend votre profil, les heures enregistrées, les relations de soutien, les cadeaux et transferts d'heures, les échanges de fidélité, les points régionaux, les signalements de protection que vous avez déposés et vos préférences de résumé civique.",
     "download_button": "Télécharger mes données (JSON)",
     "format_note": "Votre export sera un fichier JSON. Contactez votre coordinateur communautaire si vous préférez un autre format.",
     "privacy_note": "Votre exportation contient uniquement les données que vous avez soumises ou les actions que vous avez entreprises. Il n'inclut pas les informations personnelles des autres membres.",
@@ -294,7 +294,7 @@
         "success-stories": "Histoires de réussite",
         "feedback": "Boîte de réception des commentaires",
         "verification": "Vérification municipale",
-        "safeguarding": "Rapports de sauvegarde",
+        "safeguarding": "Signalements de protection",
         "trust-tier": "Niveaux de confiance",
         "launch-readiness": "Préparation au lancement",
         "pilot-scoreboard": "Tableau de bord pilote",
@@ -326,7 +326,7 @@
       "sections": {
         "overview": "Aperçu",
         "operations": "Opérations",
-        "engagement": "Fiançailles",
+        "engagement": "Engagement",
         "trust_safety": "Confiance et sécurité",
         "pilot_governance": "Gouvernance pilote",
         "partnerships": "Partenariats",
@@ -354,7 +354,7 @@
         "success_stories": "Histoires de réussite",
         "feedback": "Boîte de réception des commentaires",
         "verification": "Vérification municipale",
-        "safeguarding": "Rapports de sauvegarde",
+        "safeguarding": "Signalements de protection",
         "trust_tier": "Niveaux de confiance",
         "launch_readiness": "Préparation au lancement",
         "pilot_scoreboard": "Tableau de bord pilote",
@@ -436,7 +436,7 @@
         "name": "Nom",
         "phone": "Téléphone",
         "status": "Statut",
-        "type": "Taper",
+        "type": "Type",
         "website": "Site web"
       },
       "messages": {
@@ -478,7 +478,7 @@
         "aria": "Tableau des prestataires de soins",
         "name": "Nom",
         "status": "Statut",
-        "type": "Taper",
+        "type": "Type",
         "verified": "Vérifié"
       },
       "types": {
@@ -927,15 +927,15 @@
       "loading": "Chargement du cercle des destinataires...",
       "member_since": "Membre depuis {{date}}",
       "member_id_value": "ID{{id}}",
-      "safeguarding_flags_one": "Drapeau de sauvegarde {{count}}",
-      "safeguarding_flags_other": "Drapeaux de sauvegarde {{count}}",
+      "safeguarding_flags_one": "{{count}} indicateur de protection",
+      "safeguarding_flags_other": "{{count}} indicateurs de protection",
       "about": {
         "title": "À propos de cette page",
-        "body": "Un cercle de bénéficiaires de soins est un groupe de soutien privé autour d’une personne qui reçoit des soins. Cette vue montre leur réseau d'assistance complet : tous les assistants, le nombre total d'heures reçues, les demandes d'aide ouvertes et tous les indicateurs de sauvegarde. Saisissez l'ID utilisateur du membre pour rechercher son cercle.",
+        "body": "Un cercle de bénéficiaires de soins est un groupe de soutien privé autour d’une personne qui reçoit des soins. Cette vue montre leur réseau d'assistance complet : tous les assistants, le nombre total d'heures reçues, les demandes d'aide ouvertes et tous les indicateurs de protection. Saisissez l'ID utilisateur du membre pour rechercher son cercle.",
         "trust_tiers_label": "Niveaux de confiance :",
         "trust_tiers_body": "Nouveau venu, membre, fiable, vérifié, coordinateur - affiché pour le destinataire et chaque supporter.",
-        "safeguarding_label": "Drapeaux de sauvegarde :",
-        "safeguarding_body": "Un nombre d’indicateurs différent de zéro indique des problèmes de sauvegarde active enregistrés à l’encontre de ce membre. Consultez-les dans la section Sauvegarde.",
+        "safeguarding_label": "Indicateurs de protection :",
+        "safeguarding_body": "Un nombre d’indicateurs différent de zéro signale des préoccupations de protection actives enregistrées pour ce membre. Consultez-les dans la section Protection.",
         "privacy_label": "Confidentialité:",
         "privacy_body": "Les données du cercle sont visibles uniquement par les membres du cercle et les administrateurs de locataires. Il n'est pas inclus dans les rapports à l'échelle de la communauté ni dans l'annuaire des membres."
       },
@@ -978,7 +978,7 @@
         "aria": "Relations de soutien",
         "supporter": "Soutien",
         "trust_tier": "Niveau de confiance",
-        "type": "Taper",
+        "type": "Type",
         "hours_logged": "Heures enregistrées",
         "last_activity": "Dernière activité",
         "status": "Statut"
@@ -989,9 +989,9 @@
       "safeguarding_flags_many": "Drapeaux de sauvegarde {{count}}"
     },
     "safeguarding_reports": {
-      "meta_title": "Rapports de sauvegarde - Administrateur",
-      "title": "Rapports de sauvegarde",
-      "subtitle": "Examiner, attribuer et résoudre les problèmes de sauvegarde soulevés par les membres.",
+      "meta_title": "Signalements de protection - Administrateur",
+      "title": "Signalements de protection",
+      "subtitle": "Examiner, attribuer et résoudre les préoccupations de protection soulevées par les membres.",
       "empty_dash": "-",
       "actor_id": "#{{id}}",
       "subject_org": "Organisation #{{id}}",
@@ -999,12 +999,12 @@
       "escalated": "Escaladé",
       "open": "Ouvrir",
       "report_title": "Signaler #{{id}}",
-      "empty": "Aucun rapport de sauvegarde ne correspond à ces filtres.",
-      "loading": "Chargement des rapports de sauvegarde",
-      "loading_detail": "Chargement des détails du rapport de sauvegarde",
+      "empty": "Aucun signalement de protection ne correspond à ces filtres.",
+      "loading": "Chargement des signalements de protection",
+      "loading_detail": "Chargement des détails du signalement de protection",
       "about": {
         "title": "À propos de cette page",
-        "body": "Cette page gère les incidents de sauvegarde formels : situations dans lesquelles le bien-être, la sécurité ou la dignité d'un membre peuvent être menacés. Les rapports sont soumis par les membres, les coordinateurs ou les administrateurs. Tous les rapports doivent être triés dans le cadre du SLA configuré dans la politique d'exploitation. Les rapports critiques et de gravité élevée nécessitent une attention immédiate. Les rapports s'appliquent aux locataires et ne peuvent pas être consultés par les autres communautés."
+        "body": "Cette page gère les incidents de protection formels : situations dans lesquelles le bien-être, la sécurité ou la dignité d'un membre peuvent être menacés. Les signalements sont soumis par les membres, les coordinateurs ou les administrateurs. Tous les signalements doivent être triés dans le délai (SLA) configuré dans la politique d'exploitation. Les signalements critiques et de gravité élevée nécessitent une attention immédiate. Les signalements sont propres à chaque communauté et ne peuvent pas être consultés par les autres communautés."
       },
       "severity": {
         "critical": "Critique",
@@ -1039,7 +1039,7 @@
         "severity": "Gravité"
       },
       "table": {
-        "aria": "Rapports de sauvegarde",
+        "aria": "Signalements de protection",
         "severity": "Gravité",
         "category": "Catégorie",
         "reporter": "Journaliste",
@@ -1160,7 +1160,7 @@
         "title": "Configuration du programme",
         "enabled": "Programme activé",
         "enabled_hint": "Lorsqu'elle est désactivée, la troisième devise est masquée aux membres et les points de terminaison d'administrateur renvoient 403.",
-        "display_label": "Afficher l'étiquette",
+        "display_label": "Libellé affiché",
         "display_label_description": "Affiché dans le portefeuille (par exemple « Points régionaux », « Stadtmuenze »)",
         "symbol": "Symbole",
         "symbol_description": "Suffixe court affiché à côté des montants (par exemple « pts », « SM »)",
@@ -1194,7 +1194,7 @@
         "empty": "Aucune écriture au grand livre pour l'instant.",
         "date": "Date",
         "member": "Membre",
-        "type": "Taper",
+        "type": "Type",
         "description": "Descriptif",
         "points": "Points",
         "balance": "Équilibre",

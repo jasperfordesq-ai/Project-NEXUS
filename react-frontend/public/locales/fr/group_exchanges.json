@@ -201,8 +201,8 @@
       "title": "Créer un échange de groupe"
     }
   },
-  "role_provider": "Provider",
-  "role_receiver": "Receiver",
+  "role_provider": "Fournisseur",
+  "role_receiver": "Bénéficiaire",
   "participants_count_many": "{{count}} participants",
   "hours_count_many": "{{count}} heures"
 }

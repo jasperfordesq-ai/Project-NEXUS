@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -82,7 +82,7 @@
       "generate_report_now": "Générer un rapport maintenant",
       "view_access_log": "Afficher le journal d'accès",
       "suspend": "Suspendre",
-      "resume": "CV",
+      "resume": "Reprendre",
       "close": "Fermer",
       "cancel": "Annuler",
       "create": "Créer"
@@ -90,7 +90,7 @@
     "tables": {
       "subscriptions_aria": "Abonnements aux analyses régionales",
       "partner": "Partenaire",
-      "type": "Taper",
+      "type": "Type",
       "plan": "Planifier",
       "status": "Statut",
       "period_end": "Fin de période",

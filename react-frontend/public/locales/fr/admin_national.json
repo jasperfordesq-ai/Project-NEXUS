@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -129,7 +129,7 @@
     "inline": {
       "active_members": "Membres actifs:",
       "recipients_reached": "Destinataires atteints:",
-      "safeguarding_reports": "Rapports de sauvegarde:"
+      "safeguarding_reports": "Signalements de protection :"
     },
     "metrics": {
       "yoy": "{{value}} Annuel"

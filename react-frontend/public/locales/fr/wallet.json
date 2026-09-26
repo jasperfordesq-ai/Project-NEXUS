@@ -47,7 +47,7 @@
   },
   "csv": {
     "date": "Date",
-    "type": "Taper",
+    "type": "Type",
     "amount": "Montant",
     "description": "Description",
     "other_party": "Autre partie",

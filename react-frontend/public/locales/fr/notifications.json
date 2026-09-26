@@ -48,7 +48,7 @@
     "default": "Notification"
   },
   "load_more": "Charger plus",
-  "undo": "Undo",
+  "undo": "Annuler",
   "toast": {
     "mark_read_failed": "Impossible de marquer la notification comme lue",
     "all_read": "Toutes les notifications marquées comme lues",

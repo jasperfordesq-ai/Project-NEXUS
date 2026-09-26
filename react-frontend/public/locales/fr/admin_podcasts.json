@@ -15,7 +15,7 @@
     "refresh": "Actualiser",
     "unexpected_error": "Erreur inattendue",
     "unknown": "Inconnu",
-    "unfeature": "Inutilité",
+    "unfeature": "Retirer la mise en avant",
     "actions": "Actions",
     "active": "Actif",
     "all": "Tout",
@@ -152,7 +152,7 @@
       }
     },
     "readiness": {
-      "moderation": "Moderation",
+      "moderation": "Modération",
       "rss": "RSS",
       "pending_items_one": "{{count}} élément en attente d'examen",
       "pending_items_other": "{{count}} éléments en attente d'examen",
@@ -194,7 +194,7 @@
       "title": "Titre",
       "owner": "Propriétaire",
       "author": "Auteur",
-      "moderation": "Moderation",
+      "moderation": "Modération",
       "updated": "Mis à jour",
       "actions": "Actions",
       "listens": "Écoutes",
@@ -216,8 +216,8 @@
       "other": "Autre"
     },
     "stats": {
-      "published_shows": "Spectacles publiés",
-      "pending_shows": "Spectacles en attente",
+      "published_shows": "Émissions publiées",
+      "pending_shows": "Émissions en attente",
       "published_episodes": "Épisodes publiés",
       "pending_episodes": "Épisodes en attente",
       "total_listens": "Écoutes",
@@ -252,8 +252,8 @@
       "reports": "Aucun rapport ouvert."
     },
     "toasts": {
-      "show_approve": "Spectacle approuvé.",
-      "show_reject": "Spectacle rejeté.",
+      "show_approve": "Émission approuvée.",
+      "show_reject": "Émission rejetée.",
       "show_flag": "Afficher signalé.",
       "episode_approve": "Épisode approuvé.",
       "episode_reject": "Épisode rejeté.",

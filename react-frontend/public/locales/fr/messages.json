@@ -237,11 +237,11 @@
     "dismiss": "Ignorer avis de protection"
   },
   "safeguarding_policy_unavailable": {
-    "title": "Chèque de sauvegarde temporairement indisponible",
+    "title": "Vérification de protection temporairement indisponible",
     "body": "La messagerie directe est suspendue car la politique de protection de la communauté n'a pas pu être vérifiée en toute sécurité.",
     "contact_broker": "Vérifiez à nouveau sous peu. Si cela continue, demandez de l’aide à un coordonnateur communautaire.",
     "action": "Revérifier",
-    "dismiss": "Rejeter l'avis de sauvegarde"
+    "dismiss": "Fermer l'avis de protection"
   },
   "coordinator_request": {
     "button": "Demander l'aide d'un coordinateur",
@@ -266,7 +266,7 @@
     "garda_vetting": "Vérification Garda"
   },
   "composer_blocked_safeguarding": "La messagerie directe n'est pas disponible avec ce membre. Utilisez l'option ci-dessus pour demander à un coordinateur de vous aider à organiser un contact.",
-  "composer_blocked_safeguarding_unavailable": "La messagerie directe est suspendue pendant que la politique de sauvegarde est vérifiée. Utilisez à nouveau Check ci-dessus.",
+  "composer_blocked_safeguarding_unavailable": "La messagerie directe est suspendue pendant la vérification de la politique de protection. Utilisez « Revérifier » ci-dessus.",
   "aria_conversation_unread_one": "Conversation avec {{name}}, {{count}} non lu(e)(s)",
   "aria_conversation_unread_other": "Conversation avec {{name}}, {{count}} non lu(e)(s)",
   "selected_members_one": "Sélectionné ({{count}})",

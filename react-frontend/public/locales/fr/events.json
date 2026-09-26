@@ -450,7 +450,7 @@
       "registration_filter": "Inscription",
       "waitlist_filter": "Liste d'attente",
       "attendance_filter": "Participation",
-      "engagement_filter": "Fiançailles",
+      "engagement_filter": "Engagement",
       "sort_label": "Trier les gens",
       "sorts": {
         "name_asc": "Nom, de A à Z",
@@ -528,7 +528,7 @@
       "export_excluded_fields": {
         "contact_details": "Adresses e-mail, numéros de téléphone, adresses postales et autres coordonnées",
         "form_answers": "Réponses au formulaire d'inscription et réponses aux questions personnalisées",
-        "incident_records": "Dossiers d’incidents, de sauvegarde et de gestion des cas",
+        "incident_records": "Dossiers d’incidents, de protection et de gestion des cas",
         "support_notes": "Notes de santé, d’accessibilité, d’hébergement et de soutien privé",
         "audit_metadata": "Métadonnées d'audit interne, motifs du personnel et notes opérationnelles"
       },

@@ -351,7 +351,7 @@
           },
           "broker_application": {
             "title": "Demande de courtier et de coordonnateur",
-            "description": "Une application distincte pour les coordinateurs et les courtiers qui interviennent entre les membres lorsqu'un problème de sauvegarde ou de conformité est en cours. Il gère la surveillance des échanges et l'approbation des correspondances, les enregistrements des membres et la progression de l'intégration, les files d'attente de modération pour le flux, les commentaires et les avis, les balises de risque et les listes de surveillance, l'examen des messages pour les membres placés sous surveillance, le suivi des certificats d'assurance et le reporting.",
+            "description": "Une application distincte pour les coordinateurs et les courtiers qui interviennent entre les membres lorsqu'une préoccupation de protection ou de conformité est en cours. Elle gère la surveillance des échanges et l'approbation des correspondances, les dossiers des membres et la progression de l'intégration, les files d'attente de modération pour le fil, les commentaires et les avis, les balises de risque et les listes de surveillance, l'examen des messages pour les membres placés sous surveillance, le suivi des certificats d'assurance et le reporting.",
             "note": "Un courtier est un rôle opérationnel à part entière, pas un administrateur junior : les courtiers obtiennent cette candidature et se voient délibérément refuser le panel d'administration général."
           },
           "two_factor_and_passkeys": {
@@ -460,7 +460,7 @@
           },
           "safeguarding_reporting": {
             "title": "Signalement de préoccupations",
-            "description": "Les membres peuvent soulever eux-mêmes une préoccupation en matière de sauvegarde, et le personnel l'examine, l'attribue et la résout à l'aide d'un journal d'actions qui ne peut être que complété, jamais réécrit."
+            "description": "Les membres peuvent soulever eux-mêmes une préoccupation de protection, et le personnel l'examine, l'attribue et la résout à l'aide d'un journal d'actions qui ne peut être que complété, jamais réécrit."
           },
           "surveys_and_projects": {
             "title": "Enquêtes et projets communautaires",
