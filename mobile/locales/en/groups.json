@@ -441,6 +441,14 @@
     "unsavedMessage": "You have unsaved details. Leaving now will lose them.",
     "discard": "Discard"
   },
+  "invite_manage": {
+    "title": "Manage invitations", "open": "Manage invitations", "access_denied": "You do not have permission to manage invitations.", "invalid_group": "This group is not available.", "load_error": "Invitations could not be loaded.",
+    "uncertain": "We could not confirm the result. The pending invitation list has been refreshed; check it before trying again.", "expiry_error": "Enter an expiry from 1 to 90 days.",
+    "link_title": "Invitation link", "link_description": "Create an expiring link, then share it using your device.", "expiry_label": "Expires after (days)", "create_link": "Create and share link",
+    "email_title": "Email invitations", "email_label": "Email addresses", "message_label": "Optional message", "send": "Send invitations", "email_error": "Enter valid email addresses separated by spaces, commas, or new lines.", "email_limit": "Send no more than 50 invitations at a time.",
+    "pending_title": "Pending invitations", "pending_empty": "There are no pending invitations.", "share_link": "Share link", "expires": "Expires {{date}}", "share": "Share", "revoke": "Revoke", "revoke_title": "Revoke invitation?", "revoke_message": "This invitation will stop working immediately.",
+    "status": { "sent": "Sent", "invalid": "Invalid address", "already_member": "Already a member", "already_invited": "Already invited", "limit_reached": "Invitation limit reached" }
+  },
   "invite_accept": {
     "title": "Group Invitation",
     "description": "Review and accept your invitation to join this group.",

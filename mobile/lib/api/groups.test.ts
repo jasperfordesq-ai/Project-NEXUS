@@ -34,6 +34,8 @@ import {
   deleteGroupAnnouncement,
   deleteGroupWikiPage,
   createGroupQuestion,
+  createGroupInviteLink,
+  getGroupInvites,
   getGroups,
   getGroup,
   getGroupAnalytics,
@@ -54,6 +56,8 @@ import {
   getGroupWikiRevisions,
   joinGroup,
   leaveGroup,
+  revokeGroupInvite,
+  sendGroupEmailInvites,
   updateGroup,
   updateGroupAnnouncement,
   updateGroupTask,
@@ -679,5 +683,68 @@ describe('leaveGroup', () => {
     (api.delete as jest.Mock).mockResolvedValue(undefined);
     await leaveGroup(7);
     expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/membership');
+  });
+});
+
+describe('group manager invitations', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  const invite = {
+    id: 41,
+    type: 'link' as const,
+    email: null,
+    status: 'pending' as const,
+    invite_url: 'https://example.test/groups/invite/token',
+    expires_at: '2026-10-10T00:00:00Z',
+    created_at: '2026-09-26T00:00:00Z',
+    invited_by: 8,
+    inviter_name: 'Group Manager',
+    capabilities: { can_revoke: true },
+  };
+
+  it('lists pending invitations and creates an expiry-bounded link', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [invite] });
+    (api.post as jest.Mock).mockResolvedValue({ data: invite });
+
+    await expect(getGroupInvites(7)).resolves.toEqual([invite]);
+    await expect(createGroupInviteLink(7, 14)).resolves.toEqual(invite);
+
+    expect(api.get).toHaveBeenCalledWith('/api/v2/groups/7/invites');
+    expect(api.post).toHaveBeenCalledWith('/api/v2/groups/7/invites/link', { expiry_days: 14 });
+  });
+
+  it('sends the normalized email draft and revokes the selected invitation', async () => {
+    const results = [{ email: 'member@example.test', status: 'sent' as const, email_delivered: true }];
+    (api.post as jest.Mock).mockResolvedValue({ data: results });
+    (api.delete as jest.Mock).mockResolvedValue(undefined);
+
+    await expect(sendGroupEmailInvites(7, ['member@example.test'], '  Welcome  ')).resolves.toEqual(results);
+    await revokeGroupInvite(7, 41);
+
+    expect(api.post).toHaveBeenCalledWith('/api/v2/groups/7/invites/email', {
+      emails: ['member@example.test'], message: 'Welcome',
+    });
+    expect(api.delete).toHaveBeenCalledWith('/api/v2/groups/7/invites/41');
+  });
+
+  it('rejects invalid identifiers and expiry before transport', async () => {
+    await expect(getGroupInvites(0)).rejects.toThrow('Invalid group');
+    await expect(createGroupInviteLink(7, 91)).rejects.toThrow('Invalid invitation expiry');
+    await expect(sendGroupEmailInvites(7, [], '')).rejects.toThrow('Invalid invitation recipients');
+    await expect(revokeGroupInvite(7, 0)).rejects.toThrow('Invalid invitation');
+    expect(api.get).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalled();
+    expect(api.delete).not.toHaveBeenCalled();
+  });
+
+  it('fails closed on malformed invitation responses', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [{ ...invite, id: 0 }] });
+    await expect(getGroupInvites(7)).rejects.toThrow('Invalid group invitation response');
+    (api.get as jest.Mock).mockResolvedValue({ data: [{ ...invite, capabilities: { can_revoke: 'yes' } }] });
+    await expect(getGroupInvites(7)).rejects.toThrow('Invalid group invitation response');
+    (api.post as jest.Mock).mockResolvedValueOnce({ data: { ...invite, expires_at: 'not-a-date' } });
+    await expect(createGroupInviteLink(7, 14)).rejects.toThrow('Invalid group invitation response');
+    (api.post as jest.Mock).mockResolvedValueOnce({ data: [{ email: 'member@example.test', status: 'mystery' }] });
+    await expect(sendGroupEmailInvites(7, ['member@example.test'], '')).rejects.toThrow('Invalid group invitation response');
   });
 });

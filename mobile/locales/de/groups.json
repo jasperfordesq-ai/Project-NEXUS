@@ -441,6 +441,14 @@
     "unsavedMessage": "Du hast ungespeicherte Angaben. Wenn du jetzt gehst, gehen sie verloren.",
     "discard": "Verwerfen"
   },
+  "invite_manage": {
+    "title": "Einladungen verwalten", "open": "Einladungen verwalten", "access_denied": "Sie dürfen Einladungen nicht verwalten.", "invalid_group": "Diese Gruppe ist nicht verfügbar.", "load_error": "Einladungen konnten nicht geladen werden.",
+    "uncertain": "Das Ergebnis konnte nicht bestätigt werden. Die Liste wurde aktualisiert; prüfen Sie sie vor einem erneuten Versuch.", "expiry_error": "Geben Sie eine Gültigkeit von 1 bis 90 Tagen ein.",
+    "link_title": "Einladungslink", "link_description": "Erstellen Sie einen ablaufenden Link und teilen Sie ihn über Ihr Gerät.", "expiry_label": "Gültig für (Tage)", "create_link": "Link erstellen und teilen",
+    "email_title": "E-Mail-Einladungen", "email_label": "E-Mail-Adressen", "message_label": "Optionale Nachricht", "send": "Einladungen senden", "email_error": "Geben Sie gültige E-Mail-Adressen getrennt durch Leerzeichen, Kommas oder neue Zeilen ein.", "email_limit": "Senden Sie höchstens 50 Einladungen gleichzeitig.",
+    "pending_title": "Ausstehende Einladungen", "pending_empty": "Es gibt keine ausstehenden Einladungen.", "share_link": "Freigabelink", "expires": "Läuft am {{date}} ab", "share": "Teilen", "revoke": "Widerrufen", "revoke_title": "Einladung widerrufen?", "revoke_message": "Diese Einladung funktioniert dann sofort nicht mehr.",
+    "status": { "sent": "Gesendet", "invalid": "Ungültige Adresse", "already_member": "Bereits Mitglied", "already_invited": "Bereits eingeladen", "limit_reached": "Einladungslimit erreicht" }
+  },
   "invite_accept": {
     "title": "Gruppeneinladung",
     "description": "Prüfe und akzeptiere deine Einladung zu dieser Gruppe.",

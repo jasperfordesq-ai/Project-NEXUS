@@ -1045,6 +1045,96 @@ export interface GroupInviteAcceptance {
   membership: { status: 'active'; role: 'member' };
 }
 
+export interface GroupPendingInvite {
+  id: number;
+  type: 'link' | 'email';
+  email?: string | null;
+  status: 'pending';
+  invite_url: string | null;
+  expires_at: string;
+  created_at: string;
+  invited_by?: number;
+  inviter_name?: string;
+  capabilities?: { can_revoke: boolean };
+}
+
+export interface GroupEmailInviteResult {
+  email: string;
+  status: 'sent' | 'invalid' | 'already_member' | 'already_invited' | 'limit_reached';
+  email_delivered?: boolean | null;
+  message?: string;
+  invite?: { id: number; type: 'email'; status: 'pending'; expires_at: string };
+}
+
+function managerInviteData<T>(response: { data: T } | T): T {
+  return response && typeof response === 'object' && 'data' in response ? response.data : response;
+}
+
+function parsePendingInvite(value: unknown): GroupPendingInvite {
+  if (!value || typeof value !== 'object') throw new Error('Invalid group invitation response');
+  const invite = value as Record<string, unknown>;
+  const capabilities = invite.capabilities as Record<string, unknown> | undefined;
+  if (!Number.isInteger(invite.id) || Number(invite.id) <= 0
+    || !['link', 'email'].includes(String(invite.type)) || invite.status !== 'pending'
+    || typeof invite.expires_at !== 'string' || !Number.isFinite(Date.parse(invite.expires_at))
+    || typeof invite.created_at !== 'string' || !Number.isFinite(Date.parse(invite.created_at))
+    || (invite.invite_url !== null && invite.invite_url !== undefined && typeof invite.invite_url !== 'string')
+    || (invite.email !== null && invite.email !== undefined && typeof invite.email !== 'string')
+    || (invite.invited_by !== undefined && (!Number.isInteger(invite.invited_by) || Number(invite.invited_by) <= 0))
+    || (invite.inviter_name !== undefined && typeof invite.inviter_name !== 'string')
+    || (capabilities !== undefined
+      && (!capabilities || typeof capabilities !== 'object' || typeof capabilities.can_revoke !== 'boolean'))) {
+    throw new Error('Invalid group invitation response');
+  }
+  return value as GroupPendingInvite;
+}
+
+function parseEmailInviteResult(value: unknown): GroupEmailInviteResult {
+  if (!value || typeof value !== 'object') throw new Error('Invalid group invitation response');
+  const result = value as Record<string, unknown>;
+  if (typeof result.email !== 'string'
+    || !['sent', 'invalid', 'already_member', 'already_invited', 'limit_reached'].includes(String(result.status))) {
+    throw new Error('Invalid group invitation response');
+  }
+  return value as GroupEmailInviteResult;
+}
+
+export async function getGroupInvites(groupId: number): Promise<GroupPendingInvite[]> {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error('Invalid group');
+  const invites = managerInviteData(await api.get<{ data: GroupPendingInvite[] } | GroupPendingInvite[]>(`${API_V2}/groups/${groupId}/invites`));
+  if (!Array.isArray(invites)) throw new Error('Invalid group invitation response');
+  return invites.map(parsePendingInvite);
+}
+
+export async function createGroupInviteLink(groupId: number, expiryDays: number): Promise<GroupPendingInvite> {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error('Invalid group');
+  if (!Number.isInteger(expiryDays) || expiryDays < 1 || expiryDays > 90) throw new Error('Invalid invitation expiry');
+  return parsePendingInvite(managerInviteData(await api.post<{ data: GroupPendingInvite } | GroupPendingInvite>(
+    `${API_V2}/groups/${groupId}/invites/link`,
+    { expiry_days: expiryDays },
+  )));
+}
+
+export async function sendGroupEmailInvites(
+  groupId: number,
+  emails: string[],
+  message: string,
+): Promise<GroupEmailInviteResult[]> {
+  if (!Number.isInteger(groupId) || groupId <= 0) throw new Error('Invalid group');
+  if (emails.length < 1 || emails.length > 50) throw new Error('Invalid invitation recipients');
+  const results = managerInviteData(await api.post<{ data: GroupEmailInviteResult[] } | GroupEmailInviteResult[]>(
+    `${API_V2}/groups/${groupId}/invites/email`,
+    { emails, message: message.trim() },
+  ));
+  if (!Array.isArray(results)) throw new Error('Invalid group invitation response');
+  return results.map(parseEmailInviteResult);
+}
+
+export async function revokeGroupInvite(groupId: number, inviteId: number): Promise<void> {
+  if (!Number.isInteger(groupId) || groupId <= 0 || !Number.isInteger(inviteId) || inviteId <= 0) throw new Error('Invalid invitation');
+  await api.delete(`${API_V2}/groups/${groupId}/invites/${inviteId}`);
+}
+
 export async function getGroupInvitePreview(token: string): Promise<GroupInvitePreview> {
   const response = await api.get<{ data: GroupInvitePreview } | GroupInvitePreview>(`${API_V2}/groups/invite/${encodeURIComponent(token)}`);
   return response && typeof response === 'object' && 'data' in response ? response.data : response;

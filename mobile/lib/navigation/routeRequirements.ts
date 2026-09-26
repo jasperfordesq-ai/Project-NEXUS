@@ -125,6 +125,7 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
 
   // ---- groups -----------------------------------------------------------------------
   'group-detail': F('groups'),
+  'group-invitations': F('groups'),
   'group-discussion': F('groups'),
   'new-group': F('groups'),
   'edit-group': F('groups'),

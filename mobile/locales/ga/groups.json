@@ -441,6 +441,14 @@
     "joined": "Ball de",
     "loadedNote": "Baineann na comhairimh leis na grúpaí atá lódáilte go dtí seo."
   },
+  "invite_manage": {
+    "title": "Bainistigh cuirí", "open": "Bainistigh cuirí", "access_denied": "Níl cead agat cuirí a bhainistiú.", "invalid_group": "Níl an grúpa seo ar fáil.", "load_error": "Níorbh fhéidir na cuirí a lódáil.",
+    "uncertain": "Níorbh fhéidir an toradh a dheimhniú. Athnuadh an liosta; seiceáil é sula ndéanann tú iarracht arís.", "expiry_error": "Cuir isteach tréimhse idir 1 agus 90 lá.",
+    "link_title": "Nasc cuireadh", "link_description": "Cruthaigh nasc a rachaidh in éag agus roinn ó do ghléas é.", "expiry_label": "In éag tar éis (laethanta)", "create_link": "Cruthaigh agus roinn nasc",
+    "email_title": "Cuirí ríomhphoist", "email_label": "Seoltaí ríomhphoist", "message_label": "Teachtaireacht roghnach", "send": "Seol cuirí", "email_error": "Cuir isteach seoltaí bailí scartha le spásanna, camóga nó línte nua.", "email_limit": "Ná seol níos mó ná 50 cuireadh ag an am.",
+    "pending_title": "Cuirí ar feitheamh", "pending_empty": "Níl aon chuireadh ar feitheamh.", "share_link": "Nasc comhroinnte", "expires": "In éag {{date}}", "share": "Roinn", "revoke": "Cúlghair", "revoke_title": "Cúlghair an cuireadh?", "revoke_message": "Stopfaidh an cuireadh seo ag obair láithreach.",
+    "status": { "sent": "Seolta", "invalid": "Seoladh neamhbhailí", "already_member": "Ina bhall cheana", "already_invited": "Tugadh cuireadh cheana", "limit_reached": "Teorainn cuirí bainte amach" }
+  },
   "invite_accept": {
     "title": "Cuireadh grúpa",
     "description": "Athbhreithnigh agus glac le do chuireadh chun dul isteach sa ghrúpa seo.",

@@ -441,6 +441,14 @@
     "unsavedMessage": "Tienes datos sin guardar. Si sales ahora, se perderán.",
     "discard": "Descartar"
   },
+  "invite_manage": {
+    "title": "Gestionar invitaciones", "open": "Gestionar invitaciones", "access_denied": "No tienes permiso para gestionar invitaciones.", "invalid_group": "Este grupo no está disponible.", "load_error": "No se pudieron cargar las invitaciones.",
+    "uncertain": "No pudimos confirmar el resultado. La lista se ha actualizado; revísala antes de volver a intentarlo.", "expiry_error": "Introduce una caducidad de 1 a 90 días.",
+    "link_title": "Enlace de invitación", "link_description": "Crea un enlace con caducidad y compártelo desde tu dispositivo.", "expiry_label": "Caduca después de (días)", "create_link": "Crear y compartir enlace",
+    "email_title": "Invitaciones por correo", "email_label": "Direcciones de correo", "message_label": "Mensaje opcional", "send": "Enviar invitaciones", "email_error": "Introduce correos válidos separados por espacios, comas o líneas nuevas.", "email_limit": "Envía como máximo 50 invitaciones cada vez.",
+    "pending_title": "Invitaciones pendientes", "pending_empty": "No hay invitaciones pendientes.", "share_link": "Enlace para compartir", "expires": "Caduca el {{date}}", "share": "Compartir", "revoke": "Revocar", "revoke_title": "¿Revocar la invitación?", "revoke_message": "Esta invitación dejará de funcionar inmediatamente.",
+    "status": { "sent": "Enviada", "invalid": "Dirección no válida", "already_member": "Ya es miembro", "already_invited": "Ya invitado", "limit_reached": "Límite de invitaciones alcanzado" }
+  },
   "invite_accept": {
     "title": "Invitación al grupo",
     "description": "Revisa y acepta tu invitación para unirte a este grupo.",

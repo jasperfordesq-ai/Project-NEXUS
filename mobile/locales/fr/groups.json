@@ -441,6 +441,14 @@
     "unsavedMessage": "Vous avez des informations non enregistrées. En partant maintenant, vous les perdrez.",
     "discard": "Abandonner"
   },
+  "invite_manage": {
+    "title": "Gérer les invitations", "open": "Gérer les invitations", "access_denied": "Vous n’êtes pas autorisé à gérer les invitations.", "invalid_group": "Ce groupe n’est pas disponible.", "load_error": "Impossible de charger les invitations.",
+    "uncertain": "Le résultat n’a pas pu être confirmé. La liste a été actualisée ; vérifiez-la avant de réessayer.", "expiry_error": "Saisissez une durée de 1 à 90 jours.",
+    "link_title": "Lien d’invitation", "link_description": "Créez un lien temporaire puis partagez-le depuis votre appareil.", "expiry_label": "Expire après (jours)", "create_link": "Créer et partager le lien",
+    "email_title": "Invitations par e-mail", "email_label": "Adresses e-mail", "message_label": "Message facultatif", "send": "Envoyer les invitations", "email_error": "Saisissez des adresses valides séparées par des espaces, virgules ou retours à la ligne.", "email_limit": "N’envoyez pas plus de 50 invitations à la fois.",
+    "pending_title": "Invitations en attente", "pending_empty": "Aucune invitation n’est en attente.", "share_link": "Lien de partage", "expires": "Expire le {{date}}", "share": "Partager", "revoke": "Révoquer", "revoke_title": "Révoquer l’invitation ?", "revoke_message": "Cette invitation cessera immédiatement de fonctionner.",
+    "status": { "sent": "Envoyée", "invalid": "Adresse invalide", "already_member": "Déjà membre", "already_invited": "Déjà invité", "limit_reached": "Limite d’invitations atteinte" }
+  },
   "invite_accept": {
     "title": "Invitation au groupe",
     "description": "Vérifiez et acceptez votre invitation à rejoindre ce groupe.",

@@ -831,6 +831,7 @@ function RootNavigator() {
         <Stack.Screen name="(modals)/ideation-campaign-detail" options={{ ...modalOptions, headerShown: false, title: t('ideation:campaigns.fallback_title') }} />
         <Stack.Screen name="(modals)/ideation-outcomes" options={{ ...modalOptions, headerShown: false, title: t('ideation:outcomes.dashboard') }} />
         <Stack.Screen name="(modals)/group-invite" options={{ ...modalOptions, headerShown: false, title: t('groups:invite_accept.title') }} />
+        <Stack.Screen name="(modals)/group-invitations" options={{ ...modalOptions, headerShown: false, title: t('groups:invite_manage.title') }} />
         <Stack.Screen name="(modals)/venue-checkin" options={{ ...modalOptions, headerShown: false, title: t('venues:verify.title') }} />
         <Stack.Screen name="(modals)/volunteer-checkin" options={{ ...modalOptions, headerShown: false, title: t('volunteering:check_in.verify_title') }} />
       <Stack.Screen name="(modals)/clubs" options={{ ...modalOptions, headerShown: false, title: t('clubs:title') }} />

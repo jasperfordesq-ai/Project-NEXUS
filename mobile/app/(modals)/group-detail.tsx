@@ -671,6 +671,10 @@ function GroupDetailScreenInner() {
     router.push({ pathname: '/(modals)/edit-group', params: { id: String(loadedGroup.id) } } as unknown as Href);
   }
 
+  function openGroupInvitations() {
+    router.push({ pathname: '/(modals)/group-invitations', params: { id: String(loadedGroup.id) } } as unknown as Href);
+  }
+
   async function handleJoin() {
     if (!beginAction()) return;
     const prevIsMember = isMember ?? isGroupMember(loadedGroup);
@@ -1041,6 +1045,10 @@ function GroupDetailScreenInner() {
                 <HeroButton variant="secondary" onPress={openEditGroup}>
                   <Ionicons name="create-outline" size={18} color={primary} />
                   <HeroButton.Label>{t('detail.edit')}</HeroButton.Label>
+                </HeroButton>
+                <HeroButton variant="secondary" onPress={openGroupInvitations}>
+                  <Ionicons name="person-add-outline" size={18} color={primary} />
+                  <HeroButton.Label>{t('invite_manage.open')}</HeroButton.Label>
                 </HeroButton>
               </Surface>
             ) : null}

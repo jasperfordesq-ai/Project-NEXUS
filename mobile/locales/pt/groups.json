@@ -441,6 +441,14 @@
     "unsavedMessage": "Tem dados por guardar. Se sair agora, vai perdê-los.",
     "discard": "Descartar"
   },
+  "invite_manage": {
+    "title": "Gerir convites", "open": "Gerir convites", "access_denied": "Não tem permissão para gerir convites.", "invalid_group": "Este grupo não está disponível.", "load_error": "Não foi possível carregar os convites.",
+    "uncertain": "Não foi possível confirmar o resultado. A lista foi atualizada; verifique-a antes de tentar novamente.", "expiry_error": "Introduza uma validade entre 1 e 90 dias.",
+    "link_title": "Ligação de convite", "link_description": "Crie uma ligação com validade e partilhe-a a partir do dispositivo.", "expiry_label": "Expira após (dias)", "create_link": "Criar e partilhar ligação",
+    "email_title": "Convites por email", "email_label": "Endereços de email", "message_label": "Mensagem opcional", "send": "Enviar convites", "email_error": "Introduza endereços válidos separados por espaços, vírgulas ou novas linhas.", "email_limit": "Envie no máximo 50 convites de cada vez.",
+    "pending_title": "Convites pendentes", "pending_empty": "Não existem convites pendentes.", "share_link": "Ligação de partilha", "expires": "Expira em {{date}}", "share": "Partilhar", "revoke": "Revogar", "revoke_title": "Revogar convite?", "revoke_message": "Este convite deixará de funcionar imediatamente.",
+    "status": { "sent": "Enviado", "invalid": "Endereço inválido", "already_member": "Já é membro", "already_invited": "Já convidado", "limit_reached": "Limite de convites atingido" }
+  },
   "invite_accept": {
     "title": "Convite para o grupo",
     "description": "Reveja e aceite o convite para aderir a este grupo.",

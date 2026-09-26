@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group managers can now create and share expiring invitation links, send validated email invitations, review pending invitations and revoke them from the mobile app. Interrupted requests refresh authoritative pending state before another mutation is allowed, and refused email work remains editable.
+
 - Group tasks now offer every loaded member and a searchable, paginated assignee picker for creation and reassignment, preserving an off-page current assignee and ignoring obsolete or failed searches.
 
 - Group-task creation in the mobile app now preserves the exact draft and protected request across an interrupted response or app restart. Retrying returns the original task instead of creating a duplicate; invalid submissions remain editable, and deleting a task removes its replay receipt so it can be created again safely.

@@ -273,6 +273,7 @@ jest.mock('react-i18next', () => ({
         'detail.stats.posts': 'Posts',
         'detail.ownerTools': 'Group tools',
         'detail.edit': 'Edit group',
+        'invite_manage.open': 'Manage invitations',
         'featured': 'Featured',
         'private': 'Private',
         'public': 'Public',
@@ -917,6 +918,19 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Edit group'));
 
     expect(mockRouterPush).toHaveBeenCalledWith({ pathname: '/(modals)/edit-group', params: { id: '1' } });
+    fireEvent.press(getByText('Manage invitations'));
+    expect(mockRouterPush).toHaveBeenCalledWith({ pathname: '/(modals)/group-invitations', params: { id: '1' } });
+  });
+
+  it('does not offer invitation management to ordinary group members', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'member', is_admin: false } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const { queryByText } = render(<GroupDetailScreen />);
+    expect(queryByText('Manage invitations')).toBeNull();
   });
 
   it('opens group event details from HeroUI Native-backed event cards', () => {

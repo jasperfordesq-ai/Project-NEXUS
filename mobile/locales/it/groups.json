@@ -441,6 +441,14 @@
     "unsavedMessage": "Hai dati non salvati. Se esci ora, andranno perduti.",
     "discard": "Scarta"
   },
+  "invite_manage": {
+    "title": "Gestisci inviti", "open": "Gestisci inviti", "access_denied": "Non hai il permesso di gestire gli inviti.", "invalid_group": "Questo gruppo non è disponibile.", "load_error": "Impossibile caricare gli inviti.",
+    "uncertain": "Non è stato possibile confermare il risultato. L’elenco è stato aggiornato; controllalo prima di riprovare.", "expiry_error": "Inserisci una scadenza da 1 a 90 giorni.",
+    "link_title": "Link di invito", "link_description": "Crea un link con scadenza e condividilo dal dispositivo.", "expiry_label": "Scade dopo (giorni)", "create_link": "Crea e condividi link",
+    "email_title": "Inviti via email", "email_label": "Indirizzi email", "message_label": "Messaggio facoltativo", "send": "Invia inviti", "email_error": "Inserisci indirizzi validi separati da spazi, virgole o nuove righe.", "email_limit": "Invia non più di 50 inviti alla volta.",
+    "pending_title": "Inviti in sospeso", "pending_empty": "Non ci sono inviti in sospeso.", "share_link": "Link condivisibile", "expires": "Scade il {{date}}", "share": "Condividi", "revoke": "Revoca", "revoke_title": "Revocare l’invito?", "revoke_message": "Questo invito smetterà di funzionare immediatamente.",
+    "status": { "sent": "Inviato", "invalid": "Indirizzo non valido", "already_member": "Già membro", "already_invited": "Già invitato", "limit_reached": "Limite inviti raggiunto" }
+  },
   "invite_accept": {
     "title": "Invito al gruppo",
     "description": "Controlla e accetta l’invito a unirti a questo gruppo.",
