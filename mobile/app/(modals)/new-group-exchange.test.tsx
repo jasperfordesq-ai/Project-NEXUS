@@ -11,6 +11,7 @@ const mockGetMembers = jest.fn();
 const mockRouterReplace = jest.fn();
 const mockReserveCreation = jest.fn();
 const mockCompleteCreation = jest.fn();
+const mockShowToast = jest.fn();
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -99,9 +100,8 @@ jest.mock('@/lib/groupExchangeCreationOperation', () => ({
 
 // Stable AppToast mock — fns created inside the factory closure.
 jest.mock('@/components/ui/AppToast', () => {
-  const show = jest.fn();
   const hide = jest.fn();
-  return { useAppToast: () => ({ show, hide, isToastVisible: false }) };
+  return { useAppToast: () => ({ show: mockShowToast, hide, isToastVisible: false }) };
 });
 
 import NewGroupExchangeRoute from './new-group-exchange';
@@ -153,9 +153,71 @@ beforeEach(() => {
     createdAt: 1,
   });
   mockCompleteCreation.mockReset().mockResolvedValue(undefined);
+  mockShowToast.mockReset();
 });
 
 describe('NewGroupExchangeRoute', () => {
+  const member = (id: number, name: string) => ({
+    id,
+    name,
+    first_name: name,
+    last_name: '',
+    avatar: null,
+    avatar_url: null,
+    tagline: null,
+    location: null,
+    latitude: null,
+    longitude: null,
+    created_at: '2026-01-01T00:00:00Z',
+    is_verified: true,
+    rating: null,
+    total_hours_given: 0,
+    total_hours_received: 0,
+  });
+
+  it('keeps the latest member search when an earlier response finishes last', async () => {
+    let finishEarlier!: (value: unknown) => void;
+    let finishLatest!: (value: unknown) => void;
+    mockGetMembers
+      .mockReset()
+      .mockImplementationOnce(() => new Promise(resolve => { finishEarlier = resolve; }))
+      .mockImplementationOnce(() => new Promise(resolve => { finishLatest = resolve; }));
+    const screen = render(<NewGroupExchangeRoute />);
+    const input = screen.getByPlaceholderText('Search by name or skill');
+
+    fireEvent.changeText(input, 'al');
+    fireEvent(input, 'submitEditing');
+    fireEvent.changeText(input, 'ri');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(mockGetMembers).toHaveBeenCalledTimes(2));
+
+    await act(async () => { finishLatest({ data: [member(8, 'Riley Receiver')] }); });
+    expect(screen.getByText('Riley Receiver')).toBeTruthy();
+    await act(async () => { finishEarlier({ data: [member(7, 'Alice Provider')] }); });
+    expect(screen.queryByText('Alice Provider')).toBeNull();
+    expect(screen.getByText('Riley Receiver')).toBeTruthy();
+  });
+
+  it('ignores an obsolete member-search failure after a newer search succeeds', async () => {
+    let rejectEarlier!: (reason: Error) => void;
+    mockGetMembers
+      .mockReset()
+      .mockImplementationOnce(() => new Promise((_, reject) => { rejectEarlier = reject; }))
+      .mockResolvedValueOnce({ data: [member(8, 'Riley Receiver')] });
+    const screen = render(<NewGroupExchangeRoute />);
+    const input = screen.getByPlaceholderText('Search by name or skill');
+
+    fireEvent.changeText(input, 'al');
+    fireEvent(input, 'submitEditing');
+    fireEvent.changeText(input, 'ri');
+    fireEvent(input, 'submitEditing');
+    await screen.findByText('Riley Receiver');
+    await act(async () => { rejectEarlier(new Error('Late failure')); });
+
+    expect(screen.getByText('Riley Receiver')).toBeTruthy();
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
   it('serializes submit events before a rerender', async () => {
     let finish!: (value: unknown) => void;
     mockCreateGroupExchange.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));

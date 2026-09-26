@@ -57,6 +57,7 @@ function NewGroupExchangeRoute() {
 
 function NewGroupExchangeScreen() {
   const submittingRef = useRef(false);
+  const memberSearchRequestRef = useRef(0);
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -97,20 +98,31 @@ function NewGroupExchangeScreen() {
   const receiverCount = participants.filter((participant) => participant.role === 'receiver').length;
 
   async function searchMembers() {
+    const requestId = ++memberSearchRequestRef.current;
     const query = participantQuery.trim();
     if (query.length < 2) {
       setMemberResults([]);
+      setIsSearching(false);
       return;
     }
     try {
       setIsSearching(true);
       const response = await getMembers(0, query);
+      if (!mountedRef.current || requestId !== memberSearchRequestRef.current) return;
       setMemberResults((response.data ?? []).filter((member) => !selectedIds.has(member.id)));
     } catch (err) {
+      if (!mountedRef.current || requestId !== memberSearchRequestRef.current) return;
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('groupExchanges.create.searchError')), variant: 'danger' });
     } finally {
-      setIsSearching(false);
+      if (mountedRef.current && requestId === memberSearchRequestRef.current) setIsSearching(false);
     }
+  }
+
+  function changeParticipantQuery(value: string) {
+    memberSearchRequestRef.current += 1;
+    setParticipantQuery(value);
+    setMemberResults([]);
+    setIsSearching(false);
   }
 
   function addParticipant(member: Member, role: ParticipantDraft['role']) {
@@ -308,7 +320,7 @@ function NewGroupExchangeScreen() {
                 <Input
                   label={t('groupExchanges.create.fields.memberSearch')}
                   value={participantQuery}
-                  onChangeText={setParticipantQuery}
+                  onChangeText={changeParticipantQuery}
                   placeholder={t('groupExchanges.create.placeholders.memberSearch')}
                   returnKeyType="search"
                   onSubmitEditing={searchMembers}

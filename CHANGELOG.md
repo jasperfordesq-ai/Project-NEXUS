@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group-exchange member search now keeps the newest query's result when an earlier request finishes later, and ignores obsolete failures instead of replacing current results with a stale error.
+
 - Native group member and task actions now follow the server's per-record permissions, hiding refused controls while preserving the task creator's edit/delete access and an assignee's status-only access.
 
 - Native group pages now honour each community's configured sections: disabled tabs are hidden, their guarded endpoints are not read or refreshed, and a disabled deep link safely opens the group overview.
