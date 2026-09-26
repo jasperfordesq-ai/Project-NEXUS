@@ -229,6 +229,16 @@
       "noMatchesTitle": "Aucune réponse correspondante",
       "noMatchesSubtitle": "Essayez un autre mot ou effacez la recherche pour tout afficher."
     },
+    "guides": {
+      "title": "Guides pas à pas",
+      "subtitle": "Des guides en langage simple sur tout ce que vous pouvez faire, des premiers pas à la sécurité.",
+      "matchesHeading": "Guides correspondants",
+      "communityHeading": "Questions de votre communauté",
+      "loadFailed": "Impossible de charger les guides. Vérifiez votre connexion et réessayez.",
+      "notFoundTitle": "Guide introuvable",
+      "notFoundSubtitle": "Il a peut-être été déplacé, ou cette fonction n’est pas activée dans votre communauté.",
+      "websiteNote": "Ces guides décrivent le site web. L’application fonctionne de la même façon, mais certains boutons sont placés ailleurs."
+    },
     "page": {
       "fallbackTitle": "Informations de la communauté",
       "unknownTitle": "Page indisponible",

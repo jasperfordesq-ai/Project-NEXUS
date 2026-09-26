@@ -229,6 +229,16 @@
       "noMatchesTitle": "Keine passenden Antworten",
       "noMatchesSubtitle": "Versuche ein anderes Wort oder lösche die Suche, um alles zu sehen."
     },
+    "guides": {
+      "title": "Schritt-für-Schritt-Anleitungen",
+      "subtitle": "Anleitungen in einfacher Sprache zu allem, was Sie tun können – vom Einstieg bis zur Sicherheit.",
+      "matchesHeading": "Passende Anleitungen",
+      "communityHeading": "Fragen aus Ihrer Community",
+      "loadFailed": "Die Anleitungen konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "notFoundTitle": "Anleitung nicht gefunden",
+      "notFoundSubtitle": "Sie wurde möglicherweise verschoben, oder diese Funktion ist in Ihrer Community nicht eingeschaltet.",
+      "websiteNote": "Diese Anleitungen beschreiben die Website. Die App funktioniert genauso, aber einige Schaltflächen befinden sich an anderer Stelle."
+    },
     "page": {
       "fallbackTitle": "Informationen der Gemeinschaft",
       "unknownTitle": "Seite nicht verfügbar",

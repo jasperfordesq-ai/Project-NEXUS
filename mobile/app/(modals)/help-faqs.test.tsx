@@ -8,12 +8,23 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { ApiResponseError } from '@/lib/api/client';
 import { getHelpFaqs } from '@/lib/api/help';
+import { getMembersGuide } from '@/lib/help/guides';
 import HelpFaqsRoute from './help-faqs';
 
 jest.mock('@/lib/api/help', () => ({ getHelpFaqs: jest.fn() }));
+jest.mock('@/lib/help/guides', () => ({
+  ...jest.requireActual('@/lib/help/guides'),
+  getMembersGuide: jest.fn(),
+}));
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ router: { push: (...args: unknown[]) => mockPush(...args) } }));
 jest.mock('@/lib/hooks/useTenant', () => ({
   usePrimaryColor: () => '#0ea5e9',
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' } }),
+  useTenant: () => ({
+    tenant: { slug: 'hour-timebank' },
+    hasFeature: (name: string) => name !== 'events',
+    hasModule: () => true,
+  }),
 }));
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/AppTopBar', () => {
@@ -24,6 +35,24 @@ jest.mock('@/components/ui/AppTopBar', () => {
 });
 
 const mockGetHelpFaqs = getHelpFaqs as jest.MockedFunction<typeof getHelpFaqs>;
+const mockGetMembersGuide = getMembersGuide as jest.MockedFunction<typeof getMembersGuide>;
+
+const GUIDE = {
+  sections: {
+    getting_started: {
+      title: 'Getting started',
+      summary: 'First steps on the platform.',
+      articles: {
+        what_is_timebanking: { title: 'What is timebanking?', summary: 'An hour for an hour.', body: 'Everyone’s time is **equal**.' },
+      },
+    },
+    events: {
+      title: 'Events',
+      summary: 'Community events.',
+      articles: { events_rsvp: { title: 'Saying you are going', summary: 'RSVP.', body: 'Press **Going**.' } },
+    },
+  },
+};
 
 const FAQS = [
   {
@@ -49,6 +78,8 @@ describe('HelpFaqsRoute', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetHelpFaqs.mockResolvedValue(FAQS);
+    // By default the guides are unavailable, which must leave the FAQ screen exactly as before.
+    mockGetMembersGuide.mockRejectedValue(new Error('offline'));
   });
 
   it('shows every published question, grouped by its category', async () => {
@@ -157,5 +188,36 @@ describe('HelpFaqsRoute', () => {
 
     await waitFor(() => expect(getByText('Where is my balance?')).toBeTruthy());
     expect(mockGetHelpFaqs).toHaveBeenCalledTimes(2);
+  });
+
+  describe('step-by-step guides', () => {
+    it('lists the guide topics this community has switched on, above the community answers', async () => {
+      mockGetMembersGuide.mockResolvedValue(GUIDE);
+      const { findByTestId, queryByTestId, getByText } = await renderScreen();
+
+      expect(await findByTestId('help-guide-section-getting_started')).toBeTruthy();
+      // `events` is switched off for this community, so its topic is hidden.
+      expect(queryByTestId('help-guide-section-events')).toBeNull();
+      expect(getByText('Questions from your community')).toBeTruthy();
+    });
+
+    it('opens a topic inside the app, never in a browser', async () => {
+      mockGetMembersGuide.mockResolvedValue(GUIDE);
+      const { findByTestId } = await renderScreen();
+
+      fireEvent.press(await findByTestId('help-guide-section-getting_started'));
+
+      expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/help-guide', params: { section: 'getting_started' } });
+    });
+
+    it('searches the guide text as well as the community answers', async () => {
+      mockGetMembersGuide.mockResolvedValue(GUIDE);
+      const { findByTestId, getByPlaceholderText } = await renderScreen();
+      await findByTestId('help-guide-section-getting_started');
+
+      fireEvent.changeText(getByPlaceholderText('Search questions and answers'), 'equal');
+
+      expect(await findByTestId('help-guide-match-what_is_timebanking')).toBeTruthy();
+    });
   });
 });

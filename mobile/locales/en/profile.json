@@ -229,6 +229,16 @@
       "noMatchesTitle": "No matching answers",
       "noMatchesSubtitle": "Try a different word, or clear the search to see everything."
     },
+    "guides": {
+      "title": "Step-by-step guides",
+      "subtitle": "Plain-English guides to everything you can do, from getting started to staying safe.",
+      "matchesHeading": "Guides that match",
+      "communityHeading": "Questions from your community",
+      "loadFailed": "The guides could not be loaded. Check your connection and try again.",
+      "notFoundTitle": "Guide not found",
+      "notFoundSubtitle": "It may have moved, or this feature may not be switched on in your community.",
+      "websiteNote": "These guides describe the website. The app works the same way, but some buttons are in different places."
+    },
     "page": {
       "fallbackTitle": "Community information",
       "unknownTitle": "Page not available",

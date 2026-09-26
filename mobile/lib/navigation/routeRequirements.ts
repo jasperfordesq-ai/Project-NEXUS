@@ -257,6 +257,7 @@ export const UNGATED_ROUTES: Readonly<Record<string, string>> = {
   endorsements: 'Skills and endorsements are ungated in React.',
   skills: 'Alias of endorsements.',
   'help-faqs': 'Support content must stay reachable regardless of modules.',
+  'help-guide': 'Help Centre guides; each topic and article hides itself when its feature is off.',
   support: 'Support hub must stay reachable regardless of modules.',
   'static-page': 'About/contact pages — public content.',
   'legal-acceptance': 'A legal refusal must be resolvable whatever is switched on.',

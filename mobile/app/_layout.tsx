@@ -863,6 +863,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('profile:support.faqs.title') }}
       />
       <Stack.Screen
+        name="(modals)/help-guide"
+        options={{ ...modalOptions, headerShown: false, title: t('profile:support.guides.title') }}
+      />
+      <Stack.Screen
         name="(modals)/static-page"
         options={{ ...modalOptions, headerShown: false, title: t('profile:support.page.fallbackTitle') }}
       />

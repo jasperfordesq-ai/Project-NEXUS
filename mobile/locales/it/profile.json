@@ -229,6 +229,16 @@
       "noMatchesTitle": "Nessuna risposta corrispondente",
       "noMatchesSubtitle": "Prova con un’altra parola oppure cancella la ricerca per vedere tutto."
     },
+    "guides": {
+      "title": "Guide passo passo",
+      "subtitle": "Guide in un linguaggio semplice su tutto ciò che puoi fare, dai primi passi alla sicurezza.",
+      "matchesHeading": "Guide corrispondenti",
+      "communityHeading": "Domande dalla tua comunità",
+      "loadFailed": "Impossibile caricare le guide. Controlla la connessione e riprova.",
+      "notFoundTitle": "Guida non trovata",
+      "notFoundSubtitle": "Potrebbe essere stata spostata, oppure questa funzione non è attiva nella tua comunità.",
+      "websiteNote": "Queste guide descrivono il sito web. L’app funziona allo stesso modo, ma alcuni pulsanti si trovano in posizioni diverse."
+    },
     "page": {
       "fallbackTitle": "Informazioni della comunità",
       "unknownTitle": "Pagina non disponibile",

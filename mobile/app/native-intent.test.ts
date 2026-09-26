@@ -20,6 +20,14 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/users/25717/collections?name=Community%20Coordinator')).toBe('/(modals)/profile-collections?userId=25717&scope=public');
   });
 
+  it('opens the members Help Centre guide links in the app, and other help links on the help screen', () => {
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/hour-timebank/help/members/wallet/send_hours'))
+      .toBe('/(modals)/help-guide?section=wallet&article=send_hours');
+    expect(mapSystemPathToNativeRoute('/help/members/wallet')).toBe('/(modals)/help-guide?section=wallet');
+    expect(mapSystemPathToNativeRoute('/help/brokers/broker_basics')).toBe('/(modals)/help-faqs');
+    expect(mapSystemPathToNativeRoute('/help')).toBe('/(modals)/help-faqs');
+  });
+
   it('keeps the current-member profile link on the Profile tab', () => {
     expect(mapSystemPathToNativeRoute('/profile')).toBe('/(tabs)/profile');
     expect(mapSystemPathToNativeRoute('/profile/25717')).toBe('/(modals)/member-profile?id=25717');

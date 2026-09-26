@@ -14,6 +14,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { router, type Href } from 'expo-router';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card as HeroCard, Text } from 'heroui-native';
@@ -21,8 +22,9 @@ import { useTranslation } from 'react-i18next';
 
 import { Ionicons } from '@/components/ui/Icon';
 import { getHelpFaqs, type HelpFaqCategory } from '@/lib/api/help';
+import { bodyToPlainText, getMembersGuide, visibleSections, type HelpGuideText } from '@/lib/help/guides';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { toPlainText } from '@/lib/utils/plainText';
@@ -42,8 +44,12 @@ export default function HelpFaqsRoute() {
 }
 
 function HelpFaqsScreen() {
-  const { t } = useTranslation(['profile', 'common']);
+  const { t, i18n } = useTranslation(['profile', 'common']);
   const primary = usePrimaryColor();
+  const language = i18n.resolvedLanguage || i18n.language || 'en';
+  // The members' step-by-step guides (the website's Help Centre text). A failure
+  // here only hides the guides: the community's own answers below still work.
+  const { data: guide } = useApi(() => getMembersGuide(language), [language]);
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const [openIds, setOpenIds] = useState<number[]>([]);
@@ -111,7 +117,7 @@ function HelpFaqsScreen() {
           </HeroCard.Body>
         </HeroCard>
 
-        {hasAnyAnswers ? (
+        {hasAnyAnswers || guide ? (
           <SearchInput
             value={search}
             onChangeText={setSearch}
@@ -119,6 +125,14 @@ function HelpFaqsScreen() {
             accessibilityLabel={t('profile:support.faqs.searchLabel')}
             clearLabel={t('common:actions.clear')}
           />
+        ) : null}
+
+        {guide ? <HelpGuidesBlock guide={guide} search={search} /> : null}
+
+        {guide && hasAnyAnswers ? (
+          <Text accessibilityRole="header" className="px-1 pt-2 text-lg font-bold" style={{ color: theme.text }}>
+            {t('profile:support.guides.communityHeading')}
+          </Text>
         ) : null}
 
         {isLoading && groups.length === 0 ? (
@@ -194,5 +208,81 @@ function HelpFaqsScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/**
+ * Topics of the members' guide, or — while the member is searching — the guide
+ * articles that match. Each opens `help-guide` inside the app.
+ */
+function HelpGuidesBlock({ guide, search }: { guide: HelpGuideText; search: string }) {
+  const { t } = useTranslation(['profile']);
+  const primary = usePrimaryColor();
+  const theme = useTheme();
+  const { hasFeature, hasModule } = useTenant();
+
+  const sections = useMemo(
+    () => visibleSections({ hasFeature, hasModule }).filter((section) => guide.sections[section.id]),
+    [guide, hasFeature, hasModule],
+  );
+
+  const matches = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return [];
+    return sections.flatMap((section) =>
+      section.articles
+        .map((entry) => ({ section, entry, text: guide.sections[section.id]?.articles[entry.id] }))
+        .filter(({ text }) => !!text
+          && [text.title, text.summary, bodyToPlainText(text.body)].join(' ').toLowerCase().includes(term)),
+    ).slice(0, 20);
+  }, [guide, search, sections]);
+
+  if (sections.length === 0) return null;
+  const searching = search.trim().length > 0;
+  if (searching && matches.length === 0) return null;
+
+  const row = (key: string, title: string, subtitle: string, href: Href, testID: string) => (
+    <Pressable key={key} accessibilityRole="button" accessibilityLabel={title} testID={testID} onPress={() => router.push(href)}>
+      <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.borderSubtle }}>
+        <HeroCard.Body className="min-h-11 flex-row items-center gap-3 p-4">
+          <Ionicons name="book-outline" size={20} color={primary} />
+          <View className="min-w-0 flex-1">
+            <Text className="text-base font-semibold leading-6" style={{ color: theme.text }}>{title}</Text>
+            <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{subtitle}</Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={18} color={primary} />
+        </HeroCard.Body>
+      </HeroCard>
+    </Pressable>
+  );
+
+  return (
+    <View className="gap-2" testID="help-guides">
+      <Text accessibilityRole="header" className="px-1 pt-2 text-lg font-bold" style={{ color: theme.text }}>
+        {searching ? t('profile:support.guides.matchesHeading') : t('profile:support.guides.title')}
+      </Text>
+      {!searching ? (
+        <Text className="px-1 text-sm leading-5" style={{ color: theme.textSecondary }}>
+          {t('profile:support.guides.subtitle')}
+        </Text>
+      ) : null}
+      {searching
+        ? matches.map(({ section, entry, text }) =>
+            row(
+              `${section.id}.${entry.id}`,
+              text?.title ?? '',
+              text?.summary ?? '',
+              { pathname: '/(modals)/help-guide', params: { section: section.id, article: entry.id } } as Href,
+              `help-guide-match-${entry.id}`,
+            ))
+        : sections.map((section) =>
+            row(
+              section.id,
+              guide.sections[section.id]?.title ?? '',
+              guide.sections[section.id]?.summary ?? '',
+              { pathname: '/(modals)/help-guide', params: { section: section.id } } as Href,
+              `help-guide-section-${section.id}`,
+            ))}
+    </View>
   );
 }

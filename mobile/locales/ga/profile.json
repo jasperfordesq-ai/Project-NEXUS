@@ -229,6 +229,16 @@
       "noMatchesTitle": "Níl aon fhreagra comhoiriúnach ann",
       "noMatchesSubtitle": "Bain triail as focal eile, nó glan an cuardach chun gach rud a fheiceáil."
     },
+    "guides": {
+      "title": "Treoracha céim ar chéim",
+      "subtitle": "Treoracha i dteanga shimplí faoi gach rud is féidir leat a dhéanamh, ó thosú amach go fanacht slán.",
+      "matchesHeading": "Treoracha a mheaitseálann",
+      "communityHeading": "Ceisteanna ó do phobal",
+      "loadFailed": "Níorbh fhéidir na treoracha a lódáil. Seiceáil do cheangal agus bain triail eile as.",
+      "notFoundTitle": "Níor aimsíodh an treoir",
+      "notFoundSubtitle": "B’fhéidir gur bogadh í, nó níl an ghné seo curtha ar siúl i do phobal.",
+      "websiteNote": "Déanann na treoracha seo cur síos ar an suíomh gréasáin. Oibríonn an aip ar an mbealach céanna, ach tá roinnt cnaipí in áiteanna eile."
+    },
     "page": {
       "fallbackTitle": "Eolas an phobail",
       "unknownTitle": "Níl an leathanach ar fáil",

@@ -341,6 +341,16 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     // to reach a page the link already named.
     case 'help':
     case 'faq':
+      // `/help/members/<section>[/<article>]` is a members' guide the app shows
+      // natively. Broker and admin guides describe website-only panels, so they
+      // land on the help screen like a bare `/help`.
+      if (section === 'help' && id === 'members' && detail) {
+        return appendParams('/(modals)/help-guide', {
+          ...params,
+          section: detail,
+          ...(segments[2] ? { article: segments[2] } : {}),
+        });
+      }
       return appendParams('/(modals)/help-faqs', params);
 
     case 'acceptable-use':
