@@ -110,7 +110,8 @@ final class GroupExchangeCompletionConcurrencyTest extends TestCase
             self::assertSame($completionFirst ? 'completed' : 'pending_confirmation', DB::table('group_exchanges')->where('id', $exchangeId)->value('status'));
             self::assertSame($completionFirst ? 6.0 : 0.0, (float) DB::table('users')->where('id', $users[1])->value('balance'));
             self::assertSame($completionFirst ? 4.0 : 10.0, (float) DB::table('users')->where('id', $users[2])->value('balance'));
-            self::assertSame($completionFirst ? 1 : 0, DB::table('transactions')->where('sender_id', $users[0])->count());
+            self::assertSame($completionFirst ? 1 : 0, DB::table('transactions')->where('sender_id', $users[2])->where('receiver_id', $users[1])->count());
+            self::assertSame(0, DB::table('transactions')->where('sender_id', $users[0])->count(), 'the organiser is never a ledger party');
             if ($completionFirst) {
                 self::assertSame(6.0, (float) DB::table('group_exchanges')->where('id', $exchangeId)->value('total_hours'));
                 self::assertSame(2, DB::table('group_exchange_participants')->where('group_exchange_id', $exchangeId)->where('confirmed', 1)->count());

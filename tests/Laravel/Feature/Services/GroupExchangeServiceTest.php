@@ -323,6 +323,73 @@ class GroupExchangeServiceTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  Ledger rows (2026-09-26): complete() wrote one row per PROVIDER with
+    //  the ORGANISER as sender, and none for receivers. Receivers' wallet
+    //  history never showed what they gave, and the organiser — whose
+    //  balance never moves — appeared to have paid everyone, inflating the
+    //  SUM(amount) GROUP BY sender_id totals the admin reports use.
+    // ------------------------------------------------------------------
+
+    public function test_complete_writes_ledger_rows_that_match_every_balance_change(): void
+    {
+        $providerA = $this->makeUser(0);
+        $providerB = $this->makeUser(0);
+        $receiverA = $this->makeUser(10);
+        $receiverB = $this->makeUser(10);
+        $receiverC = $this->makeUser(10);
+        // Uneven on purpose so a receiver's payment has to be split across providers.
+        $exchangeId = $this->seedExchange([
+            ['user_id' => $providerA, 'role' => 'provider', 'hours' => 1],
+            ['user_id' => $providerB, 'role' => 'provider', 'hours' => 4.5],
+            ['user_id' => $receiverA, 'role' => 'receiver', 'hours' => 2],
+            ['user_id' => $receiverB, 'role' => 'receiver', 'hours' => 2],
+            ['user_id' => $receiverC, 'role' => 'receiver', 'hours' => 1.5],
+        ]);
+        $organizer = (int) DB::table('group_exchanges')->where('id', $exchangeId)->value('organizer_id');
+        $users = [$providerA, $providerB, $receiverA, $receiverB, $receiverC];
+        $before = [];
+        foreach ($users as $userId) {
+            $before[$userId] = $this->balanceOf($userId);
+        }
+
+        TenantContext::setById($this->testTenantId);
+        $result = $this->service->complete($exchangeId);
+        $this->assertTrue($result['success'] ?? false, 'complete must succeed: ' . json_encode($result));
+
+        $rows = DB::table('transactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->whereIn('id', $result['transaction_ids'])
+            ->get();
+        $this->assertNotEmpty($rows);
+
+        // The organiser is not a participant and moved no hours, so must not
+        // appear on either side of any ledger row.
+        $this->assertSame(0, DB::table('transactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where(fn ($q) => $q->where('sender_id', $organizer)->orWhere('receiver_id', $organizer))
+            ->count(), 'the organiser must not appear in the ledger');
+
+        foreach ($rows as $row) {
+            $this->assertContains((int) $row->sender_id, [$receiverA, $receiverB, $receiverC], 'every row is paid by a receiver');
+            $this->assertContains((int) $row->receiver_id, [$providerA, $providerB], 'every row is paid to a provider');
+            $this->assertSame('exchange', $row->transaction_type);
+        }
+
+        // Each participant's ledger rows net to exactly their balance change,
+        // so their wallet history explains their balance.
+        foreach ($users as $userId) {
+            $received = (float) $rows->where('receiver_id', $userId)->sum('amount');
+            $sent = (float) $rows->where('sender_id', $userId)->sum('amount');
+            $this->assertEqualsWithDelta(
+                $this->balanceOf($userId) - $before[$userId],
+                $received - $sent,
+                0.001,
+                "ledger rows for user {$userId} must match their balance change"
+            );
+        }
+    }
+
+    // ------------------------------------------------------------------
     //  Fractional-hours notifications (P3 — audit 2026-07-09): hours were
     //  (int)-cast, so a 0.5h share moved money with NO notification and
     //  1.5h read as "1 hour".

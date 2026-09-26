@@ -1083,7 +1083,11 @@ class GroupExchangeService
                 return false; // another request completed it first
             }
 
-            // Create wallet transactions for each participant
+            // Remaining hours per side, in whole cents, for the ledger rows below.
+            $creditCents = [];
+            $debitCents = [];
+
+            // Move each participant's balance
             foreach ($split as $entry) {
                 // Keep the 2-decimal split — (int) casting truncated shares
                 // (3×3.33h credited 9h while debiting 10h) and zeroed sub-1h
@@ -1095,19 +1099,7 @@ class GroupExchangeService
 
                 // Providers earn credits, receivers spend them
                 if ($entry['role'] === 'provider') {
-                    // Credit the provider: system (sender=0) sends to provider
-                    $txnId = DB::table('transactions')->insertGetId([
-                        'tenant_id'        => $tenantId,
-                        'sender_id'        => $exchange->organizer_id,
-                        'receiver_id'      => $entry['user_id'],
-                        'amount'           => $hours,
-                        'description'      => __('api.group_exchange_transaction_description', ['title' => $exchange->title]),
-                        'status'           => 'completed',
-                        'transaction_type' => 'exchange',
-                        'listing_id'       => null,
-                        'created_at'       => now(),
-                    ]);
-                    $transactionIds[] = (int) $txnId;
+                    $creditCents[] = ['user_id' => (int) $entry['user_id'], 'cents' => (int) round($hours * 100)];
 
                     DB::table('users')
                         ->where('id', $entry['user_id'])
@@ -1126,6 +1118,8 @@ class GroupExchangeService
                     if ($debited === 0) {
                         throw new \RuntimeException(__('api.insufficient_balance'));
                     }
+
+                    $debitCents[] = ['user_id' => (int) $entry['user_id'], 'cents' => (int) round($hours * 100)];
                 }
 
                 $balanceChanges[] = [
@@ -1133,6 +1127,43 @@ class GroupExchangeService
                     'role'    => $entry['role'],
                     'hours'   => $hours,
                 ];
+            }
+
+            // Ledger rows: receivers pay providers. Every row debits its sender
+            // and credits its receiver, so each participant's history nets to
+            // exactly their balance change. The organiser is recorded on
+            // neither side — they only move hours as a participant. Rows are
+            // matched greedily in whole cents; splitImbalanceError() guarantees
+            // both sides total the same, so every cent is allocated. A member
+            // who is both provider and receiver skips the self-paired portion,
+            // which nets to zero for them either way.
+            $p = 0;
+            $r = 0;
+            while ($p < count($creditCents) && $r < count($debitCents)) {
+                $cents = min($creditCents[$p]['cents'], $debitCents[$r]['cents']);
+
+                if ($cents > 0 && $debitCents[$r]['user_id'] !== $creditCents[$p]['user_id']) {
+                    $transactionIds[] = (int) DB::table('transactions')->insertGetId([
+                        'tenant_id'        => $tenantId,
+                        'sender_id'        => $debitCents[$r]['user_id'],
+                        'receiver_id'      => $creditCents[$p]['user_id'],
+                        'amount'           => $cents / 100,
+                        'description'      => __('api.group_exchange_transaction_description', ['title' => $exchange->title]),
+                        'status'           => 'completed',
+                        'transaction_type' => 'exchange',
+                        'listing_id'       => null,
+                        'created_at'       => now(),
+                    ]);
+                }
+
+                $creditCents[$p]['cents'] -= $cents;
+                $debitCents[$r]['cents'] -= $cents;
+                if ($creditCents[$p]['cents'] <= 0) {
+                    $p++;
+                }
+                if ($debitCents[$r]['cents'] <= 0) {
+                    $r++;
+                }
             }
 
             return true;

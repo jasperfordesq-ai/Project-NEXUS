@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Completing a group exchange now records who paid whom. Each receiver's wallet history shows the hours they gave, paid to the providers who earned them, and every participant's records now add up to their balance change. Previously only providers got a record, and it named the organiser as the payer even though the organiser's balance never moved, so receivers could not see what they had given and the organiser's totals in admin reports were inflated. Exchanges completed before this change keep their old records (`GroupExchangeService::complete()`).
+
 - Group join-request decisions in the mobile app are now stored before sending and can be retried safely after a lost response or app restart. The server replays the original accept or reject result without repeating XP or in-app notifications, rejects changed intent, and prevents a second manager from overwriting a completed decision.
 
 - Group managers can now create and share expiring invitation links, send validated email invitations, review pending invitations and revoke them from the mobile app. Interrupted requests refresh authoritative pending state before another mutation is allowed, and refused email work remains editable.
