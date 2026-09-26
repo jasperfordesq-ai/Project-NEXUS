@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "دعم هذا الهدف",
                 "become_buddy_intro": "عرّض نفسك لتكون رفيقاً وتساعد هذا العضو على البقاء في المسار الصحيح.",
                 "become_buddy_button": "أصبح رفيقاً",
+                "offer_buddy_button": "اعرض أن تكون صديقًا",
+                "become_buddy_consent_hint": "يقرر صاحب الهدف ما إذا كان سيقبل عرضك.",
+                "buddy_request_pending": "لقد عرضت أن تكون صديقًا لهذا الهدف. لم يتخذ صاحب الهدف قراره بعد.",
+                "buddy_requests_title": "عروض الصداقة",
+                "buddy_requests_intro": "عرض هؤلاء الأعضاء دعم هذا الهدف. لن يصبح أحد صديقك ما لم تقبل.",
+                "buddy_request_accept": "قبول",
+                "buddy_request_decline": "رفض",
+                "buddy_request_context": "عرض الصداقة من :name",
                 "buddy_notes_title": "تحديثات الرفيق",
                 "buddying_title": "الأهداف التي ترافقها",
                 "buddying_caption": "الأهداف التي تدعمها والأهداف العامة التي يمكنك عرض المرافقة فيها.",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "حدث خطأ ما. يرجى المحاولة مجدداً.",
                     "goal-invalid": "أدخل هدفاً ومستهدفاً أكبر من صفر.",
                     "buddy-joined": "أنت الآن رفيق لهذا الهدف.",
-                    "buddy-failed": "تعذّر إضافتك كرفيق. ربما يكون للهدف رفيق بالفعل."
+                    "buddy-failed": "تعذّر إضافتك كرفيق. ربما يكون للهدف رفيق بالفعل.",
+                    "buddy-requested": "تم إرسال عرضك. ستصبح صديقًا عندما يقبل صاحب الهدف.",
+                    "buddy-request-accepted": "لقد قبلت عرض الصداقة.",
+                    "buddy-request-declined": "لقد رفضت عرض الصداقة.",
+                    "buddy-request-failed": "تعذر علينا تحديث عرض الصداقة هذا. ربما لم يعد متاحًا."
                 }
             },
             "skills": {
@@ -10983,7 +10995,7 @@
             },
             "jurisdictions": {
                 "unconfigured": "لم يتم تكوين اختصاص الحماية",
-                "united_kingdom": "United Kingdom ? national policy package",
+                "united_kingdom": "المملكة المتحدة — حزمة السياسات الوطنية",
                 "england_wales": "إنجلترا وويلز",
                 "scotland": "اسكتلندا",
                 "northern_ireland": "أيرلندا الشمالية",

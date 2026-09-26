@@ -42,6 +42,7 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { GoalProgressHistory } from './components/GoalProgressHistory';
 import { GoalInsightsPanel } from './components/GoalInsightsPanel';
+import { GoalBuddyRequests } from './components/GoalBuddyRequests';
 
 interface Goal {
   id: number;
@@ -63,6 +64,8 @@ interface Goal {
   buddy_name?: string | null;
   buddy_avatar?: string | null;
   is_buddy?: boolean;
+  buddy_request_pending?: boolean;
+  pending_buddy_requests_count?: number;
   likes_count?: number;
   comments_count?: number;
   is_liked?: boolean;
@@ -344,10 +347,18 @@ export function GoalDetailPage() {
                 <Users className="w-3.5 h-3.5" aria-hidden="true" />
                 {t('goals.detail.buddy')}
               </div>
-              <p className="text-sm text-theme-muted">{t('goals.detail.no_buddy')}</p>
+              <p className="text-sm text-theme-muted">{t('goals.detail.no_buddy_consent')}</p>
             </div>
           )}
         </div>
+
+        {/* F-004: pending buddy offers — only the owner sees and decides them */}
+        {isOwner && !goal.buddy_id && (goal.pending_buddy_requests_count ?? 0) > 0 && (
+          <GoalBuddyRequests
+            goalId={goal.id}
+            onAccepted={(accepted) => setGoal((prev) => (prev ? { ...prev, ...accepted } : prev))}
+          />
+        )}
 
         {/* Owner info */}
         {goal.user_name && (

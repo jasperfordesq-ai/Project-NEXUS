@@ -120,14 +120,13 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'GET api/v2/goals/{id}/insights' => 'check-in statistics of a public goal',
         'GET api/v2/volunteering/opportunities/{id}' => 'published volunteering opportunity (the control 404 was an unpublished own record)',
 
-        // Registered with a note for the owner (F-002): the accessible frontend
-        // shows a member's activity timeline — completed exchanges with the
-        // counterparty's name, hours given/received and a net balance — on that
-        // member's public page (web-uk routes/members.js). The React app only
-        // ever calls the /users/me/ variant. Whether other members should see
-        // counterparties and a balance is a product decision, not a defect the
-        // audit can settle; it is listed in the report for the owner.
-        'GET api/v2/users/{id}/activity/dashboard' => 'member activity timeline, shown on the accessible site\'s member page — owner decision pending (F-002)',
+        // F-002 (E-038, owner decision 26 Sep 2026): another member's dashboard
+        // is still served, but without exchange detail — no exchange entries in
+        // the timeline (no counterparty names or hours), no hours_summary /
+        // net balance and no monthly_hours. Those stay with the member and
+        // their community's admins and brokers
+        // (tests/Laravel/Feature/Security/E038/MemberActivityDashboardPrivacyTest.php).
+        'GET api/v2/users/{id}/activity/dashboard' => 'member activity timeline without exchange partners, hours or balance (F-002, E-038)',
     ];
 
     /**
@@ -177,6 +176,10 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'POST api/v2/feed/posts/{id}/report' => 'the caller reports another member\'s post',
         'DELETE api/v2/marketplace/listings/{id}/save' => 'removes a marketplace listing from the caller\'s saved list (idempotent)',
         'PUT api/v2/goals/{id}/reminder' => 'sets the CALLER\'s own reminder for a public goal (GoalReminderService scopes by user_id)',
+        // F-004 (E-038, owner decision 26 Sep 2026): an offer creates the CALLER's
+        // own pending goal_buddy_requests row and leaves the goal untouched;
+        // mentor_id is written only when the goal owner accepts.
+        'POST api/v2/goals/{id}/buddy' => 'the caller offers to be buddy of a public goal; creates the caller\'s own pending request, the goal owner must accept (F-004)',
         'POST api/v2/goals/{id}/buddy/nudge' => 'a buddy sends encouragement to the goal owner; only reachable once the caller is the goal\'s buddy',
 
         // Social interactions with another member or their content.
@@ -201,14 +204,8 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
      * reverse direction.
      */
     protected const KNOWN_MUTATED_BY_DESIGN = [
-        // GoalService::offerBuddy(): any member may appoint themselves buddy
-        // ("mentor") of another member's PUBLIC goal that has no buddy yet — the
-        // goal's mentor_id is set to the caller and the owner is notified. The
-        // safeguarding interaction policy is consulted first. Whether making a
-        // goal public should imply "I want a buddy" is a product question, listed
-        // in the audit report for the owner (F-004); the write itself is the
-        // feature working as designed.
-        'POST api/v2/goals/{id}/buddy' => 'self-appointment as buddy of a public goal without a buddy — sets mentor_id (owner decision pending, F-004)',
+        // F-004 (E-038): the buddy offer no longer writes mentor_id; it is now
+        // registered in ACCEPTED_BY_DESIGN as a pending request the owner decides.
     ];
 
     /**

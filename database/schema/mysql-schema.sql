@@ -10498,6 +10498,24 @@ CREATE TABLE `goal_buddy_notes` (
   KEY `goal_buddy_notes_tenant_id_index` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `goal_buddy_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `goal_buddy_requests` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `goal_id` int(10) unsigned NOT NULL,
+  `owner_id` int(10) unsigned NOT NULL,
+  `requester_id` int(10) unsigned NOT NULL,
+  `status` enum('pending','accepted','declined','superseded') NOT NULL DEFAULT 'pending',
+  `responded_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `goal_buddy_requests_goal_status_index` (`tenant_id`,`goal_id`,`status`),
+  KEY `goal_buddy_requests_requester_status_index` (`tenant_id`,`requester_id`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `goal_checkins`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21605,7 +21623,8 @@ INSERT INTO `laravel_migrations` VALUES
 (452,'2026_09_23_210000_rekey_link_preview_cache_urls',136),
 (453,'2026_09_26_120000_create_group_join_request_decision_receipts',136),
 (454,'2026_09_26_150000_correct_group_exchange_ai_module_doc',136),
-(455,'2026_09_26_160000_create_feed_post_creation_receipts',137);
+(455,'2026_09_26_160000_create_feed_post_creation_receipts',137),
+(456,'2026_09_26_170000_create_goal_buddy_requests',138);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

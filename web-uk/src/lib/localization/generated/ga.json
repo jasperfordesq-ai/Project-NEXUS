@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "Tacaigh leis an gcuspóir seo",
                 "become_buddy_intro": "Tairg a bheith i do bhuddy agus cabhraigh leis an gcomhalta seo fanacht ar an mbóthar ceart.",
                 "become_buddy_button": "Bí i do bhuddy",
+                "offer_buddy_button": "Tairg a bheith i do chara",
+                "become_buddy_consent_hint": "Socraíonn úinéir na sprice an nglacfaidh sé le do thairiscint.",
+                "buddy_request_pending": "Thairg tú a bheith i do chara don sprioc seo. Níl cinneadh déanta ag úinéir na sprice fós.",
+                "buddy_requests_title": "Tairiscintí cara",
+                "buddy_requests_intro": "Thairg na baill seo tacú leis an sprioc seo. Ní bheidh aon duine ina chara agat mura nglacann tú leis.",
+                "buddy_request_accept": "Glac leis",
+                "buddy_request_decline": "Diúltaigh",
+                "buddy_request_context": "an tairiscint cara ó :name",
                 "buddy_notes_title": "Nuashonruithe buddy",
                 "buddying_title": "Cuspóirí ar a bhfuil tú i do bhuddy",
                 "buddying_caption": "Cuspóirí a thacaíonn tú leo agus cuspóirí poiblí ar féidir leat tairiscint a bheith i do bhuddy dóibh.",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "Chuaigh rud éigin amú. Déan iarracht arís le do thoil.",
                     "goal-invalid": "Iontráil cuspóir agus sprioc níos mó ná nialas.",
                     "buddy-joined": "Is buddy thú don chuspóir seo anois.",
-                    "buddy-failed": "Níorbh fhéidir tú a chur leis mar bhuddy. Seans go bhfuil ceann ann cheana féin."
+                    "buddy-failed": "Níorbh fhéidir tú a chur leis mar bhuddy. Seans go bhfuil ceann ann cheana féin.",
+                    "buddy-requested": "Seoladh do thairiscint. Beidh tú i do chara nuair a ghlacfaidh úinéir na sprice léi.",
+                    "buddy-request-accepted": "Ghlac tú leis an tairiscint cara.",
+                    "buddy-request-declined": "Dhiúltaigh tú don tairiscint cara.",
+                    "buddy-request-failed": "Níorbh fhéidir linn an tairiscint cara sin a nuashonrú. B'fhéidir nach bhfuil sí ar fáil a thuilleadh."
                 }
             },
             "skills": {

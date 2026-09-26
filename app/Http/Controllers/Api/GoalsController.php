@@ -109,6 +109,7 @@ class GoalsController extends BaseApiController
             $goal['is_buddy'] = ((int) ($goal['mentor_id'] ?? 0) === $userId && ($goal['mentor_id'] ?? null) !== null);
             return $goal;
         }, $result['items']);
+        $items = $this->withBuddyRequestState($items, $userId);
 
         return $this->respondWithCollection(
             $items,
@@ -139,6 +140,7 @@ class GoalsController extends BaseApiController
         $data = $this->enrichGoal($goal->toArray());
         $data['is_owner'] = ((int) $goal->user_id === $userId);
         $data['is_buddy'] = ((int) ($goal->mentor_id ?? 0) === $userId && $goal->mentor_id !== null);
+        $data = $this->withBuddyRequestState([$data], $userId)[0];
 
         return $this->respondWithData($data);
     }
@@ -429,6 +431,7 @@ class GoalsController extends BaseApiController
             $goal['is_buddy'] = false;
             return $goal;
         }, $result['items']);
+        $items = $this->withBuddyRequestState($items, $userId);
 
         return $this->respondWithCollection($items, $result['cursor'], $filters['limit'], $result['has_more']);
     }
@@ -470,41 +473,165 @@ class GoalsController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('goal_buddy', 10, 60);
 
+        // F-004 (E-038): this creates a pending request; the goal owner must
+        // accept it (acceptBuddyRequest) before the caller becomes the buddy.
         try {
-            $goal = $this->goalService->offerBuddy($id, $userId);
+            $offer = $this->goalService->offerBuddy($id, $userId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
 
-        if (! $goal) {
+        if (! $offer) {
             return $this->respondWithError('RESOURCE_CONFLICT', __('api.cannot_become_buddy'), null, 409);
         }
 
-        // Notify the goal owner that someone became their buddy
+        $goal = $offer['goal'];
+
+        // Ask the goal owner to accept or decline.
         try {
             $goalOwnerId = (int) $goal->user_id;
-            if ($goalOwnerId !== $userId) {
-                $buddy = User::find($userId);
-                $goalOwner = User::find($goalOwnerId);
-                LocaleContext::withLocale($goalOwner, function () use ($buddy, $goal, $goalOwnerId, $id) {
-                    $buddyName = $buddy->name ?? __('emails.common.fallback_someone');
-                    Notification::createNotification(
-                        $goalOwnerId,
-                        __('api_controllers_3.goals.buddy_joined_owner', ['name' => $buddyName, 'title' => $goal->title]),
-                        "/goals/{$id}",
-                        'goal_buddy'
-                    );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $goalOwnerId, 'goal_buddy', __('api_controllers_3.goals.buddy_joined_owner', ['name' => $buddyName, 'title' => $goal->title]), "/goals/{$id}");
-                });
-            }
+            $buddy = User::find($userId);
+            $goalOwner = User::find($goalOwnerId);
+            LocaleContext::withLocale($goalOwner, function () use ($buddy, $goal, $goalOwnerId, $id) {
+                $buddyName = $buddy->name ?? __('emails.common.fallback_someone');
+                $message = __('api_controllers_3.goals.buddy_requested_owner', ['name' => $buddyName, 'title' => $goal->title]);
+                Notification::createNotification($goalOwnerId, $message, "/goals/{$id}", 'goal_buddy');
+                \App\Services\NotificationDispatcher::fanOutPush($goalOwnerId, 'goal_buddy', $message, "/goals/{$id}");
+            });
         } catch (\Throwable $e) {
-            \Log::warning('Goal buddy notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
+            \Log::warning('Goal buddy request notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
+        }
+
+        $data = $this->enrichGoal($goal->toArray());
+        $data['is_owner'] = false;
+        $data['is_buddy'] = false;
+        $data['buddy_request_pending'] = true;
+
+        return $this->respondWithData([
+            'status'     => 'pending',
+            'request_id' => $offer['request_id'],
+            'message'    => __('api_controllers_3.goals.buddy_request_sent'),
+            'goal'       => $data,
+        ]);
+    }
+
+    // -----------------------------------------------------------------
+    //  Buddy requests — owner decides (F-004, E-038)
+    // -----------------------------------------------------------------
+
+    /** GET /api/v2/goals/{id}/buddy-requests — pending offers, owner only. */
+    public function buddyRequests(int $id): JsonResponse
+    {
+        $userId = $this->getUserId();
+
+        $result = $this->goalService->listBuddyRequests($id, $userId);
+
+        return match ($result['status']) {
+            'ok'        => $this->respondWithData($result['requests'] ?? []),
+            'forbidden' => $this->respondWithError('RESOURCE_FORBIDDEN', __('api_controllers_3.goals.buddy_request_owner_only'), null, 403),
+            default     => $this->respondWithError('RESOURCE_NOT_FOUND', __('api.goal_not_found'), null, 404),
+        };
+    }
+
+    /** POST /api/v2/goals/{id}/buddy-requests/{requestId}/accept */
+    public function acceptBuddyRequest(int $id, int $requestId): JsonResponse
+    {
+        $userId = $this->getUserId();
+        $this->rateLimit('goal_buddy_decision', 20, 60);
+
+        try {
+            $result = $this->goalService->acceptBuddyRequest($id, $requestId, $userId);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+
+        if ($result['status'] !== 'accepted') {
+            return $this->buddyDecisionError($result['status']);
+        }
+
+        /** @var Goal $goal */
+        $goal = $result['goal'];
+        $requesterId = (int) $result['requester_id'];
+
+        try {
+            $owner = User::find($userId);
+            $requester = User::find($requesterId);
+            LocaleContext::withLocale($requester, function () use ($owner, $goal, $requesterId, $id) {
+                $ownerName = $owner->name ?? __('emails.common.fallback_someone');
+                $message = __('api_controllers_3.goals.buddy_request_accepted_requester', ['name' => $ownerName, 'title' => $goal->title]);
+                Notification::createNotification($requesterId, $message, "/goals/{$id}", 'goal_buddy');
+                \App\Services\NotificationDispatcher::fanOutPush($requesterId, 'goal_buddy', $message, "/goals/{$id}");
+            });
+        } catch (\Throwable $e) {
+            \Log::warning('Goal buddy accept notification failed', ['goal' => $id, 'error' => $e->getMessage()]);
+        }
+
+        $data = $this->enrichGoal($goal->toArray());
+        $data['is_owner'] = true;
+        $data['is_buddy'] = false;
+        $data['pending_buddy_requests_count'] = 0;
+
+        return $this->respondWithData([
+            'status'  => 'accepted',
+            'message' => __('api_controllers_3.goals.buddy_request_accepted'),
+            'goal'    => $data,
+        ]);
+    }
+
+    /** POST /api/v2/goals/{id}/buddy-requests/{requestId}/decline */
+    public function declineBuddyRequest(int $id, int $requestId): JsonResponse
+    {
+        $userId = $this->getUserId();
+        $this->rateLimit('goal_buddy_decision', 20, 60);
+
+        $result = $this->goalService->declineBuddyRequest($id, $requestId, $userId);
+
+        if ($result['status'] !== 'declined') {
+            return $this->buddyDecisionError($result['status']);
         }
 
         return $this->respondWithData([
-            'message' => __('api.buddy_added'),
-            'goal'    => $this->enrichGoal($goal->toArray()),
+            'status'  => 'declined',
+            'message' => __('api_controllers_3.goals.buddy_request_declined'),
         ]);
+    }
+
+    private function buddyDecisionError(string $status): JsonResponse
+    {
+        return match ($status) {
+            'forbidden' => $this->respondWithError('RESOURCE_FORBIDDEN', __('api_controllers_3.goals.buddy_request_owner_only'), null, 403),
+            'conflict'  => $this->respondWithError('RESOURCE_CONFLICT', __('api_controllers_3.goals.buddy_request_unavailable'), null, 409),
+            default     => $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_3.goals.buddy_request_unavailable'), null, 404),
+        };
+    }
+
+    /**
+     * Add the caller's buddy-request state to goal rows: `buddy_request_pending`
+     * (the caller has offered and is waiting) and, on the caller's own goals,
+     * `pending_buddy_requests_count`.
+     *
+     * @param  list<array<string,mixed>>  $items
+     * @return list<array<string,mixed>>
+     */
+    private function withBuddyRequestState(array $items, int $userId): array
+    {
+        $goalIds = array_values(array_map(fn (array $g): int => (int) ($g['id'] ?? 0), $items));
+        $pendingForCaller = array_flip($this->goalService->pendingBuddyRequestGoalIds($userId, $goalIds));
+        $ownGoalIds = array_values(array_map(
+            fn (array $g): int => (int) $g['id'],
+            array_filter($items, fn (array $g): bool => (int) ($g['user_id'] ?? 0) === $userId)
+        ));
+        $counts = $this->goalService->pendingBuddyRequestCounts($ownGoalIds);
+
+        return array_map(function (array $goal) use ($pendingForCaller, $counts, $userId): array {
+            $goalId = (int) ($goal['id'] ?? 0);
+            $goal['buddy_request_pending'] = isset($pendingForCaller[$goalId]);
+            if ((int) ($goal['user_id'] ?? 0) === $userId) {
+                $goal['pending_buddy_requests_count'] = $counts[$goalId] ?? 0;
+            }
+
+            return $goal;
+        }, $items);
     }
 
     public function buddyNudge(int $id): JsonResponse

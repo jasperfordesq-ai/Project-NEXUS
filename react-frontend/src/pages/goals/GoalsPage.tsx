@@ -65,12 +65,14 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { GoalTemplatePickerModal } from './components/GoalTemplatePickerModal';
 import { GoalCheckinModal } from './components/GoalCheckinModal';
 import { GoalReminderToggle } from './components/GoalReminderToggle';
 import { GoalProgressHistory } from './components/GoalProgressHistory';
 import { GoalInsightsPanel } from './components/GoalInsightsPanel';
+import { GoalBuddyRequests } from './components/GoalBuddyRequests';
+import type { AcceptedBuddyGoal } from './components/GoalBuddyRequests';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -97,6 +99,10 @@ interface Goal {
   buddy_name?: string | null;
   buddy_avatar?: string | null;
   is_buddy?: boolean;
+  /** F-004: the viewer has offered to be buddy and the owner has not decided yet. */
+  buddy_request_pending?: boolean;
+  /** F-004: on the viewer's own goal, how many buddy offers await a decision. */
+  pending_buddy_requests_count?: number;
   likes_count?: number;
   comments_count?: number;
   progress_history?: ProgressEntry[];
@@ -422,12 +428,13 @@ export function GoalsPage() {
       const response = await api.post(`/v2/goals/${goal.id}/buddy`, {});
 
       if (response.success) {
-        toastRef.current.success(tRef.current('goals.toast.buddy_joined'));
-        // Update local state
+        // F-004: this is an offer. The goal owner must accept it before the
+        // viewer becomes the buddy, so only mark the offer as pending.
+        toastRef.current.success(tRef.current('goals.toast.buddy_requested'));
         setGoals((prev) =>
           prev.map((g) =>
             g.id === goal.id
-              ? { ...g, buddy_id: user?.id ?? null, buddy_name: user ? resolveUserDisplayName(user) : null, is_buddy: true }
+              ? { ...g, buddy_request_pending: true }
               : g
           )
         );
@@ -437,6 +444,21 @@ export function GoalsPage() {
     } catch (err) {
       logError('Failed to become buddy', err);
       toastRef.current.error(tRef.current('goals.toast.buddy_failed'));
+    }
+  };
+
+  // F-004: the owner accepted an offer in the detail modal.
+  const handleBuddyAccepted = (accepted: AcceptedBuddyGoal) => {
+    const update = (g: Goal): Goal => ({
+      ...g,
+      buddy_id: accepted.buddy_id ?? null,
+      buddy_name: accepted.buddy_name ?? null,
+      buddy_avatar: accepted.buddy_avatar ?? null,
+      pending_buddy_requests_count: 0,
+    });
+    setDetailGoal((prev) => (prev ? update(prev) : prev));
+    if (detailGoal) {
+      setGoals((prev) => prev.map((g) => (g.id === detailGoal.id ? update(g) : g)));
     }
   };
 
@@ -992,7 +1014,7 @@ export function GoalsPage() {
                         <Users className="w-3.5 h-3.5" aria-hidden="true" />
                         {t('goals.detail.buddy')}
                       </div>
-                      <p className="text-sm text-theme-muted">{t('goals.detail.no_buddy')}</p>
+                      <p className="text-sm text-theme-muted">{t('goals.detail.no_buddy_consent')}</p>
                     </div>
                   )}
                   {(detailGoal.likes_count !== undefined || detailGoal.comments_count !== undefined) && (
@@ -1040,6 +1062,11 @@ export function GoalsPage() {
                   <GoalInsightsPanel goalId={detailGoal.id} canNudge={detailGoal.is_buddy} />
                 </div>
 
+                {/* F-004: pending buddy offers — only the owner sees and decides them */}
+                {detailGoal.is_owner && !detailGoal.buddy_id && (detailGoal.pending_buddy_requests_count ?? 0) > 0 && (
+                  <GoalBuddyRequests goalId={detailGoal.id} onAccepted={handleBuddyAccepted} />
+                )}
+
                 {/* G5 - Full Progress History Timeline */}
                 <div>
                   <h4 className="text-sm font-semibold text-theme-primary mb-3 flex items-center gap-2">
@@ -1050,7 +1077,7 @@ export function GoalsPage() {
                 </div>
               </ModalBody>
               <ModalFooter>
-                {tab === 'discover' && detailGoal && !detailGoal.is_owner && detailGoal.is_public && !detailGoal.buddy_id && !detailGoal.is_buddy && user && (
+                {tab === 'discover' && detailGoal && !detailGoal.is_owner && detailGoal.is_public && !detailGoal.buddy_id && !detailGoal.is_buddy && !detailGoal.buddy_request_pending && user && (
                   <Button
                     className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
                     startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
@@ -1059,7 +1086,7 @@ export function GoalsPage() {
                       onDetailClose();
                     }}
                   >
-                    {t('goals.become_buddy')}
+                    {t('goals.offer_buddy')}
                   </Button>
                 )}
                 <Button variant="flat" onPress={onDetailClose} className="text-theme-muted">{t('goals.modal.close')}</Button>
@@ -1114,7 +1141,7 @@ function GoalCard({
   const isOverdue = deadlineDate && deadlineDate < new Date() && !isCompleted;
   const canComplete = isOwner && !isCompleted && goal.progress_percentage >= 100;
   const isBuddy = goal.is_buddy || (goal.buddy_id != null && goal.buddy_id === currentUserId);
-  const canBecomeBuddy = isDiscoverTab && !isOwner && goal.is_public && !goal.buddy_id && !isBuddy && currentUserId !== null;
+  const canBecomeBuddy = isDiscoverTab && !isOwner && goal.is_public && !goal.buddy_id && !isBuddy && !goal.buddy_request_pending && currentUserId !== null;
 
   return (
     <GlassCard className={`p-5 relative overflow-hidden ${isCompleted ? 'border-l-4 border-emerald-500' : ''} ${isOverdue ? 'border-l-4 border-red-500' : ''}`}>
@@ -1148,6 +1175,11 @@ function GoalCard({
             {isBuddy && !isBuddyingTab && (
               <Chip size="sm" color="secondary" variant="flat" startContent={<Users className="w-3 h-3" />}>
                 {t('goals.youre_a_buddy')}
+              </Chip>
+            )}
+            {goal.buddy_request_pending && !isBuddy && (
+              <Chip size="sm" variant="flat" className="text-theme-subtle" startContent={<UserPlus className="w-3 h-3" aria-hidden="true" />}>
+                {t('goals.buddy_request_sent_chip')}
               </Chip>
             )}
           </div>
@@ -1305,7 +1337,7 @@ function GoalCard({
               startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
               onPress={() => onBecomeBuddy(goal)}
             >
-              {t('goals.become_buddy')}
+              {t('goals.offer_buddy')}
             </Button>
           )}
 

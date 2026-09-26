@@ -481,7 +481,24 @@ class GoalsControllerTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->apiPost("/v2/goals/{$goal->id}/buddy")
+        // F-004 (E-038): the offer is a pending request — the goal returned
+        // has no buddy yet, and its owner row is still projected (F-097).
+        $offer = $this->apiPost("/v2/goals/{$goal->id}/buddy")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.goal.user.id', $owner->id)
+            ->assertJsonPath('data.goal.buddy_id', null);
+        foreach (['email', 'phone', 'date_of_birth', 'location', 'latitude', 'longitude', 'stripe_customer_id'] as $privateField) {
+            $offer->assertJsonMissingPath("data.goal.user.{$privateField}");
+        }
+
+        // The owner accepts; the accept response carries both participants.
+        $requestId = (int) DB::table('goal_buddy_requests')
+            ->where('goal_id', $goal->id)
+            ->where('requester_id', $buddy->id)
+            ->value('id');
+        Sanctum::actingAs($owner, ['*']);
+        $response = $this->apiPost("/v2/goals/{$goal->id}/buddy-requests/{$requestId}/accept")
             ->assertOk()
             ->assertJsonPath('data.goal.user.id', $owner->id)
             ->assertJsonPath('data.goal.mentor.id', $buddy->id)

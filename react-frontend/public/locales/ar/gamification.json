@@ -257,7 +257,8 @@
       "insights": "رؤى الهدف",
       "progress_timeline": "الجدول الزمني للتقدم",
       "progress_explainer": "يتم حساب التقدم من القيمة الحالية مقابل الهدف. يمكن لعمليات تسجيل الوصول تحديث هذه النسبة مباشرة.",
-      "no_progress": "لم يتم تسجيل تحديثات التقدم حتى الآن."
+      "no_progress": "لم يتم تسجيل تحديثات التقدم حتى الآن.",
+      "no_buddy_consent": "لا يوجد صديق بعد. يمكن للأعضاء عرض دعم هذا الهدف، ويقرر صاحب الهدف ما إذا كان سيقبل."
     },
     "modal": {
       "create_title": "إنشاء هدف جديد",
@@ -295,14 +296,28 @@
       "buddy_joined": "أنت الآن صديق!",
       "buddy_failed": "فشل في أن يصبح صديقًا",
       "buddy_action_sent": "تم إرسال دعم الأصدقاء",
-      "buddy_action_failed": "فشل في إرسال دعم الأصدقاء"
+      "buddy_action_failed": "فشل في إرسال دعم الأصدقاء",
+      "buddy_requested": "تم إرسال العرض. ستصبح صديقًا عندما يقبل صاحب الهدف.",
+      "buddy_request_accepted": "تم قبول عرض الصداقة",
+      "buddy_request_declined": "تم رفض عرض الصداقة",
+      "buddy_request_failed": "تعذر تحديث عرض الصداقة"
     },
     "streak_label_few": "{{count}} خط تسجيل الوصول",
     "streak_label_many": "{{count}} خط تسجيل الوصول",
     "streak_label_one": "{{count}} خط تسجيل الوصول",
     "streak_label_other": "{{count}} خط تسجيل الوصول",
     "streak_label_two": "{{count}} خط تسجيل الوصول",
-    "streak_label_zero": "{{count}} خط تسجيل الوصول"
+    "streak_label_zero": "{{count}} خط تسجيل الوصول",
+    "offer_buddy": "اعرض أن تكون صديقًا",
+    "buddy_request_sent_chip": "تم إرسال عرض الصداقة",
+    "buddy_requests": {
+      "title": "عروض الصداقة",
+      "description": "عرض هؤلاء الأعضاء دعم هذا الهدف. لن يصبح أحد صديقك ما لم تقبل.",
+      "accept": "قبول",
+      "decline": "رفض",
+      "accept_aria": "قبول {{name}} صديقًا لك",
+      "decline_aria": "رفض عرض الصداقة من {{name}}"
+    }
   },
   "frequency": {
     "none": "لا إيقاع",

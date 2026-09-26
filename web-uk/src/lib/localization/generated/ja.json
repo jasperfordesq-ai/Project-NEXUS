@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "このゴールを支援する",
                 "become_buddy_intro": "バディとしてこのメンバーのサポートを申し出てください。",
                 "become_buddy_button": "バディになる",
+                "offer_buddy_button": "仲間になることを申し出る",
+                "become_buddy_consent_hint": "申し出を承認するかどうかは目標の所有者が決めます。",
+                "buddy_request_pending": "この目標の仲間になることを申し出ました。目標の所有者はまだ決めていません。",
+                "buddy_requests_title": "仲間の申し出",
+                "buddy_requests_intro": "これらのメンバーがこの目標の応援を申し出ています。あなたが承認しない限り、誰も仲間にはなりません。",
+                "buddy_request_accept": "承認",
+                "buddy_request_decline": "辞退",
+                "buddy_request_context": ":name からの仲間の申し出",
                 "buddy_notes_title": "バディからの更新",
                 "buddying_title": "バディになっているゴール",
                 "buddying_caption": "あなたが支援しているゴールと、バディになれる公開ゴール。",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "エラーが発生しました。もう一度お試しください。",
                     "goal-invalid": "ゴールと0より大きい目標値を入力してください。",
                     "buddy-joined": "このゴールのバディになりました。",
-                    "buddy-failed": "バディとして追加できませんでした。すでにバディがいる可能性があります。"
+                    "buddy-failed": "バディとして追加できませんでした。すでにバディがいる可能性があります。",
+                    "buddy-requested": "申し出を送信しました。目標の所有者が承認すると仲間になります。",
+                    "buddy-request-accepted": "仲間の申し出を承認しました。",
+                    "buddy-request-declined": "仲間の申し出を辞退しました。",
+                    "buddy-request-failed": "この仲間の申し出を更新できませんでした。すでに利用できない可能性があります。"
                 }
             },
             "skills": {
@@ -10983,7 +10995,7 @@
             },
             "jurisdictions": {
                 "unconfigured": "保護管轄区域が構成されていません",
-                "united_kingdom": "United Kingdom ? national policy package",
+                "united_kingdom": "イギリス — 国の方針パッケージ",
                 "england_wales": "イングランドとウェールズ",
                 "scotland": "スコットランド",
                 "northern_ireland": "北アイルランド",

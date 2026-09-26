@@ -34,7 +34,14 @@ const requiredKeys = [
   'goals.buddy_you_are_buddy',
   'goals.become_buddy_title',
   'goals.become_buddy_intro',
-  'goals.become_buddy_button',
+  'goals.offer_buddy_button',
+  'goals.become_buddy_consent_hint',
+  'goals.buddy_request_pending',
+  'goals.buddy_requests_title',
+  'goals.buddy_requests_intro',
+  'goals.buddy_request_accept',
+  'goals.buddy_request_decline',
+  'goals.buddy_request_context',
   'goals.buddy_notes_title',
   'goals.a_member',
   'goals.history_title',
@@ -124,5 +131,34 @@ describe('Laravel-first goal detail localization', () => {
     expect(html).toContain(t('goals.history_empty'));
     expect(html).toContain('Member-authored goal title');
     expect(html).toContain('Member-authored goal description');
+  });
+
+  // F-004 (E-038): a buddy offer waits for the goal owner, who accepts or declines it.
+  it.each(['en', 'ga', 'ar'])('shows the goal owner each pending buddy offer with accept and decline in %s', (locale) => {
+    const t = createTranslator(locale);
+    const html = templateEnvironment.render('goals/detail.njk', {
+      ...baseLocals(locale),
+      buddyRequests: [{ id: 7, requesterId: 5, requesterName: 'Offering Member' }]
+    });
+
+    expect(html).toContain(t('goals.buddy_requests_title'));
+    expect(html).toContain('Offering Member');
+    expect(html).toContain('action="/goals/42/buddy-requests/7/accept"');
+    expect(html).toContain('action="/goals/42/buddy-requests/7/decline"');
+    expect(html).toContain(t('goals.buddy_request_accept'));
+    expect(html).toContain(t('goals.buddy_request_decline'));
+  });
+
+  it('tells a member who has offered that the owner has not decided, with no second offer button', () => {
+    const t = createTranslator('en');
+    const html = templateEnvironment.render('goals/detail.njk', {
+      ...baseLocals('en'),
+      isOwner: false,
+      buddyRequestPending: true
+    });
+
+    expect(html).toContain(t('goals.buddy_request_pending'));
+    expect(html).not.toContain(t('goals.offer_buddy_button'));
+    expect(html).not.toContain('/goals/42/buddy"');
   });
 });

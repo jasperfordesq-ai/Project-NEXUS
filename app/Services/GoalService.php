@@ -14,6 +14,7 @@ use App\Models\Goal;
 use App\Models\GoalCheckin;
 use App\Models\User;
 use App\Models\UserXpLog;
+use App\Support\UserDisplayName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\GoalMilestoneEmailService;
@@ -515,11 +516,23 @@ class GoalService
     }
 
     /**
-     * Offer to be buddy for a goal.
+     * Offer to be the buddy of another member's public goal.
+     *
+     * F-004 (E-038, owner decision 26 Sep 2026): an offer is a REQUEST. It
+     * creates a pending `goal_buddy_requests` row and changes nothing on the
+     * goal; `mentor_id` is written only when the goal owner accepts
+     * (acceptBuddyRequest). One pending request per member per goal, and a
+     * member whose offer was declined cannot offer again on that goal, so an
+     * owner cannot be re-notified at will.
+     *
+     * The goal row is locked for the whole decision (F-143) so an offer cannot
+     * interleave with an owner's accept.
+     *
+     * @return array{request_id: int, goal: Goal}|null null when the offer is not possible
      */
-    public function offerBuddy(int $goalId, int $userId): ?Goal
+    public function offerBuddy(int $goalId, int $userId): ?array
     {
-        return DB::transaction(function () use ($goalId, $userId): ?Goal {
+        return DB::transaction(function () use ($goalId, $userId): ?array {
             $goal = $this->goal->newQuery()->lockForUpdate()->find($goalId);
 
             if (! $goal || ! $goal->is_public || $goal->mentor_id !== null) {
@@ -537,19 +550,254 @@ class GoalService
                 'goal_buddy',
             );
 
-            $goal->mentor_id = $userId;
-            $goal->save();
-            $this->recordHistory($goal, 'buddy_joined', __('api_controllers_3.goals.history_buddy_joined'), [
-                'buddy_id' => $userId,
-            ], $userId);
+            $alreadyAsked = DB::table('goal_buddy_requests')
+                ->where('tenant_id', (int) $goal->tenant_id)
+                ->where('goal_id', (int) $goal->id)
+                ->where('requester_id', $userId)
+                ->whereIn('status', ['pending', 'declined'])
+                ->exists();
+            if ($alreadyAsked) {
+                return null;
+            }
 
-            $publicIdentity = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
-
-            return $goal->fresh([
-                "user:{$publicIdentity}",
-                "mentor:{$publicIdentity}",
+            $requestId = (int) DB::table('goal_buddy_requests')->insertGetId([
+                'tenant_id'    => (int) $goal->tenant_id,
+                'goal_id'      => (int) $goal->id,
+                'owner_id'     => (int) $goal->user_id,
+                'requester_id' => $userId,
+                'status'       => 'pending',
+                'created_at'   => now(),
+                'updated_at'   => now(),
             ]);
+
+            return [
+                'request_id' => $requestId,
+                'goal'       => $this->freshWithPublicParticipants($goal),
+            ];
         });
+    }
+
+    /**
+     * Pending buddy requests on a goal, for its owner only.
+     *
+     * @return array{status: string, requests?: list<array<string,mixed>>}
+     */
+    public function listBuddyRequests(int $goalId, int $ownerId): array
+    {
+        $goal = $this->goal->newQuery()->find($goalId);
+        if (! $goal) {
+            return ['status' => 'not_found'];
+        }
+        if ((int) $goal->user_id !== $ownerId) {
+            return ['status' => 'forbidden'];
+        }
+
+        $rows = DB::table('goal_buddy_requests')
+            ->where('tenant_id', (int) $goal->tenant_id)
+            ->where('goal_id', (int) $goal->id)
+            ->where('status', 'pending')
+            ->orderBy('id')
+            ->get(['id', 'requester_id', 'status', 'created_at']);
+
+        // User is tenant-scoped: a requester who left the community drops out.
+        $requesters = User::query()
+            ->whereIn('id', $rows->pluck('requester_id')->map(fn ($id) => (int) $id)->all())
+            ->get(User::PUBLIC_IDENTITY_COLUMNS)
+            ->keyBy('id');
+
+        $requests = [];
+        foreach ($rows as $row) {
+            $requester = $requesters->get((int) $row->requester_id);
+            if (! $requester) {
+                continue;
+            }
+            $requests[] = [
+                'id'         => (int) $row->id,
+                'status'     => (string) $row->status,
+                'created_at' => $row->created_at,
+                'requester'  => [
+                    'id'         => (int) $requester->id,
+                    'name'       => UserDisplayName::resolve($requester),
+                    'avatar_url' => $requester->avatar_url,
+                ],
+            ];
+        }
+
+        return ['status' => 'ok', 'requests' => $requests];
+    }
+
+    /**
+     * The goal owner accepts a pending buddy request. This is the only path
+     * that writes `goals.mentor_id` for a member-initiated buddy.
+     *
+     * The goal row and the request row are locked in one transaction, so two
+     * accepts (double submit, two tabs) cannot both win (F-143); every other
+     * pending request on the goal is closed as superseded.
+     *
+     * @return array{status: string, goal?: Goal, requester_id?: int}
+     */
+    public function acceptBuddyRequest(int $goalId, int $requestId, int $ownerId): array
+    {
+        return DB::transaction(function () use ($goalId, $requestId, $ownerId): array {
+            $goal = $this->goal->newQuery()->lockForUpdate()->find($goalId);
+            if (! $goal) {
+                return ['status' => 'not_found'];
+            }
+            if ((int) $goal->user_id !== $ownerId) {
+                return ['status' => 'forbidden'];
+            }
+
+            $request = DB::table('goal_buddy_requests')
+                ->where('id', $requestId)
+                ->where('tenant_id', (int) $goal->tenant_id)
+                ->where('goal_id', (int) $goal->id)
+                ->lockForUpdate()
+                ->first();
+            if (! $request) {
+                return ['status' => 'not_found'];
+            }
+            if ($request->status !== 'pending' || $goal->mentor_id !== null) {
+                return ['status' => 'conflict'];
+            }
+
+            $requesterId = (int) $request->requester_id;
+            if (! User::query()->where('id', $requesterId)->exists()) {
+                return ['status' => 'conflict'];
+            }
+
+            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $requesterId,
+                (int) $goal->user_id,
+                (int) $goal->tenant_id,
+                'goal_buddy',
+            );
+
+            $goal->mentor_id = $requesterId;
+            $goal->save();
+
+            $now = now();
+            DB::table('goal_buddy_requests')
+                ->where('id', (int) $request->id)
+                ->update(['status' => 'accepted', 'responded_at' => $now, 'updated_at' => $now]);
+            DB::table('goal_buddy_requests')
+                ->where('tenant_id', (int) $goal->tenant_id)
+                ->where('goal_id', (int) $goal->id)
+                ->where('status', 'pending')
+                ->update(['status' => 'superseded', 'responded_at' => $now, 'updated_at' => $now]);
+
+            $this->recordHistory($goal, 'buddy_joined', __('api_controllers_3.goals.history_buddy_joined'), [
+                'buddy_id'         => $requesterId,
+                'buddy_request_id' => (int) $request->id,
+            ], $ownerId);
+
+            return [
+                'status'       => 'accepted',
+                'goal'         => $this->freshWithPublicParticipants($goal),
+                'requester_id' => $requesterId,
+            ];
+        });
+    }
+
+    /**
+     * The goal owner declines a pending buddy request. The goal is untouched.
+     *
+     * @return array{status: string}
+     */
+    public function declineBuddyRequest(int $goalId, int $requestId, int $ownerId): array
+    {
+        return DB::transaction(function () use ($goalId, $requestId, $ownerId): array {
+            $goal = $this->goal->newQuery()->lockForUpdate()->find($goalId);
+            if (! $goal) {
+                return ['status' => 'not_found'];
+            }
+            if ((int) $goal->user_id !== $ownerId) {
+                return ['status' => 'forbidden'];
+            }
+
+            $request = DB::table('goal_buddy_requests')
+                ->where('id', $requestId)
+                ->where('tenant_id', (int) $goal->tenant_id)
+                ->where('goal_id', (int) $goal->id)
+                ->lockForUpdate()
+                ->first();
+            if (! $request) {
+                return ['status' => 'not_found'];
+            }
+            if ($request->status !== 'pending') {
+                return ['status' => 'conflict'];
+            }
+
+            DB::table('goal_buddy_requests')
+                ->where('id', (int) $request->id)
+                ->update(['status' => 'declined', 'responded_at' => now(), 'updated_at' => now()]);
+
+            return ['status' => 'declined'];
+        });
+    }
+
+    /**
+     * Goal ids (from $goalIds) on which $requesterId has a pending buddy request.
+     *
+     * @param  list<int>  $goalIds
+     * @return list<int>
+     */
+    public function pendingBuddyRequestGoalIds(int $requesterId, array $goalIds): array
+    {
+        if ($goalIds === []) {
+            return [];
+        }
+
+        return DB::table('goal_buddy_requests')
+            ->where('tenant_id', TenantContext::getId())
+            ->where('requester_id', $requesterId)
+            ->where('status', 'pending')
+            ->whereIn('goal_id', $goalIds)
+            ->pluck('goal_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Pending buddy request counts keyed by goal id.
+     *
+     * @param  list<int>  $goalIds
+     * @return array<int,int>
+     */
+    public function pendingBuddyRequestCounts(array $goalIds): array
+    {
+        if ($goalIds === []) {
+            return [];
+        }
+
+        $counts = [];
+        $rows = DB::table('goal_buddy_requests')
+            ->where('tenant_id', TenantContext::getId())
+            ->where('status', 'pending')
+            ->whereIn('goal_id', $goalIds)
+            ->groupBy('goal_id')
+            ->selectRaw('goal_id, COUNT(*) as pending_count')
+            ->get();
+        foreach ($rows as $row) {
+            $counts[(int) $row->goal_id] = (int) $row->pending_count;
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Reload a goal with owner and buddy constrained to public identity
+     * columns (F-097 — never return full account rows).
+     */
+    private function freshWithPublicParticipants(Goal $goal): Goal
+    {
+        $publicIdentity = implode(',', User::PUBLIC_IDENTITY_COLUMNS);
+
+        return $goal->fresh([
+            "user:{$publicIdentity}",
+            "mentor:{$publicIdentity}",
+        ]);
     }
 
     /**

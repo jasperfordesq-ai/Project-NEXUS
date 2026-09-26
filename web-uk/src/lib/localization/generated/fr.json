@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "Soutenir cet objectif",
                 "become_buddy_intro": "Proposez-vous comme soutien pour aider ce membre à rester sur la bonne voie.",
                 "become_buddy_button": "Devenir un soutien",
+                "offer_buddy_button": "Proposer d'être partenaire",
+                "become_buddy_consent_hint": "La personne propriétaire de l'objectif décide d'accepter ou non votre proposition.",
+                "buddy_request_pending": "Vous avez proposé d'être partenaire pour cet objectif. La personne propriétaire n'a pas encore décidé.",
+                "buddy_requests_title": "Propositions de partenaire",
+                "buddy_requests_intro": "Ces membres ont proposé de soutenir cet objectif. Personne ne devient votre partenaire sans votre accord.",
+                "buddy_request_accept": "Accepter",
+                "buddy_request_decline": "Refuser",
+                "buddy_request_context": "la proposition de partenaire de :name",
                 "buddy_notes_title": "Mises à jour du soutien",
                 "buddying_title": "Objectifs que vous soutenez",
                 "buddying_caption": "Objectifs que vous soutenez et objectifs publics pour lesquels vous pouvez proposer votre aide.",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "Une erreur s'est produite. Veuillez réessayer.",
                     "goal-invalid": "Saisissez un objectif et une cible supérieure à zéro.",
                     "buddy-joined": "Vous êtes désormais un soutien pour cet objectif.",
-                    "buddy-failed": "Nous n'avons pas pu vous ajouter comme soutien. L'objectif en a peut-être déjà un."
+                    "buddy-failed": "Nous n'avons pas pu vous ajouter comme soutien. L'objectif en a peut-être déjà un.",
+                    "buddy-requested": "Votre proposition a été envoyée. Vous deviendrez partenaire dès que la personne propriétaire de l'objectif l'aura acceptée.",
+                    "buddy-request-accepted": "Vous avez accepté la proposition de partenaire.",
+                    "buddy-request-declined": "Vous avez refusé la proposition de partenaire.",
+                    "buddy-request-failed": "Nous n'avons pas pu mettre à jour cette proposition de partenaire. Elle n'est peut-être plus disponible."
                 }
             },
             "skills": {
@@ -10983,7 +10995,7 @@
             },
             "jurisdictions": {
                 "unconfigured": "Juridiction de sauvegarde non configurée",
-                "united_kingdom": "United Kingdom ? national policy package",
+                "united_kingdom": "Royaume-Uni — ensemble de politiques nationales",
                 "england_wales": "Angleterre et Pays de Galles",
                 "scotland": "Écosse",
                 "northern_ireland": "Irlande du Nord",

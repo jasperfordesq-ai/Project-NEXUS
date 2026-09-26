@@ -58,10 +58,14 @@
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>
               <progress max="100" value="{{ goal.progressPercent }}" aria-label="{{ goal.progressPercent }}%">{{ goal.progressPercent }}%</progress>
 
+              {% if goal.buddy_request_pending %}
+                <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("goals.buddy_request_pending") }}</p>
+              {% else %}
               <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy') }}" class="govuk-!-margin-top-2">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_gamify.goals_discover_become_buddy") }}</button>
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.offer_buddy_button") }}</button>
               </form>
+              {% endif %}
             </article>
           {% endfor %}
         </div>

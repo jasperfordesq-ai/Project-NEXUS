@@ -237,7 +237,8 @@
       "insights": "Goal insights",
       "progress_timeline": "Progress Timeline",
       "progress_explainer": "Progress is calculated from the current value against the target. Check-ins can update this percentage directly.",
-      "no_progress": "No progress updates recorded yet."
+      "no_progress": "No progress updates recorded yet.",
+      "no_buddy_consent": "No buddy yet. Members can offer to support this goal, and the goal owner decides whether to accept."
     },
     "modal": {
       "create_title": "Create New Goal",
@@ -275,10 +276,24 @@
       "buddy_joined": "You are now a buddy!",
       "buddy_failed": "Failed to become buddy",
       "buddy_action_sent": "Buddy support sent",
-      "buddy_action_failed": "Failed to send buddy support"
+      "buddy_action_failed": "Failed to send buddy support",
+      "buddy_requested": "Offer sent. You will become a buddy once the goal owner accepts.",
+      "buddy_request_accepted": "Buddy offer accepted",
+      "buddy_request_declined": "Buddy offer declined",
+      "buddy_request_failed": "Could not update the buddy offer"
     },
     "streak_label_one": "{{count}} check-in streak",
-    "streak_label_other": "{{count}} check-in streak"
+    "streak_label_other": "{{count}} check-in streak",
+    "offer_buddy": "Offer to be buddy",
+    "buddy_request_sent_chip": "Buddy offer sent",
+    "buddy_requests": {
+      "title": "Buddy offers",
+      "description": "These members have offered to support this goal. Nobody becomes your buddy unless you accept.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "accept_aria": "Accept {{name}} as your buddy",
+      "decline_aria": "Decline the buddy offer from {{name}}"
+    }
   },
   "frequency": {
     "none": "No cadence",

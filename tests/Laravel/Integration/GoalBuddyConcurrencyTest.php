@@ -18,14 +18,21 @@ use Tests\Laravel\TestCase;
 
 final class GoalBuddyConcurrencyTest extends TestCase
 {
-    public function test_two_simultaneous_buddy_offers_have_one_winner_and_one_history_event(): void
+    /**
+     * F-143, carried through F-004 (E-038): a buddy is now assigned only when
+     * the goal owner accepts a pending request. Two accepts racing on the same
+     * goal (double submit, two tabs, two different offers) must still produce
+     * exactly one buddy and one history event.
+     */
+    public function test_two_simultaneous_buddy_request_accepts_have_one_winner_and_one_history_event(): void
     {
         foreach (['pcntl_fork', 'pcntl_waitpid', 'stream_socket_pair', 'posix_kill'] as $function) {
             if (! function_exists($function)) {
                 self::markTestSkipped("{$function} is required for goal-buddy concurrency verification.");
             }
         }
-        self::assertSame('nexus_test', DB::connection()->getDatabaseName());
+        // Never against the development database: only a nexus_test* database.
+        self::assertStringStartsWith('nexus_test', DB::connection()->getDatabaseName());
 
         $owner = User::factory()->forTenant($this->testTenantId)->create();
         $buddies = [
@@ -39,6 +46,13 @@ final class GoalBuddyConcurrencyTest extends TestCase
             'is_public' => true,
             'status' => 'active',
         ]);
+        $requestIds = [];
+        foreach ($buddies as $buddy) {
+            $offer = (new GoalService(new Goal()))->offerBuddy((int) $goal->id, (int) $buddy->id);
+            self::assertNotNull($offer);
+            $requestIds[(int) $buddy->id] = (int) $offer['request_id'];
+        }
+        self::assertNull(DB::table('goals')->where('id', $goal->id)->value('mentor_id'));
         $workers = [];
 
         try {
@@ -92,8 +106,12 @@ final class GoalBuddyConcurrencyTest extends TestCase
                             }
                         });
 
-                        $result = (new GoalService(new Goal()))->offerBuddy((int) $goal->id, (int) $buddy->id);
-                        fwrite($sockets[1], json_encode(['won' => $result !== null], JSON_THROW_ON_ERROR) . "\n");
+                        $result = (new GoalService(new Goal()))->acceptBuddyRequest(
+                            (int) $goal->id,
+                            $requestIds[(int) $buddy->id],
+                            (int) $owner->id,
+                        );
+                        fwrite($sockets[1], json_encode(['won' => $result['status'] === 'accepted'], JSON_THROW_ON_ERROR) . "\n");
                         fclose($sockets[1]);
                         exit(0);
                     } catch (\Throwable $error) {
@@ -141,7 +159,17 @@ final class GoalBuddyConcurrencyTest extends TestCase
                 ->where('event_type', 'buddy_joined')
                 ->get();
             self::assertCount(1, $progressLog);
-            self::assertSame($persistedMentorId, (int) $progressLog[0]->created_by);
+            // The owner made the decision, so the owner is recorded as its author.
+            self::assertSame((int) $owner->id, (int) $progressLog[0]->created_by);
+
+            $statuses = DB::table('goal_buddy_requests')
+                ->where('goal_id', $goal->id)
+                ->pluck('status', 'requester_id')
+                ->all();
+            self::assertSame('accepted', $statuses[$persistedMentorId] ?? null);
+            $sorted = array_values($statuses);
+            sort($sorted);
+            self::assertSame(['accepted', 'superseded'], $sorted);
         } finally {
             foreach ($workers as $worker) {
                 if (pcntl_waitpid($worker['pid'], $status, WNOHANG) === 0) {
@@ -154,6 +182,7 @@ final class GoalBuddyConcurrencyTest extends TestCase
             DB::reconnect();
             DB::table('goal_progress_log')->where('goal_id', $goal->id)->delete();
             DB::table('goal_progress_history')->where('goal_id', $goal->id)->delete();
+            DB::table('goal_buddy_requests')->where('goal_id', $goal->id)->delete();
             DB::table('goals')->where('id', $goal->id)->delete();
             DB::table('users')->whereIn('id', [$owner->id, ...array_map(
                 static fn (User $buddy): int => (int) $buddy->id,

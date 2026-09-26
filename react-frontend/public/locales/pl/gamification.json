@@ -247,7 +247,8 @@
       "insights": "Informacje o celach",
       "progress_timeline": "Kalendarium postępu",
       "progress_explainer": "Postęp jest obliczany na podstawie aktualnej wartości względem celu. Osoby meldujące się mogą bezpośrednio zaktualizować ten procent.",
-      "no_progress": "Nie zarejestrowano jeszcze żadnych aktualizacji postępu."
+      "no_progress": "Nie zarejestrowano jeszcze żadnych aktualizacji postępu.",
+      "no_buddy_consent": "Brak kolegi. Członkowie mogą zaproponować wsparcie tego celu, a właściciel celu decyduje, czy je przyjąć."
     },
     "modal": {
       "create_title": "Utwórz nowy cel",
@@ -285,12 +286,26 @@
       "buddy_joined": "Jesteś teraz przyjacielem!",
       "buddy_failed": "Nie udało się zostać kumplem",
       "buddy_action_sent": "Wysłano wsparcie znajomego",
-      "buddy_action_failed": "Nie udało się wysłać wsparcia do znajomych"
+      "buddy_action_failed": "Nie udało się wysłać wsparcia do znajomych",
+      "buddy_requested": "Propozycja wysłana. Zostaniesz kolegą, gdy właściciel celu ją zaakceptuje.",
+      "buddy_request_accepted": "Propozycja zaakceptowana",
+      "buddy_request_declined": "Propozycja odrzucona",
+      "buddy_request_failed": "Nie udało się zaktualizować propozycji"
     },
     "streak_label_few": "Seria meldunków {{count}}",
     "streak_label_many": "Seria meldunków {{count}}",
     "streak_label_one": "Seria meldunków {{count}}",
-    "streak_label_other": "Seria meldunków {{count}}"
+    "streak_label_other": "Seria meldunków {{count}}",
+    "offer_buddy": "Zaproponuj pomoc jako kolega",
+    "buddy_request_sent_chip": "Propozycja wysłana",
+    "buddy_requests": {
+      "title": "Propozycje wsparcia",
+      "description": "Ci członkowie zaproponowali wsparcie tego celu. Nikt nie zostanie Twoim kolegą bez Twojej zgody.",
+      "accept": "Akceptuj",
+      "decline": "Odrzuć",
+      "accept_aria": "Zaakceptuj {{name}} jako kolegę",
+      "decline_aria": "Odrzuć propozycję od {{name}}"
+    }
   },
   "frequency": {
     "none": "Brak rytmu",

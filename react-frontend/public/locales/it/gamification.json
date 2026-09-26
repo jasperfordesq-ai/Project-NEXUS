@@ -242,7 +242,8 @@
       "insights": "Approfondimenti sugli obiettivi",
       "progress_timeline": "Cronologia progressi",
       "progress_explainer": "Il progresso viene calcolato dal valore corrente rispetto al target. I check-in possono aggiornare direttamente questa percentuale.",
-      "no_progress": "Nessun aggiornamento dei progressi registrato finora."
+      "no_progress": "Nessun aggiornamento dei progressi registrato finora.",
+      "no_buddy_consent": "Ancora nessun compagno. I membri possono offrirsi di sostenere questo obiettivo e la persona proprietaria decide se accettare."
     },
     "modal": {
       "create_title": "Crea nuovo obiettivo",
@@ -280,11 +281,25 @@
       "buddy_joined": "Ora sei un compagno!",
       "buddy_failed": "Impossibile diventare compagno",
       "buddy_action_sent": "Supporto amico inviato",
-      "buddy_action_failed": "Impossibile inviare il supporto agli amici"
+      "buddy_action_failed": "Impossibile inviare il supporto agli amici",
+      "buddy_requested": "Offerta inviata. Diventerai compagno quando la persona proprietaria dell'obiettivo la accetterà.",
+      "buddy_request_accepted": "Offerta di compagno accettata",
+      "buddy_request_declined": "Offerta di compagno rifiutata",
+      "buddy_request_failed": "Impossibile aggiornare l'offerta di compagno"
     },
     "streak_label_many": "{{count}} serie di check-in",
     "streak_label_one": "{{count}} serie di check-in",
-    "streak_label_other": "{{count}} serie di check-in"
+    "streak_label_other": "{{count}} serie di check-in",
+    "offer_buddy": "Offriti come compagno",
+    "buddy_request_sent_chip": "Offerta di compagno inviata",
+    "buddy_requests": {
+      "title": "Offerte di compagno",
+      "description": "Questi membri si sono offerti di sostenere questo obiettivo. Nessuno diventa tuo compagno se non accetti.",
+      "accept": "Accetta",
+      "decline": "Rifiuta",
+      "accept_aria": "Accetta {{name}} come compagno",
+      "decline_aria": "Rifiuta l'offerta di compagno di {{name}}"
+    }
   },
   "frequency": {
     "none": "Nessuna cadenza",

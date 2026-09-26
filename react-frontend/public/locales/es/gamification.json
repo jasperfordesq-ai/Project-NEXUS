@@ -242,7 +242,8 @@
       "insights": "Información sobre objetivos",
       "progress_timeline": "Línea de Tiempo del Progreso",
       "progress_explainer": "El progreso se calcula a partir del valor actual frente al objetivo. Los check-ins pueden actualizar este porcentaje directamente.",
-      "no_progress": "Aún no se han registrado actualizaciones de progreso."
+      "no_progress": "Aún no se han registrado actualizaciones de progreso.",
+      "no_buddy_consent": "Aún no hay compañero. Los miembros pueden ofrecerse a apoyar este objetivo y la persona propietaria decide si acepta."
     },
     "modal": {
       "create_title": "Crear Nueva Meta",
@@ -280,11 +281,25 @@
       "buddy_joined": "¡Ahora eres compañero!",
       "buddy_failed": "Error al unirse como compañero",
       "buddy_action_sent": "Soporte de amigos enviado",
-      "buddy_action_failed": "No se pudo enviar soporte de amigo"
+      "buddy_action_failed": "No se pudo enviar soporte de amigo",
+      "buddy_requested": "Oferta enviada. Serás compañero cuando la persona propietaria del objetivo la acepte.",
+      "buddy_request_accepted": "Oferta de compañero aceptada",
+      "buddy_request_declined": "Oferta de compañero rechazada",
+      "buddy_request_failed": "No se pudo actualizar la oferta de compañero"
     },
     "streak_label_many": "{{count}} racha de registros",
     "streak_label_one": "{{count}} racha de registros",
-    "streak_label_other": "{{count}} racha de registros"
+    "streak_label_other": "{{count}} racha de registros",
+    "offer_buddy": "Ofrecerse como compañero",
+    "buddy_request_sent_chip": "Oferta de compañero enviada",
+    "buddy_requests": {
+      "title": "Ofertas de compañero",
+      "description": "Estos miembros se han ofrecido a apoyar este objetivo. Nadie será tu compañero a menos que lo aceptes.",
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "accept_aria": "Aceptar a {{name}} como compañero",
+      "decline_aria": "Rechazar la oferta de compañero de {{name}}"
+    }
   },
   "frequency": {
     "none": "Sin cadencia",

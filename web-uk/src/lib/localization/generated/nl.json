@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "Dit doel ondersteunen",
                 "become_buddy_intro": "Bied aan om een buddy te zijn en help dit lid op koers te blijven.",
                 "become_buddy_button": "Buddy worden",
+                "offer_buddy_button": "Aanbieden als buddy",
+                "become_buddy_consent_hint": "De eigenaar van het doel beslist of die je aanbod accepteert.",
+                "buddy_request_pending": "Je hebt aangeboden buddy te zijn voor dit doel. De eigenaar van het doel heeft nog niet beslist.",
+                "buddy_requests_title": "Buddy-aanbiedingen",
+                "buddy_requests_intro": "Deze leden bieden aan dit doel te steunen. Niemand wordt je buddy tenzij jij het accepteert.",
+                "buddy_request_accept": "Accepteren",
+                "buddy_request_decline": "Weigeren",
+                "buddy_request_context": "het buddy-aanbod van :name",
                 "buddy_notes_title": "Buddy-updates",
                 "buddying_title": "Doelen waarvoor u buddy bent",
                 "buddying_caption": "Doelen die u ondersteunt en openbare doelen waarbij u buddy kunt aanbieden.",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "Er is iets misgegaan. Probeer het opnieuw.",
                     "goal-invalid": "Voer een doel en een streefwaarde van meer dan nul in.",
                     "buddy-joined": "U bent nu een buddy voor dit doel.",
-                    "buddy-failed": "We konden u niet als buddy toevoegen. Het doel heeft mogelijk al een buddy."
+                    "buddy-failed": "We konden u niet als buddy toevoegen. Het doel heeft mogelijk al een buddy.",
+                    "buddy-requested": "Je aanbod is verstuurd. Je wordt buddy zodra de eigenaar van het doel het accepteert.",
+                    "buddy-request-accepted": "Je hebt het buddy-aanbod geaccepteerd.",
+                    "buddy-request-declined": "Je hebt het buddy-aanbod geweigerd.",
+                    "buddy-request-failed": "We konden dat buddy-aanbod niet bijwerken. Het is mogelijk niet meer beschikbaar."
                 }
             },
             "skills": {
@@ -10983,7 +10995,7 @@
             },
             "jurisdictions": {
                 "unconfigured": "Bescherming van jurisdictie niet geconfigureerd",
-                "united_kingdom": "United Kingdom ? national policy package",
+                "united_kingdom": "Verenigd Koninkrijk — nationaal beleidspakket",
                 "england_wales": "Engeland en Wales",
                 "scotland": "Schotland",
                 "northern_ireland": "Noord-Ierland",

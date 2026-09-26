@@ -237,7 +237,8 @@
       "insights": "目標に関する洞察",
       "progress_timeline": "進行状況のタイムライン",
       "progress_explainer": "進捗状況は、目標に対する現在の値から計算されます。チェックインはこの割合を直接更新できます。",
-      "no_progress": "進捗状況の更新はまだ記録されていません。"
+      "no_progress": "進捗状況の更新はまだ記録されていません。",
+      "no_buddy_consent": "まだ仲間はいません。メンバーはこの目標の応援を申し出ることができ、承認するかどうかは目標の所有者が決めます。"
     },
     "modal": {
       "create_title": "新しい目標を作成する",
@@ -275,10 +276,24 @@
       "buddy_joined": "これであなたも仲間です！",
       "buddy_failed": "仲間になれませんでした",
       "buddy_action_sent": "バディサポートを送信しました",
-      "buddy_action_failed": "バディサポートを送信できませんでした"
+      "buddy_action_failed": "バディサポートを送信できませんでした",
+      "buddy_requested": "申し出を送信しました。目標の所有者が承認すると仲間になります。",
+      "buddy_request_accepted": "仲間の申し出を承認しました",
+      "buddy_request_declined": "仲間の申し出を辞退しました",
+      "buddy_request_failed": "仲間の申し出を更新できませんでした"
     },
     "streak_label_one": "{{count}} 連続チェックイン",
-    "streak_label_other": "{{count}} 連続チェックイン"
+    "streak_label_other": "{{count}} 連続チェックイン",
+    "offer_buddy": "仲間になることを申し出る",
+    "buddy_request_sent_chip": "仲間の申し出を送信済み",
+    "buddy_requests": {
+      "title": "仲間の申し出",
+      "description": "これらのメンバーがこの目標の応援を申し出ています。あなたが承認しない限り、誰も仲間にはなりません。",
+      "accept": "承認",
+      "decline": "辞退",
+      "accept_aria": "{{name}} を仲間として承認",
+      "decline_aria": "{{name}} からの仲間の申し出を辞退"
+    }
   },
   "frequency": {
     "none": "リズムなし",

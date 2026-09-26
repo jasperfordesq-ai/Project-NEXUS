@@ -76,6 +76,9 @@ vi.mock('./components/GoalProgressHistory', () => ({
 vi.mock('./components/GoalInsightsPanel', () => ({
   GoalInsightsPanel: () => <div data-testid="insights-panel" />,
 }));
+vi.mock('./components/GoalBuddyRequests', () => ({
+  GoalBuddyRequests: () => <div data-testid="buddy-requests" />,
+}));
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
 vi.mock('@/components/feedback', () => ({
@@ -241,6 +244,29 @@ describe('GoalDetailPage', () => {
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledTimes(2);
     });
+  });
+
+  // F-004 (E-038): buddy offers wait for the owner's decision.
+  it('shows pending buddy offers to the goal owner', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: { ...GOAL, pending_buddy_requests_count: 2 } });
+    render(<GoalDetailPage />);
+    expect(await screen.findByTestId('buddy-requests')).toBeInTheDocument();
+  });
+
+  it('does not show buddy offers to anyone but the owner, or when none are pending', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: { ...GOAL, is_owner: false, user_id: 99, pending_buddy_requests_count: 2 },
+    });
+    const { unmount } = render(<GoalDetailPage />);
+    await screen.findByText('Run a marathon');
+    expect(screen.queryByTestId('buddy-requests')).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.get.mockResolvedValue({ success: true, data: { ...GOAL, pending_buddy_requests_count: 0 } });
+    render(<GoalDetailPage />);
+    await screen.findByText('Run a marathon');
+    expect(screen.queryByTestId('buddy-requests')).not.toBeInTheDocument();
   });
 
   it('calls api.get with the correct goal id from useParams', async () => {

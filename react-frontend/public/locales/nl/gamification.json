@@ -237,7 +237,8 @@
       "insights": "Doelinzichten",
       "progress_timeline": "Voortgang Tijdlijn",
       "progress_explainer": "De voortgang wordt berekend op basis van de huidige waarde ten opzichte van het doel. Check-ins kunnen dit percentage direct bijwerken.",
-      "no_progress": "Nog geen voortgangsupdates geregistreerd."
+      "no_progress": "Nog geen voortgangsupdates geregistreerd.",
+      "no_buddy_consent": "Nog geen buddy. Leden kunnen aanbieden dit doel te steunen, en de eigenaar van het doel beslist of die het accepteert."
     },
     "modal": {
       "create_title": "Nieuw Doel Aanmaken",
@@ -275,10 +276,24 @@
       "buddy_joined": "Je bent nu een buddy!",
       "buddy_failed": "Mislukt om buddy te worden",
       "buddy_action_sent": "Buddy-ondersteuning verzonden",
-      "buddy_action_failed": "Kan buddy-ondersteuning niet verzenden"
+      "buddy_action_failed": "Kan buddy-ondersteuning niet verzenden",
+      "buddy_requested": "Aanbod verstuurd. Je wordt buddy zodra de eigenaar van het doel het accepteert.",
+      "buddy_request_accepted": "Buddy-aanbod geaccepteerd",
+      "buddy_request_declined": "Buddy-aanbod geweigerd",
+      "buddy_request_failed": "Het buddy-aanbod kon niet worden bijgewerkt"
     },
     "streak_label_one": "{{count}} check-inreeks",
-    "streak_label_other": "{{count}} check-inreeks"
+    "streak_label_other": "{{count}} check-inreeks",
+    "offer_buddy": "Aanbieden als buddy",
+    "buddy_request_sent_chip": "Buddy-aanbod verstuurd",
+    "buddy_requests": {
+      "title": "Buddy-aanbiedingen",
+      "description": "Deze leden bieden aan dit doel te steunen. Niemand wordt je buddy tenzij jij het accepteert.",
+      "accept": "Accepteren",
+      "decline": "Weigeren",
+      "accept_aria": "{{name}} als buddy accepteren",
+      "decline_aria": "Het buddy-aanbod van {{name}} weigeren"
+    }
   },
   "frequency": {
     "none": "Geen cadans",

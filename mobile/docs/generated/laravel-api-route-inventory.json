@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2735,
-  "api_route_rows": 2700,
-  "distinct_api_paths": 2245,
+  "total_registered_routes": 2738,
+  "api_route_rows": 2703,
+  "distinct_api_paths": 2248,
   "route_source_fingerprint": {
-    "digest": "626a1b10a3e147ccf6a8484c3185d10c7ac355e61de09c45cfe4092537c5d248",
+    "digest": "3ce9cc36ee3d70bd206cc13e57db6e7b11c53a6a00a93dbebd10511820002cf4",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "e5da96c1d1070f0cde252f4929940e895e21c18cae2d66946d90003d8f50224d"
+        "sha256": "3a6ef24849368cc8ad306bf65278dbf97fb8b04919c63758b67f93e28043fc2b"
       },
       {
         "file": "routes/channels.php",
@@ -4827,6 +4827,15 @@
       "PUT"
     ],
     "/api/v2/goals/{id}/buddy": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/buddy-requests": [
+      "GET"
+    ],
+    "/api/v2/goals/{id}/buddy-requests/{requestId}/accept": [
+      "POST"
+    ],
+    "/api/v2/goals/{id}/buddy-requests/{requestId}/decline": [
       "POST"
     ],
     "/api/v2/goals/{id}/buddy/nudge": [

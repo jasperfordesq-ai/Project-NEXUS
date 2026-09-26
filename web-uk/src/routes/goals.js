@@ -393,6 +393,16 @@ function ownerNameFrom(raw, t) {
   return name || (t ? t('goals.a_member') : 'A member');
 }
 
+function normalizeBuddyRequest(item, t) {
+  const raw = item && typeof item === 'object' ? item : {};
+  const requester = raw.requester && typeof raw.requester === 'object' ? raw.requester : {};
+  return {
+    id: positiveInteger(raw.id),
+    requesterId: positiveInteger(requester.id),
+    requesterName: trimmed(requester.name || '') || t('goals.a_member')
+  };
+}
+
 function normalizeDiscoverGoal(item, t) {
   const goal = normalizeGoal(item, t);
   const raw = item && typeof item === 'object' ? item : {};
@@ -514,18 +524,18 @@ function normalizeBuddyNote(item, t) {
 
 function goalDetailStatus(status) {
   const value = trimmed(status);
-  if (['goal-updated', 'goal-edited', 'goal-completed', 'buddy-joined'].includes(value)) {
+  if (['goal-updated', 'goal-edited', 'goal-completed', 'buddy-joined', 'buddy-requested', 'buddy-request-accepted', 'buddy-request-declined'].includes(value)) {
     return {
       successStateKey: `goals.states.${value}`,
       errorStateKey: '',
       errorHref: ''
     };
   }
-  if (['goal-failed', 'goal-invalid', 'goal-deadline-invalid', 'buddy-failed'].includes(value)) {
+  if (['goal-failed', 'goal-invalid', 'goal-deadline-invalid', 'buddy-failed', 'buddy-request-failed'].includes(value)) {
     return {
       successStateKey: '',
       errorStateKey: `goals.states.${value}`,
-      errorHref: value === 'buddy-failed' ? '#buddy-section' : '#increment'
+      errorHref: ['buddy-failed', 'buddy-request-failed'].includes(value) ? '#buddy-section' : '#increment'
     };
   }
   return { successStateKey: '', errorStateKey: '', errorHref: '' };
@@ -1177,11 +1187,29 @@ router.post('/:id(\\d+)/buddy', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   try {
+    // F-004 (E-038): this sends an offer; the goal owner must accept it.
     await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy`);
-    return redirectTo(res, goalRedirect(id, 'buddy-joined'));
+    return redirectTo(res, goalRedirect(id, 'buddy-requested'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, goalRedirect(id, 'buddy-failed'));
+  }
+}));
+
+// F-004 (E-038): the goal owner accepts or declines a pending buddy offer.
+router.post('/:id(\\d+)/buddy-requests/:requestId(\\d+)/:decision(accept|decline)', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const requestId = Number(req.params.requestId);
+  const decision = req.params.decision === 'accept' ? 'accept' : 'decline';
+  try {
+    await callGoal(token, 'POST', `/${encodeURIComponent(id)}/buddy-requests/${encodeURIComponent(requestId)}/${encodeURIComponent(decision)}`);
+    return redirectTo(res, goalRedirect(id, decision === 'accept' ? 'buddy-request-accepted' : 'buddy-request-declined', '#buddy-section'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, goalRedirect(id, 'buddy-request-failed', '#buddy-section'));
   }
 }));
 
@@ -1419,6 +1447,14 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const isOwner = checked(goal.is_owner || goal.isOwner);
   const isBuddy = checked(goal.is_buddy || goal.isBuddy);
   const hasBuddy = positiveInteger(goal.mentor_id || goal.mentorId || goal.buddy_id || goal.buddyId) !== null;
+  const buddyRequestPending = checked(goal.buddy_request_pending || goal.buddyRequestPending);
+  // F-004 (E-038): only the owner is shown, and decides, pending buddy offers.
+  const pendingOfferCount = Number(goal.pending_buddy_requests_count ?? goal.pendingBuddyRequestsCount ?? 0) || 0;
+  const buddyRequests = isOwner && !hasBuddy && pendingOfferCount > 0
+    ? collectionFrom(await optionalGoalRead(callGoal(token, 'GET', `/${encodeURIComponent(id)}/buddy-requests`), { data: [] }))
+      .map((request) => normalizeBuddyRequest(request, res.locals.t))
+      .filter((request) => request.id !== null)
+    : [];
 
   return res.render('goals/detail', {
     title: goal.title,
@@ -1427,7 +1463,9 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     isOwner,
     isBuddy,
     hasBuddy,
-    canBecomeBuddy: checked(goal.is_public || goal.isPublic) && !isOwner && !hasBuddy,
+    canBecomeBuddy: checked(goal.is_public || goal.isPublic) && !isOwner && !hasBuddy && !buddyRequestPending,
+    buddyRequestPending: !isOwner && !hasBuddy && buddyRequestPending,
+    buddyRequests,
     goalHistory: collectionFrom(historyResult).map((item) => normalizeHistoryEvent(item)),
     buddyNotes: collectionFrom({ data: rawInsights.buddy_notes || rawInsights.buddyNotes || [] })
       .map((note) => normalizeBuddyNote(note, res.locals.t)),

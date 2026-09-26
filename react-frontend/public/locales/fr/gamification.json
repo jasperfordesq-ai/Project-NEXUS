@@ -242,7 +242,8 @@
       "insights": "Informations sur les objectifs",
       "progress_timeline": "Historique de progression",
       "progress_explainer": "La progression est calculée à partir de la valeur actuelle par rapport à l'objectif. Les enregistrements peuvent mettre à jour ce pourcentage directement.",
-      "no_progress": "Aucune mise à jour de progression enregistrée pour le moment."
+      "no_progress": "Aucune mise à jour de progression enregistrée pour le moment.",
+      "no_buddy_consent": "Pas encore de partenaire. Les membres peuvent proposer de soutenir cet objectif, et la personne propriétaire décide d'accepter ou non."
     },
     "modal": {
       "create_title": "Créer un nouvel objectif",
@@ -280,11 +281,25 @@
       "buddy_joined": "Vous êtes maintenant partenaire !",
       "buddy_failed": "Impossible de devenir partenaire",
       "buddy_action_sent": "Soutien d'ami envoyé",
-      "buddy_action_failed": "Échec de l'envoi de l'assistance d'un ami"
+      "buddy_action_failed": "Échec de l'envoi de l'assistance d'un ami",
+      "buddy_requested": "Proposition envoyée. Vous deviendrez partenaire dès que la personne propriétaire de l'objectif l'aura acceptée.",
+      "buddy_request_accepted": "Proposition de partenaire acceptée",
+      "buddy_request_declined": "Proposition de partenaire refusée",
+      "buddy_request_failed": "Impossible de mettre à jour la proposition de partenaire"
     },
     "streak_label_many": "{{count}} séquence d'enregistrement",
     "streak_label_one": "{{count}} séquence d'enregistrement",
-    "streak_label_other": "{{count}} séquence d'enregistrement"
+    "streak_label_other": "{{count}} séquence d'enregistrement",
+    "offer_buddy": "Proposer d'être partenaire",
+    "buddy_request_sent_chip": "Proposition de partenaire envoyée",
+    "buddy_requests": {
+      "title": "Propositions de partenaire",
+      "description": "Ces membres ont proposé de soutenir cet objectif. Personne ne devient votre partenaire sans votre accord.",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "accept_aria": "Accepter {{name}} comme partenaire",
+      "decline_aria": "Refuser la proposition de partenaire de {{name}}"
+    }
   },
   "frequency": {
     "none": "Pas de cadence",

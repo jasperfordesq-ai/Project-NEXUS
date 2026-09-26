@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 230,
+    "producer_count": 231,
     "producers": [
         {
             "id": "app/Console/Commands/ProcessSavedSearchAlerts.php:186:NotificationDispatcher::fanOutPush",
@@ -615,9 +615,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:305:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:307:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 305,
+            "line": 307,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $mentorId",
@@ -628,9 +628,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:313:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:315:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 313,
+            "line": 315,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $mentorId",
@@ -641,9 +641,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:332:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:334:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 332,
+            "line": 334,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -654,9 +654,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:372:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:374:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 372,
+            "line": 374,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -667,9 +667,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:393:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:395:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 393,
+            "line": 395,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $mentorId",
@@ -680,22 +680,35 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:497:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:499:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 497,
+            "line": 499,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
-            "recipient_expression": "(int) $goalOwnerId",
+            "recipient_expression": "$goalOwnerId",
             "title_expression": null,
-            "body_expression": "__('api_controllers_3.goals.buddy_joined_owner', ['name' => $buddyName, 'title' => $goal->title])",
+            "body_expression": "$message",
             "type_expression": "goal_buddy",
             "link_expression": "\"/goals/{$id}\"",
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/GoalsController.php:543:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/GoalsController.php:563:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/GoalsController.php",
-            "line": 543,
+            "line": 563,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "$requesterId",
+            "title_expression": null,
+            "body_expression": "$message",
+            "type_expression": "goal_buddy",
+            "link_expression": "\"/goals/{$id}\"",
+            "data_expression": null
+        },
+        {
+            "id": "app/Http/Controllers/Api/GoalsController.php:670:NotificationDispatcher::fanOutPush",
+            "file": "app/Http/Controllers/Api/GoalsController.php",
+            "line": 670,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ownerId",

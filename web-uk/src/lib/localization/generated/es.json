@@ -3366,6 +3366,14 @@
                 "become_buddy_title": "Apoyar este objetivo",
                 "become_buddy_intro": "Ofrezca ser acompañante y ayude a que este miembro mantenga el rumbo.",
                 "become_buddy_button": "Convertirse en acompañante",
+                "offer_buddy_button": "Ofrecerse como compañero",
+                "become_buddy_consent_hint": "La persona propietaria del objetivo decide si acepta tu oferta.",
+                "buddy_request_pending": "Te has ofrecido como compañero para este objetivo. La persona propietaria aún no ha decidido.",
+                "buddy_requests_title": "Ofertas de compañero",
+                "buddy_requests_intro": "Estos miembros se han ofrecido a apoyar este objetivo. Nadie será tu compañero a menos que lo aceptes.",
+                "buddy_request_accept": "Aceptar",
+                "buddy_request_decline": "Rechazar",
+                "buddy_request_context": "la oferta de compañero de :name",
                 "buddy_notes_title": "Actualizaciones del acompañante",
                 "buddying_title": "Objetivos que acompaña",
                 "buddying_caption": "Objetivos que apoya y objetivos públicos en los que puede ofrecerse como acompañante.",
@@ -3397,7 +3405,11 @@
                     "goal-failed": "Algo salió mal. Por favor, inténtelo de nuevo.",
                     "goal-invalid": "Introduzca un objetivo y un valor mayor que cero.",
                     "buddy-joined": "Ahora es acompañante de este objetivo.",
-                    "buddy-failed": "No hemos podido añadirle como acompañante. Es posible que el objetivo ya tenga uno."
+                    "buddy-failed": "No hemos podido añadirle como acompañante. Es posible que el objetivo ya tenga uno.",
+                    "buddy-requested": "Tu oferta se ha enviado. Serás compañero cuando la persona propietaria del objetivo la acepte.",
+                    "buddy-request-accepted": "Has aceptado la oferta de compañero.",
+                    "buddy-request-declined": "Has rechazado la oferta de compañero.",
+                    "buddy-request-failed": "No hemos podido actualizar esa oferta de compañero. Puede que ya no esté disponible."
                 }
             },
             "skills": {
@@ -10983,7 +10995,7 @@
             },
             "jurisdictions": {
                 "unconfigured": "Jurisdicción de salvaguardia no configurada",
-                "united_kingdom": "United Kingdom ? national policy package",
+                "united_kingdom": "Reino Unido — paquete de políticas nacionales",
                 "england_wales": "Inglaterra y Gales",
                 "scotland": "Escocia",
                 "northern_ireland": "Irlanda del Norte",

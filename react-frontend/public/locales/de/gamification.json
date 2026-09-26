@@ -237,7 +237,8 @@
       "insights": "Zielerkenntnisse",
       "progress_timeline": "Fortschrittsverlauf",
       "progress_explainer": "Der Fortschritt wird aus dem aktuellen Wert im Vergleich zum Ziel berechnet. Check-Ins können diesen Prozentsatz direkt aktualisieren.",
-      "no_progress": "Noch keine Fortschrittsaktualisierungen erfasst."
+      "no_progress": "Noch keine Fortschrittsaktualisierungen erfasst.",
+      "no_buddy_consent": "Noch kein Begleiter. Mitglieder können anbieten, dieses Ziel zu unterstützen, und die Person, der das Ziel gehört, entscheidet, ob sie annimmt."
     },
     "modal": {
       "create_title": "Neues Ziel erstellen",
@@ -275,10 +276,24 @@
       "buddy_joined": "Sie sind jetzt ein Begleiter!",
       "buddy_failed": "Begleiter werden fehlgeschlagen",
       "buddy_action_sent": "Buddy-Support gesendet",
-      "buddy_action_failed": "Buddy-Support konnte nicht gesendet werden"
+      "buddy_action_failed": "Buddy-Support konnte nicht gesendet werden",
+      "buddy_requested": "Angebot gesendet. Sie werden Begleiter, sobald die Person, der das Ziel gehört, zustimmt.",
+      "buddy_request_accepted": "Begleitangebot angenommen",
+      "buddy_request_declined": "Begleitangebot abgelehnt",
+      "buddy_request_failed": "Das Begleitangebot konnte nicht aktualisiert werden"
     },
     "streak_label_one": "{{count}} Check-in-Strecke",
-    "streak_label_other": "{{count}} Check-in-Strecke"
+    "streak_label_other": "{{count}} Check-in-Strecke",
+    "offer_buddy": "Als Begleiter anbieten",
+    "buddy_request_sent_chip": "Begleitangebot gesendet",
+    "buddy_requests": {
+      "title": "Begleitangebote",
+      "description": "Diese Mitglieder haben angeboten, dieses Ziel zu unterstützen. Niemand wird Ihr Begleiter, solange Sie nicht annehmen.",
+      "accept": "Annehmen",
+      "decline": "Ablehnen",
+      "accept_aria": "{{name}} als Begleiter annehmen",
+      "decline_aria": "Das Begleitangebot von {{name}} ablehnen"
+    }
   },
   "frequency": {
     "none": "Keine Trittfrequenz",

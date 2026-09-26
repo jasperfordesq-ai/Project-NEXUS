@@ -252,7 +252,8 @@
       "insights": "Léargais spriocanna",
       "progress_timeline": "Amlíne Dul Chun Cinn",
       "progress_explainer": "Ríomhtar an dul chun cinn ón luach reatha in aghaidh na sprice. Is féidir le seiceálacha isteach an céatadán seo a nuashonrú go díreach.",
-      "no_progress": "Níl aon nuashonruithe dul chun cinn taifeadta fós."
+      "no_progress": "Níl aon nuashonruithe dul chun cinn taifeadta fós.",
+      "no_buddy_consent": "Níl cara ann fós. Is féidir le baill tairiscint tacú leis an sprioc seo, agus socraíonn úinéir na sprice an nglacfaidh sé léi."
     },
     "modal": {
       "create_title": "Cruthaigh Sprioc Nua",
@@ -290,13 +291,27 @@
       "buddy_joined": "Is cara thú anois!",
       "buddy_failed": "Theip ar bheith i do chara",
       "buddy_action_sent": "Tacaíocht cara seolta",
-      "buddy_action_failed": "Theip ar thacaíocht ó chara a sheoladh"
+      "buddy_action_failed": "Theip ar thacaíocht ó chara a sheoladh",
+      "buddy_requested": "Seoladh an tairiscint. Beidh tú i do chara nuair a ghlacfaidh úinéir na sprice léi.",
+      "buddy_request_accepted": "Glacadh leis an tairiscint cara",
+      "buddy_request_declined": "Diúltaíodh don tairiscint cara",
+      "buddy_request_failed": "Níorbh fhéidir an tairiscint cara a nuashonrú"
     },
     "streak_label_few": "{{count}} sheiceáil isteach as a chéile",
     "streak_label_many": "{{count}} seiceáil isteach as a chéile",
     "streak_label_one": "{{count}} seiceáil isteach as a chéile",
     "streak_label_other": "{{count}} seiceáil isteach as a chéile",
-    "streak_label_two": "{{count}} sheiceáil isteach as a chéile"
+    "streak_label_two": "{{count}} sheiceáil isteach as a chéile",
+    "offer_buddy": "Tairg a bheith i do chara",
+    "buddy_request_sent_chip": "Tairiscint cara seolta",
+    "buddy_requests": {
+      "title": "Tairiscintí cara",
+      "description": "Thairg na baill seo tacú leis an sprioc seo. Ní bheidh aon duine ina chara agat mura nglacann tú leis.",
+      "accept": "Glac leis",
+      "decline": "Diúltaigh",
+      "accept_aria": "Glac le {{name}} mar chara",
+      "decline_aria": "Diúltaigh don tairiscint cara ó {{name}}"
+    }
   },
   "frequency": {
     "none": "Gan mhinicíocht",

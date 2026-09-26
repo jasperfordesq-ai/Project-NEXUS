@@ -80,13 +80,37 @@
   {% if isBuddy %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.buddy_section_title") }}</h2>
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.buddy_you_are_buddy") }}</p></div>
+  {% elif buddyRequestPending %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="buddy-section">{{ t("goals.buddy_section_title") }}</h2>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.buddy_request_pending") }}</p></div>
   {% elif canBecomeBuddy %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="buddy-section">{{ t("goals.become_buddy_title") }}</h2>
     <p class="govuk-body">{{ t("goals.become_buddy_intro") }}</p>
+    <p class="govuk-body">{{ t("goals.become_buddy_consent_hint") }}</p>
     <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.become_buddy_button") }}</button>
+      <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.offer_buddy_button") }}</button>
     </form>
+  {% elif isOwner and buddyRequests and buddyRequests.length %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="buddy-section">{{ t("goals.buddy_requests_title") }}</h2>
+    <p class="govuk-body">{{ t("goals.buddy_requests_intro") }}</p>
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for request in buddyRequests %}
+        <li class="nexus-alpha-card">
+          <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-2">{{ request.requesterName }}</p>
+          <div class="govuk-button-group govuk-!-margin-bottom-0">
+            <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-requests/' + (request.id | string) + '/accept') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.buddy_request_accept") }}<span class="govuk-visually-hidden"> {{ t("goals.buddy_request_context", { name: request.requesterName }) }}</span></button>
+            </form>
+            <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-requests/' + (request.id | string) + '/decline') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.buddy_request_decline") }}<span class="govuk-visually-hidden"> {{ t("goals.buddy_request_context", { name: request.requesterName }) }}</span></button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
   {% elif isOwner and hasBuddy %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.buddy_section_title") }}</h2>
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.buddy_has_buddy") }}</p></div>

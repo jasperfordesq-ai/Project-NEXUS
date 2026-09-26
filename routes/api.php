@@ -1231,6 +1231,10 @@ Route::delete('/v2/goals/{id}', [\App\Http\Controllers\Api\GoalsController::clas
 Route::post('/v2/goals/{id}/progress', [\App\Http\Controllers\Api\GoalsController::class, 'progress']);
 Route::post('/v2/goals/{id}/buddy', [\App\Http\Controllers\Api\GoalsController::class, 'buddy']);
 Route::post('/v2/goals/{id}/buddy/nudge', [\App\Http\Controllers\Api\GoalsController::class, 'buddyNudge']);
+// F-004 (E-038): a buddy offer is a request the goal owner accepts or declines.
+Route::get('/v2/goals/{id}/buddy-requests', [\App\Http\Controllers\Api\GoalsController::class, 'buddyRequests']);
+Route::post('/v2/goals/{id}/buddy-requests/{requestId}/accept', [\App\Http\Controllers\Api\GoalsController::class, 'acceptBuddyRequest'])->whereNumber('requestId');
+Route::post('/v2/goals/{id}/buddy-requests/{requestId}/decline', [\App\Http\Controllers\Api\GoalsController::class, 'declineBuddyRequest'])->whereNumber('requestId');
 Route::post('/v2/goals/{id}/complete', [\App\Http\Controllers\Api\GoalsController::class, 'complete']);
 Route::get('/v2/goals/{id}/checkins', [\App\Http\Controllers\Api\GoalsController::class, 'listCheckins']);
 Route::post('/v2/goals/{id}/checkins', [\App\Http\Controllers\Api\GoalsController::class, 'createCheckin']);

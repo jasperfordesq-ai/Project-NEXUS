@@ -9452,7 +9452,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Support this goal');
     expect(response.text).toContain('Offer to be a buddy and help keep this member on track.');
     expect(response.text).toContain('method="post" action="/acme/accessible/goals/77/buddy"');
-    expect(response.text).toContain('Become a buddy');
+    // F-004 (E-038): the button sends an offer the goal owner must accept.
+    expect(response.text).toContain('Offer to be a buddy');
+    expect(response.text).toContain('The goal owner decides whether to accept your offer.');
     expect(response.text).toContain('href="/acme/accessible/goals/77/social"');
     expect(response.text).toContain('href="/acme/accessible/goals/77/history"');
     expect(response.text).not.toContain('href="/acme/accessible/goals/77/edit"');
@@ -9606,7 +9608,7 @@ describe('shared accessible frontend shell', () => {
       'polish_gamify.goals_discover_title',
       'polish_gamify.goals_discover_description',
       'goals.states.buddy-failed',
-      'polish_gamify.goals_discover_become_buddy',
+      'goals.offer_buddy_button',
       'actions.load_more'
     ]) {
       expect(signed.text).toContain(t(key));
@@ -9678,7 +9680,7 @@ describe('shared accessible frontend shell', () => {
       'goals.status_active',
       'polish_gamify.buddy_nudge_button',
       'goals.buddying_available_heading',
-      'goals.become_buddy_button'
+      'goals.offer_buddy_button'
     ]) {
       expect(signed.text).toContain(t(key));
     }
@@ -32760,9 +32762,18 @@ describe('shared accessible frontend shell', () => {
     expect(deleteResponse.headers.location).toBe('/goals?status=goal-deleted');
     expect(api.callGoalApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/42');
 
+    // F-004 (E-038): an offer is a request; the goal owner accepts or declines it.
     const buddyResponse = await post('/goals/42/buddy');
-    expect(buddyResponse.headers.location).toBe('/goals/42?status=buddy-joined');
+    expect(buddyResponse.headers.location).toBe('/goals/42?status=buddy-requested');
     expect(api.callGoalApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/buddy');
+
+    const acceptResponse = await post('/goals/42/buddy-requests/7/accept');
+    expect(acceptResponse.headers.location).toBe('/goals/42?status=buddy-request-accepted#buddy-section');
+    expect(api.callGoalApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/buddy-requests/7/accept');
+
+    const declineResponse = await post('/goals/42/buddy-requests/8/decline');
+    expect(declineResponse.headers.location).toBe('/goals/42?status=buddy-request-declined#buddy-section');
+    expect(api.callGoalApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/buddy-requests/8/decline');
 
     const buddyNudgeResponse = await post('/goals/42/buddy-nudge');
     expect(buddyNudgeResponse.headers.location).toBe('/goals/buddying?status=buddy-nudge-sent');

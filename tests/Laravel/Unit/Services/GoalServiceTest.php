@@ -58,6 +58,11 @@ class GoalServiceTest extends TestCase
         }
 
         $this->assertNull($goal->fresh()?->mentor_id);
+        // F-004 (E-038): a refused offer must not leave a pending request behind.
+        $this->assertDatabaseMissing('goal_buddy_requests', [
+            'goal_id' => $goal->id,
+            'requester_id' => $buddy->id,
+        ]);
     }
 
     public function test_createBuddyNote_denial_writes_no_note(): void
