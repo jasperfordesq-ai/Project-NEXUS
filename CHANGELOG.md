@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Scheduled group posts in the mobile app now keep the local time selected by the manager after refresh, and links to the manager-only Automation tab now wait for group permissions to load instead of reopening the Overview tab.
+
 - Members can now pull down to refresh a Help Centre guide after reconnecting, without leaving the article or replacing already loaded text with a full-page spinner.
 
 - Many on-screen labels in the ten non-English versions of the website were machine-translation errors and have been corrected, together with every Help Centre guide that quoted them. Examples: "Safeguarding" shown as the word for "backup" (French) or "IT security" (Dutch), "Sign in" shown as "Registration" (Italian), "Passkey" shown as "password" (Dutch), "Dismissed" shown as "fired from a job", "30 seconds" shown as "30 years", safeguarding notices written in Latin letters instead of Arabic script, and admin buttons written as verbs. Exchange statuses such as "Awaiting Provider" were fixed English text in the code and are now translated. The corrections were made by AI translators and have not been reviewed by native speakers.

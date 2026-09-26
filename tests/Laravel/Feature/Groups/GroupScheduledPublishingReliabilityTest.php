@@ -152,6 +152,22 @@ final class GroupScheduledPublishingReliabilityTest extends TestCase
             ->assertJsonPath('errors.0.code', 'IDEMPOTENCY_CONFLICT');
     }
 
+    public function test_scheduled_listing_serializes_timestamp_with_an_explicit_timezone(): void
+    {
+        $scheduledAt = Carbon::parse('2026-10-01T12:34:00+00:00');
+        $scheduledId = $this->insertScheduled([
+            'title' => 'Timezone-safe listing',
+            'scheduled_at' => $scheduledAt,
+        ]);
+
+        $listed = collect(GroupScheduledPostService::getScheduled($this->group->id))
+            ->firstWhere('id', $scheduledId);
+
+        self::assertIsArray($listed);
+        self::assertSame($scheduledAt->toIso8601String(), $listed['scheduled_at']);
+        self::assertSame($scheduledAt->getTimestamp(), Carbon::parse($listed['scheduled_at'])->getTimestamp());
+    }
+
     public function test_canonical_discussion_publication_and_retry_are_exactly_once(): void
     {
         $webhookId = $this->insertWebhook([GroupWebhookService::EVENT_DISCUSSION_CREATED]);

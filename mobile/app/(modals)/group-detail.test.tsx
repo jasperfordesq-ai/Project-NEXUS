@@ -801,6 +801,37 @@ describe('GroupDetailScreen', () => {
     expect(screen.getByTestId('group-automation-panel').props.accessibilityLabel).toBe('1:true:false');
   });
 
+  it('preserves a manager automation deep link while group authority is loading', async () => {
+    mockRouteParams = { id: '1', tab: 'automation' };
+    mockGroupTabs = { tab_discussion: true, tab_announcements: true };
+    let groupState = { data: null as unknown, isLoading: true, error: null, refresh: jest.fn() };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const states = () => [
+      groupState,
+      emptyListState,
+      emptyListState,
+      { ...emptyListState, data: { data: { items: [] } } },
+      { ...emptyListState, data: { data: { items: [] } } },
+      { ...emptyListState, data: { data: { items: [] } } },
+      emptyListState,
+    ];
+    let call = 0;
+    mockUseApi.mockImplementation(() => states()[(call++) % 7] ?? emptyListState);
+
+    const screen = render(<GroupDetailScreen />);
+    expect(screen.queryByTestId('group-automation-panel')).toBeNull();
+
+    groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'admin', is_admin: true } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    screen.rerender(<GroupDetailScreen />);
+
+    await waitFor(() => expect(screen.getByTestId('group-automation-panel')).toBeTruthy());
+  });
+
   it('opens the tab named by a notification deep link', () => {
     mockRouteParams = { id: '1', tab: 'discussion' };
     const groupState = { data: { data: { ...mockGroupDetail, is_member: true } }, isLoading: false, error: null, refresh: jest.fn() };

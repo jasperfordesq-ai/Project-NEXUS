@@ -486,8 +486,13 @@ function GroupDetailScreenInner() {
     if (key === 'overview') return true;
     if (key === 'feed') return hasModule('feed');
     if (key === 'marketplace') return hasFeature('marketplace');
-    if (key === 'automation') return canManageGroup;
-    if (key === 'analytics' && !canManageGroup) return false;
+    if (key === 'automation' || key === 'analytics') {
+      // A cold deep link arrives before the group response that proves manager
+      // authority. Preserve the requested tab while that authoritative read is
+      // pending; once the group loads, ordinary members still fail closed.
+      if (group === null && isLoading) return true;
+      return canManageGroup;
+    }
     if (key === 'events' && !hasFeature('events')) return false;
     if (key === 'subgroups') {
       return hasGroupTab('tab_subgroups') && (group === null ? isLoading : hasValidSubgroups(group.sub_groups, group.id));

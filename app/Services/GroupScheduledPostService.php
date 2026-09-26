@@ -223,7 +223,15 @@ final class GroupScheduledPostService
             ->orderBy('sp.scheduled_at')
             ->orderBy('sp.id')
             ->get()
-            ->map(static fn (object $row): array => (array) $row)
+            ->map(static function (object $row): array {
+                $serialized = (array) $row;
+                $serialized['scheduled_at'] = Carbon::parse(
+                    (string) $row->scheduled_at,
+                    (string) config('app.timezone', 'UTC'),
+                )->utc()->toIso8601String();
+
+                return $serialized;
+            })
             ->all();
     }
 
