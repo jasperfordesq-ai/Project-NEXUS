@@ -62,6 +62,21 @@ describe('Switch — rendering', () => {
     expect(container.querySelector('.switch__control')).not.toHaveClass('!bg-accent');
   });
 
+  // Regression: the unselected track used HeroUI's `--default`, which is the
+  // card colour in this theme, so an OFF switch on a card was invisible.
+  it('gives the unselected track a visible boundary and fill', () => {
+    const { container } = render(<Switch isSelected={false} onChange={vi.fn()}>My toggle</Switch>);
+    const control = container.querySelector('.switch__control');
+    expect(control).toHaveClass('ring-1', 'ring-[var(--text-muted)]', '!bg-[var(--text-muted)]/35');
+  });
+
+  it('drops the unselected styling once the switch is on', () => {
+    const { container } = render(<Switch isSelected={true} onChange={vi.fn()}>My toggle</Switch>);
+    const control = container.querySelector('.switch__control');
+    expect(control).not.toHaveClass('ring-1');
+    expect(control).not.toHaveClass('!bg-[var(--text-muted)]/35');
+  });
+
   it('updates the visible control when a controlled value changes', () => {
     const { container, rerender } = render(
       <Switch isSelected={false} onChange={vi.fn()}>My toggle</Switch>

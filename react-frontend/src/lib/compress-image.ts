@@ -73,6 +73,25 @@ export async function compressImage(
 }
 
 /**
+ * Read an image file's pixel dimensions without uploading it.
+ *
+ * Resolves `null` when the browser cannot decode the file (an unsupported
+ * format, a corrupt file) so callers can fall back to the server's own check
+ * rather than refusing an image the server would have accepted.
+ */
+export async function readImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number } | null> {
+  try {
+    const img = await loadImage(file);
+    if (!img.naturalWidth || !img.naturalHeight) return null;
+    return { width: img.naturalWidth, height: img.naturalHeight };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Load a File into an HTMLImageElement via an object URL.
  */
 function loadImage(file: File): Promise<HTMLImageElement> {

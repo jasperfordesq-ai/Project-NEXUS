@@ -66,6 +66,13 @@ vi.mock('../../components/RichTextEditor', () => ({
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
+// jsdom never fires load/error on an <img>, so the real helper would never
+// settle. null = "browser could not read the size", the form's own fallback.
+const { mockReadImageDimensions } = vi.hoisted(() => ({
+  mockReadImageDimensions: vi.fn<(file: File) => Promise<{ width: number; height: number } | null>>(),
+}));
+vi.mock('@/lib/compress-image', () => ({ readImageDimensions: mockReadImageDimensions }));
+
 import { BlogPostForm } from './BlogPostForm';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -118,9 +125,96 @@ const EXISTING_POST_WITH_IMAGE = {
   featured_image: 'https://api.example.test/storage/tenant_2/uploads/blog/current.webp',
 };
 
+function chooseFile(file: File) {
+  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+  fireEvent.change(fileInput, { target: { files: [file] } });
+}
+
+function getSearchSwitch() {
+  return screen.getByRole('switch', { name: /show in search engines/i });
+}
+
 describe('BlogPostForm — create mode', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockReadImageDimensions.mockResolvedValue(null);
+  });
+
+  it('shows the image limits before any file is chosen', async () => {
+    renderCreate();
+    await waitFor(() => getTitleInput());
+    expect(screen.getByText(/up to 10 MB, and no larger than 24 megapixels or 6000 pixels/i)).toBeInTheDocument();
+  });
+
+  it('explains an over-size file beside the image and does not upload it', async () => {
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    const file = new File(['x'], 'huge.jpg', { type: 'image/jpeg' });
+    Object.defineProperty(file, 'size', { value: 12.5 * 1024 * 1024 });
+    chooseFile(file);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/this image is 12\.5 MB\. the largest you can upload is 10 MB/i);
+    expect(mockToast.error).toHaveBeenCalledWith(alert.textContent);
+    expect(mockAdminBlog.uploadFeaturedImage).not.toHaveBeenCalled();
+  });
+
+  it('explains an image with too many pixels and does not upload it', async () => {
+    mockReadImageDimensions.mockResolvedValueOnce({ width: 8000, height: 6000 });
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    chooseFile(new File(['x'], 'phone.jpg', { type: 'image/jpeg' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/8000 × 6000 pixels, which is too large/i);
+    expect(mockAdminBlog.uploadFeaturedImage).not.toHaveBeenCalled();
+  });
+
+  it('shows the server reason when the server refuses the image', async () => {
+    mockAdminBlog.uploadFeaturedImage.mockResolvedValueOnce({ success: false, error: 'Image dimensions could not be read.' });
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    chooseFile(new File(['x'], 'odd.png', { type: 'image/png' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Image dimensions could not be read.');
+  });
+
+  it('defaults a new post to published and visible to search engines', async () => {
+    mockAdminBlog.create.mockResolvedValueOnce({ success: true });
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    expect(getSearchSwitch()).toBeChecked();
+    expect(screen.getByText(/on — search engines such as google can list this post/i)).toBeInTheDocument();
+
+    fireEvent.change(getTitleInput()!, { target: { value: 'Default Post' } });
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(mockAdminBlog.create).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'published', noindex: false }),
+      );
+    });
+  });
+
+  it('sends noindex when the search switch is turned off', async () => {
+    mockAdminBlog.create.mockResolvedValueOnce({ success: true });
+    renderCreate();
+    await waitFor(() => getTitleInput());
+
+    fireEvent.click(getSearchSwitch());
+    expect(getSearchSwitch()).not.toBeChecked();
+    expect(screen.getByText(/off — search engines are asked not to list this post/i)).toBeInTheDocument();
+
+    fireEvent.change(getTitleInput()!, { target: { value: 'Hidden Post' } });
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(mockAdminBlog.create).toHaveBeenCalledWith(expect.objectContaining({ noindex: true }));
+    });
   });
 
   it('renders title input in create mode', async () => {
@@ -333,6 +427,37 @@ describe('BlogPostForm — edit mode', () => {
         expect.objectContaining({ title: 'My Existing Post' }),
       );
       expect(mockAdminBlog.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // Regression: `noindex || undefined` dropped the key when false, and the
+  // server only rewrites the SEO row when a key is present, so a hidden post
+  // could never be made searchable again.
+  it('sends noindex: false when a hidden post is made searchable again', async () => {
+    mockAdminBlog.get.mockResolvedValueOnce({ success: true, data: { ...EXISTING_POST, noindex: true } });
+    mockAdminBlog.update.mockResolvedValueOnce({ success: true });
+    renderEdit();
+
+    await waitFor(() => expect(getSearchSwitch()).not.toBeChecked());
+    fireEvent.click(getSearchSwitch());
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(mockAdminBlog.update).toHaveBeenCalledWith(42, expect.objectContaining({ noindex: false }));
+    });
+  });
+
+  it('keeps the loaded status of an existing draft', async () => {
+    mockAdminBlog.get.mockResolvedValueOnce({ success: true, data: { ...EXISTING_POST, status: 'draft' } });
+    mockAdminBlog.update.mockResolvedValueOnce({ success: true });
+    renderEdit();
+
+    await waitFor(() => getTitleInput());
+    await waitFor(() => expect((getTitleInput() as HTMLInputElement).value).toBe('My Existing Post'));
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(mockAdminBlog.update).toHaveBeenCalledWith(42, expect.objectContaining({ status: 'draft' }));
     });
   });
 

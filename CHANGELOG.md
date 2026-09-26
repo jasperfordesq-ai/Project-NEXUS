@@ -32,11 +32,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- New blog posts now start as Published and visible to search engines, so a post goes live and can be found unless an admin chooses otherwise. The search-engine setting on the blog form is now a plain "Show in search engines" switch, on by default, with a line underneath saying in words whether search engines may list the post. Available in all eleven languages.
+
 - The "Get the app" page now labels the Android app as an early release that is still in development, with that notice placed directly under its heading and before the download button, and says plainly that the core features are solid but some less common situations may not work yet. A new "Most stable" section above the one-tap install button recommends the browser version on phones: it is the same as the full website, always current, and fully maintained, with the Apple home-screen limitation restated. Available in all eleven languages.
 
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed
+
+- Switches that are turned off are visible again everywhere on the platform. An off switch drew a white track and a white knob on a white card, so it looked as if there was no switch at all (the blog form's search-engine setting and the cookie preferences were two examples). Off switches now have a grey track with an outline in both light and dark mode (`react-frontend/src/components/ui/Switch.tsx`).
+
+- The blog form now shows the featured-image limits at all times — up to 10 MB, and no larger than 24 megapixels or 6000 pixels on the longest side — and checks a chosen image against them before uploading. An image that is too large now gets a message beside the image saying which limit it broke and by how much, instead of only a brief "upload failed" notice; when the server refuses an image, its reason is shown.
+
+- Turning a blog post's search-engine visibility back on now saves. The form left the setting out of the request when it was switched on, and the server only updates that setting when it is sent, so a post once hidden from search engines stayed hidden unless a meta title or description was also filled in.
+
+- The blog form's featured-image messages showed as rows of question marks in Arabic, Japanese and Polish, and with missing letters in German, Dutch and Portuguese. They have been rewritten in all six languages.
 
 - Creating a feed post in the mobile app now preserves the exact account, community, group and text across a lost response or app restart. An exact retry returns the original post instead of creating a duplicate, while changed content under the same protected request is rejected.
 

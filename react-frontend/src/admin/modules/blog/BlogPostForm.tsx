@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { resolveUploadedUrl } from '../../components/builderImage';
 import { resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { readImageDimensions } from '@/lib/compress-image';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const ACCEPTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -40,7 +41,14 @@ const ACCEPTED_IMAGE_INPUT = [
   ...ACCEPTED_IMAGE_TYPES,
   ...ACCEPTED_IMAGE_EXTENSIONS.map((extension) => `.${extension}`),
 ].join(',');
-const MAX_FEATURED_IMAGE_BYTES = 10 * 1024 * 1024;
+// These mirror ImageUploadService (MAX_FILE_SIZE, MAX_IMAGE_PIXELS,
+// MAX_IMAGE_EDGE). The server enforces them; checking here first lets the
+// form say which limit a file broke instead of a bare "upload failed".
+const MAX_FEATURED_IMAGE_MB = 10;
+const MAX_FEATURED_IMAGE_BYTES = MAX_FEATURED_IMAGE_MB * 1024 * 1024;
+const MAX_FEATURED_IMAGE_MEGAPIXELS = 24;
+const MAX_FEATURED_IMAGE_PIXELS = MAX_FEATURED_IMAGE_MEGAPIXELS * 1_000_000;
+const MAX_FEATURED_IMAGE_EDGE = 6000;
 
 type FeaturedImageUploadResult = Awaited<ReturnType<typeof adminBlog.uploadFeaturedImage>>;
 
@@ -77,7 +85,7 @@ function resolveBlogFeaturedImageValue(res: FeaturedImageUploadResult): string |
 }
 
 export function BlogPostForm() {
-  const { t } = useTranslation('admin_blog');
+  const { t, i18n } = useTranslation('admin_blog');
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const { tenantPath } = useTenant();
@@ -93,6 +101,9 @@ export function BlogPostForm() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [imagePreviewError, setImagePreviewError] = useState(false);
+  // Why the last image was refused, shown beside the image until the next try.
+  // A toast alone disappears before an admin has read which limit applied.
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
 
   // Original post data (for edit mode page title)
   const [post, setPost] = useState<AdminBlogPost | null>(null);
@@ -102,7 +113,10 @@ export function BlogPostForm() {
   const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
-  const [status, setStatus] = useState('draft');
+  // New posts default to published: the owner's rule is that a post goes live
+  // and is findable unless an admin chooses otherwise. Edit mode loads the
+  // post's real status over this.
+  const [status, setStatus] = useState('published');
   const [categoryId, setCategoryId] = useState('');
   const [featuredImage, setFeaturedImage] = useState('');
 
@@ -239,7 +253,11 @@ export function BlogPostForm() {
         category_id: categoryId ? Number(categoryId) : undefined,
         meta_title: metaTitle.trim() || undefined,
         meta_description: metaDescription.trim() || undefined,
-        noindex: noindex || undefined,
+        // Always sent. `noindex || undefined` dropped the key when it was
+        // false, and AdminBlogController::update() only rewrites the SEO row
+        // when a key is present — so a post hidden from search engines could
+        // not be made visible again unless a meta field happened to be filled.
+        noindex,
       };
 
       const res = isEdit
@@ -262,22 +280,53 @@ export function BlogPostForm() {
   async function uploadFeaturedImageFile(file: File) {
     if (!file) return;
 
+    const refuseImage = (message: string) => {
+      setImageUploadError(message);
+      toast.error(message);
+    };
+
+    setImageUploadError(null);
+
     if (!isAcceptedImageFile(file)) {
-      toast.error(t('blog.featured_image_type_error'));
+      refuseImage(t('blog.featured_image_type_error'));
       return;
     }
 
     if (file.size > MAX_FEATURED_IMAGE_BYTES) {
-      toast.error(t('blog.featured_image_size_error'));
+      refuseImage(t('blog.featured_image_too_large_file', {
+        size: new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+          .format(file.size / (1024 * 1024)),
+        max: MAX_FEATURED_IMAGE_MB,
+      }));
       return;
     }
 
     setUploadingImage(true);
     setUploadProgress(0);
     try {
-      const url = resolveBlogFeaturedImageValue(await adminBlog.uploadFeaturedImage(file, setUploadProgress));
+      // null = the browser could not read it; leave the verdict to the server.
+      const dimensions = await readImageDimensions(file);
+      if (
+        dimensions
+        && (dimensions.width * dimensions.height > MAX_FEATURED_IMAGE_PIXELS
+          || Math.max(dimensions.width, dimensions.height) > MAX_FEATURED_IMAGE_EDGE)
+      ) {
+        refuseImage(t('blog.featured_image_too_large_pixels', {
+          width: dimensions.width,
+          height: dimensions.height,
+          max_edge: MAX_FEATURED_IMAGE_EDGE,
+          max_megapixels: MAX_FEATURED_IMAGE_MEGAPIXELS,
+        }));
+        return;
+      }
+
+      const res = await adminBlog.uploadFeaturedImage(file, setUploadProgress);
+      const url = resolveBlogFeaturedImageValue(res);
       if (!url) {
-        toast.error(t('blog.featured_image_upload_failed'));
+        // admin-i18n-ignore: the server's own reason for refusing the file
+        // (e.g. a limit the checks above could not measure); the translated
+        // generic message covers a response with no reason.
+        refuseImage(res.error || t('blog.featured_image_upload_failed'));
         return;
       }
       setFeaturedImage(url);
@@ -285,7 +334,7 @@ export function BlogPostForm() {
       toast.success(t('blog.featured_image_uploaded'));
     } catch (error) {
       logError('BlogPostForm: featured image upload failed', error);
-      toast.error(t('blog.featured_image_upload_failed'));
+      refuseImage(t('blog.featured_image_upload_failed'));
     } finally {
       setUploadingImage(false);
       setUploadProgress(null);
@@ -560,21 +609,30 @@ export function BlogPostForm() {
                     ) : (
                       <>
                         <UploadCloud size={28} className="text-muted" aria-hidden="true" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {featuredImage.trim()
-                              ? t('blog.featured_image_preview_unavailable')
-                              : t('blog.featured_image_preview_empty')}
-                          </p>
-                          <p className="mt-1 text-xs text-muted">
-                            {t('blog.featured_image_format_hint')}
-                          </p>
-                        </div>
+                        <p className="text-sm font-medium">
+                          {featuredImage.trim()
+                            ? t('blog.featured_image_preview_unavailable')
+                            : t('blog.featured_image_preview_empty')}
+                        </p>
                       </>
                     )}
                   </div>
                 )}
               </div>
+              {/* The limits stay visible whether or not an image is already set,
+                  so an admin replacing one can see them before choosing a file. */}
+              <p className="text-xs text-muted">
+                {t('blog.featured_image_limits', {
+                  max: MAX_FEATURED_IMAGE_MB,
+                  max_edge: MAX_FEATURED_IMAGE_EDGE,
+                  max_megapixels: MAX_FEATURED_IMAGE_MEGAPIXELS,
+                })}
+              </p>
+              {imageUploadError && (
+                <p role="alert" className="text-sm font-medium text-danger">
+                  {imageUploadError}
+                </p>
+              )}
             </div>
 
             {/* SEO Override (Optional) */}
@@ -601,16 +659,26 @@ export function BlogPostForm() {
               isDisabled={submitting}
               description={t('blog.meta_desc_desc')}
             />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{t('blog.noindex')}</p>
-                <p className="text-xs text-muted">{t('blog.noindex_desc')}</p>
+            {/* Asked as a positive ("show in search engines", on by default)
+                rather than the stored `noindex` flag, whose double negative made
+                it unclear which way the switch was set. The line underneath
+                states the current effect in words. */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p id="blog-search-visible-label" className="text-sm font-medium">
+                  {t('blog.search_visible')}
+                </p>
+                <p id="blog-search-visible-state" className="text-xs text-muted">
+                  {noindex ? t('blog.search_visible_off') : t('blog.search_visible_on')}
+                </p>
               </div>
               <Switch
-                isSelected={noindex}
-                onValueChange={setNoindex}
+                className="shrink-0"
+                isSelected={!noindex}
+                onValueChange={(visible) => setNoindex(!visible)}
                 isDisabled={submitting}
-                size="sm"
+                aria-labelledby="blog-search-visible-label"
+                aria-describedby="blog-search-visible-state"
               />
             </div>
 

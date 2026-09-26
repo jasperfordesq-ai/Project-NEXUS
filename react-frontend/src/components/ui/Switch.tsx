@@ -61,6 +61,16 @@ function selectedControlClass(color?: SwitchColor) {
   }
 }
 
+// HeroUI paints the unselected track with `--default`, which this theme maps to
+// `--surface-elevated` — the same colour as a card. With the white thumb that
+// made every OFF switch invisible on a card (measured: track and card both
+// rgba(255,255,255,0.9)), so admins could not tell a switch was there, let
+// alone which way it was set. The muted-text ring gives the track a boundary
+// that clears WCAG 1.4.11's 3:1 in both themes; the tinted fill keeps the
+// white thumb readable against it.
+const UNSELECTED_CONTROL_CLASS =
+  '!bg-[var(--text-muted)]/35 ring-1 ring-inset ring-[var(--text-muted)]';
+
 function selectedThumbClass(size: HeroUISwitchProps['size']) {
   if (size === 'sm') {
     return '!ms-[calc(100%-1.15625rem)] !bg-accent-foreground !text-accent';
@@ -114,7 +124,7 @@ export function Switch({
             <HeroUISwitch.Control
               className={combineClasses(
                 classNames?.wrapper,
-                isSelected && selectedControlClass(color),
+                isSelected ? selectedControlClass(color) : UNSELECTED_CONTROL_CLASS,
               )}
               data-selected={isSelected}
             >
