@@ -227,6 +227,8 @@
       "loadError": "Could not load group tasks.",
       "loadMoreError": "Could not load more group tasks.",
       "createError": "Could not create the task.",
+      "recoveryError": "Could not restore the unfinished task.",
+      "recoveryNotice": "An unfinished task was restored. Retry it before creating another task.",
       "updateError": "Could not update the task.",
       "deleteError": "Could not delete the task.",
       "empty": "No tasks have been created yet.",

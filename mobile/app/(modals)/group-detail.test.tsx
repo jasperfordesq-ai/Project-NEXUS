@@ -198,6 +198,8 @@ jest.mock('react-i18next', () => ({
         'detail.tasks.validation': 'Add a task title.',
         'detail.tasks.loadError': 'Could not load tasks.',
         'detail.tasks.createError': 'Could not create task.',
+        'detail.tasks.recoveryError': 'Could not restore the unfinished task.',
+        'detail.tasks.recoveryNotice': 'An unfinished task was restored. Retry it before creating another task.',
         'detail.tasks.updateError': 'Could not update task.',
         'detail.tasks.deleteError': 'Could not delete task.',
         'detail.tasks.empty': 'No tasks yet.',
@@ -461,6 +463,26 @@ jest.mock('@/lib/media/pickGroupFile', () => ({
   pickGroupFile: jest.fn(),
 }));
 
+jest.mock('@/lib/groupTaskCreationOperation', () => ({
+  loadGroupTaskCreationOperation: jest.fn().mockResolvedValue(null),
+  reserveGroupTaskCreationOperation: jest.fn().mockResolvedValue({
+    storageKey: 'saved-group-task',
+    key: 'group-task-operation-key',
+    groupId: 1,
+    intent: 'saved-intent',
+    draft: {
+      title: 'Saved task',
+      description: '',
+      priority: 'medium',
+      assignedTo: null,
+      dueDate: '',
+    },
+    createdAt: 1,
+  }),
+  completeGroupTaskCreationOperation: jest.fn().mockResolvedValue(undefined),
+  discardGroupTaskCreationOperation: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
@@ -544,6 +566,12 @@ import {
 import { ApiResponseError } from '@/lib/api/client';
 import * as ImagePicker from 'expo-image-picker';
 import { pickGroupFile } from '@/lib/media/pickGroupFile';
+import {
+  completeGroupTaskCreationOperation,
+  discardGroupTaskCreationOperation,
+  loadGroupTaskCreationOperation,
+  reserveGroupTaskCreationOperation,
+} from '@/lib/groupTaskCreationOperation';
 
 const defaultApiState = { data: null, isLoading: true, error: null, refresh: jest.fn() };
 
@@ -555,6 +583,21 @@ beforeEach(() => {
   mockUseApi.mockReturnValue(defaultApiState);
   mockRouterPush.mockClear();
   jest.clearAllMocks();
+  jest.mocked(loadGroupTaskCreationOperation).mockReset();
+  jest.mocked(reserveGroupTaskCreationOperation).mockReset();
+  jest.mocked(completeGroupTaskCreationOperation).mockReset();
+  jest.mocked(discardGroupTaskCreationOperation).mockReset();
+  jest.mocked(loadGroupTaskCreationOperation).mockResolvedValue(null);
+  jest.mocked(reserveGroupTaskCreationOperation).mockResolvedValue({
+    storageKey: 'saved-group-task',
+    key: 'group-task-operation-key',
+    groupId: 1,
+    intent: 'saved-intent',
+    draft: { title: 'Saved task', description: '', priority: 'medium', assignedTo: null, dueDate: '' },
+    createdAt: 1,
+  });
+  jest.mocked(completeGroupTaskCreationOperation).mockResolvedValue(undefined);
+  jest.mocked(discardGroupTaskCreationOperation).mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -956,7 +999,7 @@ describe('GroupDetailScreen', () => {
       return state;
     });
 
-    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByText, getByTestId } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Announcements'));
     fireEvent.press(getByText('Create'));
@@ -2485,11 +2528,12 @@ describe('GroupDetailScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getByPlaceholderText, getByText } = render(<GroupDetailScreen />);
+    const { getByPlaceholderText, getByText, getByTestId } = render(<GroupDetailScreen />);
 
     fireEvent.press(getByText('Tasks'));
     await waitFor(() => expect(getGroupTasks).toHaveBeenCalledWith(1, { status: 'all', cursor: null }));
-    fireEvent.press(getByText('New task'));
+    await waitFor(() => expect(getByTestId('group-task-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(getByTestId('group-task-composer-toggle'));
     fireEvent.changeText(getByPlaceholderText('Task title'), 'Mulch vegetable beds');
     fireEvent.changeText(getByPlaceholderText('Add task details...'), 'Use the compost near shed two.');
     fireEvent.changeText(getByPlaceholderText('Due date, for example 2026-06-30'), '2026-06-30');
@@ -2497,6 +2541,21 @@ describe('GroupDetailScreen', () => {
     fireEvent.press(getByText('Create task'));
 
     await waitFor(() => {
+      expect(reserveGroupTaskCreationOperation).toHaveBeenCalledWith(1, JSON.stringify({
+        groupId: 1,
+        title: 'Mulch vegetable beds',
+        description: 'Use the compost near shed two.',
+        status: 'todo',
+        priority: 'high',
+        assigned_to: null,
+        due_date: '2026-06-30',
+      }), {
+        title: 'Mulch vegetable beds',
+        description: 'Use the compost near shed two.',
+        priority: 'high',
+        assignedTo: null,
+        dueDate: '2026-06-30',
+      });
       expect(createGroupTask).toHaveBeenCalledWith(1, {
         title: 'Mulch vegetable beds',
         description: 'Use the compost near shed two.',
@@ -2504,8 +2563,128 @@ describe('GroupDetailScreen', () => {
         priority: 'high',
         assigned_to: null,
         due_date: '2026-06-30',
-      }, expect.any(String));
+      }, 'group-task-operation-key');
+      expect(completeGroupTaskCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'group-task-operation-key' }));
     });
+  });
+
+  it('restores and safely retries the exact unfinished task after an app restart', async () => {
+    const pending = {
+      storageKey: 'saved-group-task',
+      key: 'group-task-restart-key',
+      groupId: 1,
+      intent: 'saved-intent',
+      draft: {
+        title: 'Resume garden rota',
+        description: 'Keep this exact draft.',
+        priority: 'urgent' as const,
+        assignedTo: null,
+        dueDate: '2026-07-01',
+      },
+      createdAt: 1,
+    };
+    jest.mocked(loadGroupTaskCreationOperation).mockResolvedValue(pending);
+    jest.mocked(reserveGroupTaskCreationOperation).mockResolvedValue(pending);
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+
+    await screen.findByDisplayValue('Resume garden rota');
+    expect(screen.getByDisplayValue('Keep this exact draft.')).toBeTruthy();
+    expect(screen.getByDisplayValue('2026-07-01')).toBeTruthy();
+    fireEvent.press(screen.getByText('Create task'));
+
+    await waitFor(() => {
+      expect(createGroupTask).toHaveBeenCalledWith(1, expect.objectContaining({
+        title: 'Resume garden rota',
+        description: 'Keep this exact draft.',
+        priority: 'urgent',
+        due_date: '2026-07-01',
+      }), 'group-task-restart-key');
+      expect(completeGroupTaskCreationOperation).toHaveBeenCalledWith(pending);
+    });
+  });
+
+  it('keeps the task draft and blocks transport when durable reservation fails', async () => {
+    jest.mocked(reserveGroupTaskCreationOperation).mockRejectedValueOnce(new Error('Keystore unavailable'));
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await waitFor(() => expect(loadGroupTaskCreationOperation).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(screen.getByTestId('group-task-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(screen.getByTestId('group-task-composer-toggle'));
+    fireEvent.changeText(screen.getByPlaceholderText('Task title'), 'Do not lose this task');
+    fireEvent.press(screen.getByText('Create task'));
+
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' })));
+    expect(createGroupTask).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue('Do not lose this task')).toBeTruthy();
+  });
+
+  it('blocks a new task when recovery cannot be read and restores it on retry', async () => {
+    const pending = {
+      storageKey: 'saved-group-task',
+      key: 'group-task-recovered-key',
+      groupId: 1,
+      intent: 'saved-intent',
+      draft: { title: 'Recovered after retry', description: '', priority: 'medium' as const, assignedTo: null, dueDate: '' },
+      createdAt: 1,
+    };
+    let retryAllowed = false;
+    jest.mocked(loadGroupTaskCreationOperation).mockImplementation(async () => {
+      if (!retryAllowed) throw new Error('Secure storage locked');
+      return pending;
+    });
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await screen.findByTestId('group-task-recovery-error');
+    expect(screen.getByTestId('group-task-composer-toggle').props.accessibilityState.disabled).toBe(true);
+    retryAllowed = true;
+    fireEvent.press(screen.getByText('common:buttons.retry'));
+
+    await screen.findByDisplayValue('Recovered after retry');
+    expect(loadGroupTaskCreationOperation).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears a durable task operation after a definite server rejection so the draft can be corrected', async () => {
+    jest.mocked(createGroupTask).mockRejectedValueOnce(new ApiResponseError(422, 'Invalid due date'));
+    mockUseApi.mockReturnValue({
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Tasks'));
+    await waitFor(() => expect(loadGroupTaskCreationOperation).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(screen.getByTestId('group-task-composer-toggle').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(screen.getByTestId('group-task-composer-toggle'));
+    fireEvent.changeText(screen.getByPlaceholderText('Task title'), 'Correctable task');
+    fireEvent.changeText(screen.getByPlaceholderText('Due date, for example 2026-06-30'), 'bad-date');
+    fireEvent.press(screen.getByText('Create task'));
+
+    await waitFor(() => expect(discardGroupTaskCreationOperation).toHaveBeenCalledWith(expect.objectContaining({ key: 'group-task-operation-key' })));
+    expect(screen.getByDisplayValue('Correctable task')).toBeTruthy();
   });
 
   it('renders group analytics for group admins and changes the reporting window', async () => {

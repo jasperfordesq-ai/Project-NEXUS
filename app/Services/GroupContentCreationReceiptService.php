@@ -85,6 +85,20 @@ final class GroupContentCreationReceiptService
         ]);
     }
 
+    public static function deleteForResult(
+        int $tenantId,
+        int $groupId,
+        string $operationType,
+        int $resultId,
+    ): int {
+        return DB::table('group_content_creation_receipts')
+            ->where('tenant_id', $tenantId)
+            ->where('group_id', $groupId)
+            ->where('operation_type', $operationType)
+            ->where('result_id', $resultId)
+            ->delete();
+    }
+
     private static function canonicalize(array $value): array
     {
         foreach ($value as $key => $item) {

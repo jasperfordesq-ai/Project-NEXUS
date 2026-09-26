@@ -227,6 +227,8 @@
       "loadError": "No se pudieron cargar las tareas del grupo.",
       "loadMoreError": "No se pudieron cargar más tareas del grupo.",
       "createError": "No se pudo crear la tarea.",
+      "recoveryError": "No se pudo restaurar la tarea sin terminar.",
+      "recoveryNotice": "Se restauró una tarea sin terminar. Vuelve a intentarlo antes de crear otra tarea.",
       "updateError": "No se pudo actualizar la tarea.",
       "deleteError": "No se pudo eliminar la tarea.",
       "empty": "Todavía no se ha creado ninguna tarea.",

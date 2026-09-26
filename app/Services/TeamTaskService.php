@@ -439,6 +439,13 @@ class TeamTaskService
                 return false;
             }
 
+            GroupContentCreationReceiptService::deleteForResult(
+                (int) $tenantId,
+                $groupId,
+                'task',
+                $taskId,
+            );
+
             GroupAuditService::log(
                 GroupAuditService::ACTION_TEAM_TASK_DELETED,
                 $groupId,

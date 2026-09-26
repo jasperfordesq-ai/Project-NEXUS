@@ -227,6 +227,8 @@
       "loadError": "Die Gruppenaufgaben konnten nicht geladen werden.",
       "loadMoreError": "Weitere Gruppenaufgaben konnten nicht geladen werden.",
       "createError": "Die Aufgabe konnte nicht erstellt werden.",
+      "recoveryError": "Die nicht abgeschlossene Aufgabe konnte nicht wiederhergestellt werden.",
+      "recoveryNotice": "Eine nicht abgeschlossene Aufgabe wurde wiederhergestellt. Versuchen Sie es erneut, bevor Sie eine andere Aufgabe erstellen.",
       "updateError": "Die Aufgabe konnte nicht aktualisiert werden.",
       "deleteError": "Die Aufgabe konnte nicht gelöscht werden.",
       "empty": "Es wurden noch keine Aufgaben erstellt.",

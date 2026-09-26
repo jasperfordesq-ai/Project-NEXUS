@@ -187,6 +187,8 @@
       "loadError": "Níorbh fhéidir tascanna an ghrúpa a luchtú.",
       "loadMoreError": "Níorbh fhéidir tuilleadh tascanna grúpa a lódáil.",
       "createError": "Níorbh fhéidir an tasc a chruthú.",
+      "recoveryError": "Níorbh fhéidir an tasc neamhchríochnaithe a athchóiriú.",
+      "recoveryNotice": "Athchóiríodh tasc neamhchríochnaithe. Bain triail eile as sula gcruthaítear tasc eile.",
       "updateError": "Níorbh fhéidir an tasc a nuashonrú.",
       "deleteError": "Níorbh fhéidir an tasc a scriosadh.",
       "empty": "Níl aon tasc cruthaithe fós.",

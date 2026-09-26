@@ -429,6 +429,34 @@ final class GroupTaskEventAuthorizationTest extends TestCase
         $this->assertNull($malformed['assignee']);
     }
 
+    public function test_task_replay_after_deletion_returns_a_new_complete_task_response(): void
+    {
+        Sanctum::actingAs($this->member, ['*']);
+        $path = "/v2/groups/{$this->activeGroupId}/tasks";
+        $payload = ['title' => 'Replay-safe disposable task', 'priority' => 'high'];
+        $headers = ['Idempotency-Key' => 'group-task-api-delete-replay-1'];
+
+        $first = $this->apiPost($path, $payload, $headers)
+            ->assertCreated()
+            ->assertJsonPath('data.title', 'Replay-safe disposable task')
+            ->assertJsonPath('data.priority', 'high');
+        $firstId = (int) $first->json('data.id');
+        self::assertGreaterThan(0, $firstId);
+
+        $this->apiPost($path, $payload, $headers)
+            ->assertCreated()
+            ->assertJsonPath('data.id', $firstId);
+        $this->apiDelete("/v2/team-tasks/{$firstId}")->assertNoContent();
+
+        $replacement = $this->apiPost($path, $payload, $headers)
+            ->assertCreated()
+            ->assertJsonPath('data.title', 'Replay-safe disposable task')
+            ->assertJsonPath('data.priority', 'high');
+        $replacementId = (int) $replacement->json('data.id');
+        self::assertGreaterThan(0, $replacementId);
+        self::assertNotSame($firstId, $replacementId);
+    }
+
     public function test_task_create_authorizes_parent_before_payload_and_assignee_validation(): void
     {
         $this->assertSame($this->testTenantId, (int) TenantContext::getId());

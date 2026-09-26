@@ -9,6 +9,13 @@ import {
   completeGroupFileUploadOperation,
   reserveGroupFileUploadOperation,
 } from '@/lib/groupFileUploadOperation';
+import {
+  completeGroupTaskCreationOperation,
+  discardGroupTaskCreationOperation,
+  loadGroupTaskCreationOperation,
+  reserveGroupTaskCreationOperation,
+  type GroupTaskCreationOperation,
+} from '@/lib/groupTaskCreationOperation';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -3190,6 +3197,9 @@ function GroupTasksPanel({
   const [assignedTo, setAssignedTo] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState('');
   const [creating, setCreating] = useState(false);
+  const [isRestoringTaskDraft, setIsRestoringTaskDraft] = useState(true);
+  const [taskRecoveryError, setTaskRecoveryError] = useState<string | null>(null);
+  const [pendingTaskOperation, setPendingTaskOperation] = useState<GroupTaskCreationOperation | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
   const memberOptions = Array.isArray(members) ? members : [];
   /* 🔴 Fifty tasks and then nothing, though the endpoint answers with a cursor.
@@ -3200,7 +3210,7 @@ function GroupTasksPanel({
   const { isMountedRef, beginMutation, finishMutation } = useAsyncMutationBoundary();
   const loadVersionRef = useRef(0);
   const loadMorePendingRef = useRef(false);
-  const createAttemptRef = useRef<MutationAttempt | null>(null);
+  const taskRestoreVersionRef = useRef(0);
 
   const taskPageRef = useRef({ cursor, hasMore, statusFilter, isLoading });
   const [taskLoadError, setTaskLoadError] = useState<string | null>(null);
@@ -3253,6 +3263,42 @@ function GroupTasksPanel({
     setHasMore(false);
     void loadTasks();
   }, [loadTasks]);
+
+  const restoreTaskDraft = useCallback(async () => {
+    const version = ++taskRestoreVersionRef.current;
+    setIsRestoringTaskDraft(true);
+    setTaskRecoveryError(null);
+    setPendingTaskOperation(null);
+    if (!canView) {
+      setIsRestoringTaskDraft(false);
+      return;
+    }
+    try {
+      const operation = await loadGroupTaskCreationOperation(groupId);
+      if (!isMountedRef.current || version !== taskRestoreVersionRef.current) return;
+      if (operation) {
+        setPendingTaskOperation(operation);
+        setTitle(operation.draft.title);
+        setDescription(operation.draft.description);
+        setPriority(operation.draft.priority);
+        setAssignedTo(operation.draft.assignedTo);
+        setDueDate(operation.draft.dueDate);
+        setShowComposer(true);
+      }
+    } catch (err) {
+      if (!isMountedRef.current || version !== taskRestoreVersionRef.current) return;
+      setTaskRecoveryError(describeApiError(err, t('detail.tasks.recoveryError')));
+    } finally {
+      if (isMountedRef.current && version === taskRestoreVersionRef.current) setIsRestoringTaskDraft(false);
+    }
+  // This recovery is scoped to the authenticated identity inside the durable store.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView, groupId]);
+
+  useEffect(() => {
+    void restoreTaskDraft();
+    return () => { taskRestoreVersionRef.current += 1; };
+  }, [restoreTaskDraft]);
 
   const cycleStatus = async (task: GroupTask) => {
     if (!beginMutation()) return;
@@ -3337,13 +3383,24 @@ function GroupTasksPanel({
       assigned_to: assignedTo,
       due_date: dueDate.trim() || null,
     };
-    const fingerprint = JSON.stringify({ groupId, ...payload });
-    createAttemptRef.current = mutationAttemptFor(createAttemptRef.current, fingerprint, 'group-task');
+    const intent = JSON.stringify({ groupId, ...payload });
+    const draft = {
+      title: cleanTitle,
+      description: description.trim(),
+      priority,
+      assignedTo,
+      dueDate: dueDate.trim(),
+    };
     setCreating(true);
+    let operation: GroupTaskCreationOperation | null = null;
     try {
-      await createGroupTask(groupId, payload, createAttemptRef.current.key);
+      operation = await reserveGroupTaskCreationOperation(groupId, intent, draft);
       if (!isMountedRef.current) return;
-      createAttemptRef.current = null;
+      setPendingTaskOperation(operation);
+      await createGroupTask(groupId, payload, operation.key);
+      await completeGroupTaskCreationOperation(operation);
+      if (!isMountedRef.current) return;
+      setPendingTaskOperation(null);
       setTitle('');
       setDescription('');
       setPriority('medium');
@@ -3354,9 +3411,21 @@ function GroupTasksPanel({
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
+      let displayError = err;
+      const definitelyRejected = err instanceof ApiResponseError
+        && (err.operationOutcome === 'not_applied'
+          || (err.status >= 400 && err.status < 500 && ![408, 409, 425, 429].includes(err.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupTaskCreationOperation(operation);
+          if (isMountedRef.current) setPendingTaskOperation(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
       if (!isMountedRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('detail.tasks.createError')), variant: 'danger' });
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.tasks.createError')), variant: 'danger' });
     } finally {
       finishMutation();
       if (isMountedRef.current) setCreating(false);
@@ -3418,10 +3487,25 @@ function GroupTasksPanel({
                 {t('detail.tasks.subtitle')}
               </Text>
             </View>
-            <HeroButton size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating} onPress={() => setShowComposer((value) => !value)}>
+            <HeroButton testID="group-task-composer-toggle" size="sm" variant={showComposer ? 'secondary' : 'primary'} isDisabled={creating || isRestoringTaskDraft || Boolean(taskRecoveryError)} onPress={() => setShowComposer((value) => !value)}>
               <HeroButton.Label>{showComposer ? t('common:buttons.cancel') : t('detail.tasks.newTask')}</HeroButton.Label>
             </HeroButton>
           </View>
+
+          {taskRecoveryError ? (
+            <View className="gap-2" testID="group-task-recovery-error">
+              <Text accessibilityRole="alert" className="text-sm" style={{ color: theme.error }}>{taskRecoveryError}</Text>
+              <HeroButton size="sm" variant="secondary" isDisabled={isRestoringTaskDraft} onPress={() => void restoreTaskDraft()}>
+                {isRestoringTaskDraft ? <Spinner size="sm" /> : <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>}
+              </HeroButton>
+            </View>
+          ) : null}
+
+          {pendingTaskOperation ? (
+            <Text className="text-sm" style={{ color: theme.textSecondary }}>
+              {t('detail.tasks.recoveryNotice')}
+            </Text>
+          ) : null}
 
           {stats ? (
             <View className="flex-row flex-wrap gap-2">
@@ -3452,7 +3536,7 @@ function GroupTasksPanel({
                 value={title}
                 onChangeText={setTitle}
                 placeholder={t('detail.tasks.titlePlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingTaskOperation}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -3462,7 +3546,7 @@ function GroupTasksPanel({
                 value={description}
                 onChangeText={setDescription}
                 placeholder={t('detail.tasks.descriptionPlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingTaskOperation}
                 placeholderTextColor={theme.textMuted}
                 multiline
                 className="min-h-[88px] text-base"
@@ -3473,7 +3557,7 @@ function GroupTasksPanel({
                 value={dueDate}
                 onChangeText={setDueDate}
                 placeholder={t('detail.tasks.dueDatePlaceholder')}
-                editable={!creating}
+                editable={!creating && !pendingTaskOperation}
                 placeholderTextColor={theme.textMuted}
                 className="text-base"
                 style={{ color: theme.text }}
@@ -3485,7 +3569,7 @@ function GroupTasksPanel({
                 </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {(['low', 'medium', 'high', 'urgent'] as GroupTaskPriority[]).map((value) => (
-                    <HeroButton key={value} size="sm" variant={priority === value ? 'primary' : 'secondary'} isDisabled={creating} onPress={() => setPriority(value)}>
+                    <HeroButton key={value} size="sm" variant={priority === value ? 'primary' : 'secondary'} isDisabled={creating || Boolean(pendingTaskOperation)} onPress={() => setPriority(value)}>
                       <HeroButton.Label>{t(`detail.tasks.priority.${value}`)}</HeroButton.Label>
                     </HeroButton>
                   ))}
@@ -3500,7 +3584,7 @@ function GroupTasksPanel({
                   initialMembers={memberOptions}
                   selectedId={assignedTo}
                   selectedMember={memberOptions.find((member) => member.id === assignedTo) ?? null}
-                  disabled={creating}
+                  disabled={creating || Boolean(pendingTaskOperation)}
                   testIDPrefix="group-task-create-assignee"
                   onSelect={setAssignedTo}
                 />

@@ -227,6 +227,8 @@
       "loadError": "Não foi possível carregar as tarefas do grupo.",
       "loadMoreError": "Não foi possível carregar mais tarefas do grupo.",
       "createError": "Não foi possível criar a tarefa.",
+      "recoveryError": "Não foi possível restaurar a tarefa inacabada.",
+      "recoveryNotice": "Uma tarefa inacabada foi restaurada. Tente novamente antes de criar outra tarefa.",
       "updateError": "Não foi possível atualizar a tarefa.",
       "deleteError": "Não foi possível eliminar a tarefa.",
       "empty": "Ainda não foi criada nenhuma tarefa.",

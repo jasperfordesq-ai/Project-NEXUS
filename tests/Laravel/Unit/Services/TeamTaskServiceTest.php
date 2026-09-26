@@ -142,4 +142,35 @@ final class TeamTaskServiceTest extends TestCase
         ]));
         self::assertSame('IDEMPOTENCY_CONFLICT', $this->service->getErrors()[0]['code'] ?? null);
     }
+
+    public function test_deleting_a_task_removes_its_creation_receipt_atomically(): void
+    {
+        $payload = [
+            'title' => 'Disposable task',
+            'description' => 'Delete this after the replay proof.',
+            'idempotency_key' => 'group-task-delete-receipt-1',
+        ];
+        $firstId = $this->service->create($this->groupId, (int) $this->owner->id, $payload);
+        self::assertNotNull($firstId);
+        self::assertDatabaseHas('group_content_creation_receipts', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $this->groupId,
+            'operation_type' => 'task',
+            'result_id' => $firstId,
+        ]);
+
+        self::assertTrue($this->service->delete((int) $firstId, (int) $this->owner->id));
+        self::assertDatabaseMissing('team_tasks', ['id' => $firstId]);
+        self::assertDatabaseMissing('group_content_creation_receipts', [
+            'tenant_id' => $this->testTenantId,
+            'group_id' => $this->groupId,
+            'operation_type' => 'task',
+            'result_id' => $firstId,
+        ]);
+
+        $replacementId = $this->service->create($this->groupId, (int) $this->owner->id, $payload);
+        self::assertNotNull($replacementId);
+        self::assertNotSame($firstId, $replacementId);
+        self::assertDatabaseHas('team_tasks', ['id' => $replacementId]);
+    }
 }

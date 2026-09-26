@@ -227,6 +227,8 @@
       "loadError": "Impossibile caricare le attività del gruppo.",
       "loadMoreError": "Impossibile caricare altre attività del gruppo.",
       "createError": "Impossibile creare l’attività.",
+      "recoveryError": "Impossibile ripristinare l’attività non completata.",
+      "recoveryNotice": "È stata ripristinata un’attività non completata. Riprova prima di crearne un’altra.",
       "updateError": "Impossibile aggiornare l’attività.",
       "deleteError": "Impossibile eliminare l’attività.",
       "empty": "Non è stata ancora creata alcuna attività.",

@@ -227,6 +227,8 @@
       "loadError": "Impossible de charger les tâches du groupe.",
       "loadMoreError": "Impossible de charger plus de tâches du groupe.",
       "createError": "Impossible de créer la tâche.",
+      "recoveryError": "Impossible de restaurer la tâche inachevée.",
+      "recoveryNotice": "Une tâche inachevée a été restaurée. Réessayez avant de créer une autre tâche.",
       "updateError": "Impossible de mettre à jour la tâche.",
       "deleteError": "Impossible de supprimer la tâche.",
       "empty": "Aucune tâche n’a encore été créée.",
