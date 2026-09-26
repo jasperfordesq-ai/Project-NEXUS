@@ -380,6 +380,17 @@ jest.mock('@/lib/haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
 
+const mockReserveGroupFileUploadOperation = jest.fn().mockResolvedValue({
+  storageKey: 'group-file-operation',
+  key: 'group-file-idempotency-key',
+  createdAt: 1,
+});
+const mockCompleteGroupFileUploadOperation = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/lib/groupFileUploadOperation', () => ({
+  reserveGroupFileUploadOperation: (...args: unknown[]) => mockReserveGroupFileUploadOperation(...args),
+  completeGroupFileUploadOperation: (...args: unknown[]) => mockCompleteGroupFileUploadOperation(...args),
+}));
+
 jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'View',
 }));
@@ -1165,9 +1176,59 @@ describe('GroupDetailScreen', () => {
         uri: 'file:///cache/group-notes.txt',
         fileName: 'group-notes.txt',
         mimeType: 'text/plain',
+      }, 'group-file-idempotency-key');
+      expect(mockReserveGroupFileUploadOperation).toHaveBeenCalledWith(JSON.stringify({
+        groupId: 1,
+        mimeType: 'text/plain',
+        name: 'group-notes.txt',
+        size: 1024,
+      }));
+      expect(mockCompleteGroupFileUploadOperation).toHaveBeenCalledWith({
+        storageKey: 'group-file-operation',
+        key: 'group-file-idempotency-key',
+        createdAt: 1,
       });
       expect(refreshFiles).toHaveBeenCalled();
     });
+  });
+
+  it('keeps the group file operation reserved when upload outcome is uncertain', async () => {
+    const refreshFiles = jest.fn();
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true, viewer_membership: { status: 'active', role: 'member', is_admin: false } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    };
+    const emptyListState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    const emptyAnnouncementsState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const filesState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: refreshFiles };
+    const emptyQuestionsState = { data: { data: { items: [], cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() };
+    const eventsState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyListState, emptyListState, emptyAnnouncementsState, filesState, emptyQuestionsState, eventsState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+    jest.mocked(pickGroupFile).mockResolvedValue({
+      status: 'picked',
+      file: { uri: 'file:///cache/group-notes.txt', name: 'group-notes.txt', mimeType: 'text/plain', size: 1024 },
+    });
+    jest.mocked(uploadGroupFile).mockRejectedValueOnce(new Error('Response lost'));
+
+    const { getByText } = render(<GroupDetailScreen />);
+    fireEvent.press(getByText('Files'));
+    fireEvent.press(getByText('Upload file'));
+
+    await waitFor(() => expect(uploadGroupFile).toHaveBeenCalled());
+    expect(mockCompleteGroupFileUploadOperation).not.toHaveBeenCalled();
+    expect(refreshFiles).not.toHaveBeenCalled();
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+      description: 'Could not upload the file.',
+      variant: 'danger',
+    }));
   });
 
   it.each([false, true])('handles file deletion confirmation with departed screen = %s', async (departed) => {

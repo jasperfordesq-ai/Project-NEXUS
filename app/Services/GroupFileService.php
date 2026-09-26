@@ -166,6 +166,33 @@ final class GroupFileService
         $description = $validated['description'];
         $fileSize = $validated['size'];
 
+        $realPath = $file->getRealPath();
+        if (! is_string($realPath) || $realPath === '') {
+            $this->errors[] = ['code' => 'UPLOAD_FAILED', 'message' => __('api.group_file_store_failed')];
+            return null;
+        }
+        $digest = hash_file('sha256', $realPath);
+        if (! is_string($digest) || $digest === '') {
+            $this->errors[] = ['code' => 'UPLOAD_FAILED', 'message' => __('api.group_file_store_failed')];
+            return null;
+        }
+        $identity = GroupContentCreationReceiptService::identity(
+            $fileData['idempotency_key'] ?? null,
+            [
+                'description' => $description,
+                'digest' => $digest,
+                'folder' => $folder,
+                'group_id' => $groupId,
+                'mime' => $mimeType,
+                'name' => $originalName,
+                'size' => $fileSize,
+            ],
+        );
+        if ($identity === false) {
+            $this->errors[] = ['code' => 'IDEMPOTENCY_INVALID', 'message' => __('event_registration.idempotency_invalid'), 'field' => 'idempotency_key'];
+            return null;
+        }
+
         GroupService::assertSafeguardingBroadcastAllowed(
             $groupId,
             $userId,
@@ -182,7 +209,7 @@ final class GroupFileService
         }
 
         try {
-            $fileId = DB::transaction(function () use (
+            $mutation = DB::transaction(function () use (
                 $groupId,
                 $userId,
                 $tenantId,
@@ -192,7 +219,18 @@ final class GroupFileService
                 $fileSize,
                 $folder,
                 $description,
-            ): ?int {
+                $identity,
+            ): array {
+                if ($identity !== null) {
+                    GroupContentCreationReceiptService::lockActor($tenantId, $userId);
+                    $receipt = GroupContentCreationReceiptService::find($tenantId, $userId, 'file', $identity['key_hash']);
+                    if ($receipt !== null) {
+                        return GroupContentCreationReceiptService::matches($receipt, $identity['request_hash'])
+                            ? ['id' => (int) $receipt->result_id, 'replayed' => true, 'conflict' => false]
+                            : ['id' => null, 'replayed' => true, 'conflict' => true];
+                    }
+                }
+
                 DB::table('tenants')->where('id', $tenantId)->lockForUpdate()->first();
                 $group = DB::table('groups')
                     ->where('id', $groupId)
@@ -200,10 +238,10 @@ final class GroupFileService
                     ->lockForUpdate()
                     ->first();
                 if ($group === null || ! $this->authorizeParent($groupId, $userId, true)) {
-                    return null;
+                    return ['id' => null, 'replayed' => false, 'conflict' => false];
                 }
                 if (! $this->assertQuotaAvailable($groupId, $tenantId, $fileSize)) {
-                    return null;
+                    return ['id' => null, 'replayed' => false, 'conflict' => false];
                 }
 
                 $now = now();
@@ -240,19 +278,43 @@ final class GroupFileService
                     'file_name' => $originalName,
                 ]);
 
-                return $fileId;
+                if ($identity !== null) {
+                    GroupContentCreationReceiptService::store(
+                        $tenantId,
+                        $userId,
+                        $groupId,
+                        'file',
+                        $identity,
+                        $fileId,
+                        ['id' => $fileId],
+                    );
+                }
+
+                return ['id' => $fileId, 'replayed' => false, 'conflict' => false];
             }, 3);
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($path);
             throw $exception;
         }
 
+        if ($mutation['conflict']) {
+            Storage::disk('local')->delete($path);
+            $this->errors[] = ['code' => 'IDEMPOTENCY_CONFLICT', 'message' => __('event_registration.idempotency_conflict'), 'field' => 'idempotency_key'];
+            return null;
+        }
+
+        $fileId = $mutation['id'];
+        if ($mutation['replayed']) {
+            Storage::disk('local')->delete($path);
+        }
         if ($fileId === null) {
             Storage::disk('local')->delete($path);
             return null;
         }
 
-        try { GroupChallengeService::incrementProgress($groupId, 'files'); } catch (Throwable $e) { Log::warning('GroupFileService: challenge progress failed', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
+        if (! $mutation['replayed']) {
+            try { GroupChallengeService::incrementProgress($groupId, 'files'); } catch (Throwable $e) { Log::warning('GroupFileService: challenge progress failed', ['group_id' => $groupId, 'error' => $e->getMessage()]); }
+        }
 
         $row = DB::table('group_files as gf')
             ->join('users as u', function ($join) use ($tenantId): void {
@@ -357,6 +419,13 @@ final class GroupFileService
                 if ($deleted !== 1) {
                     throw new \RuntimeException('Group file metadata delete lost its locked row.');
                 }
+
+                DB::table('group_content_creation_receipts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('group_id', $groupId)
+                    ->where('operation_type', 'file')
+                    ->where('result_id', $fileId)
+                    ->delete();
 
                 GroupAuditService::log(
                     GroupAuditService::ACTION_FILE_DELETED,

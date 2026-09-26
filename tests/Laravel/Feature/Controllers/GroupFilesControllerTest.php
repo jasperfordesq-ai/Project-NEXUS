@@ -6,8 +6,12 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\Group;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
 
@@ -72,5 +76,46 @@ class GroupFilesControllerTest extends TestCase
         $this->authenticatedUser();
         $response = $this->apiGet('/v2/groups/1/files/stats');
         $this->assertTrue($response->status() < 500, "Got 5xx: {$response->status()}");
+    }
+
+    public function test_upload_replays_same_operation_without_duplicate_file_or_storage(): void
+    {
+        Storage::fake('local');
+        $owner = $this->authenticatedUser();
+        $group = Group::factory()->forTenant($this->testTenantId)->create([
+            'owner_id' => $owner->id,
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+        $headers = ['Idempotency-Key' => 'group-file-replay-0001'];
+
+        $first = $this->apiPost("/v2/groups/{$group->id}/files", [
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'same private file bytes'),
+        ], $headers)->assertCreated();
+        $second = $this->apiPost("/v2/groups/{$group->id}/files", [
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'same private file bytes'),
+        ], $headers)->assertCreated();
+
+        self::assertSame($first->json('data.id'), $second->json('data.id'));
+        self::assertSame(1, DB::table('group_files')->where('group_id', $group->id)->count());
+        self::assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('group_id', $group->id)
+            ->where('operation_type', 'file')
+            ->count());
+        self::assertCount(1, Storage::disk('local')->allFiles("groups/{$this->testTenantId}/{$group->id}"));
+
+        $this->apiPost("/v2/groups/{$group->id}/files", [
+            'file' => UploadedFile::fake()->createWithContent('notes.txt', 'changed private file'),
+        ], $headers)->assertStatus(409);
+        self::assertSame(1, DB::table('group_files')->where('group_id', $group->id)->count());
+        self::assertCount(1, Storage::disk('local')->allFiles("groups/{$this->testTenantId}/{$group->id}"));
+
+        $fileId = (int) $first->json('data.id');
+        $this->apiDelete("/v2/groups/{$group->id}/files/{$fileId}")->assertOk();
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('group_id', $group->id)
+            ->where('operation_type', 'file')
+            ->where('result_id', $fileId)
+            ->count());
     }
 }

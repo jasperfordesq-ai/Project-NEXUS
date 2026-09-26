@@ -5,6 +5,10 @@
 
 import { downloadAuthenticatedFile, SHARING_UNAVAILABLE } from '@/lib/volunteering/authenticatedFileDownload';
 import { pickGroupFile } from '@/lib/media/pickGroupFile';
+import {
+  completeGroupFileUploadOperation,
+  reserveGroupFileUploadOperation,
+} from '@/lib/groupFileUploadOperation';
 import { buildWebUrl } from '@/lib/utils/webUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1693,11 +1697,19 @@ function GroupFilesPanel({
         showToast({ title: t('common:errors.alertTitle'), description: t('detail.files.unsupportedType'), variant: 'danger' });
         return;
       }
+      const intent = JSON.stringify({
+        groupId,
+        mimeType: selection.file.mimeType,
+        name: selection.file.name,
+        size: selection.file.size,
+      });
+      const operation = await reserveGroupFileUploadOperation(intent);
       await uploadGroupFile(groupId, {
         uri: selection.file.uri,
         fileName: selection.file.name,
         mimeType: selection.file.mimeType,
-      });
+      }, operation.key);
+      await completeGroupFileUploadOperation(operation);
       if (!isMountedRef.current) return;
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

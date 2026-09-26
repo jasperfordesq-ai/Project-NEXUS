@@ -77,6 +77,7 @@ class GroupFilesController extends BaseApiController
                 'file' => $file,
                 'folder' => $request->input('folder'),
                 'description' => $request->input('description'),
+                'idempotency_key' => $request->header('Idempotency-Key') ?? $request->input('idempotency_key'),
             ]);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
@@ -88,9 +89,10 @@ class GroupFilesController extends BaseApiController
                 'NOT_FOUND' => 404,
                 'FORBIDDEN' => 403,
                 'FILE_TOO_LARGE' => 413,
+                'IDEMPOTENCY_CONFLICT' => 409,
                 'GROUP_QUOTA_EXCEEDED', 'TENANT_QUOTA_EXCEEDED' => 409,
                 'INVALID_TYPE', 'INVALID_FILE', 'INVALID_NAME', 'INVALID_DIMENSIONS',
-                'INVALID_FOLDER', 'DESCRIPTION_TOO_LONG' => 422,
+                'INVALID_FOLDER', 'DESCRIPTION_TOO_LONG', 'IDEMPOTENCY_INVALID' => 422,
                 default => 500,
             };
             return $errors !== []

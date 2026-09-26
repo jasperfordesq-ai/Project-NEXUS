@@ -327,8 +327,28 @@ describe('group file helpers', () => {
       mimeType: 'text/plain',
     });
 
-    expect(api.upload).toHaveBeenCalledWith('/api/v2/groups/7/files', expect.any(FormData));
+    expect(api.upload).toHaveBeenCalledWith('/api/v2/groups/7/files', expect.any(FormData), undefined);
     expect(result.data.file_name).toBe('group-notes.txt');
+  });
+
+  it('sends durable operation identity with a group file upload', async () => {
+    (api.upload as jest.Mock).mockResolvedValue({
+      data: { id: 32, file_name: 'group-notes.txt' },
+    });
+
+    await uploadGroupFile(7, {
+      uri: 'file:///tmp/group-notes.txt',
+      fileName: 'group-notes.txt',
+      mimeType: 'text/plain',
+    }, 'group-file-abc123');
+
+    expect(api.upload).toHaveBeenCalledWith(
+      '/api/v2/groups/7/files',
+      expect.any(FormData),
+      { headers: { 'Idempotency-Key': 'group-file-abc123' } },
+    );
+    const formData = (api.upload as jest.Mock).mock.calls[0][1] as FormData;
+    expect(formData.get('idempotency_key')).toBe('group-file-abc123');
   });
 });
 

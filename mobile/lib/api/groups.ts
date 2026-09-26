@@ -702,10 +702,19 @@ export function deleteGroupFile(id: number, fileId: number): Promise<{ data: { m
   return api.delete<{ data: { message: string } }>(`${API_V2}/groups/${id}/files/${fileId}`);
 }
 
-export async function uploadGroupFile(id: number, asset: GroupFileUploadAsset): Promise<{ data: GroupFileItem }> {
+export async function uploadGroupFile(
+  id: number,
+  asset: GroupFileUploadAsset,
+  idempotencyKey?: string,
+): Promise<{ data: GroupFileItem }> {
   const formData = new FormData();
   await appendGroupFile(formData, asset);
-  const response = await api.upload<UploadGroupFileResponse>(`${API_V2}/groups/${id}/files`, formData);
+  if (idempotencyKey) formData.append('idempotency_key', idempotencyKey);
+  const response = await api.upload<UploadGroupFileResponse>(
+    `${API_V2}/groups/${id}/files`,
+    formData,
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  );
   if (!response.data) {
     throw new ApiResponseError(502, response.message ?? i18n.t('common:errors.uploadIncomplete'));
   }
