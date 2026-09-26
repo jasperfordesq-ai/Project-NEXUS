@@ -131,6 +131,7 @@
     "providers_count": "Anbietende ({{count}})",
     "receivers_count": "Empfangende ({{count}})",
     "no_participants_yet": "Noch keine Teilnehmer hinzugefügt",
+    "add_yourself": "Sich selbst hinzufügen als",
     "validation_min_participants": "Sie benötigen mindestens 1 Anbietende(n) und 1 Empfangende(n), um fortzufahren.",
     "hour_split_preview": "Vorschau der Stundenaufteilung",
     "hour_split_preview_desc": "Überprüfen Sie, wie die Stunden zwischen den Teilnehmenden verteilt werden.",

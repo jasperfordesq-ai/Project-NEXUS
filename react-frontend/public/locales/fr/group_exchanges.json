@@ -133,6 +133,7 @@
     "providers_count": "Fournisseurs ({{count}})",
     "receivers_count": "Bénéficiaires ({{count}})",
     "no_participants_yet": "Aucun participant ajouté pour le moment",
+    "add_yourself": "Vous ajouter en tant que",
     "validation_min_participants": "Vous avez besoin d'au moins 1 fournisseur et 1 bénéficiaire pour continuer.",
     "hour_split_preview": "Aperçu de la répartition des heures",
     "hour_split_preview_desc": "Vérifiez comment les heures seront réparties entre les participants.",

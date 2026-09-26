@@ -133,6 +133,7 @@
     "providers_count": "Proveedores ({{count}})",
     "receivers_count": "Receptores ({{count}})",
     "no_participants_yet": "Aún no se han añadido participantes",
+    "add_yourself": "Añadirte como",
     "validation_min_participants": "Necesitas al menos 1 proveedor y 1 receptor para continuar.",
     "hour_split_preview": "Vista Previa del Reparto de Horas",
     "hour_split_preview_desc": "Revisa cómo se distribuirán las horas entre los participantes.",

@@ -131,6 +131,7 @@
     "providers_count": "Aanbieders ({{count}})",
     "receivers_count": "Ontvangers ({{count}})",
     "no_participants_yet": "Nog geen deelnemers toegevoegd",
+    "add_yourself": "Jezelf toevoegen als",
     "validation_min_participants": "U heeft minimaal 1 aanbieder en 1 ontvanger nodig om door te gaan.",
     "hour_split_preview": "Uren Split Voorbeeld",
     "hour_split_preview_desc": "Bekijk hoe de uren verdeeld zullen worden tussen de deelnemers.",

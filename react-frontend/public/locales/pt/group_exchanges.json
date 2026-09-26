@@ -133,6 +133,7 @@
     "providers_count": "Prestadores ({{count}})",
     "receivers_count": "Recetores ({{count}})",
     "no_participants_yet": "Ainda sem participantes adicionados",
+    "add_yourself": "Adicionar-se como",
     "validation_min_participants": "Precisa de pelo menos 1 prestador e 1 recetor para continuar.",
     "hour_split_preview": "Pré-visualização da Divisão de Horas",
     "hour_split_preview_desc": "Reveja como as horas serão distribuídas entre os participantes.",

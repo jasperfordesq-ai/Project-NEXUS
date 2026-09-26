@@ -135,6 +135,7 @@
     "providers_count": "Dostawcy ({{count}})",
     "receivers_count": "Odbiorcy ({{count}})",
     "no_participants_yet": "Jeszcze nie dodano uczestników",
+    "add_yourself": "Dodaj siebie jako",
     "validation_min_participants": "Potrzebujesz przynajmniej 1 dostawcę i 1 odbiorcę, aby kontynuować.",
     "hour_split_preview": "Podgląd podziału godzin",
     "hour_split_preview_desc": "Sprawdź, jak godziny będą rozdzielane między uczestników.",

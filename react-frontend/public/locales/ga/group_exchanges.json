@@ -137,6 +137,7 @@
     "providers_count": "Soláthraithe ({{count}})",
     "receivers_count": "Faighteoirí ({{count}})",
     "no_participants_yet": "Níl rannpháirtithe curtha leis fós",
+    "add_yourself": "Cuir tú féin leis mar",
     "validation_min_participants": "Teastaíonn soláthraí amháin agus faighteoir amháin ar a laghad le leanúint ar aghaidh.",
     "hour_split_preview": "Réamhamharc Roinnt Uaireanta",
     "hour_split_preview_desc": "Athbhreithnigh conas a roinnfear uaireanta idir rannpháirtithe.",

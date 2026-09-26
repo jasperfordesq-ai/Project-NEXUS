@@ -139,6 +139,7 @@
     "providers_count": "المزودون ({{count}})",
     "receivers_count": "المستلمون ({{count}})",
     "no_participants_yet": "لم يتم إضافة أي مشاركين بعد",
+    "add_yourself": "أضف نفسك بصفة",
     "validation_min_participants": "تحتاج إلى مزود واحد على الأقل ومستلم واحد للمتابعة.",
     "hour_split_preview": "معاينة تقسيم الساعات",
     "hour_split_preview_desc": "راجع كيف سيتم توزيع الساعات بين المشاركين.",

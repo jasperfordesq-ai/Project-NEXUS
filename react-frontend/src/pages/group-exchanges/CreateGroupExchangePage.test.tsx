@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -139,5 +139,25 @@ describe('CreateGroupExchangePage', () => {
     render(<CreateGroupExchangePage />);
     // Should show equal/custom/weighted split options
     expect(document.body).toBeInTheDocument();
+  });
+
+  // The member directory never returns the viewer, so an organiser who is
+  // also delivering the activity could not add themselves before this.
+  it('lets the organiser add themselves as a participant', async () => {
+    render(<CreateGroupExchangePage />);
+
+    fireEvent.change(screen.getByPlaceholderText('e.g., Community Garden Workday'), {
+      target: { value: 'Workshop' },
+    });
+    const hours = screen.getByPlaceholderText('e.g., 10');
+    fireEvent.change(hours, { target: { value: '1' } });
+    fireEvent.blur(hours);
+    fireEvent.click(screen.getByText('Next'));
+
+    const selfRow = (await screen.findByText('Add yourself as')).parentElement as HTMLElement;
+    fireEvent.click(within(selfRow).getByRole('button', { name: /Provider/ }));
+
+    await waitFor(() => expect(screen.getByText('Test User')).toBeInTheDocument());
+    expect(screen.queryByText('Add yourself as')).not.toBeInTheDocument();
   });
 });

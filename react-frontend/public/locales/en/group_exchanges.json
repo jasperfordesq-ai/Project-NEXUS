@@ -133,6 +133,7 @@
     "providers_count": "Providers ({{count}})",
     "receivers_count": "Receivers ({{count}})",
     "no_participants_yet": "No participants added yet",
+    "add_yourself": "Add yourself as",
     "validation_min_participants": "You need at least 1 provider and 1 receiver to continue.",
     "hour_split_preview": "Hour Split Preview",
     "hour_split_preview_desc": "Review how hours will be distributed between participants.",

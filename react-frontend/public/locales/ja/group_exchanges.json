@@ -131,6 +131,7 @@
     "providers_count": "提供者（{{count}}）",
     "receivers_count": "受取人（{{count}}）",
     "no_participants_yet": "まだ参加者が追加されていません",
+    "add_yourself": "自分を次の役割で追加",
     "validation_min_participants": "続行するには少なくとも1人の提供者と1人の受取人が必要です。",
     "hour_split_preview": "時間分配プレビュー",
     "hour_split_preview_desc": "参加者間で時間がどのように分配されるかを確認します。",

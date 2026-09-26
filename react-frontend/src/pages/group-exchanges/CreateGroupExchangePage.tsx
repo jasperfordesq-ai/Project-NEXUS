@@ -53,6 +53,7 @@ import { useAuth, useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import type { User } from '@/types/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -80,6 +81,17 @@ interface SearchResult {
 }
 
 const TOTAL_STEPS = 4;
+
+function selfAsSearchResult(user: User): SearchResult {
+  return {
+    id: user.id,
+    name: user.name,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    avatar_url: user.avatar_url ?? undefined,
+    avatar: user.avatar ?? undefined,
+  };
+}
 
 const SPLIT_TYPE_CARDS: { value: SplitType; icon: React.ReactNode }[] = [
   {
@@ -667,6 +679,37 @@ export function CreateGroupExchangePage() {
                         {t('detail.no_members_found')}
                       </p>
                     ) : null}
+                  </div>
+                )}
+
+                {/*
+                  The member directory never returns the viewer, so an organiser
+                  who is also delivering the activity (a workshop leader, say)
+                  could not add themselves at all. Offer it explicitly.
+                */}
+                {user?.id && !participants.some((p) => p.user_id === user.id) && (
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-theme-default p-3">
+                    <p className="text-sm text-theme-muted">{t('create.add_yourself')}</p>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                        onPress={() => addParticipant(selfAsSearchResult(user), 'provider')}
+                        startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
+                      >
+                        {t('detail.role_provider')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                        onPress={() => addParticipant(selfAsSearchResult(user), 'receiver')}
+                        startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
+                      >
+                        {t('detail.role_receiver')}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </GlassCard>
