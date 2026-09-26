@@ -497,6 +497,15 @@ final class GroupQAService
                 ->where('question_id', $questionId)
                 ->delete();
 
+            foreach ($answerIds as $answerId) {
+                GroupContentCreationReceiptService::deleteForResult(
+                    $tenantId,
+                    $groupId,
+                    'answer',
+                    $answerId,
+                );
+            }
+
             $deleted = DB::table('group_questions')
                 ->where('id', $questionId)
                 ->where('group_id', $groupId)
@@ -505,6 +514,13 @@ final class GroupQAService
             if ($deleted !== 1) {
                 return false;
             }
+
+            GroupContentCreationReceiptService::deleteForResult(
+                $tenantId,
+                $groupId,
+                'question',
+                $questionId,
+            );
 
             GroupAuditService::log(
                 GroupAuditService::ACTION_QA_QUESTION_DELETED,
@@ -635,6 +651,12 @@ final class GroupQAService
             if ($deleted !== 1) {
                 return false;
             }
+            GroupContentCreationReceiptService::deleteForResult(
+                $tenantId,
+                $groupId,
+                'answer',
+                $answerId,
+            );
             DB::table('group_questions')
                 ->where('id', (int) $answer->question_id)
                 ->where('group_id', $groupId)

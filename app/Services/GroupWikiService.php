@@ -374,6 +374,13 @@ final class GroupWikiService
                 return false;
             }
 
+            GroupContentCreationReceiptService::deleteForResult(
+                $tenantId,
+                $groupId,
+                'wiki_page',
+                $pageId,
+            );
+
             GroupAuditService::log(
                 GroupAuditService::ACTION_WIKI_PAGE_DELETED,
                 $groupId,

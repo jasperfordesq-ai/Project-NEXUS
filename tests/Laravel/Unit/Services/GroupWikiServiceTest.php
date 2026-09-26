@@ -182,8 +182,13 @@ final class GroupWikiServiceTest extends TestCase
         $page = $this->service->createPage($this->groupId, (int) $this->author->id, [
             'title' => 'Audited wiki page',
             'content' => 'This page will be deleted.',
+            'idempotency_key' => 'wiki-delete-receipt-1',
         ]);
         self::assertNotNull($page);
+        self::assertSame(1, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'wiki_page')
+            ->where('result_id', $page['id'])
+            ->count());
 
         self::assertTrue($this->service->deletePage(
             $this->groupId,
@@ -200,6 +205,18 @@ final class GroupWikiServiceTest extends TestCase
         self::assertSame((int) $page['id'], (int) $details['page_id']);
         self::assertSame((int) $this->author->id, (int) $details['target_user_id']);
         self::assertSame('Audited wiki page', $details['title']);
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'wiki_page')
+            ->where('result_id', $page['id'])
+            ->count());
+
+        $recreated = $this->service->createPage($this->groupId, (int) $this->author->id, [
+            'title' => 'Audited wiki page',
+            'content' => 'This page will be deleted.',
+            'idempotency_key' => 'wiki-delete-receipt-1',
+        ]);
+        self::assertNotNull($recreated);
+        self::assertNotSame((int) $page['id'], (int) $recreated['id']);
     }
 
     private function user(): User

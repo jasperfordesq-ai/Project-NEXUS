@@ -381,6 +381,13 @@ class GroupAnnouncementService
                 return false;
             }
 
+            GroupContentCreationReceiptService::deleteForResult(
+                (int) $tenantId,
+                $groupId,
+                'announcement',
+                $announcementId,
+            );
+
             GroupAuditService::log(
                 GroupAuditService::ACTION_ANNOUNCEMENT_DELETED,
                 $groupId,

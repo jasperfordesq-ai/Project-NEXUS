@@ -193,6 +193,33 @@ final class GroupQAControllerTest extends TestCase
         self::assertSame($firstAnswer->json('data.id'), $replayedAnswer->json('data.id'));
         self::assertSame(1, DB::table('group_answers')->where('id', $firstAnswer->json('data.id'))->count());
         self::assertSame(1, (int) DB::table('group_questions')->where('id', $first->json('data.id'))->value('answer_count'));
+
+        $this->apiDelete(
+            "/v2/groups/{$this->activeGroupId}/answers/{$firstAnswer->json('data.id')}",
+        )->assertOk();
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'answer')
+            ->where('result_id', $firstAnswer->json('data.id'))
+            ->count());
+
+        $recreatedAnswer = $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/questions/{$first->json('data.id')}/answers",
+            $answerPayload,
+            $answerHeaders,
+        )->assertCreated();
+        self::assertNotSame($firstAnswer->json('data.id'), $recreatedAnswer->json('data.id'));
+
+        $this->apiDelete(
+            "/v2/groups/{$this->activeGroupId}/questions/{$first->json('data.id')}",
+        )->assertOk();
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'question')
+            ->where('result_id', $first->json('data.id'))
+            ->count());
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'answer')
+            ->where('result_id', $recreatedAnswer->json('data.id'))
+            ->count());
     }
 
     public function test_malformed_scalar_fields_resolve_to_validation_errors(): void

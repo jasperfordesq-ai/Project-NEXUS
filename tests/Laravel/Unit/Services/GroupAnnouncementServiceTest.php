@@ -107,6 +107,15 @@ class GroupAnnouncementServiceTest extends TestCase
             'content' => 'Changed intent.',
         ]));
         self::assertSame('IDEMPOTENCY_CONFLICT', $this->service->getErrors()[0]['code'] ?? null);
+
+        self::assertTrue($this->service->delete($groupId, (int) $first['id'], (int) $owner->id));
+        self::assertSame(0, DB::table('group_content_creation_receipts')
+            ->where('operation_type', 'announcement')
+            ->where('result_id', $first['id'])
+            ->count());
+        $recreated = $this->service->create($groupId, (int) $owner->id, $payload);
+        self::assertNotNull($recreated);
+        self::assertNotSame((int) $first['id'], (int) $recreated['id']);
     }
 
     public function test_admin_delete_writes_actor_and_announcement_metadata(): void
