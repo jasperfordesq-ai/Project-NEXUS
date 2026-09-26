@@ -1560,9 +1560,6 @@
       "TS2550": 1,
       "TS2769": 2
     },
-    "src/pages/help/HelpCenterPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/pages/ideation/CampaignDetailPage.test.tsx": {
       "TS2769": 1
     },
@@ -1931,7 +1928,7 @@
     }
   },
   "totals": {
-    "fileCount": 570,
-    "errorCount": 1739
+    "fileCount": 569,
+    "errorCount": 1738
   }
 }

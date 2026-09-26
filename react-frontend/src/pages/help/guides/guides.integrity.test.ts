@@ -31,6 +31,12 @@ interface GuideFile {
   }>;
 }
 
+/** A lookup the test requires; fails with a readable message instead of a crash. */
+function required<T>(value: T | undefined, what: string): T {
+  if (value === undefined) throw new Error(`missing ${what}`);
+  return value;
+}
+
 function readGuide(locale: string, namespace: string): GuideFile {
   return JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, locale, `${namespace}.json`), 'utf8').replace(/^﻿/, ''));
 }
@@ -39,7 +45,7 @@ function interfaceKeys(name: string): Set<string> {
   const source = fs.readFileSync(path.resolve(__dirname, '../../../types/api.ts'), 'utf8');
   const match = new RegExp(`export interface ${name} \\{([\\s\\S]*?)\\n\\}`).exec(source);
   if (!match) throw new Error(`interface ${name} not found`);
-  return new Set([...match[1].matchAll(/^\s*([a-z_]+)\??:/gm)].map((m) => m[1]));
+  return new Set([...(match[1] ?? '').matchAll(/^\s*([a-z_]+)\??:/gm)].map((m) => m[1] ?? ''));
 }
 
 const FEATURES = interfaceKeys('TenantFeatures');
@@ -54,7 +60,7 @@ function gateNames(gate: HelpGate | undefined): Array<{ kind: 'feature' | 'modul
 /** The parts of a body a translation must keep: links, and the shape of lists and steps. */
 function bodyShape(body: string) {
   return {
-    links: [...body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]).sort(),
+    links: [...body.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1] ?? '').sort(),
     blocks: parseHelpBody(body).map((block) => `${block.kind}:${block.kind === 'step' || block.kind === 'bullet' ? block.lines.length : ''}`),
   };
 }
@@ -80,12 +86,12 @@ describe.each(HELP_AUDIENCES)('%s guide', (audience) => {
   it('has English text for every registered guide, and nothing unregistered', () => {
     expect(Object.keys(english.sections).sort()).toEqual(registry.map((s) => s.id).sort());
     for (const section of registry) {
-      const text = english.sections[section.id];
+      const text = required(english.sections[section.id], `English text for ${section.id}`);
       expect(text.title?.trim(), `${section.id}.title`).toBeTruthy();
       expect(text.summary?.trim(), `${section.id}.summary`).toBeTruthy();
       expect(Object.keys(text.articles).sort(), section.id).toEqual(section.articles.map((a) => a.id).sort());
       for (const article of section.articles) {
-        const a = text.articles[article.id];
+        const a = required(text.articles[article.id], `English text for ${section.id}.${article.id}`);
         expect(a.title?.trim(), `${section.id}.${article.id}.title`).toBeTruthy();
         expect(a.summary?.trim(), `${section.id}.${article.id}.summary`).toBeTruthy();
         expect(a.body?.trim(), `${section.id}.${article.id}.body`).toBeTruthy();
@@ -108,7 +114,7 @@ describe.each(HELP_AUDIENCES)('%s guide', (audience) => {
       for (const article of section.articles) {
         const links = [
           ...(article.link ? [article.link] : []),
-          ...bodyShape(english.sections[section.id].articles[article.id].body).links,
+          ...bodyShape(english.sections[section.id]?.articles[article.id]?.body ?? '').links,
         ];
         for (const link of links) {
           expect(link.startsWith('/') && !link.startsWith('//'), `${section.id}.${article.id}: ${link}`).toBe(true);
@@ -121,12 +127,12 @@ describe.each(HELP_AUDIENCES)('%s guide', (audience) => {
     const translated = readGuide(locale, namespace);
     expect(Object.keys(translated.sections).sort()).toEqual(Object.keys(english.sections).sort());
     for (const [sectionId, section] of Object.entries(english.sections)) {
-      const other = translated.sections[sectionId];
+      const other = required(translated.sections[sectionId], `${locale} ${sectionId}`);
       expect(other.title?.trim(), `${locale} ${sectionId}.title`).toBeTruthy();
       expect(other.summary?.trim(), `${locale} ${sectionId}.summary`).toBeTruthy();
       expect(Object.keys(other.articles).sort(), `${locale} ${sectionId}`).toEqual(Object.keys(section.articles).sort());
       for (const [articleId, article] of Object.entries(section.articles)) {
-        const t = other.articles[articleId];
+        const t = required(other.articles[articleId], `${locale} ${sectionId}.${articleId}`);
         const where = `${locale} ${sectionId}.${articleId}`;
         expect(t.title?.trim(), `${where}.title`).toBeTruthy();
         expect(t.summary?.trim(), `${where}.summary`).toBeTruthy();

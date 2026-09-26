@@ -53,9 +53,10 @@ describe('parseHelpBody', () => {
 describe('HelpBody', () => {
   it('renders steps as an ordered list and bullets as a list', () => {
     render(<HelpBody body={BODY} />);
-    const lists = screen.getAllByRole('list');
-    expect(within(lists[0]).getAllByRole('listitem')).toHaveLength(3);
-    expect(within(lists[1]).getAllByRole('listitem')).toHaveLength(2);
+    const [steps, bullets] = screen.getAllByRole('list');
+    if (!steps || !bullets) throw new Error('expected a steps list and a bullet list');
+    expect(within(steps).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(bullets).getAllByRole('listitem')).toHaveLength(2);
     expect(screen.getByRole('heading', { name: 'Before you start' })).toBeInTheDocument();
   });
 
