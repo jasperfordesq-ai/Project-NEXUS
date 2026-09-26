@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- When a group manager loses management authority while the mobile Automation screen is open, a refused manager-only read or write now refreshes the group immediately. Stale scheduling and welcome-message controls disappear, the screen returns to Overview, and a definitively refused schedule is not retained for retry or created on the server.
+
 - A scheduled group post refused by safeguarding or another definite client-side rule now releases its encrypted retry lock while keeping the manager's entered text available to correct. Connection failures still retain the protected request for an exact retry, and the app explains safeguarding refusals in all seven mobile languages instead of claiming the post is waiting for a connection.
 
 - Scheduled group posts in the mobile app now keep the local time selected by the manager after refresh, and links to the manager-only Automation tab now wait for group permissions to load instead of reopening the Overview tab.

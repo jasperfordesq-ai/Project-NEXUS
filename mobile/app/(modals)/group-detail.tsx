@@ -1387,6 +1387,7 @@ function GroupDetailScreenInner() {
             groupId={loadedGroup.id}
             discussionEnabled={hasGroupTab('tab_discussion')}
             announcementsEnabled={hasGroupTab('tab_announcements')}
+            onAuthorityLost={refresh}
           />
         ) : null}
 

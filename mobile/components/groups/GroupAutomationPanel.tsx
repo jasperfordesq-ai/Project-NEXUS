@@ -47,6 +47,10 @@ const SAFEGUARDING_REFUSAL_CODES = new Set([
 ]);
 type PendingScheduledPost = GroupContentCreationOperation<'scheduled-post'>;
 
+function isManagerAuthorityLoss(error: unknown): error is ApiResponseError {
+  return error instanceof ApiResponseError && error.status === 403 && error.code === 'FORBIDDEN';
+}
+
 function validPost(value: unknown, groupId: number): value is GroupScheduledPost {
   if (!value || typeof value !== 'object') return false;
   const post = value as Partial<GroupScheduledPost>;
@@ -67,10 +71,12 @@ export default function GroupAutomationPanel({
   groupId,
   discussionEnabled,
   announcementsEnabled,
+  onAuthorityLost,
 }: {
   groupId: number;
   discussionEnabled: boolean;
   announcementsEnabled: boolean;
+  onAuthorityLost?: () => void;
 }) {
   const { t } = useTranslation(['groups', 'common']);
   const tRef = useRef(t); tRef.current = t;
@@ -122,13 +128,14 @@ export default function GroupAutomationPanel({
       return response.data;
     } catch (error) {
       if (mounted.current && version === requestVersion.current) {
+        if (isManagerAuthorityLoss(error)) onAuthorityLost?.();
         setLoadError(describeApiError(error, tRef.current('detail.automation.loadError')));
       }
       return null;
     } finally {
       if (mounted.current && version === requestVersion.current) setLoading(false);
     }
-  }, [groupId]);
+  }, [groupId, onAuthorityLost]);
 
   const loadWelcome = useCallback(async () => {
     setWelcomeLoading(true);
@@ -143,12 +150,15 @@ export default function GroupAutomationPanel({
       }
       return response.data;
     } catch (error) {
-      if (mounted.current) showToast({ title: tRef.current('detail.automation.welcomeLoadError'), description: describeApiError(error, tRef.current('detail.automation.welcomeLoadError')), variant: 'danger' });
+      if (mounted.current) {
+        if (isManagerAuthorityLoss(error)) onAuthorityLost?.();
+        showToast({ title: tRef.current('detail.automation.welcomeLoadError'), description: describeApiError(error, tRef.current('detail.automation.welcomeLoadError')), variant: 'danger' });
+      }
       return null;
     } finally {
       if (mounted.current) setWelcomeLoading(false);
     }
-  }, [groupId, showToast]);
+  }, [groupId, onAuthorityLost, showToast]);
 
   useEffect(() => { void loadPosts(); void loadWelcome(); }, [loadPosts, loadWelcome]);
   useEffect(() => {
@@ -210,6 +220,7 @@ export default function GroupAutomationPanel({
           displayError = cleanupError;
         }
       }
+      if (mounted.current && isManagerAuthorityLoss(error)) onAuthorityLost?.();
       const fallback = definitelyRejected
         ? (displayError === error && error instanceof ApiResponseError && error.code && SAFEGUARDING_REFUSAL_CODES.has(error.code)
           ? t('detail.automation.safeguardingRefusal')

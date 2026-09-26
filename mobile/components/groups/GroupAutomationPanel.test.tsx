@@ -122,6 +122,31 @@ it('releases a definitively refused schedule while preserving the manager input'
   }));
 });
 
+it('requests an authoritative group refresh when manager authority is refused', async () => {
+  const onAuthorityLost = jest.fn();
+  mockApi.create.mockRejectedValue(new ApiResponseError(
+    403,
+    'You do not have permission to manage this group.',
+    undefined,
+    'FORBIDDEN',
+  ));
+  mockOperation.discard.mockResolvedValue(undefined);
+
+  render(<GroupAutomationPanel groupId={23} discussionEnabled announcementsEnabled onAuthorityLost={onAuthorityLost} />);
+  await screen.findByText('Weekly check-in');
+  fireEvent.press(screen.getByText('Schedule post'));
+  fireEvent.changeText(screen.getByLabelText('Title'), 'Former manager update');
+  fireEvent.changeText(screen.getByLabelText('Content'), 'The parent screen must reload authority');
+  fireEvent.press(screen.getByText('Choose date'));
+  const picker = screen.UNSAFE_getByType('DateTimePicker' as never);
+  act(() => picker.props.onChange({ type: 'set' }, new Date('2026-12-03T11:00:00.000Z')));
+  fireEvent.press(screen.getByTestId('group-automation-create'));
+
+  await waitFor(() => expect(onAuthorityLost).toHaveBeenCalledTimes(1));
+  expect(mockOperation.discard).toHaveBeenCalledWith(expect.objectContaining({ key: 'scheduled-key' }));
+  expect(screen.queryByTestId('group-automation-recovery')).toBeNull();
+});
+
 it('retains an ambiguous schedule failure for explicit recovery', async () => {
   mockApi.create.mockRejectedValue(new Error('response lost'));
 
