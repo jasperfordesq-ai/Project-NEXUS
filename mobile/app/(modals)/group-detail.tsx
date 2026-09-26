@@ -962,6 +962,7 @@ function GroupDetailScreenInner() {
         }
       }
       if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && isRefusalStatus(err.status)) refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.discussionCreateError')), variant: 'danger' });
     } finally {
@@ -1014,6 +1015,7 @@ function GroupDetailScreenInner() {
         }
       }
       if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && isRefusalStatus(err.status)) refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.announcementCreateError')), variant: 'danger' });
     } finally {
@@ -1106,6 +1108,7 @@ function GroupDetailScreenInner() {
         }
       }
       if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && isRefusalStatus(err.status)) refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.qa.createError')), variant: 'danger' });
     } finally {
@@ -1744,6 +1747,7 @@ function GroupDetailScreenInner() {
             groupId={loadedGroup.id}
             canView={userCanSeeMemberContent}
             canManage={canManageGroup}
+            onAuthorityLost={refresh}
           />
         ) : null}
 
@@ -1771,6 +1775,7 @@ function GroupDetailScreenInner() {
             onRetryRecovery={() => void restoreQuestionDraft()}
             onCreate={() => void handleCreateQuestion()}
             onRefresh={questionsApi.refresh}
+            onAuthorityLost={refresh}
           />
         ) : null}
 
@@ -1780,6 +1785,7 @@ function GroupDetailScreenInner() {
             canView={userCanSeeMemberContent}
             canEdit={userCanSeeMemberContent}
             canManage={canManageGroup}
+            onAuthorityLost={refresh}
           />
         ) : null}
 
@@ -2207,10 +2213,12 @@ function GroupMediaPanel({
   groupId,
   canView,
   canManage,
+  onAuthorityLost,
 }: {
   groupId: number;
   canView: boolean;
   canManage: boolean;
+  onAuthorityLost: () => void;
 }) {
   const { t } = useTranslation(['groups', 'common']);
   const primary = usePrimaryColor();
@@ -2378,6 +2386,7 @@ function GroupMediaPanel({
       }
     }
     if (!isMountedRef.current) return;
+    if (err instanceof ApiResponseError && isRefusalStatus(err.status)) onAuthorityLost();
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.media.uploadError')), variant: 'danger' });
   }
@@ -2574,6 +2583,7 @@ function GroupQAPanel({
   onRetryRecovery,
   onCreate,
   onRefresh,
+  onAuthorityLost,
 }: {
   groupId: number;
   questions: GroupQuestion[];
@@ -2597,6 +2607,7 @@ function GroupQAPanel({
   onRetryRecovery: () => void;
   onCreate: () => void;
   onRefresh: () => void;
+  onAuthorityLost: () => void;
 }) {
   const { t } = useTranslation(['groups', 'common']);
   const primary = usePrimaryColor();
@@ -2722,6 +2733,7 @@ function GroupQAPanel({
         }
       }
       if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && isRefusalStatus(err.status)) onAuthorityLost();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.qa.answerError')), variant: 'danger' });
     } finally {
@@ -3075,11 +3087,13 @@ function GroupWikiPanel({
   canView,
   canEdit,
   canManage,
+  onAuthorityLost,
 }: {
   groupId: number;
   canView: boolean;
   canEdit: boolean;
   canManage: boolean;
+  onAuthorityLost: () => void;
 }) {
   const { t } = useTranslation(['groups', 'common']);
   const theme = useTheme();
@@ -3248,6 +3262,7 @@ function GroupWikiPanel({
         }
       }
       if (!isMountedRef.current) return;
+      if (err instanceof ApiResponseError && isRefusalStatus(err.status)) onAuthorityLost();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(displayError, t('detail.wiki.createError')), variant: 'danger' });
     } finally {

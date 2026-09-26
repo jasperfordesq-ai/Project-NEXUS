@@ -1451,6 +1451,36 @@ describe('GroupDetailScreen', () => {
     expect(getByPlaceholderText('Write a message').props.editable).toBe(true);
   });
 
+  it('refreshes group authority after discussion creation is refused', async () => {
+    const refreshGroup = jest.fn();
+    const groupState = {
+      data: { data: { ...mockGroupDetail, is_member: true } },
+      isLoading: false,
+      error: null,
+      refresh: refreshGroup,
+    };
+    const emptyState = { data: { data: [] }, isLoading: false, error: null, refresh: jest.fn() };
+    let apiCall = 0;
+    mockUseApi.mockImplementation(() => {
+      const states = [groupState, emptyState, emptyState, emptyState, emptyState, emptyState, emptyState];
+      const state = states[apiCall % states.length];
+      apiCall += 1;
+      return state;
+    });
+    jest.mocked(createGroupDiscussion).mockRejectedValueOnce(new ApiResponseError(403, 'Membership changed.'));
+
+    const screen = render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Discussions'));
+    await waitFor(() => expect(screen.getByTestId('group-discussion-composer-open').props.accessibilityState.disabled).toBe(false));
+    fireEvent.press(screen.getByTestId('group-discussion-composer-open'));
+    fireEvent.changeText(screen.getByPlaceholderText('Discussion title'), 'Stale membership');
+    fireEvent.changeText(screen.getByPlaceholderText('Write a message'), 'This must not be submitted again.');
+    fireEvent.press(screen.getByText('Publish discussion'));
+
+    await waitFor(() => expect(refreshGroup).toHaveBeenCalledTimes(1));
+    expect(discardGroupContentCreationOperation).toHaveBeenCalledTimes(1);
+  });
+
   it('restores an unfinished discussion and retries its exact durable key', async () => {
     const pending = {
       storageKey: 'saved-group-content',

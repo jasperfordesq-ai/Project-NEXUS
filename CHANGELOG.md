@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Group content creation in the mobile app now refreshes group membership and management rights after the server refuses a stale request. Discussion, announcement, Q&A, wiki and gallery controls disappear immediately when access has changed, preventing repeated attempts from an outdated composer.
+
 - Group invitation emails can now be sent from the mobile app when the optional message is left blank. Laravel previously converted the empty field to `null` and then rejected it. Results also distinguish a durable invitation whose email delivery failed from one that was actually sent, instead of reporting both as “Sent”, and malformed delivery results fail closed.
 
 - When a group manager loses management authority while the mobile Automation screen is open, a refused manager-only read or write now refreshes the group immediately. Stale scheduling and welcome-message controls disappear, the screen returns to Overview, and a definitively refused schedule is not retained for retry or created on the server.
