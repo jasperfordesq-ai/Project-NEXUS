@@ -537,6 +537,8 @@
       "created": "Post programmato",
       "createError": "Post non programmato",
       "retryHint": "Il post programmato è salvato su questo dispositivo. Riprova quando la connessione è disponibile.",
+      "refusalHint": "La richiesta è stata rifiutata e non è stata programmata. Controlla le modifiche prima di riprovare.",
+      "safeguardingRefusal": "Questo post non è stato programmato a causa di una regola di tutela. Contatta il coordinatore della tua comunità prima di riprovare.",
       "recoveryTitle": "Post programmato incompleto",
       "recoveryNotice": "Il post incompleto è stato ripristinato. Riprova prima di programmare contenuti diversi.",
       "recoveryError": "Il post salvato non è stato ripristinato in modo sicuro.",

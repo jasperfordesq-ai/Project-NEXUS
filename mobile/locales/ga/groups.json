@@ -528,6 +528,8 @@
       "created": "Postáil sceidealaithe",
       "createError": "Níor sceidealaíodh an phostáil",
       "retryHint": "Tá do phostáil sceidealaithe sábháilte ar an ngléas seo. Bain triail eile as nuair atá an ceangal réidh.",
+      "refusalHint": "Diúltaíodh don iarratas agus níor sceidealaíodh é. Seiceáil do chuid athruithe sula ndéanann tú iarracht eile.",
+      "safeguardingRefusal": "Níor sceidealaíodh an phostáil seo de bharr riail chosanta. Déan teagmháil le comhordaitheoir do phobail sula ndéanann tú iarracht eile.",
       "recoveryTitle": "Postáil sceidealaithe neamhchríochnaithe",
       "recoveryNotice": "Athchóiríodh do phostáil neamhchríochnaithe. Bain triail eile aisti sula sceidealaíonn tú ábhar eile.",
       "recoveryError": "Níorbh fhéidir an phostáil shábháilte a athchóiriú go sábháilte.",

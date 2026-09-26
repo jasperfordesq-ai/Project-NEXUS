@@ -537,6 +537,8 @@
       "created": "Publication programmée",
       "createError": "Publication non programmée",
       "retryHint": "Votre publication est enregistrée sur cet appareil. Réessayez lorsque la connexion est disponible.",
+      "refusalHint": "La demande a été refusée et n’a pas été programmée. Vérifiez vos modifications avant de réessayer.",
+      "safeguardingRefusal": "Cette publication n’a pas été programmée en raison d’une règle de protection. Contactez la coordination de votre communauté avant de réessayer.",
       "recoveryTitle": "Publication programmée inachevée",
       "recoveryNotice": "Votre publication inachevée a été restaurée. Réessayez avant de programmer un autre contenu.",
       "recoveryError": "La publication enregistrée n’a pas pu être restaurée en toute sécurité.",

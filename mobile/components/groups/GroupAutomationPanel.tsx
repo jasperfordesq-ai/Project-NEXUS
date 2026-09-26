@@ -27,6 +27,7 @@ import {
   type GroupScheduledPostRecurrence,
   type GroupScheduledPostType,
 } from '@/lib/api/groups';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
   completeGroupContentCreationOperation,
@@ -39,6 +40,11 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { dateLocale } from '@/lib/utils/dateLocale';
 
 const RECURRENCES: GroupScheduledPostRecurrence[] = ['daily', 'weekly', 'monthly'];
+const SAFEGUARDING_REFUSAL_CODES = new Set([
+  'SAFEGUARDING_CONTACT_RESTRICTED',
+  'SAFEGUARDING_POLICY_UNAVAILABLE',
+  'VETTING_REQUIRED',
+]);
 type PendingScheduledPost = GroupContentCreationOperation<'scheduled-post'>;
 
 function validPost(value: unknown, groupId: number): value is GroupScheduledPost {
@@ -171,8 +177,9 @@ export default function GroupAutomationPanel({
       return;
     }
     setValidationError(null); setCreating(true);
+    let operation: PendingScheduledPost | null = null;
     try {
-      const operation = await reserveGroupContentCreationOperation(groupId, 'scheduled-post', {
+      operation = await reserveGroupContentCreationOperation(groupId, 'scheduled-post', {
         postType, title, content, scheduledAt: scheduledAt.toISOString(), isRecurring: recurring,
         recurrencePattern: recurring ? recurrence : null,
       });
@@ -191,7 +198,24 @@ export default function GroupAutomationPanel({
       showToast({ title: t('detail.automation.created'), variant: 'success' });
       await loadPosts();
     } catch (error) {
-      if (mounted.current) showToast({ title: t('detail.automation.createError'), description: describeApiError(error, t('detail.automation.retryHint')), variant: 'danger' });
+      let displayError = error;
+      const definitelyRejected = error instanceof ApiResponseError
+        && (error.operationOutcome === 'not_applied'
+          || (error.status >= 400 && error.status < 500 && ![408, 409, 425, 429].includes(error.status)));
+      if (operation && definitelyRejected) {
+        try {
+          await discardGroupContentCreationOperation(operation);
+          if (mounted.current) setPending(null);
+        } catch (cleanupError) {
+          displayError = cleanupError;
+        }
+      }
+      const fallback = definitelyRejected
+        ? (displayError === error && error instanceof ApiResponseError && error.code && SAFEGUARDING_REFUSAL_CODES.has(error.code)
+          ? t('detail.automation.safeguardingRefusal')
+          : t('detail.automation.refusalHint'))
+        : t('detail.automation.retryHint');
+      if (mounted.current) showToast({ title: t('detail.automation.createError'), description: describeApiError(displayError, fallback), variant: 'danger' });
     } finally {
       if (mounted.current) setCreating(false);
     }

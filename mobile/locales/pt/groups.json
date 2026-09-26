@@ -537,6 +537,8 @@
       "created": "Publicação agendada",
       "createError": "Publicação não agendada",
       "retryHint": "A publicação está guardada neste dispositivo. Tente novamente quando houver ligação.",
+      "refusalHint": "O pedido foi recusado e não foi agendado. Reveja as alterações antes de tentar novamente.",
+      "safeguardingRefusal": "Esta publicação não foi agendada devido a uma regra de proteção. Contacte a coordenação da sua comunidade antes de tentar novamente.",
       "recoveryTitle": "Publicação agendada inacabada",
       "recoveryNotice": "A publicação inacabada foi restaurada. Tente novamente antes de agendar outro conteúdo.",
       "recoveryError": "A publicação guardada não pôde ser restaurada em segurança.",

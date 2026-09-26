@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { ApiResponseError } from '@/lib/api/client';
 
 const mockApi = {
   list: jest.fn(), create: jest.fn(), cancel: jest.fn(), getWelcome: jest.fn(), saveWelcome: jest.fn(),
@@ -90,6 +91,52 @@ it('creates through the durable scheduled-post operation key', async () => {
   fireEvent.press(screen.getByTestId('group-automation-create'));
   await waitFor(() => expect(mockOperation.reserve).toHaveBeenCalledWith(23, 'scheduled-post', expect.objectContaining({ title: 'Planned update' })));
   expect(mockApi.create).toHaveBeenCalledWith(23, expect.objectContaining({ title: 'Planned update' }), 'scheduled-key');
+});
+
+it('releases a definitively refused schedule while preserving the manager input', async () => {
+  mockApi.create.mockRejectedValue(new ApiResponseError(
+    403,
+    'This member has asked for a coordinator to arrange contact on their behalf. Your message has not been sent. Please contact your broker or community administrator so they can help arrange the next safe step.',
+    undefined,
+    'SAFEGUARDING_CONTACT_RESTRICTED',
+  ));
+  mockOperation.discard.mockResolvedValue(undefined);
+
+  render(<GroupAutomationPanel groupId={23} discussionEnabled announcementsEnabled />);
+  await screen.findByText('Weekly check-in');
+  fireEvent.press(screen.getByText('Schedule post'));
+  fireEvent.changeText(screen.getByLabelText('Title'), 'Protected group update');
+  fireEvent.changeText(screen.getByLabelText('Content'), 'Keep this editable after refusal');
+  fireEvent.press(screen.getByText('Choose date'));
+  const picker = screen.UNSAFE_getByType('DateTimePicker' as never);
+  act(() => picker.props.onChange({ type: 'set' }, new Date('2026-12-03T11:00:00.000Z')));
+  fireEvent.press(screen.getByTestId('group-automation-create'));
+
+  await waitFor(() => expect(mockOperation.discard).toHaveBeenCalledWith(expect.objectContaining({ key: 'scheduled-key' })));
+  expect(screen.queryByTestId('group-automation-recovery')).toBeNull();
+  expect(screen.getByDisplayValue('Protected group update')).toBeTruthy();
+  expect(screen.getByDisplayValue('Keep this editable after refusal')).toBeTruthy();
+  expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+    description: 'This post was not scheduled because a safeguarding rule requires coordinator-assisted contact. Contact your community coordinator before trying again.',
+    variant: 'danger',
+  }));
+});
+
+it('retains an ambiguous schedule failure for explicit recovery', async () => {
+  mockApi.create.mockRejectedValue(new Error('response lost'));
+
+  render(<GroupAutomationPanel groupId={23} discussionEnabled announcementsEnabled />);
+  await screen.findByText('Weekly check-in');
+  fireEvent.press(screen.getByText('Schedule post'));
+  fireEvent.changeText(screen.getByLabelText('Title'), 'Uncertain group update');
+  fireEvent.changeText(screen.getByLabelText('Content'), 'Retain this after response loss');
+  fireEvent.press(screen.getByText('Choose date'));
+  const picker = screen.UNSAFE_getByType('DateTimePicker' as never);
+  act(() => picker.props.onChange({ type: 'set' }, new Date('2026-12-03T11:00:00.000Z')));
+  fireEvent.press(screen.getByTestId('group-automation-create'));
+
+  expect(await screen.findByTestId('group-automation-recovery')).toBeTruthy();
+  expect(mockOperation.discard).not.toHaveBeenCalled();
 });
 
 it('uses welcome readback to confirm a response-lost save', async () => {

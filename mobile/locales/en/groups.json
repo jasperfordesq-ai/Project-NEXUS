@@ -537,6 +537,8 @@
       "created": "Post scheduled",
       "createError": "Post not scheduled",
       "retryHint": "Your scheduled post is saved on this device. Retry it when the connection is ready.",
+      "refusalHint": "The request was refused and was not scheduled. Review your changes before trying again.",
+      "safeguardingRefusal": "This post was not scheduled because a safeguarding rule requires coordinator-assisted contact. Contact your community coordinator before trying again.",
       "recoveryTitle": "Unfinished scheduled post",
       "recoveryNotice": "Your unfinished scheduled post was restored. Retry it before scheduling different content.",
       "recoveryError": "The saved scheduled post could not be restored safely.",

@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A scheduled group post refused by safeguarding or another definite client-side rule now releases its encrypted retry lock while keeping the manager's entered text available to correct. Connection failures still retain the protected request for an exact retry, and the app explains safeguarding refusals in all seven mobile languages instead of claiming the post is waiting for a connection.
+
 - Scheduled group posts in the mobile app now keep the local time selected by the manager after refresh, and links to the manager-only Automation tab now wait for group permissions to load instead of reopening the Overview tab.
 
 - Members can now pull down to refresh a Help Centre guide after reconnecting, without leaving the article or replacing already loaded text with a full-page spinner.

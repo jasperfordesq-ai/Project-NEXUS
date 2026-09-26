@@ -537,6 +537,8 @@
       "created": "Publicación programada",
       "createError": "Publicación no programada",
       "retryHint": "La publicación programada está guardada en este dispositivo. Reinténtalo cuando haya conexión.",
+      "refusalHint": "La solicitud fue rechazada y no se programó. Revisa los cambios antes de volver a intentarlo.",
+      "safeguardingRefusal": "Esta publicación no se programó debido a una norma de protección. Ponte en contacto con la coordinación de tu comunidad antes de volver a intentarlo.",
       "recoveryTitle": "Publicación programada sin terminar",
       "recoveryNotice": "Se restauró la publicación sin terminar. Reinténtala antes de programar otro contenido.",
       "recoveryError": "La publicación guardada no se pudo restaurar de forma segura.",

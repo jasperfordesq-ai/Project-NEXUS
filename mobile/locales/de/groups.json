@@ -537,6 +537,8 @@
       "created": "Beitrag geplant",
       "createError": "Beitrag nicht geplant",
       "retryHint": "Dein geplanter Beitrag ist auf diesem Gerät gespeichert. Versuche es erneut, wenn die Verbindung bereit ist.",
+      "refusalHint": "Die Anfrage wurde abgelehnt und nicht geplant. Prüfe deine Änderungen, bevor du es erneut versuchst.",
+      "safeguardingRefusal": "Dieser Beitrag wurde wegen einer Schutzregel nicht geplant. Wende dich an die Koordination deiner Community, bevor du es erneut versuchst.",
       "recoveryTitle": "Unfertiger geplanter Beitrag",
       "recoveryNotice": "Dein unfertiger geplanter Beitrag wurde wiederhergestellt. Wiederhole ihn, bevor du andere Inhalte planst.",
       "recoveryError": "Der gespeicherte geplante Beitrag konnte nicht sicher wiederhergestellt werden.",
