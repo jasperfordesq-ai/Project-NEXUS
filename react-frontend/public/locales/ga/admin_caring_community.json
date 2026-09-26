@@ -174,7 +174,7 @@
       "title": "Aistrithe Uair",
       "subtitle": "Athbhreithniú agus próiseáil a dhéanamh ar aistrithe uaire isteach agus ar feitheamh idir comhaltaí.",
       "actions": {
-        "approve": "Cheadaigh",
+        "approve": "Ceadaigh",
         "reject": "Diúltaigh"
       },
       "errors": {
@@ -663,7 +663,7 @@
       "sent": "Seolta",
       "expires": "In éag",
       "push": "Brúigh",
-      "dismissed": "Briseadh as a phost",
+      "dismissed": "Curtha ar leataobh",
       "status": "Stádas",
       "actions": "Gníomhartha"
     },
@@ -701,7 +701,7 @@
       "retry": "Bain triail eile as",
       "open_hour_review": "Léirmheas ar uair an chloig oscailte",
       "open_report_pack": "Oscail pacáiste tuairisce",
-      "approve": "Cheadaigh",
+      "approve": "Ceadaigh",
       "decline": "Meath",
       "escalate": "Ardaigh",
       "re_escalate": "Athmhéadaigh"
@@ -788,7 +788,7 @@
       "note_label": "Nóta comhordaitheoir",
       "note_placeholder": "Comhthéacs roghnach don ionchur seo",
       "upload_cta": "Uaslódáil & a bhaint",
-      "confirm_cta": "Dearbhaigh & cruthaigh cuntas",
+      "confirm_cta": "Deimhnigh & cruthaigh cuntas",
       "no_email": "Gan ríomhphost",
       "file_required": "Roghnaigh comhad le uaslódáil ar dtús.",
       "upload_failed": "Níorbh fhéidir an t-ionchur páipéir a uaslódáil.",
@@ -799,8 +799,8 @@
       "description": "AI-péirí tacadóirí-faighteoirí a mholtar bunaithe ar shuíomh, teanga, scileanna agus infhaighteacht.",
       "empty": "Níl aon mholtaí ann faoi láthair. Cuir tuilleadh ball leis nó coigeartaigh infhaighteacht.",
       "load_failed": "Níorbh fhéidir moltaí comhuaineach a lódáil.",
-      "dismiss_success": "Díbheadh ​​an moladh.",
-      "dismiss_failed": "Níorbh fhéidir an moladh a dhíbhe.",
+      "dismiss_success": "Cuireadh an moladh ar leataobh.",
+      "dismiss_failed": "Níorbh fhéidir an moladh a chur ar leataobh.",
       "relationship_title": "Comhartha:{{supporter}}&{{recipient}}",
       "distance_km": "{{value}}km",
       "same_language": "Teanga chéanna",
@@ -808,7 +808,7 @@
       "availability_overlap": "Forluí infhaighteachta",
       "shared_interests": "Leasanna roinnte",
       "score": "Scór {{value}}%",
-      "dismiss": "Díbhe",
+      "dismiss": "Cuir ar leataobh",
       "create": "Cruthaigh Tandem",
       "reason_join": "{{previous}}; {{next}}",
       "reasons": {
@@ -852,7 +852,7 @@
         "triaged": "Triáiseadh",
         "investigating": "Ag fiosrú",
         "resolved": "Réitíodh",
-        "dismissed": "Briseadh as a phost"
+        "dismissed": "Curtha ar leataobh"
       },
       "age_hours_one": "{{count}}h",
       "age_hours_other": "{{count}}h",
@@ -876,7 +876,7 @@
       "history_actions": {
         "assigned": "D'ionadaíodh",
         "created": "Cruthaíodh",
-        "dismissed": "Brúite",
+        "dismissed": "Curtha ar leataobh",
         "escalated": "Ardaíodh",
         "note_added": "Nóta curtha leis",
         "resolved": "Réitithe",
@@ -1599,7 +1599,7 @@
       "duplicate_phones": {
         "label": "Uimhreacha fóin dhúblacha",
         "schema_unavailable": "Níl an tábla úsáideoirí nó colún fóin ar fáil sa scéim tionóil seo.",
-        "found": "Roinn roinnt ball an uimhir ghutháin chéanna. Dearbhaigh an bhfuil siad ina gcónaí éagsúla.",
+        "found": "Roinn roinnt ball an uimhir ghutháin chéanna. Deimhnigh an cónaitheoirí éagsúla iad.",
         "clear": "Níor aimsíodh uimhreacha fóin dhúblacha."
       },
       "missing_preferred_language": {
@@ -1697,7 +1697,7 @@
       "controller": "Rialaitheoir & Próiseálaí",
       "data_retention": "Sonraí & coinneáil",
       "data_subject_rights": "Cearta ábhar sonraí",
-      "federation_isolated_node": "Cónaidhm & nód scoite",
+      "federation_isolated_node": "Líonra comhpháirtíochta & nód scoite",
       "incident_response": "Freagra ar theagmhais",
       "cross_border_transfers": "Aistrithe trasteorann"
     },
@@ -1707,7 +1707,7 @@
       "data_categories": "Catagóirí sonraí",
       "lawful_basis": "Bunús dleathach",
       "retention_defaults": "Mainneachtainí coinneála",
-      "federation_policy": "Beartas Cónaidhme",
+      "federation_policy": "Beartas an líonra comhpháirtíochta",
       "isolated_node_configuration": "Cumraíocht nód scoite",
       "destinations": "Cinn scríbe",
       "safeguards": "Coimircí"
@@ -1977,13 +1977,13 @@
   },
   "federation_peers_admin": {
     "meta": {
-      "page_title": "Piaraí Cónaidhm - Riarachán",
-      "title": "Piaraí Cónaidhme",
+      "page_title": "Piaraí an líonra comhpháirtíochta - Riarachán",
+      "title": "Piaraí an líonra comhpháirtíochta",
       "subtitle": "Ceangail le comharchumainn eile ionas gur féidir le baill uaireanta a sheoladh idir pobail."
     },
     "actions": {
       "refresh": "Athnuaigh",
-      "refresh_aria": "Athnuaigh piaraí cónaidhm",
+      "refresh_aria": "Athnuaigh piaraí an líonra comhpháirtíochta",
       "add_peer": "Cuir Piaraí leis",
       "rotate_secret": "Rothlaigh rún roinnte",
       "delete_peer": "Scrios piaraí",
@@ -2004,8 +2004,8 @@
     },
     "peers": {
       "title": "Piaraí Cláraithe",
-      "table_aria": "Piaraí Cónaidhm",
-      "empty": "Níl aon phiaraí cónaidhm fós - cuir ceann leis chun tús a chur leis."
+      "table_aria": "Piaraí an líonra comhpháirtíochta",
+      "empty": "Níl aon phiaraí an líonra comhpháirtíochta fós - cuir ceann leis chun tús a chur leis."
     },
     "table": {
       "name": "Ainm",
@@ -2024,7 +2024,7 @@
       "never": "Riamh"
     },
     "create_modal": {
-      "title": "Cuir Piaraí Cónaidhme leis",
+      "title": "Cuir Piaraí an líonra comhpháirtíochta leis",
       "peer_slug": "Slug an phiara",
       "peer_slug_description": "Carachtair alfa-uimhriúla sa chás íochtair agus fleiscíní. Úsáidtear é mar slug an chomharchumainn cinn scríbe le haghaidh aistrithe amach.",
       "peer_slug_placeholder": "bern-cooperative",
@@ -2042,7 +2042,7 @@
       "title": "Rún Roinnte Aonuaire",
       "body_prefix": "Taispeántar an rún seo",
       "only_once": "ach uair amháin",
-      "body_suffix": "Cóipeáil anois é agus greamaigh isteach in iontráil phiara cónaidhm an tsuiteála cianda NEXUS don chomharchumann seo. Má chailleann tú é, ní mór duit an rún a rothlú anseo agus an taobh cianda a nuashonrú arís.",
+      "body_suffix": "Cóipeáil anois é agus greamaigh isteach in iontráil phiara an líonra comhpháirtíochta an tsuiteála cianda NEXUS don chomharchumann seo. Má chailleann tú é, ní mór duit an rún a rothlú anseo agus an taobh cianda a nuashonrú arís.",
       "peer_slug_label": "Slug an phiara:",
       "base_url_label": "Bonn URL:"
     },
@@ -2050,10 +2050,10 @@
       "required_fields": "Ní mór na réimsí riachtanacha go léir a líonadh."
     },
     "confirm_rotate": "Rothlaigh an rún roinnte le haghaidh \"{{name}}\"? Stopann an sean-rún ag obair láithreach agus ní mór duit an taobh iargúlta a nuashonrú.",
-    "confirm_delete": "An bhfuil fonn ort an piara cónaidhme \"{{name}}\" a scriosadh? Tá sé seo buan.",
+    "confirm_delete": "An bhfuil fonn ort piara an líonra comhpháirtíochta \"{{name}}\" a scriosadh? Tá sé seo buan.",
     "toasts": {
-      "load_failed": "Theip ar lódáil piaraí an chónaidhm.",
-      "created": "Cruthaíodh piaraí Cónaidhm.",
+      "load_failed": "Theip ar lódáil piaraí an líonra comhpháirtíochta.",
+      "created": "Cruthaíodh piaraí an líonra comhpháirtíochta.",
       "create_failed": "Theip ar chruthú piara.",
       "status_updated": "Stádas piaraí socraithe go {{status}}.",
       "status_failed": "Theip ar stádas an chomhghleacaí a nuashonrú.",
@@ -2194,7 +2194,7 @@
     "meta": {
       "page_title": "Taispeántas Comhtháthaithe",
       "title": "Taispeántas Comhtháthaithe",
-      "subtitle": "Tagairt aon-leathanaigh de gach API poiblí, webbhook, críochphointe cónaidhm, agus dromchla OAuth atá ar fáil san imscaradh seo - réidh le tabhairt ar láimh do chomhpháirtí comhtháthú teicniúil."
+      "subtitle": "Tagairt aon-leathanaigh de gach API poiblí, webbhook, críochphointe an líonra comhpháirtíochta, agus dromchla OAuth atá ar fáil san imscaradh seo - réidh le tabhairt ar láimh do chomhpháirtí comhtháthú teicniúil."
     },
     "actions": {
       "refresh": "Athnuaigh",

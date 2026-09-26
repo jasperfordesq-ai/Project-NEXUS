@@ -184,7 +184,7 @@
         "description": "Tograí gníomhaire uathrialaitheach a athbhreithniú, a chur in eagar, a cheadú nó a dhiúltú sula ndéanann siad difear do shonraí tionóntaí."
       },
       "actions": {
-        "approve": "Cheadaigh",
+        "approve": "Ceadaigh",
         "edit_approve": "Cuir in eagar & ceadaigh",
         "reject": "Diúltaigh",
         "save_approve": "Sábháil & ceadaigh"

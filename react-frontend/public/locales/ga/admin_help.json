@@ -174,7 +174,7 @@
         },
         {
           "label": "Pas a chúlghairm",
-          "detail": "Cliceáil ar an pas gníomhach, ansin \"Cúlghairm\". Iompraítear an chúlghairm chuig gach comhghleacaí de chuid chónaidhm an Chomhphobail Chúraim laistigh de nóiméid trí shioncronú an chónaidhm."
+          "detail": "Cliceáil ar an pas gníomhach, ansin \"Cúlghairm\". Iompraítear an chúlghairm chuig gach comhghleacaí de chuid an líonra comhpháirtíochta an Chomhphobail Chúraim laistigh de nóiméid trí shioncronú an líonra comhpháirtíochta."
         },
         {
           "label": "Déan athbhreithniú ar úsáid pas",
@@ -321,7 +321,7 @@
     },
     "/caring/isolated-node": {
       "title": "Nód Scoite - Mód Ceannasacht Sonraí",
-      "summary": "Cumraíonn mód Nód Isolated an t-imscaradh seo chun na sonraí pearsanta go léir a stóráil laistigh de theorainn gheografach shainithe agus díchumasaítear sioncronú sonraí an chónaidhm le comharchumainn seachtracha Pobail Chúraim. Tá sé seo ag teastáil le haghaidh imscaradh a chaithfidh cloí le FADP/nDSG na hEilvéise (An tAcht Chónaidhme um Chosaint Sonraí).",
+      "summary": "Cumraíonn mód Nód Isolated an t-imscaradh seo chun na sonraí pearsanta go léir a stóráil laistigh de theorainn gheografach shainithe agus díchumasaítear sioncronú sonraí an líonra comhpháirtíochta le comharchumainn seachtracha Pobail Chúraim. Tá sé seo ag teastáil le haghaidh imscaradh a chaithfidh cloí le FADP/nDSG na hEilvéise (An tAcht Chónaidhme um Chosaint Sonraí).",
       "steps": [
         {
           "label": "Cumasaigh mód Nód Leithlisithe",
@@ -332,8 +332,8 @@
           "detail": "Féadfar roinnt sreafaí sonraí (m.sh. staidreamh comhiomlán gan ainm don deais náisiúnta) a bhánliosta. Athbhreithnigh gach sreabhadh agus ceadaigh nó bacaigh é."
         },
         {
-          "label": "Díchumasaigh an sioncronú cónaidhm",
-          "detail": "Nuair a bhíonn Nód Isolated gníomhach, cuirtear sioncronú cónaidhm Pas Téamh agus naisc chomhoibríocha piaraí ar fionraí. Feicfidh na comhaltaí fógra ag míniú é seo."
+          "label": "Díchumasaigh sioncronú an líonra comhpháirtíochta",
+          "detail": "Nuair a bhíonn Nód Isolated gníomhach, cuirtear sioncronú an líonra comhpháirtíochta Pas Téamh agus naisc chomhoibríocha piaraí ar fionraí. Feicfidh na comhaltaí fógra ag míniú é seo."
         },
         {
           "label": "Gin taifead comhlíonta FADP",
@@ -791,7 +791,7 @@
         },
         {
           "label": "Socraigh am éaga",
-          "detail": "Téann foláirimh in éag go huathoibríoch tar éis an ama a shocraigh tú (24 uair an chloig réamhshocraithe). Déantar foláirimh atá imithe in éag a dhíbhe go huathoibríoch ó scáileáin na mball."
+          "detail": "Téann foláirimh in éag go huathoibríoch tar éis an ama a shocraigh tú (24 uair an chloig réamhshocraithe). Baintear foláirimh atá imithe in éag de scáileáin na mball go huathoibríoch."
         },
         {
           "label": "Seol agus monatóireacht a dhéanamh",
@@ -1283,12 +1283,12 @@
         },
         {
           "label": "Cuir nasc piaraí ar fionraí",
-          "detail": "Mura bhfuil comharchumann gníomhach a thuilleadh nó má bhí saincheist chosanta aige, bain úsáid as \"Fionraí\" chun nasc an chónaidhm a chur ar sos gan é a bhaint go buan."
+          "detail": "Mura bhfuil comharchumann gníomhach a thuilleadh nó má bhí saincheist chosanta aige, bain úsáid as \"Fionraí\" chun nasc an líonra comhpháirtíochta a chur ar sos gan é a bhaint go buan."
         }
       ],
       "tips": [
         "Ná déan teagmháil ach le comharchumainn atá fíoraithe agat go pearsanta nó trí líonra náisiúnta an Chomhphobail Chúraim - is féidir cuirí turscair uathoibrithe a bheith ann.",
-        "Nuair a bhíonn mód Nód Leithlisithe gníomhach, cuirtear an sioncronú sonraí piaraí cónaidhm ar fad ar sos go huathoibríoch. Ath-chumas ina n-aonar tar éis athbhreithniú a dhéanamh ar chomhlíonadh FADP."
+        "Nuair a bhíonn mód Nód Leithlisithe gníomhach, cuirtear an sioncronú sonraí piaraí an líonra comhpháirtíochta ar fad ar sos go huathoibríoch. Ath-chumas ina n-aonar tar éis athbhreithniú a dhéanamh ar chomhlíonadh FADP."
       ],
       "relatedPaths": [
         {
@@ -1424,7 +1424,7 @@
     },
     "/caring/external-integrations": {
       "title": "Rianaire Comhtháthaithe Comhpháirtithe - Spleáchais Sheachtracha",
-      "summary": "Rianaigh comhtháthú atá ag brath ar chomhpháirtí a dteastaíonn úinéir seachtrach, comhaontú comhroinnte sonraí, bosca gainimh nó sonraíocht comhéadain uathu sular féidir leo dul beo. Is rianaire ullmhachta é an leathanach seo, ní leathanach socraithe an chónaidhm Partner Timebanks.",
+      "summary": "Rianaigh comhtháthú atá ag brath ar chomhpháirtí a dteastaíonn úinéir seachtrach, comhaontú comhroinnte sonraí, bosca gainimh nó sonraíocht comhéadain uathu sular féidir leo dul beo. Is rianaire ullmhachta é an leathanach seo, ní leathanach socraithe an líonra comhpháirtíochta Partner Timebanks.",
       "steps": [
         {
           "label": "Déan athbhreithniú ar an stádas spleáchais",
@@ -1500,7 +1500,7 @@
     },
     "/super-admin/national/kiss": {
       "title": "Pobal Cúraim — Painéal Náisiúnta Tras-Chomhoibríoch",
-      "summary": "Painéal comhiomlán ar an leibhéal náisiúnta nach féidir a fheiceáil ach ag foireann náisiúnta agus sár-riarthóirí an Phobail Chúraim. Comhiomlaíonn sé príomhmhéadracht ar fud gach comharchumainn ghníomhacha de chuid an Chomhphobail Chúram: uaireanta malairte iomlána, seachaint costais CHF le chéile, úsáid tras-chomhoibríoch Pas Téimh, agus sláinte an chónaidhm.",
+      "summary": "Painéal comhiomlán ar an leibhéal náisiúnta nach féidir a fheiceáil ach ag foireann náisiúnta agus sár-riarthóirí an Phobail Chúraim. Comhiomlaíonn sé príomhmhéadracht ar fud gach comharchumainn ghníomhacha de chuid an Chomhphobail Chúram: uaireanta malairte iomlána, seachaint costais CHF le chéile, úsáid tras-chomhoibríoch Pas Téimh, agus sláinte an líonra comhpháirtíochta.",
       "steps": [
         {
           "label": "Déan athbhreithniú ar na cártaí achoimre náisiúnta",
@@ -1511,8 +1511,8 @@
           "detail": "Cliceáil ar ró aon chomharchumainn sa tábla chun a dheais mhionsonraithe a oscailt. Is féidir leat a gcuid sonraí a léamh ach ní féidir leat iad a athrú."
         },
         {
-          "label": "Athbhreithniú a dhéanamh ar shláinte an chónaidhm",
-          "detail": "Léiríonn léarscáil sláinte na Cónaidhme cé na comharchumainn atá nasctha trí chónaidhm Pas Téamh agus ar theip ar shioncronú le déanaí."
+          "label": "Athbhreithniú a dhéanamh ar shláinte an líonra comhpháirtíochta",
+          "detail": "Léiríonn léarscáil sláinte an líonra comhpháirtíochta cé na comharchumainn atá nasctha tríd an líonra comhpháirtíochta Pas Téamh agus ar theip ar shioncronú le déanaí."
         },
         {
           "label": "Íoslódáil an tuarascáil náisiúnta",
@@ -1548,7 +1548,7 @@
         },
         {
           "label": "Togra a cheadú nó a dhiúltú",
-          "detail": "Cliceáil \"Ceadaigh\" chun an gníomh a dhéanamh láithreach, \"Diúltaigh\" chun é a dhíbhe, nó \"Iarchuir\" chun athmhachnamh a dhéanamh ar dháta níos déanaí. Cuir nóta leis ag míniú do chinneadh."
+          "detail": "Cliceáil \"Ceadaigh\" chun an gníomh a dhéanamh láithreach, \"Diúltaigh\" chun é a chur ar leataobh, nó \"Iarchuir\" chun athmhachnamh a dhéanamh ar dháta níos déanaí. Cuir nóta leis ag míniú do chinneadh."
         },
         {
           "label": "Cumraigh an tairseach uathfheidhmithe",

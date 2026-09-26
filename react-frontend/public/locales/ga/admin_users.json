@@ -73,7 +73,7 @@
     "select_row": "Roghnaigh sraith {{id}}"
   },
   "users": {
-    "action_approve": "Cheadaigh",
+    "action_approve": "Ceadaigh",
     "action_ban": "Cosc",
     "action_delete": "Scrios",
     "action_edit": "Cuir in eagar",

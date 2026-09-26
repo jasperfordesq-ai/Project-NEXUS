@@ -156,7 +156,7 @@
         "notification_email_placeholder": "admin@example.org"
       },
       "actions": {
-        "approve": "Cheadaigh",
+        "approve": "Ceadaigh",
         "approve_all_eligible": "Gach incháilithe a cheadú",
         "details": "Sonraí",
         "reject": "Diúltaigh",

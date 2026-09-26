@@ -265,7 +265,7 @@
     "enable_push": "Cumasaigh Brúfhógraí",
     "marketing_emails": "Ríomhphoist Margaíochta",
     "caring_smart_nudges": "Spreagthaí cliste an phobail chúramaigh",
-    "federation_notifications": "Fógraí cónaidhme trasardáin",
+    "federation_notifications": "Fógraí an líonra comhpháirtíochta trasardáin",
     "activity_digest": "Minicíocht achoimre gníomhaíochta"
   },
   "privacy_prefs": {
@@ -493,7 +493,7 @@
     "connections": "Naisc amháin - Do naisc"
   },
   "federation": {
-    "title": "Socruithe Cónaidhme",
+    "title": "Socruithe an líonra comhpháirtíochta",
     "description": "Bainistigh d'infheictheacht agus do roghanna thar phobail chomhpháirtíochta"
   },
   "gdpr": {

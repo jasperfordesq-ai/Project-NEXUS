@@ -7,7 +7,7 @@
       "capture_from_event": "Sábháil {{title}} mar theimpléad",
       "this_event": "imeacht seo",
       "safety_title": "Cumraíocht cóipe teimpléid amháin",
-      "safety_description": "Ní dhéantar daoine, clárúcháin, freagraí, tinreamh, ticéid, idirbhearta, stair seachadta, aitheantóirí cónaidhm agus staid na bhfoilseachán a chóipeáil riamh.",
+      "safety_description": "Ní dhéantar daoine, clárúcháin, freagraí, tinreamh, ticéid, idirbhearta, stair seachadta, aitheantóirí an líonra comhpháirtíochta agus staid na bhfoilseachán a chóipeáil riamh.",
       "search_label": "Cuardaigh teimpléid",
       "search_placeholder": "Cuardaigh de réir teideal foinse an imeachta",
       "search": "Cuardach",
@@ -57,7 +57,7 @@
         "allow_remote_attendance": "Ceadaigh cianfhreastal",
         "timezone": "Crios ama",
         "all_day": "Imeacht uile-lae",
-        "federated_visibility": "Infheictheacht Cónaidhm"
+        "federated_visibility": "Infheictheacht an líonra comhpháirtíochta"
       },
       "never_copied_title": "Ná cóipeáil riamh",
       "never_copied_description": "Fanann na taifid oibríochtúla agus príobháideacha seo i gcónaí leis an imeacht foinseach.",
@@ -68,7 +68,7 @@
         "attendance": "Stair tinrimh agus seiceála isteach",
         "tickets": "Ticéid, teidlíochtaí agus idirbhearta",
         "notifications": "Meabhrúcháin, fógraí agus stair seachadta",
-        "federation": "Aitheantóirí agus seachadtaí Cónaidhme",
+        "federation": "Aitheantóirí agus seachadtaí an líonra comhpháirtíochta",
         "lifecycle": "Foilsiú, modhnóireacht agus staid saolré"
       },
       "checks": {
@@ -78,7 +78,7 @@
         "event_template_check_versioned_snapshot": "Stóráiltear an chumraíocht mar ghrianghraf leagan do- immutable",
         "event_template_check_version_current": "Tá leagan an teimpléid roghnaithe reatha",
         "event_template_check_schedule_valid": "Tá an sceideal nua bailí agus sa todhchaí",
-        "event_template_check_federation_none": "Tá Cónaidhm díchumasaithe don dréacht nua",
+        "event_template_check_federation_none": "Tá an líonra comhpháirtíochta díchumasaithe don dréacht nua",
         "event_template_check_canonical_writer": "Bainfear úsáid as an sreabhadh oibre cruthú imeachtaí canónacha"
       },
       "capture": {
@@ -130,7 +130,7 @@
         "review": "Dréacht athbhreithnithe",
         "review_title": "Déan athbhreithniú ar dhréacht imeachta nua",
         "ready_title": "Réidh le dréacht a chruthú",
-        "ready_description": "D'fhíoraigh an freastalaí an leagan reatha, an liosta ceadaithe sábháilte, an sceideal, an socrú cónaidhm agus an scríbhneoir canónach.",
+        "ready_description": "D'fhíoraigh an freastalaí an leagan reatha, an liosta ceadaithe sábháilte, an sceideal, socrú an líonra comhpháirtíochta agus an scríbhneoir canónach.",
         "preview_event": "Imeacht nua",
         "publication_state": "Staid foilsiú",
         "draft": "Dréacht",

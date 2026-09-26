@@ -279,7 +279,7 @@
   },
   "moderation": {
     "pending": "Athbhreithniú ar feitheamh",
-    "approved": "Faofa",
+    "approved": "Ceadaithe",
     "rejected": "Diúltaithe",
     "flagged": "Marcáilte"
   }

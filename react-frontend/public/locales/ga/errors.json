@@ -33,7 +33,7 @@
     "update_failed": "Theip ar an nuashonrú"
   },
   "federation": {
-    "feature_disabled": "Níl an chónaidhm cumasaithe don phobal seo"
+    "feature_disabled": "Níl an líonra comhpháirtíochta cumasaithe don phobal seo"
   },
   "update_available": "Nuashonrú ar fáil",
   "version_info": "Reatha: {{currentVersion}} · Ar fáil: {{clientVersion}}",

@@ -184,5 +184,39 @@
   "hours_count_one": "{{count}} uair",
   "hours_count_few": "{{count}} uair",
   "hours_count_many": "{{count}} uair",
-  "hours_count_two": "{{count}} uair"
+  "hours_count_two": "{{count}} uair",
+  "status_config": {
+    "pending_provider": {
+      "label": "Ag fanacht leis an soláthraí",
+      "description": "Ag fanacht go nglacfaidh an soláthraí seirbhíse leis an iarratas seo nó go ndiúltóidh sé dó."
+    },
+    "pending_broker": {
+      "label": "Ag fanacht leis an mbróicéir",
+      "description": "Ní mór do bhróicéir an malartú seo a cheadú sular féidir leis dul ar aghaidh."
+    },
+    "accepted": {
+      "label": "Glactha",
+      "description": "Glacadh leis an malartú. Is féidir leis an soláthraí tosú nuair a bheidh sé réidh."
+    },
+    "in_progress": {
+      "label": "Ar siúl",
+      "description": "Tá an tseirbhís á soláthar faoi láthair."
+    },
+    "pending_confirmation": {
+      "label": "Deimhnigh na huaireanta",
+      "description": "Ní mór don dá pháirtí na huaireanta a oibríodh a dheimhniú chun an malartú a chríochnú."
+    },
+    "completed": {
+      "label": "Críochnaithe",
+      "description": "Tá an malartú críochnaithe agus aistríodh na creidmheasanna ama."
+    },
+    "disputed": {
+      "label": "Faoi dhíospóid",
+      "description": "Tá easaontas ann faoi na huaireanta. Déanfaidh bróicéir athbhreithniú air seo."
+    },
+    "cancelled": {
+      "label": "Cealaithe",
+      "description": "Cealaíodh an malartú seo."
+    }
+  }
 }

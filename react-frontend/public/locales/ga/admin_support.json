@@ -121,7 +121,7 @@
       "impact": "Tionchar",
       "status": "Stádas",
       "reporter": "Tuairisceoir",
-      "assignee": "Dúnta",
+      "assignee": "Sannaí",
       "created": "Cruthaíodh",
       "actions": "Gníomhartha"
     },
@@ -141,7 +141,7 @@
       "sentry_issue_url": "URL na heisiúna seolta",
       "triage_notes": "Nótaí triáise",
       "status": "Stádas",
-      "assignee": "Dúnta"
+      "assignee": "Sannaí"
     },
     "messages": {
       "saved": "Tuarascáil tacaíochta nuashonraithe.",

@@ -73,7 +73,7 @@
     "total_count": "{{count}}iomlán"
   },
   "marketplace": {
-    "action_approve": "Cheadaigh",
+    "action_approve": "Ceadaigh",
     "action_approve_listing": "Liosta a cheadú",
     "action_delete": "Scrios",
     "action_delete_listing": "Scrios Liostú",
@@ -255,7 +255,7 @@
     "result_partial": "Níorbh fhéidir roinnt míreanna a phróiseáil",
     "result_success": "Mórghníomh curtha i gcrích",
     "users": {
-      "approve": "Cheadaigh",
+      "approve": "Ceadaigh",
       "approve_confirm_message": "Ceadaigh Deimhnigh",
       "approve_confirm_title": "Ceadaigh Deimhnigh",
       "reason_label": "Cúis",

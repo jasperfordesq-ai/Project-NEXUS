@@ -67,7 +67,7 @@
     "review_received": "D'fhág {{name}} athbhreithniú {{rating}}-réalta agat"
   },
   "federation_credit": {
-    "action_taken": "Tá {{tenant}} tar éis {{action}} ar do chomhaontú creidmheasa cónaidhme."
+    "action_taken": "Tá {{tenant}} tar éis {{action}} ar do chomhaontú creidmheasa an líonra comhpháirtíochta."
   },
   "volunteer": {
     "shift_signup_confirmed": "Tá tú cláraithe do sheal deonaíochta ar {{date}}",

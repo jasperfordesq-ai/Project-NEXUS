@@ -75,7 +75,7 @@
   "listings": {
     "actions": "Gníomhartha",
     "an_unexpected_error_occurred": "Tharla earráid gan choinne",
-    "approve": "Cheadaigh",
+    "approve": "Ceadaigh",
     "approve_content": "Ábhar a cheadú",
     "approve_content_message": "An bhfuil tú cinnte gur mhaith leat an t-inneachar seo a cheadú?",
     "author": "Údar",
@@ -100,7 +100,7 @@
     "filter_all": "Gach",
     "filter_inactive": "Neamhghníomhach",
     "filter_pending": "Ar feitheamh",
-    "label_approve": "Cheadaigh",
+    "label_approve": "Ceadaigh",
     "label_delete": "Scrios",
     "label_reject": "Diúltaigh",
     "label_search_listings": "Liostaí Cuardaigh",

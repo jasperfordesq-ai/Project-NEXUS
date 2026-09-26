@@ -1082,7 +1082,7 @@
     "member": "Ball"
   },
   "federation_share_label": "Comhroinn le pobail chomhpháirtíochta",
-  "federation_share_description": "Déan an deis seo infheicthe do phobail chomhpháirtíochta i do líonra cónaidhme.",
+  "federation_share_description": "Déan an deis seo infheicthe do phobail chomhpháirtíochta i do líonra comhpháirtíochta.",
   "federation_share_updated": "Sainrogha comhroinnte nuashonraithe.",
   "federation_share_update_failed": "Níorbh fhéidir an tsainrogha comhroinnte a nuashonrú. Bain triail eile as.",
   "form_remote_label": "Deis cianda",

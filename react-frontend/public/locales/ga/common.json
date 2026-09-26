@@ -30,20 +30,20 @@
     "more": "Tuilleadh",
     "activity": "Gníomhaíocht",
     "saved": "Míreanna Sábháilte",
-    "federation": "Cónaidhm",
-    "federation_hub": "Mol Cónaidhme",
+    "federation": "Líonra comhpháirtíochta",
+    "federation_hub": "Mol an líonra comhpháirtíochta",
     "federation_hub_short": "Mol",
     "partner_communities": "Pobail Chomhpháirtíochta",
     "federation_partners_short": "Pobail",
-    "federated_members": "Comhaltaí Cónaidhme",
+    "federated_members": "Comhaltaí an líonra comhpháirtíochta",
     "federation_members_short": "Baill",
-    "federated_messages": "Teachtaireachtaí Cónaidhme",
+    "federated_messages": "Teachtaireachtaí an líonra comhpháirtíochta",
     "federation_messages_short": "Teachtaireachtaí",
-    "federated_listings": "Liostuithe Cónaidhme",
+    "federated_listings": "Liostuithe an líonra comhpháirtíochta",
     "federation_listings_short": "Liostaí",
-    "federated_events": "Imeachtaí Cónaidhme",
+    "federated_events": "Imeachtaí an líonra comhpháirtíochta",
     "federation_events_short": "Imeachtaí",
-    "federation_settings": "Socruithe Cónaidhme",
+    "federation_settings": "Socruithe an líonra comhpháirtíochta",
     "federation_settings_short": "Socruithe",
     "about": "Maidir Linn",
     "faq": "Ceisteanna Coitianta",
@@ -130,7 +130,7 @@
     "federated_messages": "Teachtaireachtaí trasnphobail",
     "federated_listings": "Fógraí ó phobail comhpháirtíochta",
     "federated_events": "Imeachtaí ar fud an líonra",
-    "federation_settings": "Bainistigh do roghanna cónaidhme",
+    "federation_settings": "Bainistigh do roghanna an líonra comhpháirtíochta",
     "about": "Maidir leis an bpobal seo",
     "faq": "Ceisteanna coitianta",
     "timebanking_guide": "Conas a oibríonn baincéireacht ama",
@@ -247,7 +247,7 @@
     "main": "Príomhábhar",
     "community": "Pobal",
     "explore": "Taiscéalaigh",
-    "federation": "Cónaidhm",
+    "federation": "Líonra comhpháirtíochta",
     "activity": "Gníomhaíocht",
     "partner_communities": "Pobail Chomhpháirtíochta",
     "about": "Maidir linn",
@@ -617,7 +617,7 @@
         "description": "Lean spriocanna tacaíochta pearsanta, pobail agus bardasacha."
       },
       "federation": {
-        "title": "Cónaidhm",
+        "title": "Líonra comhpháirtíochta",
         "description": "Nasc nóid réigiúnacha, comharchumainn agus pobail chomhpháirtíochta."
       },
       "messages": {
@@ -944,7 +944,7 @@
     "mobile_navigation": "Nascleanúint mhóibíleach",
     "engage_navigation": "Nascleanúint rannpháirtíochta",
     "explore_navigation": "Nascleanúint aimsithe",
-    "federation_navigation": "Nascleanúint chónaidhme",
+    "federation_navigation": "Nascleanúint an líonra comhpháirtíochta",
     "about_navigation": "Nascleanúint eolais",
     "legal_navigation": "Nascleanúint dhlíthiúil",
     "more_navigation": "Tuilleadh nascleanúna",
@@ -1268,8 +1268,8 @@
     }
   },
   "federation_aggregates": {
-    "consent_enabled": "Comhiomláin chónaidhme cumasaithe",
-    "consent_disabled": "Comhiomláin chónaidhme díchumasaithe"
+    "consent_enabled": "Comhiomláin an líonra comhpháirtíochta cumasaithe",
+    "consent_disabled": "Comhiomláin an líonra comhpháirtíochta díchumasaithe"
   },
   "data_export": {
     "meta": {
@@ -1364,7 +1364,7 @@
         "triaged": "Triáilte",
         "investigating": "Á imscrúdú",
         "resolved": "Réitithe",
-        "dismissed": "Dífhostaithe"
+        "dismissed": "Curtha ar leataobh"
       },
       "escalated": "Géaraithe",
       "submitted_at": "Curtha isteach ar {{date}}"
@@ -1401,7 +1401,7 @@
     "status": {
       "draft": "Dréacht",
       "pending_approval": "Ag fanacht le faomhadh",
-      "approved": "Faofa",
+      "approved": "Ceadaithe",
       "active": "Gníomhach",
       "paused": "Sosaithe",
       "rejected": "Diúltaithe",
@@ -2102,7 +2102,7 @@
   },
   "common": {
     "loading": "Á Lódáil...",
-    "dismiss": "Dífhostaigh",
+    "dismiss": "Cuir ar leataobh",
     "create": "Cruthaigh",
     "delete": "Scrios",
     "cancel": "Cealaigh",
@@ -2115,20 +2115,20 @@
     "expand": "Leathnaigh"
   },
   "verein_federation": {
-    "panel_title": "Cónaidhm le cumainn eile",
+    "panel_title": "Líonra comhpháirtíochta le cumainn eile",
     "panel_subtitle": "Roinn imeachtaí agus nasc baill le cumainn eile i do bhardas.",
-    "consent_title": "Toiliú cónaidhme",
+    "consent_title": "Toiliú an líonra comhpháirtíochta",
     "consent_toggle_label": "Glac páirt le cumainn eile inár mbardas",
     "consent_scope_label": "Cad atá le roinnt",
-    "scope_none": "Gan aon rud (cónaidhm múchta)",
+    "scope_none": "Gan aon rud (an líonra comhpháirtíochta múchta)",
     "scope_events": "Imeachtaí amháin",
     "scope_members": "Cuirí ball amháin",
     "scope_both": "Imeachtaí agus cuirí ball",
     "municipality_code_label": "Cód bardais",
     "municipality_code_help": "Cód oifigiúil an bhardais (m.sh. cód poist nó cód BFS) — caithfidh sé a bheith ag teacht le cód na gcumann comhpháirtíochta.",
     "save_consent": "Sábháil toiliú",
-    "consent_saved": "Sábháladh socruithe cónaidhme.",
-    "consent_save_failed": "Níorbh fhéidir socruithe cónaidhme a shábháil.",
+    "consent_saved": "Sábháladh socruithe an líonra comhpháirtíochta.",
+    "consent_save_failed": "Níorbh fhéidir socruithe an líonra comhpháirtíochta a shábháil.",
     "network_title": "Cumainn eile i do líonra",
     "network_empty": "Níor chláraigh aon chumann eile i do bhardas leis an líonra fós.",
     "network_column_name": "Cumann",
@@ -2148,7 +2148,7 @@
     "share_event_submit": "Roinn",
     "share_event_done": "Roinneadh {{shared}} imeacht; scipeáladh {{skipped}}.",
     "share_event_failed": "Níorbh fhéidir imeacht a roinnt.",
-    "load_failed": "Níorbh fhéidir sonraí cónaidhme a lódáil.",
+    "load_failed": "Níorbh fhéidir sonraí an líonra comhpháirtíochta a lódáil.",
     "invite_to_verein_button": "Tabhair cuireadh chuig {{name}}",
     "invite_modal_title": "Cuireadh idirchumainn",
     "invite_modal_subtitle": "Tabhair cuireadh don duine seo páirt a ghlacadh i gceann de na cumainn chomhpháirtíochta freisin.",

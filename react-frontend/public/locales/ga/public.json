@@ -7,7 +7,7 @@
     },
     "title": "Gnéithe",
     "meta_title": "Gnéithe - Project NEXUS v1.6",
-    "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don chónaidhm, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
+    "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don líonra comhpháirtíochta, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
     "heading": "Cad a dhéanann Project NEXUS",
     "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v2.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
     "maturity_key_title": "Conas a lipéadaímid aibíocht",
@@ -16,7 +16,7 @@
     "maturity_preview": "Eisithe le déanaí agus ar fáil más mian leat é a chumasú. Beidh athruithe tapa ann — d'fhéadfadh an API agus an t-eispéireas úsáideora athrú.",
     "tech_stack_title": "Cruach theicniúil nua-aimseartha",
     "open_source_title": "Foinse oscailte - AGPL-3.0",
-    "open_source_body": "Tá Project NEXUS go hiomlán foinse oscailte faoi AGPL-3.0. Is féidir gach líne den chód a iniúchadh, a fhorcáil agus a fhéinóstáil. Tá na prótacail chónaidhme doiciméadaithe mar chaighdeáin oscailte ionas nach mbeidh aon ardán amháin i gceannas ar an líonra domhanda banc ama.",
+    "open_source_body": "Tá Project NEXUS go hiomlán foinse oscailte faoi AGPL-3.0. Is féidir gach líne den chód a iniúchadh, a fhorcáil agus a fhéinóstáil. Tá na prótacail an líonra comhpháirtíochta doiciméadaithe mar chaighdeáin oscailte ionas nach mbeidh aon ardán amháin i gceannas ar an líonra domhanda banc ama.",
     "link_repo": "Stór foinseach",
     "link_changelog": "Logleabhar athruithe",
     "link_report_bug": "Tuairiscigh fabht",
@@ -59,7 +59,7 @@
           },
           "tenant_hierarchy": {
             "title": "Ordlathas tionóntaí",
-            "description": "Caidreamh tuismitheoir–leanbh idir tionóntaí le scoránú gnéithe agus scóip chónaidhme."
+            "description": "Caidreamh tuismitheoir–leanbh idir tionóntaí le scoránú gnéithe agus scóip an líonra comhpháirtíochta."
           },
           "smart_matching": {
             "title": "Meaitseáil chliste",
@@ -94,25 +94,25 @@
         }
       },
       "federation": {
-        "title": "Cónaidhm",
-        "intro": "Tá dhá bhrí éagsúla le cónaidhm anseo, agus tá siad ag céimeanna éagsúla. Úsáidtear an nasc idir pobail ar an tsuiteáil chéanna gach lá. Tá naisc le suiteálacha agus ardáin eile tógtha agus tástáilte, ach tá siad múchta de réir réamhshocraithe agus níl siad in úsáid faoi láthair.",
+        "title": "Líonra comhpháirtíochta",
+        "intro": "Tá dhá bhrí éagsúla leis an líonra comhpháirtíochta anseo, agus tá siad ag céimeanna éagsúla. Úsáidtear an nasc idir pobail ar an tsuiteáil chéanna gach lá. Tá naisc le suiteálacha agus ardáin eile tógtha agus tástáilte, ach tá siad múchta de réir réamhshocraithe agus níl siad in úsáid faoi láthair.",
         "items": {
           "federation_network": {
             "title": "Líonra Pobail (suiteáil chéanna)",
             "description": "Nasc pobail éagsúla atá á n-óstáil ar shuiteáil amháin chun liostálacha, imeachtaí agus teachtaireachtaí a aimsiú thar phobail éagsúla."
           },
           "external_partner_federation": {
-            "title": "Cónaidhm le páirtithe seachtracha",
+            "title": "Líonra comhpháirtíochta le páirtithe seachtracha",
             "description": "Ceangail le suiteálacha NEXUS eile agus le hardáin eile baincéireachta ama trí cheithre phrótacal doiciméadaithe: Nexus Native, Komunitin, Credit Commons (comhoiriúnach le CEN) agus TimeOverflow.",
-            "note": "Tá sé críochnaithe agus tástáilte, agus múchta de réir réamhshocraithe — tugann gach críochphointe seachtrach freagra sealadach nach bhfuil sé ar fáil go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach nasctha faoi láthair. Tá spéis léirithe ag oibreoirí ardán eile, mar sin tá an bhunobair déanta agus iniúchta, ach ní fhorbróimid tuilleadh í go dtí go mbeidh togra comhtháthaithe sonrach ann. Más mian leat dul i gcónaidhm linn, déan teagmháil linn."
+            "note": "Tá sé críochnaithe agus tástáilte, agus múchta de réir réamhshocraithe — tugann gach críochphointe seachtrach freagra sealadach nach bhfuil sé ar fáil go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach nasctha faoi láthair. Tá spéis léirithe ag oibreoirí ardán eile, mar sin tá an bhunobair déanta agus iniúchta, ach ní fhorbróimid tuilleadh í go dtí go mbeidh togra comhtháthaithe sonrach ann. Más mian leat nascadh linn mar chomhpháirtí, déan teagmháil linn."
           },
           "multi_protocol_adapters": {
             "title": "Cuibheoirí ilphrótacal",
             "description": "Cuibheoirí chun naoi gcineál eintitis a shioncronú sa dá threo — baill, liostálacha, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe agus teachtaireachtaí — thar na ceithre phrótacal.",
-            "note": "Tógtha agus clúdaithe ag tástálacha in éineacht le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon cheann de na naisc cumasaithe, mar sin níl aon sioncronú ar siúl."
+            "note": "Tógtha agus clúdaithe ag tástálacha in éineacht leis an líonra comhpháirtíochta na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon cheann de na naisc cumasaithe, mar sin níl aon sioncronú ar siúl."
           },
           "federation_neighborhoods": {
-            "title": "Comharsanachtaí cónaidhme",
+            "title": "Comharsanachtaí an líonra comhpháirtíochta",
             "description": "Cnuasaigh de phobail nasctha atá grúpáilte go geografach le haghaidh comhordú réigiúnach."
           },
           "credit_agreements": {
@@ -120,13 +120,13 @@
             "description": "Téarmaí ráta malairte idirbheartaithe idir pobail nasctha."
           },
           "federation_analytics": {
-            "title": "Anailísíocht chónaidhme",
+            "title": "Anailísíocht an líonra comhpháirtíochta",
             "description": "Deais riaracháin le haghaidh gníomhaíochta idirphobail, sláinte sioncronaithe agus líon na n-idirbheart idirphobail."
           },
           "partner_network_portal": {
             "title": "Tairseach Líonra agus Páirtithe",
             "description": "Limistéar ar leith dóibh siúd a reáchtálann líonra pobal seachas aon phobal amháin: eolaire comhpháirtithe, grúpáil comharsanachtaí, comhaontuithe creidmheasa, socruithe don líonra ar fad, gníomhaíocht agus anailísíocht chomhcheangailte, bainistiú sonraí, agus eochracha API lena ndoiciméadacht féin.",
-            "note": "Fanann na codanna a shroicheann suiteálacha eile — páirtithe seachtracha, páirtithe API isteach agus Credit Commons — múchta in éineacht le cuid eile na cónaidhme seachtraí. Tá uirlisí an líonra inmheánaigh in úsáid go laethúil."
+            "note": "Fanann na codanna a shroicheann suiteálacha eile — páirtithe seachtracha, páirtithe API isteach agus Credit Commons — múchta in éineacht le cuid eile an líonra comhpháirtíochta seachtraí. Tá uirlisí an líonra inmheánaigh in úsáid go laethúil."
           }
         }
       },
@@ -541,7 +541,7 @@
           },
           "automated_test_suite": {
             "title": "Sraith Tástála Uathoibrithe",
-            "description": "Thart ar 16,500 modh tástála PHP i 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, webhooks, cónaidhm, grúpaí agus an margadh. Ritear iad tar éis gach brú chuig Git, agus cuirtear bac ar imscaradh go dtí go mbíonn an tiomantas a brúdh seiceáilte."
+            "description": "Thart ar 16,500 modh tástála PHP i 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, webhooks, an líonra comhpháirtíochta, grúpaí agus an margadh. Ritear iad tar éis gach brú chuig Git, agus cuirtear bac ar imscaradh go dtí go mbíonn an tiomantas a brúdh seiceáilte."
           },
           "performance_monitoring": {
             "title": "Monatóireacht Feidhmíochta",

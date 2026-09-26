@@ -99,11 +99,11 @@
     "actions": {
       "inspect": "Athbhreithnigh agus modhnaigh",
       "refresh": "Athnuaigh",
-      "approve": "Cheadaigh",
+      "approve": "Ceadaigh",
       "reject": "Diúltaigh",
       "flag": "Bratach",
       "resolve_report": "Réitigh an tuarascáil",
-      "dismiss_report": "An tuairisc a dhíbhe",
+      "dismiss_report": "Cuir an tuairisc ar leataobh",
       "escalate_report": "Tuairisc a ardú",
       "validate_feed": "Bailíochtaigh fotha RSS"
     },
@@ -146,7 +146,7 @@
       "report_status": {
         "open": "Oscailte",
         "resolved": "Réitithe",
-        "dismissed": "Díbháilte",
+        "dismissed": "Curtha ar leataobh",
         "escalated": "Ardaithe"
       }
     },
@@ -266,7 +266,7 @@
       "episode_reject": "Eipeasóid diúltaithe.",
       "episode_flag": "Eipeasóid bratach.",
       "report_resolved": "Tuarascáil réitithe.",
-      "report_dismissed": "Díbhe an tuairisc.",
+      "report_dismissed": "Cuireadh an tuairisc ar leataobh.",
       "report_escalated": "Ardaíodh an tuairisc.",
       "feed_valid": "Tá fotha RSS réidh.",
       "feed_invalid": "Tá {{count}} saincheist(eanna) ag fotha RSS.",

@@ -35,7 +35,7 @@
     "open": "Oscailte",
     "closed": "Dúnta",
     "filled": "Líonta",
-    "draft": "Dreacht"
+    "draft": "Dréacht"
   },
   "application_status": {
     "applied": "Iarratas déanta",
@@ -752,7 +752,7 @@
   },
   "duplicate": {
     "warning": "Folúntas comhchosúil aimsithe: {{title}} ({{status}})",
-    "dismiss": "Díbhe"
+    "dismiss": "Cuir ar leataobh"
   },
   "moderation": {
     "title": "Scuaine Modhnóireachta",

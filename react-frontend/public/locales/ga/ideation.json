@@ -18,7 +18,7 @@
     "favorites": "Mo Chuid Ceanán"
   },
   "status": {
-    "draft": "Dreacht",
+    "draft": "Dréacht",
     "open": "Oscailte",
     "voting": "Vótáil",
     "evaluating": "Á Measúnú",
@@ -26,7 +26,7 @@
     "archived": "Cartlannaithe"
   },
   "idea_status": {
-    "draft": "Dreacht",
+    "draft": "Dréacht",
     "submitted": "Curtha isteach",
     "shortlisted": "Ar an ngearrliosta",
     "winner": "Buaiteoir",
@@ -86,12 +86,12 @@
     "delete": "Scrios Smaoineamh",
     "delete_confirm": "An bhfuil tú cinnte gur mhaith leat an smaoineamh seo a scriosadh? Ní féidir an gníomh seo a chur ar ceal.",
     "load_error": "Níorbh fhéidir na smaointe a luchtú",
-    "save_draft": "Sábháil Dreacht",
+    "save_draft": "Sábháil Dréacht",
     "publish_draft": "Foilsigh Smaoineamh",
     "draft_saved": "Sábháladh an dreacht",
-    "draft": "Dreacht",
+    "draft": "Dréacht",
     "your_drafts": "Do Chuid Dréachtaí",
-    "untitled_draft": "Dreacht Gan Teideal",
+    "untitled_draft": "Dréacht Gan Teideal",
     "draft_updated": "Nuashonraithe {{date}}",
     "draft_created": "Cruthaithe {{date}}",
     "new_idea": "Smaoineamh Nua",

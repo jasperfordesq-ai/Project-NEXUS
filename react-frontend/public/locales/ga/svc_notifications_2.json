@@ -145,9 +145,9 @@
     "partnership_reactivated": "Comhpháirtíocht athghníomhachtaithe",
     "partnership_terminated": "Cuireadh deireadh le comhpháirtíocht",
     "permissions_updated": "Ceadanna nuashonraithe",
-    "notify_partnership_approved": "Tá d’iarratas comhpháirtíochta cónaidhm ceadaithe ag {{tenant_name}}.",
-    "notify_partnership_rejected": "Dhiúltaigh {{tenant_name}} d’iarratas comhpháirtíochta an chónaidhm.",
-    "notify_partnership_terminated": "Chuir {{tenant_name}} deireadh le comhpháirtíocht na Cónaidhme."
+    "notify_partnership_approved": "Tá d’iarratas comhpháirtíochta an líonra comhpháirtíochta ceadaithe ag {{tenant_name}}.",
+    "notify_partnership_rejected": "Dhiúltaigh {{tenant_name}} d’iarratas comhpháirtíochta an líonra comhpháirtíochta.",
+    "notify_partnership_terminated": "Chuir {{tenant_name}} deireadh le comhpháirtíocht an líonra comhpháirtíochta."
   },
   "team_task": {
     "title_required": "Tá teideal ag teastáil",

@@ -101,7 +101,7 @@
       "search_campaigns": "Feachtais chuardaigh...",
       "unexpected_error": "Tharla earráid gan choinne",
       "actions": {
-        "approve": "Cheadaigh",
+        "approve": "Ceadaigh",
         "cancel": "Cealaigh",
         "close": "Dún",
         "create_campaign": "Cruthaigh feachtas",

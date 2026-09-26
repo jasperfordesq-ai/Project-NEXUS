@@ -177,14 +177,14 @@
     "severity_danger": "Éigeandáil"
   },
   "federation_picker": {
-    "title": "Brabhsáil pobail Chónaidhme",
+    "title": "Brabhsáil pobail an líonra comhpháirtíochta",
     "search_placeholder": "Cuardaigh de réir ainm pobail nó réigiúin",
     "browse_button": "Brabhsáil pobail",
     "selected_label": "Roghnaithe:",
     "no_selection": "Níor roghnaíodh aon phobal",
     "select_button": "Roghnaigh",
     "cancel_button": "Cealaigh",
-    "empty": "Níl aon phobal Cónaidhme le haimsiú faoi láthair. Is féidir leat sluga pobail a chur isteach de láimh fós.",
+    "empty": "Níl aon phobal an líonra comhpháirtíochta le haimsiú faoi láthair. Is féidir leat sluga pobail a chur isteach de láimh fós.",
     "fallback_label": "Nó cuir sluga pobail isteach de láimh",
     "member_count_label": "ball"
   },
@@ -282,7 +282,7 @@
         "hour-transfers": "Aistrithe Uair",
         "regional-points": "Pointí Réigiúnacha",
         "sub-regions": "Fo-Réigiúin",
-        "federation-peers": "Piaraí Cónaidhme",
+        "federation-peers": "Piaraí an líonra comhpháirtíochta",
         "sla-dashboard": "Painéal SLA",
         "providers": "Soláthraithe",
         "warmth-pass": "Pas Teas",
@@ -342,7 +342,7 @@
         "hour_transfers": "Aistrithe Uair",
         "regional_points": "Pointí Réigiúnacha",
         "sub_regions": "Fo-Réigiúin",
-        "federation_peers": "Piaraí Cónaidhme",
+        "federation_peers": "Piaraí an líonra comhpháirtíochta",
         "sla_dashboard": "Painéal SLA",
         "providers": "Soláthraithe",
         "warmth_pass": "Pas Teas",
@@ -606,7 +606,7 @@
         "status": "Stádas"
       },
       "status": {
-        "approved_by_source": "Faofa de réir foinse",
+        "approved_by_source": "Ceadaithe de réir foinse",
         "completed": "Críochnaithe",
         "pending": "Ar feitheamh",
         "received": "Faighte",
@@ -614,7 +614,7 @@
         "sent": "Seolta"
       },
       "actions": {
-        "approve": "Cheadaigh",
+        "approve": "Ceadaigh",
         "reject": "Diúltaigh"
       },
       "reject_modal": {
@@ -1029,7 +1029,7 @@
         "triaged": "Triáiseadh",
         "investigating": "Ag fiosrú",
         "resolved": "Réitíodh",
-        "dismissed": "Briseadh as a post"
+        "dismissed": "Curtha ar leataobh"
       },
       "severity_legend": {
         "title": "Leibhéil déine",
@@ -1081,7 +1081,7 @@
         "notes": "Nótaí (roghnach)",
         "update": "Nuashonrú",
         "resolved_hint": "Dúnann \"Réiteach\" an tuarascáil seo le nótaí réitigh doiciméadaithe. Bain úsáid as nuair a bhíonn gníomh déanta.",
-        "dismissed_hint": "Dúnann “Díbhe” an tuarascáil seo gan aon ghníomhaíocht eile. Ní mór cúis a thaifeadadh sna nótaí thuas.",
+        "dismissed_hint": "Dúnann “Curtha ar leataobh” an tuarascáil seo gan aon ghníomhaíocht eile. Ní mór cúis a thaifeadadh sna nótaí thuas.",
         "add_note": "Cuir nóta leis"
       },
       "history": {
@@ -1229,7 +1229,7 @@
     }
   },
   "admin_a11y": {
-    "refresh_federation_peers": "Athnuaigh piaraí cónaidhm",
+    "refresh_federation_peers": "Athnuaigh piaraí an líonra comhpháirtíochta",
     "refresh_kpi_baselines": "Bunlínte KPI a athnuachan",
     "refresh_research_partnerships": "Comhpháirtíochtaí taighde a athnuachan"
   }

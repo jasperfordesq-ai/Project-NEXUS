@@ -74,7 +74,7 @@
   },
   "advanced": {
     "health_loading": "Algartam sláinte á lódáil...",
-    "404_entry_dismissed": "Briseadh 404 iontráil",
+    "404_entry_dismissed": "Cuireadh an iontráil 404 ar leataobh",
     "a_i_settings_saved_successfully": "D'éirigh le Socruithe AI a shábháil",
     "active_provider": "Soláthraí Gníomhach",
     "add_redirect": "Cuir Atreorú leis",
@@ -129,10 +129,10 @@
     "desc_when_visitors_hit_missing_pages_they_wi": "Nuair a bhuaileann cuairteoirí leathanaigh atá ar iarraidh, feicfidh siad earráid 404 á rianú anseo",
     "desc_your_a_i_provider_a_p_i_key_stored_encrypt": "Eochair API do sholáthraí AI, stóráilte criptithe",
     "disabled": "faoi mhíchumas",
-    "dismiss": "Díbhe",
-    "dismiss_404_entry": "Díbhe",
-    "dismiss_404_message": "404 a dhíbhe",
-    "dismiss_404_title": "404 a dhíbhe",
+    "dismiss": "Cuir ar leataobh",
+    "dismiss_404_entry": "Cuir ar leataobh",
+    "dismiss_404_message": "Cuir an 404 ar leataobh",
+    "dismiss_404_title": "Cuir an 404 ar leataobh",
     "direct_referrer": "Díreach",
     "diversity_factor": "Fachtóir Éagsúlachta",
     "email_provider_heading": "Soláthraí Ríomhphoist",
@@ -642,7 +642,7 @@
       },
       "freshness": {
         "actions": {
-          "apply": "Cuir iarratas isteach",
+          "apply": "Rith anois",
           "dry_run": "Rith tirim"
         },
         "auto_recache": {
@@ -2066,9 +2066,9 @@
         "civic_digest_delivery_claims": "Éileamh cathartha díolama",
         "event_reminder_delivery_claims": "Éileamh meabhrúcháin imeachtaí",
         "event_reminders": "Meabhrúchán imeachtaí",
-        "federation_inbound_connections": "Cónaidhm nasc",
-        "federation_messages": "Teachtaireacht Cónaidhme",
-        "federation_transactions": "Idirbheart Cónaidhm",
+        "federation_inbound_connections": "Nasc an líonra comhpháirtíochta",
+        "federation_messages": "Teachtaireacht an líonra comhpháirtíochta",
+        "federation_transactions": "Idirbheart an líonra comhpháirtíochta",
         "goal_reminders": "Meabhrúchán sprice",
         "job_interviews": "Meabhrúchán agallamh poist",
         "listing_expiry_reminders_sent": "Meabhrúchán éaga a liostú",
@@ -2080,7 +2080,7 @@
         "newsletter_queue": "Nuachtlitir",
         "notification_queue": "Fógra",
         "notifications": "Fianaise fógra",
-        "reviews": "Athbhreithniú Cónaidhme",
+        "reviews": "Athbhreithniú an líonra comhpháirtíochta",
         "transaction_notification_deliveries": "Fógra idirbhirt",
         "user_safeguarding_preferences": "Athbhreithniú ar shlándáil",
         "vol_donations": "Admháil síntiús",
@@ -2292,19 +2292,19 @@
         "body": "Réitíodh achomhairc thuarascáil margaidh {{count}} gan an tsraith fógra ríomhphoist faoin gcinneadh deiridh a mheaitseáil sna huaireanta {{window_hours}} deiridh."
       },
       "federation_connection_without_email_evidence": {
-        "title": "Fianaise ríomhphoist nasc Cónaidhm in easnamh",
+        "title": "Fianaise ríomhphoist nasc an líonra comhpháirtíochta in easnamh",
         "body": "Níl aon fhianaise ar sheachadadh ríomhphoist rathúil ag {{count}} imeacht comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "federation_connection_without_bell_evidence": {
-        "title": "Fianaise fógra maidir le ceangal Cónaidhm in easnamh",
+        "title": "Fianaise fógra maidir le ceangal an líonra comhpháirtíochta in easnamh",
         "body": "Níl aon fhianaise ar fhógra san aip ag {{count}} imeacht comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "federation_review_without_email_evidence": {
-        "title": "Fianaise ríomhphoist athbhreithnithe Cónaidhm in easnamh",
+        "title": "Fianaise ríomhphoist athbhreithnithe an líonra comhpháirtíochta in easnamh",
         "body": "Theip ar {{count}} athbhreithniú comhpháirtíochta, nó fágadh fianaise ríomhphoist ar lár d’aon ghnó, le {{window_hours}} uair an chloig anuas."
       },
       "federation_review_without_bell_evidence": {
-        "title": "Fianaise fógra athbhreithnithe Cónaidhm in easnamh",
+        "title": "Fianaise fógra athbhreithnithe an líonra comhpháirtíochta in easnamh",
         "body": "Níl aon fhianaise ar fhógra san aip ag {{count}} athbhreithniú comhpháirtíochta le {{window_hours}} uair an chloig anuas."
       },
       "member_subscription_event_without_email_evidence": {
