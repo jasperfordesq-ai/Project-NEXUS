@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Excluir",
-    "feature": "Recurso",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "Em andamento",
     "in_review": "Em revisão",
@@ -15,7 +15,7 @@
     "refresh": "Atualizar",
     "unexpected_error": "Erro inesperado",
     "unknown": "Desconhecido",
-    "unfeature": "Desapresentar",
+    "unfeature": "Remover destaque",
     "actions": "Ações",
     "active": "Ativo",
     "all": "Todos",
@@ -458,7 +458,7 @@
           "help": "Quando o desequilíbrio entre dar/receber de um membro aciona um check-in do coordenador."
         },
         "safeguarding_escalation_user_id": {
-          "label": "Protegendo o proprietário do escalonamento (usuário ID)",
+          "label": "Responsável pelo escalonamento de proteção (ID do usuário)",
           "help": "Usuário ID recebendo escalonamentos de proteção. Deixe em branco para usar administradores como um grupo."
         },
         "chf_hourly_rate": {
@@ -812,7 +812,7 @@
       }
     },
     "safeguarding": {
-      "title": "Protegendo Relatórios",
+      "title": "Relatórios de Proteção",
       "description": "Preocupações levantadas pelos membros sobre outros membros, coordenadores ou organizações.",
       "view_all": "Ver tudo",
       "no_data": "Ainda não existem dados de salvaguarda disponíveis.",
@@ -2680,7 +2680,7 @@
       "title": "Sobre esta página",
       "body_prefix": "O Municipal",
       "body_middle": "O relatório calcula o valor social e econômico do seu programa de assistência comunitária usando o",
-      "body_suffix": "Metodologia Caring Community. Mostra a compensação de custos estimada para serviços de cuidados formais (Spitex/Pflege), o valor social gerado e dados de tendências ao longo dos períodos de relatório. Este relatório foi concebido para ser partilhado com parceiros municipais e financiadores como prova do impacto do programa.",
+      "body_suffix": "Metodologia Caring Community. Mostra a compensação de custos estimada para serviços de cuidados formais (Spitex/Pflege), o valor social gerado e dados de tendências ao longo dos períodos de relatório. Este relatório foi concebido para ser compartilhado com parceiros municipais e financiadores como prova do impacto do programa.",
       "formula_prefix": "Compensação de custos = total de horas de atendimento aprovadas x",
       "formula_suffix": "taxa horária x multiplicador de prevenção. O multiplicador de prevenção (predefinição: 2,0) reflete que uma hora de cuidados informais evita aproximadamente duas horas de intervenção de cuidados formais, com base na investigação Caring Community."
     },
@@ -2858,7 +2858,7 @@
       "incident_response_contact_email": "E-mail de contato de resposta a incidentes",
       "workshop_not_run": "Workshop de política operacional não realizado",
       "policy_appendix_url": "Apêndice de política URL",
-      "safeguarding_escalation_user_id": "Protegendo o contato de escalonamento",
+      "safeguarding_escalation_user_id": "Contato de escalonamento de proteção",
       "acknowledgement": "Reconhecimento do coordenador",
       "pre_pilot_baseline": "Linha de base do placar pré-piloto",
       "danger_checks": "Problemas de qualidade de dados",

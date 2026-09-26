@@ -93,7 +93,7 @@
     "create_listing_cta": "Crie uma listagem",
     "adjust_preferences_cta": "Ajustar preferências de correspondência",
     "safeguarding_unavailable_title": "Algumas correspondências ainda não podem ser mostradas",
-    "safeguarding_unavailable_description": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipa da sua comunidade a tiver concluído."
+    "safeguarding_unavailable_description": "A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipe da sua comunidade a tiver concluído."
   },
   "preferences": {
     "subtitle": "Controle como o Smart Matching encontra e notifica você sobre conexões.",

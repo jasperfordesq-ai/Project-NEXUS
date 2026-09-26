@@ -1,7 +1,7 @@
 {
   "push_status": {
     "unsupported": "O seu navegador não suporta notificações push.",
-    "denied": "Bloqueou as notificações. Atualize as definições do navegador para as reativar.",
+    "denied": "Bloqueou as notificações. Atualize as configurações do navegador para as reativar.",
     "subscribed": "Está subscrito neste dispositivo."
   },
   "push_errors": {
@@ -60,7 +60,7 @@
   "marketing_consent_confirm_body": "Tem a certeza de que quer receber e-mails de marketing ocasionais, atualizações de produtos e destaques da comunidade? Pode cancelar a subscrição a qualquer momento.",
   "marketing_consent_confirm_button": "Sim, subscrever-me",
   "cancel": "Cancelar",
-  "title": "Definições",
+  "title": "Configurações",
   "account": "Conta",
   "notifications": "Notificações",
   "privacy": "Privacidade",
@@ -68,8 +68,8 @@
   "appearance": "Aparência",
   "language_appearance": "Idioma e aparência",
   "security": "Segurança",
-  "save": "Guardar Definições",
-  "saved": "Definições guardadas",
+  "save": "Salvar Configurações",
+  "saved": "Configurações salvas",
   "notification_load_failed": "Falha ao carregar as configurações de notificação",
   "notifications_loading": "A carregar as configurações de notificação...",
   "privacy_load_failed": "Falha ao carregar as configurações de privacidade",
@@ -82,9 +82,9 @@
     "dark": "Escuro",
     "system": "Sistema"
   },
-  "security_settings": "Definições de Segurança",
-  "change_password": "Alterar Palavra-passe",
-  "change_password_subtitle": "Atualize a palavra-passe da sua conta",
+  "security_settings": "Configurações de Segurança",
+  "change_password": "Alterar Senha",
+  "change_password_subtitle": "Atualize a senha da sua conta",
   "twofa_title": "Autenticação de Dois Fatores",
   "twofa_checking": "A verificar estado...",
   "twofa_enabled": "Ativada",
@@ -104,7 +104,7 @@
   "delete_account": "Eliminar Conta",
   "twofa_setup_title": "Configurar Autenticação de Dois Fatores",
   "twofa_what_is": "O que é uma app de autenticação?",
-  "twofa_what_is_desc": "Uma app de autenticação gera um código temporário de 6 dígitos que muda a cada 30 segundos. Adiciona uma camada extra de segurança — mesmo que alguém saiba a sua palavra-passe, não poderá iniciar sessão sem o código do seu telemóvel.",
+  "twofa_what_is_desc": "Uma app de autenticação gera um código temporário de 6 dígitos que muda a cada 30 segundos. Adiciona uma camada extra de segurança — mesmo que alguém saiba a sua senha, não poderá iniciar sessão sem o código do seu telemóvel.",
   "twofa_download_prompt": "Descarregue uma app de autenticação gratuita se não tiver uma:",
   "twofa_app_google": "Autenticador Google",
   "twofa_app_microsoft": "Autenticador Microsoft",
@@ -118,14 +118,14 @@
   "twofa_cancel": "Cancelar",
   "twofa_disable_title": "Desativar Autenticação de Dois Fatores",
   "twofa_disable_warning": "Isto reduzirá a segurança da sua conta",
-  "twofa_disable_desc": "Sem 2FA, a sua conta será protegida apenas pela sua palavra-passe.",
-  "twofa_confirm_password": "Confirme a Sua Palavra-passe",
+  "twofa_disable_desc": "Sem 2FA, a sua conta será protegida apenas pela sua senha.",
+  "twofa_confirm_password": "Confirme a Sua Senha",
   "twofa_disable_confirm": "Desativar 2FA",
   "backup_codes_title": "Os Seus Códigos de Backup",
-  "backup_codes_warning": "Guarde estes códigos num local seguro",
+  "backup_codes_warning": "Salve estes códigos num local seguro",
   "backup_codes_desc": "Cada código de backup só pode ser usado uma vez. Se perder o acesso à sua app de autenticação, pode usar estes códigos para iniciar sessão.",
   "backup_codes_copy": "Copiar Todos os Códigos",
-  "backup_codes_saved": "Guardei os Meus Códigos",
+  "backup_codes_saved": "Salvei os Meus Códigos",
   "biometric": {
     "label_builtin": "Autenticador embutido",
     "label_external": "Autenticador externo",
@@ -159,14 +159,14 @@
     "platform_unknown_step2": "Ou clique em \"Telefone, tablet ou chave de segurança\" para registrar um dispositivo diferente."
   },
   "passkey_setup_subtitle": "Configuração para este dispositivo",
-  "passkey_multi_device_note": "Pode registar passkeys em vários dispositivos. Cada dispositivo precisa da sua própria passkey, a menos que o seu fornecedor as sincronize (ex. Porta-chaves iCloud entre dispositivos Apple, Google Password Manager entre Android e Chrome).",
+  "passkey_multi_device_note": "Pode registrar passkeys em vários dispositivos. Cada dispositivo precisa da sua própria passkey, a menos que o seu fornecedor as sincronize (ex. Porta-chaves iCloud entre dispositivos Apple, Google Password Manager entre Android e Chrome).",
   "passkey_add_another": "Adicionar outra passkey",
   "passkey_create": "Criar uma passkey",
-  "passkey_device_tip": "Registe uma passkey em cada dispositivo que utiliza. Para adicionar o seu telemóvel, abra esta página no telemóvel.",
+  "passkey_device_tip": "Registre uma passkey em cada dispositivo que utiliza. Para adicionar o seu telemóvel, abra esta página no telemóvel.",
   "passkey_setup_guide": "Guia de configuração",
   "passkey_setup_tooltip": "Mostrar guia de configuração de passkey",
   "passkey_show_instructions": "Mostrar instruções de configuração de passkey",
-  "passkey_registration_failed": "Registo falhado",
+  "passkey_registration_failed": "Registro falhado",
   "passkey_error_domain": "As chaves de acesso ainda não estão disponíveis neste endereço do site. Contate a administração da sua comunidade.",
   "passkey_cancelled": "A configuração da chave de acesso foi cancelada.",
   "passkey_enrollment_disabled": "A sua comunidade pausou a configuração de novas chaves de acesso. Ainda pode gerir as existentes.",
@@ -182,7 +182,7 @@
   "passkey_security_confirm_title": "Confirme a sua identidade",
   "passkey_security_confirm_description": "Confirme a sua identidade antes de adicionar, renomear ou remover uma chave de acesso.",
   "passkey_security_confirm_method_label": "Método de confirmação",
-  "passkey_security_confirm_password": "Palavra-passe atual",
+  "passkey_security_confirm_password": "Senha atual",
   "passkey_security_confirm_totp": "Código do autenticador",
   "passkey_security_confirm_backup": "Código de recuperação",
   "passkey_security_confirm_action": "Confirmar",
@@ -255,7 +255,7 @@
     "new_reviews": "Novas Avaliações",
     "gamification_digest": "Resumo de Gamificação",
     "achievement_milestones": "Marcos de Conquistas",
-    "weekly_digest": "Resumo Semanal",
+    "weekly_digest": "Resumo Mensal",
     "payment_notifications": "Notificações de Pagamento",
     "transfer_notifications": "Notificações de Transferência",
     "membership_updates": "Atualizações de Adesão",
@@ -273,9 +273,9 @@
     "search_indexing": "Indexação por Motores de Busca"
   },
   "password": {
-    "current": "Palavra-passe Atual",
-    "new": "Nova Palavra-passe",
-    "confirm": "Confirmar Nova Palavra-passe",
+    "current": "Senha Atual",
+    "new": "Nova Senha",
+    "confirm": "Confirmar Nova Senha",
     "hide_current": "Ocultar senha atual",
     "show_current": "Mostrar senha atual",
     "hide_new": "Ocultar nova senha",
@@ -283,16 +283,16 @@
   },
   "insurance": {
     "type_label": "Tipo de Seguro",
-    "title": "Registos de seguro",
-    "description": "Registe apenas o tipo de seguro, o fornecedor e a data de validade. Não carregue documentos nem dados sensíveis da apólice.",
-    "loading": "A carregar registos de seguro...",
+    "title": "Registros de seguro",
+    "description": "Registre apenas o tipo de seguro, o fornecedor e a data de validade. Não carregue documentos nem dados sensíveis da apólice.",
+    "loading": "A carregar registros de seguro...",
     "provider_label": "Fornecedor do seguro (opcional)",
     "expiry_label": "Data de validade",
     "expiry_required": "Introduza a data de validade do seguro.",
-    "save_record": "Guardar registo de seguro",
-    "record_saved": "Registo de seguro guardado",
-    "record_saved_desc": "Os lembretes podem ser enviados sem guardar o documento original.",
-    "record_failed_desc": "Não foi possível guardar o registo de seguro.",
+    "save_record": "Salvar registro de seguro",
+    "record_saved": "Registro de seguro salvo",
+    "record_saved_desc": "Os lembretes podem ser enviados sem salvar o documento original.",
+    "record_failed_desc": "Não foi possível salvar o registro de seguro.",
     "unknown_provider": "Fornecedor desconhecido",
     "expires": "Expira {{date}}",
     "public_liability": "Responsabilidade Civil",
@@ -406,7 +406,7 @@
       "tiers_explainer": "“Apenas preparar” significa que eles armaram algo e nada acontece até que você diga sim. \"Faça por conta própria\" significa que acontece imediatamente, registrado como feito por eles em seu nome.",
       "tiers_error": "Não foi possível salvar isso. Nada foi alterado.",
       "tiers_option_none": "Nada",
-      "tiers_toast": "Guardado.",
+      "tiers_toast": "Salvo.",
       "step_one_label": "Etapa 1 de 2",
       "admin_managed_label": "Acordo de proteção gerido pela administração",
       "why_visible_title": "Por que estou vendo isto?",
@@ -422,15 +422,15 @@
     }
   },
   "header": {
-    "title": "Definições",
+    "title": "Configurações",
     "subtitle": "Gerir as suas preferências de conta",
     "badge": "Controlos da conta",
-    "unsaved_badge": "Alterações não guardadas",
+    "unsaved_badge": "Alterações não salvas",
     "current_section": "Secção atual"
   },
-  "save_changes": "Guardar Alterações",
-  "save_preferences": "Guardar Preferências",
-  "save_privacy": "Guardar Definições de Privacidade",
+  "save_changes": "Salvar Alterações",
+  "save_preferences": "Salvar Preferências",
+  "save_privacy": "Salvar Configurações de Privacidade",
   "try_again": "Tentar Novamente",
   "notification_sections": {
     "title": "Preferências de Notificação",
@@ -480,7 +480,7 @@
     "monthly": "Mensal"
   },
   "privacy_sections": {
-    "title": "Definições de Privacidade",
+    "title": "Configurações de Privacidade",
     "profile_visibility": "Visibilidade do Perfil",
     "search_discovery": "Pesquisa e Descoberta"
   },
@@ -493,7 +493,7 @@
     "connections": "Apenas Conexões - As suas conexões"
   },
   "federation": {
-    "title": "Definições de Federação",
+    "title": "Configurações de Federação",
     "description": "Gerir a sua visibilidade e preferências em comunidades parceiras"
   },
   "gdpr": {
@@ -516,10 +516,10 @@
     "deletion_modal_desc": "Após a eliminação dos seus dados, não será possível recuperá-los. A sua conta e todos os dados associados serão permanentemente removidos.",
     "download_modal_desc": "Prepararemos um arquivo transferível com todos os seus dados pessoais, incluindo o seu perfil, anúncios, mensagens e histórico de transações. Receberá um email com um link de transferência no prazo de 30 dias.",
     "portability_modal_desc": "Exportaremos os seus dados num formato estruturado, comummente utilizado e legível por máquina (JSON/CSV). Isto permite-lhe transferir os seus dados para outro serviço. Receberá um email no prazo de 30 dias.",
-    "rectification_modal_desc": "Solicite a correção de quaisquer dados pessoais incorretos ou incompletos que tenhamos sobre si. Analisaremos o seu pedido e atualizaremos os registos no prazo de 30 dias.",
+    "rectification_modal_desc": "Solicite a correção de quaisquer dados pessoais incorretos ou incompletos que tenhamos sobre si. Analisaremos o seu pedido e atualizaremos os registros no prazo de 30 dias.",
     "restriction_modal_desc": "Solicite que restrinjamos o tratamento dos seus dados pessoais. Enquanto restrito, armazenaremos mas não trataremos ativamente os seus dados. Responderemos no prazo de 30 dias.",
     "objection_modal_desc": "Oponha-se ao tratamento dos seus dados pessoais para fins específicos, como marketing direto ou criação de perfis. Analisaremos a sua oposição no prazo de 30 dias.",
-    "confirmation_email": "Será enviado um email de confirmação para o seu endereço de email registado.",
+    "confirmation_email": "Será enviado um email de confirmação para o seu endereço de email registrado.",
     "confirm_deletion": "Confirmar Pedido de Eliminação",
     "submit_request": "Submeter Pedido"
   },
@@ -529,8 +529,8 @@
     "loading": "Carregando habilidades..."
   },
   "password_modal": {
-    "title": "Alterar Palavra-passe",
-    "submit": "Alterar Palavra-passe"
+    "title": "Alterar Senha",
+    "submit": "Alterar Senha"
   },
   "logout_modal": {
     "title": "Terminar Sessão",
@@ -654,7 +654,7 @@
       "capability_credits": "Seus créditos de tempo",
       "option_none": "Desativado",
       "option_co_decide": "Apenas preparar — a pessoa aprova cada ação",
-      "option_represent": "Agir sozinho — tudo registado",
+      "option_represent": "Agir sozinho — tudo registrado",
       "tier_aria": "Nível de suporte para {{capability}} de {{name}}",
       "co_decide_explainer": "\"Apenas preparar\" significa que o ajudante configura as coisas e nada acontece até que o proprietário da conta aprove - com um toque aqui ou em um link no e-mail. É o nível recomendado para a maioria das famílias.",
       "set_by_member": "{{name}} escolheu esses níveis. Só eles podem alterá-los, a partir das suas próprias configurações de salvaguarda."
@@ -683,7 +683,7 @@
       "state_active": "Disse que sim — pode ver",
       "state_pending": "À espera da aprovação de {{name}}",
       "request_button": "Pedir para ver as mensagens",
-      "explainer": "A visualização só começa com o sim de {{name}}, cada visualização fica registada onde a pessoa pode ver, e pode retirar o acesso em qualquer momento.",
+      "explainer": "A visualização só começa com o sim de {{name}}, cada visualização fica registrada onde a pessoa pode ver, e pode retirar o acesso em qualquer momento.",
       "request_sent_toast": "O pedido foi enviado — nada acontece até aprovar",
       "withdrawn_toast": "Acesso às mensagens retirado",
       "member_reminder": "{{name}} pode ver as suas mensagens — você concordou com isto.",
@@ -736,7 +736,7 @@
     "decline_confirm_body": "Nada acontecerá e {{name}} será informado que você recusou. Recusar é sempre bom.",
     "reason_label": "Razão (opcional)",
     "reason_hint": "Você nunca precisa dar um motivo.",
-    "status_pending": "A aguardar",
+    "status_pending": "Aguardando",
     "status_confirmed": "Aprovado",
     "status_declined": "Recusado",
     "status_expired": "Expirado",
@@ -850,15 +850,15 @@
     "error": "Falha ao bloquear usuário"
   },
   "page_meta": {
-    "title": "Definições"
+    "title": "Configurações"
   },
   "identity_auth": {
     "please_login": "Inicie sessão para verificar a sua identidade.",
     "go_to_login": "Ir para o Login"
   },
   "unsaved_changes": {
-    "title": "Alterações não guardadas",
-    "message": "Tem alterações não guardadas. Se sair, as suas alterações serão perdidas.",
+    "title": "Alterações não salvas",
+    "message": "Tem alterações não salvas. Se sair, as suas alterações serão perdidas.",
     "leave": "Sair mesmo assim",
     "stay": "Ficar"
   },
@@ -901,9 +901,9 @@
   "twofa_backup_remaining_many": "{{count}} códigos de backup restantes",
   "supported_messages": {
     "page_title": "As mensagens dela",
-    "read_only_banner": "Apenas leitura. Não pode enviar nada e nada é marcado como lido. Cada visita aqui fica registada, e a pessoa vê quando olhou pela última vez.",
+    "read_only_banner": "Apenas leitura. Não pode enviar nada e nada é marcado como lido. Cada visita aqui fica registrada, e a pessoa vê quando olhou pela última vez.",
     "purpose_title": "Porque precisa de ver?",
-    "purpose_explainer": "A sua razão fica registada permanentemente e não pode ser editada nem apagada. Ajuda todos a confiar na forma como este acesso é usado.",
+    "purpose_explainer": "A sua razão fica registrada permanentemente e não pode ser editada nem apagada. Ajuda todos a confiar na forma como este acesso é usado.",
     "purpose_reason_label": "Motivo",
     "reason_wellbeing": "Verificar se está bem",
     "reason_safety": "Uma preocupação de segurança",
@@ -928,8 +928,8 @@
     "warning": "A substituição invalida os códigos antigos não utilizados. Introduza um novo código da aplicação; se acabou de iniciar sessão, aguarde o seguinte. Se perdeu a resposta da configuração, pode substituir os códigos aqui.",
     "code": "Código de autenticação",
     "replace": "Substituir códigos de recuperação",
-    "save": "Guarde estes novos códigos num local seguro antes de sair desta página.",
-    "saved": "Guardei estes códigos",
+    "save": "Salve estes novos códigos num local seguro antes de sair desta página.",
+    "saved": "Salvei estes códigos",
     "revoke": "Esquecer todos os dispositivos de confiança",
     "revoked": "Dispositivos de confiança removidos. Será necessária verificação no próximo início de sessão.",
     "failed": "Não foi possível concluir a ação. Verifique o código e tente novamente."

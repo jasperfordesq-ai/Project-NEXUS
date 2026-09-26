@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Excluir",
-    "feature": "Recurso",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "Em andamento",
     "in_review": "Em revisão",
@@ -15,7 +15,7 @@
     "refresh": "Atualizar",
     "unexpected_error": "Erro inesperado",
     "unknown": "Desconhecido",
-    "unfeature": "Desapresentar",
+    "unfeature": "Remover destaque",
     "actions": "Ações",
     "active": "Ativo",
     "all": "Todos",
@@ -111,7 +111,7 @@
     "col_actions": "Ações",
     "col_amount": "Quantidade",
     "col_auth_method": "Método de autenticação",
-    "col_balance": "Equilíbrio",
+    "col_balance": "Saldo",
     "col_base_url": "URL base",
     "col_created": "Criado",
     "col_date": "Data",
@@ -1221,7 +1221,7 @@
         "step_2_title": "Exporte apenas quando necessário.",
         "step_2_body": "As exportações podem incluir parcerias confidenciais e metadados de log de API. Armazene arquivos com segurança.",
         "step_3_title": "Purgar com um motivo de retenção.",
-        "step_3_body": "Antes de eliminar registos antigos, confirme o período de retenção e os requisitos de auditoria do inquilino."
+        "step_3_body": "Antes de eliminar registros antigos, confirme o período de retenção e os requisitos de auditoria do inquilino."
       },
       "activityFeed": {
         "title": "Audite o que realmente aconteceu nos bancos de tempo parceiros",
@@ -1264,12 +1264,12 @@
   "federation_aggregates": {
     "meta": {
       "title": "Agregados de federação",
-      "description": "Partilhe estatísticas comunitárias anonimizadas com redes parceiras e controle o feed público assinado."
+      "description": "Compartilhe estatísticas comunitárias anonimizadas com redes parceiras e controle o feed público assinado."
     },
     "consent": {
-      "title": "Consentimento de partilha de agregados",
-      "loading": "A carregar as definições de consentimento…",
-      "enable_label": "Partilhar estatísticas agregadas anonimizadas",
+      "title": "Consentimento de compartilhamento de agregados",
+      "loading": "Carregando as configurações de consentimento…",
+      "enable_label": "Compartilhar estatísticas agregadas anonimizadas",
       "endpoint_prefix": "Quando ativado, o feed público assinado em",
       "endpoint_suffix": "devolve agregados mensais anonimizados às redes parceiras."
     },
@@ -1284,14 +1284,14 @@
     "actions": {
       "rotate_secret": "Substituir chave de assinatura",
       "preview_payload": "Pré-visualizar payload",
-      "show_audit_log": "Registo de auditoria",
+      "show_audit_log": "Registro de auditoria",
       "refresh": "Atualizar",
       "close": "Fechar"
     },
     "audit": {
-      "title": "Registo de auditoria do feed de agregados",
-      "loading": "A carregar o registo de auditoria…",
-      "empty": "Ainda não foram registadas consultas de agregados.",
+      "title": "Registro de auditoria do feed de agregados",
+      "loading": "A carregar o registro de auditoria…",
+      "empty": "Ainda não foram registradas consultas de agregados.",
       "table_aria": "Consultas recentes ao feed de agregados",
       "columns": {
         "time": "Hora",
@@ -1308,13 +1308,13 @@
       "empty": "Nenhuma pré-visualização disponível."
     },
     "toasts": {
-      "load_consent_failed": "Não foi possível carregar as definições de partilha de agregados.",
-      "enabled": "Partilha de agregados ativada.",
-      "disabled": "Partilha de agregados desativada.",
-      "update_failed": "Não foi possível atualizar a partilha de agregados.",
+      "load_consent_failed": "Não foi possível carregar as configurações de compartilhamento de agregados.",
+      "enabled": "Compartilhamento de agregados ativado.",
+      "disabled": "Compartilhamento de agregados desativado.",
+      "update_failed": "Não foi possível atualizar o compartilhamento de agregados.",
       "secret_rotated": "Chave de assinatura substituída.",
       "rotate_failed": "Não foi possível substituir a chave de assinatura.",
-      "load_audit_failed": "Não foi possível carregar o registo de auditoria.",
+      "load_audit_failed": "Não foi possível carregar o registro de auditoria.",
       "load_preview_failed": "Não foi possível carregar a pré-visualização."
     }
   },

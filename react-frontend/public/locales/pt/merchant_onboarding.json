@@ -18,7 +18,7 @@
   "business_name": "Nome da empresa",
   "display_name": "Nome de exibição",
   "bio": "Sobre o seu negócio",
-  "business_reg": "Registo comercial (opcional)",
+  "business_reg": "Registro comercial (opcional)",
   "address_street": "Morada",
   "address_city": "Cidade",
   "address_postal": "Código postal",
@@ -40,7 +40,7 @@
   "paste_image_url": "ou cole o URL da imagem",
   "next": "Seguinte",
   "back": "Voltar",
-  "saving": "A guardar…",
+  "saving": "Salvando…",
   "complete_title": "Quase lá!",
   "complete_summary": "Reveja o seu perfil",
   "launch": "Lançar a sua loja",
@@ -49,7 +49,7 @@
   "badge_earned": "Distintivo Marktplatz-Partner obtido",
   "success_cta": "Criar o seu primeiro anúncio",
   "errors": {
-    "save_failed": "Falha ao guardar. Por favor, tente novamente.",
+    "save_failed": "Falha ao salvar. Por favor, tente novamente.",
     "complete_failed": "Falha ao concluir a configuração."
   },
   "open_time": "Hora de abertura",

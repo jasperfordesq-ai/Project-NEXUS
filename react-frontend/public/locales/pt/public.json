@@ -18,7 +18,7 @@
     "open_source_title": "Open source - AGPL-3.0",
     "open_source_body": "O Project NEXUS é totalmente open source sob a AGPL-3.0. Cada linha de código pode ser auditada, criada em fork e alojada de forma autónoma. Os protocolos de federação estão documentados como normas abertas para que nenhuma plataforma controle sozinha a rede global de bancos de tempo.",
     "link_repo": "Repositório do código-fonte",
-    "link_changelog": "Registo de alterações",
+    "link_changelog": "Registro de alterações",
     "link_report_bug": "Reportar um erro",
     "link_about": "Sobre este tenant",
     "security_title": "Divulgação de segurança",
@@ -195,7 +195,7 @@
           },
           "volunteering": {
             "title": "Voluntariado",
-            "description": "Oportunidades de voluntariado, registo de horas, check-ins, despesas, certificados, monitorização do bem-estar, alertas de emergência e uma carteira da organização de voluntariado que paga créditos de tempo pelas horas aprovadas."
+            "description": "Oportunidades de voluntariado, registro de horas, check-ins, despesas, certificados, monitorização do bem-estar, alertas de emergência e uma carteira da organização de voluntariado que paga créditos de tempo pelas horas aprovadas."
           },
           "job_vacancies": {
             "title": "Vagas de emprego",
@@ -285,7 +285,7 @@
           },
           "resources_and_knowledge_base": {
             "title": "Recursos e base de conhecimento",
-            "description": "Artigos estruturados e uma biblioteca partilhada de recursos."
+            "description": "Artigos estruturados e uma biblioteca compartilhada de recursos."
           },
           "help_center": {
             "title": "Centro de ajuda",
@@ -305,7 +305,7 @@
           },
           "legal_hub": {
             "title": "Hub jurídico",
-            "description": "Documentos legais com versões, com barreiras de aceitação e registo de auditoria."
+            "description": "Documentos legais com versões, com barreiras de aceitação e registro de auditoria."
           },
           "impact_reports": {
             "title": "Relatórios de impacto",
@@ -389,7 +389,7 @@
           },
           "match_learning": {
             "title": "Aprendizagem de correspondências",
-            "description": "Ciclo de feedback que melhora as recomendações a partir das interações do utilizador."
+            "description": "Ciclo de feedback que melhora as recomendações a partir das interações do usuário."
           },
           "algorithm_health_dashboard": {
             "title": "Painel de saúde dos algoritmos",
@@ -468,7 +468,7 @@
           },
           "municipality_reporting": {
             "title": "Relatórios Municipais",
-            "description": "Um calendário municipal partilhado, uma caixa de entrada de feedback dos residentes que encaminha perguntas, ideias, problemas e reclamações para a equipa certa, e relatórios criados para o conselho e parceiros do setor público."
+            "description": "Um calendário municipal compartilhado, uma caixa de entrada de feedback dos residentes que encaminha perguntas, ideias, problemas e reclamações para a equipe certa, e relatórios criados para o conselho e parceiros do setor público."
           },
           "community_market": {
             "title": "Mercado Comunitário",
@@ -485,7 +485,7 @@
         "items": {
           "enterprise_security": {
             "title": "Segurança empresarial",
-            "description": "CSRF, limitação de débito, 2FA TOTP, chaves de acesso WebAuthn, nonces CSP, lista de permissões CORS, validação de Form Request, barreiras de verificação por email e registo por código de convite."
+            "description": "CSRF, limitação de débito, 2FA TOTP, chaves de acesso WebAuthn, nonces CSP, lista de permissões CORS, validação de Form Request, barreiras de verificação por email e registro por código de convite."
           },
           "stripe_payments_layer": {
             "title": "Camada de pagamentos Stripe",
@@ -493,7 +493,7 @@
           },
           "gdpr_compliance_suite": {
             "title": "Suíte de conformidade RGPD",
-            "description": "Pedidos de dados, gestão de consentimentos, consentimento de cookies, registo de violações e registo de auditoria completo."
+            "description": "Pedidos de dados, gestão de consentimentos, consentimento de cookies, registro de violações e registro de auditoria completo."
           },
           "fraud_and_abuse_detection": {
             "title": "Deteção de fraude e abuso",
@@ -509,7 +509,7 @@
           },
           "wcag_2_1_aa_accessibility": {
             "title": "Acessibilidade WCAG 2.1 AA",
-            "description": "Conformidade de acessibilidade auditada em toda a superfície de utilizador."
+            "description": "Conformidade de acessibilidade auditada em toda a superfície de usuário."
           },
           "multi_language_support": {
             "title": "Suporte multilingue",
@@ -517,7 +517,7 @@
           },
           "self_hosted_prerendering": {
             "title": "Pré-renderização auto-alojada",
-            "description": "Snapshots de Playwright apenas para bots, servidos aos rastreadores de SEO; os utilizadores recebem sempre a SPA em direto."
+            "description": "Snapshots de Playwright apenas para bots, servidos aos rastreadores de SEO; os usuários recebem sempre a SPA em direto."
           },
           "guided_onboarding": {
             "title": "Integração guiada",
@@ -657,7 +657,7 @@
       "subtitle": "Comece em quatro passos simples",
       "steps": {
         "0": {
-          "title": "Registe-se Gratuitamente",
+          "title": "Cadastre-se Gratuitamente",
           "description": "Crie o seu perfil em minutos e liste as competências que pode oferecer."
         },
         "1": {
@@ -709,7 +709,7 @@
       "steps": {
         "0": {
           "title": "Crie o Seu Perfil",
-          "description": "Registe-se gratuitamente e liste as competências que pode oferecer à sua comunidade."
+          "description": "Cadastre-se gratuitamente e liste as competências que pode oferecer à sua comunidade."
         },
         "1": {
           "title": "Encontre o Que Precisa",
@@ -743,7 +743,7 @@
         },
         "3": {
           "title": "Sustentabilidade",
-          "description": "Ao partilhar competências localmente, reduzimos o desperdício, apoiamos economias circulares e fortalecemos a resiliência local."
+          "description": "Ao compartilhar competências localmente, reduzimos o desperdício, apoiamos economias circulares e fortalecemos a resiliência local."
         }
       }
     },
@@ -769,7 +769,7 @@
     },
     "cta": {
       "title": "Pronto para Participar?",
-      "description": "Quer partilhar as suas competências ou encontrar ajuda com algo, a nossa comunidade está aqui para si.",
+      "description": "Quer compartilhar as suas competências ou encontrar ajuda com algo, a nossa comunidade está aqui para si.",
       "dashboard": "Ir para o Painel",
       "join": "Junte-se Gratuitamente",
       "help_center": "Centro de Ajuda",
@@ -823,7 +823,7 @@
     "search_placeholder": "Pesquisar perguntas...",
     "no_results": "Nenhuma pergunta correspondente encontrada. Tente um termo de pesquisa diferente.",
     "cta_title": "Ainda tem perguntas?",
-    "cta_description": "A nossa equipa de suporte está aqui para ajudar.",
+    "cta_description": "A nossa equipe de suporte está aqui para ajudar.",
     "cta_button": "Contactar Suporte",
     "categories": {
       "getting_started": {
@@ -846,7 +846,7 @@
           "step2_bold": "Explore o mercado",
           "step2_text": "Veja que serviços são oferecidos e necessitados",
           "step3_bold": "Publique uma oferta",
-          "step3_text": "Partilhe em que pode ajudar outros",
+          "step3_text": "Compartilhe em que pode ajudar outros",
           "step4_bold": "Faça um pedido",
           "step4_text": "Peça algo de que precisa",
           "step5_bold": "Conecte-se com membros",
@@ -877,7 +877,7 @@
           "answer_intro": "Ganha créditos ao:",
           "way1_bold": "Prestar serviços",
           "way1_text": "a outros membros",
-          "way2_bold": "Registar horas de voluntariado",
+          "way2_bold": "Registrar horas de voluntariado",
           "way2_text": "com organizações aprovadas",
           "way3_bold": "Receber doações",
           "way3_text": "de outros membros",
@@ -925,7 +925,7 @@
           "tip3": "Diga a alguém para onde vai",
           "tip4": "Confie nos seus instintos — se algo parecer errado, vá embora",
           "tip5": "Comece com trocas mais pequenas e de baixo risco",
-          "answer_outro": "Reporte qualquer comportamento preocupante à nossa equipa de suporte."
+          "answer_outro": "Reporte qualquer comportamento preocupante à nossa equipe de suporte."
         },
         "q3": {
           "question": "E se alguém não aparecer ou não concluir o serviço?",
@@ -959,7 +959,7 @@
           "answer_intro": "Ganha XP por muitas atividades:",
           "activity1": "Enviar/receber créditos de tempo",
           "activity2": "Criar anúncios",
-          "activity3": "Registar horas de voluntariado",
+          "activity3": "Registrar horas de voluntariado",
           "activity4": "Participar em eventos",
           "activity5": "Fazer conexões",
           "activity6": "Logins diários",
@@ -968,17 +968,17 @@
         "q3": {
           "question": "Posso sair das tabelas de classificação?",
           "answer_before_link": "Sim! Se preferir privacidade, pode optar por não aparecer nas tabelas de classificação públicas nas suas ",
-          "settings_link": "Definições",
+          "settings_link": "Configurações",
           "answer_after_link": ". Continuará a ganhar XP e insígnias, apenas não serão visíveis para outros nas classificações."
         }
       },
       "account_privacy": {
         "title": "Conta e Privacidade",
         "q1": {
-          "question": "Como altero a minha palavra-passe?",
+          "question": "Como altero a minha senha?",
           "answer_before_link": "Vá a ",
-          "settings_link": "Definições",
-          "answer_after_link": " > Segurança para alterar a sua palavra-passe. Terá de introduzir a sua palavra-passe atual primeiro. Se esqueceu a sua palavra-passe, use o link \"Esqueceu a Palavra-passe\" na página de início de sessão."
+          "settings_link": "Configurações",
+          "answer_after_link": " > Segurança para alterar a sua senha. Terá de introduzir a sua senha atual primeiro. Se esqueceu a sua senha, use o link \"Esqueceu a Senha\" na página de início de sessão."
         },
         "q2": {
           "question": "Quem pode ver o meu perfil?",
@@ -987,16 +987,16 @@
           "item2": "Se aparece nas tabelas de classificação",
           "item3": "A visibilidade da sua localização geral",
           "answer_link_before": "Ajuste nas suas ",
-          "settings_link": "Definições",
+          "settings_link": "Configurações",
           "answer_link_after": "."
         },
         "q3": {
           "question": "Como elimino a minha conta?",
           "answer_intro": "Se desejar sair da comunidade:",
-          "step1": "Vá a Definições > Conta",
+          "step1": "Vá a Configurações > Conta",
           "step2": "Clique em \"Eliminar Conta\"",
           "step3": "Confirme a sua decisão",
-          "answer_outro": "Nota: O seu histórico de transações será retido para fins de registo, mas a sua informação pessoal será removida."
+          "answer_outro": "Nota: O seu histórico de transações será retido para fins de registro, mas a sua informação pessoal será removida."
         },
         "q4": {
           "question": "Como são protegidos os meus dados?",
@@ -1132,7 +1132,7 @@
     "web_stable_point_1": "Espelha exatamente o site, por isso funciona da forma que já conhece",
     "web_stable_point_2": "Sempre a versão mais recente — as melhorias chegam-lhe de imediato, sem descarregar nada",
     "web_stable_point_3": "Totalmente mantida e a opção mais fiável que oferecemos hoje",
-    "web_stable_install_note": "Em telemóveis Android e computadores Windows também a pode instalar, para que abra a partir do seu próprio ícone como qualquer outra aplicação. No iPhone e no iPad funciona totalmente no Safari, mas guardá-la como ícone de aplicação ainda não é fiável — mais sobre isso abaixo.",
+    "web_stable_install_note": "Em telemóveis Android e computadores Windows também a pode instalar, para que abra a partir do seu próprio ícone como qualquer outra aplicação. No iPhone e no iPad funciona totalmente no Safari, mas salvá-la como ícone de aplicação ainda não é fiável — mais sobre isso abaixo.",
     "web_stable_steps_cta": "Mostre-me como a adicionar ao meu telemóvel"
   },
   "unknown_error": "Erro desconhecido",

@@ -54,8 +54,8 @@
   "toast": {
     "created": "Sondagem criada com sucesso!",
     "create_failed": "Falha ao criar sondagem. Tente novamente.",
-    "voted": "Voto registado!",
-    "vote_failed": "Falha ao registar voto. Tente novamente.",
+    "voted": "Voto registrado!",
+    "vote_failed": "Falha ao registrar voto. Tente novamente.",
     "deleted": "Sondagem eliminada.",
     "delete_failed": "Falha ao eliminar sondagem. Tente novamente.",
     "csv_exported": "CSV exportado com sucesso.",

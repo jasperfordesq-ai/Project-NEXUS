@@ -64,10 +64,10 @@
     "filter_by_type": "Filtrar por tipo",
     "filter_badges_aria": "Filtrar insígnias por tipo",
     "all_types": "Todos os Tipos",
-    "manage_showcase": "Gerir Montra",
+    "manage_showcase": "Gerir Vitrine",
     "empty_title": "Ainda sem insígnias",
     "empty_description": "Complete atividades e desafios para ganhar insígnias!",
-    "showcased": "Em Montra",
+    "showcased": "Em Vitrine",
     "earned_date": "Obtida {{date}}",
     "locked": "Bloqueada",
     "daily_reward": {
@@ -160,17 +160,17 @@
       "load_failed": "Não foi possível carregar os detalhes do selo."
     },
     "showcase": {
-      "manage_title": "Gerir Montra de Insígnias",
+      "manage_title": "Gerir Vitrine de Insígnias",
       "select_badges": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)",
       "no_badges_earned": "Ainda não ganhou nenhuma insígnia.",
       "showcase_badge": "Mostrar {{name}}",
       "cancel": "Cancelar",
-      "saving": "A guardar...",
-      "save": "Guardar Montra",
-      "updated": "Montra Atualizada",
-      "updated_desc": "A sua montra de insígnias foi guardada.",
-      "save_failed": "Falha ao Guardar",
-      "save_failed_desc": "Não foi possível atualizar a montra.",
+      "saving": "Salvando...",
+      "save": "Salvar Vitrine",
+      "updated": "Vitrine Atualizada",
+      "updated_desc": "A sua vitrine de insígnias foi salva.",
+      "save_failed": "Falha ao Salvar",
+      "save_failed_desc": "Não foi possível atualizar a vitrine.",
       "save_error": "Algo correu mal.",
       "select_badges_many": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)",
       "select_badges_one": "Selecione até 5 insígnias para mostrar no seu perfil. ({{count}}/5 selecionadas)",
@@ -242,7 +242,7 @@
       "insights": "Informações sobre metas",
       "progress_timeline": "Cronologia do Progresso",
       "progress_explainer": "O progresso é calculado a partir do valor atual em relação à meta. Os check-ins podem atualizar essa porcentagem diretamente.",
-      "no_progress": "Ainda sem atualizações de progresso registadas."
+      "no_progress": "Ainda sem atualizações de progresso registradas."
     },
     "modal": {
       "create_title": "Criar Novo Objetivo",
@@ -261,7 +261,7 @@
       "make_public_desc": "Outros podem ver e apoiar o seu objetivo",
       "cancel": "Cancelar",
       "close": "Fechar",
-      "save_changes": "Guardar Alterações",
+      "save_changes": "Salvar Alterações",
       "delete_goal": "Eliminar Objetivo",
       "delete_confirm": "Tem a certeza de que pretende eliminar \"{{title}}\"?",
       "delete_warning": "Esta ação não pode ser revertida."

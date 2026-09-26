@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Excluir",
-    "feature": "Recurso",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "Em andamento",
     "in_review": "Em revisão",
@@ -15,7 +15,7 @@
     "refresh": "Atualizar",
     "unexpected_error": "Erro inesperado",
     "unknown": "Desconhecido",
-    "unfeature": "Desapresentar",
+    "unfeature": "Remover destaque",
     "actions": "Ações",
     "active": "Ativo",
     "all": "Todos",
@@ -493,7 +493,7 @@
         "tooltip_position": "Posição",
         "tooltip_length": "Comprimento",
         "tooltip_visible": "Visível",
-        "style_tooltip": "Ajustar as definições de estilo deste elemento",
+        "style_tooltip": "Ajustar as configurações de estilo deste elemento",
         "add_tab": "Adicionar aba",
         "style_active_tab": "Guia ativo"
       },
@@ -686,7 +686,7 @@
       }
     },
     "storage": {
-      "recover_unsaved": "Pretende recuperar as alterações não guardadas?"
+      "recover_unsaved": "Pretende recuperar as alterações não salvas?"
     },
     "asset_manager": {
       "add_image": "Adicionar imagem",
@@ -745,5 +745,5 @@
       "new_window": "Nova janela"
     }
   },
-  "saving": "A guardar…"
+  "saving": "Salvando…"
 }

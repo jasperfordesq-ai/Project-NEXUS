@@ -3,8 +3,8 @@
     "members_marked_notified": ":count membro(s) marcado(s) como notificado(s)"
   },
   "admin_cron": {
-    "log_not_found": "Registo não encontrado",
-    "deleted_log_entries": ":count entradas de registo eliminadas"
+    "log_not_found": "Registro não encontrado",
+    "deleted_log_entries": ":count entradas de registro eliminadas"
   },
   "admin_enterprise": {
     "breach_reported": "Violação reportada com sucesso",
@@ -12,19 +12,19 @@
     "gdpr_request_create_failed": "Falha ao criar pedido RGPD",
     "data_export_generated": "Exportação de dados gerada com sucesso",
     "data_export_failed": "Falha ao gerar exportação de dados",
-    "dpa_notification_recorded": "Notificação APD registada com sucesso",
-    "dpa_notification_failed": "Falha ao registar notificação APD",
-    "log_file_cleared": "Ficheiro de registo limpo com sucesso",
-    "log_file_only_allowed": "Apenas ficheiros .log são permitidos",
-    "log_file_not_found": "Ficheiro de registo não encontrado",
-    "log_file_clear_failed": "Falha ao limpar ficheiro de registo",
-    "secret_rotation_requires_ssh": "A rotação de segredos requer acesso ao servidor. Utilize SSH para rodar segredos no ficheiro .env.",
-    "secret_deletion_requires_ssh": "A eliminação de segredos requer acesso ao servidor. Utilize SSH para remover segredos do ficheiro .env.",
+    "dpa_notification_recorded": "Notificação APD registrada com sucesso",
+    "dpa_notification_failed": "Falha ao registrar notificação APD",
+    "log_file_cleared": "Arquivo de registro limpo com sucesso",
+    "log_file_only_allowed": "Apenas arquivos .log são permitidos",
+    "log_file_not_found": "Arquivo de registro não encontrado",
+    "log_file_clear_failed": "Falha ao limpar arquivo de registro",
+    "secret_rotation_requires_ssh": "A rotação de segredos requer acesso ao servidor. Utilize SSH para rodar segredos no arquivo .env.",
+    "secret_deletion_requires_ssh": "A eliminação de segredos requer acesso ao servidor. Utilize SSH para remover segredos do arquivo .env.",
     "config_reset_failed": "Falha ao repor configuração",
     "gdpr_request_not_found": "Pedido RGPD não encontrado",
     "gdpr_request_fetch_failed": "Falha ao obter pedido RGPD",
-    "user_id_required": "O ID de utilizador é obrigatório",
-    "assigned_to_required": "assigned_to (ID de utilizador) é obrigatório",
+    "user_id_required": "O ID de usuário é obrigatório",
+    "assigned_to_required": "assigned_to (ID de usuário) é obrigatório",
     "gdpr_request_assign_failed": "Falha ao atribuir pedido RGPD",
     "note_text_required": "O texto da nota é obrigatório",
     "gdpr_request_note_failed": "Falha ao adicionar nota ao pedido RGPD",
@@ -34,12 +34,12 @@
     "consent_type_not_found": "Tipo de consentimento não encontrado",
     "consent_type_update_failed": "Falha ao atualizar tipo de consentimento",
     "consent_type_delete_failed": "Falha ao eliminar tipo de consentimento",
-    "breach_record_not_found": "Registo de violação não encontrado",
-    "breach_record_fetch_failed": "Falha ao obter registo de violação",
-    "breach_record_update_failed": "Falha ao atualizar registo de violação",
+    "breach_record_not_found": "Registro de violação não encontrado",
+    "breach_record_fetch_failed": "Falha ao obter registro de violação",
+    "breach_record_update_failed": "Falha ao atualizar registro de violação",
     "invalid_request_type": "Tipo de pedido inválido. Deve ser um dos seguintes: :types",
-    "invalid_log_filename": "Nome de ficheiro inválido",
-    "log_file_read_failed": "Falha ao ler ficheiro de registo",
+    "invalid_log_filename": "Nome de arquivo inválido",
+    "log_file_read_failed": "Falha ao ler arquivo de registro",
     "feature_key_required": "A chave é obrigatória",
     "feature_type_invalid": "O tipo deve ser \"feature\" ou \"module\"",
     "feature_flag_update_failed": "Falha ao atualizar indicador de funcionalidade"
@@ -59,19 +59,19 @@
     "api_key_revoke_failed": "Falha ao revogar chave API",
     "max_topics_exceeded": "Máximo de 10 tópicos permitidos.",
     "invalid_export_type": "Tipo de exportação inválido. Permitidos: :types",
-    "federation_user_settings_not_found": "Tabela de definições de utilizador de federação não encontrada",
+    "federation_user_settings_not_found": "Tabela de configurações de usuário de federação não encontrada",
     "federation_partnerships_not_found": "Tabela de parcerias de federação não encontrada",
     "federation_transactions_not_found": "Tabela de transações de federação não encontrada",
-    "federation_audit_log_not_found": "Tabela de registo de auditoria de federação não encontrada",
+    "federation_audit_log_not_found": "Tabela de registro de auditoria de federação não encontrada",
     "export_failed": "Falha ao exportar dados",
-    "api_key_shown_once_warning": "Esta chave é mostrada UMA ÚNICA VEZ. Guarde-a com segurança — não pode ser recuperada novamente."
+    "api_key_shown_once_warning": "Esta chave é mostrada UMA ÚNICA VEZ. Salve-a com segurança — não pode ser recuperada novamente."
   },
   "admin_feed": {
     "item_hidden": "Item ocultado",
     "item_deleted": "Item eliminado"
   },
   "admin_gamification": {
-    "badge_recheck_completed": "Reverificação de emblemas concluída para :count utilizadores"
+    "badge_recheck_completed": "Reverificação de emblemas concluída para :count usuários"
   },
   "admin_groups": {
     "group_archived": "Grupo arquivado",
@@ -104,7 +104,7 @@
     "test_email_sent": "Email de teste enviado para :email"
   },
   "admin_onboarding": {
-    "settings_updated": "Definições de integração atualizadas",
+    "settings_updated": "Configurações de integração atualizadas",
     "preset_applied": "Predefinição :preset aplicada"
   },
   "admin_reports": {
@@ -118,7 +118,7 @@
   },
   "admin_safeguarding": {
     "guardian_assigned_notification": "Foi designado como tutor de proteção para :name",
-    "ward_assigned_notification": ":guardian foi designado como seu contacto de suporte de proteção. Pode dar ou revogar o consentimento nas suas definições.",
+    "ward_assigned_notification": ":guardian foi designado como seu contacto de suporte de proteção. Pode dar ou revogar o consentimento nas suas configurações.",
     "a_member": "um membro",
     "a_coordinator": "Um coordenador comunitário"
   },
@@ -156,7 +156,7 @@
     "connection_test_failed": "Teste de ligação falhou"
   },
   "app": {
-    "log_recorded": "Registo guardado"
+    "log_recorded": "Registro salvo"
   },
   "auth": {
     "two_factor_required": "Autenticação de dois fatores obrigatória",
@@ -167,9 +167,9 @@
     "tokens_revoked": "Todos os tokens de atualização foram revogados. Terá de iniciar sessão novamente em todos os dispositivos."
   },
   "block_user": {
-    "user_blocked": "Utilizador bloqueado",
-    "user_unblocked": "Utilizador desbloqueado",
-    "user_not_blocked": "O utilizador não estava bloqueado"
+    "user_blocked": "Usuário bloqueado",
+    "user_unblocked": "Usuário desbloqueado",
+    "user_not_blocked": "O usuário não estava bloqueado"
   },
   "cookie_consent": {
     "preferences_updated": "Preferências de consentimento atualizadas com sucesso",
@@ -190,7 +190,7 @@
     "enabled_successfully": "Federação ativada com sucesso.",
     "disabled_successfully": "Federação desativada com sucesso.",
     "signature_verified": "Assinatura verificada com sucesso",
-    "settings_updated": "Definições atualizadas com sucesso."
+    "settings_updated": "Configurações atualizadas com sucesso."
   },
   "federation_v2": {
     "receiver_id_required": "receiver_id é obrigatório.",
@@ -200,11 +200,11 @@
     "body_max_length": "O corpo da mensagem não deve exceder 10 000 caracteres."
   },
   "feed_social": {
-    "post_unshared": "Publicação não partilhada"
+    "post_unshared": "Publicação não compartilhada"
   },
   "gamification": {
     "invalid_leaderboard_type": "Tipo de classificação inválido",
-    "showcase_updated": "Montra atualizada",
+    "showcase_updated": "Vitrine atualizada",
     "score_recalculation_initiated": "Recálculo de pontuação iniciado"
   },
   "gdpr": {
@@ -219,7 +219,7 @@
     "exchange_completed": "Troca concluída com sucesso"
   },
   "group_files": {
-    "file_deleted": "Ficheiro eliminado"
+    "file_deleted": "Arquivo eliminado"
   },
   "group_invite": {
     "invite_revoked": "Convite revogado"

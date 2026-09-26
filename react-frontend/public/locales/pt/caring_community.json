@@ -72,8 +72,8 @@
     "confirm_relationship": "Confirmar relação",
     "reject_relationship": "Rejeitar pedido",
     "recipient_rejection_reason": "Não dou consentimento a esta relação de cuidado.",
-    "status_pending_recipient": "A aguardar a pessoa cuidada",
-    "status_pending_staff": "A aguardar revisão de salvaguarda pela equipa",
+    "status_pending_recipient": "Aguardando a pessoa cuidada",
+    "status_pending_staff": "Aguardando revisão de salvaguarda pela equipe",
     "status_active": "Ativa",
     "status_rejected": "Não aprovada",
     "status_inactive": "Terminada"
@@ -85,7 +85,7 @@
     "empty": "Não há pedidos à espera de revisão.",
     "requested_for": "Pedido para {{name}}",
     "recipient_confirmed": "A pessoa cuidada confirmou",
-    "recipient_not_confirmed": "Confirmação da pessoa cuidada não registada",
+    "recipient_not_confirmed": "Confirmação da pessoa cuidada não registrada",
     "consent_evidence": "Prova de consentimento",
     "confirm_consent": "Confirmo que o consentimento foi explicitamente verificado",
     "approve": "Aprovar ligação",
@@ -294,7 +294,7 @@
         "success-stories": "Histórias de sucesso",
         "feedback": "Caixa de entrada de comentários",
         "verification": "Verificação Municipal",
-        "safeguarding": "Protegendo Relatórios",
+        "safeguarding": "Relatórios de Proteção",
         "trust-tier": "Níveis de confiança",
         "launch-readiness": "Preparação para lançamento",
         "pilot-scoreboard": "Placar Piloto",
@@ -354,7 +354,7 @@
         "success_stories": "Histórias de sucesso",
         "feedback": "Caixa de entrada de comentários",
         "verification": "Verificação Municipal",
-        "safeguarding": "Protegendo Relatórios",
+        "safeguarding": "Relatórios de Proteção",
         "trust_tier": "Níveis de confiança",
         "launch_readiness": "Preparação para lançamento",
         "pilot_scoreboard": "Placar Piloto",
@@ -588,7 +588,7 @@
       },
       "inbound": {
         "title": "Recebidos de outras cooperativas (últimos 90 dias)",
-        "description": "Este é apenas um registo de auditoria - as transferências de entrada são processadas automaticamente quando a cooperativa de origem as aprova. Nenhuma ação é necessária aqui.",
+        "description": "Este é apenas um registro de auditoria - as transferências de entrada são processadas automaticamente quando a cooperativa de origem as aprova. Nenhuma ação é necessária aqui.",
         "empty": "Nenhuma transferência recebida nos últimos 90 dias.",
         "table_aria": "Transferências de horas de entrada"
       },
@@ -928,13 +928,13 @@
       "member_since": "Membro desde {{date}}",
       "member_id_value": "ID{{id}}",
       "safeguarding_flags_one": "Bandeira de salvaguarda {{count}}",
-      "safeguarding_flags_other": "{{count}} protegendo bandeiras",
+      "safeguarding_flags_other": "{{count}} sinalizações de proteção",
       "about": {
         "title": "Sobre esta página",
         "body": "Um Círculo de Destinatários de Cuidados é um grupo de apoio privado em torno de um indivíduo que recebe cuidados. Esta visualização mostra toda a rede de suporte: todos os ajudantes, total de horas recebidas, solicitações de ajuda abertas e quaisquer sinalizadores de proteção. Insira o ID de usuário do membro para procurar seu círculo.",
         "trust_tiers_label": "Níveis de confiança:",
         "trust_tiers_body": "Recém-chegado, Membro, Confiável, Verificado, Coordenador - mostrado para o destinatário e cada apoiador.",
-        "safeguarding_label": "Protegendo bandeiras:",
+        "safeguarding_label": "Sinalizações de proteção:",
         "safeguarding_body": "Uma contagem de sinalizadores diferente de zero indica preocupações de salvaguarda ativas registradas contra este membro. Revise-os na seção Proteção.",
         "privacy_label": "Privacidade:",
         "privacy_body": "Os dados do círculo são visíveis apenas para membros do círculo e administradores de locatários. Não está incluído nos relatórios de toda a comunidade ou no diretório de membros."
@@ -986,11 +986,11 @@
       "errors": {
         "load": "Falha ao carregar o círculo de destinatários. Verifique o ID do membro e tente novamente."
       },
-      "safeguarding_flags_many": "{{count}} protegendo bandeiras"
+      "safeguarding_flags_many": "{{count}} sinalizações de proteção"
     },
     "safeguarding_reports": {
-      "meta_title": "Protegendo Relatórios - Administrador",
-      "title": "Protegendo Relatórios",
+      "meta_title": "Relatórios de Proteção - Administrador",
+      "title": "Relatórios de Proteção",
       "subtitle": "Revise, atribua e resolva as preocupações de proteção levantadas pelos membros.",
       "empty_dash": "-",
       "actor_id": "#{{id}}",
@@ -1039,7 +1039,7 @@
         "severity": "Gravidade"
       },
       "table": {
-        "aria": "Protegendo relatórios",
+        "aria": "Relatórios de proteção",
         "severity": "Gravidade",
         "category": "Categoria",
         "reporter": "Repórter",
@@ -1197,7 +1197,7 @@
         "type": "Tipo",
         "description": "Descrição",
         "points": "Pontos",
-        "balance": "Equilíbrio",
+        "balance": "Saldo",
         "user_fallback": "#{{id}}"
       },
       "messages": {

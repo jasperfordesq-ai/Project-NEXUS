@@ -22,16 +22,16 @@
     "title": "Check-in",
     "new_checkin": "Novo Check-in",
     "history": "Histórico",
-    "no_checkins": "Sem check-ins ainda. Registe o seu primeiro!",
+    "no_checkins": "Sem check-ins ainda. Registre o seu primeiro!",
     "progress_label": "Progresso",
-    "progress_help": "Defina isto para o progresso real que quer mostrar no objetivo. Registar um check-in atualiza a barra do objetivo e a linha do tempo.",
+    "progress_help": "Defina isto para o progresso real que quer mostrar no objetivo. Registrar um check-in atualiza a barra do objetivo e a linha do tempo.",
     "progress_value": "{{percent}}%",
-    "progress_unknown": "Progresso não registado",
+    "progress_unknown": "Progresso não registrado",
     "mood_label": "Como se está a sentir?",
     "note_label": "Nota (opcional)",
     "note_placeholder": "Como vai? Alguma conquista ou desafio?",
     "cancel": "Cancelar",
-    "submit": "Registar Check-in",
+    "submit": "Registrar Check-in",
     "check_in_button": "Check-in"
   },
   "mood": {
@@ -73,7 +73,7 @@
   "history": {
     "load_failed": "Falha ao carregar histórico.",
     "retry": "Tentar Novamente",
-    "no_activity": "Ainda não foi registada atividade.",
+    "no_activity": "Ainda não foi registrada atividade.",
     "progress_aria": "Progresso: {{percent}}%",
     "event": {
       "progress_update": "Atualização de progresso",
@@ -97,7 +97,7 @@
     "checkin_due": "Um check-in está pendente",
     "frequency": "Cadência {{frequency}}",
     "checkins": "Check-ins",
-    "checkins_value": "{{count}} registados",
+    "checkins_value": "{{count}} registrados",
     "last_checkin": "Último check-in {{time}}",
     "no_checkins": "Sem check-ins ainda",
     "milestones": "Marcos",
@@ -127,9 +127,9 @@
     "best_streak_many": "Melhor sequência: {{count}}",
     "best_streak_one": "Melhor sequência: {{count}}",
     "best_streak_other": "Melhor sequência: {{count}}",
-    "checkins_value_many": "{{count}} registados",
-    "checkins_value_one": "{{count}} registados",
-    "checkins_value_other": "{{count}} registados"
+    "checkins_value_many": "{{count}} registrados",
+    "checkins_value_one": "{{count}} registrados",
+    "checkins_value_other": "{{count}} registrados"
   },
   "template_picker": {
     "load_error": "Falha ao carregar os modelos. Por favor, tente novamente.",

@@ -1,14 +1,14 @@
 {
   "meta": {
     "title": "Inquéritos da Comunidade",
-    "description": "Partilhe a sua opinião sobre questões locais"
+    "description": "Compartilhe a sua opinião sobre questões locais"
   },
   "empty": "Não há inquéritos disponíveis de momento",
   "already_responded": "Já participou neste inquérito.",
   "submit": "Enviar respostas",
   "submitting": "A enviar…",
   "success_title": "Obrigado!",
-  "success_body": "O seu feedback foi registado.",
+  "success_body": "O seu feedback foi registrado.",
   "back": "Voltar aos inquéritos",
   "required_error": "Por favor, responda a todas as perguntas obrigatórias.",
   "take_survey": "Responder ao inquérito",

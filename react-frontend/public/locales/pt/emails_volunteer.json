@@ -21,7 +21,7 @@
     "title": "Obrigado pelo seu voluntariado!",
     "preview": "Obrigado pelo seu turno de voluntariado com {{title}}",
     "body": "Obrigado por concluir o seu turno de voluntariado com <strong>{{title}}</strong>. A sua contribuição faz uma diferença real!",
-    "log_hours_prompt": "Lembre-se de registar as suas horas para que a sua contribuição fique registada.",
-    "cta": "Registar as suas horas"
+    "log_hours_prompt": "Lembre-se de registrar as suas horas para que a sua contribuição fique registrada.",
+    "cta": "Registrar as suas horas"
   }
 }

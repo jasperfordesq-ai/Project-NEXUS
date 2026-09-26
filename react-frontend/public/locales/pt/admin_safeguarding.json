@@ -5,7 +5,7 @@
     "cancel": "Cancelar",
     "critical": "Crítico",
     "delete": "Excluir",
-    "feature": "Recurso",
+    "feature": "Destacar",
     "high": "Alto",
     "in_progress": "Em andamento",
     "in_review": "Em revisão",
@@ -15,7 +15,7 @@
     "refresh": "Atualizar",
     "unexpected_error": "Erro inesperado",
     "unknown": "Desconhecido",
-    "unfeature": "Desapresentar",
+    "unfeature": "Remover destaque",
     "actions": "Ações",
     "active": "Ativo",
     "all": "Todos",
@@ -108,7 +108,7 @@
     "deactivation_failed": "Falha na desativação",
     "declined": "Recusado",
     "declined_none_apply": "Recusado - nenhum se aplica",
-    "desc_guardian_monitors_messages": "Este é um registo para a equipa de salvaguarda. Não dá ao responsável qualquer acesso às mensagens ou à conta deste membro.",
+    "desc_guardian_monitors_messages": "Este é um registro para a equipe de salvaguarda. Não dá ao responsável qualquer acesso às mensagens ou à conta deste membro.",
     "desc_help_url": "Um link para documentação de ajuda para esta opção de proteção",
     "desc_option_key": "Um identificador exclusivo para esta opção de proteção",
     "desc_required_vetting_type": "O tipo de verificação necessário antes que esta opção de proteção possa ser atribuída",
@@ -139,7 +139,7 @@
       "type_dmr_court_order": "Ordem judicial representativa para tomada de decisão",
       "type_power_of_attorney": "Procuração",
       "type_edm_assistant_agreement": "Contrato de assistência à tomada de decisão registrado",
-      "type_co_decision_agreement": "Acordo de co-decisão registado",
+      "type_co_decision_agreement": "Acordo de co-decisão registrado",
       "scope_label": "O que cobre (opcional)",
       "scope_hint": "Em suas próprias palavras. Armazenado criptografado.",
       "no_evidence_notice": "Não insira números de documentos, datas nem carregue nada. A plataforma registra apenas que você viu a autoridade —nunca deve se tornar um depósito de ordens judiciais.",
@@ -157,7 +157,7 @@
       "revoke_confirm_button": "Marcar como não é mais válido",
       "revoked_toast": "Marcado como não é mais válido.",
       "col_supporter": "Ajudante",
-      "attested_toast": "Registado."
+      "attested_toast": "Registrado."
     },
     "support": {
       "title": "Ações preparadas aguardando aprovação",
@@ -233,7 +233,7 @@
           "restricts_messaging": "Marca o membro sob monitoramento; as cópias das mensagens começam.",
           "vetting_type_required": "Especifica qual verificação um membro de contato deve realizar, por exemplo garda_vetting."
         },
-        "table_aria": "Protegendo os efeitos de gatilho",
+        "table_aria": "Efeitos dos gatilhos de proteção",
         "merge_note": "Quando um membro seleciona múltiplas opções, aciona a fusão OR: a combinação mais protetora vence. A revogação de uma opção pode liberar algumas proteções, mas manter outras ativas – o sistema reavalia do zero a cada vez."
       },
       "vetting": {
@@ -263,7 +263,7 @@
         "assign_guardian_path": "corretor/monitoramento -> Atribuir Guardião",
         "create_suffix": "Ambas as partes recebem um e-mail e uma notificação no aplicativo.",
         "consent_label": "Consentimento",
-        "consent_prefix": "- o membro apoiado tem de aceitar; a sua aceitação é registada em",
+        "consent_prefix": "- o membro apoiado tem de aceitar; a sua aceitação é registrada em",
         "consent_middle": "A atribuição só se torna",
         "active": "ativo",
         "consent_suffix": "uma vez aceito.",
@@ -341,7 +341,7 @@
     "label_description_help": "Descrição Ajuda",
     "label_display_label": "Etiqueta de exibição",
     "label_flagged_messages": "Mensagens sinalizadas",
-    "label_flags_this_month": "Bandeiras este mês",
+    "label_flags_this_month": "Sinalizações este mês",
     "label_guardian_assignments": "Atribuições de Guardião",
     "label_guardian_email": "E-mail do Guardião",
     "label_help_url": "URL de ajuda",
@@ -402,7 +402,7 @@
     "reviewed": "Revisado",
     "revoke": "Revogar",
     "safeguarding_dashboard_desc": "Visão geral das atribuições dos responsáveis, mensagens sinalizadas e atividades de proteção",
-    "safeguarding_dashboard_title": "Protegendo o painel",
+    "safeguarding_dashboard_title": "Painel de proteção",
     "safeguarding_options": "Opções de salvaguarda",
     "safeguarding_options_desc": "Crie e gerencie opções de proteção disponíveis para membros",
     "save_changes": "Salvar alterações",
@@ -416,7 +416,7 @@
     "tab_member_preferences": "Preferências de membros",
     "to": "Para",
     "trigger_labels": {
-      "notify_admin_on_selection": "Notificar a equipa de salvaguarda",
+      "notify_admin_on_selection": "Notificar a equipe de salvaguarda",
       "requires_broker_approval": "Exigir aprovação do coordenador",
       "requires_vetted_interaction": "Apenas membros verificados",
       "restricts_matching": "Restringir correspondências",
@@ -438,6 +438,6 @@
     "vetting_international": "Verificação Internacional",
     "vetting_other": "Verificação de outros",
     "vetting_pvg_scotland": "Verificando Pvg Escócia",
-    "tabs_aria": "Protegendo seções"
+    "tabs_aria": "Seções de proteção"
   }
 }

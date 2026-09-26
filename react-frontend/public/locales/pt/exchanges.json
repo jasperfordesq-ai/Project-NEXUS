@@ -180,5 +180,39 @@
     }
   },
   "hours_count_one": "{{count}} hora",
-  "hours_count_many": "{{count}} hora"
+  "hours_count_many": "{{count}} hora",
+  "status_config": {
+    "pending_provider": {
+      "label": "Aguardando prestador",
+      "description": "Aguardando o prestador do serviço aceitar ou recusar este pedido."
+    },
+    "pending_broker": {
+      "label": "Aguardando mediador",
+      "description": "Esta troca precisa da aprovação de um mediador antes de continuar."
+    },
+    "accepted": {
+      "label": "Aceita",
+      "description": "A troca foi aceita. O prestador pode começar quando estiver pronto."
+    },
+    "in_progress": {
+      "label": "Em andamento",
+      "description": "O serviço está sendo prestado neste momento."
+    },
+    "pending_confirmation": {
+      "label": "Confirmar horas",
+      "description": "As duas partes precisam confirmar as horas trabalhadas para concluir a troca."
+    },
+    "completed": {
+      "label": "Concluída",
+      "description": "A troca foi concluída e os créditos foram transferidos."
+    },
+    "disputed": {
+      "label": "Em disputa",
+      "description": "Há uma divergência sobre as horas. Um mediador vai analisar o caso."
+    },
+    "cancelled": {
+      "label": "Cancelada",
+      "description": "Esta troca foi cancelada."
+    }
+  }
 }

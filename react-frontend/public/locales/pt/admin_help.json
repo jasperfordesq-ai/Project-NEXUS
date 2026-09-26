@@ -216,7 +216,7 @@
         },
         {
           "label": "Escalar para agências externas",
-          "detail": "Para incidentes críticos que envolvam risco de danos, utilize \"Escalar externamente\" para registar que contactou os serviços legais (polícia, serviço social, etc.)."
+          "detail": "Para incidentes críticos que envolvam risco de danos, utilize \"Escalar externamente\" para registrar que contactou os serviços legais (polícia, serviço social, etc.)."
         },
         {
           "label": "Fechar o relatório",
@@ -673,7 +673,7 @@
       ],
       "tips": [
         "Você pode trabalhar nos critérios em qualquer ordem — não há sequência obrigatória.",
-        "Os documentos comprovativos são armazenados de forma segura e acessíveis aos nacionais da Caring Community para os seus registos.",
+        "Os documentos comprovativos são armazenados de forma segura e acessíveis aos nacionais da Caring Community para os seus registros.",
         "O portão de prontidão pode ser reavaliado a qualquer momento — se as circunstâncias mudarem (por exemplo, se um parceiro municipal se retirar), o status do portão será atualizado automaticamente."
       ],
       "caution": "Não tente contornar o portão de prontidão manualmente. Lançar sem passar em todos os critérios representa o risco de uma experiência insatisfatória para os membros e prejudica a responsabilização da subvenção.",
@@ -1087,7 +1087,7 @@
       ],
       "tips": [
         "A propagação do DNS pode levar até 48 horas. Reserve tempo suficiente antes da verificação – não tente novamente mais de uma vez por hora.",
-        "O selo será automaticamente revogado se o registro DNS for removido posteriormente. Os parceiros verificados devem ser aconselhados a manter o registo permanentemente."
+        "O selo será automaticamente revogado se o registro DNS for removido posteriormente. Os parceiros verificados devem ser aconselhados a manter o registro permanentemente."
       ],
       "relatedPaths": [
         {
@@ -1163,7 +1163,7 @@
         },
         {
           "label": "Desembolsos de recompensas de auditoria",
-          "detail": "O registo de desembolsos mostra todas as recompensas emitidas, para quem e porquê. Use isso para detectar anomalias."
+          "detail": "O registro de desembolsos mostra todas as recompensas emitidas, para quem e porquê. Use isso para detectar anomalias."
         }
       ],
       "tips": [
@@ -1370,7 +1370,7 @@
         "O conteúdo do plano de cuidados é confidencial – apenas os membros do círculo e coordenadores podem vê-lo.",
         "Quando um membro do círculo sai (por exemplo, um voluntário se afasta), arquive-o do círculo em vez de excluir a função — isso preserva o histórico de atendimento."
       ],
-      "caution": "Os planos de cuidados podem conter informações confidenciais de saúde. Trate-os como registos confidenciais ao abrigo do FADP/nDSG.",
+      "caution": "Os planos de cuidados podem conter informações confidenciais de saúde. Trate-os como registros confidenciais ao abrigo do FADP/nDSG.",
       "relatedPaths": [
         {
           "label": "Providers",

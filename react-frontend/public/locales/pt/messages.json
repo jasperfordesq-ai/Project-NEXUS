@@ -27,7 +27,7 @@
   "search_empty": "Nenhuma conversa encontrada",
   "archived_search_empty": "Nenhuma conversa arquivada encontrada",
   "search_empty_subtitle": "Tente outro nome ou limpe o campo de pesquisa.",
-  "unknown_user": "Utilizador desconhecido",
+  "unknown_user": "Usuário desconhecido",
   "restore": "Restaurar",
   "mic_required_title": "Acesso ao Microfone Necessário",
   "mic_required_subtitle": "Permita o acesso ao microfone para gravar mensagens de voz.",
@@ -80,7 +80,7 @@
   "message_copied": "Mensagem copiada",
   "error": "Erro",
   "error_title": "Erro",
-  "save": "Guardar",
+  "save": "Salvar",
   "search_result_count": "{{current}} de {{total}}",
   "archive_confirm_prompt": "Tem a certeza de que pretende arquivar esta conversa com {{name}}?",
   "aria_add_attachment": "Adicionar anexo",
@@ -222,19 +222,19 @@
   "character_count": "{{current}}/{{max}}",
   "loading_older": "Carregando mensagens mais antigas",
   "safeguarding_vetting_required": {
-    "title": "Verificacao de protecao necessaria",
-    "body": "Esta conversa esta pausada porque uma regra de protecao da comunidade exige uma verificacao confirmada antes de poder enviar mensagens a este membro.",
-    "contact_broker": "Contacte o seu mediador ou administrador da comunidade para confirmar o seu estado de verificacao ou combinar o proximo passo seguro.",
-    "required_checks": "Verificacoes necessarias",
+    "title": "Verificação de proteção necessária",
+    "body": "Esta conversa está pausada porque uma regra de proteção da comunidade exige uma verificação confirmada antes de você poder enviar mensagens a este membro.",
+    "contact_broker": "Contate seu mediador ou administrador da comunidade para confirmar seu status de verificação ou combinar o próximo passo seguro.",
+    "required_checks": "Verificações necessárias",
     "action": "Abrir ajuda",
-    "dismiss": "Dispensar aviso de protecao"
+    "dismiss": "Dispensar aviso de proteção"
   },
   "safeguarding_contact_restricted": {
-    "title": "E necessario acordo com coordenador",
-    "body": "Este membro nao esta disponivel para mensagens diretas porque as preferencias de salvaguarda exigem contacto mediado por coordenador.",
+    "title": "É necessário acordo com coordenador",
+    "body": "Este membro não está disponível para mensagens diretas porque as preferências de proteção exigem contato mediado por coordenador.",
     "contact_broker": "Pode pedir a um mediador, administrador ou coordenador que ajude a organizar o contacto. Utilize o botão abaixo — alguém entrará em contacto consigo.",
     "action": "Abrir ajuda",
-    "dismiss": "Dispensar aviso de protecao"
+    "dismiss": "Dispensar aviso de proteção"
   },
   "safeguarding_policy_unavailable": {
     "title": "Verificação de proteção temporariamente indisponível",

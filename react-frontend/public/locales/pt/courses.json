@@ -226,7 +226,7 @@
     "drip_fixed_date": "Data fixa",
     "drip_offset_days": "Dias",
     "drip_date": "Data de desbloqueio",
-    "no_questions": "Ainda nao ha perguntas. Guarde a licao de questionario e depois adicione perguntas.",
+    "no_questions": "Ainda nao ha perguntas. Salve a licao de questionario e depois adicione perguntas.",
     "question_prompt": "Pergunta",
     "question_options": "Opcoes de resposta, separadas por virgulas",
     "question_correct": "ID da opcao correta",

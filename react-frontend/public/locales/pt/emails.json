@@ -25,7 +25,7 @@
     "cta_primary": "Abrir a plataforma",
     "cta_secondary": "Ver o estado completo do desenvolvimento",
     "thanks": "Obrigado por fazer parte desta comunidade — em breve haverá mais.",
-    "signoff": "— A equipa {{community}}"
+    "signoff": "— A equipe {{community}}"
   },
   "welcome": {
     "subject": "Bem-vindo a {{community}}!",
@@ -63,19 +63,19 @@
   },
   "password_reset": {
     "subject": "Redefina sua senha — {{community}}",
-    "title": "Redefina a sua palavra-passe",
-    "preview": "Solicitou um link de redefinição de palavra-passe",
+    "title": "Redefina a sua senha",
+    "preview": "Solicitou um link de redefinição de senha",
     "greeting": "Olá {{name}},",
-    "body": "Solicitou uma reposição de palavra-passe. Clique no botão abaixo para definir uma nova palavra-passe.",
-    "cta": "Repor Palavra-passe",
+    "body": "Solicitou uma reposição de senha. Clique no botão abaixo para definir uma nova senha.",
+    "cta": "Repor Senha",
     "expiry": "Este link expira dentro de 1 hora.",
     "ignore": "Se não solicitou isto, pode ignorar este email com segurança."
   },
   "security": {
-    "password_changed_subject": "Alerta de segurança: a sua palavra-passe foi alterada — {{community}}",
-    "password_changed_title": "Palavra-passe alterada",
-    "password_changed_preview": "A palavra-passe da sua conta foi alterada recentemente",
-    "password_changed_body": "A palavra-passe da sua conta foi alterada recentemente. Se foi você que fez esta alteração, não é necessária qualquer ação.",
+    "password_changed_subject": "Alerta de segurança: a sua senha foi alterada — {{community}}",
+    "password_changed_title": "Senha alterada",
+    "password_changed_preview": "A senha da sua conta foi alterada recentemente",
+    "password_changed_body": "A senha da sua conta foi alterada recentemente. Se foi você que fez esta alteração, não é necessária qualquer ação.",
     "password_changed_warning": "Se não foi você que fez esta alteração, contacte o suporte imediatamente para proteger a sua conta.",
     "email_changed_subject": "Alerta de segurança: o seu endereço de e-mail foi alterado — {{community}}",
     "email_changed_title": "Endereço de e-mail alterado",
@@ -455,7 +455,7 @@
     "failed_greeting": "Olá :name,",
     "failed_body": "Infelizmente não foi possível verificar a sua identidade neste momento.",
     "failed_reason_label": "Motivo",
-    "failed_retry_note": "Pode tentar novamente nas definições de segurança.",
+    "failed_retry_note": "Pode tentar novamente nas configurações de segurança.",
     "failed_cta": "Tentar novamente"
   },
   "wallet_alert": {
@@ -479,7 +479,7 @@
     "hours_approved_subject": "As suas horas de voluntariado foram confirmadas",
     "hours_approved_title": "Horas confirmadas",
     "hours_approved_preview": "As suas horas de voluntariado foram aprovadas",
-    "hours_approved_body": "As suas horas de voluntariado para ':opportunity' foram aprovadas e adicionadas ao seu registo.",
+    "hours_approved_body": "As suas horas de voluntariado para ':opportunity' foram aprovadas e adicionadas ao seu registro.",
     "hours_approved_cta": "Ver as suas horas",
     "hours_declined_subject": "Atualização das horas de voluntariado",
     "hours_declined_title": "Horas não confirmadas",

@@ -1,10 +1,10 @@
 {
   "manage": {
     "federation": {
-      "title": "Partilha federada do evento",
+      "title": "Compartilhamento federado do evento",
       "tab": "Federação",
       "overview": "Rever a entrega federada",
-      "description": "Acompanhe como este evento é partilhado com comunidades parceiras sem expor dados privados de participantes.",
+      "description": "Acompanhe como este evento é compartilhado com comunidades parceiras sem expor dados privados de participantes.",
       "refresh": "Atualizar",
       "loading": "A carregar o estado da federação...",
       "load_error_title": "Não foi possível carregar o estado da federação",
@@ -18,10 +18,10 @@
         "configured_partners": "Parceiros configurados",
         "recipient_partners": "Histórico de entregas",
         "federation_version": "Versão da federação",
-        "visibility": "Visibilidade partilhada"
+        "visibility": "Visibilidade compartilhada"
       },
       "visibility": {
-        "none": "Não partilhado",
+        "none": "Não compartilhado",
         "listed": "Listado",
         "joinable": "Listado e disponível para adesão"
       },
@@ -41,7 +41,7 @@
         "attempts": "Tentativas",
         "activity": "Atividade mais recente"
       },
-      "no_deliveries": "Não foram registadas entregas federadas para este evento.",
+      "no_deliveries": "Não foram registradas entregas federadas para este evento.",
       "removed_partner": "Parceiro removido",
       "partner_status": {
         "active": "Ativo",
@@ -51,7 +51,7 @@
         "removed": "Removido",
         "unknown": "Estado desconhecido"
       },
-      "events_disabled": "Partilha de eventos desativada",
+      "events_disabled": "Compartilhamento de eventos desativado",
       "action": {
         "upsert": "Publicar ou atualizar",
         "tombstone": "Remover"

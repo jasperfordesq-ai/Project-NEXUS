@@ -29,7 +29,7 @@
     "goals": "Objetivos",
     "more": "Mais",
     "activity": "Atividade",
-    "saved": "Guardados",
+    "saved": "Salvos",
     "federation": "Federação",
     "federation_hub": "Hub de Federação",
     "federation_hub_short": "Eixo",
@@ -68,7 +68,7 @@
     "timebanking": "Banco de tempo",
     "explore": "Explorar",
     "marketplace": "Mercado",
-    "premium": "Prêmio",
+    "premium": "Doar",
     "verify_identity": "Verifique a sua identidade",
     "accessibility_alpha": "Acessibilidade (alfa)",
     "accessibility_alpha_tooltip": "Versão acessível aprimorada – compatível com WCAG 2.2 AA. Abre em uma nova guia.",
@@ -105,7 +105,7 @@
     "volunteering": "Oportunidades de voluntariado",
     "venues": "Locais locais que aceitam seu passe de membro",
     "organisations": "Organizações locais",
-    "resources": "Ficheiros e documentos partilhados",
+    "resources": "Arquivos e documentos compartilhados",
     "knowledge_base": "Guias e tutoriais",
     "polls": "Sondagens da comunidade",
     "jobs": "Ofertas de emprego e oportunidades",
@@ -120,7 +120,7 @@
     "goals": "Metas pessoais e comunitárias",
     "skills": "Diretório de competências e recomendações",
     "saved": "Seus itens favoritos",
-    "activity": "O seu registo de atividade recente",
+    "activity": "O seu registro de atividade recente",
     "ai_chat": "Assistente comunitário com IA",
     "federation_hub": "Rede intercomunidades",
     "partner_communities": "Bancos de tempo conectados",
@@ -150,7 +150,7 @@
   "user_menu": {
     "my_profile": "O Meu Perfil",
     "wallet": "Carteira",
-    "settings": "Definições",
+    "settings": "Configurações",
     "light_mode": "Modo Claro",
     "dark_mode": "Modo Escuro",
     "help_center": "Centro de Ajuda",
@@ -162,7 +162,7 @@
   "auth": {
     "log_out": "Terminar Sessão",
     "log_in": "Iniciar Sessão",
-    "sign_up": "Registar"
+    "sign_up": "Cadastrar"
   },
   "create": {
     "new_listing": "Novo Anúncio",
@@ -233,7 +233,7 @@
   },
   "account": {
     "section": "Conta",
-    "settings": "Definições",
+    "settings": "Configurações",
     "log_out": "Terminar Sessão"
   },
   "stats": {
@@ -280,7 +280,7 @@
   "cookie_consent": {
     "banner_label": "Consentimento de cookies",
     "title": "Utilizamos cookies",
-    "description": "Utilizamos cookies essenciais para a segurança e o funcionamento da plataforma e registamos sempre relatórios de falhas anónimos para podermos corrigir o que não funciona. Os cookies opcionais ajudam-nos a compreender como a plataforma é utilizada.",
+    "description": "Utilizamos cookies essenciais para a segurança e o funcionamento da plataforma e registramos sempre relatórios de falhas anónimos para podermos corrigir o que não funciona. Os cookies opcionais ajudam-nos a compreender como a plataforma é utilizada.",
     "learn_more": "Saber mais",
     "essential": "Essenciais",
     "essential_desc": "Autenticação, segurança, gestão de sessão, relatórios de falhas anónimos",
@@ -288,14 +288,14 @@
     "analytics": "Análise",
     "analytics_desc": "Estatísticas de utilização, medições de desempenho, repetição de sessão",
     "preferences": "Preferências",
-    "preferences_desc": "Tema, idioma, definições de apresentação",
+    "preferences_desc": "Tema, idioma, configurações de apresentação",
     "toggle_analytics": "Alternar cookies de análise",
     "toggle_preferences": "Alternar cookies de preferência",
     "manage": "Gerir preferências",
     "hide_details": "Ocultar detalhes",
     "accept_all": "Aceitar todos",
     "essential_only": "Apenas essenciais",
-    "save": "Guardar preferências"
+    "save": "Salvar preferências"
   },
   "footer": {
     "project_nexus": "Projeto NEXUS",
@@ -310,7 +310,7 @@
     "report_bug": "Reportar um Erro",
     "legal": "Jurídico",
     "pages": "Páginas",
-    "cookie_settings": "Definições de Cookies",
+    "cookie_settings": "Configurações de Cookies",
     "built_on_nexus": "Construído com Project NEXUS — Plataforma Comunitária de Código Aberto",
     "agpl_notice": "AGPL-3.0 — Direitos autorais © 2024–{{year}} Jasper Ford",
     "terms": "Termos",
@@ -474,7 +474,7 @@
     "badge": "Módulo integrado",
     "title": "Comunidade Solidária",
     "subtitle": "Junta troca de banco de tempo, voluntariado verificado, organizações de confiança, grupos, eventos, recursos e sinais de impacto num único fluxo de cuidados coordenado.",
-    "welcome_banner": "Bem-vindo/a! Aqui podes pedir ajuda, oferecer o teu tempo ou simplesmente registar um gesto de vizinhança. Cada contributo — grande ou pequeno — torna a tua comunidade mais forte.",
+    "welcome_banner": "Bem-vindo/a! Aqui podes pedir ajuda, oferecer o teu tempo ou simplesmente registrar um gesto de vizinhança. Cada contributo — grande ou pequeno — torna a tua comunidade mais forte.",
     "alpha": {
       "badge": "Novo · Acesso antecipado"
     },
@@ -482,7 +482,7 @@
     "hero": {
       "title": "Comunidade Solidária",
       "intro": "A Comunidade Solidária é um espaço onde os vizinhos se ajudam no dia a dia — uma boleia para uma consulta, umas compras ou simplesmente companhia numa tarde. Pede ajuda quando precisares e oferece-a quando puderes.",
-      "timebank_note": "Funciona em conjunto com o banco de tempo: quando dás o teu tempo, ele é registado como horas que podes usar mais tarde — as mesmas horas, num saldo partilhado.",
+      "timebank_note": "Funciona em conjunto com o banco de tempo: quando dás o teu tempo, ele é registrado como horas que podes usar mais tarde — as mesmas horas, num saldo compartilhado.",
       "cta_get_help": "Preciso de ajuda",
       "cta_give_help": "Quero ajudar"
     },
@@ -497,15 +497,15 @@
       "step1_desc": "Diz-nos por palavras tuas do que precisas. O teu pedido chega a membros de confiança por perto.",
       "step2_title": "Um vizinho oferece-se",
       "step2_desc": "Alguém da comunidade oferece-se para ajudar e combinam uma hora que vos dê jeito a ambos.",
-      "step3_title": "As horas são registadas",
-      "step3_desc": "O tempo dado é registado em horas, por isso quem ajuda acumula horas para usar ou ceder mais tarde."
+      "step3_title": "As horas são registradas",
+      "step3_desc": "O tempo dado é registrado em horas, por isso quem ajuda acumula horas para usar ou ceder mais tarde."
     },
     "recruit": {
       "title": "Procuramos os nossos primeiros cuidadores",
-      "body": "A Comunidade Solidária só funciona quando há pessoas dispostas a ajudar. Ainda não temos uma equipa de cuidadores — estamos a criá-la. Se puderes dispensar um pouco de tempo, podes ser dos primeiros.",
+      "body": "A Comunidade Solidária só funciona quando há pessoas dispostas a ajudar. Ainda não temos uma equipe de cuidadores — estamos a criá-la. Se puderes dispensar um pouco de tempo, podes ser dos primeiros.",
       "cta": "Oferecer ajuda"
     },
-    "your_hours_note": "São os mesmos créditos de tempo usados no banco de tempo — um saldo partilhado, não uma moeda separada da Comunidade Solidária.",
+    "your_hours_note": "São os mesmos créditos de tempo usados no banco de tempo — um saldo compartilhado, não uma moeda separada da Comunidade Solidária.",
     "groups": {
       "get_help": {
         "title": "Receber ajuda",
@@ -532,11 +532,11 @@
       "request_help": "Pedir ajuda",
       "request_help_sub": "Pede à tua comunidade apoio prático",
       "offer_favour": "Oferecer um favor",
-      "offer_favour_sub": "Regista um gesto informal de bondade — sem créditos",
+      "offer_favour_sub": "Registra um gesto informal de bondade — sem créditos",
       "offer_time": "Oferecer tempo",
-      "offer_time_sub": "Publica um serviço ou competência que possas partilhar",
-      "log_hours": "Registar horas",
-      "log_hours_sub": "Regista tempo de voluntariado para aprovação",
+      "offer_time_sub": "Publica um serviço ou competência que possas compartilhar",
+      "log_hours": "Registrar horas",
+      "log_hours_sub": "Registra tempo de voluntariado para aprovação",
       "coordinate_org": "Coordenar organização",
       "coordinate_org_sub": "Gere as tuas organizações de voluntariado",
       "my_relationships": "As minhas relações de apoio",
@@ -550,7 +550,7 @@
       "cover_care": "Substituição de cuidadores",
       "cover_care_sub": "Para cuidadores: organiza uma substituição de confiança quando precisares de uma pausa. Mais útil à medida que a rede cresce.",
       "become_caregiver": "Tornar-me cuidador",
-      "become_caregiver_sub": "Diz-nos que queres prestar cuidados regulares e ajuda-nos a formar a equipa.",
+      "become_caregiver_sub": "Diz-nos que queres prestar cuidados regulares e ajuda-nos a formar a equipe.",
       "hour_gift": "Oferecer horas",
       "hour_gift_sub": "Oferece as tuas horas acumuladas a familiares ou amigos.",
       "hour_transfer": "Transferir horas",
@@ -569,7 +569,7 @@
       },
       "verified_hours": {
         "title": "Horas verificadas",
-        "description": "A atividade de apoio pode passar por aprovações, registos, avaliações e saldos de tempo."
+        "description": "A atividade de apoio pode passar por aprovações, registros, avaliações e saldos de tempo."
       },
       "municipal_value": {
         "title": "Valor municipal",
@@ -602,7 +602,7 @@
       },
       "resources": {
         "title": "Recursos",
-        "description": "Partilha guias, documentos de privacidade, manuais e material de integração."
+        "description": "Compartilhe guias, documentos de privacidade, manuais e material de integração."
       },
       "goals": {
         "title": "Objetivos",
@@ -726,7 +726,7 @@
       "empty": "Ainda não enviaste ofertas.",
       "to": "Para {{name}}",
       "status": {
-        "pending": "A aguardar aceitação",
+        "pending": "Aguardando aceitação",
         "accepted": "Aceite",
         "declined": "Recusada",
         "reverted": "Retirada"
@@ -778,7 +778,7 @@
       "empty": "Ainda sem transferências."
     },
     "status": {
-      "pending": "A aguardar aprovação",
+      "pending": "Aguardando aprovação",
       "approved_by_source": "Aprovado",
       "sent": "Enviado",
       "received": "Recebido",
@@ -790,7 +790,7 @@
     "errors": {
       "submit_failed": "Não foi possível pedir a transferência. Tenta novamente.",
       "destination_not_found": "Não conseguimos encontrar essa cooperativa de destino.",
-      "no_matching_email": "O teu email não está registado na cooperativa de destino — regista-te lá primeiro.",
+      "no_matching_email": "O teu email não está registrado na cooperativa de destino — cadastre-se lá primeiro.",
       "insufficient_hours": "Não tens horas acumuladas suficientes."
     }
   },
@@ -830,8 +830,8 @@
     "overdue": "Em atraso",
     "expected_hours": "{{hours}} h previstas",
     "hours_short": "{{hours}} h",
-    "recent_logs": "Horas registadas recentemente",
-    "no_recent_logs": "Ainda sem horas registadas",
+    "recent_logs": "Horas registradas recentemente",
+    "no_recent_logs": "Ainda sem horas registradas",
     "back": "Voltar ao Centro da Comunidade",
     "errors": {
       "load_failed": "Não foi possível carregar as suas relações de apoio."
@@ -870,7 +870,7 @@
     "how_it_works": {
       "title": "Como funciona o teu fundo de cuidados futuros",
       "step1": "Ajuda os teus vizinhos e ganha horas",
-      "step2": "As horas ficam guardadas em segurança no teu fundo comunitário",
+      "step2": "As horas ficam salvas em segurança no teu fundo comunitário",
       "step3": "Quando precisares de ajuda, resgata horas do teu fundo",
       "cta_offer": "Oferecer ajuda agora",
       "cta_browse": "Ver o que é necessário",
@@ -930,7 +930,7 @@
     "community_navigation": "Navegação da comunidade",
     "tenant_switcher_navigation": "Seletor de comunidade",
     "create_actions": "Ações de criação",
-    "user_actions": "Ações do utilizador",
+    "user_actions": "Ações do usuário",
     "close_menu": "Fechar menu",
     "open_search": "Abrir pesquisa",
     "mobile_navigation": "Navegação móvel",
@@ -940,7 +940,7 @@
     "about_navigation": "Navegação sobre",
     "legal_navigation": "Navegação legal",
     "more_navigation": "Mais navegação",
-    "cookie_settings": "Definições de cookies",
+    "cookie_settings": "Configurações de cookies",
     "clear": "Limpar",
     "scroll_left": "Deslocar para a esquerda",
     "scroll_right": "Deslocar para a direita",
@@ -965,13 +965,13 @@
   },
   "skills": {
     "browse_title": "Diretório de Competências da Comunidade",
-    "explainer": "Explore as competências partilhadas pelos membros da sua comunidade, encontre pessoas que oferecem ajuda e descubra membros que querem aprender.",
+    "explainer": "Explore as competências compartilhadas pelos membros da sua comunidade, encontre pessoas que oferecem ajuda e descubra membros que querem aprender.",
     "unable_to_load": "Não foi possível carregar",
     "try_again": "Tentar novamente",
     "load_failed": "Falha ao carregar categorias de competências",
     "load_failed_retry": "Falha ao carregar categorias de competências. Por favor, tente novamente.",
     "offering_label": "A Oferecer",
-    "offering_desc": "membros dispostos a partilhar esta competência com outros",
+    "offering_desc": "membros dispostos a compartilhar esta competência com outros",
     "requesting_label": "A Procurar",
     "requesting_desc": "membros que pretendem aprender ou receber ajuda com esta competência",
     "add_your_skills": "Adicione as suas próprias competências",
@@ -1063,17 +1063,17 @@
   "level_short": "Nv. {{level}}",
   "cancel": "Cancelar",
   "confirm": "Confirm",
-  "save": "Guardar",
+  "save": "Salvar",
   "delete": "Delete",
   "offer_favour": {
     "meta": {
       "title": "Oferecer um favor",
-      "description": "Registe um gesto informal de entreajuda entre vizinhos"
+      "description": "Registre um gesto informal de entreajuda entre vizinhos"
     },
-    "subtitle": "Não precisa de créditos de tempo — basta registar um gesto de gentileza para a sua comunidade.",
+    "subtitle": "Não precisa de créditos de tempo — basta registrar um gesto de gentileza para a sua comunidade.",
     "form": {
       "what_label": "O que fez para ajudar?",
-      "what_placeholder": "p. ex. Ajudei a carregar as compras, dei boleia, partilhei uma refeição...",
+      "what_placeholder": "p. ex. Ajudei a carregar as compras, dei boleia, compartilhei uma refeição...",
       "category_label": "Categoria",
       "categories": {
         "companionship": "Companhia",
@@ -1088,16 +1088,16 @@
       "recipient_placeholder": "Nome, ou deixe em branco para manter o anonimato",
       "date_label": "Quando?",
       "what_too_long": "Mantenha a descrição do favor abaixo dos 500 caracteres.",
-      "submit": "Registar favor",
-      "submitting": "A registar..."
+      "submit": "Registrar favor",
+      "submitting": "Registrando..."
     },
     "success": {
       "title": "Obrigado!",
-      "body": "Cada gesto de gentileza fortalece a sua comunidade. O seu favor foi registado.",
+      "body": "Cada gesto de gentileza fortalece a sua comunidade. O seu favor foi registrado.",
       "back": "Voltar ao Centro da Comunidade"
     },
     "errors": {
-      "submit_failed": "Não foi possível registar o seu favor. Tente novamente."
+      "submit_failed": "Não foi possível registrar o seu favor. Tente novamente."
     },
     "back": "Voltar ao Centro da Comunidade"
   },
@@ -1164,7 +1164,7 @@
     "requesting": "A obter a sua localização…",
     "error": {
       "unavailable": "Localização indisponível neste dispositivo",
-      "denied": "Ative a localização nas definições do seu navegador"
+      "denied": "Ative a localização nas configurações do seu navegador"
     },
     "clear": "Limpar localização"
   },
@@ -1258,21 +1258,21 @@
   "data_export": {
     "meta": {
       "title": "Transferir os teus dados",
-      "description": "Exporta o teu ficheiro de dados pessoais"
+      "description": "Exporta o teu arquivo de dados pessoais"
     },
     "title": "Transferir os teus dados",
     "subtitle": "O teu direito de aceder e exportar tudo o que temos sobre ti.",
-    "intro": "Este ficheiro contém todos os dados que temos sobre ti nesta comunidade: o teu perfil, horas dadas e recebidas, relações de apoio, transações, favores, anúncios, eventos e mais.",
+    "intro": "Este arquivo contém todos os dados que temos sobre ti nesta comunidade: o teu perfil, horas dadas e recebidas, relações de apoio, transações, favores, anúncios, eventos e mais.",
     "format": {
       "label": "Formato",
       "json": "JSON (para programadores)",
-      "json_help": "Um único ficheiro estruturado com todos os teus dados.",
-      "zip": "Ficheiro ZIP (mais legível)",
+      "json_help": "Um único arquivo estruturado com todos os teus dados.",
+      "zip": "Arquivo ZIP (mais legível)",
       "zip_help": "Inclui o JSON e um README.md a explicar cada secção."
     },
     "download_button": "Transferir os meus dados",
-    "downloading": "A preparar o teu ficheiro...",
-    "warning": "O teu ficheiro contém informação pessoal. Mantém-no privado.",
+    "downloading": "A preparar o teu arquivo...",
+    "warning": "O teu arquivo contém informação pessoal. Mantém-no privado.",
     "history": {
       "title": "Exportações recentes",
       "date": "Pedido",
@@ -1286,7 +1286,7 @@
     },
     "errors": {
       "rate_limit": "Podes pedir 5 exportações por dia. Tenta amanhã.",
-      "build_failed": "Não conseguimos criar o teu ficheiro. Tenta novamente ou contacta o suporte."
+      "build_failed": "Não conseguimos criar o teu arquivo. Tenta novamente ou contacta o suporte."
     }
   },
   "safeguarding_reports": {
@@ -1467,7 +1467,7 @@
     },
     "status": {
       "draft": "Rascunho",
-      "pending_approval": "A aguardar aprovação",
+      "pending_approval": "Aguardando aprovação",
       "approved": "Aprovada",
       "scheduled": "Agendada",
       "sent": "Enviada",
@@ -1592,14 +1592,14 @@
       "specific_listings": "Anúncios específicos",
       "specific_categories": "Categorias específicas",
       "target_required": "Escolha pelo menos um anúncio ou uma categoria",
-      "save": "Guardar",
+      "save": "Salvar",
       "delete_confirm": "Eliminar este cupão? Esta ação é irreversível.",
       "no_coupons": "Ainda não criaste cupões.",
       "table_aria": "Cupões do vendedor",
       "redemptions": "Resgates",
       "view_redemptions": "Ver resgates",
       "usage_count": "Usado {{count}} vezes",
-      "saved": "Cupão guardado",
+      "saved": "Cupão salvo",
       "deleted": "Cupão eliminado",
       "usage_count_one": "Usado {{count}} vezes",
       "usage_count_other": "Usado {{count}} vezes",
@@ -1659,11 +1659,11 @@
   },
   "verein_import": {
     "title": "Importar membros do clube",
-    "subtitle": "Adicione membros em massa a partir de um CSV. Pré-visualização antes de confirmar — nenhum utilizador é criado até clicar em Importar.",
+    "subtitle": "Adicione membros em massa a partir de um CSV. Pré-visualização antes de confirmar — nenhum usuário é criado até clicar em Importar.",
     "step1": "1. Carregar CSV",
     "step2": "2. Rever e confirmar",
     "csv_format": "Linha de cabeçalho obrigatória: email,first_name,last_name,phone,role",
-    "file_label": "Ficheiro CSV",
+    "file_label": "Arquivo CSV",
     "csv_label": "Ou colar CSV",
     "csv_placeholder": "e-mail,nome,sobrenome,telefone,função\nalice@example.org,Alice,Smith,+1 555 123 4567,membro",
     "preview": "Pré-visualizar",
@@ -1694,11 +1694,11 @@
     "result": {
       "title": "Importação concluída",
       "summary": "Criados {{created}} novos membros, ligados {{linked}} existentes, ignorados {{skipped}}",
-      "passwords_title": "Palavras-passe temporárias (partilhar em segurança):",
-      "passwords_warning": "Estas não serão mostradas novamente. Partilhe em segurança; será pedido aos membros que as alterem no primeiro início de sessão."
+      "passwords_title": "Senhas temporárias (compartilhar em segurança):",
+      "passwords_warning": "Estas não serão mostradas novamente. Compartilhe em segurança; será pedido aos membros que as alterem no primeiro início de sessão."
     },
     "errors": {
-      "read_failed": "Não foi possível ler o ficheiro",
+      "read_failed": "Não foi possível ler o arquivo",
       "empty_csv": "Cole ou carregue um CSV primeiro",
       "preview_failed": "Pré-visualização falhada",
       "import_failed": "Importação falhada",
@@ -1707,7 +1707,7 @@
     }
   },
   "premium": {
-    "pricing_title": "Prêmio",
+    "pricing_title": "Doar",
     "pricing_subtitle": "Desbloqueie funcionalidades premium para tirar mais partido da sua comunidade.",
     "monthly": "Mensal",
     "yearly": "Anual",
@@ -1793,7 +1793,7 @@
     "feature_oauth_title": "OAuth2 Client Credentials",
     "feature_oauth_body": "Autenticação servidor a servidor. Bearer tokens de curta duração, com scope por parceiro.",
     "feature_curated_title": "Conjunto de endpoints curado",
-    "feature_curated_body": "Só o que bancos e sistemas de administração realmente precisam: utilizadores, anúncios, carteira, agregados.",
+    "feature_curated_body": "Só o que bancos e sistemas de administração realmente precisam: usuários, anúncios, carteira, agregados.",
     "feature_webhooks_title": "Webhooks assinados",
     "feature_webhooks_body": "Assinaturas HMAC-SHA256, repetições automáticas, estado de entrega no teu painel.",
     "feature_rate_limit_title": "Limites de taxa por parceiro",
@@ -1998,7 +1998,7 @@
       "approved": "Aprovada — provisionamento em curso",
       "provisioned": "Provisionada — a sua comunidade está online",
       "rejected": "Não aprovada",
-      "failed": "Ocorreu um problema técnico — a nossa equipa foi notificada"
+      "failed": "Ocorreu um problema técnico — a nossa equipe foi notificada"
     },
     "errors": {
       "submit_failed": "Não conseguimos submeter a sua candidatura. Tente novamente.",
@@ -2019,8 +2019,8 @@
     "auto_translate_label": "Traduzir automaticamente publicações e anúncios para o meu idioma",
     "auto_translate_help": "Quando ativado, o conteúdo já traduzido para o seu idioma é mostrado automaticamente.",
     "target_locale_label": "Traduzir para",
-    "saved": "Preferências de tradução guardadas.",
-    "save_failed": "Não foi possível guardar as preferências de tradução."
+    "saved": "Preferências de tradução salvas.",
+    "save_failed": "Não foi possível salvar as preferências de tradução."
   },
   "marketplace": {
     "pickup": {
@@ -2086,7 +2086,7 @@
     "cancel": "Cancelar",
     "error": "Ocorreu um erro",
     "someone": "Alguém",
-    "unknown_user": "Utilizador",
+    "unknown_user": "Usuário",
     "not_available": "Não disponível",
     "edit": "Editar",
     "collapse": "Recolher",
@@ -2094,38 +2094,38 @@
   },
   "verein_federation": {
     "panel_title": "Federação com outros clubes",
-    "panel_subtitle": "Partilhe eventos e ligue membros com outros clubes no seu município.",
+    "panel_subtitle": "Compartilhe eventos e ligue membros com outros clubes no seu município.",
     "consent_title": "Consentimento de federação",
     "consent_toggle_label": "Federarmo-nos com outros clubes no nosso município",
-    "consent_scope_label": "O que partilhar",
+    "consent_scope_label": "O que compartilhar",
     "scope_none": "Nada (federação desligada)",
     "scope_events": "Apenas eventos",
     "scope_members": "Apenas convites de membros",
     "scope_both": "Eventos e convites de membros",
     "municipality_code_label": "Código do município",
     "municipality_code_help": "O código oficial do município (p. ex. código postal ou BFS) — deve corresponder ao dos outros clubes para federar.",
-    "save_consent": "Guardar consentimento",
-    "consent_saved": "Definições de federação guardadas.",
-    "consent_save_failed": "Não foi possível guardar as definições de federação.",
+    "save_consent": "Salvar consentimento",
+    "consent_saved": "Configurações de federação salvas.",
+    "consent_save_failed": "Não foi possível salvar as configurações de federação.",
     "network_title": "Outros clubes na sua rede",
     "network_empty": "Nenhum outro clube no seu município aderiu ainda.",
     "network_column_name": "Clube",
-    "network_column_scope": "Partilha",
+    "network_column_scope": "Compartilhamento",
     "network_column_municipality": "Município",
-    "network_action_share_event": "Partilhar um evento",
-    "shared_events_title": "Eventos partilhados",
+    "network_action_share_event": "Compartilhar um evento",
+    "shared_events_title": "Eventos compartilhados",
     "tab_incoming": "Recebidos",
     "tab_outgoing": "Enviados",
-    "shared_events_empty_in": "Ainda não foram partilhados eventos com o seu clube.",
-    "shared_events_empty_out": "Ainda não partilhou nenhum evento.",
-    "withdraw_share": "Retirar partilha",
-    "withdraw_share_confirm": "Deixar de partilhar este evento?",
-    "withdraw_share_done": "Partilha do evento retirada.",
-    "share_event_modal_title": "Partilhar um evento com {{target}}",
+    "shared_events_empty_in": "Ainda não foram compartilhados eventos com o seu clube.",
+    "shared_events_empty_out": "Ainda não compartilhou nenhum evento.",
+    "withdraw_share": "Retirar compartilhamento",
+    "withdraw_share_confirm": "Deixar de compartilhar este evento?",
+    "withdraw_share_done": "Compartilhamento do evento retirado.",
+    "share_event_modal_title": "Compartilhar um evento com {{target}}",
     "share_event_pick_label": "Escolha um evento",
-    "share_event_submit": "Partilhar",
-    "share_event_done": "Partilhado(s) {{shared}} evento(s); ignorado(s) {{skipped}}.",
-    "share_event_failed": "Não foi possível partilhar o evento.",
+    "share_event_submit": "Compartilhar",
+    "share_event_done": "Compartilhado(s) {{shared}} evento(s); ignorado(s) {{skipped}}.",
+    "share_event_failed": "Não foi possível compartilhar o evento.",
     "load_failed": "Não foi possível carregar os dados de federação.",
     "invite_to_verein_button": "Convidar para {{name}}",
     "invite_modal_title": "Convite entre clubes",
@@ -2192,7 +2192,7 @@
       "security_confirm_description": "Confirme a sua identidade antes de ligar um novo método de início de sessão."
     },
     "connect_modal": {
-      "confirm": "Este é o seu único método de início de sessão restante. Se o desligar, ficará bloqueado a menos que defina primeiro uma palavra-passe ou adicione uma passkey. Continuar?"
+      "confirm": "Este é o seu único método de início de sessão restante. Se o desligar, ficará bloqueado a menos que defina primeiro uma senha ou adicione uma passkey. Continuar?"
     },
     "sign_in_with_provider": "Faça login com {{name}}"
   },
@@ -2200,7 +2200,7 @@
     "my_page_title": "As minhas quotas de membro Verein",
     "my_page_heading": "As minhas quotas de membro Verein",
     "my_page_subtitle": "Pague as suas quotas anuais para os Vereine a que pertence.",
-    "empty_state": "Ainda não tem registos de quotas de membro.",
+    "empty_state": "Ainda não tem registros de quotas de membro.",
     "unnamed_verein": "Verein",
     "year_label": "Ano",
     "due_label": "Vencimento",
@@ -2233,8 +2233,8 @@
     "admin_billing_cycle": "Ciclo de faturação",
     "admin_grace_period": "Período de tolerância (dias)",
     "admin_late_fee": "Multa por atraso (opcional)",
-    "admin_save": "Guardar configuração",
-    "admin_config_saved": "Configuração de quotas guardada.",
+    "admin_save": "Salvar configuração",
+    "admin_config_saved": "Configuração de quotas salva.",
     "admin_overdue_title": "Quotas em atraso",
     "admin_overdue_count": "{{count}} membro(s) têm quotas em atraso.",
     "admin_bulk_remind": "Enviar lembretes a todos os em atraso",
@@ -2244,7 +2244,7 @@
     "admin_search": "Pesquisar",
     "admin_generate": "Gerar quotas para {{year}}",
     "admin_generated": "{{generated}} novas quotas criadas, {{skipped}} ignoradas.",
-    "admin_no_rows": "Ainda sem registos de quotas.",
+    "admin_no_rows": "Ainda sem registros de quotas.",
     "admin_reminder_sent": "Lembrete enviado.",
     "admin_bulk_reminder_sent": "{{count}} lembretes enviados.",
     "admin_waive_title": "Dispensar quotas de membro",
@@ -2268,7 +2268,7 @@
     "errors": {
       "load_failed": "Falha ao carregar as quotas de membro.",
       "start_payment_failed": "Não foi possível iniciar o pagamento. Tente novamente.",
-      "save_failed": "Falha ao guardar a configuração de quotas.",
+      "save_failed": "Falha ao salvar a configuração de quotas.",
       "generate_failed": "Geração falhada.",
       "reminder_failed": "Não foi possível enviar o lembrete.",
       "waive_failed": "Não foi possível dispensar as quotas."
@@ -2282,9 +2282,9 @@
     "admin_overdue_count_many": "{{count}} membro(s) têm quotas em atraso."
   },
   "collections": {
-    "save": "Guardar",
-    "remove": "Remover dos guardados",
-    "save_to": "Guardar na coleção",
+    "save": "Salvar",
+    "remove": "Remover dos salvos",
+    "save_to": "Salvar na coleção",
     "default": "Predefinida",
     "new": "Nova coleção",
     "name_placeholder": "Nome da coleção",
@@ -2295,7 +2295,7 @@
     "detail_title": "Coleção",
     "back_to_my": "Voltar às minhas coleções",
     "items_count": "{{n}} itens",
-    "no_items": "Ainda sem itens guardados",
+    "no_items": "Ainda sem itens salvos",
     "no_items_desc": "Guarda itens nesta coleção a partir de qualquer parte da plataforma.",
     "remove_item": "Remover da coleção",
     "item_removed": "Removido",
@@ -2354,7 +2354,7 @@
     "ios_title": "Instalar no iPhone ou iPad",
     "ios_intro": "O iOS não suporta avisos de instalação automáticos, mas pode adicionar o NEXUS ao seu ecrã principal em três toques:",
     "ios_step_1": "Toque no",
-    "ios_step_1_after": "botão Partilhar na parte inferior do Safari.",
+    "ios_step_1_after": "botão Compartilhar na parte inferior do Safari.",
     "ios_step_2": "Desça e toque em",
     "ios_add_to_home": "Adicionar ao ecrã principal",
     "ios_step_2_after": ".",
@@ -2384,7 +2384,7 @@
     "chrome_desktop_title": "Instalar no seu computador",
     "chrome_desktop_intro": "O Chrome pode ainda não ter apresentado o pedido. Pode na mesma instalar o NEXUS através do menu do Chrome:",
     "chrome_desktop_step_1": "Clique no menu de três pontos no canto superior direito do Chrome.",
-    "chrome_desktop_step_2": "Clique em Transmitir, guardar e partilhar e depois em Instalar página como aplicação, ou procure um ícone de instalação na barra de endereço.",
+    "chrome_desktop_step_2": "Clique em Transmitir, salvar e compartilhar e depois em Instalar página como aplicação, ou procure um ícone de instalação na barra de endereço.",
     "chrome_desktop_step_3": "Clique em Instalar. O NEXUS abrirá numa janela própria, como uma aplicação nativa.",
     "edge_desktop_title": "Instalar no seu computador",
     "edge_desktop_intro": "Instale o NEXUS como aplicação de ambiente de trabalho através do menu do Edge:",
@@ -2396,15 +2396,15 @@
     "firefox_desktop_step_1": "Adicione esta página aos marcadores com Ctrl+D ou fixe o separador através do menu de contexto do separador.",
     "firefox_desktop_step_2": "Para uma verdadeira aplicação instalável, experimente o Chrome, o Edge ou a nossa aplicação móvel.",
     "macos_safari_title": "Instalar no Safari",
-    "macos_safari_intro": "O Safari instala esta aplicação a partir do menu Partilhar:",
-    "macos_safari_step_1": "Clique no botão Partilhar na barra de ferramentas do Safari.",
+    "macos_safari_intro": "O Safari instala esta aplicação a partir do menu Compartilhar:",
+    "macos_safari_step_1": "Clique no botão Compartilhar na barra de ferramentas do Safari.",
     "macos_safari_step_2": "Escolha «Adicionar à Dock».",
     "macos_safari_step_3": "Confirme o nome e clique em Adicionar."
   },
   "release_status": {
     "summary": "Em evolução constante.",
     "features_link": "Funcionalidades",
-    "changelog_link": "Registo de alterações",
+    "changelog_link": "Registro de alterações",
     "docs_link": "Documentação",
     "docs_link_aria": "Documentação (abre num novo separador)"
   },
@@ -2522,11 +2522,11 @@
   },
   "salary_display": "{{min}} – {{max}}",
   "activity": {
-    "action_listing": "partilhou um anúncio",
+    "action_listing": "compartilhou um anúncio",
     "action_event": "publicou sobre um evento",
     "action_poll": "criou uma sondagem",
     "action_goal": "definiu um novo objetivo",
-    "action_post": "partilhou uma publicação"
+    "action_post": "compartilhou uma publicação"
   },
   "hours_short_one": "{{count}} h",
   "hours_short_other": "{{count}} h",
@@ -2695,7 +2695,7 @@
     "action_edit": "Editar",
     "action_approve": "Aprovar",
     "action_suspend": "Suspender",
-    "action_ban": "Proibição",
+    "action_ban": "Banir",
     "action_reactivate": "Reativar",
     "action_reset_2fa": "Redefinir 2FA",
     "action_permissions": "Permissões",
@@ -2934,7 +2934,7 @@
       "incident_response_contact_email": "E-mail de contato de resposta a incidentes",
       "workshop_not_run": "Workshop de política operacional não realizado",
       "policy_appendix_url": "Apêndice de política URL",
-      "safeguarding_escalation_user_id": "Protegendo o contato de escalonamento",
+      "safeguarding_escalation_user_id": "Contato de escalonamento de proteção",
       "acknowledgement": "Reconhecimento do coordenador",
       "pre_pilot_baseline": "Linha de base do placar pré-piloto",
       "danger_checks": "Problemas de qualidade de dados",

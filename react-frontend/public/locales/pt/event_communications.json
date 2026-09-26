@@ -17,7 +17,7 @@
   "delivery": "Entrega",
   "delivery_progress": "{{delivered}} de {{total}} entregues",
   "scheduled_for": "Agendado para",
-  "not_recorded": "Não registado",
+  "not_recorded": "Não registrado",
   "dead_letter_title": "Algumas entregas precisam de atenção",
   "dead_letter_description": "{{count}} entregas esgotaram as tentativas automáticas. Tente novamente depois de resolver o problema do canal.",
   "view_history": "Ver histórico",
@@ -29,7 +29,7 @@
   "composer_edit_title": "Editar rascunho da mensagem",
   "variant_label": "Tipo de mensagem",
   "segments_label": "Segmentos do público",
-  "segments_description": "Os destinatários são determinados pelos registos atuais de inscrição, lista de espera e presença quando a mensagem é agendada.",
+  "segments_description": "Os destinatários são determinados pelos registros atuais de inscrição, lista de espera e presença quando a mensagem é agendada.",
   "channels_label": "Canais de entrega",
   "body_label": "Mensagem",
   "body_description": "O seu texto é preservado exatamente. A plataforma acrescenta uma saudação, um título e uma ligação de ação traduzidos para cada pessoa.",
@@ -37,7 +37,7 @@
   "preview_summary": "{{recipients}} destinatários e {{deliveries}} entregas por canal correspondem a este público.",
   "close": "Fechar",
   "preview_audience": "Pré-visualizar público",
-  "save_draft": "Guardar rascunho",
+  "save_draft": "Salvar rascunho",
   "schedule_title": "Agendar mensagem",
   "schedule_mode": "Quando enviar",
   "send_now": "Enviar assim que possível",
@@ -51,7 +51,7 @@
   "confirm_cancel": "Cancelar mensagem",
   "load_detail_error": "Não foi possível carregar os detalhes da mensagem.",
   "preview_error": "Não foi possível gerar a pré-visualização do público.",
-  "save_error": "Não foi possível guardar o rascunho.",
+  "save_error": "Não foi possível salvar o rascunho.",
   "revise_success": "Rascunho atualizado.",
   "create_success": "Rascunho criado.",
   "schedule_error": "Não foi possível agendar a mensagem.",
@@ -65,9 +65,38 @@
   "loading_history": "A carregar histórico de auditoria",
   "history_load_more": "Carregar mais histórico",
   "history_entry_meta": "Versão {{version}} · {{date}}",
-  "variants": { "announcement": "Anúncio", "follow_up": "Acompanhamento após o evento", "review_request": "Pedido de avaliação" },
-  "statuses": { "draft": "Rascunho", "scheduled": "Agendada", "sending": "A enviar", "sent": "Enviada", "cancelled": "Cancelada", "failed": "Falhou" },
-  "segment_labels": { "registration_confirmed": "Inscrições confirmadas", "waitlist_active": "Lista de espera ativa", "attendance_attended": "Presentes", "attendance_no_show": "Não compareceram" },
-  "channel_labels": { "email": "E-mail", "in_app": "Notificação na aplicação", "push": "Notificação push" },
-  "history_actions": { "created": "Rascunho criado", "revised": "Rascunho revisto", "scheduled": "Entrega agendada", "sending": "Entrega iniciada", "sent": "Entrega concluída", "cancelled": "Mensagem cancelada", "failed": "Entrega falhou", "retried": "Entregas falhadas repetidas" }
+  "variants": {
+    "announcement": "Anúncio",
+    "follow_up": "Acompanhamento após o evento",
+    "review_request": "Pedido de avaliação"
+  },
+  "statuses": {
+    "draft": "Rascunho",
+    "scheduled": "Agendada",
+    "sending": "A enviar",
+    "sent": "Enviada",
+    "cancelled": "Cancelada",
+    "failed": "Falhou"
+  },
+  "segment_labels": {
+    "registration_confirmed": "Inscrições confirmadas",
+    "waitlist_active": "Lista de espera ativa",
+    "attendance_attended": "Presentes",
+    "attendance_no_show": "Não compareceram"
+  },
+  "channel_labels": {
+    "email": "E-mail",
+    "in_app": "Notificação na aplicação",
+    "push": "Notificação push"
+  },
+  "history_actions": {
+    "created": "Rascunho criado",
+    "revised": "Rascunho revisto",
+    "scheduled": "Entrega agendada",
+    "sending": "Entrega iniciada",
+    "sent": "Entrega concluída",
+    "cancelled": "Mensagem cancelada",
+    "failed": "Entrega falhou",
+    "retried": "Entregas falhadas repetidas"
+  }
 }

@@ -37,14 +37,14 @@
     "body": "Obrigado pela sua generosa doação a <strong>{{community}}</strong>. O seu apoio faz uma diferença real.",
     "label_amount": "Valor",
     "label_date": "Data",
-    "recurring_note": "Esta é uma doação recorrente. Pode gerir as suas doações nas definições da conta.",
+    "recurring_note": "Esta é uma doação recorrente. Pode gerir as suas doações nas configurações da conta.",
     "cta": "Ver a sua conta"
   },
   "listing_updated": {
-    "subject": "Um anúncio guardado foi atualizado — {{community}}",
-    "title": "Anúncio guardado atualizado",
+    "subject": "Um anúncio salvo foi atualizado — {{community}}",
+    "title": "Anúncio salvo atualizado",
     "preview": "\"{{title}}\" foi atualizado em {{community}}",
-    "body": "Um anúncio que guardou, <strong>\"{{title}}\"</strong>, foi atualizado em {{community}}.",
+    "body": "Um anúncio que salvou, <strong>\"{{title}}\"</strong>, foi atualizado em {{community}}.",
     "cta": "Ver anúncio"
   }
 }

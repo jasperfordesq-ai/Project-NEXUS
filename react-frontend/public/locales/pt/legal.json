@@ -61,7 +61,7 @@
     "prohibited_illegal": "Serviços ou atividades ilegais",
     "prohibited_spam": "Spam ou solicitação",
     "prohibited_impersonation": "Falsidade de identidade",
-    "prohibited_sharing_private": "Partilhar informações privadas de outros",
+    "prohibited_sharing_private": "Compartilhar informações privadas de outros",
     "section5_title": "Segurança e Encontros",
     "section5_intro": "A sua segurança é importante. Recomendamos seguir estas diretrizes:",
     "safety_first_meetings_label": "Primeiros encontros",
@@ -72,7 +72,7 @@
     "safety_instincts_desc": "Se algo parecer errado, não prossiga",
     "safety_report_label": "Reportar preocupações",
     "safety_report_desc": "Informe-nos sobre qualquer comportamento suspeito",
-    "safety_records_label": "Manter registos",
+    "safety_records_label": "Manter registros",
     "safety_records_desc": "Documente as trocas através da plataforma",
     "section6_title": "Limitação de Responsabilidade",
     "section6_intro": "{{name}} fornece uma plataforma para membros da comunidade se conectarem e trocarem serviços. No entanto:",
@@ -88,25 +88,25 @@
     "termination_harassment": "Assédio de outros membros",
     "termination_inactivity": "Inatividade prolongada (mais de 12 meses)",
     "termination_false_info": "Fornecimento de informações falsas",
-    "termination_self_close": "Também pode encerrar a sua conta a qualquer momento através das definições da conta.",
+    "termination_self_close": "Também pode encerrar a sua conta a qualquer momento através das configurações da conta.",
     "section8_title": "Alterações a Estes Termos",
     "section8_intro": "Podemos atualizar estes termos periodicamente para refletir alterações nas nossas práticas ou por motivos legais. Quando fizermos alterações significativas:",
     "changes_notify": "Notificá-lo-emos por email ou notificação na plataforma",
     "changes_date_shown": "A data atualizada será mostrada no topo desta página",
     "changes_continued_use": "O uso continuado da plataforma constitui aceitação dos novos termos",
     "cta_title": "Tem Perguntas?",
-    "cta_body": "Se tiver questões sobre estes Termos de Serviço ou precisar de esclarecimentos, a nossa equipa está aqui para ajudar.",
+    "cta_body": "Se tiver questões sobre estes Termos de Serviço ou precisar de esclarecimentos, a nossa equipe está aqui para ajudar.",
     "contact_us": "Contacte-nos",
     "privacy_policy_link": "Política de Privacidade"
   },
   "privacy": {
     "last_updated_safeguarding": "Última atualização: julho de 2026",
     "data_safeguarding_type": "Confirmação privada de verificação para fins de salvaguarda",
-    "data_safeguarding_collected": "Comunidade, membro, regime de verificação definido, finalidade e âmbito, decisão de confirmação ou revogação, responsável autorizado pela decisão, registos de data e hora, código de motivo definido e versão da política. Não pedimos nem guardamos o certificado, o número de referência, datas, resultado, dados do registo criminal, notas de texto livre ou documentos de identificação.",
+    "data_safeguarding_collected": "Comunidade, membro, regime de verificação definido, finalidade e âmbito, decisão de confirmação ou revogação, responsável autorizado pela decisão, registros de data e hora, código de motivo definido e versão da política. Não pedimos nem armazenamos o certificado, o número de referência, datas, resultado, dados do registro criminal, notas de texto livre ou documentos de identificação.",
     "data_safeguarding_why": "Para aplicar a preferência privada de contacto de um membro e disponibilizar um processo auditável de correção e revisão.",
     "data_safeguarding_basis": "Fundamento jurídico documentado pelo responsável pelo tratamento",
     "safeguarding_data_title": "Metadados da confirmação de salvaguarda",
-    "safeguarding_data_body": "Quando uma comunidade exige legitimamente a confirmação de uma verificação Enhanced DBS para contacto protegido entre membros, realiza as suas próprias verificações fora do Project NEXUS. Um intermediário autorizado regista apenas a decisão resultante da comunidade. Isto não significa que um membro seja seguro, não tenha registo criminal ou esteja habilitado para todas as funções.",
+    "safeguarding_data_body": "Quando uma comunidade exige legitimamente a confirmação de uma verificação Enhanced DBS para contacto protegido entre membros, realiza as suas próprias verificações fora do Project NEXUS. Um intermediário autorizado registra apenas a decisão resultante da comunidade. Isto não significa que um membro seja seguro, não tenha registro criminal ou esteja habilitado para todas as funções.",
     "safeguarding_data_access": "O acesso está limitado a intermediários autorizados e administradores da comunidade do membro. Os dados não são apresentados em perfis públicos, emblemas, resultados de pesquisa ou análises gerais.",
     "safeguarding_data_retention": "O Operador da Comunidade deve publicar e aplicar um calendário de conservação documentado e eliminar os metadados quando deixarem de ser necessários, sem prejuízo de qualquer obrigação jurídica devidamente documentada.",
     "safeguarding_data_correction": "Os membros podem consultar o seu estado privado, pedir a revisão de um intermediário sem enviar provas e solicitar ao Operador da Comunidade que corrija ou conteste uma decisão inexata.",
@@ -124,12 +124,12 @@
     "commitment_body_2_before": "Acreditamos em",
     "commitment_body_2_transparency": "transparência",
     "commitment_body_2_and": "e",
-    "commitment_body_2_control": "controlo do utilizador",
+    "commitment_body_2_control": "controlo do usuário",
     "commitment_body_2_after": "Tem o direito de compreender e gerir como a sua informação é utilizada.",
     "data_collection_title": "Informação Que Recolhemos",
     "data_collection_intro": "Recolhemos apenas a informação necessária para fornecer e melhorar os nossos serviços:",
     "data_account_type": "Informação da Conta",
-    "data_account_collected": "Nome, endereço de email, palavra-passe (encriptada)",
+    "data_account_collected": "Nome, endereço de email, senha (encriptada)",
     "data_account_why": "Necessária para criar e gerir a sua conta",
     "data_account_basis": "Contrato",
     "data_profile_type": "Detalhes do Perfil",
@@ -160,18 +160,18 @@
     "usage_improvement_desc": "Analisar padrões de utilização para melhorar funcionalidades da plataforma",
     "usage_legal_label": "Conformidade Legal",
     "usage_legal_desc": "Cumprir requisitos regulamentares quando necessário",
-    "no_sell_data": "Não vendemos os seus dados pessoais a terceiros. A sua informação nunca é partilhada com anunciantes ou corretores de dados.",
+    "no_sell_data": "Não vendemos os seus dados pessoais a terceiros. A sua informação nunca é compartilhada com anunciantes ou corretores de dados.",
     "visibility_title": "Visibilidade do Perfil",
     "visibility_body_1": "O seu perfil é visível para outros membros verificados da comunidade de timebanking. Esta visibilidade é essencial para facilitar trocas e construir confiança na comunidade.",
     "visibility_body_2_before": "Pode controlar que informação aparece no seu perfil através das suas",
-    "visibility_body_2_emphasis": "definições de conta",
+    "visibility_body_2_emphasis": "configurações de conta",
     "visibility_body_2_after": "Alguma informação, como o seu nome e localização geral, é necessária para participação significativa na comunidade.",
     "protection_title": "Como Protegemos os Seus Dados",
     "protection_intro": "Implementamos medidas de segurança robustas para salvaguardar a sua informação:",
     "protect_encryption_label": "Encriptação",
     "protect_encryption_desc": "Todos os dados encriptados em trânsito (HTTPS) e em repouso",
-    "protect_passwords_label": "Palavras-passe Seguras",
-    "protect_passwords_desc": "Palavras-passe transformadas usando algoritmos padrão da indústria",
+    "protect_passwords_label": "Senhas Seguras",
+    "protect_passwords_desc": "Senhas transformadas usando algoritmos padrão da indústria",
     "protect_access_label": "Controlos de Acesso",
     "protect_access_desc": "Políticas internas rigorosas limitam o acesso aos dados",
     "protect_audits_label": "Auditorias Regulares",
@@ -198,13 +198,13 @@
     "cookie_essential_name": "Cookies Essenciais",
     "cookie_essential_desc": "Necessários para login, segurança e funcionalidade básica da plataforma. Não podem ser desativados.",
     "cookie_preference_name": "Cookies de Preferência",
-    "cookie_preference_desc": "Lembram as suas definições como preferência de tema, idioma e opções de apresentação.",
+    "cookie_preference_desc": "Lembram as suas configurações como preferência de tema, idioma e opções de apresentação.",
     "cookie_analytics_name": "Cookies de Análise",
     "cookie_analytics_desc": "Ajudam-nos a compreender como as pessoas usam a plataforma para podermos melhorar funcionalidades. Todos os dados são anonimizados.",
     "cookie_required": "Obrigatório",
     "cookies_no_ads_before": "Nós",
     "cookies_no_ads_not": "não",
-    "cookies_no_ads_after": "utilizamos cookies de publicidade nem partilhamos dados com redes de anúncios. Pode gerir as preferências de cookies nas definições do seu navegador. Para mais detalhes, veja a nossa",
+    "cookies_no_ads_after": "utilizamos cookies de publicidade nem compartilhamos dados com redes de anúncios. Pode gerir as preferências de cookies nas configurações do seu navegador. Para mais detalhes, veja a nossa",
     "cookie_policy_link": "Política de Cookies",
     "retention_title": "Retenção de Dados",
     "retention_intro": "Retemos os seus dados apenas enquanto necessário:",
@@ -212,13 +212,13 @@
     "retention_active_desc": "Os dados são mantidos enquanto a sua conta permanece ativa",
     "retention_deleted_label": "Contas Eliminadas",
     "retention_deleted_desc": "Os dados pessoais são removidos no prazo de 30 dias após a eliminação da conta",
-    "retention_transactions_label": "Registos de Transações",
+    "retention_transactions_label": "Registros de Transações",
     "retention_transactions_desc": "Podem ser retidos até 7 anos para fins legais e de auditoria",
-    "retention_logs_label": "Registos de Segurança",
-    "retention_logs_desc": "Endereços IP e registos de acesso retidos por 12 meses",
+    "retention_logs_label": "Registros de Segurança",
+    "retention_logs_desc": "Endereços IP e registros de acesso retidos por 12 meses",
     "cta_title": "Perguntas Sobre a Sua Privacidade?",
     "cta_body": "Estamos aqui para ajudar. Se tiver questões sobre esta política ou quiser exercer os seus direitos de dados, não hesite em contactar-nos.",
-    "contact_privacy_team": "Contactar a Nossa Equipa de Privacidade"
+    "contact_privacy_team": "Contactar a Nossa Equipe de Privacidade"
   },
   "cookies": {
     "meta_description": "Informações sobre como utilizamos cookies para melhorar a sua experiência na nossa plataforma.",
@@ -231,14 +231,14 @@
     "nav_cookie_list": "Lista de Cookies",
     "nav_manage": "Gerir Cookies",
     "what_are_title": "O Que São Cookies?",
-    "what_are_body_1": "Cookies são pequenos ficheiros de texto que são colocados no seu dispositivo quando visita um website. São amplamente utilizados para fazer os websites funcionar de forma mais eficiente e para fornecer informação aos proprietários do site.",
+    "what_are_body_1": "Cookies são pequenos arquivos de texto que são colocados no seu dispositivo quando visita um website. São amplamente utilizados para fazer os websites funcionar de forma mais eficiente e para fornecer informação aos proprietários do site.",
     "what_are_body_2": "{{name}} utiliza cookies e tecnologias semelhantes para garantir a melhor experiência na nossa plataforma. Esta política explica que cookies utilizamos, porque os utilizamos e como pode controlá-los.",
     "categories_title": "Categorias de Cookies",
     "always_active": "Sempre Ativo",
     "optional": "Opcional",
     "cat_essential_name": "Cookies Essenciais",
     "cat_essential_desc": "Estes cookies são estritamente necessários para o funcionamento da plataforma. Permitem funcionalidades essenciais como autenticação, segurança e gestão de sessão. Sem estes cookies, a plataforma não pode funcionar corretamente.",
-    "cat_essential_ex1": "Autenticação de utilizador e tokens de sessão",
+    "cat_essential_ex1": "Autenticação de usuário e tokens de sessão",
     "cat_essential_ex2": "Tokens de proteção CSRF",
     "cat_essential_ex3": "Preferências de segurança",
     "cat_essential_ex4": "Balanceamento de carga e relatórios de falhas anônimas",
@@ -249,12 +249,12 @@
     "cat_analytics_ex3": "Medições de velocidade e repetição da sessão",
     "cat_analytics_ex4": "Estatísticas de utilização agregadas",
     "cat_preference_name": "Cookies de Preferência",
-    "cat_preference_desc": "Estes cookies lembram as suas preferências e definições para proporcionar uma experiência mais personalizada. Permitem que a plataforma recorde escolhas como tema, idioma e opções de apresentação.",
+    "cat_preference_desc": "Estes cookies lembram as suas preferências e configurações para proporcionar uma experiência mais personalizada. Permitem que a plataforma recorde escolhas como tema, idioma e opções de apresentação.",
     "cat_preference_ex1": "Preferência de tema claro/escuro",
-    "cat_preference_ex2": "Definições de idioma e região",
+    "cat_preference_ex2": "Configurações de idioma e região",
     "cat_preference_ex3": "Preferências de densidade de apresentação",
     "cat_preference_ex4": "Preferências de notificação",
-    "no_marketing": "Não utilizamos cookies de marketing ou publicidade. Nunca partilhamos os seus dados com anunciantes ou redes de anúncios.",
+    "no_marketing": "Não utilizamos cookies de marketing ou publicidade. Nunca compartilhamos os seus dados com anunciantes ou redes de anúncios.",
     "list_title": "Cookies Que Utilizamos",
     "provider_label": "Fornecedor",
     "expiry_label": "Validade",
@@ -285,18 +285,18 @@
     "third_party_pusher_desc": "Para notificações em tempo real e funcionalidade de mensagens",
     "third_party_compliance": "Selecionamos cuidadosamente os nossos parceiros terceiros e garantimos que cumprem os regulamentos de proteção de dados aplicáveis. Os cookies de terceiros são regidos pela respetiva política de privacidade do terceiro.",
     "manage_title": "Como Gerir Cookies",
-    "manage_intro": "Pode controlar e gerir cookies de várias formas. Note que remover ou bloquear cookies pode afetar a sua experiência de utilizador e algumas funcionalidades podem deixar de estar disponíveis.",
+    "manage_intro": "Pode controlar e gerir cookies de várias formas. Note que remover ou bloquear cookies pode afetar a sua experiência de usuário e algumas funcionalidades podem deixar de estar disponíveis.",
     "manage_warning": "Desativar cookies essenciais impedirá que inicie sessão e use funcionalidades essenciais da plataforma. Recomendamos manter os cookies essenciais ativados.",
-    "browser_settings_title": "Definições de Cookies do Navegador",
-    "browser_settings_intro": "A maioria dos navegadores permite gerir cookies através das suas definições. Eis onde encontrar as definições de cookies em navegadores populares:",
+    "browser_settings_title": "Configurações de Cookies do Navegador",
+    "browser_settings_intro": "A maioria dos navegadores permite gerir cookies através das suas configurações. Eis onde encontrar as configurações de cookies em navegadores populares:",
     "browser_chrome": "Cromo",
-    "browser_chrome_path": "Definições > Privacidade e segurança > Cookies e outros dados do site",
+    "browser_chrome_path": "Configurações > Privacidade e segurança > Cookies e outros dados do site",
     "browser_firefox": "Firefox",
-    "browser_firefox_path": "Definições > Privacidade e Segurança > Cookies e Dados do Site",
+    "browser_firefox_path": "Configurações > Privacidade e Segurança > Cookies e Dados do Site",
     "browser_safari": "Safári",
     "browser_safari_path": "Preferências > Privacidade > Gerir Dados do Website",
     "browser_edge": "Borda",
-    "browser_edge_path": "Definições > Cookies e permissões do site > Cookies e dados do site",
+    "browser_edge_path": "Configurações > Cookies e permissões do site > Cookies e dados do site",
     "cta_title": "Perguntas Sobre Cookies?",
     "cta_body": "Se tiver questões sobre a nossa utilização de cookies ou esta política, não hesite em contactar-nos.",
     "contact_us": "Contacte-nos",
@@ -309,7 +309,7 @@
     "subtitle": "{{name}} está comprometido em garantir acessibilidade digital para pessoas de todas as capacidades.",
     "commitment_title": "O Nosso Compromisso",
     "commitment_body_1": "Acreditamos que a internet deve ser acessível a todos, independentemente da capacidade ou deficiência. {{name}} esforça-se por garantir que a nossa plataforma cumpre ou excede os requisitos das Diretrizes de Acessibilidade para Conteúdo Web (WCAG) 2.1 Nível AA.",
-    "commitment_body_2": "Estamos continuamente a melhorar a experiência do utilizador para todos e a aplicar os padrões de acessibilidade relevantes para garantir acesso igual a todos os nossos utilizadores.",
+    "commitment_body_2": "Estamos continuamente a melhorar a experiência do usuário para todos e a aplicar os padrões de acessibilidade relevantes para garantir acesso igual a todos os nossos usuários.",
     "feature_keyboard_title": "Navegação por Teclado",
     "feature_keyboard_desc": "Suporte completo de teclado incluindo links de salto, indicadores de foco e ordem lógica de tabulação",
     "feature_visual_title": "Acessibilidade Visual",
@@ -357,7 +357,7 @@
     "commitment_body_1": "{{name}} está totalmente comprometido com a conformidade RGPD e as melhores práticas de proteção de dados. Acreditamos que tem o direito de compreender exatamente como os seus dados são recolhidos, processados e armazenados.",
     "commitment_body_2_before": "Cada política abaixo foi escrita em",
     "commitment_body_2_emphasis": "linguagem simples",
-    "commitment_body_2_after": "para que seja genuinamente útil, não apenas legalmente exigida. Se algo não estiver claro, a nossa equipa está sempre disponível para ajudar.",
+    "commitment_body_2_after": "para que seja genuinamente útil, não apenas legalmente exigida. Se algo não estiver claro, a nossa equipe está sempre disponível para ajudar.",
     "doc_privacy_title": "Política de Privacidade",
     "doc_privacy_desc": "Como recolhemos, utilizamos e protegemos as suas informações pessoais. Inclui os seus direitos RGPD e políticas de retenção de dados.",
     "doc_terms_title": "Termos de Serviço",
@@ -374,7 +374,7 @@
     "read_document": "Ler Documento",
     "cta_title": "Perguntas Sobre as Nossas Políticas?",
     "cta_body": "Se tiver questões sobre os nossos documentos legais, práticas de dados ou quiser exercer os seus direitos RGPD, entre em contacto.",
-    "contact_team": "Contactar a Nossa Equipa",
+    "contact_team": "Contactar a Nossa Equipe",
     "privacy_policy_link": "Política de Privacidade",
     "doc_trust_safety_title": "Confiança e Segurança",
     "doc_trust_safety_desc": "Guia em inglês simples sobre como funcionam as trocas, o que fazemos para manter a comunidade segura, o que não fazemos e como relatar uma preocupação de salvaguarda.",
@@ -423,7 +423,7 @@
     "contents": "Índice",
     "related_documents": "Documentos da Plataforma Relacionados",
     "cta_title": "Questões Sobre Este Documento?",
-    "cta_body": "Se tiver questões sobre este documento da plataforma, contacte a equipa do Project NEXUS. Para questões sobre as políticas da sua comunidade, contacte {{tenant}} diretamente.",
+    "cta_body": "Se tiver questões sobre este documento da plataforma, contacte a equipe do Project NEXUS. Para questões sobre as políticas da sua comunidade, contacte {{tenant}} diretamente.",
     "nexus_website": "Website do Project NEXUS",
     "contact_tenant": "Contactar {{tenant}}"
   },
@@ -455,7 +455,7 @@
       "controller-processor": "Responsável pelo tratamento vs. subcontratante",
       "data-collected": "Dados recolhidos ao nível da plataforma",
       "legal-basis": "Fundamento jurídico do tratamento",
-      "data-sharing": "Partilha de dados",
+      "data-sharing": "Compartilhamento de dados",
       "international-transfers": "Transferências internacionais de dados",
       "retention": "Conservação dos dados",
       "your-rights": "Os seus direitos ao abrigo do RGPD",
@@ -541,7 +541,7 @@
         "items": {
           "0": "Utilize o seu nome verdadeiro e uma fotografia real no seu perfil.",
           "1": "Descreva competências, anúncios e pedidos com rigor. Não exagere o que sabe fazer nem o tempo necessário.",
-          "2": "Registe as horas honestamente. Não reclame tempo que não prestou.",
+          "2": "Registre as horas honestamente. Não reclame tempo que não prestou.",
           "3": "Uma pessoa, uma conta."
         }
       },
@@ -556,7 +556,7 @@
       },
       "privacy": {
         "title": "4. Proteja a privacidade",
-        "body": "O que os membros partilham dentro da comunidade fica dentro da comunidade.",
+        "body": "O que os membros compartilham dentro da comunidade fica dentro da comunidade.",
         "items": {
           "0": "Não divulgue informações pessoais de outro membro, como morada, telefone, fotografias, dados de saúde ou situação familiar, sem o seu consentimento explícito.",
           "1": "Não publique capturas de ecrã de mensagens privadas.",
@@ -580,10 +580,10 @@
         "body_before": "Se vir algo que viole estas regras ou que o preocupe, diga-nos. Pode:",
         "items": {
           "0": "utilizar o botão de denúncia em qualquer perfil, anúncio, mensagem, publicação ou evento.",
-          "1": "enviar e-mail à equipa da comunidade através da página de Contacto.",
+          "1": "enviar e-mail à equipe da comunidade através da página de Contacto.",
           "2": "Para questões de proteção, como uma criança ou adulto vulnerável em risco, consulte a página Confiança e Segurança para o canal de denúncia próprio."
         },
-        "body_after": "As denúncias são analisadas pelos moderadores e tratadas de forma confidencial. Não partilhamos a sua identidade com a pessoa denunciada, salvo se o solicitar ou se a lei o exigir."
+        "body_after": "As denúncias são analisadas pelos moderadores e tratadas de forma confidencial. Não compartilhamos a sua identidade com a pessoa denunciada, salvo se o solicitar ou se a lei o exigir."
       },
       "enforcement": {
         "title": "7. O que acontece quando as regras são violadas",
@@ -591,7 +591,7 @@
         "items": {
           "0": "Um aviso amigável para uma primeira ocorrência ligeira.",
           "1": "Remoção de conteúdo, como uma publicação, anúncio ou mensagem.",
-          "2": "Uma advertência, registada na sua conta.",
+          "2": "Uma advertência, registrada na sua conta.",
           "3": "Suspensão temporária por ocorrências repetidas ou graves.",
           "4": "Exclusão permanente por assédio, violações de proteção, fraude, ameaças, discurso de ódio ou suspensões repetidas."
         },
@@ -600,7 +600,7 @@
       },
       "changes": {
         "title": "Alterações a estas regras",
-        "body": "Poderemos atualizar estas regras à medida que a comunidade cresce. Alterações materiais serão anunciadas na plataforma e registadas no histórico legal de versões."
+        "body": "Poderemos atualizar estas regras à medida que a comunidade cresce. Alterações materiais serão anunciadas na plataforma e registradas no histórico legal de versões."
       }
     }
   },
@@ -613,7 +613,7 @@
     "sections": {
       "scope": {
         "title": "1. Âmbito",
-        "body": "Esta política aplica-se a quem utilize {{platformName}}: membros, organizações, visitantes, utilizadores da API e integradores. Aplica-se a toda a atividade na plataforma, incluindo perfis, anúncios, mensagens, eventos, publicações, sondagens, empregos, ficheiros e comunicações enviadas através da plataforma."
+        "body": "Esta política aplica-se a quem utilize {{platformName}}: membros, organizações, visitantes, usuários da API e integradores. Aplica-se a toda a atividade na plataforma, incluindo perfis, anúncios, mensagens, eventos, publicações, sondagens, empregos, arquivos e comunicações enviadas através da plataforma."
       },
       "illegal": {
         "title": "2. Nenhuma atividade ilegal",
@@ -642,15 +642,15 @@
           "2": "Sem ameaças, incitamento ou apologia da violência.",
           "3": "Sem conteúdos que sexualizem crianças, sob qualquer forma.",
           "4": "Sem conteúdos sexuais sem consentimento, sem abuso de imagens íntimas e sem conteúdos divulgados para humilhar ou extorquir.",
-          "5": "Sem promoção de autolesão ou suicídio. Se o utilizador ou alguém que conhece estiver em crise, contacte os serviços de emergência locais ou uma linha de apoio reconhecida."
+          "5": "Sem promoção de autolesão ou suicídio. Se o usuário ou alguém que conhece estiver em crise, contacte os serviços de emergência locais ou uma linha de apoio reconhecida."
         }
       },
       "content": {
         "title": "5. Nenhum conteúdo proibido",
         "items": {
           "0": "Conteúdos sexualmente explícitos, violência gratuita ou conteúdos chocantes.",
-          "1": "Conteúdos que violem direitos de autor, marcas registadas ou outros direitos de propriedade intelectual de terceiros.",
-          "2": "Informação confidencial que não tem autorização para partilhar, como segredos de um empregador ou informação clínica protegida.",
+          "1": "Conteúdos que violem direitos de autor, marcas registradas ou outros direitos de propriedade intelectual de terceiros.",
+          "2": "Informação confidencial que não tem autorização para compartilhar, como segredos de um empregador ou informação clínica protegida.",
           "3": "Dados pessoais de terceiros publicados sem o seu consentimento."
         }
       },
@@ -670,14 +670,14 @@
           "0": "Sem sondagens, varrimentos ou testes de vulnerabilidades sem autorização prévia por escrito. A divulgação coordenada é bem-vinda através da página de Contacto.",
           "1": "Sem malware, vírus, worms ou outro código malicioso.",
           "2": "Sem tentativas de contornar a autenticação, os limites de utilização, os paywalls, os bloqueios de funcionalidades ou as ferramentas de moderação.",
-          "3": "Sem tentativas de negação de serviço ou atividades que degradem materialmente o serviço para os restantes utilizadores.",
+          "3": "Sem tentativas de negação de serviço ou atividades que degradem materialmente o serviço para os restantes usuários.",
           "4": "Sem engenharia inversa, descompilação ou extração de código-fonte, salvo no que for expressamente permitido pela licença AGPL-3.0."
         }
       },
       "account": {
         "title": "8. Higiene da conta",
         "items": {
-          "0": "Não partilhe as suas credenciais. É responsável pela atividade realizada com a sua conta.",
+          "0": "Não compartilhe as suas credenciais. É responsável pela atividade realizada com a sua conta.",
           "1": "Avise-nos prontamente se considerar que a sua conta foi comprometida.",
           "2": "Não transfira nem venda a sua conta a outra pessoa.",
           "3": "Utilize as ferramentas da plataforma para eliminar ou exportar os seus dados; não tente extraí-los por meio de automatizações."
@@ -690,11 +690,11 @@
       },
       "reporting": {
         "title": "10. Comunicação de violações",
-        "body": "Se detetar algo que viole esta política, utilize a ferramenta de denúncia integrada no perfil, anúncio, mensagem, publicação ou evento correspondente, ou envie e-mail à equipa através da página de Contacto. Para questões de proteção de uma criança ou de um adulto vulnerável, siga a via dedicada na página Confiança e Segurança."
+        "body": "Se detetar algo que viole esta política, utilize a ferramenta de denúncia integrada no perfil, anúncio, mensagem, publicação ou evento correspondente, ou envie e-mail à equipe através da página de Contacto. Para questões de proteção de uma criança ou de um adulto vulnerável, siga a via dedicada na página Confiança e Segurança."
       },
       "changes": {
         "title": "11. Alterações",
-        "body": "Poderemos atualizar esta política à medida que a plataforma e o enquadramento regulamentar evoluem. Alterações materiais serão anunciadas e registadas no histórico legal de versões."
+        "body": "Poderemos atualizar esta política à medida que a plataforma e o enquadramento regulamentar evoluem. Alterações materiais serão anunciadas e registradas no histórico legal de versões."
       }
     }
   },
@@ -733,8 +733,8 @@
     }
   },
   "trust_safety": {
-    "vetting_attestation_body": "Quando uma política comunitária exige contacto entre pessoas verificadas, a comunidade realiza a verificação legítima fora do Project NEXUS. Um intermediário autorizado pode registar, para a política de contacto específica, uma confirmação privada da comunidade composta apenas por metadados. O Project NEXUS não pede nem conserva certificados DBS, Garda Vetting, AccessNI, PVG ou equivalentes, os respetivos números de referência, resultados ou dados do registo criminal. Uma confirmação não significa que uma pessoa seja segura em todas as situações ou esteja habilitada para todas as funções.",
-    "what_we_dont_vetting_item": "Não inspecionamos nem guardamos de forma independente certificados de registo criminal, não certificamos um membro para uma profissão e não transformamos uma confirmação de política de contacto numa habilitação geral para funções.",
+    "vetting_attestation_body": "Quando uma política comunitária exige contacto entre pessoas verificadas, a comunidade realiza a verificação legítima fora do Project NEXUS. Um intermediário autorizado pode registrar, para a política de contacto específica, uma confirmação privada da comunidade composta apenas por metadados. O Project NEXUS não pede nem conserva certificados DBS, Garda Vetting, AccessNI, PVG ou equivalentes, os respetivos números de referência, resultados ou dados do registro criminal. Uma confirmação não significa que uma pessoa seja segura em todas as situações ou esteja habilitada para todas as funções.",
+    "what_we_dont_vetting_item": "Não inspecionamos nem armazenamos de forma independente certificados de registro criminal, não certificamos um membro para uma profissão e não transformamos uma confirmação de política de contacto numa habilitação geral para funções.",
     "precautions_vetting_item": "Para atividades que envolvam crianças ou adultos vulneráveis, contacte o coordenador da sua comunidade para conhecer as regras aplicáveis. Não peça a outro membro que envie um certificado DBS, Garda Vetting, AccessNI, PVG ou equivalente através do Project NEXUS.",
     "page_title": "Confiança e Segurança",
     "meta_description": "Como funcionam as trocas em {{name}}, o que fazemos para manter a comunidade segura, o que não fazemos e como relatar uma preocupação. Confiança e proteção em inglês simples.",
@@ -823,34 +823,34 @@
     "heading": "Eliminar a sua conta Timebank Global",
     "subtitle": "Pode eliminar permanentemente a sua conta a partir da aplicação ou enviar-nos um pedido de eliminação se não conseguir aceder-lhe.",
     "operator_title": "Responsável pela aplicação e pelo tratamento de dados",
-    "operator_body": "A Timebank Global é operada pela hOUR Timebank Company Limited by Guarantee, nome comercial registado Timebank Ireland, número de instituição de solidariedade RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlanda.",
+    "operator_body": "A Timebank Global é operada pela hOUR Timebank Company Limited by Guarantee, nome comercial registrado Timebank Ireland, número de instituição de solidariedade RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlanda.",
     "package_id": "Esta página aplica-se à aplicação Android Timebank Global, pacote ie.project.nexus.",
     "in_app_title": "Eliminar a sua conta na aplicação",
     "in_app_steps": {
       "0": "Abra a Timebank Global e inicie sessão.",
-      "1": "Abra as Definições.",
+      "1": "Abra as Configurações.",
       "2": "Escolha «Conta» e depois «Eliminar conta».",
-      "3": "Leia as consequências, escreva DELETE e introduza a sua palavra-passe atual.",
+      "3": "Leia as consequências, escreva DELETE e introduza a sua senha atual.",
       "4": "Escolha «Eliminar a minha conta». A conta é desativada, as credenciais são revogadas e o apagamento dos dados pessoais começa de imediato."
     },
     "web_request_title": "Pedir a eliminação sem a aplicação",
     "web_request_body": "Utilize o nosso formulário de contacto público e indique o endereço de e-mail utilizado na sua conta Timebank Global. Selecione «Eliminação da conta». Vamos confirmar que a conta lhe pertence antes de executar o pedido.",
-    "web_request_timing": "Acusamos a receção dos pedidos com prontidão e concluímos os pedidos de eliminação verificados no prazo de 30 dias, salvo se a lei permitir ou exigir um prazo mais longo.",
+    "web_request_timing": "Acusamos a recepção dos pedidos com prontidão e concluímos os pedidos de eliminação verificados no prazo de 30 dias, salvo se a lei permitir ou exigir um prazo mais longo.",
     "web_request_button": "Abrir o formulário de pedido de eliminação da conta",
     "deleted_title": "Dados eliminados ou anonimizados",
     "deleted_items": {
       "0": "O seu nome, endereço de e-mail, número de telefone, perfil, localização, biografia, interesses e imagem de perfil.",
-      "1": "A sua palavra-passe, chaves de acesso, segredos de autenticação de dois fatores, sessões, tokens de atualização e dispositivos registados.",
-      "2": "Os seus anúncios ativos, notificações, registos de consentimento, o histórico de conversa com a IA e as suas preferências pessoais.",
-      "3": "Os ficheiros e conteúdos multimédia que carregou, incluindo anexos de mensagens e gravações de voz, salvo se uma falha na eliminação do armazenamento exigir acompanhamento restrito por parte de um administrador.",
-      "4": "O conteúdo das mensagens que escreveu é depurado; a outra pessoa participante mantém um registo anonimizado da conversa.",
+      "1": "A sua senha, chaves de acesso, segredos de autenticação de dois fatores, sessões, tokens de atualização e dispositivos registrados.",
+      "2": "Os seus anúncios ativos, notificações, registros de consentimento, o histórico de conversa com a IA e as suas preferências pessoais.",
+      "3": "Os arquivos e conteúdos multimédia que carregou, incluindo anexos de mensagens e gravações de voz, salvo se uma falha na eliminação do armazenamento exigir acompanhamento restrito por parte de um administrador.",
+      "4": "O conteúdo das mensagens que escreveu é depurado; a outra pessoa participante mantém um registro anonimizado da conversa.",
       "5": "O seu perfil e os seus anúncios são retirados dos índices de pesquisa e é pedido aos parceiros de federação externos que retirem o perfil."
     },
     "retained_title": "Dados que podem ser conservados",
     "retained_items": {
-      "0": "Os registos contabilísticos anonimizados de créditos de tempo, trocas, donativos e organizações podem ser conservados até sete anos quando necessário para fins de auditoria, solidariedade social, fiscais, de prevenção da fraude ou obrigações legais.",
-      "1": "Os registos partilhados de que outro membro necessite, como uma troca ou um histórico de conversa, podem permanecer depois de removidas a sua identidade e os conteúdos pessoais que escreveu.",
-      "2": "Os registos de proteção, litígio ou retenção legal só são conservados quando a lei o exige ou é necessário para proteger pessoas, com acesso restrito e reapreciação da eliminação quando a obrigação termina."
+      "0": "Os registros contabilísticos anonimizados de créditos de tempo, trocas, donativos e organizações podem ser conservados até sete anos quando necessário para fins de auditoria, solidariedade social, fiscais, de prevenção da fraude ou obrigações legais.",
+      "1": "Os registros compartilhados de que outro membro necessite, como uma troca ou um histórico de conversa, podem permanecer depois de removidas a sua identidade e os conteúdos pessoais que escreveu.",
+      "2": "Os registros de proteção, litígio ou retenção legal só são conservados quando a lei o exige ou é necessário para proteger pessoas, com acesso restrito e reapreciação da eliminação quando a obrigação termina."
     },
     "contact_title": "Contacto de privacidade",
     "contact_body": "Se o formulário de contacto não estiver acessível, escreva para o contacto de proteção de dados da Timebank Global usando o assunto «Account deletion request».",
@@ -865,7 +865,7 @@
     "zero_tolerance_title": "Tolerância zero para o abuso e a exploração sexual de crianças",
     "zero_tolerance_body": "Proibimos o abuso e a exploração sexual de crianças (CSAE), o material de abuso sexual de crianças (CSAM) e qualquer tentativa de usar a Timebank Global para facilitar, promover, solicitar ou ocultar danos a uma criança.",
     "prohibited_items": {
-      "0": "Criar, carregar, partilhar, solicitar, armazenar ou ligar a CSAM, incluindo material sintético ou gerado por computador.",
+      "0": "Criar, carregar, compartilhar, solicitar, armazenar ou ligar a CSAM, incluindo material sintético ou gerado por computador.",
       "1": "Aliciamento, sexualização de uma criança, sextorsão, tráfico ou marcação de contacto sexual com uma criança.",
       "2": "Instruções, incentivos, piadas ou comunidades que normalizem ou promovam o abuso ou a exploração sexual de crianças.",
       "3": "Usar perfis, mensagens, anúncios, grupos, eventos ou qualquer outra funcionalidade para identificar, visar, contactar ou explorar uma criança.",
@@ -881,7 +881,7 @@
     "reporting_button": "Abrir o formulário de denúncia de proteção de crianças",
     "response_title": "Como respondemos",
     "response_items": {
-      "0": "As denúncias de proteção de crianças são priorizadas para revisão humana e a receção de comunicações de salvaguarda é normalmente confirmada no prazo de um dia útil.",
+      "0": "As denúncias de proteção de crianças são priorizadas para revisão humana e a recepção de comunicações de salvaguarda é normalmente confirmada no prazo de um dia útil.",
       "1": "Restringimos o acesso ao conteúdo denunciado durante a avaliação quando tal é necessário para proteger pessoas ou preservar provas.",
       "2": "O conteúdo proibido confirmado é removido e as contas envolvidas podem ser suspensas ou eliminadas definitivamente.",
       "3": "Conservamos apenas as provas necessárias a uma investigação lícita e protegemos a confidencialidade de quem denuncia na medida em que a lei o permita.",
@@ -890,6 +890,6 @@
     "contact_title": "Contacto designado para a proteção de crianças",
     "contact_body": "O Google Play, as autoridades policiais, as organizações de proteção de crianças e os membros podem contactar o nosso representante designado através de:",
     "contact_email": "jasper@timebank.global",
-    "operator_body": "A Timebank Global é operada pela hOUR Timebank Company Limited by Guarantee, nome comercial registado Timebank Ireland, número de instituição de solidariedade RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlanda."
+    "operator_body": "A Timebank Global é operada pela hOUR Timebank Company Limited by Guarantee, nome comercial registrado Timebank Ireland, número de instituição de solidariedade RCN 20162023, 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Irlanda."
   }
 }

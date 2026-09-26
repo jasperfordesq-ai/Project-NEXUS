@@ -1,7 +1,7 @@
 {
   "form": {
     "title": "Acessibilidade do local",
-    "hint": "Registe o que está disponível no local. Escolha «Desconhecido» quando a organização não tiver confirmado uma característica; não é o mesmo que «Não».",
+    "hint": "Registre o que está disponível no local. Escolha «Desconhecido» quando a organização não tiver confirmado uma característica; não é o mesmo que «Não».",
     "parking_details": "Estacionamento e chegada",
     "parking_details_hint": "Descreva lugares acessíveis, pontos de largada e o percurso até à entrada.",
     "transit_details": "Transportes públicos",
@@ -28,7 +28,12 @@
   "filters": {
     "step_free_label": "Acesso sem degraus no local",
     "step_free_hint": "Filtre pelas informações de acesso confirmadas pela organização.",
-    "step_free_options": { "any": "Qualquer local", "yes": "Acesso sem degraus confirmado", "no": "Com degraus", "unknown": "Acesso sem degraus desconhecido" },
+    "step_free_options": {
+      "any": "Qualquer local",
+      "yes": "Acesso sem degraus confirmado",
+      "no": "Com degraus",
+      "unknown": "Acesso sem degraus desconhecido"
+    },
     "step_free_active": "Acesso sem degraus: {{value}}"
   },
   "detail": {

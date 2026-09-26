@@ -7,17 +7,32 @@
   "effective_from_label": "Válido desde a identidade de recorrência",
   "effective_from_help": "Esta identidade estável pertence à ocorrência selecionada e não é recalculada a partir de uma hora de início alterada.",
   "sections_title": "Definições a manter",
-  "sections_description": "Cada secção é selecionada explicitamente. As atribuições de equipa nunca são escolhidas automaticamente.",
+  "sections_description": "Cada secção é selecionada explicitamente. As atribuições de equipe nunca são escolhidas automaticamente.",
   "sections": {
-    "agenda": { "label": "Agenda", "description": "Sessões agendadas, oradores e definições de recursos protegidos." },
-    "ticket_types": { "label": "Tipos de bilhete", "description": "Definições gratuitas ou em rascunho e respetivas janelas de venda." },
-    "registration": { "label": "Inscrição", "description": "Definições de inscrição e formulário atualmente publicado." },
-    "safety": { "label": "Requisitos de segurança", "description": "Requisitos de segurança e elegibilidade atualmente publicados." },
-    "staff": { "label": "Atribuições da equipa", "description": "Opção de alto risco: manter funções ativas em novas ocorrências futuras." }
+    "agenda": {
+      "label": "Agenda",
+      "description": "Sessões agendadas, oradores e definições de recursos protegidos."
+    },
+    "ticket_types": {
+      "label": "Tipos de bilhete",
+      "description": "Definições gratuitas ou em rascunho e respetivas janelas de venda."
+    },
+    "registration": {
+      "label": "Inscrição",
+      "description": "Configurações de inscrição e formulário atualmente publicado."
+    },
+    "safety": {
+      "label": "Requisitos de segurança",
+      "description": "Requisitos de segurança e elegibilidade atualmente publicados."
+    },
+    "staff": {
+      "label": "Atribuições da equipe",
+      "description": "Opção de alto risco: manter funções ativas em novas ocorrências futuras."
+    }
   },
   "section_not_permitted": "A sua função no evento não permite manter esta secção.",
   "no_sections_title": "Selecione pelo menos uma secção",
-  "no_sections_description": "É necessária uma pré-visualização antes de guardar a configuração futura.",
+  "no_sections_description": "É necessária uma pré-visualização antes de salvar a configuração futura.",
   "preview_button": "Pré-visualizar configuração futura",
   "previewing": "A preparar pré-visualização",
   "preview_title": "Pré-visualização das definições",
@@ -35,28 +50,49 @@
     "published_form_missing": "Não foi possível verificar o formulário de inscrição publicado.",
     "question_limit_exceeded": "O formulário publicado excede o limite seguro de perguntas ({{count}} encontradas).",
     "published_requirement_version_missing": "Não foi possível verificar a versão publicada dos requisitos de segurança.",
-    "invalid_staff_reference": "{{count}} atribuição da equipa refere um membro indisponível.",
-    "nonportable_staff_expiry": "{{count}} atribuição da equipa expira antes da ocorrência futura e não pode ser mantida."
+    "invalid_staff_reference": "{{count}} atribuição da equipe refere um membro indisponível.",
+    "nonportable_staff_expiry": "{{count}} atribuição da equipe expira antes da ocorrência futura e não pode ser mantida."
   },
   "counts": {
     "none": "Não foram encontradas definições nas secções selecionadas.",
-    "sessions": "Sessões", "speakers": "Oradores", "resources": "Recursos", "ticket_types": "Tipos de bilhete",
-    "registration_settings": "Definições de inscrição", "published_forms": "Formulários publicados", "form_questions": "Perguntas do formulário",
-    "safety_requirements": "Requisitos de segurança", "staff_assignments": "Atribuições da equipa"
+    "sessions": "Sessões",
+    "speakers": "Oradores",
+    "resources": "Recursos",
+    "ticket_types": "Tipos de bilhete",
+    "registration_settings": "Configurações de inscrição",
+    "published_forms": "Formulários publicados",
+    "form_questions": "Perguntas do formulário",
+    "safety_requirements": "Requisitos de segurança",
+    "staff_assignments": "Atribuições da equipe"
   },
   "errors": {
-    "preview_error": { "title": "Não foi possível preparar a pré-visualização", "description": "Verifique as definições selecionadas e tente novamente." },
-    "preview_expired": { "title": "Pré-visualização expirada", "description": "Atualize-a antes de confirmar. Nada foi guardado." },
-    "preview_stale": { "title": "As definições mudaram após a pré-visualização", "description": "Prepare uma nova pré-visualização com as definições mais recentes." },
-    "commit_conflict": { "title": "A configuração futura não foi guardada", "description": "Outra versão ou pedido incompatível foi guardado primeiro. Atualize e reveja novamente." },
-    "commit_error": { "title": "Não foi possível guardar a configuração futura", "description": "A sua chave estável de repetição foi mantida. Confirme novamente ou atualize a pré-visualização se expirou." }
+    "preview_error": {
+      "title": "Não foi possível preparar a pré-visualização",
+      "description": "Verifique as definições selecionadas e tente novamente."
+    },
+    "preview_expired": {
+      "title": "Pré-visualização expirada",
+      "description": "Atualize-a antes de confirmar. Nada foi salvo."
+    },
+    "preview_stale": {
+      "title": "As definições mudaram após a pré-visualização",
+      "description": "Prepare uma nova pré-visualização com as definições mais recentes."
+    },
+    "commit_conflict": {
+      "title": "A configuração futura não foi salva",
+      "description": "Outra versão ou pedido incompatível foi salvo primeiro. Atualize e reveja novamente."
+    },
+    "commit_error": {
+      "title": "Não foi possível salvar a configuração futura",
+      "description": "A sua chave estável de repetição foi mantida. Confirme novamente ou atualize a pré-visualização se expirou."
+    }
   },
-  "success_created_title": "Configuração futura guardada",
+  "success_created_title": "Configuração futura salva",
   "success_created_description": "A versão imutável {{version}} será aplicada apenas a novas ocorrências futuras.",
-  "success_replay_title": "A configuração futura já estava guardada",
+  "success_replay_title": "A configuração futura já estava salva",
   "success_replay_description": "A versão {{version}} corresponde a esta repetição. Não foi criado um duplicado.",
   "history_title": "Histórico imutável de versões",
-  "history_description": "Cada versão guardada é mantida com contagens limitadas e a respetiva identidade de recorrência efetiva.",
+  "history_description": "Cada versão salva é mantida com contagens limitadas e a respetiva identidade de recorrência efetiva.",
   "history_loading": "A carregar histórico",
   "history_error_title": "Não foi possível carregar o histórico",
   "history_error_description": "Tente novamente para obter as versões imutáveis.",
@@ -71,15 +107,15 @@
   "load_more_error_title": "Não foi possível carregar mais versões",
   "load_more_error_description": "Tente carregar novamente a página seguinte.",
   "retry": "Tentar novamente",
-  "time_unknown": "Hora não registada",
+  "time_unknown": "Hora não registrada",
   "confirm_title": "Confirmar configuração futura",
   "confirm_scope_title": "Apenas novas ocorrências",
   "confirm_scope_description": "Esta versão entra em vigor na identidade apresentada. As ocorrências e os dados de participantes existentes não são alterados.",
-  "staff_risk_title": "A propagação da equipa está selecionada",
+  "staff_risk_title": "A propagação da equipe está selecionada",
   "staff_risk_description": "As funções ativas podem conceder acesso operacional em cada nova ocorrência. Reveja cuidadosamente esta opção.",
   "confirm_ack": "Confirmo esta versão de definições apenas para o futuro",
   "confirm_ack_description": "Revi as secções, contagens, conflitos e identidade de recorrência efetiva.",
   "cancel": "Cancelar",
-  "commit_button": "Guardar versão imutável",
-  "committing": "A guardar versão"
+  "commit_button": "Salvar versão imutável",
+  "committing": "Salvando versão"
 }

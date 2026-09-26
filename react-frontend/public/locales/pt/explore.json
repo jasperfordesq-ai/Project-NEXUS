@@ -59,7 +59,7 @@
   },
   "featured_challenges": {
     "title": "Desafios em Destaque",
-    "subtitle": "Partilhe as suas ideias e faça a diferença",
+    "subtitle": "Compartilhe as suas ideias e faça a diferença",
     "ideas_count": "{{count}} ideias",
     "ends": "Termina em {{date}}",
     "progress": "Progresso do desafio",
@@ -87,7 +87,7 @@
   },
   "suggested_connections": {
     "title": "Pessoas que Pode Conhecer",
-    "subtitle": "Conecte-se com membros que partilham os seus interesses",
+    "subtitle": "Conecte-se com membros que compartilham os seus interesses",
     "connect": "Conectar",
     "mutual": "Conexões mútuas",
     "similar": "Interesses semelhantes",

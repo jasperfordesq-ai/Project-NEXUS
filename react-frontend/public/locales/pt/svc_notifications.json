@@ -18,7 +18,7 @@
     "hired": "Parabéns! Você foi contratado para {{title}}",
     "status_updated": "Sua solicitação de status {{title}} foi atualizada para {{status}}",
     "status_updated_generic": "O status da sua inscrição foi atualizado",
-    "stuck_in_stage": "O aplicativo #{{id}} está em '{{stage}}' há {{days}}+ dias"
+    "stuck_in_stage": "A candidatura #{{id}} está em '{{stage}}' há {{days}}+ dias"
   },
   "job_team": {
     "added_as_role": "Você foi adicionado como {{role}} para '{{title}}'"

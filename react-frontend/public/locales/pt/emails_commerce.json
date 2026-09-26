@@ -4,7 +4,7 @@
     "title": "Candidatura submetida!",
     "preview": "A sua candidatura para {{job_title}} foi recebida",
     "body": "A sua candidatura para <strong>{{job_title}}</strong> foi recebida e está a ser analisada.",
-    "next_steps": "A equipa de recrutamento irá analisar a sua candidatura e entrará em contacto caso seja pré-selecionado/a.",
+    "next_steps": "A equipe de recrutamento irá analisar a sua candidatura e entrará em contacto caso seja pré-selecionado/a.",
     "cta": "Ver candidatura"
   },
   "job_application_employer": {

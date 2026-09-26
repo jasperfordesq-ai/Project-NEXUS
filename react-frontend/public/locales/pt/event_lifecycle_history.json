@@ -1,6 +1,6 @@
 {
   "title": "Histórico do ciclo de vida",
-  "description": "Um registo imutável das alterações de publicação e operacionais deste evento.",
+  "description": "Um registro imutável das alterações de publicação e operacionais deste evento.",
   "loading": "A carregar o histórico do ciclo de vida",
   "load_error_title": "Não foi possível carregar o histórico do ciclo de vida",
   "load_error_description": "Tente novamente para obter o histórico imutável.",
@@ -22,11 +22,11 @@
   "loading_more": "A carregar mais histórico",
   "load_more_error_title": "Não foi possível carregar mais histórico",
   "load_more_error_description": "Tente carregar novamente a página seguinte.",
-  "timestamp_unknown": "Hora não registada",
+  "timestamp_unknown": "Hora não registrada",
   "states": {
     "publication": {
       "draft": "Rascunho",
-      "pending_review": "A aguardar revisão",
+      "pending_review": "Aguardando revisão",
       "published": "Publicado",
       "archived": "Arquivado"
     },

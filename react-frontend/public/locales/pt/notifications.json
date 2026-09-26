@@ -5,8 +5,8 @@
   "unread_badge": "{{count}} novas",
   "caught_up_badge": "Em dia",
   "mark_all_read": "Marcar todas como lidas",
-  "settings_label": "Definições",
-  "settings_aria": "Definições de notificação",
+  "settings_label": "Configurações",
+  "settings_aria": "Configurações de notificação",
   "filter_all": "Todas",
   "filter_unread": "Não lidas ({{count}})",
   "empty_title": "Sem notificações",
@@ -48,7 +48,7 @@
     "default": "Notificação"
   },
   "load_more": "Carregar mais",
-  "undo": "Undo",
+  "undo": "Desfazer",
   "toast": {
     "mark_read_failed": "Falha ao marcar notificação como lida",
     "all_read": "Todas as notificações marcadas como lidas",

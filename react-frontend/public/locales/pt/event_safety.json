@@ -157,7 +157,7 @@
       "withdrawn": "Revisão de participação retirada.",
       "action_error": "A avaliação da participação não pôde ser alterada. Atualize e tente novamente.",
       "history_title": "Revise o razão",
-      "total": "{{count}} decisões registadas",
+      "total": "{{count}} decisões registradas",
       "empty": "Nenhuma avaliação de participação foi registrada para este evento.",
       "reviewed_by": "Avaliado por",
       "version": "Versão de decisão",

@@ -10,9 +10,9 @@
   },
   "group_qa": {
     "answer_accepted": "Resposta aceite",
-    "vote_recorded": "Voto registado",
+    "vote_recorded": "Voto registrado",
     "failed_accept_answer": "Não foi possível aceitar a resposta",
-    "failed_record_vote": "Não foi possível registar o voto",
+    "failed_record_vote": "Não foi possível registrar o voto",
     "title_required": "O título é obrigatório",
     "body_required": "O conteúdo é obrigatório",
     "failed_create_question": "Não foi possível criar a pergunta",
@@ -34,7 +34,7 @@
     "wiki_page_deleted": "Página Wiki eliminada"
   },
   "listings": {
-    "listing_saved_notification": ":saver_name guardou o seu anúncio \":title\""
+    "listing_saved_notification": ":saver_name salvou o seu anúncio \":title\""
   },
   "goals": {
     "progress_mentor": "{{name}} fez progressos no seu objetivo: \"{{title}}\"",
@@ -42,7 +42,7 @@
     "completed_self": "Parabéns! Concluiu o seu objetivo: \"{{title}}\""
   },
   "feed": {
-    "post_shared": "{{name}} partilhou a sua publicação"
+    "post_shared": "{{name}} compartilhou a sua publicação"
   },
   "polls": {
     "vote_received": "{{name}} votou na sua sondagem: \"{{title}}\"",
@@ -110,7 +110,7 @@
     "report_reviewed": "A sua denúncia foi analisada.",
     "vetting_approved": "A sua verificação foi aprovada!",
     "vetting_rejected": "A sua verificação não pôde ser concluída. Contacte o suporte.",
-    "vetting_removed": "O seu registo de verificação foi removido.",
+    "vetting_removed": "O seu registro de verificação foi removido.",
     "volunteer_approved": "A sua candidatura de voluntariado foi aprovada!",
     "volunteer_declined": "A sua candidatura de voluntariado não foi aceite.",
     "monitoring_restricted": "O seu coordenador do banco de tempo restringiu temporariamente as suas mensagens.",

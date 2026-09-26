@@ -23,7 +23,7 @@
     "actions": {
       "open_hub": "Abrir hub",
       "request_help": "Pedir ajuda",
-      "log_hours": "Registar horas"
+      "log_hours": "Registrar horas"
     }
   },
   "stats": {
@@ -64,17 +64,17 @@
     "requesting": "A Solicitar",
     "offer": "Oferta",
     "request": "Pedido",
-    "user_fallback": "Utilizador",
+    "user_fallback": "Usuário",
     "empty": "Sem anúncios recentes",
     "empty_description": "Cria um pedido ou uma oferta para começares a encontrar correspondências com pessoas próximas.",
     "create_first": "Crie o seu primeiro anúncio"
   },
   "activity": {
-    "action_listing": "partilhou um anúncio",
+    "action_listing": "compartilhou um anúncio",
     "action_event": "publicou sobre um evento",
     "action_poll": "criou uma sondagem",
     "action_goal": "definiu um novo objetivo",
-    "action_post": "partilhou uma publicação",
+    "action_post": "compartilhou uma publicação",
     "empty": "Sem atividade recente",
     "empty_description": "As atualizações da comunidade aparecerão aqui assim que as pessoas começarem a publicar.",
     "check_feed": "Veja o feed"
@@ -89,7 +89,7 @@
   "groups": {
     "members_count": "{{count}} membros",
     "empty": "Ainda não aderiu a nenhum grupo",
-    "empty_description": "Os grupos ajudam-te a acompanhar interesses partilhados, projetos e círculos locais.",
+    "empty_description": "Os grupos ajudam-te a acompanhar interesses compartilhados, projetos e círculos locais.",
     "discover": "Descobrir grupos",
     "members_count_many": "{{count}} membros",
     "members_count_one": "{{count}} membros",

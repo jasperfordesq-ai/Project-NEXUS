@@ -16,7 +16,7 @@
     "member_ids_must_be_array": "member_ids deve ser um array"
   },
   "group_files": {
-    "listing_failed": "Erro ao listar ficheiros",
+    "listing_failed": "Erro ao listar arquivos",
     "upload_failed": "Falha no envio",
     "download_failed": "Falha no download",
     "delete_failed": "Falha ao eliminar"

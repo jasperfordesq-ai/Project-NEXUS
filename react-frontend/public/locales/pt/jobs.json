@@ -67,15 +67,15 @@
   "unable_to_load": "Não Foi Possível Carregar as Vagas",
   "error_load_more": "Falha ao carregar mais vagas",
   "saved": {
-    "title": "Empregos Guardados",
-    "empty_title": "Sem empregos guardados",
+    "title": "Empregos Salvos",
+    "empty_title": "Sem empregos salvos",
     "empty_description": "Os empregos que marcar aparecerão aqui",
-    "save": "Guardar",
+    "save": "Salvar",
     "unsave": "Remover",
-    "saved": "Guardado",
-    "save_success": "Emprego guardado",
-    "unsave_success": "Emprego removido dos guardados",
-    "save_error": "Falha ao guardar emprego"
+    "saved": "Salvo",
+    "save_success": "Emprego salvo",
+    "unsave_success": "Emprego removido dos salvos",
+    "save_error": "Falha ao salvar emprego"
   },
   "match": {
     "title": "Correspondência de Competências",
@@ -167,7 +167,7 @@
     "dim_flexibility": "Flexibilidade",
     "dim_impact": "Impacto na comunidade",
     "review_comment": "Comentário",
-    "review_comment_placeholder": "Partilha a tua experiência a trabalhar com este empregador...",
+    "review_comment_placeholder": "Compartilhe sua experiência trabalhando com este empregador...",
     "submit_review": "Enviar avaliação",
     "no_reviews": "Ainda sem avaliações",
     "anonymous": "Anónimo",
@@ -260,7 +260,7 @@
     "no_data": "Ainda sem dados de análise",
     "load_error": "Falha ao carregar a análise",
     "weekly_trend": "Candidaturas Semanais",
-    "referral_shares": "Total de Partilhas",
+    "referral_shares": "Total de Compartilhamentos",
     "referral_apps": "Candidaturas por Referência",
     "referral_conversion": "Conversão de Referências",
     "scorecard_avg": "Média de Avaliação",
@@ -406,7 +406,7 @@
     "ai_ranked": "Candidatos classificados por IA",
     "ai_rank_failed": "Falha na classificação por IA",
     "tab_pipeline": "Gasoduto",
-    "tab_activity": "Registo de atividade",
+    "tab_activity": "Registro de atividade",
     "no_activity": "Ainda sem atividade",
     "no_activity_hint": "Os eventos aparecerão aqui à medida que o processo de contratação avança.",
     "previous": "Anterior",
@@ -445,13 +445,13 @@
     "cv_hint": "(opcional — PDF, DOC, DOCX, máx. 5MB)",
     "cv_drop_prompt": "Solte o CV aqui ou clique para procurar",
     "cv_remove": "Remover CV",
-    "cv_dropzone_aria": "Clique ou solte ficheiro para carregar CV",
-    "cv_too_large": "O ficheiro do CV deve ter menos de 5MB",
-    "cv_invalid_type": "Apenas ficheiros PDF, DOC ou DOCX são suportados",
+    "cv_dropzone_aria": "Clique ou solte arquivo para carregar CV",
+    "cv_too_large": "O arquivo do CV deve ter menos de 5MB",
+    "cv_invalid_type": "Apenas arquivos PDF, DOC ou DOCX são suportados",
     "cv_size_kb": "({{count}} KB)",
     "message_employer": "Mensagem ao Empregador",
     "cv_parse_error": "Falha ao analisar CV. Pode submeter a sua candidatura manualmente.",
-    "quick_apply": "Candidatura Rápida com Perfil Guardado",
+    "quick_apply": "Candidatura Rápida com Perfil Salvo",
     "cv_size_kb_one": "({{count}} KB)",
     "cv_size_kb_other": "({{count}} KB)",
     "cv_size_kb_many": "({{count}} KB)"
@@ -500,7 +500,7 @@
     "check_qualification": "Estou Qualificado?",
     "owner_banner_title": "Publicou esta vaga",
     "owner_has_applicants": "{{count}} candidato(s) — deslize para baixo para rever",
-    "owner_no_applicants": "Sem candidatos ainda — partilhe esta vaga para mais visibilidade",
+    "owner_no_applicants": "Sem candidatos ainda — compartilhe esta vaga para mais visibilidade",
     "close_vacancy": "Fechar Vaga",
     "reopen_vacancy": "Reabrir",
     "refresh": "Atualizar",
@@ -508,7 +508,7 @@
     "kanban_board": "Quadro Kanban",
     "cv_download_error": "Falha ao baixar currículo",
     "confirm_close_title": "Fechar esta vaga?",
-    "confirm_close": "O fechamento impede a entrada de novos aplicativos. Você pode reabri-lo a qualquer momento.",
+    "confirm_close": "O fechamento impede a entrada de novas candidaturas. Você pode reabri-lo a qualquer momento.",
     "confirm_reopen_title": "Reabrir esta vaga?",
     "confirm_reopen": "A reabertura torna a vaga visível novamente e permite que as pessoas se inscrevam.",
     "owner_has_applicants_one": "{{count}} candidato(s) — deslize para baixo para rever",
@@ -572,15 +572,15 @@
     "about_company": "Sobre a Empresa"
   },
   "referral": {
-    "share": "Partilhar e Ganhar",
+    "share": "Compartilhar e Ganhar",
     "copied": "Link de referência copiado para a área de transferência!"
   },
   "scorecard": {
     "title": "Avaliar Candidato",
     "criteria": "Critérios de Avaliação",
     "notes": "Notas do Avaliador",
-    "save": "Guardar Avaliação",
-    "saved": "Avaliação guardada",
+    "save": "Salvar Avaliação",
+    "saved": "Avaliação salva",
     "notes_placeholder": "Notas opcionais sobre este candidato...",
     "max_score_suffix": "/ 10",
     "communication": "Comunicação",
@@ -590,15 +590,15 @@
     "motivation": "Motivação"
   },
   "saved_profile": {
-    "found": "Perfil de candidatura guardado encontrado",
-    "use": "Usar Perfil Guardado",
+    "found": "Perfil de candidatura salvo encontrado",
+    "use": "Usar Perfil Salvo",
     "start_fresh": "Começar de Novo",
     "inline_cv": "- CV: {{filename}}",
-    "cv_label": "CV Guardado: {{filename}}"
+    "cv_label": "CV Salvo: {{filename}}"
   },
   "team": {
-    "section": "Equipa de Recrutamento",
-    "title": "Equipa de Recrutamento",
+    "section": "Equipe de Recrutamento",
+    "title": "Equipe de Recrutamento",
     "add_reviewer": "Adicionar Avaliador",
     "add": "Adicionar",
     "add_member": "Adicionar Membro",
@@ -610,9 +610,9 @@
     "role_interviewer": "Entrevistador",
     "role_hiring_manager": "Gestor de Recrutamento",
     "role_manager": "Gestor",
-    "added": "Membro da equipa adicionado",
-    "removed": "Membro da equipa removido",
-    "edit_only": "Disponível após guardar a vaga"
+    "added": "Membro da equipe adicionado",
+    "removed": "Membro da equipe removido",
+    "edit_only": "Disponível após salvar a vaga"
   },
   "search": {
     "label": "Pesquisar vagas de emprego",
@@ -630,27 +630,27 @@
   "templates": {
     "title": "Modelos",
     "load": "Carregar Modelo",
-    "save": "Guardar como Modelo",
-    "save_title": "Guardar Modelo",
+    "save": "Salvar como Modelo",
+    "save_title": "Salvar Modelo",
     "name_label": "Nome do Modelo",
     "name_placeholder": "Introduza um nome para este modelo",
-    "save_button": "Guardar",
-    "saved": "Modelo guardado",
+    "save_button": "Salvar",
+    "saved": "Modelo salvo",
     "deleted": "Modelo eliminado",
     "loaded": "Modelo carregado",
-    "empty": "Sem modelos guardados",
+    "empty": "Sem modelos salvos",
     "delete_confirm": "Eliminar este modelo?"
   },
   "template": {
     "start_from": "Começar a partir de modelo (opcional)",
     "no_templates": "Ainda sem modelos",
-    "save_as": "Guardar como Modelo",
+    "save_as": "Salvar como Modelo",
     "template_name": "Nome do modelo",
     "name_placeholder": "ex.: Vaga de Programador Sénior",
-    "share_with_team": "Partilhar com a equipa (modelo público)",
-    "saving": "A guardar...",
-    "saved": "Modelo guardado!",
-    "save_error": "Falha ao guardar modelo"
+    "share_with_team": "Compartilhar com a equipe (modelo público)",
+    "saving": "Salvando...",
+    "saved": "Modelo salvo!",
+    "save_error": "Falha ao salvar modelo"
   },
   "benchmark": {
     "market_rate": "Taxa de mercado para \"{{role}}\": {{currency}}{{min}} – {{currency}}{{max}} / {{type}} (mediana: {{currency}}{{median}})"
@@ -691,12 +691,12 @@
     "salary_negotiable_label": "Salário é negociável",
     "salary_transparency_hint": "Obrigatório ao abrigo da Diretiva de Transparência Salarial da UE (junho 2026)",
     "submit_create": "Publicar Vaga",
-    "submit_update": "Guardar Alterações",
-    "save_draft": "Guardar como Rascunho",
-    "draft_saved": "Rascunho guardado",
+    "submit_update": "Salvar Alterações",
+    "save_draft": "Salvar como Rascunho",
+    "draft_saved": "Rascunho salvo",
     "cancel": "Cancelar",
     "creating": "A publicar...",
-    "updating": "A guardar...",
+    "updating": "Salvando...",
     "create_success": "Vaga de emprego publicada com sucesso!",
     "update_success": "Vaga de emprego atualizada com sucesso!",
     "create_error": "Falha ao publicar vaga",
@@ -770,7 +770,7 @@
     "no_description": "Sem descrição",
     "no_flags": "Sem sinalizações",
     "flags_tooltip": "Sinalizações: {{flags}}",
-    "user_fallback": "Utilizador #{{id}}",
+    "user_fallback": "Usuário #{{id}}",
     "pagination_label": "Páginas da fila de moderação"
   },
   "spam": {
@@ -982,7 +982,7 @@
     "tip_1": "Adicione uma descrição detalhada com responsabilidades claras",
     "tip_2": "Inclua informação salarial ou de créditos de tempo para transparência",
     "tip_3": "Liste competências específicas para atrair candidatos qualificados",
-    "tip_4": "Partilhe a sua vaga nos canais da comunidade",
+    "tip_4": "Compartilhe a sua vaga nos canais da comunidade",
     "go_to_jobs": "Ir para Empregos",
     "first_time_banner": "Primeira vez a publicar?",
     "first_time_desc": "O nosso assistente de integração guiá-lo-á na publicação da sua primeira vaga.",
@@ -999,13 +999,13 @@
     "apply": "Aplicar Referência",
     "applied": "Referência aplicada"
   },
-  "unsaved_warning": "Tem alterações não guardadas. Tem a certeza de que deseja sair?",
+  "unsaved_warning": "Tem alterações não salvas. Tem a certeza de que deseja sair?",
   "share": {
-    "title": "Partilhar",
+    "title": "Compartilhar",
     "copy_link": "Copiar Ligação",
-    "email": "Partilhar por Email",
+    "email": "Compartilhar por Email",
     "copied": "Ligação copiada!",
-    "native": "Partilhar...",
+    "native": "Compartilhar...",
     "email_body": "Confira esta vaga: {{title}}\n\n{{url}}",
     "native_text": "Confira esta oportunidade {{type}}: {{title}}"
   },
@@ -1032,7 +1032,7 @@
     "offer_accepted": "Oferta aceite",
     "offer_declined": "Oferta recusada",
     "decline_reason_label": "Motivo (opcional)",
-    "decline_reason_placeholder": "Partilhe o seu motivo..."
+    "decline_reason_placeholder": "Compartilhe o seu motivo..."
   },
   "sort": {
     "label": "Ordenar por",
@@ -1076,7 +1076,7 @@
     },
     "edit": {
       "title": "Editar vaga",
-      "description": "Atualiza os detalhes da vaga, remuneração, definições da equipa e opções de publicação."
+      "description": "Atualiza os detalhes da vaga, remuneração, configurações da equipe e opções de publicação."
     },
     "talent_search": {
       "title": "Busca de Talentos"
