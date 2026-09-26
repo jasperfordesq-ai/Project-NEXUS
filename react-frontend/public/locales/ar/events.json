@@ -455,8 +455,8 @@
         "waitlisted": "مدرج في قائمة الانتظار",
         "checked_in": "تم تسجيل الوصول",
         "checked_out": "تم السحب",
-        "no_show": "?? ????",
-        "attended": "???"
+        "no_show": "لم يحضر",
+        "attended": "حضر"
       },
       "invite_title": "دعوة الأعضاء",
       "invite_description": "ابحث في دليل الأعضاء وقم بدعوة ما يصل إلى 100 عضو في عملية واحدة.",
@@ -468,7 +468,7 @@
       "invite_search_error": "البحث عن الأعضاء غير متاح. يرجى المحاولة مرة أخرى.",
       "no_invite_results": "لم يتم العثور على أعضاء متطابقين.",
       "invite_results_aria": "نتائج البحث عن الدعوة",
-      "invite_selected": "???? ???????? ({{count}})",
+      "invite_selected": "دعوة المحدَّدين ({{count}})",
       "invite_success": "تمت معالجة الدعوة (الدعوات) {{count}} بنجاح.",
       "invite_error": "لا يمكن معالجة الدعوات.",
       "search_label": "بحث الناس",
@@ -489,21 +489,21 @@
       "filter_options": {
         "all": "الجميع",
         "none": "لا أحد",
-        "invited": "??? ?????",
+        "invited": "تمت دعوته",
         "pending": "قيد الانتظار",
         "confirmed": "مؤكد",
         "declined": "انخفض",
         "cancelled": "تم الإلغاء",
         "active": "نشيط",
-        "waiting": "??? ????????",
+        "waiting": "قيد الانتظار",
         "offered": "المكان المعروض",
         "accepted": "مقبول",
         "expired": "منتهي الصلاحية",
         "not_checked_in": "لم يتم تسجيل الوصول",
         "checked_in": "تم تسجيل الوصول",
         "checked_out": "تم السحب",
-        "attended": "???",
-        "no_show": "?? ????",
+        "attended": "حضر",
+        "no_show": "لم يحضر",
         "interested": "مهتم"
       },
       "selected_count": "تم تحديد {{count}}",
@@ -559,15 +559,15 @@
         "support_notes": "الصحة وإمكانية الوصول والإقامة ومذكرات الدعم الخاصة",
         "audit_metadata": "البيانات الوصفية للتدقيق الداخلي وأسباب الموظفين والملاحظات التشغيلية"
       },
-      "export_cancel": "?????",
+      "export_cancel": "إلغاء",
       "export_confirm": "قم بتنزيل ملف CSV الآمن للخصوصية",
       "loading": "جارٍ تحميل الأشخاص في الحدث...",
       "empty": "لا يوجد أشخاص يتطابقون مع هذه المرشحات.",
       "load_error_title": "غير قادر على تحميل الأشخاص الحدث",
       "load_error_desc": "تعذر تحميل مساحة عمل الأشخاص. يرجى المحاولة مرة أخرى.",
-      "pagination_summary": "{{start}}?{{end}} ?? {{total}}",
+      "pagination_summary": "{{start}}–{{end}} من {{total}}",
       "pagination_aria": "صفحات الأشخاص الحدث",
-      "history_title": "??? {{name}}",
+      "history_title": "سجل {{name}}",
       "history_loading": "جارٍ تحميل السجل...",
       "history_error": "لا يمكن تحميل هذا التاريخ.",
       "history_empty": "لم يتم إرجاع أي إدخالات للتاريخ.",
@@ -585,7 +585,7 @@
         "none": "لا أحد",
         "registration": {
           "none": "غير مسجل",
-          "invited": "??? ?????",
+          "invited": "تمت دعوته",
           "pending": "قيد الانتظار",
           "confirmed": "مؤكد",
           "declined": "انخفض",
@@ -593,7 +593,7 @@
         },
         "waitlist": {
           "none": "غير مدرج في قائمة الانتظار",
-          "waiting": "??? ????????",
+          "waiting": "قيد الانتظار",
           "offered": "المكان المعروض",
           "accepted": "مقبول",
           "expired": "منتهي الصلاحية",
@@ -604,8 +604,8 @@
           "not_checked_in": "لم يتم تسجيل الوصول",
           "checked_in": "تم تسجيل الوصول",
           "checked_out": "تم السحب",
-          "attended": "???",
-          "no_show": "?? ????"
+          "attended": "حضر",
+          "no_show": "لم يحضر"
         }
       }
     },

@@ -988,7 +988,7 @@
     "desc_newsletter": "Campañas de boletines informativos por correo electrónico, suscriptores, segmentos y análisis",
     "desc_partner_api": "Permitir que los socios externos se integren con este inquilino a través de la API de socios",
     "desc_regional_analytics": "Producto de análisis regional pago: informes mensuales para municipios y organismos regionales",
-    "cost_warning": "Este inquilino está configurado para utilizar los servicios pagos de Google. La función de autocompletar de Google Places suele ser el mayor generador de costos. las sesiones se facturan por ráfaga de teclas. Cambie a Nominatim para eliminar ese componente de la factura por completo.",
+    "cost_warning": "Este inquilino está configurado para utilizar los servicios pagos de Google. La función de autocompletar de Google Places suele ser el mayor generador de costos — las sesiones se facturan por ráfaga de teclas. Cambie a Nominatim para eliminar ese componente de la factura por completo.",
     "currently_serving": "Activo actualmente:",
     "status_autocomplete": "Autocompletado",
     "status_google_paid": "Google (de pago)",

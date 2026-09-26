@@ -429,7 +429,7 @@
         "checked_in": "Enregistré",
         "checked_out": "Extrait",
         "no_show": "Absent",
-        "attended": "A particip?"
+        "attended": "A participé"
       },
       "invite_title": "Inviter des membres",
       "invite_description": "Recherchez dans l’annuaire des membres et invitez jusqu’à 100 membres en une seule opération.",
@@ -441,7 +441,7 @@
       "invite_search_error": "La recherche de membres n'est pas disponible. Veuillez réessayer.",
       "no_invite_results": "Aucun membre correspondant trouvé.",
       "invite_results_aria": "Résultats de la recherche d'invitations",
-      "invite_selected": "Inviter la s?lection ({{count}})",
+      "invite_selected": "Inviter la sélection ({{count}})",
       "invite_success": "{{count}} invitation(s) traitée(s) avec succès.",
       "invite_error": "Les invitations n'ont pas pu être traitées.",
       "search_label": "Rechercher des personnes",
@@ -462,7 +462,7 @@
       "filter_options": {
         "all": "Tout",
         "none": "Aucun",
-        "invited": "Invit?",
+        "invited": "Invité",
         "pending": "En attente",
         "confirmed": "Confirmé",
         "declined": "Refusé",
@@ -475,7 +475,7 @@
         "not_checked_in": "Non enregistré",
         "checked_in": "Enregistré",
         "checked_out": "Extrait",
-        "attended": "A particip?",
+        "attended": "A participé",
         "no_show": "Absent",
         "interested": "Intéressé"
       },
@@ -538,7 +538,7 @@
       "empty": "Aucune personne ne correspond à ces filtres.",
       "load_error_title": "Impossible de charger les participants à l'événement",
       "load_error_desc": "L'espace de travail Personnes n'a pas pu être chargé. Veuillez réessayer.",
-      "pagination_summary": "{{start}}?{{end}} sur {{total}}",
+      "pagination_summary": "{{start}}–{{end}} sur {{total}}",
       "pagination_aria": "Pages de personnes d'événements",
       "history_title": "Historique de {{name}}",
       "history_loading": "Chargement de l'historique...",
@@ -558,7 +558,7 @@
         "none": "Aucun",
         "registration": {
           "none": "Non inscrit",
-          "invited": "Invit?",
+          "invited": "Invité",
           "pending": "En attente",
           "confirmed": "Confirmé",
           "declined": "Refusé",
@@ -577,7 +577,7 @@
           "not_checked_in": "Non enregistré",
           "checked_in": "Enregistré",
           "checked_out": "Extrait",
-          "attended": "A particip?",
+          "attended": "A participé",
           "no_show": "Absent"
         }
       }

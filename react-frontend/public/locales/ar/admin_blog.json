@@ -123,7 +123,7 @@
     "all": "الجميع",
     "back": "خلف",
     "cancel": "يلغي",
-    "delete_confirm_message": "يمسح ؟{{title}}؟؟ لا يمكن التراجع عن هذا.",
+    "delete_confirm_message": "هل تريد حذف «{{title}}»؟ لا يمكن التراجع عن هذا.",
     "delete_confirm_title": "حذف مشاركة المدونة",
     "item_updated": "تم تحديث العنصر",
     "label_actions": "الإجراءات",

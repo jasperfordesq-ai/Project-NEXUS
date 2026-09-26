@@ -235,7 +235,7 @@
       "manage": "Verwalten",
       "recheck_badges": "Überprüfen Sie die Abzeichen erneut",
       "remove_badge": "Abzeichen entfernen",
-      "resend_verification_email": "Best?tigungs-E-Mail erneut senden",
+      "resend_verification_email": "Bestätigungs-E-Mail erneut senden",
       "resend_welcome_email": "Willkommens-E-Mail erneut senden",
       "return_to_list": "Zurück zur Liste",
       "save_changes": "Änderungen speichern",
@@ -264,8 +264,8 @@
     "descriptions": {
       "balance_amount": "Verwenden Sie negative Werte, um Zeitguthaben von diesem Mitglied abzuziehen",
       "cannot_modify_self": "In diesem Bereich können Sie Ihr eigenes Konto nicht ändern",
-      "email_activation_unverified": "Dieses Mitglied hat den Aktivierungslink f?r die E-Mail noch nicht abgeschlossen. Senden Sie die Best?tigungs-E-Mail erneut, damit das Konto aktiviert werden kann.",
-      "email_activation_verified": "Dieses Mitglied hat die E-Mail-Aktivierung abgeschlossen und kann die E-Mail-Verifizierungspr?fung beim Anmelden bestehen.",
+      "email_activation_unverified": "Dieses Mitglied hat den Aktivierungslink für die E-Mail noch nicht abgeschlossen. Senden Sie die Bestätigungs-E-Mail erneut, damit das Konto aktiviert werden kann.",
+      "email_activation_verified": "Dieses Mitglied hat die E-Mail-Aktivierung abgeschlossen und kann die E-Mail-Verifizierungsprüfung beim Anmelden bestehen.",
       "global_super_admin": "Gewährt vollen Zugriff für alle Mandanten auf der Plattform",
       "municipal_announcer": "Beiträge dieses Benutzers werden mit einem offiziellen Abzeichen angezeigt und oben im Feed angeheftet",
       "tenant_super_admin": "Gewährt vollständigen Administratorzugriff innerhalb dieses Mandanten"
@@ -409,8 +409,8 @@
       "tenant_super_admin_revoked": "Der Superadministrator des Mieters wurde widerrufen",
       "update_failed": "Aktualisierung fehlgeschlagen",
       "update_success": "Update erfolgreich",
-      "verification_email_failed": "Best?tigungs-E-Mail konnte nicht gesendet werden",
-      "verification_email_sent": "Best?tigungs-E-Mail gesendet",
+      "verification_email_failed": "Bestätigungs-E-Mail konnte nicht gesendet werden",
+      "verification_email_sent": "Bestätigungs-E-Mail gesendet",
       "welcome_email_failed": "Willkommens-E-Mail konnte nicht gesendet werden",
       "welcome_email_sent": "Willkommens-E-Mail gesendet"
     },

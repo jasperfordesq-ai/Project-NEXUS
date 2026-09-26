@@ -235,7 +235,7 @@
       "manage": "Maneggio",
       "recheck_badges": "Ricontrolla i badge",
       "remove_badge": "Rimuovi distintivo",
-      "resend_verification_email": "Invia di nuovo l?email di verifica",
+      "resend_verification_email": "Invia di nuovo l’email di verifica",
       "resend_welcome_email": "Invia nuovamente l'e-mail di benvenuto",
       "return_to_list": "Ritorna all'elenco",
       "save_changes": "Salva modifiche",
@@ -264,8 +264,8 @@
     "descriptions": {
       "balance_amount": "Utilizzare valori negativi per detrarre crediti di tempo da questo membro",
       "cannot_modify_self": "Non puoi modificare il tuo account da questo pannello",
-      "email_activation_unverified": "Questo membro non ha ancora completato il link di attivazione email. Invia di nuovo l?email di verifica cos? potr? completare l?attivazione dell?account.",
-      "email_activation_verified": "Questo membro ha completato l?attivazione email e pu? superare il controllo di verifica email all?accesso.",
+      "email_activation_unverified": "Questo membro non ha ancora completato il link di attivazione email. Invia di nuovo l’email di verifica così potrà completare l’attivazione dell’account.",
+      "email_activation_verified": "Questo membro ha completato l’attivazione email e può superare il controllo di verifica email all’accesso.",
       "global_super_admin": "Garantisce l'accesso completo a tutti i tenant sulla piattaforma",
       "municipal_announcer": "I post di questo utente visualizzeranno un badge ufficiale e verranno fissati nella parte superiore del feed",
       "tenant_super_admin": "Concede l'accesso amministrativo completo all'interno di questo tenant"
@@ -389,7 +389,7 @@
       "balance_adjusted": "Saldo rettificato",
       "balance_failed": "Saldo non riuscito",
       "balance_invalid": "Saldo non valido",
-      "email_already_activated": "L?email ? gi? attivata",
+      "email_already_activated": "L’email è già attivata",
       "generic_error": "Si è verificato un errore",
       "global_super_admin_failed": "Impossibile aggiornare lo stato di super amministratore globale",
       "global_super_admin_granted": "Super amministratore globale concesso",
@@ -409,7 +409,7 @@
       "tenant_super_admin_revoked": "Super amministratore dell'inquilino revocato",
       "update_failed": "Aggiornamento non riuscito",
       "update_success": "Aggiornamento riuscito",
-      "verification_email_failed": "Impossibile inviare l?email di verifica",
+      "verification_email_failed": "Impossibile inviare l’email di verifica",
       "verification_email_sent": "Email di verifica inviata",
       "welcome_email_failed": "Impossibile inviare l'e-mail di benvenuto",
       "welcome_email_sent": "Email di benvenuto inviata"

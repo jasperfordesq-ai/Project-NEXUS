@@ -529,7 +529,7 @@
       "empty": "Er zijn geen mensen die aan deze filters voldoen.",
       "load_error_title": "Kan evenementmensen niet laden",
       "load_error_desc": "De werkruimte Personen kan niet worden geladen. Probeer het opnieuw.",
-      "pagination_summary": "{{start}}?{{end}} van {{total}}",
+      "pagination_summary": "{{start}}–{{end}} van {{total}}",
       "pagination_aria": "Pagina's met evenementenmensen",
       "history_title": "Geschiedenis voor {{name}}",
       "history_loading": "Geschiedenis laden...",

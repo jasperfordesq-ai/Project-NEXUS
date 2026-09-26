@@ -424,7 +424,7 @@
     "authority_expiry_label": "Verstrijken van het lidmaatschap van de autoriteit",
     "authority_expiry_help": "Optioneel voor regelingen zonder wettelijke vervaldatum.",
     "authority_expiry_required_help": "Vereist wanneer PVG is geselecteerd. Voer de vervaldatum van het Disclosure Scotland-lidmaatschap in.",
-    "details_title": "Certificeringsdetails ? {{name}}",
+    "details_title": "Certificeringsdetails — {{name}}",
     "no_private_notes": "Er zijn geen privéaantekeningen opgenomen.",
     "not_applicable": "Niet van toepassing",
     "close": "Close",

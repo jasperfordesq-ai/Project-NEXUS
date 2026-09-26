@@ -419,8 +419,8 @@
         "waitlisted": "キャンセル待ちリストに登録されました",
         "checked_in": "チェックインしました",
         "checked_out": "チェックアウトしました",
-        "no_show": "??",
-        "attended": "????"
+        "no_show": "欠席",
+        "attended": "出席済み"
       },
       "invite_title": "メンバーを招待する",
       "invite_description": "メンバー ディレクトリを検索し、1 回の操作で最大 100 人のメンバーを招待します。",
@@ -432,7 +432,7 @@
       "invite_search_error": "メンバー検索はできません。もう一度試してください。",
       "no_invite_results": "一致するメンバーが見つかりませんでした。",
       "invite_results_aria": "招待状の検索結果",
-      "invite_selected": "??????????? ({{count}})",
+      "invite_selected": "選択した人を招待 ({{count}})",
       "invite_success": "{{count}} 件の招待は正常に処理されました。",
       "invite_error": "招待状を処理できませんでした。",
       "search_label": "人を検索する",
@@ -453,21 +453,21 @@
       "filter_options": {
         "all": "すべて",
         "none": "なし",
-        "invited": "????",
+        "invited": "招待済み",
         "pending": "保留中",
         "confirmed": "確認済み",
         "declined": "拒否されました",
         "cancelled": "キャンセル",
         "active": "アクティブ",
-        "waiting": "???",
+        "waiting": "待機中",
         "offered": "提供場所",
         "accepted": "承認されました",
         "expired": "期限切れ",
         "not_checked_in": "チェックインされていません",
         "checked_in": "チェックインしました",
         "checked_out": "チェックアウトしました",
-        "attended": "????",
-        "no_show": "??",
+        "attended": "出席済み",
+        "no_show": "欠席",
         "interested": "興味あり"
       },
       "selected_count": "{{count}} が選択されました",
@@ -523,15 +523,15 @@
         "support_notes": "健康、アクセシビリティ、宿泊施設、および個人的なサポートに関するメモ",
         "audit_metadata": "内部監査メタデータ、スタッフの理由、および運用メモ"
       },
-      "export_cancel": "?????",
+      "export_cancel": "キャンセル",
       "export_confirm": "プライバシーに配慮した CSV をダウンロードする",
       "loading": "イベント参加者を読み込み中...",
       "empty": "これらのフィルターに一致する人はいません。",
       "load_error_title": "イベント参加者を読み込めません",
       "load_error_desc": "People ワークスペースをロードできませんでした。もう一度試してください。",
-      "pagination_summary": "{{total}}??{{start}}?{{end}}?",
+      "pagination_summary": "{{total}}件中{{start}}–{{end}}件",
       "pagination_aria": "イベント人物ページ",
-      "history_title": "{{name}}???",
+      "history_title": "{{name}}の履歴",
       "history_loading": "履歴を読み込んでいます...",
       "history_error": "この履歴は読み込めませんでした。",
       "history_empty": "履歴エントリは返されませんでした。",
@@ -549,7 +549,7 @@
         "none": "なし",
         "registration": {
           "none": "未登録",
-          "invited": "????",
+          "invited": "招待済み",
           "pending": "保留中",
           "confirmed": "確認済み",
           "declined": "拒否されました",
@@ -557,7 +557,7 @@
         },
         "waitlist": {
           "none": "順番待ちリストに登録されていません",
-          "waiting": "???",
+          "waiting": "待機中",
           "offered": "提供場所",
           "accepted": "承認されました",
           "expired": "期限切れ",
@@ -568,8 +568,8 @@
           "not_checked_in": "チェックインされていません",
           "checked_in": "チェックインしました",
           "checked_out": "チェックアウトしました",
-          "attended": "????",
-          "no_show": "??"
+          "attended": "出席済み",
+          "no_show": "欠席"
         }
       }
     },

@@ -519,8 +519,8 @@
   },
   "shared": {
     "loading": "جارٍ التحميل",
-    "help": "??????",
-    "open_page_help": "??? ?????? ??????",
+    "help": "المساعدة",
+    "open_page_help": "فتح مساعدة الصفحة",
     "search": "يبحث...",
     "refresh": "ينعش",
     "total_count": "إجمالي{{count}}",

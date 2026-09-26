@@ -84,7 +84,7 @@
     "featured_image_format_hint": "JPEG, PNG, GIF o WebP fino a 10 MB",
     "featured_image_preview_alt": "Anteprima dell'immagine in evidenza",
     "featured_image_preview_empty": "Nessuna immagine in evidenza selezionata",
-    "featured_image_preview_unavailable": "L'anteprima dell'immagine non ? disponibile. Controlla l'URL o carica un'altra immagine.",
+    "featured_image_preview_unavailable": "L'anteprima dell'immagine non è disponibile. Controlla l'URL o carica un'altra immagine.",
     "featured_image_remove": "Rimuovi immagine in evidenza",
     "featured_image_size_error": "L'immagine in evidenza deve essere di 10 MB o meno.",
     "featured_image_type_error": "Scegli un'immagine JPEG, PNG, GIF o WebP.",

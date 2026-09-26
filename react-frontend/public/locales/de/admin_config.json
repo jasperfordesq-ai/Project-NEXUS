@@ -984,7 +984,7 @@
     "desc_newsletter": "E-Mail-Newsletter-Kampagnen, Abonnenten, Segmente und Analysen",
     "desc_partner_api": "Ermöglichen Sie externen Partnern die Integration mit diesem Mandanten über die Partner-API",
     "desc_regional_analytics": "Kostenpflichtiges regionales Analyseprodukt – monatliche Berichte für Kommunen und regionale Körperschaften",
-    "cost_warning": "Dieser Mandant ist für die Nutzung kostenpflichtiger Google-Dienste konfiguriert. Ist die automatische Vervollständigung von Google Places normalerweise der größte Kostentreiber? Sitzungen werden pro Tastendruck abgerechnet. Wechseln Sie zu Nominatim, um diese Rechnungskomponente vollständig zu entfernen.",
+    "cost_warning": "Dieser Mandant ist für die Nutzung kostenpflichtiger Google-Dienste konfiguriert. Die automatische Vervollständigung von Google Places ist normalerweise der größte Kostentreiber — Sitzungen werden pro Tastenfolge abgerechnet. Wechseln Sie zu Nominatim, um diese Rechnungskomponente vollständig zu entfernen.",
     "currently_serving": "Derzeit aktiv:",
     "status_autocomplete": "Autovervollständigung",
     "status_google_paid": "Google (kostenpflichtig)",

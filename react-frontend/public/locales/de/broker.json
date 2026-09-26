@@ -424,7 +424,7 @@
     "authority_expiry_label": "Ablauf der Mitgliedschaft in der Behörde",
     "authority_expiry_help": "Optional für Programme ohne gesetzliches Ablaufdatum.",
     "authority_expiry_required_help": "Erforderlich, wenn PVG ausgewählt ist. Geben Sie das Ablaufdatum der Disclosure Scotland-Mitgliedschaft ein.",
-    "details_title": "Zertifizierungsdetails ? {{name}}",
+    "details_title": "Zertifizierungsdetails — {{name}}",
     "no_private_notes": "Keine privaten Notizen aufgezeichnet.",
     "not_applicable": "Nicht zutreffend",
     "close": "Close",

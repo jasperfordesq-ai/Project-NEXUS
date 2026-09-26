@@ -520,7 +520,7 @@
   "shared": {
     "loading": "Lädt",
     "help": "Hilfe",
-    "open_page_help": "Seitenhilfe ?ffnen",
+    "open_page_help": "Seitenhilfe öffnen",
     "search": "Suchen...",
     "refresh": "Aktualisieren",
     "total_count": "{{count}}insgesamt",

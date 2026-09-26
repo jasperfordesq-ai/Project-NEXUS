@@ -432,7 +432,7 @@
     "authority_expiry_label": "Caducidad de la membresía de la autoridad",
     "authority_expiry_help": "Opcional para esquemas sin fecha de vencimiento legal.",
     "authority_expiry_required_help": "Requerido cuando se selecciona PVG. Ingrese la fecha de vencimiento de la membresía de Disclosure Scotland.",
-    "details_title": "Detalles de la certificaci?n ? {{name}}",
+    "details_title": "Detalles de la certificación — {{name}}",
     "no_private_notes": "No se registraron notas privadas.",
     "not_applicable": "No aplicable",
     "close": "Close",

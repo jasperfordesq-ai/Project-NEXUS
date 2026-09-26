@@ -440,7 +440,7 @@
     "authority_expiry_label": "Wygaśnięcie członkostwa w organie",
     "authority_expiry_help": "Opcjonalne w przypadku programów bez ustawowego terminu wygaśnięcia.",
     "authority_expiry_required_help": "Wymagane, jeśli wybrano PVG. Wprowadź datę wygaśnięcia członkostwa Disclosure Scotland.",
-    "details_title": "Szczeg??y certyfikacji ? {{name}}",
+    "details_title": "Szczegóły certyfikacji — {{name}}",
     "no_private_notes": "Nie zapisano żadnych prywatnych notatek.",
     "not_applicable": "Nie dotyczy",
     "close": "Close",

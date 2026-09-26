@@ -3,7 +3,7 @@
     "heading": "Match chaud trouvé !",
     "subheading": "Une liste compatible {{score}}% vient d'apparaître",
     "posted_by": "Publié par {{name}}",
-    "km_away": "? {{distance}} km"
+    "km_away": "à {{distance}} km"
   },
   "mutual_match": {
     "heading": "Match mutuel !",
@@ -95,7 +95,7 @@
     "heading_accepted": "Candidature acceptée !",
     "tenant_volunteering": "{{community}} Bénévolat",
     "approved_body": "Excellente nouvelle ! Votre candidature bénévole a été <strong style=\"color: #16a34a;\">approuvée</strong>.",
-    "label_opportunity": "Opportunit?",
+    "label_opportunity": "Opportunité",
     "approved_next": "Vous pouvez maintenant vous inscrire à des quarts de travail et commencer à enregistrer vos heures de bénévolat. Merci de faire une différence dans votre communauté!",
     "btn_view_opportunity": "Voir l'opportunité",
     "heading_declined": "Mise à jour des applications",

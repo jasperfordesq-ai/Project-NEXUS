@@ -424,7 +424,7 @@
     "authority_expiry_label": "当局のメンバーシップの有効期限",
     "authority_expiry_help": "法定有効期限のないスキームの場合はオプションです。",
     "authority_expiry_required_help": "PVG が選択されている場合は必須です。 Disclosure Scotland メンバーシップの有効期限日を入力します。",
-    "details_title": "????? ? {{name}}",
+    "details_title": "認定の詳細 — {{name}}",
     "no_private_notes": "個人的なメモは記録されていません。",
     "not_applicable": "適用できない",
     "close": "Close",

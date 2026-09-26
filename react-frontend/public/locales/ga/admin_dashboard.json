@@ -47,7 +47,7 @@
     "orgs_pending_one": "{{count}}Eagraíocht ar Feitheamh",
     "orgs_pending_other": "{{count}}Eagraíochtaí ar Feitheamh",
     "orgs_pending_text": "Eagraíochtaí deonacha ag fanacht le ceadú",
-    "review": "Athbhreithni?"
+    "review": "Athbhreithniú"
   },
   "modules": {
     "section_title": "Modúil Ardáin",

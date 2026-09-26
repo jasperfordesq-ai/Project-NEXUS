@@ -432,7 +432,7 @@
     "authority_expiry_label": "Expiração da associação à autoridade",
     "authority_expiry_help": "Facultativo para regimes sem prazo de validade legal.",
     "authority_expiry_required_help": "Obrigatório quando PVG é selecionado. Insira a data de expiração da associação ao Disclosure Scotland.",
-    "details_title": "Detalhes da certifica??o ? {{name}}",
+    "details_title": "Detalhes da certificação — {{name}}",
     "no_private_notes": "Nenhuma nota privada registrada.",
     "not_applicable": "Não aplicável",
     "close": "Close",

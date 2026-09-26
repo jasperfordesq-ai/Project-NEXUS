@@ -428,7 +428,7 @@
         "waitlisted": "Na lista de espera",
         "checked_in": "Check-in",
         "checked_out": "Check-out",
-        "no_show": "N?o compareceu",
+        "no_show": "Não compareceu",
         "attended": "Compareceu"
       },
       "invite_title": "Convidar membros",
@@ -476,7 +476,7 @@
         "checked_in": "Check-in",
         "checked_out": "Check-out",
         "attended": "Compareceu",
-        "no_show": "N?o compareceu",
+        "no_show": "Não compareceu",
         "interested": "Interessado"
       },
       "selected_count": "{{count}} selecionado",
@@ -538,9 +538,9 @@
       "empty": "Nenhuma pessoa corresponde a esses filtros.",
       "load_error_title": "Não foi possível carregar as pessoas do evento",
       "load_error_desc": "Não foi possível carregar o espaço de trabalho Pessoas. Por favor, tente novamente.",
-      "pagination_summary": "{{start}}?{{end}} de {{total}}",
+      "pagination_summary": "{{start}}–{{end}} de {{total}}",
       "pagination_aria": "Páginas de pessoas do evento",
-      "history_title": "Hist?rico de {{name}}",
+      "history_title": "Histórico de {{name}}",
       "history_loading": "Carregando histórico...",
       "history_error": "Este histórico não pôde ser carregado.",
       "history_empty": "Nenhuma entrada de histórico foi retornada.",
@@ -578,7 +578,7 @@
           "checked_in": "Check-in",
           "checked_out": "Check-out",
           "attended": "Compareceu",
-          "no_show": "N?o compareceu"
+          "no_show": "Não compareceu"
         }
       }
     },

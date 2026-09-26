@@ -438,7 +438,7 @@
         "checked_in": "Zameldowałem się",
         "checked_out": "Sprawdzone",
         "no_show": "Nieobecny",
-        "attended": "Obecno?? potwierdzona"
+        "attended": "Obecność potwierdzona"
       },
       "invite_title": "Zaproś członków",
       "invite_description": "Przeszukaj katalog członków i zaproś do 100 członków w jednej operacji.",
@@ -450,7 +450,7 @@
       "invite_search_error": "Wyszukiwanie członków jest niedostępne. Spróbuj ponownie.",
       "no_invite_results": "Nie znaleziono pasujących członków.",
       "invite_results_aria": "Wyniki wyszukiwania zaproszeń",
-      "invite_selected": "Zapro? wybrane osoby ({{count}})",
+      "invite_selected": "Zaproś wybrane osoby ({{count}})",
       "invite_success": "Zaproszenia {{count}} zostały przetworzone pomyślnie.",
       "invite_error": "Nie udało się przetworzyć zaproszeń.",
       "search_label": "Szukaj ludzi",
@@ -484,7 +484,7 @@
         "not_checked_in": "Nie zameldowany",
         "checked_in": "Zameldowałem się",
         "checked_out": "Sprawdzone",
-        "attended": "Obecno?? potwierdzona",
+        "attended": "Obecność potwierdzona",
         "no_show": "Nieobecny",
         "interested": "Zainteresowany"
       },
@@ -547,9 +547,9 @@
       "empty": "Żadna osoba nie pasuje do tych filtrów.",
       "load_error_title": "Nie można wczytać osób biorących udział w wydarzeniu",
       "load_error_desc": "Nie można załadować obszaru roboczego Osoby. Spróbuj ponownie.",
-      "pagination_summary": "{{start}}?{{end}} z {{total}}",
+      "pagination_summary": "{{start}}–{{end}} z {{total}}",
       "pagination_aria": "Strony z wydarzeniami dla osób",
-      "history_title": "Historia u?ytkownika {{name}}",
+      "history_title": "Historia użytkownika {{name}}",
       "history_loading": "Ładowanie historii...",
       "history_error": "Nie można wczytać tej historii.",
       "history_empty": "Nie zwrócono żadnych wpisów historii.",
@@ -586,7 +586,7 @@
           "not_checked_in": "Nie zameldowany",
           "checked_in": "Zameldowałem się",
           "checked_out": "Sprawdzone",
-          "attended": "Obecno?? potwierdzona",
+          "attended": "Obecność potwierdzona",
           "no_show": "Nieobecny"
         }
       }

@@ -456,7 +456,7 @@
     "authority_expiry_label": "انتهاء عضوية الهيئة",
     "authority_expiry_help": "اختياري للمخططات التي ليس لها تاريخ انتهاء قانوني.",
     "authority_expiry_required_help": "مطلوب عند تحديد PVG. أدخل تاريخ انتهاء صلاحية عضوية الإفصاح في اسكتلندا.",
-    "details_title": "?????? ??????? ? {{name}}",
+    "details_title": "تفاصيل الشهادة — {{name}}",
     "no_private_notes": "لم يتم تسجيل أي ملاحظات خاصة.",
     "not_applicable": "لا ينطبق",
     "close": "Close",
