@@ -396,6 +396,7 @@ export function NewsletterActivity() {
                         size="sm"
                         color={event.action_type === 'open' ? 'accent' : 'success'}
                         variant="soft"
+                        className="whitespace-nowrap"
                         startContent={event.action_type === 'open' ? <Eye size={12} /> : <MousePointer size={12} />}
                       >
                         {event.action_type === 'open' ? t('newsletters.action_opened') : t('newsletters.action_clicked')}
