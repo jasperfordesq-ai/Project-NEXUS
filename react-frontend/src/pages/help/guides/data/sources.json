@@ -1,0 +1,371 @@
+{
+  "//": "Help Centre article -> the files its text depends on, and the commit it was last checked against. See scripts/check-help-staleness.mjs and docs/TESTING.md. Keys are <audience>/<section>/<article>; add entries as articles are checked.",
+  "admins/admin_records/admin_activity_log": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminDashboardController.php",
+      "react-frontend/public/locales/en/admin_system.json",
+      "react-frontend/src/admin/components/AdminSidebar.tsx",
+      "react-frontend/src/admin/modules/system/ActivityLog.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "admins/admin_records/admin_consent_records": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminEnterpriseController.php",
+      "react-frontend/public/locales/en/admin_enterprise.json",
+      "react-frontend/src/admin/modules/enterprise/GdprConsentTypes.tsx",
+      "react-frontend/src/admin/modules/enterprise/GdprConsents.tsx",
+      "routes/api.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "admins/admin_records/admin_data_retention": {
+    "sources": [
+      "app/Services/RetentionPolicyService.php",
+      "bootstrap/app.php",
+      "react-frontend/public/locales/en/admin_system.json",
+      "react-frontend/src/admin/modules/system/RetentionPolicies.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "admins/admin_records/admin_gdpr_audit_log": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminEnterpriseController.php",
+      "app/Services/Enterprise/GdprService.php",
+      "react-frontend/public/locales/en/admin_enterprise.json",
+      "react-frontend/src/admin/modules/enterprise/GdprAuditLog.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_exchanges/broker_approve_exchange": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminBrokerController.php",
+      "app/Services/ExchangeWorkflowService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/public/locales/en/exchanges.json",
+      "react-frontend/src/broker/pages/ExchangeDetailPage.tsx",
+      "react-frontend/src/broker/pages/ExchangesPage.tsx",
+      "react-frontend/src/pages/exchanges/ExchangeDetailPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_exchanges/broker_insurance": {
+    "sources": [
+      "app/Http/Controllers/Api/ExchangesController.php",
+      "app/Services/BrokerControlConfigService.php",
+      "app/Services/ExchangeWorkflowService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/src/broker/pages/InsuranceCertificatesPage.tsx",
+      "react-frontend/src/pages/settings/SettingsPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_exchanges/broker_match_approvals": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminMatchingController.php",
+      "app/Services/MatchApprovalWorkflowService.php",
+      "app/Services/SafeguardingTriggerService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/public/locales/en/onboarding.json",
+      "react-frontend/public/locales/en/settings.json",
+      "react-frontend/src/broker/pages/MatchApprovalDetailPage.tsx",
+      "react-frontend/src/broker/pages/MatchApprovalsPage.tsx",
+      "react-frontend/src/broker/routes.tsx",
+      "react-frontend/src/pages/settings/tabs/SafeguardingTab.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_group_activities/broker_group_exchange_basics": {
+    "sources": [
+      "app/Http/Controllers/Api/GroupExchangeController.php",
+      "app/Services/GroupExchangeService.php",
+      "react-frontend/public/locales/en/group_exchanges.json",
+      "react-frontend/src/pages/group-exchanges/CreateGroupExchangePage.tsx",
+      "react-frontend/src/pages/group-exchanges/GroupExchangeDetailPage.tsx",
+      "react-frontend/src/routes/AppRoutes.tsx",
+      "routes/api.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_members/broker_approve_new_members": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Services/StartingBalanceService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/src/broker/pages/MembersPage.tsx",
+      "react-frontend/src/broker/pages/OnboardingPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_moderation/broker_feed_posts": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminFeedController.php",
+      "lang/en/emails_misc.json",
+      "react-frontend/public/locales/en/admin_moderation.json",
+      "react-frontend/src/admin/modules/moderation/FeedModeration.tsx",
+      "react-frontend/src/broker/pages/FeedModerationPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_role/broker_can_and_cannot": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminBrokerController.php",
+      "app/Http/Controllers/Api/AdminCommentsController.php",
+      "app/Http/Controllers/Api/AdminFeedController.php",
+      "app/Http/Controllers/Api/AdminOnboardingConfigController.php",
+      "app/Http/Controllers/Api/AdminReportsController.php",
+      "app/Http/Controllers/Api/AdminTimebankingController.php",
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Http/Controllers/Api/AdminVettingController.php",
+      "app/Http/Controllers/Api/WalletFeaturesController.php",
+      "app/Support/Authorization/AdminTier.php",
+      "react-frontend/src/broker/components/MemberDetailModal.tsx",
+      "react-frontend/src/broker/pages/BrokerConfigurationPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_role/broker_what_is_a_broker": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Http/Middleware/EnsureIsBrokerOrAdmin.php",
+      "app/Support/Authorization/AdminTier.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/src/broker/BrokerRoute.tsx",
+      "react-frontend/src/broker/components/BrokerSidebar.tsx",
+      "react-frontend/src/broker/pages/BrokerConfigurationPage.tsx",
+      "react-frontend/src/lib/access.ts"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_safeguarding/broker_message_review": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminBrokerController.php",
+      "app/Services/BrokerControlConfigService.php",
+      "app/Services/BrokerMessageVisibilityService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/public/locales/en/messages.json",
+      "react-frontend/src/broker/pages/MessageDetailPage.tsx",
+      "react-frontend/src/broker/pages/MessageReviewPage.tsx",
+      "react-frontend/src/pages/messages/ConversationPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_safeguarding/broker_review_message": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminBrokerController.php",
+      "app/Services/BrokerMessageVisibilityService.php",
+      "app/Services/MessageService.php",
+      "react-frontend/public/locales/en/broker.json",
+      "react-frontend/src/broker/pages/MessageDetailPage.tsx",
+      "react-frontend/src/broker/pages/MessageReviewPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/account_profile/editing_your_profile": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Services/UserService.php",
+      "react-frontend/src/broker/components/MemberDetailModal.tsx",
+      "react-frontend/src/pages/settings/SettingsPage.tsx",
+      "routes/api.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/account_profile/saved_items": {
+    "sources": [
+      "app/Services/BookmarkService.php",
+      "react-frontend/public/locales/en/social.json",
+      "react-frontend/src/pages/bookmarks/BookmarksPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/ai_assistant/ai_assistant_allowance": {
+    "sources": [
+      "app/Http/Controllers/Api/AiChatController.php",
+      "app/Models/AiUserLimit.php",
+      "react-frontend/src/pages/chat/AiChatPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/caring_community/caring_data_export": {
+    "sources": [
+      "app/Http/Controllers/Api/CaringCommunityApiController.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/caring_community/caring_hour_transfer": {
+    "sources": [
+      "app/Support/SecurityBounds.php",
+      "react-frontend/src/routes/AppRoutes.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/caring_community/caring_markt": {
+    "sources": [
+      "react-frontend/src/pages/caring-community/CaringCommunityPage.tsx",
+      "react-frontend/src/routes/AppRoutes.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/caring_community/caring_trust_tier": {
+    "sources": [
+      "app/Services/CaringCommunity/TrustTierService.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/events/events_attendance_credits": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminEventAttendanceRewardController.php",
+      "app/Services/EventAttendanceService.php",
+      "app/Services/EventCreditService.php",
+      "app/Services/WalletService.php",
+      "lang/en/api.php",
+      "react-frontend/public/locales/en/events.json"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/finding_people/matches": {
+    "sources": [
+      "app/Http/Controllers/Api/MatchingController.php",
+      "app/Services/CrossModuleMatchingService.php",
+      "react-frontend/public/locales/en/matches.json",
+      "react-frontend/src/pages/matches/MatchesPage.tsx",
+      "react-frontend/src/pages/matches/components/MatchCard.tsx",
+      "react-frontend/src/pages/matches/types.ts"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/getting_started/joining_your_community": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Services/RegistrationService.php",
+      "app/Services/UserService.php",
+      "react-frontend/src/broker/components/MemberDetailModal.tsx",
+      "react-frontend/src/pages/auth/RegisterPage.tsx",
+      "routes/api.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/jobs/finding_jobs": {
+    "sources": [
+      "app/Services/JobVacancyService.php",
+      "react-frontend/public/locales/en/jobs.json"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/jobs/job_posting_limits": {
+    "sources": [
+      "app/Services/JobConfigurationService.php",
+      "app/Services/JobVacancyService.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/marketplace/buying_an_item": {
+    "sources": [
+      "app/Services/MarketplaceOrderService.php",
+      "app/Services/MarketplaceTimeCreditSettlementService.php",
+      "react-frontend/public/locales/en/marketplace.json",
+      "react-frontend/src/components/marketplace/BuyNowButton.tsx",
+      "react-frontend/src/pages/marketplace/MarketplaceListingPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/marketplace/marketplace_listing_limits": {
+    "sources": [
+      "app/Http/Controllers/Api/MarketplaceListingController.php",
+      "app/Services/MarketplaceListingService.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/marketplace/marketplace_orders": {
+    "sources": [
+      "app/Http/Controllers/Api/MarketplaceOrderController.php",
+      "app/Services/MarketplaceDisputeService.php",
+      "app/Services/MarketplaceTimeCreditSettlementService.php",
+      "react-frontend/public/locales/en/marketplace.json",
+      "react-frontend/src/pages/marketplace/BuyerOrdersPage.tsx",
+      "react-frontend/src/pages/marketplace/SellerOrdersPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/privacy_safety/contact_details_private": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminUsersController.php",
+      "app/Services/TenantVisibilityService.php",
+      "app/Services/UserService.php",
+      "react-frontend/src/broker/components/MemberDetailModal.tsx",
+      "routes/api.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/privacy_safety/muting_members": {
+    "sources": [
+      "app/Http/Controllers/Api/SocialController.php",
+      "app/Services/ExploreService.php",
+      "app/Services/FeedService.php",
+      "app/Services/NotificationDispatcher.php",
+      "react-frontend/public/locales/en/feed.json"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/privacy_safety/safeguarding_preferences": {
+    "sources": [
+      "app/Http/Controllers/Api/AdminMatchingController.php",
+      "app/Http/Controllers/Api/SafeguardingMemberController.php",
+      "app/Services/ExchangeWorkflowService.php",
+      "app/Services/GroupExchangeService.php",
+      "app/Services/MatchApprovalWorkflowService.php",
+      "app/Services/SafeguardingInteractionPolicy.php",
+      "app/Services/SafeguardingPreferenceService.php",
+      "app/Services/SafeguardingTriggerService.php",
+      "react-frontend/public/locales/en/onboarding.json",
+      "react-frontend/public/locales/en/settings.json",
+      "react-frontend/src/pages/onboarding/SafeguardingStep.tsx",
+      "react-frontend/src/pages/settings/tabs/SafeguardingTab.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/recognition/recognition_badges": {
+    "sources": [
+      "react-frontend/public/locales/en/gamification.json",
+      "react-frontend/src/pages/achievements/AchievementsPage.tsx",
+      "react-frontend/src/pages/members/MembersPage.tsx",
+      "react-frontend/src/pages/profile/ProfilePage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/recognition/venue_visit_xp": {
+    "sources": [
+      "app/Services/GamificationService.php",
+      "app/Services/PartnerVenueVisitService.php"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/security_signin/signing_in": {
+    "sources": [
+      "react-frontend/public/locales/en/auth.json",
+      "react-frontend/public/locales/en/common.json",
+      "react-frontend/src/components/auth/OAuthButtons.tsx",
+      "react-frontend/src/components/auth/SsoButtons.tsx",
+      "react-frontend/src/pages/auth/LoginPage.tsx",
+      "react-frontend/src/pages/settings/tabs/ConnectedAccountsTab.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/volunteering/logging_volunteer_hours": {
+    "sources": [
+      "app/Services/CaringCommunityWorkflowPolicyService.php",
+      "app/Services/VolunteerService.php",
+      "lang/en/api.php",
+      "react-frontend/src/pages/volunteering/VolunteeringPage.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "members/volunteering/volunteer_training_and_incidents": {
+    "sources": [
+      "react-frontend/public/locales/en/volunteering.json",
+      "react-frontend/src/pages/volunteering/SafeguardingTab.tsx"
+    ],
+    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  }
+}

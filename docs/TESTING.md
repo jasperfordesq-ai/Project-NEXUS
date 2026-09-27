@@ -1,6 +1,6 @@
 # Testing
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-09-27
 
 This page explains what each test layer proves and where the remaining test-documentation risk sits.
 
@@ -97,6 +97,58 @@ Firefox, and mobile projects. Run it only through
 and requires an explicit opt-in for any other non-loopback fixture target. CI
 runs it against a disposable database with CI-local actors, not repository or
 environment secrets.
+
+## Help Centre guides
+
+The Help Centre (`/help`, and `/broker/help` inside the Broker Panel) is a set of built-in
+guides for three audiences: members, brokers and coordinators, and community admins. It is
+shown only for the features a community has switched on. The phone app shows the members'
+guide too (`mobile/lib/help/`), fetching the same text from the website.
+
+Where things live:
+
+| What | Where |
+| --- | --- |
+| Structure: sections, articles, order, icons, feature switches, the page each article is about | `react-frontend/src/pages/help/guides/data/{members,brokers,admins}.registry.json` |
+| Text, in every language | `react-frontend/public/locales/<lang>/help_{members,brokers,admins}.json`; page chrome in `help_centre.json` |
+| Body format (paragraphs, `##`, `-`, `1.`, `>`, `**bold**`, internal links — never HTML) | `react-frontend/src/pages/help/guides/HelpBody.tsx` |
+| The app's copy of the members' structure | `mobile/lib/help/membersRegistry.json`, kept identical by `mobile/lib/help/guides.test.ts` |
+| Which code each article describes, and when it was last checked | `react-frontend/src/pages/help/guides/data/sources.json` |
+
+Three checks guard the guides:
+
+1. **Integrity** — `src/pages/help/guides/guides.integrity.test.ts`. Every registered article has
+   text in every language and nothing is unregistered; feature switches exist; links stay inside
+   the app and are hidden whenever the page they point at is switched off; translations keep the
+   English links, lists and steps. Runs in the React suite.
+2. **Labels** — `src/pages/help/guides/guides.labels.test.ts`, rules in `labelCheck.ts`. Every
+   `**bold**` span must be words the app really shows in that language: it is looked up in the
+   locale's other UI translation files, ignoring spacing and a trailing colon or ellipsis,
+   otherwise exactly (capitals count). Placeholder texts (`{{count}} left today`) match filled-in
+   labels; a bolded sentence ending in a full stop is emphasis and is skipped; a bold guide title is
+   a cross-reference and passes. Genuine exceptions go in `data/label-allowlist.json` with a
+   reason. Known failures are in `data/label-baseline.json`, which may only shrink: a new unmatched
+   label fails, and so does a baseline line that is fixed. A pass proves the words exist in the
+   interface, not that they are on the page the article describes. Labels that only the server or
+   the phone app produces are not in these files and show as failures until allowlisted.
+   Regenerate the baseline, after checking the change is an improvement, from `react-frontend/`
+   with `node scripts/write-help-label-baseline.mjs` (`--report <file>` also writes every failure
+   for translators).
+3. **Staleness** — `npm run check:help-staleness` (`scripts/check-help-staleness.mjs`, tests in
+   `npm run test:help-staleness`). Each `sources.json` entry maps an article
+   (`<audience>/<section>/<article>`) to the files it depends on and the full commit sha its text
+   was last checked at. The check lists articles whose sources changed since that commit, articles
+   with no entry, sources that no longer exist, and entries that are malformed or point at an
+   article that no longer exists. `.github/help-staleness-baseline.json` holds the drift accepted
+   today; only new drift, or a baseline line that no longer applies, fails. A verified commit that
+   is not in the clone is reported as UNAVAILABLE (exit 2), never as a pass — CI needs a full
+   history checkout (`fetch-depth: 0`).
+
+The staleness workflow: when an article has been read against its sources and is right, run
+`node scripts/check-help-staleness.mjs --mark-verified <audience>/<section>/<article>` (sets
+`verified` to HEAD) and commit `sources.json` with the text change. When a change to a page makes
+an article stale, update the article, then mark it verified. Accept existing drift only with
+`--write-baseline`, and only after looking at what it accepts.
 
 ## Generated Reports
 

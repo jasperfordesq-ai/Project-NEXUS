@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `npm run check:help-staleness` lists Help Centre articles whose underlying code has changed since the article was last checked against it, using a record of each article's source files and the commit it was verified at (`react-frontend/src/pages/help/guides/data/sources.json`). It fails only on new, unreviewed drift. Not yet part of CI.
+
 - Help Centre label check: an automated test that every bold on-screen label quoted in a guide exists in the app's own text for that language, so a guide cannot silently name a button the reader will not find. Labels already known to be missing are listed per language and may only go down.
 
 - Admin Help Centre guide: a new "Privacy, records and data" topic (Activity Log, GDPR dashboard, consent records, GDPR audit log, data retention) and an article on message translation settings, each checked against the code; settings on those pages that currently have no effect are not described. All eleven languages, AI-translated and not yet native-reviewed.
