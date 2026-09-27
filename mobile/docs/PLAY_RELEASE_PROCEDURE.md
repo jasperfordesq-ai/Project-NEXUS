@@ -424,6 +424,27 @@ forced 35-job CI suite passed. The guarded signed build completed in **2m 49s**.
   at **10:59 AM**. Managed publishing was off, so approval released it automatically.
   No physical-device walkthrough of this exact artifact was performed in this session.
 
+On **2026-09-27**, build **20 / 1.8.1** was built locally from exact source commit
+`86adbf3391972f5c6b6cf863adda734bcfb6eda0` after all exact-commit workflow groups
+passed. The guarded signed build completed in **2m 23s**. Its compiled manifest was
+independently verified as version code 20 after the release recipe was repaired to
+catch a repeated-code bundle before archiving. The 96,305,250-byte AAB has SHA-256
+`EDBACE9FEC8106D77833CEEFB333234DE6813D9781E0A3F4B04AD8CFB4520CFE` and is filed as
+`releases/android/play/timebank-global-1.8.1-build20.aab`.
+
+- **Internal testing:** published at **6:13 PM**. Play verified API level 24+, target
+  SDK 36, four screen layouts, four ABIs and six required features, with mapping and
+  native debug symbols attached. The review table reported **0 devices lost** in every
+  category (Phone 12,264 / Tablet 6,450 / TV 3 / Chromebook 10 / Android XR 1), a
+  33 MB new install and a 108 KB update.
+- **Production:** promoted at 100.0% to all targeted countries, covering six active
+  installs. The pre-submit quick checks completed with "Your changes can now be sent
+  for review" and no issue.
+- **Submission 15** was submitted September 27, 2026 at **6:25 PM**. It remains **In
+  review** at the time of this record. Managed publishing is off, so approval will
+  publish it automatically. `live-store-build.json` correctly remains on build 19
+  until Play confirms publication.
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*
