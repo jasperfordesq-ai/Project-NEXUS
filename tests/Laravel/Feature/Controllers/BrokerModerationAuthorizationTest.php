@@ -6,7 +6,11 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\FeedPost;
+use App\Models\Goal;
+use App\Models\Post;
 use App\Models\User;
+use App\Models\VolOpportunity;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -176,7 +180,10 @@ class BrokerModerationAuthorizationTest extends TestCase
 
     public function test_broker_can_resolve_a_report_filed_by_another_member(): void
     {
-        $id = $this->seedReport($this->member());
+        $post = FeedPost::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $this->member()->id,
+        ]);
+        $id = $this->seedReport($this->member(), 'post', (int) $post->id);
         Sanctum::actingAs($this->broker());
 
         $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(200);
@@ -311,6 +318,68 @@ class BrokerModerationAuthorizationTest extends TestCase
 
         $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(403);
         $this->assertSame('open', DB::table('reports')->where('id', $id)->value('status'));
+    }
+
+    public function test_broker_cannot_dismiss_a_members_report_about_their_public_goal(): void
+    {
+        $broker = $this->broker();
+        $reporter = $this->member();
+        $goal = Goal::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $broker->id,
+            'is_public' => true,
+        ]);
+        $reportId = $this->seedReport($reporter, 'goal', (int) $goal->id);
+
+        Sanctum::actingAs($broker);
+        $this->apiPost("/v2/admin/reports/{$reportId}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $reportId)->value('status'));
+    }
+
+    public function test_broker_cannot_close_reports_about_their_blog_or_volunteering_opportunity(): void
+    {
+        $broker = $this->broker();
+        $reporter = $this->member();
+        $blog = Post::factory()->forTenant($this->testTenantId)->published()->create(['author_id' => $broker->id]);
+        $opportunity = VolOpportunity::factory()->forTenant($this->testTenantId)->create(['created_by' => $broker->id]);
+        $blogReport = $this->seedReport($reporter, 'blog', (int) $blog->id);
+        $volunteerReport = $this->seedReport($reporter, 'volunteer', (int) $opportunity->id);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$blogReport}/resolve")->assertStatus(403);
+        $this->apiPost("/v2/admin/reports/{$volunteerReport}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $blogReport)->value('status'));
+        $this->assertSame('open', DB::table('reports')->where('id', $volunteerReport)->value('status'));
+    }
+
+    public function test_broker_can_resolve_a_report_about_another_members_goal(): void
+    {
+        $goal = Goal::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $this->member()->id,
+            'is_public' => true,
+        ]);
+        $reportId = $this->seedReport($this->member(), 'goal', (int) $goal->id);
+        Sanctum::actingAs($this->broker());
+
+        $this->apiPost("/v2/admin/reports/{$reportId}/resolve")->assertStatus(200);
+        $this->assertSame('resolved', DB::table('reports')->where('id', $reportId)->value('status'));
+    }
+
+    public function test_broker_cannot_dismiss_a_report_after_deleting_their_goal(): void
+    {
+        $broker = $this->broker();
+        $goal = Goal::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $broker->id,
+            'is_public' => true,
+        ]);
+        $reportId = $this->seedReport($this->member(), 'goal', (int) $goal->id);
+        $goal->delete();
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$reportId}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $reportId)->value('status'));
+
+        Sanctum::actingAs($this->admin());
+        $this->apiPost("/v2/admin/reports/{$reportId}/resolve")->assertStatus(200);
     }
 
     public function test_broker_cannot_close_a_report_about_a_review_they_wrote_or_received(): void
