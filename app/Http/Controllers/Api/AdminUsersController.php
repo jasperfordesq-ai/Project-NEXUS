@@ -39,11 +39,16 @@ class AdminUsersController extends BaseApiController
 
     public function __construct(
         private readonly GamificationService $gamificationService,
-        private readonly GdprService $gdprService,
         private readonly TenantSettingsService $tenantSettingsService,
         private readonly TokenService $tokenService,
         private readonly AuditLogService $auditLogService,
     ) {}
+
+    private function gdprServiceForCurrentTenant(): GdprService
+    {
+        // Controller construction may precede tenant middleware resolution.
+        return new GdprService($this->getTenantId());
+    }
 
     // =========================================================================
     // List & Show
@@ -619,8 +624,9 @@ class AdminUsersController extends BaseApiController
         try {
             $consentText = "Account created by administrator. User agrees to Terms of Service and Privacy Policy upon first login.";
             $consentVersion = '1.0';
-            $this->gdprService->recordConsent($newUserId, 'terms_of_service', true, $consentText, $consentVersion);
-            $this->gdprService->recordConsent($newUserId, 'privacy_policy', true, $consentText, $consentVersion);
+            $gdprService = $this->gdprServiceForCurrentTenant();
+            $gdprService->recordConsent($newUserId, 'terms_of_service', true, $consentText, $consentVersion);
+            $gdprService->recordConsent($newUserId, 'privacy_policy', true, $consentText, $consentVersion);
         } catch (\Throwable $e) {
             Log::warning('[AdminUsers] GDPR consent recording failed for admin-created user: ' . $e->getMessage());
         }
@@ -1394,7 +1400,7 @@ class AdminUsersController extends BaseApiController
         }
 
         try {
-            $consents = $this->gdprService->getUserConsents($id);
+            $consents = $this->gdprServiceForCurrentTenant()->getUserConsents($id);
 
             $formatted = array_map(fn($c) => [
                 'consent_type' => $c['consent_type_slug'] ?? $c['consent_type'] ?? '',

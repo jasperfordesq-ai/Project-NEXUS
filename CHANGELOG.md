@@ -221,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Bind member GDPR data requests, consent changes and account-erasure requests, plus administrator consent views and account-created consents, to the authenticated community after tenant resolution. These operations could otherwise use the platform default community when their controllers were constructed early (F-216).
+
 - The job-moderation administrator switch now governs job publication and review. A saved choice takes precedence over older tenant configuration, so enabling review in settings actually holds new and edited job ads for approval (F-215).
 
 - Job ads now return to moderation when an employer changes approved content. An open ad is removed from public view pending review; changes to a closed or draft ad invalidate its old approval before reopening. Resubmitting unchanged content leaves the approval intact (F-214).

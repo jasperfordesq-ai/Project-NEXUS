@@ -23,9 +23,15 @@ class GdprController extends BaseApiController
     protected bool $isV2Api = true;
 
     public function __construct(
-        private readonly GdprService $gdprService,
         private readonly TokenService $tokenService,
     ) {}
+
+    private function gdprServiceForCurrentTenant(): GdprService
+    {
+        // Laravel can construct the controller before tenant middleware runs.
+        // Bind this service after authentication has resolved the request tenant.
+        return new GdprService($this->getTenantId());
+    }
 
     /**
      * POST /api/v2/gdpr/consent
@@ -65,7 +71,7 @@ class GdprController extends BaseApiController
         }
 
         try {
-            $this->gdprService->updateUserConsent($userId, $consentType, $granted);
+            $this->gdprServiceForCurrentTenant()->updateUserConsent($userId, $consentType, $granted);
 
             return $this->respondWithData([
                 'updated' => true,
@@ -116,7 +122,7 @@ class GdprController extends BaseApiController
         try {
             $internalType = $typeMap[$type];
 
-            $result = $this->gdprService->createRequest($userId, $internalType, [
+            $result = $this->gdprServiceForCurrentTenant()->createRequest($userId, $internalType, [
                 'notes' => $notes,
             ]);
 
@@ -168,7 +174,7 @@ class GdprController extends BaseApiController
         }
 
         try {
-            $result = $this->gdprService->createRequest($userId, 'erasure', [
+            $result = $this->gdprServiceForCurrentTenant()->createRequest($userId, 'erasure', [
                 'notes' => $reason,
                 'metadata' => [
                     'feedback' => $feedback,
