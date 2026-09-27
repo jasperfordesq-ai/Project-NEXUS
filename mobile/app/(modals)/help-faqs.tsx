@@ -24,7 +24,8 @@ import { Ionicons } from '@/components/ui/Icon';
 import { getHelpFaqs, type HelpFaqCategory } from '@/lib/api/help';
 import { bodyToPlainText, getMembersGuide, visibleSections, type HelpGuideText } from '@/lib/help/guides';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useHelpGateContext } from '@/lib/help/useHelpGateContext';
+import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { toPlainText } from '@/lib/utils/plainText';
@@ -219,11 +220,11 @@ function HelpGuidesBlock({ guide, search }: { guide: HelpGuideText; search: stri
   const { t } = useTranslation(['profile']);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const { hasFeature, hasModule } = useTenant();
+  const gateContext = useHelpGateContext();
 
   const sections = useMemo(
-    () => visibleSections({ hasFeature, hasModule }).filter((section) => guide.sections[section.id]),
-    [guide, hasFeature, hasModule],
+    () => visibleSections(gateContext).filter((section) => guide.sections[section.id]),
+    [guide, gateContext],
   );
 
   const matches = useMemo(() => {

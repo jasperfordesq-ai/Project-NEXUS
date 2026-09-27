@@ -29,7 +29,8 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import { getMembersGuide, parseHelpBody, parseInline, visibleSections, type HelpBlock } from '@/lib/help/guides';
 import { useApi } from '@/lib/hooks/useApi';
-import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
+import { useHelpGateContext } from '@/lib/help/useHelpGateContext';
+import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 
@@ -52,14 +53,14 @@ function HelpGuideScreen() {
   const articleId = one(params.article);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const { hasFeature, hasModule } = useTenant();
+  const gateContext = useHelpGateContext();
   const language = i18n.resolvedLanguage || i18n.language || 'en';
 
   const { data: guide, isLoading, error, refresh } = useApi(() => getMembersGuide(language), [language]);
 
   const section = useMemo(
-    () => visibleSections({ hasFeature, hasModule }).find((s) => s.id === sectionId) ?? null,
-    [hasFeature, hasModule, sectionId],
+    () => visibleSections(gateContext).find((s) => s.id === sectionId) ?? null,
+    [gateContext, sectionId],
   );
   const sectionText = guide?.sections[sectionId];
   const article = articleId ? section?.articles.find((a) => a.id === articleId) ?? null : null;

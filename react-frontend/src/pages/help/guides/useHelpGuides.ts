@@ -3,11 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTenant } from '@/contexts';
+import { useAuthOptional, useTenant } from '@/contexts';
+import { api } from '@/lib/api';
 import type { TenantFeatures, TenantModules } from '@/types/api';
-import { HELP_AUDIENCES, HELP_AUDIENCE_NAMESPACE, type HelpAudience, type HelpGateContext } from './types';
+import { HELP_AUDIENCES, HELP_AUDIENCE_NAMESPACE, type HelpAudience, type HelpGateContext, type HelpSetting } from './types';
 import { articleKey, sectionKey, visibleSections, type VisibleSection } from './registry';
 import { helpBodyToPlainText } from './HelpBody';
 
@@ -53,14 +54,66 @@ function hasWord(text: string, word: string): boolean {
   return false;
 }
 
+type HelpSettings = Partial<Record<HelpSetting, boolean>>;
+
+/**
+ * Community settings the guides depend on, fetched once per tenant and member
+ * (several Help components use this hook on one page). The exchange settings
+ * endpoint needs a signed-in member; signed out, or if it fails, the settings
+ * stay unknown and gated guides are shown rather than hidden.
+ */
+const settingsCache = new Map<string, Promise<HelpSettings>>();
+
+function loadSettings(key: string): Promise<HelpSettings> {
+  let pending = settingsCache.get(key);
+  if (!pending) {
+    pending = api
+      .get<{ exchange_workflow_enabled?: boolean }>('/v2/exchanges/config')
+      .then((result): HelpSettings => (
+        result.success && typeof result.data?.exchange_workflow_enabled === 'boolean'
+          ? { exchange_workflow: result.data.exchange_workflow_enabled }
+          : {}
+      ))
+      .catch((): HelpSettings => ({}));
+    settingsCache.set(key, pending);
+  }
+  return pending;
+}
+
+function useHelpSettings(): HelpSettings {
+  const { tenant } = useTenant();
+  const auth = useAuthOptional();
+  const signedIn = auth?.isAuthenticated ?? false;
+  const key = signedIn && tenant ? `${tenant.id}:${auth?.user?.id ?? ''}` : null;
+  const [settings, setSettings] = useState<HelpSettings>({});
+
+  useEffect(() => {
+    if (!key) {
+      setSettings({});
+      return;
+    }
+    let cancelled = false;
+    void loadSettings(key).then((loaded) => {
+      if (!cancelled) setSettings(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [key]);
+
+  return settings;
+}
+
 export function useHelpGuides() {
   const { t, i18n } = useTranslation(HELP_NAMESPACES);
   const { hasFeature, hasModule } = useTenant();
+  const settings = useHelpSettings();
 
   const gateContext = useMemo<HelpGateContext>(() => ({
     hasFeature: (feature) => hasFeature(feature as keyof TenantFeatures),
     hasModule: (module) => hasModule(module as keyof TenantModules),
-  }), [hasFeature, hasModule]);
+    hasSetting: (setting) => settings[setting] ?? true,
+  }), [hasFeature, hasModule, settings]);
 
   /** Text from an audience's guide namespace. */
   const guideText = useCallback(

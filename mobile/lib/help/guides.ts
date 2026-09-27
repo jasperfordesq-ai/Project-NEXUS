@@ -26,8 +26,11 @@
 import { APP_URL } from '@/lib/constants';
 import registryJson from './membersRegistry.json';
 
-export type HelpGateTerm = { feature: string } | { module: string };
-export type HelpGate = HelpGateTerm | { any: HelpGateTerm[] } | null;
+/** Community settings a guide can depend on that are not features or modules. */
+export type HelpSetting = 'exchange_workflow';
+export type HelpGateTerm = { feature: string } | { module: string } | { setting: HelpSetting };
+/** `any` opens when one part is open, `all` only when every part is. */
+export type HelpGate = HelpGateTerm | { any: HelpGate[] } | { all: HelpGate[] } | null;
 
 export interface HelpArticleEntry {
   id: string;
@@ -62,17 +65,22 @@ export interface HelpGuideText {
 export interface HelpGateContext {
   hasFeature: (name: string) => boolean;
   hasModule: (name: string) => boolean;
+  /** Whether a community setting is on. Unknown counts as on. */
+  hasSetting?: (name: HelpSetting) => boolean;
 }
 
 export const MEMBERS_REGISTRY = registryJson as HelpSectionEntry[];
 
 function termIsOpen(term: HelpGateTerm, ctx: HelpGateContext): boolean {
-  return 'feature' in term ? ctx.hasFeature(term.feature) : ctx.hasModule(term.module);
+  if ('feature' in term) return ctx.hasFeature(term.feature);
+  if ('module' in term) return ctx.hasModule(term.module);
+  return ctx.hasSetting?.(term.setting) ?? true;
 }
 
 export function isGateOpen(gate: HelpGate | undefined, ctx: HelpGateContext): boolean {
   if (!gate) return true;
-  if ('any' in gate) return gate.any.some((term) => termIsOpen(term, ctx));
+  if ('any' in gate) return gate.any.some((part) => isGateOpen(part, ctx));
+  if ('all' in gate) return gate.all.every((part) => isGateOpen(part, ctx));
   return termIsOpen(gate, ctx);
 }
 

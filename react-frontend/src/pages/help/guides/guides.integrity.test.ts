@@ -14,9 +14,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HELP_REGISTRY, isGateOpen } from './registry';
+import { HELP_REGISTRY, isGateOpen, visibleSections } from './registry';
 import { parseHelpBody } from './HelpBody';
-import { HELP_AUDIENCES, HELP_AUDIENCE_NAMESPACE, type HelpGate } from './types';
+import { HELP_AUDIENCES, HELP_AUDIENCE_NAMESPACE, HELP_SETTINGS, type HelpGate } from './types';
 
 const LOCALES_DIR = path.resolve(__dirname, '../../../../public/locales');
 const LOCALES = fs.readdirSync(LOCALES_DIR).filter((entry) =>
@@ -51,10 +51,62 @@ function interfaceKeys(name: string): Set<string> {
 const FEATURES = interfaceKeys('TenantFeatures');
 const MODULES = interfaceKeys('TenantModules');
 
-function gateNames(gate: HelpGate | undefined): Array<{ kind: 'feature' | 'module'; name: string }> {
+const SETTINGS = new Set<string>(HELP_SETTINGS);
+
+type GateKind = 'feature' | 'module' | 'setting';
+
+function gateNames(gate: HelpGate | undefined): Array<{ kind: GateKind; name: string }> {
   if (!gate) return [];
-  const terms = 'any' in gate ? gate.any : [gate];
-  return terms.map((term) => ('feature' in term ? { kind: 'feature', name: term.feature } : { kind: 'module', name: term.module }));
+  if ('any' in gate) return gate.any.flatMap(gateNames);
+  if ('all' in gate) return gate.all.flatMap(gateNames);
+  if ('feature' in gate) return [{ kind: 'feature', name: gate.feature }];
+  if ('module' in gate) return [{ kind: 'module', name: gate.module }];
+  return [{ kind: 'setting', name: gate.setting }];
+}
+
+const KNOWN: Record<GateKind, Set<string>> = { feature: FEATURES, module: MODULES, setting: SETTINGS };
+
+/**
+ * Switches a section/article is guaranteed to need: bare terms and `all` parts
+ * count; an `any` gate guarantees none of its parts on its own.
+ */
+function requiredGates(gate: HelpGate | undefined): string[] {
+  if (!gate) return [];
+  if ('all' in gate) return gate.all.flatMap(requiredGates);
+  if ('any' in gate) return gate.any.length === 1 ? requiredGates(gate.any[0]) : [];
+  if ('feature' in gate) return [`feature:${gate.feature}`];
+  if ('module' in gate) return [`module:${gate.module}`];
+  return [`setting:${gate.setting}`];
+}
+
+/**
+ * The member app's route table: path → the FeatureGate switches wrapping it.
+ * Read from source so a guide cannot outlive a page being put behind a switch.
+ */
+function routeGates(): Array<{ pattern: RegExp; path: string; gates: string[] }> {
+  const routes: Array<{ pattern: RegExp; path: string; gates: string[] }> = [];
+  for (const file of ['AppRoutes.tsx', 'PublicAppRoutes.tsx']) {
+    const source = fs.readFileSync(path.resolve(__dirname, '../../../routes', file), 'utf8');
+    for (const chunk of source.split(/(?=<Route\s)/)) {
+      const route = /^<Route\s+path="([^"]+)"/.exec(chunk);
+      if (!route) continue;
+      const gates = [...chunk.matchAll(/<FeatureGate\s+(feature|module)="([^"]+)"/g)].map((m) => `${m[1]}:${m[2]}`);
+      const routePath = `/${(route[1] ?? '').replace(/^\//, '')}`;
+      const pattern = new RegExp(`^${routePath.replace(/:[^/]+/g, '[^/]+').replace(/\*/g, '.*')}$`);
+      routes.push({ pattern, path: routePath, gates });
+    }
+  }
+  return routes;
+}
+
+const ROUTE_GATES = routeGates();
+
+function gatesForLink(link: string): string[] | null {
+  const clean = link.split(/[?#]/)[0]?.replace(/(.)\/$/, '$1') ?? link;
+  const exact = ROUTE_GATES.filter((r) => r.path === clean);
+  const matches = exact.length > 0 ? exact : ROUTE_GATES.filter((r) => r.pattern.test(clean));
+  if (matches.length === 0) return null;
+  return [...new Set(matches.flatMap((r) => r.gates))];
 }
 
 /** The parts of a body a translation must keep: links, and the shape of lists and steps. */
@@ -103,7 +155,7 @@ describe.each(HELP_AUDIENCES)('%s guide', (audience) => {
     for (const section of registry) {
       for (const entry of [section, ...section.articles]) {
         for (const { kind, name } of gateNames(entry.gate)) {
-          expect((kind === 'feature' ? FEATURES : MODULES).has(name), `${entry.id}: ${kind} ${name}`).toBe(true);
+          expect(KNOWN[kind].has(name), `${entry.id}: ${kind} ${name}`).toBe(true);
         }
       }
     }
@@ -121,6 +173,30 @@ describe.each(HELP_AUDIENCES)('%s guide', (audience) => {
         }
       }
     }
+  });
+
+  it('is hidden whenever a page it sends people to is switched off', () => {
+    const problems: string[] = [];
+    for (const section of registry) {
+      for (const article of section.articles) {
+        const have = new Set([...requiredGates(section.gate), ...requiredGates(article.gate)]);
+        const links = [
+          ...(article.link ? [article.link] : []),
+          ...bodyShape(english.sections[section.id]?.articles[article.id]?.body ?? '').links,
+        ].filter((link) => !/^\/(admin|broker|help|partners)(\/|$)/.test(link));
+        for (const link of links) {
+          const gates = gatesForLink(link);
+          if (gates === null) {
+            problems.push(`${section.id}.${article.id}: ${link} is not a page in the app`);
+            continue;
+          }
+          for (const gate of gates) {
+            if (!have.has(gate)) problems.push(`${section.id}.${article.id}: ${link} needs ${gate}`);
+          }
+        }
+      }
+    }
+    expect(problems).toEqual([]);
   });
 
   it.each(LOCALES.filter((locale) => locale !== 'en'))('is fully translated into %s, keeping links and structure', (locale) => {
@@ -147,6 +223,7 @@ describe('isGateOpen', () => {
   const ctx = {
     hasFeature: (name: string) => name === 'events',
     hasModule: (name: string) => name === 'wallet',
+    hasSetting: (name: string) => name !== 'exchange_workflow',
   };
 
   it('is open for ungated entries', () => {
@@ -164,5 +241,28 @@ describe('isGateOpen', () => {
   it('opens an any-gate when one switch is on', () => {
     expect(isGateOpen({ any: [{ feature: 'groups' }, { module: 'wallet' }] }, ctx)).toBe(true);
     expect(isGateOpen({ any: [{ feature: 'groups' }, { module: 'feed' }] }, ctx)).toBe(false);
+  });
+
+  it('opens an all-gate only when every switch is on', () => {
+    expect(isGateOpen({ all: [{ feature: 'events' }, { module: 'wallet' }] }, ctx)).toBe(true);
+    expect(isGateOpen({ all: [{ feature: 'events' }, { module: 'feed' }] }, ctx)).toBe(false);
+    expect(isGateOpen({ all: [{ module: 'wallet' }, { any: [{ feature: 'groups' }, { feature: 'events' }] }] }, ctx)).toBe(true);
+  });
+
+  it('follows a community setting', () => {
+    expect(isGateOpen({ setting: 'exchange_workflow' }, ctx)).toBe(false);
+    expect(isGateOpen({ all: [{ feature: 'events' }, { setting: 'exchange_workflow' }] }, ctx)).toBe(false);
+  });
+
+  it('hides the exchange guides when members cannot request exchanges', () => {
+    const allOn = { hasFeature: () => true, hasModule: () => true, hasSetting: () => true };
+    expect(visibleSections('members', allOn).map((s) => s.id)).toContain('exchanges');
+    expect(visibleSections('members', { ...allOn, hasSetting: () => false }).map((s) => s.id)).not.toContain('exchanges');
+  });
+
+  it('hides account guides when the Settings page is switched off', () => {
+    const settingsOff = { hasFeature: () => true, hasModule: (name: string) => name !== 'settings', hasSetting: () => true };
+    const security = visibleSections('members', settingsOff).find((s) => s.id === 'security_signin');
+    expect(security?.articles.map((a) => a.id)).not.toContain('changing_password');
   });
 });

@@ -29,18 +29,27 @@
       },
       {
         "id": "finding_your_way_around",
-        "link": "/dashboard"
+        "link": "/dashboard",
+        "gate": {
+          "module": "dashboard"
+        }
       },
       {
         "id": "using_on_your_phone",
         "link": "/install-app"
       },
       {
-        "id": "accessible_version"
+        "id": "accessible_version",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "language_and_appearance",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       }
     ]
   },
@@ -53,7 +62,14 @@
         "id": "editing_your_profile",
         "link": "/settings",
         "gate": {
-          "module": "profile"
+          "all": [
+            {
+              "module": "profile"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       },
       {
@@ -65,13 +81,23 @@
       },
       {
         "id": "skills_and_availability",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "why_you_are_not_listed",
         "link": "/members",
         "gate": {
-          "feature": "connections"
+          "all": [
+            {
+              "feature": "connections"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       },
       {
@@ -90,7 +116,10 @@
     "articles": [
       {
         "id": "signing_in",
-        "link": "/login"
+        "link": "/login",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "forgotten_password",
@@ -99,7 +128,10 @@
       },
       {
         "id": "changing_password",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "changing_email",
@@ -109,19 +141,36 @@
         "id": "two_step_verification",
         "link": "/settings",
         "gate": {
-          "feature": "two_factor_authentication"
+          "all": [
+            {
+              "feature": "two_factor_authentication"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       },
       {
         "id": "passkeys",
         "link": "/settings",
         "gate": {
-          "feature": "biometric_login"
+          "all": [
+            {
+              "feature": "biometric_login"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       },
       {
         "id": "someone_got_into_account",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       }
     ]
   },
@@ -133,28 +182,47 @@
       {
         "id": "contact_details_private",
         "link": "/messages",
+        "gate": {
+          "module": "messages"
+        },
         "popular": true
       },
       {
         "id": "who_can_see_profile",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "blocking_members",
-        "link": "/settings/blocked"
+        "link": "/settings/blocked",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "reporting_content"
       },
       {
         "id": "safeguarding_preferences",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "coordinator_message_review",
         "link": "/messages",
         "gate": {
-          "module": "messages"
+          "all": [
+            {
+              "module": "messages"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       },
       {
@@ -178,15 +246,24 @@
       },
       {
         "id": "email_notification_settings",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "email_digests",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "push_notifications",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       }
     ]
   },
@@ -197,15 +274,24 @@
     "articles": [
       {
         "id": "download_your_data",
-        "link": "/settings/data-export"
+        "link": "/settings/data-export",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "data_rights_requests",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "deleting_your_account",
-        "link": "/settings"
+        "link": "/settings",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "cookie_settings",
@@ -227,7 +313,10 @@
         "link": "/login"
       },
       {
-        "id": "not_receiving_emails"
+        "id": "not_receiving_emails",
+        "gate": {
+          "module": "settings"
+        }
       },
       {
         "id": "something_not_working"
@@ -288,7 +377,10 @@
       },
       {
         "id": "manage_listing",
-        "link": "/profile"
+        "link": "/profile",
+        "gate": {
+          "module": "profile"
+        }
       },
       {
         "id": "browse_listings",
@@ -339,7 +431,10 @@
       },
       {
         "id": "explore_page",
-        "link": "/explore"
+        "link": "/explore",
+        "gate": {
+          "feature": "explore"
+        }
       },
       {
         "id": "matches",
@@ -409,7 +504,14 @@
     "id": "exchanges",
     "icon": "handshake",
     "gate": {
-      "feature": "exchange_workflow"
+      "all": [
+        {
+          "feature": "exchange_workflow"
+        },
+        {
+          "setting": "exchange_workflow"
+        }
+      ]
     },
     "articles": [
       {
@@ -617,7 +719,14 @@
         "id": "events_attendance_credits",
         "link": "/events",
         "gate": {
-          "feature": "event_attendance_credits"
+          "all": [
+            {
+              "feature": "event_attendance_credits"
+            },
+            {
+              "module": "wallet"
+            }
+          ]
         }
       },
       {
@@ -730,7 +839,14 @@
         "id": "community_newsletter",
         "link": "/settings",
         "gate": {
-          "feature": "newsletter"
+          "all": [
+            {
+              "feature": "newsletter"
+            },
+            {
+              "module": "settings"
+            }
+          ]
         }
       }
     ]

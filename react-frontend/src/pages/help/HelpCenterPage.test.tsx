@@ -19,6 +19,9 @@ vi.mock('@/lib/api', () => ({
 
 const enabled = { features: new Set<string>(), modules: new Set<string>(), all: true };
 
+/** Signed-out by default; a test signs in to exercise the exchange-workflow setting. */
+const auth: { user: { id: number } | null; isAuthenticated: boolean } = { user: null, isAuthenticated: false };
+
 const tenant = () => ({
   tenant: { id: 2, name: 'Test Community', slug: 'test' },
   tenantSlug: 'test',
@@ -33,6 +36,7 @@ vi.mock('@/contexts', () => ({
   useFeature: vi.fn(() => true),
   useModule: vi.fn(() => true),
   useAuth: () => ({ user: null, isAuthenticated: false }),
+  useAuthOptional: () => auth,
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [] }),
@@ -77,7 +81,42 @@ describe('Help Centre home', () => {
     enabled.all = true;
     enabled.features.clear();
     enabled.modules.clear();
+    auth.user = null;
+    auth.isAuthenticated = false;
     mockApiGet.mockResolvedValue({ success: true, data: [] });
+  });
+
+  it('hides the exchange guides when members cannot request exchanges', async () => {
+    auth.user = { id: 901 };
+    auth.isAuthenticated = true;
+    mockApiGet.mockImplementation(async (url: string) => (
+      url === '/v2/exchanges/config'
+        ? { success: true, data: { exchange_workflow_enabled: false } }
+        : { success: true, data: [] }
+    ));
+    renderAt('/help');
+    await waitFor(() => expect(screen.queryByRole('link', { name: /^Exchanges/ })).not.toBeInTheDocument());
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/exchanges/config');
+    expect(screen.getByRole('link', { name: /Group exchanges/ })).toBeInTheDocument();
+  });
+
+  it('keeps the exchange guides when members can request exchanges', async () => {
+    auth.user = { id: 902 };
+    auth.isAuthenticated = true;
+    mockApiGet.mockImplementation(async (url: string) => (
+      url === '/v2/exchanges/config'
+        ? { success: true, data: { exchange_workflow_enabled: true } }
+        : { success: true, data: [] }
+    ));
+    renderAt('/help');
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledWith('/v2/exchanges/config'));
+    expect(screen.getByRole('link', { name: /^Exchanges/ })).toBeInTheDocument();
+  });
+
+  it('shows the exchange guides to signed-out visitors without asking the server', () => {
+    renderAt('/help');
+    expect(screen.getByRole('link', { name: /^Exchanges/ })).toBeInTheDocument();
+    expect(mockApiGet).not.toHaveBeenCalledWith('/v2/exchanges/config');
   });
 
   it('offers the three guides', () => {

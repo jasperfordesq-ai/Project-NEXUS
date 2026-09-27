@@ -23,13 +23,15 @@ export const HELP_REGISTRY: Record<HelpAudience, HelpSectionEntry[]> = {
 
 function termIsOpen(term: HelpGateTerm, ctx: HelpGateContext): boolean {
   if ('feature' in term) return ctx.hasFeature(term.feature);
-  return ctx.hasModule(term.module);
+  if ('module' in term) return ctx.hasModule(term.module);
+  return ctx.hasSetting(term.setting);
 }
 
 /** Whether a section/article switched on by `gate` exists in this community. */
 export function isGateOpen(gate: HelpGate | undefined, ctx: HelpGateContext): boolean {
   if (!gate) return true;
-  if ('any' in gate) return gate.any.some((term) => termIsOpen(term, ctx));
+  if ('any' in gate) return gate.any.some((part) => isGateOpen(part, ctx));
+  if ('all' in gate) return gate.all.every((part) => isGateOpen(part, ctx));
   return termIsOpen(gate, ctx);
 }
 

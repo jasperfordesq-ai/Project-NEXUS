@@ -26,6 +26,8 @@ jest.mock('@/lib/hooks/useTenant', () => ({
     hasModule: () => true,
   }),
 }));
+// Signed out: the exchange-workflow setting stays unknown, so it counts as on.
+jest.mock('@/lib/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: false }) }));
 jest.mock('@/components/ModalErrorBoundary', () => ({ children }: { children: React.ReactNode }) => children);
 jest.mock('@/components/ui/AppTopBar', () => {
   const { Text } = require('react-native');

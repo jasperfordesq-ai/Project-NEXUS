@@ -26,10 +26,23 @@ export const HELP_AUDIENCE_NAMESPACE: Record<HelpAudience, string> = {
   admins: 'help_admins',
 };
 
-export type HelpGateTerm = { feature: string } | { module: string };
+/**
+ * Community settings a guide can depend on that are not tenant features or
+ * modules. `exchange_workflow` is the Broker Panel switch that decides whether
+ * members see **Request Exchange** at all (GET /v2/exchanges/config), which is
+ * separate from the `exchange_workflow` feature.
+ */
+export const HELP_SETTINGS = ['exchange_workflow'] as const;
 
-/** A section or article is shown only when its gate is open (null = always). */
-export type HelpGate = HelpGateTerm | { any: HelpGateTerm[] } | null;
+export type HelpSetting = (typeof HELP_SETTINGS)[number];
+
+export type HelpGateTerm = { feature: string } | { module: string } | { setting: HelpSetting };
+
+/**
+ * A section or article is shown only when its gate is open (null = always).
+ * `any` opens when one part is open, `all` only when every part is.
+ */
+export type HelpGate = HelpGateTerm | { any: HelpGate[] } | { all: HelpGate[] } | null;
 
 export type HelpIconName =
   | 'rocket' | 'user' | 'shield' | 'list' | 'message' | 'handshake' | 'wallet'
@@ -57,4 +70,6 @@ export interface HelpSectionEntry {
 export interface HelpGateContext {
   hasFeature: (feature: string) => boolean;
   hasModule: (module: string) => boolean;
+  /** Whether a community setting is on. Unknown (e.g. signed out) counts as on. */
+  hasSetting: (setting: HelpSetting) => boolean;
 }

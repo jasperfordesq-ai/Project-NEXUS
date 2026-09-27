@@ -57,6 +57,22 @@ describe('gating', () => {
     expect(noneOn).not.toContain('events');
     expect(allOn).toContain('events');
   });
+
+  it('opens an all-of gate only when every switch is on', () => {
+    expect(isGateOpen({ all: [{ feature: 'events' }, { module: 'wallet' }] }, ctx)).toBe(true);
+    expect(isGateOpen({ all: [{ feature: 'events' }, { module: 'feed' }] }, ctx)).toBe(false);
+  });
+
+  it('treats an unknown community setting as on, and follows a known one', () => {
+    expect(isGateOpen({ setting: 'exchange_workflow' }, ctx)).toBe(true);
+    expect(isGateOpen({ setting: 'exchange_workflow' }, { ...ctx, hasSetting: () => false })).toBe(false);
+  });
+
+  it('hides the exchange guides when members cannot request exchanges', () => {
+    const allOn = { hasFeature: () => true, hasModule: () => true };
+    expect(visibleSections(allOn).map((s) => s.id)).toContain('exchanges');
+    expect(visibleSections({ ...allOn, hasSetting: () => false }).map((s) => s.id)).not.toContain('exchanges');
+  });
 });
 
 describe('body format', () => {
