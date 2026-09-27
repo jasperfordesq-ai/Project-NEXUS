@@ -25,6 +25,15 @@ This is the single source of truth for project conventions, rules, and workflows
 
 ---
 
+## Owner preference — branches and worktrees
+
+- Work on `main` in the shared checkout at `C:\platforms\htdocs\staging` whenever practical. Do not create a branch or worktree just because it is a familiar default workflow.
+- Use a separate branch or worktree when there is a concrete need, such as protecting another task's uncommitted changes, isolating risky work, or meeting a required PR review gate. Before working there, tell the owner in plain language **why**, the **branch name**, the **full worktree path**, and where the result is intended to go.
+- If the Codex task still appears to be on `main` while commands run in a different worktree, say so explicitly. Label progress updates with **branch, worktree, and destination** so the owner can see where changes actually live.
+- When the separate work is ready, state clearly whether it has been merged into `main`, remains only in a PR, or has been deployed. A green PR is not a merge or a deployment. Preserve unrelated work and the existing rules requiring owner authorisation for pushes, merges, and server changes.
+
+---
+
 ## Project Overview
 
 Project NEXUS is an enterprise **multi-tenant community platform** with timebanking, enabling communities to exchange services using time credits.
