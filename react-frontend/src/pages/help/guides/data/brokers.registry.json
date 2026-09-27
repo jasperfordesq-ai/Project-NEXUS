@@ -104,6 +104,13 @@
         }
       },
       {
+        "id": "broker_match_approvals",
+        "link": "/broker/match-approvals",
+        "gate": {
+          "feature": "exchange_workflow"
+        }
+      },
+      {
         "id": "broker_risk_tags",
         "link": "/broker/risk-tags"
       },
@@ -196,7 +203,14 @@
     "id": "broker_group_activities",
     "icon": "calendar",
     "gate": {
-      "feature": "group_exchanges"
+      "all": [
+        {
+          "feature": "group_exchanges"
+        },
+        {
+          "feature": "groups"
+        }
+      ]
     },
     "articles": [
       {
