@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -147,6 +148,54 @@ class BrokerUserActionsAuthorizationTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    // F-219: nor anyone of equal or higher rank.
+
+    public function test_broker_cannot_adjust_another_brokers_balance(): void
+    {
+        $other = $this->broker();
+        $before = (int) DB::table('users')->where('id', $other->id)->value('balance');
+        Sanctum::actingAs($this->broker());
+
+        $this->apiPost('/v2/admin/timebanking/adjust-balance', [
+            'user_id' => $other->id,
+            'amount' => 10,
+            'reason' => 'Crediting a fellow broker',
+        ])->assertStatus(403);
+
+        $this->assertSame($before, (int) DB::table('users')->where('id', $other->id)->value('balance'));
+    }
+
+    public function test_broker_cannot_adjust_an_admins_balance(): void
+    {
+        $admin = $this->admin();
+        $before = (int) DB::table('users')->where('id', $admin->id)->value('balance');
+        Sanctum::actingAs($this->broker());
+
+        $this->apiPost('/v2/admin/timebanking/adjust-balance', [
+            'user_id' => $admin->id,
+            'amount' => 10,
+            'reason' => 'Crediting an admin',
+        ])->assertStatus(403);
+
+        $this->assertSame($before, (int) DB::table('users')->where('id', $admin->id)->value('balance'));
+        $this->assertSame(0, DB::table('transactions')
+            ->where('receiver_id', $admin->id)
+            ->where('transaction_type', 'admin_grant')
+            ->count(), 'No ledger entry for a refused adjustment');
+    }
+
+    public function test_admin_can_still_adjust_a_brokers_balance(): void
+    {
+        $broker = $this->broker();
+        Sanctum::actingAs($this->admin());
+
+        $this->apiPost('/v2/admin/timebanking/adjust-balance', [
+            'user_id' => $broker->id,
+            'amount' => 5,
+            'reason' => 'Correction by admin',
+        ])->assertStatus(200);
     }
 
     // ================================================================

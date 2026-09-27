@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Services\AbuseDetectionService;
+use App\Support\Authorization\AdminTier;
 use App\Support\UserDisplayName;
 
 /**
@@ -201,8 +202,19 @@ class AdminTimebankingController extends BaseApiController
         // Verify user exists (non-locking read for early 404). preferred_language
         // is selected so the balance-adjustment notification below renders in the
         // RECIPIENT's locale, not the admin's/broker's request locale.
-        $user = DB::selectOne("SELECT id, first_name, last_name, balance, preferred_language FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
+        $user = DB::selectOne("SELECT id, first_name, last_name, balance, preferred_language, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
         if (!$user) return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+
+        // Rank guard (F-219): a broker/coordinator may correct an ordinary
+        // member's balance, never a fellow broker's or an admin's — the same
+        // hierarchy member-management actions use (AdminTier::outranks).
+        // Admin tiers keep full latitude, as for the self-dealing guard above.
+        if (!$this->callerIsAdminTier()) {
+            $actor = DB::selectOne("SELECT id, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ?", [$adminId]);
+            if (!$actor || !AdminTier::outranks($actor, $user)) {
+                return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+            }
+        }
 
         try {
             $result = DB::transaction(function () use ($userId, $tenantId, $adminId, $amount, $reason) {
