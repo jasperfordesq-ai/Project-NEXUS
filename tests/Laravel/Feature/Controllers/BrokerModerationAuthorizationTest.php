@@ -277,6 +277,75 @@ class BrokerModerationAuthorizationTest extends TestCase
         $this->assertSame('open', DB::table('reports')->where('id', $id)->value('status'));
     }
 
+    // F-218: a report about the broker's own CONTENT is theirs too.
+
+    public function test_broker_cannot_close_a_report_about_their_own_listing(): void
+    {
+        $broker = $this->broker();
+        $listing = \App\Models\Listing::factory()->create(['tenant_id' => $this->testTenantId, 'user_id' => $broker->id]);
+        $id = $this->seedReport($this->member(), 'listing', (int) $listing->id);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(403);
+        $this->apiPost("/v2/admin/reports/{$id}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $id)->value('status'));
+    }
+
+    public function test_broker_cannot_close_a_report_about_their_own_post(): void
+    {
+        $broker = $this->broker();
+        $post = \App\Models\FeedPost::factory()->forTenant($this->testTenantId)->create(['user_id' => $broker->id]);
+        $id = $this->seedReport($this->member(), 'post', (int) $post->id);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$id}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $id)->value('status'));
+    }
+
+    public function test_broker_cannot_close_a_report_about_their_own_comment(): void
+    {
+        $broker = $this->broker();
+        $commentId = $this->seedComment($broker);
+        $id = $this->seedReport($this->member(), 'comment', $commentId);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $id)->value('status'));
+    }
+
+    public function test_broker_cannot_close_a_report_about_a_review_they_wrote_or_received(): void
+    {
+        $broker = $this->broker();
+        $wrote = $this->seedReport($this->member(), 'review', $this->seedReview($broker, $this->member()));
+        $received = $this->seedReport($this->member(), 'review', $this->seedReview($this->member(), $broker));
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/reports/{$wrote}/dismiss")->assertStatus(403);
+        $this->apiPost("/v2/admin/reports/{$received}/dismiss")->assertStatus(403);
+        $this->assertSame('open', DB::table('reports')->where('id', $wrote)->value('status'));
+        $this->assertSame('open', DB::table('reports')->where('id', $received)->value('status'));
+    }
+
+    public function test_broker_can_close_a_report_about_another_members_listing(): void
+    {
+        $listing = \App\Models\Listing::factory()->create(['tenant_id' => $this->testTenantId, 'user_id' => $this->member()->id]);
+        $id = $this->seedReport($this->member(), 'listing', (int) $listing->id);
+        Sanctum::actingAs($this->broker());
+
+        $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(200);
+        $this->assertSame('resolved', DB::table('reports')->where('id', $id)->value('status'));
+    }
+
+    public function test_admin_can_close_a_report_about_their_own_listing(): void
+    {
+        $admin = $this->admin();
+        $listing = \App\Models\Listing::factory()->create(['tenant_id' => $this->testTenantId, 'user_id' => $admin->id]);
+        $id = $this->seedReport($this->member(), 'listing', (int) $listing->id);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/reports/{$id}/resolve")->assertStatus(200);
+    }
+
     // ================================================================
     // Admin-only leftovers stay admin-only for brokers
     // ================================================================

@@ -62,24 +62,60 @@ class AdminReportsController extends BaseApiController
      */
     /**
      * Self-dealing guard: a broker/coordinator must not close a report they
-     * filed themselves, nor one that directly targets them — they could
-     * otherwise bury complaints about their own conduct. For content targets
-     * (listing/post/message/…) the owner is not resolved here (polymorphic
-     * target; per-type joins are out of scope), so only direct user targets
-     * are guarded. Admin tiers retain full latitude.
-     * See BrokerModerationAuthorizationTest.
+     * filed themselves, one that targets them directly, or one about content
+     * they own — they could otherwise bury complaints about their own conduct.
+     * Content ownership comes from ReportTargetResolver (the same lookup the
+     * report list shows as the item's author); for a review, the member it is
+     * about is a party too. A target type the resolver does not know has no
+     * resolvable owner and is guarded on reporter/user only.
+     * Admin tiers retain full latitude.
+     * See BrokerModerationAuthorizationTest (F-218).
      */
     private function guardBrokerNotParty(object $report, int $callerId): ?JsonResponse
     {
         if ($this->callerIsAdminTier()) {
             return null;
         }
-        $isReporter = $callerId === (int) $report->reporter_id;
-        $isReportedUser = ($report->target_type ?? null) === 'user' && $callerId === (int) ($report->target_id ?? 0);
-        if ($isReporter || $isReportedUser) {
+        if (in_array($callerId, $this->reportParties($report), true)) {
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
         }
         return null;
+    }
+
+    /**
+     * Members with a personal stake in a report: who filed it, and who the
+     * reported item belongs to or is about.
+     *
+     * @return list<int>
+     */
+    private function reportParties(object $report): array
+    {
+        $parties = [(int) $report->reporter_id];
+        $type = $report->target_type ?? null;
+        $targetId = (int) ($report->target_id ?? 0);
+
+        if ($type === 'user') {
+            $parties[] = $targetId;
+            return $parties;
+        }
+
+        $targets = ReportTargetResolver::resolveMany([$report]);
+        $authorId = $targets["{$type}:{$targetId}"]['target_author_id'] ?? null;
+        if ($authorId !== null) {
+            $parties[] = (int) $authorId;
+        }
+
+        if ($type === 'review' && $targetId > 0) {
+            $receiverId = DB::table('reviews')
+                ->where('id', $targetId)
+                ->where('tenant_id', (int) $report->tenant_id)
+                ->value('receiver_id');
+            if ($receiverId !== null) {
+                $parties[] = (int) $receiverId;
+            }
+        }
+
+        return $parties;
     }
 
     public function index(): JsonResponse
