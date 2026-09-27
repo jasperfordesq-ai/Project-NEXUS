@@ -52,6 +52,20 @@ The `--profile docker-php` flag is required: the `app` service is profile-gated 
 
 The seed step creates the master tenant (`tenant_id=1`) and a first-run platform administrator. Development installs default to `admin@project-nexus.local` / `ChangeMe123!`; set `NEXUS_BOOTSTRAP_ADMIN_EMAIL` and `NEXUS_BOOTSTRAP_ADMIN_PASSWORD` before seeding to use different credentials.
 
+### Restoring under a different database name
+
+The dump contains four legacy views. After importing it into a **separate**
+database, select that restored database and run
+`database/restore/user_effective_permissions.sql` followed by
+`database/restore/other_invoker_views.sql`. These statements bind the views to
+the target database and use the caller's permissions. The application account
+must have `SELECT` on the restored database before its view reads are checked.
+Query all four views as that account and compare the base-table rows before
+calling the recovery successful. Never run the repair against the live source
+database while drilling a restore. An import-time error from the original
+permissions-view definition is not a complete restore until this repair and
+read-back succeed.
+
 After running migrations that change the schema, **refresh the dump and commit it**:
 
 ```bash
