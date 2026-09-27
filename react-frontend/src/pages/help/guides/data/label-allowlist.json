@@ -1,0 +1,38 @@
+{
+  "//": "Bold spans in Help Centre guides that are correct although the words are not in the web interface text. One reason per entry; `locales` is a list or \"*\". See src/pages/help/guides/guides.labels.test.ts.",
+  "entries": [
+    {
+      "label": "+",
+      "locales": "*",
+      "reason": "The create button at the top of the page is an icon showing a plus sign; it has no text label to match."
+    },
+    {
+      "label": "time credit",
+      "locales": [
+        "en"
+      ],
+      "reason": "A key word bolded where the guide first defines it, not an on-screen label."
+    },
+    {
+      "label": "brokers",
+      "locales": [
+        "en"
+      ],
+      "reason": "A key word bolded where the guide explains what coordinators are also called, not an on-screen label."
+    },
+    {
+      "label": "Administrators",
+      "locales": [
+        "en"
+      ],
+      "reason": "A key word bolded where the guide explains who runs a community, not an on-screen label."
+    },
+    {
+      "label": "Community Pot",
+      "locales": [
+        "en"
+      ],
+      "reason": "The name of a shared member account that a community creates for itself; it is data, not interface text."
+    }
+  ]
+}
