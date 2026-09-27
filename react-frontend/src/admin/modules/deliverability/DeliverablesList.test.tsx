@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -128,6 +128,38 @@ describe('DeliverablesList', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Alpha Release')).toBeInTheDocument();
+    });
+  });
+
+  // Regression: the endpoint serves 20 rows a page (AdminDeliverabilityController
+  // ::getDeliverables). The page never asked for a page and never read `meta`, so
+  // everything past the first 20 deliverables was hidden with no page control.
+  it('offers a page control when the API reports more than one page', async () => {
+    vi.mocked(adminDeliverability.list).mockResolvedValue({
+      success: true,
+      data: DELIVERABLES, meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3, has_more: true },
+    } as never);
+
+    render(<DeliverablesList />);
+
+    const nav = await screen.findByRole('navigation');
+    expect(within(nav).getByRole('button', { name: '3' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: '4' })).not.toBeInTheDocument();
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    vi.mocked(adminDeliverability.list).mockResolvedValue({
+      success: true,
+      data: DELIVERABLES, meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3, has_more: true },
+    } as never);
+
+    render(<DeliverablesList />);
+
+    const nav = await screen.findByRole('navigation');
+    fireEvent.click(within(nav).getByRole('button', { name: '2' }));
+
+    await waitFor(() => {
+      expect(adminDeliverability.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
     });
   });
 

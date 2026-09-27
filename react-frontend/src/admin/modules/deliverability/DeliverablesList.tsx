@@ -52,19 +52,28 @@ export function DeliverablesList() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<DeliverableItem | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const res = await adminDeliverability.list();
+      const res = await adminDeliverability.list({ page });
       if (res.success && res.data) {
         const result = res.data as unknown;
         if (Array.isArray(result)) {
+          // The shared api client unwraps the `{ data, meta }` envelope: `res.data`
+          // is the bare row array and the true total arrives on the sibling
+          // `res.meta`. This used to request no page and ignore `meta`, so every
+          // deliverable past the first 20 was hidden with no page control.
+          const metaTotal = (res.meta as { total?: unknown } | undefined)?.total;
           setData(result);
+          setTotal(typeof metaTotal === 'number' ? metaTotal : result.length);
         } else if (result && typeof result === 'object') {
           const pd = result as { data?: DeliverableItem[] };
           setData(pd.data || []);
+          setTotal(pd.data?.length ?? 0);
         }
       } else {
         setLoadError(t('deliverability.failed_to_load_deliverables'));
@@ -75,7 +84,7 @@ export function DeliverablesList() {
     } finally {
       setLoading(false);
     }
-  }, [t, toast]);
+  }, [page, t, toast]);
 
 
   useEffect(() => {
@@ -212,6 +221,10 @@ export function DeliverablesList() {
           data={data}
           searchPlaceholder={t('deliverability.search_deliverables')}
           onRefresh={fetchData}
+          totalItems={total}
+          page={page}
+          pageSize={20}
+          onPageChange={setPage}
         />
       )}
 
