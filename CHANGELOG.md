@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Five more admin list pages now let you reach every record, not just the first page. Like the newsletter activity page, they read the page count from the wrong part of the server's response. The GDPR audit log showed no entries at all. The error log stopped at its first 50 entries, and the GDPR requests list, the newsletter list and the smart-match results each stopped at their first 20. None of them offered a page control. The error log also now works out its pages from the 50 entries per page the server actually sends.
+
 - The admin newsletter activity page now shows every open and click. It read the page count from the wrong part of the server's response, so it always believed there was one page: anything past the first 50 events was hidden with no page control, and the header count stopped at 50. The Opened and Clicked badges on the same page no longer break mid-word in the narrow Event column.
 
 - The mobile event-communications recovery test now waits for the retry read from secure storage before checking that the recovery panel closes. Under the complete 6,959-test CI run, the asynchronous update occasionally crossed the test library's one-second default even though the same focused test passed locally.
