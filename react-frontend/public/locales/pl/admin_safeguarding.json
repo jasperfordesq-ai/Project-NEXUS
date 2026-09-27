@@ -227,10 +227,10 @@
         "col_trigger_key": "Klawisz spustowy",
         "effects": {
           "notify_admin_on_selection": "Otrzymasz powiadomienie w czasie rzeczywistym w momencie zaznaczenia opcji.",
-          "requires_broker_approval": "Wszystkie wiadomości wychodzące kopiowane do przeglądu brokera; mecze wymagają podpisu.",
+          "requires_broker_approval": "Dopasowania i wymiany z udziałem członka czekają na zgodę koordynatora. Wiadomości nie są kopiowane.",
           "requires_vetted_interaction": "Niesprawdzeni członkowie są ukrywani przed kanałem odkrywania członków.",
-          "restricts_matching": "Włącza się przepływ pracy zatwierdzania dopasowań – bez automatycznego przedstawiania.",
-          "restricts_messaging": "Oznacza członka objętego monitorowaniem; rozpoczynają się kopie wiadomości.",
+          "restricts_matching": "Zapisuje tylko wybór członka. Obecnie nie zmienia sposobu tworzenia dopasowań.",
+          "restricts_messaging": "Inni członkowie nie mogą skontaktować się z członkiem bezpośrednio; proponuje się im poproszenie koordynatora. Wiadomości nie są kopiowane.",
           "vetting_type_required": "Określa, jaką weryfikację musi posiadać członek kontaktu, na przykład garda_vetting."
         },
         "table_aria": "Ochrona efektów wyzwalających",

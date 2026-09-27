@@ -27545,10 +27545,10 @@ export default interface Resources {
           "col_trigger_key": "Trigger key",
           "effects": {
             "notify_admin_on_selection": "You get a real-time notification the moment the option is ticked.",
-            "requires_broker_approval": "All outgoing messages copied for broker review; matches need sign-off.",
+            "requires_broker_approval": "Matches and exchanges involving the member wait for a coordinator's sign-off. Messages are not copied.",
             "requires_vetted_interaction": "Non-vetted members are hidden from the member's discovery feed.",
-            "restricts_matching": "Match approval workflow engages - no auto-introductions.",
-            "restricts_messaging": "Marks the member under monitoring; message copies begin.",
+            "restricts_matching": "Records the member's choice only. It does not currently change how matches are made.",
+            "restricts_messaging": "Other members cannot contact the member directly; they are offered a way to ask a coordinator. Messages are not copied.",
             "vetting_type_required": "Specifies which vetting a contacting member must hold, for example garda_vetting."
           },
           "intro_prefix": "A safeguarding option (defined per-tenant in",

@@ -227,10 +227,10 @@
         "col_trigger_key": "Chave de gatilho",
         "effects": {
           "notify_admin_on_selection": "Você recebe uma notificação em tempo real no momento em que a opção é marcada.",
-          "requires_broker_approval": "Todas as mensagens enviadas são copiadas para revisão do corretor; as partidas precisam de aprovação.",
+          "requires_broker_approval": "As correspondências e trocas com o membro aguardam a aprovação de um coordenador. As mensagens não são copiadas.",
           "requires_vetted_interaction": "Membros não avaliados ficam ocultos no feed de descoberta do membro.",
-          "restricts_matching": "O fluxo de trabalho de aprovação de correspondência é ativado - sem apresentações automáticas.",
-          "restricts_messaging": "Marca o membro sob monitoramento; as cópias das mensagens começam.",
+          "restricts_matching": "Só regista a escolha do membro. Por enquanto, não muda a forma como as correspondências são feitas.",
+          "restricts_messaging": "Os outros membros não podem contactar o membro diretamente; podem pedir ajuda a um coordenador. As mensagens não são copiadas.",
           "vetting_type_required": "Especifica qual verificação um membro de contato deve realizar, por exemplo garda_vetting."
         },
         "table_aria": "Efeitos dos gatilhos de proteção",

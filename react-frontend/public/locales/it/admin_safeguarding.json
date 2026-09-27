@@ -227,10 +227,10 @@
         "col_trigger_key": "Tasto di attivazione",
         "effects": {
           "notify_admin_on_selection": "Riceverai una notifica in tempo reale nel momento in cui l'opzione viene selezionata.",
-          "requires_broker_approval": "Tutti i messaggi in uscita copiati per la revisione del broker; le partite necessitano di approvazione.",
+          "requires_broker_approval": "Gli abbinamenti e gli scambi con il membro attendono il via libera di un coordinatore. I messaggi non vengono copiati.",
           "requires_vetted_interaction": "I membri non controllati vengono nascosti dal feed di scoperta del membro.",
-          "restricts_matching": "Il flusso di lavoro per l'approvazione della corrispondenza si attiva, senza presentazioni automatiche.",
-          "restricts_messaging": "Contrassegna il membro sotto monitoraggio; iniziano le copie dei messaggi.",
+          "restricts_matching": "Registra soltanto la scelta del membro. Per ora non cambia il modo in cui si creano gli abbinamenti.",
+          "restricts_messaging": "Gli altri membri non possono contattare direttamente il membro; viene proposto loro di rivolgersi a un coordinatore. I messaggi non vengono copiati.",
           "vetting_type_required": "Specifica quale controllo deve mantenere un membro contattante, ad esempio garda_vetting."
         },
         "table_aria": "Salvaguardare gli effetti scatenanti",

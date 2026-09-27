@@ -227,10 +227,10 @@
         "col_trigger_key": "Auslösetaste",
         "effects": {
           "notify_admin_on_selection": "Sobald die Option aktiviert ist, erhalten Sie eine Echtzeitbenachrichtigung.",
-          "requires_broker_approval": "Alle ausgehenden Nachrichten werden zur Überprüfung durch den Broker kopiert. Spiele müssen abgemeldet werden.",
+          "requires_broker_approval": "Vermittlungen und Tauschvorgänge mit dem Mitglied warten auf die Freigabe durch eine Koordination. Nachrichten werden nicht kopiert.",
           "requires_vetted_interaction": "Nicht überprüfte Mitglieder werden im Discovery-Feed des Mitglieds ausgeblendet.",
-          "restricts_matching": "Der Match-Genehmigungs-Workflow wird aktiviert – keine automatischen Einführungen.",
-          "restricts_messaging": "Markiert das überwachte Mitglied; Das Kopieren der Nachrichten beginnt.",
+          "restricts_matching": "Speichert nur die Wahl des Mitglieds. An den Vermittlungen ändert sich derzeit nichts.",
+          "restricts_messaging": "Andere Mitglieder können das Mitglied nicht direkt kontaktieren; ihnen wird angeboten, eine Koordination zu fragen. Nachrichten werden nicht kopiert.",
           "vetting_type_required": "Gibt an, welche Überprüfung ein kontaktierendes Mitglied haben muss, zum Beispiel garda_vetting."
         },
         "table_aria": "Auswirkungen von Schutzauslösern",

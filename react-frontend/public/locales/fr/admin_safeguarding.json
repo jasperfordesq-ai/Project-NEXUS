@@ -227,10 +227,10 @@
         "col_trigger_key": "Clé de déclenchement",
         "effects": {
           "notify_admin_on_selection": "Vous recevez une notification en temps réel dès que l'option est cochée.",
-          "requires_broker_approval": "Tous les messages sortants copiés pour examen par le courtier ; les matchs doivent être approuvés.",
+          "requires_broker_approval": "Les mises en relation et les échanges avec le membre attendent la validation d'un coordinateur. Les messages ne sont pas copiés.",
           "requires_vetted_interaction": "Les membres non sélectionnés sont masqués du flux de découverte des membres.",
-          "restricts_matching": "Le workflow d'approbation des correspondances s'engage - pas d'introductions automatiques.",
-          "restricts_messaging": "Marque le membre sous surveillance ; les copies des messages commencent.",
+          "restricts_matching": "Enregistre seulement le choix du membre. Cela ne change pas actuellement la façon dont les mises en relation sont faites.",
+          "restricts_messaging": "Les autres membres ne peuvent pas contacter directement le membre ; on leur propose de passer par un coordinateur. Les messages ne sont pas copiés.",
           "vetting_type_required": "Spécifie quelle vérification un membre contactant doit détenir, par exemple garda_vetting."
         },
         "table_aria": "Effets des déclencheurs de protection",

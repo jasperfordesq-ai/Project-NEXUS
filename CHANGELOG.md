@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The admin Safeguarding screen now describes three safeguarding options correctly, in all eleven languages. It said "Require coordinator approval" and "Monitor messaging" copy the member's messages for review, and that "Restrict matching" holds matches for approval. In fact coordinator approval holds matches and exchanges for sign-off without copying messages, "Monitor messaging" stops other members contacting that member directly, and "Restrict matching" currently only records the member's choice.
+
 - Made Docker build verification wait for the production PHP container's real health endpoint and fail when it never becomes ready, instead of emitting a non-blocking warning after a fixed five-second delay.
 
 - Corrected Irish Help Centre wording across the shared page, member, broker and admin guides. The changes clarify search results, blocking and reporting, photo ID, wallet payments, partner-community choices and safeguarding contact, and fix several awkward titles and summaries. Further member-guide claims were corrected in all eleven guide languages: the Broker Panel does not offer a control to settle or cancel disputed exchanges, "Match approval" currently records a preference without changing match suggestions, and "Broker review" routes exchanges through approval without promising approval of matches. The same safeguarding corrections now appear in web and mobile onboarding confirmations; the web confirmation shows the "Match approval" explanation only when that preference was selected. The guide labels quoted from the app remain as shown on screen; native-speaker review is still outstanding.
