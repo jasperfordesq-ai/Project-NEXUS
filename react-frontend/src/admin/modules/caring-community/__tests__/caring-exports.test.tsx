@@ -55,21 +55,22 @@ describe('Caring admin CSV exports', () => {
   it('exports municipal survey responses with the survey id in the filename', async () => {
     apiMock.get.mockResolvedValueOnce({
       success: true,
-      data: {
-        data: [
-          {
-            id: 42,
-            title: 'Resident Pulse',
-            status: 'active',
-            is_anonymous: true,
-            question_count: 3,
-            response_count: 9,
-            starts_at: null,
-            ends_at: null,
-            created_at: '2026-05-01T00:00:00Z',
-          },
-        ],
-      },
+      // GET /v2/admin/caring-community/surveys sends a bare array (respondWithData),
+      // which the shared api client (src/lib/api.ts) resolves as `data: [rows]`.
+      // An earlier fixture nested the rows inside `data`, a shape it never produces.
+      data: [
+        {
+          id: 42,
+          title: 'Resident Pulse',
+          status: 'active',
+          is_anonymous: true,
+          question_count: 3,
+          response_count: 9,
+          starts_at: null,
+          ends_at: null,
+          created_at: '2026-05-01T00:00:00Z',
+        },
+      ],
     });
 
     render(<Wrapper><MunicipalSurveyAdminPage /></Wrapper>);

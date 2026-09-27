@@ -83,9 +83,13 @@ describe('BrokerLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetDashboard.mockResolvedValue({ success: true, data: BROKER_DASHBOARD });
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     mockUsersList.mockResolvedValue({
       success: true,
-      data: { data: [], meta: { total: 4 } },
+      data: [], meta: { current_page: 1, per_page: 1, total: 4, total_pages: 4, has_more: true },
     });
     mockApprovalStats.mockResolvedValue({
       success: true,

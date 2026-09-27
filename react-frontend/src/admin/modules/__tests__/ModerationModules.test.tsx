@@ -121,17 +121,21 @@ vi.mock('@/admin/api/adminApi', () => ({
     listTenants: vi.fn().mockResolvedValue({ success: true, data: [] }),
   },
   adminModeration: {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     getComments: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { current_page: 1, last_page: 1, per_page: 20, total: 0 } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getFeedPosts: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { current_page: 1, last_page: 1, per_page: 20, total: 0 } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getReports: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { current_page: 1, last_page: 1, per_page: 20, total: 0 } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getReportStats: vi.fn().mockResolvedValue({
       success: true,
@@ -139,7 +143,7 @@ vi.mock('@/admin/api/adminApi', () => ({
     }),
     getReviews: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { current_page: 1, last_page: 1, per_page: 20, total: 0 } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     hideComment: vi.fn().mockResolvedValue({ success: true }),
     deleteComment: vi.fn().mockResolvedValue({ success: true }),

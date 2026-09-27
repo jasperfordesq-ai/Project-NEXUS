@@ -171,7 +171,9 @@ describe('ApiKeys', () => {
     });
   });
 
-  it('handles array-wrapped payload (data property)', async () => {
+  it('still renders keys from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/federation/api-keys really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     mockGetApiKeys.mockResolvedValue({
       success: true,
       data: { data: [ACTIVE_KEY] },

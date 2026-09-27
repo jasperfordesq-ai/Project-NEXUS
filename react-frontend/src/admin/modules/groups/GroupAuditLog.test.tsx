@@ -204,7 +204,9 @@ describe('GroupAuditLog — populated', () => {
     });
   });
 
-  it('handles wrapped { data: [...] } payload shape', async () => {
+  it('still renders entries from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/groups/{id}/audit-log really sends
+    // { items, actions, pagination } (respondWithData), covered by the paging test below.
     // Override the default mock to return wrapped payload
     mockApiGet.mockReset();
     mockApiGet.mockResolvedValue({ success: true, data: { data: AUDIT_ENTRIES } });

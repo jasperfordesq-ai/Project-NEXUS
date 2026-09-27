@@ -114,10 +114,14 @@ describe('DeliverablesList', () => {
     expect(screen.getByText('Beta Release')).toBeInTheDocument();
   });
 
-  it('renders deliverables from a paginated { data: [...] } response', async () => {
+  it('renders deliverables from the paginated shape (rows in data, pagination in meta)', async () => {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // this paginated endpoint: `data` is the bare row array and pagination lives on
+    // the sibling `meta`. An earlier fixture nested the rows inside `data`, a shape
+    // the client never produces.
     vi.mocked(adminDeliverability.list).mockResolvedValue({
       success: true,
-      data: { data: DELIVERABLES, meta: { total: 2 } },
+      data: DELIVERABLES, meta: { current_page: 1, per_page: 20, total: 2, total_pages: 1, has_more: false },
     });
 
     render(<DeliverablesList />);

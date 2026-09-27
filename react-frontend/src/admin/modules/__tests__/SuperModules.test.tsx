@@ -142,7 +142,9 @@ vi.mock('../../api/adminApi', () => ({
     revokeGlobalSuperAdmin: vi.fn().mockResolvedValue({ success: true }),
     moveUserTenant: vi.fn().mockResolvedValue({ success: true }),
     moveAndPromote: vi.fn().mockResolvedValue({ success: true }),
-    getAudit: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0 } } }),
+    // GET /v2/admin/super/audit sends a bare array (respondWithData), which the
+    // shared api client (src/lib/api.ts) resolves as `data: [rows]`, not nested.
+    getAudit: vi.fn().mockResolvedValue({ success: true, data: [] }),
     getSystemControls: vi.fn().mockResolvedValue({ success: true, data: {} }),
     updateSystemControls: vi.fn().mockResolvedValue({ success: true }),
     getWhitelist: vi.fn().mockResolvedValue({ success: true, data: [] }),

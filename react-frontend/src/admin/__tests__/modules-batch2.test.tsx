@@ -83,10 +83,15 @@ vi.mock('recharts', () => ({
 vi.mock('../../api/adminApi', () => ({
   adminBroker: {
     getDashboard: vi.fn().mockResolvedValue({ success: true, data: { pending_exchanges: 0, unreviewed_messages: 0, high_risk_listings: 0, monitored_users: 0, vetting_review_requests: 0, safeguarding_alerts: 0, recent_activity: [] } }),
-    getExchanges: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
+    // adminVetting.list is a bare array with `meta.pagination` (respondWithData).
+    getExchanges: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     showExchange: vi.fn().mockResolvedValue({ success: true, data: { exchange: { id: 1, requester_id: 1, requester_name: 'A', provider_id: 2, provider_name: 'B', status: 'pending', created_at: '2026-01-01' }, history: [], risk_tag: null } }),
     getRiskTags: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    getMessages: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    getMessages: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     getMonitoring: vi.fn().mockResolvedValue({ success: true, data: [] }),
     getConfiguration: vi.fn().mockResolvedValue({ success: true, data: {} }),
     saveConfiguration: vi.fn().mockResolvedValue({ success: true }),
@@ -96,7 +101,7 @@ vi.mock('../../api/adminApi', () => ({
   adminMatching: {
     getConfig: vi.fn().mockResolvedValue({ success: true, data: { category_weight: 0.3, skill_weight: 0.25, proximity_weight: 0.2, freshness_weight: 0.1, reciprocity_weight: 0.1, quality_weight: 0.05 } }),
     getMatchingStats: vi.fn().mockResolvedValue({ success: true, data: { overview: {}, score_distribution: {}, distance_distribution: {}, broker_approval_enabled: false, pending_approvals: 0, approved_count: 0, rejected_count: 0, approval_rate: 0 } }),
-    getApprovals: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    getApprovals: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     getApproval: vi.fn().mockResolvedValue({ success: true, data: {} }),
     getApprovalStats: vi.fn().mockResolvedValue({ success: true, data: { pending_count: 0, approved_count: 0, rejected_count: 0, avg_approval_time: 0, approval_rate: 0 } }),
     updateConfig: vi.fn().mockResolvedValue({ success: true }),
@@ -104,9 +109,9 @@ vi.mock('../../api/adminApi', () => ({
   },
   adminTimebanking: {
     getStats: vi.fn().mockResolvedValue({ success: true, data: { total_transactions: 100, total_volume: 500, avg_transaction: 5, active_alerts: 0, top_earners: [], top_spenders: [] } }),
-    getAlerts: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    getAlerts: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     getOrgWallets: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    getUserReport: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    getUserReport: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     getUserStatement: vi.fn().mockResolvedValue({ success: true, data: null }),
   },
   adminGamification: {
@@ -117,7 +122,7 @@ vi.mock('../../api/adminApi', () => ({
     recheckAll: vi.fn().mockResolvedValue({ success: true }),
   },
   adminVetting: {
-    list: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    list: vi.fn().mockResolvedValue({ success: true, data: [], meta: { pagination: { current_page: 1, per_page: 20, total: 0, last_page: 1 } } }),
     stats: vi.fn().mockResolvedValue({ success: true, data: { total: 0, pending: 0, verified: 0, expired: 0, expiring_soon: 0 } }),
   },
 }));

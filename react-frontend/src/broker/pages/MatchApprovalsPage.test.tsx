@@ -81,9 +81,13 @@ function renderPage(initialPath = '/test/broker/match-approvals') {
 describe('MatchApprovalsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     mockGetApprovals.mockResolvedValue({
       success: true,
-      data: { data: [APPROVAL], meta: { total: 1 } },
+      data: [APPROVAL], meta: { current_page: 1, per_page: 20, total: 1, total_pages: 1, has_more: false },
     });
     mockGetApprovalStats.mockResolvedValue({ success: true, data: STATS });
   });
@@ -175,7 +179,7 @@ describe('MatchApprovalsPage', () => {
   });
 
   it('shows the all-caught-up empty state when the pending queue is empty', async () => {
-    mockGetApprovals.mockResolvedValue({ success: true, data: { data: [], meta: { total: 0 } } });
+    mockGetApprovals.mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } });
     renderPage();
     await waitFor(() => {
       expect(screen.getByText('No matches waiting')).toBeInTheDocument();

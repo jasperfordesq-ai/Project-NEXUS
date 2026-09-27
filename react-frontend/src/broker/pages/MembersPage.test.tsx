@@ -125,9 +125,13 @@ const makeMember = (overrides = {}) => ({
   ...overrides,
 });
 
+// Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+// paginated endpoints: `data` is the bare row array and pagination lives on the
+// sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+// client never produces for these endpoints.
 const makeListResponse = (data: object[], total = data.length) => ({
   success: true,
-  data: { data, meta: { total } },
+  data, meta: { total },
 });
 
 const makeNote = (overrides = {}) => ({
@@ -240,7 +244,7 @@ describe('MembersPage (broker)', () => {
       if (params.limit === 1) {
         const totals: Record<string, number> = { pending: 3, active: 30, suspended: 2 };
         const total = params.status ? (totals[params.status] ?? 0) : 40;
-        return Promise.resolve({ success: true, data: { data: [], meta: { total } } });
+        return Promise.resolve({ success: true, data: [], meta: { total } });
       }
       return Promise.resolve(makeListResponse([makeMember()]));
     });

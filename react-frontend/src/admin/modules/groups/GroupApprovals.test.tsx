@@ -235,7 +235,9 @@ describe('GroupApprovals', () => {
     });
   });
 
-  it('handles envelope-wrapped API response (data.data array)', async () => {
+  it('still renders approvals from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/groups/approvals really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     getApprovalsMock.mockResolvedValueOnce({
       success: true,
       data: { data: MOCK_APPROVALS },

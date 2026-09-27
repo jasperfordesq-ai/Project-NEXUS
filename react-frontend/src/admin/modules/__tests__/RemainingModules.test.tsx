@@ -159,9 +159,13 @@ vi.mock('../../api/adminApi', () => ({
         approved_count: 0, rejected_count: 0, approval_rate: 0,
       },
     }),
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     getApprovals: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getApproval: vi.fn().mockResolvedValue({
       success: true,
@@ -208,7 +212,7 @@ vi.mock('../../api/adminApi', () => ({
     }),
     getApprovals: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [],
     }),
     approveApplication: vi.fn().mockResolvedValue({ success: true }),
     declineApplication: vi.fn().mockResolvedValue({ success: true }),
@@ -241,7 +245,7 @@ vi.mock('@/admin/api/adminApi', () => ({
     }),
     getApprovals: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getApproval: vi.fn().mockResolvedValue({
       success: true,
@@ -288,7 +292,7 @@ vi.mock('@/admin/api/adminApi', () => ({
     }),
     getApprovals: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [],
     }),
     approveApplication: vi.fn().mockResolvedValue({ success: true }),
     declineApplication: vi.fn().mockResolvedValue({ success: true }),

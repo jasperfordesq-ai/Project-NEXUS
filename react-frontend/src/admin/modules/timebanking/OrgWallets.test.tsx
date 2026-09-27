@@ -138,7 +138,9 @@ describe('OrgWallets — populated state', () => {
     expect(screen.getByTestId('row-count').textContent).toBe('2');
   });
 
-  it('renders DataTable when API returns nested { data: [...] } shape', async () => {
+  it('still renders the DataTable from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/timebanking/org-wallets really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     mockGetOrgWallets.mockResolvedValue({
       success: true,
       data: {

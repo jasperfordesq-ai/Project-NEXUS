@@ -99,9 +99,13 @@ vi.mock('recharts', () => ({
 // Mock admin API modules used by newsletter components
 vi.mock('../../api/adminApi', () => ({
   adminNewsletters: {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     list: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     get: vi.fn().mockResolvedValue({
       success: true,

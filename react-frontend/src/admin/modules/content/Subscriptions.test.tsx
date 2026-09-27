@@ -131,7 +131,9 @@ describe('Subscriptions', () => {
     expect(mockToast.error).not.toHaveBeenCalled();
   });
 
-  it('handles paginated response shape { data: [...] }', async () => {
+  it('still renders subscriptions from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/subscriptions really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     mockGetSubscriptions.mockResolvedValue({
       success: true,
       data: { data: MOCK_SUBS },

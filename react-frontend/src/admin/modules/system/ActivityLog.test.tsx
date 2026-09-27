@@ -137,10 +137,14 @@ describe('ActivityLog', () => {
   });
 
   // ── paginated data format ──────────────────────────────────────────────────
-  it('handles paginated data format { data: [...], meta: { total } }', async () => {
+  it('handles the paginated shape (rows in data, total in the sibling meta)', async () => {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // this paginated endpoint: `data` is the bare row array and pagination lives on
+    // the sibling `meta`. An earlier fixture nested the rows inside `data`, a shape
+    // the client never produces.
     mockGetActivityLog.mockResolvedValue({
       success: true,
-      data: { data: MOCK_ENTRIES, meta: { total: 50 } },
+      data: MOCK_ENTRIES, meta: { current_page: 1, per_page: 20, total: 50, total_pages: 3, has_more: true },
     });
     render(<ActivityLog />);
     await waitFor(() => {

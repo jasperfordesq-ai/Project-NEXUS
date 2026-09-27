@@ -341,7 +341,6 @@
       "TS2345": 1
     },
     "src/admin/modules/deliverability/DeliverablesList.test.tsx": {
-      "TS2322": 1,
       "TS2345": 4,
       "TS2532": 2,
       "TS2739": 8
@@ -1926,6 +1925,6 @@
   },
   "totals": {
     "fileCount": 568,
-    "errorCount": 1736
+    "errorCount": 1735
   }
 }

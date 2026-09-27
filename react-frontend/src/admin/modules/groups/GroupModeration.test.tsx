@@ -96,7 +96,9 @@ describe('GroupModeration', () => {
     });
   });
 
-  it('handles the nested-envelope shape {data:[...]}', async () => {
+  it('still renders items from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/groups/moderation really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     vi.mocked(adminGroups.getModeration).mockResolvedValueOnce({
       success: true,
       data: { data: MOCK_ITEMS },

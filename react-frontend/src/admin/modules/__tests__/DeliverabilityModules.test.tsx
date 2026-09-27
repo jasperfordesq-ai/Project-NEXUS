@@ -75,9 +75,13 @@ vi.mock('../../api/adminApi', () => ({
       success: true,
       data: { total: 0, by_status: {}, overdue: 0, completion_rate: 0, recent_activity: [] },
     }),
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     list: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     create: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),

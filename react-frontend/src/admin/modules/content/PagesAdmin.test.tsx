@@ -117,7 +117,9 @@ describe('PagesAdmin', () => {
     });
   });
 
-  it('renders pages from paginated { data: [...] } response', async () => {
+  it('still renders pages from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/pages really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     vi.mocked(adminPages.list).mockResolvedValue({
       success: true,
       data: { data: PAGES },

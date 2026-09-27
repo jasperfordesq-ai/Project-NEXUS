@@ -116,9 +116,13 @@ vi.mock('recharts', () => ({
 // Mock admin API modules used by group components
 vi.mock('../../api/adminApi', () => ({
   adminGroups: {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     list: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getGroup: vi.fn().mockResolvedValue({
       success: true,
@@ -158,7 +162,7 @@ vi.mock('../../api/adminApi', () => ({
 // Also mock @/admin/api/adminApi (GroupDetail etc. use absolute imports)
 vi.mock('@/admin/api/adminApi', () => ({
   adminGroups: {
-    list: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: {} } }),
+    list: vi.fn().mockResolvedValue({ success: true, data: [], meta: {} }),
     getGroup: vi.fn().mockResolvedValue({ success: true, data: { id: 1, name: 'Test Group', description: 'Test', status: 'active', member_count: 5 } }),
     updateGroup: vi.fn().mockResolvedValue({ success: true }),
     getMembers: vi.fn().mockResolvedValue({ success: true, data: [] }),

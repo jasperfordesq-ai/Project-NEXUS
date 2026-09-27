@@ -105,7 +105,11 @@ vi.mock('../../api/adminApi', () => ({
     getActivity: vi.fn().mockResolvedValue({ success: true, data: [] }),
   },
   adminUsers: {
-    list: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
+    list: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     get: vi.fn().mockResolvedValue({ success: true, data: { id: 1, first_name: 'John', last_name: 'Doe', email: 'john@test.com', role: 'member', status: 'active', balance: 10, has_2fa_enabled: false, is_super_admin: false, created_at: '2026-01-01', badges: [] } }),
     create: vi.fn().mockResolvedValue({ success: true }),
     update: vi.fn().mockResolvedValue({ success: true }),
@@ -117,12 +121,12 @@ vi.mock('../../api/adminApi', () => ({
     importUsers: vi.fn().mockResolvedValue({ success: true }),
   },
   adminListings: {
-    list: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    list: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     approve: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),
   },
   adminBlog: {
-    list: vi.fn().mockResolvedValue({ success: true, data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } } }),
+    list: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),
     get: vi.fn().mockResolvedValue({ success: true, data: { id: 1, title: 'Test', slug: 'test', status: 'draft', author_id: 1, created_at: '2026-01-01' } }),
     create: vi.fn().mockResolvedValue({ success: true }),
     update: vi.fn().mockResolvedValue({ success: true }),

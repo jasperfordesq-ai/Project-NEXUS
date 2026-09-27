@@ -58,9 +58,13 @@ import { UserReport } from './UserReport';
 describe('UserReport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     mockAdminTimebanking.getUserReport.mockResolvedValue({
       success: true,
-      data: { data: USERS, meta: { total: 2 } },
+      data: USERS, meta: { current_page: 1, per_page: 20, total: 2, total_pages: 1, has_more: false },
     });
     mockAdminTimebanking.adjustBalance.mockResolvedValue({ success: true });
     mockAdminTimebanking.downloadStatementCsv.mockResolvedValue(undefined);
@@ -90,7 +94,7 @@ describe('UserReport', () => {
   it('shows empty state when no users returned', async () => {
     mockAdminTimebanking.getUserReport.mockResolvedValue({
       success: true,
-      data: { data: [], meta: { total: 0 } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     });
 
     render(<UserReport />);

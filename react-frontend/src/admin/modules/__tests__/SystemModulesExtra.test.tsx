@@ -72,9 +72,13 @@ vi.mock('@/components/seo', () => ({
 // Mock admin API modules used by system components
 vi.mock('../../api/adminApi', () => ({
   adminSystem: {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // paginated endpoints: `data` is the bare row array and pagination lives on the
+    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
+    // client never produces for these endpoints.
     getActivityLog: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { page: 1, total_pages: 1, per_page: 20, total: 0, has_more: false } },
+      data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false },
     }),
     getCronJobs: vi.fn().mockResolvedValue({ success: true, data: [] }),
     runCronJob: vi.fn().mockResolvedValue({ success: true }),

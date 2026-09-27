@@ -144,10 +144,14 @@ describe('MarketplaceAdmin', () => {
     });
   });
 
-  it('handles paginated listings response (data.data shape)', async () => {
+  it('renders listings from the paginated shape (rows in data, pagination in meta)', async () => {
+    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
+    // this paginated endpoint: `data` is the bare row array and pagination lives on
+    // the sibling `meta`. An earlier fixture nested the rows inside `data`, a shape
+    // the client never produces.
     vi.mocked(api.get)
       .mockResolvedValueOnce({ success: true, data: mockStats })
-      .mockResolvedValueOnce({ success: true, data: { data: mockListings, total: 1 } });
+      .mockResolvedValueOnce({ success: true, data: mockListings, meta: { current_page: 1, per_page: 10, total: 1, total_pages: 1, has_more: false } });
 
     render(<MarketplaceAdmin />);
 

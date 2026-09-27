@@ -107,7 +107,9 @@ describe('Segments', () => {
     expect(createBtn).toBeInTheDocument();
   });
 
-  it('handles object envelope response shape { data: [...] }', async () => {
+  it('still renders segments from a legacy/fallback nested { data: [...] } payload', async () => {
+    // Legacy/fallback shape only. GET /v2/admin/newsletters/segments really sends a
+    // bare array (respondWithData), which is what the other tests here mock.
     mockGetSegments.mockResolvedValue({
       success: true,
       data: { data: [SEG_ACTIVE] },
