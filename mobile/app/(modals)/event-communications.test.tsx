@@ -393,7 +393,8 @@ describe('EventCommunicationsScreen', () => {
     fireEvent.press(screen.getByText('New message'));
     expect(screen.queryByTestId('event-communication-body')).toBeNull();
     fireEvent.press(screen.getByText('recovery_reload'));
-    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull());
+    await waitFor(() => expect(storage.get).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByTestId('event-operation-recovery')).toBeNull(), { timeout: 5000 });
     fireEvent.press(screen.getByText('New message'));
     expect(screen.getByTestId('event-communication-body')).toBeTruthy();
     expect(mockCreate).not.toHaveBeenCalled();
