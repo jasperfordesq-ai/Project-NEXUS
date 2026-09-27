@@ -51,7 +51,7 @@ jobs:
         # packages with severity level high or higher" and no denied packages.
         # Dependency Graph itself is live: the SBOM endpoint returns 3,153
         # packages.
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
           comment-summary-in-pr: always
