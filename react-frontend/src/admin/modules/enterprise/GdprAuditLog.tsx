@@ -95,11 +95,19 @@ export function GdprAuditLog() {
       });
       if (res.success && res.data) {
         const result = res.data as unknown;
-        if (result && typeof result === 'object') {
-          const pd = result as { data?: GdprAuditEntry[]; meta?: { total?: number } };
-          const items = pd.data || [];
+        // The shared api client unwraps the `{ data, meta }` envelope: `res.data`
+        // is the bare row array and pagination arrives on the sibling `res.meta`.
+        // This used to test for an object first — which an array also is — then
+        // look for rows and meta inside it, so a real response rendered no
+        // entries at all and never offered a second page.
+        const nested = !Array.isArray(result) && result && typeof result === 'object'
+          ? (result as { data?: GdprAuditEntry[]; meta?: { total?: number } })
+          : null;
+        if (Array.isArray(result) || nested) {
+          const items: GdprAuditEntry[] = Array.isArray(result) ? result : (nested?.data || []);
+          const meta = (nested?.meta ?? res.meta) as { total?: unknown } | undefined;
           setEntries(items);
-          setTotal(pd.meta?.total ?? items.length);
+          setTotal(typeof meta?.total === 'number' ? meta.total : items.length);
 
           // Build unique action/entity_type lists from returned data
           // (we accumulate across pages so the dropdown stays populated)
@@ -113,9 +121,6 @@ export function GdprAuditLog() {
             items.forEach((e) => { if (e.entity_type) set.add(e.entity_type); });
             return Array.from(set).sort();
           });
-        } else if (Array.isArray(result)) {
-          setEntries(result);
-          setTotal(result.length);
         }
       }
     } catch {

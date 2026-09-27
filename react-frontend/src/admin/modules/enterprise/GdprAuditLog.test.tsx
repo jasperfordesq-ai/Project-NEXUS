@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -80,15 +80,20 @@ const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
 
 import { GdprAuditLog } from './GdprAuditLog';
 
+// These mirror what the shared api client (src/lib/api.ts) really resolves
+// with: it unwraps the `data` envelope, so `data` is the bare row array and
+// pagination lives on the sibling `meta`. Earlier fixtures nested `meta` inside
+// `data`, a shape the client never produces — which hid that the page, given
+// the real shape, rendered no rows at all and never offered a second page.
 const EMPTY_RESPONSE = {
   success: true,
-  data: { data: [], meta: { total: 0 } },
+  data: [],
+  meta: { current_page: 1, per_page: 25, total: 0, total_pages: 0 },
 };
 
 const POPULATED_RESPONSE = {
   success: true,
-  data: {
-    data: [
+  data: [
       {
         id: 1,
         action: 'view_profile',
@@ -113,9 +118,8 @@ const POPULATED_RESPONSE = {
         old_value: '{"name":"old"}',
         new_value: null,
       },
-    ],
-    meta: { total: 2 },
-  },
+  ],
+  meta: { current_page: 1, per_page: 25, total: 2, total_pages: 1 },
 };
 
 describe('GdprAuditLog', () => {
@@ -171,23 +175,21 @@ describe('GdprAuditLog', () => {
   it('renders a row whose entity_type is null without crashing', async () => {
     mockGetGdprAudit.mockResolvedValue({
       success: true,
-      data: {
-        data: [
-          {
-            id: 304,
-            action: 'account_deleted',
-            entity_type: null,
-            entity_id: 0,
-            admin_id: 7,
-            user_name: null,
-            ip_address: null,
-            created_at: '2026-08-26T14:09:56Z',
-            old_value: null,
-            new_value: null,
-          },
-        ],
-        meta: { total: 1 },
-      },
+      data: [
+        {
+          id: 304,
+          action: 'account_deleted',
+          entity_type: null,
+          entity_id: 0,
+          admin_id: 7,
+          user_name: null,
+          ip_address: null,
+          created_at: '2026-08-26T14:09:56Z',
+          old_value: null,
+          new_value: null,
+        },
+      ],
+      meta: { current_page: 1, per_page: 25, total: 1, total_pages: 1 },
     });
     render(<GdprAuditLog />);
 
@@ -247,5 +249,35 @@ describe('GdprAuditLog', () => {
     expect(refreshBtn).toBeTruthy();
     await userEvent.click(refreshBtn!);
     await waitFor(() => expect(mockGetGdprAudit).toHaveBeenCalledTimes(2));
+  });
+
+  // Regression: the audit trail has more than 25 entries on any live community.
+  // The page read pagination from inside the row array, found none, and offered
+  // no way past the first page.
+  it('offers a page control when the API reports more than one page', async () => {
+    mockGetGdprAudit.mockResolvedValue({
+      ...POPULATED_RESPONSE,
+      meta: { current_page: 1, per_page: 25, total: 60, total_pages: 3 },
+    });
+    render(<GdprAuditLog />);
+
+    const nav = await screen.findByRole('navigation');
+    expect(within(nav).getByRole('button', { name: '3' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: '4' })).not.toBeInTheDocument();
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    mockGetGdprAudit.mockResolvedValue({
+      ...POPULATED_RESPONSE,
+      meta: { current_page: 1, per_page: 25, total: 60, total_pages: 3 },
+    });
+    render(<GdprAuditLog />);
+
+    const nav = await screen.findByRole('navigation');
+    fireEvent.click(within(nav).getByRole('button', { name: '2' }));
+
+    await waitFor(() => {
+      expect(mockGetGdprAudit).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    });
   });
 });

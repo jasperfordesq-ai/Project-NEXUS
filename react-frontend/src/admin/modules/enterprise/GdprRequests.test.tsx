@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -98,16 +98,43 @@ describe('GdprRequests', () => {
     expect(screen.getByText('Bob Jones')).toBeInTheDocument();
   });
 
-  it('renders user names from paginated { data, meta } response', async () => {
+  // The shared api client (src/lib/api.ts) unwraps the `data` envelope, so a
+  // paginated response resolves as `{ success, data: rows, meta }`. An earlier
+  // fixture here nested `meta` inside `data`, a shape the client never produces,
+  // which hid that the page ignored the real `meta`.
+  //
+  // Regression: with more than 20 requests the page counted only the 20 rows it
+  // was given, showed no page control, and every older request was unreachable.
+  it('offers a page control when the API reports more than one page', async () => {
     vi.mocked(adminEnterprise.getGdprRequests).mockResolvedValue({
       success: true,
-      data: { data: GDPR_REQUESTS, meta: { total: 2 } },
-    });
+      data: GDPR_REQUESTS,
+      meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3 },
+    } as never);
 
     render(<GdprRequests />);
 
+    const nav = await screen.findByRole('navigation');
+    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+    expect(within(nav).getByRole('button', { name: '3' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: '4' })).not.toBeInTheDocument();
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    const user = userEvent.setup();
+    vi.mocked(adminEnterprise.getGdprRequests).mockResolvedValue({
+      success: true,
+      data: GDPR_REQUESTS,
+      meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3 },
+    } as never);
+
+    render(<GdprRequests />);
+
+    const nav = await screen.findByRole('navigation');
+    await user.click(within(nav).getByRole('button', { name: '2' }));
+
     await waitFor(() => {
-      expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+      expect(adminEnterprise.getGdprRequests).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
     });
   });
 

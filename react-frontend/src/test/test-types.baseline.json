@@ -361,7 +361,7 @@
     "src/admin/modules/enterprise/GdprRequests.test.tsx": {
       "TS2345": 4,
       "TS2532": 3,
-      "TS2739": 9
+      "TS2739": 8
     },
     "src/admin/modules/enterprise/LegalDocForm.test.tsx": {
       "TS2322": 2,
@@ -476,9 +476,6 @@
     "src/admin/modules/moderation/ReviewsModeration.test.tsx": {
       "TS2345": 5,
       "TS2739": 1
-    },
-    "src/admin/modules/newsletters/NewsletterActivity.test.tsx": {
-      "TS2345": 1
     },
     "src/admin/modules/newsletters/NewsletterList.test.tsx": {
       "TS2345": 6
@@ -1928,7 +1925,7 @@
     }
   },
   "totals": {
-    "fileCount": 569,
-    "errorCount": 1738
+    "fileCount": 568,
+    "errorCount": 1736
   }
 }

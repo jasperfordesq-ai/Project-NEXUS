@@ -79,8 +79,13 @@ export function GdprRequests() {
       if (res.success && res.data) {
         const result = res.data as unknown;
         if (Array.isArray(result)) {
+          // The shared api client unwraps the `{ data, meta }` envelope: `res.data`
+          // is the bare row array and the true total arrives on the sibling
+          // `res.meta`. Counting only this page's rows (as this did) reported one
+          // page and hid every request past the first 20.
+          const metaTotal = (res.meta as { total?: unknown } | undefined)?.total;
           setRequests(result);
-          setTotal(result.length);
+          setTotal(typeof metaTotal === 'number' ? metaTotal : result.length);
         } else if (result && typeof result === 'object') {
           const pd = result as { data?: GdprRequest[]; meta?: { total?: number } };
           setRequests(pd.data || []);

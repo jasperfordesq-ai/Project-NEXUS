@@ -29,6 +29,7 @@ export function ErrorLogs() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -37,8 +38,14 @@ export function ErrorLogs() {
       if (res.success && res.data) {
         const result = res.data as unknown;
         if (Array.isArray(result)) {
+          // The shared api client unwraps the `{ data, meta }` envelope: `res.data`
+          // is the bare row array and pagination arrives on the sibling `res.meta`.
+          // Counting only the rows on this page (as this did) reported one page and
+          // hid every entry past the first 50.
+          const meta = res.meta as { total?: unknown; per_page?: unknown } | undefined;
           setLogs(result);
-          setTotal(result.length);
+          setTotal(typeof meta?.total === 'number' ? meta.total : result.length);
+          if (typeof meta?.per_page === 'number' && meta.per_page > 0) setPageSize(meta.per_page);
         } else if (result && typeof result === 'object') {
           const pd = result as { data?: ErrorLogEntry[]; meta?: { total?: number } };
           setLogs(pd.data || []);
@@ -115,6 +122,7 @@ export function ErrorLogs() {
         data={logs}
         isLoading={loading}
         totalItems={total}
+        pageSize={pageSize}
         page={page}
         onPageChange={setPage}
         searchable={false}
