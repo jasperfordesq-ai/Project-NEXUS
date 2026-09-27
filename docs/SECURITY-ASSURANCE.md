@@ -1,6 +1,6 @@
 # Security Assurance
 
-Last reviewed: 2026-09-11
+Last reviewed: 2026-09-24
 
 How security assessment works on Project NEXUS: what gets tested, how results are recorded, and
 how a customer — particularly a public-sector one — can ask for and receive evidence.
@@ -43,6 +43,26 @@ Four layers, each answering a different question.
 
 The fourth line is the honest one and must stay. No internal work substitutes for independent
 testing, and no assurance document may suggest otherwise.
+
+### A finite verification checklist
+
+Internal reviews use the versioned requirements in [OWASP ASVS 5.0.0](https://github.com/OWASP/ASVS/tree/v5.0.0/5.0)
+as a checklist. The private ledger records each requirement as unassessed, in progress, passed,
+failed, not applicable with a reason, or blocked with the missing evidence named. A proposed
+level 2 baseline is a long-term reference, not a request to audit hundreds of requirements at once or an ASVS certification claim. Each review selects a small number of high-risk journeys, records the requirements actually tested, and reports the untested remainder plainly.
+
+The chain for each applicable requirement is: requirement → source and route trace → working
+control and adverse test → candidate or finding → attack-precondition check → regression test
+and retest → evidence-backed status. A scanner severity label alone does not establish that an
+outside attacker can reach or exploit a path. A test refusal without an authorized control is
+inconclusive. Prior assessments are evidence leads; their results are not automatically carried
+forward to a newer commit.
+
+Dynamic tests name the exact environment and deployed commit. A bounded passive scan of the
+isolated, synthetic staging server can find runtime and configuration issues, while authenticated
+member, broker, administrator and cross-community tests check authorization and business logic.
+Testing an older staging build cannot verify newer local fixes. No internal test closes the
+independent-testing obligation.
 
 ### Route-table-wide sweeps
 

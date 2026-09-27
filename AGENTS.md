@@ -132,6 +132,24 @@ It does not push and does not deploy.
 
 ---
 
+## 🔴 Three environments — "staging" is a SERVER, not this checkout
+
+| The owner says | It means | Tell it apart by |
+|---|---|---|
+| **"staging", "the staging server", "rebuild staging"** | The isolated pen-test target on its own Azure subscription (synthetic data, built 21 September 2026 for the independent test Coventry City Council requires) | Containers `nexus-staging-*`, `APP_ENV=staging`, hosts `*.staging.project-nexus.ie` |
+| "local", "dev" | The Docker stack on the workstation | Containers `nexus-php-app` / `nexus-php-db`, `APP_ENV=development`, `127.0.0.1:8090` |
+| "production", "live" | The real platform | `*.project-nexus.ie` without `staging` |
+
+🔴 The working checkout lives in a folder named `staging` (`C:\platforms\htdocs\staging`). **That does not
+make it the staging server.** A session on 2026-09-23 changed the local database believing it was staging.
+
+Everything about the staging server — access, current state, the rebuild command, and the rules — is in the
+private guide `.local-docs-archive/third-party-pentest-readiness/STAGING-SERVER.md` (gitignored; not in a
+fresh clone). Read it before acting on any instruction that mentions staging. Never point `scripts/deploy.sh`
+or the blue/green scripts at the staging server.
+
+---
+
 ## Local Development (Docker-First)
 
 | Service | URL |

@@ -1,6 +1,6 @@
 # Security Scanning
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-09-24
 
 Project NEXUS is a public AGPL repository. Security scanning must distinguish reachable production risk from development-tooling noise.
 
@@ -16,10 +16,10 @@ Do **not** open a public issue for an unpatched vulnerability. Use the private d
 | --- | --- |
 | `SECURITY.md` | Public vulnerability disclosure policy and safe-research rules. |
 | `.github/workflows/security-scan.yml` | CI security scan workflow (runs nightly + on every push to `main`). |
-| `.github/workflows/dependency-review.yml` | Lightweight PR gate — runs only when package files change. |
+| `.github/workflows/dependency-review.yml` | PR dependency check — runs when package files change and fails its job on High or Critical advisories. Branch protection determines whether a failed job blocks merge. |
 | `owasp-suppressions.xml` | OWASP Dependency-Check suppressions with documented reasons. |
 | `.trivyignore` | Trivy suppressions with documented reasons. |
-| `.npm-audit-exceptions.json` | npm-audit exceptions (advisory id, scope, reason, added date) consumed by `scripts/npm-audit-gate.mjs`. |
+| `.npm-audit-exceptions.json` | npm-audit exceptions (advisory id, scope, reason, added and expiry dates) consumed by `scripts/npm-audit-gate.mjs`. |
 | `.semgrepignore` | Semgrep path exclusions (dead/legacy code). |
 | `composer.lock`, `package-lock.json`, `react-frontend/package-lock.json`, `e2e/package-lock.json`, `mobile/package-lock.json` | Dependency state that scanners evaluate. |
 
@@ -34,16 +34,21 @@ The `security-scan.yml` workflow runs the following tools in order. The CI defin
 | 1 | `composer audit --locked` | PHP CVEs in `composer.lock` | Yes |
 | 2 | Trivy filesystem (table) | Filesystem CVEs at CRITICAL/HIGH | Yes, respects `.trivyignore` |
 | 3 | Trivy filesystem (SARIF) | Same — uploads to GitHub Security tab | No (visibility only) |
-| 4 | Semgrep (SAST) | PHP injection, secret patterns, security anti-patterns | No (SARIF upload only) |
+| 4 | Semgrep (SAST) | PHP/JS/TS injection, secret patterns, security anti-patterns | No (SARIF upload only; the step is `continue-on-error`) |
 | 5 | TruffleHog (`Check for Hardcoded Secrets`) | Verified secrets in git history | Yes |
 | 6 | Enlightn Security Checker (`PHP Security Checker`) | A second advisory-database pass over `composer.lock` | Yes |
-| 7 | `scripts/npm-audit-gate.mjs` (`NPM Audit (production deps — blocking)`) | Production npm CVEs at high+ across the root, React, E2E, and mobile lockfiles | Yes, respects `.npm-audit-exceptions.json` |
+| 7 | `scripts/npm-audit-gate.mjs` (`NPM Audit (production deps — blocking)`) | Production npm CVEs at high+ across the root, React, E2E, mobile and web-uk lockfiles | Yes, respects `.npm-audit-exceptions.json` |
 | 8 | OWASP Dependency-Check | Transitive CVEs across PHP + installed root/React/E2E npm dependency trees, CVSS ≥ 7 | Yes, respects `owasp-suppressions.xml` |
 | 9 | Trivy container scan (separate `container-scan` job) | OS/library CVEs inside the built Docker image | Yes (push events only) |
 
-The npm step is **not** raw `npm audit`. It runs `scripts/npm-audit-gate.mjs` four times — bare, `--prefix react-frontend`, `--prefix e2e`, and `--prefix mobile --package-lock-only`. The wrapper blocks on `high`/`critical` advisories unless the advisory carries a dated, scope-matched entry in `.npm-audit-exceptions.json`, in which case it is printed as excepted and the gate still exits 0. Consequence: the local commands below can surface a HIGH that CI deliberately passes. One exception is live today — `GHSA-mh99-v99m-4gvg` (`brace-expansion`, scope `mobile`, added 2026-07-25).
+The npm step is **not** raw `npm audit`. It runs `scripts/npm-audit-gate.mjs` five times — bare, `--prefix react-frontend`, `--prefix e2e`, `--prefix mobile --package-lock-only`, and `--prefix web-uk --package-lock-only`. The wrapper blocks on `high`/`critical` advisories unless the advisory carries an unexpired, scope-matched entry in `.npm-audit-exceptions.json`, in which case it is printed as excepted and the gate still exits 0. Consequence: the local commands below can surface a HIGH that CI deliberately passes. Check the exception file for the current accepted advisories and expiry dates.
 
 Full scan results land in the GitHub Security tab (SARIF uploads) and as workflow artifacts for the OWASP HTML report.
+
+A green overall Security Scan workflow does not mean Semgrep found nothing. Its step may exit
+non-zero on rule matches while the job remains green; read the Semgrep step and SARIF results,
+then trace each match to an attacker-controlled source and reachable sink before calling it a
+vulnerability. The other blocking scan steps still need their executed job list checked.
 
 Dependency-Check's network-dependent Node Audit Analyzer is disabled because it
 duplicates the explicit blocking `npm audit` commands and turns npm Audit API
@@ -96,6 +101,7 @@ npm audit --omit=dev --audit-level=high
 npm --prefix react-frontend audit --omit=dev --audit-level=high
 npm --prefix e2e audit --omit=dev --audit-level=high
 npm --prefix mobile audit --package-lock-only --omit=dev --audit-level=high
+npm --prefix web-uk audit --package-lock-only --omit=dev --audit-level=high
 ```
 
 - `--omit=dev` restricts the check to packages that ship in the production bundle. Build tools, dev servers, and test frameworks are excluded; their advisories are real noise against the production risk surface.
@@ -115,6 +121,7 @@ node scripts/npm-audit-gate.mjs
 node scripts/npm-audit-gate.mjs --prefix react-frontend
 node scripts/npm-audit-gate.mjs --prefix e2e
 node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
+node scripts/npm-audit-gate.mjs --prefix web-uk --package-lock-only
 ```
 
 ### Quick local Trivy scan (optional)
@@ -210,13 +217,14 @@ The `until` date enforces expiry — OWASP Dependency-Check will re-surface the 
       "scope": "mobile",
       "package": "example-lib",
       "reason": "No in-range fix; the only npm-offered fix is a breaking major of an on-hold app. Path processes repo-controlled input at build time only.",
-      "added": "2026-07-25"
+      "added": "2026-07-25",
+      "expires": "2026-10-25"
     }
   ]
 }
 ```
 
-There is no automatic expiry here — the gate prints every excepted advisory on each run, and the file's own comment requires a quarterly review alongside `.trivyignore`. Remove an entry as soon as an in-range fix ships.
+The gate enforces `expires`: once that date passes, the advisory blocks again unless a reviewer renews the exception with a current reachability reason. Remove an entry as soon as an in-range fix ships.
 
 ### Suppression hygiene rules
 
@@ -230,13 +238,13 @@ There is no automatic expiry here — the gate prints every excepted advisory on
 
 ## CI Scan Schedule and Gate Summary
 
-| When | What runs | Blocks merge? |
+| When | What runs | Failure result |
 | --- | --- | --- |
-| Every push to `main` | Full security scan + container scan | Yes (composer, Trivy, TruffleHog, OWASP, npm audit) |
-| Nightly (02:00 UTC) | Full security scan | Yes |
-| PR touching package files | Dependency review (GitHub Dependency Graph) | Informational only (Dependency Graph not yet enabled) |
+| Every push to `main` | Full security scan + container scan | Blocking steps fail this post-merge workflow |
+| Nightly (02:00 UTC) | Full security scan | Blocking steps fail the scheduled workflow |
+| PR touching package files | Dependency review (GitHub Dependency Graph) | Its job fails on High or Critical advisories; merge protection is configured separately |
 
-The full scan does not run on PRs by default. PR-time coverage comes from the dependency-review workflow and from the fact that every merge to `main` triggers the full scan.
+The full scan does not run on PRs by default. PR-time dependency coverage comes from the dependency-review workflow. Static and secret scans run after a merge to `main` or on the nightly schedule, so they are detection signals rather than pre-merge gates.
 
 ---
 
