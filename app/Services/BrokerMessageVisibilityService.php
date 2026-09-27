@@ -421,6 +421,15 @@ class BrokerMessageVisibilityService
         // messaging-disabled decision on the same row.
         $this->isActiveAuthorizedMonitoring($restriction, $userId, $tenantId);
 
+        // "Disable messaging while monitored" ends with the monitoring period.
+        // If the period has passed but the row has not been cleared yet (the
+        // nightly safeguarding:clear-expired-monitoring does that, and tells
+        // the member), do not keep the member silenced in the meantime (F-217).
+        $monitoringExpiresAt = $restriction->monitoring_expires_at ?? null;
+        if ($monitoringExpiresAt && strtotime((string) $monitoringExpiresAt) <= time()) {
+            return false;
+        }
+
         return (bool) ($restriction->messaging_disabled ?? false);
     }
 

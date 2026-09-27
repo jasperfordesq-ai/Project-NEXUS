@@ -221,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- When a broker's monitoring period runs out, a member whose messaging was switched off can now send messages again, and is told their restrictions have been lifted. Until now the nightly clean-up ended the monitoring but left messaging switched off for good, while the member dropped out of the brokers' monitoring list, so nobody could see or undo it. The same clean-up frees members already left in that state, the automatic end is recorded in the activity log, and the message-sending check no longer honours a switch-off whose period has passed. The broker guide now describes this in all eleven languages instead of warning brokers to end monitoring by hand (F-217).
+
 - Retire the prior member's browser push subscription when a session expires or is replaced, including cross-tab account switches, and give each push endpoint one current member owner when a new account subscribes (F-108 follow-up).
 
 - Bind member GDPR data requests, consent changes and account-erasure requests, plus administrator consent views and account-created consents, to the authenticated community after tenant resolution. These operations could otherwise use the platform default community when their controllers were constructed early (F-216).

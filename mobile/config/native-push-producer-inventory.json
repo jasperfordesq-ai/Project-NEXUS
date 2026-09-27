@@ -1,8 +1,21 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 231,
+    "producer_count": 232,
     "producers": [
+        {
+            "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
+            "file": "app/Console/Commands/ClearExpiredMonitoringCommand.php",
+            "line": 109,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $row->user_id",
+            "title_expression": null,
+            "body_expression": "$message",
+            "type_expression": "system",
+            "link_expression": "/messages",
+            "data_expression": null
+        },
         {
             "id": "app/Console/Commands/ProcessSavedSearchAlerts.php:186:NotificationDispatcher::fanOutPush",
             "file": "app/Console/Commands/ProcessSavedSearchAlerts.php",
