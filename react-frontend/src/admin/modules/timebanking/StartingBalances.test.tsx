@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -64,6 +64,60 @@ const GRANTS = [
 import { StartingBalances } from './StartingBalances';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
+
+// What GET /v2/admin/wallet/grants really sends (AdminWalletGrantController::index,
+// respondWithData), after the shared api client unwraps `data`: the rows are under
+// `grants`, the count is a sibling `total`, and each row uses the server's field
+// names. The page used to look for `data` / `meta.total` and `user_name` / `reason`,
+// so the grant history was always empty.
+const SERVER_GRANTS_REPLY = {
+  success: true,
+  data: {
+    grants: [
+      {
+        id: 41,
+        sender_id: 1,
+        receiver_id: 5,
+        amount: 5,
+        description: 'Welcome grant',
+        status: 'completed',
+        created_at: '2025-01-01T00:00:00Z',
+        recipient_name: 'Carol Recipient',
+        recipient_email: 'carol@example.com',
+        admin_name: 'Dana Admin',
+      },
+    ],
+    total: 45,
+    page: 1,
+    per_page: 20,
+  },
+};
+
+describe('StartingBalances — grant history from the real server reply', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAdminUsers.list.mockResolvedValue({ success: true, data: USERS });
+  });
+
+  it('lists the grants the server returns, with recipient, reason and admin', async () => {
+    mockAdminTimebanking.getGrants.mockResolvedValue(SERVER_GRANTS_REPLY);
+    render(<StartingBalances />);
+
+    expect(await screen.findByText('Carol Recipient')).toBeInTheDocument();
+    expect(screen.getByText('carol@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Welcome grant')).toBeInTheDocument();
+    expect(screen.getByText('Dana Admin')).toBeInTheDocument();
+  });
+
+  it('offers a page control from the server total', async () => {
+    mockAdminTimebanking.getGrants.mockResolvedValue(SERVER_GRANTS_REPLY);
+    render(<StartingBalances />);
+
+    const nav = await screen.findByRole('navigation');
+    expect(within(nav).getByRole('button', { name: '3' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: '4' })).not.toBeInTheDocument();
+  });
+});
 
 describe('StartingBalances', () => {
   beforeEach(() => {

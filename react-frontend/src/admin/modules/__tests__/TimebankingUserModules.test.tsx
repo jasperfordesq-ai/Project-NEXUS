@@ -135,9 +135,10 @@ vi.mock('@/admin/api/adminApi', () => ({
     getAlerts: vi.fn().mockResolvedValue({ success: true, data: [] }),
     updateAlertStatus: vi.fn().mockResolvedValue({ success: true }),
     getOrgWallets: vi.fn().mockResolvedValue({ success: true, data: [] }),
+    // GET /v2/admin/wallet/grants sends { grants, total, page, per_page }.
     getGrants: vi.fn().mockResolvedValue({
       success: true,
-      data: { data: [], meta: { total: 0 } },
+      data: { grants: [], total: 0, page: 1, per_page: 20 },
     }),
     grantCredits: vi.fn().mockResolvedValue({ success: true }),
     // Mirrors what the shared api client (src/lib/api.ts) really resolves with for

@@ -266,9 +266,19 @@ function GrantHistory({ refreshKey }: { refreshKey: number }) {
           const metaTotal = (res.meta as Record<string, unknown> | undefined)?.total;
           setTotal(typeof metaTotal === 'number' ? metaTotal : data.length);
         } else if (data && typeof data === 'object') {
-          const pd = data as { data: WalletGrant[]; meta?: { total: number } };
-          setGrants(pd.data || []);
-          setTotal(pd.meta?.total || 0);
+          // GET /v2/admin/wallet/grants (AdminWalletGrantController::index) sends
+          // `{ grants, total, page, per_page }` with the server's own field names.
+          // This used to read `data` / `meta.total` and `user_name` / `reason`,
+          // none of which that endpoint sends, so the history was always empty.
+          const pd = data as {
+            grants?: ServerWalletGrant[];
+            data?: WalletGrant[];
+            total?: number;
+            meta?: { total?: number };
+          };
+          const rows = Array.isArray(pd.grants) ? pd.grants.map(toWalletGrant) : (pd.data || []);
+          setGrants(rows);
+          setTotal(pd.total ?? pd.meta?.total ?? rows.length);
         }
       }
     } catch {
@@ -357,6 +367,31 @@ function GrantHistory({ refreshKey }: { refreshKey: number }) {
       />
     </div>
   );
+}
+
+/** A grant row exactly as GET /v2/admin/wallet/grants sends it. */
+interface ServerWalletGrant {
+  id: number;
+  receiver_id: number;
+  amount: number;
+  description?: string;
+  created_at: string;
+  recipient_name?: string;
+  recipient_email?: string;
+  admin_name?: string;
+}
+
+function toWalletGrant(row: ServerWalletGrant): WalletGrant {
+  return {
+    id: row.id,
+    user_id: row.receiver_id,
+    user_name: row.recipient_name ?? '',
+    user_email: row.recipient_email ?? '',
+    amount: row.amount,
+    reason: row.description ?? '',
+    granted_by: row.admin_name ?? '',
+    created_at: row.created_at,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
