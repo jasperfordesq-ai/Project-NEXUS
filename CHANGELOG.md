@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The admin newsletter activity page now shows every open and click. It read the page count from the wrong part of the server's response, so it always believed there was one page: anything past the first 50 events was hidden with no page control, and the header count stopped at 50. The Opened and Clicked badges on the same page no longer break mid-word in the narrow Event column.
+
 - The mobile event-communications recovery test now waits for the retry read from secure storage before checking that the recovery panel closes. Under the complete 6,959-test CI run, the asynchronous update occasionally crossed the test library's one-second default even though the same focused test passed locally.
 
 - The Android device-test workflow now allows the full thirteen-flow Maestro suite and screenshot tour up to 90 minutes. The former 60-minute whole-job limit cancelled two build 19 verification runs while Maestro was still active, after the API checks and Android build had passed. The longer run exposed the underlying shared failure: Android API 36 left the app behind the launcher while its `starting_reveal` animation never completed, so every journey after launch smoke timed out against the home screen. CI now disables emulator animations for deterministic launches; the E2E build already suppresses the reduced-motion LogBox warning, while ordinary local debug runs still restore animations before testing.
