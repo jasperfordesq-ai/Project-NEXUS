@@ -29,6 +29,13 @@ class JobModerationService
      */
     public static function isModerationEnabled(int $tenantId): bool
     {
+        // The administrator's job configuration is stored in tenant_settings.
+        // Honour an explicit choice before the older tenants.configuration keys.
+        $saved = JobConfigurationService::getStoredOverride(JobConfigurationService::CONFIG_MODERATION_ENABLED);
+        if ($saved !== null) {
+            return filter_var($saved, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+        }
+
         $configured = TenantContext::getSetting(JobConfigurationService::CONFIG_MODERATION_ENABLED, null);
         if ($configured !== null) {
             if (is_bool($configured)) {

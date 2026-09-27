@@ -221,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The job-moderation administrator switch now governs job publication and review. A saved choice takes precedence over older tenant configuration, so enabling review in settings actually holds new and edited job ads for approval (F-215).
+
 - Job ads now return to moderation when an employer changes approved content. An open ad is removed from public view pending review; changes to a closed or draft ad invalidate its old approval before reopening. Resubmitting unchanged content leaves the approval intact (F-214).
 
 - **F-004 (E-038): a goal buddy must be accepted by the goal owner.** Any member could appoint themselves buddy of another member's public goal with one request. `POST /v2/goals/{id}/buddy` now creates a pending request (new table `goal_buddy_requests`, additive migration) and changes nothing on the goal; the owner accepts or declines it through the new owner-only `GET /v2/goals/{id}/buddy-requests` and `POST /v2/goals/{id}/buddy-requests/{requestId}/accept|decline`. Accepting keeps the F-143 row lock and the F-097 public-identity projection, re-checks the safeguarding policy and closes competing offers; a declined member cannot re-offer on the same goal. React and the accessible site show pending offers to the owner with accept/decline controls, and "offer sent" to the member who offered. Regression test: `tests/Laravel/Feature/Security/E038/GoalBuddyConsentTest.php`; `GoalBuddyConcurrencyTest` now races two owner accepts. The accessible site's generated route matrix and API consumer ledger are refreshed for the new route and its three API calls.

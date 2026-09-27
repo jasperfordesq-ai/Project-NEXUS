@@ -2201,9 +2201,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobModerationService.php:132:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobModerationService.php:139:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobModerationService.php",
-            "line": 132,
+            "line": 139,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $job->user_id",
@@ -2214,9 +2214,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobModerationService.php:204:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobModerationService.php:211:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobModerationService.php",
-            "line": 204,
+            "line": 211,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $job->user_id",

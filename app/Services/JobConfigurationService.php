@@ -144,6 +144,13 @@ class JobConfigurationService
         return $default ?? self::DEFAULTS[$key] ?? null;
     }
 
+    /** Return a saved override without substituting the module default. */
+    public static function getStoredOverride(string $key): mixed
+    {
+        $stored = self::getStoredValues(TenantContext::getId());
+        return $stored[$key] ?? null;
+    }
+
     public static function set(string $key, mixed $value): void
     {
         $tenantId = TenantContext::getId();
