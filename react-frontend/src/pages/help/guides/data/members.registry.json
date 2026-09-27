@@ -106,6 +106,10 @@
         "gate": {
           "feature": "identity_verification"
         }
+      },
+      {
+        "id": "saved_items",
+        "link": "/saved"
       }
     ]
   },
@@ -199,6 +203,13 @@
         "link": "/settings/blocked",
         "gate": {
           "module": "settings"
+        }
+      },
+      {
+        "id": "muting_members",
+        "link": "/feed",
+        "gate": {
+          "module": "feed"
         }
       },
       {
@@ -343,6 +354,10 @@
       },
       {
         "id": "ai_assistant_limits",
+        "link": "/chat"
+      },
+      {
+        "id": "ai_assistant_allowance",
         "link": "/chat"
       }
     ]
@@ -942,6 +957,13 @@
       {
         "id": "recognition_nexus_score",
         "link": "/nexus-score"
+      },
+      {
+        "id": "venue_visit_xp",
+        "link": "/venues/pass",
+        "gate": {
+          "feature": "partner_venues"
+        }
       }
     ]
   },
@@ -1116,6 +1138,10 @@
         "link": "/jobs/create"
       },
       {
+        "id": "job_posting_limits",
+        "link": "/jobs/create"
+      },
+      {
         "id": "managing_your_vacancy",
         "link": "/jobs"
       },
@@ -1146,6 +1172,10 @@
       },
       {
         "id": "managing_your_listings",
+        "link": "/marketplace/my-listings"
+      },
+      {
+        "id": "marketplace_listing_limits",
         "link": "/marketplace/my-listings"
       },
       {
@@ -1262,6 +1292,25 @@
       {
         "id": "gifting_hours",
         "link": "/caring-community/hour-gift"
+      },
+      {
+        "id": "caring_markt",
+        "link": "/caring-community/markt"
+      },
+      {
+        "id": "caring_hour_transfer",
+        "link": "/caring-community/hour-transfer"
+      },
+      {
+        "id": "caring_trust_tier",
+        "link": "/caring-community/my-trust-tier"
+      },
+      {
+        "id": "caring_data_export",
+        "link": "/caring-community/my-data-export",
+        "gate": {
+          "module": "settings"
+        }
       }
     ]
   },

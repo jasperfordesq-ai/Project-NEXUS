@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Members' Help Centre guide corrected in 13 articles after checking each against the code: sign-in offers Google and Facebook (not Apple); brokers and coordinators, not only admins, can see a member's phone number; matches include upcoming events; event attendance rewards explain self check-in, the monthly limit and reversals; showcased badges appear in the members directory; volunteer hours explain the per-entry and 24-hours-a-day limits; job lists include jobs with no closing date; marketplace orders explain paying with time credits and the Disputed status. Ten new articles cover saved items, muting, the AI assistant allowance, job and marketplace listing limits, venue visit points and four Caring Community pages. Pages that do not work as their screens describe were deliberately left out. All eleven languages; the ten non-English versions were drafted by AI and have not been reviewed by native speakers.
+
 - Help Centre: searching the community's own questions no longer matches the hidden formatting inside an answer (for example "strong" or "href"); only the words a reader can see are searched. Search now lists every matching guide instead of stopping at 30, Broker Panel guide pages show the article's title in the browser tab, and the "Go to this page" buttons use an in-app arrow instead of the "opens another site" arrow.
 
 - Search backfills now wait for Meilisearch to finish each document task and report rejected writes as failures; writes explicitly use the document ID as the primary key.
