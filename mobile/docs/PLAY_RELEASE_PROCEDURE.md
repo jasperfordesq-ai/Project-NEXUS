@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Releasing to Google Play — the procedure, and everything that bites
 
-Last reviewed: 2026-09-23
+Last reviewed: 2026-09-27
 
 Status: **Maintained — written from an end-to-end release of version code 8 on
 2026-09-09, every timing and fingerprint in it measured rather than assumed.**
@@ -400,7 +400,9 @@ browser upload was refused by its permission layer. The agent then entered the e
   "Not included". 100.0% rollout, all targeted countries, 7 active installs.
 - **Quick checks:** the pre-submit bar ran about 13 minutes ("up to 14 minutes" → "Your changes
   can now be sent for review") before submitting. A second pass then ended "Your changes are now in review".
-- **Submission 13**, submitted September 23, 2026, 1:09 PM, **Production — In review**.
+- **Submission 13**, submitted September 23, 2026, 1:09 PM, was **Published** on
+  September 23, 2026 at 2:16 PM. Play identifies the live release as build 18 / 1.8.0.
+  `mobile/live-store-build.json` now records that exact artifact and source commit.
 
 Two Console behaviours worth knowing before you click:
 
