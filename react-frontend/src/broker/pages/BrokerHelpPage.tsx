@@ -23,7 +23,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import BookOpen from 'lucide-react/icons/book-open';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ArrowRight from 'lucide-react/icons/arrow-right';
-import ArrowUpRight from 'lucide-react/icons/arrow-up-right';
 import Search from 'lucide-react/icons/search';
 import SearchX from 'lucide-react/icons/search-x';
 import { Button, Card, CardBody, CardHeader, Input, Separator } from '@/components/ui';
@@ -138,7 +137,13 @@ function BrokerHelpArticle({ sectionId, articleId }: { sectionId: string; articl
           <HelpBody body={guideText('brokers', articleKey(section.id, article.id, 'body'))} />
           <div className="mt-8 flex flex-wrap gap-2">
             {article.link && (
-              <Button as={Link} to={tenantPath(article.link)} color="primary" size="sm">
+              <Button
+                as={Link}
+                to={tenantPath(article.link)}
+                color="primary"
+                size="sm"
+                endContent={<ArrowRight size={14} className="rtl:rotate-180" aria-hidden="true" />}
+              >
                 {t('open_page')}
               </Button>
             )}
@@ -147,7 +152,7 @@ function BrokerHelpArticle({ sectionId, articleId }: { sectionId: string; articl
               to={tenantPath(helpPath('brokers', section.id, article.id))}
               size="sm"
               variant="tertiary"
-              endContent={<ArrowUpRight size={14} aria-hidden="true" />}
+              endContent={<ArrowRight size={14} className="rtl:rotate-180" aria-hidden="true" />}
             >
               {t('broker_panel.view_in_help_centre')}
             </Button>
@@ -181,6 +186,14 @@ function BrokerHelpArticle({ sectionId, articleId }: { sectionId: string; articl
 
 export default function BrokerHelpPage() {
   const { sectionId, articleId } = useParams<{ sectionId?: string; articleId?: string }>();
+  // Two separate components so only one of them sets the page title: when the
+  // list's usePageTitle also ran on an article, it ran last and every article
+  // tab read "Broker and coordinator guide".
+  if (sectionId && articleId) return <BrokerHelpArticle sectionId={sectionId} articleId={articleId} />;
+  return <BrokerHelpIndex />;
+}
+
+function BrokerHelpIndex() {
   const { t, guideText, sectionsFor, search } = useHelpGuides();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') ?? '';
@@ -194,8 +207,6 @@ export default function BrokerHelpPage() {
   const searching = query.trim().length >= 2;
 
   usePageTitle(t('broker_panel.title'));
-
-  if (sectionId && articleId) return <BrokerHelpArticle sectionId={sectionId} articleId={articleId} />;
 
   return (
     <BrokerPageShell

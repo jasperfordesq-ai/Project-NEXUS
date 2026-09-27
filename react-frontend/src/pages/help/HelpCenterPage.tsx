@@ -26,7 +26,9 @@ import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { AUDIENCE_ICON, HelpCardLink, HelpContactPanel, HelpIcon } from './guides/HelpParts';
+import { faqAnswerText } from './guides/faqText';
 import { articleKey, helpPath, sectionKey } from './guides/registry';
+import { foldText, matchesEveryWord, queryWords } from './guides/searchText';
 import { HELP_AUDIENCES, type HelpAudience } from './guides/types';
 import { useHelpGuides } from './guides/useHelpGuides';
 
@@ -80,13 +82,24 @@ export function HelpCenterPage() {
     };
   }, []);
 
-  const matchingFaqGroups = query.trim()
+  // Searched on what the reader sees: answers are admin-written HTML, and the
+  // markup ("strong", "href") must not match. Same word rules as the guides.
+  const faqSearchText = useMemo(
+    () => new Map(faqGroups.flatMap((group) => group.faqs.map((faq) => [
+      faq.id,
+      foldText(`${faq.question} ${faqAnswerText(faq.answer)} ${group.category}`),
+    ] as const))),
+    [faqGroups],
+  );
+
+  // One threshold for guides and questions, so a single letter filters neither.
+  const searching = query.trim().length >= 2;
+  const words = queryWords(query);
+  const matchingFaqGroups = searching
     ? faqGroups
         .map((group) => ({
           ...group,
-          faqs: group.faqs.filter((faq) =>
-            `${faq.question} ${faq.answer}`.toLowerCase().includes(query.trim().toLowerCase()),
-          ),
+          faqs: group.faqs.filter((faq) => matchesEveryWord(faqSearchText.get(faq.id) ?? '', words)),
         }))
         .filter((group) => group.faqs.length > 0)
     : faqGroups;
@@ -94,8 +107,6 @@ export function HelpCenterPage() {
   if (params.audience !== undefined && !isAudience(params.audience)) {
     return <Navigate to={tenantPath('/help')} replace />;
   }
-
-  const searching = query.trim().length >= 2;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-1 sm:px-0">
@@ -134,7 +145,9 @@ export function HelpCenterPage() {
           </div>
           {results.length > 0 ? (
             <div className="grid gap-3">
-              {results.slice(0, 30).map((result) => (
+              {/* Every match is listed: the count above says how many were found,
+                  and it used to promise more guides than a 30-card cap showed. */}
+              {results.map((result) => (
                 <HelpCardLink
                   key={`${result.audience}.${result.sectionId}.${result.articleId}`}
                   to={helpPath(result.audience, result.sectionId, result.articleId)}

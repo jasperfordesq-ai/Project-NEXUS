@@ -9,7 +9,6 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ArrowRight from 'lucide-react/icons/arrow-right';
-import ExternalLink from 'lucide-react/icons/arrow-up-right';
 import { Breadcrumbs } from '@/components/navigation';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -87,7 +86,7 @@ export function HelpArticlePage() {
                 as={Link}
                 to={tenantPath(article.link)}
                 color="primary"
-                endContent={<ExternalLink className="h-4 w-4" aria-hidden="true" />}
+                endContent={<ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />}
               >
                 {t('open_page')}
               </Button>

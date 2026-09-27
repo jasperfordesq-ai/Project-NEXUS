@@ -11,6 +11,7 @@ import type { TenantFeatures, TenantModules } from '@/types/api';
 import { HELP_AUDIENCES, HELP_AUDIENCE_NAMESPACE, type HelpAudience, type HelpGateContext, type HelpSetting } from './types';
 import { articleKey, sectionKey, visibleSections, type VisibleSection } from './registry';
 import { helpBodyToPlainText } from './HelpBody';
+import { foldText as fold, hasWord, queryWords } from './searchText';
 
 export const HELP_NAMESPACES = ['help_centre', ...HELP_AUDIENCES.map((a) => HELP_AUDIENCE_NAMESPACE[a])];
 
@@ -29,29 +30,6 @@ interface IndexEntry extends Omit<HelpSearchResult, 'score'> {
   summaryText: string;
   sectionText: string;
   bodyText: string;
-}
-
-/** Lower-case and strip accents so "pagamento" matches "Pagamento" and "é" matches "e". */
-function fold(value: string): string {
-  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
-
-const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
-/** Scripts written without spaces between words, where any substring can be a word. */
-const NO_WORD_SPACES = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
-
-/**
- * Whether `word` starts a word somewhere in `text`: "pot" finds "pot" and
- * "pots" but not "spot". Japanese has no spaces, so any match counts there.
- */
-function hasWord(text: string, word: string): boolean {
-  if (NO_WORD_SPACES.test(word)) return text.includes(word);
-  let from = text.indexOf(word);
-  while (from !== -1) {
-    if (from === 0 || !LETTER_OR_DIGIT.test(text.charAt(from - 1))) return true;
-    from = text.indexOf(word, from + 1);
-  }
-  return false;
 }
 
 type HelpSettings = Partial<Record<HelpSetting, boolean>>;
@@ -157,7 +135,7 @@ export function useHelpGuides() {
 
   /** Every guide containing all the words searched for, best matches first. */
   const search = useCallback((query: string): HelpSearchResult[] => {
-    const words = fold(query).split(/[^\p{L}\p{N}]+/u).filter((word) => word.length >= 2 || NO_WORD_SPACES.test(word));
+    const words = queryWords(query);
     if (words.length === 0) return [];
 
     const results: HelpSearchResult[] = [];

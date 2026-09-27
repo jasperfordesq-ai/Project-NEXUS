@@ -18,6 +18,7 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 import BrokerHelpPage, { BrokerControlsHelp } from './BrokerHelpPage';
+import { usePageTitle } from '@/hooks';
 
 function renderAt(path: string) {
   window.history.pushState({}, '', path);
@@ -65,6 +66,17 @@ describe('BrokerHelpPage', () => {
     expect(screen.getByRole('link', { name: /All broker guides/ })).toHaveAttribute('href', '/test/broker/help');
     expect(screen.getByRole('link', { name: /Open in the Help Centre/ }))
       .toHaveAttribute('href', '/test/help/brokers/broker_group_activities/broker_community_pot');
+  });
+
+  it("titles the browser tab with the article, not the guide's name", () => {
+    renderAt('/broker/help/broker_group_activities/broker_community_pot');
+    expect(vi.mocked(usePageTitle)).toHaveBeenCalledWith('Using a Community Pot account for workshops');
+    expect(vi.mocked(usePageTitle)).not.toHaveBeenCalledWith('Broker and coordinator guide');
+  });
+
+  it('marks links to other pages of the app with the in-app arrow, not the external-site one', () => {
+    const { container } = renderAt('/broker/help/broker_group_activities/broker_community_pot');
+    expect(container.querySelector('svg.lucide-arrow-up-right')).toBeNull();
   });
 
   it('handles a guide that does not exist', () => {

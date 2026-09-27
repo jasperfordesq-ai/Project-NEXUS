@@ -60,6 +60,7 @@ import { HelpCenterPage } from './HelpCenterPage';
 import { HelpSectionPage } from './HelpSectionPage';
 import { HelpArticlePage } from './HelpArticlePage';
 import { api } from '@/lib/api';
+import { HELP_REGISTRY } from './guides/registry';
 
 const mockApiGet = vi.mocked(api.get);
 
@@ -171,6 +172,49 @@ describe('Help Centre home', () => {
     expect(screen.getByText('Where do we meet?')).toBeInTheDocument();
   });
 
+  describe("searching the community's own questions", () => {
+    const faqs = [
+      { id: 11, question: 'What should I bring?', answer: '<p><strong>Bring</strong> your <a href="/library" class="note">library card</a>.</p><p>Tea &amp; coffee provided.</p>' },
+      { id: 12, question: 'Where do we meet?', answer: 'At the town hall.' },
+      // Says the markup words in its visible text, so a search for them has a
+      // real match to wait for.
+      { id: 13, question: 'Why do web pages have tags?', answer: '<p>Words like strong, href, class, note and amp are part of HTML.</p>' },
+    ];
+
+    beforeEach(() => {
+      mockApiGet.mockResolvedValue({ success: true, data: [{ category: 'Local', faqs }] });
+    });
+
+    it.each(['strong', 'href', 'class', 'note', 'amp'])('does not match "%s" in the markup the reader never sees', async (query) => {
+      renderAt(`/help?q=${query}`);
+      expect(await screen.findByText('Why do web pages have tags?')).toBeInTheDocument();
+      expect(screen.queryByText('What should I bring?')).not.toBeInTheDocument();
+    });
+
+    it('matches the words the reader can see, across tags and paragraphs', async () => {
+      renderAt(`/help?q=${encodeURIComponent('library card')}`);
+      expect(await screen.findByText('What should I bring?')).toBeInTheDocument();
+      expect(screen.queryByText('Where do we meet?')).not.toBeInTheDocument();
+    });
+
+    it('matches decoded entities and ignores accents and case', async () => {
+      renderAt(`/help?q=${encodeURIComponent('TEA COFFEE')}`);
+      expect(await screen.findByText('What should I bring?')).toBeInTheDocument();
+    });
+
+    it('matches the category shown beside each question', async () => {
+      renderAt('/help?q=local');
+      expect(await screen.findByText('Where do we meet?')).toBeInTheDocument();
+      expect(screen.getByText('What should I bring?')).toBeInTheDocument();
+    });
+
+    it('does not filter the questions on a single letter, just as it does not search the guides', async () => {
+      renderAt('/help?q=w');
+      expect(await screen.findByText('What should I bring?')).toBeInTheDocument();
+      expect(screen.getByText('Where do we meet?')).toBeInTheDocument();
+    });
+  });
+
   it('always offers a way to contact a person', () => {
     renderAt('/help');
     expect(screen.getByText('Still need help?')).toBeInTheDocument();
@@ -196,6 +240,19 @@ describe('Help Centre topic and article pages', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Recording hours for a workshop or group activity' })).toBeInTheDocument();
     expect(screen.getAllByRole('list').length).toBeGreaterThan(0);
     expect(screen.getByText('More guides in this topic')).toBeInTheDocument();
+  });
+
+  it('sends "Go to this page" to the page inside the app, not to an external site', () => {
+    const section = HELP_REGISTRY.members.find((s) => s.articles.some((a) => a.link));
+    const article = section?.articles.find((a) => a.link);
+    if (!section || !article?.link) throw new Error('no member guide has a page link');
+    renderAt(`/help/members/${section.id}/${article.id}`);
+    const button = screen.getByRole('link', { name: 'Go to this page' });
+    expect(button).toHaveAttribute('href', `/test${article.link}`);
+    expect(button).not.toHaveAttribute('target');
+    // The arrow is the in-app "go on" arrow, not the "leaves this site" one.
+    expect(button.querySelector('svg.lucide-arrow-up-right')).toBeNull();
+    expect(button.querySelector('svg.lucide-arrow-right')).not.toBeNull();
   });
 
   it('shows a friendly page for a guide that does not exist', () => {

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Help Centre: searching the community's own questions no longer matches the hidden formatting inside an answer (for example "strong" or "href"); only the words a reader can see are searched. Search now lists every matching guide instead of stopping at 30, Broker Panel guide pages show the article's title in the browser tab, and the "Go to this page" buttons use an in-app arrow instead of the "opens another site" arrow.
+
 - Search backfills now wait for Meilisearch to finish each document task and report rejected writes as failures; writes explicitly use the document ID as the primary key.
 - Added a permissions-view rebuild for database recovery under a different database name, with a separate-database restore check.
 - Updated the React test runner and coverage package to patched Vitest 4.1.11, retaining isolated test files and the existing CI worker limit.
