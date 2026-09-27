@@ -30,30 +30,6 @@ class PushNotificationServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_subscribe_updates_existing_subscription(): void
-    {
-        DB::shouldReceive('table->where->where->exists')->andReturn(true);
-        DB::shouldReceive('table->where->where->update')->once();
-
-        $result = $this->service->subscribe(1, [
-            'endpoint' => 'https://fcm.googleapis.com/fcm/send/abc',
-            'keys' => ['p256dh' => 'key1', 'auth' => 'auth1'],
-        ]);
-        $this->assertTrue($result);
-    }
-
-    public function test_subscribe_creates_new_subscription(): void
-    {
-        DB::shouldReceive('table->where->where->exists')->andReturn(false);
-        DB::shouldReceive('table->insert')->once();
-
-        $result = $this->service->subscribe(1, [
-            'endpoint' => 'https://updates.push.services.mozilla.com/wpush/v2/new',
-            'keys' => ['p256dh' => 'key2', 'auth' => 'auth2'],
-        ]);
-        $this->assertTrue($result);
-    }
-
     // ── unsubscribe ──
 
     public function test_unsubscribe_returns_true_on_deletion(): void

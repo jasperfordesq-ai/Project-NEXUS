@@ -66,6 +66,26 @@ class PushControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_same_member_resubscription_updates_keys_without_adding_a_row(): void
+    {
+        $member = $this->authenticatedUser();
+        $endpoint = 'https://fcm.googleapis.com/f108-refresh-' . bin2hex(random_bytes(8));
+        $this->apiPost('/push/subscribe', [
+            'endpoint' => $endpoint,
+            'keys' => ['p256dh' => 'first-public-key', 'auth' => 'first-auth-key'],
+        ])->assertCreated();
+        $this->apiPost('/push/subscribe', [
+            'endpoint' => $endpoint,
+            'keys' => ['p256dh' => 'new-public-key', 'auth' => 'new-auth-key'],
+        ])->assertCreated();
+
+        $rows = DB::table('push_subscriptions')->where('endpoint', $endpoint)->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame((int) $member->id, (int) $rows->first()->user_id);
+        $this->assertSame('new-public-key', $rows->first()->p256dh_key);
+        $this->assertSame('new-auth-key', $rows->first()->auth_key);
+    }
+
     public function test_one_browser_endpoint_cannot_remain_bound_to_two_members(): void
     {
         $first = $this->authenticatedUser();
