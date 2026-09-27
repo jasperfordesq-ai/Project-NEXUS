@@ -404,6 +404,25 @@ browser upload was refused by its permission layer. The agent then entered the e
   September 23, 2026 at 2:16 PM. Play identifies the live release as build 18 / 1.8.0.
   `mobile/live-store-build.json` now records that exact artifact and source commit.
 
+On **2026-09-27**, build **19 / 1.8.1** was built locally from exact source commit
+`e94f077037ca6de4bdf23cf4d6e347c1351d9064` after every exact-commit workflow and the
+forced 35-job CI suite passed. The guarded signed build completed in **2m 49s**. The
+96,305,232-byte AAB has SHA-256
+`0A3BFE837F184C7DBE11FDAF945156539540159151359E251C05565A954A13B3` and is filed as
+`releases/android/play/timebank-global-1.8.1-build19.aab`.
+
+- **Internal testing:** published at **10:30 AM**. Play verified API level 24+, target
+  SDK 36, four screen layouts, four ABIs and six required features, with mapping and
+  native debug symbols attached. The review table reported **0 devices lost** in every
+  category (Phone 12,264 / Tablet 6,450 / TV 3 / Chromebook 10 / Android XR 1), a
+  33 MB new install and a 2.21 MB update.
+- **Production:** promoted at 100.0% to all targeted countries, covering six active
+  installs. The pre-submit quick checks completed with "Your changes can now be sent
+  for review" and no issue before submission.
+- **Submission 14**, submitted September 27, 2026 at **10:44 AM**, was **Published**
+  at **10:59 AM**. Managed publishing was off, so approval released it automatically.
+  No physical-device walkthrough of this exact artifact was performed in this session.
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*
