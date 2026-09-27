@@ -29,9 +29,15 @@ interface ParsedMatchResults {
   total: number;
 }
 
-function parseMatchResults(value: unknown): ParsedMatchResults | null {
+// The shared api client unwraps the `{ data, meta }` envelope: `res.data` is the
+// bare row array and the true total arrives on the sibling `res.meta`. Counting
+// only this page's rows (as this did) reported one page and hid every match past
+// the first 20.
+function parseMatchResults(res: { data?: unknown; meta?: unknown }): ParsedMatchResults | null {
+  const value = res.data;
   if (Array.isArray(value)) {
-    return { items: value as MatchApproval[], total: value.length };
+    const metaTotal = (res.meta as { total?: unknown } | undefined)?.total;
+    return { items: value as MatchApproval[], total: typeof metaTotal === 'number' ? metaTotal : value.length };
   }
 
   if (typeof value !== 'object' || value === null) return null;
@@ -66,7 +72,7 @@ export function SmartMatchUsers() {
       const res = await adminMatching.getApprovals({ status: 'all', page: requestedPage });
       if (requestId !== requestIdRef.current) return;
 
-      const parsed = res.success ? parseMatchResults(res.data) : null;
+      const parsed = res.success ? parseMatchResults(res) : null;
       if (parsed) {
         setData(parsed.items);
         setTotal(parsed.total);

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── vi.hoisted: stable mock data factories ──────────────────────────────────
@@ -33,10 +33,18 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── Mock admin sub-components that need full admin context ─────────────────
 vi.mock('../../components/DataTable', () => ({
-    DataTable: ({ data, onRefresh }: { data: unknown[]; onRefresh?: () => void }) => (
+    DataTable: ({ data, onRefresh, totalItems, page, onPageChange }: {
+      data: unknown[];
+      onRefresh?: () => void;
+      totalItems?: number;
+      page?: number;
+      onPageChange?: (page: number) => void;
+    }) => (
       <div data-testid="data-table">
         <span data-testid="row-count">{data.length}</span>
+        <span data-testid="total-items">{totalItems}</span>
         {onRefresh && <button onClick={onRefresh}>Refresh</button>}
+        {onPageChange && <button onClick={() => onPageChange((page ?? 1) + 1)}>Next page</button>}
       </div>
     ),
     StatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
@@ -107,13 +115,18 @@ describe('SmartMatchUsers — populated state (array response)', () => {
     expect(screen.getByTestId('row-count').textContent).toBe('2');
   });
 
-  it('renders DataTable when API returns paginated object shape', async () => {
+  // The shared api client (src/lib/api.ts) unwraps the `data` envelope, so a
+  // paginated response resolves as `{ success, data: rows, meta }`. An earlier
+  // fixture here nested `meta` inside `data`, a shape the client never produces,
+  // which hid that the page ignored the real `meta`.
+  //
+  // Regression: with more than 20 matches the page counted only the 20 rows it
+  // was given, so the table never offered a second page.
+  it('uses the total from the response meta, not the rows on this page', async () => {
     mockGetApprovals.mockResolvedValue({
       success: true,
-      data: {
-        data: [makeMatch(), makeMatch({ id: 2 }), makeMatch({ id: 3 })],
-        meta: { total: 3 },
-      },
+      data: [makeMatch(), makeMatch({ id: 2 }), makeMatch({ id: 3 })],
+      meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3 },
     });
 
     render(<SmartMatchUsers />);
@@ -123,6 +136,23 @@ describe('SmartMatchUsers — populated state (array response)', () => {
     });
 
     expect(screen.getByTestId('row-count').textContent).toBe('3');
+    expect(screen.getByTestId('total-items').textContent).toBe('45');
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    mockGetApprovals.mockResolvedValue({
+      success: true,
+      data: [makeMatch()],
+      meta: { current_page: 1, per_page: 20, total: 45, total_pages: 3 },
+    });
+
+    render(<SmartMatchUsers />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Next page' }));
+
+    await waitFor(() => {
+      expect(mockGetApprovals).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    });
   });
 });
 
