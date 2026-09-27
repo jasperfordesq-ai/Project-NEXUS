@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -214,8 +215,7 @@ class BrokerMessageVisibilityService
                 $senderDisplayName = 'A user';
             }
 
-            $brokerUsers = User::where('tenant_id', $tenantId)
-                ->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin'])
+            $brokerUsers = SafeguardingStaff::scope(User::where('tenant_id', $tenantId))
                 ->where('status', 'active')
                 ->select(['id', 'email', 'first_name', 'name', 'preferred_language', 'tenant_id'])
                 ->get();
@@ -663,8 +663,7 @@ class BrokerMessageVisibilityService
 
     private function getTenantBrokerAdminIds(): array
     {
-        return User::where('tenant_id', TenantContext::getId())
-            ->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin'])
+        return SafeguardingStaff::scope(User::where('tenant_id', TenantContext::getId()))
             ->where('status', 'active')
             ->pluck('id')
             ->map(fn ($id) => (int) $id)

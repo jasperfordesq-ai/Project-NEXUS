@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -132,15 +133,7 @@ class VettingRenewalRemindersCommand extends Command
     /** @param array{kind: string, days: int, due_date: string, stamp_column: string} $notification */
     private function notifyStaff(object $row, array $notification): bool
     {
-        $staff = DB::table('users')
-            ->where('tenant_id', (int) $row->tenant_id)
-            ->where(function ($query): void {
-                $query->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin', 'god'])
-                    ->orWhere('is_admin', 1)
-                    ->orWhere('is_tenant_super_admin', 1)
-                    ->orWhere('is_super_admin', 1)
-                    ->orWhere('is_god', 1);
-            })
+        $staff = SafeguardingStaff::scope(DB::table('users')->where('tenant_id', (int) $row->tenant_id))
             ->where('status', 'active')
             ->get(['id', 'email', 'preferred_language']);
         if ($staff->isEmpty()) {

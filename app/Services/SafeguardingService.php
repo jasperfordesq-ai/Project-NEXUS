@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -1120,7 +1121,7 @@ class SafeguardingService
             $reporterName = $reporter ? UserDisplayName::resolve($reporter) : __('emails_misc.safeguarding.reporter_fallback_name');
 
             $staffUsers = DB::select(
-                "SELECT id, email, preferred_language FROM users WHERE tenant_id = ? AND role IN ('admin', 'tenant_admin', 'broker', 'super_admin') AND status = 'active'",
+                "SELECT id, email, preferred_language FROM users WHERE tenant_id = ? AND " . SafeguardingStaff::sqlCondition() . " AND status = 'active'",
                 [$tenantId]
             );
 

@@ -112,6 +112,32 @@ class NotifySafeguardingCoordinationRequestedTest extends TestCase
         $this->assertSame(3, $notificationCount);
     }
 
+    public function test_handle_also_notifies_coordinators_and_flag_only_admins(): void
+    {
+        // F-221: role=coordinator and admins expressed as flags on a member row
+        // can open every Broker Panel page, so they must get the alert too.
+        $sender = $this->seedUser(['role' => 'member', 'status' => 'active']);
+        $recipient = $this->seedUser(['role' => 'member', 'status' => 'active']);
+        $this->seedUser(['role' => 'coordinator', 'status' => 'active']);
+        $this->seedUser(['role' => 'member', 'status' => 'active', 'is_tenant_super_admin' => 1]);
+        $this->seedUser(['role' => 'member', 'status' => 'active', 'is_admin' => 1]);
+        $this->seedUser(['role' => 'member', 'status' => 'active']); // ordinary member: not notified
+
+        $event = new SafeguardingCoordinationRequested(
+            tenantId: $this->testTenantId,
+            senderId: $sender->id,
+            recipientId: $recipient->id,
+            reasonCode: 'SAFEGUARDING_CONTACT_RESTRICTED'
+        );
+
+        $this->notificationAlias->shouldReceive('create')->times(3);
+        $this->emailAlias->shouldReceive('sendRaw')->times(3)->andReturn(true);
+
+        (new NotifySafeguardingCoordinationRequested())->handle($event);
+
+        $this->assertTrue(true);
+    }
+
     private function seedUser(array $overrides = [], ?int $tenantId = null): object
     {
         $tenantId = $tenantId ?? $this->testTenantId;

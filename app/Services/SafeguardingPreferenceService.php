@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
@@ -1015,7 +1016,7 @@ class SafeguardingPreferenceService
             $legacyName = $revoker ? ($revoker->name ?? null) : null;
 
             $staffUsers = DB::select(
-                "SELECT id, preferred_language FROM users WHERE tenant_id = ? AND role IN ('admin', 'tenant_admin', 'broker', 'super_admin') AND status = 'active'",
+                "SELECT id, preferred_language FROM users WHERE tenant_id = ? AND " . SafeguardingStaff::sqlCondition() . " AND status = 'active'",
                 [$tenantId]
             );
 
@@ -1090,11 +1091,9 @@ class SafeguardingPreferenceService
                 });
             }
 
-            $staff = DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin'])
-                ->get(['id', 'preferred_language']);
+            $staff = SafeguardingStaff::scope(
+                DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active')
+            )->get(['id', 'preferred_language']);
             foreach ($staff as $recipient) {
                 LocaleContext::withLocale($recipient, function () use ($recipient, $tenantId): void {
                     Notification::createNotification(

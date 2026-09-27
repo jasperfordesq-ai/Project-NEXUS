@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Mail\SafeguardingCriticalMail;
@@ -590,13 +591,9 @@ class SafeguardingService
         // alone matched nobody in practice (O-040), so reports alerted no one.
         $ids = [];
         try {
-            $ids = DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->where(function ($q) {
-                    $q->whereIn('role', ['admin', 'tenant_admin', 'broker', 'coordinator'])
-                      ->orWhere('is_tenant_super_admin', 1);
-                })
+            $ids = SafeguardingStaff::scope(
+                DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active')
+            )
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
                 ->all();

@@ -6,6 +6,7 @@
 
 namespace App\Listeners;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\Events\SafeguardingCoordinationRequested;
@@ -80,7 +81,7 @@ class NotifySafeguardingCoordinationRequested implements ShouldQueue
 
             $staffUsers = DB::select(
                 "SELECT id, email, first_name, name, role, preferred_language FROM users
-                 WHERE tenant_id = ? AND role IN ('admin', 'tenant_admin', 'broker', 'super_admin') AND status = 'active'",
+                 WHERE tenant_id = ? AND " . SafeguardingStaff::sqlCondition() . " AND status = 'active'",
                 [$event->tenantId]
             );
 

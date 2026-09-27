@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -301,9 +302,7 @@ class SafeguardingReviewFlagsCommand extends Command
     {
         // Includes preferred_language so each staff member's bell + email
         // renders in their own locale (not the cron worker's default).
-        $staff = DB::table('users')
-            ->where('tenant_id', $userBatch['tenant_id'])
-            ->whereIn('role', ['admin', 'tenant_admin', 'broker', 'super_admin'])
+        $staff = SafeguardingStaff::scope(DB::table('users')->where('tenant_id', $userBatch['tenant_id']))
             ->where('status', 'active')
             ->select(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'preferred_language'])
             ->get();
