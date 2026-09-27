@@ -361,13 +361,13 @@ jobs:
           APP_ENV: testing
           APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
         with:
-          # Use Android's CI-optimised Automated Test Device for the journey
-          # suite. The API 36 google_apis image repeatedly left a starting_reveal
+          # Use the stable Android 15 image for the journey suite. The API 36
+          # google_apis image repeatedly left a starting_reveal
           # transition active forever: Maestro then waited about five seconds
           # between every input character and its device RPC expired after two
           # minutes (run 36323383803), while the app itself remained responsive.
           api-level: 35
-          target: aosp_atd
+          target: google_apis
           arch: x86_64
           profile: pixel_7
           ram-size: 4096M

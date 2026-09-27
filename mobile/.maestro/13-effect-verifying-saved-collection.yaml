@@ -3,9 +3,9 @@
 # Author: Jasper Ford
 # See NOTICE file for attribution and acknowledgements.
 
-# Create a member collection, reopen it from the refreshed list, and leave the
-# row in place for the independent Laravel verifier. A rendered success state
-# alone is not accepted as persistence evidence.
+# Create a member collection, open the result returned by the successful write,
+# and leave the row in place for the independent Laravel verifier. A rendered
+# success state alone is not accepted as persistence evidence.
 
 appId: ie.project.nexus
 ---
@@ -29,7 +29,6 @@ appId: ie.project.nexus
 - extendedWaitUntil:
     visible: "E2E Device Journey Collection"
     timeout: 20000
-- tapOn: "E2E Device Journey Collection"
 - extendedWaitUntil:
     visible: "No saved items"
     timeout: 20000

@@ -146,13 +146,17 @@ function ProfileCollectionsInner() {
     creatingRef.current = true;
     setCreating(true);
     try {
-      await createSavedCollection({
+      const created = await createSavedCollection({
         name: payload.name.trim(),
         description: payload.description.trim() || null,
         is_public: payload.isPublic,
       });
       setShowCreate(false);
       collectionsQuery.refresh();
+      // Open the result returned by the successful write. Besides saving the
+      // member an extra tap, this avoids making them chase a row while the
+      // refreshed collection list is being reconciled and repositioned.
+      openCollection(created.data);
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('collections.createFailed')), variant: 'danger' });
     } finally {

@@ -436,16 +436,16 @@ One thing it does NOT do, on purpose:
   the screens and uploads them as artefacts instead. Enabling a visual gate in CI
   needs a CI-specific baseline captured deliberately from a green run.
 
-CI uses Android 15's `aosp_atd` image for the full journey suite. Automated Test
-Device images are intended for CI and avoid the background Google applications in
-the general-purpose image. The API 36 `google_apis` image left a
-`starting_reveal` transition permanently active in runs `36318392072` and
-`36323383803`. In the latter run the app reached the login form, but Android made
-Maestro wait about five seconds between every input character until its device
-control request expired after two minutes; launch smoke still passed. That is an
-emulator-control failure, not thirteen independent app failures. Android 16 launch
-compatibility was exercised by those runs, while the stable ATD supplies the full
-journey evidence.
+CI uses Android 15's `google_apis` image for the full journey suite. The API 36
+image left a `starting_reveal` transition permanently active in runs `36318392072`
+and `36323383803`. In the latter run the app reached the login form, but Android
+made Maestro wait about five seconds between every input character until its
+device control request expired after two minutes; launch smoke still passed. That
+is an emulator-control failure, not thirteen independent app failures. Android 16
+launch compatibility was exercised by those runs, while the stable Android 15
+image supplies full journey and screenshot evidence. An `aosp_atd` run proved all
+but one journey but produced black screenshots because Automated Test Devices omit
+hardware rendering, so it is not used for this workflow's visual evidence.
 
 CI disables emulator animations and spellchecking. The E2E build sets
 `EXPO_PUBLIC_E2E=1`, which suppresses the reduced-motion LogBox warning that

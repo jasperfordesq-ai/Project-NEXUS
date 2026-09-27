@@ -153,7 +153,7 @@ describe('ProfileCollectionsScreen', () => {
     expect(getByTestId('create-saved-collection-submit')).toBeTruthy();
   });
 
-  it('submits new collections through the API helper', async () => {
+  it('submits new collections and opens the saved result', async () => {
     const { getAllByText, getByPlaceholderText } = render(<ProfileCollectionsScreen />);
 
     fireEvent.press(getAllByText('Create collection')[0]);
@@ -168,6 +168,7 @@ describe('ProfileCollectionsScreen', () => {
         is_public: false,
       });
     });
+    await waitFor(() => expect(getAllByText('New set')).toHaveLength(2));
   });
 
   it('creates one collection when Create is pressed twice in the same frame', async () => {
