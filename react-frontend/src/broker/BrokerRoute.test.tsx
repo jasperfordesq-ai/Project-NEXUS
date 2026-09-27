@@ -24,8 +24,8 @@ const { mockAuth, mockTenant } = vi.hoisted(() => ({
   mockTenant: {
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    hasFeature: vi.fn((_key: string) => true),
+    hasModule: vi.fn((_key: string) => true),
   },
 }));
 

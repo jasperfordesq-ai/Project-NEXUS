@@ -58,21 +58,12 @@ export default defineConfig({
     globalSetup: ['./src/test/ci-force-exit.ts'],
     include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        maxForks,
-        minForks: 1,
-        // isolate stays TRUE at every concurrency level. A fresh fork per file
-        // is what prevents the heap/jsdom accumulation that hangs a long run in
-        // singleFork mode; running files concurrently does not replace it.
-        isolate: true,
-        singleFork: false,
-        // Inherit npm test's worker heap cap and expose GC for setup cleanup.
-        // Note this is a per-fork CEILING, not a reservation — 16 forks do not
-        // reserve 16x the cap.
-        execArgv: ['--expose-gc', inheritedMaxOldSpace],
-      },
-    },
+    maxWorkers: maxForks,
+    // Isolate each file to avoid cross-file jsdom state accumulation.
+    isolate: true,
+    // Inherit npm test's worker heap cap and expose GC for setup cleanup.
+    // This is a per-worker ceiling, not a reservation.
+    execArgv: ['--expose-gc', inheritedMaxOldSpace],
     fileParallelism,
     testTimeout: 30000,  // 30s per test
     hookTimeout: 30000,

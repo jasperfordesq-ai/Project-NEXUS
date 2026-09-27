@@ -29,7 +29,7 @@ let latestInstance: MockIOInstance | null = null;
 let allInstances: MockIOInstance[] = [];
 
 function createMockIO() {
-  return vi.fn((callback: IOCallback, options?: IntersectionObserverInit) => {
+  return vi.fn(function mockIntersectionObserver(callback: IOCallback, options?: IntersectionObserverInit) {
     const instance: MockIOInstance = {
       callback,
       options,

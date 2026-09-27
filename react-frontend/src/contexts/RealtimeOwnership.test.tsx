@@ -52,7 +52,7 @@ const realtimeMock = vi.hoisted(() => {
     return channel;
   };
 
-  const createClient = () => {
+  const createClient = function createClient() {
     const connection = {
       state: 'connecting',
       bind: vi.fn((event: string, handler: EventHandler) => {

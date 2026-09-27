@@ -570,9 +570,6 @@
       "TS2322": 1,
       "TS2345": 1
     },
-    "src/admin/modules/system/RegistrationBreakerCard.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/system/RegistrationPolicySettings.test.tsx": {
       "TS2322": 1
     },
@@ -778,9 +775,6 @@
     "src/components/feed/ConnectionSuggestionsWidget.test.tsx": {
       "TS2345": 1,
       "TS2769": 1
-    },
-    "src/components/feed/FeedAdCard.test.tsx": {
-      "TS2322": 1
     },
     "src/components/feed/FeedCard.test.tsx": {
       "TS2322": 1
@@ -1244,7 +1238,6 @@
       "TS2532": 3
     },
     "src/lib/nav-helpers.test.ts": {
-      "TS2322": 1,
       "TS2551": 1,
       "TS2783": 1
     },
@@ -1834,9 +1827,6 @@
       "TS2322": 1,
       "TS2769": 1
     },
-    "src/pages/vereine/VereinCrossInvitationButton.test.tsx": {
-      "TS2740": 1
-    },
     "src/pages/volunteering/CertificatesTab.test.tsx": {
       "TS2345": 1
     },
@@ -1908,7 +1898,7 @@
       "TS2322": 3
     },
     "src/partners/components/PartnersSidebar.test.tsx": {
-      "TS2322": 2
+      "TS2322": 1
     },
     "src/super-admin/SuperAdminLayout.test.tsx": {
       "TS2769": 1
@@ -1924,7 +1914,7 @@
     }
   },
   "totals": {
-    "fileCount": 568,
-    "errorCount": 1735
+    "fileCount": 565,
+    "errorCount": 1730
   }
 }

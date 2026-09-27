@@ -159,7 +159,7 @@ function runVitest(files, root, extraArgs) {
     return 2;
   }
 
-  // Deliberately NOT --poolOptions.forks.singleFork=true. That flag belongs to
+  // Deliberately NOT --maxWorkers=1. That flag belongs to
   // the 14-file smoke step, where it fixed an IPC channel hang. At ~150 files it
   // causes a different hang: one process runs every file, and jsdom/React Aria
   // state plus heap accumulate until the run stalls — src/test/setup.ts already

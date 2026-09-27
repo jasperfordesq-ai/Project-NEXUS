@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Search backfills now wait for Meilisearch to finish each document task and report rejected writes as failures; writes explicitly use the document ID as the primary key.
+- Added a permissions-view rebuild for database recovery under a different database name, with a separate-database restore check.
+- Updated the React test runner and coverage package to patched Vitest 4.1.11, retaining isolated test files and the existing CI worker limit.
+
 - Fixed Android Play bundles silently retaining an already-used version code after Expo regenerated an existing native project; the guarded build now reapplies the Gradle override and verifies the compiled version code before archiving.
 
 ### Added

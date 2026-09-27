@@ -7,7 +7,7 @@
  * Tests for EmojiPicker component
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { EmojiPicker } from './EmojiPicker';
@@ -40,10 +40,10 @@ vi.mock('react-i18next', () => ({
 Element.prototype.scrollIntoView = vi.fn();
 
 describe('EmojiPicker', () => {
-  let onSelect: ReturnType<typeof vi.fn>;
+  let onSelect: Mock<(emoji: string) => void>;
 
   beforeEach(() => {
-    onSelect = vi.fn();
+    onSelect = vi.fn<(emoji: string) => void>();
   });
 
   it('renders trigger button with Smile icon', () => {

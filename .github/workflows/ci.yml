@@ -654,7 +654,7 @@ jobs:
         # in those logs are this comment being echoed by bash, not runtime errors.
         # It is now blocking — a green step behind continue-on-error reports nothing
         # if it ever breaks, which is how six suites sat red unnoticed.
-        # Keep --pool=forks --singleFork: that is the fix, not a workaround.
+        # Keep one worker for the small smoke set, with files isolated.
         working-directory: react-frontend
         shell: bash
         run: |
@@ -664,9 +664,9 @@ jobs:
           # source so a second reader of it can never drift again.
           mapfile -t TESTS < <(grep -vE '^\s*(#|$)' scripts/ci-smoke-suites.txt)
           echo "Smoke suites: ${#TESTS[@]}"
-          # Run serially in a single fork — the parallel worker pool hangs/dies
-          # (ERR_IPC_CHANNEL_CLOSED) on this set; serial is what passes locally.
-          npx vitest run "${TESTS[@]}" --pool=forks --poolOptions.forks.singleFork=true
+          # Run one worker at a time — the parallel worker pool hangs/dies
+          # (ERR_IPC_CHANNEL_CLOSED) on this set; file isolation stays enabled.
+          npx vitest run "${TESTS[@]}" --pool=forks --maxWorkers=1
         timeout-minutes: 6
 
       - name: Build Production Bundle (BLOCKING)

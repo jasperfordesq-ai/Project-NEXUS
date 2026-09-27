@@ -35,7 +35,7 @@ vi.mock('@/contexts', () => createMockContexts({
   useAuth: () => mockAuthValue,
   useToast: () => mockToast,
   // caring_community feature is ON by default
-  useFeature: () => true,
+  useFeature: vi.fn((_key: string) => true),
 }));
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));

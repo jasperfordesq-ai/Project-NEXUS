@@ -149,6 +149,11 @@ const mockUser = {
 describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks preserves unused mockResolvedValueOnce queues between tests.
+    // Reset API/WebAuthn implementations before assigning each test's defaults.
+    mockApiGet.mockReset();
+    mockApiPost.mockReset();
+    mockAuthenticateWithBiometric.mockReset();
     // Default: no access token stored
     mockTokenManager.hasAccessToken.mockReturnValue(false);
     mockTokenManager.getAccessToken.mockReturnValue(null);

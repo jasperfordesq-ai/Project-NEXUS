@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 // vi.hoisted so the react-router-dom factory (which runs as soon as
@@ -379,8 +379,8 @@ describe('ListingDetailPage', () => {
     // fix, handleDelete discarded the api.delete result — showing the success
     // toast and navigating away while the listing still existed — and
     // handleRenew simply did nothing on failure (spinner stopped, no feedback).
-    let successToast: ReturnType<typeof vi.fn>;
-    let errorToast: ReturnType<typeof vi.fn>;
+    let successToast: Mock<(title: string, message?: string) => void>;
+    let errorToast: Mock<(title: string, message?: string) => void>;
 
     // Owner view (user 5 owns mockListing) with an expiring listing so the
     // owner action bar renders the Delete and Extend buttons.
@@ -391,8 +391,8 @@ describe('ListingDetailPage', () => {
         user: { id: 5, first_name: 'Bob', name: 'Bob Smith' },
         isAuthenticated: true,
       });
-      successToast = vi.fn();
-      errorToast = vi.fn();
+      successToast = vi.fn<(title: string, message?: string) => void>();
+      errorToast = vi.fn<(title: string, message?: string) => void>();
       vi.mocked(useToast).mockReturnValue({ success: successToast, error: errorToast, info: vi.fn() });
       api.get.mockImplementation((url: string) => {
         if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });

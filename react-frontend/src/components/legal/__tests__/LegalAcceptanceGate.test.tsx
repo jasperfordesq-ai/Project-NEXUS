@@ -7,7 +7,7 @@
  * Tests for LegalAcceptanceGate component
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
 
 // LegalAcceptanceGate imports useTenant by its DIRECT path
@@ -53,11 +53,11 @@ const mockPendingDocs: PendingDocument[] = [
 ];
 
 describe('LegalAcceptanceGate', () => {
-  let mockAcceptAll: ReturnType<typeof vi.fn>;
+  let mockAcceptAll: Mock<() => Promise<void>>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAcceptAll = vi.fn().mockResolvedValue(undefined);
+    mockAcceptAll = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
   });
 
   it('renders without crashing', () => {

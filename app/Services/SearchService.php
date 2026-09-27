@@ -52,7 +52,7 @@ class SearchService
     // Meilisearch client & availability
     // =========================================================================
 
-    private static function client(): MeilisearchClient
+    protected static function client(): MeilisearchClient
     {
         return new MeilisearchClient(
             env('MEILISEARCH_HOST', 'http://meilisearch:7700'),
@@ -382,9 +382,12 @@ class SearchService
      * Silently skips if Meilisearch is unavailable.
      * Accepts an Eloquent Listing model or a plain array (from sync script).
      */
-    public static function indexListing(array|Listing $listing): void
+    public static function indexListing(array|Listing $listing, bool $verifyTask = false): void
     {
         if (!static::isAvailable()) {
+            if ($verifyTask) {
+                throw new \RuntimeException('Meilisearch is unavailable while indexing listings');
+            }
             return;
         }
 
@@ -409,7 +412,7 @@ class SearchService
 
         $doc['moderation_status'] = $doc['moderation_status'] ?? 'approved';
 
-        static::client()->index('listings')->addDocuments([$doc]);
+        static::submitDocument('listings', $doc, $verifyTask);
     }
 
     /**
@@ -417,9 +420,12 @@ class SearchService
      * Silently skips if Meilisearch is unavailable.
      * Accepts an Eloquent User model or a plain array (from sync script).
      */
-    public static function indexUser(array|User $user): void
+    public static function indexUser(array|User $user, bool $verifyTask = false): void
     {
         if (!static::isAvailable()) {
+            if ($verifyTask) {
+                throw new \RuntimeException('Meilisearch is unavailable while indexing users');
+            }
             return;
         }
 
@@ -441,7 +447,7 @@ class SearchService
             'created_at'        => $user->created_at?->timestamp ?? 0,
         ] : $user;
 
-        static::client()->index('users')->addDocuments([$doc]);
+        static::submitDocument('users', $doc, $verifyTask);
     }
 
     /**
@@ -485,11 +491,14 @@ class SearchService
      * Silently skips if Meilisearch is unavailable.
      * Accepts an Eloquent Event model or a plain array (from sync script).
      */
-    public static function indexEvent(array|Event $event): void
+    public static function indexEvent(array|Event $event, bool $verifyTask = false): void
     {
         $eventId = (int) ($event instanceof Event ? $event->getKey() : ($event['id'] ?? 0));
         $doc = static::eventDocument($event);
         if ($eventId <= 0 || $doc === null) {
+            if ($verifyTask) {
+                throw new \RuntimeException("Event {$eventId} is not indexable during verified sync");
+            }
             if ($eventId > 0) {
                 static::removeEvent($eventId);
             }
@@ -497,10 +506,13 @@ class SearchService
         }
 
         if (!static::isAvailable()) {
+            if ($verifyTask) {
+                throw new \RuntimeException('Meilisearch is unavailable while indexing events');
+            }
             return;
         }
 
-        static::client()->index('events')->addDocuments([$doc]);
+        static::submitDocument('events', $doc, $verifyTask);
     }
 
     /** @return array<string,mixed>|null */
@@ -540,7 +552,7 @@ class SearchService
      * Silently skips if Meilisearch is unavailable.
      * Accepts an Eloquent Group model or a plain array (from sync script).
      */
-    public static function indexGroup(array|Group $group): void
+    public static function indexGroup(array|Group $group, bool $verifyTask = false): void
     {
         $status = $group instanceof Group
             ? $group->status->value
@@ -555,6 +567,9 @@ class SearchService
         }
 
         if (!static::isAvailable()) {
+            if ($verifyTask) {
+                throw new \RuntimeException('Meilisearch is unavailable while indexing groups');
+            }
             return;
         }
 
@@ -569,7 +584,7 @@ class SearchService
             'created_at'    => $group->created_at?->timestamp ?? 0,
         ] : $group;
 
-        static::client()->index('groups')->addDocuments([$doc]);
+        static::submitDocument('groups', $doc, $verifyTask);
     }
 
     /**
@@ -645,9 +660,12 @@ class SearchService
      * Silently skips if Meilisearch is unavailable.
      * Accepts an Eloquent MarketplaceListing model or a plain array (from sync script).
      */
-    public static function indexMarketplaceListing(array|MarketplaceListing $listing): void
+    public static function indexMarketplaceListing(array|MarketplaceListing $listing, bool $verifyTask = false): void
     {
         if (!static::isAvailable()) {
+            if ($verifyTask) {
+                throw new \RuntimeException('Meilisearch is unavailable while indexing marketplace listings');
+            }
             return;
         }
 
@@ -669,7 +687,38 @@ class SearchService
             'created_at'        => $listing->created_at?->timestamp ?? 0,
         ] : $listing;
 
-        static::client()->index('marketplace_listings')->addDocuments([$doc]);
+        static::submitDocument('marketplace_listings', $doc, $verifyTask);
+    }
+
+    /**
+     * Operator backfills must await Meilisearch's final task result. An accepted
+     * HTTP write only means queued; it can still fail after this method returns.
+     * Ordinary request/queue indexing remains asynchronous by default.
+     *
+     * @param array<string, mixed> $doc
+     */
+    private static function submitDocument(string $index, array $doc, bool $verifyTask): void
+    {
+        $client = static::client();
+        // Explicitly name the key even if an existing index was created without
+        // one; inferring from both id and tenant_id fails asynchronously.
+        $task = $client->index($index)->addDocuments([$doc], 'id');
+        if (!$verifyTask) {
+            return;
+        }
+
+        $uid = $task['taskUid'] ?? null;
+        if (!is_int($uid)) {
+            throw new \RuntimeException("Meilisearch {$index} write did not return a task ID");
+        }
+
+        $result = $client->waitForTask($uid, 120_000, 100);
+        if (($result['status'] ?? null) !== 'succeeded') {
+            $status = (string) ($result['status'] ?? 'unknown');
+            $code = (string) ($result['error']['code'] ?? 'unknown');
+            $message = (string) ($result['error']['message'] ?? 'No task error supplied');
+            throw new \RuntimeException("Meilisearch {$index} task {$uid} {$status} ({$code}): {$message}");
+        }
     }
 
     /**

@@ -38,7 +38,7 @@ describe('useFeedTracking', () => {
     observerCallbacks = new Map();
     mockObserverInstances = [];
 
-    vi.stubGlobal('IntersectionObserver', vi.fn((callback: IntersectionObserverCallback) => {
+    vi.stubGlobal('IntersectionObserver', vi.fn(function mockIntersectionObserver(callback: IntersectionObserverCallback) {
       const instance = {
         observe: vi.fn((el: Element) => {
           observerCallbacks.set(el, callback);

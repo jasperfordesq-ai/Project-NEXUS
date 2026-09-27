@@ -7,7 +7,7 @@
  * Tests for VoiceInput component
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { VoiceInput } from './VoiceInput';
@@ -44,17 +44,17 @@ function createMockSpeechRecognition() {
     dispatchEvent: vi.fn(),
   };
 
-  const MockCtor = vi.fn(() => mockInstance);
+  const MockCtor = vi.fn(function MockSpeechRecognition() { return mockInstance; });
   return { MockCtor, mockInstance };
 }
 
 describe('VoiceInput', () => {
-  let onTranscript: ReturnType<typeof vi.fn>;
+  let onTranscript: Mock<(text: string) => void>;
   let originalSpeechRecognition: unknown;
   let originalWebkitSpeechRecognition: unknown;
 
   beforeEach(() => {
-    onTranscript = vi.fn();
+    onTranscript = vi.fn<(text: string) => void>();
     // Save originals
     originalSpeechRecognition = (window as unknown as Record<string, unknown>).SpeechRecognition;
     originalWebkitSpeechRecognition = (window as unknown as Record<string, unknown>).webkitSpeechRecognition;

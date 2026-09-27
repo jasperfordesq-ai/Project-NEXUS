@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 // vi.hoisted so the react-router-dom factory (which runs as soon as
@@ -252,12 +252,12 @@ describe('CreateListingPage', () => {
     // api.put result entirely and the create path only read response.data —
     // both then showed the success toast and navigated away even though nothing
     // was saved, silently losing the failure (and, on create, the user's input).
-    let successToast: ReturnType<typeof vi.fn>;
-    let errorToast: ReturnType<typeof vi.fn>;
+    let successToast: Mock<(title: string, message?: string) => void>;
+    let errorToast: Mock<(title: string, message?: string) => void>;
 
     beforeEach(() => {
-      successToast = vi.fn();
-      errorToast = vi.fn();
+      successToast = vi.fn<(title: string, message?: string) => void>();
+      errorToast = vi.fn<(title: string, message?: string) => void>();
       vi.mocked(useToast).mockReturnValue({
         success: successToast,
         error: errorToast,

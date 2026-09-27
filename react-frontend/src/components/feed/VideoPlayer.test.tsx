@@ -45,11 +45,11 @@ Object.defineProperty(HTMLMediaElement.prototype, 'pause', {
 // Stub IntersectionObserver — jsdom does not implement it
 const observeFn = vi.fn();
 const disconnectFn = vi.fn();
-const MockIntersectionObserver = vi.fn(() => ({
+const MockIntersectionObserver = vi.fn(function mockIntersectionObserver() { return {
   observe: observeFn,
   disconnect: disconnectFn,
   unobserve: vi.fn(),
-}));
+}; });
 vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 
 import { VideoPlayer } from './VideoPlayer';

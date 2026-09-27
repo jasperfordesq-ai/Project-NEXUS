@@ -36,7 +36,9 @@ describe('VoiceMessagePlayer', () => {
       onended: null,
     };
 
-    vi.spyOn(window, 'Audio' as keyof Window).mockImplementation(() => mockAudio as unknown as HTMLAudioElement);
+    vi.spyOn(window, 'Audio' as keyof Window).mockImplementation(function mockAudioConstructor() {
+      return mockAudio as unknown as HTMLAudioElement;
+    });
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake-audio-url');
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   });

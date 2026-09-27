@@ -108,7 +108,7 @@ if (!$dryRun) {
         fwrite(STDERR, "Error: Meilisearch is not available. Check MEILISEARCH_HOST env var and ensure the service is running.\n");
         exit(1);
     }
-    echo "Meilisearch is online. Indexes configured with synonyms and ranking rules.\n\n";
+    echo "Meilisearch is online. Index configuration submitted; document task outcomes will be checked.\n\n";
 }
 
 // ============================================================
@@ -209,7 +209,7 @@ function syncListings(int $tenantId, bool $dryRun): array
         return $row;
     }, $rows);
 
-    return batchIndex($rows, 'listings', 'listing', $dryRun, fn($row) => SearchService::indexListing($row));
+    return batchIndex($rows, 'listings', 'listing', $dryRun, fn($row) => SearchService::indexListing($row, true));
 }
 
 /**
@@ -230,7 +230,7 @@ function syncUsers(int $tenantId, bool $dryRun): array
         [$tenantId]
     ));
 
-    return batchIndex($rows, 'users', 'user', $dryRun, fn($row) => SearchService::indexUser($row));
+    return batchIndex($rows, 'users', 'user', $dryRun, fn($row) => SearchService::indexUser($row, true));
 }
 
 /**
@@ -272,7 +272,7 @@ function syncEvents(int $tenantId, bool $dryRun): array
         [$tenantId]
     ));
 
-    return batchIndex($rows, 'events', 'event', $dryRun, fn($row) => SearchService::indexEvent($row));
+    return batchIndex($rows, 'events', 'event', $dryRun, fn($row) => SearchService::indexEvent($row, true));
 }
 
 /**
@@ -295,7 +295,7 @@ function syncGroups(int $tenantId, bool $dryRun): array
         [$tenantId]
     ));
 
-    return batchIndex($rows, 'groups', 'group', $dryRun, fn($row) => SearchService::indexGroup($row));
+    return batchIndex($rows, 'groups', 'group', $dryRun, fn($row) => SearchService::indexGroup($row, true));
 }
 
 /**
@@ -327,7 +327,7 @@ function syncMarketplaceListings(int $tenantId, bool $dryRun): array
         return $row;
     }, $rows);
 
-    return batchIndex($rows, 'marketplace_listings', 'marketplace_listing', $dryRun, fn($row) => SearchService::indexMarketplaceListing($row));
+    return batchIndex($rows, 'marketplace_listings', 'marketplace_listing', $dryRun, fn($row) => SearchService::indexMarketplaceListing($row, true));
 }
 
 /**
@@ -369,6 +369,6 @@ function batchIndex(array $rows, string $label, string $type, bool $dryRun, call
         echo "  {$label}: {$done}/{$total}\r";
     }
 
-    echo "  {$label}: {$total}/{$total} processed\n";
+    echo "  {$label}: {$processed} indexed, {$errors} failed\n";
     return [$processed, 0, $errors];
 }

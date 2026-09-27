@@ -94,9 +94,9 @@ vi.mock('@googlemaps/markerclusterer', () => ({
 // Mock Google Maps globals
 (global as Record<string, unknown>).google = {
   maps: {
-    LatLngBounds: vi.fn(() => ({
-      extend: vi.fn(),
-    })),
+    LatLngBounds: vi.fn(function LatLngBounds() {
+      return { extend: vi.fn() };
+    }),
     Marker: { MAX_ZINDEX: 1000000 },
     marker: {
       AdvancedMarkerElement: vi.fn(),

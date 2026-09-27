@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
@@ -79,12 +79,12 @@ function makeLikersResult(
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('LikersModal', () => {
-  let loadLikers: ReturnType<typeof vi.fn>;
+  let loadLikers: Mock<(page?: number) => Promise<LikersResult>>;
   const onClose = vi.fn();
 
   beforeEach(() => {
     vi.resetAllMocks();
-    loadLikers = vi.fn().mockResolvedValue(makeLikersResult());
+    loadLikers = vi.fn<(page?: number) => Promise<LikersResult>>().mockResolvedValue(makeLikersResult());
     onClose.mockReset();
   });
 

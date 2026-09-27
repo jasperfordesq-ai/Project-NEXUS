@@ -45,7 +45,7 @@
  *  - Cleanup on unmount: removeEventListener called
  */
 
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
 // ─── Static vi.mock (hoisted; survives vi.resetModules) ───────────────────────
@@ -148,6 +148,12 @@ function removeGlobals() {
     Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: undefined });
   } catch { /* noop */ }
 }
+
+beforeEach(() => {
+  // resetModules reimports the hook, but the hoisted API mock keeps its call
+  // history; each test must start with a fresh assertion baseline.
+  vi.clearAllMocks();
+});
 
 afterEach(() => {
   vi.restoreAllMocks();

@@ -28,7 +28,7 @@ describe('compressImage', () => {
       src: '',
     };
 
-    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(() => {
+    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(function mockImage() {
       setTimeout(() => mockImg.onload?.(), 0);
       return mockImg as unknown as HTMLImageElement;
     });
@@ -62,7 +62,7 @@ describe('compressImage', () => {
       }),
     };
 
-    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(() => {
+    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(function mockImage() {
       setTimeout(() => mockImg.onload?.(), 0);
       return mockImg as unknown as HTMLImageElement;
     });
@@ -99,7 +99,7 @@ describe('compressImage', () => {
       }),
     };
 
-    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(() => {
+    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(function mockImage() {
       setTimeout(() => mockImg.onload?.(), 0);
       return mockImg as unknown as HTMLImageElement;
     });
@@ -130,7 +130,7 @@ describe('compressImage', () => {
       getContext: vi.fn().mockReturnValue(null), // No 2D context
     };
 
-    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(() => {
+    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(function mockImage() {
       setTimeout(() => mockImg.onload?.(), 0);
       return mockImg as unknown as HTMLImageElement;
     });
@@ -155,7 +155,7 @@ describe('compressImage', () => {
       src: '',
     };
 
-    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(() => {
+    vi.spyOn(window, 'Image' as keyof Window).mockImplementation(function mockImage() {
       setTimeout(() => mockImg.onload?.(), 0);
       return mockImg as unknown as HTMLImageElement;
     });

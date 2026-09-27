@@ -61,7 +61,7 @@ vi.mock('@vis.gl/react-google-maps', () => ({
 
 (global as Record<string, unknown>).google = {
   maps: {
-    LatLngBounds: vi.fn(() => ({ extend: vi.fn() })),
+    LatLngBounds: vi.fn(function mockLatLngBounds() { return { extend: vi.fn() }; }),
   },
 };
 
