@@ -1636,7 +1636,7 @@ class MessageService
     /**
      * Delete a message (soft delete).
      *
-     * @param string $scope 'everyone' — blanks body, shows placeholder to both parties (sender or receiver can do this).
+     * @param string $scope 'everyone' — sender only; blanks body and shows a placeholder to both parties.
      *                      'self'     — hides message from current user's view only; other party unaffected.
      */
     public static function deleteMessage(int $messageId, int $userId, string $scope = 'everyone'): bool

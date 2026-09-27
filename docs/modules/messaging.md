@@ -111,7 +111,7 @@ Opening a conversation (`GET /api/v2/messages/{id}`) automatically marks it as r
 | `everyone` | Yes | Sets `is_deleted = true`, blanks `body` to `[Message deleted]`, clears `reactions`, sets `deleted_at`. Both parties see the placeholder. |
 | `self` | No | Sets `is_deleted_sender` or `is_deleted_receiver` (depending on role). The other party's view is unchanged. |
 
-Either the sender or receiver may delete with `scope=everyone`. Only the respective party is affected by `scope=self`.
+Only the sender may delete a message with `scope=everyone`; a receiver's attempt is refused with HTTP 403. Either participant may use `scope=self` to hide the message from their own view without changing the other person's view.
 
 ### Conversation archive and restore
 
