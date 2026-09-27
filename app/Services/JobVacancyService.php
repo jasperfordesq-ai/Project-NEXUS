@@ -1126,6 +1126,27 @@ class JobVacancyService
             $updates['moderation_status'] = 'pending_review';
         }
 
+        // An approval covers the reviewed content, not later edits. Compare the
+        // cast model values so an unchanged form submission does not requeue it.
+        if (!$this->isAdminUser($userId)
+            && JobModerationService::isModerationEnabled(TenantContext::getId())) {
+            $candidate = clone $vacancy;
+            $candidate->fill($updates);
+            $contentFields = array_values(array_diff($allowedFields, ['status']));
+
+            if ($candidate->isDirty($contentFields)) {
+                $nextStatus = $updates['status'] ?? $vacancy->status;
+                if ($nextStatus === 'open') {
+                    $updates['status'] = 'draft';
+                    $updates['moderation_status'] = 'pending_review';
+                } elseif ($vacancy->moderation_status === 'approved') {
+                    // A closed/draft job stays closed/draft; reopening it will
+                    // enter the F-211 review path above.
+                    $updates['moderation_status'] = null;
+                }
+            }
+        }
+
         // EU Pay Transparency Directive (June 2026) compliance — salary range required unless negotiable
         // Only validate when salary fields or type are being touched in this update
         $salaryFieldsTouched = array_key_exists('salary_min', $updates) || array_key_exists('salary_max', $updates)
