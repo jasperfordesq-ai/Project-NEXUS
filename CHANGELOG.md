@@ -44,13 +44,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Android release metadata now records the verified live Play build 18 / 1.8.0, published on 23 September 2026 at 2:16 PM, and the next signed candidate is prepared as 1.8.1 / build 19 so the final mobile audit fixes can be delivered from one exact release commit.
+
 - New blog posts now start as Published and visible to search engines, so a post goes live and can be found unless an admin chooses otherwise. The search-engine setting on the blog form is now a plain "Show in search engines" switch, on by default, with a line underneath saying in words whether search engines may list the post. Available in all eleven languages.
 
 - The "Get the app" page now labels the Android app as an early release that is still in development, with that notice placed directly under its heading and before the download button, and says plainly that the core features are solid but some less common situations may not work yet. A new "Most stable" section above the one-tap install button recommends the browser version on phones: it is the same as the full website, always current, and fully maintained, with the Apple home-screen limitation restated. Available in all eleven languages.
 
+- Security assurance now tracks small, journey-based reviews against versioned OWASP ASVS 5.0.0 requirements, with explicit proof and environment states. The full checklist remains a reference rather than an active whole-platform audit. The scanning guide now distinguishes dependency-review job failure, merge protection and the non-blocking Semgrep step.
+
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed
+
+- Corrected Irish Help Centre wording across the shared page, member, broker and admin guides. The changes clarify search results, blocking and reporting, photo ID, wallet payments, partner-community choices and safeguarding contact, and fix several awkward titles and summaries. A member guide that promised brokers could settle or cancel a disputed exchange in the Broker Panel now describes the controls actually available there, in all eleven guide languages. The guide labels quoted from the app remain as shown on screen; native-speaker review is still outstanding.
+
+- Fifteen Help Centre articles that told people something the platform does not do have been corrected in all eleven languages, after a check of every guide against the code. The admin guide said two safeguarding options copy a member's messages for review; they do not. "Monitor messaging" actually stops other members contacting that member directly, and "Restrict matching" currently changes nothing, and the guide now says both. The broker guide now says that only admins can pin, edit or delete member notes, that a broker can still adjust another broker's or an admin's balance, that a monitoring period does not switch messaging back on when it runs out, that Recent Activity shows only some kinds of action, and when "Broker approval required" on a risk tag actually takes effect. The member guide no longer says you can block someone from a feed post (that menu only mutes), describes goal buddies as offers the owner must accept, and explains that the wallet export includes only the entries loaded on screen. Guides are now also hidden whenever a page they send people to is switched off: 27 articles gained the missing switch (most of them the Settings page), and the Exchanges guides are hidden when members cannot request exchanges, on the website and in the phone app. A new test fails if an article links to a page with an on/off switch without carrying the same switch. The corrected translations were written by AI and have not been reviewed by native speakers.
 
 - Group content creation in the mobile app now refreshes group membership and management rights after the server refuses a stale request. Discussion, announcement, Q&A, wiki and gallery controls disappear immediately when access has changed, preventing repeated attempts from an outdated composer.
 
@@ -112,9 +120,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Group managers can now create and share expiring invitation links, send validated email invitations, review pending invitations and revoke them from the mobile app. Interrupted requests refresh authoritative pending state before another mutation is allowed, and refused email work remains editable.
 
-- Group tasks now offer every loaded member and a searchable, paginated assignee picker for creation and reassignment, preserving an off-page current assignee and ignoring obsolete or failed searches.
-
 - Group-task creation in the mobile app now preserves the exact draft and protected request across an interrupted response or app restart. Retrying returns the original task instead of creating a duplicate; invalid submissions remain editable, and deleting a task removes its replay receipt so it can be created again safely.
+
+- Group tasks now offer every loaded member and a searchable, paginated assignee picker for creation and reassignment, preserving an off-page current assignee and ignoring obsolete or failed searches.
 
 - Group-exchange member search now keeps the newest query's result when an earlier request finishes later, and ignores obsolete failures instead of replacing current results with a stale error.
 
