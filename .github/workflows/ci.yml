@@ -843,9 +843,17 @@ jobs:
       - name: Verify PHP Container Starts
         run: |
           docker run -d --name php-test nexus-php-prod-test:ci
-          sleep 5
-          docker exec php-test curl -sf http://localhost/up || echo "::warning::Health check failed"
+          for attempt in {1..12}; do
+            if docker exec php-test curl -fsS http://localhost/health.php; then
+              docker stop php-test
+              exit 0
+            fi
+            sleep 5
+          done
+          docker logs php-test
           docker stop php-test
+          echo "Production PHP container did not become healthy" >&2
+          exit 1
 
   # ─────────────────────────────────────────────────────────────────
   # Stage 4: Dockerfile Drift Detection
