@@ -415,10 +415,11 @@ sat unrun for months. The file now carries a real `flows:` key; keep it.
 
 ### Running them automatically
 
-`.github/workflows/mobile-device-tests.yml` runs all ten flows on a real emulator
+`.github/workflows/mobile-device-tests.yml` runs the launch smoke and all thirteen
+journey flows on a real emulator
 against a real Laravel API. **Nightly at 04:40 UTC**, plus `workflow_dispatch` —
 deliberately not on every push, because it stands up MariaDB, Redis, Laravel, an
-emulator, a native build and Metro, and a ~35-minute job on every commit gets
+emulator, a native build and Metro, and an hour-plus job on every commit gets
 ignored within a week.
 
 The workflow has executed on GitHub-hosted Android runners. Run `33249852302`
@@ -427,16 +428,21 @@ isolation, stable tenant selectors and wake/keyguard setup are the direct fixes.
 Do not treat that older failed run as evidence for the revised workflow—the
 post-fix dispatch must be green before freezing the release candidate.
 
-Two things it does NOT do, on purpose:
+One thing it does NOT do, on purpose:
 
 - **It does not gate on screenshots.** The committed baselines were captured on this
   machine's AVD, and pixel equality does not transfer between environments — a
   different system-image build renders text with different anti-aliasing. It captures
   the screens and uploads them as artefacts instead. Enabling a visual gate in CI
   needs a CI-specific baseline captured deliberately from a green run.
-- **It does not disable animations** (`disable-animations: false`). The action's
-  default is `true`, which would reintroduce the LogBox banner over the tab bar and
-  fail five flows.
+
+It **does disable emulator animations**. API 36 left `MainActivity` behind the
+launcher in a `starting_reveal` animation for every journey after the first launch
+in run `36318392072`; 13 of 14 flows then timed out against the home screen. The
+E2E build sets `EXPO_PUBLIC_E2E=1`, which suppresses the reduced-motion LogBox
+warning that originally forced animations to remain enabled. `e2e.mjs` preserves
+disabled animations only when that flag is present and restores them for ordinary
+local debug builds.
 
 Two corrections found while checking it against reality:
 

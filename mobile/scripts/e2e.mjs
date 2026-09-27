@@ -52,6 +52,7 @@ const flowTarget = argValue('--flow', '.maestro/');
 const requestedSerial = argValue('--serial', process.env.ANDROID_SERIAL || '');
 const email = argValue('--email', process.env.E2E_TEST_EMAIL || 'e2e.user.a@project-nexus.local');
 const password = argValue('--password', process.env.E2E_TEST_PASSWORD || 'TestPassword123!');
+const e2eMode = readEnvLocal('EXPO_PUBLIC_E2E') === '1';
 
 function argValue(flag, fallback) {
   const i = args.indexOf(flag);
@@ -136,9 +137,12 @@ check('it is a DEBUG build (a release build talks to production)', () => {
   return 'debuggable';
 });
 
-check('animations are enabled (LogBox banner would cover the tab bar)', () => {
+check('the animation policy cannot expose a LogBox banner', () => {
   const scale = adb(['shell', 'settings', 'get', 'global', 'animator_duration_scale']).trim();
   if (scale === '0' || scale === '0.0') {
+    if (e2eMode) {
+      return 'disabled for deterministic E2E launches; LogBox is suppressed';
+    }
     // Fix rather than fail: the screenshot tooling sets this and it is safe to undo.
     for (const k of ['window_animation_scale', 'transition_animation_scale', 'animator_duration_scale']) {
       adb(['shell', 'settings', 'put', 'global', k, '1']);
@@ -199,8 +203,7 @@ check('LogBox is suppressed for this build (a banner covers the tab bar)', () =>
     would need Metro restarted before it took effect, and a developer running one flow by
     hand can simply dismiss the banner. CI sets it in the workflow.
   */
-  const flag = readEnvLocal('EXPO_PUBLIC_E2E');
-  if (flag === '1') return 'EXPO_PUBLIC_E2E=1';
+  if (e2eMode) return 'EXPO_PUBLIC_E2E=1';
   return 'NOT set — a warning banner can swallow a tab tap. Add EXPO_PUBLIC_E2E=1 to '
     + 'mobile/.env.local and restart Metro, or dismiss the banner by hand.';
 });

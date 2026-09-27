@@ -10,7 +10,7 @@
 # no Android SDK. It can typecheck, run Jest and inspect a generated manifest, and
 # it cannot launch an app. This workflow does the expensive half — MariaDB, Redis,
 # Laravel, an emulator, a native build, Metro — which is why it is scheduled rather
-# than run on every push. A ~35-minute job on every commit would be ignored within
+# than run on every push. An hour-plus native job on every commit would be ignored within
 # a week.
 #
 # The workflow is established CI evidence, not an experiment. Each flow starts from
@@ -369,13 +369,14 @@ jobs:
           # swiftshader_indirect matches the local AVD: CPU rendering is slower but
           # deterministic, which is what a pixel comparison needs.
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          disable-animations: false # 🔴 see below
+          # API 36 repeatedly left MainActivity behind the launcher while its
+          # starting_reveal animation never completed. The E2E build suppresses
+          # LogBox, so reduced-motion warnings cannot cover the tab bar here.
+          disable-animations: true
           script: |
-            # 🔴 disable-animations MUST stay false. With animation scales at 0,
-            # Android reports reduced motion, Reanimated logs a dev warning, and
-            # LogBox draws a banner across the BOTTOM of the screen — over the tab
-            # bar. Maestro's taps on "More" then hit the banner, and five flows fail
-            # on a "View wallet" they never reached. Measured locally.
+            # Keep EXPO_PUBLIC_E2E=1 in the build when animations are disabled.
+            # Without it, the reduced-motion LogBox banner covers the tab bar and
+            # Maestro taps the warning instead of the requested destination.
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
             adb reverse tcp:8081 tcp:8081
 
