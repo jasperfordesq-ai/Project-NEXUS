@@ -63,6 +63,13 @@
       {
         "id": "admin_invite_codes",
         "link": "/admin/settings/registration-policy"
+      },
+      {
+        "id": "admin_translation_settings",
+        "link": "/admin/translation-config",
+        "gate": {
+          "feature": "message_translation"
+        }
       }
     ]
   },
@@ -268,6 +275,33 @@
       {
         "id": "admin_vetted_contact",
         "link": "/broker/vetting"
+      }
+    ]
+  },
+  {
+    "id": "admin_records",
+    "icon": "lock",
+    "gate": null,
+    "articles": [
+      {
+        "id": "admin_activity_log",
+        "link": "/admin/activity-log"
+      },
+      {
+        "id": "admin_gdpr_dashboard",
+        "link": "/admin/enterprise/gdpr"
+      },
+      {
+        "id": "admin_consent_records",
+        "link": "/admin/enterprise/gdpr/consents"
+      },
+      {
+        "id": "admin_gdpr_audit_log",
+        "link": "/admin/enterprise/gdpr/audit"
+      },
+      {
+        "id": "admin_data_retention",
+        "link": "/admin/retention"
       }
     ]
   },
