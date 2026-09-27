@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -85,8 +85,20 @@ const SENT_NL = {
   ab_test_enabled: false,
 };
 
-function resolveList(items: unknown[]) {
-  mockNLList.mockResolvedValue({ success: true, data: { data: items, meta: { total: items.length } } });
+// Mirrors what the shared api client (src/lib/api.ts) really resolves with: it
+// unwraps the `data` envelope, so `data` is the bare row array and pagination
+// lives on the sibling `meta`. Earlier fixtures nested `meta` inside `data`, a
+// shape the client never produces, which hid that the page ignored `meta`.
+function listResponse(items: unknown[], meta: { total?: number; total_pages?: number } = {}) {
+  return {
+    success: true,
+    data: items,
+    meta: { current_page: 1, per_page: 20, total: items.length, total_pages: items.length ? 1 : 0, ...meta },
+  };
+}
+
+function resolveList(items: unknown[], meta: { total?: number; total_pages?: number } = {}) {
+  mockNLList.mockResolvedValue(listResponse(items, meta));
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -136,8 +148,8 @@ describe('NewsletterList', () => {
     resolveList([DRAFT_NL]);
     mockNLDelete.mockResolvedValue({ success: true });
     mockNLList
-      .mockResolvedValueOnce({ success: true, data: { data: [DRAFT_NL], meta: { total: 1 } } })
-      .mockResolvedValue({ success: true, data: { data: [], meta: { total: 0 } } });
+      .mockResolvedValueOnce(listResponse([DRAFT_NL]))
+      .mockResolvedValue(listResponse([]));
 
     render(<NewsletterList />);
     await waitFor(() => screen.getByText('Hello World'));
@@ -195,8 +207,8 @@ describe('NewsletterList', () => {
     mockNLSend.mockResolvedValue({ success: true, data: { message: 'Queued' } });
     // After send, list re-fetches
     mockNLList
-      .mockResolvedValueOnce({ success: true, data: { data: [DRAFT_NL], meta: { total: 1 } } })
-      .mockResolvedValue({ success: true, data: { data: [], meta: { total: 0 } } });
+      .mockResolvedValueOnce(listResponse([DRAFT_NL]))
+      .mockResolvedValue(listResponse([]));
 
     render(<NewsletterList />);
     await waitFor(() => screen.getByText('Hello World'));
@@ -238,6 +250,30 @@ describe('NewsletterList', () => {
     await waitFor(() => {
       // DataTable will show empty state or just no rows; no uncaught error
       expect(screen.queryByText(/hello world/i)).not.toBeInTheDocument();
+    });
+  });
+
+  // Regression: with more than 20 newsletters the page counted only the 20 rows
+  // it was given, showed no page control, and every older newsletter was
+  // unreachable from the list.
+  it('offers a page control when the API reports more than one page', async () => {
+    resolveList([DRAFT_NL, SENT_NL], { total: 45, total_pages: 3 });
+    render(<NewsletterList />);
+
+    const nav = await screen.findByRole('navigation');
+    expect(within(nav).getByRole('button', { name: '3' })).toBeInTheDocument();
+    expect(within(nav).queryByRole('button', { name: '4' })).not.toBeInTheDocument();
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    resolveList([DRAFT_NL, SENT_NL], { total: 45, total_pages: 3 });
+    render(<NewsletterList />);
+
+    const nav = await screen.findByRole('navigation');
+    fireEvent.click(within(nav).getByRole('button', { name: '2' }));
+
+    await waitFor(() => {
+      expect(mockNLList).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
     });
   });
 });

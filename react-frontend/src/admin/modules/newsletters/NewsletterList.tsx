@@ -70,8 +70,13 @@ export function NewsletterList() {
       if (res.success && res.data) {
         const payload = res.data as unknown;
         if (Array.isArray(payload)) {
+          // The shared api client unwraps the `{ data, meta }` envelope: `res.data`
+          // is the bare row array and the true total arrives on the sibling
+          // `res.meta`. Counting only this page's rows (as this did) reported one
+          // page and hid every newsletter past the first 20.
+          const metaTotal = (res.meta as { total?: unknown } | undefined)?.total;
           setItems(payload);
-          setTotal(payload.length);
+          setTotal(typeof metaTotal === 'number' ? metaTotal : payload.length);
         } else if (payload && typeof payload === 'object') {
           const p = payload as { data?: NewsletterItem[]; meta?: { total?: number } };
           setItems(p.data || []);
