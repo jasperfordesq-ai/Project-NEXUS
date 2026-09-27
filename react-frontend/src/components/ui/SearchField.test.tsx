@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import i18n from 'i18next';
-import { render, screen, fireEvent } from '@/test/test-utils';
+import { cleanup, render, screen, fireEvent } from '@/test/test-utils';
 import { SearchField } from './SearchField';
 
 // SearchField is a thin variant-mapping wrapper over HeroUI SearchField.
@@ -17,6 +17,7 @@ describe('SearchField', () => {
   });
 
   afterEach(async () => {
+    cleanup();
     await i18n.changeLanguage('en');
   });
 

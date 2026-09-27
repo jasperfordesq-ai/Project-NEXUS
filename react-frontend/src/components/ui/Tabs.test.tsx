@@ -23,8 +23,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@/test/test-utils';
+import type { ReactElement } from 'react';
+import { act, render, screen, fireEvent } from '@/test/test-utils';
 import { Tabs, Tab } from './Tabs';
+
+// React Aria queues a mount update for its shared tab indicator. Keep that
+// update inside act so the strict console gate can catch real warnings.
+async function renderSettled(ui: ReactElement) {
+  let result!: ReturnType<typeof render>;
+  await act(async () => {
+    result = render(ui);
+  });
+  return result;
+}
 
 vi.mock('@/contexts', () => ({
   useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
@@ -48,8 +59,8 @@ describe('Tabs component', () => {
     vi.clearAllMocks();
   });
 
-  it('renders a tab list (role="tablist")', () => {
-    render(
+  it('renders a tab list (role="tablist")', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -58,8 +69,8 @@ describe('Tabs component', () => {
     expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
 
-  it('renders the correct number of tab triggers', () => {
-    render(
+  it('renders the correct number of tab triggers', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -69,8 +80,8 @@ describe('Tabs component', () => {
     expect(screen.getAllByRole('tab')).toHaveLength(3);
   });
 
-  it('renders each tab with its title text', () => {
-    render(
+  it('renders each tab with its title text', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -80,8 +91,8 @@ describe('Tabs component', () => {
     expect(screen.getByRole('tab', { name: /Beta/i })).toBeInTheDocument();
   });
 
-  it('first tab is selected by default (aria-selected="true")', () => {
-    render(
+  it('first tab is selected by default (aria-selected="true")', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="First">First panel content</Tab>
         <Tab title="Second">Second panel content</Tab>
@@ -91,8 +102,8 @@ describe('Tabs component', () => {
     expect(firstTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('clicking the second tab selects it (aria-selected toggles)', () => {
-    render(
+  it('clicking the second tab selects it (aria-selected toggles)', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="First">First panel content</Tab>
         <Tab title="Second">Second panel content</Tab>
@@ -100,12 +111,12 @@ describe('Tabs component', () => {
     );
     const secondTab = screen.getByRole('tab', { name: /Second/i });
     expect(secondTab).toHaveAttribute('aria-selected', 'false');
-    fireEvent.click(secondTab);
+    await act(async () => fireEvent.click(secondTab));
     expect(secondTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('marks the first tab as no longer selected after switching', () => {
-    render(
+  it('marks the first tab as no longer selected after switching', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="First">First panel content</Tab>
         <Tab title="Second">Second panel content</Tab>
@@ -113,12 +124,12 @@ describe('Tabs component', () => {
     );
     const firstTab = screen.getByRole('tab', { name: /First/i });
     const secondTab = screen.getByRole('tab', { name: /Second/i });
-    fireEvent.click(secondTab);
+    await act(async () => fireEvent.click(secondTab));
     expect(firstTab).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('applies aria-label to the tab list', () => {
-    render(
+  it('applies aria-label to the tab list', async () => {
+    await renderSettled(
       <Tabs aria-label="My custom tabs">
         <Tab title="One">One</Tab>
       </Tabs>,
@@ -126,8 +137,8 @@ describe('Tabs component', () => {
     expect(screen.getByRole('tablist', { name: 'My custom tabs' })).toBeInTheDocument();
   });
 
-  it('renders a disabled tab with the disabled attribute', () => {
-    render(
+  it('renders a disabled tab with the disabled attribute', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Active">Active content</Tab>
         <Tab title="Disabled" isDisabled>Disabled content</Tab>
@@ -138,8 +149,8 @@ describe('Tabs component', () => {
     expect(disabledTab).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('renders tab panels (role="tabpanel") in the DOM', () => {
-    render(
+  it('renders tab panels (role="tabpanel") in the DOM', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -150,8 +161,8 @@ describe('Tabs component', () => {
     expect(panels.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders panel content for the active tab', () => {
-    render(
+  it('renders panel content for the active tab', async () => {
+    await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -161,8 +172,8 @@ describe('Tabs component', () => {
     expect(screen.getByText('Content A')).toBeInTheDocument();
   });
 
-  it('supports vertical orientation', () => {
-    render(
+  it('supports vertical orientation', async () => {
+    await renderSettled(
       <Tabs aria-label="Vertical tabs" isVertical>
         <Tab title="Vert1">Vert content 1</Tab>
         <Tab title="Vert2">Vert content 2</Tab>
@@ -172,8 +183,8 @@ describe('Tabs component', () => {
     expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
 
-  it('maps the legacy underlined variant to the documented v3 secondary style', () => {
-    const { container } = render(
+  it('maps the legacy underlined variant to the documented v3 secondary style', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Underlined tabs" variant="underlined">
         <Tab title="Alpha">Content A</Tab>
       </Tabs>,
@@ -190,8 +201,8 @@ describe('Tabs scrollAffordance', () => {
   const scrollButtons = (container: HTMLElement) =>
     container.querySelectorAll('button[aria-hidden="true"][tabindex="-1"]');
 
-  it('renders scroll buttons by default (affordance is default-on for horizontal strips)', () => {
-    const { container } = render(
+  it('renders scroll buttons by default (affordance is default-on for horizontal strips)', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs">
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -200,8 +211,8 @@ describe('Tabs scrollAffordance', () => {
     expect(scrollButtons(container)).toHaveLength(2);
   });
 
-  it('does NOT render scroll buttons when scrollAffordance is disabled', () => {
-    const { container } = render(
+  it('does NOT render scroll buttons when scrollAffordance is disabled', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" scrollAffordance={false}>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -210,8 +221,8 @@ describe('Tabs scrollAffordance', () => {
     expect(scrollButtons(container)).toHaveLength(0);
   });
 
-  it('does NOT render scroll buttons for vertical tabs', () => {
-    const { container } = render(
+  it('does NOT render scroll buttons for vertical tabs', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" isVertical>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -220,8 +231,8 @@ describe('Tabs scrollAffordance', () => {
     expect(scrollButtons(container)).toHaveLength(0);
   });
 
-  it('renders two edge scroll buttons when scrollAffordance is set', () => {
-    const { container } = render(
+  it('renders two edge scroll buttons when scrollAffordance is set', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" scrollAffordance>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -230,8 +241,8 @@ describe('Tabs scrollAffordance', () => {
     expect(scrollButtons(container)).toHaveLength(2);
   });
 
-  it('scroll buttons are hidden from AT and non-focusable (no duplicate tab stops)', () => {
-    const { container } = render(
+  it('scroll buttons are hidden from AT and non-focusable (no duplicate tab stops)', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" scrollAffordance>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -245,8 +256,8 @@ describe('Tabs scrollAffordance', () => {
     expect(screen.getAllByRole('tab')).toHaveLength(2);
   });
 
-  it('applies the hidden-scrollbar class to the real scroll container', () => {
-    const { container } = render(
+  it('applies the hidden-scrollbar class to the real scroll container', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" scrollAffordance>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -256,12 +267,12 @@ describe('Tabs scrollAffordance', () => {
     expect(scroller?.className).toContain('scrollbar-hide');
   });
 
-  it('wraps the scroller in a min-w-0 flex item so it can clamp to the viewport', () => {
+  it('wraps the scroller in a min-w-0 flex item so it can clamp to the viewport', async () => {
     // Regression guard: the wrapper is a flex item of HeroUI's column `.tabs`
     // flexbox. Without `min-w-0` its `min-width: auto` expands to the full
     // content width and the inner overflow-x-auto scroller never scrolls —
     // i.e. the exact "can't reach the later tabs on mobile" bug this fixes.
-    const { container } = render(
+    const { container } = await renderSettled(
       <Tabs aria-label="Test tabs" scrollAffordance>
         <Tab title="Alpha">Content A</Tab>
         <Tab title="Beta">Content B</Tab>
@@ -271,8 +282,8 @@ describe('Tabs scrollAffordance', () => {
     expect(wrapper?.className).toContain('min-w-0');
   });
 
-  it('ignores scrollAffordance for vertical orientation', () => {
-    const { container } = render(
+  it('ignores scrollAffordance for vertical orientation', async () => {
+    const { container } = await renderSettled(
       <Tabs aria-label="Vertical tabs" isVertical scrollAffordance>
         <Tab title="Vert1">Vert content 1</Tab>
         <Tab title="Vert2">Vert content 2</Tab>

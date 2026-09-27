@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import i18n from 'i18next';
-import { render, screen, fireEvent } from '@/test/test-utils';
+import { cleanup, render, screen, fireEvent } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { Input } from './Input';
 
@@ -102,6 +102,7 @@ describe('Input — startContent / endContent', () => {
 
 describe('Input — isClearable / onClear', () => {
   afterEach(async () => {
+    cleanup();
     await i18n.changeLanguage('en');
   });
 

@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import i18n from "i18next";
-import { render, screen, fireEvent } from "@/test/test-utils";
+import { cleanup, render, screen, fireEvent } from "@/test/test-utils";
 import {
   Modal,
   ModalContent,
@@ -255,6 +255,7 @@ describe("Modal — render prop children", () => {
 
 describe("Modal — close trigger visibility", () => {
   afterEach(async () => {
+    cleanup();
     await i18n.changeLanguage("en");
   });
 
