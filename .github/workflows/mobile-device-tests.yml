@@ -361,18 +361,25 @@ jobs:
           APP_ENV: testing
           APP_KEY: base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=
         with:
-          api-level: 36
-          target: google_apis
+          # Use Android's CI-optimised Automated Test Device for the journey
+          # suite. The API 36 google_apis image repeatedly left a starting_reveal
+          # transition active forever: Maestro then waited about five seconds
+          # between every input character and its device RPC expired after two
+          # minutes (run 36323383803), while the app itself remained responsive.
+          api-level: 35
+          target: aosp_atd
           arch: x86_64
           profile: pixel_7
           ram-size: 4096M
           # swiftshader_indirect matches the local AVD: CPU rendering is slower but
           # deterministic, which is what a pixel comparison needs.
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
-          # API 36 repeatedly left MainActivity behind the launcher while its
-          # starting_reveal animation never completed. The E2E build suppresses
-          # LogBox, so reduced-motion warnings cannot cover the tab bar here.
+          # The E2E build suppresses the reduced-motion LogBox warning, so
+          # deterministic disabled animations cannot cover the tab bar.
           disable-animations: true
+          # Spellchecking is irrelevant to these journeys and can start another
+          # Android service while Maestro is driving the login fields.
+          disable-spellchecker: true
           script: |
             # Keep EXPO_PUBLIC_E2E=1 in the build when animations are disabled.
             # Without it, the reduced-motion LogBox banner covers the tab bar and

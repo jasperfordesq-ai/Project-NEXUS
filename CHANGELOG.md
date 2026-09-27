@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The Android device-test workflow now runs its full Maestro journey suite on Android 15's CI-optimised Automated Test Device and disables the irrelevant spellchecker service. Android 16's general-purpose Google APIs emulator left a system `starting_reveal` transition permanently active, delaying each typed character until Maestro's two-minute device-control request expired even though the app had reached the login screen and the independent launch check passed.
+
 - Five more admin list pages now let you reach every record, not just the first page. Like the newsletter activity page, they read the page count from the wrong part of the server's response. The GDPR audit log showed no entries at all. The error log stopped at its first 50 entries, and the GDPR requests list, the newsletter list and the smart-match results each stopped at their first 20. None of them offered a page control. The error log also now works out its pages from the 50 entries per page the server actually sends.
 
 - The admin newsletter activity page now shows every open and click. It read the page count from the wrong part of the server's response, so it always believed there was one page: anything past the first 50 events was hidden with no page control, and the header count stopped at 50. The Opened and Clicked badges on the same page no longer break mid-word in the narrow Event column.
