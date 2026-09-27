@@ -66,6 +66,18 @@ describe('with-android-play-signing', () => {
     expect(out.match(/playRelease \{/g)).toHaveLength(1);
   });
 
+  it('restores the version-code override when Expo rewrites an existing native project', () => {
+    const rewritten = out.replace(
+      /versionCode Integer\.parseInt\([^\n]+/,
+      'versionCode 19',
+    );
+    const repaired = injectPlaySigning(rewritten);
+    expect(repaired).toContain(
+      "versionCode Integer.parseInt((findProperty('playVersionCode') ?: '19').toString())",
+    );
+    expect(repaired.match(/playRelease \{/g)).toHaveLength(1);
+  });
+
   it('refuses a template it does not recognise rather than silently leaving the debug key', () => {
     expect(() => injectPlaySigning('android {\n}\n')).toThrow(/no `signingConfigs \{` block/);
     const noRelease = generated.replace(/release \{/, 'staging {');

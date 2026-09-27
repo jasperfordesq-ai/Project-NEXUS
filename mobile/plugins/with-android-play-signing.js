@@ -41,13 +41,15 @@ const RELEASE_SIGNING =
   "signingConfig((System.getenv('PLAY_STORE_FILE') ?: findProperty('playStoreFile')) ? signingConfigs.playRelease : signingConfigs.debug)";
 
 function injectPlaySigning(gradleSource) {
-  if (gradleSource.includes('playRelease {')) return gradleSource;
+  let out = gradleSource;
 
-  const signingBlock = /^([ \t]*)signingConfigs[ \t]*\{[ \t]*$/m;
-  if (!signingBlock.test(gradleSource)) {
-    throw new Error('with-android-play-signing: no `signingConfigs {` block in android/app/build.gradle');
+  if (!out.includes('playRelease {')) {
+    const signingBlock = /^([ \t]*)signingConfigs[ \t]*\{[ \t]*$/m;
+    if (!signingBlock.test(out)) {
+      throw new Error('with-android-play-signing: no `signingConfigs {` block in android/app/build.gradle');
+    }
+    out = out.replace(signingBlock, `$&\n${SIGNING_CONFIG}`);
   }
-  let out = gradleSource.replace(signingBlock, `$&\n${SIGNING_CONFIG}`);
 
   const releaseStart = out.search(/^[ \t]*release[ \t]*\{[ \t]*$/m);
   if (releaseStart < 0) {
@@ -56,19 +58,25 @@ function injectPlaySigning(gradleSource) {
   const head = out.slice(0, releaseStart);
   const tail = out.slice(releaseStart);
   const releaseSigning = /^([ \t]*)signingConfig signingConfigs\.debug[ \t]*$/m;
-  if (!releaseSigning.test(tail)) {
+  if (releaseSigning.test(tail)) {
+    out = head + tail.replace(releaseSigning, `$1${RELEASE_SIGNING}`);
+  } else if (!tail.includes(RELEASE_SIGNING)) {
     throw new Error('with-android-play-signing: the release build type does not sign with signingConfigs.debug as expected');
   }
-  out = head + tail.replace(releaseSigning, `$1${RELEASE_SIGNING}`);
 
   // `-PplayVersionCode=N` from the build script wins; app.json's value is the default.
   // 🔴 Command form with a method call, never `versionCode (a ?: b).toInteger()`:
   // Groovy parses that as `(versionCode(a ?: b)).toInteger()` and Gradle fails
   // with "Value is null" — the fourth 1.5.0 build died on exactly that line.
-  out = out.replace(
-    /^([ \t]*)versionCode (\d+)[ \t]*$/m,
-    "$1versionCode Integer.parseInt((findProperty('playVersionCode') ?: '$2').toString())",
-  );
+  const staticVersionCode = /^([ \t]*)versionCode (\d+)[ \t]*$/m;
+  if (staticVersionCode.test(out)) {
+    out = out.replace(
+      staticVersionCode,
+      "$1versionCode Integer.parseInt((findProperty('playVersionCode') ?: '$2').toString())",
+    );
+  } else if (!out.includes("versionCode Integer.parseInt((findProperty('playVersionCode')")) {
+    throw new Error('with-android-play-signing: no recognised `versionCode` declaration in android/app/build.gradle');
+  }
   return out;
 }
 

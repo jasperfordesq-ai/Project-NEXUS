@@ -173,7 +173,26 @@ if [ ! -f "$AAB" ]; then
   exit 1
 fi
 
-# ------------------------------------------------- guard 3: prove it is signed
+# ------------------------------------------------ guard 3: prove version code
+# Expo prebuild can rewrite a generated build.gradle while preserving the
+# plugin's signing block. A previous idempotence shortcut then skipped the
+# version-code override entirely, producing a correctly signed bundle with the
+# already-used code from app.json. Read Gradle's packaged-manifest metadata,
+# which records the value actually compiled into this release.
+VERSION_METADATA="android/app/build/intermediates/packaged_manifests/release/processReleaseManifestForPackage/output-metadata.json"
+if [ ! -f "$VERSION_METADATA" ]; then
+  echo "ERROR: cannot verify the bundle version code; Gradle metadata is missing." >&2
+  exit 1
+fi
+ACTUAL_VERSION_CODE="$(node -e "const m=require('./${VERSION_METADATA}');process.stdout.write(String(m.elements?.[0]?.versionCode ?? ''))")"
+if [ "$ACTUAL_VERSION_CODE" != "$VERSION_CODE" ]; then
+  echo "ERROR: bundle version code is ${ACTUAL_VERSION_CODE:-<missing>}, expected ${VERSION_CODE}." >&2
+  echo "Play would reject an already-used or incorrectly numbered bundle." >&2
+  exit 1
+fi
+echo "Version code       : ${ACTUAL_VERSION_CODE} (verified in packaged manifest)"
+
+# ------------------------------------------------- guard 4: prove it is signed
 # A debug-signed bundle is the failure this script exists to prevent, so verify
 # rather than assume. The upload certificate is the one Play knows us by.
 EXPECTED="F5:0D:87:55:56:B8:01:76:3D:89:B2:54:47:E7:CD:96:58:06:FE:43:96:1C:0B:46:12:2D:42:4E:0B:40:D9:7B"
@@ -195,7 +214,7 @@ else
   echo "WARNING: keytool not found — signature NOT verified. This is not a pass." >&2
 fi
 
-# ------------------------------- guard 4: prove the bundle can receive updates
+# ------------------------------- guard 5: prove the bundle can receive updates
 # Both values are read from the FINISHED bundle, not from the sources that should
 # have produced them. The manifest and resources inside an .aab are protobuf, but
 # the strings are stored verbatim, so a byte search is a reliable check.
@@ -234,7 +253,7 @@ fi
 echo "Update channel     : ${EXPECTED_CHANNEL} (verified in bundle)"
 echo "Runtime version    : ${APP_VERSION} (verified in bundle)"
 
-# ------------------------------- guard 5: prove the code was actually minified
+# ------------------------------- guard 6: prove the code was actually minified
 # R8 writes the obfuscation mapping into the bundle at
 # BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map. That entry
 # exists if and only if minification ran, so it is the proof for BOTH things at

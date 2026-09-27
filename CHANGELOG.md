@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed Android Play bundles silently retaining an already-used version code after Expo regenerated an existing native project; the guarded build now reapplies the Gradle override and verifies the compiled version code before archiving.
+
 ### Added
 
 - A new automatic check stops translations whose letters have been replaced by question marks. When text passes through a step that cannot carry accented or non-Latin characters, every such character becomes "?" — Arabic and Japanese turn into "????" and "ausgewählt" into "ausgew?hlt" — yet the file still looks valid and every existing translation check stays green. This has now had to be repaired by hand twice. `scripts/check-i18n-question-mark-damage.mjs` scans the website, the mobile app and the server's language files (both JSON and PHP) and fails with a list of every damaged value. It runs as BLOCKING in CI's Translation Drift Detection job (which now also wakes on `mobile/locales/**`), in `scripts/preflight.mjs`, and as `npm run check:i18n:question-marks` within `npm run check:i18n`; its rules are pinned by `scripts/test/check-i18n-question-mark-damage.test.mjs`. It cannot see a letter lost at the very end of a value of more than one word (such as "Non activ?"), because that looks exactly like a real question; run against the damage repaired earlier today, it would have caught 213 of the 230 values.
