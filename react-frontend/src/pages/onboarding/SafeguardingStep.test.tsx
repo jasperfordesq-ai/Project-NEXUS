@@ -334,4 +334,30 @@ describe('SafeguardingStep', () => {
     await user.click(screen.getByText('Continue'));
     expect(defaultProps.onNext).toHaveBeenCalled();
   });
+
+  it('does not describe match approval when only broker review was selected', async () => {
+    mockGet.mockResolvedValue({
+      success: true,
+      data: [{
+        id: 3,
+        option_key: 'broker_review',
+        option_type: 'checkbox',
+        label: 'I would like a broker to review exchanges',
+        description: null,
+        help_url: null,
+        is_required: false,
+        triggers: { requires_broker_approval: true },
+      }],
+    });
+
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    render(<SafeguardingStep {...defaultProps} />);
+
+    await user.click(await screen.findByText('I would like a broker to review exchanges'));
+    await user.click(screen.getByText('Save & Continue'));
+
+    expect(await screen.findByText(/checks and approves exchanges involving you/)).toBeInTheDocument();
+    expect(screen.queryByText(/This label currently records your choice only/)).toBeNull();
+  });
 });

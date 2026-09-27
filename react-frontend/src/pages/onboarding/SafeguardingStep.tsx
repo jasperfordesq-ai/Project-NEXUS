@@ -305,7 +305,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
       if (aggregatedTriggers.requires_broker_approval) {
         activations.push(t('safeguarding.confirmation.activation_broker_review'));
       }
-      if (aggregatedTriggers.restricts_matching || aggregatedTriggers.requires_broker_approval) {
+      if (aggregatedTriggers.restricts_matching) {
         activations.push(t('safeguarding.confirmation.activation_match_approval'));
       }
       if (aggregatedTriggers.requires_vetted_interaction) {
