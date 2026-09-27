@@ -102,14 +102,21 @@ function truncateUA(ua: string | null, maxLen = 60): string {
   return ua.length > maxLen ? ua.substring(0, maxLen) + '...' : ua;
 }
 
-function parsePaginated<T>(raw: unknown): PaginatedResponse<T> {
-  if (raw && typeof raw === 'object' && 'data' in raw) {
-    return raw as PaginatedResponse<T>;
-  }
+// The shared api client unwraps the `{ data, meta }` envelope: `res.data` is the
+// bare row array and pagination arrives on the sibling `res.meta`. Reading meta
+// only from inside `res.data` (as this did) always found nothing, so the page
+// reported one page and hid everything past the first 50 rows.
+function parsePaginated<T>(res: { data?: unknown; meta?: unknown }): PaginatedResponse<T> {
+  const raw = res.data;
+  const meta = (res.meta ?? undefined) as PaginatedResponse<T>['meta'];
   if (Array.isArray(raw)) {
-    return { data: raw as T[] };
+    return { data: raw as T[], meta };
   }
-  return { data: [] };
+  if (raw && typeof raw === 'object' && 'data' in raw) {
+    const nested = raw as PaginatedResponse<T>;
+    return { data: Array.isArray(nested.data) ? nested.data : [], meta: nested.meta ?? meta };
+  }
+  return { data: [], meta };
 }
 
 // The per-subscriber list endpoints (openers/clickers/non-openers/opened-no-click)
@@ -178,7 +185,7 @@ export function NewsletterActivity() {
         if (activityFilter !== 'all') params.type = activityFilter;
         const res = await adminNewsletters.getActivity(nid, params);
         if (res.success && res.data) {
-          const payload = parsePaginated<ActivityEvent>(res.data);
+          const payload = parsePaginated<ActivityEvent>(res);
           setActivityEvents(payload.data);
           setTotalPages(payload.meta?.total_pages ?? 1);
           setTotalCount(payload.meta?.total ?? payload.data.length);
@@ -186,7 +193,7 @@ export function NewsletterActivity() {
       } else if (activeTab === 'openers') {
         const res = await adminNewsletters.getOpeners(nid, { page, per_page: perPage });
         if (res.success && res.data) {
-          const payload = parsePaginated<OpenerRow>(res.data);
+          const payload = parsePaginated<OpenerRow>(res);
           setOpeners(withRowId(payload.data));
           setTotalPages(payload.meta?.total_pages ?? 1);
           setTotalCount(payload.meta?.total ?? payload.data.length);
@@ -194,7 +201,7 @@ export function NewsletterActivity() {
       } else if (activeTab === 'clickers') {
         const res = await adminNewsletters.getClickers(nid, { page, per_page: perPage });
         if (res.success && res.data) {
-          const payload = parsePaginated<ClickerRow>(res.data);
+          const payload = parsePaginated<ClickerRow>(res);
           setClickers(withRowId(payload.data));
           setTotalPages(payload.meta?.total_pages ?? 1);
           setTotalCount(payload.meta?.total ?? payload.data.length);
@@ -202,7 +209,7 @@ export function NewsletterActivity() {
       } else if (activeTab === 'non-openers') {
         const res = await adminNewsletters.getNonOpeners(nid, { page, per_page: perPage });
         if (res.success && res.data) {
-          const payload = parsePaginated<NonOpenerRow>(res.data);
+          const payload = parsePaginated<NonOpenerRow>(res);
           setNonOpeners(withRowId(payload.data));
           setTotalPages(payload.meta?.total_pages ?? 1);
           setTotalCount(payload.meta?.total ?? payload.data.length);
@@ -210,7 +217,7 @@ export function NewsletterActivity() {
       } else if (activeTab === 'opened-no-click') {
         const res = await adminNewsletters.getOpenersNoClick(nid, { page, per_page: perPage });
         if (res.success && res.data) {
-          const payload = parsePaginated<OpenedNoClickRow>(res.data);
+          const payload = parsePaginated<OpenedNoClickRow>(res);
           setOpenedNoClick(withRowId(payload.data));
           setTotalPages(payload.meta?.total_pages ?? 1);
           setTotalCount(payload.meta?.total ?? payload.data.length);

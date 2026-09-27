@@ -119,9 +119,15 @@ const makeOpenedNoClick = (overrides: { email?: string } = {}) => ({
   ...overrides,
 });
 
-const paginatedOf = <T,>(data: T[]) => ({
+// Mirrors what the shared api client (src/lib/api.ts) really resolves with: it
+// unwraps the `data` envelope, so `data` is the bare row array and pagination
+// lives on the sibling `meta`. An earlier fixture nested `meta` inside `data`,
+// a shape the client never produces, which hid that the page read pagination
+// from the wrong place and never offered a second page.
+const paginatedOf = <T,>(data: T[], meta: { total?: number; total_pages?: number; current_page?: number } = {}) => ({
   success: true,
-  data: { data, meta: { total: data.length, page: 1, per_page: 50, total_pages: 1 } },
+  data,
+  meta: { current_page: 1, per_page: 50, total: data.length, total_pages: 1, ...meta },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -390,11 +396,47 @@ describe('NewsletterActivity', () => {
     for (let i = 1; i <= 4; i++) {
       const tab = screen.getAllByRole('tab')[i];
       expect(tab).toBeDefined();
-      fireEvent.click(tab);
+      fireEvent.click(tab!);
       await waitFor(() => expect(calls[i - 1]).toHaveBeenCalled());
       // Heading still mounted ⇒ this tab rendered its rows without throwing.
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     }
+  });
+
+  // Regression: a newsletter with 66 events (61 opens + 5 clicks) showed only the
+  // first 50 and no page control, because pagination was read from the wrong place.
+  it('shows the record total and a page control when the API reports more than one page', async () => {
+    mockAdminNewsletters.getActivity.mockResolvedValue(
+      paginatedOf([makeActivityEvent()], { total: 66, total_pages: 2 })
+    );
+
+    const { NewsletterActivity } = await import('./NewsletterActivity');
+    render(<NewsletterActivity />);
+
+    await waitFor(() => {
+      expect(screen.getByText('alice@example.com')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.getByText(/66/)).toBeInTheDocument();
+  });
+
+  it('requests page 2 when the next page is chosen', async () => {
+    mockAdminNewsletters.getActivity.mockResolvedValue(
+      paginatedOf([makeActivityEvent()], { total: 66, total_pages: 2 })
+    );
+
+    const { NewsletterActivity } = await import('./NewsletterActivity');
+    render(<NewsletterActivity />);
+    await waitFor(() => screen.getByRole('navigation'));
+
+    fireEvent.click(screen.getByRole('button', { name: /2/ }));
+
+    await waitFor(() => {
+      expect(mockAdminNewsletters.getActivity).toHaveBeenLastCalledWith(
+        7,
+        expect.objectContaining({ page: 2 }),
+      );
+    });
   });
 
   it('ignores malformed subscriber rows without an email and keeps valid rows usable', async () => {
