@@ -15,7 +15,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 import { api } from '@/lib/api';
-import { unsubscribeBrowserPushOnLogout } from './useWebPush';
+import { unsubscribeBrowserPushLocally, unsubscribeBrowserPushOnLogout } from './useWebPush';
 
 function makeSub(endpoint = 'https://push.example/sub-1') {
   return { endpoint, unsubscribe: vi.fn().mockResolvedValue(true) };
@@ -52,6 +52,16 @@ describe('unsubscribeBrowserPushOnLogout (F-108)', () => {
 
     expect(sub.unsubscribe).toHaveBeenCalledTimes(1);
     expect(api.post).toHaveBeenCalledWith('/push/unsubscribe', { endpoint: 'https://push.example/sub-42' });
+  });
+
+  it('drops an invalidated session locally without an unauthenticated server call', async () => {
+    const sub = makeSub('https://push.example/expired-session');
+    installServiceWorker(async () => ({ pushManager: { getSubscription: vi.fn().mockResolvedValue(sub) } }));
+
+    await unsubscribeBrowserPushLocally();
+
+    expect(sub.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(api.post).not.toHaveBeenCalled();
   });
 
   it('does nothing when this browser has no subscription or no service worker', async () => {

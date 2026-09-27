@@ -953,6 +953,67 @@ describe('AuthContext', () => {
   });
 
   describe('session expiration', () => {
+    it.each([
+      ['expired', SESSION_EXPIRED_EVENT, { sessionGeneration: 'test-session' }],
+      ['replaced', SESSION_REPLACED_EVENT, { previousSessionGeneration: 'test-session' }],
+    ])('drops the old browser push subscription when a session is %s (F-108)', async (_label, eventName, detail) => {
+      const unsubscribe = vi.fn(async () => true);
+      Object.defineProperty(window, 'PushManager', { configurable: true, value: class {} });
+      Object.defineProperty(navigator, 'serviceWorker', {
+        configurable: true,
+        value: { getRegistration: vi.fn(async () => ({
+          pushManager: { getSubscription: vi.fn(async () => ({
+            endpoint: 'https://fcm.googleapis.com/f108-browser', unsubscribe,
+          })) },
+        })) },
+      });
+      try {
+        vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+        vi.mocked(api.get).mockResolvedValueOnce({
+          success: true,
+          data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+        });
+        render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+        await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+
+        act(() => window.dispatchEvent(new CustomEvent(eventName, { detail })));
+        await waitFor(() => expect(unsubscribe).toHaveBeenCalledTimes(1));
+      } finally {
+        delete (window as unknown as Record<string, unknown>).PushManager;
+        Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: undefined });
+      }
+    });
+
+    it('drops the old browser push subscription when another tab switches accounts (F-108)', async () => {
+      const unsubscribe = vi.fn(async () => true);
+      Object.defineProperty(window, 'PushManager', { configurable: true, value: class {} });
+      Object.defineProperty(navigator, 'serviceWorker', {
+        configurable: true,
+        value: { getRegistration: vi.fn(async () => ({
+          pushManager: { getSubscription: vi.fn(async () => ({
+            endpoint: 'https://fcm.googleapis.com/f108-cross-tab', unsubscribe,
+          })) },
+        })) },
+      });
+      try {
+        vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+        vi.mocked(api.get).mockResolvedValue({
+          success: true,
+          data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+        });
+        render(<AuthProvider><TestAuthDisplay /></AuthProvider>);
+        await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+
+        act(() => window.dispatchEvent(new StorageEvent('storage', {
+          key: 'nexus_auth_session_generation', oldValue: 'test-session', newValue: 'new-session',
+        })));
+        await waitFor(() => expect(unsubscribe).toHaveBeenCalledTimes(1));
+      } finally {
+        delete (window as unknown as Record<string, unknown>).PushManager;
+        Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: undefined });
+      }
+    });
+
     it('handles session expired event', async () => {
       vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
       vi.mocked(api.get).mockResolvedValueOnce({

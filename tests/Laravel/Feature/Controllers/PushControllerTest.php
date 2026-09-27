@@ -10,6 +10,7 @@ use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Sanctum\Sanctum;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Feature tests for PushController — push notifications (VAPID, subscribe, register device).
@@ -63,6 +64,33 @@ class PushControllerTest extends TestCase
         ]);
 
         $response->assertStatus(401);
+    }
+
+    public function test_one_browser_endpoint_cannot_remain_bound_to_two_members(): void
+    {
+        $first = $this->authenticatedUser();
+        $endpoint = 'https://fcm.googleapis.com/f108-shared-browser-' . bin2hex(random_bytes(8));
+        $body = [
+            'endpoint' => $endpoint,
+            'keys' => ['p256dh' => 'synthetic-public-key', 'auth' => 'synthetic-auth-key'],
+        ];
+        $this->apiPost('/push/subscribe', $body)->assertCreated();
+
+        $second = $this->authenticatedUser();
+        $this->apiPost('/push/subscribe', $body)->assertCreated();
+
+        $rows = DB::table('push_subscriptions')->where('endpoint', $endpoint)
+            ->get(['user_id', 'tenant_id']);
+        $this->assertCount(1, $rows, 'The old member must not keep receiving push on a shared browser.');
+        $this->assertSame((int) $second->id, (int) $rows->first()->user_id);
+        $this->assertSame($this->testTenantId, (int) $rows->first()->tenant_id);
+        $this->assertNotSame((int) $first->id, (int) $rows->first()->user_id);
+
+        // A delayed cleanup from the old account must not remove B's binding.
+        Sanctum::actingAs($first, ['*']);
+        $this->apiPost('/push/unsubscribe', ['endpoint' => $endpoint])->assertOk();
+        $this->assertSame((int) $second->id, (int) DB::table('push_subscriptions')
+            ->where('endpoint', $endpoint)->value('user_id'));
     }
 
     // ------------------------------------------------------------------

@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Support\OutboundUrlGuard;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -41,35 +42,43 @@ class PushNotificationService
 
         $tenantId = \App\Core\TenantContext::getId();
 
-        $existing = DB::table('push_subscriptions')
-            ->where('user_id', $userId)
-            ->where('endpoint', $endpoint)
-            ->exists();
+        // One browser push endpoint can belong to only one current member.
+        // Serialize re-binding across PHP workers, then remove any stale rows
+        // before a new account can receive notifications at that endpoint.
+        return Cache::lock('push-endpoint:' . hash('sha256', $endpoint), 30)->block(
+            5,
+            static function () use ($userId, $tenantId, $endpoint, $subscription): bool {
+                return DB::transaction(static function () use ($userId, $tenantId, $endpoint, $subscription): bool {
+                    $own = DB::table('push_subscriptions')
+                        ->where('endpoint', $endpoint)
+                        ->where('user_id', $userId)
+                        ->orderByDesc('id')
+                        ->first(['id']);
 
-        if ($existing) {
-            DB::table('push_subscriptions')
-                ->where('user_id', $userId)
-                ->where('endpoint', $endpoint)
-                ->update([
-                    'tenant_id'  => $tenantId,
-                    'p256dh_key' => $subscription['keys']['p256dh'] ?? null,
-                    'auth_key'   => $subscription['keys']['auth'] ?? null,
-                    'updated_at' => now(),
-                ]);
-            return true;
-        }
+                    $stale = DB::table('push_subscriptions')->where('endpoint', $endpoint);
+                    if ($own !== null) {
+                        $stale->where('id', '<>', $own->id);
+                    }
+                    $stale->delete();
 
-        DB::table('push_subscriptions')->insert([
-            'user_id'    => $userId,
-            'tenant_id'  => $tenantId,
-            'endpoint'   => $endpoint,
-            'p256dh_key' => $subscription['keys']['p256dh'] ?? null,
-            'auth_key'   => $subscription['keys']['auth'] ?? null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+                    $values = [
+                        'user_id' => $userId,
+                        'tenant_id' => $tenantId,
+                        'endpoint' => $endpoint,
+                        'p256dh_key' => $subscription['keys']['p256dh'] ?? null,
+                        'auth_key' => $subscription['keys']['auth'] ?? null,
+                        'updated_at' => now(),
+                    ];
+                    if ($own !== null) {
+                        DB::table('push_subscriptions')->where('id', $own->id)->update($values);
+                    } else {
+                        DB::table('push_subscriptions')->insert($values + ['created_at' => now()]);
+                    }
 
-        return true;
+                    return true;
+                });
+            },
+        );
     }
 
     /**

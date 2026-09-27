@@ -91,6 +91,17 @@ const LOGOUT_PUSH_CLEANUP_TIMEOUT_MS = 3000;
 export async function unsubscribeBrowserPushOnLogout(
   timeoutMs: number = LOGOUT_PUSH_CLEANUP_TIMEOUT_MS,
 ): Promise<void> {
+  return dropBrowserPushSubscription(true, timeoutMs);
+}
+
+/** Drop the old browser endpoint after a session is invalidated or replaced. */
+export async function unsubscribeBrowserPushLocally(
+  timeoutMs: number = LOGOUT_PUSH_CLEANUP_TIMEOUT_MS,
+): Promise<void> {
+  return dropBrowserPushSubscription(false, timeoutMs);
+}
+
+async function dropBrowserPushSubscription(notifyServer: boolean, timeoutMs: number): Promise<void> {
   if (
     typeof window === 'undefined'
     || typeof navigator === 'undefined'
@@ -107,7 +118,7 @@ export async function unsubscribeBrowserPushOnLogout(
     if (!pushSub) return;
     const endpoint = pushSub.endpoint;
     try { await pushSub.unsubscribe(); } catch { /* keep going — server cleanup still useful */ }
-    if (endpoint) {
+    if (notifyServer && endpoint) {
       await api.post('/push/unsubscribe', { endpoint });
     }
   })().catch(() => undefined);

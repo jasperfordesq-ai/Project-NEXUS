@@ -221,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Retire the prior member's browser push subscription when a session expires or is replaced, including cross-tab account switches, and give each push endpoint one current member owner when a new account subscribes (F-108 follow-up).
+
 - Bind member GDPR data requests, consent changes and account-erasure requests, plus administrator consent views and account-created consents, to the authenticated community after tenant resolution. These operations could otherwise use the platform default community when their controllers were constructed early (F-216).
 
 - The job-moderation administrator switch now governs job publication and review. A saved choice takes precedence over older tenant configuration, so enabling review in settings actually holds new and edited job ads for approval (F-215).

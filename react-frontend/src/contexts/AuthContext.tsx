@@ -34,7 +34,7 @@ import { queueSentryAuthEvent, queueSentryUser } from '@/lib/telemetryQueue';
 import {
   purgeOfflineCheckinDataForGeneration,
 } from '@/lib/event-offline-checkin-store';
-import { unsubscribeBrowserPushOnLogout } from '@/hooks/useWebPush';
+import { unsubscribeBrowserPushLocally, unsubscribeBrowserPushOnLogout } from '@/hooks/useWebPush';
 import { clearUserScopedStorage } from '@/lib/userScopedStorage';
 import type {
   User,
@@ -962,6 +962,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         && tokenManager.getSessionGeneration() !== null
         && tokenManager.getSessionGeneration() !== detail.sessionGeneration
       ) return;
+      // The bearer is already invalid. Retire the browser endpoint locally so
+      // the previous member cannot keep receiving push after this session ends.
+      void unsubscribeBrowserPushLocally();
       void purgeOfflineCheckinDataForGeneration(detail?.sessionGeneration ?? null);
       resetViewerCaches();
       // Cancel any pending warning timer — the session is already gone
@@ -1017,6 +1020,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const previousGeneration = (event as CustomEvent<SessionReplacedDetail>)
         .detail?.previousSessionGeneration;
       if (previousGeneration === undefined) return;
+      void unsubscribeBrowserPushLocally();
       clearUserScopedStorage();
       resetViewerCaches();
       void purgeOfflineCheckinDataForGeneration(previousGeneration);
@@ -1043,6 +1047,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Another tab committed a complete replacement session. Stop rendering
         // the previous member immediately, discard their local UI state, and
         // hydrate the replacement identity before authenticated routes resume.
+        void unsubscribeBrowserPushLocally();
         tokenManager.clearSession(event.oldValue);
         api.clearInflightRequests();
         clearUserScopedStorage();
@@ -1061,6 +1066,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           generation = marker.sessionGeneration ?? null;
           if (generation !== tokenManager.getSessionGeneration()) return;
         } catch { return; }
+        void unsubscribeBrowserPushLocally();
         api.clearInflightRequests();
         clearUserScopedStorage();
         void purgeOfflineCheckinDataForGeneration(generation);
@@ -1085,6 +1091,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             && tokenManager.getSessionGeneration() === null)))
         && (state.status === 'authenticated' || state.status === 'loading')
       ) {
+        void unsubscribeBrowserPushLocally();
         tokenManager.clearSession(removedGeneration);
         if (
           tokenManager.getSessionGeneration() !== removedGeneration
