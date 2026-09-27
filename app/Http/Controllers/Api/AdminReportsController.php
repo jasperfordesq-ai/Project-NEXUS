@@ -13,6 +13,7 @@ use App\I18n\LocaleContext;
 use App\Models\ActivityLog;
 use App\Models\Notification;
 use App\Services\ReportTargetResolver;
+use App\Support\FeedItemTables;
 
 /**
  * AdminReportsController -- Admin user and content report handling.
@@ -65,9 +66,11 @@ class AdminReportsController extends BaseApiController
      * filed themselves, one that targets them directly, or one about content
      * they own — they could otherwise bury complaints about their own conduct.
      * Content ownership comes from ReportTargetResolver (the same lookup the
-     * report list shows as the item's author); for a review, the member it is
-     * about is a party too. A target type the resolver does not know has no
-     * resolvable owner and is guarded on reporter/user only.
+     * report list shows as the item's author), with a separate lookup for the
+     * reportable feed types its display mapping does not cover. For a review,
+     * the member it is about is a party too. If a content row has been removed
+     * or its type cannot be resolved, only an admin may close the report:
+     * otherwise its former owner could remove it and bury the complaint.
      * Admin tiers retain full latitude.
      * See BrokerModerationAuthorizationTest (F-218).
      */
@@ -76,7 +79,8 @@ class AdminReportsController extends BaseApiController
         if ($this->callerIsAdminTier()) {
             return null;
         }
-        if (in_array($callerId, $this->reportParties($report), true)) {
+        $parties = $this->reportParties($report);
+        if ($parties === null || in_array($callerId, $parties, true)) {
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
         }
         return null;
@@ -86,9 +90,9 @@ class AdminReportsController extends BaseApiController
      * Members with a personal stake in a report: who filed it, and who the
      * reported item belongs to or is about.
      *
-     * @return list<int>
+     * @return list<int>|null Null when content ownership cannot be established.
      */
-    private function reportParties(object $report): array
+    private function reportParties(object $report): ?array
     {
         $parties = [(int) $report->reporter_id];
         $type = $report->target_type ?? null;
@@ -101,9 +105,28 @@ class AdminReportsController extends BaseApiController
 
         $targets = ReportTargetResolver::resolveMany([$report]);
         $authorId = $targets["{$type}:{$targetId}"]['target_author_id'] ?? null;
-        if ($authorId !== null) {
-            $parties[] = (int) $authorId;
+        if ($authorId === null && $targetId > 0 && is_string($type)) {
+            // The report API accepts every reactable feed item, while the
+            // display resolver covers only a subset. Resolve ownership for
+            // the remaining types before a broker can close the report.
+            $ownerColumn = match ($type) {
+                'volunteer' => 'created_by',
+                'blog' => 'author_id',
+                'goal', 'poll', 'challenge', 'resource', 'job', 'discussion' => 'user_id',
+                default => null,
+            };
+            $table = FeedItemTables::TABLES[$type] ?? null;
+            if ($ownerColumn !== null && $table !== null) {
+                $authorId = DB::table($table)
+                    ->where('id', $targetId)
+                    ->where('tenant_id', (int) $report->tenant_id)
+                    ->value($ownerColumn);
+            }
         }
+        if ($authorId === null) {
+            return null;
+        }
+        $parties[] = (int) $authorId;
 
         if ($type === 'review' && $targetId > 0) {
             $receiverId = DB::table('reviews')
