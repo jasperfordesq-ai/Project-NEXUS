@@ -62,7 +62,12 @@ jobs:
   device-tests:
     name: Maestro flows on an Android emulator
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The thirteen serial journeys plus the screenshot tour exceeded the old
+    # 60-minute whole-job cap twice on build 19's post-release commit. Both runs
+    # completed setup and the APK build without an assertion failure before
+    # GitHub cancelled the active Maestro step. Keep enough room for the full
+    # suite on a slower hosted runner while retaining a finite ceiling.
+    timeout-minutes: 90
 
     services:
       mariadb:
