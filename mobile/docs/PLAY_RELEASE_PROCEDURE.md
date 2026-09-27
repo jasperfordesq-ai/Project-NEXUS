@@ -440,10 +440,11 @@ catch a repeated-code bundle before archiving. The 96,305,250-byte AAB has SHA-2
 - **Production:** promoted at 100.0% to all targeted countries, covering six active
   installs. The pre-submit quick checks completed with "Your changes can now be sent
   for review" and no issue.
-- **Submission 15** was submitted September 27, 2026 at **6:25 PM**. It remains **In
-  review** at the time of this record. Managed publishing is off, so approval will
-  publish it automatically. `live-store-build.json` correctly remains on build 19
-  until Play confirms publication.
+- **Submission 15**, submitted September 27, 2026 at **6:25 PM**, was **Published**
+  at **7:31 PM**. Managed publishing was off, so approval released it automatically.
+  Play identifies Production's active latest release as build 20 / 1.8.1 across
+  177 countries and regions. `mobile/live-store-build.json` records that exact
+  artifact and source commit.
 
 Two Console behaviours worth knowing before you click:
 

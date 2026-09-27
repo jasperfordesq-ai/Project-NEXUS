@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Android release metadata now records the verified live Play build 19 / 1.8.1, published on 27 September 2026 at 10:59 AM from exact source commit `e94f077037ca6de4bdf23cf4d6e347c1351d9064`, after internal testing, zero supported-device losses, Play quick checks and production submission 14.
+- Android release metadata now records the verified live Play build 20 / 1.8.1, published on 27 September 2026 at 7:31 PM from exact source commit `86adbf3391972f5c6b6cf863adda734bcfb6eda0`, after internal testing, zero supported-device losses, Play quick checks and production submission 15.
 
 - New blog posts now start as Published and visible to search engines, so a post goes live and can be found unless an admin chooses otherwise. The search-engine setting on the blog form is now a plain "Show in search engines" switch, on by default, with a line underneath saying in words whether search engines may list the post. Available in all eleven languages.
 
