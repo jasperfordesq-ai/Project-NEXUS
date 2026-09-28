@@ -29,11 +29,11 @@
  *
  * WHY NO DATABASE
  * ---------------
- * It parses the committed `database/schema/mysql-schema.sql`, not a live
- * connection. A gate that needs a database can pass vacuously on a CI shard whose
- * env config points somewhere empty — and "0 problems found" then means "found
- * nothing to look at". Reading the committed dump makes a green result mean
- * something everywhere, including on a laptop with Docker stopped.
+ * It parses the committed `database/schema/mysql-schema.sql` and literal
+ * table-creating Laravel migrations, not a live connection. The dump comes
+ * from production and therefore lags new migrations until deployment. A gate
+ * that needs a database can pass vacuously on a CI shard whose env config points
+ * somewhere empty; committed source works even with Docker stopped.
  *
  * PRECISION OVER RECALL
  * ---------------------
@@ -63,6 +63,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseCreatedTables } from './lib/laravel-migration-tables.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -259,6 +260,12 @@ function phpFiles(dir, out = []) {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 const schema = loadSchema(SCHEMA_FILE);
+const dumpTableCount = schema.size;
+for (const migration of phpFiles(path.join(ROOT, 'database', 'migrations'))) {
+  for (const [table, columns] of parseCreatedTables(fs.readFileSync(migration, 'utf8'))) {
+    if (!schema.has(table)) schema.set(table, columns);
+  }
+}
 const files = SCAN_ROOTS.flatMap((r) => phpFiles(path.join(ROOT, r)));
 
 const mismatches = [];
@@ -295,7 +302,7 @@ if (AS_JSON) {
   console.log('============================================================');
   console.log('  DB Column Reference Check');
   console.log('============================================================');
-  console.log(`  Schema tables:            ${schema.size}`);
+  console.log(`  Schema tables:            ${dumpTableCount} dump + ${schema.size - dumpTableCount} migration-only`);
   console.log(`  PHP files scanned:        ${files.length}`);
   console.log(`  (table, column) checked:  ${checked}`);
   console.log(`  Known, tracked:           ${KNOWN.size + KNOWN_ABSENT_TABLES.size}`);
@@ -331,7 +338,7 @@ if (mismatches.length > 0) {
 
 if (absentTables.size > 0) {
   failed = true;
-  console.error('FAIL: PHP reads or writes tables that exist in no migration and no dump.');
+  console.error('FAIL: PHP reads or writes tables that exist in no recognized migration and no dump.');
   console.error('');
   for (const [table, where] of absentTables) console.error(`  ${table}  first seen at ${where}`);
   console.error('');
@@ -354,7 +361,7 @@ if (stale.length > 0) {
 if (failed) process.exit(1);
 
 if (!AS_JSON) {
-  console.log(`PASS: every literal column write resolves against the schema dump (${checked} checked).`);
+  console.log(`PASS: every literal column write resolves against the schema dump or a table-creating Laravel migration (${checked} checked).`);
   if (KNOWN.size + KNOWN_ABSENT_TABLES.size > 0) {
     console.log(`  ${KNOWN.size + KNOWN_ABSENT_TABLES.size} pre-existing problem(s) tracked in this script — shrink-only.`);
   }

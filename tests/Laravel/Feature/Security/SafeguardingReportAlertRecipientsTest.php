@@ -9,9 +9,11 @@ namespace Tests\Laravel\Feature\Security;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\CaringCommunity\SafeguardingService;
+use App\Services\EmailDispatchService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Mockery;
 use Tests\Laravel\TestCase;
 
 /**
@@ -27,6 +29,14 @@ class SafeguardingReportAlertRecipientsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->andReturn(true);
+        $this->app->instance(EmailDispatchService::class, $mailer);
+    }
+
     private function staff(string $role): User
     {
         return User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'role' => $role]);
@@ -38,6 +48,32 @@ class SafeguardingReportAlertRecipientsTest extends TestCase
             ->where('user_id', $user->id)
             ->where('type', 'safeguarding_critical')
             ->exists();
+    }
+
+    private function individualViewer(User $user, bool $granted, ?string $expiresAt = null): void
+    {
+        $permissionId = DB::table('permissions')->where('name', 'safeguarding.view')->value('id');
+        if (!$permissionId) {
+            $permissionId = DB::table('permissions')->insertGetId([
+                'name' => 'safeguarding.view',
+                'display_name' => 'View safeguarding reports',
+                'description' => 'View safeguarding reports',
+                'category' => 'safeguarding',
+                'is_dangerous' => 0,
+                'tenant_id' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::table('user_permissions')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'permission_id' => $permissionId,
+            'granted' => $granted ? 1 : 0,
+            'granted_at' => now(),
+            'expires_at' => $expiresAt,
+        ]);
     }
 
     public function test_a_critical_report_alerts_the_communitys_safeguarding_staff_but_not_its_subject(): void
@@ -90,5 +126,28 @@ class SafeguardingReportAlertRecipientsTest extends TestCase
         $this->assertNull($service->reportDetail($reportId, $reportedCoordinator->id));
         $this->assertContains($reportId, $ids($otherCoordinator->id));
         $this->assertNotNull($service->reportDetail($reportId, $otherCoordinator->id));
+    }
+
+    public function test_revoked_and_expired_viewers_receive_no_critical_report_alert(): void
+    {
+        Mail::fake();
+        TenantContext::setById($this->testTenantId);
+        $activeViewer = $this->staff('member');
+        $revokedViewer = $this->staff('member');
+        $expiredViewer = $this->staff('member');
+        $reporter = $this->staff('member');
+        $this->individualViewer($activeViewer, true);
+        $this->individualViewer($revokedViewer, false);
+        $this->individualViewer($expiredViewer, true, now()->subMinute()->toDateTimeString());
+
+        app(SafeguardingService::class)->submitReport($reporter->id, [
+            'category' => 'exploitation',
+            'severity' => 'critical',
+            'description' => 'Synthetic report for recipient authorization.',
+        ]);
+
+        $this->assertTrue($this->alerted($activeViewer), 'a current viewer must still be alerted');
+        $this->assertFalse($this->alerted($revokedViewer), 'a revoked viewer must not be alerted');
+        $this->assertFalse($this->alerted($expiredViewer), 'an expired viewer must not be alerted');
     }
 }

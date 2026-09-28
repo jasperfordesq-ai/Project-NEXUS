@@ -302,6 +302,16 @@
     "external_source_note_other": "Obejmuje {{count}} ofert od partnerów zewnętrznych; wczytanie kolejnych kontynuuje oferty partnerów wewnętrznych."
   },
   "settings": {
+    "debit_approvals_heading": "Przelewy oczekujące na Twoją zgodę",
+    "debit_approval_note": "Zatwierdzenie nie przenosi kredytów, dopóki partner nie zakończy przelewu.",
+    "debit_approvals_load_error": "Nie udało się wczytać oczekujących przelewów.",
+    "debit_approval_summary": "Zatwierdzić przelew {{amount}} godzin do {{payee}}?",
+    "debit_reversal_summary": "Zatwierdzić zwrot {{amount}} godzin do {{payee}}?",
+    "debit_approval_expires": "Wniosek wygasa {{date}}",
+    "debit_approve": "Zatwierdź przelew",
+    "debit_reject": "Odrzuć przelew",
+    "debit_decision_saved": "Decyzja zapisana",
+    "debit_decision_error": "Nie udało się zapisać decyzji. Spróbuj ponownie.",
     "page_title": "Ustawienia Federacji",
     "breadcrumb_federation": "Federacja",
     "breadcrumb_settings": "Ustawienia",

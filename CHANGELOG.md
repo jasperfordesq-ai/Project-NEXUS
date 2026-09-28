@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The native app's Expo Updates patch dependency now matches Expo SDK 55's required version, restoring the Android native release gate.
+
 - Administrator-created member, broker and administrator invitations, assisted onboarding with a real email address, and new community administrator welcomes now email a one-hour set-password link instead of a lasting password. Password-reset requests made through the accessible frontend now link back to that frontend when the community has a registered accessible domain.
 - Public contact submissions now escape submitted markup in the email sent to community staff and use only the validated address in Reply-To, preventing injected links or headers in that message.
 
@@ -80,6 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed
+
+- The database-column CI gate now recognizes new tables declared by pending Laravel migrations while the production-derived schema dump has not yet been refreshed.
 
 - The Android device-test workflow now runs its full Maestro journey suite on a stable Android 15 image and disables the irrelevant spellchecker service. Android 16's Google APIs emulator left a system `starting_reveal` transition permanently active, delaying each typed character until Maestro's two-minute device-control request expired even though the app had reached the login screen and the independent launch check passed. The app now opens a newly created saved-items collection directly, avoiding a moving-list tap while its refreshed row is inserted.
 
@@ -261,6 +265,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.
 
 ### Security
+
+- Safeguarding report assignments and alerts now require current, tenant-scoped report access, excluding report subjects and expired or revoked permissions. The report route and recipient checks use consistent administrator authority.
+- **BREAKING:** External Credit Commons and Komunitin transfers now require the local payer's approval for each specific debit. Partner-requested completion stays pending until approval; settlement and Credit Commons reversals recheck the approved terms, expiry, balance, and replay state. Komunitin transfer creation now requires a stable partner request ID or `Idempotency-Key`.
 
 - Coordinators, and admins whose rights come from account settings rather than the "admin" role, now receive every safeguarding alert the Broker Panel is built around: copies of messages for review, requests for coordinator help, safeguarding disclosures at sign-up, blocked contact attempts, changes to a member's safeguarding preferences, incident reports, overdue-review escalations and vetting renewals. Eleven alerts each had their own hard-coded list of roles, and none included coordinators, so a community run by coordinators was never told. They now share one rule, and a test fails if a hand-written list comes back. This was an original gap, not a regression (F-221).
 - "Hide Comment" in comment moderation now hides the comment from every member. It used to hide the comment only from the moderator who pressed it, so everyone else could still read it. A hidden comment is now removed the same way the content-moderation queue removes a rejected one (F-220).

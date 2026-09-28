@@ -7,9 +7,11 @@
 namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
-use App\Http\Middleware\FederationApiAuth;
+use App\Core\FederationApiMiddleware;
+use App\Http\Controllers\Api\FederationDebitApprovalController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
 use Tests\Laravel\Concerns\EnablesExternalFederation;
@@ -30,6 +32,15 @@ class FederationKomunitinControllerTest extends TestCase
     {
         parent::setUp();
         $this->enableExternalFederation();
+        FederationApiMiddleware::reset();
+    }
+
+    protected function tearDown(): void
+    {
+        FederationApiMiddleware::reset();
+        unset($_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI'], $_SERVER['REMOTE_ADDR']);
+        parent::tearDown();
     }
 
     public function test_controller_exists(): void
@@ -70,7 +81,6 @@ class FederationKomunitinControllerTest extends TestCase
     public function test_update_transfer_to_completed_settles_balances_once(): void
     {
         TenantContext::setById($this->testTenantId);
-        $this->withoutMiddleware(FederationApiAuth::class);
 
         $payer = User::factory()->forTenant($this->testTenantId)->create([
             'balance' => 10,
@@ -91,22 +101,77 @@ class FederationKomunitinControllerTest extends TestCase
             );
         }
 
-        $txId = DB::table('transactions')->insertGetId([
+        $apiKey = 'test-fed-key-' . bin2hex(random_bytes(8));
+        DB::table('federation_api_keys')->insert([
             'tenant_id' => $this->testTenantId,
-            'sender_id' => $payer->id,
-            'receiver_id' => $payee->id,
-            'amount' => 3,
-            'description' => 'Deferred federation transfer',
-            'status' => 'pending',
-            'is_federated' => 1,
+            'name' => 'Komunitin settlement test',
+            'key_hash' => hash('sha256', $apiKey),
+            'key_prefix' => substr($apiKey, 0, 8),
+            'platform_id' => 'komunitin-settlement-' . bin2hex(random_bytes(4)),
+            'permissions' => '["*"]',
+            'rate_limit' => 1000,
+            'status' => 'active',
+            'signing_enabled' => 0,
+            'created_by' => 1,
             'created_at' => now(),
             'updated_at' => now(),
+            'hourly_request_count' => 0,
         ]);
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $apiKey;
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/api/v2/federation/komunitin/HOURS/transfers';
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+        $headers = [
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Accept' => 'application/vnd.api+json',
+            'Content-Type' => 'application/vnd.api+json',
+            'X-Tenant-ID' => (string) $this->testTenantId,
+        ];
+
+        $created = $this->postJson('/api/v2/federation/komunitin/HOURS/transfers', [
+            'data' => [
+                'type' => 'transfers',
+                'id' => 'settlement-once-' . bin2hex(random_bytes(4)),
+                'attributes' => [
+                    'amount' => 300,
+                    'meta' => 'Deferred federation transfer',
+                    'state' => 'committed',
+                ],
+                'relationships' => [
+                    'payer' => ['data' => ['type' => 'accounts', 'id' => (string) $payer->id]],
+                    'payee' => ['data' => ['type' => 'accounts', 'id' => (string) $payee->id]],
+                ],
+            ],
+        ], $headers);
+        $created->assertStatus(201);
+        $txId = (int) $created->json('data.id');
+        $this->assertSame('pending', DB::table('transactions')->where('id', $txId)->value('status'));
+
+        $_SERVER['REQUEST_METHOD'] = 'PATCH';
+        $_SERVER['REQUEST_URI'] = "/api/v2/federation/komunitin/HOURS/transfers/{$txId}";
+        $denied = $this->patchJson(
+            "/api/v2/federation/komunitin/HOURS/transfers/{$txId}",
+            ['data' => ['attributes' => ['state' => 'committed']]],
+            $headers
+        );
+        $denied->assertStatus(403);
+        $this->assertSame(10, (int) DB::table('users')->where('id', $payer->id)->value('balance'));
+
+        $approvalId = (int) DB::table('federation_debit_approvals')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('protocol', 'komunitin')
+            ->where('reference_id', (string) $txId)
+            ->value('id');
+        $decision = Request::create('/', 'POST', [], [], [],
+            ['CONTENT_TYPE' => 'application/json'], '{"decision":"approve"}');
+        $decision->setUserResolver(fn () => User::find($payer->id));
+        $this->assertSame(200,
+            app(FederationDebitApprovalController::class)->decide($decision, $approvalId)->getStatusCode());
 
         $response = $this->patchJson(
             "/api/v2/federation/komunitin/HOURS/transfers/{$txId}",
             ['data' => ['attributes' => ['state' => 'committed']]],
-            $this->withTenantHeader()
+            $headers
         );
 
         $response->assertStatus(200);
@@ -117,7 +182,7 @@ class FederationKomunitinControllerTest extends TestCase
         $again = $this->patchJson(
             "/api/v2/federation/komunitin/HOURS/transfers/{$txId}",
             ['data' => ['attributes' => ['state' => 'committed']]],
-            $this->withTenantHeader()
+            $headers
         );
 
         $again->assertStatus(422);

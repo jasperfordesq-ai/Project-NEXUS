@@ -282,6 +282,16 @@
     "external_source_note_other": "{{count}} 件の外部パートナー掲載を含みます。さらに読み込むと内部パートナーの掲載を続けます。"
   },
   "settings": {
+    "debit_approvals_heading": "承認待ちの送金",
+    "debit_approval_note": "承認しても、パートナーが送金を完了するまで時間クレジットは移動しません。",
+    "debit_approvals_load_error": "保留中の送金を読み込めませんでした。",
+    "debit_approval_summary": "{{payee}} に {{amount}} 時間を送金することを承認しますか？",
+    "debit_reversal_summary": "{{payee}} に {{amount}} 時間を返還することを承認しますか？",
+    "debit_approval_expires": "申請の期限：{{date}}",
+    "debit_approve": "送金を承認",
+    "debit_reject": "送金を拒否",
+    "debit_decision_saved": "決定を保存しました",
+    "debit_decision_error": "決定を保存できませんでした。もう一度お試しください。",
     "page_title": "フェデレーション設定",
     "breadcrumb_federation": "フェデレーション",
     "breadcrumb_settings": "設定",

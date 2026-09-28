@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2738,
-  "api_route_rows": 2703,
-  "distinct_api_paths": 2248,
+  "total_registered_routes": 2740,
+  "api_route_rows": 2705,
+  "distinct_api_paths": 2250,
   "route_source_fingerprint": {
-    "digest": "3ce9cc36ee3d70bd206cc13e57db6e7b11c53a6a00a93dbebd10511820002cf4",
+    "digest": "e7e13e956204252a86ac8f077bcb10c2d01765b42e66e926291d9a2c07756ba0",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "3a6ef24849368cc8ad306bf65278dbf97fb8b04919c63758b67f93e28043fc2b"
+        "sha256": "1672f4c37d7ebb158fa0f89ca65a790ea7352798b9650cb422f86242341f1cc6"
       },
       {
         "file": "routes/channels.php",
@@ -4543,6 +4543,12 @@
       "POST"
     ],
     "/api/v2/federation/connections/{id}/reject": [
+      "POST"
+    ],
+    "/api/v2/federation/debit-approvals": [
+      "GET"
+    ],
+    "/api/v2/federation/debit-approvals/{id}/decision": [
       "POST"
     ],
     "/api/v2/federation/events": [

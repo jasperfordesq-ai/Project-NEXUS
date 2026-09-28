@@ -292,6 +292,16 @@
     "external_source_note_other": "Include {{count}} annunci di partner esterni; carica altro continua con gli annunci dei partner interni."
   },
   "settings": {
+    "debit_approvals_heading": "Trasferimenti in attesa della tua approvazione",
+    "debit_approval_note": "L'approvazione non sposta crediti finché il partner non completa il trasferimento.",
+    "debit_approvals_load_error": "Impossibile caricare i trasferimenti in sospeso.",
+    "debit_approval_summary": "Approvare il trasferimento di {{amount}} ore a {{payee}}?",
+    "debit_reversal_summary": "Approvare la restituzione di {{amount}} ore a {{payee}}?",
+    "debit_approval_expires": "La richiesta scade il {{date}}",
+    "debit_approve": "Approva trasferimento",
+    "debit_reject": "Rifiuta trasferimento",
+    "debit_decision_saved": "Decisione salvata",
+    "debit_decision_error": "Impossibile salvare la decisione. Riprova.",
     "page_title": "Impostazioni della federazione",
     "breadcrumb_federation": "Federazione",
     "breadcrumb_settings": "Impostazioni",

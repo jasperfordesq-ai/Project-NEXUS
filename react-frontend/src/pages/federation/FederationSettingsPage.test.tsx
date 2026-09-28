@@ -185,4 +185,31 @@ describe('FederationSettingsPage', () => {
       expect(api.get).toHaveBeenCalledWith('/v2/federation/settings');
     });
   });
+
+  it('shows a specific pending debit and sends only its approval decision', async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce(mockSettingsResponse)
+      .mockResolvedValueOnce({
+        success: true,
+        data: { approvals: [{
+          id: 42,
+          protocol: 'credit_commons',
+          amount: '3.0000',
+          description: 'Community exchange',
+          expires_at: '2026-09-29T12:00:00Z',
+          payee_label: 'partner/alex',
+        }] },
+      });
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { status: 'approved' } });
+
+    render(<FederationSettingsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('settings.debit_approvals_heading')).toBeInTheDocument();
+      expect(screen.getByText('Community exchange')).toBeInTheDocument();
+    });
+    screen.getByText('settings.debit_approve').click();
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/v2/federation/debit-approvals/42/decision', { decision: 'approve' });
+    });
+  });
 });

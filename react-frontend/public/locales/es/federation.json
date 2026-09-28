@@ -292,6 +292,16 @@
     "external_source_note_other": "Incluye {{count}} listados de socios externos; cargar más continúa con listados de socios internos."
   },
   "settings": {
+    "debit_approvals_heading": "Transferencias pendientes de tu aprobación",
+    "debit_approval_note": "La aprobación no mueve créditos hasta que el socio complete la transferencia.",
+    "debit_approvals_load_error": "No se pudieron cargar las transferencias pendientes.",
+    "debit_approval_summary": "¿Aprobar la transferencia de {{amount}} horas a {{payee}}?",
+    "debit_reversal_summary": "¿Aprobar la devolución de {{amount}} horas a {{payee}}?",
+    "debit_approval_expires": "La solicitud vence el {{date}}",
+    "debit_approve": "Aprobar transferencia",
+    "debit_reject": "Rechazar transferencia",
+    "debit_decision_saved": "Decisión guardada",
+    "debit_decision_error": "No se pudo guardar tu decisión. Inténtalo de nuevo.",
     "page_title": "Configuración de federación",
     "breadcrumb_federation": "Federación",
     "breadcrumb_settings": "Ajustes",

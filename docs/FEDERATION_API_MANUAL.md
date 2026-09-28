@@ -174,6 +174,17 @@ routes. They are never affected by the external kill switch.
 | Native V2 ingest | `/api/v2/federation/ingest/*` | Versioned partner **pushes** for reviews, listings, events, groups, connections, volunteering, and member sync. Inbound only — this surface never serves partner reads, which is what the V1 partner API above is for. Referred to as "NEXUS native" in Super Admin; it means traffic with *another NEXUS installation*, not anything internal. |
 | External webhook receiver | `POST /api/v2/federation/external/webhooks/receive` | HMAC-authenticated events from configured external partners. |
 
+External accounting transfers that debit a local member require that member's
+approval for the specific payer, recipient, amount and description. Credit
+Commons direct creates and proposals remain pending until approval; completion
+and local-balance reversals check approval again. A Komunitin transfer create
+must supply a stable `data.id` or `Idempotency-Key` (up to 100 letters, digits,
+periods, underscores, colons or hyphens). An identical retry returns the
+existing transfer; reusing the ID with different terms returns a conflict.
+The member reviews pending requests in Federation Settings. Approval does not
+itself settle funds: the partner must complete the pending protocol transaction.
+None of these routes is enabled by this contract change.
+
 The Komunitin, Credit Commons, and native V2 ingest routes use the
 `federation.api` middleware and a route-level 200 requests/minute throttle.
 Native V1 writes use a 20 requests/minute route throttle; the OAuth token route

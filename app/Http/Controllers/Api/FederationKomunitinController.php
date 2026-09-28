@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Core\FederationApiMiddleware;
 use App\Core\TenantContext;
 use App\Services\MessageService;
 use App\Services\Protocols\KomunitinAdapter;
@@ -636,15 +637,13 @@ class FederationKomunitinController extends BaseApiController
         $payerId = $rels['payer']['data']['id'] ?? null;
         $payeeId = $rels['payee']['data']['id'] ?? null;
 
-        // Map Komunitin requested state to Nexus internal status.
-        // Only 'committed' (and its alias 'accepted'/'completed') should
-        // immediately settle balances; all other states are non-final.
+        // A partner's requested state is not the payer's authorization.
         $statusMap = [
             'new'       => 'pending',
             'pending'   => 'pending',
             'accepted'  => 'pending',
-            'committed' => 'completed',
-            'completed' => 'completed',
+            'committed' => 'pending',
+            'completed' => 'pending',
             'rejected'  => 'cancelled',
             'failed'    => 'cancelled',
         ];
@@ -659,6 +658,21 @@ class FederationKomunitinController extends BaseApiController
         if (!SecurityBounds::isAcceptableHourAmount($amount)) {
             return $this->jsonApiError('BadRequest', 'Bad Request',
                 'Amount exceeds maximum allowed value', 400);
+        }
+
+        $partnerKeyId = (int) (FederationApiMiddleware::getPartner()['id'] ?? 0);
+        $requestId = $request->header('Idempotency-Key') ?: ($data['id'] ?? null);
+        if ($partnerKeyId <= 0 || !is_string($requestId) || strlen($requestId) > 100
+            || !preg_match('/^[A-Za-z0-9._:-]+$/D', $requestId)) {
+            return $this->jsonApiError('BadRequest', 'Bad Request',
+                'A stable transfer id or Idempotency-Key is required', 400);
+        }
+        $requestHash = hash('sha256', json_encode([
+            strtoupper($code), (int) $payerId, (int) $payeeId,
+            number_format($amount, 4, '.', ''), (string) $description, $nexusStatus,
+        ]));
+        if ($replay = $this->replayTransfer($tenantId, $partnerKeyId, $requestId, $requestHash, $code, $baseUrl)) {
+            return $replay;
         }
 
         // Validate accounts exist
@@ -694,52 +708,12 @@ class FederationKomunitinController extends BaseApiController
                 'Payee does not accept federated transactions', 403);
         }
 
-        $safeguardingDecision = app(SafeguardingInteractionPolicy::class)->evaluateLocalContact(
-            (int) $payerId,
-            (int) $payeeId,
-            $tenantId,
-            'komunitin_transfer',
-        );
-        if (! $safeguardingDecision->isAllowed()) {
-            $error = MessageService::buildSafeguardingError([
-                'status' => $safeguardingDecision->status,
-                'code' => $safeguardingDecision->code,
-                'required_vetting_types' => $safeguardingDecision->requiredAttestationCodes,
-                'required_vetting_labels' => $safeguardingDecision->requiredAttestationLabels,
-                'can_request_coordinator' => $safeguardingDecision->canRequestCoordinator,
-            ]);
-
-            return $this->jsonApiError(
-                $safeguardingDecision->code,
-                (string) ($error['title'] ?? $error['message']),
-                (string) $error['message'],
-                $safeguardingDecision->isUnavailable() ? 503 : 403,
-            );
+        if ($blocked = $this->safeguardingTransferBlock((int) $payerId, (int) $payeeId, $tenantId)) {
+            return $blocked;
         }
-
-        // Execute transfer — only settle balances when the requested state
-        // is 'committed'/'completed'; pending/accepted/etc. just record the intent.
-        $shouldSettle = ($nexusStatus === 'completed');
 
         DB::beginTransaction();
         try {
-            if ($shouldSettle) {
-                // Deduct from payer atomically — WHERE balance >= amount prevents overdraw
-                $updated = DB::update(
-                    "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND status = 'active' AND balance >= ?",
-                    [$amount, (int) $payerId, $tenantId, $amount]
-                );
-
-                if ($updated === 0) {
-                    DB::rollBack();
-                    return $this->jsonApiError('Forbidden', 'Forbidden',
-                        'Insufficient balance for this transfer', 403);
-                }
-
-                DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'",
-                    [$amount, (int) $payeeId, $tenantId]);
-            }
-
             $txId = DB::table('transactions')->insertGetId([
                 'tenant_id' => $tenantId,
                 'sender_id' => (int) $payerId,
@@ -747,10 +721,27 @@ class FederationKomunitinController extends BaseApiController
                 'amount' => $amount,
                 'description' => $description,
                 'status' => $nexusStatus,
+                'transaction_type' => 'komunitin_external',
                 'is_federated' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            $inserted = app(\App\Services\FederationDebitApprovalService::class)->request(
+                $tenantId, 'komunitin', (string) $txId, (int) $payerId, (int) $payeeId,
+                (string) ($payee->username ?? $payeeId), $amount, (string) $description,
+                $partnerKeyId, $requestId, $requestHash
+            );
+            if (!$inserted) {
+                DB::rollBack();
+                return $this->replayTransfer($tenantId, $partnerKeyId, $requestId, $requestHash, $code, $baseUrl)
+                    ?? $this->jsonApiError('Conflict', 'Conflict', 'Transfer identity is already in use', 409);
+            }
+            if ($nexusStatus !== 'pending') {
+                DB::table('federation_debit_approvals')->where('tenant_id', $tenantId)
+                    ->where('protocol', 'komunitin')->where('reference_id', (string) $txId)
+                    ->update(['status' => 'rejected', 'decided_at' => now(), 'updated_at' => now()]);
+            }
 
             DB::commit();
         } catch (\Throwable $e) {
@@ -784,7 +775,8 @@ class FederationKomunitinController extends BaseApiController
             ->where('tenant_id', $tenantId)
             ->first();
 
-        if (!$tx) {
+        if (!$tx || $tx->transaction_type !== 'komunitin_external'
+            || !$this->partnerOwnsTransfer($tenantId, (int) $id)) {
             return $this->jsonApiError('NotFound', 'Not Found',
                 "Transfer id {$id} not found in currency {$code}", 404);
         }
@@ -873,6 +865,10 @@ class FederationKomunitinController extends BaseApiController
                 return $this->jsonApiError('Forbidden', 'Forbidden',
                     'Payee does not accept federated transactions', 403);
             }
+
+            if ($blocked = $this->safeguardingTransferBlock($payerId, $payeeId, $tenantId)) {
+                return $blocked;
+            }
         }
 
         DB::beginTransaction();
@@ -897,6 +893,23 @@ class FederationKomunitinController extends BaseApiController
                 $payerId = (int) $tx->sender_id;
                 $payeeId = (int) $tx->receiver_id;
 
+                if ($blocked = $this->safeguardingTransferBlock($payerId, $payeeId, $tenantId, true)) {
+                    DB::rollBack();
+                    return $blocked;
+                }
+
+                $approval = DB::table('federation_debit_approvals')
+                    ->where('tenant_id', $tenantId)->where('protocol', 'komunitin')
+                    ->where('reference_id', (string) $id)->first();
+                if (!$approval || !app(\App\Services\FederationDebitApprovalService::class)->consume(
+                    $tenantId, 'komunitin', (string) $id, $payerId, $payeeId,
+                    (string) $approval->payee_label, $amount, (string) $tx->description
+                )) {
+                    DB::rollBack();
+                    return $this->jsonApiError('Forbidden', 'Forbidden',
+                        'Payer approval is required for this transfer', 403);
+                }
+
                 $debited = DB::update(
                     "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND status = 'active' AND balance >= ?",
                     [$amount, $payerId, $tenantId, $amount]
@@ -908,10 +921,14 @@ class FederationKomunitinController extends BaseApiController
                         'Insufficient balance for this transfer', 403);
                 }
 
-                DB::update(
+                $credited = DB::update(
                     "UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'",
                     [$amount, $payeeId, $tenantId]
                 );
+                if ($credited !== 1) {
+                    DB::rollBack();
+                    return $this->jsonApiError('Forbidden', 'Forbidden', 'Payee is unavailable', 403);
+                }
             }
 
             DB::commit();
@@ -945,7 +962,8 @@ class FederationKomunitinController extends BaseApiController
             ->where('tenant_id', $tenantId)
             ->first();
 
-        if (!$tx) {
+        if (!$tx || $tx->transaction_type !== 'komunitin_external'
+            || !$this->partnerOwnsTransfer($tenantId, (int) $id)) {
             return $this->jsonApiError('NotFound', 'Not Found',
                 "Transfer id {$id} not found in currency {$code}", 404);
         }
@@ -956,14 +974,96 @@ class FederationKomunitinController extends BaseApiController
                 'Cannot delete a committed transfer', 400);
         }
 
-        DB::table('transactions')
-            ->where('id', (int) $id)
-            ->where('tenant_id', $tenantId)
-            ->delete();
+        $deleted = DB::transaction(function () use ($id, $tenantId): bool {
+            $current = DB::table('transactions')->where('id', (int) $id)
+                ->where('tenant_id', $tenantId)->where('transaction_type', 'komunitin_external')
+                ->lockForUpdate()->first();
+            if (!$current || $current->status === 'completed') {
+                return false;
+            }
+
+            $removed = DB::table('transactions')->where('id', (int) $id)
+                ->where('tenant_id', $tenantId)->where('transaction_type', 'komunitin_external')
+                ->where('status', $current->status)->delete();
+            if ($removed !== 1) {
+                return false;
+            }
+
+            DB::table('federation_debit_approvals')
+                ->where('tenant_id', $tenantId)->where('protocol', 'komunitin')
+                ->where('reference_id', (string) $id)
+                ->whereIn('status', ['pending', 'approved'])
+                ->update(['status' => 'rejected', 'decided_at' => now(), 'updated_at' => now()]);
+            return true;
+        });
+
+        if (!$deleted) {
+            return $this->jsonApiError('Conflict', 'Conflict',
+                'Transfer state changed while processing this deletion', 409);
+        }
 
         return response()->json(null, 204, [
             'Content-Type' => 'application/vnd.api+json',
         ]);
+    }
+
+    private function safeguardingTransferBlock(int $payerId, int $payeeId, int $tenantId, bool $locked = false): ?JsonResponse
+    {
+        $policy = app(SafeguardingInteractionPolicy::class);
+        $decision = $locked
+            ? $policy->evaluateLockedLocalContact($payerId, $payeeId, $tenantId, 'komunitin_transfer')
+            : $policy->evaluateLocalContact($payerId, $payeeId, $tenantId, 'komunitin_transfer');
+        if ($decision->isAllowed()) {
+            return null;
+        }
+
+        $error = MessageService::buildSafeguardingError([
+            'status' => $decision->status,
+            'code' => $decision->code,
+            'required_vetting_types' => $decision->requiredAttestationCodes,
+            'required_vetting_labels' => $decision->requiredAttestationLabels,
+            'can_request_coordinator' => $decision->canRequestCoordinator,
+        ]);
+
+        return $this->jsonApiError(
+            $decision->code,
+            (string) ($error['title'] ?? $error['message']),
+            (string) $error['message'],
+            $decision->isUnavailable() ? 503 : 403,
+        );
+    }
+
+    private function replayTransfer(
+        int $tenantId,
+        int $partnerKeyId,
+        string $requestId,
+        string $requestHash,
+        string $code,
+        string $baseUrl,
+    ): ?JsonResponse {
+        $approval = DB::table('federation_debit_approvals')
+            ->where('tenant_id', $tenantId)->where('protocol', 'komunitin')
+            ->where('partner_key_id', $partnerKeyId)->where('partner_request_id', $requestId)->first();
+        if (!$approval) {
+            return null;
+        }
+        if (!hash_equals((string) $approval->request_hash, $requestHash)) {
+            return $this->jsonApiError('Conflict', 'Conflict', 'Transfer identity has different terms', 409);
+        }
+        $tx = DB::table('transactions')->where('id', (int) $approval->reference_id)
+            ->where('tenant_id', $tenantId)->where('transaction_type', 'komunitin_external')->first();
+        return $tx
+            ? $this->jsonApiResponse($this->buildTransferResource($tx, $tenantId, $code, $baseUrl), null, true, 200)
+            : $this->jsonApiError('Conflict', 'Conflict', 'Transfer is no longer available', 409);
+    }
+
+    private function partnerOwnsTransfer(int $tenantId, int $transferId): bool
+    {
+        $partnerKeyId = (int) (FederationApiMiddleware::getPartner()['id'] ?? 0);
+        return $partnerKeyId > 0 && DB::table('federation_debit_approvals')
+            ->where('tenant_id', $tenantId)->where('protocol', 'komunitin')
+            ->where('reference_id', (string) $transferId)->where('partner_key_id', $partnerKeyId)
+            ->exists();
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -312,6 +312,16 @@
     "external_source_note_two": "Áirítear {{count}} liostú ó chomhpháirtithe seachtracha; leanann tuilleadh luchtaithe le liostuithe comhpháirtithe inmheánacha."
   },
   "settings": {
+    "debit_approvals_heading": "Aistrithe ag fanacht le do chead",
+    "debit_approval_note": "Ní aistreofar creidmheasanna nuair a cheadaíonn tú é go dtí go gcríochnóidh an comhpháirtí an t-aistriú.",
+    "debit_approvals_load_error": "Níorbh fhéidir na haistrithe atá ar feitheamh a luchtú.",
+    "debit_approval_summary": "An gceadaíonn tú {{amount}} uair an chloig a aistriú chuig {{payee}}?",
+    "debit_reversal_summary": "An gceadaíonn tú {{amount}} uair an chloig a thabhairt ar ais do {{payee}}?",
+    "debit_approval_expires": "Rachaidh an t-iarratas in éag ar {{date}}",
+    "debit_approve": "Ceadaigh an t-aistriú",
+    "debit_reject": "Diúltaigh don aistriú",
+    "debit_decision_saved": "Sábháladh do chinneadh",
+    "debit_decision_error": "Níorbh fhéidir do chinneadh a shábháil. Bain triail eile as.",
     "page_title": "Socruithe an líonra comhpháirtíochta",
     "breadcrumb_federation": "Líonra comhpháirtíochta",
     "breadcrumb_settings": "Socruithe",

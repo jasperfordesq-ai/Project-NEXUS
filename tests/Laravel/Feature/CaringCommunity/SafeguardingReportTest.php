@@ -11,9 +11,11 @@ namespace Tests\Laravel\Feature\CaringCommunity;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\CaringCommunity\SafeguardingService;
+use App\Services\EmailDispatchService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Mockery;
 use Tests\Laravel\TestCase;
 
 class SafeguardingReportTest extends TestCase
@@ -25,6 +27,9 @@ class SafeguardingReportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->andReturn(true);
+        $this->app->instance(EmailDispatchService::class, $mailer);
         $this->setCaringCommunityFeature(self::TENANT_ID, true);
     }
 
@@ -127,6 +132,36 @@ class SafeguardingReportTest extends TestCase
             ->where('action', 'assigned')
             ->first();
         $this->assertNotNull($action);
+    }
+
+    public function test_assignment_rejects_ordinary_member_and_report_subject_without_side_effects(): void
+    {
+        TenantContext::setById(self::TENANT_ID);
+        $reporter = $this->makeUser(self::TENANT_ID, 'assign-rep.' . uniqid() . '@example.com');
+        $ordinaryMember = $this->makeUser(self::TENANT_ID, 'assign-member.' . uniqid() . '@example.com');
+        $subject = $this->makeUser(self::TENANT_ID, 'assign-subject.' . uniqid() . '@example.com', 'coordinator');
+        $admin = $this->makeUser(self::TENANT_ID, 'assign-admin.' . uniqid() . '@example.com', 'admin');
+        $service = app(SafeguardingService::class);
+        $reportId = (int) $service->submitReport($reporter, [
+            'category' => 'exploitation',
+            'severity' => 'high',
+            'description' => 'Synthetic report for assignment authorization.',
+            'subject_user_id' => $subject,
+        ])['report_id'];
+
+        foreach ([$ordinaryMember, $subject] as $assigneeId) {
+            $rejected = false;
+            try {
+                $service->assignReport($reportId, $assigneeId, $admin);
+            } catch (\RuntimeException $e) {
+                $rejected = true;
+            }
+            $this->assertTrue($rejected, 'An ineligible assignee must be rejected.');
+
+            $this->assertNull(DB::table('safeguarding_reports')->where('id', $reportId)->value('assigned_to_user_id'));
+            $this->assertSame(0, DB::table('safeguarding_report_actions')->where('report_id', $reportId)->where('action', 'assigned')->count());
+            $this->assertSame(0, DB::table('notifications')->where('user_id', $assigneeId)->where('type', 'safeguarding_assigned')->count());
+        }
     }
 
     public function test_escalation_marks_report_escalated(): void
