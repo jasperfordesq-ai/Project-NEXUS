@@ -474,7 +474,7 @@ export function GdprBreachDetail() {
               <h3 className="text-lg font-semibold">{t('enterprise.gdpr_actions')}</h3>
             </CardHeader>
             <CardBody className="p-4 space-y-2">
-              {breach.status === 'open' && (
+              {breach.status === 'detected' && (
                 <Button
                   variant="tertiary"
                   startContent={<Search size={14} />}
@@ -486,7 +486,7 @@ export function GdprBreachDetail() {
                   {t('enterprise.gdpr_mark_investigating')}
                 </Button>
               )}
-              {(breach.status === 'open' || breach.status === 'investigating') && (
+              {(breach.status === 'detected' || breach.status === 'investigating') && (
                 <Button
                   color="warning"
                   variant="tertiary"

@@ -91,7 +91,7 @@ const makeBreach = (overrides = {}) => ({
   title: 'Test Breach',
   description: 'Unauthorised access to member data.',
   severity: 'high',
-  status: 'open',
+  status: 'detected',
   detected_at: '2025-01-01T10:00:00Z',
   occurred_at: '2025-01-01T08:00:00Z',
   reported_at: null,
@@ -159,7 +159,7 @@ describe('GdprBreachDetail', () => {
     render(<GdprBreachDetail />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('status-badge')).toHaveTextContent('open');
+      expect(screen.getByTestId('status-badge')).toHaveTextContent('detected');
     });
   });
 

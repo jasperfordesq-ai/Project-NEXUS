@@ -1028,7 +1028,7 @@ export interface GdprBreach {
   title: string;
   description: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'investigating' | 'contained' | 'resolved';
+  status: 'detected' | 'investigating' | 'contained' | 'resolved' | 'closed';
   reported_at: string;
 }
 

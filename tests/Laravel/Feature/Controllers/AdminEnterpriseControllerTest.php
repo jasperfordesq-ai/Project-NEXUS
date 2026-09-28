@@ -135,6 +135,53 @@ class AdminEnterpriseControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    // ================================================================
+    // GDPR BREACHES — POST /v2/admin/enterprise/gdpr/breaches
+    // ================================================================
+
+    /**
+     * F-223: the insert set status 'open' (not in the enum) and omitted the
+     * NOT NULL breach_id and data_categories_affected columns, so every
+     * breach report failed with 500 and nothing was recorded.
+     */
+    public function test_report_breach_records_the_breach(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $title = 'F-223 lost laptop ' . uniqid();
+        $response = $this->apiPost('/v2/admin/enterprise/gdpr/breaches', [
+            'title' => $title,
+            'description' => 'A volunteer laptop holding member contact details was lost.',
+            'severity' => 'high',
+            'affected_users' => 12,
+        ]);
+
+        $response->assertStatus(201);
+
+        $row = DB::table('data_breach_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('breach_type', $title)
+            ->first();
+
+        $this->assertNotNull($row, 'The breach report must be saved.');
+        $this->assertSame('detected', $row->status);
+        $this->assertSame('high', $row->severity);
+        $this->assertSame(12, (int) $row->number_of_users_affected);
+        $this->assertSame((int) $admin->id, (int) $row->created_by);
+        $this->assertNotSame('', (string) $row->breach_id);
+        $this->assertSame((int) $response->json('data.id'), (int) $row->id);
+    }
+
+    public function test_report_breach_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $this->apiPost('/v2/admin/enterprise/gdpr/breaches', ['title' => 'Not allowed'])
+            ->assertStatus(403);
+    }
+
     /**
      * Regression: marking a GDPR request "completed" wrote to a non-existent
      * `completed_at` column, so the UPDATE threw and the endpoint returned 500

@@ -463,13 +463,30 @@ class AdminEnterpriseController extends BaseApiController
         $breachType = trim($input['breach_type'] ?? $input['title'] ?? '');
         if (!$breachType) { return $this->respondWithError('VALIDATION_ERROR', __('api.breach_type_required'), 'breach_type', 422); }
 
+        $severity = in_array($input['severity'] ?? null, ['low', 'medium', 'high', 'critical'], true)
+            ? $input['severity']
+            : 'medium';
+        $dataCategories = $input['data_categories_affected'] ?? $input['data_categories'] ?? [];
+        $usersAffected = isset($input['affected_users']) && is_numeric($input['affected_users'])
+            ? max(0, (int) $input['affected_users'])
+            : null;
+
+        // GdprService::reportBreach() supplies the unique breach_id, the
+        // 'detected' status and the JSON data categories that
+        // data_breach_log requires. The inline INSERT this replaced omitted
+        // two NOT NULL columns and used status 'open', which is not in the
+        // enum, so every breach report failed (F-223).
         try {
-            DB::insert(
-                "INSERT INTO data_breach_log (tenant_id, breach_type, description, severity, status, detected_at, created_by, created_at) VALUES (?, ?, ?, ?, 'open', NOW(), ?, NOW())",
-                [$tenantId, $breachType, $input['description'] ?? '', $input['severity'] ?? 'medium', $this->getUserId()]
-            );
-            return $this->respondWithData(['id' => DB::getPdo()->lastInsertId(), 'message' => __('api_controllers_1.admin_enterprise.breach_reported')], null, 201);
-        } catch (\Exception $e) {
+            $id = (new \App\Services\Enterprise\GdprService($tenantId))->reportBreach([
+                'breach_type' => $breachType,
+                'severity' => $severity,
+                'description' => (string) ($input['description'] ?? ''),
+                'data_categories' => is_array($dataCategories) ? array_values($dataCategories) : [],
+                'users_affected' => $usersAffected,
+            ], $this->getUserId());
+            return $this->respondWithData(['id' => $id, 'message' => __('api_controllers_1.admin_enterprise.breach_reported')], null, 201);
+        } catch (\Throwable $e) {
+            Log::error('AdminEnterpriseController::createBreach failed: ' . $e->getMessage(), ['tenant_id' => $tenantId]);
             return $this->respondWithError('CREATE_FAILED', __('api.breach_report_failed'), null, 500);
         }
     }
@@ -1745,9 +1762,10 @@ class AdminEnterpriseController extends BaseApiController
             );
             $avgProcessingHours = round((float) ($avgRow->avg_hours ?? 0), 1);
 
-            // Active breaches
+            // Active breaches — same rule as GdprService::getStatistics(). The
+            // enum has no 'open'; a new report starts as 'detected'.
             $activeBreaches = (int) (DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM data_breach_log WHERE tenant_id = ? AND status IN ('open', 'investigating')",
+                "SELECT COUNT(*) as cnt FROM data_breach_log WHERE tenant_id = ? AND status NOT IN ('resolved', 'closed')",
                 [$tenantId]
             )->cnt ?? 0);
 

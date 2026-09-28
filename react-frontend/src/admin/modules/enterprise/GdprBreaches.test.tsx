@@ -50,7 +50,7 @@ const MOCK_BREACHES = [
     id: 1,
     title: 'Email exposure incident',
     severity: 'high',
-    status: 'open',
+    status: 'detected',
     description: 'Customer emails were exposed',
     reported_at: '2026-06-01T00:00:00Z',
     affected_users: 30,
