@@ -280,6 +280,19 @@ class SalesOrderApiTest extends TestCase
         $this->apiPost('/v2/sales/orders', $this->payload())->assertCreated();
     }
 
+    public function test_public_sales_order_rejects_a_selection_that_is_not_a_label_value_pair(): void
+    {
+        // A scalar entry must be a 422, never a 500 from the renderer.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        $payload['quote']['selections'] = ['not-a-pair'];
+
+        $this->apiPost('/v2/sales/orders', $payload)->assertStatus(422);
+    }
+
     public function test_public_sales_order_rejects_an_unknown_contract_route(): void
     {
         $emailService = Mockery::mock(EmailService::class);

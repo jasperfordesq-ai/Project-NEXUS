@@ -21,6 +21,9 @@ class SalesOrderController extends BaseApiController
 
     private const RECIPIENT_EMAIL = 'jasper.ford.esq@gmail.com';
 
+    // English only, by design: the one recipient is the platform owner's sales inbox, never a
+    // member, so this email is not localised (Jasper, 28 September 2026).
+
     /** From display name for enquiry mail — the platform, never a community. */
     private const SENDER_NAME = 'Project NEXUS';
 
@@ -62,6 +65,7 @@ class SalesOrderController extends BaseApiController
             'quote.contract_route' => ['nullable', 'string', 'in:standard,public-sector'],
             'quote.active_members' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'quote.selections' => ['nullable', 'array', 'max:40'],
+            'quote.selections.*' => ['array'],
             'quote.selections.*.label' => ['required_with:quote.selections', 'string', 'max:120'],
             'quote.selections.*.value' => ['required_with:quote.selections', 'string', 'max:300'],
         ]);
