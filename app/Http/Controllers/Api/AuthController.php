@@ -929,7 +929,8 @@ class AuthController extends BaseApiController
     public function impersonateEnd(Request $request): JsonResponse
     {
         $header = (string) $request->header('Authorization', '');
-        $token = str_starts_with($header, 'Bearer ') ? substr($header, 7) : (string) $request->cookie('auth_token');
+        // Header only — the auth_token cookie is not a credential (F-247).
+        $token = str_starts_with($header, 'Bearer ') ? substr($header, 7) : '';
 
         if ($token === '') {
             return $this->authError(

@@ -195,21 +195,20 @@ class Authenticate
     }
 
     /**
-     * Extract Bearer token from Authorization header or cookie.
+     * Extract the Bearer token from the Authorization header.
+     *
+     * Only the header authenticates. An `auth_token` cookie was also accepted,
+     * but no supported client sets one, so the fallback served only session
+     * planting by any host able to write a parent-domain cookie (F-247).
      */
     private function extractBearerToken(Request $request): ?string
     {
-        $header = $request->header('Authorization', '');
+        $header = (string) $request->header('Authorization', '');
         if (str_starts_with($header, 'Bearer ')) {
             return substr($header, 7);
         }
 
-        // SECURITY NOTE: auth_token cookie must be set with HttpOnly=true, Secure=true, SameSite=Lax.
-        // Verify the Set-Cookie header is correct when this token is issued.
-        // Prefer Authorization: Bearer header over cookies for API authentication.
-        // Cookie format: cookie('auth_token', $token, $minutes, '/', null, true, true, false, 'Lax')
-        //                Parameters: name, value, minutes, path, domain, secure, httpOnly, raw, sameSite
-        return $request->cookie('auth_token');
+        return null;
     }
 
     /**
