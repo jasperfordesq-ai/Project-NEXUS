@@ -943,7 +943,8 @@ class AdminCaringCommunityController extends BaseApiController
 
         if (($result['success'] ?? false) !== true) {
             $code = (string) ($result['code'] ?? 'CREATE_FAILED');
-            $message = match ($code) {
+            // The adults-only refusal carries its own translated message (F-249).
+            $message = isset($result['message']) ? (string) $result['message'] : match ($code) {
                 'NOT_FOUND' => __('api.caring_paper_onboarding_not_found'),
                 'ALREADY_REVIEWED' => __('api.caring_paper_onboarding_already_reviewed'),
                 'EMAIL_EXISTS' => __('api.email_already_exists'),
@@ -952,7 +953,7 @@ class AdminCaringCommunityController extends BaseApiController
             };
             $status = $code === 'NOT_FOUND' ? 404 : 422;
 
-            return $this->respondWithError($code, $message, null, $status);
+            return $this->respondWithError($code, $message, isset($result['field']) ? (string) $result['field'] : null, $status);
         }
 
         $user = $result['user'] ?? [];

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services\CaringCommunity;
 
 use App\Models\User;
+use App\Support\Authorization\MinimumAge;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -122,6 +123,14 @@ class PaperOnboardingIntakeService
 
         if (User::findByEmail($email)) {
             return ['success' => false, 'code' => 'EMAIL_EXISTS'];
+        }
+
+        // Adults-only platform (owner decision 2026-09-25, F-160): a paper form
+        // whose date of birth is under 18, or not a real date, never becomes
+        // an account (F-249).
+        $dobError = MinimumAge::dateOfBirthError($dateOfBirth);
+        if ($dobError !== null) {
+            return ['success' => false] + $dobError;
         }
 
         $parts = explode(' ', $name, 2);

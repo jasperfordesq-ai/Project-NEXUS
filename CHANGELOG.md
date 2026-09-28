@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Confirming a paper sign-up form now applies the adults-only rule: a form with a date of birth under 18, or an invalid one, does not create an account (F-249).
 - Adding a new advert to an approved local-advertising campaign now sends the campaign back for admin review, so members never see an advert an admin has not reviewed (F-260).
 - A member removed from a group can no longer edit the posts and comments they left in it (F-265).
 - A member's profile no longer shows them as online to other members when they have switched on "Hide my presence" (F-264).
