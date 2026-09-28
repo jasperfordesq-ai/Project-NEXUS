@@ -301,18 +301,37 @@ class LocalAdvertisingService
             throw new \InvalidArgumentException(__('api.invalid_url'));
         }
 
-        $id = DB::table(self::TABLE_CREATIVES)->insertGetId([
-            'campaign_id'     => $campaignId,
-            'tenant_id'       => $tenantId,
-            'headline'        => $data['headline'],
-            'body'            => $data['body'],
-            'cta_text'        => $data['cta_text'] ?? null,
-            'image_url'       => $data['image_url'] ?? null,
-            'destination_url' => $destinationUrl !== '' ? $destinationUrl : null,
-            'is_active'       => 1,
-            'created_at'      => $now,
-            'updated_at'      => $now,
-        ]);
+        $id = DB::transaction(function () use ($campaignId, $tenantId, $data, $destinationUrl, $now): int {
+            $id = (int) DB::table(self::TABLE_CREATIVES)->insertGetId([
+                'campaign_id'     => $campaignId,
+                'tenant_id'       => $tenantId,
+                'headline'        => $data['headline'],
+                'body'            => $data['body'],
+                'cta_text'        => $data['cta_text'] ?? null,
+                'image_url'       => $data['image_url'] ?? null,
+                'destination_url' => $destinationUrl !== '' ? $destinationUrl : null,
+                'is_active'       => 1,
+                'created_at'      => $now,
+                'updated_at'      => $now,
+            ]);
+
+            // F-260: an approved campaign serves every active creative, so a
+            // creative added after approval would reach members unreviewed.
+            // Send the campaign back to review; approving it again serves the
+            // new creative with the rest.
+            DB::table(self::TABLE_CAMPAIGNS)
+                ->where('id', $campaignId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->update([
+                    'status'      => 'pending_review',
+                    'approved_by' => null,
+                    'approved_at' => null,
+                    'updated_at'  => $now,
+                ]);
+
+            return $id;
+        });
 
         return (array) DB::table(self::TABLE_CREATIVES)->find($id);
     }

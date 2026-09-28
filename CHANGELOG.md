@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Adding a new advert to an approved local-advertising campaign now sends the campaign back for admin review, so members never see an advert an admin has not reviewed (F-260).
 - A member removed from a group can no longer edit the posts and comments they left in it (F-265).
 - A member's profile no longer shows them as online to other members when they have switched on "Hide my presence" (F-264).
 - The web server now refuses the old public folders that message attachments and voice messages used before they moved to private storage (F-262).
