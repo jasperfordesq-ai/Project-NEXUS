@@ -72,6 +72,10 @@ $DUMP_CMD \
 # MariaDB error 1449 when that account does not exist (including CI). Omitting
 # the clause makes each object use the schema-import account instead.
 sed -E -i 's|/\*!50017 DEFINER=`[^`]+`@`[^`]+`\*/ ?||g' "$DUMP_PATH"
+# Views now use SQL SECURITY INVOKER. Their creator is irrelevant to reads,
+# and preserving that account in a portable schema dump breaks fresh installs
+# where it does not exist (F-029).
+sed -E -i 's#(/\*!50013 )DEFINER=`[^`]+`@`[^`]+` (SQL SECURITY INVOKER \*/)#\1\2#g' "$DUMP_PATH"
 
 echo "" >> "$DUMP_PATH"
 echo "-- Laravel migrations data (so fresh migrate knows what is already applied)" >> "$DUMP_PATH"

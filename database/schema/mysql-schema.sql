@@ -12843,7 +12843,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=456 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=458 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -21111,8 +21111,8 @@ CREATE TABLE `xp_shop_items` (
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`nexus`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `user_effective_permissions` AS select distinct `u`.`id` AS `user_id`,`p`.`id` AS `permission_id`,`p`.`name` AS `permission_name`,`p`.`category` AS `category`,case when `up`.`granted` = 0 then 0 when `up`.`granted` = 1 then 1 when `rp`.`permission_id` is not null then 1 else 0 end AS `has_permission`,case when `up`.`id` is not null then 'direct' when `rp`.`id` is not null then 'role' else 'none' end AS `grant_source` from ((((`users` `u` left join `user_roles` `ur` on(`u`.`id` = `ur`.`user_id` and (`ur`.`expires_at` is null or `ur`.`expires_at` > current_timestamp()))) left join `role_permissions` `rp` on(`ur`.`role_id` = `rp`.`role_id`)) left join `permissions` `p` on(`rp`.`permission_id` = `p`.`id` or `p`.`id` in (select `user_permissions`.`permission_id` from `user_permissions` where `user_permissions`.`user_id` = `u`.`id`))) left join `user_permissions` `up` on(`u`.`id` = `up`.`user_id` and `p`.`id` = `up`.`permission_id` and (`up`.`expires_at` is null or `up`.`expires_at` > current_timestamp()))) where `p`.`id` is not null */;
+/*!50013 SQL SECURITY INVOKER */
+/*!50001 VIEW `user_effective_permissions` AS select distinct `u`.`id` AS `user_id`,`p`.`id` AS `permission_id`,`p`.`name` AS `permission_name`,`p`.`category` AS `category`,case when `up`.`granted` = 0 then 0 when `up`.`granted` = 1 then 1 when `rp`.`permission_id` is not null then 1 else 0 end AS `has_permission`,case when `up`.`id` is not null then 'direct' when `rp`.`id` is not null then 'role' else 'none' end AS `grant_source` from ((((`users` `u` left join `user_roles` `ur` on(`u`.`id` = `ur`.`user_id` and (`ur`.`expires_at` is null or `ur`.`expires_at` > current_timestamp()))) left join `role_permissions` `rp` on(`ur`.`role_id` = `rp`.`role_id`)) left join `permissions` `p` on(`rp`.`permission_id` = `p`.`id` or `p`.`id` in (select `up_direct`.`permission_id` from `user_permissions` `up_direct` where `up_direct`.`user_id` = `u`.`id`))) left join `user_permissions` `up` on(`u`.`id` = `up`.`user_id` and `p`.`id` = `up`.`permission_id` and (`up`.`expires_at` is null or `up`.`expires_at` > current_timestamp()))) where `p`.`id` is not null */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -21124,8 +21124,8 @@ CREATE TABLE `xp_shop_items` (
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`nexus`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `user_gamification_summary` AS select `u`.`id` AS `user_id`,`u`.`tenant_id` AS `tenant_id`,`u`.`xp` AS `xp`,`u`.`level` AS `level`,`u`.`login_streak` AS `login_streak`,count(distinct `ub`.`badge_key`) AS `badge_count`,(select count(0) from `user_challenge_progress` `ucp` where `ucp`.`user_id` = `u`.`id` and `ucp`.`completed_at` is not null) AS `challenges_completed`,(select count(0) from `friend_challenges` `fc` where (`fc`.`challenger_id` = `u`.`id` or `fc`.`challenged_id` = `u`.`id`) and `fc`.`winner_id` = `u`.`id`) AS `friend_challenges_won` from (`users` `u` left join `user_badges` `ub` on(`u`.`id` = `ub`.`user_id`)) where `u`.`is_approved` = 1 group by `u`.`id`,`u`.`tenant_id`,`u`.`xp`,`u`.`level`,`u`.`login_streak` */;
+/*!50013 SQL SECURITY INVOKER */
+/*!50001 VIEW `user_gamification_summary` AS select `u`.`id` AS `user_id`,`u`.`tenant_id` AS `tenant_id`,`u`.`xp` AS `xp`,`u`.`level` AS `level`,`u`.`login_streak` AS `login_streak`,count(distinct `ub`.`badge_key`) AS `badge_count`,(select count(0) from `user_challenge_progress` `ucp` where `ucp`.`user_id` = `u`.`id` and `ucp`.`completed_at` is not null) AS `challenges_completed`,(select count(0) from `friend_challenges` `fc` where (`fc`.`challenger_id` = `u`.`id` or `fc`.`challenged_id` = `u`.`id`) and `fc`.`winner_id` = `u`.`id`) AS `friend_challenges_won` from (`users` `u` left join `user_badges` `ub` on(`ub`.`user_id` = `u`.`id`)) where `u`.`is_approved` = 1 group by `u`.`id`,`u`.`tenant_id`,`u`.`xp`,`u`.`level`,`u`.`login_streak` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -21137,8 +21137,8 @@ CREATE TABLE `xp_shop_items` (
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`nexus`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_active_listings_with_coords` AS select `l`.`id` AS `id`,`l`.`user_id` AS `user_id`,`l`.`tenant_id` AS `tenant_id`,`l`.`title` AS `title`,`l`.`description` AS `description`,`l`.`type` AS `type`,`l`.`category_id` AS `category_id`,`l`.`image_url` AS `image_url`,`l`.`status` AS `status`,`l`.`created_at` AS `created_at`,coalesce(`l`.`latitude`,`u`.`latitude`) AS `latitude`,coalesce(`l`.`longitude`,`u`.`longitude`) AS `longitude`,`u`.`first_name` AS `first_name`,`u`.`last_name` AS `last_name`,`u`.`avatar_url` AS `avatar_url`,`u`.`location` AS `author_location`,`c`.`name` AS `category_name`,`c`.`color` AS `category_color` from ((`listings` `l` join `users` `u` on(`l`.`user_id` = `u`.`id`)) left join `categories` `c` on(`l`.`category_id` = `c`.`id`)) where `l`.`status` = 'active' */;
+/*!50013 SQL SECURITY INVOKER */
+/*!50001 VIEW `v_active_listings_with_coords` AS select `l`.`id` AS `id`,`l`.`user_id` AS `user_id`,`l`.`tenant_id` AS `tenant_id`,`l`.`title` AS `title`,`l`.`description` AS `description`,`l`.`type` AS `type`,`l`.`category_id` AS `category_id`,`l`.`image_url` AS `image_url`,`l`.`status` AS `status`,`l`.`created_at` AS `created_at`,coalesce(`l`.`latitude`,`u`.`latitude`) AS `latitude`,coalesce(`l`.`longitude`,`u`.`longitude`) AS `longitude`,`u`.`first_name` AS `first_name`,`u`.`last_name` AS `last_name`,`u`.`avatar_url` AS `avatar_url`,`u`.`location` AS `author_location`,`c`.`name` AS `category_name`,`c`.`color` AS `category_color` from ((`listings` `l` join `users` `u` on(`u`.`id` = `l`.`user_id`)) left join `categories` `c` on(`c`.`id` = `l`.`category_id`)) where `l`.`status` = 'active' */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -21150,7 +21150,7 @@ CREATE TABLE `xp_shop_items` (
 /*!50001 SET character_set_results     = utf8mb3 */;
 /*!50001 SET collation_connection      = utf8mb3_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`nexus`@`%` SQL SECURITY DEFINER */
+/*!50013 SQL SECURITY INVOKER */
 /*!50001 VIEW `v_legal_acceptance_stats` AS select `ld`.`id` AS `document_id`,`ld`.`tenant_id` AS `tenant_id`,`ld`.`document_type` AS `document_type`,`ld`.`title` AS `title`,`ldv`.`id` AS `version_id`,`ldv`.`version_number` AS `version_number`,`ldv`.`effective_date` AS `effective_date`,`ldv`.`is_current` AS `is_current`,count(distinct `ula`.`user_id`) AS `total_acceptances`,min(`ula`.`accepted_at`) AS `first_acceptance`,max(`ula`.`accepted_at`) AS `last_acceptance` from ((`legal_documents` `ld` join `legal_document_versions` `ldv` on(`ldv`.`document_id` = `ld`.`id`)) left join `user_legal_acceptances` `ula` on(`ula`.`version_id` = `ldv`.`id`)) group by `ld`.`id`,`ld`.`tenant_id`,`ld`.`document_type`,`ld`.`title`,`ldv`.`id`,`ldv`.`version_number`,`ldv`.`effective_date`,`ldv`.`is_current` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -21624,7 +21624,8 @@ INSERT INTO `laravel_migrations` VALUES
 (453,'2026_09_26_120000_create_group_join_request_decision_receipts',136),
 (454,'2026_09_26_150000_correct_group_exchange_ai_module_doc',136),
 (455,'2026_09_26_160000_create_feed_post_creation_receipts',137),
-(456,'2026_09_26_170000_create_goal_buddy_requests',138);
+(456,'2026_09_26_170000_create_goal_buddy_requests',138),
+(457,'2026_09_27_210000_repair_legacy_views_for_restore',139);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
