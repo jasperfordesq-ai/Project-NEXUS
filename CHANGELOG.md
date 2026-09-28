@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The native app's Expo Updates patch dependency now matches Expo SDK 55's required version, restoring the Android native release gate.
+
 - Administrator-created member, broker and administrator invitations, assisted onboarding with a real email address, and new community administrator welcomes now email a one-hour set-password link instead of a lasting password. Password-reset requests made through the accessible frontend now link back to that frontend when the community has a registered accessible domain.
 - Public contact submissions now escape submitted markup in the email sent to community staff and use only the validated address in Reply-To, preventing injected links or headers in that message.
 
