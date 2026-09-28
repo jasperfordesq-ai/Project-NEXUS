@@ -9,6 +9,22 @@ namespace App\Support;
 final class OutboundUrlGuard
 {
     /**
+     * Non-public IPv4 ranges that FILTER_FLAG_NO_PRIV_RANGE | NO_RES_RANGE do
+     * not refuse (F-257): the Azure platform service address (WireServer,
+     * platform DNS, host agent), shared/CGNAT space, IETF protocol
+     * assignments, the benchmarking range and multicast.
+     *
+     * @var list<string>
+     */
+    private const EXTRA_BLOCKED_IPV4_CIDRS = [
+        '168.63.129.16/32',
+        '100.64.0.0/10',
+        '192.0.0.0/24',
+        '198.18.0.0/15',
+        '224.0.0.0/4',
+    ];
+
+    /**
      * Validate an outbound HTTP(S) URL before server-side fetch/callback use.
      */
     public static function isSafeHttpUrl(string $url, bool $requireHttps = false): bool
@@ -257,11 +273,33 @@ final class OutboundUrlGuard
             }
         }
 
-        return filter_var(
+        if (filter_var(
             $ip,
             FILTER_VALIDATE_IP,
             FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-        ) !== false;
+        ) === false) {
+            return false;
+        }
+
+        return !self::inExtraBlockedIpv4Range($ip);
+    }
+
+    private static function inExtraBlockedIpv4Range(string $ip): bool
+    {
+        $address = ip2long($ip);
+        if ($address === false) {
+            return false; // not an IPv4 literal; embedded IPv4 is checked above
+        }
+
+        foreach (self::EXTRA_BLOCKED_IPV4_CIDRS as $cidr) {
+            [$network, $bits] = explode('/', $cidr);
+            $mask = $bits === '0' ? 0 : (-1 << (32 - (int) $bits)) & 0xFFFFFFFF;
+            if (($address & $mask) === (ip2long($network) & $mask)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
