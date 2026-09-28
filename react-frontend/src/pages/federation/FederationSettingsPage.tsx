@@ -43,6 +43,7 @@ import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import type { FederationSettings } from '@/types/api';
 
@@ -522,7 +523,7 @@ export function FederationSettingsPage() {
               </p>
               {approval.description && <p className="text-sm text-theme-muted">{approval.description}</p>}
               <p className="text-sm text-theme-muted">
-                {t('settings.debit_approval_expires', { date: new Date(approval.expires_at).toLocaleString() })}
+                {t('settings.debit_approval_expires', { date: new Date(approval.expires_at).toLocaleString(getFormattingLocale()) })}
               </p>
               <div className="flex gap-2">
                 <Button onPress={() => decideDebit(approval.id, 'approve')} isDisabled={approvalBusy !== null}>
