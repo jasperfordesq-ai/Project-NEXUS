@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The native app's Expo Updates patch dependency now matches Expo SDK 55's required version, restoring the Android native release gate.
+
 - Administrator-created member, broker and administrator invitations, assisted onboarding with a real email address, and new community administrator welcomes now email a one-hour set-password link instead of a lasting password. Password-reset requests made through the accessible frontend now link back to that frontend when the community has a registered accessible domain.
 - Public contact submissions now escape submitted markup in the email sent to community staff and use only the validated address in Reply-To, preventing injected links or headers in that message.
 
@@ -27,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Android Play bundles silently retaining an already-used version code after Expo regenerated an existing native project; the guarded build now reapplies the Gradle override and verifies the compiled version code before archiving.
 
 ### Added
+
+- Sales enquiry emails from `POST /v2/sales/orders` now list everything the visitor selected in the quote builder, including the choices that cost nothing, in a table above the priced lines, with the buying route and the member count entered. Billing, pricing mode and each line's cadence read in plain words ("Annual prepay", "Custom: a written all-in quote is required", "Per month") instead of codes. The new `contract_route`, `active_members` and `selections` quote fields are optional, so existing callers get the same email as before.
 
 - `npm run check:help-staleness` lists Help Centre articles whose underlying code has changed since the article was last checked against it, using a record of each article's source files and the commit it was verified at (`react-frontend/src/pages/help/guides/data/sources.json`). It fails only on new, unreviewed drift. Not yet part of CI.
 
@@ -80,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every Android build is now filed in one folder, `mobile/releases/android/`, by the build scripts themselves: Play bundles as `play/timebank-global-<version>-build<code>.aab` and test APKs under `sideload/`, each with its SHA-256, and `INDEX.tsv` recording the source commit of every build. Bundles were previously copied by hand into `mobile/` under two naming styles with no commit recorded; the thirteen existing files were moved into the folder (`mobile/scripts/archive-android-build.sh`, `mobile/docs/PLAY_RELEASE_PROCEDURE.md`).
 
 ### Fixed
+
+- The database-column CI gate now recognizes new tables declared by pending Laravel migrations while the production-derived schema dump has not yet been refreshed.
 
 - The Android device-test workflow now runs its full Maestro journey suite on a stable Android 15 image and disables the irrelevant spellchecker service. Android 16's Google APIs emulator left a system `starting_reveal` transition permanently active, delaying each typed character until Maestro's two-minute device-control request expired even though the app had reached the login screen and the independent launch check passed. The app now opens a newly created saved-items collection directly, avoiding a moving-list tap while its refreshed row is inserted.
 

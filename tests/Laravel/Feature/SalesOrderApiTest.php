@@ -202,6 +202,109 @@ class SalesOrderApiTest extends TestCase
         ], $overrides);
     }
 
+    public function test_public_sales_order_renders_every_selection_in_plain_words(): void
+    {
+        // The enquiry email showed only paid lines and raw codes ("annual", "custom"), so the
+        // inbox could not tell which support, hosting or testing route a visitor had picked.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $to, string $subject, string $body, array $options): bool {
+                $this->assertStringContainsString('Everything selected in the quote builder', $body);
+                $this->assertStringContainsString('Support', $body);
+                $this->assertStringContainsString('Standard support (included)', $body);
+                $this->assertStringContainsString('Independent annual penetration testing', $body);
+                $this->assertStringContainsString('Public-sector contract (written all-in proposal)', $body);
+                $this->assertStringContainsString('12,000', $body);
+                $this->assertStringContainsString('Annual prepay', $body);
+                $this->assertStringContainsString('Custom: a written all-in quote is required', $body);
+                $this->assertStringContainsString('Per month', $body);
+                // Selections come before the priced lines.
+                $this->assertLessThan(
+                    strpos($body, 'Selected quote line items'),
+                    strpos($body, 'Everything selected in the quote builder')
+                );
+
+                return true;
+            })
+            ->andReturn(true);
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        $payload['quote']['pricing_mode'] = 'custom';
+        $payload['quote']['contract_route'] = 'public-sector';
+        $payload['quote']['active_members'] = 12000;
+        $payload['quote']['selections'] = [
+            ['label' => 'Support', 'value' => 'Standard support (included)'],
+            ['label' => 'Independent annual penetration testing', 'value' => 'Required by the contract'],
+        ];
+
+        $this->apiPost('/v2/sales/orders', $payload)->assertCreated();
+    }
+
+    public function test_public_sales_order_escapes_selection_text(): void
+    {
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $to, string $subject, string $body, array $options): bool {
+                $this->assertStringNotContainsString('<script>', $body);
+                $this->assertStringContainsString('&lt;script&gt;', $body);
+
+                return true;
+            })
+            ->andReturn(true);
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        $payload['quote']['selections'] = [['label' => 'Add-on', 'value' => '<script>alert(1)</script>']];
+
+        $this->apiPost('/v2/sales/orders', $payload)->assertCreated();
+    }
+
+    public function test_public_sales_order_without_selections_renders_as_before(): void
+    {
+        // Additive: an older caller with no selections gets no empty selections card.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldReceive('send')
+            ->once()
+            ->withArgs(function (string $to, string $subject, string $body, array $options): bool {
+                $this->assertStringNotContainsString('Everything selected in the quote builder', $body);
+                $this->assertStringContainsString('Selected quote line items', $body);
+
+                return true;
+            })
+            ->andReturn(true);
+        $this->app->instance(EmailService::class, $emailService);
+
+        $this->apiPost('/v2/sales/orders', $this->payload())->assertCreated();
+    }
+
+    public function test_public_sales_order_rejects_a_selection_that_is_not_a_label_value_pair(): void
+    {
+        // A scalar entry must be a 422, never a 500 from the renderer.
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        $payload['quote']['selections'] = ['not-a-pair'];
+
+        $this->apiPost('/v2/sales/orders', $payload)->assertStatus(422);
+    }
+
+    public function test_public_sales_order_rejects_an_unknown_contract_route(): void
+    {
+        $emailService = Mockery::mock(EmailService::class);
+        $emailService->shouldNotReceive('send');
+        $this->app->instance(EmailService::class, $emailService);
+
+        $payload = $this->payload();
+        $payload['quote']['contract_route'] = 'free-for-all';
+
+        $this->apiPost('/v2/sales/orders', $payload)->assertStatus(422);
+    }
+
     public function test_public_sales_order_sends_as_a_sales_enquiry_not_tenant_billing_mail(): void
     {
         // An enquiry used to go out as "hOUR TimeBank" <billing@project-nexus.net> — the billing
