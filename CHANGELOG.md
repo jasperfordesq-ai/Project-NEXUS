@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sales enquiry emails from `POST /v2/sales/orders` now list everything the visitor selected in the quote builder, including the choices that cost nothing, in a table above the priced lines, with the buying route and the member count entered. Billing, pricing mode and each line's cadence read in plain words ("Annual prepay", "Custom: a written all-in quote is required", "Per month") instead of codes. The new `contract_route`, `active_members` and `selections` quote fields are optional, so existing callers get the same email as before.
+
 - `npm run check:help-staleness` lists Help Centre articles whose underlying code has changed since the article was last checked against it, using a record of each article's source files and the commit it was verified at (`react-frontend/src/pages/help/guides/data/sources.json`). It fails only on new, unreviewed drift. Not yet part of CI.
 
 - Help Centre label check: an automated test that every bold on-screen label quoted in a guide exists in the app's own text for that language, so a guide cannot silently name a button the reader will not find. Labels already known to be missing are listed per language and may only go down.
