@@ -202,7 +202,12 @@ class AdminCommentsController extends BaseApiController
 
     /**
      * POST /api/v2/admin/comments/{id}/hide
-     * Hides a comment using the feed_hidden table (target_type='comment')
+     *
+     * Hides the comment from every member by setting `comments.deleted_at`,
+     * the "not visible" test every comment read path applies, and the same
+     * marker ContentModerationService::applyDecision() sets on rejection.
+     * It used to write a feed_hidden row keyed to the moderator's own
+     * user_id, which hid the comment from the moderator alone (F-220).
      */
     public function hide(int $id): JsonResponse
     {
@@ -229,10 +234,9 @@ class AdminCommentsController extends BaseApiController
 
         $commentTenantId = (int) $comment->tenant_id;
 
-        DB::statement(
-            "INSERT IGNORE INTO feed_hidden (user_id, tenant_id, target_type, target_id, created_at)
-             VALUES (?, ?, 'comment', ?, NOW())",
-            [$adminId, $commentTenantId, $id]
+        DB::update(
+            "UPDATE comments SET deleted_at = COALESCE(deleted_at, NOW()) WHERE id = ? AND tenant_id = ?",
+            [$id, $commentTenantId]
         );
 
         ActivityLog::log(

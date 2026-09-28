@@ -258,6 +258,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Coordinators, and admins whose rights come from account settings rather than the "admin" role, now receive every safeguarding alert the Broker Panel is built around: copies of messages for review, requests for coordinator help, safeguarding disclosures at sign-up, blocked contact attempts, changes to a member's safeguarding preferences, incident reports, overdue-review escalations and vetting renewals. Eleven alerts each had their own hard-coded list of roles, and none included coordinators, so a community run by coordinators was never told. They now share one rule, and a test fails if a hand-written list comes back. This was an original gap, not a regression (F-221).
+- "Hide Comment" in comment moderation now hides the comment from every member. It used to hide the comment only from the moderator who pressed it, so everyone else could still read it. A hidden comment is now removed the same way the content-moderation queue removes a rejected one (F-220).
 
 - A broker or coordinator can no longer add or remove hours on another broker's or an admin's balance; they can still correct an ordinary member's balance, with a reason, as before. Only a broker's own balance was blocked, although the broker guide said brokers cannot change another broker's or an admin's account. The check is the same rank rule member-management actions already use. Admins are unchanged. The broker guide's "one exception" note is removed in all eleven languages (F-219).
 

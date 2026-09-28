@@ -129,6 +129,52 @@ class AdminCommentsControllerTest extends TestCase
         $response->assertJsonPath('data.success', true);
     }
 
+    /**
+     * F-220: hiding used to write a feed_hidden row keyed to the moderator's
+     * own user_id, so the comment vanished for the moderator only and every
+     * member could still read it.
+     */
+    public function test_hide_removes_comment_for_other_members(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+
+        $postId = DB::table('feed_posts')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $author->id,
+            'content' => 'F-220 target post ' . uniqid(),
+            'type' => 'post',
+            'visibility' => 'public',
+            'publish_status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $marker = 'F-220 harmful comment ' . uniqid();
+        $commentId = DB::table('comments')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $author->id,
+            'target_type' => 'post',
+            'target_id' => $postId,
+            'content' => $marker,
+            'created_at' => now(),
+        ]);
+
+        // Control: before the hide, an ordinary member can read the comment.
+        Sanctum::actingAs($member);
+        $this->apiGet("/v2/comments?target_type=post&target_id={$postId}")
+            ->assertStatus(200)
+            ->assertSee($marker);
+
+        Sanctum::actingAs($admin);
+        $this->apiPost("/v2/admin/comments/{$commentId}/hide")->assertStatus(200);
+
+        Sanctum::actingAs($member);
+        $this->apiGet("/v2/comments?target_type=post&target_id={$postId}")
+            ->assertStatus(200)
+            ->assertDontSee($marker);
+    }
+
     public function test_hide_returns_404_for_nonexistent_comment(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
