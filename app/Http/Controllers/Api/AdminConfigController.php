@@ -1471,8 +1471,6 @@ class AdminConfigController extends BaseApiController
         // at the old identity.
         $childIdsToBust = [];
         $routingIdentityChanged = $routingFields !== [];
-        $requiresAuthoritativeRefresh = $routingIdentityChanged
-            || array_key_exists('maintenance_mode', $kvUpdates);
         $nonRoutingDirectUpdates = array_diff_key(
             $directUpdates,
             array_flip(['slug', 'domain'])
@@ -1485,7 +1483,6 @@ class AdminConfigController extends BaseApiController
                 $kvUpdates,
                 $tenantId,
                 $adminId,
-                $requiresAuthoritativeRefresh,
                 $routingIdentityChanged,
                 &$childIdsToBust,
                 &$prerenderJobId
@@ -1519,6 +1516,26 @@ class AdminConfigController extends BaseApiController
                         ->map(fn ($id) => (int) $id)
                         ->toArray();
                 }
+
+                // F-245: entering or leaving maintenance swaps this community's
+                // snapshots for 503 status-bearing ones, which only the
+                // platform-wide authoritative publish can install — and that
+                // reset cancels every community's render jobs. Queue it only
+                // when the stored state really flips, so re-sending the
+                // current value (as any settings save may) never restarts
+                // other communities' rendering. Read under the row lock so
+                // concurrent saves agree on the prior state.
+                $maintenanceStateChanged = false;
+                if (array_key_exists('maintenance_mode', $kvUpdates)) {
+                    $storedMaintenance = DB::table('tenant_settings')
+                        ->where('tenant_id', $tenantId)
+                        ->where('setting_key', 'general.maintenance_mode')
+                        ->lockForUpdate()
+                        ->value('setting_value');
+                    $isOn = static fn ($v): bool => in_array((string) $v, ['true', '1'], true);
+                    $maintenanceStateChanged = $isOn($storedMaintenance) !== $isOn($kvUpdates['maintenance_mode']);
+                }
+                $requiresAuthoritativeRefresh = $routingIdentityChanged || $maintenanceStateChanged;
 
                 foreach ($kvUpdates as $key => $value) {
                     $this->upsertSetting($tenantId, 'general.' . $key, (string) $value, $adminId);
