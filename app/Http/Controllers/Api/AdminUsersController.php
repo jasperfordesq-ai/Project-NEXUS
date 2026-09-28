@@ -918,11 +918,23 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
 
+        // F-250 (residual of F-169): overwriting `banned` with `suspended` turns an
+        // admin's ban into a broker-reversible suspension, so a caller who may not
+        // lift a ban (below admin tier, the F-169 rule in reactivate()) may not
+        // change a banned account's status here either. Re-checked under the lock.
+        $callerIsAdmin = $this->callerIsAdminTier();
+        if (($user['status'] ?? '') === 'banned' && !$callerIsAdmin) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+
         $reason = $this->input('reason', __('svc_notifications.suspended_by_admin'));
 
-        $lockedUser = DB::transaction(function () use ($adminId, $id, $tenantId): ?array {
+        $lockedUser = DB::transaction(function () use ($adminId, $id, $tenantId, $callerIsAdmin): ?array {
             $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
             if ($target === null) {
+                return null;
+            }
+            if (($target['status'] ?? '') === 'banned' && !$callerIsAdmin) {
                 return null;
             }
             DB::update("UPDATE users SET status = 'suspended' WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
@@ -2831,11 +2843,13 @@ class AdminUsersController extends BaseApiController
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $eligible = DB::select(
-            "SELECT id, tenant_id, email, first_name, preferred_language, role,
+            "SELECT id, tenant_id, email, first_name, preferred_language, role, status,
                     is_admin, is_super_admin, is_tenant_super_admin, is_god
              FROM users WHERE tenant_id = ? AND id IN ({$placeholders})",
             array_merge([$tenantId], $ids)
         );
+        // F-250: callers who may not lift a ban (F-169 rule) skip banned rows.
+        $callerIsAdmin = $this->callerIsAdminTier();
 
         $eligibleById = [];
         foreach ($eligible as $row) {
@@ -2864,9 +2878,18 @@ class AdminUsersController extends BaseApiController
                 $failed++;
                 continue;
             }
+            if (($row->status ?? '') === 'banned' && !$callerIsAdmin) {
+                $skippedIds[] = $id;
+                $failed++;
+                continue;
+            }
             try {
-                $updated = DB::transaction(function () use ($adminId, $id, $tenantId): bool {
-                    if ($this->lockManageableSecurityTarget($adminId, $id, $tenantId) === null) {
+                $updated = DB::transaction(function () use ($adminId, $id, $tenantId, $callerIsAdmin): bool {
+                    $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
+                    if ($target === null) {
+                        return false;
+                    }
+                    if (($target['status'] ?? '') === 'banned' && !$callerIsAdmin) {
                         return false;
                     }
                     DB::update(

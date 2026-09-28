@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A broker or coordinator can no longer lift an admin's ban by suspending the member and then reactivating them; single and bulk suspension leave banned members unchanged for them (F-250).
 - Deleting an account now also removes the member's stored display name, username, date of birth, organisation name, CV details and availability, and deletes their comments, so their real name no longer appears to other members afterwards (F-243).
 - On the accessible site's sign-up safeguarding step, a help link is now shown only when it is a secure https web address (F-253).
 - A broker or coordinator can no longer reverse, or settle a dispute on, an exchange involving another broker or an admin; this needs an admin, as balance corrections already do. Exchanges between ordinary members are unchanged (F-254).
