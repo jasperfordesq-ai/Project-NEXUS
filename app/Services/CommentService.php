@@ -289,6 +289,13 @@ class CommentService
             return null;
         }
 
+        // F-265: an author may edit a comment only while they can still see what
+        // it is attached to — e.g. not after being banned from the group the
+        // post belongs to. Same rule comment creation applies.
+        if (!self::targetIsCommentableAndVisible((string) $comment->target_type, (int) $comment->target_id, $userId)) {
+            return null;
+        }
+
         // Server-side XSS prevention: sanitize HTML content before storage
         $trimmedContent = \App\Helpers\HtmlSanitizer::sanitize(trim($content));
 

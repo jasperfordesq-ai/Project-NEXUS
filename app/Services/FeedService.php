@@ -1684,6 +1684,13 @@ class FeedService
             return ['success' => false, 'error' => __('api_controllers_2.feed.post_not_found_or_not_owned')];
         }
 
+        // F-265: a group post stays editable only while its author may still
+        // write in that group (a banned member may not), as group Q&A and wiki
+        // edits already require.
+        if (!empty($post->group_id) && !GroupAccessService::canWriteContent((int) $post->group_id, $userId)) {
+            return ['success' => false, 'error' => __('api_controllers_2.feed.post_not_found_or_not_owned')];
+        }
+
         if (!isset($data['content']) && isset($data['body'])) {
             $data['content'] = $data['body'];
         }
