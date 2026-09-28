@@ -31,23 +31,37 @@ class TenantProvisioningMailer
     /**
      * Send the "your community is ready" welcome email.
      */
-    public static function sendWelcome(array $request, int $tenantId, ?string $tempPassword = null): void
+    public static function sendWelcome(array $request, int $tenantId, ?int $newAdminUserId = null): bool
     {
         $tenant = DB::table('tenants')->where('id', $tenantId)->first();
         if (! $tenant) {
-            return;
+            return false;
         }
 
         $applicantEmail = $request['applicant_email'] ?? null;
         if (empty($applicantEmail)) {
-            return;
+            return false;
         }
 
         $locale = $request['default_language'] ?? 'en';
+        $invitationToken = null;
         try {
             TenantContext::setById($tenantId);
-            LocaleContext::withLocale($locale, function () use ($request, $tenant, $tenantId, $applicantEmail, $tempPassword) {
-                try {
+            if ($newAdminUserId !== null) {
+                $ownsAccount = DB::table('users')->where('id', $newAdminUserId)
+                    ->where('tenant_id', $tenantId)->where('email', $applicantEmail)->exists();
+                if (!$ownsAccount) {
+                    throw new \RuntimeException('Provisioned administrator does not match the applicant.');
+                }
+                $invitationToken = bin2hex(random_bytes(32));
+                DB::table('password_resets')->insert([
+                    'email' => $applicantEmail,
+                    'tenant_id' => $tenantId,
+                    'token' => hash('sha256', $invitationToken),
+                    'created_at' => now(),
+                ]);
+            }
+            $sent = LocaleContext::withLocale($locale, function () use ($request, $tenant, $tenantId, $applicantEmail, $invitationToken): bool {
                     $name      = $request['applicant_name'] ?? '';
                     $tenantUrl = self::tenantUrl($tenant);
                     $loginUrl  = $tenantUrl . '/login';
@@ -57,33 +71,38 @@ class TenantProvisioningMailer
                         ->title(__('emails_provisioning.welcome.title'))
                         ->previewText(__('emails_provisioning.welcome.preview', ['name' => $tenant->name]))
                         ->greeting($name ?: __('emails.common.fallback_name'))
-                        ->paragraph(__('emails_provisioning.welcome.body', ['name' => $tenant->name]));
+                        ->paragraph(__('emails_provisioning.welcome.preview', ['name' => $tenant->name]));
 
                     $info = [
                         __('emails_provisioning.welcome.tenant_url_label')  => $tenantUrl,
                         __('emails_provisioning.welcome.login_url_label')   => $loginUrl,
                         __('emails_provisioning.welcome.admin_email_label') => $applicantEmail,
                     ];
-                    if (! empty($tempPassword)) {
-                        $info[__('emails_provisioning.welcome.temp_password_label')] = $tempPassword;
-                    }
                     $builder->infoCard($info);
 
-                    $builder->paragraph(__('emails_provisioning.welcome.next_steps'));
-                    $builder->button(__('emails_provisioning.welcome.cta'), $loginUrl);
+                    if ($invitationToken !== null) {
+                        $builder->paragraph(__('emails.password_reset.expiry'));
+                        $builder->button(__('emails.password_reset.cta'), $tenantUrl . '/password/reset?token=' . $invitationToken);
+                    } else {
+                        $builder->button(__('emails_provisioning.welcome.cta'), $loginUrl);
+                    }
 
                     $subject = __('emails_provisioning.welcome.subject', ['name' => $tenant->name]);
                     $html    = $builder->render();
 
-                    if (!EmailDispatchService::sendRaw($applicantEmail, $subject, $html, null, null, null, 'tenant_provisioning', ['tenant_id' => $tenantId])) {
-                        Log::warning('TenantProvisioningMailer welcome send returned false', [
-                            'tenant_id' => $tenant->id ?? null,
-                        ]);
-                    }
-                } catch (Throwable $e) {
-                    Log::warning('TenantProvisioningMailer welcome failed', ['error' => $e->getMessage()]);
-                }
+                    return EmailDispatchService::sendRaw($applicantEmail, $subject, $html, null, null, null, 'tenant_provisioning', ['tenant_id' => $tenantId]);
             });
+            if (!$sent) {
+                throw new \RuntimeException('Provisioning welcome email dispatch failed.');
+            }
+            return true;
+        } catch (Throwable $e) {
+            if ($invitationToken !== null) {
+                DB::table('password_resets')->where('email', $applicantEmail)->where('tenant_id', $tenantId)
+                    ->where('token', hash('sha256', $invitationToken))->delete();
+            }
+            Log::warning('TenantProvisioningMailer welcome failed', ['error' => $e->getMessage()]);
+            return false;
         } finally {
             TenantContext::reset();
         }

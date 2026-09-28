@@ -737,7 +737,8 @@ class AdminCaringCommunityController extends BaseApiController
      *
      * Coordinator creates a member account on behalf of a participant who
      * cannot self-register (e.g. elderly, non-technical). Returns a temporary
-     * password the coordinator can share with the new member in person.
+     * password only for an offline placeholder account. A real address gets a
+     * single-use set-password link instead of a shared lasting credential.
      */
     public function assistedOnboarding(): JsonResponse
     {
@@ -776,14 +777,15 @@ class AdminCaringCommunityController extends BaseApiController
         $firstName = $parts[0];
         $lastName = $parts[1] ?? '';
 
-        // Generate a secure temporary password
-        $tempPassword = substr(bin2hex(random_bytes(12)), 0, 16);
+        $isDummy = str_ends_with($email, '.invalid') || str_ends_with($email, '.placeholder');
+        $tempPassword = $isDummy ? substr(bin2hex(random_bytes(12)), 0, 16) : null;
+        $initialPassword = $tempPassword ?? bin2hex(random_bytes(32));
 
         $newUserId = User::createWithTenant([
             'first_name'  => $firstName,
             'last_name'   => $lastName,
             'email'       => $email,
-            'password'    => $tempPassword,
+            'password'    => $initialPassword,
             'phone'       => $phone ?: null,
             'role'        => 'member',
             'is_approved' => 1,
@@ -796,31 +798,35 @@ class AdminCaringCommunityController extends BaseApiController
         ActivityLog::log($adminId, 'coordinator_assisted_onboarding', "Coordinator-assisted onboarding: {$email}" . ($note ? " — {$note}" : ''));
 
         // Send welcome email if the email looks real (skip dummy placeholder addresses)
-        $isDummy = str_ends_with($email, '.invalid') || str_ends_with($email, '.placeholder');
         $emailSent = false;
         $emailSkipped = $isDummy;
         if (!$isDummy) {
             try {
                 $newUser = User::findById($newUserId, true);
-                $emailSent = TenantContext::runForTenant($tenantId, function () use ($newUser, $email, $tempPassword, $tenantId): bool {
-                    return (bool) LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $tempPassword, $tenantId) {
+                $invitationToken = bin2hex(random_bytes(32));
+                DB::table('password_resets')->insert([
+                    'email' => $email,
+                    'tenant_id' => $tenantId,
+                    'token' => hash('sha256', $invitationToken),
+                    'created_at' => now(),
+                ]);
+                $emailSent = TenantContext::runForTenant($tenantId, function () use ($newUser, $email, $invitationToken, $tenantId): bool {
+                    return (bool) LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $invitationToken, $tenantId) {
                         $tenant = TenantContext::get();
                         $tenantName = $tenant['name'] ?? 'Project NEXUS';
-                        $loginLink = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/login';
+                        $setPasswordLink = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix()
+                            . '/password/reset?token=' . $invitationToken;
 
                         $html = EmailTemplateBuilder::make()
                             ->title(__('emails_misc.admin_actions.welcome_created_title'))
                             ->previewText(__('emails_misc.admin_actions.welcome_created_preview'))
                             ->greeting(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
                             ->paragraph(__('emails_misc.admin_actions.welcome_created_body_intro', ['community' => $tenantName]))
-                            ->paragraph(__('emails_misc.admin_actions.welcome_created_body_credentials'))
-                            // infoCard escapes at render — no pre-escaping.
                             ->infoCard([
                                 __('emails_misc.admin_actions.welcome_created_info_email')    => $email,
-                                __('emails_misc.admin_actions.welcome_created_info_password') => $tempPassword,
                             ])
-                            ->paragraph(__('emails_misc.admin_actions.welcome_created_body_change_pass'))
-                            ->button(__('emails_misc.admin_actions.welcome_created_cta'), $loginLink)
+                            ->paragraph(__('emails.password_reset.expiry'))
+                            ->button(__('emails.password_reset.cta'), $setPasswordLink)
                             ->render();
 
                         $sent = EmailDispatchService::sendRaw($email, __('emails_misc.admin_actions.welcome_created_subject', ['community' => $tenantName]), $html, null, null, null, 'admin_welcome', ['tenant_id' => $tenantId]);
@@ -832,11 +838,17 @@ class AdminCaringCommunityController extends BaseApiController
                     });
                 });
                 if (!$emailSent) {
+                    DB::table('password_resets')->where('email', $email)->where('tenant_id', $tenantId)
+                        ->where('token', hash('sha256', $invitationToken))->delete();
                     Log::warning('[AdminCC] Assisted onboarding welcome email returned false', [
                         'email' => $email,
                     ]);
                 }
             } catch (\Throwable $e) {
+                if (isset($invitationToken)) {
+                    DB::table('password_resets')->where('email', $email)->where('tenant_id', $tenantId)
+                        ->where('token', hash('sha256', $invitationToken))->delete();
+                }
                 Log::warning('[AdminCC] Assisted onboarding welcome email failed: ' . $e->getMessage());
             }
         }

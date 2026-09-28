@@ -53,6 +53,7 @@ final class SendPasswordResetEmail implements ShouldQueue
     public function __construct(
         public readonly string $email,
         public readonly ?int $requestTenantId,
+        public readonly bool $accessibleExperience = false,
     ) {
         $this->onQueue('emails');
     }
@@ -122,7 +123,8 @@ final class SendPasswordResetEmail implements ShouldQueue
             }
         }
 
-        $resetUrl = $appUrl . $basePath . "/password/reset?token=" . $token;
+        $accessibleBase = $this->accessibleExperience ? $this->accessibleResetBase() : null;
+        $resetUrl = ($accessibleBase ?? ($appUrl . $basePath)) . "/password/reset?token=" . $token;
             $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
         } finally {
             TenantContext::reset();
@@ -193,6 +195,36 @@ final class SendPasswordResetEmail implements ShouldQueue
         } finally {
             TenantContext::reset();
         }
+    }
+
+    /** Only registered tenant domains or the configured platform host may be used. */
+    private function accessibleResetBase(): ?string
+    {
+        $tenant = TenantContext::get();
+        $domain = trim((string) ($tenant['accessible_domain'] ?? ''));
+        if ($domain !== '' && filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return 'https://' . $domain;
+        }
+
+        $parentId = (int) ($tenant['parent_id'] ?? 0);
+        if ($parentId > 0) {
+            $parentDomain = trim((string) DB::table('tenants')
+                ->where('id', $parentId)->where('is_active', 1)->value('accessible_domain'));
+            if ($parentDomain !== '' && filter_var($parentDomain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+                return 'https://' . $parentDomain . '/' . rawurlencode((string) $tenant['slug']) . '/accessible';
+            }
+        }
+
+        $platformUrl = rtrim((string) config('app.accessible_frontend_url', ''), '/');
+        $host = parse_url($platformUrl, PHP_URL_HOST);
+        if (parse_url($platformUrl, PHP_URL_SCHEME) === 'https'
+            && is_string($host)
+            && filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
+            && !empty($tenant['slug'])) {
+            return $platformUrl . '/' . rawurlencode((string) $tenant['slug']) . '/accessible';
+        }
+
+        return null;
     }
 
     private function resolvePasswordResetUser(string $email): ?array

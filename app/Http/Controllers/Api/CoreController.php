@@ -79,6 +79,10 @@ class CoreController extends BaseApiController
             . __('govuk_alpha.contact.form.email_label') . ": {$email}\n"
             . __('govuk_alpha.contact.form.subject_label') . ": {$subject}\n\n"
             . __('govuk_alpha.contact.form.message_label') . ":\n{$message}";
+        // Mailer treats the body as HTML. Escape every submitted field while
+        // preserving line breaks, so a public contact submission cannot place
+        // a clickable attacker link in the community's email to its staff.
+        $emailBody = nl2br(htmlspecialchars($emailBody, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), false);
 
         $tenantId = TenantContext::getId();
         $requestHash = hash('sha256', json_encode([$name, mb_strtolower($email), $subject, $message], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
@@ -123,7 +127,10 @@ class CoreController extends BaseApiController
 
         $sent = false;
         try {
-            $replyTo = "{$name} <{$email}>";
+            // The mailer writes Reply-To directly into message headers. Only
+            // the validated address may enter that header; a submitted name
+            // can contain CR/LF and must stay in the escaped message body.
+            $replyTo = $email;
             $sent = EmailDispatchService::sendRaw($tenantEmail, $emailSubject, $emailBody, null, $replyTo, null, 'contact_form', [
                 'tenant_id' => $tenantId,
                 'idempotency_key' => $idempotencyKey !== '' ? $idempotencyKey : null,

@@ -13,6 +13,8 @@ use App\Services\TokenService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -27,6 +29,108 @@ use Tests\Laravel\TestCase;
 class AdminUsersControllerTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public function test_emailed_admin_created_accounts_use_one_time_tenant_bound_set_password_links(): void
+    {
+        // This test exercises six reset submissions; the separate route-level
+        // five-per-minute throttle is covered elsewhere.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $adminAuthorization = 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        );
+        $mailer = new AdminUsersSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response('', 200)]);
+        foreach (['member', 'broker', 'admin'] as $role) {
+            $this->withHeader('Authorization', $adminAuthorization);
+            $email = 'invite-' . $role . '-' . uniqid('', true) . '@example.test';
+            $submittedPassword = 'Admin-chosen-password-' . $role . '-123';
+            $response = $this->apiPost('/v2/admin/users', [
+                'first_name' => 'Invitation',
+                'last_name' => ucfirst($role),
+                'email' => $email,
+                'role' => $role,
+                'password' => $submittedPassword,
+                'send_welcome_email' => true,
+            ]);
+            $response->assertStatus(201);
+            $response->assertJsonPath('data.welcome_email_sent', true);
+
+            $userId = (int) $response->json('data.id');
+            $storedHash = (string) DB::table('users')->where('id', $userId)->value('password_hash');
+            $this->assertFalse(Hash::check($submittedPassword, $storedHash));
+            $mail = end($mailer->calls);
+            $this->assertSame($email, $mail['to']);
+            $this->assertSame('admin_welcome', $mail['options']['category']);
+            $this->assertStringNotContainsString($submittedPassword, $mail['body']);
+            $this->assertSame(1, preg_match('/token=([a-f0-9]{64})/', $mail['body'], $matches));
+            $token = $matches[1];
+            $this->assertDatabaseHas('password_resets', [
+                'email' => $email,
+                'tenant_id' => $this->testTenantId,
+                'token' => hash('sha256', $token),
+            ]);
+
+            RateLimiter::clear('api:reset_password:ip:' . request()->ip());
+            RateLimiter::clear("api:reset_password:user:{$admin->id}");
+            $this->withHeader('Authorization', '');
+            if ($role === 'member') {
+                $this->withHeader('X-Tenant-ID', '1')->postJson('/api/auth/reset-password', [
+                    'token' => $token,
+                    'password' => 'Member-chosen-password-456',
+                    'password_confirmation' => 'Member-chosen-password-456',
+                ])->assertStatus(400);
+                $this->assertDatabaseHas('password_resets', ['email' => $email, 'token' => hash('sha256', $token)]);
+
+                DB::table('password_resets')->where('email', $email)->where('tenant_id', $this->testTenantId)
+                    ->update(['created_at' => now()->subHours(2)]);
+                $this->withHeader('X-Tenant-ID', (string) $this->testTenantId)->postJson('/api/auth/reset-password', [
+                    'token' => $token,
+                    'password' => 'Member-chosen-password-456',
+                    'password_confirmation' => 'Member-chosen-password-456',
+                ])->assertStatus(400);
+                DB::table('password_resets')->where('email', $email)->where('tenant_id', $this->testTenantId)
+                    ->update(['created_at' => now()]);
+            }
+
+            $this->withHeader('X-Tenant-ID', (string) $this->testTenantId)->postJson('/api/auth/reset-password', [
+                'token' => $token,
+                'password' => 'Member-chosen-password-456',
+                'password_confirmation' => 'Member-chosen-password-456',
+            ])->assertStatus(200);
+            $this->assertTrue(Hash::check('Member-chosen-password-456',
+                (string) DB::table('users')->where('id', $userId)->value('password_hash')));
+            $this->withHeader('X-Tenant-ID', (string) $this->testTenantId)->postJson('/api/auth/reset-password', [
+                'token' => $token,
+                'password' => 'Another-member-password-789',
+                'password_confirmation' => 'Another-member-password-789',
+            ])->assertStatus(400);
+        }
+    }
+
+    public function test_admin_created_account_reports_invitation_failure_without_leaving_a_valid_link(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $email = 'invite-failure-' . uniqid('', true) . '@example.test';
+        app()->instance(EmailDispatchService::class, new AdminUsersFailingEmailDispatchService());
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+
+        $this->apiPost('/v2/admin/users', [
+            'first_name' => 'Invitation',
+            'last_name' => 'Failure',
+            'email' => $email,
+            'role' => 'member',
+            'send_welcome_email' => true,
+        ])->assertStatus(201)->assertJsonPath('data.welcome_email_sent', false);
+
+        $this->assertSame(1, DB::table('users')->where('email', $email)
+            ->where('tenant_id', $this->testTenantId)->count());
+        $this->assertSame(0, DB::table('password_resets')->where('email', $email)
+            ->where('tenant_id', $this->testTenantId)->count());
+    }
 
     // ================================================================
     // INDEX — GET /v2/admin/users

@@ -486,7 +486,7 @@ async function forgotPassword(email, tenantSlug) {
   return request('/api/auth/forgot-password', {
     method: 'POST',
     headers: tenantSlugHeaders(tenantSlug),
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email, experience: 'accessible' })
   });
 }
 

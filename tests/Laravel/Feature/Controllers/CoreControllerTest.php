@@ -88,6 +88,29 @@ class CoreControllerTest extends TestCase
             ->value('email_sent'));
     }
 
+    public function test_contact_form_escapes_submitted_markup_in_staff_email(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['contact_email' => 'contact@project-nexus.ie']);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $mailer = Mockery::mock(EmailDispatchService::class);
+        $mailer->shouldReceive('send')->once()->andReturnUsing(function (string $to, string $subject, string $body, array $options): bool {
+            $this->assertSame('contact@project-nexus.ie', $to);
+            $this->assertSame('alice@example.test', $options['replyTo']);
+            $this->assertStringNotContainsString('<a href=', $body);
+            $this->assertStringContainsString('&lt;a href=', $body);
+            $this->assertStringContainsString('<br>', $body);
+            return true;
+        });
+        $this->app->instance(EmailDispatchService::class, $mailer);
+
+        $this->apiPost('/v2/contact', [
+            'name' => "Alice\r\nBcc: outsider@example.test<a href=\"https://evil.example\">click</a>",
+            'email' => 'alice@example.test',
+            'subject' => 'Account help',
+            'message' => "Please help.\n<a href=\"https://evil.example\">Verify here</a>",
+        ])->assertOk();
+    }
+
     public function test_contact_form_rejects_changed_request_for_same_key(): void
     {
         DB::table('tenants')->where('id', $this->testTenantId)->update(['contact_email' => 'contact@project-nexus.ie']);

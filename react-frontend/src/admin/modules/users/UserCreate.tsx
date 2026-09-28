@@ -60,7 +60,7 @@ export function UserCreate() {
     if (!role) {
       newErrors.role = t('users.validation_role_required');
     }
-    if (password.trim() && password.trim().length < 8) {
+    if (!sendWelcomeEmail && password.trim() && password.trim().length < 8) {
       newErrors.password = t('users.validation_password_min');
     }
 
@@ -86,7 +86,7 @@ export function UserCreate() {
       };
 
       // Only include password if provided (backend auto-generates if empty)
-      if (password.trim()) {
+      if (!sendWelcomeEmail && password.trim()) {
         payload.password = password.trim();
       }
       if (phone.trim()) {
@@ -97,6 +97,9 @@ export function UserCreate() {
 
       if (res.success) {
         toast.success(t('users.create_success'));
+        if (sendWelcomeEmail && !res.data?.welcome_email_sent) {
+          toast.error(t('user_edit.toasts.welcome_email_failed'));
+        }
         navigate(tenantPath('/admin/users'));
       } else {
         // Show the server's own reason — "Email already taken", a validation
@@ -208,7 +211,7 @@ export function UserCreate() {
             </div>
 
             {/* Password */}
-            <Input
+            {!sendWelcomeEmail && <Input
               label={t('users.label_password')}
               type="password"
               placeholder={t('users.placeholder_password')}
@@ -218,7 +221,7 @@ export function UserCreate() {
               isDisabled={submitting}
               isInvalid={!!errors.password}
               errorMessage={errors.password}
-            />
+            />}
 
             {/* Send Welcome Email */}
             <div className="flex items-center justify-between rounded-lg border border-border p-4">

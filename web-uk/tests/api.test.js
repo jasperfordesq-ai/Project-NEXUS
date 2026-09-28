@@ -480,7 +480,7 @@ describe('API Request Functions', () => {
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({ 'X-Tenant-Slug': 'acme' }),
-          body: JSON.stringify({ email: 'member@example.test' })
+          body: JSON.stringify({ email: 'member@example.test', experience: 'accessible' })
         })
       );
       expect(mockFetch).toHaveBeenNthCalledWith(

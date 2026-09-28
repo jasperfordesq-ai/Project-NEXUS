@@ -221,6 +221,33 @@ class PasswordResetControllerTest extends TestCase
             ->count());
     }
 
+    public function test_accessible_reset_link_uses_registered_tenant_domain_only(): void
+    {
+        $email = 'accessible-reset-' . uniqid('', true) . '@example.test';
+        User::factory()->forTenant($this->testTenantId)->create([
+            'email' => $email,
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('tenants')->where('id', $this->testTenantId)
+            ->update(['accessible_domain' => 'accessible-tenant.example.test']);
+        $mailer = new PasswordResetSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $this->apiPost('/auth/forgot-password', [
+            'email' => $email,
+            'experience' => 'accessible',
+            'redirect_url' => 'https://attacker.example/reset',
+        ])->assertStatus(200);
+
+        $this->assertCount(1, $mailer->calls);
+        $body = $mailer->calls[0]['body'];
+        $this->assertStringContainsString('https://accessible-tenant.example.test/password/reset?token=', $body);
+        $this->assertStringNotContainsString('attacker.example', $body);
+        $this->assertSame(1, DB::table('password_resets')
+            ->where('email', $email)->where('tenant_id', $this->testTenantId)->count());
+    }
+
     /**
      * The queued job sends nothing for an address with no account — the branch
      * whose absence, when run inline, created the timing difference.

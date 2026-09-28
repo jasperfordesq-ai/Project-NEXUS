@@ -243,7 +243,7 @@ class TenantProvisioningService
         ]);
 
         $log = self::decodeLog($request->provisioning_log ?? null);
-        $tempPassword = null;
+        $newAdminUserId = null;
         $tenantId = null;
         $adminUserId = null;
 
@@ -257,7 +257,8 @@ class TenantProvisioningService
             $log[] = self::logEntry('seed_defaults', 'ok');
 
             // Step 3 — create admin user
-            [$adminUserId, $tempPassword] = self::createAdminUser($tenantId, (array) $request);
+            [$adminUserId, $wasCreated] = self::createAdminUser($tenantId, (array) $request);
+            $newAdminUserId = $wasCreated ? $adminUserId : null;
             $log[] = self::logEntry('create_admin_user', 'ok', ['user_id' => $adminUserId]);
 
             // Step 4 — apply caring-community preset where applicable
@@ -268,8 +269,8 @@ class TenantProvisioningService
 
             // Step 5 — send welcome email (best-effort)
             try {
-                TenantProvisioningMailer::sendWelcome((array) $request, $tenantId, $tempPassword);
-                $log[] = self::logEntry('send_welcome_email', 'ok');
+                $welcomeSent = TenantProvisioningMailer::sendWelcome((array) $request, $tenantId, $newAdminUserId);
+                $log[] = self::logEntry('send_welcome_email', $welcomeSent ? 'ok' : 'warn');
             } catch (Throwable $e) {
                 $log[] = self::logEntry('send_welcome_email', 'warn', ['error' => $e->getMessage()]);
             }
@@ -527,11 +528,11 @@ class TenantProvisioningService
     }
 
     /**
-     * @return array{0: int, 1: string} [adminUserId, tempPassword]
+     * @return array{0: int, 1: bool} [adminUserId, wasCreated]
      */
     private static function createAdminUser(int $tenantId, array $request): array
     {
-        $tempPassword = Str::random(16);
+        $initialPassword = bin2hex(random_bytes(32));
         $email = $request['applicant_email'];
 
         // If a user with this email already exists for the tenant, reuse it.
@@ -547,12 +548,12 @@ class TenantProvisioningService
                 'status'        => 'active',
                 'updated_at'    => now(),
             ]);
-            return [(int) $existing->id, ''];
+            return [(int) $existing->id, false];
         }
 
         $now = now();
         $name = $request['applicant_name'] ?: 'Admin';
-        $hash = Hash::make($tempPassword);
+        $hash = Hash::make($initialPassword);
 
         $insert = [
             'tenant_id'    => $tenantId,
@@ -571,7 +572,7 @@ class TenantProvisioningService
         ];
 
         $userId = (int) DB::table('users')->insertGetId($insert);
-        return [$userId, $tempPassword];
+        return [$userId, true];
     }
 
     private static function applyCaringPreset(int $tenantId, array $request): void

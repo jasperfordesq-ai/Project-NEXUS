@@ -836,6 +836,7 @@ const formatHours = (value: number) => `${Number(value.toFixed(1))} h`;
 
 export default function CaringCommunityWorkflowPage() {
   const { t } = useTranslation('admin_caring_community');
+  const { t: tAdminUsers } = useTranslation('admin_users');
   const { tenantPath } = useTenant();
   const toast = useToast();
   usePageTitle(t('caring_workflow.meta.page_title'));
@@ -921,7 +922,7 @@ export default function CaringCommunityWorkflowPage() {
   const [onboardingPhone, setOnboardingPhone] = useState('');
   const [onboardingNote, setOnboardingNote] = useState('');
   const [onboardingLoading, setOnboardingLoading] = useState(false);
-  const [onboardingResult, setOnboardingResult] = useState<{ user: { id: number; name: string; email: string }; temp_password: string } | null>(null);
+  const [onboardingResult, setOnboardingResult] = useState<{ user: { id: number; name: string; email: string }; temp_password: string | null } | null>(null);
   const [onboardingCopied, setOnboardingCopied] = useState(false);
   const [paperIntakes, setPaperIntakes] = useState<PaperOnboardingIntake[]>([]);
   const [paperFile, setPaperFile] = useState<File | null>(null);
@@ -1517,7 +1518,7 @@ export default function CaringCommunityWorkflowPage() {
     setOnboardingLoading(true);
     setOnboardingResult(null);
     try {
-      const res = await api.post<{ user: { id: number; name: string; email: string }; temp_password: string }>(
+      const res = await api.post<{ user: { id: number; name: string; email: string }; temp_password: string | null; email_sent: boolean; email_skipped: boolean }>(
         '/v2/admin/caring-community/assisted-onboarding',
         {
           name: onboardingName.trim(),
@@ -1533,16 +1534,19 @@ export default function CaringCommunityWorkflowPage() {
         setOnboardingPhone('');
         setOnboardingNote('');
         toast.success(t('caring_workflow.assisted_onboarding.created'));
+        if (!res.data.email_skipped && !res.data.email_sent) {
+          toast.error(tAdminUsers('user_edit.toasts.welcome_email_failed'));
+        }
       }
     } catch {
       toast.error(t('caring_workflow.assisted_onboarding.create_failed'));
     } finally {
       setOnboardingLoading(false);
     }
-  }, [onboardingEmail, onboardingName, onboardingNote, onboardingPhone, t, toast]);
+  }, [onboardingEmail, onboardingName, onboardingNote, onboardingPhone, t, tAdminUsers, toast]);
 
   const copyTempPassword = useCallback(() => {
-    if (!onboardingResult) return;
+    if (!onboardingResult?.temp_password) return;
     void navigator.clipboard.writeText(onboardingResult.temp_password);
     setOnboardingCopied(true);
     setTimeout(() => setOnboardingCopied(false), 2000);
@@ -2607,22 +2611,26 @@ export default function CaringCommunityWorkflowPage() {
               <p className="text-sm font-semibold text-success-700">
                 {t('caring_workflow.assisted_onboarding.created_for', { name: onboardingResult.user.name, email: onboardingResult.user.email })}
               </p>
-              <p className="mt-2 text-xs text-muted">
-                {t('caring_workflow.assisted_onboarding.password_note')}
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <code className="flex-1 rounded bg-surface-secondary px-3 py-2 text-sm font-mono text-foreground">
-                  {onboardingResult.temp_password}
-                </code>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  startContent={<Copy size={14} />}
-                  onPress={copyTempPassword}
-                >
-                  {onboardingCopied ? t('caring_workflow.assisted_onboarding.copied') : t('caring_workflow.assisted_onboarding.copy')}
-                </Button>
-              </div>
+              {onboardingResult.temp_password && (
+                <>
+                  <p className="mt-2 text-xs text-muted">
+                    {t('caring_workflow.assisted_onboarding.password_note')}
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <code className="flex-1 rounded bg-surface-secondary px-3 py-2 text-sm font-mono text-foreground">
+                      {onboardingResult.temp_password}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      startContent={<Copy size={14} />}
+                      onPress={copyTempPassword}
+                    >
+                      {onboardingCopied ? t('caring_workflow.assisted_onboarding.copied') : t('caring_workflow.assisted_onboarding.copy')}
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </CardBody>

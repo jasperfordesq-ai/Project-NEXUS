@@ -199,7 +199,7 @@ export const adminUsers = {
     api.get<AdminUserDetail>(`/v2/admin/users/${id}`),
 
   create: (data: CreateUserPayload) =>
-    api.post<AdminUser>('/v2/admin/users', data),
+    api.post<AdminUser & { welcome_email_sent: boolean }>('/v2/admin/users', data),
 
   update: (id: number, data: UpdateUserPayload) =>
     api.put<AdminUser>(`/v2/admin/users/${id}`, data),

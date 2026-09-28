@@ -10,6 +10,7 @@ use Tests\Laravel\TestCase;
 use App\Services\TenantProvisioning\TenantProvisioningMailer;
 use App\Services\EmailDispatchService;
 use App\Core\TenantContext;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -151,6 +152,32 @@ class TenantProvisioningMailerTest extends TestCase
         $this->assertIsArray($capturedOptions);
         $this->assertArrayHasKey('tenant_id', $capturedOptions);
         $this->assertSame(self::TENANT_ID, $capturedOptions['tenant_id']);
+    }
+
+    public function test_new_administrator_welcome_contains_one_time_link_instead_of_password(): void
+    {
+        $user = User::factory()->forTenant(self::TENANT_ID)->admin()->create([
+            'email' => 'admin@example.com',
+        ]);
+        $body = null;
+        Mockery::mock('alias:' . EmailDispatchService::class)
+            ->shouldReceive('sendRaw')->once()
+            ->withArgs(function ($to, $subject, $html) use (&$body) {
+                $body = $html;
+                return true;
+            })
+            ->andReturn(true);
+
+        $this->assertTrue(TenantProvisioningMailer::sendWelcome($this->welcomeRequest(), self::TENANT_ID, (int) $user->id));
+
+        $this->assertIsString($body);
+        $this->assertStringNotContainsString('temp_password', $body);
+        $this->assertSame(1, preg_match('/token=([a-f0-9]{64})/', $body, $matches));
+        $this->assertDatabaseHas('password_resets', [
+            'email' => $user->email,
+            'tenant_id' => self::TENANT_ID,
+            'token' => hash('sha256', $matches[1]),
+        ]);
     }
 
     public function test_sendWelcome_restores_tenant_context_after_call(): void

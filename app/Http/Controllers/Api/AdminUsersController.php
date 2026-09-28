@@ -537,6 +537,7 @@ class AdminUsersController extends BaseApiController
         $lastName = trim($input['last_name'] ?? '');
         $email = trim($input['email'] ?? '');
         $password = $input['password'] ?? '';
+        $sendWelcomeEmail = !empty($input['send_welcome_email']);
         $role = $input['role'] ?? 'member';
         $location = trim($input['location'] ?? '');
         // An admin can already switch an existing account to an organisation via
@@ -554,9 +555,11 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_role_allowed', ['roles' => implode(', ', $allowedRoles)]), 'role', 422);
         }
 
-        // Auto-generate password if not provided
-        if (empty($password)) {
-            $password = bin2hex(random_bytes(12));
+        // An emailed invitation must never leave an administrator-chosen or
+        // reusable password on the account. The recipient sets their own via
+        // the same one-hour, single-use reset flow used for recovery.
+        if ($sendWelcomeEmail || empty($password)) {
+            $password = bin2hex(random_bytes(32));
         }
 
         // Validation
@@ -635,39 +638,48 @@ class AdminUsersController extends BaseApiController
         // preferred_language preference yet, so this renders in the app default
         // (English). Locale-switch to the new user's row for consistency so future
         // preference changes flow through automatically via findById.
-        $sendWelcomeEmail = !empty($input['send_welcome_email']);
+        $welcomeEmailSent = false;
         if ($sendWelcomeEmail) {
             try {
                 $newUser = User::findById($newUserId, true);
-                LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $password, $tenantId) {
+                $invitationToken = bin2hex(random_bytes(32));
+                DB::table('password_resets')->insert([
+                    'email' => $email,
+                    'tenant_id' => $tenantId,
+                    'token' => hash('sha256', $invitationToken),
+                    'created_at' => now(),
+                ]);
+                LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $invitationToken, $tenantId) {
                     $tenant = TenantContext::get();
                     $tenantName = $tenant['name'] ?? 'Project NEXUS';
-                    $loginLink = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . "/login";
+                    $setPasswordLink = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix()
+                        . '/password/reset?token=' . $invitationToken;
 
                     $html = EmailTemplateBuilder::make()
                         ->title(__('emails_misc.admin_actions.welcome_created_title'))
                         ->previewText(__('emails_misc.admin_actions.welcome_created_preview'))
                         ->greeting(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
                         ->paragraph(__('emails_misc.admin_actions.welcome_created_body_intro', ['community' => $tenantName]))
-                        ->paragraph(__('emails_misc.admin_actions.welcome_created_body_credentials'))
-                        // infoCard escapes at render — pre-escaping corrupted
-                        // displayed passwords containing & ' < (user would
-                        // copy-paste a broken credential).
                         ->infoCard([
                             __('emails_misc.admin_actions.welcome_created_info_email')    => $email,
-                            __('emails_misc.admin_actions.welcome_created_info_password') => $password,
                         ])
-                        ->paragraph(__('emails_misc.admin_actions.welcome_created_body_change_pass'))
-                        ->button(__('emails_misc.admin_actions.welcome_created_cta'), $loginLink)
+                        ->paragraph(__('emails.password_reset.expiry'))
+                        ->button(__('emails.password_reset.cta'), $setPasswordLink)
                         ->render();
 
                     if (!EmailDispatchService::sendRaw($email, __('emails_misc.admin_actions.welcome_created_subject', ['community' => $tenantName]), $html, null, null, null, 'admin_welcome', ['tenant_id' => $tenantId])) {
-                        Log::warning('[AdminUsers] Welcome email returned false for admin-created user', [
-                            'email' => $email,
-                        ]);
+                        throw new \RuntimeException('Account invitation email dispatch failed.');
                     }
                 });
+                $welcomeEmailSent = true;
             } catch (\Throwable $e) {
+                if (isset($invitationToken)) {
+                    DB::table('password_resets')
+                        ->where('email', $email)
+                        ->where('tenant_id', $tenantId)
+                        ->where('token', hash('sha256', $invitationToken))
+                        ->delete();
+                }
                 Log::warning('[AdminUsers] Welcome email failed for admin-created user: ' . $e->getMessage());
             }
         }
@@ -678,6 +690,7 @@ class AdminUsersController extends BaseApiController
             'email' => $email,
             'role' => $role,
             'status' => 'active',
+            'welcome_email_sent' => $welcomeEmailSent,
         ], null, 201);
     }
 

@@ -99,7 +99,10 @@ class PasswordResetController extends BaseApiController
         // terminate phase would not help. Dispatching UNCONDITIONALLY (the
         // account lookup lives in the job, not here) makes the request path do
         // identical, constant work for every address, closing the oracle.
-        SendPasswordResetEmail::dispatch($email, TenantContext::getId());
+        // This selector can only choose between server-owned tenant URLs. It
+        // never supplies a host or return URL to the queued job.
+        $accessible = $this->input('experience') === 'accessible';
+        SendPasswordResetEmail::dispatch($email, TenantContext::getId(), $accessible);
 
         // Always return the same response
         return $this->respondWithData([
