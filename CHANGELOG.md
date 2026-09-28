@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The web server now refuses the old public folders that message attachments and voice messages used before they moved to private storage (F-262).
 - Cross-community credit transfers now require the wallet to be switched on, onboarding to be complete and the current terms to be accepted, like ordinary transfers. Creating a group exchange now also requires the current terms to be accepted (F-259).
 - Group webhook deliveries now always connect to the address the platform checked, instead of looking the address up a second time (F-258).
 - Server-side web requests the platform makes (link previews, webhooks, partner connections) now also refuse the cloud host's internal service address and other non-public network ranges (F-257).

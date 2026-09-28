@@ -25,6 +25,14 @@ RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|pht|phar)(?:/|$) - [F,L,NC]
     Require all denied
 </If>
 
+# Message attachments and voice messages live in private storage and are served
+# only through the authorised media endpoint (moved 2026-07-14). The old public
+# folders are refused outright, so a file the move could not relocate is not
+# reachable by URL (F-262). Same <If> form as above, for the same reason.
+<If "%{REQUEST_URI} =~ m#^/uploads/(?:[0-9]+/(?:message_attachments|voice_messages)|tenants/[^/]+/voice_messages|messages)(?:/|$)#i">
+    Require all denied
+</If>
+
 # APK MIME Type - Force Download
 <FilesMatch "\.apk$">
     ForceType application/vnd.android.package-archive
