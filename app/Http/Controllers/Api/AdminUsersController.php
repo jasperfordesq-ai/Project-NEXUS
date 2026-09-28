@@ -1660,7 +1660,9 @@ class AdminUsersController extends BaseApiController
         try {
             // SECURITY: Scope user lookup by tenant_id to prevent cross-tenant IDOR
             $user = DB::selectOne(
-                "SELECT id, email, first_name, last_name, tenant_id FROM users WHERE id = ? AND tenant_id = ?",
+                "SELECT id, email, first_name, last_name, tenant_id, role,
+                        is_admin, is_super_admin, is_tenant_super_admin, is_god
+                 FROM users WHERE id = ? AND tenant_id = ?",
                 [$id, $tenantId]
             );
 
@@ -1668,17 +1670,35 @@ class AdminUsersController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
             }
 
+            // F-255: a grant writes role='admin', which demotes a target whose god
+            // or super-admin authority is held in the role string. Apply the same
+            // hierarchy as every other security action here: the caller must
+            // strictly outrank the target (god may act on anyone). Re-checked
+            // under the row lock below.
+            if (!$this->canManageSecurityTarget($adminId, (array) $user)) {
+                return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+            }
+
             // SECURITY: Scope UPDATE by tenant_id to prevent cross-tenant modification
-            if ($grant) {
-                DB::update(
-                    "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ? AND tenant_id = ?",
-                    [$id, $tenantId]
-                );
-            } else {
-                DB::update(
-                    "UPDATE users SET is_tenant_super_admin = 0 WHERE id = ? AND tenant_id = ?",
-                    [$id, $tenantId]
-                );
+            $updated = DB::transaction(function () use ($adminId, $id, $tenantId, $grant): bool {
+                if ($this->lockManageableSecurityTarget($adminId, $id, $tenantId) === null) {
+                    return false;
+                }
+                if ($grant) {
+                    DB::update(
+                        "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ? AND tenant_id = ?",
+                        [$id, $tenantId]
+                    );
+                } else {
+                    DB::update(
+                        "UPDATE users SET is_tenant_super_admin = 0 WHERE id = ? AND tenant_id = ?",
+                        [$id, $tenantId]
+                    );
+                }
+                return true;
+            }, 3);
+            if (!$updated) {
+                return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
             }
 
             $action = $grant ? 'grant_tenant_super_admin' : 'revoke_tenant_super_admin';

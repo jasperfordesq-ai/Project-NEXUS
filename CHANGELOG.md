@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Granting or removing community top-admin rights now requires outranking the account being changed, as other account-security actions already do, so one platform admin can no longer demote another or a platform owner (F-255).
 - Identity verification now applies the adults-only rule: when a passed ID check shows the holder is under 18, the account is not approved or activated, gets no "ID verified" badge, and cannot sign in (F-240).
 - Podcast audio can now be stored only on private server storage or the configured cloud storage. Community admins can no longer choose a shared public folder or the website's own folder, where audio would have bypassed signed links and members-only checks (F-266).
 - A regional network admin can no longer switch hub mode on or off, or reactivate, their own root community (which could remove a fellow network admin's rights); that is for platform admins. They still manage their sub-communities as before (F-251).
