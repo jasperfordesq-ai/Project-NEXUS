@@ -173,6 +173,13 @@ class UserService
 
         $profile = self::formatProfile($user, false);
 
+        // F-264 (F-088 residual): "Hide my presence" applies to the profile too,
+        // exactly as the presence API, messaging and the feed sidebar honour it.
+        if ($viewerId !== $userId && PresenceService::hiddenUserIds([$userId]) !== []) {
+            $profile['is_online'] = false;
+            $profile['online_status'] = 'offline';
+        }
+
         // Hide last name from non-admin viewers — surnames are private by default
         if ($viewerId !== $userId) {
             if (!$viewerId || !self::isViewerAdmin($viewerId)) {
