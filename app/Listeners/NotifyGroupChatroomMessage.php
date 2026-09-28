@@ -106,10 +106,18 @@ class NotifyGroupChatroomMessage implements ShouldQueue
             // All active group members EXCEPT the sender and anyone who muted
             // the sender are eligible. group_members has `joined_at` and a
             // unique (tenant_id, group_id, user_id) shape.
+            //
+            // F-238: the membership row must be ACTIVE. `pending` (join
+            // requested), `invited` and `banned` rows are refused the chatroom
+            // itself (GroupAccessService::canViewMemberContent) and must not
+            // receive the message preview in a bell notification either. This
+            // matches the audience of the group realtime channel
+            // (routes/channels.php) and GroupChatroomService's send check.
             $recipients = DB::table('group_members as gm')
                 ->join('users as u', 'u.id', '=', 'gm.user_id')
                 ->where('gm.tenant_id', $event->tenantId)
                 ->where('gm.group_id', $event->groupId)
+                ->where('gm.status', 'active')
                 ->where('u.status', 'active')
                 ->where('u.id', '!=', $senderId)
                 ->whereNotIn('u.id', function ($q) use ($senderId, $event) {

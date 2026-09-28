@@ -1200,9 +1200,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyGroupChatroomMessage.php:173:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyGroupChatroomMessage.php:181:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyGroupChatroomMessage.php",
-            "line": 173,
+            "line": 181,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
