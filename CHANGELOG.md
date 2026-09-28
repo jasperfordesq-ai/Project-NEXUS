@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Only admins can now turn on review copies of every private message. A broker could reach the same setting through the message-sampling rate; brokers can still choose a sampling rate below 100% (F-242).
 - Group chatroom notifications now go only to active members of the group. People who had asked to join, had been invited or had been removed from a group could receive message previews from its chatroom (F-238).
 - Strengthened authorization and privacy controls for safeguarding case changes, message review archives, message translation and marketplace discovery. Supported transfer approvals now show the amount and exact beneficiary, and paid course enrolments keep separate payment identities.
 - **BREAKING:** Regional-point member transfer responses no longer include `recipient_balance`; recipients can continue to read their own balance through their account summary.

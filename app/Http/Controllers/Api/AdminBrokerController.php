@@ -1837,6 +1837,17 @@ class AdminBrokerController extends BaseApiController
                 $rejectedAdminOnly[] = $key;
                 continue;
             }
+            // F-242: a sampling rate at the blanket-copy threshold IS the
+            // admin-only broker_copy_all_messages policy (the config service
+            // stores them as one value), so gate it the same way. The cast
+            // mirrors the service's own normalisation. Lower rates stay
+            // broker-settable.
+            if ($key === 'random_sample_percentage' && !$isAdminTier
+                && (int) $body[$key] >= BrokerControlConfigService::BLANKET_COPY_SAMPLE_PERCENTAGE
+            ) {
+                $rejectedAdminOnly[] = $key;
+                continue;
+            }
             $config[$key] = $body[$key];
         }
 

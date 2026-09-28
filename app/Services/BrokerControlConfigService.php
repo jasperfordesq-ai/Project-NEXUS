@@ -24,6 +24,14 @@ use Illuminate\Support\Facades\DB;
  */
 class BrokerControlConfigService
 {
+    /**
+     * A random_sample_percentage at or above this value copies EVERY private
+     * message into broker review — the same stored policy as the admin-only
+     * `broker_copy_all_messages` flag. Callers that gate that flag must gate
+     * the sampling rate against this constant too (F-242).
+     */
+    public const BLANKET_COPY_SAMPLE_PERCENTAGE = 100;
+
     /** Default configuration values */
     private const DEFAULTS = [
         'messaging' => [
@@ -236,7 +244,7 @@ class BrokerControlConfigService
         }
         if (array_key_exists('random_sample_percentage', $visibility)) {
             $flat['random_sample_percentage'] = (int) $visibility['random_sample_percentage'];
-            $flat['broker_copy_all_messages'] = (int) $visibility['random_sample_percentage'] >= 100;
+            $flat['broker_copy_all_messages'] = (int) $visibility['random_sample_percentage'] >= self::BLANKET_COPY_SAMPLE_PERCENTAGE;
         }
         if (array_key_exists('retention_days', $visibility)) {
             $flat['retention_days'] = (int) $visibility['retention_days'];
@@ -490,7 +498,7 @@ class BrokerControlConfigService
             $nested['broker_visibility']['random_sample_percentage'] = max(0, min(100, (int) $data['random_sample_percentage']));
         }
         if (!empty($data['broker_copy_all_messages'])) {
-            $nested['broker_visibility']['random_sample_percentage'] = 100;
+            $nested['broker_visibility']['random_sample_percentage'] = self::BLANKET_COPY_SAMPLE_PERCENTAGE;
         }
         if (array_key_exists('retention_days', $data)) {
             $nested['broker_visibility']['retention_days'] = max(1, min(3650, (int) $data['retention_days']));
