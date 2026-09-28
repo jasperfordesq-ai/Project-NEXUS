@@ -164,6 +164,39 @@ class SafeguardingReportTest extends TestCase
         }
     }
 
+    public function test_subject_cannot_mutate_their_own_report_but_other_staff_can(): void
+    {
+        $subject = $this->makeUser(self::TENANT_ID, uniqid() . '@example.test', 'admin');
+        $reviewer = $this->makeUser(self::TENANT_ID, uniqid() . '@example.test', 'admin');
+        $service = app(SafeguardingService::class);
+        $id = $service->submitReport($reviewer, ['category' => 'neglect', 'severity' => 'medium',
+            'description' => 'Synthetic concern', 'subject_user_id' => $subject])['report_id'];
+        $before = (array) DB::table('safeguarding_reports')->find($id);
+        $actions = DB::table('safeguarding_report_actions')->where('report_id', $id)->count();
+        foreach ([
+            fn () => $service->assignReport($id, $reviewer, $subject),
+            fn () => $service->escalateReport($id, $subject, 'attempt'),
+            fn () => $service->changeStatus($id, 'dismissed', $subject),
+            fn () => $service->addNote($id, $subject, 'attempt'),
+        ] as $attempt) {
+            try {
+                $attempt();
+                $this->fail('A report subject must not mutate their case.');
+            } catch (\RuntimeException $e) {
+                $this->assertNotEmpty($e->getMessage());
+            }
+            $this->assertSame($before, (array) DB::table('safeguarding_reports')->find($id));
+            $this->assertSame($actions, DB::table('safeguarding_report_actions')->where('report_id', $id)->count());
+        }
+        $service->assignReport($id, $reviewer, $reviewer);
+        $service->escalateReport($id, 0, 'Scheduled escalation');
+        $service->addNote($id, $reviewer, 'reviewed');
+        $service->changeStatus($id, 'investigating', $reviewer);
+        $this->assertDatabaseHas('safeguarding_reports', ['id' => $id, 'assigned_to_user_id' => $reviewer,
+            'escalated' => 1, 'status' => 'investigating']);
+        $this->assertSame($actions + 4, DB::table('safeguarding_report_actions')->where('report_id', $id)->count());
+    }
+
     public function test_escalation_marks_report_escalated(): void
     {
         TenantContext::setById(self::TENANT_ID);

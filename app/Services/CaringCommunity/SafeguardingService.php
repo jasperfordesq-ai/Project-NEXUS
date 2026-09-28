@@ -156,7 +156,7 @@ class SafeguardingService
             ->where('tenant_id', $tenantId)
             ->where('id', $reportId)
             ->first();
-        if (!$report) {
+        if (!$report || ($actorId > 0 && (int) $report->subject_user_id === $actorId)) {
             throw new RuntimeException(__('api.safeguarding_report_not_found'));
         }
 
@@ -206,7 +206,7 @@ class SafeguardingService
             ->where('tenant_id', $tenantId)
             ->where('id', $reportId)
             ->first();
-        if (!$report) {
+        if (!$report || ($actorId > 0 && (int) $report->subject_user_id === $actorId)) {
             throw new RuntimeException(__('api.safeguarding_report_not_found'));
         }
 
@@ -258,7 +258,7 @@ class SafeguardingService
             ->where('tenant_id', $tenantId)
             ->where('id', $reportId)
             ->first();
-        if (!$report) {
+        if (!$report || ($actorId > 0 && (int) $report->subject_user_id === $actorId)) {
             throw new RuntimeException(__('api.safeguarding_report_not_found'));
         }
         if (!in_array($newStatus, self::STATUS_TRANSITIONS[(string) $report->status] ?? [], true)) {
@@ -311,7 +311,7 @@ class SafeguardingService
             ->where('tenant_id', $tenantId)
             ->where('id', $reportId)
             ->first();
-        if (!$report) {
+        if (!$report || ($actorId > 0 && (int) $report->subject_user_id === $actorId)) {
             throw new RuntimeException(__('api.safeguarding_report_not_found'));
         }
 

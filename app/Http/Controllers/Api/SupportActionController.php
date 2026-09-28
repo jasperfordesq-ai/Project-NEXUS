@@ -151,6 +151,7 @@ class SupportActionController extends BaseApiController
 
         return $this->respondWithData([
             'action_type' => $action->action_type,
+            'payload_summary' => $this->service->summarisePayload($action),
             'status' => $expired ? SupportPendingAction::STATUS_EXPIRED : $action->status,
             'supporter_name' => $action->supporterUser
                 ? UserDisplayName::resolve($action->supporterUser)

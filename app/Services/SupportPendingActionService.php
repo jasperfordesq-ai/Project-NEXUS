@@ -124,6 +124,15 @@ class SupportPendingActionService
             return null;
         }
 
+        if ($actionType === SupportPendingAction::TYPE_CREDIT_TRANSFER) {
+            try {
+                $payload = $this->canonicalTransferPayload($payload);
+            } catch (\RuntimeException|\InvalidArgumentException $e) {
+                $this->errors[] = ['code' => 'INVALID_TRANSFER', 'message' => $e->getMessage()];
+                return null;
+            }
+        }
+
         // Raw token exists only in memory and in the email link; the row keeps
         // its hash. 32 random bytes, hex — same strength as the event flow.
         $token = bin2hex(random_bytes(32));
@@ -713,6 +722,14 @@ class SupportPendingActionService
                 return (int) $listing->id;
 
             case SupportPendingAction::TYPE_CREDIT_TRANSFER:
+                // Legacy alias-based approvals must be prepared again: an alias
+                // may now identify a different member than when it was approved.
+                if (!isset($payload['recipient']) || !ctype_digit((string) $payload['recipient'])
+                    || array_intersect(['user_id', 'username', 'email', 'recipient_id'], array_keys($payload))) {
+                    throw new \RuntimeException(__('api.wallet_transfer_recipient_required'));
+                }
+                $payload = $this->canonicalTransferPayload($payload);
+                $payload['idempotency_key'] = 'support-action:' . $action->tenant_id . ':' . $action->id;
                 $txn = app(WalletService::class)->transfer(
                     (int) $action->supported_user_id,
                     $payload,
@@ -770,9 +787,14 @@ class SupportPendingActionService
      *
      * @return array<string, mixed>
      */
-    private function summarisePayload(SupportPendingAction $a): array
+    public function summarisePayload(SupportPendingAction $a): array
     {
         $payload = is_array($a->payload) ? $a->payload : [];
+        $recipient = null;
+        if ($a->action_type === SupportPendingAction::TYPE_CREDIT_TRANSFER
+            && isset($payload['recipient']) && ctype_digit((string) $payload['recipient'])) {
+            $recipient = User::query()->where('tenant_id', $a->tenant_id)->find((int) $payload['recipient']);
+        }
 
         return match ($a->action_type) {
             SupportPendingAction::TYPE_LISTING_CREATE => [
@@ -781,12 +803,52 @@ class SupportPendingActionService
             ],
             SupportPendingAction::TYPE_CREDIT_TRANSFER => [
                 'amount' => isset($payload['amount']) ? (float) $payload['amount'] : null,
-                'recipient_id' => isset($payload['recipient_id']) ? (int) $payload['recipient_id'] : null,
+                'recipient_id' => $recipient ? (int) $recipient->id : null,
+                'recipient_name' => $recipient ? UserDisplayName::resolve($recipient) : null,
             ],
             // A consent request carries no payload — the ask IS the content.
             SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT => ['capability' => 'messages'],
             default => [],
         };
+    }
+
+    /** Bind the approval to one member, independent of future alias changes. */
+    private function canonicalTransferPayload(array $payload): array
+    {
+        $recipientId = null;
+        foreach (['recipient', 'user_id', 'username', 'email', 'recipient_id'] as $key) {
+            if (!isset($payload[$key])) {
+                continue;
+            }
+            $value = $payload[$key];
+            if (!is_scalar($value) || trim((string) $value) === '') {
+                throw new \InvalidArgumentException(__('api.wallet_transfer_recipient_required'));
+            }
+            $query = User::query()->where('tenant_id', TenantContext::getId());
+            $user = is_numeric($value)
+                ? $query->find((int) $value)
+                : $query->where(filter_var($value, FILTER_VALIDATE_EMAIL) ? 'email' : 'username', $value)->first();
+            if (!$user || ($recipientId !== null && $recipientId !== (int) $user->id)) {
+                throw new \RuntimeException(__('api.wallet_transfer_recipient_not_found'));
+            }
+            $recipientId = (int) $user->id;
+        }
+        if ($recipientId === null) {
+            throw new \InvalidArgumentException(__('api.wallet_transfer_recipient_required'));
+        }
+        $amount = $payload['amount'] ?? null;
+        if (!is_numeric($amount) || !is_finite((float) $amount) || (float) $amount <= 0) {
+            throw new \InvalidArgumentException(__('api.wallet_transfer_amount_positive'));
+        }
+        if (round((float) $amount, 2) != (float) $amount) {
+            throw new \InvalidArgumentException(__('api.wallet_transfer_amount_precision'));
+        }
+        $maximum = app(WalletService::class)->maxTransferAmount();
+        if ((float) $amount > $maximum) {
+            throw new \InvalidArgumentException(__('api.wallet_transfer_amount_max', ['max' => (int) $maximum]));
+        }
+        return ['recipient' => $recipientId, 'amount' => (float) $amount,
+            'description' => is_string($payload['description'] ?? null) ? trim($payload['description']) : ''];
     }
 
     private function assertContactsAllowed(int $supporterUserId, int $supportedUserId, string $channel): void

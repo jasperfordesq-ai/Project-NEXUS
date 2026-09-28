@@ -63,6 +63,33 @@ class MessageTranslationAvailabilityTest extends TestCase
         ]);
     }
 
+    public function test_translation_context_respects_each_participants_hidden_messages(): void
+    {
+        config(['services.openai.api_key' => 'synthetic-test-key']);
+        \App\Services\AI\AIServiceFactory::clearCache();
+        DB::table('ai_settings')->updateOrInsert(['tenant_id' => $this->testTenantId, 'setting_key' => 'ai_enabled'], ['setting_value' => '1']);
+        \App\Services\TranslationConfigurationService::set('translation.context_aware', true);
+        \App\Services\TranslationConfigurationService::set('translation.context_messages', 2);
+        $me = $this->member();
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $visible = $this->messageBetween($other, $me);
+        DB::table('messages')->where('id', $visible)->update(['body' => 'visible-context', 'is_deleted_sender' => 1]);
+        $hiddenReceived = $this->messageBetween($other, $me);
+        DB::table('messages')->where('id', $hiddenReceived)->update(['body' => 'hidden-received', 'is_deleted_receiver' => 1]);
+        $hiddenSent = $this->messageBetween($me, $other);
+        DB::table('messages')->where('id', $hiddenSent)->update(['body' => 'hidden-sent', 'is_deleted_sender' => 1]);
+        $target = $this->messageBetween($other, $me);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response([
+            'choices' => [['message' => ['content' => 'Translated message']]],
+        ])]);
+        $this->apiPost("/v2/messages/{$target}/translate", ['target_language' => 'de'])->assertOk();
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            $prompt = json_encode($request['messages']);
+            return str_contains($prompt, 'visible-context') && !str_contains($prompt, 'hidden-received') && !str_contains($prompt, 'hidden-sent');
+        });
+        \App\Services\AI\AIServiceFactory::clearCache();
+    }
+
     public function test_reports_unavailable_rather_than_failed_when_no_provider_is_configured(): void
     {
         config(['services.openai.api_key' => null]);

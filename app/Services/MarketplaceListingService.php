@@ -1339,11 +1339,11 @@ class MarketplaceListingService
     /**
      * Apply the canonical public-listing visibility contract.
      */
-    public static function applyPublicVisibility(Builder $query): Builder
+    public static function applyPublicVisibility(Builder|\Illuminate\Database\Query\Builder $query): Builder|\Illuminate\Database\Query\Builder
     {
         $query->where('status', 'active')
             ->where('moderation_status', 'approved')
-            ->where(static function (Builder $expiryQuery): void {
+            ->where(static function (Builder|\Illuminate\Database\Query\Builder $expiryQuery): void {
                 $expiryQuery->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());
             })

@@ -75,14 +75,14 @@ describe('Support actions — the approval queue', () => {
     expect(response.body.locals.outgoing).toEqual([]);
   });
 
-  it('shows a transfer amount of 0 rather than treating it as missing', async () => {
+  it('shows the transfer amount and the exact beneficiary before approval', async () => {
     api.getSupportActions.mockImplementation((token, role) => (role === 'supported'
-      ? Promise.resolve({ data: { actions: [{ id: 4, action_type: 'credit_transfer', payload_summary: { amount: 0 } }] } })
+      ? Promise.resolve({ data: { actions: [{ id: 4, action_type: 'credit_transfer', payload_summary: { amount: 3, recipient_name: 'Alex Recipient', recipient_id: 42 } }] } })
       : Promise.resolve({ data: { actions: [] } })));
 
     const response = await request(testApp()).get('/settings/support-actions');
 
-    expect(response.body.locals.incoming[0].detail).toBe(0);
+    expect(response.body.locals.incoming[0].detail).toBe('3 → Alex Recipient (#42)');
   });
 
   it.each([

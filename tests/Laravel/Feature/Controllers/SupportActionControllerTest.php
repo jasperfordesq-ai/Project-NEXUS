@@ -25,6 +25,13 @@ class SupportActionControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
+    }
+
     private function actingUser(array $attributes = []): User
     {
         // NB: extra attributes must go through the factory — User::update()
@@ -106,6 +113,34 @@ class SupportActionControllerTest extends TestCase
 
         // The supported member was told something awaits them (bell row exists).
         $this->assertDatabaseHas('notifications', ['user_id' => $supported->id]);
+    }
+
+    public function test_transfer_approval_binds_and_displays_the_recipient_before_execution(): void
+    {
+        $supporter = $this->actingUser();
+        $supported = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'balance' => 10]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'balance' => 0]);
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'balance' => 0]);
+        $this->relationshipWithTiers($supporter, $supported, ['credits' => SupportTiers::CO_DECIDE]);
+        $service = app(SupportPendingActionService::class);
+        $this->assertNull($service->prepare($supporter->id, $supported->id, 'credit_transfer', [
+            'recipient' => $recipient->id, 'email' => $other->email, 'amount' => 3,
+        ]));
+        $prepared = $service->prepare($supporter->id, $supported->id, 'credit_transfer', ['email' => $recipient->email, 'amount' => 3]);
+        $this->assertNotNull($prepared);
+        $token = $prepared['token'];
+        $this->apiGet("/v2/support-actions/confirm/{$token}")->assertOk()
+            ->assertJsonPath('data.payload_summary.recipient_id', $recipient->id)
+            ->assertJsonPath('data.payload_summary.amount', 3);
+        $this->assertEquals(10, $supported->fresh()->balance);
+        $this->assertDatabaseHas('support_pending_actions', ['id' => $prepared['id'], 'status' => 'pending', 'token_consumed_at' => null]);
+        DB::table('users')->where('id', $recipient->id)->update(['email' => uniqid() . '@example.test']);
+        DB::table('users')->where('id', $other->id)->update(['email' => $recipient->email]);
+        $this->apiPost("/v2/support-actions/confirm/{$token}")->assertOk();
+        $this->apiPost("/v2/support-actions/confirm/{$token}")->assertStatus(422);
+        $this->assertEquals(7, $supported->fresh()->balance);
+        $this->assertEquals(3, $recipient->fresh()->balance);
+        $this->assertEquals(0, $other->fresh()->balance);
     }
 
     public function test_supporter_without_the_tier_cannot_prepare(): void

@@ -43,7 +43,7 @@ interface SupportAction {
   id: number;
   action_type: 'listing_create' | 'credit_transfer' | 'message_access_grant';
   status: ActionStatus;
-  payload_summary: { title?: string | null; amount?: number | null };
+  payload_summary: { title?: string | null; amount?: number | null; recipient_id?: number | null; recipient_name?: string | null };
   other_party_name: string | null;
   created_at: string | null;
   expires_at: string | null;
@@ -59,7 +59,7 @@ const STATUS_COLOR: Record<ActionStatus, 'warning' | 'success' | 'danger' | 'def
 
 function summarise(action: SupportAction, typeLabel: string): string {
   const detail = action.action_type === 'credit_transfer'
-    ? action.payload_summary.amount
+    ? `${action.payload_summary.amount ?? ''} → ${action.payload_summary.recipient_name ?? ''} (#${action.payload_summary.recipient_id ?? ''})`
     : action.payload_summary.title;
 
   return detail != null && detail !== '' ? `${typeLabel} — ${detail}` : typeLabel;

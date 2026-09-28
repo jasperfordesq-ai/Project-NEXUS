@@ -29,6 +29,8 @@ class SafeguardingSlaCronTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
         $this->setCaringCommunityFeature(self::TENANT_ID, true);
         TenantContext::setById(self::TENANT_ID);
     }

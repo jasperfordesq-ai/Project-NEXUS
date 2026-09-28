@@ -78,6 +78,47 @@ class BrokerMessageViewDisclosureTest extends TestCase
         $this->assertNotContains('a later private reply', $bodies);
     }
 
+    public function test_archive_uses_the_review_boundary_and_filters_older_oversized_snapshots(): void
+    {
+        [$broker, $copyId] = $this->scenario();
+        Sanctum::actingAs($broker);
+        $copy = DB::table('broker_message_copies')->find($copyId);
+        $sameSecond = $this->message($copy->sender_id, $copy->receiver_id, 'later same second', new \DateTimeImmutable($copy->sent_at));
+        $response = $this->apiPost("/v2/admin/broker/messages/{$copyId}/approve")->assertOk();
+        $archiveId = $response->json('data.archive_id');
+        $stored = json_decode(DB::table('broker_review_archives')->where('id', $archiveId)->value('conversation_snapshot'), true);
+        $this->assertSame(['earlier context', 'the copied message'], array_column($stored, 'body'));
+        $stored[] = ['id' => $sameSecond, 'body' => 'later same second'];
+        DB::table('broker_review_archives')->where('id', $archiveId)->update(['conversation_snapshot' => json_encode($stored)]);
+        $shown = $this->apiGet("/v2/admin/broker/archives/{$archiveId}")->assertOk()->json('data.conversation_snapshot');
+        $this->assertSame(['earlier context', 'the copied message'], array_column($shown, 'body'));
+        DB::table('messages')->where('id', $copy->original_message_id)->update(['is_deleted' => true]);
+        $shown = $this->apiGet("/v2/admin/broker/archives/{$archiveId}")->assertOk()->json('data.conversation_snapshot');
+        $this->assertSame(['earlier context', '[Message deleted]'], array_column($shown, 'body'));
+    }
+
+    public function test_group_review_and_archive_exclude_direct_history_and_cap_context(): void
+    {
+        [$broker, $copyId] = $this->scenario();
+        Sanctum::actingAs($broker);
+        $copy = DB::table('broker_message_copies')->find($copyId);
+        $conversation = DB::table('conversations')->insertGetId(['tenant_id' => $this->testTenantId,
+            'is_group' => true, 'group_name' => 'Synthetic group', 'created_by' => $copy->sender_id,
+            'created_at' => now(), 'updated_at' => now()]);
+        DB::table('messages')->where('id', $copy->original_message_id)->update(['conversation_id' => $conversation]);
+        for ($i = 0; $i < 55; $i++) {
+            $message = $this->message($copy->sender_id, $copy->receiver_id, 'group-' . $i, now()->subHours(3)->addSeconds($i));
+            DB::table('messages')->where('id', $message)->update(['conversation_id' => $conversation, 'is_deleted' => $i === 54]);
+        }
+        $view = $this->apiGet("/v2/admin/broker/messages/{$copyId}")->assertOk()->json('data.thread');
+        $this->assertCount(50, $view);
+        $this->assertNotContains('earlier context', array_column($view, 'body'));
+        $this->assertNotContains('group-54', array_column($view, 'body'));
+        $archiveId = $this->apiPost("/v2/admin/broker/messages/{$copyId}/approve")->assertOk()->json('data.archive_id');
+        $stored = json_decode(DB::table('broker_review_archives')->where('id', $archiveId)->value('conversation_snapshot'), true);
+        $this->assertSame($view, $stored);
+    }
+
     public function test_opening_a_copy_is_written_to_the_audit_log(): void
     {
         [$broker, $copyId] = $this->scenario();

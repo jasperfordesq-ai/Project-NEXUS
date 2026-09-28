@@ -49,7 +49,8 @@ describe('SupportActionConfirmPage', () => {
   it('looks up the token on load and does NOT confirm', async () => {
     mockedGet.mockResolvedValue({
       success: true,
-      data: { action_type: 'credit_transfer', status: 'pending', supporter_name: 'Carer Smith', expires_at: null },
+      data: { action_type: 'credit_transfer', status: 'pending', supporter_name: 'Carer Smith', expires_at: null,
+        payload_summary: { amount: 3, recipient_name: 'Alex Recipient', recipient_id: 42 } },
     } as never);
 
     renderAtToken();
@@ -58,6 +59,7 @@ describe('SupportActionConfirmPage', () => {
       expect(mockedGet).toHaveBeenCalledWith('/v2/support-actions/confirm/tok123', { skipAuth: true }),
     );
     expect(screen.getByText(/Carer Smith/)).toBeInTheDocument();
+    expect(screen.getByText('3 → Alex Recipient (#42)')).toBeInTheDocument();
     expect(mockedPost).not.toHaveBeenCalled();
   });
 

@@ -86,9 +86,9 @@ router.get('/', asyncRoute(async (req, res) => {
         ...action,
         id: positiveInt(action?.id),
         typeKey: `type_${action?.action_type || 'listing_create'}`,
-        // Blade shows a title, or an amount for a transfer. `?? ` rather than
-        // `||` so an amount of 0 is still shown rather than treated as absent.
-        detail: summary.title ?? summary.amount ?? null,
+        detail: action.action_type === 'credit_transfer'
+          ? `${summary.amount ?? ''} → ${summary.recipient_name ?? ''} (#${summary.recipient_id ?? ''})`
+          : summary.title ?? null,
         expiresOnLabel: action?.expires_at
           ? formatLocaleDate(action.expires_at, locale, { day: 'numeric', month: 'long', year: 'numeric' })
           : null

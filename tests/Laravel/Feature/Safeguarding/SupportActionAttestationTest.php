@@ -30,6 +30,13 @@ class SupportActionAttestationTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
+    }
+
     /** @return array{0:User,1:User,2:int} [supporter, supported, actionId] */
     private function seedPendingTransfer(): array
     {

@@ -262,6 +262,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Strengthened authorization and privacy controls for safeguarding case changes, message review archives, message translation and marketplace discovery. Supported transfer approvals now show the amount and exact beneficiary, and paid course enrolments keep separate payment identities.
+- **BREAKING:** Regional-point member transfer responses no longer include `recipient_balance`; recipients can continue to read their own balance through their account summary.
+
 - Safeguarding report assignments and alerts now require current, tenant-scoped report access, excluding report subjects and expired or revoked permissions. The report route and recipient checks use consistent administrator authority.
 - **BREAKING:** External Credit Commons and Komunitin transfers now require the local payer's approval for each specific debit. Partner-requested completion stays pending until approval; settlement and Credit Commons reversals recheck the approved terms, expiry, balance, and replay state. Komunitin transfer creation now requires a stable partner request ID or `Idempotency-Key`.
 

@@ -571,7 +571,6 @@ class CaringRegionalPointService
                 'recipient_user_id' => $recipientId,
                 'points' => $points,
                 'sender_balance' => $senderNewBalance,
-                'recipient_balance' => $recipientNewBalance,
             ];
         });
     }

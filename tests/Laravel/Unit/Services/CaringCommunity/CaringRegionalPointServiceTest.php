@@ -467,7 +467,7 @@ class CaringRegionalPointServiceTest extends TestCase
 
         $this->assertSame(40.0, $result['points']);
         $this->assertSame(60.0, $result['sender_balance']);
-        $this->assertSame(40.0, $result['recipient_balance']);
+        $this->assertArrayNotHasKey('recipient_balance', $result);
         $this->assertIsInt($result['sender_transaction_id']);
         $this->assertIsInt($result['recipient_transaction_id']);
 

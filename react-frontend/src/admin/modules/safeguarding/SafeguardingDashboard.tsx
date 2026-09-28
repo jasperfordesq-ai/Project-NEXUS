@@ -116,7 +116,7 @@ interface MemberSafeguardingEntry {
 interface SupportActionRow {
   id: number;
   action_type: 'listing_create' | 'credit_transfer';
-  payload_summary: { title?: string | null; amount?: number | null };
+  payload_summary: { title?: string | null; amount?: number | null; recipient_id?: number | null; recipient_name?: string | null };
   supported_name: string | null;
   supporter_name: string | null;
   created_at: string | null;
@@ -955,6 +955,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                         {t(`safeguarding.support.type_${action.action_type}`)}
                         {action.payload_summary.title ? ` — ${action.payload_summary.title}` : ''}
                         {action.payload_summary.amount != null ? ` — ${action.payload_summary.amount}` : ''}
+                        {action.payload_summary.recipient_id != null ? ` → ${action.payload_summary.recipient_name ?? ''} (#${action.payload_summary.recipient_id})` : ''}
                       </span>
                     </TableCell>
                     <TableCell>

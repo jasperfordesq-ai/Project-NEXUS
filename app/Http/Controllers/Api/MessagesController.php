@@ -1004,7 +1004,7 @@ class MessagesController extends BaseApiController
         $translationConfig = TranslationConfigurationService::getAll();
         if (!empty($translationConfig['translation.context_aware'])) {
             $contextLimit = (int) ($translationConfig['translation.context_messages'] ?? 5);
-            $otherUserId = ($message->sender_id === $userId) ? $message->receiver_id : $message->sender_id;
+            $otherUserId = ((int) $message->sender_id === $userId) ? $message->receiver_id : $message->sender_id;
             $contextRows = DB::table('messages')
                 ->where('tenant_id', $tenantId)
                 ->where(function ($q) use ($userId, $otherUserId) {
@@ -1016,6 +1016,15 @@ class MessagesController extends BaseApiController
                 })
                 ->where('id', '<', $id)
                 ->where('is_deleted', false)
+                ->whereRaw('NOT (sender_id = ? AND COALESCE(is_deleted_sender, 0) = 1)', [$userId])
+                ->whereRaw('NOT (receiver_id = ? AND COALESCE(is_deleted_receiver, 0) = 1)', [$userId])
+                ->where(function ($q) use ($message) {
+                    if (!empty($message->conversation_id)) {
+                        $q->where('conversation_id', $message->conversation_id);
+                    } else {
+                        $q->whereNull('conversation_id')->orWhere('conversation_id', 0);
+                    }
+                })
                 ->orderByDesc('id')
                 ->limit($contextLimit)
                 ->pluck('body')

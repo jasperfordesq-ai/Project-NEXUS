@@ -140,6 +140,9 @@ class SemanticSearchTool extends AbstractTool
                 continue;
             }
             $table = self::TYPE_MAP[$type]['table'];
+            if ($type === 'marketplace' && !(new SearchMarketplaceTool())->isAvailable($userId)) {
+                continue;
+            }
             $query = DB::table($table)
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', array_keys($ids));
@@ -223,11 +226,7 @@ class SemanticSearchTool extends AbstractTool
                 break;
 
             case 'marketplace':
-                $query->where('status', 'active')
-                    ->where(function ($q) {
-                        $q->whereNull('moderation_status')
-                            ->orWhere('moderation_status', 'approved');
-                    });
+                \App\Services\MarketplaceListingService::applyPublicVisibility($query);
                 break;
 
             case 'kb_article':

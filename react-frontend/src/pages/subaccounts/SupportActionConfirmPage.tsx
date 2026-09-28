@@ -38,6 +38,7 @@ import { useTenant } from '@/contexts';
 type State = 'loading' | 'confirm' | 'submitting' | 'success' | 'unavailable' | 'error';
 
 interface TokenLookup {
+  payload_summary?: { title?: string | null; amount?: number | null; recipient_id?: number | null; recipient_name?: string | null };
   action_type: 'listing_create' | 'credit_transfer' | 'message_access_grant';
   status: string;
   supporter_name: string | null;
@@ -121,6 +122,11 @@ export default function SupportActionConfirmPage() {
                   name: details.supporter_name ?? '',
                   what: t(`support_actions.type_${details.action_type}`),
                 })}
+              </p>
+              <p className="text-theme-primary">
+                {details.action_type === 'credit_transfer'
+                  ? `${details.payload_summary?.amount ?? ''} → ${details.payload_summary?.recipient_name ?? ''} (#${details.payload_summary?.recipient_id ?? ''})`
+                  : details.payload_summary?.title}
               </p>
               <p className="text-sm text-theme-muted">{t('support_actions.confirm_nothing_otherwise')}</p>
               <Button color="primary" className="w-full" onPress={handleConfirm}>

@@ -48,6 +48,7 @@ class CourseCreditService
             /** @var WalletService $wallet */
             $wallet = app(WalletService::class);
             $wallet->transfer($learnerId, [
+                'idempotency_key' => 'course-enrollment:' . $course->tenant_id . ':' . $course->id . ':' . $learnerId,
                 'recipient' => $authorId,
                 'amount' => round($cost, 2),
                 'description' => __('svc_notifications_2.course.enrolment_payment', ['title' => $course->title]),

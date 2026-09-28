@@ -23,6 +23,8 @@ class RegionalPointTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
         $this->setCaringCommunityFeature(true);
         TenantContext::setById(self::TENANT_ID);
     }
@@ -236,6 +238,25 @@ class RegionalPointTest extends TestCase
         $service->transferBetweenMembers($sender, $recipient, 7.5, 'Thanks');
     }
 
+    public function test_member_transfer_response_keeps_recipient_balance_private(): void
+    {
+        $sender = $this->makeUser(uniqid() . '@example.test');
+        $recipient = $this->makeUser(uniqid() . '@example.test');
+        $admin = $this->makeUser(uniqid() . '@example.test');
+        DB::table('users')->whereIn('id', [$sender, $recipient])->update(['is_approved' => true]);
+        $service = app(CaringRegionalPointService::class);
+        $service->updateConfig(self::TENANT_ID, ['enabled' => true, 'member_transfers_enabled' => true]);
+        $service->issue($sender, 30, 'Synthetic sender', $admin);
+        $service->issue($recipient, 11, 'Synthetic recipient', $admin);
+        \Laravel\Sanctum\Sanctum::actingAs(\App\Models\User::findOrFail($sender));
+        $data = $this->apiPost('/v2/caring-community/regional-points/transfer', [
+            'recipient_user_id' => $recipient, 'points' => 3,
+        ])->assertStatus(201)->json('data');
+        $this->assertArrayNotHasKey('recipient_balance', $data);
+        $this->assertEquals(27, $data['sender_balance']);
+        $this->assertEquals(14, $service->memberSummary($recipient)['account']['balance']);
+    }
+
     public function test_member_transfer_creates_debit_and_credit_pair(): void
     {
         $sender = $this->makeUser('rp-transfer2-sender-' . uniqid() . '@example.test');
@@ -255,7 +276,7 @@ class RegionalPointTest extends TestCase
 
         $this->assertEqualsWithDelta(7.5, $transfer['points'], 0.001);
         $this->assertEqualsWithDelta(22.5, $transfer['sender_balance'], 0.001);
-        $this->assertEqualsWithDelta(7.5, $transfer['recipient_balance'], 0.001);
+        $this->assertArrayNotHasKey('recipient_balance', $transfer);
 
         $senderSummary = $service->memberSummary($sender);
         $recipientSummary = $service->memberSummary($recipient);

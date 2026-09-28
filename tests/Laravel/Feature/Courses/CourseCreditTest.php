@@ -21,6 +21,13 @@ class CourseCreditTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mock(\App\Services\EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
+        \Illuminate\Support\Facades\Http::fake();
+    }
+
     private function paidCourse(int $authorId, float $cost): Course
     {
         // author_user_id / status / moderation_status / published_at are not
@@ -147,6 +154,22 @@ class CourseCreditTest extends TestCase
         $second = CourseEnrollmentService::enroll($course->id, $learner->id);
 
         $this->assertSame($first->id, $second->id);
+    }
+
+    public function test_distinct_identically_priced_courses_each_charge_once(): void
+    {
+        $author = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 0]);
+        $learner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'balance' => 10]);
+        $courses = [$this->paidCourse($author->id, 2), $this->paidCourse($author->id, 2)];
+        foreach ($courses as $course) {
+            $first = CourseEnrollmentService::enrollWithPayment($course, $learner->id);
+            $retry = CourseEnrollmentService::enrollWithPayment($course, $learner->id);
+            $this->assertSame($first->id, $retry->id);
+            $this->assertEquals(2, $first->fresh()->credits_paid);
+        }
+        $this->assertEquals(6, $learner->fresh()->balance);
+        $this->assertEquals(4, $author->fresh()->balance);
+        $this->assertSame(2, \Illuminate\Support\Facades\DB::table('transactions')->where('sender_id', $learner->id)->count());
     }
 
     public function test_enroll_service_charges_once_and_records_credits_paid(): void

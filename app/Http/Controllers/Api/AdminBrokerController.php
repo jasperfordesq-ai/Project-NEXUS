@@ -1124,35 +1124,7 @@ class AdminBrokerController extends BaseApiController
             $copy['tenant_name'] = $copy['tenant_name'] ?? 'Unknown';
             $copyTenantId = (int) $copy['tenant_id'];
 
-            // A copy of a group-conversation message (F-086) names one
-            // recipient, but its context is the group thread, not that
-            // pair's one-to-one history.
-            $original = DB::table('messages')
-                ->where('id', (int) $copy['original_message_id'])
-                ->where('tenant_id', $copyTenantId)
-                ->first(['conversation_id', 'created_at']);
-            $groupConversationId = (int) ($original->conversation_id ?? 0);
-            // F-212: show the context needed to review THIS message — what was
-            // said up to it — not everything the members wrote afterwards.
-            $cutoff = $original->created_at ?? $copy['sent_at'] ?? $copy['created_at'];
-            $threadWhere = $groupConversationId > 0
-                ? 'm.conversation_id = ?'
-                : '((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))';
-            $threadParams = $groupConversationId > 0
-                ? [$groupConversationId]
-                : [$copy['sender_id'], $copy['receiver_id'], $copy['receiver_id'], $copy['sender_id']];
-            $thread = DB::select(
-                "SELECT m.id, m.sender_id, m.receiver_id, m.body, m.created_at, m.is_deleted,
-                    m.is_edited, m.edited_at,
-                    " . UserDisplayName::sql('u', 'sender_name') . "
-                FROM messages m LEFT JOIN users u ON m.sender_id = u.id
-                WHERE m.tenant_id = ?
-                  AND {$threadWhere}
-                  AND m.created_at <= ?
-                ORDER BY m.created_at DESC, m.id DESC LIMIT 50",
-                array_merge([$copyTenantId], $threadParams, [$cutoff])
-            );
-            $thread = array_reverse(array_map(fn($r) => (array)$r, $thread));
+            $thread = $this->reviewContext($copy);
 
             // F-212: reading members' messages is itself recorded, not only the
             // review decisions that may follow.
@@ -1184,6 +1156,40 @@ class AdminBrokerController extends BaseApiController
         } catch (\Exception $e) {
             return $this->respondWithError('SERVER_ERROR', __('api.fetch_failed', ['resource' => 'message detail']), null, 500);
         }
+    }
+
+    /** The same bounded conversation is used for live review and archival. */
+    private function reviewContext(array $copy): array
+    {
+        $original = DB::table('messages')->where('tenant_id', $copy['tenant_id'])
+            ->where('id', $copy['original_message_id'])->first();
+        if (!$original) {
+            return [];
+        }
+        $query = DB::table('messages as m')->leftJoin('users as u', 'm.sender_id', '=', 'u.id')
+            ->where('m.tenant_id', $copy['tenant_id']);
+        if ((int) $original->conversation_id > 0) {
+            $query->where('m.conversation_id', $original->conversation_id);
+        } else {
+            $query->where(fn ($q) => $q->whereNull('m.conversation_id')->orWhere('m.conversation_id', 0))
+                ->where(function ($q) use ($original) {
+                    $q->where(fn ($pair) => $pair->where('m.sender_id', $original->sender_id)->where('m.receiver_id', $original->receiver_id))
+                        ->orWhere(fn ($pair) => $pair->where('m.sender_id', $original->receiver_id)->where('m.receiver_id', $original->sender_id));
+                });
+        }
+        $rows = $query->where(function ($q) use ($original) {
+            $q->where('m.created_at', '<', $original->created_at)
+                ->orWhere(fn ($sameTime) => $sameTime->where('m.created_at', $original->created_at)->where('m.id', '<=', $original->id));
+        })->select('m.id', 'm.sender_id', 'm.receiver_id', 'm.body', 'm.created_at', 'm.is_deleted', 'm.is_edited', 'm.edited_at')
+            ->selectRaw(UserDisplayName::sql('u', 'sender_name'))
+            ->orderByDesc('m.created_at')->orderByDesc('m.id')->limit(50)->get();
+        return $rows->reverse()->map(function ($row) {
+            $row = (array) $row;
+            if (!empty($row['is_deleted'])) {
+                $row['body'] = '[Message deleted]';
+            }
+            return $row;
+        })->values()->all();
     }
 
     /** POST /api/v2/admin/broker/messages/{id}/review */
@@ -1254,24 +1260,7 @@ class AdminBrokerController extends BaseApiController
             $adminRow = DB::selectOne("SELECT " . UserDisplayName::sql('', 'name') . " FROM users WHERE id = ? AND tenant_id = ?", [$adminId, $tenantId]);
             $adminName = $adminRow->name ?? 'Unknown';
 
-            $conversationRows = DB::select(
-                "SELECT m.id, m.sender_id, m.body, m.created_at, m.is_deleted,
-                    " . UserDisplayName::sql('u', 'sender_name') . "
-                FROM messages m LEFT JOIN users u ON m.sender_id = u.id
-                WHERE m.tenant_id = ?
-                  AND ((m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?))
-                ORDER BY m.created_at ASC LIMIT 500",
-                [$copyTenantId, $copy['sender_id'], $copy['receiver_id'], $copy['receiver_id'], $copy['sender_id']]
-            );
-            $conversationRows = array_map(fn($r) => (array)$r, $conversationRows);
-
-            foreach ($conversationRows as &$msg) {
-                if (!empty($msg['is_deleted'])) {
-                    $msg['body'] = '[Message deleted]';
-                }
-                unset($msg['is_deleted']);
-            }
-            unset($msg);
+            $conversationRows = $this->reviewContext($copy);
 
             $conversationSnapshot = json_encode($conversationRows);
             $decision = !empty($copy['flagged']) ? 'flagged' : 'approved';
@@ -1672,6 +1661,22 @@ class AdminBrokerController extends BaseApiController
             } else {
                 $archive['conversation_snapshot'] = [];
             }
+
+            // Older snapshots can contain messages outside the review boundary.
+            // Keep stored evidence intact, but never disclose that excess content.
+            $copy = DB::table('broker_message_copies')->where('tenant_id', $archive['tenant_id'])
+                ->where('id', $archive['broker_copy_id'])->first();
+            $allowed = $copy ? collect($this->reviewContext((array) $copy))->keyBy('id') : collect();
+            $archive['conversation_snapshot'] = array_values(array_filter(
+                $archive['conversation_snapshot'],
+                fn ($message) => is_array($message) && $allowed->has($message['id'] ?? 0),
+            ));
+            foreach ($archive['conversation_snapshot'] as &$message) {
+                if (!empty($allowed[$message['id']]['is_deleted'])) {
+                    $message['body'] = '[Message deleted]';
+                }
+            }
+            unset($message);
 
             return $this->respondWithData($archive);
         } catch (\Exception $e) {
