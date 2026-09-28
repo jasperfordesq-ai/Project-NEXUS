@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Security-assurance guidance now distinguishes the contracted independent penetration test from a test that has actually begun or produced a report.
+
 - Android release metadata now records the verified live Play build 20 / 1.8.1, published on 27 September 2026 at 7:31 PM from exact source commit `86adbf3391972f5c6b6cf863adda734bcfb6eda0`, after internal testing, zero supported-device losses, Play quick checks and production submission 15.
 
 - New blog posts now start as Published and visible to search engines, so a post goes live and can be found unless an admin chooses otherwise. The search-engine setting on the blog form is now a plain "Show in search engines" switch, on by default, with a line underneath saying in words whether search engines may list the post. Available in all eleven languages.
@@ -259,6 +261,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.
 
 ### Security
+
+- Safeguarding report assignments and alerts now require current, tenant-scoped report access, excluding report subjects and expired or revoked permissions. The report route and recipient checks use consistent administrator authority.
+- **BREAKING:** External Credit Commons and Komunitin transfers now require the local payer's approval for each specific debit. Partner-requested completion stays pending until approval; settlement and Credit Commons reversals recheck the approved terms, expiry, balance, and replay state. Komunitin transfer creation now requires a stable partner request ID or `Idempotency-Key`.
 
 - Coordinators, and admins whose rights come from account settings rather than the "admin" role, now receive every safeguarding alert the Broker Panel is built around: copies of messages for review, requests for coordinator help, safeguarding disclosures at sign-up, blocked contact attempts, changes to a member's safeguarding preferences, incident reports, overdue-review escalations and vetting renewals. Eleven alerts each had their own hard-coded list of roles, and none included coordinators, so a community run by coordinators was never told. They now share one rule, and a test fails if a hand-written list comes back. This was an original gap, not a regression (F-221).
 - "Hide Comment" in comment moderation now hides the comment from every member. It used to hide the comment only from the moderator who pressed it, so everyone else could still read it. A hidden comment is now removed the same way the content-moderation queue removes a rejected one (F-220).

@@ -1,6 +1,6 @@
 # Security Assurance
 
-Last reviewed: 2026-09-24
+Last reviewed: 2026-09-28
 
 How security assessment works on Project NEXUS: what gets tested, how results are recorded, and
 how a customer — particularly a public-sector one — can ask for and receive evidence.
@@ -39,7 +39,7 @@ Four layers, each answering a different question.
 | **Automated gates** | Did this change break a security property we already protect? | Every push, every release. See [`CI.md`](CI.md). |
 | **Automated scanning** | Are there known-vulnerable dependencies, secrets, or patterns? | Nightly and on merge. See [`SECURITY-SCANNING.md`](SECURITY-SCANNING.md). |
 | **Targeted assessment** | Does a specific security property hold across the whole route table? | Periodic, recorded as an engagement. |
-| **Independent testing** | Would someone outside the team reach the same conclusion? | **Not yet commissioned.** Stated plainly, never implied. |
+| **Independent testing** | Would someone outside the team reach the same conclusion? | Contracted with an independent firm; testing has not started and no independent report exists. |
 
 The fourth line is the honest one and must stay. No internal work substitutes for independent
 testing, and no assurance document may suggest otherwise.
@@ -194,9 +194,10 @@ A public-sector buyer, or anyone with a supplier-assurance obligation, can ask f
 3. **The complete internal assessment record** — methods, endpoint populations, original findings
    and their remediation history. Supplied confidentially on request; the summary is never
    presented as though it were this.
-4. **Testing terms**, if the organisation wants to commission its own testing. A draft
-   rules-of-engagement document exists for that conversation. Nothing about independent testing
-   is claimed unless it has actually been commissioned.
+4. **Testing terms**, if the organisation wants to commission its own testing. The current
+   engagement has a signed proposal and a draft rules-of-engagement document; its final
+   authorisation and test window are still being agreed. Do not describe contracted work as a
+   completed independent assessment before the testing and report exist.
 
 Requests come through the commercial relationship. The technical contact is named in the
 assurance package itself.

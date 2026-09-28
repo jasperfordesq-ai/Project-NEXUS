@@ -65,6 +65,15 @@ interface SettingsFormData {
   travel_radius_km: number;
 }
 
+interface DebitApproval {
+  id: number;
+  protocol: string;
+  amount: string;
+  description: string | null;
+  expires_at: string;
+  payee_label: string;
+}
+
 const DEFAULT_SETTINGS: SettingsFormData = {
   profile_visible_federated: true,
   appear_in_federated_search: true,
@@ -127,6 +136,9 @@ export function FederationSettingsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [debitApprovals, setDebitApprovals] = useState<DebitApproval[]>([]);
+  const [approvalBusy, setApprovalBusy] = useState<number | null>(null);
+  const [approvalLoadError, setApprovalLoadError] = useState(false);
   const [federationOptedIn, setFederationOptedIn] = useState(false);
   const [settings, setSettings] = useState<SettingsFormData>(DEFAULT_SETTINGS);
   const [originalSettings, setOriginalSettings] = useState<SettingsFormData>(DEFAULT_SETTINGS);
@@ -186,6 +198,25 @@ export function FederationSettingsPage() {
     loadSettings();
   }, [loadSettings]);
 
+  const loadDebitApprovals = useCallback(async () => {
+    try {
+      const response = await api.get<{ approvals: DebitApproval[] }>('/v2/federation/debit-approvals');
+      if (response.success && response.data && Array.isArray(response.data.approvals)) {
+        setDebitApprovals(response.data.approvals);
+        setApprovalLoadError(false);
+      } else {
+        setApprovalLoadError(true);
+      }
+    } catch (error) {
+      logError('Failed to load federated debit approvals', error);
+      setApprovalLoadError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDebitApprovals();
+  }, [loadDebitApprovals]);
+
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Handlers
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -237,6 +268,24 @@ export function FederationSettingsPage() {
   const updateSetting = useCallback(<K extends keyof SettingsFormData>(key: K, value: SettingsFormData[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
+
+  const decideDebit = useCallback(async (id: number, decision: 'approve' | 'reject') => {
+    setApprovalBusy(id);
+    try {
+      const response = await api.post(`/v2/federation/debit-approvals/${id}/decision`, { decision });
+      if (!response.success) {
+        throw new Error('Approval decision failed');
+      }
+      setDebitApprovals((current) => current.filter((approval) => approval.id !== id));
+      toastRef.current.success(tRef.current('settings.debit_decision_saved'));
+    } catch (error) {
+      logError('Failed to decide federated debit', error);
+      toastRef.current.error(tRef.current('settings.debit_decision_error'));
+      loadDebitApprovals();
+    } finally {
+      setApprovalBusy(null);
+    }
+  }, [loadDebitApprovals]);
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Loading / Error States
@@ -449,6 +498,44 @@ export function FederationSettingsPage() {
           </div>
         </GlassCard>
       </motion.div>
+
+      {(debitApprovals.length > 0 || approvalLoadError) && (
+        <section aria-labelledby="federation-debit-approvals" className="space-y-4">
+          <h2 id="federation-debit-approvals" className="text-lg font-semibold text-theme-primary flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-accent" aria-hidden="true" />
+            {t('settings.debit_approvals_heading')}
+          </h2>
+          <p className="text-sm text-theme-muted">{t('settings.debit_approval_note')}</p>
+          {approvalLoadError && (
+            <div role="alert" className="flex items-center gap-3 text-theme-primary">
+              <span>{t('settings.debit_approvals_load_error')}</span>
+              <Button onPress={loadDebitApprovals}>{t('settings.try_again')}</Button>
+            </div>
+          )}
+          {debitApprovals.map((approval) => (
+            <div key={approval.id} className="border border-theme-default rounded-md p-4 space-y-3">
+              <p className="font-medium text-theme-primary">
+                {t(approval.protocol === 'credit_commons_reversal'
+                  ? 'settings.debit_reversal_summary'
+                  : 'settings.debit_approval_summary',
+                { amount: approval.amount, payee: approval.payee_label })}
+              </p>
+              {approval.description && <p className="text-sm text-theme-muted">{approval.description}</p>}
+              <p className="text-sm text-theme-muted">
+                {t('settings.debit_approval_expires', { date: new Date(approval.expires_at).toLocaleString() })}
+              </p>
+              <div className="flex gap-2">
+                <Button onPress={() => decideDebit(approval.id, 'approve')} isDisabled={approvalBusy !== null}>
+                  {t('settings.debit_approve')}
+                </Button>
+                <Button onPress={() => decideDebit(approval.id, 'reject')} isDisabled={approvalBusy !== null}>
+                  {t('settings.debit_reject')}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* â”€â”€â”€ 3. Service Reach â”€â”€â”€ */}
       <motion.div variants={itemVariants}>

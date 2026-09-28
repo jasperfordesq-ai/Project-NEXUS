@@ -292,6 +292,16 @@
     "external_source_note_other": "Inclut {{count}} annonces de partenaires externes ; charger plus continue avec les annonces des partenaires internes."
   },
   "settings": {
+    "debit_approvals_heading": "Transferts en attente de votre accord",
+    "debit_approval_note": "L'approbation ne déplace aucun crédit tant que le partenaire n'a pas terminé le transfert.",
+    "debit_approvals_load_error": "Impossible de charger les transferts en attente.",
+    "debit_approval_summary": "Approuver le transfert de {{amount}} heures à {{payee}} ?",
+    "debit_reversal_summary": "Approuver le retour de {{amount}} heures à {{payee}} ?",
+    "debit_approval_expires": "La demande expire le {{date}}",
+    "debit_approve": "Approuver le transfert",
+    "debit_reject": "Refuser le transfert",
+    "debit_decision_saved": "Décision enregistrée",
+    "debit_decision_error": "Impossible d'enregistrer votre décision. Veuillez réessayer.",
     "page_title": "Paramètres de fédération",
     "breadcrumb_federation": "Fédération",
     "breadcrumb_settings": "Paramètres",

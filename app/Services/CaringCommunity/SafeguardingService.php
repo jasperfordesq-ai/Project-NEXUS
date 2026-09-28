@@ -163,8 +163,13 @@ class SafeguardingService
         $assignee = DB::table('users')
             ->where('tenant_id', $tenantId)
             ->where('id', $assigneeUserId)
+            ->where('status', 'active')
             ->first(['id']);
-        if (!$assignee) {
+        if (!$assignee || !in_array(
+            $assigneeUserId,
+            $this->resolveSafeguardingViewers($tenantId, $report->subject_user_id !== null ? (int) $report->subject_user_id : null),
+            true,
+        )) {
             throw new RuntimeException(__('api.safeguarding_assignee_not_found'));
         }
 
@@ -226,7 +231,8 @@ class SafeguardingService
                 $tenantId,
                 isset($report->subject_user_id) ? (int) $report->subject_user_id : null,
             );
-            if (!empty($report->assigned_to_user_id)) {
+            if (!empty($report->assigned_to_user_id)
+                && (int) $report->assigned_to_user_id !== (int) ($report->subject_user_id ?? 0)) {
                 $recipients[] = (int) $report->assigned_to_user_id;
             }
             $this->notifyReportStaff($reportId, $tenantId, $recipients, 'escalated');
@@ -587,13 +593,17 @@ class SafeguardingService
         // F-213: alert the people who can actually open reports —
         // AdminCaringCommunityController::guardSafeguarding('view') admits
         // admins, tenant admins, network admins, brokers and coordinators — plus
-        // anyone given `safeguarding.view` individually. The individual grant
+        // anyone given `safeguarding.view` or `.manage` individually. The individual grant
         // alone matched nobody in practice (O-040), so reports alerted no one.
         $ids = [];
         try {
-            $ids = SafeguardingStaff::scope(
+            $staff = SafeguardingStaff::scope(
                 DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active')
             )
+                ->get(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            $ids = $staff
+                ->filter(fn ($user) => \App\Support\Authorization\AdminTier::allows($user)
+                    || in_array((string) $user->role, ['broker', 'coordinator'], true))
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
                 ->all();
@@ -603,10 +613,29 @@ class SafeguardingService
 
         if (Schema::hasTable('user_permissions') && Schema::hasTable('permissions')) {
             try {
-                $granted = DB::table('user_permissions as up')
+                $query = DB::table('user_permissions as up')
                     ->join('permissions as p', 'p.id', '=', 'up.permission_id')
-                    ->where('p.name', 'safeguarding.view')
+                    ->join('users as u', 'u.id', '=', 'up.user_id')
+                    ->whereIn('p.name', ['safeguarding.view', 'safeguarding.manage'])
                     ->where('up.tenant_id', $tenantId)
+                    ->where('u.tenant_id', $tenantId)
+                    ->where('u.status', 'active');
+
+                if (Schema::hasColumn('user_permissions', 'granted')) {
+                    $query->where('up.granted', true);
+                }
+                if (Schema::hasColumn('user_permissions', 'expires_at')) {
+                    $query->where(function ($q): void {
+                        $q->whereNull('up.expires_at')->orWhere('up.expires_at', '>', now());
+                    });
+                }
+                if (Schema::hasColumn('permissions', 'tenant_id')) {
+                    $query->where(function ($q) use ($tenantId): void {
+                        $q->whereNull('p.tenant_id')->orWhere('p.tenant_id', $tenantId);
+                    });
+                }
+
+                $granted = $query
                     ->distinct()
                     ->pluck('up.user_id')
                     ->map(fn ($id) => (int) $id)
@@ -652,8 +681,17 @@ class SafeguardingService
         $report = DB::table('safeguarding_reports')
             ->where('tenant_id', $tenantId)
             ->where('id', $reportId)
-            ->first(['id', 'severity', 'category', 'review_due_at']);
+            ->first(['id', 'subject_user_id', 'severity', 'category', 'review_due_at']);
         if (!$report) {
+            return;
+        }
+
+        $allowedIds = $this->resolveSafeguardingViewers(
+            $tenantId,
+            $report->subject_user_id !== null ? (int) $report->subject_user_id : null,
+        );
+        $recipientIds = array_values(array_intersect($recipientIds, $allowedIds));
+        if ($recipientIds === []) {
             return;
         }
 

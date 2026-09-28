@@ -282,6 +282,16 @@
     "external_source_note_other": "Bevat {{count}} vermeldingen van externe partners; meer laden gaat verder met interne partnervermeldingen."
   },
   "settings": {
+    "debit_approvals_heading": "Overdrachten die op uw goedkeuring wachten",
+    "debit_approval_note": "Na goedkeuring worden pas tijdtegoeden overgedragen wanneer de partner de overdracht voltooit.",
+    "debit_approvals_load_error": "Openstaande overdrachten konden niet worden geladen.",
+    "debit_approval_summary": "{{amount}} uur naar {{payee}} overdragen?",
+    "debit_reversal_summary": "{{amount}} uur teruggeven aan {{payee}}?",
+    "debit_approval_expires": "Verzoek verloopt op {{date}}",
+    "debit_approve": "Overdracht goedkeuren",
+    "debit_reject": "Overdracht afwijzen",
+    "debit_decision_saved": "Beslissing opgeslagen",
+    "debit_decision_error": "Uw beslissing kon niet worden opgeslagen. Probeer het opnieuw.",
     "page_title": "Federatie-instellingen",
     "breadcrumb_federation": "Federatie",
     "breadcrumb_settings": "Instellingen",

@@ -282,6 +282,16 @@
     "external_source_note_other": "Enthält {{count}} Einträge von externen Partnern; „Mehr laden“ fährt mit internen Partnereinträgen fort."
   },
   "settings": {
+    "debit_approvals_heading": "Überweisungen, die auf Ihre Zustimmung warten",
+    "debit_approval_note": "Durch die Genehmigung werden erst dann Zeitguthaben übertragen, wenn der Partner die Überweisung abschließt.",
+    "debit_approvals_load_error": "Ausstehende Überweisungen konnten nicht geladen werden.",
+    "debit_approval_summary": "{{amount}} Stunden an {{payee}} überweisen?",
+    "debit_reversal_summary": "{{amount}} Stunden an {{payee}} zurückgeben?",
+    "debit_approval_expires": "Anfrage läuft am {{date}} ab",
+    "debit_approve": "Überweisung genehmigen",
+    "debit_reject": "Überweisung ablehnen",
+    "debit_decision_saved": "Entscheidung gespeichert",
+    "debit_decision_error": "Ihre Entscheidung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "page_title": "Föderationseinstellungen",
     "breadcrumb_federation": "Föderation",
     "breadcrumb_settings": "Einstellungen",
