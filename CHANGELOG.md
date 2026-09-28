@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Installing a community's caring role presets no longer takes over a role that another community created under the same name (F-267).
 - A member's activity timeline, shown on their profile to other members, now contains only posts, comments and events the viewer could open themselves, and shows connections by first name only. It is also withheld when the profile is visible to connections only or either member has blocked the other, as the profile itself is. Supporters with "view activity" permission see the same filtered timeline (F-239).
 - Confirming a paper sign-up form now applies the adults-only rule: a form with a date of birth under 18, or an invalid one, does not create an account (F-249).
 - Adding a new advert to an approved local-advertising campaign now sends the campaign back for admin review, so members never see an advert an admin has not reviewed (F-260).

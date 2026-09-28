@@ -10,6 +10,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -221,12 +222,26 @@ class CaringCommunityRolePresetService
             'INSERT IGNORE INTO roles (name, display_name, description, level, is_system, tenant_id) VALUES (?, ?, ?, ?, 0, ?)',
             [$roleName, $roleName, null, $preset['level'], $tenantId]
         );
+
+        // F-267: role names are unique across the platform and preset names are
+        // predictable, so the name may already belong to another community (or
+        // be global). Never adopt such a role — that would move it, with the
+        // permissions its owner attached, into this community. Fail closed.
+        $role = DB::selectOne('SELECT id, tenant_id FROM roles WHERE name = ? LIMIT 1', [$roleName]);
+        if ($role === null || (int) ($role->tenant_id ?? 0) !== $tenantId) {
+            Log::error('Caring role preset name is owned by another community; refusing to adopt it', [
+                'tenant_id' => $tenantId,
+                'role_name' => $roleName,
+            ]);
+            throw new \RuntimeException('Role preset name is already in use.');
+        }
+
         DB::update(
-            'UPDATE roles SET display_name = ?, description = ?, level = ?, tenant_id = ? WHERE name = ?',
-            [$roleName, null, $preset['level'], $tenantId, $roleName]
+            'UPDATE roles SET display_name = ?, description = ?, level = ? WHERE id = ? AND tenant_id = ?',
+            [$roleName, null, $preset['level'], (int) $role->id, $tenantId]
         );
 
-        return (int) DB::selectOne('SELECT id FROM roles WHERE name = ? LIMIT 1', [$roleName])->id;
+        return (int) $role->id;
     }
 
     private function roleName(int $tenantId, string $key): string
