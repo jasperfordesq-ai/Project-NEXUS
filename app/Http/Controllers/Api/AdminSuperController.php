@@ -871,12 +871,17 @@ class AdminSuperController extends BaseApiController
         ], null, 202);
     }
 
-    /** POST /api/v2/super-admin/tenants/{id}/reactivate */
+    /**
+     * POST /api/v2/super-admin/tenants/{id}/reactivate
+     *
+     * F-251: the reverse of tenantDelete(), so the same canManageTenant() guard —
+     * a regional super-admin may not change the activation of its own root.
+     */
     public function tenantReactivate(int $id): JsonResponse
     {
         $this->requireSuperAdmin();
 
-        if (!SuperPanelAccess::canAccessTenant($id)) {
+        if (!SuperPanelAccess::canManageTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
         }
 
@@ -889,12 +894,20 @@ class AdminSuperController extends BaseApiController
         return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $result['error'], null, 422);
     }
 
-    /** POST /api/v2/super-admin/tenants/{id}/toggle-hub */
+    /**
+     * POST /api/v2/super-admin/tenants/{id}/toggle-hub
+     *
+     * F-251: hub mode is hierarchy-structural, so this needs canManageTenant()
+     * exactly as a change of allows_subtenants through tenantUpdate() does
+     * (F-172). canAccessTenant() admits the caller's OWN root, and switching hub
+     * mode off there also clears is_tenant_super_admin from every account in
+     * that tenant — stripping a same-rank peer the revoke endpoint refuses.
+     */
     public function tenantToggleHub(int $id): JsonResponse
     {
         $this->requireSuperAdmin();
 
-        if (!SuperPanelAccess::canAccessTenant($id)) {
+        if (!SuperPanelAccess::canManageTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
         }
 
@@ -1932,21 +1945,24 @@ class AdminSuperController extends BaseApiController
                 continue;
             }
 
+            // F-060 / F-251: every bulk action changes activation or hub mode,
+            // both hierarchy-structural, so the caller must be able to MANAGE
+            // the tenant — a regional super-admin cannot change its own root
+            // (the single-tenant endpoints apply the same canManageTenant()).
+            if (!SuperPanelAccess::canManageTenant($tid)) {
+                $errors[] = ['code' => 'TENANT_ACCESS_DENIED', 'params' => ['tenant_id' => $tid]];
+                continue;
+            }
+
             try {
                 switch ($action) {
                     case 'activate':
                         DB::update("UPDATE tenants SET is_active = 1 WHERE id = ?", [$tid]);
                         break;
                     case 'deactivate':
-                        // F-060: the same guards as DELETE /tenants/{id} — the
-                        // caller must be able to MANAGE the tenant (a regional
-                        // super-admin cannot deactivate its own root), and a
+                        // F-060: the same guards as DELETE /tenants/{id} — a
                         // tenant with active children is refused so a network is
                         // never stranded under an inactive parent.
-                        if (!SuperPanelAccess::canManageTenant($tid)) {
-                            $errors[] = ['code' => 'TENANT_ACCESS_DENIED', 'params' => ['tenant_id' => $tid]];
-                            continue 2;
-                        }
                         $result = $this->tenantHierarchyService->deleteTenant($tid, false);
                         if (!$result['success']) {
                             $errors[] = ['code' => 'TENANT_DEACTIVATION_REFUSED', 'params' => ['tenant_id' => $tid]];
