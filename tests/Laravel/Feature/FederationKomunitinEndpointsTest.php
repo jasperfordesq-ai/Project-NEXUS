@@ -9,6 +9,9 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature;
 
 use App\Core\FederationApiMiddleware;
+use App\Http\Controllers\Api\FederationDebitApprovalController;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -302,6 +305,7 @@ class FederationKomunitinEndpointsTest extends TestCase
         $payload = [
             'data' => [
                 'type' => 'transfers',
+                'id' => 'race-test-1',
                 'attributes' => [
                     'amount' => 100, // 1 hour in minor units (100 cents)
                     'meta' => 'race-test',
@@ -314,14 +318,62 @@ class FederationKomunitinEndpointsTest extends TestCase
             ],
         ];
 
-        // First transfer succeeds
+        // Partner proposals do not debit, even when they request committed.
         $r1 = $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', $payload, $this->authHeaders());
-        $this->assertContains($r1->getStatusCode(), [201, 200]);
+        $r1->assertStatus(201);
+        $id1 = (int) $r1->json('data.id');
+        $this->assertSame('pending', DB::table('transactions')->where('id', $id1)->value('status'));
+        $this->assertSame(1.0, (float) DB::table('users')->where('id', $payerId)->value('balance'));
 
-        // Second transfer must fail — payer has no balance left
+        $denied = $this->json('PATCH', "/api/v2/federation/komunitin/HOURS/transfers/{$id1}", [
+            'data' => ['attributes' => ['state' => 'committed']],
+        ], $this->authHeaders());
+        $denied->assertStatus(403);
+        $this->assertSame(1.0, (float) DB::table('users')->where('id', $payerId)->value('balance'));
+
+        $replay = $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', $payload, $this->authHeaders());
+        $replay->assertOk();
+        $this->assertSame($id1, (int) $replay->json('data.id'));
+        $this->assertSame(1, DB::table('federation_debit_approvals')->where('tenant_id', $this->testTenantId)
+            ->where('protocol', 'komunitin')->where('partner_request_id', 'race-test-1')->count());
+
+        $changed = $payload;
+        $changed['data']['attributes']['amount'] = 200;
+        $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', $changed, $this->authHeaders())
+            ->assertStatus(409);
+
+        $payload['data']['id'] = 'race-test-2';
         $r2 = $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', $payload, $this->authHeaders());
-        $this->assertSame(403, $r2->getStatusCode());
-        $this->assertStringContainsString('Insufficient balance', $r2->json('errors.0.detail') ?? '');
+        $r2->assertStatus(201);
+        $id2 = (int) $r2->json('data.id');
+
+        foreach ([$id1, $id2] as $txId) {
+            $approvalId = (int) DB::table('federation_debit_approvals')->where('tenant_id', $this->testTenantId)
+                ->where('protocol', 'komunitin')->where('reference_id', (string) $txId)->value('id');
+            $decision = Request::create('/', 'POST', [], [], [], ['CONTENT_TYPE' => 'application/json'], '{"decision":"approve"}');
+            $decision->setUserResolver(fn () => User::find($payerId));
+            $approved = app(FederationDebitApprovalController::class)->decide($decision, $approvalId);
+            $this->assertSame(200, $approved->getStatusCode(), $approved->getContent());
+        }
+
+        $commit = fn (int $id) => $this->json('PATCH', "/api/v2/federation/komunitin/HOURS/transfers/{$id}", [
+            'data' => ['attributes' => ['state' => 'committed']],
+        ], $this->authHeaders());
+        $commit($id1)->assertOk();
+        $this->assertSame(0.0, (float) DB::table('users')->where('id', $payerId)->value('balance'));
+        $overdraw = $commit($id2);
+        $overdraw->assertStatus(403);
+        $this->assertStringContainsString('Insufficient balance', $overdraw->json('errors.0.detail') ?? '');
+        $this->assertSame('approved', DB::table('federation_debit_approvals')->where('reference_id', (string) $id2)
+            ->where('protocol', 'komunitin')->value('status'));
+
+        $this->json('DELETE', "/api/v2/federation/komunitin/HOURS/transfers/{$id2}", [], $this->authHeaders())
+            ->assertStatus(204);
+        $this->assertSame('rejected', DB::table('federation_debit_approvals')->where('reference_id', (string) $id2)
+            ->where('protocol', 'komunitin')->value('status'));
+        $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', $payload, $this->authHeaders())
+            ->assertStatus(409);
+        $this->assertSame(0.0, (float) DB::table('users')->where('id', $payerId)->value('balance'));
     }
 
     public function test_transfer_nonexistent_payer_returns_404(): void
@@ -329,6 +381,7 @@ class FederationKomunitinEndpointsTest extends TestCase
         $response = $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', [
             'data' => [
                 'type' => 'transfers',
+                'id' => 'missing-payer-test',
                 'attributes' => ['amount' => 100, 'state' => 'committed'],
                 'relationships' => [
                     'payer' => ['data' => ['type' => 'accounts', 'id' => '99999999']],
@@ -338,6 +391,32 @@ class FederationKomunitinEndpointsTest extends TestCase
         ], $this->authHeaders());
 
         $response->assertStatus(404);
+    }
+
+    public function test_transfer_requires_stable_partner_request_identity(): void
+    {
+        $payer = \App\Models\User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'federation_optin' => 1,
+        ]);
+        $payee = \App\Models\User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'federation_optin' => 1,
+        ]);
+        $this->enableFederatedTransactions((int) $payer->id);
+        $this->enableFederatedTransactions((int) $payee->id);
+
+        $response = $this->json('POST', '/api/v2/federation/komunitin/HOURS/transfers', [
+            'data' => [
+                'type' => 'transfers',
+                'attributes' => ['amount' => 100, 'state' => 'committed'],
+                'relationships' => [
+                    'payer' => ['data' => ['type' => 'accounts', 'id' => (string) $payer->id]],
+                    'payee' => ['data' => ['type' => 'accounts', 'id' => (string) $payee->id]],
+                ],
+            ],
+        ], $this->authHeaders());
+        $response->assertStatus(400);
+        $this->assertSame(0, DB::table('transactions')->where('tenant_id', $this->testTenantId)
+            ->where('transaction_type', 'komunitin_external')->where('sender_id', $payer->id)->count());
     }
 
     // ==========================================

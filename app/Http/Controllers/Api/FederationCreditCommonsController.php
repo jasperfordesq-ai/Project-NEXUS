@@ -307,50 +307,20 @@ class FederationCreditCommonsController extends BaseApiController
 
         $nodeSlug = $this->getNodeSlug($tenantId);
 
-        // Determine initial state based on workflow.
-        // Workflows starting with '+|P' (e.g., '+|PPC-PE+CE-') require an approval step —
-        // the first state is Pending. Workflows starting with '0|P' (e.g., '0|PC-CE=') mean
-        // the transaction can start in Pending but may also go direct to Completed.
-        // We use the '+|' prefix as the signal that approval is mandatory.
-        $requiresApproval = str_starts_with($workflow ?? '', '+|');
-        $initialState = $requiresApproval ? CreditCommonsAdapter::STATE_PENDING : CreditCommonsAdapter::STATE_COMPLETED;
+        // A partner's workflow is not the member's authority to debit. Every
+        // local-payer transaction starts pending until the payer approves it.
+        $initialState = CreditCommonsAdapter::STATE_PENDING;
 
         $resolvedPayerPath = $this->toAccountPath($payerId, $tenantId);
         $resolvedPayeePath = $this->toAccountPath($payeeId, $tenantId);
-        $newHash = null;
-
-        // Authorization: a federated transaction may only debit a local payer who
-        // has opted into federation. Without this, a transactions:write caller
-        // could move credits out of any member's wallet (cross-account IDOR).
-        if ($initialState === CreditCommonsAdapter::STATE_COMPLETED
-            && !$this->payerMayBeDebited($payerId, $tenantId)) {
+        if (!$this->payerMayBeDebited($payerId, $tenantId)) {
             return $this->ccError('PermissionViolation',
                 'Payer has not opted into federation; their balance cannot be debited by a federated transaction', 403);
         }
 
-        // Execute the transaction with pessimistic locking to prevent race conditions
         DB::beginTransaction();
         try {
-            if ($initialState === CreditCommonsAdapter::STATE_COMPLETED) {
-                // Lock payer row and check balance atomically
-                $updated = DB::update(
-                    "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND status = 'active' AND balance >= ?",
-                    [$quant, $payerId, $tenantId, $quant]
-                );
-
-                if ($updated === 0) {
-                    DB::rollBack();
-                    return $this->ccError('InsufficientBalance', 'Payer has insufficient balance', 400);
-                }
-
-                DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'",
-                    [$quant, $payeeId, $tenantId]);
-
-                $this->recordFederatedTransactionLedger($tenantId, $payerId, $payeeId, $quant, $description);
-            }
-
-            // Create CC entry
-            DB::table('federation_cc_entries')->insert([
+            $entryId = DB::table('federation_cc_entries')->insertGetId([
                 'tenant_id' => $tenantId,
                 'transaction_uuid' => $uuid,
                 'federation_transaction_id' => null,
@@ -360,18 +330,19 @@ class FederationCreditCommonsController extends BaseApiController
                 'description' => $description,
                 'state' => $initialState,
                 'workflow' => $workflow,
-                'written_at' => $initialState === CreditCommonsAdapter::STATE_COMPLETED ? now() : null,
+                'metadata' => json_encode([
+                    'local_payer_id' => $payerId,
+                    'local_payee_id' => $payeeId,
+                    'local_settlement' => false,
+                ]),
+                'written_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Only advance the hashchain for completed transactions — the chain
-            // only includes permanently written entries, not pending proposals.
-            if ($initialState === CreditCommonsAdapter::STATE_COMPLETED) {
-                $newHash = CreditCommonsNodeService::advanceHashchain(
-                    $tenantId, $uuid, $quant, $resolvedPayerPath, $resolvedPayeePath
-                );
-            }
+            app(\App\Services\FederationDebitApprovalService::class)->request(
+                $tenantId, 'credit_commons', (string) $entryId, $payerId, $payeeId, $resolvedPayeePath, $quant, (string) $description
+            );
 
             DB::commit();
         } catch (\Illuminate\Database\QueryException $e) {
@@ -395,12 +366,10 @@ class FederationCreditCommonsController extends BaseApiController
             return $this->ccError('Other', 'Transaction processing failed', 500);
         }
 
-        $responseHeaders = $newHash ? ['Last-hash' => $newHash] : [];
-
         return response()->json([
             'data' => [
                 'uuid' => $uuid,
-                'written' => $initialState === CreditCommonsAdapter::STATE_COMPLETED ? now()->format('Y-m-d') : null,
+                'written' => null,
                 'state' => $initialState,
                 'workflow' => $workflow,
                 'entries' => [
@@ -416,7 +385,7 @@ class FederationCreditCommonsController extends BaseApiController
             'meta' => [
                 'transitions' => CreditCommonsAdapter::STATE_TRANSITIONS[$initialState] ?? [],
             ],
-        ], 201, $responseHeaders);
+        ], 201);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -599,12 +568,30 @@ class FederationCreditCommonsController extends BaseApiController
         ];
 
         if ($destState === CreditCommonsAdapter::STATE_ERASED) {
-            // Reverse the balance changes and update state atomically whenever the
-            // entry reached STATE_COMPLETED — regardless of whether it arrived via
-            // relay (federation_transaction_id set) or was created locally via
-            // POST /transaction (federation_transaction_id = null). Both paths
-            // debit/credit real balances and both need reversal on erase.
+            // Only entries with recorded local settlement may change local balances.
             if ($entry->state === CreditCommonsAdapter::STATE_COMPLETED) {
+                $accounts = json_decode((string) ($entry->metadata ?? ''), true);
+                if (!is_array($accounts) || !array_key_exists('local_payer_id', $accounts)
+                    || !array_key_exists('local_payee_id', $accounts)
+                    || !is_bool($accounts['local_settlement'] ?? null)) {
+                    return $this->ccError('PermissionViolation', 'Transaction requires verified settlement history', 403);
+                }
+                $locallySettled = $accounts['local_settlement'];
+                $reversalPayerId = $accounts['local_payee_id'] === null ? null : (int) $accounts['local_payee_id'];
+                $reversalPayeeId = $accounts['local_payer_id'] === null ? null : (int) $accounts['local_payer_id'];
+                if (!$locallySettled && ($reversalPayerId || $reversalPayeeId)) {
+                    return $this->ccError('PermissionViolation', 'Transaction has no verified local settlement', 403);
+                }
+                if ($reversalPayerId) {
+                    if (!$this->payerMayBeDebited($reversalPayerId, $tenantId)) {
+                        return $this->ccError('PermissionViolation', 'Payee has not enabled federated transactions', 403);
+                    }
+                    app(\App\Services\FederationDebitApprovalService::class)->request(
+                        $tenantId, 'credit_commons_reversal', (string) $entry->id,
+                        $reversalPayerId, $reversalPayeeId, (string) $entry->payer,
+                        (float) $entry->quant, (string) ($entry->description ?? '')
+                    );
+                }
                 DB::beginTransaction();
                 try {
                     // Atomically claim C→E first: with two concurrent erases of
@@ -620,7 +607,33 @@ class FederationCreditCommonsController extends BaseApiController
                             "Cannot transition from {$entry->state} to E (transaction was concurrently transitioned)", 400);
                     }
 
-                    $this->reverseTransaction($entry, $tenantId);
+                    if ($reversalPayerId && !app(\App\Services\FederationDebitApprovalService::class)->consume(
+                        $tenantId, 'credit_commons_reversal', (string) $entry->id,
+                        $reversalPayerId, $reversalPayeeId, (string) $entry->payer,
+                        (float) $entry->quant, (string) ($entry->description ?? '')
+                    )) {
+                        DB::rollBack();
+                        return $this->ccError('PermissionViolation', 'Payee approval is required for this reversal', 403);
+                    }
+
+                    if ($reversalPayerId && $reversalPayeeId) {
+                        $blocked = $this->creditCommonsSafeguardingBlock(
+                            (string) $entry->payee, (string) $entry->payer, $tenantId,
+                            'credit_commons_reversal',
+                            ['payer' => $reversalPayerId, 'payee' => $reversalPayeeId], true
+                        );
+                        if ($blocked) {
+                            DB::rollBack();
+                            return $blocked;
+                        }
+                    }
+
+                    if ($locallySettled && !$this->reverseTransaction(
+                        $entry, $tenantId, $reversalPayeeId, $reversalPayerId
+                    )) {
+                        DB::rollBack();
+                        return $this->ccError('InsufficientBalance', 'Payee has insufficient balance for reversal', 400);
+                    }
 
                     DB::commit();
                 } catch (\Throwable $e) {
@@ -839,6 +852,11 @@ class FederationCreditCommonsController extends BaseApiController
             return $this->ccError('MissingParameter', 'Amount exceeds maximum', 400);
         }
 
+        if (CreditCommonsNodeService::isLocalAccount((string) $payerPath, $tenantId)) {
+            return $this->ccError('PermissionViolation',
+                'Local payer transfers must use a member-approved proposal', 403);
+        }
+
         $payeeIsLocal = CreditCommonsNodeService::isLocalAccount($payeePath, $tenantId);
 
         if ($payeeIsLocal) {
@@ -899,6 +917,11 @@ class FederationCreditCommonsController extends BaseApiController
                     'description' => $description,
                     'state' => CreditCommonsAdapter::STATE_COMPLETED,
                     'workflow' => $workflow,
+                    'metadata' => json_encode([
+                        'local_payer_id' => null,
+                        'local_payee_id' => $payeeId,
+                        'local_settlement' => true,
+                    ]),
                     'author' => $payerPath,
                     'written_at' => now(),
                     'created_at' => now(),
@@ -986,6 +1009,11 @@ class FederationCreditCommonsController extends BaseApiController
                 'description' => $description,
                 'state' => CreditCommonsAdapter::STATE_COMPLETED,
                 'workflow' => $workflow,
+                'metadata' => json_encode([
+                    'local_payer_id' => null,
+                    'local_payee_id' => null,
+                    'local_settlement' => false,
+                ]),
                 'author' => $payerPath,
                 'written_at' => now(),
                 'created_at' => now(),
@@ -1059,6 +1087,16 @@ class FederationCreditCommonsController extends BaseApiController
             return $blocked;
         }
 
+        $localPayerId = $this->resolveAccountId((string) $payerPath, $tenantId);
+        if ($localPayerId && !$this->payerMayBeDebited($localPayerId, $tenantId)) {
+            return $this->ccError('PermissionViolation',
+                'Payer has not enabled federated transactions', 403);
+        }
+        $localPayeeId = $this->resolveAccountId((string) $payeePath, $tenantId);
+        if (CreditCommonsNodeService::isLocalAccount((string) $payeePath, $tenantId) && !$localPayeeId) {
+            return $this->ccError('UnresolvedAccountnameViolation', 'Local payee account not found', 400);
+        }
+
         // Honour a caller-supplied UUID (like createTransaction and relay do)
         // so a replayed propose is idempotent instead of accumulating duplicate
         // independently-committable PENDING proposals.
@@ -1075,7 +1113,8 @@ class FederationCreditCommonsController extends BaseApiController
         }
 
         try {
-            DB::table('federation_cc_entries')->insert([
+            DB::beginTransaction();
+            $entryId = DB::table('federation_cc_entries')->insertGetId([
                 'tenant_id' => $tenantId,
                 'transaction_uuid' => $uuid,
                 'federation_transaction_id' => null,
@@ -1085,12 +1124,27 @@ class FederationCreditCommonsController extends BaseApiController
                 'description' => $description,
                 'state' => CreditCommonsAdapter::STATE_PENDING,
                 'workflow' => $workflow,
+                'metadata' => json_encode([
+                    'local_payer_id' => $localPayerId,
+                    'local_payee_id' => $localPayeeId,
+                    'local_settlement' => false,
+                ]),
                 'author' => $payerPath,
                 'written_at' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            $payerId = $this->resolveAccountId((string) $payerPath, $tenantId);
+            if ($payerId) {
+                $payeeId = $this->resolveAccountId((string) $payeePath, $tenantId);
+                app(\App\Services\FederationDebitApprovalService::class)->request(
+                    $tenantId, 'credit_commons', (string) $entryId, $payerId, $payeeId,
+                    (string) $payeePath, $quant, (string) $description
+                );
+            }
+            DB::commit();
         } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
             if ((int) ($e->errorInfo[1] ?? 0) !== 1062) {
                 throw $e;
             }
@@ -1101,6 +1155,9 @@ class FederationCreditCommonsController extends BaseApiController
             if ($dup) {
                 return $this->ccReplayResponse($uuid, $dup);
             }
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
             throw $e;
         }
 
@@ -1315,23 +1372,31 @@ class FederationCreditCommonsController extends BaseApiController
         string $payeePath,
         int $tenantId,
         string $channel,
+        ?array $localAccounts = null,
+        bool $locked = false,
     ): ?JsonResponse {
-        if (! CreditCommonsNodeService::isLocalAccount($payeePath, $tenantId)) {
+        if ($localAccounts === null && !CreditCommonsNodeService::isLocalAccount($payeePath, $tenantId)) {
             return null;
         }
 
-        $payeeId = $this->resolveAccountId($payeePath, $tenantId);
+        $payeeId = $localAccounts === null
+            ? $this->resolveAccountId($payeePath, $tenantId)
+            : $localAccounts['payee'];
         if ($payeeId === null) {
             return null;
         }
 
         $policy = app(SafeguardingInteractionPolicy::class);
-        if (CreditCommonsNodeService::isLocalAccount($payerPath, $tenantId)) {
-            $payerId = $this->resolveAccountId($payerPath, $tenantId);
+        if ($localAccounts !== null ? $localAccounts['payer'] !== null : CreditCommonsNodeService::isLocalAccount($payerPath, $tenantId)) {
+            $payerId = $localAccounts === null
+                ? $this->resolveAccountId($payerPath, $tenantId)
+                : $localAccounts['payer'];
             if ($payerId === null) {
                 return null;
             }
-            $decision = $policy->evaluateLocalContact($payerId, $payeeId, $tenantId, $channel);
+            $decision = $locked
+                ? $policy->evaluateLockedLocalContact($payerId, $payeeId, $tenantId, $channel)
+                : $policy->evaluateLocalContact($payerId, $payeeId, $tenantId, $channel);
         } else {
             $decision = $policy->evaluateExternalContact(
                 $payeeId,
@@ -1381,10 +1446,14 @@ class FederationCreditCommonsController extends BaseApiController
             return $exists ? (int) $accountRef : null;
         }
 
-        // Strip node prefix: "my-node/alice" → "alice"
-        $username = str_contains($accountRef, '/')
-            ? explode('/', $accountRef, 2)[1]
-            : $accountRef;
+        if (str_contains($accountRef, '/')) {
+            [$node, $username] = explode('/', $accountRef, 2);
+            if ($node !== $this->getNodeSlug($tenantId)) {
+                return null;
+            }
+        } else {
+            $username = $accountRef;
+        }
 
         $user = (clone $baseQuery)
             ->where('users.username', $username)
@@ -1396,9 +1465,19 @@ class FederationCreditCommonsController extends BaseApiController
     private function completeTransactionEntry(object $entry, int $tenantId, int $status): JsonResponse
     {
         $uuid = (string) $entry->transaction_uuid;
-        $payerId = $this->resolveAccountId((string) $entry->payer, $tenantId);
-        $payeeId = $this->resolveAccountId((string) $entry->payee, $tenantId);
+        $accounts = json_decode((string) ($entry->metadata ?? ''), true);
+        if (!is_array($accounts) || !array_key_exists('local_payer_id', $accounts)
+            || !array_key_exists('local_payee_id', $accounts) || ($accounts['local_settlement'] ?? null) !== false) {
+            return $this->ccError('PermissionViolation', 'Transaction requires a verified local account binding', 403);
+        }
+        $payerId = $accounts['local_payer_id'] === null ? null : (int) $accounts['local_payer_id'];
+        $payeeId = $accounts['local_payee_id'] === null ? null : (int) $accounts['local_payee_id'];
         $quant = (float) $entry->quant;
+
+        if (CreditCommonsNodeService::isLocalAccount((string) $entry->payer, $tenantId) !== ($payerId !== null)
+            || CreditCommonsNodeService::isLocalAccount((string) $entry->payee, $tenantId) !== ($payeeId !== null)) {
+            return $this->ccError('PermissionViolation', 'Transaction account binding is invalid', 403);
+        }
 
         if (!SecurityBounds::isAcceptableHourAmount($quant)) {
             return $this->ccError('MissingParameter', 'Amount exceeds maximum', 400);
@@ -1422,6 +1501,7 @@ class FederationCreditCommonsController extends BaseApiController
             (string) $entry->payee,
             $tenantId,
             'credit_commons_complete',
+            ['payer' => $payerId, 'payee' => $payeeId],
         )) {
             return $blocked;
         }
@@ -1434,6 +1514,7 @@ class FederationCreditCommonsController extends BaseApiController
                 ->where('state', $entry->state)
                 ->update([
                     'state' => CreditCommonsAdapter::STATE_COMPLETED,
+                    'metadata' => json_encode(array_merge($accounts, ['local_settlement' => true])),
                     'written_at' => $writtenAt,
                     'updated_at' => $writtenAt,
                 ]);
@@ -1443,7 +1524,25 @@ class FederationCreditCommonsController extends BaseApiController
                     "Cannot transition from {$entry->state} to C (transaction was concurrently transitioned)", 400);
             }
 
+            if ($payerId && $payeeId) {
+                $blocked = $this->creditCommonsSafeguardingBlock(
+                    (string) $entry->payer, (string) $entry->payee, $tenantId,
+                    'credit_commons_complete', ['payer' => $payerId, 'payee' => $payeeId], true
+                );
+                if ($blocked) {
+                    DB::rollBack();
+                    return $blocked;
+                }
+            }
+
             if ($payerId) {
+                if (!app(\App\Services\FederationDebitApprovalService::class)->consume(
+                    $tenantId, 'credit_commons', (string) $entry->id, $payerId, $payeeId, (string) $entry->payee,
+                    $quant, (string) ($entry->description ?? '')
+                )) {
+                    DB::rollBack();
+                    return $this->ccError('PermissionViolation', 'Payer approval is required for this transfer', 403);
+                }
                 $updated = DB::update(
                     "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND status = 'active' AND balance >= ?",
                     [$quant, $payerId, $tenantId, $quant]
@@ -1454,10 +1553,14 @@ class FederationCreditCommonsController extends BaseApiController
                 }
             }
             if ($payeeId) {
-                DB::update(
+                $credited = DB::update(
                     "UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'",
                     [$quant, $payeeId, $tenantId]
                 );
+                if ($credited !== 1) {
+                    DB::rollBack();
+                    return $this->ccError('PermissionViolation', 'Payee is unavailable', 403);
+                }
             }
 
             $this->recordFederatedTransactionLedger(
@@ -1542,18 +1645,24 @@ class FederationCreditCommonsController extends BaseApiController
     /**
      * Reverse a completed transaction's balance changes.
      */
-    private function reverseTransaction(object $entry, int $tenantId): void
+    private function reverseTransaction(object $entry, int $tenantId, ?int $payerId, ?int $payeeId): bool
     {
-        $payerId = $this->resolveAccountId($entry->payer, $tenantId);
-        $payeeId = $this->resolveAccountId($entry->payee, $tenantId);
-
-        if ($payerId) {
-            DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ?",
-                [(float) $entry->quant, $payerId, $tenantId]);
-        }
         if ($payeeId) {
-            DB::update("UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ?",
-                [(float) $entry->quant, $payeeId, $tenantId]);
+            $debited = DB::update(
+                "UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND status = 'active' AND balance >= ?",
+                [(float) $entry->quant, $payeeId, $tenantId, (float) $entry->quant]
+            );
+            if ($debited !== 1) {
+                return false;
+            }
         }
+        if ($payerId) {
+            $credited = DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'",
+                [(float) $entry->quant, $payerId, $tenantId]);
+            if ($credited !== 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

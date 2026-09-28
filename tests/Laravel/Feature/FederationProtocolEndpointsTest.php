@@ -297,6 +297,11 @@ class FederationProtocolEndpointsTest extends TestCase
             'quant' => 0.5,
             'state' => 'V',
             'workflow' => '+|PPC-PE+CE-',
+            'metadata' => json_encode([
+                'local_payer_id' => null,
+                'local_payee_id' => null,
+                'local_settlement' => false,
+            ]),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

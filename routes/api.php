@@ -879,6 +879,9 @@ Route::post('/v2/federation/messages/{id}/mark-read', [\App\Http\Controllers\Api
 Route::post('/v2/federation/messages/{id}/translate', [\App\Http\Controllers\Api\FederationV2Controller::class, 'translateMessage']);
 Route::post('/v2/federation/transactions', [\App\Http\Controllers\Api\FederationV2Controller::class, 'sendTransaction'])->middleware('throttle:nexus-route-20-per-1m');
 Route::get('/v2/federation/settings', [\App\Http\Controllers\Api\FederationV2Controller::class, 'getSettings']);
+Route::get('/v2/federation/debit-approvals', [\App\Http\Controllers\Api\FederationDebitApprovalController::class, 'index']);
+Route::post('/v2/federation/debit-approvals/{id}/decision', [\App\Http\Controllers\Api\FederationDebitApprovalController::class, 'decide'])
+    ->middleware('throttle:nexus-route-10-per-1m');
 Route::put('/v2/federation/settings', [\App\Http\Controllers\Api\FederationV2Controller::class, 'updateSettings'])->middleware('throttle:nexus-route-20-per-1m');
 Route::get('/v2/federation/connections', [\App\Http\Controllers\Api\FederationV2Controller::class, 'connections']);
 Route::post('/v2/federation/connections', [\App\Http\Controllers\Api\FederationV2Controller::class, 'sendConnectionRequest'])->middleware('throttle:nexus-route-10-per-1m');

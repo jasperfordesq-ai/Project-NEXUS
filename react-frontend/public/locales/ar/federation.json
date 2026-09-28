@@ -322,6 +322,16 @@
     "external_source_note_zero": "يتضمن {{count}} قائمة من شركاء خارجيين؛ تحميل المزيد يتابع قوائم الشركاء الداخليين."
   },
   "settings": {
+    "debit_approvals_heading": "التحويلات التي تنتظر موافقتك",
+    "debit_approval_note": "الموافقة لا تنقل الأرصدة حتى يكمل الشريك التحويل.",
+    "debit_approvals_load_error": "تعذر تحميل التحويلات المعلقة.",
+    "debit_approval_summary": "هل توافق على تحويل {{amount}} ساعة إلى {{payee}}؟",
+    "debit_reversal_summary": "هل توافق على إعادة {{amount}} ساعة إلى {{payee}}؟",
+    "debit_approval_expires": "تنتهي صلاحية الطلب في {{date}}",
+    "debit_approve": "الموافقة على التحويل",
+    "debit_reject": "رفض التحويل",
+    "debit_decision_saved": "تم حفظ قرار التحويل",
+    "debit_decision_error": "تعذر حفظ قرارك. يرجى المحاولة مرة أخرى.",
     "page_title": "إعدادات الاتحاد",
     "breadcrumb_federation": "الاتحاد",
     "breadcrumb_settings": "إعدادات",

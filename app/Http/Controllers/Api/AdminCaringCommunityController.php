@@ -237,13 +237,14 @@ class AdminCaringCommunityController extends BaseApiController
         $user = \DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['role', 'is_super_admin', 'is_tenant_super_admin']);
+            ->where('status', 'active')
+            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+        if (!$user) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.safeguarding_staff_access_required'), null, 403);
+        }
         $role = $user ? (string) ($user->role ?? 'member') : 'member';
 
-        if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)) {
-            return null;
-        }
-        if ($user && (($user->is_super_admin ?? false) || ($user->is_tenant_super_admin ?? false))) {
+        if (\App\Support\Authorization\AdminTier::allows($user)) {
             return null;
         }
         if ($level === 'view' && in_array($role, ['coordinator', 'broker'], true)) {
