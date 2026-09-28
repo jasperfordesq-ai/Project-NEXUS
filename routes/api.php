@@ -877,7 +877,9 @@ Route::post('/v2/federation/messages', [\App\Http\Controllers\Api\FederationV2Co
 Route::post('/v2/federation/messages/mark-read-batch', [\App\Http\Controllers\Api\FederationV2Controller::class, 'markMessagesReadBatch'])->middleware('throttle:nexus-route-60-per-1m');
 Route::post('/v2/federation/messages/{id}/mark-read', [\App\Http\Controllers\Api\FederationV2Controller::class, 'markMessageRead'])->middleware('throttle:nexus-route-60-per-1m');
 Route::post('/v2/federation/messages/{id}/translate', [\App\Http\Controllers\Api\FederationV2Controller::class, 'translateMessage']);
-Route::post('/v2/federation/transactions', [\App\Http\Controllers\Api\FederationV2Controller::class, 'sendTransaction'])->middleware('throttle:nexus-route-20-per-1m');
+// Cross-community transfers move wallet credits, so they carry the same module,
+// onboarding and legal-acceptance gates as /v2/wallet/transfer (F-105, F-259).
+Route::post('/v2/federation/transactions', [\App\Http\Controllers\Api\FederationV2Controller::class, 'sendTransaction'])->middleware('throttle:nexus-route-20-per-1m')->middleware('module:wallet')->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::get('/v2/federation/settings', [\App\Http\Controllers\Api\FederationV2Controller::class, 'getSettings']);
 Route::get('/v2/federation/debit-approvals', [\App\Http\Controllers\Api\FederationDebitApprovalController::class, 'index']);
 Route::post('/v2/federation/debit-approvals/{id}/decision', [\App\Http\Controllers\Api\FederationDebitApprovalController::class, 'decide'])
@@ -3665,7 +3667,8 @@ Route::middleware('feature:groups')
     ])
     ->group(function () {
 Route::get('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'index']);
-Route::post('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'store']);
+// Same legal-acceptance gate as POST /v2/exchanges (F-259).
+Route::post('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'store'])->middleware('legal-acceptance');
 Route::get('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'show']);
 Route::put('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'update']);
 Route::delete('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'destroy']);
