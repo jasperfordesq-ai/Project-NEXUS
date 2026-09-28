@@ -30,9 +30,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1480:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1490:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1480,
+            "line": 1490,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -43,9 +43,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1519:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1529:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1519,
+            "line": 1529,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -1798,9 +1798,9 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1416:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:1451:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1416,
+            "line": 1451,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "$counterpartyId",
@@ -1811,9 +1811,9 @@
             "data_expression": "$data"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1433:NotificationDispatcher::notifyAdmins",
+            "id": "app/Services/ExchangeWorkflowService.php:1468:NotificationDispatcher::notifyAdmins",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1433,
+            "line": 1468,
             "transport": "NotificationDispatcher::notifyAdmins",
             "role": "producer",
             "recipient_expression": null,

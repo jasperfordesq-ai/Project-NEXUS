@@ -665,6 +665,11 @@ class AdminBrokerController extends BaseApiController
             $result = $this->exchangeWorkflowService::resolveDispute($id, $adminId, $finalHours, $notes);
             if (!($result['ok'] ?? false)) {
                 $code = (string) ($result['error'] ?? 'SERVER_ERROR');
+                // F-254: same refusal as F-219 adjust-balance (a party is at
+                // or above the calling broker's tier).
+                if ($code === 'AUTH_INSUFFICIENT_PERMISSIONS') {
+                    return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+                }
                 $status = in_array($code, ['NOT_FOUND'], true) ? 404
                     : (in_array($code, ['UNAUTHORIZED'], true) ? 403
                     : (in_array($code, ['NOT_DISPUTED', 'REASON_REQUIRED', 'INVALID_HOURS'], true) ? 400 : 500));
@@ -786,6 +791,11 @@ class AdminBrokerController extends BaseApiController
             $result = $this->exchangeWorkflowService::reverseCompletedExchange($id, $adminId, $reason);
             if (!($result['ok'] ?? false)) {
                 $code = (string) ($result['error'] ?? 'SERVER_ERROR');
+                // F-254: same refusal as F-219 adjust-balance (a party is at
+                // or above the calling broker's tier).
+                if ($code === 'AUTH_INSUFFICIENT_PERMISSIONS') {
+                    return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+                }
                 $status = match ($code) {
                     'NOT_FOUND' => 404,
                     'UNAUTHORIZED' => 403,

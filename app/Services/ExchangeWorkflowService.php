@@ -1344,6 +1344,41 @@ class ExchangeWorkflowService
     }
 
     /**
+     * F-219 rank rule for staff actions that move an exchange's credits
+     * (E-055 F-254): a broker/coordinator may change an ordinary member's
+     * balance, never a fellow broker's or an admin's. Non-admin callers must
+     * strictly outrank (AdminTier::outranks) every account whose balance the
+     * action changes; admin tiers keep full latitude, exactly as in
+     * AdminTimebankingController::adjustBalance(). An account that cannot be
+     * read in this community fails closed for a non-admin caller.
+     *
+     * @param object|array<string,mixed> $caller
+     * @param list<int> $userIds
+     */
+    private static function callerMayMoveCreditsOf(object|array $caller, array $userIds, int $tenantId): bool
+    {
+        if (AdminTier::allows($caller)) {
+            return true;
+        }
+
+        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+        $targets = DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $userIds)
+            ->get(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+        if ($targets->count() !== count($userIds)) {
+            return false;
+        }
+        foreach ($targets as $target) {
+            if (!AdminTier::outranks($caller, $target)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * A member reports a problem with their own exchange — journey 3.20.
      *
      * 🔴 Nothing could raise a dispute before this. `resolveDispute()` has always existed
@@ -1488,6 +1523,14 @@ class ExchangeWorkflowService
         if (!self::callerHasStaffAuthority($caller)) {
             return ['ok' => false, 'error' => 'UNAUTHORIZED'];
         }
+        // F-254: arbitration decides both parties' credits.
+        if (!self::callerMayMoveCreditsOf(
+            $caller,
+            [(int) $exchange->requester_id, (int) $exchange->provider_id],
+            (int) $exchange->tenant_id
+        )) {
+            return ['ok' => false, 'error' => 'AUTH_INSUFFICIENT_PERMISSIONS'];
+        }
 
         if (!is_finite($finalHours) || $finalHours <= 0) {
             return ['ok' => false, 'error' => 'INVALID_HOURS'];
@@ -1585,7 +1628,7 @@ class ExchangeWorkflowService
         $tenantId = TenantContext::getId();
 
         try {
-            $result = DB::transaction(function () use ($exchangeId, $actorId, $reason, $tenantId): array {
+            $result = DB::transaction(function () use ($exchangeId, $actorId, $reason, $tenantId, $caller): array {
                 $locked = DB::table('exchange_requests')
                     ->where('id', $exchangeId)
                     ->where('tenant_id', $tenantId)
@@ -1637,6 +1680,11 @@ class ExchangeWorkflowService
                 $originalPayeeId = (int) $original->receiver_id;
                 if ($originalPayerId <= 0 || $originalPayeeId <= 0) {
                     return ['ok' => false, 'error' => 'ORIGINAL_NOT_TWO_SIDED'];
+                }
+                // F-254: the reversal changes exactly these two balances. Checked
+                // before any write, on the ledger row the amount is taken from.
+                if (!self::callerMayMoveCreditsOf($caller, [$originalPayerId, $originalPayeeId], (int) $tenantId)) {
+                    return ['ok' => false, 'error' => 'AUTH_INSUFFICIENT_PERMISSIONS'];
                 }
 
                 // Deterministic lock order prevents deadlock against a concurrent
