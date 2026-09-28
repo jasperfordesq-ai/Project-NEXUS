@@ -81,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The database-column CI gate now recognizes new tables declared by pending Laravel migrations while the production-derived schema dump has not yet been refreshed.
+
 - The Android device-test workflow now runs its full Maestro journey suite on a stable Android 15 image and disables the irrelevant spellchecker service. Android 16's Google APIs emulator left a system `starting_reveal` transition permanently active, delaying each typed character until Maestro's two-minute device-control request expired even though the app had reached the login screen and the independent launch check passed. The app now opens a newly created saved-items collection directly, avoiding a moving-list tap while its refreshed row is inserted.
 
 - The admin Deliverables list now shows every deliverable, with a page control. It only ever asked for the first 20, so anything beyond that was hidden.
