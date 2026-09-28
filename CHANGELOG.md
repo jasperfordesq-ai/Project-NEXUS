@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- On the accessible site's sign-up safeguarding step, a help link is now shown only when it is a secure https web address (F-253).
 - A broker or coordinator can no longer reverse, or settle a dispute on, an exchange involving another broker or an admin; this needs an admin, as balance corrections already do. Exchanges between ordinary members are unchanged (F-254).
 - Installing a community's caring role presets no longer takes over a role that another community created under the same name (F-267).
 - A member's activity timeline, shown on their profile to other members, now contains only posts, comments and events the viewer could open themselves, and shows connections by first name only. It is also withheld when the profile is visible to connections only or either member has blocked the other, as the profile itself is. Supporters with "view activity" permission see the same filtered timeline (F-239).

@@ -5,6 +5,7 @@
 
 const express = require('express');
 const fs = require('fs/promises');
+const { URL } = require('node:url');
 const {
   updateProfile,
   uploadProfileAvatar,
@@ -96,6 +97,24 @@ function normalizeCategory(category) {
   };
 }
 
+// F-253 (F-207 residual): a help link becomes an `href` on the page every new
+// member sees. Mirror the API's rule (SafeguardingPreferenceService::validateUrl):
+// only a well-formed https:// URL on a dotted host is kept; anything else —
+// javascript:, data:, http:, scheme-relative, control characters — is dropped.
+function safeHelpUrl(value) {
+  const raw = String(value || '').trim();
+  // eslint-disable-next-line no-control-regex
+  if (!raw || /[\u0000-\u001f\u007f]/.test(raw) || !/^https:\/\//i.test(raw)) return '';
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return '';
+  }
+  if (parsed.protocol !== 'https:' || !parsed.hostname.includes('.')) return '';
+  return raw;
+}
+
 function normalizeSafeguardingOption(option) {
   const item = asObject(option);
   return {
@@ -104,7 +123,7 @@ function normalizeSafeguardingOption(option) {
     option_type: String(item.option_type || 'checkbox').trim() || 'checkbox',
     label: String(item.label || '').trim(),
     description: String(item.description || '').trim(),
-    help_url: String(item.help_url || '').trim(),
+    help_url: safeHelpUrl(item.help_url),
     select_options: item.select_options && typeof item.select_options === 'object' ? item.select_options : {},
     is_required: Boolean(item.is_required)
   };
@@ -414,3 +433,6 @@ module.exports = router;
 // Exported for its own test: the message must come from the catalogue, and
 // a wrong lookup path renders a raw key at a member.
 module.exports.onboardingStatusBanner = statusBanner;
+
+// Exported for its test (F-253): help links must be https before they reach href.
+module.exports.normalizeSafeguardingOption = normalizeSafeguardingOption;
