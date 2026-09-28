@@ -3194,7 +3194,8 @@ class AdminConfigController extends BaseApiController
 
     /**
      * Reject podcast storage settings that would break media uploads: an
-     * unknown driver, a cloud disk that is not configured on this server, a
+     * unknown driver, a cloud disk that is not configured on this server or
+     * not in PodcastService::MEDIA_STORAGE_DISKS (F-266), a
      * cloud switch without the Flysystem adapter installed, or a CDN base
      * URL that is not http(s). Returns a 422 response or null when valid.
      */
@@ -3214,7 +3215,11 @@ class AdminConfigController extends BaseApiController
         $disk = $effective(PodcastConfigurationService::CONFIG_CLOUD_STORAGE_DISK);
         $diskSubmitted = array_key_exists(PodcastConfigurationService::CONFIG_CLOUD_STORAGE_DISK, $settings);
         $diskConfig = $disk !== '' ? config("filesystems.disks.{$disk}") : null;
-        if (($diskSubmitted || $driver === 'cloud') && !is_array($diskConfig)) {
+        // F-266 (E-055): a configured disk is not enough — only the disks
+        // podcast media is designed for (private `local`, cloud `s3`) are
+        // accepted, never a platform-wide web-served disk or the web root.
+        if (($diskSubmitted || $driver === 'cloud')
+            && (!is_array($diskConfig) || !\App\Services\PodcastService::isAllowedMediaDisk($disk))) {
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.podcasts.invalid_storage_disk'), PodcastConfigurationService::CONFIG_CLOUD_STORAGE_DISK, 422);
         }
 

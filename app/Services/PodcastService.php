@@ -2039,6 +2039,27 @@ class PodcastService
         return in_array($type, ['full', 'trailer', 'bonus'], true) ? $type : 'full';
     }
 
+    /**
+     * F-266 (E-055): the only filesystem disks podcast media may live on.
+     *
+     *   - `local` — `storage/app/private`, never web-served; hosted audio is
+     *     streamed through the signed, visibility-checked media proxy. It is
+     *     what the default `media_storage_driver = local` uses.
+     *   - `s3`    — the documented default for `cloud_storage_disk`.
+     *
+     * Deliberately excluded (config/filesystems.php): `public` and `uploads`
+     * are platform-wide web-served directories and `legacy_httpdocs` is the
+     * Apache document root, so audio there would be served as a plain file,
+     * past signed links, moderation, scanning and members-only checks. A new
+     * cloud disk added to config/filesystems.php must be added here too.
+     */
+    public const MEDIA_STORAGE_DISKS = ['local', 's3'];
+
+    public static function isAllowedMediaDisk(string $disk): bool
+    {
+        return in_array($disk, self::MEDIA_STORAGE_DISKS, true);
+    }
+
     private static function mediaStorageDisk(): string
     {
         $driver = (string) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_MEDIA_STORAGE_DRIVER);
@@ -2046,7 +2067,19 @@ class PodcastService
             return 'local';
         }
 
-        return (string) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_CLOUD_STORAGE_DISK, 's3') ?: 's3';
+        $disk = (string) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_CLOUD_STORAGE_DISK, 's3') ?: 's3';
+        if (!self::isAllowedMediaDisk($disk)) {
+            // A value saved before F-266 was fixed: fall back to private
+            // storage rather than keep writing to a web-served disk.
+            Log::warning('Podcast cloud storage disk is not allowed; using private local storage', [
+                'tenant_id' => TenantContext::getId(),
+                'disk' => $disk,
+            ]);
+
+            return 'local';
+        }
+
+        return $disk;
     }
 
     private static function cloudMediaUrl(string $path): string
@@ -2191,6 +2224,14 @@ class PodcastService
             return $result;
         }
         $result['checks']['configured'] = true;
+
+        // F-266: refuse before touching the disk — the probe writes and
+        // deletes a file, and must not reach platform-wide web-served disks.
+        if (!self::isAllowedMediaDisk($disk)) {
+            $result['error'] = 'disk_not_allowed';
+
+            return $result;
+        }
         $result['driver'] = (string) ($config['driver'] ?? '');
 
         if ($result['driver'] === 's3' && !class_exists(\League\Flysystem\AwsS3V3\AwsS3V3Adapter::class)) {
