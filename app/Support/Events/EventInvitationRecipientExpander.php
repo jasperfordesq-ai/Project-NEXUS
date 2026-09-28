@@ -26,6 +26,12 @@ use Throwable;
 final class EventInvitationRecipientExpander
 {
     private const MAX_RECIPIENTS = 10000;
+    /**
+     * Most members a caller below community admin may name in one member-picker
+     * campaign (Member type, or an Audience of only member_ids). Above this a
+     * named-id list is bulk reach, reserved for admins like all_active (F-241).
+     */
+    public const ORGANISER_MAX_MEMBER_IDS = 50;
     private const MAX_GROUPS = 25;
     private const MAX_EXCLUSIONS = 1000;
     private const SUPPORTED_LOCALES = [
@@ -133,6 +139,13 @@ final class EventInvitationRecipientExpander
             [$candidates, $structuralErrors] = $this->csvCandidates($csv);
         }
 
+        $this->assertNamedSelectionAuthority(
+            $tenantId,
+            $type,
+            $criteriaSnapshot,
+            count($candidates),
+            $actor,
+        );
         if (count($candidates) > self::MAX_RECIPIENTS) {
             throw new EventRegistrationFoundationException('event_invitation_recipient_limit_exceeded');
         }
@@ -346,6 +359,16 @@ final class EventInvitationRecipientExpander
             is_array($snapshot['criteria'] ?? null) ? $snapshot['criteria'] : null,
             $actor,
         );
+        // F-241: a named-member snapshot larger than the organiser cap
+        // (previewed by an admin, or before the cap existed) cannot be sent by
+        // an ordinary organiser either.
+        $this->assertNamedSelectionAuthority(
+            $tenantId,
+            $type,
+            is_array($snapshot['criteria'] ?? null) ? $snapshot['criteria'] : null,
+            is_int($snapshot['preview_count'] ?? null) ? $snapshot['preview_count'] : PHP_INT_MAX,
+            $actor,
+        );
         if ($type === EventInvitationCampaignType::Group) {
             $reference = $snapshot['source_reference'] ?? null;
             if (! is_string($reference)
@@ -411,6 +434,38 @@ final class EventInvitationRecipientExpander
         if (! $this->isBulkReach($type, $criteria)) {
             return;
         }
+        $this->assertCommunityAdmin($tenantId, $actor);
+    }
+
+    /**
+     * E-055 F-241: the member picker (Member type, or an Audience of only
+     * member_ids) stays open to ordinary organisers, but naming more than
+     * ORGANISER_MAX_MEMBER_IDS members is bulk reach — a sweep over
+     * sequential ids reaches the whole community. The count is of named ids,
+     * valid or not, so the picker cannot be used to enumerate members at
+     * scale either. Refused exactly like the other admin-only bulk types.
+     *
+     * @param array<string,mixed>|null $criteria Audience criteria (raw or snapshot)
+     */
+    private function assertNamedSelectionAuthority(
+        int $tenantId,
+        EventInvitationCampaignType $type,
+        ?array $criteria,
+        int $namedCount,
+        User|int $actor,
+    ): void {
+        $isNamedSelection = $type === EventInvitationCampaignType::Member
+            || ($type === EventInvitationCampaignType::Audience
+                && is_array($criteria)
+                && array_keys($criteria) === ['member_ids']);
+        if (! $isNamedSelection || $namedCount <= self::ORGANISER_MAX_MEMBER_IDS) {
+            return;
+        }
+        $this->assertCommunityAdmin($tenantId, $actor);
+    }
+
+    private function assertCommunityAdmin(int $tenantId, User|int $actor): void
+    {
         $actorModel = $actor instanceof User
             ? $actor
             : User::withoutGlobalScopes()->where('tenant_id', $tenantId)->find($actor);
