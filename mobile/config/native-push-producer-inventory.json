@@ -2773,9 +2773,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:1411:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:1415:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 1411,
+            "line": 1415,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$childUserId",

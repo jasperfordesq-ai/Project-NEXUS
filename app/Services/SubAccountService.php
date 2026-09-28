@@ -1106,7 +1106,11 @@ class SubAccountService
             return null;
         }
 
-        return $this->activityService->getDashboardData($childUserId);
+        // F-239 (E-055): the supporter is the viewer. can_view_activity shows
+        // them the supported member's activity, not other people's content
+        // the supporter could not open themselves (a private group's posts,
+        // a secret group's events, connections' surnames).
+        return $this->activityService->getDashboardData($childUserId, true, $parentUserId);
     }
 
     /**

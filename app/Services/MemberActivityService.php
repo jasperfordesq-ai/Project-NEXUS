@@ -16,6 +16,10 @@ use App\Models\Like;
 use App\Models\Listing;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\FeedItemTables;
+use App\Support\Members\MemberProfileVisibility;
+use App\Support\SavedItemVisibility;
+use App\Support\UserDisplayName;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -57,11 +61,16 @@ class MemberActivityService
      * carries no exchange entries, and `hours_summary` / `monthly_hours` are
      * omitted rather than zeroed, so a client cannot mistake "hidden" for
      * "no activity".
+     *
+     * F-239 (E-055): $viewerId is who is looking. Null, or the member's own
+     * id, is the member's own full view; any other viewer gets a timeline in
+     * which every entry passes the read rule of the item it describes for that
+     * viewer (see getRecentTimeline()).
      */
-    public function getDashboardData(int $userId, bool $includeExchangeDetail = true): array
+    public function getDashboardData(int $userId, bool $includeExchangeDetail = true, ?int $viewerId = null): array
     {
         $data = [
-            'timeline'         => $this->getRecentTimeline($userId, null, 30, $includeExchangeDetail),
+            'timeline'         => $this->getRecentTimeline($userId, null, 30, $includeExchangeDetail, $viewerId),
             'skills_breakdown' => $this->getSkillsBreakdown($userId),
             'connection_stats' => $this->getConnectionStats($userId),
             'engagement'       => $this->getEngagementMetrics($userId),
@@ -114,10 +123,24 @@ class MemberActivityService
 
     /**
      * Get recent activity timeline (full version with comments, connections, events).
+     *
+     * F-239 (E-055): when $viewerId is someone other than the member, each
+     * entry is kept only if that viewer could open it themselves, using the
+     * canonical read rules rather than a copy of them:
+     *   - posts       — FeedItemTables::canView('post') (group membership,
+     *                   scheduled / hidden / deleted state, post visibility);
+     *   - comments    — FeedItemTables::canView('comment'), which applies the
+     *                   read rule of the item the comment is attached to;
+     *   - RSVPs       — SavedItemVisibility::canView('event') (EventPolicy);
+     *   - connections — named without surname unless the viewer is an
+     *                   administrator (F-084, as on the profile route).
+     * Entries are filtered after each source's own LIMIT, so another viewer
+     * can see fewer than $limit entries; nothing withheld is padded back in.
      */
-    public function getRecentTimeline(int $userId, ?int $tenantId = null, int $limit = 30, bool $includeExchanges = true): array
+    public function getRecentTimeline(int $userId, ?int $tenantId = null, int $limit = 30, bool $includeExchanges = true, ?int $viewerId = null): array
     {
         $items = collect();
+        $filterForViewer = $viewerId !== null && $viewerId !== $userId;
 
         // Posts — only public posts belong in a timeline shown to other members.
         $posts = FeedPost::query()
@@ -127,6 +150,9 @@ class MemberActivityService
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
+        if ($filterForViewer) {
+            $posts = $posts->filter(fn ($post) => FeedItemTables::canView('post', (int) $post->id, $viewerId));
+        }
         $items = $items->merge($posts);
 
         // Transactions with user names — exchange partners and hours, so only
@@ -169,12 +195,19 @@ class MemberActivityService
                 ->orderByDesc('created_at')
                 ->limit($limit)
                 ->get();
+            if ($filterForViewer) {
+                $comments = $comments->filter(fn ($comment) => FeedItemTables::canView('comment', (int) $comment->id, $viewerId));
+            }
             $items = $items->merge($comments);
         } catch (\Illuminate\Database\QueryException $e) {
             report($e);
         }
 
-        // Connections
+        // Connections — surnames only for the member themselves and for
+        // administrators (F-084), as on the profile route.
+        $fullNames = ! $filterForViewer || MemberProfileVisibility::viewerIsAdmin($viewerId);
+        $u1Name = $fullNames ? "CONCAT(u1.first_name, ' ', u1.last_name)" : self::publicNameSql('u1');
+        $u2Name = $fullNames ? "CONCAT(u2.first_name, ' ', u2.last_name)" : self::publicNameSql('u2');
         try {
             $connections = Connection::query()
                 ->leftJoin('users as u1', function ($join) use ($activityTenantId) {
@@ -189,8 +222,8 @@ class MemberActivityService
                     "connections.id,
                      'connection' as activity_type,
                      CONCAT('Connected with ',
-                         CASE WHEN connections.requester_id = ? THEN CONCAT(u2.first_name, ' ', u2.last_name)
-                              ELSE CONCAT(u1.first_name, ' ', u1.last_name)
+                         CASE WHEN connections.requester_id = ? THEN {$u2Name}
+                              ELSE {$u1Name}
                          END
                      ) as description,
                      connections.updated_at as created_at",
@@ -212,6 +245,7 @@ class MemberActivityService
                 ->where('event_rsvps.status', 'going')
                 ->select(
                     'event_rsvps.id',
+                    'event_rsvps.event_id',
                     DB::raw("'event_rsvp' as activity_type"),
                     DB::raw("CONCAT('RSVP to ', e.title) as description"),
                     'event_rsvps.created_at'
@@ -219,6 +253,11 @@ class MemberActivityService
                 ->orderByDesc('event_rsvps.created_at')
                 ->limit($limit)
                 ->get();
+            if ($filterForViewer) {
+                $events = $events->filter(fn ($rsvp) => SavedItemVisibility::canView('event', (int) $rsvp->event_id, $viewerId));
+            }
+            // event_id is selected only for the check above; the entry's shape is unchanged.
+            $events->each(fn ($rsvp) => $rsvp->makeHidden('event_id'));
             $items = $items->merge($events);
         } catch (\Illuminate\Database\QueryException $e) {
             report($e);
@@ -230,6 +269,20 @@ class MemberActivityService
             ->values()
             ->map(fn ($i) => $i instanceof \Illuminate\Database\Eloquent\Model ? $i->toArray() : (array) $i)
             ->all();
+    }
+
+    /**
+     * SQL for the name another member may see (F-084): an organisation's
+     * trading name, otherwise the first name only — the same rule as
+     * MemberProfileVisibility::withoutSurname().
+     */
+    private static function publicNameSql(string $alias): string
+    {
+        return "CASE WHEN {$alias}.profile_type = '" . UserDisplayName::ORGANISATION . "'
+                          AND TRIM(COALESCE({$alias}.organization_name, '')) <> ''
+                     THEN {$alias}.organization_name
+                     ELSE TRIM(COALESCE({$alias}.first_name, ''))
+                END";
     }
 
     /**

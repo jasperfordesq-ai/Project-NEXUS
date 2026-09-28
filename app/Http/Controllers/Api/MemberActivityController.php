@@ -7,8 +7,10 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
 use App\Services\MemberActivityService;
 use App\Support\Authorization\AdminTier;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * MemberActivityController -- Member activity dashboard.
@@ -83,7 +85,21 @@ class MemberActivityController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 
-        $data = $this->memberActivityService->getDashboardData($id, $this->canSeeExchangeDetail($id));
+        // F-239 (E-055): this dashboard is part of the member's profile, so the
+        // profile route's gate applies — a block in either direction is refused
+        // with 403, and the member's privacy_profile choice with the same 404
+        // PROFILE_PRIVATE as GET /v2/users/{id} and /v2/users/{id}/listings.
+        $viewerId = $this->requireAuth();
+        if ($viewerId !== $id) {
+            if (BlockUserService::isBlockedEither($viewerId, $id)) {
+                return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+            }
+            if (! MemberProfileVisibility::canView($id, $viewerId)) {
+                return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+            }
+        }
+
+        $data = $this->memberActivityService->getDashboardData($id, $this->canSeeExchangeDetail($id), $viewerId);
 
         return $this->respondWithData($data);
     }
