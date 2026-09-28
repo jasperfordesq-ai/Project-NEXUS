@@ -1183,13 +1183,26 @@ class GdprService
                 $originalEmail = null;
             }
 
-            // 2. Anonymize user record
+            // 2. Anonymize user record.
+            // `name` must be overwritten too: UserDisplayName::fromParts()
+            // prefers the stored name over first/last, so leaving it would keep
+            // the real name on every display path (F-243). `username` is
+            // nullable and NULL never collides on the (tenant_id, username)
+            // unique key. `safeguarding_notes` is deliberately NOT cleared here:
+            // it is a staff safeguarding record whose retention is a DPO call.
             $anonymizedEmail = "deleted_{$userId}_" . bin2hex(random_bytes(8)) . "@anonymized.local";
             $this->query(
                 "UPDATE users SET
                     email = ?,
                     first_name = 'Deleted',
                     last_name = 'User',
+                    name = 'Deleted User',
+                    username = NULL,
+                    date_of_birth = NULL,
+                    organization_name = NULL,
+                    resume_headline = NULL,
+                    resume_summary = NULL,
+                    availability = NULL,
                     phone = NULL,
                     bio = NULL,
                     skills = NULL,
@@ -1889,6 +1902,13 @@ class GdprService
             try {
                 $this->query("DELETE FROM feed_comments WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
             } catch (\Throwable $e) { $this->logger->warning('GDPR feed-comments deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
+
+            // 3v-b. Canonical comments table (/api/v2/comments, /api/social/comments)
+            // — handled like feed_comments. Mentions cascade via FK; replies by
+            // other members are kept and render as top-level comments.
+            try {
+                $this->query("DELETE FROM comments WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+            } catch (\Throwable $e) { $this->logger->warning('GDPR comments deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
 
             // 3w. Courses — learning history (defensive: schema has no CASCADE
             // FK on these tables; quiz answers can contain free text).
