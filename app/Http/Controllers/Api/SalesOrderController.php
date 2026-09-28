@@ -56,6 +56,14 @@ class SalesOrderController extends BaseApiController
             'quote.line_items.*.amount_label' => ['required_with:quote.line_items', 'string', 'max:80'],
             'quote.line_items.*.quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
             'quote.line_items.*.cadence' => ['required_with:quote.line_items', 'string', 'in:monthly,one-off'],
+            // Optional, and additive: the sales site sends every choice the visitor made, labelled
+            // in plain words and including the ones that cost nothing, so the enquiry email shows
+            // the whole quote rather than only its paid lines. Older callers omit these.
+            'quote.contract_route' => ['nullable', 'string', 'in:standard,public-sector'],
+            'quote.active_members' => ['nullable', 'integer', 'min:0', 'max:100000000'],
+            'quote.selections' => ['nullable', 'array', 'max:40'],
+            'quote.selections.*.label' => ['required_with:quote.selections', 'string', 'max:120'],
+            'quote.selections.*.value' => ['required_with:quote.selections', 'string', 'max:300'],
         ]);
 
         if ($validator->fails()) {
@@ -162,10 +170,12 @@ class SalesOrderController extends BaseApiController
         // column of dashes, which reads like the quote failed to save rather than never existing.
         $quoteRows = $hasQuote ? [
             ['Product line', (string) ($quote['product_line_label'] ?? '')],
+            ...($this->contractRouteLabel($quote) !== '' ? [['Buying route', $this->contractRouteLabel($quote)]] : []),
+            ...(isset($quote['active_members']) ? [['Active members entered', number_format((int) $quote['active_members'])]] : []),
             ['Recommended plan', (string) ($quote['plan_name'] ?? '')],
             ['Capacity', (string) ($quote['active_member_label'] ?? '')],
-            ['Billing preference', (string) ($quote['billing_cycle'] ?? '')],
-            ['Pricing mode', (string) ($quote['pricing_mode'] ?? '')],
+            ['Billing preference', $this->billingLabel((string) ($quote['billing_cycle'] ?? ''))],
+            ['Pricing mode', $this->pricingModeLabel((string) ($quote['pricing_mode'] ?? ''))],
             ['Monthly recurring', (string) ($quote['monthly_recurring_label'] ?? '')],
             ['Annual recurring', (string) ($quote['annual_recurring_label'] ?? '')],
             ['Annual saving', (string) ($quote['annual_savings_label'] ?? '')],
@@ -190,8 +200,21 @@ class SalesOrderController extends BaseApiController
 
         $lineItemRows = array_map(function (array $item): string {
             $quantity = (int) ($item['quantity'] ?? 1);
-            return '<tr><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $this->escape((string) ($item['label'] ?? '')) . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $this->escape((string) ($item['cadence'] ?? '')) . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $quantity . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:700;">' . $this->escape((string) ($item['amount_label'] ?? '')) . '</td></tr>';
+            return '<tr><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $this->escape((string) ($item['label'] ?? '')) . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $this->escape($this->cadenceLabel((string) ($item['cadence'] ?? ''))) . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">' . $quantity . '</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:700;">' . $this->escape((string) ($item['amount_label'] ?? '')) . '</td></tr>';
         }, $lineItems);
+
+        $selections = is_array($quote['selections'] ?? null) ? $quote['selections'] : [];
+        $selectionRows = array_map(
+            fn (array $selection): string => '<tr><th style="text-align:left;padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#475569;width:260px;vertical-align:top;">' . $this->escape((string) ($selection['label'] ?? '')) . '</th><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;color:#0f172a;">' . $this->escape((string) ($selection['value'] ?? '')) . '</td></tr>',
+            $selections
+        );
+        // Every choice, free ones included, ahead of the priced lines: the paid lines alone do not
+        // say which support, hosting or testing route the visitor actually picked.
+        $selectionsHtml = $selectionRows !== []
+            ? '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
+                . '<div style="padding:16px 18px;border-bottom:1px solid #e5e7eb;"><strong>Everything selected in the quote builder</strong></div>'
+                . '<table role="presentation" style="width:100%;border-collapse:collapse;">' . implode('', $selectionRows) . '</table></div>'
+            : '';
 
         $lineItemsHtml = $lineItemRows !== []
             ? implode('', $lineItemRows)
@@ -207,6 +230,7 @@ class SalesOrderController extends BaseApiController
             . '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
             . '<table role="presentation" style="width:100%;border-collapse:collapse;">' . implode('', $summaryRows) . '</table>'
             . '</div>'
+            . ($hasQuote ? $selectionsHtml : '')
             . ($hasQuote
                 ? '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:20px;">'
                     . '<div style="padding:16px 18px;border-bottom:1px solid #e5e7eb;"><strong>Selected quote line items</strong></div>'
@@ -217,6 +241,43 @@ class SalesOrderController extends BaseApiController
             . '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;">'
             . '<strong>Notes</strong><p style="white-space:pre-wrap;line-height:1.6;color:#334155;">' . $this->escape((string) ($data['note'] ?? 'No extra notes added.')) . '</p>'
             . '</div></div></body></html>';
+    }
+
+    /** @param array<string,mixed> $quote */
+    private function contractRouteLabel(array $quote): string
+    {
+        return match ((string) ($quote['contract_route'] ?? '')) {
+            'public-sector' => 'Public-sector contract (written all-in proposal)',
+            'standard' => 'Standard managed hosting (published prices)',
+            default => '',
+        };
+    }
+
+    private function billingLabel(string $cycle): string
+    {
+        return match ($cycle) {
+            'annual' => 'Annual prepay',
+            'monthly' => 'Monthly',
+            default => $cycle,
+        };
+    }
+
+    private function pricingModeLabel(string $mode): string
+    {
+        return match ($mode) {
+            'published' => 'Published prices',
+            'custom' => 'Custom: a written all-in quote is required',
+            default => $mode,
+        };
+    }
+
+    private function cadenceLabel(string $cadence): string
+    {
+        return match ($cadence) {
+            'monthly' => 'Per month',
+            'one-off' => 'One-off',
+            default => $cadence,
+        };
     }
 
     private function formatReplyTo(string $name, string $email): string
