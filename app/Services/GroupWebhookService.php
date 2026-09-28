@@ -490,10 +490,14 @@ final class GroupWebhookService
 
         $response = Http::connectTimeout(3)
             ->timeout(5)
+            // No `stream => true` here (F-258): Guzzle sends a streamed request
+            // through its PHP-stream handler, which ignores the guard's cURL
+            // options — including the CURLOPT_RESOLVE address pin — and resolves
+            // the host again (DNS rebinding). The cURL handler buffers the body
+            // in php://temp, which spills to disk past 2 MB, so memory stays
+            // bounded; the 5-second timeout bounds the size, and
+            // responseExcerpt() still reads only a short prefix.
             ->withOptions(OutboundUrlGuard::httpClientOptions($url, requireHttps: true))
-            // Do not eagerly buffer the whole body; responseExcerpt() reads only a
-            // bounded prefix, so a hostile endpoint cannot exhaust worker memory.
-            ->withOptions(['stream' => true])
             ->withHeaders($headers)
             ->withBody($encodedBody, 'application/json')
             ->post($url);

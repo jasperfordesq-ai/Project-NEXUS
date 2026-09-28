@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Group webhook deliveries now always connect to the address the platform checked, instead of looking the address up a second time (F-258).
 - Server-side web requests the platform makes (link previews, webhooks, partner connections) now also refuse the cloud host's internal service address and other non-public network ranges (F-257).
 - Admins can now attach item attributes only to categories in their own community, and the attribute list never shows another community's category name (F-256).
 - The API now accepts sign-in credentials only in the Authorization header. A browser cookie that no Project NEXUS app sets was also accepted as a credential (F-247).
