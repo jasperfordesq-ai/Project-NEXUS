@@ -9,6 +9,7 @@ namespace App\Services\Identity;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\Authorization\MinimumAge;
 use App\Support\UserDisplayName;
 
 /**
@@ -289,7 +290,12 @@ class RegistrationOrchestrationService
                     "UPDATE users SET status = 'inactive' WHERE id = ? AND tenant_id = ?",
                     [$userId, $tenantId]
                 );
-            } elseif ($policy['fallback_mode'] !== 'none') {
+            } elseif ($policy['fallback_mode'] !== 'none'
+                // F-240: a verification refused because the document shows an
+                // under-18 holder must not be released by a fallback (the
+                // native_registration fallback approves and activates).
+                && !MinimumAge::userIsUnder(['id' => $userId, 'tenant_id' => $tenantId])
+            ) {
                 self::triggerFallback($userId, $tenantId, 'verification_failed');
             }
         }

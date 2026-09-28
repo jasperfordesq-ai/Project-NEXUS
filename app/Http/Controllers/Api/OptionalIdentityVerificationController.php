@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\I18n\LocaleContext;
+use App\Support\Authorization\MinimumAge;
 use App\Services\Identity\IdentityProviderRegistry;
 use App\Services\Identity\IdentityVerificationSessionService;
 use App\Services\Identity\IdentityVerificationEventService;
@@ -447,7 +449,7 @@ class OptionalIdentityVerificationController extends BaseApiController
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->first(['first_name', 'last_name', 'profile_type', 'organization_name', 'date_of_birth']);
+            ->first(['first_name', 'last_name', 'profile_type', 'organization_name', 'date_of_birth', 'preferred_language']);
 
         if (!$user) {
             return null; // Can't check — allow through
@@ -476,13 +478,16 @@ class OptionalIdentityVerificationController extends BaseApiController
 
         // Compare DOB
         $docDob = $stripeStatus['verified_dob'] ?? null;
-        if ($docDob && $user->date_of_birth) {
+        $docDobStr = null;
+        if ($docDob) {
             // Stripe returns DOB as { year, month, day }
             if (is_array($docDob)) {
                 $docDobStr = sprintf('%04d-%02d-%02d', $docDob['year'] ?? 0, $docDob['month'] ?? 0, $docDob['day'] ?? 0);
             } else {
                 $docDobStr = (string) $docDob;
             }
+        }
+        if ($docDobStr !== null && $user->date_of_birth) {
             $userDobStr = date('Y-m-d', strtotime($user->date_of_birth));
 
             if ($docDobStr !== $userDobStr) {
@@ -500,6 +505,34 @@ class OptionalIdentityVerificationController extends BaseApiController
                 'profile_last_name' => $user->last_name,
             ]);
             return "The {$fields} on your ID document does not match your profile. Please update your profile details and try again.";
+        }
+
+        // F-240: the platform is adults-only (MinimumAge). A document that
+        // matches the profile but shows the holder is under 18 must never pass:
+        // returning a reason makes every result path (webhook, in-app poll,
+        // scheduled poll) record the session as failed and withhold the badge
+        // and activation. The document date of birth is stored when the profile
+        // has none, so the sign-in / per-request age gate refuses the account
+        // from then on. An existing profile date of birth is never overwritten
+        // (a differing one already failed as a mismatch above).
+        $docDobNormalised = MinimumAge::normalise($docDobStr);
+        if ($docDobNormalised !== null && MinimumAge::isUnder($docDobNormalised)) {
+            if (empty($user->date_of_birth)) {
+                DB::table('users')
+                    ->where('id', $userId)
+                    ->where('tenant_id', $tenantId)
+                    ->whereNull('date_of_birth')
+                    ->update(['date_of_birth' => $docDobNormalised]);
+            }
+            Log::warning("Identity verification refused for user {$userId}: document holder is under the minimum age", [
+                'tenant_id' => $tenantId,
+                'code' => MinimumAge::ACCOUNT_ERROR_CODE,
+            ]);
+
+            return (string) LocaleContext::withLocale(
+                $user->preferred_language ?? null,
+                fn () => __('api.account_under_minimum_age', ['age' => MinimumAge::YEARS])
+            );
         }
 
         return null; // All matches
