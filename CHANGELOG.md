@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Admins can now attach item attributes only to categories in their own community, and the attribute list never shows another community's category name (F-256).
 - The API now accepts sign-in credentials only in the Authorization header. A browser cookie that no Project NEXUS app sets was also accepted as a credential (F-247).
 - A member's availability, skills, endorsements, appreciations, public collections, verification badges and rating now follow the same privacy rules as their profile: hidden from non-connections when the profile is visible to connections only, and from anyone either side has blocked. The "who is available" list now also respects search opt-out, connections-only profiles and blocks, and shows first names only (F-246).
 - Event organisers who are not community admins can now name at most 50 members in one invitation campaign. Larger lists are for admins, like the other community-wide invitation types (F-241).

@@ -268,6 +268,17 @@ class AdminCategoriesController extends BaseApiController
     // ========================================
 
     /**
+     * An attribute may only point at a category of the same community (F-256).
+     */
+    private function categoryBelongsToTenant(int $categoryId, int $tenantId): bool
+    {
+        return DB::table('categories')
+            ->where('id', $categoryId)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+    }
+
+    /**
      * GET /api/v2/admin/categories/attributes
      *
      * Lists all attributes for the current tenant.
@@ -280,7 +291,7 @@ class AdminCategoriesController extends BaseApiController
         $items = DB::select(
             "SELECT a.*, c.name as category_name
              FROM attributes a
-             LEFT JOIN categories c ON a.category_id = c.id
+             LEFT JOIN categories c ON a.category_id = c.id AND c.tenant_id = a.tenant_id
              WHERE a.tenant_id = ?
              ORDER BY a.category_id ASC, a.name ASC
              LIMIT 500",
@@ -320,6 +331,9 @@ class AdminCategoriesController extends BaseApiController
         }
 
         $categoryId = $this->input('category_id') ? (int) $this->input('category_id') : null;
+        if ($categoryId !== null && !$this->categoryBelongsToTenant($categoryId, $tenantId)) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.category_not_found'), 'category_id', 404);
+        }
         $inputType = trim($this->input('type', $this->input('input_type', 'checkbox')));
 
         $attribute = \App\Models\Attribute::create([
@@ -362,6 +376,11 @@ class AdminCategoriesController extends BaseApiController
 
         $name = isset($data['name']) && trim($data['name']) !== '' ? trim($data['name']) : $attribute->name;
         $categoryId = array_key_exists('category_id', $data) ? ($data['category_id'] ?: null) : ($attribute->category_id ?: null);
+        if (array_key_exists('category_id', $data) && $categoryId !== null
+            && !$this->categoryBelongsToTenant((int) $categoryId, $tenantId)
+        ) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.category_not_found'), 'category_id', 404);
+        }
         $inputType = isset($data['type']) ? trim($data['type']) : (isset($data['input_type']) ? trim($data['input_type']) : $attribute->input_type);
         $isActive = isset($data['is_active']) ? ($data['is_active'] ? 1 : 0) : ($attribute->is_active ?? 1);
 
