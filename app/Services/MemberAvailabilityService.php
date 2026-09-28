@@ -9,6 +9,8 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\MemberAvailability;
 use Illuminate\Support\Facades\DB;
+use App\Support\Members\MemberDirectoryVisibility;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /**
@@ -367,22 +369,42 @@ class MemberAvailabilityService
      * @param int         $dayOfWeek
      * @param string|null $time  Optional time to check (HH:MM)
      * @param int         $limit
+     * @param int|null    $viewerId The member asking (null for a guest)
      * @return array User IDs with availability
      */
-    public function getAvailableMembers(int $dayOfWeek, ?string $time = null, int $limit = 50): array
+    public function getAvailableMembers(int $dayOfWeek, ?string $time = null, int $limit = 50, ?int $viewerId = null): array
     {
+        $tenantId = (int) TenantContext::getId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+
         $query = $this->availability->newQuery()
             ->join('users as u', 'member_availability.user_id', '=', 'u.id')
             ->where('member_availability.day_of_week', $dayOfWeek)
             ->where('member_availability.is_recurring', true)
+            // F-246 (E-055): this is a member-discovery surface, so the member
+            // directory's rules apply — active members of this community only,
+            // the member's search opt-out and the community's onboarding
+            // visibility requirements, their connections-only choice, and a
+            // block in either direction with the viewer.
+            ->where('u.tenant_id', $tenantId)
+            ->where('u.status', 'active')
             ->select(
                 'member_availability.user_id',
                 'member_availability.start_time',
                 'member_availability.end_time',
                 DB::raw(UserDisplayName::sql('u', 'member_name')),
+                'u.first_name',
+                'u.profile_type',
+                'u.organization_name',
                 'u.avatar_url'
             )
             ->distinct();
+
+        MemberDirectoryVisibility::applyToEloquent($query, $tenantId, 'u');
+        MemberProfileVisibility::applyToQuery($query, $tenantId, $viewerId, 'u', $viewerIsAdmin);
+        if ($viewerId !== null) {
+            BlockUserService::applyBilateralExclusion($query, $tenantId, $viewerId, 'u.id');
+        }
 
         if ($time !== null) {
             $query->where('member_availability.start_time', '<=', $time)
@@ -393,7 +415,18 @@ class MemberAvailabilityService
             ->orderBy('member_availability.start_time')
             ->limit($limit)
             ->get()
-            ->map(fn ($r) => $r->toArray())
+            ->map(function ($r) use ($viewerIsAdmin): array {
+                $row = $r->toArray();
+                // F-084: the directory shows other members a first name only
+                // (an organisation keeps its trading name); administrators see
+                // the full name, as in the member directory.
+                if (! $viewerIsAdmin) {
+                    $row = MemberProfileVisibility::withoutSurname($row, 'member_name');
+                }
+                unset($row['first_name'], $row['profile_type'], $row['organization_name']);
+
+                return $row;
+            })
             ->all();
     }
 }

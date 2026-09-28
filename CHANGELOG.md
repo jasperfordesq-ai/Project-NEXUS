@@ -262,6 +262,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A member's availability, skills, endorsements, appreciations, public collections, verification badges and rating now follow the same privacy rules as their profile: hidden from non-connections when the profile is visible to connections only, and from anyone either side has blocked. The "who is available" list now also respects search opt-out, connections-only profiles and blocks, and shows first names only (F-246).
 - Event organisers who are not community admins can now name at most 50 members in one invitation campaign. Larger lists are for admins, like the other community-wide invitation types (F-241).
 - Saving a community's settings no longer restarts page rendering for every other community unless the community's maintenance mode really changes. Re-sending the current maintenance setting used to trigger a full platform re-render each time (F-245, partly fixed: a real switch into or out of maintenance still re-renders every community).
 - Only admins can now turn on review copies of every private message. A broker could reach the same setting through the message-sampling rate; brokers can still choose a sampling rate below 100% (F-242).

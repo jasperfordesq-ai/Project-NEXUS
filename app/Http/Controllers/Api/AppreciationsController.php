@@ -11,6 +11,8 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\Social\AppreciationService;
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * SOC14 — Appreciations / thank-you HTTP controller.
@@ -59,6 +61,9 @@ class AppreciationsController extends BaseApiController
 
     public function publicForUser(int $userId): JsonResponse
     {
+        if ($refusal = $this->refuseIfProfileHidden($userId)) {
+            return $refusal;
+        }
         $viewerId = $this->getOptionalUserId();
         $page = $this->queryInt('page', 1, 1) ?? 1;
         $perPage = $this->queryInt('per_page', 20, 1, 100) ?? 20;
@@ -111,5 +116,27 @@ class AppreciationsController extends BaseApiController
         $period = (string) $this->query('period', 'last_30d');
         $limit = $this->queryInt('limit', 10, 1, 50) ?? 10;
         return $this->respondWithData($this->service->getMostAppreciatedMembers(null, $period, $limit));
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

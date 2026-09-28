@@ -7,6 +7,8 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use App\Services\MemberVerificationBadgeService;
 
@@ -47,6 +49,10 @@ class MemberVerificationBadgeController extends BaseApiController
 
         if (!$userExists) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
+        if ($refusal = $this->refuseIfProfileHidden($id)) {
+            return $refusal;
         }
 
         $badges = $this->memberVerificationBadgeService->getUserBadges($id);
@@ -134,5 +140,27 @@ class MemberVerificationBadgeController extends BaseApiController
             'available_types' => MemberVerificationBadgeService::BADGE_TYPES,
             'labels' => MemberVerificationBadgeService::BADGE_LABELS,
         ]);
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

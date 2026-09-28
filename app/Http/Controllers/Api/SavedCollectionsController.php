@@ -10,6 +10,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\Social\SavedCollectionService;
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * SOC10 — Bookmarks / Saved-collections HTTP controller.
@@ -174,8 +176,32 @@ class SavedCollectionsController extends BaseApiController
 
     public function publicCollections(int $userId): JsonResponse
     {
-        $this->getOptionalUserId(); // not required, but resolves auth if any
+        if ($refusal = $this->refuseIfProfileHidden($userId)) {
+            return $refusal;
+        }
         $rows = $this->service->getUserCollections($userId, true);
         return $this->respondWithData($rows);
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

@@ -7,6 +7,8 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\Services\CommunityFundService;
@@ -350,6 +352,10 @@ class WalletFeaturesController extends BaseApiController
     {
         $this->requireAuth();
 
+        if ($refusal = $this->refuseIfProfileHidden($userId)) {
+            return $refusal;
+        }
+
         $rating = $this->exchangeRatingService->getUserRating($userId);
 
         return $this->respondWithData($rating);
@@ -569,5 +575,27 @@ class WalletFeaturesController extends BaseApiController
         // This line won't be reached in production (sendCSVDownload exits),
         // but provides a fallback for testing environments
         return $this->respondWithData(['message' => __('api_controllers_2.wallet.statement_exported')]);
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

@@ -7,6 +7,8 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 use App\Services\SkillTaxonomyService;
 
 /**
@@ -166,6 +168,10 @@ class SkillTaxonomyController extends BaseApiController
     {
         $this->rateLimit('user_skills_view', 30, 60);
 
+        if ($refusal = $this->refuseIfProfileHidden((int) $id)) {
+            return $refusal;
+        }
+
         $skills = $this->skillTaxonomyService->getUserSkills((int) $id);
 
         return $this->respondWithData($skills);
@@ -215,5 +221,27 @@ class SkillTaxonomyController extends BaseApiController
         $this->skillTaxonomyService->removeUserSkill($userId, $id);
 
         return $this->respondWithData(['message' => __('api_controllers_2.skill_taxonomy.skill_removed')]);
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

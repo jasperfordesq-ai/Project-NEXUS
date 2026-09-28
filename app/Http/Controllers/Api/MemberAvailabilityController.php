@@ -7,6 +7,8 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 use App\Services\MemberAvailabilityService;
 
 /**
@@ -114,6 +116,10 @@ class MemberAvailabilityController extends BaseApiController
     {
         $this->rateLimit('availability_view', 30, 60);
 
+        if ($refusal = $this->refuseIfProfileHidden($id)) {
+            return $refusal;
+        }
+
         $availability = $this->memberAvailabilityService->getUserAvailability($id);
 
         return $this->respondWithData(['weekly' => $availability]);
@@ -128,6 +134,11 @@ class MemberAvailabilityController extends BaseApiController
         $otherUserId = $this->queryInt('user_id');
         if (!$otherUserId) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'user_id']), 'user_id', 400);
+        }
+
+        // The overlap is derived from the other member's schedule.
+        if ($refusal = $this->refuseIfProfileHidden($otherUserId)) {
+            return $refusal;
         }
 
         $compatible = $this->memberAvailabilityService->findCompatibleTimes($userId, $otherUserId);
@@ -152,8 +163,30 @@ class MemberAvailabilityController extends BaseApiController
         $time = $this->query('time');
         $limit = $this->queryInt('limit', 50, 1, 100);
 
-        $members = $this->memberAvailabilityService->getAvailableMembers($day, $time, $limit);
+        $members = $this->memberAvailabilityService->getAvailableMembers($day, $time, $limit, $this->getOptionalUserId());
 
         return $this->respondWithData($members);
+    }
+
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
     }
 }

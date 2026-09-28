@@ -8,6 +8,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\SafeguardingPolicyException;
 use Illuminate\Http\JsonResponse;
+use App\Services\BlockUserService;
+use App\Support\Members\MemberProfileVisibility;
 use App\Services\EndorsementService;
 
 /**
@@ -106,6 +108,10 @@ class EndorsementController extends BaseApiController
     {
         $this->rateLimit('endorsements_view', 30, 60);
 
+        if ($refusal = $this->refuseIfProfileHidden($id)) {
+            return $refusal;
+        }
+
         $skillName = $this->query('skill_name');
         $viewerId = $this->getOptionalUserId();
 
@@ -151,4 +157,25 @@ class EndorsementController extends BaseApiController
         return $this->respondWithData($members);
     }
 
+    /**
+     * F-246 (E-055): this is part of the member's profile, so the profile
+     * route's gate (GET /v2/users/{id}) applies — a block in either direction
+     * is refused with 403, and the member's privacy_profile choice with the
+     * same 404 PROFILE_PRIVATE. The owner is never refused.
+     */
+    private function refuseIfProfileHidden(int $ownerId): ?JsonResponse
+    {
+        $viewerId = $this->getOptionalUserId();
+        if ($viewerId !== null && $viewerId === $ownerId) {
+            return null;
+        }
+        if ($viewerId !== null && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+        if (! MemberProfileVisibility::canView($ownerId, $viewerId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        return null;
+    }
 }
