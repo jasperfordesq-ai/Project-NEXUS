@@ -75,6 +75,7 @@ describe('UserCreate', () => {
     expect(screen.getByRole('textbox', { name: /email/i })).toBeInTheDocument();
     // Switch for "send welcome email" is rendered
     expect(screen.getByRole('switch')).toBeInTheDocument();
+    expect(document.querySelector('input[type="password"]')).toBeNull();
   });
 
   it('submits valid form and navigates on success', async () => {
@@ -93,9 +94,11 @@ describe('UserCreate', () => {
           first_name: 'Jane',
           last_name: 'Doe',
           email: 'jane@example.com',
+          send_welcome_email: true,
         }),
       );
     });
+    expect(mockAdminUsersCreate.mock.calls[0]?.[0]).not.toHaveProperty('password');
     expect(mockToast.success).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/users'));
   });
@@ -164,12 +167,11 @@ describe('UserCreate', () => {
     render(<UserCreate />);
     await fillRequiredFields();
 
-    // Type a short password in the password field
-    // Password input type="password" – use document query since getByRole('textbox') won't match
-    const pwInput = document.querySelector('input[type="password"]') as HTMLInputElement;
-    if (pwInput) {
-      await userEvent.type(pwInput, 'abc');
-    }
+    // A manual password is offered only when the invitation is disabled.
+    await userEvent.click(screen.getByRole('switch'));
+    const pwInput = document.querySelector('input[type="password"]') as HTMLInputElement | null;
+    expect(pwInput).not.toBeNull();
+    await userEvent.type(pwInput!, 'abc');
 
     const form = document.querySelector('form');
     fireEvent.submit(form!);
