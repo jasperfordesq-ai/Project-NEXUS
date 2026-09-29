@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Review dependency changes
         # BLOCKING as of 2026-08-10. It was continue-on-error only because
@@ -51,7 +51,7 @@ jobs:
         # packages with severity level high or higher" and no denied packages.
         # Dependency Graph itself is live: the SBOM endpoint returns 3,153
         # packages.
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           fail-on-severity: high
           comment-summary-in-pr: always

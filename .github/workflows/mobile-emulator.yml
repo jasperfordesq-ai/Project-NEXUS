@@ -70,7 +70,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # Hardware acceleration. Without it the AVD falls back to software
       # rendering and a cold boot goes from ~2 minutes to well past the timeout.
@@ -81,14 +81,14 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 
       # Gradle needs a JDK; the runner's default is not guaranteed to be 17.
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '17'
@@ -104,7 +104,7 @@ jobs:
         run: npx expo prebuild --platform android --no-install --clean
 
       - name: Cache Gradle
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.gradle/caches
@@ -165,7 +165,7 @@ jobs:
       # line. The first version hit both and invoked Maestro from the repo root with
       # a single backslash as its flow path. See the script's own header.
       - name: Boot the emulator and run the flow
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
@@ -190,7 +190,7 @@ jobs:
 
       - name: Upload diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: mobile-emulator-diagnostics
           path: ${{ runner.temp }}/diagnostics
@@ -225,7 +225,7 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Select Expo SDK 55's Xcode toolchain
         run: |
@@ -239,7 +239,7 @@ jobs:
           sudo xcode-select -s "$XCODE_APP/Contents/Developer"
           xcodebuild -version
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -256,7 +256,7 @@ jobs:
         run: npx expo prebuild --platform ios --no-install --clean
 
       - name: Cache CocoaPods
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -390,7 +390,7 @@ jobs:
 
       - name: Upload diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ios-emulator-diagnostics
           path: ${{ runner.temp }}/diagnostics-ios

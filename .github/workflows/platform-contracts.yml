@@ -93,9 +93,9 @@ jobs:
       contracts_inventory: ${{ steps.filter.outputs.contracts_inventory }}
       react_contracts: ${{ steps.filter.outputs.react_contracts }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
         with:
           filters: .github/ci-paths.yml
 
@@ -109,7 +109,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       # -SkipDotNet/-SkipReact/-SkipWebUk skip the build, lint and test steps
       # ONLY. Those are not disabled checks — the aspnet-build, aspnet-api-tests,
       # react-contracts and web-uk jobs in this same workflow run them properly,
@@ -129,7 +129,7 @@ jobs:
         run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./web-uk
       - name: Upload contract comparison reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: platform-contract-reports
           path: .local-docs-archive/platform-contracts/latest
@@ -146,8 +146,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '10.0.x'
       - name: Build
@@ -205,8 +205,8 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4, 5, 6]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '10.0.x'
       # The shard script runs with --no-restore --no-build so that discovery
@@ -228,7 +228,7 @@ jobs:
           -ManifestPath "artifacts/backend-test-shards/manifest-shard-${{ matrix.shard }}.json"
       - name: Upload API test diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: aspnet-api-test-results-shard-${{ matrix.shard }}
           path: aspnet-backend/artifacts/backend-test-shards
@@ -241,8 +241,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: '10.0.x'
       - name: Test Nexus.Messaging.Tests (10-minute hard limit)
@@ -256,7 +256,7 @@ jobs:
           --results-directory "${{ github.workspace }}/aspnet-test-results/messaging"
       - name: Upload Messaging test diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: aspnet-messaging-test-results
           path: aspnet-test-results/messaging
@@ -287,7 +287,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Build aspnet-backend image
         run: docker build -t nexus-aspnet:ci aspnet-backend/
 
@@ -301,7 +301,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       # --target production: the stage compose.prod.yml selects. The default
       # final stage would not exercise it.
       - name: Build web-uk production image
@@ -320,8 +320,8 @@ jobs:
       run:
         working-directory: react-frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
@@ -342,8 +342,8 @@ jobs:
       run:
         working-directory: web-uk
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
@@ -405,7 +405,7 @@ jobs:
       # screenshots are what make it diagnosable.
       - name: Upload accessibility report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: webuk-accessibility-report
           path: web-uk/artifacts/accessibility/
@@ -474,9 +474,9 @@ jobs:
       A11Y_MEMBER_EMAIL: e2e.user.a@project-nexus.local
       A11Y_MEMBER_PASSWORD: TestPassword123!
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: '8.2'
           extensions: mbstring, pdo_mysql, gmp, bcmath, intl, zip
@@ -587,7 +587,7 @@ jobs:
           done
           echo "Laravel did not come up"; exit 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
@@ -644,7 +644,7 @@ jobs:
 
       - name: Upload the contract verification report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: web-uk-api-contract-verification
           path: web-uk/docs/generated/api-contract-verification.*
@@ -653,7 +653,7 @@ jobs:
 
       - name: Upload accessibility report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: web-uk-authenticated-accessibility
           path: web-uk/artifacts/accessibility
