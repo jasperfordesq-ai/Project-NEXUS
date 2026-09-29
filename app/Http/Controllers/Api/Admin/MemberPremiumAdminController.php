@@ -45,7 +45,16 @@ class MemberPremiumAdminController extends BaseApiController
         $tenantId = TenantContext::getId();
         $accountId = trim((string) ($this->input('stripe_connect_account_id') ?? ''));
 
-        if ($accountId !== '' && preg_match('/^acct_[A-Za-z0-9_]+$/', $accountId) !== 1) {
+        // F-263: beyond the format check, only an account this platform's
+        // Stripe Connect onboarding created for THIS community may be bound —
+        // never another community's, a marketplace seller's, or an arbitrary id.
+        if (
+            $accountId !== ''
+            && (
+                preg_match('/^acct_[A-Za-z0-9_]+$/', $accountId) !== 1
+                || !DonationStripeAccountService::isOnboardedAccountForTenant($tenantId, $accountId)
+            )
+        ) {
             return $this->respondWithError(
                 'VALIDATION_ERROR',
                 __('api.member_premium_connect_account_invalid'),

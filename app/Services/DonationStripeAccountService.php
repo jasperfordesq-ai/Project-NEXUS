@@ -20,6 +20,16 @@ class DonationStripeAccountService
     public const ROUTE_PLATFORM_DEFAULT = 'platform_default';
     public const ROUTE_TENANT_CONNECT = 'tenant_connect';
 
+    /**
+     * Metadata written on every Connect account created by createOrResumeOnboarding().
+     * Only the platform (holding the secret key) can set metadata on its connected
+     * accounts, so these two values are the record that an account was onboarded
+     * by this platform FOR a given community (F-263).
+     */
+    public const METADATA_TENANT_ID = 'nexus_tenant_id';
+    public const METADATA_PURPOSE = 'nexus_account_purpose';
+    public const ACCOUNT_PURPOSE_DONATIONS = 'donations';
+
     public static function accountIdForTenant(int $tenantId): ?string
     {
         $value = app(TenantSettingsService::class)->get($tenantId, self::SETTING_CONNECT_ACCOUNT_ID);
@@ -124,10 +134,10 @@ class DonationStripeAccountService
                 $account = $client->accounts->create([
                     'type' => 'express',
                     'metadata' => [
-                        'nexus_tenant_id' => (string) $tenantId,
+                        self::METADATA_TENANT_ID => (string) $tenantId,
                         'nexus_tenant_name' => (string) (($tenant->name ?? null) ?: 'Community'),
                         'nexus_tenant_slug' => (string) (($tenant->slug ?? null) ?: ''),
-                        'nexus_account_purpose' => 'donations',
+                        self::METADATA_PURPOSE => self::ACCOUNT_PURPOSE_DONATIONS,
                     ],
                     'capabilities' => [
                         'card_payments' => ['requested' => true],
@@ -153,6 +163,28 @@ class DonationStripeAccountService
                 'tenant_id' => $tenantId,
                 'stripe_account_id' => $accountId,
             ]);
+        } else {
+            // F-263: never issue an onboarding link for a saved account this
+            // community's onboarding did not create — an account_onboarding
+            // link lets the holder edit that account's details and payouts.
+            try {
+                $account = $client->accounts->retrieve($accountId);
+            } catch (\Throwable $e) {
+                Log::warning('DonationStripeAccountService: failed to retrieve saved Connect account before resuming onboarding', [
+                    'tenant_id' => $tenantId,
+                    'stripe_account_id' => $accountId,
+                    'error' => $e->getMessage(),
+                ]);
+                throw new \RuntimeException('Failed to check the saved Stripe Connect account: ' . $e->getMessage(), 0, $e);
+            }
+
+            if (!self::accountWasOnboardedForTenant($account, $tenantId)) {
+                Log::warning('DonationStripeAccountService: refused to resume onboarding for a Connect account not onboarded by this tenant', [
+                    'tenant_id' => $tenantId,
+                    'stripe_account_id' => $accountId,
+                ]);
+                throw new \RuntimeException('The saved Stripe Connect account was not created by this community\'s onboarding. Clear it and start onboarding again.');
+            }
         }
 
         try {
@@ -194,7 +226,6 @@ class DonationStripeAccountService
 
         try {
             $account = StripeService::client()->accounts->retrieve($accountId);
-            return self::statusFromAccountObject($account);
         } catch (\Throwable $e) {
             Log::warning('DonationStripeAccountService: failed to retrieve Connect account status', [
                 'tenant_id' => $tenantId,
@@ -212,6 +243,74 @@ class DonationStripeAccountService
                 'error' => 'Stripe account status could not be checked.',
             ];
         }
+
+        // F-263: an id this community's onboarding did not create (another
+        // community's account, a marketplace seller's, anything saved before
+        // the fix) is never 'ready', so charges fall back to the platform
+        // route exactly as they do for an unfinished onboarding.
+        if (!self::accountWasOnboardedForTenant($account, $tenantId)) {
+            Log::warning('DonationStripeAccountService: saved Connect account was not onboarded by this tenant; not used for charges', [
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $accountId,
+            ]);
+
+            return self::notOnboardedForTenantStatus();
+        }
+
+        return self::statusFromAccountObject($account);
+    }
+
+    /**
+     * True only when Stripe confirms $accountId is a Connect account that this
+     * platform's donations onboarding created for $tenantId (F-263). Any
+     * failure to confirm — unknown account, other tenant, other purpose,
+     * Stripe unreachable — is false.
+     */
+    public static function isOnboardedAccountForTenant(int $tenantId, string $accountId): bool
+    {
+        $accountId = self::normalizeAccountId($accountId);
+        if (!$accountId) {
+            return false;
+        }
+
+        try {
+            $account = StripeService::client()->accounts->retrieve($accountId);
+        } catch (\Throwable $e) {
+            Log::warning('DonationStripeAccountService: could not verify Connect account ownership', [
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $accountId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return self::accountWasOnboardedForTenant($account, $tenantId);
+    }
+
+    /**
+     * Whether a retrieved Stripe account object carries the metadata that
+     * createOrResumeOnboarding() writes for $tenantId.
+     */
+    public static function accountWasOnboardedForTenant(object $account, int $tenantId): bool
+    {
+        $metadata = $account->metadata ?? null;
+
+        return self::metadataValue($metadata, self::METADATA_TENANT_ID) === (string) $tenantId
+            && self::metadataValue($metadata, self::METADATA_PURPOSE) === self::ACCOUNT_PURPOSE_DONATIONS;
+    }
+
+    private static function metadataValue(mixed $metadata, string $key): ?string
+    {
+        if (is_array($metadata)) {
+            $value = $metadata[$key] ?? null;
+        } elseif (is_object($metadata)) {
+            $value = $metadata->{$key} ?? null;
+        } else {
+            return null;
+        }
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /**
@@ -250,6 +349,16 @@ class DonationStripeAccountService
             'disabled_reason' => $disabledReason,
             'error' => null,
         ];
+    }
+
+    /**
+     * @return array{state:string,charges_enabled:bool,payouts_enabled:bool,details_submitted:bool,requirements_due:array<int,string>,disabled_reason:?string,error:?string}
+     */
+    private static function notOnboardedForTenantStatus(): array
+    {
+        return array_merge(self::notConnectedStatus(), [
+            'error' => 'This Stripe account was not created through this community\'s Stripe Connect onboarding.',
+        ]);
     }
 
     /**
