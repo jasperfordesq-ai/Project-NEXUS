@@ -2546,10 +2546,16 @@ HTML;
     {
         $hours = $details['proposed_hours'] ?? $data['hours'] ?? 0;
         $finalHours = $details['final_hours'] ?? $data['hours'] ?? $hours;
-        $reason = $data['reason'] ?? '';
+        // F-273: every value below is placed into this hand-written HTML
+        // template, which does not go through EmailTemplateBuilder and so gets
+        // none of its F-038 protection. The reason is typed by a member (or a
+        // broker) and the names are chosen by members, so all three are
+        // escaped here, at the point of insertion — as buildRichExchangeEmail()
+        // already does for the same names in the details card.
+        $reason = htmlspecialchars((string) ($data['reason'] ?? ''), ENT_QUOTES, 'UTF-8');
         $listingType = $details['listing_type'] ?? 'offer';
-        $requesterName = $details['requester_first_name'] ?? $details['requester_name'] ?? __('emails.common.fallback_member_name');
-        $providerName = $details['provider_first_name'] ?? $details['provider_name'] ?? 'the provider';
+        $requesterName = htmlspecialchars((string) ($details['requester_first_name'] ?? $details['requester_name'] ?? __('emails.common.fallback_member_name')), ENT_QUOTES, 'UTF-8');
+        $providerName = htmlspecialchars((string) ($details['provider_first_name'] ?? $details['provider_name'] ?? 'the provider'), ENT_QUOTES, 'UTF-8');
 
         $typeColor = $listingType === 'offer' ? '#dcfce7' : '#fef3c7';
         $typeText = $listingType === 'offer' ? '#166534' : '#92400e';
