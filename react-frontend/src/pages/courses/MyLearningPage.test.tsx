@@ -129,6 +129,44 @@ describe('MyLearningPage', () => {
     expect(screen.getByRole('button', { name: /download|certificate/i })).toBeInTheDocument();
   });
 
+  // F-299: the print window is an about:blank document that inherits this app's
+  // origin, so whatever is written into it runs as the app. The server escapes
+  // every field today; the page must not depend on that alone.
+  it('writes the certificate into the print window without script or handlers', async () => {
+    const written: string[] = [];
+    const fakeWindow = {
+      document: { write: (html: string) => written.push(html), close: vi.fn() },
+      focus: vi.fn(),
+      print: vi.fn(),
+    };
+    const open = vi.spyOn(window, 'open').mockReturnValue(fakeWindow as unknown as Window);
+    mockMyCourses.mockResolvedValueOnce({ success: true, data: [COMPLETED_ENROLLMENT] });
+    mockCertificate.mockResolvedValueOnce({
+      success: true,
+      data: {
+        html: '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Certificate</title>'
+          + '<style>body { color: #111827; }</style><script>window.opener.stolen = 1</script></head>'
+          + '<body><h1>Certificate</h1><p class="name">Ada <img src="x" onerror="alert(1)"></p>'
+          + '<a href="javascript:alert(1)">verify</a><iframe src="https://evil.invalid"></iframe></body></html>',
+      },
+    });
+    render(<MyLearningPage />);
+    await waitFor(() => expect(screen.getByText('Advanced React')).toBeInTheDocument());
+    screen.getByRole('button', { name: /download|certificate/i }).click();
+    await waitFor(() => expect(fakeWindow.print).toHaveBeenCalled());
+
+    const html = written.join('');
+    expect(html).not.toMatch(/<script/i);
+    expect(html).not.toMatch(/onerror/i);
+    expect(html).not.toMatch(/javascript:/i);
+    expect(html).not.toMatch(/<iframe/i);
+    // Control: the certificate itself still prints with its styling.
+    expect(html).toContain('<h1>Certificate</h1>');
+    expect(html).toContain('body { color: #111827; }');
+    expect(html).toContain('<title>Certificate</title>');
+    open.mockRestore();
+  });
+
   it('handles API failure gracefully (returns empty list)', async () => {
     mockMyCourses.mockResolvedValueOnce({ success: false, data: null });
     const { container } = render(<MyLearningPage />);

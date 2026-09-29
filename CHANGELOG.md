@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A printable course certificate is now cleaned of any hidden code before it opens (F-299).
 - Links that members or admins type in (event video links, order tracking, websites, report links, menu items and more) now go through one shared safety check before the website shows or opens them (F-298).
 - A job interview's video-call link must now be an ordinary web address, and interview location notes can no longer hold a script or local-file link (F-297).
 - A safeguarding report's evidence link must now be an ordinary web address; anything else is refused (F-296).

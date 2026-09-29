@@ -14,6 +14,7 @@ import { Button, Card, CardBody, Chip, Spinner, Progress } from '@/components/ui
 import { usePageTitle } from '@/hooks';
 import { useTenant } from '@/contexts';
 import { coursesApi, type CourseEnrollment } from '@/lib/api/courses';
+import { writePrintableDocument } from '@/lib/printableDocument';
 
 export default function MyLearningPage() {
   const { t } = useTranslation('courses');
@@ -90,8 +91,8 @@ function EnrollmentCard({ enrollment, tenantPath }: { enrollment: CourseEnrollme
     if (res.success && res.data?.html) {
       const win = window.open('', '_blank');
       if (win) {
-        win.document.write(res.data.html);
-        win.document.close();
+        // F-299: sanitised, because this window shares the app's origin.
+        writePrintableDocument(win, res.data.html);
         win.focus();
         win.print();
       }
