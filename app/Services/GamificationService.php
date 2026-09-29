@@ -471,14 +471,18 @@ class GamificationService
 
     /**
      * Award a badge to a user (idempotent — skips if already earned).
+     *
+     * @return bool true only when this call granted the badge; false when the
+     *              key is unknown or the member already holds it (F-310: callers
+     *              must not report an award that did not happen).
      */
-    public static function awardBadge(int $userId, $badge): void
+    public static function awardBadge(int $userId, $badge): bool
     {
         // Accept either array definition or badge key string
         if (is_string($badge)) {
             $badge = self::getBadgeByKey($badge);
             if (! $badge) {
-                return;
+                return false;
             }
         }
 
@@ -488,7 +492,7 @@ class GamificationService
             ->exists();
 
         if ($exists) {
-            return;
+            return false;
         }
 
         try {
@@ -500,7 +504,7 @@ class GamificationService
             ]);
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             // Badge already exists (race condition or cross-tenant duplicate) — skip silently
-            return;
+            return false;
         }
 
         // Create notification — render in the RECIPIENT's preferred language.
@@ -560,17 +564,20 @@ class GamificationService
 
         // Award XP for earning badge
         self::awardXP($userId, self::XP_VALUES['earn_badge'], 'earn_badge', "Badge: {$badge['name']}");
+
+        return true;
     }
 
     /**
      * Award a badge by key (admin use).
+     *
+     * @return bool true only when this call granted the badge (see awardBadge()).
      */
-    public static function awardBadgeByKey(int $userId, string $badgeKey): void
+    public static function awardBadgeByKey(int $userId, string $badgeKey): bool
     {
         $def = self::getBadgeByKey($badgeKey);
-        if ($def) {
-            self::awardBadge($userId, $def);
-        }
+
+        return $def ? self::awardBadge($userId, $def) : false;
     }
 
     // =========================================================================

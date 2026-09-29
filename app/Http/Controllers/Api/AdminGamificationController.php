@@ -220,6 +220,9 @@ class AdminGamificationController extends BaseApiController
         $this->requireAdmin();
         $name = trim($this->input('name', ''));
         if (empty($name)) return $this->respondWithError('VALIDATION_ERROR', __('api.campaign_name_required'), 'name');
+        if (!$this->campaignBadgeKeyResolves((string) $this->input('type', 'one_time'), (string) $this->input('badge_key', ''))) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_invalid'), 'badge_key', 422);
+        }
 
         try {
             $id = $this->achievementCampaignService->createCampaign([
@@ -241,6 +244,13 @@ class AdminGamificationController extends BaseApiController
         $this->requireAdmin();
         $campaign = $this->achievementCampaignService->getCampaign($id);
         if (!$campaign) return $this->respondWithError('NOT_FOUND', __('api.campaign_not_found'), null, 404);
+
+        if (($this->input('badge_key') !== null || $this->input('type') !== null) && !$this->campaignBadgeKeyResolves(
+            (string) $this->input('type', $campaign['type'] ?? 'one_time'),
+            (string) $this->input('badge_key', $campaign['badge_key'] ?? '')
+        )) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_invalid'), 'badge_key', 422);
+        }
 
         $newStatus = $this->input('status');
         if ($newStatus && $newStatus !== $campaign['status']) {
@@ -310,6 +320,23 @@ class AdminGamificationController extends BaseApiController
             'supported_action_types' => \App\Services\ChallengeService::SUPPORTED_ACTION_TYPES,
             'challenge_types' => \App\Services\ChallengeService::CHALLENGE_TYPES,
         ]);
+    }
+
+    /**
+     * F-310: a badge campaign must name a badge the award path can resolve, or
+     * it reports awards that never happen. An empty key is left to the draft
+     * (delivery skips it and says so in the log).
+     */
+    private function campaignBadgeKeyResolves(string $type, string $badgeKey): bool
+    {
+        $badgeKey = trim($badgeKey);
+        // Any type other than recurring/triggered is stored as a badge award
+        // (AchievementCampaignService::$typeToDbMap falls back to badge_award).
+        if (in_array($type, ['recurring', 'triggered'], true) || $badgeKey === '') {
+            return true;
+        }
+
+        return GamificationService::getBadgeByKey($badgeKey) !== null;
     }
 
     /**
@@ -541,7 +568,8 @@ class AdminGamificationController extends BaseApiController
 
         $awarded = 0; $errors = [];
         foreach ($validUserIds as $userId) {
-            try { $this->gamificationService->awardBadgeByKey((int) $userId, $badgeSlug); $awarded++; }
+            // F-310: count a member only when the badge was actually granted.
+            try { if ($this->gamificationService->awardBadgeByKey((int) $userId, $badgeSlug)) { $awarded++; } }
             catch (\Throwable $e) { $errors[] = "User {$userId}: " . $e->getMessage(); }
         }
 

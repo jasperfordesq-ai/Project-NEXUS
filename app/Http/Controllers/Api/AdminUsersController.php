@@ -1370,26 +1370,25 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_required'), 'badge_slug', 422);
         }
 
-        try {
-            $this->gamificationService->awardBadgeByKey($id, $badgeSlug);
-            ActivityLog::log($adminId, 'admin_award_badge', "Awarded badge '{$badgeSlug}' to user #{$id}");
+        // F-310: refuse a key the award path cannot resolve, instead of
+        // reporting (and notifying the member about) an award that never happens.
+        if ($this->gamificationService->getBadgeByKey($badgeSlug) === null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_invalid'), 'badge_slug', 422);
+        }
 
-            // Notify the user (bell notification only)
-            try {
-                $badgeDisplayName = ucwords(str_replace(['-', '_'], ' ', $badgeSlug));
-                Notification::createNotification(
-                    $id,
-                    "You've been awarded the {$badgeDisplayName} badge!",
-                    '/achievements',
-                    'achievement',
-                    false
-                );
-                \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'achievement', "You've been awarded the {$badgeDisplayName} badge!", '/achievements');
-            } catch (\Throwable $e) {
-                Log::warning("[AdminUsers] Failed to create badge award bell notification for user #{$id}: " . $e->getMessage());
+        try {
+            // awardBadge() notifies the member itself (bell, push, email) in
+            // their own language, and only when the badge is newly granted.
+            $awarded = $this->gamificationService->awardBadgeByKey($id, $badgeSlug);
+            if ($awarded) {
+                ActivityLog::log($adminId, 'admin_award_badge', "Awarded badge '{$badgeSlug}' to user #{$id}");
             }
 
-            return $this->respondWithData(['awarded' => true, 'user_id' => $id, 'badge_slug' => $badgeSlug], null, 201);
+            return $this->respondWithData(
+                ['awarded' => $awarded, 'user_id' => $id, 'badge_slug' => $badgeSlug],
+                null,
+                $awarded ? 201 : 200
+            );
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to award badge to user #{$id}: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.create_failed', ['resource' => 'badge award']), null, 500);

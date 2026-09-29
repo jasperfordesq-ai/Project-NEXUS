@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Awarding a badge that doesn't exist is now refused instead of reporting success, badge counts only include badges actually given, and members get one badge notification in their own language instead of two (F-310).
 - On the accessible site, opening the two-step sign-in set-up page no longer replaces a code you may already have scanned; you now press "Set up" first (F-307).
 - The accessible site's automated check that page addresses are built safely now covers every part of every address (F-306).
 - In the mobile app, links on an event's agenda now go through the app's link safety check before they open (F-301).

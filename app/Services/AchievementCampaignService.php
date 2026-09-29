@@ -433,10 +433,14 @@ class AchievementCampaignService
             $type, $badgeKey, $xpAmount, $reference, $description, &$awarded
         ): void {
             if ($type === 'badge_award') {
-                GamificationService::awardBadgeByKey($userId, $badgeKey);
-            } else {
-                GamificationService::awardXP($userId, $xpAmount, self::XP_ACTION, $description, $reference);
+                // F-310: count only a badge actually granted — an unknown key,
+                // or a member who already holds it, is not an award.
+                if (GamificationService::awardBadgeByKey($userId, $badgeKey)) {
+                    $awarded++;
+                }
+                return;
             }
+            GamificationService::awardXP($userId, $xpAmount, self::XP_ACTION, $description, $reference);
             $awarded++;
         });
 
