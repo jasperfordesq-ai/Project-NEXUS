@@ -55,9 +55,10 @@ describe('Android device screenshot evidence', () => {
   });
 
   it('uses the maintained setup actions', () => {
-    expect(workflow).toContain('actions/checkout@v5');
-    expect(workflow).toContain('actions/setup-node@v5');
-    expect(workflow).toContain('actions/setup-java@v5');
+    // Actions are pinned to a commit SHA with the release tag as a comment (F-008).
+    for (const action of ['actions/checkout', 'actions/setup-node', 'actions/setup-java']) {
+      expect(workflow).toMatch(new RegExp(`${action}@[0-9a-f]{40} # v5(?![0-9])`));
+    }
   });
 
   it('enrols and verifies the disposable administrator without weakening MFA policy', () => {

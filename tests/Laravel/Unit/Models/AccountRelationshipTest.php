@@ -30,6 +30,9 @@ class AccountRelationshipTest extends TestCase
             // while it was missing here Eloquent silently dropped it, leaving
             // the counterparty-notice mirror null on a live grant.
             'message_access_granted_at',
+            // Added 2026-09-29 (F-224): who asked for the link, so the OTHER
+            // party is the one who accepts.
+            'requested_by_user_id',
         ];
         $this->assertEquals($expected, $model->getFillable());
     }
