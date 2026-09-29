@@ -82,4 +82,37 @@ class HelpControllerTest extends TestCase
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
+
+    /**
+     * O-087 (E-063): the insert omitted tenant_id, so every community's
+     * feedback was filed under tenant 1 by the column default; once that
+     * default became a refusal the endpoint's catch would have answered
+     * "feedback recorded" while storing nothing. Assert the row itself.
+     */
+    public function test_feedback_is_stored_under_the_article_community(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $slug = 'test-help-article-' . uniqid();
+        $articleId = DB::table('help_articles')->insertGetId([
+            'tenant_id'  => $this->testTenantId,
+            'title'      => 'Test Help Article',
+            'slug'       => $slug,
+            'content'    => 'Body',
+            'module_tag' => 'core',
+            'is_public'  => 1,
+            'created_at' => now(),
+        ]);
+
+        $this->apiPost('/help/feedback', ['article_slug' => $slug, 'helpful' => false])->assertStatus(200);
+
+        $row = DB::table('help_article_feedback')
+            ->where('article_id', $articleId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $this->assertNotNull($row, 'feedback was answered as recorded but not stored');
+        $this->assertSame($this->testTenantId, (int) $row->tenant_id);
+        $this->assertSame(0, (int) $row->helpful);
+    }
 }

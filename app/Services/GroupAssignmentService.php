@@ -81,11 +81,13 @@ class GroupAssignmentService
             'group_automatic_assignment',
         );
 
-        // Insert the user into the group (INSERT IGNORE to avoid duplicates)
+        // Insert the user into the group (INSERT IGNORE to avoid duplicates).
+        // tenant_id is explicit: the column used to default to 1 and filed
+        // every assignment under the master community (O-087).
         DB::insert(
-            "INSERT IGNORE INTO group_members (group_id, user_id, status, created_at)
-             VALUES (?, ?, 'active', NOW())",
-            [$groupId, $userId]
+            "INSERT IGNORE INTO group_members (tenant_id, group_id, user_id, status, created_at)
+             VALUES (?, ?, ?, 'active', NOW())",
+            [(int) TenantContext::getId(), $groupId, $userId]
         );
 
         return 'ASSIGNED: ' . $bestGroup['name'];

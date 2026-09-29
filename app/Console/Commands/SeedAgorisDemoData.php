@@ -503,7 +503,7 @@ class SeedAgorisDemoData extends Command
         ]);
 
         foreach (['Besuchsdienste', 'Digitale Hilfe', 'Fahrdienste', 'Formularhilfe'] as $idx => $label) {
-            $this->upsert('poll_options', ['poll_id' => $pollId, 'option_text' => $label], [
+            $this->upsert('poll_options', ['tenant_id' => $tenantId, 'poll_id' => $pollId, 'option_text' => $label], [
                 'sort_order' => $idx,
                 'votes_count' => 3 + $idx,
                 'updated_at' => now(),

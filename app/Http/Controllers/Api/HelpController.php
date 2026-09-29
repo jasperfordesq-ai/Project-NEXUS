@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Services\HelpService;
 
 /**
@@ -249,6 +250,7 @@ class HelpController extends BaseApiController
             }
 
             DB::table('help_article_feedback')->insert([
+                'tenant_id'  => (int) $article->tenant_id,
                 'article_id' => $article->id,
                 'helpful'    => $helpful ? 1 : 0,
                 'user_id'    => $userId,
@@ -258,7 +260,13 @@ class HelpController extends BaseApiController
 
             return $this->respondWithData(['message' => __('api_controllers_2.help.feedback_recorded')]);
         } catch (\Exception $e) {
-            // Feedback table may not exist yet
+            // Feedback is non-critical to the reader, so the answer stays the
+            // same — but a failed write must not vanish: this insert once
+            // omitted tenant_id and misfiled every community's feedback.
+            Log::error('[HelpController] help article feedback not stored', [
+                'article_id' => $article->id,
+                'error' => $e->getMessage(),
+            ]);
             return $this->respondWithData(['message' => __('api_controllers_2.help.feedback_recorded')]);
         }
     }
