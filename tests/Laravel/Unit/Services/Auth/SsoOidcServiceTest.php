@@ -301,7 +301,14 @@ class SsoOidcServiceTest extends TestCase
         $identityProvider = 'sso:' . $this->testTenantId . ':' . $providerKey;
         $subject = 'existing-subject-' . bin2hex(random_bytes(6));
         $trustedEmail = 'trusted-' . bin2hex(random_bytes(6)) . '@example.test';
-        $trustedPayload = ['email' => $trustedEmail, 'email_verified' => true];
+        // As the application stores it: the verified claims, incl. `iss` and
+        // `aud` — F-268 refuses a linked row with no recorded issuer.
+        $trustedPayload = [
+            'iss' => 'https://93.184.216.34/email-claims',
+            'aud' => 'email-claims-client',
+            'email' => $trustedEmail,
+            'email_verified' => true,
+        ];
         DB::table('oauth_identities')->insert([
             'user_id' => (int) $user->id,
             'tenant_id' => $this->testTenantId,
@@ -322,6 +329,8 @@ class SsoOidcServiceTest extends TestCase
         $provider = (object) [
             'tenant_id' => $this->testTenantId,
             'provider_key' => $providerKey,
+            'issuer_url' => 'https://93.184.216.34/email-claims',
+            'client_id' => 'email-claims-client',
             'allowed_email_domains' => null,
             'auto_provision' => true,
         ];
@@ -346,7 +355,16 @@ class SsoOidcServiceTest extends TestCase
             ->first();
         $this->assertNotNull($identity);
         $this->assertSame($trustedEmail, $identity->provider_email);
-        $this->assertSame($trustedPayload, json_decode((string) $identity->raw_payload, true));
+        // Trusted metadata is untouched; only the F-268 binding is added.
+        $stored = json_decode((string) $identity->raw_payload, true);
+        $binding = $stored['nexus_sso_binding'] ?? null;
+        unset($stored['nexus_sso_binding']);
+        $this->assertSame($trustedPayload, $stored);
+        $this->assertSame([
+            'issuer_url' => 'https://93.184.216.34/email-claims',
+            'client_id' => 'email-claims-client',
+            'iss' => 'https://93.184.216.34/email-claims',
+        ], $binding);
         $this->assertNotNull($identity->last_used_at);
     }
 

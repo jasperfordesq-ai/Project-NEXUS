@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A member's linked community sign-in now works only through the same sign-in system it was linked under. If a community admin later points the provider somewhere else, linked members have to link it again from their settings, so the change cannot be used to sign in as them (F-268).
 - Added an optional safeguard so that visitor addresses forwarded by Cloudflare are trusted only when the request comes through this platform's own Cloudflare account. It is off until the operator configures it, and changes nothing until then (F-248).
 - A job candidate's data export still includes the employer's notes about their application and interviews, but no longer identifies which staff member wrote the decision or proposed the interview (F-261).
 - A sign-in provider set up by a community admin can no longer sign someone into an existing account just because the email address matches. New members can still join through it, and anyone already linked keeps signing in. Providers approved by the platform operator are unchanged (F-244).

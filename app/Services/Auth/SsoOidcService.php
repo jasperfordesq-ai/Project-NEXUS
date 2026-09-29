@@ -59,6 +59,13 @@ class SsoOidcService
     private const DISCOVERY_CACHE_SECONDS = 3600;
     private const JWKS_CACHE_SECONDS = 3600;
     private const HTTP_TIMEOUT_SECONDS = 10;
+    /**
+     * F-268: key inside oauth_identities.raw_payload under which NEXUS records
+     * the provider configuration (issuer URL, client id) and token issuer an
+     * SSO identity was bound under. Written only by this service, never taken
+     * from an ID token (safeClaims() strips a claim of the same name).
+     */
+    private const IDENTITY_BINDING_KEY = 'nexus_sso_binding';
 
     /**
      * Public metadata for the tenant's enabled providers (login buttons).
@@ -380,7 +387,7 @@ class SsoOidcService
                 // Metadata only — never an ownership signal on this path.
                 'provider_email' => $emailVerified ? $email : null,
                 'avatar_url' => null,
-                'raw_payload' => $this->safeClaims($claims),
+                'raw_payload' => $this->withIdentityBinding($this->safeClaims($claims), $provider, $claims),
                 'authentication_started_at' => $payload['authentication_started_at'],
                 'expected_verified_email' => null,
                 'sso_provider_context' => $context,
@@ -827,10 +834,26 @@ class SsoOidcService
 
         // 1. Existing identity?
         $existing = DB::selectOne(
-            'SELECT user_id FROM oauth_identities WHERE tenant_id = ? AND provider = ? AND provider_user_id = ? LIMIT 1',
+            'SELECT user_id, raw_payload FROM oauth_identities WHERE tenant_id = ? AND provider = ? AND provider_user_id = ? LIMIT 1',
             [$tenantId, $identityProvider, $subject]
         );
         if ($existing) {
+            // F-268: the subject is opaque and chosen by whoever signs the
+            // token. A linked identity signs in only through the issuer and
+            // client it was bound under, so a provider an admin repoints at
+            // an IdP they control cannot mint a linked member's `sub`.
+            $storedPayload = json_decode((string) ($existing->raw_payload ?? ''), true);
+            $storedPayload = is_array($storedPayload) ? $storedPayload : [];
+            if (! $this->linkedIdentityBindingHolds($provider, $claims, $storedPayload)) {
+                Log::warning('[SSO] refused linked identity: issuer or client differs from the one it was bound under', [
+                    'tenant_id' => $tenantId,
+                    'provider_key' => (string) $provider->provider_key,
+                    'user_id' => (int) $existing->user_id,
+                    'bound' => is_array($storedPayload[self::IDENTITY_BINDING_KEY] ?? null),
+                ]);
+                throw new \RuntimeException(__('api.sso_login_failed'));
+            }
+
             $user = User::query()
                 ->whereKey((int) $existing->user_id)
                 ->where('tenant_id', $tenantId)
@@ -843,15 +866,16 @@ class SsoOidcService
             if ($emailVerified && $email !== null) {
                 DB::update(
                     'UPDATE oauth_identities SET last_used_at = NOW(), provider_email = ?, raw_payload = ?, updated_at = NOW() WHERE tenant_id = ? AND provider = ? AND provider_user_id = ?',
-                    [$email, json_encode($rawPayload), $tenantId, $identityProvider, $subject]
+                    [$email, json_encode($this->withIdentityBinding($rawPayload, $provider, $claims)), $tenantId, $identityProvider, $subject]
                 );
             } else {
                 // The signed subject preserves an established tenant-bound
                 // identity when no domain gate applies. An unverified email
-                // must not replace trusted metadata or influence ownership.
+                // must not replace trusted metadata or influence ownership;
+                // only the (just verified) binding is recorded alongside it.
                 DB::update(
-                    'UPDATE oauth_identities SET last_used_at = NOW(), updated_at = NOW() WHERE tenant_id = ? AND provider = ? AND provider_user_id = ?',
-                    [$tenantId, $identityProvider, $subject]
+                    'UPDATE oauth_identities SET last_used_at = NOW(), raw_payload = ?, updated_at = NOW() WHERE tenant_id = ? AND provider = ? AND provider_user_id = ?',
+                    [json_encode($this->withIdentityBinding($storedPayload, $provider, $claims)), $tenantId, $identityProvider, $subject]
                 );
             }
             return ['user' => $user, 'is_new' => false, 'tenant_id' => $tenantId];
@@ -913,7 +937,7 @@ class SsoOidcService
                             'provider_user_id' => $subject,
                             'provider_email' => $email,
                             'avatar_url' => null,
-                            'raw_payload' => $rawPayload,
+                            'raw_payload' => $this->withIdentityBinding($rawPayload, $provider, $claims),
                             'authentication_started_at' => $authenticationStartedAt,
                             'expected_verified_email' => $email,
                         ],
@@ -956,7 +980,14 @@ class SsoOidcService
             'updated_at' => now(),
         ]);
 
-        $this->insertIdentity((int) $userId, $tenantId, $identityProvider, $subject, $email, $rawPayload);
+        $this->insertIdentity(
+            (int) $userId,
+            $tenantId,
+            $identityProvider,
+            $subject,
+            $email,
+            $this->withIdentityBinding($rawPayload, $provider, $claims)
+        );
 
         $user = User::query()
             ->whereKey((int) $userId)
@@ -1184,8 +1215,89 @@ class SsoOidcService
      */
     private function safeClaims(array $claims): array
     {
-        unset($claims['at_hash'], $claims['c_hash'], $claims['nonce']);
+        // The binding key is NEXUS-owned: an IdP must never be able to plant it.
+        unset($claims['at_hash'], $claims['c_hash'], $claims['nonce'], $claims[self::IDENTITY_BINDING_KEY]);
         return $claims;
+    }
+
+    /**
+     * The issuer and client an SSO identity is bound under (F-268): the
+     * provider configuration used for this validated sign-in plus the token's
+     * issuer, which exchangeAndValidate() has already matched to discovery.
+     *
+     * @param array<string, mixed> $claims validated ID token claims
+     * @return array{issuer_url:string, client_id:string, iss:string}
+     */
+    private function identityBinding(object $provider, array $claims): array
+    {
+        return [
+            'issuer_url' => rtrim((string) ($provider->issuer_url ?? ''), '/'),
+            'client_id' => (string) ($provider->client_id ?? ''),
+            'iss' => is_string($claims['iss'] ?? null) ? $claims['iss'] : '',
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @param array<string, mixed> $claims validated ID token claims
+     * @return array<string, mixed>
+     */
+    private function withIdentityBinding(array $payload, object $provider, array $claims): array
+    {
+        $payload[self::IDENTITY_BINDING_KEY] = $this->identityBinding($provider, $claims);
+
+        return $payload;
+    }
+
+    /**
+     * F-268: may this validated token sign in through an existing identity?
+     *
+     * Bound identity (written since F-268): the provider's issuer URL and
+     * client id, and the token's issuer, must all equal what was recorded.
+     *
+     * Identity written before the binding existed: every creation path has
+     * always stored the verified ID-token claims, so the row carries the
+     * `iss` (and `aud`) it was last verified under. It may sign in — and is
+     * then bound — only when the token's issuer equals that recorded `iss`,
+     * the recorded `aud` (if any) includes the current client id, AND the
+     * configured issuer URL is that same issuer (OIDC Discovery 1.0 §4.3).
+     * The last condition stops a repointed provider whose discovery document
+     * merely claims the original issuer. A row with no recorded issuer cannot
+     * be proved unchanged and is refused; the member re-links while signed in.
+     *
+     * @param array<string, mixed> $claims validated ID token claims
+     * @param array<string, mixed> $stored the identity's stored raw_payload
+     */
+    private function linkedIdentityBindingHolds(object $provider, array $claims, array $stored): bool
+    {
+        $current = $this->identityBinding($provider, $claims);
+        if ($current['issuer_url'] === '' || $current['client_id'] === '' || $current['iss'] === '') {
+            return false;
+        }
+
+        $recorded = $stored[self::IDENTITY_BINDING_KEY] ?? null;
+        if (is_array($recorded)) {
+            foreach ($current as $field => $value) {
+                if (! is_string($recorded[$field] ?? null) || $recorded[$field] !== $value) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        $recordedIssuer = $stored['iss'] ?? null;
+        if (! is_string($recordedIssuer) || $recordedIssuer === '' || $recordedIssuer !== $current['iss']) {
+            return false;
+        }
+        if (array_key_exists('aud', $stored)) {
+            $recordedAudience = is_array($stored['aud']) ? $stored['aud'] : [$stored['aud']];
+            if (! in_array($current['client_id'], $recordedAudience, true)) {
+                return false;
+            }
+        }
+
+        return rtrim($current['iss'], '/') === $current['issuer_url'];
     }
 
     /**

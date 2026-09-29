@@ -155,7 +155,9 @@ class F244SsoNoEmailAutoLinkTest extends TestCase
             'provider' => $this->identityProvider(),
             'provider_user_id' => $subject,
             'provider_email' => $member->email,
-            'raw_payload' => json_encode(['sub' => $subject]),
+            // As the application stores it: the verified claims, incl. `iss`
+            // and `aud` — F-268 refuses a linked row with no recorded issuer.
+            'raw_payload' => json_encode(['sub' => $subject, 'iss' => $this->issuer, 'aud' => $this->clientId]),
             'linked_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
