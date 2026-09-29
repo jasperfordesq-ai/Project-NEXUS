@@ -126,4 +126,14 @@ return [
         'address' => env('CLAMAV_ADDRESS', ''),
     ],
 
+    'cloudflare' => [
+        // F-248: optional shared secret proving a request came through OUR
+        // Cloudflare zone (a Transform Rule adds it as X-Nexus-Origin-Secret).
+        // Every Cloudflare customer's Workers egress from the same published
+        // ranges, so the range alone proves nothing. When set, App\Core\ClientIp
+        // trusts forwarded client-IP headers across a Cloudflare hop only if the
+        // header matches. Empty/unset = previous behaviour (range trust only).
+        'origin_secret' => env('CLOUDFLARE_ORIGIN_SECRET'),
+    ],
+
 ];

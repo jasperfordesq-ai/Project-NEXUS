@@ -103,6 +103,8 @@ services:
       # permitted a host the browser cannot reach.
       - PUBLIC_ASSET_BASE_URL=${WEBUK_PUBLIC_ASSET_BASE_URL:-https://api.project-nexus.ie}
       - TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-}
+      # F-248: optional Cloudflare origin secret; empty = today's behaviour.
+      - CLOUDFLARE_ORIGIN_SECRET=${CLOUDFLARE_ORIGIN_SECRET:-}
       - SENTRY_DSN=${SENTRY_DSN_WEBUK:-}
       - SENTRY_ENVIRONMENT=production
       # Identity reported by /version, which is how a cutover is proved to have

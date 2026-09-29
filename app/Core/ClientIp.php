@@ -16,6 +16,20 @@ namespace App\Core;
  *   2. X-Forwarded-For   (first untrusted hop, evaluated right-to-left)
  *   3. X-Real-IP         (single-IP header from reverse proxies)
  *   4. REMOTE_ADDR       (fallback)
+ *
+ * F-248: Cloudflare's published ranges are shared by every Cloudflare customer,
+ * including their Workers, so an address in those ranges does not by itself
+ * prove the request came through OUR zone. When `services.cloudflare.origin_secret`
+ * (CLOUDFLARE_ORIGIN_SECRET) is set, a Cloudflare hop is trusted only if the
+ * request carries a matching X-Nexus-Origin-Secret header, which our zone adds
+ * with a Transform Rule. Otherwise the Cloudflare address itself is the client.
+ * Unset = the previous behaviour, unchanged.
+ *
+ * 🔴 In production the API image's mod_remoteip (Dockerfile.bluegreen) rewrites
+ * REMOTE_ADDR from X-Forwarded-For BEFORE PHP runs, trusting the same ranges.
+ * This class cannot undo that; the host Apache vhost must drop forwarded headers
+ * on requests without the secret. This check covers ClientIp's own branches
+ * (CF-Connecting-IP, X-Real-IP, and chains that reach PHP unrewritten).
  */
 class ClientIp
 {
@@ -60,6 +74,12 @@ class ClientIp
         '2c0f:f248::/32',
     ];
 
+    /** Request header (as a $_SERVER key) carrying the zone's origin secret. */
+    public const ORIGIN_SECRET_SERVER_KEY = 'HTTP_X_NEXUS_ORIGIN_SECRET';
+
+    /** Config key holding the expected origin secret (empty = check disabled). */
+    public const ORIGIN_SECRET_CONFIG_KEY = 'services.cloudflare.origin_secret';
+
     /** Cached result for the current request */
     private static ?string $cachedIp = null;
 
@@ -91,14 +111,16 @@ class ClientIp
     private static function resolve(): string
     {
         $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $trustCloudflare = self::cloudflareHopIsOurs();
 
         // If REMOTE_ADDR is NOT a trusted proxy, it IS the real client.
-        if (!self::isTrustedProxy($remoteAddr)) {
+        if (!self::isTrustedProxy($remoteAddr, $trustCloudflare)) {
             return $remoteAddr;
         }
 
         $xff = self::getHeader('HTTP_X_FORWARDED_FOR');
-        $hasVerifiedCloudflareHop = self::hasVerifiedCloudflareHop($remoteAddr, $xff);
+        $hasVerifiedCloudflareHop = $trustCloudflare
+            && self::hasVerifiedCloudflareHop($remoteAddr, $xff);
 
         // 1. CF-Connecting-IP. An internal/Docker hop alone is not proof that
         // Cloudflare supplied this header: direct-origin clients can choose it.
@@ -112,7 +134,7 @@ class ClientIp
             $ips = array_map('trim', explode(',', $xff));
             for ($i = count($ips) - 1; $i >= 0; $i--) {
                 $ip = $ips[$i];
-                if (filter_var($ip, FILTER_VALIDATE_IP) && !self::isTrustedProxy($ip)) {
+                if (filter_var($ip, FILTER_VALIDATE_IP) && !self::isTrustedProxy($ip, $trustCloudflare)) {
                     return $ip;
                 }
             }
@@ -137,9 +159,45 @@ class ClientIp
     /**
      * Check if an IP is within our trusted proxy ranges.
      */
-    private static function isTrustedProxy(string $ip): bool
+    private static function isTrustedProxy(string $ip, bool $trustCloudflare = true): bool
     {
-        return self::isInternalProxy($ip) || self::isCloudflareProxy($ip);
+        return self::isInternalProxy($ip) || ($trustCloudflare && self::isCloudflareProxy($ip));
+    }
+
+    /**
+     * F-248: may a Cloudflare hop on this request be treated as our own zone?
+     * Always yes when no origin secret is configured (previous behaviour).
+     * Otherwise only when X-Nexus-Origin-Secret matches, compared in constant time.
+     */
+    private static function cloudflareHopIsOurs(): bool
+    {
+        $expected = self::configuredOriginSecret();
+        if ($expected === '') {
+            return true;
+        }
+
+        $provided = $_SERVER[self::ORIGIN_SECRET_SERVER_KEY] ?? null;
+        if (! is_string($provided) || $provided === '') {
+            return false;
+        }
+
+        return hash_equals($expected, trim($provided));
+    }
+
+    /**
+     * ClientIp is also used outside a booted Laravel application (plain PHPUnit
+     * unit tests), so read config only when the container actually has it.
+     */
+    private static function configuredOriginSecret(): string
+    {
+        $container = \Illuminate\Container\Container::getInstance();
+        if (! $container->bound('config')) {
+            return '';
+        }
+
+        $value = $container->make('config')->get(self::ORIGIN_SECRET_CONFIG_KEY);
+
+        return is_string($value) ? trim($value) : '';
     }
 
     private static function isInternalProxy(string $ip): bool
@@ -252,7 +310,9 @@ class ClientIp
             'HTTP_X_FORWARDED_PROTO' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null,
             'HTTP_CF_RAY' => $_SERVER['HTTP_CF_RAY'] ?? null,
             'HTTP_CF_IPCOUNTRY' => $_SERVER['HTTP_CF_IPCOUNTRY'] ?? null,
-            'remote_addr_is_trusted' => self::isTrustedProxy($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'),
+            'remote_addr_is_trusted' => self::isTrustedProxy($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1', self::cloudflareHopIsOurs()),
+            'origin_secret_configured' => self::configuredOriginSecret() !== '',
+            'cloudflare_hop_is_ours' => self::cloudflareHopIsOurs(),
             'mod_remoteip_active' => isset($_SERVER['REMOTE_ADDR']) && !self::isTrustedProxy($_SERVER['REMOTE_ADDR']),
         ];
     }

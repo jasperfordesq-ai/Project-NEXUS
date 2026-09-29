@@ -1456,6 +1456,18 @@ class AppServiceProvider extends ServiceProvider
                         }
                         $event->setRequest($request);
                     }
+
+                    // F-248: the Cloudflare origin secret travels as a request
+                    // header; never let it reach Sentry.
+                    $request = $event->getRequest();
+                    if (!empty($request['headers']) && is_array($request['headers'])) {
+                        foreach (array_keys($request['headers']) as $name) {
+                            if (strcasecmp((string) $name, 'X-Nexus-Origin-Secret') === 0) {
+                                $request['headers'][$name] = '[FILTERED]';
+                            }
+                        }
+                        $event->setRequest($request);
+                    }
                     return $event;
                 },
             ]);

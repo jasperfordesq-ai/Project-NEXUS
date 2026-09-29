@@ -117,7 +117,9 @@ function scrubEvent(event) {
         'x-real-ip',
         'cf-connecting-ip',
         'true-client-ip',
-        'x-client-ip'
+        'x-client-ip',
+        // F-248: the Cloudflare origin secret header.
+        'x-nexus-origin-secret'
       ]);
       for (const name of Object.keys(event.request.headers)) {
         if (REDACT.has(name.toLowerCase())) {
