@@ -64,6 +64,8 @@
     "sources": [
       "app/Http/Controllers/Api/AdminMatchingController.php",
       "app/Services/MatchApprovalWorkflowService.php",
+      "app/Services/Matching/MatchApprovalGate.php",
+      "app/Services/SmartMatchingEngine.php",
       "app/Services/SafeguardingTriggerService.php",
       "react-frontend/public/locales/en/broker.json",
       "react-frontend/public/locales/en/onboarding.json",
@@ -73,7 +75,7 @@
       "react-frontend/src/broker/routes.tsx",
       "react-frontend/src/pages/settings/tabs/SafeguardingTab.tsx"
     ],
-    "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+    "verified": "8ec91047fee4a9dc8f4c40ba2f3496b41394b754"
   },
   "brokers/broker_group_activities/broker_group_exchange_basics": {
     "sources": [
