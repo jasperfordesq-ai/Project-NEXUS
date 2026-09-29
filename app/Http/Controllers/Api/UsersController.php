@@ -999,6 +999,25 @@ class UsersController extends BaseApiController
             );
         }
 
+        // F-308: an erasure request is the third door to irreversible account
+        // deletion. It must be as hard to open as the other two — DELETE
+        // /v2/users/me and POST /gdpr/delete-account both require and verify
+        // the password — so a bearer token alone cannot queue it.
+        $isErasure = $type === 'erasure';
+        if ($isErasure) {
+            $password = $data['password'] ?? '';
+            if (!is_string($password) || $password === '') {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.password_required'), 'password', 400);
+            }
+            $passwordHash = DB::table('users')
+                ->where('id', $userId)
+                ->where('tenant_id', $this->getTenantId())
+                ->value('password_hash');
+            if (!is_string($passwordHash) || !password_verify($password, $passwordHash)) {
+                return $this->respondWithError('INVALID_PASSWORD', __('api.invalid_password'), 'password', 403);
+            }
+        }
+
         try {
             $result = (new GdprService($this->getTenantId()))->createRequest($userId, $type, [
                 'notes'    => $notes,
@@ -1009,18 +1028,38 @@ class UsersController extends BaseApiController
                 ],
             ]);
 
+            // F-308: same session handling as POST /gdpr/delete-account — a
+            // recorded erasure request ends every active session, so another
+            // device or a copied token cannot carry on as the member (and the
+            // member gets a visible signal that the request was made).
+            if ($isErasure && app(\App\Services\TokenService::class)->revokeAllTokensForUser(
+                $userId,
+                'account_deletion_request'
+            ) < 1) {
+                Log::error('GDPR erasure request recorded but sessions could not be revoked', [
+                    'user' => $userId,
+                    'request_id' => $result['id'] ?? null,
+                ]);
+                return $this->respondWithError('REQUEST_FAILED', __('api.user_request_failed'), null, 500);
+            }
+
             // Acknowledge the request by email so the member has a record of it —
             // the Privacy settings UI promises a confirmation email. Best-effort:
             // a mail failure must never fail the request. Rendered in the
             // recipient's preferred language per the platform i18n rule.
             $this->sendGdprRequestConfirmation($userId);
 
-            return $this->respondWithData([
+            $payload = [
                 'request_id' => $result['id'],
                 'type'       => $type,
                 'status'     => 'pending',
                 'message'    => __('api.users.gdpr_request_submitted'),
-            ], null, 201);
+            ];
+            if ($isErasure) {
+                $payload['logout_required'] = true;
+            }
+
+            return $this->respondWithData($payload, null, 201);
         } catch (\RuntimeException $e) {
             return $this->respondWithError('DUPLICATE_REQUEST', __('api.user_duplicate_request'), null, 409);
         } catch (\Exception $e) {

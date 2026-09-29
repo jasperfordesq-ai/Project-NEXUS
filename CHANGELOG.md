@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Asking for your account to be deleted through the data-protection request form now needs your password and signs you out everywhere, the same as the other two ways of deleting an account (F-308).
 - Rejecting or cancelling a data-protection request now records who did it, when and why, and adds an entry to the audit log, as completing one already did (F-325).
 - A visitor filling in the sales enquiry form can no longer slip a second email address into the reply-to line of the email the sales team receives (F-323).
 - Two parts of the standard email layout, the statistic-card icon and the badge colour, are now checked before they go into an email. Nothing uses them unsafely today; this closes the door before anything does (F-322).
