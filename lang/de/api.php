@@ -328,6 +328,7 @@ return [
     'tag_param_required' => 'Tag-Parameter ist erforderlich',
     'invalid_email_provider' => 'Ungültiger E-Mail-Anbieter',
     'smtp_host_not_allowed' => 'Der SMTP-Server muss ein öffentlicher Mailserver sein. Private, lokale und reservierte Netzwerkadressen sind nicht zulässig.',
+    'email_sender_invalid_characters' => 'Absendername und Absender-E-Mail-Adresse dürfen keine Zeilenumbrüche oder anderen Steuerzeichen enthalten.',
     'no_valid_settings' => 'Keine gültigen Einstellungen angegeben',
     'failed_send_test_email' => 'Test-E-Mail konnte nicht gesendet werden. Überprüfen Sie die Serverprotokolle.',
     'failed_send_test_via' => 'Test-E-Mail konnte nicht über :provider gesendet werden. Überprüfen Sie die Serverprotokolle.',

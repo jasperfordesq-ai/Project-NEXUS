@@ -340,6 +340,7 @@ return [
     'tag_param_required' => 'tagparameter is vereist',
     'invalid_email_provider' => 'Ongeldige e-mailprovider',
     'smtp_host_not_allowed' => 'De SMTP-server moet een openbare mailserver zijn. Privé-, lokale en gereserveerde netwerkadressen zijn niet toegestaan.',
+    'email_sender_invalid_characters' => 'De afzendernaam en het e-mailadres van de afzender mogen geen regeleinden of andere besturingstekens bevatten.',
     'no_valid_settings' => 'Geen geldige instellingen opgegeven',
     'failed_send_test_email' => 'Kan geen test-e-mail verzenden. Controleer serverlogboeken.',
     'failed_send_test_via' => 'Kan geen test-e-mail verzenden via :provider. Controleer serverlogboeken.',

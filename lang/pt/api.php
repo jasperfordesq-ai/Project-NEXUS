@@ -328,6 +328,7 @@ return [
     'tag_param_required' => 'o parâmetro tag é obrigatório',
     'invalid_email_provider' => 'Provedor de e-mail inválido',
     'smtp_host_not_allowed' => 'O servidor SMTP tem de ser um servidor de correio público. Não são permitidos endereços de rede privados, locais ou reservados.',
+    'email_sender_invalid_characters' => 'O nome e o endereço de e-mail do remetente não podem conter quebras de linha nem outros caracteres de controlo.',
     'no_valid_settings' => 'Nenhuma configuração válida fornecida',
     'failed_send_test_email' => 'Falha ao enviar e-mail de teste. Verifique os logs do servidor.',
     'failed_send_test_via' => 'Falha ao enviar e-mail de teste via :provider. Verifique os logs do servidor.',

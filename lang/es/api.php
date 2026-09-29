@@ -328,6 +328,7 @@ return [
     'tag_param_required' => 'El parámetro de etiqueta es obligatorio.',
     'invalid_email_provider' => 'Proveedor de correo electrónico no válido',
     'smtp_host_not_allowed' => 'El servidor SMTP debe ser un servidor de correo público. No se permiten direcciones de red privadas, locales ni reservadas.',
+    'email_sender_invalid_characters' => 'El nombre y la dirección de correo electrónico del remitente no pueden contener saltos de línea ni otros caracteres de control.',
     'no_valid_settings' => 'No se han proporcionado configuraciones válidas',
     'failed_send_test_email' => 'No se pudo enviar el correo electrónico de prueba. Verifique los registros del servidor.',
     'failed_send_test_via' => 'No se pudo enviar el correo electrónico de prueba a través de :provider. Verifique los registros del servidor.',

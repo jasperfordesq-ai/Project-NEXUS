@@ -189,6 +189,14 @@ class Mailer
         if ($tenantId !== null) {
             $this->loadTenantConfig($tenantId);
         }
+
+        // F-280: the From name and address come from config, the community's
+        // name and the community's own email settings — the last two are set
+        // by a community admin. Every one of them ends up in a raw header (and
+        // the address in the SMTP MAIL FROM command), so normalise them here,
+        // once, after every source above has had its say.
+        $this->fromName = self::sanitizeHeaderValue((string) $this->fromName);
+        $this->fromEmail = self::sanitizeHeaderValue((string) $this->fromEmail);
     }
 
     /**
@@ -624,6 +632,8 @@ class Mailer
         $subject = self::sanitizeHeaderValue($subject);
         $cc = $cc !== null ? self::sanitizeHeaderValue($cc) : null;
         $replyTo = $replyTo !== null ? self::sanitizeHeaderValue($replyTo) : null;
+        $unsubscribeUrl = $unsubscribeUrl !== null ? self::sanitizeHeaderValue($unsubscribeUrl) : null;
+        $this->fromEmail = self::sanitizeHeaderValue((string) $this->fromEmail);
 
         // Auto-attach a one-click unsubscribe URL if the caller didn't pass one
         // AND the recipient is a known tenant member. Gmail / Yahoo (Feb 2024)
@@ -1113,8 +1123,17 @@ class Mailer
             $plainText = trim($plainText);
         }
 
+        // F-280: every value interpolated into a header line is re-sanitised
+        // here, so no code path that reaches this builder can add a header.
+        $fromName = self::sanitizeHeaderValue((string) $this->fromName);
+        $fromEmail = self::sanitizeHeaderValue((string) $this->fromEmail);
+        $to = self::sanitizeHeaderValue((string) $to);
+        $cc = $cc ? self::sanitizeHeaderValue((string) $cc) : null;
+        $replyTo = $replyTo ? self::sanitizeHeaderValue((string) $replyTo) : null;
+        $unsubscribeUrl = $unsubscribeUrl ? self::sanitizeHeaderValue($unsubscribeUrl) : null;
+
         $headers = [];
-        $headers[] = 'From: ' . $this->fromName . ' <' . $this->fromEmail . '>';
+        $headers[] = 'From: ' . $fromName . ' <' . $fromEmail . '>';
         $headers[] = 'To: ' . $to;
         if ($cc) {
             $headers[] = 'Cc: ' . $cc;
@@ -1235,7 +1254,17 @@ class Mailer
 
     private function sendData($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
     {
-        $this->write("MAIL FROM: <{$this->fromEmail}>");
+        // F-280: re-sanitise everything that is written into an SMTP command
+        // or a header line, so no code path that reaches the wire can add a
+        // recipient, a command or a header.
+        $fromName = self::sanitizeHeaderValue((string) $this->fromName);
+        $fromEmail = self::sanitizeHeaderValue((string) $this->fromEmail);
+        $to = self::sanitizeHeaderValue((string) $to);
+        $cc = $cc ? self::sanitizeHeaderValue((string) $cc) : null;
+        $replyTo = $replyTo ? self::sanitizeHeaderValue((string) $replyTo) : null;
+        $unsubscribeUrl = $unsubscribeUrl ? self::sanitizeHeaderValue($unsubscribeUrl) : null;
+
+        $this->write("MAIL FROM: <{$fromEmail}>");
         $this->read();
         $this->write("RCPT TO: <$to>");
         $this->read();
@@ -1253,7 +1282,7 @@ class Mailer
         $headers .= $hasText
             ? "Content-Type: multipart/alternative; boundary=\"$boundary\"\r\n"
             : "Content-Type: text/html; charset=UTF-8\r\n";
-        $headers .= "From: {$this->fromName} <{$this->fromEmail}>\r\n";
+        $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
         $headers .= "To: $to\r\n";
         if ($cc) {
             $headers .= "Cc: $cc\r\n";
@@ -1389,9 +1418,27 @@ class Mailer
      *
      * Strips carriage returns and line feeds which could be used to inject
      * additional headers (e.g., BCC, additional To, or arbitrary headers).
+     *
+     * F-280: also strips every other ASCII control character and DEL, and the
+     * Unicode line/paragraph separators (U+0085, U+2028, U+2029) that some
+     * mail software treats as line breaks. A tab becomes a space. This is the
+     * one guard for every header value — To, Cc, Reply-To, Subject, the
+     * unsubscribe URL, and the From name and address however they were set.
      */
     private static function sanitizeHeaderValue(string $value): string
     {
-        return str_replace(["\r", "\n", "\0"], '', $value);
+        $value = str_replace(["\t", "\u{0085}", "\u{2028}", "\u{2029}"], [' ', '', '', ''], $value);
+
+        return (string) preg_replace('/[\x00-\x1F\x7F]/', '', $value);
+    }
+
+    /**
+     * True when a value would be altered by sanitizeHeaderValue() — i.e. it
+     * carries a line break or other control character. Used to REFUSE such a
+     * value when an admin tries to store it, rather than silently changing it.
+     */
+    public static function containsHeaderBreakingCharacters(string $value): bool
+    {
+        return str_replace("\t", ' ', $value) !== self::sanitizeHeaderValue($value);
     }
 }

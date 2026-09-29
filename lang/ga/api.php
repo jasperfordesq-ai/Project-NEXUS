@@ -328,6 +328,7 @@ return [
     'tag_param_required' => 'tá paraiméadar tag ag teastáil',
     'invalid_email_provider' => 'Soláthraí ríomhphoist neamhbhailí',
     'smtp_host_not_allowed' => 'Caithfidh an freastalaí SMTP a bheith ina fhreastalaí poist poiblí. Ní cheadaítear seoltaí líonra príobháideacha, áitiúla ná forchoimeádta.',
+    'email_sender_invalid_characters' => 'Ní féidir briseadh líne ná carachtair rialaithe eile a bheith in ainm an tseoltóra ná i seoladh ríomhphoist an tseoltóra.',
     'no_valid_settings' => 'Níor soláthraíodh aon socruithe bailí',
     'failed_send_test_email' => 'Theip ar sheoladh ríomhphoist tástála. Seiceáil logaí freastalaí.',
     'failed_send_test_via' => 'Theip ar ríomhphost tástála a sheoladh trí :provider. Seiceáil logaí freastalaí.',

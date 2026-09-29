@@ -188,6 +188,18 @@ class AdminEmailController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_valid_settings'), null, 422);
         }
 
+        // F-280: the sender name and address are written into raw mail headers
+        // (and the address into the SMTP MAIL FROM command). A line break in
+        // one would let this community's settings add a hidden Bcc: to every
+        // email it sends. Mailer strips such characters regardless; refusing
+        // them here means an admin is told, rather than having the value
+        // silently changed.
+        foreach (['smtp_from_name', 'smtp_from_email', 'gmail_sender_name', 'gmail_sender_email'] as $headerKey) {
+            if (isset($toSave[$headerKey]) && Mailer::containsHeaderBreakingCharacters($toSave[$headerKey])) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.email_sender_invalid_characters'), $headerKey, 422);
+            }
+        }
+
         // F-062: a community's SMTP server must be a public mail host. Refuse a
         // host that is, or resolves to, a private, loopback, link-local or
         // reserved address so the platform cannot be used to probe its own

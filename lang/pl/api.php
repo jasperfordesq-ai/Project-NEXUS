@@ -340,6 +340,7 @@ return [
     'tag_param_required' => 'parametr tagu jest wymagany',
     'invalid_email_provider' => 'Nieprawidłowy dostawca poczty e-mail',
     'smtp_host_not_allowed' => 'Serwer SMTP musi być publicznym serwerem pocztowym. Prywatne, lokalne i zarezerwowane adresy sieciowe są niedozwolone.',
+    'email_sender_invalid_characters' => 'Nazwa nadawcy i adres e-mail nadawcy nie mogą zawierać podziałów wierszy ani innych znaków sterujących.',
     'no_valid_settings' => 'Nie podano prawidłowych ustawień',
     'failed_send_test_email' => 'Nie udało się wysłać wiadomości testowej. Sprawdź logi serwera.',
     'failed_send_test_via' => 'Nie udało się wysłać testowego e-maila przez :provider. Sprawdź logi serwera.',

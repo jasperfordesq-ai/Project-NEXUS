@@ -340,6 +340,7 @@ return [
     'tag_param_required' => 'タグパラメータは必須です',
     'invalid_email_provider' => '無効な電子メールプロバイダー',
     'smtp_host_not_allowed' => 'SMTP サーバーは公開メールサーバーである必要があります。プライベート、ローカル、予約済みのネットワークアドレスは使用できません。',
+    'email_sender_invalid_characters' => '送信者名と送信者のメールアドレスに、改行やその他の制御文字を含めることはできません。',
     'no_valid_settings' => '有効な設定が提供されていません',
     'failed_send_test_email' => 'テストメールの送信に失敗しました。サーバーのログを確認します。',
     'failed_send_test_via' => ':provider 経由でテスト電子メールを送信できませんでした。サーバーのログを確認します。',

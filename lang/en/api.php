@@ -762,6 +762,7 @@ return [
     // ============================================
     'invalid_email_provider'               => 'Invalid email provider',
     'smtp_host_not_allowed' => 'The SMTP server must be a public mail server. Private, local and reserved network addresses are not allowed.',
+    'email_sender_invalid_characters' => 'The sender name and sender email address cannot contain line breaks or other control characters.',
     'no_valid_settings'                    => 'No valid settings provided',
     'failed_send_test_email'               => 'Failed to send test email. Check server logs.',
     'failed_send_test_via'                 => 'Failed to send test email via :provider. Check server logs.',
