@@ -1441,7 +1441,7 @@ router.get('/:id(\\d+)/files/:fileId(\\d+)/download', requireAuth, asyncRoute(as
   let download;
 
   try {
-    download = await downloadGroupFile(req.token, `/${id}/files/${fileId}/download`);
+    download = await downloadGroupFile(req.token, `/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}/download`);
   } catch (error) {
     if (isAuthError(error)) {
       return redirectTo(res, loginRedirect());
