@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Brokers and coordinators no longer see staff concern notes written about themselves, about fellow brokers or about admins; they still see concern notes about ordinary members. Admins are unchanged (F-252).
+
 ## [3.0.0] - 2026-09-29
 
 ### Fixed

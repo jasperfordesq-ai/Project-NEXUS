@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\Support\Authorization\AdminTier;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -20,6 +21,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AdminCrmController extends BaseApiController
 {
     protected bool $isV2Api = true;
+
+    /** Note category whose visibility below admin tier is rank-limited (F-252). */
+    private const CONCERN_CATEGORY = 'concern';
 
     public function __construct() {}
 
@@ -196,7 +200,7 @@ class AdminCrmController extends BaseApiController
     /** GET /api/v2/admin/crm/notes */
     public function listNotes(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $callerId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
         $userId = $this->queryInt('user_id');
@@ -226,6 +230,16 @@ class AdminCrmController extends BaseApiController
             $where .= " AND (mn.content LIKE ? ESCAPE '\\\\' OR u.name LIKE ? ESCAPE '\\\\')";
             $params[] = $searchTerm;
             $params[] = $searchTerm;
+        }
+
+        // F-252: a caller below admin tier never receives a concern note
+        // about themselves or about an account at or above their own tier.
+        $hiddenSubjects = $this->concernSubjectsHiddenFromCaller($callerId, $tenantId);
+        if ($hiddenSubjects !== []) {
+            $placeholders = implode(',', array_fill(0, count($hiddenSubjects), '?'));
+            $where .= " AND NOT (mn.category = ? AND mn.user_id IN ({$placeholders}))";
+            $params[] = self::CONCERN_CATEGORY;
+            array_push($params, ...$hiddenSubjects);
         }
 
         $total = (int) DB::selectOne(
@@ -963,6 +977,45 @@ class AdminCrmController extends BaseApiController
     // ─────────────────────────────────────────────────────────────────────────
     // Helpers
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * F-252: ids of the note subjects whose concern notes the caller may not
+     * read. Admin tiers see every note (empty list). A caller below admin
+     * tier (broker / coordinator) never sees a concern note about themselves
+     * or about anyone they do not strictly outrank (AdminTier::outranks, the
+     * rank rule F-219 applies to balance changes) — i.e. a fellow broker or
+     * any admin. If the caller's own row cannot be read they are ranked as a
+     * member, which hides every concern note (fails closed).
+     *
+     * @return list<int>
+     */
+    private function concernSubjectsHiddenFromCaller(int $callerId, int $tenantId): array
+    {
+        if ($this->callerIsAdminTier()) {
+            return [];
+        }
+
+        $actor = DB::selectOne(
+            "SELECT id, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ?",
+            [$callerId]
+        ) ?? ['role' => 'member'];
+
+        $subjects = DB::select(
+            "SELECT DISTINCT mn.user_id AS id, u.role, u.is_admin, u.is_super_admin, u.is_tenant_super_admin, u.is_god
+             FROM member_notes mn LEFT JOIN users u ON u.id = mn.user_id
+             WHERE mn.tenant_id = ? AND mn.category = ?",
+            [$tenantId, self::CONCERN_CATEGORY]
+        );
+
+        $hidden = [$callerId];
+        foreach ($subjects as $subject) {
+            if (!AdminTier::outranks($actor, $subject)) {
+                $hidden[] = (int) $subject->id;
+            }
+        }
+
+        return array_values(array_unique($hidden));
+    }
 
     private function appendTimelineBranch(
         array &$unions,
