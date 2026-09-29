@@ -255,11 +255,14 @@ final class EventCreditService
         float $amount,
         string $eventTitle,
     ): array {
-        // Monthly treasury ceiling. Deliberately lock-free: two concurrent
-        // check-ins can each pass the read and overshoot the cap by at most one
-        // reward (itself capped by attendance_credit_max). That bounded
-        // overshoot is preferred over serialising every check-in on a
-        // tenant-wide lock.
+        // Monthly treasury ceiling — a SOFT ceiling. Deliberately lock-free:
+        // every check-in whose read runs before the others' mints commit sees
+        // the same `spent`, so N concurrent check-ins can all pass and overshoot
+        // the cap by up to N−1 rewards (each capped by attendance_credit_max).
+        // (This said "at most one reward" until F-295 — true only for N = 2.)
+        // Sequential check-ins never overshoot. The overshoot is preferred over
+        // serialising every check-in on a tenant-wide lock; if a hard ceiling is
+        // ever required, take a per-tenant lock around this read and the mint.
         $cap = $this->monthlyCap($tenantId);
         if ($cap !== null) {
             $spent = (float) DB::table('event_attendance_credit_claims')

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Corrected an internal note about how far the event check-in reward limit can be exceeded when many people check in at once. No behaviour changed (F-295).
 - Unused code that could have created volunteering credits without any checks has been removed (F-293).
 - A donation refund can no longer be started twice at the same time (F-292).
 - An administrator's grant of time credits can no longer be applied twice by pressing the button twice (F-294).
