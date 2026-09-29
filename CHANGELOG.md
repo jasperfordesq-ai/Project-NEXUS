@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The admin fraud-alert count now shows the open alerts on the Fraud Alerts screen. It was always zero before (F-318).
 - Members who switch notification emails off no longer get emails when someone likes, comments on, replies to or shares their content (F-317).
 - If a message's community has been removed before the safeguarding review check runs, the check is now skipped instead of running against another community's records (F-288).
 - Members can now block someone from a partner community. The block stops that person's messages, connection requests and credit transfers, and the emails and notifications they would send, in both directions, and removes any connection between the two. Blocked partner-community members appear in your blocked list, and their profile page has a Block button. Blocks made in the past that never took effect across communities now do (F-284).

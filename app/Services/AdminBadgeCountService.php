@@ -123,10 +123,17 @@ class AdminBadgeCountService
 
     private function countFraudAlerts(int $tenantId): int
     {
+        // F-318: count the queue the Fraud Alerts screen (/admin/timebanking/alerts,
+        // AdminTimebankingController::alerts) actually shows — `abuse_alerts`,
+        // written by AbuseDetectionService — using the same "open" predicate as
+        // AdminTimebankingController's active_alerts stat. This used to count
+        // `fraud_alerts` with status 'new', a value outside that table's
+        // enum('open','investigating','resolved','dismissed'); nothing in app/
+        // writes `fraud_alerts`, so the badge could never be anything but 0.
         try {
-            return (int) DB::table('fraud_alerts')
+            return (int) DB::table('abuse_alerts')
                 ->where('tenant_id', $tenantId)
-                ->where('status', 'new')
+                ->whereIn('status', ['new', 'reviewing'])
                 ->count();
         } catch (\Exception $e) {
             Log::warning('[AdminBadgeCount] Failed to count fraud alerts: ' . $e->getMessage());
