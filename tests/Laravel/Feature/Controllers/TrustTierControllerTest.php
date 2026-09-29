@@ -60,6 +60,15 @@ class TrustTierControllerTest extends TestCase
             'trust_tier' => 0,
         ]);
 
+        // E-061 F-269: identity verification is the active id_verified badge.
+        // The email/verification_* columns above no longer count on their own.
+        DB::table('member_verification_badges')->insert([
+            'user_id' => $member->id,
+            'tenant_id' => $this->testTenantId,
+            'badge_type' => 'id_verified',
+            'granted_at' => now(),
+        ]);
+
         DB::table('vol_logs')->insert([
             [
                 'tenant_id' => $this->testTenantId,

@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Services\Identity\MemberIdentityVerification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Support\UserDisplayName;
@@ -44,10 +45,10 @@ class WarmthPassService
     public const MIN_ELIGIBLE_TIER = 2;
 
     /** Highest tier the pass may show for a member without an identity check. */
-    public const MAX_TIER_WITHOUT_IDENTITY = 2;
+    public const MAX_TIER_WITHOUT_IDENTITY = TrustTierService::MAX_TIER_WITHOUT_IDENTITY;
 
     /** The verification badge that records a passed identity check. */
-    public const IDENTITY_BADGE_TYPE = 'id_verified';
+    public const IDENTITY_BADGE_TYPE = MemberIdentityVerification::BADGE_TYPE;
 
     /** Support relationships that count as help the member gives. */
     private const HELP_GIVEN_RELATIONSHIP_STATUSES = ['active', 'completed'];
@@ -199,22 +200,11 @@ class WarmthPassService
 
     /**
      * An active (not revoked, not expired) id_verified badge in this tenant.
+     * Shared with TrustTierService so the two cannot drift (E-061 F-269).
      */
     private function hasActiveIdentityBadge(int $userId, int $tenantId): bool
     {
-        if (!Schema::hasTable('member_verification_badges')) {
-            return false;
-        }
-
-        return DB::table('member_verification_badges')
-            ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->where('badge_type', self::IDENTITY_BADGE_TYPE)
-            ->whereNull('revoked_at')
-            ->where(function ($q): void {
-                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
-            ->exists();
+        return MemberIdentityVerification::isVerified($userId, $tenantId);
     }
 
     /**

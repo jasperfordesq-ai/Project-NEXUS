@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Services\Identity\MemberIdentityVerification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,12 @@ use Illuminate\Support\Facades\Schema;
  * Tier is calculated from configurable per-tenant criteria:
  *   - hours_logged: count of approved vol_logs
  *   - reviews_received: count of reviews received
- *   - identity_verified: whether identity_verified_at is set on user
+ *   - identity_verified: an active id_verified badge (MemberIdentityVerification)
+ *
+ * E-061 F-269: every tier above MAX_TIER_WITHOUT_IDENTITY ("Verified",
+ * "Coordinator") requires a real identity check whatever a tenant configures.
+ * Stored tiers are corrected by the recompute paths: GET my-trust-tier
+ * (recomputeForUser) and the admin "Recompute" action (recomputeAll).
  */
 class TrustTierService
 {
@@ -38,6 +44,9 @@ class TrustTierService
         3 => 'verified',
         4 => 'coordinator',
     ];
+
+    /** Highest tier a member can hold without an identity check. */
+    public const MAX_TIER_WITHOUT_IDENTITY = self::TIER_TRUSTED;
 
     public const DEFAULT_CRITERIA = [
         'member'      => ['hours_logged' => 1,  'reviews_received' => 0, 'identity_verified' => false],
@@ -76,6 +85,26 @@ class TrustTierService
         foreach (array_keys(self::DEFAULT_CRITERIA) as $tierName) {
             if (isset($decoded[$tierName]) && is_array($decoded[$tierName])) {
                 $config[$tierName] = array_merge(self::DEFAULT_CRITERIA[$tierName], $decoded[$tierName]);
+            }
+        }
+
+        return $this->enforceIdentityAboveTrusted($config);
+    }
+
+    /**
+     * E-061 F-269: tiers above MAX_TIER_WITHOUT_IDENTITY are named "Verified"
+     * and "Coordinator", so a tenant setting cannot remove their identity
+     * requirement. Applied on read, so computeTier, the breakdown and the admin
+     * config screen all see the same rule.
+     *
+     * @param array<string, array<string, mixed>> $config
+     * @return array<string, array<string, mixed>>
+     */
+    private function enforceIdentityAboveTrusted(array $config): array
+    {
+        foreach (self::TIER_LABELS as $tierInt => $tierName) {
+            if ($tierInt > self::MAX_TIER_WITHOUT_IDENTITY && isset($config[$tierName])) {
+                $config[$tierName]['identity_verified'] = true;
             }
         }
 
@@ -358,19 +387,13 @@ class TrustTierService
         return (int) $query->count();
     }
 
+    /**
+     * E-061 F-269: the active id_verified badge only (shared with the Warmth
+     * Pass). This used to accept users.is_verified (EMAIL verification) and any
+     * verification_completed_at (also stamped on a FAILED check).
+     */
     private function isIdentityVerified(int $userId, int $tenantId): bool
     {
-        $user = DB::table('users')
-            ->where('id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->first(['is_verified', 'verification_status', 'verification_completed_at']);
-
-        if ($user === null) {
-            return false;
-        }
-
-        return (bool) ($user->is_verified ?? false)
-            || (string) ($user->verification_status ?? '') === 'passed'
-            || ! empty($user->verification_completed_at);
+        return MemberIdentityVerification::isVerified($userId, $tenantId);
     }
 }
