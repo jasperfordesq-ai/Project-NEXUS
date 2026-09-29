@@ -79,6 +79,7 @@ export const PAGE_BUILDER_ALLOWED_ATTR = [
 ];
 
 const URL_BEARING_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'] as const;
+const FORM_TARGET_ATTRIBUTES = new Set<string>(['action', 'formaction']);
 
 const GLOBAL_SELECTOR_PARTS = [
   ':root',
@@ -499,6 +500,15 @@ function isSafePageBuilderUrl(value: string, attribute: string): boolean {
 
   try {
     const parsed = new URL(candidate, document.baseURI || window.location.origin);
+    if (FORM_TARGET_ATTRIBUTES.has(attribute)) {
+      // F-282: where a form SENDS what visitors type is restricted to this
+      // site. An outside address would let a published page collect passwords
+      // for another origin from the community's own trusted domain. The
+      // platform API is excluded too: a page form has no business posting to it.
+      return (parsed.protocol === 'http:' || parsed.protocol === 'https:')
+        && parsed.origin === window.location.origin
+        && !/^\/api(?:\/|$)/i.test(parsed.pathname);
+    }
     if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return true;
     return attribute === 'href' && parsed.protocol === 'mailto:';
   } catch {

