@@ -59,10 +59,36 @@ const PATHS = (process.env.NEXUS_DELIVERY_PATHS || '/,/about').split(',');
 // across a deploy. Failing on "not the newest commit" would fire on every
 // deploy for every unchanged page, and a check that cries wolf is a check
 // people stop reading — which is precisely how the two-month blank-shell
-// outage above survived. Age is the signal that separates the two cases: the
-// refresh loops cycle every tenant in wall-clock minutes, so a snapshot built
-// from a commit that is a day old has not been refreshed by anything.
-const MAX_SNAPSHOT_AGE_HOURS = Number(process.env.NEXUS_DELIVERY_MAX_SNAPSHOT_AGE_HOURS || 24);
+// outage above survived. Age is the signal that separates the two cases.
+//
+// 🔴 WHICH age matters (corrected 2026-09-29). This used to be the age of the
+// snapshot's build COMMIT, on the stated premise that "the refresh loops cycle
+// every tenant in wall-clock minutes". That premise was only ever true by
+// accident: until #237 (25 Sep) the scheduler could not see the snapshot volume
+// and re-rendered every page roughly every 40 minutes. With a real inventory the
+// loops re-render on their designed cadence instead — every sitemap page once a
+// day just after midnight (static pages carry today's date as <lastmod>), and
+// the home page on its 6-hour TTL. A page re-rendered four hours ago is still
+// built from whatever was live four hours ago, so its commit can easily be more
+// than a day old. The 29 Sep 10:47 deploy reported 15 of 18 pages "FROZEN" that
+// had all been re-rendered between 4 and 11 hours earlier.
+//
+// The question the check exists to ask is "has anything re-rendered this page
+// recently?", so it now measures WHEN THE SNAPSHOT WAS RENDERED: the response's
+// Last-Modified header, which nginx takes from the snapshot file's mtime (the
+// same mtime the drift detector compares against). Commit age is only a
+// fallback when that header is absent; it can over-state staleness, never
+// under-state it, because a snapshot is always rendered after its commit.
+//
+// The limit is 30 hours, not 24: the daily refresh takes ~45 minutes to drain
+// across every tenant, so a healthy page can legitimately be a few minutes over
+// 24 hours old just before its next turn. The real freezes this check was built
+// for were 39 and 68 hours.
+const MAX_SNAPSHOT_AGE_HOURS = Number(process.env.NEXUS_DELIVERY_MAX_SNAPSHOT_AGE_HOURS || 30);
+
+// A Last-Modified this far in the future is not a render time we can trust
+// (clock skew beyond this is a fault of its own); treat it as unknown.
+const MAX_CLOCK_SKEW_MS = 10 * 60 * 1000;
 
 // A git object name and nothing else. This value is read out of a remote page,
 // so it is untrusted input and must never reach a subprocess unvalidated.
@@ -115,6 +141,21 @@ function commitAgeHours(sha) {
   const seconds = Number(ts);
   if (!ts || !Number.isFinite(seconds) || seconds <= 0) return null;
   return (Date.now() / 1000 - seconds) / 3600;
+}
+
+/**
+ * Hours since the snapshot was rendered, from the response's Last-Modified
+ * header, or null when it is absent or unusable. nginx serves each snapshot as
+ * a static file, so this is the file's mtime — the moment the render was
+ * published. Never guessed: an unparseable or future date is "unknown".
+ */
+function renderAgeHoursFrom(lastModified, nowMs = Date.now()) {
+  if (typeof lastModified !== 'string' || lastModified.trim() === '') return null;
+  const renderedMs = Date.parse(lastModified);
+  if (!Number.isFinite(renderedMs)) return null;
+  const ageMs = nowMs - renderedMs;
+  if (ageMs < -MAX_CLOCK_SKEW_MS) return null;
+  return Math.max(0, ageMs) / 3600000;
 }
 
 /**
@@ -171,21 +212,40 @@ function hasMetaDescription(body) {
  *   behind   — it carries an older commit. Normal and expected: the pipeline
  *              re-renders a page when its content changes or its TTL expires,
  *              not because a build happened. Only reported.
- *   stale    — it carries a commit older than MAX_SNAPSHOT_AGE_HOURS. The
- *              refresh loops visit every tenant in minutes, so nothing has
- *              re-rendered this page for a day. That is a freeze.
+ *   stale    — nothing has re-rendered it for more than MAX_SNAPSHOT_AGE_HOURS.
+ *              Every page is re-rendered at least daily, so that is a freeze.
  *
- * When the expected commit or the snapshot's commit age cannot be resolved,
- * this reports "unknown" and does not fail. An unresolvable comparison is not
- * evidence of a fault, and inventing one here would be the false alarm this
- * whole file exists to avoid.
+ * `renderAgeHours` (from Last-Modified) decides between the last two whenever
+ * it is known. Only when it is not does the age of the build commit stand in
+ * for it — see the note on MAX_SNAPSHOT_AGE_HOURS for why that proxy fails.
+ *
+ * When neither age can be resolved, this reports "unknown" and does not fail.
+ * An unresolvable comparison is not evidence of a fault, and inventing one here
+ * would be the false alarm this whole file exists to avoid.
  */
-function judgeFreshness(built, expected, ageCache) {
+function judgeFreshness(built, expected, ageCache, renderAgeHours = null) {
   if (!built) {
     return { stale: false, built: null, note: ' (no build marker)' };
   }
   if (expected && sameCommit(built, expected)) {
     return { stale: false, built, note: ' — current build' };
+  }
+
+  if (typeof renderAgeHours === 'number' && Number.isFinite(renderAgeHours) && renderAgeHours >= 0) {
+    const rendered = Math.round(renderAgeHours * 10) / 10;
+    if (renderAgeHours > MAX_SNAPSHOT_AGE_HOURS) {
+      return {
+        stale: true,
+        built,
+        ageHours: rendered,
+        ageNote: `last re-rendered ${rendered}h ago (limit ${MAX_SNAPSHOT_AGE_HOURS}h)`,
+      };
+    }
+    return {
+      stale: false,
+      built,
+      note: ` (built from ${built.slice(0, 12)}, re-rendered ${rendered}h ago — waiting for its next scheduled refresh)`,
+    };
   }
 
   if (!ageCache.has(built)) ageCache.set(built, commitAgeHours(built));
@@ -204,7 +264,7 @@ function judgeFreshness(built, expected, ageCache) {
       stale: true,
       built,
       ageHours: rounded,
-      ageNote: `that commit is ${rounded}h old (limit ${MAX_SNAPSHOT_AGE_HOURS}h)`,
+      ageNote: `that commit is ${rounded}h old (limit ${MAX_SNAPSHOT_AGE_HOURS}h) — the response had no usable Last-Modified, so this is judged by commit age, which can over-state staleness`,
     };
   }
   return { stale: false, built, note: ` (built from ${built.slice(0, 12)}, ${rounded}h old)` };
@@ -235,11 +295,12 @@ async function probe(origin, path) {
     const isShell = !res.ok || bytes < MIN_BYTES || emptyRoot;
     const real = !isShell && hasH1 && hasDescription;
     const buildCommit = isShell ? null : buildCommitOf(body);
+    const renderAgeHours = isShell ? null : renderAgeHoursFrom(res.headers.get('last-modified'));
     return { url, status: res.status, bytes, hasH1, hasDescription, emptyRoot, isShell, real,
-             buildCommit, error: null };
+             buildCommit, renderAgeHours, error: null };
   } catch (err) {
     return { url, status: 0, bytes: 0, hasH1: false, hasDescription: false,
-             emptyRoot: false, real: false, buildCommit: null,
+             emptyRoot: false, real: false, buildCommit: null, renderAgeHours: null,
              error: String(err && err.message || err) };
   } finally {
     clearTimeout(timer);
@@ -260,7 +321,7 @@ async function main() {
   console.log(`check-prerender-delivery: probing ${origins.length} origin(s) as Googlebot`);
   console.log(`  paths: ${PATHS.join(', ')}   minimum real-page size: ${MIN_BYTES} bytes`);
   console.log(expected
-    ? `  expected build: ${expected.slice(0, 12)}   stale after: ${MAX_SNAPSHOT_AGE_HOURS}h\n`
+    ? `  expected build: ${expected.slice(0, 12)}   stale after: ${MAX_SNAPSHOT_AGE_HOURS}h without a re-render\n`
     : `  expected build: UNKNOWN — freshness will be reported but cannot be judged\n`);
 
   let shells = 0;      // served the empty SPA shell — platform-wide fault
@@ -283,7 +344,7 @@ async function main() {
       if (r.real) {
         // Freshness is judged only on a page that is otherwise fine. A blank
         // page is already the louder fault and does not need a second label.
-        const freshness = judgeFreshness(r.buildCommit, expected, ageCache);
+        const freshness = judgeFreshness(r.buildCommit, expected, ageCache, r.renderAgeHours);
         if (freshness.stale) {
           stale += 1;
           staleDetail.push({ page: `${origin}${path}`, ...freshness });
@@ -333,7 +394,7 @@ async function main() {
     const hosts = [...new Set(staleDetail.map((s) => new URL(s.page.startsWith('http') ? s.page : `https://${s.page}`).host))];
     console.error(`check-prerender-delivery: FAIL — ${stale} of ${probed} probed page(s) are real but FROZEN at an old build.`);
     console.error('  Crawlers are receiving content, so nothing looks broken — but it is not the current content,');
-    console.error('  and nothing has re-rendered these pages for over a day. Search engines are indexing a stale site.');
+    console.error(`  and nothing has re-rendered these pages for over ${MAX_SNAPSHOT_AGE_HOURS} hours. Search engines are indexing a stale site.`);
     console.error(`  Affected host(s): ${hosts.join(', ')}`);
     console.error('  This is a REFRESH fault, not a serving fault. Do not go looking for the serving marker.');
     console.error('  Most likely cause: those tenants are being skipped by both freshness sweeps because a');
@@ -366,7 +427,7 @@ async function main() {
 // Exported so the freshness decision can be tested without a network or a
 // particular git history: judgeFreshness takes the age cache as an argument,
 // so a test seeds it and drives every branch directly.
-export { judgeFreshness, sameCommit, buildCommitOf, expectedCommit };
+export { judgeFreshness, sameCommit, buildCommitOf, expectedCommit, renderAgeHoursFrom };
 
 // Only probe when run as a command. Importing this file for its helpers must
 // not fire sixteen HTTP requests and call process.exit().

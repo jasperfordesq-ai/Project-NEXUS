@@ -25,7 +25,7 @@ import test from 'node:test';
 // at import time, from the environment.
 process.env.NEXUS_DELIVERY_MAX_SNAPSHOT_AGE_HOURS = '24';
 
-const { judgeFreshness, sameCommit, buildCommitOf } = await import(
+const { judgeFreshness, sameCommit, buildCommitOf, renderAgeHoursFrom } = await import(
   '../check-prerender-delivery.mjs'
 );
 
@@ -113,6 +113,74 @@ test('a build marker that is not a git object name is refused', () => {
   assert.equal(buildCommitOf('<span data-build-commit="../../etc/passwd"></span>'), null);
   assert.equal(buildCommitOf('<span data-build-commit="abc; rm -rf /"></span>'), null);
   assert.equal(buildCommitOf('<span data-build-commit="$(whoami)"></span>'), null);
+});
+
+// ---------------------------------------------------------------------------
+// 🔴 2026-09-29: the age that matters is the RENDER age, not the commit age.
+//
+// The 10:47 deploy of 0225fd5f8 reported 15 of 18 pages FROZEN, "built from
+// 0c92f062c4f9, that commit is 25h old". Every one of those snapshots had been
+// re-rendered between 4 and 11 hours earlier (home pages ~06:25 on their 6-hour
+// TTL, /about ~00:05 in the nightly sweep) — from 0c92f062c, because that was
+// the build that was live at the time. Commit age over-states how long a page
+// has gone without a refresh by the whole interval between deploys.
+// ---------------------------------------------------------------------------
+
+const PREVIOUS_DEPLOY = '0c92f062c4f9';
+
+test('29 Sep false alarm: re-rendered hours ago from a day-old commit is NOT stale', () => {
+  // Commit 0c92f062c was 25.2h old at probe time; the page was re-rendered 4.4h ago.
+  const cache = new Map([[PREVIOUS_DEPLOY, 25.2]]);
+  const verdict = judgeFreshness(PREVIOUS_DEPLOY, DEPLOYED, cache, 4.4);
+  assert.equal(verdict.stale, false);
+  assert.match(verdict.note, /re-rendered 4\.4h ago/);
+});
+
+test('a page nothing has re-rendered beyond the limit is STALE, whatever its commit', () => {
+  const cache = new Map([[FROZEN, 68.5]]);
+  const verdict = judgeFreshness(FROZEN, DEPLOYED, cache, 68.5);
+  assert.equal(verdict.stale, true);
+  assert.match(verdict.ageNote, /last re-rendered 68\.5h ago \(limit 24h\)/);
+});
+
+test('render age decides even when the commit age is unknown in this checkout', () => {
+  // A shallow CI clone cannot resolve an old commit; the render time still can.
+  const cache = new Map([['deadbeef1234', null]]);
+  assert.equal(judgeFreshness('deadbeef1234', DEPLOYED, cache, 40).stale, true);
+  assert.equal(judgeFreshness('deadbeef1234', DEPLOYED, cache, 2).stale, false);
+});
+
+test('the deployed build is current regardless of render age', () => {
+  const verdict = judgeFreshness(DEPLOYED.slice(0, 12), DEPLOYED, new Map(), 500);
+  assert.equal(verdict.stale, false);
+  assert.match(verdict.note, /current build/);
+});
+
+test('without a usable render time, commit age is still the fallback and says so', () => {
+  const cache = new Map([[FROZEN, 68.5]]);
+  for (const unknown of [null, undefined, Number.NaN, -1]) {
+    const verdict = judgeFreshness(FROZEN, DEPLOYED, cache, unknown);
+    assert.equal(verdict.stale, true, `render age ${unknown} must fall back to commit age`);
+    assert.match(verdict.ageNote, /judged by commit age/);
+  }
+});
+
+test('Last-Modified is read as hours since the snapshot was rendered', () => {
+  const now = Date.parse('2026-09-29T11:05:00Z');
+  const age = renderAgeHoursFrom('Tue, 29 Sep 2026 06:26:17 GMT', now);
+  assert.ok(Math.abs(age - 4.645) < 0.01, String(age));
+  assert.equal(renderAgeHoursFrom('Tue, 29 Sep 2026 11:05:00 GMT', now), 0);
+  // A few minutes of clock skew is tolerated as "just now".
+  assert.equal(renderAgeHoursFrom('Tue, 29 Sep 2026 11:08:00 GMT', now), 0);
+});
+
+test('an absent, garbled or far-future Last-Modified is unknown, never fresh', () => {
+  const now = Date.parse('2026-09-29T11:05:00Z');
+  assert.equal(renderAgeHoursFrom(null, now), null);
+  assert.equal(renderAgeHoursFrom(undefined, now), null);
+  assert.equal(renderAgeHoursFrom('', now), null);
+  assert.equal(renderAgeHoursFrom('not a date', now), null);
+  assert.equal(renderAgeHoursFrom('Wed, 30 Sep 2026 11:05:00 GMT', now), null);
 });
 
 test('importing the module does not run the probe', () => {

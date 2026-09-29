@@ -523,10 +523,22 @@ acquire_lock() {
     claim_lock
 }
 
+# Is NEEDLE exactly one of the newline-separated lines in HAYSTACK?
+#
+# 🔴 Pure bash on purpose — no pipe. This was
+# `printf '%s\n' "$HAYSTACK" | grep -Fxq "$NEEDLE"`, and under this script's
+# `set -o pipefail` that is a race: `grep -q` exits at the first match, printf
+# dies of SIGPIPE if it still has bytes to write, and the pipeline returns 141
+# — so a path that IS present was reported absent. On production (2026-09-29)
+# it lost 5-51 of 593 lookups per pass against the live snapshot list, which
+# made every deploy re-render a random ~40 existing pages "because they were
+# missing". The quoted "$NEEDLE" inside [[ ]] is matched literally, so glob
+# characters in a path cannot widen the match.
 list_contains() {
     local NEEDLE="$1"
     local HAYSTACK="$2"
-    printf '%s\n' "$HAYSTACK" | grep -Fxq "$NEEDLE"
+    [ -n "$NEEDLE" ] || return 1
+    [[ $'\n'"$HAYSTACK"$'\n' == *$'\n'"$NEEDLE"$'\n'* ]]
 }
 
 append_query_param() {
