@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} heeft je accountkoppeling beëindigd",
     "permissions_expanded_bell": "{{name}} kan nu meer op je account doen — bekijk de toegekende niveaus",
     "permissions_changed_bell": "De toegangsniveaus van je koppeling met {{name}} zijn gewijzigd",
-    "message_access_revoked_bell": "{{name}} heeft je toegang tot hun berichten ingetrokken"
+    "message_access_revoked_bell": "{{name}} heeft je toegang tot hun berichten ingetrokken",
+    "help_request": "{{name}} heeft je gevraagd te helpen met hun account ({{type}})",
+    "help_request_accepted": "{{name}} heeft je verzoek geaccepteerd en kan je nu helpen met je account"
   },
   "totp": {
     "rate_limited": "Te veel mislukte pogingen. Probeer het opnieuw over {{minutes}} minuten."

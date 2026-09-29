@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} finalizó el vínculo de tu cuenta",
     "permissions_expanded_bell": "{{name}} ahora puede hacer más en tu cuenta — revisa los niveles concedidos",
     "permissions_changed_bell": "Los niveles de acceso de tu vínculo con {{name}} cambiaron",
-    "message_access_revoked_bell": "{{name}} retiró tu acceso a sus mensajes"
+    "message_access_revoked_bell": "{{name}} retiró tu acceso a sus mensajes",
+    "help_request": "{{name}} te ha pedido ayuda con su cuenta ({{type}})",
+    "help_request_accepted": "{{name}} aceptó tu solicitud y ya puede ayudarte con tu cuenta"
   },
   "totp": {
     "rate_limited": "Demasiados intentos fallidos. Por favor intente de nuevo en {{minutes}} minutos."

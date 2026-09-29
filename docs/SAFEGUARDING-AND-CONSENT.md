@@ -196,8 +196,15 @@ Expiry is still swept by a scheduled command.
 A member-to-member relationship, self-service, distinct from all of the above.
 `relationship_type` is one of `family`, `guardian`, `carer`, `organization`.
 
-- Requested by one member, **approved by the other** (the child/dependent), with
-  status `pending → active → revoked`. Either party can revoke.
+- Requested by one member, **approved by the other**, with status
+  `pending → active → revoked`. Either party can revoke. It can be asked for
+  from either end: a supporter offering to help (`requester_role=supporter`, the
+  default — the supported member approves) or a member asking someone to help
+  them (`requester_role=member` — the named supporter approves).
+  `requested_by_user_id` records who asked; the person who asked can never
+  approve their own request, and a `NULL` value (rows before E-061) keeps the
+  original rule. Until E-061 (F-224) the React "Add someone who can help" button
+  sent no role, so the member asking for help was recorded as the helper.
 - Guarded against self-linking, circularity, nesting in either direction, and a
   maximum number of children.
 - Cross-checked against the safeguarding contact policy in **both** directions at

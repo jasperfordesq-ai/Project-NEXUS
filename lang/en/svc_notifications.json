@@ -104,7 +104,9 @@
     "link_revoked_bell": "{{name}} ended your account link",
     "permissions_expanded_bell": "{{name}} can now do more on your account — review the levels you granted",
     "permissions_changed_bell": "The access levels on your link with {{name}} changed",
-    "message_access_revoked_bell": "{{name}} withdrew your access to their messages"
+    "message_access_revoked_bell": "{{name}} withdrew your access to their messages",
+    "help_request": "{{name}} has asked you to help with their account ({{type}})",
+    "help_request_accepted": "{{name}} accepted your request and can now help with your account"
   },
   "totp": {
     "rate_limited": "Too many failed attempts. Please try again in {{minutes}} minutes."

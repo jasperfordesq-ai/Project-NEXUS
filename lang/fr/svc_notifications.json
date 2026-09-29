@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} a mis fin au lien de votre compte",
     "permissions_expanded_bell": "{{name}} peut désormais faire davantage sur votre compte — vérifiez les niveaux accordés",
     "permissions_changed_bell": "Les niveaux d’accès de votre lien avec {{name}} ont changé",
-    "message_access_revoked_bell": "{{name}} a retiré votre accès à ses messages"
+    "message_access_revoked_bell": "{{name}} a retiré votre accès à ses messages",
+    "help_request": "{{name}} vous a demandé de l'aider avec son compte ({{type}})",
+    "help_request_accepted": "{{name}} a accepté votre demande et peut désormais vous aider avec votre compte"
   },
   "totp": {
     "rate_limited": "Trop de tentatives échouées. Veuillez réessayer dans {{minutes}} minutes."

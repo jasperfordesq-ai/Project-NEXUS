@@ -2862,7 +2862,7 @@
       "reason": "protocol-acronym-or-identifier"
     },
     "settings.sub_accounts.email_placeholder": {
-      "value": "child@example.com",
+      "value": "member@example.com",
       "reason": "functional-address-route-or-example"
     },
     "stories.creator.font_sans": {

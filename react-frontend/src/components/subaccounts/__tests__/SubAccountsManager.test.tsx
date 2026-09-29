@@ -466,7 +466,11 @@ describe('SubAccountsManager', () => {
 
   /** Updated pin (B2, 2026-08-07): the add flow now sends the relationship
    *  type as well — 'family' unless the member picks another. It must still
-   *  NEVER send permissions the server doesn't enforce. */
+   *  NEVER send permissions the server doesn't enforce.
+   *
+   *  F-224 (E-061): it must also say the presser is the one ASKING for help.
+   *  Without `requester_role: 'member'` the API recorded the member who
+   *  pressed "Add someone who can help" as the helper of the person named. */
   it('posts email and relationship type when adding a linked account request', async () => {
     mockLoad([], []);
     vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: [] });
@@ -478,16 +482,58 @@ describe('SubAccountsManager', () => {
 
     await screen.findByText('No account support set up');
     fireEvent.click(screen.getAllByText('Add someone')[0]);
-    fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'child@example.com' } });
+    expect(await screen.findByText('Add someone who can help')).toBeInTheDocument();
+    expect(screen.getByText(/member you would like help from/)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('member@example.com')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'helper@example.com' } });
     fireEvent.click(screen.getByText('Send Request'));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/v2/users/me/sub-accounts', {
-        email: 'child@example.com',
+        email: 'helper@example.com',
         relationship_type: 'family',
+        requester_role: 'member',
       });
     });
     // Drain the post-add reload (see the cancel test for why).
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(4));
+  });
+
+  /** F-224 (E-061): a member's request for help is answered by the named
+   *  helper, never by the member who asked. */
+  it('lets the named helper accept a request for help, and shows the asker a waiting request', async () => {
+    const helpRequestForMe = {
+      ...mockManagedAccounts[1]!,
+      relationship_id: 7,
+      awaiting_your_response: true,
+    };
+    const myRequestForHelp = {
+      ...mockManagerAccounts[0]!,
+      relationship_id: 8,
+      awaiting_your_response: false,
+    };
+    mockLoad([helpRequestForMe], [myRequestForHelp]);
+    vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [] })
+      .mockResolvedValueOnce({ success: true, data: [] });
+
+    render(<SubAccountsManager />);
+
+    // Helper side: told what is being asked, and can accept or decline.
+    expect(await screen.findByText(/They have asked you to help with their account/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Decline' })).toHaveLength(1);
+
+    // Asker side: waiting on the helper, with a cancel — no way to accept
+    // their own request.
+    expect(screen.getByText(/Waiting for them to accept/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Cancel request' })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/7/approve');
+    });
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(4));
   });
 

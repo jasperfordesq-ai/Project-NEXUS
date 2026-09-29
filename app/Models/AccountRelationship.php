@@ -24,11 +24,15 @@ class AccountRelationship extends Model
         // only by applyConsentedMessageAccess / cleared on withdrawal+revoke;
         // never read for authorization (the tiers object is the authority).
         'message_access_granted_at',
+        // Who asked for a member-initiated link (F-224). The OTHER party is
+        // the one who accepts; NULL = legacy supporter-initiated row.
+        'requested_by_user_id',
     ];
 
     protected $casts = [
         'parent_user_id' => 'integer',
         'child_user_id'  => 'integer',
+        'requested_by_user_id' => 'integer',
         'permissions'     => 'array',
         'approved_at'     => 'datetime',
     ];

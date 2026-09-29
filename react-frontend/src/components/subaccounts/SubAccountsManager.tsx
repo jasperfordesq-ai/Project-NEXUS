@@ -81,6 +81,13 @@ interface AccountRelationshipRow {
   message_access_granted_at?: string | null;
   /** Member side only: when their supporter last looked (accountability). */
   message_view_last_at?: string | null;
+  /**
+   * Pending rows only: whether THIS viewer is the one who must answer. A link
+   * can be asked for from either end (F-224) — a supporter offering to help,
+   * or a member asking for help — and the person who asked never answers
+   * their own request. Absent on older API responses.
+   */
+  awaiting_your_response?: boolean;
 }
 
 interface NormalizedRelationship extends Omit<AccountRelationshipRow, 'permissions'> {
@@ -273,9 +280,14 @@ export function SubAccountsManager() {
 
     try {
       setIsAdding(true);
+      // 🔴 `requester_role: 'member'` is what makes this button do what it
+      // says (F-224): the person pressing "Add someone who can help" is the one
+      // being helped, and the person they name must accept. Without it the API
+      // records the presser as the HELPER of the person they named.
       const response = await api.post('/v2/users/me/sub-accounts', {
         email,
         relationship_type: addType,
+        requester_role: 'member',
       });
 
       if (response.success) {
@@ -469,6 +481,15 @@ export function SubAccountsManager() {
     };
     const isBusy = busyRelationshipId === account.relationship_id;
     const isMemberView = !options.canManagePermissions;
+    // Who answers a pending link comes from the server; the section default
+    // covers older responses that do not say.
+    const canApprove = account.awaiting_your_response ?? options.canApprove;
+    // The member asked for help, so the answering side is the reverse of this
+    // section's usual one: the helper answers, the member waits.
+    const memberAskedForHelp = canApprove !== options.canApprove;
+    const pendingMessageKey = !memberAskedForHelp
+      ? options.pendingMessageKey
+      : (isMemberView ? 'sub_accounts.pending_helper_acceptance' : 'sub_accounts.pending_help_request_for_you');
     const activityLabel = t(isMemberView
       ? 'sub_accounts.current_access_activity_your'
       : 'sub_accounts.current_access_activity_their');
@@ -791,8 +812,11 @@ export function SubAccountsManager() {
                     {t('sub_accounts.requested_at', { time: formatRelativeTime(account.created_at) })}
                   </p>
                 )}
+                {canApprove && memberAskedForHelp && (
+                  <p className="text-xs text-theme-muted">{t(pendingMessageKey)}</p>
+                )}
                 <div className="flex flex-wrap items-center gap-2">
-                  {options.canApprove ? (
+                  {canApprove ? (
                     <>
                       <Button
                         size="sm"
@@ -816,7 +840,7 @@ export function SubAccountsManager() {
                   ) : (
                     <>
                       <p className="text-xs text-theme-muted">
-                        {t(options.pendingMessageKey)}
+                        {t(pendingMessageKey)}
                       </p>
                       {/* A labelled cancel, not just the unlabelled trash icon
                           (audit B4) — and busy-guarded so a double press can't

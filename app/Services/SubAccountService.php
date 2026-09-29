@@ -152,6 +152,7 @@ class SubAccountService
                 'account_relationships.permissions',
                 'account_relationships.status',
                 'account_relationships.proposed_by_user_id',
+                'account_relationships.requested_by_user_id',
                 'account_relationships.approved_at',
                 'account_relationships.message_access_granted_at',
                 'account_relationships.created_at',
@@ -205,6 +206,7 @@ class SubAccountService
                 'account_relationships.relationship_type',
                 'account_relationships.permissions',
                 'account_relationships.status',
+                'account_relationships.requested_by_user_id',
                 'account_relationships.approved_at',
                 'account_relationships.message_access_granted_at',
                 'account_relationships.created_at',
@@ -221,13 +223,56 @@ class SubAccountService
     }
 
     /**
-     * Request a parent-child relationship.
+     * A member asks someone to help THEM (F-224).
+     *
+     * The caller becomes the supported member (`child_user_id`) and the person
+     * they name becomes the supporter (`parent_user_id`). The row stays pending
+     * until the named supporter accepts — no support takes effect before then.
+     * The permissions are the member's own grant over their own account.
      *
      * @return int|null Relationship ID or null on failure.
      */
-    public function requestRelationship(int $parentUserId, int $childUserId, string $type = 'family', array $permissions = []): ?int
+    public function requestHelpFrom(int $memberUserId, int $supporterUserId, string $type = 'family', array $permissions = []): ?int
+    {
+        return $this->requestRelationship($supporterUserId, $memberUserId, $type, $permissions, $memberUserId);
+    }
+
+    /**
+     * Whether a pending member link is waiting on $userId to answer it.
+     *
+     * The party who asked never answers their own request: a NULL requester is
+     * a legacy row (or a plain supporter offer), where the supporter asked and
+     * the supported member answers.
+     */
+    public static function awaitsResponseFrom(object|array $row, int $userId): bool
+    {
+        $row = (object) $row;
+        $requester = $row->requested_by_user_id ?? null;
+        $requester = $requester !== null ? (int) $requester : (int) $row->parent_user_id;
+
+        return $requester !== $userId
+            && in_array($userId, [(int) $row->parent_user_id, (int) $row->child_user_id], true);
+    }
+
+    /**
+     * Request a parent-child relationship.
+     *
+     * By default the SUPPORTER asks ("let me help with your account") and the
+     * supported member accepts. {@see requestHelpFrom()} is the other direction.
+     *
+     * @param int|null $requestedByUserId Who is asking; must be one of the two
+     *                                    parties. Defaults to the supporter.
+     * @return int|null Relationship ID or null on failure.
+     */
+    public function requestRelationship(int $parentUserId, int $childUserId, string $type = 'family', array $permissions = [], ?int $requestedByUserId = null): ?int
     {
         $this->errors = [];
+        $requestedByUserId ??= $parentUserId;
+        if (! in_array($requestedByUserId, [$parentUserId, $childUserId], true)) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.missing_required_field', ['field' => 'requester_role'])];
+            return null;
+        }
+        $memberAsked = $requestedByUserId === $childUserId;
 
         if ($parentUserId === $childUserId) {
             $this->errors[] = ['code' => 'SELF_RELATIONSHIP', 'message' => __('api.subaccount_self_relationship')];
@@ -277,6 +322,8 @@ class SubAccountService
                 'relationship_type' => $type,
                 'permissions'       => array_merge(self::DEFAULT_PERMISSIONS, $permissions),
                 'approved_at'       => null,
+                // Re-requested: the person asking now decides who answers.
+                'requested_by_user_id' => $requestedByUserId,
             ]);
 
             return $existing->id;
@@ -346,6 +393,7 @@ class SubAccountService
             'relationship_type' => $type,
             'permissions'       => $mergedPermissions,
             'status'            => 'pending',
+            'requested_by_user_id' => $requestedByUserId,
         ]);
         $rel->save();
 
@@ -361,6 +409,13 @@ class SubAccountService
         // in NotificationDispatcher's $criticalInstantTypes so the email goes out
         // immediately instead of waiting for a digest the member has not opted
         // into (the digest default is 'off').
+        if ($memberAsked) {
+            $this->notifyHelperOfHelpRequest($parentUserId, $child, $type);
+            $this->relationshipEvent($rel, 'requested', 'member', $childUserId);
+
+            return $rel->id;
+        }
+
         try {
             $parentName = UserDisplayName::resolve($parent);
             $child = User::find($childUserId);
@@ -405,15 +460,27 @@ class SubAccountService
     /**
      * Approve a pending relationship request.
      */
-    public function approve(int $relationshipId, int $childUserId): bool
+    public function approve(int $relationshipId, int $approverUserId): bool
     {
         $this->errors = [];
 
         /** @var AccountRelationship|null $pending */
         $pending = $this->relationship->newQuery()
             ->where('id', $relationshipId)
-            ->where('child_user_id', $childUserId)
             ->where('status', 'pending')
+            // 🔴 The person who asked never answers their own request (F-224).
+            // A supporter's offer (requested_by NULL or = parent) is answered
+            // by the supported member; a member's request for help
+            // (requested_by = child) is answered by the named supporter.
+            ->where(fn (Builder $q) => $q
+                ->where(fn (Builder $w) => $w
+                    ->where('child_user_id', $approverUserId)
+                    ->where(fn (Builder $r) => $r
+                        ->whereNull('requested_by_user_id')
+                        ->orWhereColumn('requested_by_user_id', 'parent_user_id')))
+                ->orWhere(fn (Builder $w) => $w
+                    ->where('parent_user_id', $approverUserId)
+                    ->whereColumn('requested_by_user_id', 'child_user_id')))
             // Staff-proposed arrangements are answered through the safeguarding
             // respond flow (GuardianArrangementService) — approving one here
             // would bypass its transition table, events and staff notification.
@@ -425,17 +492,22 @@ class SubAccountService
             return false;
         }
 
+        $childUserId = (int) $pending->child_user_id;
+        $parentUserId = (int) $pending->parent_user_id;
+        $memberAsked = $approverUserId === $parentUserId;
+
         // Re-evaluate the relationship and its already-stored requested
         // permissions at approval time; a request-time decision may now be
         // stale. Denial leaves the pending row untouched so it can be revoked.
         $this->assertRelationshipContactsAllowed(
-            (int) $pending->parent_user_id,
+            $parentUserId,
             $childUserId,
             'sub_account_approval',
         );
 
         $approved = $this->relationship->newQuery()
             ->where('id', $relationshipId)
+            ->where('parent_user_id', $parentUserId)
             ->where('child_user_id', $childUserId)
             ->where('status', 'pending')
             ->update([
@@ -448,15 +520,19 @@ class SubAccountService
             return false;
         }
 
-        $this->relationshipEvent($pending, 'approved', 'member', $childUserId);
+        $this->relationshipEvent($pending, 'approved', 'member', $approverUserId);
+
+        if ($memberAsked) {
+            $this->notifyMemberHelpAccepted($childUserId, $parentUserId, $relationshipId);
+
+            return true;
+        }
 
         // Tell the requester their request was accepted. Until 2026-08-06 the
         // approval was silent in every channel: the person who asked had no way
         // to learn the answer except by revisiting the settings tab and noticing
         // the status had changed. Rendered in the RECIPIENT's language — the
         // approving member's locale is the active one at this point.
-        $parentUserId = (int) $pending->parent_user_id;
-
         try {
             $child = User::find($childUserId);
             $parent = User::find($parentUserId);
@@ -494,9 +570,9 @@ class SubAccountService
     /**
      * Approve a pending relationship request (alias).
      */
-    public function approveRelationship(int $childUserId, int $relationshipId): bool
+    public function approveRelationship(int $approverUserId, int $relationshipId): bool
     {
-        return $this->approve($relationshipId, $childUserId);
+        return $this->approve($relationshipId, $approverUserId);
     }
 
     /**
@@ -1428,6 +1504,73 @@ class SubAccountService
             Log::warning('Failed to notify dependent of linked-account proxy action', [
                 'child_user_id' => $childUserId,
                 'activity_type' => $activityType,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Tell the member named as a helper that someone asked for their help
+     * (F-224). Rendered in the helper's language. Same instant-delivery type as
+     * a supporter's offer, but its own wording: the existing email template
+     * says "a request to manage your account", which is the opposite of what is
+     * being asked, so no template HTML is passed and the dispatcher's standard
+     * email carries this text.
+     */
+    private function notifyHelperOfHelpRequest(int $helperUserId, User $member, string $type): void
+    {
+        try {
+            $memberName = UserDisplayName::resolve($member);
+            $helper = User::find($helperUserId);
+
+            LocaleContext::withLocale($helper, function () use ($helperUserId, $memberName, $type) {
+                $typeLabel = __('emails_notifications.sub_account.type_' . self::normalizeRelationshipType($type));
+
+                NotificationDispatcher::dispatch(
+                    $helperUserId,
+                    'global',
+                    0,
+                    'sub_account_request',
+                    __('svc_notifications.sub_account.help_request', ['name' => $memberName, 'type' => $typeLabel]),
+                    self::LINKED_ACCOUNTS_LINK,
+                    null,
+                    // No actor id: a mute must not silently swallow a request
+                    // that nothing happens without (see requestRelationship()).
+                );
+            });
+        } catch (\Throwable $e) {
+            Log::warning('SubAccountService::requestHelpFrom notification failed', [
+                'helper_user_id' => $helperUserId,
+                'member_user_id' => (int) $member->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /** Tell a member who asked for help that the named helper accepted. */
+    private function notifyMemberHelpAccepted(int $memberUserId, int $helperUserId, int $relationshipId): void
+    {
+        try {
+            $member = User::find($memberUserId);
+            $helper = User::find($helperUserId);
+            $helperName = $helper !== null ? UserDisplayName::resolve($helper) : '';
+
+            if ($member !== null) {
+                LocaleContext::withLocale($member, function () use ($memberUserId, $helperName) {
+                    NotificationDispatcher::dispatch(
+                        $memberUserId,
+                        'global',
+                        0,
+                        'sub_account_approved',
+                        __('svc_notifications.sub_account.help_request_accepted', ['name' => $helperName]),
+                        self::LINKED_ACCOUNTS_LINK,
+                        null,
+                    );
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::warning('SubAccountService::approve help-accepted notification failed', [
+                'relationship_id' => $relationshipId,
                 'error' => $e->getMessage(),
             ]);
         }

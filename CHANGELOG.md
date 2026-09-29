@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- "Add someone who can help" in linked-account settings now does what it says: the person you name is asked to help you, and nothing changes until they accept. It used to make you their helper instead (F-224).
 - The Caring Community "Verified" and "Coordinator" trust levels now require a real ID check. Email verification or a failed ID attempt no longer counts, and community settings can no longer remove the requirement (F-269).
 - Sending regional points now asks you to pick the recipient by name and confirm "Send … to …?" before anything is sent, and points can only go to active members of your community. Spending regional points in the marketplace is switched off until a checkout that honours the discount exists, so points can no longer be spent on a discount that never applied (F-225).
 - Every GitHub Actions step used by the build and release pipeline is now pinned to an exact, reviewed version, so a changed or hijacked tag upstream cannot alter what runs (F-008).

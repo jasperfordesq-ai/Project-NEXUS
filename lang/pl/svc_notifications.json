@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} zakończył(a) połączenie Twojego konta",
     "permissions_expanded_bell": "{{name}} może teraz robić więcej na Twoim koncie — sprawdź przyznane poziomy",
     "permissions_changed_bell": "Poziomy dostępu w Twoim połączeniu z {{name}} uległy zmianie",
-    "message_access_revoked_bell": "{{name}} wycofał(a) Twój dostęp do swoich wiadomości"
+    "message_access_revoked_bell": "{{name}} wycofał(a) Twój dostęp do swoich wiadomości",
+    "help_request": "{{name}} prosi Cię o pomoc przy swoim koncie ({{type}})",
+    "help_request_accepted": "{{name}} zaakceptował(a) Twoją prośbę i może teraz pomagać przy Twoim koncie"
   },
   "totp": {
     "rate_limited": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {{minutes}} minut."

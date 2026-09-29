@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} さんがアカウントのリンクを終了しました",
     "permissions_expanded_bell": "{{name}} さんがあなたのアカウントでできることが増えました — 許可したレベルを確認してください",
     "permissions_changed_bell": "{{name}} さんとのリンクのアクセスレベルが変更されました",
-    "message_access_revoked_bell": "{{name}} さんがメッセージへのアクセスを取り消しました"
+    "message_access_revoked_bell": "{{name}} さんがメッセージへのアクセスを取り消しました",
+    "help_request": "{{name}} さんがアカウントの手伝いをあなたに依頼しました（{{type}}）",
+    "help_request_accepted": "{{name}} さんがリクエストを承諾し、あなたのアカウントを手伝えるようになりました"
   },
   "totp": {
     "rate_limited": "試行回数が多すぎます。{{minutes}} 分後に再試行してください。"

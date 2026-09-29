@@ -102,7 +102,9 @@
     "link_revoked_bell": "{{name}} hat Ihre Kontoverknüpfung beendet",
     "permissions_expanded_bell": "{{name}} kann jetzt mehr auf Ihrem Konto tun — prüfen Sie die erteilten Stufen",
     "permissions_changed_bell": "Die Zugriffsstufen Ihrer Verknüpfung mit {{name}} wurden geändert",
-    "message_access_revoked_bell": "{{name}} hat Ihren Zugriff auf ihre Nachrichten zurückgezogen"
+    "message_access_revoked_bell": "{{name}} hat Ihren Zugriff auf ihre Nachrichten zurückgezogen",
+    "help_request": "{{name}} bittet Sie um Hilfe beim eigenen Konto ({{type}})",
+    "help_request_accepted": "{{name}} hat Ihre Anfrage angenommen und kann Ihnen jetzt bei Ihrem Konto helfen"
   },
   "totp": {
     "rate_limited": "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es in {{minutes}} Minuten erneut."

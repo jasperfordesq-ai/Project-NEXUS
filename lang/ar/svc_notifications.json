@@ -102,7 +102,9 @@
     "link_revoked_bell": "أنهى {{name}} ارتباط حسابك",
     "permissions_expanded_bell": "أصبح بإمكان {{name}} فعل المزيد في حسابك — راجع المستويات التي منحتها",
     "permissions_changed_bell": "تغيّرت مستويات الوصول في ارتباطك مع {{name}}",
-    "message_access_revoked_bell": "سحب {{name}} وصولك إلى رسائله"
+    "message_access_revoked_bell": "سحب {{name}} وصولك إلى رسائله",
+    "help_request": "طلب {{name}} مساعدتك في حسابه ({{type}})",
+    "help_request_accepted": "قبل {{name}} طلبك ويمكنه الآن مساعدتك في حسابك"
   },
   "totp": {
     "rate_limited": "محاولات فاشلة كثيرة جداً. يرجى المحاولة مجدداً بعد {{minutes}} دقيقة."

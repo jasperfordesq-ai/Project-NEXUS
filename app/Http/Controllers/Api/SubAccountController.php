@@ -22,6 +22,10 @@ class SubAccountController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /** The two ends of a linked account, as `requester_role` names them. */
+    private const SIDE_SUPPORTER = 'supporter';
+    private const SIDE_MEMBER = 'member';
+
     public function __construct(
         private readonly SubAccountService $subAccountService,
     ) {}
@@ -33,7 +37,7 @@ class SubAccountController extends BaseApiController
 
         $children = $this->subAccountService->getChildAccounts($userId);
 
-        return $this->respondWithData($this->normalizeRelationships($children));
+        return $this->respondWithData($this->normalizeRelationships($children, $userId, self::SIDE_SUPPORTER));
     }
 
     /** GET /api/v2/users/me/parent-accounts */
@@ -41,7 +45,7 @@ class SubAccountController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
-        $parents = $this->normalizeRelationships($this->subAccountService->getParentAccounts($userId));
+        $parents = $this->normalizeRelationships($this->subAccountService->getParentAccounts($userId), $userId, self::SIDE_MEMBER);
 
         // Member-visible accountability: on rows where a supporter can view
         // this member's messages, say when they last looked (from the
@@ -59,13 +63,31 @@ class SubAccountController extends BaseApiController
         return $this->respondWithData($parents);
     }
 
-    /** POST /api/v2/users/me/sub-accounts */
+    /**
+     * POST /api/v2/users/me/sub-accounts
+     *
+     * `requester_role` says which end of the link the caller is on:
+     *
+     * - `supporter` (default — what web-uk and the mobile app send, and what
+     *   their screens describe): "let me help with your account". The caller
+     *   becomes the supporter; the named member must accept.
+     * - `member` (React "Add someone who can help", F-224): "please help me".
+     *   The caller becomes the supported member; the named supporter must
+     *   accept, and nothing takes effect until they do.
+     *
+     * Until E-061 the React button sent no role, so the member asking for help
+     * was recorded as the helper of the person they named.
+     */
     public function requestRelationship(): JsonResponse
     {
         $userId = $this->requireAuth();
         $this->rateLimit('sub_account_request', 5, 60);
 
         $data = $this->getAllInput();
+        $requesterRole = $data['requester_role'] ?? self::SIDE_SUPPORTER;
+        if (! in_array($requesterRole, [self::SIDE_SUPPORTER, self::SIDE_MEMBER], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'requester_role']), 'requester_role', 400);
+        }
         $childUserId = (int) ($data['child_user_id'] ?? 0);
         $email = is_string($data['email'] ?? null)
             ? trim((string) $data['email'])
@@ -101,8 +123,13 @@ class SubAccountController extends BaseApiController
             }
         }
 
+        // `$childUserId` above is simply "the member named in the request".
+        $namedUserId = $childUserId;
+
         try {
-            $relationshipId = $this->subAccountService->requestRelationship($userId, $childUserId, $relationshipType, $permissions);
+            $relationshipId = $requesterRole === self::SIDE_MEMBER
+                ? $this->subAccountService->requestHelpFrom($userId, $namedUserId, $relationshipType, $permissions)
+                : $this->subAccountService->requestRelationship($userId, $namedUserId, $relationshipType, $permissions);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -111,9 +138,12 @@ class SubAccountController extends BaseApiController
             return $this->respondWithErrors($this->subAccountService->getErrors(), 422);
         }
 
-        $children = $this->subAccountService->getChildAccounts($userId);
+        // Answer with the list the new row appears in, from the caller's side.
+        $rows = $requesterRole === self::SIDE_MEMBER
+            ? $this->subAccountService->getParentAccounts($userId)
+            : $this->subAccountService->getChildAccounts($userId);
 
-        return $this->respondWithData($this->normalizeRelationships($children), null, 201);
+        return $this->respondWithData($this->normalizeRelationships($rows, $userId, $requesterRole), null, 201);
     }
 
     /** PUT /api/v2/users/me/sub-accounts/{id}/approve */
@@ -133,7 +163,7 @@ class SubAccountController extends BaseApiController
 
         $parents = $this->subAccountService->getParentAccounts($userId);
 
-        return $this->respondWithData($this->normalizeRelationships($parents));
+        return $this->respondWithData($this->normalizeRelationships($parents, $userId, self::SIDE_MEMBER));
     }
 
     /** PUT /api/v2/users/me/sub-accounts/{id}/permissions */
@@ -178,7 +208,7 @@ class SubAccountController extends BaseApiController
 
         $children = $this->subAccountService->getChildAccounts($userId);
 
-        return $this->respondWithData($this->normalizeRelationships($children));
+        return $this->respondWithData($this->normalizeRelationships($children, $userId, self::SIDE_SUPPORTER));
     }
 
     /** PUT /api/v2/users/me/parent-accounts/{id}/permissions — supported member only. */
@@ -200,7 +230,7 @@ class SubAccountController extends BaseApiController
             return $this->respondWithErrors($this->subAccountService->getErrors(), 404);
         }
 
-        return $this->respondWithData($this->normalizeRelationships($this->subAccountService->getParentAccounts($userId)));
+        return $this->respondWithData($this->normalizeRelationships($this->subAccountService->getParentAccounts($userId), $userId, self::SIDE_MEMBER));
     }
 
     /** DELETE /api/v2/users/me/sub-accounts/{id} */
@@ -526,7 +556,13 @@ class SubAccountController extends BaseApiController
         };
     }
 
-    private function normalizeRelationships(array $relationships): array
+    /**
+     * @param string $viewerSide Which end of every row the viewer is on:
+     *                           SIDE_SUPPORTER (their `sub-accounts` list, the
+     *                           other party is the supported member) or
+     *                           SIDE_MEMBER (their `parent-accounts` list).
+     */
+    private function normalizeRelationships(array $relationships, int $viewerId, string $viewerSide): array
     {
         // One query for every row's open message-access ask, not one per row.
         $pendingAskIds = \App\Services\SubAccountService::pendingMessageAskRelationshipIds(array_map(
@@ -550,6 +586,18 @@ class SubAccountController extends BaseApiController
                 ? 'active'
                 : (in_array((int) ($relationship['relationship_id'] ?? 0), $pendingAskIds, true) ? 'pending' : 'none');
             $relationship['message_access_granted_at'] = $relationship['message_access_granted_at'] ?? null;
+
+            // F-224: a pending link can now be asked for from either end, so
+            // the screen must be told who answers it rather than assume the
+            // supported member always does. The raw requester id is not sent.
+            $otherId = (int) ($relationship['user_id'] ?? 0);
+            $relationship['awaiting_your_response'] = ($relationship['status'] ?? null) === 'pending'
+                && SubAccountService::awaitsResponseFrom([
+                    'parent_user_id' => $viewerSide === self::SIDE_SUPPORTER ? $viewerId : $otherId,
+                    'child_user_id' => $viewerSide === self::SIDE_SUPPORTER ? $otherId : $viewerId,
+                    'requested_by_user_id' => $relationship['requested_by_user_id'] ?? null,
+                ], $viewerId);
+            unset($relationship['requested_by_user_id']);
         }
         unset($relationship);
 

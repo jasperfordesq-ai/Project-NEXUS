@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 232,
+    "producer_count": 234,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -2708,9 +2708,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:375:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:430:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 375,
+            "line": 430,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$childUserId",
@@ -2721,9 +2721,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:469:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:545:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 469,
+            "line": 545,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$parentUserId",
@@ -2734,9 +2734,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:550:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:626:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 550,
+            "line": 626,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$otherUserId",
@@ -2747,9 +2747,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:764:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:840:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 764,
+            "line": 840,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "(int) $existing->child_user_id",
@@ -2760,9 +2760,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:1013:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:1089:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 1013,
+            "line": 1089,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "(int) $row->parent_user_id",
@@ -2773,9 +2773,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SubAccountService.php:1415:NotificationDispatcher::dispatch",
+            "id": "app/Services/SubAccountService.php:1491:NotificationDispatcher::dispatch",
             "file": "app/Services/SubAccountService.php",
-            "line": 1415,
+            "line": 1491,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$childUserId",
@@ -2783,6 +2783,32 @@
             "body_expression": "__($bellKey, ['name' => $parentName])",
             "type_expression": "$activityType",
             "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/SubAccountService.php:1529:NotificationDispatcher::dispatch",
+            "file": "app/Services/SubAccountService.php",
+            "line": 1529,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "$helperUserId",
+            "title_expression": null,
+            "body_expression": "__('svc_notifications.sub_account.help_request', ['name' => $memberName, 'type' => $typeLabel])",
+            "type_expression": "sub_account_request",
+            "link_expression": "self::LINKED_ACCOUNTS_LINK",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/SubAccountService.php:1560:NotificationDispatcher::dispatch",
+            "file": "app/Services/SubAccountService.php",
+            "line": 1560,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "$memberUserId",
+            "title_expression": null,
+            "body_expression": "__('svc_notifications.sub_account.help_request_accepted', ['name' => $helperName])",
+            "type_expression": "sub_account_approved",
+            "link_expression": "self::LINKED_ACCOUNTS_LINK",
             "data_expression": null
         },
         {

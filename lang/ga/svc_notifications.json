@@ -102,7 +102,9 @@
     "link_revoked_bell": "Chuir {{name}} deireadh le nasc do chuntais",
     "permissions_expanded_bell": "Is féidir le {{name}} níos mó a dhéanamh ar do chuntas anois — athbhreithnigh na leibhéil a cheadaigh tú",
     "permissions_changed_bell": "Athraíodh na leibhéil rochtana ar do nasc le {{name}}",
-    "message_access_revoked_bell": "Tharraing {{name}} siar do rochtain ar a gcuid teachtaireachtaí"
+    "message_access_revoked_bell": "Tharraing {{name}} siar do rochtain ar a gcuid teachtaireachtaí",
+    "help_request": "D'iarr {{name}} ort cabhrú lena gcuntas ({{type}})",
+    "help_request_accepted": "Ghlac {{name}} le d'iarratas agus is féidir leo cabhrú le do chuntas anois"
   },
   "totp": {
     "rate_limited": "An iomarca iarrachtaí teipthe. Bain triail as arís i gceann {{minutes}} nóiméad."
