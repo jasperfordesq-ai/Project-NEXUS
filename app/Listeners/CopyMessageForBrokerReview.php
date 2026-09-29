@@ -75,9 +75,18 @@ class CopyMessageForBrokerReview implements ShouldQueue
             $listingId = $message->listing_id ? (int) $message->listing_id : null;
 
             // Set tenant context for the queued job â€” required for HasTenantScope
-            // trait and any service that reads TenantContext::getId()
-            if ($event->tenantId) {
-                TenantContext::setById($event->tenantId);
+            // trait and any service that reads TenantContext::getId().
+            // F-288: setById() returns false when the community no longer
+            // exists. Bail, as NotifyMessageReceived and
+            // CopyGroupMessageForBrokerReview do, rather than run the review
+            // rules (which read and write first-contact / monitoring rows)
+            // under whatever community this worker was last left in.
+            if (!$event->tenantId || !TenantContext::setById($event->tenantId)) {
+                Log::warning('CopyMessageForBrokerReview: tenant not found, skipping', [
+                    'tenant_id' => $event->tenantId,
+                    'message_id' => $message->id ?? null,
+                ]);
+                return;
             }
 
             /** @var BrokerMessageVisibilityService $visibilityService */
