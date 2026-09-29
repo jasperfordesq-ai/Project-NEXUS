@@ -86,6 +86,11 @@ class JobInterviewService
             }
             $data['interview_type'] = $interviewType;
             $data['duration_mins'] = $duration;
+            // F-297: location_notes is prose, but the applicant's card turns it
+            // into a link for a video interview with no meeting link.
+            if (self::carriesUnsafeLinkScheme((string) ($data['location_notes'] ?? ''))) {
+                return false;
+            }
 
             if ($keyHash !== null && $requestHash !== null) {
                 $existing = self::creationReplay($tenantId, $proposedByUserId, $keyHash, $requestHash);
@@ -159,6 +164,20 @@ class JobInterviewService
             Log::error('JobInterviewService::propose failed', ['error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    /**
+     * True when a browser would read the value as a URL whose scheme runs
+     * script or opens local content. Mirrors the WHATWG URL parser's own
+     * clean-up (leading C0 controls and spaces dropped, tab and newline
+     * removed anywhere) so "java\tscript:" is caught. Prose — including prose
+     * containing a colon — and app links such as zoommtg: are not affected.
+     */
+    private static function carriesUnsafeLinkScheme(string $value): bool
+    {
+        $normalised = strtolower(ltrim(str_replace(["\t", "\n", "\r"], '', $value), "\x00..\x20"));
+
+        return preg_match('/^(javascript|vbscript|data|file|blob):/', $normalised) === 1;
     }
 
     private static function creationRequestHash(int $applicationId, array $data): string

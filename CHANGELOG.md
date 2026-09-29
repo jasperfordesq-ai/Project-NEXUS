@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A job interview's video-call link must now be an ordinary web address, and interview location notes can no longer hold a script or local-file link (F-297).
 - A safeguarding report's evidence link must now be an ordinary web address; anything else is refused (F-296).
 - A paid community plan is now matched to the community using the platform's own payment records, not details carried in the payment message (F-289).
 - Corrected an internal note about how far the event check-in reward limit can be exceeded when many people check in at once. No behaviour changed (F-295).

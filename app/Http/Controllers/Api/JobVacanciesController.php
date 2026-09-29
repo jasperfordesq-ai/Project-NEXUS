@@ -2231,6 +2231,10 @@ class JobVacanciesController extends BaseApiController
             $errors = $this->schedulingService->getErrors();
             $status = 400;
             foreach ($errors as $error) {
+                if ($error['code'] === 'VALIDATION_INVALID_URL') {
+                    $status = 422;
+                    break;
+                }
                 if ($error['code'] === 'RESOURCE_NOT_FOUND') {
                     $status = 404;
                     break;

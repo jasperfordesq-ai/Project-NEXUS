@@ -62,6 +62,18 @@ class JobInterviewSchedulingService
             ->exists();
     }
 
+    /**
+     * An absolute http(s) URL with a host. Same rule as EventService::isHttpUrl().
+     */
+    private static function isHttpUrl(string $value): bool
+    {
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true)
+            && (string) parse_url($value, PHP_URL_HOST) !== ''
+            && filter_var($value, FILTER_VALIDATE_URL) !== false;
+    }
+
     private function hasActiveApplication(int $jobId, int $userId, int $tenantId): bool
     {
         return JobApplication::where('tenant_id', $tenantId)
@@ -111,6 +123,21 @@ class JobInterviewSchedulingService
         if (!$this->canManageSlots($vacancy, $employerId, $tenantId)) {
             $this->errors[] = ['code' => 'RESOURCE_FORBIDDEN', 'message' => __('api.job_slots_manage_forbidden')];
             return [];
+        }
+
+        // F-297: the applicant's "Join call" button links to meeting_link, so a
+        // supplied value must be an http(s) URL. Checked for the whole batch
+        // before anything is written, so a refused batch stores no slot.
+        foreach ($slots as $slot) {
+            $link = is_array($slot) ? trim((string) ($slot['meeting_link'] ?? '')) : '';
+            if ($link !== '' && !self::isHttpUrl($link)) {
+                $this->errors[] = [
+                    'code' => 'VALIDATION_INVALID_URL',
+                    'message' => __('api.invalid_url'),
+                    'field' => 'meeting_link',
+                ];
+                return [];
+            }
         }
 
         $created = [];

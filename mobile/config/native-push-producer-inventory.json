@@ -2188,9 +2188,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobInterviewService.php:617:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobInterviewService.php:636:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobInterviewService.php",
-            "line": 617,
+            "line": 636,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $candidateId",
@@ -2201,9 +2201,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobInterviewService.php:670:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/JobInterviewService.php:689:NotificationDispatcher::fanOutPush",
             "file": "app/Services/JobInterviewService.php",
-            "line": 670,
+            "line": 689,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $posterId",
