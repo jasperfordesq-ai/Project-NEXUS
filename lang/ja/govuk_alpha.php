@@ -1557,6 +1557,7 @@ return [
         'accessibility_title' => 'アクセシビリティのニーズ',
         'accessibility_link' => 'アクセシビリティのニーズを管理する',
         'accessibility_description' => '主催者がサポートできるよう、アクセシビリティのニーズについて主催者に伝えてください。この情報はお客様が管理し、いつでも変更または削除できます。',
+        'accessibility_private_description' => 'アクセシビリティに関するニーズや、役立つ配慮を非公開のメモとして記録できます。主催者やコーディネーターは、緊急連絡先を含めてこの内容を見ることができません。知っておいてほしいことは、主催者に直接お伝えください。内容はいつでも変更・削除できます。',
         'need_types_legend' => 'あなたは次のうちどれに当てはまりますか%',
         'need_types_hint' => '該当するものをすべて選択してください。保存したニーズを削除するには、すべて選択を解除したままにしておきます。',
         'need_type_labels' => [
@@ -1569,6 +1570,7 @@ return [
             'other' => 'その他',
         ],
         'accessibility_description_label' => '主催者が知っておくべきこと',
+        'accessibility_notes_label' => 'このニーズに関するメモ',
         'accessibility_description_hint' => '自分のニーズを自分の言葉で説明してください。オプション。',
         'accessibility_accommodations_label' => '役立つ調整',
         'accessibility_accommodations_hint' => 'たとえば、静かな空間、段差のないアクセス、印刷物などです。オプション。',

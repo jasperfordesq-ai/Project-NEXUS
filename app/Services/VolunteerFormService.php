@@ -227,6 +227,69 @@ class VolunteerFormService
         }
     }
 
+    /** The values `vol_accessibility_needs.need_type` accepts (a MariaDB enum). */
+    public const ACCESSIBILITY_NEED_TYPES = ['mobility', 'visual', 'hearing', 'cognitive', 'dietary', 'language', 'other'];
+
+    /** Column widths of `vol_accessibility_needs`, so an over-long value is refused rather than failing the write. */
+    public const ACCESSIBILITY_EMERGENCY_NAME_MAX = 255;
+    public const ACCESSIBILITY_EMERGENCY_PHONE_MAX = 50;
+    /** `text` holds 65,535 bytes; 10,000 characters of 4-byte UTF-8 stays inside it. */
+    public const ACCESSIBILITY_TEXT_MAX = 10000;
+
+    /**
+     * Check a replacement set of accessibility needs before anything is deleted.
+     *
+     * F-227: the save used to replace the member's whole set and report success
+     * whatever happened. A duplicate need type (the unique key is
+     * tenant+user+need_type), an unknown type or an over-long value made the
+     * write fail and roll back while the member was told it had been saved, and
+     * a request with no `needs` list at all replaced the set with nothing.
+     *
+     * @param mixed $needs The raw `needs` value from the request
+     * @return string|null The offending field path, or null when the set is valid
+     */
+    public static function accessibilityNeedsInputError(mixed $needs): ?string
+    {
+        if (!is_array($needs) || !array_is_list($needs)) {
+            return 'needs';
+        }
+
+        $seenTypes = [];
+        $textLimits = [
+            'description' => self::ACCESSIBILITY_TEXT_MAX,
+            'accommodations_required' => self::ACCESSIBILITY_TEXT_MAX,
+            'emergency_contact_name' => self::ACCESSIBILITY_EMERGENCY_NAME_MAX,
+            'emergency_contact_phone' => self::ACCESSIBILITY_EMERGENCY_PHONE_MAX,
+        ];
+
+        foreach ($needs as $index => $need) {
+            if (!is_array($need)) {
+                return "needs.{$index}";
+            }
+
+            $type = $need['need_type'] ?? null;
+            if (!is_string($type) || !in_array($type, self::ACCESSIBILITY_NEED_TYPES, true)) {
+                return "needs.{$index}.need_type";
+            }
+            if (isset($seenTypes[$type])) {
+                return "needs.{$index}.need_type";
+            }
+            $seenTypes[$type] = true;
+
+            foreach ($textLimits as $field => $max) {
+                $value = $need[$field] ?? null;
+                if ($value === null) {
+                    continue;
+                }
+                if (!is_string($value) || mb_strlen($value) > $max) {
+                    return "needs.{$index}.{$field}";
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Replace all accessibility needs for a user (delete then insert within transaction).
      *

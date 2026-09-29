@@ -2549,6 +2549,7 @@
                 "accessibility_title": "Twoje potrzeby w zakresie dostępności",
                 "accessibility_link": "Zarządzaj swoimi potrzebami w zakresie dostępności",
                 "accessibility_description": "Poinformuj organizatorów o wszelkich potrzebach związanych z dostępnością, aby mogli Ci pomóc. Masz kontrolę nad tymi informacjami i możesz je zmienić lub usunąć w dowolnym momencie.",
+                "accessibility_private_description": "Zapisz prywatną notatkę o swoich potrzebach w zakresie dostępności i udogodnieniach, które Ci pomagają. Organizatorzy i koordynatorzy nie mają do niej dostępu, w tym do Twojego kontaktu alarmowego, dlatego o wszystkim, co powinni wiedzieć, poinformuj organizatora bezpośrednio. Możesz ją w każdej chwili zmienić lub usunąć.",
                 "need_types_legend": "Które z nich dotyczą Ciebie%",
                 "need_types_hint": "Wybierz wszystkie pasujące. Pozostaw je wszystkie niezaznaczone, aby usunąć zapisane potrzeby.",
                 "need_type_labels": {
@@ -2561,6 +2562,7 @@
                     "other": "Inne"
                 },
                 "accessibility_description_label": "Wszystko, co organizatorzy powinni wiedzieć",
+                "accessibility_notes_label": "Notatki dotyczące tej potrzeby",
                 "accessibility_description_hint": "Opisz swoje potrzeby własnymi słowami. Fakultatywny.",
                 "accessibility_accommodations_label": "Korekty, które by pomogły",
                 "accessibility_accommodations_hint": "Na przykład cicha przestrzeń, dostęp bez schodów lub drukowane materiały. Fakultatywny.",

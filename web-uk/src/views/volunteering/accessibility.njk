@@ -34,7 +34,9 @@
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha.volunteering.title") }}</span>
   <h1 class="govuk-heading-xl">{{ t("volunteering.accessibility_title") }}</h1>
-  <p class="govuk-body-l">{{ t("volunteering.accessibility_description") }}</p>
+  {# F-227: no organiser or coordinator screen reads these needs, so the page says
+     they are private rather than asking the member to tell organisers through it. #}
+  <p class="govuk-body-l">{{ t("volunteering.accessibility_private_description") }}</p>
 
   <form method="post" action="{{ urlFor('/volunteering/accessibility') }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -79,7 +81,7 @@
 
         {% call characterCount(2000, characterCountMessages, "description-" + needType.value) %}
         <div class="govuk-form-group">
-          <label class="govuk-label govuk-label--s" for="description-{{ needType.value }}">{{ t("volunteering.accessibility_description_label") }}</label>
+          <label class="govuk-label govuk-label--s" for="description-{{ needType.value }}">{{ t("volunteering.accessibility_notes_label") }}</label>
           <div id="description-hint-{{ needType.value }}" class="govuk-hint">{{ t("volunteering.accessibility_description_hint") }}</div>
           <textarea class="govuk-textarea govuk-js-character-count" id="description-{{ needType.value }}" name="description[{{ needType.value }}]" rows="3" maxlength="2000" aria-describedby="description-hint-{{ needType.value }} description-{{ needType.value }}-info">{{ detail.description }}</textarea>
         </div>

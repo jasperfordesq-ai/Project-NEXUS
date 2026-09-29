@@ -35635,7 +35635,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Back to volunteering');
     expect(response.text).toContain('Your accessibility needs have been saved.');
     expect(response.text).toContain('Your accessibility needs');
-    expect(response.text).toContain('Tell organisers about any accessibility needs so they can support you.');
+    // F-227: no organiser or coordinator can read these needs, so the page must say
+    // they are private — never ask the member to tell organisers through it.
+    expect(response.text).toContain('Keep a private record of your accessibility needs');
+    expect(response.text).toContain('Organisers and coordinators cannot see it, including your emergency contact');
+    expect(response.text).not.toContain('Tell organisers about any accessibility needs so they can support you.');
+    expect(response.text).not.toContain('Anything organisers should know');
+    expect(response.text).toContain('Notes about this need');
     expect(response.text).toContain('method="post" action="/volunteering/accessibility"');
     expect(response.text).toContain('id="need-mobility" name="need_types[]" type="checkbox" value="mobility" checked');
     expect(response.text).toContain('Mobility');

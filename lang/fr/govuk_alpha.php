@@ -1557,6 +1557,7 @@ return [
         'accessibility_title' => 'Vos besoins en accessibilité',
         'accessibility_link' => 'Gérez vos besoins en accessibilité',
         'accessibility_description' => 'Informez les organisateurs de tout besoin en matière d’accessibilité afin qu’ils puissent vous aider. Vous contrôlez ces informations et pouvez les modifier ou les supprimer à tout moment.',
+        'accessibility_private_description' => 'Gardez une trace privée de vos besoins d\'accessibilité et des aménagements qui vous aident. Les organisateurs et les coordinateurs ne peuvent pas la voir, y compris votre contact d\'urgence : informez donc directement l\'organisateur de tout ce qu\'il doit savoir. Vous pouvez la modifier ou la supprimer à tout moment.',
         'need_types_legend' => 'Lequel de ces éléments s\'applique à vous%',
         'need_types_hint' => 'Sélectionnez tout ce qui s\'applique. Laissez-les tous désélectionnés pour supprimer vos besoins enregistrés.',
         'need_type_labels' => [
@@ -1569,6 +1570,7 @@ return [
             'other' => 'Autre',
         ],
         'accessibility_description_label' => 'Tout ce que les organisateurs devraient savoir',
+        'accessibility_notes_label' => 'Notes sur ce besoin',
         'accessibility_description_hint' => 'Décrivez vos besoins dans vos propres mots. Facultatif.',
         'accessibility_accommodations_label' => 'Des ajustements qui aideraient',
         'accessibility_accommodations_hint' => 'Par exemple un espace calme, un accès sans marches ou des documents imprimés. Facultatif.',

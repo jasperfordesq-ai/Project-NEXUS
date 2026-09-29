@@ -1557,6 +1557,7 @@ return [
         'accessibility_title' => 'Uw toegankelijkheidsbehoeften',
         'accessibility_link' => 'Beheer uw toegankelijkheidsbehoeften',
         'accessibility_description' => 'Vertel organisatoren over eventuele toegankelijkheidsbehoeften, zodat zij u kunnen ondersteunen. U beheert deze gegevens en kunt deze op elk moment wijzigen of verwijderen.',
+        'accessibility_private_description' => 'Houd een privénotitie bij van uw toegankelijkheidsbehoeften en de aanpassingen die u helpen. Organisatoren en coördinatoren kunnen deze niet zien, ook uw noodcontact niet. Vertel de organisator daarom rechtstreeks alles wat hij of zij moet weten. U kunt deze op elk moment wijzigen of verwijderen.',
         'need_types_legend' => 'Welke van deze zijn op u van toepassing%',
         'need_types_hint' => 'Selecteer alles wat van toepassing is. Laat ze allemaal uitgeschakeld om uw opgeslagen behoeften te verwijderen.',
         'need_type_labels' => [
@@ -1569,6 +1570,7 @@ return [
             'other' => 'Anders',
         ],
         'accessibility_description_label' => 'Alles wat organisatoren moeten weten',
+        'accessibility_notes_label' => 'Notities over deze behoefte',
         'accessibility_description_hint' => 'Beschrijf uw behoeften in uw eigen woorden. Optioneel.',
         'accessibility_accommodations_label' => 'Aanpassingen die zouden helpen',
         'accessibility_accommodations_hint' => 'Denk aan een rustige ruimte, traploze toegang of drukwerk. Optioneel.',

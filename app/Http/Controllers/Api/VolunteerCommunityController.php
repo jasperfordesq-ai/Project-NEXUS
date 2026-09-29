@@ -609,7 +609,22 @@ class VolunteerCommunityController extends BaseApiController
 
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
-        $this->volunteerFormService->updateAccessibilityNeeds($userId, $data['needs'] ?? [], $tenantId);
+
+        // F-227: the save replaces the member's whole set, so a missing or
+        // malformed `needs` list is refused before anything is deleted, and a
+        // write that fails is reported as a failure instead of `success: true`.
+        if (!array_key_exists('needs', $data)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'needs', 422);
+        }
+        $invalidField = VolunteerFormService::accessibilityNeedsInputError($data['needs']);
+        if ($invalidField !== null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), $invalidField, 422);
+        }
+
+        if (!$this->volunteerFormService->updateAccessibilityNeeds($userId, $data['needs'], $tenantId)) {
+            return $this->respondWithError('INTERNAL_ERROR', __('api.server_error'), null, 500);
+        }
+
         return $this->respondWithData(['success' => true]);
     }
 

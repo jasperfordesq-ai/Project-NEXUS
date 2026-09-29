@@ -1557,6 +1557,7 @@ return [
         'accessibility_title' => 'Do riachtanais inrochtaineachta',
         'accessibility_link' => 'Bainistigh do riachtanais inrochtaineachta',
         'accessibility_description' => 'Inis do na heagraithe faoi aon riachtanais inrochtaineachta ionas gur féidir leo tacú leat. Rialaíonn tú an fhaisnéis seo agus is féidir leat é a athrú nó a bhaint am ar bith.',
+        'accessibility_private_description' => 'Coinnigh taifead príobháideach de do riachtanais inrochtaineachta agus de na coigeartuithe a chabhraíonn leat. Ní féidir le heagraithe ná le comhordaitheoirí é a fheiceáil, do theagmhálaí éigeandála san áireamh, mar sin inis go díreach don eagraí faoi aon rud ar gá dóibh a bheith ar an eolas faoi. Is féidir leat é a athrú nó a bhaint tráth ar bith.',
         'need_types_legend' => 'Cé acu seo a bhaineann leat?',
         'need_types_hint' => 'Roghnaigh gach a mbaineann. Fág iad go léir neamhroghnaithe chun do riachtanais shábháilte a bhaint.',
         'need_type_labels' => [
@@ -1569,6 +1570,7 @@ return [
             'other' => 'Eile',
         ],
         'accessibility_description_label' => 'Ba chóir go mbeadh a fhios ag lucht eagraithe rud ar bith',
+        'accessibility_notes_label' => 'Nótaí faoin riachtanas seo',
         'accessibility_description_hint' => 'Déan cur síos ar do chuid riachtanas i d’fhocail féin. Roghnach.',
         'accessibility_accommodations_label' => 'Coigeartuithe a chuideodh',
         'accessibility_accommodations_hint' => 'Mar shampla spás ciúin, rochtain saor ó chéimeanna, nó ábhair chlóite. Roghnach.',

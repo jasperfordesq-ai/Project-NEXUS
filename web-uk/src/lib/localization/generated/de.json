@@ -2549,6 +2549,7 @@
                 "accessibility_title": "Ihre Anforderungen an die Barrierefreiheit",
                 "accessibility_link": "Verwalten Sie Ihre Barrierefreiheitsanforderungen",
                 "accessibility_description": "Informieren Sie die Organisatoren über eventuelle Barrierefreiheitsanforderungen, damit sie Sie unterstützen können. Sie haben die Kontrolle über diese Informationen und können sie jederzeit ändern oder entfernen.",
+                "accessibility_private_description": "Halten Sie Ihre Barrierefreiheitsbedürfnisse und die Anpassungen, die Ihnen helfen, in einer privaten Notiz fest. Veranstalter und Koordinatoren können sie nicht sehen – auch Ihren Notfallkontakt nicht. Teilen Sie den Veranstaltern daher direkt mit, was sie wissen müssen. Sie können die Angaben jederzeit ändern oder entfernen.",
                 "need_types_legend": "Welche davon treffen auf Sie zu%",
                 "need_types_hint": "Wählen Sie alles aus, was zutrifft. Lassen Sie sie alle deaktiviert, um Ihre gespeicherten Anforderungen zu entfernen.",
                 "need_type_labels": {
@@ -2561,6 +2562,7 @@
                     "other": "Andere"
                 },
                 "accessibility_description_label": "Alles, was Veranstalter wissen sollten",
+                "accessibility_notes_label": "Notizen zu diesem Bedürfnis",
                 "accessibility_description_hint": "Beschreiben Sie Ihre Bedürfnisse mit Ihren eigenen Worten. Optional.",
                 "accessibility_accommodations_label": "Anpassungen, die helfen würden",
                 "accessibility_accommodations_hint": "Zum Beispiel ein ruhiger Raum, ein stufenloser Zugang oder gedruckte Materialien. Optional.",

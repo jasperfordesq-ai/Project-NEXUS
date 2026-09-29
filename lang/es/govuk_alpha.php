@@ -1557,6 +1557,7 @@ return [
         'accessibility_title' => 'Tus necesidades de accesibilidad',
         'accessibility_link' => 'Gestione sus necesidades de accesibilidad',
         'accessibility_description' => 'Informe a los organizadores sobre cualquier necesidad de accesibilidad para que puedan brindarle asistencia. Usted controla esta información y puede cambiarla o eliminarla en cualquier momento.',
+        'accessibility_private_description' => 'Guarde una nota privada de sus necesidades de accesibilidad y de las adaptaciones que le ayudan. Los organizadores y los coordinadores no pueden verla, incluido su contacto de emergencia, así que comunique directamente al organizador todo lo que necesite saber. Puede cambiarla o eliminarla en cualquier momento.',
         'need_types_legend' => '¿Cuál de estos se aplica a usted%',
         'need_types_hint' => 'Seleccione todo lo que corresponda. Déjelos todos sin seleccionar para eliminar sus necesidades guardadas.',
         'need_type_labels' => [
@@ -1569,6 +1570,7 @@ return [
             'other' => 'Otro',
         ],
         'accessibility_description_label' => 'Todo lo que los organizadores deben saber.',
+        'accessibility_notes_label' => 'Notas sobre esta necesidad',
         'accessibility_description_hint' => 'Describe tus necesidades con tus propias palabras. Opcional.',
         'accessibility_accommodations_label' => 'Ajustes que ayudarían',
         'accessibility_accommodations_hint' => 'Por ejemplo, un espacio tranquilo, acceso sin escalones o materiales impresos. Opcional.',

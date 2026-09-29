@@ -122,6 +122,15 @@ export function AccessibilityTab() {
   useEffect(() => { load(); return () => { abortRef.current?.abort(); }; }, [load]);
 
   const handleSave = async () => {
+    // F-227: a member can hold one need per type (the server keeps one row per
+    // type). Refuse a duplicate here, before anything is sent, so the member keeps
+    // what they typed instead of being told it saved when it could not.
+    const types = needs.map((n) => n.need_type);
+    if (new Set(types).size !== types.length) {
+      toastRef.current.error(tRef.current('accessibility.duplicate_type'));
+      return;
+    }
+
     try {
       setIsSaving(true);
       const response = await api.put('/v2/volunteering/accessibility-needs', { needs });
@@ -169,12 +178,14 @@ export function AccessibilityTab() {
         </Button>
       </div>
 
-      {/* Info Banner */}
+      {/* Privacy notice — F-227: these needs are visible to the member only.
+          No organisation or coordinator screen reads them, so the page must not
+          suggest they are shared. */}
       <GlassCard className="p-4 border-l-4 border-rose-500">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
           <p className="text-sm text-theme-muted">
-            {t('accessibility.info_banner')}
+            {t('accessibility.privacy_notice')}
           </p>
         </div>
       </GlassCard>
@@ -210,7 +221,7 @@ export function AccessibilityTab() {
             <EmptyState
               icon={<Accessibility className="w-12 h-12" aria-hidden="true" />}
               title={t('accessibility.no_needs_title')}
-              description={t('accessibility.no_needs_desc')}
+              description={t('accessibility.no_needs_desc_private')}
               action={
                 <Button
                   className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"

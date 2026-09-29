@@ -1588,6 +1588,7 @@ return [
         'accessibility_title' => 'Your accessibility needs',
         'accessibility_link' => 'Manage your accessibility needs',
         'accessibility_description' => 'Tell organisers about any accessibility needs so they can support you. You control this information and can change or remove it at any time.',
+        'accessibility_private_description' => 'Keep a private record of your accessibility needs and the adjustments that help you. Organisers and coordinators cannot see it, including your emergency contact, so tell the organiser directly about anything they need to know. You can change or remove it at any time.',
         'need_types_legend' => 'Which of these apply to you?',
         'need_types_hint' => 'Select all that apply. Leave them all unselected to remove your saved needs.',
         'need_type_labels' => [
@@ -1600,6 +1601,7 @@ return [
             'other' => 'Other',
         ],
         'accessibility_description_label' => 'Anything organisers should know',
+        'accessibility_notes_label' => 'Notes about this need',
         'accessibility_description_hint' => 'Describe your needs in your own words. Optional.',
         'accessibility_accommodations_label' => 'Adjustments that would help',
         'accessibility_accommodations_hint' => 'For example a quiet space, step-free access, or printed materials. Optional.',

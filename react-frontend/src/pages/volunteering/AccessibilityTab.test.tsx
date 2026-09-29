@@ -16,11 +16,12 @@ vi.mock('@/lib/motion', () => framerMotionMock);
 const translations: Record<string, string> = {
   'accessibility.heading': 'Accessibility & Accommodations',
   'accessibility.save': 'Save Changes',
-  'accessibility.info_banner': 'This information helps organizations provide appropriate support',
+  'accessibility.privacy_notice': 'This is a private note for you. Organisations and coordinators cannot see it.',
+  'accessibility.duplicate_type': 'Each type of need can only be added once.',
   'accessibility.load_error': 'Unable to load accessibility needs.',
   'accessibility.try_again': 'Try Again',
   'accessibility.no_needs_title': 'No accessibility needs added',
-  'accessibility.no_needs_desc': 'Add accessibility needs so volunteer organizations can support you.',
+  'accessibility.no_needs_desc_private': 'Keep a private note of your accessibility needs. It is not shared with organisations or coordinators.',
   'accessibility.add_first': 'Add Your First Need',
   'accessibility.add_need': 'Add Another Need',
   'accessibility.types.mobility': 'mobility',
@@ -44,13 +45,15 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+const toastSpies = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  warning: vi.fn(),
+}));
+
 vi.mock('@/contexts/ToastContext', () => ({
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  useToast: vi.fn(() => toastSpies),
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
@@ -94,12 +97,52 @@ describe('AccessibilityTab', () => {
     expect(screen.getByRole('button', { name: /Save Changes/i })).toBeInTheDocument();
   });
 
-  it('renders the info banner text', () => {
+  // F-227: no organisation or coordinator can read these needs, so the screen
+  // must say they are private to the member — not that they help organisations.
+  it('tells the member the needs are private and not seen by organisations or coordinators', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<AccessibilityTab />);
-    expect(
-      screen.getByText(/This information helps organizations provide appropriate support/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Organisations and coordinators cannot see it/)).toBeInTheDocument();
+    expect(screen.queryByText('accessibility.info_banner')).not.toBeInTheDocument();
+  });
+
+  it('describes the empty state as a private note, not as sharing with organisations', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<AccessibilityTab />);
+    await waitFor(() => {
+      expect(screen.getByText(/Keep a private note of your accessibility needs/)).toBeInTheDocument();
+    });
+    expect(screen.queryByText('accessibility.no_needs_desc')).not.toBeInTheDocument();
+  });
+
+  // F-227: two needs of the same type cannot be stored (one per type), and the
+  // save used to report success anyway. Refuse before sending, keep the form.
+  it('refuses to save two needs of the same type and keeps the form', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<AccessibilityTab />);
+    fireEvent.click(await screen.findByRole('button', { name: /Add Your First Need/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /Add Another Need/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }));
+    await waitFor(() => {
+      expect(toastSpies.error).toHaveBeenCalledWith('Each type of need can only be added once.');
+    });
+    expect(api.put).not.toHaveBeenCalled();
+    expect(toastSpies.success).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Add Another Need/i })).toBeInTheDocument();
+  });
+
+  it('reports an error, not success, when the server refuses the save', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockNeed] });
+    vi.mocked(api.put).mockResolvedValue({ success: false, error: 'Invalid input' });
+    render(<AccessibilityTab />);
+    await waitFor(() => {
+      expect(screen.getAllByText('mobility').length).toBeGreaterThan(0);
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Save Changes/i }));
+    await waitFor(() => {
+      expect(toastSpies.error).toHaveBeenCalled();
+    });
+    expect(toastSpies.success).not.toHaveBeenCalled();
   });
 
   it('shows empty state when no needs exist', async () => {
