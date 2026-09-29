@@ -55,11 +55,45 @@ class BlockUserService
             'created_at' => now(),
         ];
 
-        if (Schema::hasColumn('user_blocks', 'tenant_id')) {
+        $hasTenantColumn = Schema::hasColumn('user_blocks', 'tenant_id');
+        if ($hasTenantColumn) {
             $data['tenant_id'] = TenantContext::getId();
         }
 
-        DB::table('user_blocks')->insertOrIgnore($data);
+        $inserted = DB::table('user_blocks')->insertOrIgnore($data);
+
+        // F-285: the table's UNIQUE key is (user_id, blocked_user_id) with no
+        // tenant_id, while every read is tenant-scoped. After a super admin
+        // moves members between communities (User::moveTenant rewrites
+        // users.tenant_id only), a row for this pair can still carry the old
+        // community's tenant_id — invisible here, yet it made the insert above
+        // a silent no-op, so the member was told "blocked" and nothing was
+        // enforced. Re-home that stale row into this community.
+        //
+        // Only a row whose tenant is not the blocked member's current one is
+        // re-homed, so a live block elsewhere can never be moved, and a repeat
+        // block in the same community stays the idempotent no-op it always was.
+        if ($inserted === 0 && $hasTenantColumn) {
+            $tenantId = (int) TenantContext::getId();
+            $blockedIsHere = DB::table('users')
+                ->where('id', $blockedUserId)
+                ->where('tenant_id', $tenantId)
+                ->exists();
+
+            if ($blockedIsHere) {
+                DB::table('user_blocks')
+                    ->where('user_id', $userId)
+                    ->where('blocked_user_id', $blockedUserId)
+                    ->where(function ($q) use ($tenantId) {
+                        $q->where('tenant_id', '!=', $tenantId)->orWhereNull('tenant_id');
+                    })
+                    ->update([
+                        'tenant_id' => $tenantId,
+                        'reason' => $reason,
+                        'created_at' => now(),
+                    ]);
+            }
+        }
 
         // Auto-disconnect if connected
         try {

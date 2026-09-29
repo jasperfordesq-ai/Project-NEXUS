@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A blocked member can no longer peer-endorse the person who blocked them. Peer endorsements now also follow the safeguarding contact rules and the member's "who can see my profile" setting (F-271).
 - Employer reviews now follow the same rules as other reviews: a blocked member cannot leave one, the safeguarding contact rules apply, and a member can leave one review per employer instead of an unlimited number (F-272).
 - Blocking someone now also stops them rating your exchanges, marketplace orders or volunteering, commenting on your ideas, and reacting to your podcast episodes. None of these can email the person who blocked them any more (F-279).
+- A member who has been moved to a different community can block people again. Before, the screen said the block worked but nothing was stored, and the blocked person's messages still arrived (F-285).
 - Switching a community's maintenance mode on or off now refreshes only that community's search-engine pages. It used to restart page rendering for every community on the platform (F-245).
 - The volunteering accessibility page now says truthfully that these notes are private and are not shared with organisations or coordinators, and a save that fails is reported as an error instead of "saved" (F-227).
 - "Add someone who can help" in linked-account settings now does what it says: the person you name is asked to help you, and nothing changes until they accept. It used to make you their helper instead (F-224).
