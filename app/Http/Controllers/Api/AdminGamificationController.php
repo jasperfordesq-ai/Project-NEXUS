@@ -223,6 +223,9 @@ class AdminGamificationController extends BaseApiController
         if (!$this->campaignBadgeKeyResolves((string) $this->input('type', 'one_time'), (string) $this->input('badge_key', ''))) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_invalid'), 'badge_key', 422);
         }
+        if (!self::campaignXpAmountInRange($this->input('xp_amount', 0))) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'xp_amount', 422);
+        }
 
         try {
             $id = $this->achievementCampaignService->createCampaign([
@@ -250,6 +253,9 @@ class AdminGamificationController extends BaseApiController
             (string) $this->input('badge_key', $campaign['badge_key'] ?? '')
         )) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.badge_slug_invalid'), 'badge_key', 422);
+        }
+        if (!self::campaignXpAmountInRange($this->input('xp_amount', $campaign['xp_amount'] ?? 0))) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'xp_amount', 422);
         }
 
         $newStatus = $this->input('status');
@@ -337,6 +343,19 @@ class AdminGamificationController extends BaseApiController
         }
 
         return GamificationService::getBadgeByKey($badgeKey) !== null;
+    }
+
+    /**
+     * F-311: the same 0–1000 bound the challenge path puts on xp_reward, so a
+     * recurring all-member campaign cannot mint arbitrary XP each period.
+     */
+    private const CAMPAIGN_XP_MAX = 1000;
+
+    private static function campaignXpAmountInRange(mixed $xpAmount): bool
+    {
+        $xp = (int) $xpAmount;
+
+        return $xp >= 0 && $xp <= self::CAMPAIGN_XP_MAX;
     }
 
     /**
