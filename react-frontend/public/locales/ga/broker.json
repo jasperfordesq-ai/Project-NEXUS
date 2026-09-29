@@ -1259,7 +1259,7 @@
     "rejecting_between": "An mheaitseáil idir {{user1}} agus {{user2}} á diúltú.",
     "cancel": "Cealaigh",
     "empty_pending_title": "Níl aon mheaitseáil ag fanacht",
-    "empty_pending_hint": "Taispeánfar moltaí nua meaitseála cliste anseo lena n-athbhreithniú agat.",
+    "empty_pending_hint": "Níl aon rud le hathbhreithniú. Taispeántar meaitseáil anseo nuair a d'iarr ceachtar ball faomhadh comhordaitheora nó meaitseáil shrianta, nó nuair atá sé faoi mhonatóireacht.",
     "empty_status_title": "Níl aon rud anseo fós",
     "empty_status_hint": "Níl aon mheaitseáil leis an stádas seo fós.",
     "match_information": "Eolas faoin meaitseáil",

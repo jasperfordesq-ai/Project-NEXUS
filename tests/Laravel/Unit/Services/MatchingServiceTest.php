@@ -15,6 +15,19 @@ use Tests\Laravel\TestCase;
 
 class MatchingServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // These tests fake the database; the safeguarding match-approval gate
+        // is exercised for real in Feature/Matching/MatchApprovalGateTest.
+        $this->app->instance(\App\Services\Matching\MatchApprovalGate::class, new class extends \App\Services\Matching\MatchApprovalGate {
+            public function membersNeedingApproval(array $userIds, int $tenantId): array
+            {
+                return [];
+            }
+        });
+    }
+
     public function test_getSuggestionsForUser_returns_results(): void
     {
         DB::shouldReceive('select')->once()->andReturn([

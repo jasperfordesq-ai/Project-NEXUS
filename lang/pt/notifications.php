@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count mútuo',
     'match_approval_request' => 'A correspondência precisa de aprovação: :name corresponde a ":title"',
     'match_approved' => 'Ótimas notícias! Você foi correspondido com ":title"',
+    'match_approved_owner' => 'Um coordenador aprovou uma correspondência entre :name e o seu anúncio ":title". Essa pessoa poderá entrar em contacto consigo.',
     'match_rejected' => 'Atualização da partida: ":title" não era adequado no momento',
     'match_rejected_reason' => '. Motivo: :reason',
     'exchange_request_received' => 'Nova solicitação de troca para sua listagem',

@@ -141,6 +141,7 @@ return [
     'match_digest_mutual' => '، :count متبادل',
     'match_approval_request' => 'المطابقة تحتاج إلى موافقة: :name متطابق مع ":title"',
     'match_approved' => 'أخبار عظيمة! لقد تمت مطابقتك مع ":title"',
+    'match_approved_owner' => 'وافق منسق على مطابقة بين :name وإعلانك ":title". قد يتواصل معك.',
     'match_rejected' => 'تحديث المباراة: ":title" لم يكن مناسبًا في الوقت الحالي',
     'match_rejected_reason' => '. السبب: :reason',
     'exchange_request_received' => 'طلب تبادل جديد لقائمتك',

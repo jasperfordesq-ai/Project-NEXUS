@@ -920,12 +920,11 @@ class NotificationDispatcher
 
         LocaleContext::withLocale($broker, function () use ($brokerId, $userName, $listingTitle, $requestId) {
             $content = __('notifications.match_approval_request', ['name' => $userName, 'title' => $listingTitle]);
-            // Recipient query upstream (MatchApprovalWorkflowService) targets
-            // role IN ('admin','broker','coordinator'). /admin/match-approvals
-            // 403's brokers — link to the broker exchanges queue with the
-            // pending_broker filter, which renders the same pending requests
-            // in a broker-accessible UI for all three roles.
-            $link = "/broker/exchanges?status=pending_broker";
+            // Recipients are safeguarding staff (SafeguardingStaff). The
+            // broker panel's Match Approvals page is where these requests are
+            // reviewed; it is open to brokers, coordinators and admins. (This
+            // pointed at the exchanges queue, which never lists matches.)
+            $link = "/broker/match-approvals/{$requestId}";
 
             Notification::createNotification((int) $brokerId, $content, $link, 'match_approval_request');
             // Device push to the broker/admin — an approval is waiting on them.
@@ -959,6 +958,39 @@ class NotificationDispatcher
 
             $htmlContent = self::buildMatchApprovedEmail($listingTitle, $listingId, $matchScore);
             self::queueNotification($userId, 'match_approved', $content, $link, 'instant', $htmlContent);
+        });
+    }
+
+    /**
+     * Tell a listing owner that a coordinator has approved introducing a
+     * member to their listing (the member is told by dispatchMatchApproved).
+     * Bell + device push only, in the owner's preferred language.
+     */
+    public static function dispatchMatchApprovedForOwner($ownerId, $memberId, $listingTitle, $listingId): void
+    {
+        $tenantId = TenantContext::getId();
+        $owner = DB::table('users')
+            ->where('id', $ownerId)
+            ->where('tenant_id', $tenantId)
+            ->select(['preferred_language'])
+            ->first();
+        if (! $owner) {
+            return;
+        }
+        $memberName = trim((string) DB::table('users')
+            ->where('id', $memberId)
+            ->where('tenant_id', $tenantId)
+            ->value(DB::raw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))")));
+
+        LocaleContext::withLocale($owner, function () use ($ownerId, $memberId, $memberName, $listingTitle) {
+            $content = __('notifications.match_approved_owner', [
+                'name' => $memberName !== '' ? $memberName : __('emails.common.fallback_member_name'),
+                'title' => $listingTitle,
+            ]);
+            $link = "/profile/{$memberId}";
+
+            Notification::createNotification((int) $ownerId, $content, $link, 'match_approved');
+            self::fanOutPush((int) $ownerId, 'match_approved', $content, $link);
         });
     }
 
@@ -2149,7 +2181,7 @@ HTML;
             {$reviewNote}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/broker/exchanges?status=pending_broker" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnReview}</a>
+            <a href="{$frontendUrl}{$basePath}/broker/match-approvals/{$requestId}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnReview}</a>
         </div>
     </div>
 </div>

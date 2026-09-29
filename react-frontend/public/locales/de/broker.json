@@ -1226,7 +1226,7 @@
     "rejecting_between": "Der Match zwischen {{user1}} und {{user2}} wird abgelehnt.",
     "cancel": "Abbrechen",
     "empty_pending_title": "Keine wartenden Matches",
-    "empty_pending_hint": "Neue Smart-Match-Vorschläge erscheinen hier zur Prüfung.",
+    "empty_pending_hint": "Nichts zu prüfen. Ein Vorschlag erscheint hier, wenn eines der Mitglieder eine Freigabe durch die Koordination oder eingeschränkte Vermittlung gewählt hat oder unter Beobachtung steht.",
     "empty_status_title": "Hier ist noch nichts",
     "empty_status_hint": "Noch keine Matches mit diesem Status.",
     "match_information": "Match-Informationen",

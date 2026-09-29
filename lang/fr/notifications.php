@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count mutuelle',
     'match_approval_request' => 'La correspondance doit être approuvée : :name correspond à ":title"',
     'match_approved' => 'Excellente nouvelle ! Vous avez été mis en correspondance avec ":title"',
+    'match_approved_owner' => 'Un coordinateur a approuvé une mise en relation entre :name et votre annonce « :title ». Cette personne pourra vous contacter.',
     'match_rejected' => 'Mise à jour du match : ":title" ne convenait pas pour le moment',
     'match_rejected_reason' => '. Raison : :reason',
     'exchange_request_received' => 'Nouvelle demande d\'échange pour votre annonce',

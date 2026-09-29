@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Riceverai una notifica in tempo reale nel momento in cui l'opzione viene selezionata.",
           "requires_broker_approval": "Gli abbinamenti e gli scambi con il membro attendono il via libera di un coordinatore. I messaggi non vengono copiati.",
           "requires_vetted_interaction": "I membri non controllati vengono nascosti dal feed di scoperta del membro.",
-          "restricts_matching": "Registra soltanto la scelta del membro. Per ora non cambia il modo in cui si creano gli abbinamenti.",
+          "restricts_matching": "Gli abbinamenti con il membro restano in attesa in Approvazioni degli abbinamenti finché un coordinatore non li approva. Nessuno dei due membri ne viene informato prima.",
           "restricts_messaging": "Gli altri membri non possono contattare direttamente il membro; viene proposto loro di rivolgersi a un coordinatore. I messaggi non vengono copiati.",
           "vetting_type_required": "Specifica quale controllo deve mantenere un membro contattante, ad esempio garda_vetting."
         },

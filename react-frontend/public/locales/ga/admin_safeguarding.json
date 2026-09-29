@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Gheobhaidh tú fógra fíor-ama nuair a chuirtear tic leis an rogha.",
           "requires_broker_approval": "Fanann meaitseálacha agus malartuithe leis an mball le faomhadh ó chomhordaitheoir. Ní chóipeáiltear teachtaireachtaí.",
           "requires_vetted_interaction": "Ní thaispeántar i bhfotha fionnachtana an bhaill ach daoine a bhfuil an grinnfhiosrúchán riachtanach críochnaithe acu.",
-          "restricts_matching": "Ní dhéanann sé ach rogha an bhaill a thaifeadadh. Ní athraíonn sé faoi láthair an chaoi a ndéantar meaitseálacha.",
+          "restricts_matching": "Coinnítear meaitseálacha leis an mball i bhFaomhadh meaitseálacha go dtí go gceadaíonn comhordaitheoir iad. Ní insítear d'aon bhall fúthu roimhe sin.",
           "restricts_messaging": "Ní féidir le baill eile teagmháil dhíreach a dhéanamh leis an mball; tairgtear bealach dóibh comhordaitheoir a iarraidh. Ní chóipeáiltear teachtaireachtaí.",
           "vetting_type_required": "Sonraíonn sé cén t-seiceáil a chaithfidh ball teagmhála a bheith aige, mar shampla garda_vetting."
         },

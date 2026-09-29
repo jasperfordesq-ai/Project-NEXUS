@@ -27547,7 +27547,7 @@ export default interface Resources {
             "notify_admin_on_selection": "You get a real-time notification the moment the option is ticked.",
             "requires_broker_approval": "Matches and exchanges involving the member wait for a coordinator's sign-off. Messages are not copied.",
             "requires_vetted_interaction": "Non-vetted members are hidden from the member's discovery feed.",
-            "restricts_matching": "Records the member's choice only. It does not currently change how matches are made.",
+            "restricts_matching": "Matches involving the member are held in Match Approvals until a coordinator approves them. Neither member is told about a match before that.",
             "restricts_messaging": "Other members cannot contact the member directly; they are offered a way to ask a coordinator. Messages are not copied.",
             "vetting_type_required": "Specifies which vetting a contacting member must hold, for example garda_vetting."
           },
@@ -33812,7 +33812,7 @@ export default interface Resources {
       "detail_title": "Match Approval",
       "distance": "Distance",
       "distance_km": "{{km}} km",
-      "empty_pending_hint": "New smart-match proposals will land here for your review.",
+      "empty_pending_hint": "Nothing to review. A match appears here when either member asked for coordinator approval or restricted matching, or is under monitoring.",
       "empty_pending_title": "No matches waiting",
       "empty_status_hint": "No matches with this status yet.",
       "empty_status_title": "Nothing here yet",
@@ -51898,9 +51898,9 @@ export default interface Resources {
     "required_to_continue": "Required to continue:",
     "safeguarding": {
       "confirmation": {
-        "activation_broker_review": "A coordinator (also called a broker) checks and approves exchanges involving you before they go ahead. This does not let them read your messages.",
+        "activation_broker_review": "A coordinator (also called a broker) checks and approves exchanges and matches involving you before they go ahead. This does not let them read your messages.",
         "activation_discovery_hidden": "You will be hidden from discovery for members who have not completed the required vetting.",
-        "activation_match_approval": "This label currently records your choice only. It does not change how matches are suggested. Ask your coordinator if you need matches checked.",
+        "activation_match_approval": "A coordinator checks each match suggested for you before you or the other member are told about it. This does not let them read your messages.",
         "activation_none": "No automatic protections activate from these selections. Your preferences are recorded for coordinator awareness.",
         "activation_notification": "A coordinator has been notified and will be in touch to discuss how we can help.",
         "continue_cta": "Continue",

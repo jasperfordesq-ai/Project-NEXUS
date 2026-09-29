@@ -1237,7 +1237,7 @@
     "rejecting_between": "A rejeitar a correspondência entre {{user1}} e {{user2}}.",
     "cancel": "Cancelar",
     "empty_pending_title": "Nenhuma correspondência à espera",
-    "empty_pending_hint": "Novas propostas de correspondência inteligente surgirão aqui para a sua revisão.",
+    "empty_pending_hint": "Nada para revisar. Uma correspondência aparece aqui quando um dos membros pediu aprovação de um coordenador ou restrição de correspondências, ou está sob monitoramento.",
     "empty_status_title": "Ainda não há nada aqui",
     "empty_status_hint": "Ainda não há correspondências com este estado.",
     "match_information": "Informação da Correspondência",

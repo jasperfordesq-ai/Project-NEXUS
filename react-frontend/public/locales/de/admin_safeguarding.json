@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Sobald die Option aktiviert ist, erhalten Sie eine Echtzeitbenachrichtigung.",
           "requires_broker_approval": "Vermittlungen und Tauschvorgänge mit dem Mitglied warten auf die Freigabe durch eine Koordination. Nachrichten werden nicht kopiert.",
           "requires_vetted_interaction": "Nicht überprüfte Mitglieder werden im Discovery-Feed des Mitglieds ausgeblendet.",
-          "restricts_matching": "Speichert nur die Wahl des Mitglieds. An den Vermittlungen ändert sich derzeit nichts.",
+          "restricts_matching": "Vermittlungen mit dem Mitglied werden in den Match-Genehmigungen zurückgehalten, bis eine Koordination sie freigibt. Vorher erfährt keines der beiden Mitglieder davon.",
           "restricts_messaging": "Andere Mitglieder können das Mitglied nicht direkt kontaktieren; ihnen wird angeboten, eine Koordination zu fragen. Nachrichten werden nicht kopiert.",
           "vetting_type_required": "Gibt an, welche Überprüfung ein kontaktierendes Mitglied haben muss, zum Beispiel garda_vetting."
         },

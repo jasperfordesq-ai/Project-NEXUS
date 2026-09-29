@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count gegenseitig',
     'match_approval_request' => 'Übereinstimmung erfordert Genehmigung: :name abgeglichen mit „:title“',
     'match_approved' => 'Tolle Neuigkeiten! Sie wurden mit „:title“ abgeglichen.',
+    'match_approved_owner' => 'Eine Koordinatorin oder ein Koordinator hat eine Übereinstimmung zwischen :name und Ihrem Inserat „:title“ genehmigt. :name meldet sich eventuell bei Ihnen.',
     'match_rejected' => 'Match-Update: „:title“ war zu diesem Zeitpunkt nicht geeignet',
     'match_rejected_reason' => '. Grund: :reason',
     'exchange_request_received' => 'Neuer Umtauschantrag für Ihr Angebot',

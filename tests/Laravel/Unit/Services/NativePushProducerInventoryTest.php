@@ -79,6 +79,7 @@ class NativePushProducerInventoryTest extends TestCase
             'dispatchMatchDigest',
             'dispatchMatchApprovalRequest',
             'dispatchMatchApproved',
+            'dispatchMatchApprovedForOwner',
             'dispatchMatchRejected',
             'send',
             'notifyAdmins',

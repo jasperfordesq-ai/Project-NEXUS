@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count frithpháirteach',
     'match_approval_request' => 'Tá ceadú de dhíth ar mheaitseáil: :name meaitseáilte le ":title"',
     'match_approved' => 'Nuacht iontach! Tá tú meaitseáilte le ":title"',
+    'match_approved_owner' => 'Tá meaitseáil idir :name agus d\'fhógra ":title" ceadaithe ag comhordaitheoir. D\'fhéadfadh sé nó sí teagmháil a dhéanamh leat.',
     'match_rejected' => 'Nuashonrú meaitseála: ní raibh ":title" oiriúnach faoi láthair',
     'match_rejected_reason' => '. Cúis: :reason',
     'exchange_request_received' => 'Iarratas malairte nua ar do liostú',

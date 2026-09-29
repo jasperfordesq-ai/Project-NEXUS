@@ -141,6 +141,7 @@ return [
     'match_digest_mutual' => ', :count wederzijds',
     'match_approval_request' => 'Overeenkomst vereist goedkeuring: :name komt overeen met \':title\'',
     'match_approved' => 'Geweldig nieuws! Je bent gematcht met \':title\'',
+    'match_approved_owner' => 'Een coördinator heeft een match tussen :name en je advertentie \':title\' goedgekeurd. Diegene kan contact met je opnemen.',
     'match_rejected' => 'Match-update: \':title\' was op dit moment niet geschikt',
     'match_rejected_reason' => '. Reden: :reason',
     'exchange_request_received' => 'Nieuw ruilverzoek voor uw vermelding',

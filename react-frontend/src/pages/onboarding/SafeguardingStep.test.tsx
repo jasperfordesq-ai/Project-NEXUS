@@ -357,7 +357,7 @@ describe('SafeguardingStep', () => {
     await user.click(await screen.findByText('I would like a broker to review exchanges'));
     await user.click(screen.getByText('Save & Continue'));
 
-    expect(await screen.findByText(/checks and approves exchanges involving you/)).toBeInTheDocument();
-    expect(screen.queryByText(/This label currently records your choice only/)).toBeNull();
+    expect(await screen.findByText(/checks and approves exchanges and matches involving you/)).toBeInTheDocument();
+    expect(screen.queryByText(/checks each match suggested for you/)).toBeNull();
   });
 });

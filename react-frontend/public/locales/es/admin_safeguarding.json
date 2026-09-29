@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Recibe una notificación en tiempo real en el momento en que se marca la opción.",
           "requires_broker_approval": "Las coincidencias e intercambios con el miembro esperan el visto bueno de un coordinador. Los mensajes no se copian.",
           "requires_vetted_interaction": "Los miembros no examinados están ocultos del feed de descubrimiento del miembro.",
-          "restricts_matching": "Solo guarda la elección del miembro. Por ahora no cambia cómo se hacen las coincidencias.",
+          "restricts_matching": "Las coincidencias con el miembro quedan retenidas en Aprobaciones de coincidencias hasta que un coordinador las apruebe. Ninguno de los dos miembros recibe aviso antes.",
           "restricts_messaging": "Los demás miembros no pueden contactar directamente con el miembro; se les ofrece pedir ayuda a un coordinador. Los mensajes no se copian.",
           "vetting_type_required": "Especifica qué verificación debe realizar un miembro de contacto, por ejemplo garda_vetting."
         },

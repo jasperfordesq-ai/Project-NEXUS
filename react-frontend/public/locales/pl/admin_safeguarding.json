@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Otrzymasz powiadomienie w czasie rzeczywistym w momencie zaznaczenia opcji.",
           "requires_broker_approval": "Dopasowania i wymiany z udziałem członka czekają na zgodę koordynatora. Wiadomości nie są kopiowane.",
           "requires_vetted_interaction": "Niesprawdzeni członkowie są ukrywani przed kanałem odkrywania członków.",
-          "restricts_matching": "Zapisuje tylko wybór członka. Obecnie nie zmienia sposobu tworzenia dopasowań.",
+          "restricts_matching": "Dopasowania z udziałem członka czekają w Zatwierdzeniach dopasowań, aż zatwierdzi je koordynator. Wcześniej żaden z członków się o nich nie dowiaduje.",
           "restricts_messaging": "Inni członkowie nie mogą skontaktować się z członkiem bezpośrednio; proponuje się im poproszenie koordynatora. Wiadomości nie są kopiowane.",
           "vetting_type_required": "Określa, jaką weryfikację musi posiadać członek kontaktu, na przykład garda_vetting."
         },

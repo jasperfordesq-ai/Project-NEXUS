@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Support\Authorization\SafeguardingStaff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -58,30 +59,11 @@ class MatchApprovalWorkflowService
                 return null;
             }
 
-            // Administrative monitoring remains separate from self-selected
-            // broker-approval preferences.
-            $hasMatchingRestriction = DB::table('user_messaging_restrictions')
-                ->where('tenant_id', $tenantId)
-                ->whereIn('user_id', [$userId, $listingOwnerId])
-                ->where('under_monitoring', 1)
-                ->where(function ($q) {
-                    $q->whereNull('monitoring_expires_at')
-                      ->orWhere('monitoring_expires_at', '>', now());
-                })
-                ->exists();
-
-            $requiresBrokerApproval = SafeguardingTriggerService::requiresBrokerApproval($userId, $tenantId)
-                || SafeguardingTriggerService::requiresBrokerApproval($listingOwnerId, $tenantId);
-
-            if ($hasMatchingRestriction || $requiresBrokerApproval) {
-                Log::info('[MatchApprovalWorkflow] Blocked: user has safeguarding restrictions', [
-                    'user_id' => $userId,
-                    'listing_owner_id' => $listingOwnerId,
-                    'listing_id' => $listingId,
-                ]);
-                return null;
-            }
-
+            // This queue exists for exactly the pairs MatchApprovalGate holds
+            // back (a safeguarding "coordinator approval" / "restrict matching"
+            // choice, or administrative monitoring). Until 29 Sep 2026 this
+            // method refused those pairs, so the queue could never fill. A pair
+            // the contact policy forbids outright is still never queued.
             if (! self::contactPolicyAllowsBoth($userId, $listingOwnerId, $tenantId, 'match_submission')) {
                 return null;
             }
@@ -127,10 +109,11 @@ class MatchApprovalWorkflowService
             // the recipient's bell. The downstream dispatcher already wraps
             // under LocaleContext for the notification text itself.
             try {
-                $brokers = DB::table('users')
-                    ->where('tenant_id', $tenantId)
-                    ->whereIn('role', ['admin', 'broker', 'coordinator'])
-                    ->where('status', 'active')
+                $brokers = SafeguardingStaff::scope(
+                    DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active')
+                )
+                    ->where('id', '!=', $userId)
+                    ->where('id', '!=', $listingOwnerId)
                     ->select(['id', 'preferred_language'])
                     ->get();
 
@@ -154,59 +137,8 @@ class MatchApprovalWorkflowService
                 ]);
             }
 
-            // If this is a mutual match, notify both users.
-            // We pass the real user names verbatim (trimmed) or null, so the
-            // downstream dispatcher can apply its own fallback_someone under
-            // the recipient's LocaleContext — avoiding a leak of the caller's
-            // locale into the recipient's persisted bell.
-            if ($matchType === 'mutual') {
-                try {
-                    $trimmedUserName = trim((string) ($userName ?? ''));
-                    $matchInfo = [
-                        'id' => $listingId,
-                        'user_name' => $trimmedUserName !== '' ? $trimmedUserName : null,
-                    ];
-                    // Pass null when unknown so the dispatcher applies its
-                    // localized fallback under the recipient's LocaleContext.
-                    $reciprocalInfo = [
-                        'they_offer' => $matchData['matched_listing'] ?? null,
-                        'you_offer' => $listingTitle ?? null,
-                    ];
-
-                    NotificationDispatcher::dispatchMutualMatch(
-                        $listingOwnerId,
-                        $matchInfo,
-                        $reciprocalInfo
-                    );
-
-                    // Also notify the requesting user about the mutual match
-                    $ownerName = DB::table('users')
-                        ->where('id', $listingOwnerId)
-                        ->where('tenant_id', $tenantId)
-                        ->value(DB::raw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))"));
-                    $trimmedOwnerName = trim((string) ($ownerName ?? ''));
-
-                    $reverseMatchInfo = [
-                        'id' => $listingId,
-                        'user_name' => $trimmedOwnerName !== '' ? $trimmedOwnerName : null,
-                    ];
-                    $reverseReciprocalInfo = [
-                        'they_offer' => $listingTitle ?? null,
-                        'you_offer' => $matchData['matched_listing'] ?? null,
-                    ];
-
-                    NotificationDispatcher::dispatchMutualMatch(
-                        $userId,
-                        $reverseMatchInfo,
-                        $reverseReciprocalInfo
-                    );
-                } catch (\Throwable $e) {
-                    Log::warning('[MatchApprovalWorkflow] Failed to dispatch mutual match notification', [
-                        'request_id' => $id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
+            // Neither member is told anything at submission: the pair has not
+            // been approved yet. Both are told on approval (approveMatch).
 
             return (int) $id;
         } catch (\Throwable $e) {
@@ -290,6 +222,12 @@ class MatchApprovalWorkflowService
                         (int) $approval->listing_id,
                         (int) ($approval->match_score ?? 0)
                     );
+                    NotificationDispatcher::dispatchMatchApprovedForOwner(
+                        (int) $approval->listing_owner_id,
+                        (int) $approval->user_id,
+                        $listingTitle,
+                        (int) $approval->listing_id
+                    );
                 } catch (\Throwable $e) {
                     Log::warning('[MatchApprovalWorkflow] Failed to dispatch match approved notification', [
                         'request_id' => $requestId,
@@ -351,24 +289,11 @@ class MatchApprovalWorkflowService
                     'reason' => $reason,
                 ]);
 
-                // Notify the matched user that their match was rejected
-                try {
-                    $listingTitle = DB::table('listings')
-                        ->where('id', (int) $approval->listing_id)
-                        ->where('tenant_id', $tenantId)
-                        ->value('title') ?? 'a listing';
-
-                    NotificationDispatcher::dispatchMatchRejected(
-                        (int) $approval->user_id,
-                        $listingTitle,
-                        $reason
-                    );
-                } catch (\Throwable $e) {
-                    Log::warning('[MatchApprovalWorkflow] Failed to dispatch match rejected notification', [
-                        'request_id' => $requestId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+                // Deliberately silent to both members: neither was ever shown
+                // this proposal (MatchApprovalGate withheld it), and the
+                // reviewer's reason can carry safeguarding detail. The
+                // rejected row keeps the pair from being proposed again, and
+                // the controller writes the audit entry.
 
                 return true;
             }
@@ -457,6 +382,12 @@ class MatchApprovalWorkflowService
                             (int) $row->listing_id,
                             (int) ($row->match_score ?? 0)
                         );
+                        NotificationDispatcher::dispatchMatchApprovedForOwner(
+                            (int) $row->listing_owner_id,
+                            (int) $row->user_id,
+                            $row->listing_title ?? 'a listing',
+                            (int) $row->listing_id
+                        );
                     }
                 } catch (\Throwable $e) {
                     Log::warning('[MatchApprovalWorkflow] Failed to dispatch bulk approve notifications', [
@@ -492,20 +423,6 @@ class MatchApprovalWorkflowService
         try {
             $placeholders = implode(',', array_fill(0, count($requestIds), '?'));
 
-            // Fetch pending rows before updating so we can notify users
-            $pendingRows = DB::select(
-                "SELECT ma.id, ma.user_id, ma.listing_id, l.title as listing_title
-                 FROM match_approvals ma
-                 LEFT JOIN listings l ON ma.listing_id = l.id
-                 WHERE ma.id IN ({$placeholders})
-                   AND ma.tenant_id = ?
-                   AND ma.status = 'pending'",
-                array_merge(
-                    array_map('intval', $requestIds),
-                    [$tenantId]
-                )
-            );
-
             $affected = DB::update(
                 "UPDATE match_approvals
                  SET status = 'rejected',
@@ -529,20 +446,7 @@ class MatchApprovalWorkflowService
                     'rejected_by' => $rejectedBy,
                 ]);
 
-                // Notify each affected user
-                try {
-                    foreach ($pendingRows as $row) {
-                        NotificationDispatcher::dispatchMatchRejected(
-                            (int) $row->user_id,
-                            $row->listing_title ?? 'a listing',
-                            $reason
-                        );
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning('[MatchApprovalWorkflow] Failed to dispatch bulk reject notifications', [
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+                // Silent to members for the same reason as rejectMatch().
             }
 
             return $affected;

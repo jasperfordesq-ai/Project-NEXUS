@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count mutuo',
     'match_approval_request' => 'La corrispondenza richiede l\'approvazione: :name corrisponde a ":title"',
     'match_approved' => 'Grandi notizie! Sei stato abbinato a ":title"',
+    'match_approved_owner' => 'Un coordinatore ha approvato un abbinamento tra :name e il tuo annuncio ":title". Potrebbe contattarti.',
     'match_rejected' => 'Aggiornamento della corrispondenza: ":title" non era adatto in questo momento',
     'match_rejected_reason' => '. Motivo: :reason',
     'exchange_request_received' => 'Nuova richiesta di scambio per la tua inserzione',

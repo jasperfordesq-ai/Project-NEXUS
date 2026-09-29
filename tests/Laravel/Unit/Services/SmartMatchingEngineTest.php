@@ -26,6 +26,14 @@ class SmartMatchingEngineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // These tests fake the database; the safeguarding match-approval gate
+        // is exercised for real in Feature/Matching/MatchApprovalGateTest.
+        $this->app->instance(\App\Services\Matching\MatchApprovalGate::class, new class extends \App\Services\Matching\MatchApprovalGate {
+            public function membersNeedingApproval(array $userIds, int $tenantId): array
+            {
+                return [];
+            }
+        });
         $this->mockEmbedding = Mockery::mock(EmbeddingService::class);
         $this->mockRetriever = Mockery::mock(CandidateRetriever::class);
         $this->mockLearning = Mockery::mock(MatchLearningService::class);

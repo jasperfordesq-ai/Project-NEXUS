@@ -1237,7 +1237,7 @@
     "rejecting_between": "Rifiuto dell'abbinamento tra {{user1}} e {{user2}}.",
     "cancel": "Annulla",
     "empty_pending_title": "Nessun abbinamento in attesa",
-    "empty_pending_hint": "Le nuove proposte di abbinamento intelligente arriveranno qui per la tua revisione.",
+    "empty_pending_hint": "Niente da esaminare. Un abbinamento compare qui quando uno dei membri ha chiesto l'approvazione di un coordinatore o la limitazione degli abbinamenti, oppure è sotto monitoraggio.",
     "empty_status_title": "Ancora nulla qui",
     "empty_status_hint": "Nessun abbinamento con questo stato per ora.",
     "match_information": "Informazioni sull'abbinamento",

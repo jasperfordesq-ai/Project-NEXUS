@@ -1226,7 +1226,7 @@
     "rejecting_between": "Rejecting the match between {{user1}} and {{user2}}.",
     "cancel": "Cancel",
     "empty_pending_title": "No matches waiting",
-    "empty_pending_hint": "New smart-match proposals will land here for your review.",
+    "empty_pending_hint": "Nothing to review. A match appears here when either member asked for coordinator approval or restricted matching, or is under monitoring.",
     "empty_status_title": "Nothing here yet",
     "empty_status_hint": "No matches with this status yet.",
     "match_information": "Match Information",

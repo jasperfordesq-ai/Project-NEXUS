@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Services\Matching\CandidateRetriever;
 use App\Services\Matching\KeywordExtractor;
+use App\Services\Matching\MatchApprovalGate;
 use App\Services\Matching\MatchScorer;
 use App\Services\Matching\TenantMatchingContext;
 use Illuminate\Support\Facades\Cache;
@@ -428,6 +429,9 @@ class SmartMatchingEngine
         if (empty($userListings)) {
             $meta['has_active_listings'] = false;
             $coldStart = $this->getColdStartMatches($userId, $userData, $maxDistance, $limit);
+            // Cold-start items are browsing suggestions, not real matches, so
+            // they are withheld for a pair needing review but never queued.
+            $coldStart = app(MatchApprovalGate::class)->filterListingMatches($coldStart, $userId, $tenantId, false);
             $this->applyVettingUnavailabilityToMeta($meta);
             return $coldStart;
         }
@@ -667,6 +671,12 @@ class SmartMatchingEngine
             $perOwner[$owner] = ($perOwner[$owner] ?? 0) + 1;
             $capped[] = $match;
         }
+
+        // Safeguarding: a pair where either member chose coordinator approval
+        // or "restrict matching", or is under monitoring, is never introduced
+        // automatically — the match goes to the coordinators' Match Approvals
+        // queue and appears only once approved.
+        $capped = app(MatchApprovalGate::class)->filterListingMatches($capped, $userId, $tenantId);
 
         $this->applyVettingUnavailabilityToMeta($meta);
 

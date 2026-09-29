@@ -1237,7 +1237,7 @@
     "rejecting_between": "Rejet de l'appariement entre {{user1}} et {{user2}}.",
     "cancel": "Annuler",
     "empty_pending_title": "Aucun appariement en attente",
-    "empty_pending_hint": "Les nouvelles propositions d'appariement intelligent arriveront ici pour votre examen.",
+    "empty_pending_hint": "Rien à examiner. Une mise en relation apparaît ici lorsque l'un des membres a demandé l'approbation d'un coordinateur ou la restriction des mises en relation, ou fait l'objet d'une surveillance.",
     "empty_status_title": "Rien pour le moment",
     "empty_status_hint": "Aucun appariement avec ce statut pour le moment.",
     "match_information": "Informations sur l'appariement",

@@ -2553,6 +2553,32 @@ class CronJobRunner
                     );
 
                     if ($matchResult['score'] >= 85) {
+                        // Safeguarding: never email an introduction for a pair
+                        // that needs a coordinator's approval. Queue it for
+                        // review instead (idempotent: one pending row per pair).
+                        $recipientId = (int) $user['user_id'];
+                        $listingId = (int) $listing['id'];
+                        if (app(\App\Services\Matching\MatchApprovalGate::class)->pairNeedsApproval($recipientId, (int) $listing['user_id'], $tenantId)
+                            && ! app(\App\Services\Matching\MatchApprovalGate::class)->isApproved($recipientId, $listingId, $tenantId)
+                        ) {
+                            \App\Core\TenantContext::runForTenant($tenantId, function () use ($recipientId, $listingId, $matchResult): void {
+                                $exists = DB::table('match_approvals')
+                                    ->where('tenant_id', \App\Core\TenantContext::getId())
+                                    ->where('user_id', $recipientId)
+                                    ->where('listing_id', $listingId)
+                                    ->exists();
+                                if (! $exists) {
+                                    \App\Services\MatchApprovalWorkflowService::submitForApproval($recipientId, $listingId, [
+                                        'match_score' => $matchResult['score'],
+                                        'match_reasons' => $matchResult['reasons'],
+                                        'distance_km' => $matchResult['distance'] ?? null,
+                                        'match_type' => $matchResult['type'] ?? 'one_way',
+                                    ]);
+                                }
+                            });
+                            continue;
+                        }
+
                         // Deduplication gate: skip if we already notified this user about this
                         // listing in the last 30 days. The hot-match cron runs hourly and
                         // re-scans recent listings — without this gate the same recipient

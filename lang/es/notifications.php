@@ -138,6 +138,7 @@ return [
     'match_digest_mutual' => ', :count mutuo',
     'match_approval_request' => 'La coincidencia necesita aprobación: :name coincide con ":title"',
     'match_approved' => '¡Buenas noticias! Te han asignado ":title"',
+    'match_approved_owner' => 'Un coordinador ha aprobado una coincidencia entre :name y tu anuncio ":title". Es posible que se ponga en contacto contigo.',
     'match_rejected' => 'Actualización del partido: ":title" no era adecuado en este momento',
     'match_rejected_reason' => '. Razón: :reason',
     'exchange_request_received' => 'Nueva solicitud de cambio para tu anuncio',

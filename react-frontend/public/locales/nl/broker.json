@@ -1226,7 +1226,7 @@
     "rejecting_between": "Bezig met het afwijzen van de match tussen {{user1}} en {{user2}}.",
     "cancel": "Annuleren",
     "empty_pending_title": "Geen matches in afwachting",
-    "empty_pending_hint": "Nieuwe smart-match voorstellen komen hier binnen voor jouw beoordeling.",
+    "empty_pending_hint": "Niets te beoordelen. Een match verschijnt hier wanneer een van de leden om goedkeuring door een coördinator of beperkte matching heeft gevraagd, of onder toezicht staat.",
     "empty_status_title": "Hier nog niets te zien",
     "empty_status_hint": "Nog geen matches met deze status.",
     "match_information": "Matchinformatie",

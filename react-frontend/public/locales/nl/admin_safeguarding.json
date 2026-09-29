@@ -229,7 +229,7 @@
           "notify_admin_on_selection": "Je krijgt een real-time melding zodra de optie is aangevinkt.",
           "requires_broker_approval": "Matches en uitwisselingen met het lid wachten op goedkeuring door een coördinator. Berichten worden niet gekopieerd.",
           "requires_vetted_interaction": "Niet-doorgelichte leden worden verborgen in de ontdekkingsfeed van het lid.",
-          "restricts_matching": "Legt alleen de keuze van het lid vast. Het verandert op dit moment niets aan hoe matches worden gemaakt.",
+          "restricts_matching": "Matches met het lid worden in Matchgoedkeuringen vastgehouden tot een coördinator ze goedkeurt. Geen van beide leden hoort er eerder van.",
           "restricts_messaging": "Andere leden kunnen het lid niet rechtstreeks benaderen; ze krijgen de mogelijkheid een coördinator te vragen. Berichten worden niet gekopieerd.",
           "vetting_type_required": "Specificeert welke doorlichting een contacterend lid moet hebben, bijvoorbeeld garda_vetting."
         },

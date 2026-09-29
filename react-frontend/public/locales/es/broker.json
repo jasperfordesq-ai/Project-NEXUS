@@ -1237,7 +1237,7 @@
     "rejecting_between": "Rechazando la coincidencia entre {{user1}} y {{user2}}.",
     "cancel": "Cancelar",
     "empty_pending_title": "No hay coincidencias en espera",
-    "empty_pending_hint": "Las nuevas propuestas de coincidencia inteligente llegarán aquí para tu revisión.",
+    "empty_pending_hint": "No hay nada que revisar. Una coincidencia aparece aquí cuando uno de los miembros pidió la aprobación de un coordinador o restringir las coincidencias, o está bajo supervisión.",
     "empty_status_title": "Aún no hay nada aquí",
     "empty_status_hint": "Aún no hay coincidencias con este estado.",
     "match_information": "Información de la coincidencia",

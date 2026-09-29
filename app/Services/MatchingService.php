@@ -48,11 +48,23 @@ class MatchingService
                 [$tenantId, $userId, $candidateLimit]
             );
 
+            // Safeguarding: these member suggestions feed the match digest
+            // email. A member suggestion has no listing, so it cannot go to the
+            // Match Approvals queue — a pair needing a coordinator's approval
+            // is simply never suggested here. Throws (fails closed) if unreadable.
+            $needsReview = app(\App\Services\Matching\MatchApprovalGate::class)->membersNeedingApproval(
+                array_merge([$userId], array_map(fn ($c) => (int) ($c->id ?? 0), $candidates)),
+                $tenantId,
+            );
+            if (isset($needsReview[$userId])) {
+                return [];
+            }
+
             $policy = app(SafeguardingInteractionPolicy::class);
             $suggestions = [];
             foreach ($candidates as $candidate) {
                 $candidateId = (int) ($candidate->id ?? 0);
-                if ($candidateId <= 0) {
+                if ($candidateId <= 0 || isset($needsReview[$candidateId])) {
                     continue;
                 }
 

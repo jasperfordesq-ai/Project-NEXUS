@@ -141,6 +141,7 @@ return [
     'match_digest_mutual' => '、:count 相互',
     'match_approval_request' => '一致には承認が必要です: :name は「:title」と一致しました',
     'match_approved' => '素晴らしいニュースです！ 「:title」と一致しました',
+    'match_approved_owner' => 'コーディネーターが :name さんとあなたの掲載「:title」のマッチングを承認しました。先方から連絡が来ることがあります。',
     'match_rejected' => '一致の更新:「:title」は現時点では適切ではありませんでした',
     'match_rejected_reason' => '。理由: :reason',
     'exchange_request_received' => 'あなたのリストに対する新しい交換リクエスト',

@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The "Restrict matching" and "Require coordinator approval" safeguarding options now apply to matches. A match involving a member who chose either option, or who is under monitoring, is no longer shown or emailed to anyone until a coordinator approves it on the Match Approvals page. That page was always empty until now, because nothing ever sent matches to it. When a coordinator approves a match, both members are told. A rejected match stays hidden, and neither member is told. The matching screens and Help Centre articles are updated in all languages.
 - The post-deploy check of what search engines see no longer reports freshly re-rendered pages as frozen: it now judges a page by when it was last rendered, not by how old the code is. Deploys also no longer re-render dozens of existing pages at random because of a faulty "already exists" check.
 - Completing an exchange now earns experience points (XP) for both members. Until now a completed exchange earned nothing, because the XP award only ran for direct wallet transfers. Each member now receives the existing "complete a transaction" award once per exchange; no XP amounts or level thresholds were changed.
 

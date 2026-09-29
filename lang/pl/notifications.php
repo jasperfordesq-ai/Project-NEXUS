@@ -141,6 +141,7 @@ return [
     'match_digest_mutual' => ', :count wzajemne',
     'match_approval_request' => 'Dopasowanie wymaga zatwierdzenia: :name dopasowane do „:title”',
     'match_approved' => 'Świetna wiadomość! Dopasowano Cię do „:title”',
+    'match_approved_owner' => 'Koordynator zatwierdził dopasowanie między :name a Twoim ogłoszeniem „:title”. Ta osoba może się z Tobą skontaktować.',
     'match_rejected' => 'Aktualizacja meczu: „:title” nie była w tym momencie odpowiednia',
     'match_rejected_reason' => '. Powód: :reason',
     'exchange_request_received' => 'Nowa prośba o wymianę dla Twojej aukcji',

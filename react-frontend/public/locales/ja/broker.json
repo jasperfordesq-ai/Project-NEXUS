@@ -1226,7 +1226,7 @@
     "rejecting_between": "{{user1}}と{{user2}}の間のマッチを却下します。",
     "cancel": "キャンセル",
     "empty_pending_title": "待機中のマッチはありません",
-    "empty_pending_hint": "新しいスマートマッチ提案は、レビュー用としてここに表示されます。",
+    "empty_pending_hint": "確認するものはありません。どちらかのメンバーがコーディネーターの承認やマッチングの制限を選んでいる場合、または見守り対象の場合に、ここにマッチングが表示されます。",
     "empty_status_title": "まだ何もありません",
     "empty_status_hint": "このステータスのマッチはまだありません。",
     "match_information": "マッチ情報",

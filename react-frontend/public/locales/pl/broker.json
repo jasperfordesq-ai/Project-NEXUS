@@ -1248,7 +1248,7 @@
     "rejecting_between": "Odrzucanie dopasowania między {{user1}} a {{user2}}.",
     "cancel": "Anuluj",
     "empty_pending_title": "Brak oczekujących dopasowań",
-    "empty_pending_hint": "Nowe propozycje inteligentnych dopasowań pojawią się tutaj do Twojego przeglądu.",
+    "empty_pending_hint": "Nie ma nic do sprawdzenia. Dopasowanie pojawia się tutaj, gdy któryś z członków poprosił o zatwierdzenie przez koordynatora lub ograniczenie dopasowań albo jest objęty monitorowaniem.",
     "empty_status_title": "Nic tu jeszcze nie ma",
     "empty_status_hint": "Brak dopasowań o tym statusie.",
     "match_information": "Informacje o dopasowaniu",

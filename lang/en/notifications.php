@@ -208,6 +208,7 @@ return [
     'match_digest_mutual'        => ', :count mutual',
     'match_approval_request'     => 'Match needs approval: :name matched with ":title"',
     'match_approved'             => 'Great news! You\'ve been matched with ":title"',
+    'match_approved_owner'            => 'A coordinator has approved a match between :name and your listing ":title". They may get in touch.',
     'match_rejected'             => 'Match update: ":title" wasn\'t suitable at this time',
     'match_rejected_reason'      => '. Reason: :reason',
 
