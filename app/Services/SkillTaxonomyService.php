@@ -184,7 +184,23 @@ class SkillTaxonomyService
         }
 
         if (array_key_exists('parent_id', $data)) {
-            $updates['parent_id'] = ! empty($data['parent_id']) ? (int) $data['parent_id'] : null;
+            $parentId = ! empty($data['parent_id']) ? (int) $data['parent_id'] : null;
+
+            // E-062 F-312: the same check createCategory() applies — the parent
+            // must exist in this community (the F-256 class on this table).
+            if ($parentId !== null) {
+                $parentExists = DB::table('skill_categories')
+                    ->where('id', $parentId)
+                    ->where('tenant_id', $tenantId)
+                    ->exists();
+
+                if (! $parentExists) {
+                    self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.parent_category_not_found'), 'field' => 'parent_id'];
+                    return false;
+                }
+            }
+
+            $updates['parent_id'] = $parentId;
         }
         if (isset($data['description'])) {
             $updates['description'] = trim($data['description']);

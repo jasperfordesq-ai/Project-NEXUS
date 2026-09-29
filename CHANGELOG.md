@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A skill category can no longer be placed under another community's category (F-312).
 - A broker or coordinator whose account still carries an old admin flag can no longer read a job vacancy's applicants (F-309).
 - A date of birth entered from a paper sign-up form is now saved on the member's account, so the adults-only check applies to these members like everyone else (F-320).
 - Accounts an administrator creates, including from a spreadsheet, are approved straight away but still have to pass the community's ID check if it requires one, unless the administrator confirms they checked the person's identity themselves, which is recorded. A spreadsheet can now only create ordinary members, not administrators or brokers (F-278).
