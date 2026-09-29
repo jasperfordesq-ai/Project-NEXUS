@@ -24,7 +24,7 @@ import {
 } from '@/components/ui';
 import { useAuthOptional, useToast } from '@/contexts';
 import { api } from '@/lib/api';
-import { getSupportDiagnosticsSnapshot } from '@/lib/supportDiagnostics';
+import { getSupportDiagnosticsSnapshot, getSupportReportLocation } from '@/lib/supportDiagnostics';
 
 type Impact = 'blocked' | 'major' | 'minor' | 'cosmetic';
 
@@ -88,8 +88,11 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
 
     setIsSubmitting(true);
     const diagnostics = includeDiagnostics ? getSupportDiagnosticsSnapshot() : undefined;
-    const pageUrl = typeof window === 'undefined' ? undefined : window.location.href;
-    const route = typeof window === 'undefined' ? undefined : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    // Path only — never the query string or fragment, which can carry
+    // sign-in and reset tokens into a staff-readable record (F-281).
+    const location = getSupportReportLocation();
+    const pageUrl = location.pageUrl ?? undefined;
+    const route = location.route ?? undefined;
     const { captureSentryMessage } = await import('@/lib/sentry');
     const sentryEventId = captureSentryMessage('Support report submitted', 'info', {
       impact,

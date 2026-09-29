@@ -39,6 +39,13 @@ export interface SupportDiagnosticsSnapshot {
 const SENSITIVE_KEY_PATTERN = /(authorization|password|passcode|token|secret|cookie|csrf|session|email|phone|address|credit|card|cvv|iban|sort_code)/i;
 const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const BEARER_PATTERN = /Bearer\s+[A-Za-z0-9._~+/=-]+/gi;
+const EMBEDDED_URL_QUERY_PATTERN = /(https?:\/\/[^\s?#"'<>]+)[?#][^\s"'<>]*/gi;
+// Keep in step with SupportReportController::SAFE_QUERY_KEYS on the server.
+const SAFE_QUERY_KEYS = new Set([
+  'page', 'per_page', 'limit', 'offset', 'cursor', 'sort', 'order', 'direction',
+  'filter', 'status', 'type', 'category', 'tab', 'view', 'include', 'fields',
+  'lang', 'locale', 'format', 'period', 'from', 'to',
+]);
 const MAX_STRING_LENGTH = 1000;
 const MAX_DEPTH = 5;
 const FILTERED = '[filtered]';
@@ -86,11 +93,30 @@ export function recordApiDiagnostic(input: {
   });
 }
 
+/**
+ * The page a support report is about, WITHOUT its query string or fragment.
+ *
+ * Both routinely carry credentials — password-reset and sign-in links, one-time
+ * partner links, OAuth `#access_token=` fragments — and a support report is
+ * stored and shown to staff. The path alone is enough to find the page (F-281).
+ */
+export function getSupportReportLocation(): { pageUrl: string | null; route: string | null } {
+  if (typeof window === 'undefined') {
+    return { pageUrl: null, route: null };
+  }
+
+  const { origin, pathname } = window.location;
+
+  return { pageUrl: `${origin}${pathname}`, route: pathname };
+}
+
 export function getSupportDiagnosticsSnapshot(): SupportDiagnosticsSnapshot {
+  const location = getSupportReportLocation();
+
   return {
     captured_at: new Date().toISOString(),
-    page_url: typeof window === 'undefined' ? null : redactUrl(window.location.href),
-    route: typeof window === 'undefined' ? null : `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    page_url: location.pageUrl,
+    route: location.route,
     user_agent: typeof navigator === 'undefined' ? null : navigator.userAgent,
     viewport: {
       width: typeof window === 'undefined' ? null : window.innerWidth,
@@ -174,26 +200,36 @@ function redactValue(value: unknown, depth = 0): unknown {
 function redactString(value: string): string {
   const redacted = value
     .replace(BEARER_PATTERN, `Bearer ${FILTERED}`)
-    .replace(EMAIL_PATTERN, FILTERED);
+    .replace(EMAIL_PATTERN, FILTERED)
+    // A web address quoted in free text (an error message, say) keeps its
+    // path only: its query string and fragment are where credentials live.
+    .replace(EMBEDDED_URL_QUERY_PATTERN, '$1');
 
   return redacted.length > MAX_STRING_LENGTH ? redacted.slice(0, MAX_STRING_LENGTH) : redacted;
 }
 
+/**
+ * API request addresses keep their parameter NAMES (useful when debugging) but
+ * only an allowlisted set of plainly non-secret values; everything else is
+ * filtered, because a credential can sit under any name (`t`, `code`, `sig`).
+ * The fragment is always dropped (F-281).
+ */
 function redactUrl(value: string): string {
   try {
     const base = typeof window === 'undefined' ? 'https://app.project-nexus.ie' : window.location.origin;
     const url = new URL(value, base);
     for (const key of Array.from(url.searchParams.keys())) {
-      if (SENSITIVE_KEY_PATTERN.test(key)) {
+      if (SENSITIVE_KEY_PATTERN.test(key) || !SAFE_QUERY_KEYS.has(key.toLowerCase())) {
         url.searchParams.set(key, FILTERED);
       } else {
         url.searchParams.set(key, redactString(url.searchParams.get(key) ?? ''));
       }
     }
+    url.hash = '';
 
     const redacted = value.startsWith('http://') || value.startsWith('https://')
       ? url.toString()
-      : `${url.pathname}${url.search}${url.hash}`;
+      : `${url.pathname}${url.search}`;
 
     return redacted.replace(/%5Bfiltered%5D/gi, FILTERED);
   } catch {

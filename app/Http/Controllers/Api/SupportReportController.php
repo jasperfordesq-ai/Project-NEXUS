@@ -27,6 +27,23 @@ class SupportReportController extends BaseApiController
     private const MAX_DIAGNOSTIC_STRING_LENGTH = 2000;
     private const SENSITIVE_KEY_PATTERN = '/(authorization|password|passcode|token|secret|cookie|csrf|session|email|phone|address|credit|card|cvv|iban|sort_code)/i';
 
+    /**
+     * F-281: diagnostics keys whose value is a page address. The query string and
+     * fragment are dropped entirely — that is where reset/sign-in tokens live.
+     */
+    private const PAGE_ADDRESS_KEYS = ['page_url', 'route', 'url', 'href', 'referrer', 'referer'];
+
+    /**
+     * F-281: an API request address keeps its parameter names but only these
+     * plainly non-secret values. Keep in step with SAFE_QUERY_KEYS in
+     * react-frontend/src/lib/supportDiagnostics.ts.
+     */
+    private const SAFE_QUERY_KEYS = [
+        'page', 'per_page', 'limit', 'offset', 'cursor', 'sort', 'order', 'direction',
+        'filter', 'status', 'type', 'category', 'tab', 'view', 'include', 'fields',
+        'lang', 'locale', 'format', 'period', 'from', 'to',
+    ];
+
     public function store(Request $request): JsonResponse
     {
         $userId = $this->requireAuth();
@@ -82,8 +99,8 @@ class SupportReportController extends BaseApiController
             'impact' => (string) $validated['impact'],
             'status' => 'open',
             'module' => $this->nullableString($validated['module'] ?? null),
-            'route' => $this->nullableString($validated['route'] ?? null),
-            'page_url' => $this->nullableString($validated['page_url'] ?? null),
+            'route' => $this->pathOnly($this->nullableString($validated['route'] ?? null)),
+            'page_url' => $this->safePageUrl($this->nullableString($validated['page_url'] ?? null)),
             'sentry_event_id' => $this->nullableString($validated['sentry_event_id'] ?? null),
             'sentry_issue_url' => $this->nullableString($validated['sentry_issue_url'] ?? null),
             'diagnostics' => $diagnostics,
@@ -169,9 +186,15 @@ class SupportReportController extends BaseApiController
                 }
 
                 $safeKey = is_int($key) ? $key : $this->redactDiagnosticKey((string) $key);
-                $redacted[$safeKey] = is_string($key) && preg_match(self::SENSITIVE_KEY_PATTERN, $key)
-                    ? self::FILTERED
-                    : $this->redactDiagnosticValue($item, $depth + 1);
+                if (is_string($key) && preg_match(self::SENSITIVE_KEY_PATTERN, $key)) {
+                    $redacted[$safeKey] = self::FILTERED;
+                } elseif (is_string($key) && is_string($item) && in_array(strtolower($key), self::PAGE_ADDRESS_KEYS, true)) {
+                    $redacted[$safeKey] = $this->redactDiagnosticString((string) $this->pathOnly($item));
+                } elseif (is_string($key) && is_string($item) && strtolower($key) === 'endpoint') {
+                    $redacted[$safeKey] = $this->redactDiagnosticString($this->redactEndpointQuery($item));
+                } else {
+                    $redacted[$safeKey] = $this->redactDiagnosticValue($item, $depth + 1);
+                }
                 $count++;
             }
 
@@ -202,8 +225,70 @@ class SupportReportController extends BaseApiController
     {
         $redacted = preg_replace('/Bearer\s+[A-Za-z0-9._~+\/=-]+/i', 'Bearer ' . self::FILTERED, $value) ?? $value;
         $redacted = preg_replace('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', self::FILTERED, $redacted) ?? $redacted;
+        // A web address quoted in free text keeps its path only (F-281).
+        $redacted = preg_replace('~(https?://[^\s?#"\'<>]+)[?#][^\s"\'<>]*~i', '$1', $redacted) ?? $redacted;
 
         return Str::limit($redacted, self::MAX_DIAGNOSTIC_STRING_LENGTH, '');
+    }
+
+    /**
+     * F-281: drop an address's query string and fragment. Credentials travel in
+     * both, and a support report is stored and shown to every community admin.
+     */
+    private function pathOnly(?string $address): ?string
+    {
+        if ($address === null) {
+            return null;
+        }
+
+        $path = trim(preg_split('/[?#]/', $address, 2)[0] ?? '');
+
+        return $path === '' ? null : $path;
+    }
+
+    /**
+     * F-281: the page address is opened by staff in a new window, so only an
+     * http(s) or site-relative address is kept — and never its query or fragment.
+     */
+    private function safePageUrl(?string $pageUrl): ?string
+    {
+        $path = $this->pathOnly($pageUrl);
+        if ($path === null) {
+            return null;
+        }
+
+        if (preg_match('~^https?://~i', $path) || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return null;
+    }
+
+    /**
+     * F-281: an API request address keeps its parameter names, but a value is
+     * kept only under a plainly non-secret name; the fragment is dropped.
+     */
+    private function redactEndpointQuery(string $endpoint): string
+    {
+        $withoutFragment = explode('#', $endpoint, 2)[0];
+        $parts = explode('?', $withoutFragment, 2);
+        if (!isset($parts[1]) || $parts[1] === '') {
+            return $parts[0];
+        }
+
+        $pairs = [];
+        foreach (explode('&', $parts[1]) as $pair) {
+            if ($pair === '') {
+                continue;
+            }
+            [$rawKey] = explode('=', $pair, 2);
+            $key = strtolower(urldecode($rawKey));
+            $safe = in_array($key, self::SAFE_QUERY_KEYS, true)
+                && !preg_match(self::SENSITIVE_KEY_PATTERN, $key);
+            $pairs[] = $safe ? $pair : $rawKey . '=' . self::FILTERED;
+        }
+
+        return $parts[0] . ($pairs === [] ? '' : '?' . implode('&', $pairs));
     }
 
     private function nullableString(mixed $value, int $maxLength = 2048): ?string

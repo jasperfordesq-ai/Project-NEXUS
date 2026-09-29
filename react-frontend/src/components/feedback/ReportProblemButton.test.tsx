@@ -31,7 +31,9 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-vi.mock('@/lib/supportDiagnostics', () => ({
+vi.mock('@/lib/supportDiagnostics', async (importOriginal) => ({
+  // Keep the real location helper so the F-281 test exercises what ships.
+  ...(await importOriginal<typeof import('@/lib/supportDiagnostics')>()),
   getSupportDiagnosticsSnapshot: () => ({
     captured_at: '2026-05-27T00:00:00.000Z',
     entries: [{ kind: 'console', level: 'error', message: 'Captured error' }],
@@ -95,6 +97,44 @@ describe('ReportProblemButton', () => {
       }),
     }));
     expect(await screen.findByText('Reference NXR-260527-ABC123 has been created.')).toBeInTheDocument();
+  });
+
+  it('F-281: never sends the page query string or fragment, even with diagnostics off', async () => {
+    const SECRET = 'f281-synthetic-token-9b3d';
+    const originalPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    window.history.replaceState({}, '', `/partner-analytics?token=${SECRET}#impersonate=${SECRET}`);
+
+    try {
+      const user = userEvent.setup();
+      render(<ReportProblemButton />);
+
+      await user.click(screen.getByRole('button', { name: 'Report a problem' }));
+      await user.type(screen.getByLabelText('Short summary'), 'Checkout broken');
+      await user.type(screen.getByLabelText('What happened?'), 'The checkout button does not respond.');
+      await user.click(screen.getByRole('checkbox', { name: 'Include technical diagnostics from this page' }));
+      await user.click(screen.getByRole('button', { name: 'Send report' }));
+
+      await waitFor(() => expect(mocks.captureSentryFeedback).toHaveBeenCalledTimes(1));
+
+      const sent = JSON.stringify([
+        mocks.apiPost.mock.calls,
+        mocks.captureSentryMessage.mock.calls,
+        mocks.captureSentryFeedback.mock.calls,
+      ]);
+      expect(sent).not.toContain(SECRET);
+
+      // Control: the page is still identified, so staff can find it.
+      expect(mocks.apiPost).toHaveBeenCalledWith('/v2/support/reports', expect.objectContaining({
+        include_diagnostics: false,
+        route: '/partner-analytics',
+        page_url: `${window.location.origin}/partner-analytics`,
+      }));
+      expect(mocks.captureSentryFeedback).toHaveBeenCalledWith(expect.objectContaining({
+        url: `${window.location.origin}/partner-analytics`,
+      }));
+    } finally {
+      window.history.replaceState({}, '', originalPath);
+    }
   });
 
   it('uses viewport-constrained scrollable modal layout', async () => {

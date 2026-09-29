@@ -24,7 +24,8 @@ vi.mock('@/lib/sentry', () => ({
   captureSentryFeedback: vi.fn(),
 }));
 
-vi.mock('@/lib/supportDiagnostics', () => ({
+vi.mock('@/lib/supportDiagnostics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/supportDiagnostics')>()),
   getSupportDiagnosticsSnapshot: vi.fn(() => ({ ua: 'test' })),
 }));
 
