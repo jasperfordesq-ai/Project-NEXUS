@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The Warmth Pass now says "Identity verified" only for members who have passed an ID check, no longer describes itself as proof a member is verified, and "Areas I help with" now lists help the member gives rather than help they receive (F-228).
 - A member's linked community sign-in now works only through the same sign-in system it was linked under. If a community admin later points the provider somewhere else, linked members have to link it again from their settings, so the change cannot be used to sign in as them (F-268).
 - Added an optional safeguard so that visitor addresses forwarded by Cloudflare are trusted only when the request comes through this platform's own Cloudflare account. It is off until the operator configures it, and changes nothing until then (F-248).
 - A job candidate's data export still includes the employer's notes about their application and interviews, but no longer identifies which staff member wrote the decision or proposed the interview (F-261).

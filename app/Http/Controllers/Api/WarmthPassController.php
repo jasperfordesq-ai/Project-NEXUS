@@ -67,6 +67,11 @@ class WarmthPassController extends BaseApiController
         }
 
         try {
+            // E-061 F-228: only members of this community can be looked up.
+            if (!$this->service->memberExists($userId, $tenantId)) {
+                return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+            }
+
             $pass = $this->service->buildPass($userId, $tenantId);
         } catch (\Throwable $e) {
             return $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500);

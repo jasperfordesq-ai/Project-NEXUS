@@ -184,6 +184,57 @@ describe('WarmthPassPage', () => {
     await waitFor(() => expect(mockNavigate).toHaveBeenCalled());
   });
 
+  // E-061 F-228: the pass is shown to third parties, so it must not describe the
+  // member as "verified" when they only reached Trusted by hours and reviews.
+  it('explains the pass truthfully and never calls a Trusted member verified', () => {
+    vi.mocked(useApi).mockReturnValue({
+      data: {
+        ...mockWarmthPass,
+        tier: 2,
+        tier_label: 'trusted',
+        identity_verified: false,
+      },
+      isLoading: false,
+      error: null,
+      execute: vi.fn(),
+      refetch: vi.fn(),
+      reset: vi.fn(),
+      setData: vi.fn(),
+      loading: false,
+      meta: null,
+    });
+    render(<WarmthPassPage />);
+
+    const text = document.body.textContent ?? '';
+    expect(text).toContain('It is not an identity check');
+    expect(text).not.toMatch(/verified, trusted community helper/i);
+    expect(text).not.toContain('what_is_this_body');
+
+    const tierChip = document.querySelector('[data-tier]');
+    expect(tierChip?.getAttribute('data-tier')).toBe('2');
+    expect(tierChip?.textContent).toBe('Trusted');
+    expect(screen.getByText('No')).toBeInTheDocument();
+  });
+
+  it('labels the tier with the translated name, not the raw API slug', () => {
+    vi.mocked(useApi).mockReturnValue({
+      data: mockWarmthPass,
+      isLoading: false,
+      error: null,
+      execute: vi.fn(),
+      refetch: vi.fn(),
+      reset: vi.fn(),
+      setData: vi.fn(),
+      loading: false,
+      meta: null,
+    });
+    render(<WarmthPassPage />);
+
+    const tierChip = document.querySelector('[data-tier]');
+    expect(tierChip?.getAttribute('data-tier')).toBe('3');
+    expect(tierChip?.textContent).toBe('Verified');
+  });
+
   it('shows identity verified as yes when identity_verified is true', () => {
     vi.mocked(useApi).mockReturnValue({
       data: { ...mockWarmthPass, identity_verified: true },

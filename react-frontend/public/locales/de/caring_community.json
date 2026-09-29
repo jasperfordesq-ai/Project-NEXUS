@@ -250,7 +250,7 @@
     "active_since": "Ausweis aktiv seit",
     "issued_by": "Ausgestellt von {{tenant}} über Project NEXUS",
     "what_is_this": "Was ist ein Vertrauensausweis?",
-    "what_is_this_body": "Ihr Vertrauensausweis zeigt, dass Sie eine verifizierte, vertrauenswürdige Helferin oder ein verifizierter, vertrauenswürdiger Helfer in der Gemeinschaft sind. Sie können ihn begleiteten Personen, Koordinator/innen und Organisationen als Beleg für Ihre Stellung in der Caring Community vorzeigen.",
+    "what_it_shows_body": "Ihr Vertrauensausweis zeigt, dass Sie in dieser Gemeinschaft die Stufe „Vertrauensperson“ erreicht haben – auf Grundlage Ihrer erfassten Stunden und der erhaltenen Bewertungen. Er ist keine Identitätsprüfung: Die Zeile „Identität verifiziert“ zeigt, ob Sie Ihren Ausweis bei uns verifiziert haben.",
     "loading": "Ihr Ausweis wird geladen...",
     "error": "Vertrauensausweis konnte nicht geladen werden"
   },
@@ -1099,7 +1099,7 @@
       "tier_chip": "{{label}} (Stufe {{tier}})",
       "about": {
         "title": "Über diese Seite",
-        "body": "Ein Warmth Pass ist ein tragbarer Vertrauensnachweis, der zeigt, dass ein Mitglied die Vertrauensstufe erreicht hat, Peer-Reviews erhalten hat und zur informellen Nachbarschaftspflege berechtigt ist. Empfänger können die Vorlage des Wärmepasses eines Helfers anfordern, bevor sie Hilfe annehmen. Verwenden Sie diese Suche, um die Anmeldeinformationen eines Mitglieds auf Anfrage zu überprüfen oder um einem Mitglied zu helfen, das sich seiner Berechtigung nicht sicher ist."
+        "what_it_shows": "Ein Vertrauensausweis zeigt, dass ein Mitglied in dieser Gemeinschaft die Stufe „Vertrauensperson“ erreicht hat – auf Grundlage der erfassten Stunden und der erhaltenen Bewertungen. Für diese Stufe ist keine Identitätsprüfung nötig: Das Feld „Identität überprüft“ zeigt, ob das Mitglied seinen Ausweis verifiziert hat. Nutzen Sie diese Suche, um den Ausweis eines Mitglieds auf Anfrage zu prüfen oder einem Mitglied zu helfen, das unsicher ist, ob es berechtigt ist."
       },
       "lookup": {
         "title": "Mitgliedersuche",

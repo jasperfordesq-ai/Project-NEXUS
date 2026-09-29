@@ -253,7 +253,7 @@
     "active_since": "Pas gníomhach ó",
     "issued_by": "Arna eisiúint ag {{tenant}} trí Project NEXUS",
     "what_is_this": "Cad is Pas Teasa ann?",
-    "what_is_this_body": "Léiríonn do Phas Teasa gur cúntóir pobail fíoraithe thú a bhfuil muinín ag an bpobal as. Is féidir leat é a thaispeáint d’fhaighteoirí cúraim, do chomhordaitheoirí agus d’eagraíochtaí mar chruthúnas ar do sheasamh sa Phobal Cúraim.",
+    "what_it_shows_body": "Léiríonn do Phas Teasa gur bhain tú an leibhéal “Iontaofa” amach sa phobal seo, bunaithe ar na huaireanta a chláraigh tú agus ar na léirmheasanna a fuair tú. Ní seiceáil aitheantais é: taispeánann an líne “Aitheantas fíoraithe” an bhfuil do chárta aitheantais fíoraithe agat linn.",
     "loading": "Do phas á lódáil...",
     "error": "Níorbh fhéidir do Phas Teasa a lódáil"
   },
@@ -1117,7 +1117,7 @@
       "tier_chip": "{{label}} (Sraith {{tier}})",
       "about": {
         "title": "Maidir leis an leathanach seo",
-        "body": "Is éard atá i bPas Teasa ná dintiúir iontaobhais iniompartha a thaispeánann go bhfuil leibhéal Iontaofa bainte amach ag ball, go bhfuil athbhreithnithe piaraí faighte aige, agus go bhfuil sé incháilithe chun cúram comharsanachta neamhfhoirmiúil a sholáthar. Is féidir le faighteoirí iarraidh féachaint ar Phas Teasa an chúntóra sula nglacann siad le cúnamh. Bain úsáid as an gcuardach seo chun dintiúr ball a fhíorú ar iarratas, nó chun cabhrú le comhalta nach bhfuil cinnte faoina cháilitheacht."
+        "what_it_shows": "Léiríonn Pas Teasa gur bhain ball an leibhéal “Iontaofa” amach sa phobal seo, bunaithe ar na huaireanta a chláraigh siad agus ar na léirmheasanna a fuair siad. Ní bhaineann seiceáil aitheantais leis an leibhéal sin a bhaint amach: taispeánann an réimse “Aitheantais Deimhnithe” an bhfuil a gcárta aitheantais fíoraithe ag an mball. Úsáid an cuardach seo chun pas ball a sheiceáil nuair a iarrtar é, nó chun cabhrú le ball nach bhfuil cinnte an bhfuil siad incháilithe."
       },
       "lookup": {
         "title": "Cuardach Ball",

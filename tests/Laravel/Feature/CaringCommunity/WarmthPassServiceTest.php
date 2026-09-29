@@ -113,24 +113,37 @@ class WarmthPassServiceTest extends TestCase
         $this->assertEqualsWithDelta(7.5, $pass['hours_logged'], 0.001);
     }
 
-    public function test_pass_identity_verified_reflects_user_flag(): void
+    /**
+     * E-061 F-228: identity verified is the active id_verified badge. This test
+     * used to assert that `users.is_verified` (EMAIL verification) made a pass
+     * read "Identity verified: Yes", which is the defect F-228 records.
+     */
+    public function test_pass_identity_verified_reflects_id_verified_badge_not_email_flag(): void
     {
         $service = new WarmthPassService();
 
         $verifiedId = $this->makeUser(self::TENANT_A, 'wpv.' . uniqid() . '@example.com', [
             'trust_tier' => 3,
-            'is_verified' => 1,
-        ]);
-        $unverifiedId = $this->makeUser(self::TENANT_A, 'wpu.' . uniqid() . '@example.com', [
-            'trust_tier' => 2,
             'is_verified' => 0,
+        ]);
+        DB::table('member_verification_badges')->insert([
+            'user_id'    => $verifiedId,
+            'tenant_id'  => self::TENANT_A,
+            'badge_type' => 'id_verified',
+            'granted_at' => now(),
+        ]);
+        $emailOnlyId = $this->makeUser(self::TENANT_A, 'wpu.' . uniqid() . '@example.com', [
+            'trust_tier' => 3,
+            'is_verified' => 1,
         ]);
 
         $vp = $service->buildPass($verifiedId, self::TENANT_A);
-        $up = $service->buildPass($unverifiedId, self::TENANT_A);
+        $up = $service->buildPass($emailOnlyId, self::TENANT_A);
 
         $this->assertTrue($vp['identity_verified']);
+        $this->assertSame('verified', $vp['tier_label']);
         $this->assertFalse($up['identity_verified']);
+        $this->assertSame('trusted', $up['tier_label']);
     }
 
     public function test_pass_returns_default_when_user_not_in_tenant(): void

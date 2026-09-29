@@ -251,7 +251,7 @@
     "active_since": "Laissez-passer actif depuis",
     "issued_by": "Délivré par {{tenant}} via Project NEXUS",
     "what_is_this": "Qu'est-ce qu'un laissez-passer de confiance ?",
-    "what_is_this_body": "Votre laissez-passer de confiance atteste que vous êtes un·e aidant·e vérifié·e et digne de confiance dans la communauté. Vous pouvez le présenter aux personnes accompagnées, aux coordinateur·trices et aux organisations comme preuve de votre engagement dans la Caring Community.",
+    "what_it_shows_body": "Votre laissez-passer de confiance montre que vous avez atteint le niveau « Personne de confiance » dans cette communauté, d’après les heures que vous avez enregistrées et les avis que vous avez reçus. Ce n’est pas une vérification d’identité : la ligne « Identité vérifiée » indique si vous avez fait vérifier votre pièce d’identité auprès de nous.",
     "loading": "Chargement de votre laissez-passer...",
     "error": "Impossible de charger votre laissez-passer de confiance"
   },
@@ -1105,7 +1105,7 @@
       "tier_chip": "{{label}} (Niveau {{tier}})",
       "about": {
         "title": "À propos de cette page",
-        "body": "Un Warmth Pass est un identifiant de confiance portable montrant qu'un membre a atteint le niveau de confiance, a reçu des évaluations par les pairs et est éligible pour fournir des soins de quartier informels. Recipients can request to see a helper's Warmth Pass before accepting assistance. Use this lookup to verify a member's credential on request, or to assist a member who is unsure of their eligibility."
+        "what_it_shows": "Un laissez-passer de confiance montre qu’un membre a atteint le niveau « Personne de confiance » dans cette communauté, d’après les heures qu’il a enregistrées et les avis qu’il a reçus. Atteindre ce niveau n’implique aucune vérification d’identité : le champ « Identité vérifiée » indique si le membre a fait vérifier sa pièce d’identité. Utilisez cette recherche pour consulter le laissez-passer d’un membre sur demande, ou pour aider un membre qui ne sait pas s’il est éligible."
       },
       "lookup": {
         "title": "Recherche de membres",

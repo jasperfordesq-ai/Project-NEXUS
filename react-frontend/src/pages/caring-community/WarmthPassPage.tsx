@@ -15,7 +15,7 @@ import AlertCircle from 'lucide-react/icons/alert-circle';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CheckCircle from 'lucide-react/icons/check-circle';
 import Clock from 'lucide-react/icons/clock';
-import ShieldCheck from 'lucide-react/icons/shield-check';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import Star from 'lucide-react/icons/star';
 import XCircle from 'lucide-react/icons/x-circle';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +56,17 @@ function formatDate(iso: string | null): string {
   });
 }
 
+// The API caps the tier shown on a pass at Trusted unless the member holds an
+// active id_verified badge (E-061 F-228), so "Verified" only appears for a
+// member whose identity really was checked.
+const TIER_LABEL_KEYS: Record<number, string> = {
+  0: 'trust_tier.tier_newcomer',
+  1: 'trust_tier.tier_member',
+  2: 'trust_tier.tier_trusted',
+  3: 'trust_tier.tier_verified',
+  4: 'trust_tier.tier_coordinator',
+};
+
 type TierChipColor = 'default' | 'primary' | 'warning' | 'success';
 
 function tierChipColor(tier: number): TierChipColor {
@@ -92,7 +103,7 @@ export function WarmthPassPage() {
     <>
       <PageMeta
         title={t('warmth_pass.title')}
-        description={t('warmth_pass.what_is_this_body')}
+        description={t('warmth_pass.what_it_shows_body')}
         noIndex
       />
 
@@ -110,14 +121,14 @@ export function WarmthPassPage() {
         <GlassCard className="p-6 sm:p-8">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning/15">
-              <ShieldCheck className="h-6 w-6 text-warning-600" aria-hidden="true" />
+              <HeartHandshake className="h-6 w-6 text-warning-600" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">
                 {t('warmth_pass.title')}
               </h1>
               <p className="mt-2 text-base leading-relaxed text-theme-muted">
-                {t('warmth_pass.what_is_this_body')}
+                {t('warmth_pass.what_it_shows_body')}
               </p>
             </div>
           </div>
@@ -147,7 +158,7 @@ export function WarmthPassPage() {
           <GlassCard className="p-6 sm:p-8">
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-tertiary">
-                <ShieldCheck className="h-8 w-8 text-muted" aria-hidden="true" />
+                <HeartHandshake className="h-8 w-8 text-muted" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-semibold text-theme-primary">
@@ -186,7 +197,7 @@ export function WarmthPassPage() {
                       {t('warmth_pass.credential_label')}
                     </p>
                   </div>
-                  <ShieldCheck className="h-8 w-8 text-warning-500" aria-hidden="true" />
+                  <HeartHandshake className="h-8 w-8 text-warning-500" aria-hidden="true" />
                 </div>
 
                 {/* Member name */}
@@ -205,9 +216,10 @@ export function WarmthPassPage() {
                     size="md"
                     color={tierChipColor(data.tier)}
                     variant="flat"
-                    className="font-semibold capitalize"
+                    className="font-semibold"
+                    data-tier={data.tier}
                   >
-                    {data.tier_label}
+                    {t(TIER_LABEL_KEYS[data.tier] ?? 'trust_tier.tier_trusted')}
                   </Chip>
                 </div>
 
@@ -295,11 +307,11 @@ export function WarmthPassPage() {
             <Card>
               <CardBody className="gap-3 p-5">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-accent" aria-hidden="true" />
+                  <HeartHandshake className="h-5 w-5 text-accent" aria-hidden="true" />
                   <p className="font-semibold text-sm">{t('warmth_pass.what_is_this')}</p>
                 </div>
                 <p className="text-sm text-theme-muted leading-relaxed">
-                  {t('warmth_pass.what_is_this_body')}
+                  {t('warmth_pass.what_it_shows_body')}
                 </p>
               </CardBody>
             </Card>

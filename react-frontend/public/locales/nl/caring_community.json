@@ -250,7 +250,7 @@
     "active_since": "Pass actief sinds",
     "issued_by": "Uitgegeven door{{tenant}}via Project NEXUS",
     "what_is_this": "Wat is een Warmtepas?",
-    "what_is_this_body": "Uit uw Warmtepas blijkt dat u een geverifieerde, vertrouwde communityhelper bent. U kunt het aan zorgontvangers, coördinatoren en organisaties laten zien als bewijs van uw status in de zorgzame gemeenschap.",
+    "what_it_shows_body": "Uw Warmtepas laat zien dat u in deze gemeenschap het niveau ‘Vertrouwd’ hebt bereikt, op basis van de uren die u hebt geregistreerd en de beoordelingen die u hebt ontvangen. Het is geen identiteitscontrole: de regel ‘Identiteit geverifieerd’ laat zien of u uw identiteitsbewijs bij ons hebt laten verifiëren.",
     "loading": "Uw pas laden...",
     "error": "Kan uw Warmtepas niet laden"
   },
@@ -1099,7 +1099,7 @@
       "tier_chip": "{{label}} (niveau {{tier}})",
       "about": {
         "title": "Over deze pagina",
-        "body": "Een Warmtepas is een draagbare vertrouwensreferentie waaruit blijkt dat een lid het Trusted-niveau heeft bereikt, peer reviews heeft ontvangen en in aanmerking komt voor het verlenen van informele buurtzorg. Ontvangers kunnen vragen om de Warmtepas van een helper te zien voordat ze hulp accepteren. Gebruik deze zoekopdracht om op verzoek de inloggegevens van een lid te verifiëren of om een ​​lid te helpen dat niet zeker weet of hij of zij in aanmerking komt."
+        "what_it_shows": "Een Warmtepas laat zien dat een lid in deze gemeenschap het niveau ‘Vertrouwd’ heeft bereikt, op basis van de geregistreerde uren en de ontvangen beoordelingen. Voor dat niveau is geen identiteitscontrole nodig: het veld ‘Identiteit geverifieerd’ laat zien of het lid zijn of haar identiteitsbewijs heeft laten verifiëren. Gebruik deze zoekfunctie om op verzoek de pas van een lid te bekijken, of om een lid te helpen dat niet zeker weet of het in aanmerking komt."
       },
       "lookup": {
         "title": "Leden opzoeken",

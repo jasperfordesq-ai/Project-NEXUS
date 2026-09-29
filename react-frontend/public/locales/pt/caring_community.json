@@ -251,7 +251,7 @@
     "active_since": "Passe ativo desde",
     "issued_by": "Emitido por{{tenant}}através do Projeto NEXUS",
     "what_is_this": "O que é um passe de calor?",
-    "what_is_this_body": "Seu Warmth Pass mostra que você é um ajudante verificado e confiável da comunidade. Você pode mostrá-lo aos destinatários dos cuidados, coordenadores e organizações como prova de sua posição na comunidade de cuidados.",
+    "what_it_shows_body": "Seu passe de calor mostra que você alcançou o nível “Confiável” nesta comunidade, com base nas horas que registrou e nas avaliações que recebeu. Não é uma verificação de identidade: a linha “Identidade verificada” mostra se você verificou seu documento de identidade conosco.",
     "loading": "Carregando seu passe...",
     "error": "Não foi possível carregar seu Warm Pass"
   },
@@ -1105,7 +1105,7 @@
       "tier_chip": "{{label}} (Nível {{tier}})",
       "about": {
         "title": "Sobre esta página",
-        "body": "Um Warmth Pass é uma credencial de confiança portátil que mostra que um membro atingiu o nível Confiável, recebeu avaliações de pares e é elegível para fornecer atendimento informal à vizinhança. Os destinatários podem solicitar o Warmth Pass de um ajudante antes de aceitar assistência. Use esta pesquisa para verificar a credencial de um membro mediante solicitação ou para ajudar um membro que não tenha certeza de sua elegibilidade."
+        "what_it_shows": "Um passe de calor mostra que um membro alcançou o nível “Confiável” nesta comunidade, com base nas horas registradas e nas avaliações recebidas. Alcançar esse nível não envolve verificação de identidade: o campo “Identidade verificada” mostra se o membro verificou seu documento de identidade. Use esta consulta para verificar o passe de um membro quando solicitado ou para ajudar um membro que não sabe se é elegível."
       },
       "lookup": {
         "title": "Pesquisa de membros",

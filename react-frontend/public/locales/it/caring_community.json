@@ -251,7 +251,7 @@
     "active_since": "Pass attivo da",
     "issued_by": "Rilasciato da {{tenant}} tramite Project NEXUS",
     "what_is_this": "Che cos'è un pass di fiducia?",
-    "what_is_this_body": "Il tuo pass di fiducia attesta che sei una persona verificata e di fiducia all'interno della comunità. Puoi mostrarlo alle persone accompagnate, ai coordinatori e alle organizzazioni come prova del tuo impegno nella Caring Community.",
+    "what_it_shows_body": "Il tuo pass di fiducia mostra che hai raggiunto il livello «Persona di fiducia» in questa comunità, in base alle ore che hai registrato e alle recensioni che hai ricevuto. Non è una verifica dell’identità: la riga «Identità verificata» indica se hai verificato il tuo documento d’identità con noi.",
     "loading": "Caricamento del tuo pass...",
     "error": "Impossibile caricare il tuo pass di fiducia"
   },
@@ -1105,7 +1105,7 @@
       "tier_chip": "{{label}} (Livello {{tier}})",
       "about": {
         "title": "A proposito di questa pagina",
-        "body": "Un Warmth Pass è una credenziale di fiducia portatile che dimostra che un membro ha raggiunto il livello di fiducia, ha ricevuto revisioni tra pari ed è idoneo a fornire assistenza informale di quartiere. I destinatari possono richiedere di vedere il Warmth Pass di un aiutante prima di accettare l'assistenza. Utilizza questa ricerca per verificare le credenziali di un membro su richiesta o per assistere un membro che non è sicuro della propria idoneità."
+        "what_it_shows": "Un pass di fiducia mostra che un membro ha raggiunto il livello «Persona di fiducia» in questa comunità, in base alle ore registrate e alle recensioni ricevute. Raggiungere questo livello non comporta alcuna verifica dell’identità: il campo «Identità verificata» indica se il membro ha verificato il proprio documento d’identità. Usa questa ricerca per controllare il pass di un membro su richiesta, o per aiutare un membro che non sa se ne ha diritto."
       },
       "lookup": {
         "title": "Ricerca membri",

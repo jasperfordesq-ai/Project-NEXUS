@@ -35382,8 +35382,8 @@ export default interface Resources {
       },
       "warmth_pass": {
         "about": {
-          "body": "A Warmth Pass is a portable trust credential showing that a member has reached Trusted tier, has received peer reviews, and is eligible to provide informal neighbourhood care. Recipients can request to see a helper's Warmth Pass before accepting assistance. Use this lookup to verify a member's credential on request, or to assist a member who is unsure of their eligibility.",
-          "title": "About this page"
+          "title": "About this page",
+          "what_it_shows": "A Warmth Pass shows that a member has reached the Trusted level in this community, based on the hours they have logged and the reviews they have received. Reaching that level does not involve an identity check: the Identity Verified field shows whether the member has verified their ID. Use this lookup to check a member's pass on request, or to help a member who is unsure whether they are eligible."
         },
         "eligible": "Eligible",
         "empty_date": "Not set",
@@ -35795,7 +35795,7 @@ export default interface Resources {
       "reviews_received": "Reviews received",
       "title": "My Warmth Pass",
       "what_is_this": "What is a Warmth Pass?",
-      "what_is_this_body": "Your Warmth Pass shows that you're a verified, trusted community helper. You can show it to care recipients, coordinators, and organisations as proof of your standing in the caring community.",
+      "what_it_shows_body": "Your Warmth Pass shows that you have reached the Trusted level in this community, based on the hours you have logged and the reviews you have received. It is not an identity check: the \"Identity verified\" line shows whether you have verified your ID with us.",
       "yes": "Yes"
     }
   },

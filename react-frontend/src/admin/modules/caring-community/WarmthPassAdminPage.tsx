@@ -43,6 +43,16 @@ interface WarmthPass {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// The API caps the tier on a pass at Trusted unless the member holds an active
+// id_verified badge (E-061 F-228). Labels come from the shared trust-tier keys.
+const TIER_LABEL_KEYS: Record<number, string> = {
+  0: 'trust_tier.tier_newcomer',
+  1: 'trust_tier.tier_member',
+  2: 'trust_tier.tier_trusted',
+  3: 'trust_tier.tier_verified',
+  4: 'trust_tier.tier_coordinator',
+};
+
 function formatDate(iso: string | null, fallback: string): string {
   if (!iso) return fallback;
   return new Date(iso).toLocaleDateString(getFormattingLocale(), {
@@ -122,7 +132,7 @@ export function WarmthPassAdminPage() {
                 {t('admin.warmth_pass.about.title')}
               </p>
               <p className="text-muted">
-                {t('admin.warmth_pass.about.body')}
+                {t('admin.warmth_pass.about.what_it_shows')}
               </p>
             </div>
           </div>
@@ -231,9 +241,13 @@ export function WarmthPassAdminPage() {
                     : 'default'
                   }
                   variant="soft"
-                  className="capitalize font-semibold"
+                  className="font-semibold"
+                  data-tier={result.tier}
                 >
-                  {t('admin.warmth_pass.tier_chip', { label: result.tier_label, tier: result.tier })}
+                  {t('admin.warmth_pass.tier_chip', {
+                    label: t(TIER_LABEL_KEYS[result.tier] ?? 'trust_tier.tier_trusted'),
+                    tier: result.tier,
+                  })}
                 </Chip>
               </div>
               <div>

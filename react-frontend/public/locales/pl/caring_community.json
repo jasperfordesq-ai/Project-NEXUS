@@ -252,7 +252,7 @@
     "active_since": "Pass aktywny od",
     "issued_by": "Wydane przez{{tenant}}za pośrednictwem Projektu NEXUS",
     "what_is_this": "Co to jest przepustka rozgrzewająca?",
-    "what_is_this_body": "Twoja karta Warmth Pass pokazuje, że jesteś zweryfikowanym i zaufanym pomocnikiem społeczności. Możesz go pokazać odbiorcom opieki, koordynatorom i organizacjom jako dowód swojej pozycji w społeczności opiekuńczej.",
+    "what_it_shows_body": "Twoja przepustka ciepła pokazuje, że masz w tej społeczności poziom „Zaufany”, przyznany na podstawie zarejestrowanych godzin i otrzymanych opinii. Nie jest to weryfikacja tożsamości: wiersz „Tożsamość zweryfikowana” pokazuje, czy Twój dokument tożsamości został u nas zweryfikowany.",
     "loading": "Ładowanie przepustki...",
     "error": "Nie udało się załadować przepustki Warmth Pass"
   },
@@ -1111,7 +1111,7 @@
       "tier_chip": "{{label}} (Poziom {{tier}})",
       "about": {
         "title": "O tej stronie",
-        "body": "Warmth Pass to przenośne poświadczenie zaufania potwierdzające, że członek osiągnął poziom Zaufany, otrzymał recenzje wzajemne i jest uprawniony do zapewniania nieformalnej opieki sąsiedzkiej. Odbiorcy mogą poprosić o pokazanie Karty Ciepła pomocnika przed przyjęciem pomocy. Użyj tego wyszukiwania, aby na żądanie zweryfikować referencje członka lub pomóc członkowi, który nie jest pewien, czy się kwalifikuje."
+        "what_it_shows": "Przepustka ciepła pokazuje, że członek osiągnął w tej społeczności poziom „Zaufany” na podstawie zarejestrowanych godzin i otrzymanych opinii. Osiągnięcie tego poziomu nie wymaga weryfikacji tożsamości: pole „Tożsamość zweryfikowana” pokazuje, czy członek zweryfikował swój dokument tożsamości. Użyj tego wyszukiwania, aby na prośbę sprawdzić przepustkę członka lub pomóc członkowi, który nie wie, czy spełnia warunki."
       },
       "lookup": {
         "title": "Wyszukiwanie członków",
