@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A job candidate's data export still includes the employer's notes about their application and interviews, but no longer identifies which staff member wrote the decision or proposed the interview (F-261).
 - A sign-in provider set up by a community admin can no longer sign someone into an existing account just because the email address matches. New members can still join through it, and anyone already linked keeps signing in. Providers approved by the platform operator are unchanged (F-244).
 - A community's donation and premium payments can now only go to the Stripe account created through that community's own Stripe setup on this platform. Another account entered by hand is refused, and one saved earlier is no longer used; payments fall back to the platform account until the community completes its own setup (F-263).
 - Brokers and coordinators no longer see staff concern notes written about themselves, about fellow brokers or about admins; they still see concern notes about ordinary members. Admins are unchanged (F-252).

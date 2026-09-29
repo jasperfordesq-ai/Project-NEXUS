@@ -23,6 +23,17 @@ use Illuminate\Support\Facades\Storage;
 class JobGdprService
 {
     /**
+     * Columns removed from the candidate's own export because they identify a
+     * third party (the staff member who acted), not the candidate (F-261).
+     * Owner decision: the notes written about the candidate stay in the export;
+     * only who wrote them is withheld.
+     *  - reviewed_by: user id of the employer/staff member who recorded the decision.
+     *  - proposed_by: user id of the employer/staff member who proposed the interview.
+     */
+    public const EXPORT_THIRD_PARTY_APPLICATION_FIELDS = ['reviewed_by'];
+    public const EXPORT_THIRD_PARTY_INTERVIEW_FIELDS = ['proposed_by'];
+
+    /**
      * Export all job-related data for a user as a structured array.
      */
     public static function exportUserData(int $userId): array
@@ -57,6 +68,9 @@ class JobGdprService
                 ->where('user_id', $userId)
                 ->first(['cv_filename', 'cv_size', 'headline', 'cover_text', 'created_at', 'updated_at']);
 
+            $applications = self::withoutFields($applications, self::EXPORT_THIRD_PARTY_APPLICATION_FIELDS);
+            $interviews = self::withoutFields($interviews, self::EXPORT_THIRD_PARTY_INTERVIEW_FIELDS);
+
             return [
                 'exported_at'   => now()->toIso8601String(),
                 'user_id'       => $userId,
@@ -71,6 +85,23 @@ class JobGdprService
             Log::error('JobGdprService::exportUserData failed', ['error' => $e->getMessage()]);
             return [];
         }
+    }
+
+    /**
+     * Drop the given top-level keys from every exported row.
+     *
+     * @param array<int, array<string, mixed>> $rows
+     * @param list<string> $fields
+     * @return array<int, array<string, mixed>>
+     */
+    private static function withoutFields(array $rows, array $fields): array
+    {
+        $drop = array_flip($fields);
+
+        return array_map(
+            static fn ($row) => is_array($row) ? array_diff_key($row, $drop) : $row,
+            $rows
+        );
     }
 
     /**
