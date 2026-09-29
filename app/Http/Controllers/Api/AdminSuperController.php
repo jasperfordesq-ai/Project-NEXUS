@@ -1053,16 +1053,40 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.invalid_role_allowed', ['roles' => implode(', ', $allowedRoles)]), 'role', 422);
         }
 
+        // E-062 F-327: the connection is non-strict, so a value longer than its
+        // column would be silently shortened — an account nobody could find,
+        // sign in to or reset by the address that was typed. Refuse it instead.
+        $columnWidths = [
+            'email' => [$email, 255],
+            'first_name' => [$firstName, 100],
+            'last_name' => [$lastName, 100],
+            'location' => [is_scalar($input['location'] ?? null) ? (string) $input['location'] : '', 255],
+            'phone' => [is_scalar($input['phone'] ?? null) ? (string) $input['phone'] : '', 50],
+        ];
+        foreach ($columnWidths as $field => [$value, $max]) {
+            if (mb_strlen($value) > $max) {
+                return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]), $field, 422);
+            }
+        }
+
         // Check email uniqueness
         $existing = User::findGlobalByEmail($email);
         if ($existing) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.email_already_exists_system'), 'email', 422);
         }
 
+        // E-062 F-278: approved immediately, but held for the target community's
+        // identity check when it requires one, unless the admin attests it.
+        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+            $tenantId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
+        );
+
         $options = [
             'location' => $input['location'] ?? null,
             'phone' => $input['phone'] ?? null,
-            'is_approved' => 1,
+            'is_approved' => $admission['columns']['is_approved'],
+            'status' => $admission['columns']['status'],
             'is_tenant_super_admin' => !empty($input['is_tenant_super_admin']) ? 1 : 0,
         ];
 
@@ -1079,6 +1103,16 @@ class AdminSuperController extends BaseApiController
         $newUserId = User::createWithTenant($data, $tenantId);
 
         if ($newUserId) {
+            \App\Core\TenantContext::runForTenant($tenantId, function () use ($admission, $tenantId, $newUserId, $userId): void {
+                \App\Services\Identity\AdminCreatedAccountAdmission::afterCreate(
+                    $admission,
+                    $tenantId,
+                    (int) $newUserId,
+                    $userId,
+                    \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_SUPER_ADMIN_CREATE
+                );
+            });
+
             $this->superAdminAuditService->log(
                 'user_created',
                 'user',

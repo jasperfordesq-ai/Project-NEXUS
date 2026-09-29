@@ -175,6 +175,7 @@ return [
     'csv_empty' => 'Comhad CSV folamh',
     'csv_missing_columns' => 'Colúin riachtanacha in easnamh: :columns',
     'csv_could_not_read' => 'Níorbh fhéidir an comhad a léamh',
+    'csv_import_members_only' => 'Ní féidir le hiompórtáil ach gnáthbhaill a chruthú. Tabhair róil eile do dhaoine ceann ar cheann tar éis na hiompórtála.',
     'job_approved' => 'Post ceadaithe agus foilsithe go rathúil',
     'job_rejected' => 'D\'éirigh le Job a dhiúltú',
     'job_flagged' => 'Post luaite le haghaidh tuilleadh athbhreithnithe',

@@ -175,6 +175,7 @@ return [
     'csv_empty' => '空のCSVファイル',
     'csv_missing_columns' => '必須列が欠落しています: :columns',
     'csv_could_not_read' => 'ファイルを読み取れませんでした',
+    'csv_import_members_only' => 'インポートで作成できるのは一般メンバーのみです。その他の役割は、インポート後に一人ずつ付与してください。',
     'job_approved' => 'ジョブは承認され、正常に公開されました',
     'job_rejected' => 'ジョブは正常に拒否されました',
     'job_flagged' => 'ジョブにさらなるレビューのフラグが設定されました',

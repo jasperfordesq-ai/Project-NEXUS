@@ -782,6 +782,13 @@ class AdminCaringCommunityController extends BaseApiController
         $tempPassword = $isDummy ? substr(bin2hex(random_bytes(12)), 0, 16) : null;
         $initialPassword = $tempPassword ?? bin2hex(random_bytes(32));
 
+        // E-062 F-278: approved immediately, but held for the community's
+        // identity check when it requires one, unless the admin attests it.
+        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+            $tenantId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
+        );
+
         $newUserId = User::createWithTenant([
             'first_name'  => $firstName,
             'last_name'   => $lastName,
@@ -789,12 +796,21 @@ class AdminCaringCommunityController extends BaseApiController
             'password'    => $initialPassword,
             'phone'       => $phone ?: null,
             'role'        => 'member',
-            'is_approved' => 1,
+            'is_approved' => $admission['columns']['is_approved'],
+            'status'      => $admission['columns']['status'],
         ], $tenantId);
 
         if (!$newUserId) {
             return $this->respondWithError('SERVER_ERROR', __('api.user_created_failed'), null, 500);
         }
+
+        \App\Services\Identity\AdminCreatedAccountAdmission::afterCreate(
+            $admission,
+            $tenantId,
+            (int) $newUserId,
+            $adminId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_ASSISTED_ONBOARDING
+        );
 
         ActivityLog::log($adminId, 'coordinator_assisted_onboarding', "Coordinator-assisted onboarding: {$email}" . ($note ? " — {$note}" : ''));
 
@@ -864,6 +880,7 @@ class AdminCaringCommunityController extends BaseApiController
             'temp_password' => $tempPassword,
             'email_sent' => $emailSent,
             'email_skipped' => $emailSkipped,
+            'identity_check_required' => $admission['held'],
         ], null, 201);
     }
 

@@ -1,4 +1,4 @@
-import { Select, SelectItem, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, SearchField } from '@/components/ui';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, SearchField } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -318,7 +318,6 @@ export function UserList() {
   // Import modal state
   const [importOpen, setImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importRole, setImportRole] = useState('member');
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState<{
     imported: number;
@@ -441,7 +440,9 @@ export function UserList() {
     setImportLoading(true);
     setImportResults(null);
 
-    const res = await adminUsers.importUsers(importFile, { default_role: importRole });
+    // A CSV import creates ordinary members only (E-062 F-278); staff roles
+    // are granted one person at a time afterwards.
+    const res = await adminUsers.importUsers(importFile);
     if (res.success && res.data) {
       const data = res.data as { imported: number; skipped: number; errors: string[]; total_rows: number };
       setImportResults(data);
@@ -458,7 +459,6 @@ export function UserList() {
   const resetImportModal = () => {
     setImportOpen(false);
     setImportFile(null);
-    setImportRole('member');
     setImportResults(null);
   };
 
@@ -865,21 +865,6 @@ export function UserList() {
                     className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent-soft file:text-accent hover:file:bg-accent-soft"
                   />
                 </div>
-
-                <Select
-                  label={t('users.import_default_role')}
-                  selectedKeys={[importRole]}
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0] as string;
-                    if (selected) setImportRole(selected);
-                  }}
-                  size="sm"
-                  variant="secondary"
-                >
-                  <SelectItem key="member" id="member">{t('users.import_role_member')}</SelectItem>
-                  <SelectItem key="broker" id="broker">{t('users.import_role_broker')}</SelectItem>
-                  <SelectItem key="coordinator" id="coordinator">{t('users.import_role_coordinator')}</SelectItem>
-                </Select>
               </div>
             ) : (
               <div className="flex flex-col gap-3">

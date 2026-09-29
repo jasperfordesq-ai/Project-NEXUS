@@ -52,6 +52,8 @@ class AuditLogService
     public const ACTION_ADMIN_USER_IMPERSONATED = 'admin_user_impersonated';
     public const ACTION_ADMIN_SUPER_ADMIN_REVOKED = 'admin_super_admin_revoked';
     public const ACTION_ADMIN_BULK_IMPORT = 'admin_bulk_import';
+    // E-062 F-278: an administrator attested they checked a new account's identity themselves.
+    public const ACTION_ADMIN_IDENTITY_ATTESTED = 'admin_identity_attested';
 
     // ─── Action labels ───────────────────────────────────────────────
     private const ACTION_LABELS = [
@@ -81,6 +83,7 @@ class AuditLogService
         self::ACTION_ADMIN_USER_IMPERSONATED => 'Admin Impersonated User',
         self::ACTION_ADMIN_SUPER_ADMIN_REVOKED => 'Super Admin Revoked',
         self::ACTION_ADMIN_BULK_IMPORT => 'Admin Bulk Import Users',
+        self::ACTION_ADMIN_IDENTITY_ATTESTED => 'Admin Attested Identity Check',
     ];
 
     // ─── Instance method (DI-friendly) ──────────────────────────────

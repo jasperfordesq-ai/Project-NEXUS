@@ -594,6 +594,13 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.email_already_exists'), 'email', 422);
         }
 
+        // E-062 F-278: approved immediately, but held for the community's
+        // identity check when it requires one, unless the admin attests it.
+        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+            $tenantId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput($input)
+        );
+
         // Create user via createWithTenant (direct DB insert, not Eloquent::create)
         $newUserId = User::createWithTenant([
             'first_name' => $firstName,
@@ -602,7 +609,8 @@ class AdminUsersController extends BaseApiController
             'password' => $password,
             'location' => $location ?: null,
             'role' => $role,
-            'is_approved' => 1,
+            'is_approved' => $admission['columns']['is_approved'],
+            'status' => $admission['columns']['status'],
             'profile_type' => $profileType,
             'organization_name' => $organizationName ?: null,
         ], $tenantId);
@@ -613,9 +621,17 @@ class AdminUsersController extends BaseApiController
 
         ActivityLog::log($adminId, 'admin_create_user', "Created user: {$email}");
         $this->auditLogService->logUserCreated($adminId, $newUserId, $email);
+        \App\Services\Identity\AdminCreatedAccountAdmission::afterCreate(
+            $admission,
+            $tenantId,
+            (int) $newUserId,
+            $adminId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_ADMIN_CREATE
+        );
 
-        // Admin-created accounts are active immediately and never pass through
-        // the approval flow, so grant the tenant-configured starting balance
+        // Admin-created accounts are approved immediately and never pass through
+        // the approval flow (an identity check, where required, is separate —
+        // F-278), so grant the tenant-configured starting balance
         // here (wallet.starting_balance / legacy general.welcome_credits).
         // Idempotent and non-fatal — a wallet failure must never fail creation.
         try {
@@ -690,7 +706,8 @@ class AdminUsersController extends BaseApiController
             'name' => UserDisplayName::forStorage($profileType, $organizationName, $firstName, $lastName),
             'email' => $email,
             'role' => $role,
-            'status' => 'active',
+            'status' => $admission['columns']['status'],
+            'identity_check_required' => $admission['held'],
             'welcome_email_sent' => $welcomeEmailSent,
         ], null, 201);
     }
@@ -2040,6 +2057,14 @@ class AdminUsersController extends BaseApiController
         $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        // E-062 F-278 (owner decision): a CSV import creates ordinary members
+        // only. Staff roles are granted one person at a time afterwards, so a
+        // bulk import can never mint administrators or brokers.
+        $defaultRole = strtolower(trim((string) request()->input('default_role', 'member')));
+        if ($defaultRole !== '' && $defaultRole !== 'member') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.csv_import_members_only'), 'default_role', 422);
+        }
+
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.csv_no_file'), null, 400);
         }
@@ -2087,13 +2112,14 @@ class AdminUsersController extends BaseApiController
 
         $results = ['imported' => 0, 'skipped' => 0, 'errors' => []];
         $row = 1;
-        $defaultRole = request()->input('default_role', 'member');
 
-        // SECURITY: Restrict allowed roles for CSV import to prevent privilege escalation (SEC-008)
-        $allowedImportRoles = ['member', 'admin', 'broker'];
-        if (!in_array($defaultRole, $allowedImportRoles, true)) {
-            $defaultRole = 'member';
-        }
+        // E-062 F-278: imported accounts are approved immediately, but held for
+        // the community's identity check when it requires one — unless the
+        // admin attests they checked each person's identity themselves.
+        $admission = \App\Services\Identity\AdminCreatedAccountAdmission::decide(
+            $tenantId,
+            \App\Services\Identity\AdminCreatedAccountAdmission::attestationFromInput(request()->all())
+        );
 
         while (($data = fgetcsv($handle)) !== false) {
             $row++;
@@ -2121,6 +2147,14 @@ class AdminUsersController extends BaseApiController
                 continue;
             }
 
+            // F-278: a row naming any role other than member is not imported.
+            $rowRole = strtolower(trim((string) ($record['role'] ?? '')));
+            if ($rowRole !== '' && $rowRole !== 'member') {
+                $results['errors'][] = "Row {$row}: " . __('api.csv_import_members_only');
+                $results['skipped']++;
+                continue;
+            }
+
             // Check if user already exists in this tenant
             try {
                 $existing = DB::selectOne(
@@ -2140,7 +2174,7 @@ class AdminUsersController extends BaseApiController
 
                 DB::insert(
                     "INSERT INTO users (tenant_id, name, first_name, last_name, email, password_hash, phone, role, status, is_approved, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 1, NOW())",
+                     VALUES (?, ?, ?, ?, ?, ?, ?, 'member', ?, ?, NOW())",
                     [
                         $tenantId,
                         trim($firstName . ' ' . $lastName),
@@ -2149,14 +2183,22 @@ class AdminUsersController extends BaseApiController
                         $email,
                         $hashedPassword,
                         trim($record['phone'] ?? ''),
-                        // SECURITY: Validate per-row role against allowlist (SEC-008)
-                        in_array($record['role'] ?? $defaultRole, $allowedImportRoles, true) ? ($record['role'] ?? $defaultRole) : $defaultRole,
+                        $admission['columns']['status'],
+                        $admission['columns']['is_approved'],
                     ]
                 );
 
                 // Seed federation settings for the new user
                 $newUserId = (int) DB::getPdo()->lastInsertId();
                 if ($newUserId > 0) {
+                    \App\Services\Identity\AdminCreatedAccountAdmission::afterCreate(
+                        $admission,
+                        $tenantId,
+                        $newUserId,
+                        $adminId,
+                        \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_CSV_IMPORT
+                    );
+
                     try {
                         DB::statement(
                             "INSERT IGNORE INTO federation_user_settings (

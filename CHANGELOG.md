@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Accounts an administrator creates, including from a spreadsheet, are approved straight away but still have to pass the community's ID check if it requires one, unless the administrator confirms they checked the person's identity themselves, which is recorded. A spreadsheet can now only create ordinary members, not administrators or brokers (F-278).
+- Several admin screens (creating an account, sign-in provider settings, webhooks) and a partner connection now refuse values that are too long, instead of silently cutting them short and leaving a record that doesn't work (F-327).
 - Accounts created on an administrator's behalf are no longer made live by default: the code that creates them now has to say whether each account is approved (F-319).
 - "Clear all communities' cache" now clears every community. It used to clear only the first five, while telling the admin it had cleared them all (F-287).
 - The admin fraud-alert count now shows the open alerts on the Fraud Alerts screen. It was always zero before (F-318).

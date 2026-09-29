@@ -257,6 +257,26 @@ class RegistrationOrchestrationService
                     break;
 
                 case 'admin_approval':
+                    // E-062 F-278: an account an administrator created is
+                    // approved already; the identity check was the only thing
+                    // it was waiting for, so passing it releases the account.
+                    $alreadyApproved = (int) DB::table('users')
+                        ->where('id', $userId)
+                        ->where('tenant_id', $tenantId)
+                        ->value('is_approved') === 1;
+                    if ($alreadyApproved) {
+                        self::approveAndRelease($userId, $tenantId);
+                        IdentityVerificationEventService::log(
+                            $tenantId,
+                            $userId,
+                            IdentityVerificationEventService::EVENT_ACCOUNT_ACTIVATED,
+                            null, null,
+                            IdentityVerificationEventService::ACTOR_SYSTEM,
+                            ['reason' => 'verification_passed', 'post_action' => 'already_approved']
+                        );
+                        break;
+                    }
+
                     // Keep is_approved=0, admin must still approve
                     IdentityVerificationEventService::log(
                         $tenantId,

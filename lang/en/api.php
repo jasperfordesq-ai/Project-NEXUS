@@ -275,6 +275,7 @@ return [
     'csv_empty'                            => 'Empty CSV file',
     'csv_missing_columns'                  => 'Missing required columns: :columns',
     'csv_could_not_read'                   => 'Could not read file',
+    'csv_import_members_only'              => 'An import can only create ordinary members. Give other roles to people one at a time after the import.',
 
     // ============================================
     // ADMIN — JOBS

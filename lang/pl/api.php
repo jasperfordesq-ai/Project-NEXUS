@@ -175,6 +175,7 @@ return [
     'csv_empty' => 'Pusty plik CSV',
     'csv_missing_columns' => 'Brakuje wymaganych kolumn: :columns',
     'csv_could_not_read' => 'Nie można odczytać pliku',
+    'csv_import_members_only' => 'Import może tworzyć tylko zwykłych członków. Inne role nadaj poszczególnym osobom po imporcie.',
     'job_approved' => 'Oferta pracy została pomyślnie zatwierdzona i opublikowana',
     'job_rejected' => 'Zadanie odrzucone pomyślnie',
     'job_flagged' => 'Oferta pracy oznaczona do dalszego sprawdzenia',

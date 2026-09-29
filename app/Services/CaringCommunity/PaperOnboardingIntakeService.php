@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services\CaringCommunity;
 
 use App\Models\User;
+use App\Services\Identity\AdminCreatedAccountAdmission;
 use App\Support\Authorization\MinimumAge;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -138,6 +139,14 @@ class PaperOnboardingIntakeService
         $lastName = $parts[1] ?? '';
         $tempPassword = substr(bin2hex(random_bytes(12)), 0, 16);
 
+        // E-062 F-278: approved immediately, but held for the community's
+        // identity check when it requires one, unless the coordinator attests
+        // they checked the person's identity themselves.
+        $admission = AdminCreatedAccountAdmission::decide(
+            $tenantId,
+            AdminCreatedAccountAdmission::attestationFromInput($fields)
+        );
+
         $newUserId = User::createWithTenant([
             'first_name' => $firstName,
             'last_name' => $lastName,
@@ -146,12 +155,21 @@ class PaperOnboardingIntakeService
             'phone' => $phone !== '' ? $phone : null,
             'location' => $address !== '' ? $address : null,
             'role' => 'member',
-            'is_approved' => 1,
+            'is_approved' => $admission['columns']['is_approved'],
+            'status' => $admission['columns']['status'],
         ], $tenantId);
 
         if (!$newUserId) {
             return ['success' => false, 'code' => 'CREATE_FAILED'];
         }
+
+        AdminCreatedAccountAdmission::afterCreate(
+            $admission,
+            $tenantId,
+            (int) $newUserId,
+            $coordinatorId,
+            AdminCreatedAccountAdmission::SOURCE_PAPER_ONBOARDING
+        );
 
         $correctedFields = [
             'name' => $name,
@@ -183,6 +201,7 @@ class PaperOnboardingIntakeService
                 'email' => $email,
             ],
             'temp_password' => $tempPassword,
+            'identity_check_required' => $admission['held'],
         ];
     }
 

@@ -175,6 +175,7 @@ return [
     'csv_empty' => 'Leeg CSV-bestand',
     'csv_missing_columns' => 'Ontbrekende vereiste kolommen: :columns',
     'csv_could_not_read' => 'Kan bestand niet lezen',
+    'csv_import_members_only' => 'Een import kan alleen gewone leden aanmaken. Geef andere rollen na de import per persoon.',
     'job_approved' => 'Vacature goedgekeurd en succesvol gepubliceerd',
     'job_rejected' => 'Taak succesvol afgewezen',
     'job_flagged' => 'Vacature gemarkeerd voor verdere beoordeling',

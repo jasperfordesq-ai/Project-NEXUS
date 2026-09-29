@@ -175,6 +175,7 @@ return [
     'csv_empty' => 'Arquivo CSV vazio',
     'csv_missing_columns' => 'Colunas obrigatórias ausentes: :columns',
     'csv_could_not_read' => 'Não foi possível ler o arquivo',
+    'csv_import_members_only' => 'Uma importação só pode criar membros comuns. Atribua outras funções às pessoas uma de cada vez após a importação.',
     'job_approved' => 'Trabalho aprovado e publicado com sucesso',
     'job_rejected' => 'Trabalho rejeitado com sucesso',
     'job_flagged' => 'Trabalho sinalizado para análise adicional',
