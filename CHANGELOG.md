@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The accessible site's HTML cleaner now has its own tests, so a change that weakened it would be caught (F-316).
 - The accessible site now has an automated check that stops any page from showing member text as raw HTML without cleaning it first (F-315).
 - A learner can now submit a course quiz at most 20 times an hour (F-313).
 - Achievement campaigns can now award at most 1,000 XP, the same limit as challenges (F-311).
