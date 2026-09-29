@@ -115,12 +115,27 @@ class EventNotificationPreferenceComplianceTest extends TestCase
         $url = EventNotificationPreferenceResolver::unsubscribeUrl($user->id, $this->testTenantId);
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
 
-        $response = $this->apiGet('/v2/notifications/unsubscribe?token=' . rawurlencode((string) ($query['token'] ?? '')));
+        $token = (string) ($query['token'] ?? '');
+
+        // F-321: the link's GET is a read-only confirmation step, rendered in
+        // the recipient's language…
+        $response = $this->apiGet('/v2/notifications/unsubscribe?token=' . rawurlencode($token));
 
         $response->assertStatus(200);
         $response->assertSee('lang="de"', false);
-        $response->assertSee('Sie wurden abgemeldet');
+        $response->assertSee('Von diesen E-Mails abmelden?');
         $response->assertSee($tenantName);
+
+        // …and the confirming POST answers in it too.
+        $confirmed = $this->post('/api/v2/notifications/unsubscribe?token=' . rawurlencode($token), [
+            'token' => $token,
+            'confirm' => '1',
+        ], $this->withTenantHeader());
+
+        $confirmed->assertStatus(200);
+        $confirmed->assertSee('lang="de"', false);
+        $confirmed->assertSee('Sie wurden abgemeldet');
+        $confirmed->assertSee($tenantName);
     }
 
     public function test_instant_worker_rechecks_events_opt_out_without_suppressing_other_rows(): void

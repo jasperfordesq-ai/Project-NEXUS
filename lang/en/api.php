@@ -3192,6 +3192,9 @@ return [
         'body_unsubscribed' => 'You will no longer receive this type of email from :tenant. You can re-enable it from your account notification settings at any time.',
         'body_already' => 'This type of email was already turned off for :tenant. No further action is needed.',
         'body_invalid' => 'This unsubscribe link is invalid or has expired. Please update your preferences directly from your account notification settings.',
+        'title_confirm' => 'Unsubscribe from these emails?',
+        'body_confirm' => 'Confirm that you no longer want to receive this type of email from :tenant. You can turn it back on at any time in your account notification settings.',
+        'button_confirm' => 'Unsubscribe',
     ],
 
     'group_coordinates_invalid' => 'Latitude and longitude must be valid coordinates.',
