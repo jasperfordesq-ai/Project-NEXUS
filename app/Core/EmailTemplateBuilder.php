@@ -375,8 +375,10 @@ HTML;
         foreach ($stats as $stat) {
             $value = self::esc($stat['value'] ?? '0');
             $label = self::esc($stat['label'] ?? '');
-            $icon = $stat['icon'] ?? '';
-            $iconHtml = $icon ? '<div style="font-size: 24px; margin-bottom: 4px;">' . $icon . '</div>' : '';
+            // Escaped like value/label beside it (F-322): callers pass an emoji,
+            // which esc() leaves unchanged.
+            $icon = self::esc((string) ($stat['icon'] ?? ''));
+            $iconHtml = $icon !== '' ? '<div style="font-size: 24px; margin-bottom: 4px;">' . $icon . '</div>' : '';
 
             $cardsHtml .= <<<CARD
                                             <td width="{$widthPct}%" style="padding: 4px; vertical-align: top;" class="stack-column">
@@ -541,7 +543,12 @@ HTML;
         $badgesHtml = '';
         foreach ($block['badges'] as $badge) {
             $text = self::esc($badge['text']);
-            $color = $badge['color'] ?? '#6366f1';
+            // The colour lands inside a style attribute and gets an alpha suffix
+            // appended, so only a six-digit hex value is accepted (F-322).
+            $color = (string) ($badge['color'] ?? '');
+            if (preg_match('/^#[0-9a-fA-F]{6}$/', $color) !== 1) {
+                $color = '#6366f1';
+            }
             // Compute a soft background from the color by adding alpha
             $badgesHtml .= '<span style="display: inline-block; padding: 5px 14px; margin: 3px 4px; background: ' . $color . '1a; color: ' . $color . '; font-size: 13px; font-weight: 700; border-radius: 20px; border: 1px solid ' . $color . '33;">' . $text . '</span>';
         }
