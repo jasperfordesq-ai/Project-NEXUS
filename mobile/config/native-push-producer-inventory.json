@@ -1369,9 +1369,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CaringCommunity/SafeguardingService.php:738:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/CaringCommunity/SafeguardingService.php:743:NotificationDispatcher::fanOutPush",
             "file": "app/Services/CaringCommunity/SafeguardingService.php",
-            "line": 738,
+            "line": 743,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "$userId",

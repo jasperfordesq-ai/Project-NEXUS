@@ -104,6 +104,11 @@ class SafeguardingService
         if ($evidenceUrl !== '' && mb_strlen($evidenceUrl) > 500) {
             throw new InvalidArgumentException(__('api.safeguarding_evidence_url_too_long'));
         }
+        // F-296: the coordinator's drawer renders this as a link, so only a
+        // web address is accepted — never javascript:, data:, file: and the like.
+        if ($evidenceUrl !== '' && !self::isHttpUrl($evidenceUrl)) {
+            throw new InvalidArgumentException(__('api.invalid_url'));
+        }
         if (!$this->userBelongsToTenant($reporterId, $tenantId)) {
             throw new RuntimeException(__('api.safeguarding_reporter_not_found'));
         }
@@ -920,6 +925,18 @@ class SafeguardingService
     private function fullName(string $first, string $last): string
     {
         return trim($first . ' ' . $last);
+    }
+
+    /**
+     * An absolute http(s) URL with a host. Same rule as EventService::isHttpUrl().
+     */
+    private static function isHttpUrl(string $value): bool
+    {
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true)
+            && (string) parse_url($value, PHP_URL_HOST) !== ''
+            && filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
     private function userBelongsToTenant(int $userId, int $tenantId): bool
