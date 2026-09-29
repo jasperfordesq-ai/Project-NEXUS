@@ -12,6 +12,7 @@ use App\Models\Listing;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\BrokerControlConfigService;
+use App\Services\EmailDispatchService;
 use App\Services\ExchangeWorkflowService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,14 @@ class ExchangeWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Keep the real API/workflow journey, but isolate external email delivery.
+        // raiseDispute() emails every active admin/broker/coordinator of the tenant
+        // synchronously via App\Core\Mailer, which opens a real SMTP socket
+        // (MAIL_MAILER=array does not reach it). With an unresolvable SMTP host each
+        // send costs ~4s of DNS failure, so a test DB carrying many leaked admin rows
+        // made the dispute tests run for minutes and look hung.
+        $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
 
         // Ensure exchange workflow is enabled for the test tenant.
         //
