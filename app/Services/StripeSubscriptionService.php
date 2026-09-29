@@ -368,6 +368,36 @@ class StripeSubscriptionService
             return;
         }
 
+        // F-289: metadata says which community to credit, but metadata is
+        // whatever the creator of the Stripe object wrote. Resolve the
+        // community from OUR row keyed on the Stripe customer that paid (a
+        // Stripe-issued id we stored when createCheckoutSession made it), as
+        // MarketplacePaymentService does for payment intents, and refuse the
+        // event when the two disagree.
+        $customerId = is_string($session->customer ?? null)
+            ? $session->customer
+            : (string) ($session->customer->id ?? '');
+        $owners = $customerId !== ''
+            ? DB::select('SELECT id FROM tenants WHERE stripe_customer_id = ? LIMIT 2', [$customerId])
+            : [];
+        if (count($owners) !== 1 || (int) $owners[0]->id !== $tenantId) {
+            Log::warning('Stripe checkout.session.completed not owned by the community its metadata names — plan not activated', [
+                'session_id' => $session->id ?? null,
+                'metadata_tenant_id' => $tenantId,
+                'customer_id' => $customerId !== '' ? $customerId : null,
+                'owner_tenant_ids' => array_map(static fn ($row): int => (int) $row->id, $owners),
+            ]);
+            return;
+        }
+        if (DB::selectOne('SELECT id FROM pay_plans WHERE id = ?', [$planId]) === null) {
+            Log::warning('Stripe checkout.session.completed names a plan that does not exist — plan not activated', [
+                'session_id' => $session->id ?? null,
+                'tenant_id' => $tenantId,
+                'plan_id' => $planId,
+            ]);
+            return;
+        }
+
         try {
             $activated = DB::transaction(function () use ($tenantId, $planId, $subscriptionId): bool {
                 // Upsert tenant_plan_assignments

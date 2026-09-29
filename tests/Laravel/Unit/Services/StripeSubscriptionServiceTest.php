@@ -86,8 +86,11 @@ class StripeSubscriptionServiceTest extends TestCase
                 'nexus_plan_id' => '5',
             ],
             'subscription' => 'sub_test_456',
+            'customer' => 'cus_test_456',
             'payment_status' => 'paid',
         ];
+
+        $this->mockCheckoutOwnership('cus_test_456', 2, 5);
 
         DB::shouldReceive('transaction')->once()->andReturnUsing(function ($callback) {
             return $callback();
@@ -127,8 +130,11 @@ class StripeSubscriptionServiceTest extends TestCase
                 'nexus_plan_id' => '3',
             ],
             'subscription' => 'sub_test_789',
+            'customer' => 'cus_test_789',
             'payment_status' => 'paid',
         ];
+
+        $this->mockCheckoutOwnership('cus_test_789', 2, 3);
 
         DB::shouldReceive('transaction')->once()->andReturnUsing(function ($callback) {
             return $callback();
@@ -150,6 +156,22 @@ class StripeSubscriptionServiceTest extends TestCase
         Log::shouldReceive('info')->once();
 
         StripeSubscriptionService::handleCheckoutCompleted($session);
+    }
+
+    /**
+     * F-289: the checkout is credited only to the community that owns the
+     * paying Stripe customer, and only for a plan that exists.
+     */
+    private function mockCheckoutOwnership(string $customerId, int $tenantId, int $planId): void
+    {
+        DB::shouldReceive('select')
+            ->once()
+            ->with('SELECT id FROM tenants WHERE stripe_customer_id = ? LIMIT 2', [$customerId])
+            ->andReturn([(object) ['id' => $tenantId]]);
+        DB::shouldReceive('selectOne')
+            ->once()
+            ->with('SELECT id FROM pay_plans WHERE id = ?', [$planId])
+            ->andReturn((object) ['id' => $planId]);
     }
 
     /**

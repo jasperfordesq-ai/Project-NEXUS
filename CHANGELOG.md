@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A paid community plan is now matched to the community using the platform's own payment records, not details carried in the payment message (F-289).
 - Corrected an internal note about how far the event check-in reward limit can be exceeded when many people check in at once. No behaviour changed (F-295).
 - Unused code that could have created volunteering credits without any checks has been removed (F-293).
 - A donation refund can no longer be started twice at the same time (F-292).

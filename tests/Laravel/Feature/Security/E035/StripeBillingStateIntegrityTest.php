@@ -48,6 +48,8 @@ class StripeBillingStateIntegrityTest extends TestCase
         $slug = 'f178-billing-' . uniqid();
         $this->billingTenantId = (int) DB::table('tenants')->insertGetId([
             'name' => 'F-178 Billing Tenant', 'slug' => $slug, 'domain' => $slug . '.example.test',
+            // F-289: a checkout is credited to the community owning the paying customer.
+            'stripe_customer_id' => 'cus_f178_' . $slug,
             'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
         ]);
         User::factory()->forTenant($this->billingTenantId)->create([
@@ -110,6 +112,7 @@ class StripeBillingStateIntegrityTest extends TestCase
             'id' => 'cs_f178_' . uniqid(),
             'payment_status' => $paymentStatus,
             'subscription' => $subId,
+            'customer' => (string) DB::table('tenants')->where('id', $this->billingTenantId)->value('stripe_customer_id'),
             'metadata' => (object) [
                 'nexus_tenant_id' => (string) $this->billingTenantId,
                 'nexus_plan_id' => (string) $this->planA,
