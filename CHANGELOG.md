@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Reviews of an employer now follow the employer's "who can see my profile" setting, as other reviews already do (F-286).
 - The public version page no longer shows the server's PHP version or the text of the latest change, which named the security fix it contained. It still shows the version identifier the deploy tools rely on (F-314).
 - Thumbnails can no longer be made from files in private upload folders, such as message attachments and voice messages, that the web server already refuses to serve (F-290).
 - Asking for your account to be deleted through the data-protection request form now needs your password and signs you out everywhere, the same as the other two ways of deleting an account (F-308).

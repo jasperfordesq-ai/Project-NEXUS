@@ -2671,6 +2671,13 @@ class JobVacanciesController extends BaseApiController
         $this->rateLimit('jobs_employer_reviews', 60, 60);
         $tenantId = TenantContext::getId();
 
+        // F-286: these are the member's reviews (free-text comment and the
+        // reviewer's name), so the member's privacy_profile choice applies
+        // exactly as on GET /v2/reviews/user/{id} (F-081) — same 404 and code.
+        if (! \App\Support\Members\MemberProfileVisibility::canView($userId, $this->getOptionalUserId())) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
         $reviews = Review::where('tenant_id', $tenantId)
             ->where('receiver_id', $userId)
             ->where('review_type', 'employer')
