@@ -70,6 +70,11 @@ class ExchangeRatingService
             return ['success' => false, 'error' => 'You are not a participant in this exchange'];
         }
 
+        // F-279: a block in either direction stops a rating (and its email to
+        // the rated member), as it stops a review (F-070). Checked before the
+        // safeguarding policy so a blocked member cannot probe it.
+        BlockUserService::assertNoBlockBetween($userId, $ratedId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $userId,
             $ratedId,

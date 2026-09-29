@@ -2860,6 +2860,11 @@ class VolunteerService
                 return null;
             }
 
+            // F-279: a block in either direction stops a member review, as it
+            // does on the canonical review path (F-070). Checked before the
+            // safeguarding policy so a blocked member cannot probe it.
+            BlockUserService::assertNoBlockBetween($reviewerId, $targetId);
+
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                 $reviewerId,
                 $targetId,

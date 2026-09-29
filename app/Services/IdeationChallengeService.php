@@ -1288,6 +1288,11 @@ class IdeationChallengeService
                 DB::table('challenge_ideas')->where('id', $ideaId)->lockForUpdate()->first();
                 $ideaAuthorId = (int) $idea['user_id'];
                 if ($ideaAuthorId !== $userId) {
+                    // F-279: a block in either direction stops a comment on the
+                    // other member's content (F-070), before the safeguarding
+                    // policy so a blocked member cannot probe it.
+                    BlockUserService::assertNoBlockBetween($userId, $ideaAuthorId);
+
                     app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                         $userId,
                         $ideaAuthorId,

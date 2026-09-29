@@ -60,6 +60,11 @@ class MarketplaceRatingService
             // Determine the ratee
             $rateeId = ($role === 'buyer') ? $order->seller_id : $order->buyer_id;
 
+            // F-279: a block in either direction stops a rating (and its email
+            // to the ratee), as it stops a review (F-070). Checked before the
+            // safeguarding policy so a blocked member cannot probe it.
+            BlockUserService::assertNoBlockBetween($raterId, (int) $rateeId);
+
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                 $raterId,
                 (int) $rateeId,

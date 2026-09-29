@@ -13,6 +13,7 @@ use App\Services\ExchangeRatingService;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Mockery;
 
 class ExchangeRatingServiceTest extends TestCase
@@ -27,6 +28,24 @@ class ExchangeRatingServiceTest extends TestCase
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
         $policy->shouldReceive('assertLocalContactAllowed')->zeroOrMoreTimes();
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+    }
+
+    /**
+     * These tests mock the DB facade, so the F-279 block check
+     * (BlockUserService::assertNoBlockBetween → user_blocks) needs a stubbed
+     * "no block between the pair" answer on the paths that reach it.
+     */
+    private function stubNoBlockBetweenThePair(): void
+    {
+        $blocks = Mockery::mock();
+        $blocks->shouldReceive('where')->andReturnSelf();
+        $blocks->shouldReceive('exists')->andReturn(false);
+        DB::shouldReceive('table')->with('user_blocks')->andReturn($blocks);
+        // The schema builder resolves through the (now mocked) DB manager too,
+        // so swap in a stub rather than resolving the real one.
+        $schema = Mockery::mock(\Illuminate\Database\Schema\Builder::class);
+        $schema->shouldReceive('hasColumn')->with('user_blocks', 'tenant_id')->andReturn(true);
+        Schema::swap($schema);
     }
 
     // =========================================================================
@@ -79,6 +98,7 @@ class ExchangeRatingServiceTest extends TestCase
     {
         $exchange = (object) ['id' => 1, 'requester_id' => 1, 'provider_id' => 2, 'status' => 'completed'];
         $existing = (object) ['id' => 5];
+        $this->stubNoBlockBetweenThePair();
 
         DB::shouldReceive('selectOne')
             ->andReturn($exchange, $existing);
@@ -94,6 +114,7 @@ class ExchangeRatingServiceTest extends TestCase
 
         DB::shouldReceive('selectOne')
             ->andReturn($exchange, null); // exchange found, no existing rating
+        $this->stubNoBlockBetweenThePair();
 
         DB::shouldReceive('insert')->once()->andReturn(true);
 
@@ -108,6 +129,7 @@ class ExchangeRatingServiceTest extends TestCase
         DB::shouldReceive('selectOne')
             ->andReturn($exchange, null);
         DB::shouldReceive('insert')->andThrow(new \Exception('DB error'));
+        $this->stubNoBlockBetweenThePair();
         Log::shouldReceive('error')->once();
 
         $result = $this->service->submitRating(1, 1, 4);
@@ -119,6 +141,7 @@ class ExchangeRatingServiceTest extends TestCase
         $exchange = (object) ['id' => 1, 'requester_id' => 1, 'provider_id' => 2, 'status' => 'completed'];
         DB::shouldReceive('selectOne')->once()->andReturn($exchange);
         DB::shouldReceive('insert')->never();
+        $this->stubNoBlockBetweenThePair();
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
         $policy->shouldReceive('assertLocalContactAllowed')

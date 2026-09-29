@@ -1038,6 +1038,11 @@ class PodcastService
 
             $authorUserId = (int) $episode->author_user_id;
             if ($authorUserId > 0 && $authorUserId !== $userId) {
+                // F-279: a block in either direction stops a reaction on the
+                // other member's content (F-070, as ReactionService does),
+                // before the safeguarding policy so it cannot be probed.
+                BlockUserService::assertNoBlockBetween($userId, $authorUserId);
+
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId,
                     $authorUserId,
