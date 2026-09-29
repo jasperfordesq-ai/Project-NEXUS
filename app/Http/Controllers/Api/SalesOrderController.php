@@ -286,7 +286,12 @@ class SalesOrderController extends BaseApiController
 
     private function formatReplyTo(string $name, string $email): string
     {
-        $safeName = trim((string) preg_replace('/[\r\n<>"]+/', ' ', $name));
+        // The name is an unquoted RFC 5322 display name, so every address
+        // "special" that could end it or start another address — `,` and `;`
+        // separate addresses, `:` opens group syntax, `@` `()` `[]` `\` belong
+        // to address/comment syntax — is removed along with CR/LF (F-323).
+        // Only the visitor's validated email address may reach Reply-To.
+        $safeName = trim((string) preg_replace('/\s+/', ' ', (string) preg_replace('/[\r\n<>"\\\\,;:@()\[\]]+/', ' ', $name)));
 
         return $safeName !== '' ? "{$safeName} <{$email}>" : $email;
     }
