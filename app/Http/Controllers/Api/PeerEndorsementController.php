@@ -6,9 +6,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\SafeguardingPolicyException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Services\BlockUserService;
 use App\Services\MemberVerificationBadgeService;
+use App\Services\SafeguardingInteractionPolicy;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * PeerEndorsementController -- Peer endorsements for verification badges.
@@ -59,6 +63,35 @@ class PeerEndorsementController extends BaseApiController
 
         if (!$targetUser) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
+        // F-271: this is a second endorsement path (it feeds the auto-granted
+        // peer_endorsed badge), so it applies the same guards as the canonical
+        // skill endorsement (EndorsementService::endorse): a block in either
+        // direction stops it (F-070) and the safeguarding contact policy is
+        // consulted. Block first, so a blocked member cannot probe the other
+        // member's safeguarding settings. A profile the endorser may not see
+        // (privacy_profile) is refused exactly as the profile route refuses it
+        // (F-246), so a connections-only member cannot be endorsed by strangers.
+        try {
+            BlockUserService::assertNoBlockBetween($endorserId, $id);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+
+        if (! MemberProfileVisibility::canView($id, $endorserId)) {
+            return $this->respondWithError('PROFILE_PRIVATE', __('api.user_profile_private'), null, 404);
+        }
+
+        try {
+            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $endorserId,
+                $id,
+                (int) $tenantId,
+                'peer_endorsement',
+            );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
         }
 
         // Insert with INSERT IGNORE for idempotency (duplicate endorsements are silently ignored)
