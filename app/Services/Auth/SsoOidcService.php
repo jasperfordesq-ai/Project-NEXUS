@@ -648,6 +648,21 @@ class SsoOidcService
             );
             if ($emailMatch) {
                 self::assertPrivilegedProviderTrusted($emailMatch, (array) $provider);
+                // F-244: a community admin can point a provider at an issuer
+                // they control and have it assert `email_verified: true` (and
+                // MFA) for any member's address. Only a provider the host has
+                // approved may claim an existing account by email; every other
+                // provider must be linked by the member while signed in.
+                // Already-linked identities (step 1) and new accounts (step 3)
+                // are unaffected.
+                if (! self::isHostApprovedProvider($tenantId, (array) $provider)) {
+                    Log::notice('[SSO] refused email match to an existing account via a provider not host-approved', [
+                        'tenant_id' => $tenantId,
+                        'provider_key' => (string) $provider->provider_key,
+                        'user_id' => (int) $emailMatch->id,
+                    ]);
+                    throw new \RuntimeException(__('api.sso_login_failed'));
+                }
                 if (! empty($emailMatch->email_verified_at)) {
                     $user = (new User())->newFromBuilder((array) $emailMatch);
 
@@ -921,19 +936,33 @@ class SsoOidcService
             && data_get($user, 'role') !== 'org_admin') {
             return;
         }
+        if (self::isHostApprovedProvider((int) data_get($user, 'tenant_id'), $provider)) {
+            return;
+        }
+        throw new \RuntimeException(__('api.sso_login_failed'));
+    }
+
+    /**
+     * True only when the host operator has approved this exact provider
+     * (tenant + issuer + client + key) in SSO_PRIVILEGED_PROVIDERS. A
+     * community admin can edit the provider row but not this host list, and
+     * any edit to issuer/client/key stops the row matching.
+     */
+    private static function isHostApprovedProvider(int $tenantId, array $provider): bool
+    {
         $approved = config('services.sso.privileged_providers', []);
         foreach (is_array($approved) ? $approved : [] as $entry) {
             if (is_array($entry)
-                && (int) ($entry['tenant_id'] ?? 0) === (int) data_get($user, 'tenant_id')
-                && (int) ($provider['tenant_id'] ?? 0) === (int) data_get($user, 'tenant_id')
+                && (int) ($entry['tenant_id'] ?? 0) === $tenantId
+                && (int) ($provider['tenant_id'] ?? 0) === $tenantId
                 && !empty($entry['issuer_url']) && !empty($entry['client_id']) && !empty($entry['provider_key'])
                 && ($entry['issuer_url'] ?? null) === ($provider['issuer_url'] ?? null)
                 && ($entry['client_id'] ?? null) === ($provider['client_id'] ?? null)
                 && ($entry['provider_key'] ?? null) === ($provider['provider_key'] ?? null)) {
-                return;
+                return true;
             }
         }
-        throw new \RuntimeException(__('api.sso_login_failed'));
+        return false;
     }
 
     /** Accept explicit MFA evidence only from an already validated ID token. */

@@ -400,7 +400,18 @@ class SsoOidcServiceTest extends TestCase
         $provider = (object) [
             'tenant_id' => 7,
             'provider_key' => 'entra',
+            'issuer_url' => 'https://login.example.test/tenant-7/v2.0',
+            'client_id' => 'client-7',
         ];
+        // F-244: only a host-approved provider may claim an existing account
+        // by email; community-configured providers are refused (see
+        // tests/Laravel/Feature/Security/E055/F244SsoNoEmailAutoLinkTest.php).
+        config(['services.sso.privileged_providers' => [[
+            'tenant_id' => 7,
+            'issuer_url' => 'https://login.example.test/tenant-7/v2.0',
+            'client_id' => 'client-7',
+            'provider_key' => 'entra',
+        ]]]);
         $claims = [
             'sub' => 'oidc-subject-revoked',
             'name' => 'Existing Person',
