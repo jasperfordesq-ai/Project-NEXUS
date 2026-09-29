@@ -270,7 +270,11 @@ class AdminGamificationController extends BaseApiController
                 'type' => $this->input('type', $campaign['type'] ?? 'one_time'), 'badge_key' => $this->input('badge_key', $campaign['badge_key'] ?? ''),
                 'xp_amount' => (int) $this->input('xp_amount', $campaign['xp_amount'] ?? 0),
                 'target_audience' => $this->input('target_audience', $campaign['target_audience'] ?? 'all_users'),
-                'audience_config' => $this->input('audience_config', json_decode($campaign['audience_config'] ?? '{}', true)),
+                // The model casts audience_config to an array already; json_decode()
+                // of an array threw, so every status-only update answered 500.
+                'audience_config' => $this->input('audience_config', is_array($campaign['audience_config'] ?? null)
+                    ? $campaign['audience_config']
+                    : json_decode((string) ($campaign['audience_config'] ?? '{}'), true)),
                 'schedule' => $this->input('schedule', $campaign['schedule'] ?? null),
             ]);
             return $this->respondWithData(['id' => $id, 'updated' => true]);

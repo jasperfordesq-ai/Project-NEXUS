@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Pausing or resuming an achievement campaign no longer shows an error; the pause or resume always worked, but the screen said it had failed.
 - Uploading a photo or file larger than 1 MB works again on every community's website. Since 24 September the web server in front of the platform refused any upload over 1 MB before it reached the platform, so an ordinary phone photo could not become a profile picture — which also stopped new members finishing the welcome steps. The web server now accepts uploads up to 105 MB, the same limit the platform itself uses, and each kind of upload keeps its own size limit.
 - "Was this article helpful?" answers in the Help Centre are now kept with the community whose article was rated. Every community's answers were being filed under the platform's main community.
 - The "Restrict matching" and "Require coordinator approval" safeguarding options now apply to matches. A match involving a member who chose either option, or who is under monitoring, is no longer shown or emailed to anyone until a coordinator approves it on the Match Approvals page. That page was always empty until now, because nothing ever sent matches to it. When a coordinator approves a match, both members are told. A rejected match stays hidden, and neither member is told. The matching screens and Help Centre articles are updated in all languages.
