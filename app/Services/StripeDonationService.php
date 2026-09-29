@@ -13,6 +13,7 @@ use App\I18n\LocaleContext;
 use App\Models\VolDonation;
 use App\Models\VolGivingDay;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -832,6 +833,26 @@ class StripeDonationService
      */
     public static function createRefund(int $donationId, int $tenantId): array
     {
+        // F-292: one refund attempt per donation at a time, and the donation's
+        // state is read INSIDE that claim — two overlapping admin requests used
+        // to both pass the `completed` check and both call Stripe.
+        $lock = Cache::lock("vol-donation-refund:{$tenantId}:{$donationId}", 120);
+        if (! $lock->get()) {
+            throw new \RuntimeException('A refund for this donation is already being processed.');
+        }
+
+        try {
+            return self::createRefundClaimed($donationId, $tenantId);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * @return array{success: bool, refund_id: string}
+     */
+    private static function createRefundClaimed(int $donationId, int $tenantId): array
+    {
         $donation = DB::table('vol_donations')
             ->where('id', $donationId)
             ->where('tenant_id', $tenantId)
@@ -857,9 +878,10 @@ class StripeDonationService
                 'payment_intent' => $donation->stripe_payment_intent_id,
             ];
             $stripeOptions = DonationStripeAccountService::stripeOptionsForAccountId($stripeAccountId);
-            $refund = $stripeOptions
-                ? $client->refunds->create($refundParams, $stripeOptions)
-                : $client->refunds->create($refundParams);
+            // F-292: a stable key per donation, so a repeated request is the
+            // SAME refund to Stripe rather than a second one it must reject.
+            $stripeOptions['idempotency_key'] = "vol-donation-refund-{$tenantId}-{$donationId}";
+            $refund = $client->refunds->create($refundParams, $stripeOptions);
         } catch (\Exception $e) {
             Log::error('Stripe: failed to create refund', [
                 'donation_id' => $donationId,
