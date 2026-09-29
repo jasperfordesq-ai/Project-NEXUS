@@ -55,6 +55,10 @@ class CourseQuizController extends BaseApiController
     {
         $this->ensureCoursesFeature();
         $userId = $this->requireAuth();
+        // F-313 (partial): every attempt returns its score, and max_attempts
+        // defaults to unlimited, so without a ceiling a script can recover the
+        // answer key one answer at a time. Per learner, across all quizzes.
+        $this->rateLimit('course_quiz_attempt', 20, 3600);
 
         $quiz = CourseQuiz::find($quizId);
         if (!$quiz) {
