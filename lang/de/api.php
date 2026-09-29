@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'Die Zahlung konnte nicht zurückgehalten werden. Bitte versuchen Sie es erneut.',
     'marketplace_payout_failed' => 'Die Auszahlung an den Verkäufer konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
     'marketplace_refund_failed' => 'Die Rückerstattung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
+    'stripe_money_operation_unconfirmed' => 'Stripe hat nicht bestätigt, ob dieser Zahlungsschritt ausgeführt wurde. Er wurde erfasst und wird bei Stripe geprüft, bevor erneut etwas gesendet wird.',
     'marketplace_stripe_order_description' => 'Marketplace-Bestellung Nr. :order',
     'marketplace_stripe_disabled' => 'Kartenzahlungen sind für diesen Marktplatz nicht aktiviert.',
     'marketplace_report_access_denied' => 'Sie sind nicht berechtigt, auf diese Meldung zuzugreifen.',

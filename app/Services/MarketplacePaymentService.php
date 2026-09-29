@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
+use App\Exceptions\StripeMoneyOperationUnresolvedException;
 use App\I18n\LocaleContext;
 use App\Models\MarketplaceEscrow;
 use App\Models\MarketplaceOrder;
@@ -1245,15 +1246,69 @@ class MarketplacePaymentService
             $refundParams['reverse_transfer'] = true;
         }
 
+        // F-283: the refund is recorded before the call. A retry after a lost
+        // reply looks the refund up in Stripe instead of refunding again, and
+        // a DIFFERENT refund waits until an unresolved one is settled.
+        $refundOperationKey = sprintf(
+            'marketplace-refund-%d-%d-%d',
+            $tenantId,
+            $payment->id,
+            StripeCurrency::toMinor($alreadyRefunded + $refundAmount, $currency),
+        );
+        $paymentIntentId = (string) $payment->stripe_payment_intent_id;
+        if (StripeMoneyOperationService::hasUnresolved(
+            $tenantId,
+            'marketplace_payment',
+            (int) $payment->id,
+            'marketplace_refund',
+            $refundOperationKey,
+        ) && ! StripeMoneyOperationService::settleOthersIfAbsent(
+            $tenantId,
+            'marketplace_payment',
+            (int) $payment->id,
+            'marketplace_refund',
+            $refundOperationKey,
+            static fn (string $operationKey): ?string => StripeMoneyOperationService::findRefund(
+                $client,
+                $paymentIntentId,
+                $operationKey,
+            ),
+        )) {
+            // An earlier refund of this payment may have gone through without
+            // being recorded yet: refunding again now could over-refund.
+            throw new \RuntimeException(__('api.stripe_money_operation_unconfirmed'));
+        }
+
         try {
-            $refund = $client->refunds->create($refundParams, [
-                'idempotency_key' => sprintf(
-                    'marketplace-refund-%d-%d-%d',
-                    $tenantId,
-                    $payment->id,
-                    StripeCurrency::toMinor($alreadyRefunded + $refundAmount, $currency),
+            $refundId = StripeMoneyOperationService::perform(
+                $tenantId,
+                $refundOperationKey,
+                'marketplace_refund',
+                'marketplace_payment',
+                (int) $payment->id,
+                StripeCurrency::toMinor($refundAmount, $currency),
+                $currency,
+                static function (string $operationKey) use ($client, $refundParams): string {
+                    $refundParams['metadata'][StripeMoneyOperationService::METADATA_KEY] = $operationKey;
+
+                    return (string) $client->refunds->create($refundParams, [
+                        'idempotency_key' => $operationKey,
+                    ])->id;
+                },
+                static fn (string $operationKey): ?string => StripeMoneyOperationService::findRefund(
+                    $client,
+                    $paymentIntentId,
+                    $operationKey,
                 ),
+            );
+        } catch (StripeMoneyOperationUnresolvedException $e) {
+            Log::critical('MarketplacePayment: refund outcome unknown — recorded for reconciliation, not re-sent', [
+                'order_id' => $order->id,
+                'payment_id' => $payment->id,
+                'operation_key' => $e->operationKey,
+                'error' => $e->getPrevious()?->getMessage() ?? $e->getMessage(),
             ]);
+            throw new \RuntimeException(__('api.stripe_money_operation_unconfirmed'), previous: $e);
         } catch (\Exception $e) {
             Log::error('MarketplacePayment: failed to create refund', [
                 'order_id' => $order->id,
@@ -1272,17 +1327,22 @@ class MarketplacePaymentService
             && ! empty($payment->payout_id)
             && $payoutReversal > 0) {
             try {
-                $client->transfers->createReversal(
-                    $payment->payout_id,
-                    ['amount' => StripeCurrency::toMinor($payoutReversal, $currency)],
-                    ['idempotency_key' => 'marketplace-external-transfer-reversal-' . hash('sha256', (string) $refund->id)],
+                self::reverseTransferOnce(
+                    $client,
+                    $tenantId,
+                    (int) $payment->id,
+                    'marketplace-external-transfer-reversal-' . hash('sha256', $refundId),
+                    'marketplace_refund_transfer_reversal',
+                    (string) $payment->payout_id,
+                    StripeCurrency::toMinor($payoutReversal, $currency),
+                    $currency,
                 );
             } catch (\Throwable $exception) {
                 Log::critical('MarketplacePayment: buyer refunded but seller transfer reversal is pending webhook recovery', [
                     'order_id' => $order->id,
                     'payment_id' => $payment->id,
                     'payout_id' => $payment->payout_id,
-                    'stripe_refund_id' => $refund->id,
+                    'stripe_refund_id' => $refundId,
                     'amount' => $payoutReversal,
                     'error' => $exception->getMessage(),
                 ]);
@@ -1294,7 +1354,7 @@ class MarketplacePaymentService
         DB::transaction(function () use (
             $payment,
             $order,
-            $refund,
+            $refundId,
             $refundAmount,
             $reason,
             $feeReversal,
@@ -1316,7 +1376,7 @@ class MarketplacePaymentService
 
             $recorded = DB::table('marketplace_payment_refunds')
                 ->where('tenant_id', $tenantId)
-                ->where('stripe_refund_id', (string) $refund->id)
+                ->where('stripe_refund_id', $refundId)
                 ->exists();
             if ($recorded) {
                 $isFullRefund = $lockedPayment->status === 'refunded';
@@ -1326,7 +1386,7 @@ class MarketplacePaymentService
             DB::table('marketplace_payment_refunds')->insert([
                 'tenant_id' => $tenantId,
                 'payment_id' => $lockedPayment->id,
-                'stripe_refund_id' => (string) $refund->id,
+                'stripe_refund_id' => $refundId,
                 'amount' => $refundAmount,
                 'platform_fee_reversal' => $feeReversal,
                 'seller_payout_reversal' => $payoutReversal,
@@ -1725,6 +1785,12 @@ class MarketplacePaymentService
             if ($refundId === '' || $refundAmount <= 0) {
                 continue;
             }
+            // F-283: a refund we made but never heard back about is settled
+            // here, so a later refund of this payment is not held up by it.
+            $refundOperationKey = self::stripeMetadataValue($refund, StripeMoneyOperationService::METADATA_KEY);
+            if ($refundOperationKey !== '') {
+                StripeMoneyOperationService::adopt($refundOperationKey, $refundId);
+            }
             self::reconcileExternalRefund($payment, $order, $charge, $refund, $refundId, $refundAmount);
         }
 
@@ -1821,10 +1887,17 @@ class MarketplacePaymentService
         $alreadyReversed = ! empty($refund->transfer_reversal ?? null)
             || ! empty($refund->source_transfer_reversal ?? null);
         if ($payoutReversal > 0 && $transferId !== '' && ! $alreadyReversed) {
-            $client->transfers->createReversal(
+            // Same operation key as processRefund() uses for this refund, so
+            // the two paths can never both reverse it.
+            self::reverseTransferOnce(
+                $client,
+                (int) $payment->tenant_id,
+                (int) $payment->id,
+                'marketplace-external-transfer-reversal-' . hash('sha256', $refundId),
+                'marketplace_refund_transfer_reversal',
                 $transferId,
-                ['amount' => StripeCurrency::toMinor($payoutReversal, $currency)],
-                ['idempotency_key' => 'marketplace-external-transfer-reversal-' . hash('sha256', $refundId)],
+                StripeCurrency::toMinor($payoutReversal, $currency),
+                $currency,
             );
         }
 
@@ -1835,10 +1908,28 @@ class MarketplacePaymentService
             && $feeReversal > 0
             && $applicationFeeId !== ''
             && empty($refund->application_fee_refund ?? null)) {
-            $client->applicationFees->createRefund(
-                $applicationFeeId,
-                ['amount' => StripeCurrency::toMinor($feeReversal, $currency)],
-                ['idempotency_key' => 'marketplace-external-fee-refund-' . hash('sha256', $refundId)],
+            $feeRefundMinor = StripeCurrency::toMinor($feeReversal, $currency);
+            StripeMoneyOperationService::perform(
+                (int) $payment->tenant_id,
+                'marketplace-external-fee-refund-' . hash('sha256', $refundId),
+                'marketplace_application_fee_refund',
+                'marketplace_payment',
+                (int) $payment->id,
+                $feeRefundMinor,
+                $currency,
+                static fn (string $operationKey): string => (string) $client->applicationFees->createRefund(
+                    $applicationFeeId,
+                    [
+                        'amount' => $feeRefundMinor,
+                        'metadata' => [StripeMoneyOperationService::METADATA_KEY => $operationKey],
+                    ],
+                    ['idempotency_key' => $operationKey],
+                )->id,
+                static fn (string $operationKey): ?string => StripeMoneyOperationService::findApplicationFeeRefund(
+                    $client,
+                    $applicationFeeId,
+                    $operationKey,
+                ),
             );
         }
 
@@ -2037,24 +2128,50 @@ class MarketplacePaymentService
             if (! $sellerProfile || empty($sellerProfile->stripe_account_id)) {
                 throw new \RuntimeException(__('api.marketplace_dispute_reimbursement_unavailable'));
             }
-            StripeService::client()->transfers->create([
-                'amount' => StripeCurrency::toMinor(
-                    (float) $existingLedger->seller_payout_reversal,
-                    $currency,
-                ),
-                'currency' => strtolower((string) $payment->currency),
+            // F-283: recorded before the call. A redelivered `won` event after
+            // a lost reply finds the record (or the transfer in Stripe) instead
+            // of reimbursing the seller a second time.
+            $client = StripeService::client();
+            $reimbursementMinor = StripeCurrency::toMinor(
+                (float) $existingLedger->seller_payout_reversal,
+                $currency,
+            );
+            $reimbursementCurrency = strtolower((string) $payment->currency);
+            $reimbursementGroup = 'marketplace_order_' . $order->id;
+            $reimbursementParams = [
+                'amount' => $reimbursementMinor,
+                'currency' => $reimbursementCurrency,
                 'destination' => $sellerProfile->stripe_account_id,
                 'source_transaction' => $payment->stripe_charge_id,
-                'transfer_group' => 'marketplace_order_' . $order->id,
+                'transfer_group' => $reimbursementGroup,
                 'metadata' => [
                     'nexus_tenant_id' => (string) $payment->tenant_id,
                     'nexus_order_id' => (string) $order->id,
                     'nexus_payment_id' => (string) $payment->id,
                     'nexus_type' => 'marketplace_dispute_reimbursement',
                 ],
-            ], [
-                'idempotency_key' => 'marketplace-dispute-transfer-reimbursement-' . hash('sha256', $disputeId),
-            ]);
+            ];
+            StripeMoneyOperationService::perform(
+                (int) $payment->tenant_id,
+                'marketplace-dispute-transfer-reimbursement-' . hash('sha256', $disputeId),
+                'marketplace_dispute_reimbursement',
+                'marketplace_payment',
+                (int) $payment->id,
+                $reimbursementMinor,
+                $reimbursementCurrency,
+                static function (string $operationKey) use ($client, $reimbursementParams): string {
+                    $reimbursementParams['metadata'][StripeMoneyOperationService::METADATA_KEY] = $operationKey;
+
+                    return (string) $client->transfers->create($reimbursementParams, [
+                        'idempotency_key' => $operationKey,
+                    ])->id;
+                },
+                static fn (string $operationKey): ?string => StripeMoneyOperationService::findTransfer(
+                    $client,
+                    $reimbursementGroup,
+                    $operationKey,
+                ),
+            );
         }
 
         // An early dispute event can arrive while escrow is still held and
@@ -2078,10 +2195,15 @@ class MarketplacePaymentService
                     : (string) ($charge->transfer->id ?? '');
             }
             if ($transferId !== '') {
-                $client->transfers->createReversal(
+                self::reverseTransferOnce(
+                    $client,
+                    $tenantId,
+                    (int) $payment->id,
+                    'marketplace-dispute-transfer-reversal-' . hash('sha256', $disputeId),
+                    'marketplace_dispute_transfer_reversal',
                     $transferId,
-                    ['amount' => StripeCurrency::toMinor($sellerShare, $currency)],
-                    ['idempotency_key' => 'marketplace-dispute-transfer-reversal-' . hash('sha256', $disputeId)],
+                    StripeCurrency::toMinor($sellerShare, $currency),
+                    $currency,
                 );
                 $transferWasReversed = true;
             } else {
@@ -2803,6 +2925,63 @@ class MarketplacePaymentService
 
             return $lockedOrder;
         });
+    }
+
+    /**
+     * Reverse (part of) a Connect transfer at most once — F-283. The reversal
+     * is recorded before the call and carries the operation key in its
+     * metadata, so a retry after a lost reply finds it instead of clawing the
+     * seller's money back twice.
+     */
+    private static function reverseTransferOnce(
+        \Stripe\StripeClient $client,
+        int $tenantId,
+        int $paymentId,
+        string $operationKey,
+        string $kind,
+        string $transferId,
+        int $amountMinor,
+        string $currency,
+    ): string {
+        return StripeMoneyOperationService::perform(
+            $tenantId,
+            $operationKey,
+            $kind,
+            'marketplace_payment',
+            $paymentId,
+            $amountMinor,
+            $currency,
+            static fn (string $key): string => (string) $client->transfers->createReversal(
+                $transferId,
+                [
+                    'amount' => $amountMinor,
+                    'metadata' => [StripeMoneyOperationService::METADATA_KEY => $key],
+                ],
+                ['idempotency_key' => $key],
+            )->id,
+            static fn (string $key): ?string => StripeMoneyOperationService::findTransferReversal(
+                $client,
+                $transferId,
+                $key,
+            ),
+        );
+    }
+
+    /** Read one metadata value from a Stripe object or a decoded webhook payload. */
+    private static function stripeMetadataValue(object $object, string $key): string
+    {
+        $metadata = $object->metadata ?? null;
+        if (is_array($metadata)) {
+            return (string) ($metadata[$key] ?? '');
+        }
+        if ($metadata instanceof \ArrayAccess) {
+            return isset($metadata[$key]) ? (string) $metadata[$key] : '';
+        }
+        if (is_object($metadata)) {
+            return (string) ($metadata->{$key} ?? '');
+        }
+
+        return '';
     }
 
     private static function assertStripeEnabled(): void

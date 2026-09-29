@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'Le paiement n’a pas pu être mis en attente. Veuillez réessayer.',
     'marketplace_payout_failed' => 'Le versement au vendeur n’a pas pu être effectué. Veuillez réessayer.',
     'marketplace_refund_failed' => 'Le remboursement n’a pas pu être effectué. Veuillez réessayer.',
+    'stripe_money_operation_unconfirmed' => 'Stripe n’a pas confirmé si cette étape de paiement a abouti. Elle a été enregistrée et sera vérifiée auprès de Stripe avant tout nouvel envoi.',
     'marketplace_stripe_order_description' => 'Commande de la place de marché n° :order',
     'marketplace_stripe_disabled' => 'Les paiements par carte ne sont pas activés pour cette place de marché.',
     'marketplace_report_access_denied' => 'Vous n’êtes pas autorisé à accéder à ce signalement.',

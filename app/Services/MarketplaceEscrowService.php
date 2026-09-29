@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Exceptions\StripeMoneyOperationUnresolvedException;
 use App\I18n\LocaleContext;
 use App\Models\MarketplaceEscrow;
 use App\Models\MarketplaceOrder;
@@ -176,15 +177,20 @@ class MarketplaceEscrowService
                 throw new \RuntimeException(__('api.marketplace_escrow_transfer_ineligible'));
             }
 
+            // F-283: a payout that was already claimed (scheduled) or marked
+            // failed may have reached Stripe before the durable operation record
+            // existed, so its first recorded attempt looks it up before sending.
+            $priorAttempt = in_array((string) $payment->payout_status, ['scheduled', 'failed'], true);
             $payment->payout_status = 'scheduled';
             $payment->save();
-            return [$lockedEscrow, $payment, $order, false];
+            return [$lockedEscrow, $payment, $order, false, $priorAttempt];
         });
 
         /** @var MarketplaceEscrow $claimedEscrow */
         /** @var MarketplacePayment $payment */
         /** @var MarketplaceOrder $order */
         [$claimedEscrow, $payment, $order, $alreadyReleased] = $context;
+        $mayHaveUnrecordedAttempt = (bool) ($context[4] ?? false);
         if ($alreadyReleased) {
             return;
         }
@@ -204,25 +210,66 @@ class MarketplaceEscrowService
         }
 
         $client = StripeService::client();
+        $amountMinor = StripeCurrency::toMinor(
+            (float) $claimedEscrow->amount,
+            (string) $claimedEscrow->currency,
+        );
+        $currency = strtolower((string) $claimedEscrow->currency);
+        $transferGroup = 'marketplace_order_' . $order->id;
+        $destination = (string) $sellerProfile->stripe_account_id;
+        $sourceTransaction = (string) $payment->stripe_charge_id;
+        $paymentId = (int) $payment->id;
+        $orderId = (int) $order->id;
         try {
-            $transfer = $client->transfers->create([
-                'amount' => StripeCurrency::toMinor(
-                    (float) $claimedEscrow->amount,
-                    (string) $claimedEscrow->currency,
+            // F-283: recorded before the call; a retry finds the record and,
+            // if the first reply was lost, looks the transfer up in Stripe
+            // instead of sending it a second time.
+            $transferId = StripeMoneyOperationService::perform(
+                $tenantId,
+                "marketplace-payout-{$tenantId}-{$paymentId}",
+                'marketplace_payout',
+                'marketplace_payment',
+                $paymentId,
+                $amountMinor,
+                $currency,
+                static fn (string $operationKey): string => (string) $client->transfers->create([
+                    'amount' => $amountMinor,
+                    'currency' => $currency,
+                    'destination' => $destination,
+                    'source_transaction' => $sourceTransaction,
+                    'transfer_group' => $transferGroup,
+                    'metadata' => [
+                        'nexus_tenant_id' => (string) $tenantId,
+                        'nexus_order_id' => (string) $orderId,
+                        'nexus_payment_id' => (string) $paymentId,
+                        'nexus_type' => 'marketplace_payout',
+                        StripeMoneyOperationService::METADATA_KEY => $operationKey,
+                    ],
+                ], [
+                    'idempotency_key' => $operationKey,
+                ])->id,
+                static fn (string $operationKey): ?string => StripeMoneyOperationService::findTransfer(
+                    $client,
+                    $transferGroup,
+                    $operationKey,
+                    // One payout per payment, so a transfer written by code
+                    // older than the operation key is recognisable by these.
+                    ['nexus_type' => 'marketplace_payout', 'nexus_payment_id' => (string) $paymentId],
                 ),
-                'currency' => strtolower((string) $claimedEscrow->currency),
-                'destination' => $sellerProfile->stripe_account_id,
-                'source_transaction' => $payment->stripe_charge_id,
-                'transfer_group' => 'marketplace_order_' . $order->id,
-                'metadata' => [
-                    'nexus_tenant_id' => (string) $tenantId,
-                    'nexus_order_id' => (string) $order->id,
-                    'nexus_payment_id' => (string) $payment->id,
-                    'nexus_type' => 'marketplace_payout',
-                ],
-            ], [
-                'idempotency_key' => "marketplace-payout-{$tenantId}-{$payment->id}",
+                $mayHaveUnrecordedAttempt,
+            );
+        } catch (StripeMoneyOperationUnresolvedException $exception) {
+            // The transfer may have been made. Leave the payout claimed
+            // (`scheduled`): refunds wait on it, and the next release — by an
+            // admin or the hourly auto-release — looks it up in Stripe first.
+            Log::critical('MarketplaceEscrow: payout outcome unknown — left scheduled for reconciliation, not re-sent', [
+                'escrow_id' => $escrow->id,
+                'payment_id' => $payment->id,
+                'order_id' => $order->id,
+                'operation_key' => $exception->operationKey,
+                'error' => $exception->getPrevious()?->getMessage() ?? $exception->getMessage(),
             ]);
+            throw new \RuntimeException(__('api.stripe_money_operation_unconfirmed'), previous: $exception);
         } catch (\Throwable $exception) {
             MarketplacePayment::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
@@ -243,7 +290,7 @@ class MarketplaceEscrowService
             $claimedEscrow,
             $payment,
             $trigger,
-            $transfer,
+            $transferId,
             $tenantId,
             &$stateChangedAfterTransfer,
         ): void {
@@ -259,14 +306,14 @@ class MarketplaceEscrowService
                 ->firstOrFail();
             if ($lockedEscrow->status === 'released'
                 && $lockedPayment->payout_status === 'paid'
-                && (string) $lockedPayment->payout_id === (string) $transfer->id) {
+                && (string) $lockedPayment->payout_id === $transferId) {
                 return;
             }
             // Persist the remote transfer identity before interpreting any
             // concurrently changed escrow state. This makes compensation and
             // webhook recovery possible even if another state transition won.
             $lockedPayment->payout_status = 'paid';
-            $lockedPayment->payout_id = (string) $transfer->id;
+            $lockedPayment->payout_id = $transferId;
             $lockedPayment->paid_out_at = now();
             $lockedPayment->save();
 

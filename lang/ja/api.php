@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => '支払いを保留できませんでした。もう一度お試しください。',
     'marketplace_payout_failed' => '販売者への支払いを完了できませんでした。もう一度お試しください。',
     'marketplace_refund_failed' => '返金を完了できませんでした。もう一度お試しください。',
+    'stripe_money_operation_unconfirmed' => 'Stripe はこの支払い処理が完了したかどうかを確認できませんでした。記録済みのため、再送信する前に Stripe で確認します。',
     'marketplace_stripe_order_description' => 'マーケットプレイス注文 :order',
     'marketplace_stripe_disabled' => 'このマーケットプレイスではカード決済が有効になっていません。',
     'marketplace_report_access_denied' => 'この報告にアクセスする権限がありません。',

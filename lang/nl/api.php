@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'De betaling kon niet in de wacht worden gezet. Probeer het opnieuw.',
     'marketplace_payout_failed' => 'De uitbetaling aan de verkoper kon niet worden voltooid. Probeer het opnieuw.',
     'marketplace_refund_failed' => 'De terugbetaling kon niet worden voltooid. Probeer het opnieuw.',
+    'stripe_money_operation_unconfirmed' => 'Stripe heeft niet bevestigd of deze betaalstap is uitgevoerd. De stap is vastgelegd en wordt bij Stripe gecontroleerd voordat er opnieuw iets wordt verzonden.',
     'marketplace_stripe_order_description' => 'Marktplaatsbestelling nr. :order',
     'marketplace_stripe_disabled' => 'Kaartbetalingen zijn niet ingeschakeld voor deze marktplaats.',
     'marketplace_report_access_denied' => 'U hebt geen toestemming om dit rapport te openen.',

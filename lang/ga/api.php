@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'Níorbh fhéidir an íocaíocht a chur ar feitheamh. Bain triail eile as.',
     'marketplace_payout_failed' => 'Níorbh fhéidir íocaíocht an díoltóra a chur i gcrích. Bain triail eile as.',
     'marketplace_refund_failed' => 'Níorbh fhéidir an aisíocaíocht a chur i gcrích. Bain triail eile as.',
+    'stripe_money_operation_unconfirmed' => 'Níor dheimhnigh Stripe ar éirigh leis an gcéim íocaíochta seo. Taifeadadh í, agus seiceálfar le Stripe í sula seolfar aon rud arís.',
     'marketplace_stripe_order_description' => 'Ordú margaidh :order',
     'marketplace_stripe_disabled' => 'Níl íocaíochtaí cárta cumasaithe don mhargadh seo.',
     'marketplace_report_access_denied' => 'Níl cead agat rochtain a fháil ar an tuairisc seo.',

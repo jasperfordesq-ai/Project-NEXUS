@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'Não foi possível colocar o pagamento em espera. Tente novamente.',
     'marketplace_payout_failed' => 'Não foi possível concluir o pagamento ao vendedor. Tente novamente.',
     'marketplace_refund_failed' => 'Não foi possível concluir o reembolso. Tente novamente.',
+    'stripe_money_operation_unconfirmed' => 'A Stripe não confirmou se esta etapa do pagamento foi concluída. Ela foi registrada e será verificada junto à Stripe antes de qualquer novo envio.',
     'marketplace_stripe_order_description' => 'Encomenda do marketplace n.º :order',
     'marketplace_stripe_disabled' => 'Os pagamentos com cartão não estão ativados para este marketplace.',
     'marketplace_report_access_denied' => 'Não tem permissão para aceder a esta denúncia.',

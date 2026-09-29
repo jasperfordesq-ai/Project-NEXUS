@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'تعذر تعليق عملية الدفع. يرجى المحاولة مرة أخرى.',
     'marketplace_payout_failed' => 'تعذر إكمال دفعة البائع. يرجى المحاولة مرة أخرى.',
     'marketplace_refund_failed' => 'تعذر إكمال الاسترداد. يرجى المحاولة مرة أخرى.',
+    'stripe_money_operation_unconfirmed' => 'لم يؤكد Stripe ما إذا كانت خطوة الدفع هذه قد تمت. تم تسجيلها، وسيتم التحقق منها مع Stripe قبل إرسال أي شيء مرة أخرى.',
     'marketplace_stripe_order_description' => 'طلب السوق رقم :order',
     'marketplace_stripe_disabled' => 'مدفوعات البطاقات غير مفعّلة لهذا السوق.',
     'marketplace_report_access_denied' => 'ليس لديك إذن للوصول إلى هذا التقرير.',

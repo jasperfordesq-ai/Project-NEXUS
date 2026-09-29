@@ -662,6 +662,7 @@ return [
     'marketplace_payment_hold_failed' => 'The payment could not be placed on hold. Please try again.',
     'marketplace_payout_failed' => 'The seller payout could not be completed. Please try again.',
     'marketplace_refund_failed' => 'The refund could not be completed. Please try again.',
+    'stripe_money_operation_unconfirmed' => 'Stripe did not confirm whether this payment step went through. It has been recorded, and it will be checked with Stripe before anything is sent again.',
     'marketplace_stripe_order_description' => 'Marketplace order #:order',
     'marketplace_stripe_disabled' => 'Card payments are not enabled for this marketplace.',
     'marketplace_report_access_denied' => 'You do not have permission to access this report.',

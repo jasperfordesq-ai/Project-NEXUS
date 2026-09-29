@@ -1703,6 +1703,7 @@ return [
     'marketplace_payment_hold_failed' => 'Non è stato possibile mettere in sospeso il pagamento. Riprova.',
     'marketplace_payout_failed' => 'Non è stato possibile completare il pagamento al venditore. Riprova.',
     'marketplace_refund_failed' => 'Non è stato possibile completare il rimborso. Riprova.',
+    'stripe_money_operation_unconfirmed' => 'Stripe non ha confermato se questo passaggio di pagamento è andato a buon fine. È stato registrato e verrà verificato con Stripe prima di inviare di nuovo qualsiasi cosa.',
     'marketplace_stripe_order_description' => 'Ordine del marketplace n. :order',
     'marketplace_stripe_disabled' => 'I pagamenti con carta non sono abilitati per questo marketplace.',
     'marketplace_report_access_denied' => 'Non hai l’autorizzazione ad accedere a questa segnalazione.',
