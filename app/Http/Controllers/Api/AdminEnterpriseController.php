@@ -419,11 +419,47 @@ class AdminEnterpriseController extends BaseApiController
                 }
             }
 
+            // F-325: rejecting or cancelling a request closes it just as surely
+            // as completing it, so it must record who closed it, when and why,
+            // and leave an audit row — it used to record none of these. The
+            // reason is taken from `reason`, falling back to `notes` (which is
+            // where the admin panel's reject dialog sends it).
+            $isClosure = in_array($status, ['rejected', 'cancelled'], true);
+            $existing = null;
+            $reason = null;
+            if ($isClosure) {
+                $existing = DB::selectOne(
+                    "SELECT id, user_id, status FROM gdpr_requests WHERE id = ? AND tenant_id = ?",
+                    [$id, $tenantId]
+                );
+                if (!$existing) {
+                    return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+                }
+                $rawReason = $this->input('reason') ?? $notes;
+                $reason = is_string($rawReason) && trim($rawReason) !== '' ? trim($rawReason) : null;
+            }
+
             $updates = ["status = ?", "updated_at = NOW()"]; $params = [$status];
             if ($notes !== null) { $updates[] = "notes = ?"; $params[] = $notes; }
-            if ($status === 'completed') { $updates[] = "processed_at = NOW()"; $updates[] = "processed_by = ?"; $params[] = $this->getUserId(); }
+            if ($status === 'completed' || $isClosure) { $updates[] = "processed_at = NOW()"; $updates[] = "processed_by = ?"; $params[] = $this->getUserId(); }
+            if ($isClosure) { $updates[] = "rejection_reason = ?"; $params[] = $reason; }
             $params[] = $id; $params[] = $tenantId;
-            DB::update("UPDATE gdpr_requests SET " . implode(', ', $updates) . " WHERE id = ? AND tenant_id = ?", $params);
+
+            DB::transaction(function () use ($updates, $params, $isClosure, $existing, $tenantId, $id, $status, $reason): void {
+                DB::update("UPDATE gdpr_requests SET " . implode(', ', $updates) . " WHERE id = ? AND tenant_id = ?", $params);
+                if ($isClosure && $existing !== null) {
+                    (new \App\Services\Enterprise\GdprService($tenantId))->logAction(
+                        (int) $existing->user_id,
+                        'request_' . $status,
+                        'gdpr_request',
+                        $id,
+                        $this->getUserId(),
+                        ['status' => (string) $existing->status],
+                        ['status' => $status, 'reason' => $reason],
+                    );
+                }
+            });
+
             return $this->respondWithData(['id' => $id, 'status' => $status, 'updated' => true]);
         } catch (\Exception $e) {
             return $this->respondWithError('UPDATE_FAILED', __('api.gdpr_request_update_failed'), null, 500);

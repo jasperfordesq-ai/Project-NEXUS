@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Rejecting or cancelling a data-protection request now records who did it, when and why, and adds an entry to the audit log, as completing one already did (F-325).
 - A visitor filling in the sales enquiry form can no longer slip a second email address into the reply-to line of the email the sales team receives (F-323).
 - Two parts of the standard email layout, the statistic-card icon and the badge colour, are now checked before they go into an email. Nothing uses them unsafely today; this closes the door before anything does (F-322).
 - A record that does not say which community it belongs to is now refused by the database instead of being filed under the platform's main community (or under none). On 29 tables — including reviews, comments, likes, badges, group posts and memberships, connections, event replies, polls and volunteering — a missing community used to be filled in silently, which is how some TimeBank Ireland reviews, a group post, a volunteer application and badges ended up in the wrong community earlier this year. Records that name their community are unaffected (F-328, O-087).
