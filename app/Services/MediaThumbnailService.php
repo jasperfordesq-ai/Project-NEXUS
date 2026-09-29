@@ -71,9 +71,19 @@ final class MediaThumbnailService
                 ?? $this->realPathInside(base_path('httpdocs/storage'), base_path('httpdocs') . $path);
         }
 
-        // Re-check the resolved file too, so a symlink or a case-insensitive
-        // filesystem cannot reach the private folder under another spelling.
-        if ($resolved === null || $this->isPrivateUploadPath(str_replace('\\', '/', $resolved))) {
+        // Re-check the resolved file too, so a symlink, a doubled slash or a
+        // case-insensitive filesystem cannot reach a private folder under
+        // another spelling. The web-root-relative form is what the
+        // Apache-mirroring pattern below is anchored on.
+        if ($resolved === null) {
+            return null;
+        }
+        $resolvedPath = str_replace('\\', '/', $resolved);
+        $webRoot = str_replace('\\', '/', (string) (realpath(base_path('httpdocs')) ?: base_path('httpdocs')));
+        $webRelative = str_starts_with($resolvedPath, $webRoot . '/')
+            ? substr($resolvedPath, strlen($webRoot))
+            : $resolvedPath;
+        if ($this->isPrivateUploadPath($resolvedPath) || $this->isPrivateUploadPath($webRelative)) {
             return null;
         }
 
@@ -81,11 +91,22 @@ final class MediaThumbnailService
     }
 
     /**
+     * The uploads-tree folders `httpdocs/.htaccess` refuses to serve, in the
+     * same form (web-root-relative, case-insensitive): the legacy public
+     * message-attachment and voice-message folders (F-262) and the vetting
+     * documents folder (F-090). The thumbnail renderer must refuse exactly what
+     * Apache refuses (F-290); F290ThumbnailPrivateFolderParityTest parses the
+     * .htaccess rules and fails if the two drift apart.
+     */
+    private const APACHE_DENIED_UPLOAD_PATTERN =
+        '#^/uploads/(?:(?:tenants/[^/]+/)?vetting/documents|[0-9]+/(?:message_attachments|voice_messages)|tenants/[^/]+/voice_messages|messages)(?:/|$)#i';
+
+    /**
      * Folders Apache refuses to serve directly must not be reachable through
-     * the thumbnail renderer either (F-090). Criminal-record certificate
-     * evidence lives under `uploads/[tenants/{slug}/]vetting/documents`, and
-     * `httpdocs/.htaccess` denies it case-insensitively; this mirrors that for
-     * any `vetting` path segment, wherever it appears.
+     * the thumbnail renderer either (F-090, F-290). Criminal-record certificate
+     * evidence lives under `uploads/[tenants/{slug}/]vetting/documents`; this
+     * refuses any `vetting` path segment, wherever it appears, plus every
+     * folder in {@see self::APACHE_DENIED_UPLOAD_PATTERN}.
      */
     private function isPrivateUploadPath(string $path): bool
     {
@@ -95,7 +116,7 @@ final class MediaThumbnailService
             }
         }
 
-        return false;
+        return preg_match(self::APACHE_DENIED_UPLOAD_PATTERN, $path) === 1;
     }
 
     public function thumbnailPath(string $sourcePath, int $width, int $height, string $fit, ?string $format = null): string
