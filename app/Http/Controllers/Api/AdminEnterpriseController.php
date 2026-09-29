@@ -308,6 +308,9 @@ class AdminEnterpriseController extends BaseApiController
         }
     }
 
+    /** gdpr_requests.status enum, in schema order (database/schema/mysql-schema.sql). */
+    private const GDPR_REQUEST_STATUSES = ['pending', 'processing', 'completed', 'rejected', 'cancelled'];
+
     /** PUT /api/v2/admin/enterprise/gdpr/requests/{id} */
     public function updateGdprRequest(int $id): JsonResponse
     {
@@ -315,6 +318,19 @@ class AdminEnterpriseController extends BaseApiController
         $tenantId = $this->getTenantId();
         $status = $this->input('status'); $notes = $this->input('notes');
         if (empty($status)) { return $this->respondWithError('VALIDATION_ERROR', __('api.status_required'), 'status', 422); }
+        // F-324: only the column's own enum values. With the connection's strict
+        // mode off, anything else is silently stored as '' — the request then
+        // matches neither 'pending' nor 'processing', drops off the
+        // gdpr:check-overdue-requests alarm and is never actioned: the same
+        // false-compliance-record failure the 'completed' path below guards.
+        if (!is_string($status) || !in_array($status, self::GDPR_REQUEST_STATUSES, true)) {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.invalid_status_allowed', ['statuses' => implode(', ', self::GDPR_REQUEST_STATUSES)]),
+                'status',
+                422
+            );
+        }
 
         try {
             // 🔴 Marking an ERASURE request 'completed' must actually erase.
