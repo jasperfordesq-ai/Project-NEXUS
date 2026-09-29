@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\SsoAuthController;
 use App\Models\User;
 use App\Services\Auth\SocialAuthService;
 use App\Services\Auth\SsoOidcService;
+use App\Services\Identity\RegistrationPolicyService;
+use App\Services\TenantSettingsService;
 use Firebase\JWT\JWT;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
@@ -69,6 +71,18 @@ class F244SsoNoEmailAutoLinkTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // F-270: SSO provisioning obeys the community's registration policy,
+        // so this test establishes an open community instead of inheriting one.
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'general.registration_mode'],
+            ['setting_value' => 'open', 'setting_type' => 'string', 'updated_at' => now()]
+        );
+        RegistrationPolicyService::upsertPolicy($this->testTenantId, [
+            'registration_mode' => 'open',
+            'require_email_verify' => false,
+        ]);
+        app(TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
     }
 
     public function test_email_match_to_existing_member_without_totp_does_not_sign_in_or_link(): void

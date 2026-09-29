@@ -9,6 +9,8 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\Models\User;
+use App\Services\Identity\RegistrationOrchestrationService;
+use App\Services\Identity\RegistrationPolicyService;
 use App\Support\OutboundUrlGuard;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -960,37 +962,80 @@ class SsoOidcService
             throw new \RuntimeException(__('api.sso_email_missing'));
         }
 
-        $names = $this->splitName($name, $email);
-        $userId = DB::table('users')->insertGetId([
-            'tenant_id' => $tenantId,
-            'first_name' => $names['first'],
-            'last_name' => $names['last'],
-            // `users.name` is NOT NULL and feeds most display paths; SSO
-            // provisioning never wrote it, leaving an empty stored name.
-            'name' => UserDisplayName::forStorage(null, null, $names['first'], $names['last']),
-            'email' => $email,
-            'password' => password_hash(Str::random(48), PASSWORD_BCRYPT),
-            // Provisioning is reachable only after a signed literal-boolean
-            // `email_verified: true` assertion for this exact address.
-            'email_verified_at' => now(),
-            'preferred_language' => 'en',
-            'is_approved' => 1,
-            'role' => 'member',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // F-270: a new account obeys the community's registration policy, as
+        // SocialAuthService::findOrCreateFromOauth() does. An ID token carries
+        // no invitation proof, so invite-only is treated exactly like closed.
+        // Refused the same way as "provisioning disabled" above, so a closed
+        // community is not an account-existence oracle for the token's author.
+        $registrationPolicy = RegistrationPolicyService::getEffectivePolicy($tenantId);
+        $registrationMode = (string) ($registrationPolicy['registration_mode'] ?? 'closed');
+        if (in_array($registrationMode, ['closed', 'invite_only'], true)) {
+            Log::info('[SSO] refused to provision: community registration policy does not allow it', [
+                'tenant_id' => $tenantId,
+                'provider_key' => (string) $provider->provider_key,
+                'registration_mode' => $registrationMode,
+            ]);
+            throw new SsoLinkRequiredException(__('api.sso_account_exists_link_required'));
+        }
+        if (! in_array(
+            $registrationMode,
+            ['open', 'open_with_approval', 'verified_identity', 'government_id', 'waitlist'],
+            true
+        )) {
+            throw new \RuntimeException('SSO registration policy is unsupported.');
+        }
 
-        $this->insertIdentity(
-            (int) $userId,
+        $names = $this->splitName($name, $email);
+        $userId = DB::transaction(function () use (
             $tenantId,
+            $names,
+            $email,
+            $registrationMode,
             $identityProvider,
             $subject,
-            $email,
-            $this->withIdentityBinding($rawPayload, $provider, $claims)
-        );
+            $rawPayload,
+            $provider,
+            $claims
+        ): int {
+            $isOpen = $registrationMode === 'open';
+            $userId = (int) DB::table('users')->insertGetId([
+                'tenant_id' => $tenantId,
+                'first_name' => $names['first'],
+                'last_name' => $names['last'],
+                // `users.name` is NOT NULL and feeds most display paths; SSO
+                // provisioning never wrote it, leaving an empty stored name.
+                'name' => UserDisplayName::forStorage(null, null, $names['first'], $names['last']),
+                'email' => $email,
+                'password' => password_hash(Str::random(48), PASSWORD_BCRYPT),
+                // Provisioning is reachable only after a signed literal-boolean
+                // `email_verified: true` assertion for this exact address.
+                'email_verified_at' => now(),
+                'preferred_language' => 'en',
+                'status' => $isOpen ? 'active' : 'pending',
+                'is_approved' => $isOpen ? 1 : 0,
+                'role' => 'member',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $this->insertIdentity(
+                $userId,
+                $tenantId,
+                $identityProvider,
+                $subject,
+                $email,
+                $this->withIdentityBinding($rawPayload, $provider, $claims)
+            );
+
+            // Keep the user, identity and policy-driven account state in one
+            // SQL unit, as the social sign-in path does.
+            RegistrationOrchestrationService::processRegistration($userId, $tenantId);
+
+            return $userId;
+        }, 3);
 
         $user = User::query()
-            ->whereKey((int) $userId)
+            ->whereKey($userId)
             ->where('tenant_id', $tenantId)
             ->first();
         if ($user === null) {

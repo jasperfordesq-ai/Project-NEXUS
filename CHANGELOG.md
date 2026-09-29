@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Joining a community through its own sign-in provider (for example a council's staff login) now follows that community's joining rules. An invitation-only or closed community no longer admits anyone the provider knows, and a community that requires approval or an ID check now holds the new account for that step instead of letting the person straight in (F-270).
 - Switching a community's maintenance mode on or off now refreshes only that community's search-engine pages. It used to restart page rendering for every community on the platform (F-245).
 - The volunteering accessibility page now says truthfully that these notes are private and are not shared with organisations or coordinators, and a save that fails is reported as an error instead of "saved" (F-227).
 - "Add someone who can help" in linked-account settings now does what it says: the person you name is asked to help you, and nothing changes until they accept. It used to make you their helper instead (F-224).
