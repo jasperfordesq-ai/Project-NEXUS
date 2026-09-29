@@ -1,5 +1,6 @@
 import { getFormattingLocale } from '@/lib/helpers';
 import { CardBody, Card, Chip } from '@/components/ui';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -106,7 +107,7 @@ function ResultCard({ cardType, item }: ResultCardProps) {
     </Link>
   ) : (
     <a
-      href={url}
+      href={safeHref(url)}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-block no-underline"

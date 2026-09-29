@@ -15,6 +15,7 @@ import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -348,7 +349,7 @@ export default function ResearchPartnershipsAdminPage() {
                     <TableCell>{partner.agreement_reference || '-'}</TableCell>
                     <TableCell>
                       {partner.methodology_url ? (
-                        <a className="text-accent text-sm" href={partner.methodology_url} target="_blank" rel="noreferrer">
+                        <a className="text-accent text-sm" href={safeHref(partner.methodology_url)} target="_blank" rel="noreferrer">
                           {t('research_partnerships.actions.view')}
                         </a>
                       ) : '-'}

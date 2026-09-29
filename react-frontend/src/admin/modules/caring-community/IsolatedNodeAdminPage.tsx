@@ -15,6 +15,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { Abbr } from '../../components/Abbr';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -103,7 +104,7 @@ const renderValueChip = (item: DecisionItem, t: AdminT) => {
   if (item.type === 'url') {
     return (
       <a
-        href={item.value}
+        href={safeHref(item.value)}
         target="_blank"
         rel="noopener noreferrer"
         className="text-accent text-sm underline break-all"

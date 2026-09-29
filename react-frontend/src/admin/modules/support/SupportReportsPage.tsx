@@ -49,6 +49,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { openSafeUrl } from '@/lib/safeHref';
 
 type StatusFilter = 'all' | AdminSupportReportStatus;
 type ImpactFilter = 'all' | AdminSupportReportImpact;
@@ -508,7 +509,7 @@ export default function SupportReportsPage() {
                     <Button
                       variant="secondary"
                       startContent={<ExternalLink className="h-4 w-4" aria-hidden="true" />}
-                      onPress={() => window.open(selectedReport.page_url ?? undefined, '_blank', 'noopener,noreferrer')}
+                      onPress={() => openSafeUrl(selectedReport.page_url)}
                     >
                       {t('support_reports.actions.open_page')}
                     </Button>

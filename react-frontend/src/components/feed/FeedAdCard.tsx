@@ -10,6 +10,7 @@ import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { openSafeUrl } from '@/lib/safeHref';
 
 export interface AdItem {
   campaign_id: number;
@@ -60,7 +61,7 @@ export function FeedAdCard({ ad }: Props) {
 
   const handleCtaClick = async () => {
     // Open the CTA URL immediately — don't block on the click API call
-    window.open(ad.cta_url, '_blank', 'noopener,noreferrer');
+    openSafeUrl(ad.cta_url);
 
     if (impressionIdRef.current === null || isClickLoading) return;
     setIsClickLoading(true);

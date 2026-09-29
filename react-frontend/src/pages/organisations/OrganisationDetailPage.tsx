@@ -50,6 +50,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
 import { extractCollectionItems } from '@/pages/volunteering/extractCollectionItems';
+import { safeHref } from '@/lib/safeHref';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -363,7 +364,7 @@ export function OrganisationDetailPage() {
                 </Button>
               )}
               {organisation.website && (
-                <Button as="a" href={organisation.website} target="_blank" rel="noopener noreferrer"
+                <Button as="a" href={safeHref(organisation.website)} target="_blank" rel="noopener noreferrer"
                   variant="secondary"
                   className="bg-theme-elevated text-theme-muted"
                   startContent={<Globe className="w-4 h-4" aria-hidden="true" />}

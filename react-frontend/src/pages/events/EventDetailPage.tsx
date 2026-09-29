@@ -16,6 +16,7 @@ import { Tabs } from '@heroui/react/tabs';
 import { Textarea } from '@/components/ui/Textarea';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { safeHref } from '@/lib/safeHref';
 /**
  * Event Detail Page - Single event view with enhanced RSVP, sharing, and organizer check-in
  */
@@ -1791,7 +1792,7 @@ export function EventDetailPage() {
               {event.online_access.video_url && (
                 <Button
                   as="a"
-                  href={event.online_access.video_url}
+                  href={safeHref(event.online_access.video_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
@@ -1806,7 +1807,7 @@ export function EventDetailPage() {
               {event.online_access.join_url && (
                 <Button
                   as="a"
-                  href={event.online_access.join_url}
+                  href={safeHref(event.online_access.join_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="flat"

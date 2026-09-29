@@ -21,6 +21,7 @@ import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 
 type IntegrationStatus =
   | 'proposed'
@@ -464,7 +465,7 @@ export default function ExternalIntegrationsAdminPage(): ReactNode {
                     <TableCell>
                       {item.sandbox_url ? (
                         <a
-                          href={item.sandbox_url}
+                          href={safeHref(item.sandbox_url)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-sm text-accent underline"

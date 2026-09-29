@@ -50,6 +50,7 @@ import {
 } from '@/lib/events-api';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { safeHref } from '@/lib/safeHref';
 
 const SESSION_TYPES = [
   'session',
@@ -755,7 +756,7 @@ function SessionCard({
                   {resource.url && resource.available ? (
                     <a
                       className="inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline"
-                      href={resource.url}
+                      href={safeHref(resource.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

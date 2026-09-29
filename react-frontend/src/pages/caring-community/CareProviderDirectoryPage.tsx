@@ -24,6 +24,7 @@ import { useTenant } from '@/contexts';
 import { useApi } from '@/hooks/useApi';
 import { usePageTitle } from '@/hooks';
 import { SubRegionFilter } from '@/components/caring-community/SubRegionFilter';
+import { safeHref } from '@/lib/safeHref';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -168,7 +169,7 @@ function ProviderCard({ provider, t }: ProviderCardProps) {
           )}
           {provider.website_url && (
             <a
-              href={provider.website_url}
+              href={safeHref(provider.website_url)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t('providers.website_aria', { url: provider.website_url })}

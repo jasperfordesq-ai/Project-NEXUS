@@ -34,6 +34,7 @@ import ExternalLink from 'lucide-react/icons/external-link';
 import { useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { safeHref, webHref } from '@/lib/safeHref';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { EmptyState } from '@/components/feedback';
@@ -383,10 +384,11 @@ function ApplicationCard({ application, onWithdraw, tenantPath, onMessageEmploye
             )}
             <div className='flex flex-wrap items-center gap-2 mt-2'>
               {/* Join Video Call — meeting_link (Jitsi auto-generated or custom) */}
-              {application.interview.meeting_link && (
+              {/* F-298: the employer types these; only a web URL becomes a link. */}
+              {safeHref(application.interview.meeting_link) && (
                 <Button
                   as='a'
-                  href={application.interview.meeting_link}
+                  href={safeHref(application.interview.meeting_link)}
                   target='_blank'
                   rel='noopener noreferrer'
                   size='sm'
@@ -397,10 +399,10 @@ function ApplicationCard({ application, onWithdraw, tenantPath, onMessageEmploye
                 </Button>
               )}
               {/* Fallback: Meeting link via location_notes for video interviews */}
-              {!application.interview.meeting_link && application.interview.interview_type === 'video' && application.interview.location_notes && (
+              {!safeHref(application.interview.meeting_link) && application.interview.interview_type === 'video' && webHref(application.interview.location_notes) && (
                 <Button
                   as='a'
-                  href={application.interview.location_notes}
+                  href={webHref(application.interview.location_notes)}
                   target='_blank'
                   rel='noopener noreferrer'
                   size='sm'
@@ -410,7 +412,9 @@ function ApplicationCard({ application, onWithdraw, tenantPath, onMessageEmploye
                   {t('interview_join')}
                 </Button>
               )}
-              {application.interview.interview_type !== 'video' && application.interview.location_notes && (
+              {application.interview.location_notes
+                && (application.interview.interview_type !== 'video'
+                  || (!safeHref(application.interview.meeting_link) && !webHref(application.interview.location_notes))) && (
                 <span className='text-xs text-accent dark:text-accent'>
                   {application.interview.location_notes}
                 </span>

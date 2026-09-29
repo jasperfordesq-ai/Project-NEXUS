@@ -22,6 +22,7 @@ import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -268,7 +269,7 @@ export default function IntegrationShowcaseAdminPage() {
                     <>
                       <Separator />
                       <a
-                        href={section.docs_link}
+                        href={safeHref(section.docs_link)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-accent hover:underline"

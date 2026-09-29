@@ -16,6 +16,7 @@ import CalendarPlus from 'lucide-react/icons/calendar-plus';
 import { useTranslation } from 'react-i18next';
 import { API_BASE } from '@/lib/api';
 import { formatDateTime } from '@/lib/helpers';
+import { safeHref, webHref } from '@/lib/safeHref';
 import type { InlineInterview } from './JobDetailTypes';
 
 interface InlineInterviewCardProps {
@@ -34,6 +35,11 @@ export function InlineInterviewCard({
   const { t } = useTranslation('jobs');
 
   if (pendingInterview.status !== 'proposed') return null;
+
+  // F-298: both values are typed by the employer; only a web URL becomes a link.
+  // location_notes is prose, so it is a link only when it is an absolute web URL.
+  const meetingHref = safeHref(pendingInterview.meeting_link);
+  const locationHref = webHref(pendingInterview.location_notes);
 
   return (
     <GlassCard className="p-5 border-l-4 border-l-accent bg-accent-soft">
@@ -61,11 +67,11 @@ export function InlineInterviewCard({
                 </span>
               )}
             </div>
-            {pendingInterview.meeting_link && (
+            {meetingHref && (
               <div className="mt-2">
                 <Button
                   as="a"
-                  href={pendingInterview.meeting_link}
+                  href={meetingHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   size="sm"
@@ -93,15 +99,19 @@ export function InlineInterviewCard({
             )}
             {pendingInterview.location_notes && (
               <p className="text-sm text-theme-muted mt-1">
-                {pendingInterview.interview_type === 'video' && !pendingInterview.meeting_link ? (
-                  <a
-                    href={pendingInterview.location_notes}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent hover:underline"
-                  >
-                    {pendingInterview.location_notes}
-                  </a>
+                {pendingInterview.interview_type === 'video' && !meetingHref ? (
+                  locationHref ? (
+                    <a
+                      href={locationHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      {pendingInterview.location_notes}
+                    </a>
+                  ) : (
+                    <span>{pendingInterview.location_notes}</span>
+                  )
                 ) : pendingInterview.interview_type !== 'video' ? (
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5" aria-hidden="true" />

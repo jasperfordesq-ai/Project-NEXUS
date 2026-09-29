@@ -38,6 +38,7 @@ import {
   sanitizePageBuilderInlineStyle,
   scopePageBuilderHtml,
 } from './pageBuilderHtml';
+import { isSafeUrl } from './safeHref';
 
 /* ───────────────────────── Allow-lists ───────────────────────── */
 
@@ -87,40 +88,9 @@ const INLINE_ALLOWED_ATTR = [
 /* ───────────────────────── URL scheme guard ───────────────────────── */
 
 const URL_BEARING_ATTRS = new Set(['href', 'src', 'action', 'formaction', 'xlink:href']);
-const SAFE_URL_REGEX = /^(?:(?:https?|mailto):|[#/?]|[a-z0-9._~%!$&'()*+,;=@-]+(?:[/?#]|$))/i;
-const RELATIVE_OR_FRAGMENT_REGEX = /^(?:[#/?]|\.{1,2}\/|[a-z0-9._~%!$&'()*+,;=@-]+\/)/i;
-
-/**
- * Is `value` a URL we'll accept on an href/src/action-style attribute?
- *
- * Accepts:
- *   - Absolute http(s) URLs
- *   - mailto:
- *   - Relative paths and fragment identifiers
- *
- * Rejects:
- *   - javascript:, data:, vbscript:, file:, ftp:, anything else
- *   - URLs with embedded null bytes / whitespace tricks
- */
-function isSafeUrl(value: string): boolean {
-  // Strip control characters and whitespace that browsers ignore but parsers may not
-  // eslint-disable-next-line no-control-regex
-  const cleaned = value.replace(/[\x00-\x20]+/g, '').trim();
-  if (cleaned === '') return false;
-
-  // Fast path: relative URL or fragment
-  if (RELATIVE_OR_FRAGMENT_REGEX.test(cleaned)) return true;
-
-  // Has a scheme — must be http(s) or mailto
-  const schemeMatch = cleaned.match(/^([a-z][a-z0-9+.-]*):/i);
-  if (schemeMatch && schemeMatch[1]) {
-    const scheme = schemeMatch[1].toLowerCase();
-    return scheme === 'http' || scheme === 'https' || scheme === 'mailto';
-  }
-
-  // No scheme detected: treat as relative
-  return SAFE_URL_REGEX.test(cleaned);
-}
+// The scheme rule itself lives in ./safeHref so plain `href` / `window.open`
+// sinks share it (F-298). Accepts http(s), mailto: and relative URLs; rejects
+// javascript:, data:, vbscript:, file: and every other scheme.
 
 /* ───────────────────────── Hook installation ───────────────────────── */
 

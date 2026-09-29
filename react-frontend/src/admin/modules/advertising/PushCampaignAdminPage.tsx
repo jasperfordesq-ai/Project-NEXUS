@@ -15,6 +15,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import Users from 'lucide-react/icons/users';
 import XCircle from 'lucide-react/icons/x-circle';
 import api from '@/lib/api';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -708,7 +709,7 @@ export default function PushCampaignAdminPage() {
                     <div className="col-span-2">
                       <p className="mb-0.5 text-xs text-muted">{t('advertising.push.fields.cta_url')}</p>
                       <a
-                        href={detailCampaign.cta_url}
+                        href={safeHref(detailCampaign.cta_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-accent text-xs break-all"

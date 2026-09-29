@@ -17,6 +17,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -298,7 +299,7 @@ export default function FederationPeersAdminPage() {
                     </TableCell>
                     <TableCell>
                       <a
-                        href={peer.base_url}
+                        href={safeHref(peer.base_url)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-accent text-xs"

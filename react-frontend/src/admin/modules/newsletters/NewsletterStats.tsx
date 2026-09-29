@@ -32,6 +32,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { NewsletterResend } from './NewsletterResend';
 import { useTranslation } from 'react-i18next';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -708,7 +709,7 @@ export function NewsletterStats() {
                   <TableRow key={link.url}>
                     <TableCell>
                       <a
-                        href={link.url}
+                        href={safeHref(link.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="break-all text-sm text-accent hover:underline"

@@ -12,6 +12,7 @@ import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tab, Tabs } from '@/components/ui/Tabs';
 import { useDisclosure } from '@/components/ui/useDisclosure';
+import { safeHref } from '@/lib/safeHref';
 /**
  * SellerOrdersPage — View and manage marketplace sales orders from the seller perspective.
  *
@@ -179,7 +180,7 @@ function SellerOrderCard({
               <span>{t('orders.tracking_number')} {order.tracking_number}</span>
               {order.tracking_url && (
                 <a
-                  href={order.tracking_url}
+                  href={safeHref(order.tracking_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:underline inline-flex items-center gap-0.5"

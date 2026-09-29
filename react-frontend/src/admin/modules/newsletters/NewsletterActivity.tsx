@@ -1,5 +1,6 @@
 import { getFormattingLocale } from '@/lib/helpers';
 import { CardBody, Card, Button, Chip, Tabs, Tab, Skeleton, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -411,7 +412,7 @@ export function NewsletterActivity() {
                     </TableCell>
                     <TableCell>
                       {event.url ? (
-                        <a href={event.url} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-accent hover:underline">
+                        <a href={safeHref(event.url)} target="_blank" rel="noopener noreferrer" className="break-all text-sm text-accent hover:underline">
                           {event.url.length > 60 ? event.url.substring(0, 60) + '...' : event.url}
                         </a>
                       ) : <span className="text-sm text-muted">--</span>}

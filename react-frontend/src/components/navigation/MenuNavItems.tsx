@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { isNavigationPathEnabled } from './navigationRegistry';
 import type { ApiMenu, ApiMenuItem } from '@/types/menu';
+import { openSafeUrl, safeHref } from '@/lib/safeHref';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -95,7 +96,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
 
   const dropdownNavigate = (href: string) => {
     if (href.startsWith('http')) {
-      window.open(href, '_blank', 'noopener,noreferrer');
+      openSafeUrl(href);
     } else {
       navigate(href);
     }
@@ -176,7 +177,7 @@ export function DesktopMenuItems({ menus }: DesktopMenuItemsProps) {
           return (
             <a
               key={item.id}
-              href={item.url || '#'}
+              href={safeHref(item.url) ?? '#'}
               target={item.target || '_blank'}
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-theme-muted hover:text-theme-primary hover:bg-theme-hover transition-all"
@@ -265,7 +266,7 @@ export function MobileMenuItems({ menus }: MobileMenuItemsProps) {
       return (
         <a
           key={item.id}
-          href={item.url || '#'}
+          href={safeHref(item.url) ?? '#'}
           target={item.target || '_blank'}
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-theme-muted hover:text-theme-primary hover:bg-theme-hover transition-all min-w-0"

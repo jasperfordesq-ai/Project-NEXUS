@@ -21,6 +21,7 @@ import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { Button } from '@/components/ui/Button';
 import { resolveBrandingImageUrl } from '@/lib/helpers';
+import { safeHref } from '@/lib/safeHref';
 
 
 export interface FooterProps {
@@ -92,7 +93,7 @@ export function Footer({ children, copyright }: FooterProps) {
           {/* Tenant partner logo — real or placeholder */}
           {partnerLogoUrl ? (
             partnerLinkUrl ? (
-              <a href={partnerLinkUrl} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80">
+              <a href={safeHref(partnerLinkUrl)} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80">
                 <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-44 object-contain" />
               </a>
             ) : (
@@ -283,7 +284,7 @@ export function Footer({ children, copyright }: FooterProps) {
                   </span>
                   {partnerLogoUrl ? (
                     partnerLinkUrl ? (
-                      <a href={partnerLinkUrl} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg">
+                      <a href={safeHref(partnerLinkUrl)} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg">
                         <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-48 object-contain" />
                       </a>
                     ) : (

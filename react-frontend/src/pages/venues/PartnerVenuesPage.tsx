@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useTenant } from '@/contexts';
 import { partnerVenuesApi, type PartnerVenue } from '@/lib/partner-venues-api';
+import { safeHref } from '@/lib/safeHref';
 
 export default function PartnerVenuesPage() {
   const { t } = useTranslation('venues');
@@ -114,7 +115,7 @@ export default function PartnerVenuesPage() {
 
               {venue.website && (
                 <a
-                  href={venue.website}
+                  href={safeHref(venue.website)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-[var(--color-primary)] underline inline-flex items-center gap-1"

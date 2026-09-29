@@ -43,6 +43,7 @@ import { resolveAvatarUrl, resolveThumbnailUrl, getFormattingLocale } from '@/li
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { formatMarketplaceCurrency } from '@/lib/marketplaceNumbers';
+import { safeHref } from '@/lib/safeHref';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -170,7 +171,7 @@ function OrderCard({
               <span>{t('orders.tracking_number')} {order.tracking_number}</span>
               {order.tracking_url && (
                 <a
-                  href={order.tracking_url}
+                  href={safeHref(order.tracking_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:underline inline-flex items-center gap-0.5"

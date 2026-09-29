@@ -36,6 +36,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import type { SuperAdminTenantDetail, TenantPurgePreview } from '../../api/types';
 import { languageDisplayName } from '@/lib/languageDisplayName';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -522,7 +523,7 @@ export function TenantShow() {
                           {social.label}
                         </span>
                         <a
-                          href={social.url}
+                          href={safeHref(social.url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-sm text-accent hover:underline truncate"

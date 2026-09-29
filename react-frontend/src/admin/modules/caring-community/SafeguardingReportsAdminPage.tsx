@@ -13,6 +13,7 @@ import { api } from '@/lib/api';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { Abbr } from '../../components/Abbr';
 import { PageHeader } from '../../components/PageHeader';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -506,7 +507,7 @@ export default function SafeguardingReportsAdminPage(): ReactNode {
                   <div>
                     <p className="text-xs uppercase tracking-wide text-muted">{t('admin.safeguarding_reports.fields.evidence')}</p>
                     <a
-                      href={detail.evidence_url}
+                      href={safeHref(detail.evidence_url)}
                       target="_blank"
                       rel="noreferrer"
                       className="text-sm text-accent underline"

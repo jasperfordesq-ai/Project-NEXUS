@@ -1,5 +1,6 @@
 import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Button, Textarea, Card, CardBody, Chip, Avatar } from '@/components/ui';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -265,7 +266,7 @@ function MessageBubble({ message, userName, userAvatar, onFeedback }: MessageBub
               ) : (
                 <a
                   key={`${source.type}-${source.id}`}
-                  href={source.url}
+                  href={safeHref(source.url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex max-w-full"

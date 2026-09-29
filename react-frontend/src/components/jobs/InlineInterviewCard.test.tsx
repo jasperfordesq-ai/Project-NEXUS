@@ -195,4 +195,45 @@ describe('InlineInterviewCard', () => {
     );
     expect(screen.getByText('123 Main St')).toBeInTheDocument();
   });
+
+  // F-298: the employer types both of these; neither may become a link to a
+  // non-web scheme in the applicant's browser.
+  it('never links the join button to a non-web meeting link', () => {
+    render(
+      <InlineInterviewCard
+        pendingInterview={{ ...PROPOSED_INTERVIEW, meeting_link: 'data:text/html,<script>alert(1)</script>' }}
+        isResponding={false}
+        onAccept={vi.fn()}
+        onDeclineOpen={vi.fn()}
+      />
+    );
+    const hrefs = Array.from(document.querySelectorAll('[href]')).map((el) => el.getAttribute('href'));
+    expect(hrefs.some((href) => href?.startsWith('data:'))).toBe(false);
+  });
+
+  it('shows non-web video location notes as text, not as a link', () => {
+    render(
+      <InlineInterviewCard
+        pendingInterview={{ ...PROPOSED_INTERVIEW, location_notes: 'file:///etc/passwd' }}
+        isResponding={false}
+        onAccept={vi.fn()}
+        onDeclineOpen={vi.fn()}
+      />
+    );
+    const notes = screen.getByText('file:///etc/passwd');
+    expect(notes.closest('a')).toBeNull();
+  });
+
+  it('still links a web video location note (control)', () => {
+    render(
+      <InlineInterviewCard
+        pendingInterview={{ ...PROPOSED_INTERVIEW, location_notes: 'https://meet.example.com/xyz' }}
+        isResponding={false}
+        onAccept={vi.fn()}
+        onDeclineOpen={vi.fn()}
+      />
+    );
+    expect(screen.getByText('https://meet.example.com/xyz').closest('a'))
+      .toHaveAttribute('href', 'https://meet.example.com/xyz');
+  });
 });

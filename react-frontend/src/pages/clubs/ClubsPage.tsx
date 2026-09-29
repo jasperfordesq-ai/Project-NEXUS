@@ -32,6 +32,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { safeHref } from '@/lib/safeHref';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -276,7 +277,7 @@ function ClubCard({ club }: { club: Club }) {
         )}
         {club.website && (
           <a
-            href={club.website}
+            href={safeHref(club.website)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"

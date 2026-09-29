@@ -3,6 +3,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -552,7 +553,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                   })()}
                   {option.help_url && (
                     <a
-                      href={option.help_url}
+                      href={safeHref(option.help_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"

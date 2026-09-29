@@ -1,4 +1,5 @@
 import { Select, SelectItem, Button, Chip, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab } from '@/components/ui';
+import { safeHref } from '@/lib/safeHref';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -680,7 +681,7 @@ export function AdCampaignAdminPage() {
                               )}
                               {creative.destination_url && (
                                 <p className="mt-1 truncate text-xs text-muted">
-                                  <a href={creative.destination_url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                                  <a href={safeHref(creative.destination_url)} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                                     {creative.destination_url}
                                   </a>
                                 </p>
