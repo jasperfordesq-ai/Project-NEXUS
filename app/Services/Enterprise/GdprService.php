@@ -1624,6 +1624,15 @@ class GdprService
                     "DELETE FROM user_trusted_devices WHERE user_id = ? AND tenant_id = ?",
                     [$userId, $this->tenantId]
                 );
+                // Recovery codes are a substitute for the TOTP code and still
+                // verify against this user id (they also carry used_ip and
+                // used_user_agent). The admin 2FA reset and TotpService's
+                // disable path delete them with the secret; so must erasure
+                // (F-275).
+                $this->query(
+                    "DELETE FROM user_backup_codes WHERE user_id = ? AND tenant_id = ?",
+                    [$userId, $this->tenantId]
+                );
                 $this->query(
                     "UPDATE users SET totp_enabled = 0, totp_setup_required = 1 WHERE id = ? AND tenant_id = ?",
                     [$userId, $this->tenantId]
@@ -1631,6 +1640,29 @@ class GdprService
             } catch (\Throwable $e) {
                 $criticalErasureFailed = true;
                 $this->logger->error('GDPR CRITICAL erasure step failed (TOTP/2FA secret)', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            }
+
+            // 3i-bis. Linked sign-in identities (F-275). oauth_identities holds
+            // the identity provider's copy of the member's real email
+            // (provider_email), their picture (avatar_url) and the provider
+            // claim set (raw_payload) in plaintext. The anonymised users row is
+            // never deleted, so nothing cascades — delete the links here,
+            // tenant-scoped, the same way the member's own unlink does. This
+            // also frees the provider account id so a later sign-in cannot
+            // resolve to the erased row. Failure is CRITICAL (real email).
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('oauth_identities')) {
+                    $this->query(
+                        "DELETE FROM oauth_identities WHERE user_id = ? AND tenant_id = ?",
+                        [$userId, $this->tenantId]
+                    );
+                }
+            } catch (\Throwable $e) {
+                $criticalErasureFailed = true;
+                $this->logger->error('GDPR CRITICAL erasure step failed (linked sign-in identities)', [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // 3j. Delete user notification preferences
