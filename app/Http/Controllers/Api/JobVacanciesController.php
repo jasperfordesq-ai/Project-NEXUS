@@ -2739,11 +2739,40 @@ class JobVacanciesController extends BaseApiController
             return $this->respondWithError('NOT_ELIGIBLE', __('api_controllers_2.job_vacancies.only_review_after_completing'), null, 403);
         }
 
-        // Prevent duplicate reviews
+        // F-272: this route writes an approved review directly, so it applies
+        // the canonical review path's guards (ReviewService::create) itself:
+        // a block in either direction stops it (F-070) and the safeguarding
+        // contact policy is consulted — block first, so a blocked member cannot
+        // probe the other member's safeguarding settings.
+        try {
+            \App\Services\BlockUserService::assertNoBlockBetween($userId, $employerId);
+            app(\App\Services\SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $userId,
+                $employerId,
+                (int) $tenantId,
+                'employer_review',
+            );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+
+        // Prevent duplicate reviews. The old guard matched review_type =
+        // 'employer', a value reviews.review_type (enum('local','federated'))
+        // cannot hold — under 'strict' => false it is stored as '' — so it never
+        // matched. Two conditions instead, both on columns that hold real data:
+        //  - one employer review per employer: this route is the only writer of
+        //    `dimensions` on a transaction-less review, so that marks it;
+        //  - the canonical 24-hour per-member throttle for reviews without a
+        //    transaction, shared with POST /v2/reviews so alternating between
+        //    the two routes cannot reset it.
         $existing = Review::where('tenant_id', $tenantId)
             ->where('reviewer_id', $userId)
             ->where('receiver_id', $employerId)
-            ->where('review_type', 'employer')
+            ->whereNull('transaction_id')
+            ->where(function ($q) {
+                $q->whereNotNull('dimensions')
+                    ->orWhere('created_at', '>=', now()->subDay());
+            })
             ->exists();
 
         if ($existing) {
