@@ -1567,20 +1567,116 @@ inject_rendered_pages() {
             exit 0
         fi
 
-        # A targeted update may replace only ordinary HTTP-200 snapshots.
-        # Changing to or from a status-bearing maintenance snapshot requires
-        # an authoritative reset, where HTML and the compiled nginx status map
-        # are committed and rolled back as one transaction.
+        # A targeted update may also move a route to or from the tenant
+        # maintenance snapshot (F-245). Until 2026-09-29 it refused, so every
+        # maintenance flip needed the platform-wide authoritative reset, which
+        # cancels the render jobs of every community.
+        #
+        # There is no journal here, so correctness rests on ordering. The one
+        # state that must never exist is maintenance HTML served as HTTP 200.
+        # So: (A) before any HTML moves, the map gains a 503 entry for every
+        # incoming maintenance route; (B) routes commit with `_status` placed
+        # before maintenance HTML and removed only after ordinary HTML; (C) the
+        # map is rebuilt from the live sidecars, which drops the entries of
+        # routes that left maintenance. On any exit after (A), (C) still runs,
+        # so the map always ends equal to what is live. The worst transient
+        # state is ordinary HTML briefly answered with 503, which crawlers
+        # simply retry. The mutation lock (fd 8) excludes other publishers.
+
+        # status_map_lines ROUTE_DIR — the two nginx map keys for a route.
+        status_map_lines() {
+            smap_base="$1"
+            smap_host="${smap_base%%/*}"
+            if [ "$smap_base" = "$smap_host" ]; then
+                smap_route="/"
+            else
+                smap_route="/${smap_base#*/}"
+            fi
+            safe_host_component "$smap_host" || return 1
+            case "$smap_route" in *\"*|*\\*) return 1 ;; esac
+            printf "    \"%s\" \"503\";\n" "${smap_host}${smap_route}"
+            case "$smap_route" in
+                */) ;;
+                *) printf "    \"%s/\" \"503\";\n" "${smap_host}${smap_route}" ;;
+            esac
+        }
+
+        # rebuild_status_map [EXTRA_FILE] — map = live 503 sidecars (+ extra
+        # lines), installed atomically. On a failed reload the previous map is
+        # restored so nginx is never left with a file it rejected.
+        rebuild_status_map() {
+            smap_extra="${1:-}"
+            smap_tmp="${PRERENDER_STATUS_OVERRIDE_LIST}.targeted.$$"
+            smap_prev="${PRERENDER_STATUS_OVERRIDE_LIST}.prev.$$"
+            printf "%s\n" "# Prerender status map - rebuilt from live sidecars by a targeted publication" > "$smap_tmp"
+            find "$PRERENDER_DIR" -path "$PRERENDER_DIR/.publish-backup-*" -prune -o \
+                -path "$PRERENDER_DIR/.incoming-*" -prune -o \
+                -path "$PRERENDER_DIR/.leases" -prune -o -name _status -type f -print \
+                | sort | while IFS= read -r sidecar; do
+                    smap_rel="${sidecar#$PRERENDER_DIR/}"
+                    [ "$(tr -d "\r\n" < "$sidecar")" = "503" ] || {
+                        echo "Ignoring non-maintenance status sidecar: $smap_rel" >&2
+                        continue
+                    }
+                    status_map_lines "${smap_rel%/_status}" || {
+                        echo "Unsafe status sidecar path: $smap_rel" >&2
+                        exit 1
+                    }
+                done >> "$smap_tmp"
+            if [ -n "$smap_extra" ] && [ -s "$smap_extra" ]; then
+                cat "$smap_extra" >> "$smap_tmp"
+            fi
+            if [ -f "$PRERENDER_STATUS_OVERRIDE_LIST" ]; then
+                cp "$PRERENDER_STATUS_OVERRIDE_LIST" "$smap_prev"
+            else
+                rm -f "$smap_prev"
+            fi
+            mv "$smap_tmp" "$PRERENDER_STATUS_OVERRIDE_LIST"
+            if reload_nginx_or_fail; then
+                rm -f "$smap_prev"
+                return 0
+            fi
+            echo "nginx rejected the rebuilt status map; restoring the previous map" >&2
+            if [ -f "$smap_prev" ]; then
+                mv "$smap_prev" "$PRERENDER_STATUS_OVERRIDE_LIST"
+            else
+                rm -f "$PRERENDER_STATUS_OVERRIDE_LIST"
+            fi
+            reload_nginx_or_fail || true
+            return 1
+        }
+
+        status_additions="$INCOMING_DIR/.status-additions.list"
+        : > "$status_additions"
+        status_changes=0
         while IFS= read -r rel; do
             [ -n "$rel" ] || continue
             route_dir="${rel%/index.html}"
-            if [ -f "$INCOMING_DIR/$route_dir/_status" ] \
-                || [ -f "$PRERENDER_DIR/$route_dir/_status" ]; then
-                echo "Targeted publication cannot change a status-bearing snapshot: $route_dir" >&2
-                rm -rf "$INCOMING_DIR"
-                exit 1
+            if [ -f "$INCOMING_DIR/$route_dir/_status" ]; then
+                incoming_status="$(tr -d "\r\n" < "$INCOMING_DIR/$route_dir/_status")"
+                if [ "$incoming_status" != "503" ]; then
+                    echo "Targeted publication accepts only the maintenance status: $route_dir=$incoming_status" >&2
+                    rm -rf "$INCOMING_DIR"
+                    exit 1
+                fi
+                status_map_lines "$route_dir" >> "$status_additions" || {
+                    echo "Unsafe route in targeted publication: $route_dir" >&2
+                    rm -rf "$INCOMING_DIR"
+                    exit 1
+                }
+                status_changes=1
+            elif [ -f "$PRERENDER_DIR/$route_dir/_status" ]; then
+                status_changes=1
             fi
         done < "$expected"
+
+        if [ "$status_changes" = "1" ]; then
+            assert_publication_fence || { echo "Prerender publication fence lost before targeted status map" >&2; rm -rf "$INCOMING_DIR"; exit 75; }
+            # (A) Add the incoming 503 entries before any HTML moves.
+            rebuild_status_map "$status_additions" || { rm -rf "$INCOMING_DIR"; exit 1; }
+            # (C) On any later exit, make the map match what is live.
+            trap "rebuild_status_map || echo Status map could not be reconciled after targeted publication >&2" EXIT
+        fi
 
         # Commit one validated HTTP-200 bundle at a time. Required sidecars
         # move before HTML, so the index rename is the route-level visibility
@@ -1601,7 +1697,15 @@ inject_rendered_pages() {
                     echo "Targeted snapshot bundle is incomplete: $rel" >&2
                     exit 1
                 }
-            rm -f "$live_route/_status"
+            # Entering maintenance: the sidecar lands before the HTML. Leaving
+            # it: the sidecar goes only after the ordinary HTML is live. Either
+            # way a reconciliation at any point never maps maintenance HTML
+            # as 200 (see the F-245 note above).
+            route_is_maintenance=0
+            if [ -f "$incoming_route/_status" ]; then
+                route_is_maintenance=1
+                mv -f "$incoming_route/_status" "$live_route/_status"
+            fi
             mv -f "$incoming_route/index.html.sha256" "$live_route/index.html.sha256"
             mv -f "$incoming_route/_tenant.json" "$live_route/_tenant.json"
             if [ -f "$incoming_route/index.md" ]; then
@@ -1611,6 +1715,7 @@ inject_rendered_pages() {
             fi
             assert_publication_fence || { echo "Prerender publication fence lost before targeted route commit" >&2; exit 75; }
             mv -f "$incoming_route/index.html" "$live_route/index.html"
+            [ "$route_is_maintenance" = "1" ] || rm -f "$live_route/_status"
             assert_publication_fence || { echo "Prerender publication fence lost after targeted route commit" >&2; exit 75; }
         done < "$expected"
 
@@ -1630,6 +1735,12 @@ inject_rendered_pages() {
 
         assert_publication_fence || { echo "Prerender publication fence lost before targeted publication completion" >&2; exit 75; }
         rm -rf "$INCOMING_DIR"
+        if [ "$status_changes" = "1" ]; then
+            # (C) Drop the entries of routes that left maintenance. A failure
+            # here fails the job; the trap has nothing further to add.
+            trap - EXIT
+            rebuild_status_map
+        fi
     '
 
     if [ "$AUTHORITATIVE_RESET" -eq 1 ]; then

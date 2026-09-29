@@ -20,10 +20,12 @@ use Tests\Laravel\TestCase;
  * render jobs. A community's own top admin (is_tenant_super_admin) could
  * repeat that at will by re-sending the current value.
  *
- * The reset is now queued only when the stored maintenance state really
- * changes. (A real change still needs the authoritative publish path: the
- * tenant-scoped publish cannot change a 503 status-bearing snapshot — see
- * scripts/prerender-tenants.sh targeted publication.)
+ * First fix (28 Sep): the reset was queued only when the stored state
+ * really flipped. Residual closed 29 Sep: a real flip no longer needs the
+ * platform-wide reset at all, because the targeted publisher can now install
+ * and remove a community's 503 maintenance snapshots on its own (pinned by
+ * scripts/test/test-prerender-targeted-status-publish.sh). So no maintenance
+ * save by a community admin, changed or not, touches other communities.
  *
  * The real-change control rotates the publisher epoch, so setUp points the
  * prerender paths at a throwaway folder and tearDown removes it (the same
@@ -187,9 +189,27 @@ class F245CommunityMaintenanceToggleScopedPrerenderTest extends TestCase
         $this->assertSame('true', $this->storedMaintenance());
         $job = DB::table('prerender_jobs')->where('id', (int) $res->json('data.prerender_job_id'))->first();
         $this->assertNotNull($job, 'a refresh covering this community was queued');
-        // Covers this community: either scoped to it or the whole platform
-        // (the only publish path that can install a 503 maintenance snapshot).
-        $this->assertTrue($job->tenant_id === null || (int) $job->tenant_id === $this->testTenantId);
+        $this->assertSame($this->testTenantId, (int) $job->tenant_id);
+    }
+
+    public function test_real_maintenance_flips_never_touch_other_communities(): void
+    {
+        $this->storeMaintenance('false');
+        Sanctum::actingAs($this->communitySuperAdmin());
+
+        foreach (['true', 'false', 'true', 'false'] as $value) {
+            $res = $this->apiPut('/v2/admin/settings', ['maintenance_mode' => $value]);
+            $res->assertStatus(200);
+            $this->assertSame($value, $this->storedMaintenance());
+
+            $job = DB::table('prerender_jobs')->where('id', (int) $res->json('data.prerender_job_id'))->first();
+            $this->assertNotNull($job, 'a refresh of this community was queued');
+            $this->assertSame($this->testTenantId, (int) $job->tenant_id);
+            $this->assertSame(1, (int) $job->force_render);
+        }
+
+        $this->assertNeighbourJobsUntouched();
+        $this->assertNoPlatformWideJob();
     }
 
     public function test_control_plain_admin_still_refused_on_maintenance_key(): void

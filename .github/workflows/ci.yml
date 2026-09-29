@@ -982,6 +982,14 @@ jobs:
       - name: "BLOCKING: Prerender authoritative publish transaction test"
         run: bash scripts/test/test-prerender-authoritative-publish.sh
 
+      # Added 2026-09-29 (F-245). A community entering or leaving maintenance
+      # is published by a targeted run; it no longer needs the platform-wide
+      # reset that cancels every community's render jobs. Pins that the 503
+      # map entry lands before maintenance HTML, leaves only after ordinary
+      # HTML, and ends equal to the live sidecars even after a failed run.
+      - name: "BLOCKING: Prerender targeted maintenance publish test"
+        run: bash scripts/test/test-prerender-targeted-status-publish.sh
+
       # Added 2026-09-16. The platform master (tenant id 1) had no crawler
       # snapshot for three days after the 2026-09-13 planner fix, because (a)
       # the render script's own tenant query and static page list still

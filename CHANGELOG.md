@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Switching a community's maintenance mode on or off now refreshes only that community's search-engine pages. It used to restart page rendering for every community on the platform (F-245).
 - The volunteering accessibility page now says truthfully that these notes are private and are not shared with organisations or coordinators, and a save that fails is reported as an error instead of "saved" (F-227).
 - "Add someone who can help" in linked-account settings now does what it says: the person you name is asked to help you, and nothing changes until they accept. It used to make you their helper instead (F-224).
 - The Caring Community "Verified" and "Coordinator" trust levels now require a real ID check. Email verification or a failed ID attempt no longer counts, and community settings can no longer remove the requirement (F-269).
