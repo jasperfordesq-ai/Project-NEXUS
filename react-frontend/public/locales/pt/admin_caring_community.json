@@ -3534,6 +3534,7 @@
       "transfer_in": "Transferência recebida",
       "transfer_out": "Transferência enviada",
       "unknown": "Transação desconhecida"
-    }
+    },
+    "marketplace_redemption_unavailable": "Ainda não disponível: o checkout do mercado não consegue aplicar descontos em pontos regionais, por isso os membros não podem resgatar pontos."
   }
 }

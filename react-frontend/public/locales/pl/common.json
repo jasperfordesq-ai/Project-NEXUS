@@ -1631,8 +1631,6 @@
     },
     "transfer": {
       "title": "Wyślij punkty innemu członkowi",
-      "recipient_id": "Identyfikator członka odbiorcy",
-      "recipient_placeholder": "np. 123",
       "amount": "Kwota",
       "amount_placeholder": "0,00",
       "message": "Wiadomość (opcjonalnie)",
@@ -1640,9 +1638,18 @@
       "submit": "Wyślij przelew",
       "success": "Przelew wysłany",
       "errors": {
-        "invalid_recipient": "Podaj prawidłowy identyfikator członka odbiorcy",
-        "invalid_amount": "Podaj kwotę dodatnią"
-      }
+        "invalid_amount": "Podaj kwotę dodatnią",
+        "choose_recipient": "Wybierz członka, któremu chcesz wysłać punkty"
+      },
+      "recipient_label": "Komu chcesz wysłać punkty?",
+      "recipient_search_placeholder": "Szukaj według imienia...",
+      "recipient_hint": "Wpisz co najmniej 2 litery, aby wyszukać",
+      "recipient_no_results": "Nie znaleziono członków",
+      "change_recipient": "Zmień",
+      "confirm_title": "Wysłać {{points}} {{symbol}} do: {{name}}?",
+      "confirm_body": "Sprawdź, czy to właściwa osoba. Wysłanego przelewu nie można cofnąć.",
+      "confirm_button": "Tak, wyślij punkty",
+      "cancel": "Anuluj"
     },
     "history": {
       "types": {

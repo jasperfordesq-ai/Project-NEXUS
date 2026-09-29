@@ -3534,6 +3534,7 @@
       "transfer_in": "Trasferimento ricevuto",
       "transfer_out": "Trasferimento inviato",
       "unknown": "Transazione sconosciuta"
-    }
+    },
+    "marketplace_redemption_unavailable": "Non ancora disponibile: il checkout del marketplace non può applicare sconti in punti regionali, quindi i membri non possono riscattare punti."
   }
 }

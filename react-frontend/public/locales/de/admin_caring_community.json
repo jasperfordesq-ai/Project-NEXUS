@@ -3503,6 +3503,7 @@
       "transfer_in": "Übertragung erhalten",
       "transfer_out": "Übertragung gesendet",
       "unknown": "Unbekannte Transaktion"
-    }
+    },
+    "marketplace_redemption_unavailable": "Noch nicht verfügbar: Der Marktplatz-Checkout kann keine Rabatte mit regionalen Punkten anwenden, daher können Mitglieder keine Punkte einlösen."
   }
 }

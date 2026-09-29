@@ -3503,6 +3503,7 @@
       "transfer_in": "Ontvangen overdracht",
       "transfer_out": "Overdracht verzonden",
       "unknown": "Onbekende transactie"
-    }
+    },
+    "marketplace_redemption_unavailable": "Nog niet beschikbaar: de afrekening van de marktplaats kan geen kortingen met regionale punten toepassen, dus leden kunnen geen punten inwisselen."
   }
 }

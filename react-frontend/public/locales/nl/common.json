@@ -1609,8 +1609,6 @@
     },
     "transfer": {
       "title": "Punten naar een ander lid sturen",
-      "recipient_id": "Lid-ID ontvanger",
-      "recipient_placeholder": "bijv. 123",
       "amount": "Bedrag",
       "amount_placeholder": "0,00",
       "message": "Bericht (optioneel)",
@@ -1618,9 +1616,18 @@
       "submit": "Overdracht verzenden",
       "success": "Overdracht verzonden",
       "errors": {
-        "invalid_recipient": "Voer een geldig lid-ID voor de ontvanger in",
-        "invalid_amount": "Voer een positief bedrag in"
-      }
+        "invalid_amount": "Voer een positief bedrag in",
+        "choose_recipient": "Kies een lid om punten naar te sturen"
+      },
+      "recipient_label": "Naar wie stuurt u punten?",
+      "recipient_search_placeholder": "Zoeken op naam...",
+      "recipient_hint": "Typ minimaal 2 letters om te zoeken",
+      "recipient_no_results": "Geen leden gevonden",
+      "change_recipient": "Wijzigen",
+      "confirm_title": "{{points}} {{symbol}} naar {{name}} sturen?",
+      "confirm_body": "Controleer of dit de juiste persoon is. Een verzonden overdracht kan niet ongedaan worden gemaakt.",
+      "confirm_button": "Ja, punten sturen",
+      "cancel": "Annuleren"
     },
     "history": {
       "types": {

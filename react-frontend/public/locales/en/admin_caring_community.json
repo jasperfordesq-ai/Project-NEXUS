@@ -3202,7 +3202,8 @@
       "transfer_in": "Transfer received",
       "transfer_out": "Transfer sent",
       "unknown": "Unknown transaction"
-    }
+    },
+    "marketplace_redemption_unavailable": "Not available yet: the marketplace checkout cannot apply regional-point discounts, so members cannot redeem points."
   },
   "smart_nudges": {
     "meta": {

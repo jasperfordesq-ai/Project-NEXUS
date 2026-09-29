@@ -3534,6 +3534,7 @@
       "transfer_in": "Transfert reçu",
       "transfer_out": "Transfert envoyé",
       "unknown": "Transaction inconnue"
-    }
+    },
+    "marketplace_redemption_unavailable": "Pas encore disponible : le paiement de la place de marché ne peut pas appliquer de réductions en points régionaux, les membres ne peuvent donc pas échanger de points."
   }
 }

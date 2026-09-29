@@ -20,6 +20,19 @@ class CaringRegionalPointService
     private const PREFIX = 'caring_community.regional_points.';
     private const MAX_POINTS_PER_REDEMPTION = 100000.0;
 
+    /**
+     * F-225: marketplace redemption is not wired to any checkout. No
+     * marketplace order records or applies a regional-point discount, and the
+     * redeem endpoint took the order total from the client, so a redemption
+     * only burned the member's points against a figure the server never
+     * checked. Until an order integration exists that derives the total from
+     * the server's own prices and attaches the redemption to that order,
+     * quotes report `feature_unavailable`, redemptions refuse before any
+     * write, and the member-facing config never advertises the feature —
+     * whatever the stored admin toggle says.
+     */
+    public const MARKETPLACE_REDEMPTION_AVAILABLE = false;
+
     private const DEFAULTS = [
         'enabled' => false,
         'label' => '',
@@ -475,7 +488,13 @@ class CaringRegionalPointService
 
         $points = $this->normalisePoints($points);
         $this->assertTenantUser($tenantId, $senderId);
-        $this->assertTenantUser($tenantId, $recipientId);
+        // F-225: a transfer is addressed by member id, so the recipient must be
+        // a live account in this community — not suspended, pending, banned or
+        // deleted. The same "user not found" answer is given for every case so
+        // the endpoint cannot be used to probe another member's account state.
+        if (!$this->activeTenantUserExists($tenantId, $recipientId)) {
+            throw new InvalidArgumentException(__('api.user_not_found'));
+        }
         app(\App\Services\SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,
             $recipientId,
@@ -593,7 +612,7 @@ class CaringRegionalPointService
             return $base + ['reason' => 'feature_disabled'];
         }
 
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
+        if (!self::MARKETPLACE_REDEMPTION_AVAILABLE || !Schema::hasTable('marketplace_seller_regional_point_settings')) {
             return $base + ['reason' => 'feature_unavailable'];
         }
 
@@ -655,7 +674,7 @@ class CaringRegionalPointService
         if (!(bool) $config['marketplace_redemption_enabled']) {
             throw new RuntimeException(__('api.caring_regional_points_marketplace_disabled'));
         }
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
+        if (!self::MARKETPLACE_REDEMPTION_AVAILABLE || !Schema::hasTable('marketplace_seller_regional_point_settings')) {
             throw new RuntimeException(__('api.caring_regional_points_marketplace_unavailable'));
         }
         if ($memberId === $sellerId) {
@@ -823,8 +842,14 @@ class CaringRegionalPointService
             'label_code' => $config['label_code'],
             'symbol' => $config['symbol'],
             'member_transfers_enabled' => $config['member_transfers_enabled'],
-            'marketplace_redemption_enabled' => $config['marketplace_redemption_enabled'],
+            'marketplace_redemption_enabled' => self::MARKETPLACE_REDEMPTION_AVAILABLE
+                && $config['marketplace_redemption_enabled'],
         ];
+    }
+
+    public function isMarketplaceRedemptionAvailable(): bool
+    {
+        return self::MARKETPLACE_REDEMPTION_AVAILABLE;
     }
 
     private function credit(int $userId, float $points, string $type, string $description, int $actorId): array
@@ -1029,6 +1054,20 @@ class CaringRegionalPointService
             ->exists();
     }
 
+    private function activeTenantUserExists(int $tenantId, int $userId): bool
+    {
+        if ($userId <= 0) {
+            return false;
+        }
+
+        return DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $userId)
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->exists();
+    }
+
     private function marketplaceListingBelongsToSeller(int $tenantId, int $listingId, int $sellerId): bool
     {
         if ($listingId <= 0 || !Schema::hasTable('marketplace_listings')) {
@@ -1064,6 +1103,8 @@ class CaringRegionalPointService
     private function withDisplayMetadata(array $config): array
     {
         $config['label_code'] = $config['label'] === '' ? 'default' : null;
+        // F-225: lets the admin screen say the toggle cannot take effect yet.
+        $config['marketplace_redemption_available'] = self::MARKETPLACE_REDEMPTION_AVAILABLE;
 
         return $config;
     }

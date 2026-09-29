@@ -46,6 +46,8 @@ interface RegionalPointsConfig {
   points_per_approved_hour: number;
   member_transfers_enabled: boolean;
   marketplace_redemption_enabled: boolean;
+  /** F-225: false while no marketplace checkout applies regional-point discounts. */
+  marketplace_redemption_available?: boolean;
 }
 
 interface LedgerRow {
@@ -364,11 +366,15 @@ export default function RegionalPointsAdminPage() {
             <div>
               <p className="text-sm font-medium">{t('admin.regional_points.config.marketplace_redemption')}</p>
               <p className="text-xs text-muted">
-                {t('admin.regional_points.config.marketplace_redemption_hint')}
+                {config.marketplace_redemption_available === false
+                  ? tAdmin('regional_points.marketplace_redemption_unavailable')
+                  : t('admin.regional_points.config.marketplace_redemption_hint')}
               </p>
             </div>
             <Switch
-              isSelected={config.marketplace_redemption_enabled}
+              isSelected={config.marketplace_redemption_available !== false && config.marketplace_redemption_enabled}
+              isDisabled={config.marketplace_redemption_available === false}
+              aria-label={t('admin.regional_points.config.marketplace_redemption')}
               onValueChange={(v) =>
                 setConfig({ ...config, marketplace_redemption_enabled: v })
               }

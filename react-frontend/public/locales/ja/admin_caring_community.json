@@ -3503,6 +3503,7 @@
       "transfer_in": "送金受信",
       "transfer_out": "送金済み",
       "unknown": "不明な取引"
-    }
+    },
+    "marketplace_redemption_unavailable": "まだ利用できません。マーケットプレイスの決済では地域ポイントの割引を適用できないため、メンバーはポイントを引き換えられません。"
   }
 }

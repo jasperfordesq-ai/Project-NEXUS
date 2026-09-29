@@ -3534,6 +3534,7 @@
       "transfer_in": "Transferencia recibida",
       "transfer_out": "Transferencia enviada",
       "unknown": "Transacción desconocida"
-    }
+    },
+    "marketplace_redemption_unavailable": "Aún no disponible: el pago del mercado no puede aplicar descuentos con puntos regionales, por lo que los miembros no pueden canjear puntos."
   }
 }

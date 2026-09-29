@@ -1620,8 +1620,6 @@
     },
     "transfer": {
       "title": "Enviar puntos a otro miembro",
-      "recipient_id": "ID de miembro destinatario",
-      "recipient_placeholder": "p. ej. 123",
       "amount": "Cantidad",
       "amount_placeholder": "0,00",
       "message": "Mensaje (opcional)",
@@ -1629,9 +1627,18 @@
       "submit": "Enviar transferencia",
       "success": "Transferencia enviada",
       "errors": {
-        "invalid_recipient": "Introduce un ID de miembro destinatario válido",
-        "invalid_amount": "Introduce una cantidad positiva"
-      }
+        "invalid_amount": "Introduce una cantidad positiva",
+        "choose_recipient": "Elija un miembro al que enviar puntos"
+      },
+      "recipient_label": "¿A quién le envía puntos?",
+      "recipient_search_placeholder": "Buscar por nombre...",
+      "recipient_hint": "Escriba al menos 2 letras para buscar",
+      "recipient_no_results": "No se encontraron miembros",
+      "change_recipient": "Cambiar",
+      "confirm_title": "¿Enviar {{points}} {{symbol}} a {{name}}?",
+      "confirm_body": "Compruebe que es la persona correcta. Una transferencia enviada no se puede deshacer.",
+      "confirm_button": "Sí, enviar puntos",
+      "cancel": "Cancelar"
     },
     "history": {
       "types": {

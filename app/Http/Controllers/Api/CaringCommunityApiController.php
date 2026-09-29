@@ -213,6 +213,18 @@ class CaringCommunityApiController extends BaseApiController
             return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
         }
 
+        // F-225: no checkout applies a regional-point discount yet, and the
+        // order total below would come from the client. Refuse outright rather
+        // than burn the member's points against an unchecked figure.
+        if (!$this->regionalPointService->isMarketplaceRedemptionAvailable()) {
+            return $this->respondWithError(
+                'FEATURE_UNAVAILABLE',
+                __('api.caring_regional_points_marketplace_unavailable'),
+                null,
+                403
+            );
+        }
+
         $input = $this->getAllInput();
         $sellerId = (int) ($input['seller_id'] ?? 0);
         $listingId = isset($input['listing_id']) && $input['listing_id'] !== '' ? (int) $input['listing_id'] : null;

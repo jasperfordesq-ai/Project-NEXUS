@@ -1609,8 +1609,6 @@
     },
     "transfer": {
       "title": "Send points to another member",
-      "recipient_id": "Recipient member ID",
-      "recipient_placeholder": "e.g. 123",
       "amount": "Amount",
       "amount_placeholder": "0.00",
       "message": "Message (optional)",
@@ -1618,9 +1616,18 @@
       "submit": "Send transfer",
       "success": "Transfer sent",
       "errors": {
-        "invalid_recipient": "Enter a valid recipient member ID",
-        "invalid_amount": "Enter a positive amount"
-      }
+        "invalid_amount": "Enter a positive amount",
+        "choose_recipient": "Choose a member to send points to"
+      },
+      "recipient_label": "Who are you sending points to?",
+      "recipient_search_placeholder": "Search by name...",
+      "recipient_hint": "Type at least 2 letters to search",
+      "recipient_no_results": "No members found",
+      "change_recipient": "Change",
+      "confirm_title": "Send {{points}} {{symbol}} to {{name}}?",
+      "confirm_body": "Check this is the right person. You cannot undo a transfer once it is sent.",
+      "confirm_button": "Yes, send points",
+      "cancel": "Cancel"
     },
     "history": {
       "types": {

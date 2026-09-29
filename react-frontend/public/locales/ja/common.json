@@ -1609,8 +1609,6 @@
     },
     "transfer": {
       "title": "他のメンバーにポイントを送信",
-      "recipient_id": "受取人メンバー ID",
-      "recipient_placeholder": "例: 123",
       "amount": "金額",
       "amount_placeholder": "0.00",
       "message": "メッセージ（任意）",
@@ -1618,9 +1616,18 @@
       "submit": "送金を送信",
       "success": "送金されました",
       "errors": {
-        "invalid_recipient": "有効な受取人メンバー ID を入力してください",
-        "invalid_amount": "正の金額を入力してください"
-      }
+        "invalid_amount": "正の金額を入力してください",
+        "choose_recipient": "ポイントを送るメンバーを選んでください"
+      },
+      "recipient_label": "誰にポイントを送りますか？",
+      "recipient_search_placeholder": "名前で検索...",
+      "recipient_hint": "2文字以上入力して検索してください",
+      "recipient_no_results": "メンバーが見つかりません",
+      "change_recipient": "変更",
+      "confirm_title": "{{name}} さんに {{points}} {{symbol}} を送りますか？",
+      "confirm_body": "送り先が正しいか確認してください。送信した移転は取り消せません。",
+      "confirm_button": "はい、ポイントを送ります",
+      "cancel": "キャンセル"
     },
     "history": {
       "types": {

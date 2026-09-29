@@ -3,11 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
-import { Input } from '@/components/ui/Input';
+import { ComboBox } from '@/components/ui/ComboBox';
 import { Label } from '@/components/ui/Label';
+import { ListBoxItem as ComboBoxItem } from '@/components/ui/ListBox';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { NumberField } from '@/components/ui/NumberField';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
@@ -18,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 import Coins from 'lucide-react/icons/coins';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Search from 'lucide-react/icons/search';
 import Send from 'lucide-react/icons/send';
 import ArrowDownCircle from 'lucide-react/icons/arrow-down-circle';
 import ArrowUpCircle from 'lucide-react/icons/arrow-up-circle';
@@ -33,6 +37,11 @@ import { logError } from '@/lib/logger';
  *
  * Shows balance, transaction history and a member-to-member transfer form.
  * Backed by /api/v2/caring-community/regional-points/{summary, history, transfer}.
+ *
+ * F-225: the recipient is chosen by name from the member directory search
+ * (/v2/users?q=, the same public-identity lookup HourGiftPage uses) and the
+ * sender confirms the recipient's name before anything is sent — never a
+ * bare member id.
  *
  * Disabled tenants see a friendly "not enabled here" message — backend
  * returns FEATURE_DISABLED in that case.
@@ -80,6 +89,17 @@ interface HistoryResponse {
   items: PointTransaction[];
 }
 
+interface MemberSearchResult {
+  id: number;
+  name: string;
+  profile_photo?: string | null;
+  avatar_url?: string | null;
+}
+
+const RECIPIENT_SEARCH_MIN_CHARS = 2;
+const RECIPIENT_SEARCH_LIMIT = 8;
+const RECIPIENT_SEARCH_DEBOUNCE_MS = 250;
+
 const activityDateFormatter = () => new Intl.DateTimeFormat(getFormattingLocale(), {
   day: 'numeric',
   month: 'short',
@@ -126,10 +146,15 @@ export default function RegionalPointsPage() {
   const [unavailable, setUnavailable] = useState(false);
 
   // Transfer form
-  const [recipientId, setRecipientId] = useState('');
+  const [recipientQuery, setRecipientQuery] = useState('');
+  const [recipientResults, setRecipientResults] = useState<MemberSearchResult[]>([]);
+  const [recipient, setRecipient] = useState<MemberSearchResult | null>(null);
+  const [searching, setSearching] = useState(false);
   const [points, setPoints] = useState('');
   const [message, setMessage] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const ownUserId = summary?.account.user_id;
 
   const load = useCallback(async () => {
     setRefreshing(true);
@@ -161,40 +186,82 @@ export default function RegionalPointsPage() {
     void load();
   }, [load]);
 
-  const handleTransfer = useCallback(async () => {
-    const recipient = parseInt(recipientId, 10);
+  // Debounced recipient search against the member directory (public identity,
+  // tenant-scoped on the server).
+  useEffect(() => {
+    if (recipient !== null) return;
+    const q = recipientQuery.trim();
+    if (q.length < RECIPIENT_SEARCH_MIN_CHARS) {
+      setRecipientResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await api.get<{ items?: MemberSearchResult[] } | MemberSearchResult[]>(
+          `/v2/users?q=${encodeURIComponent(q)}&limit=${RECIPIENT_SEARCH_LIMIT}`,
+        );
+        const items: MemberSearchResult[] = Array.isArray(res.data)
+          ? res.data
+          : (res.data as { items?: MemberSearchResult[] } | undefined)?.items ?? [];
+        setRecipientResults(
+          items.filter((m) => m.id !== ownUserId).slice(0, RECIPIENT_SEARCH_LIMIT),
+        );
+      } catch (err) {
+        logError('RegionalPointsPage: recipient search failed', err);
+      } finally {
+        setSearching(false);
+      }
+    }, RECIPIENT_SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [recipientQuery, recipient, ownUserId]);
+
+  // First step: validate, then show the recipient's name for confirmation.
+  const handleReview = useCallback(() => {
     const amount = parseFloat(points);
-    if (!recipient || recipient <= 0) {
-      toast.error(t('regional_points.transfer.errors.invalid_recipient'));
+    if (!recipient) {
+      toast.error(t('regional_points.transfer.errors.choose_recipient'));
       return;
     }
     if (!amount || amount <= 0) {
       toast.error(t('regional_points.transfer.errors.invalid_amount'));
       return;
     }
+    setConfirmOpen(true);
+  }, [recipient, points, toast, t]);
+
+  const handleTransfer = useCallback(async () => {
+    const amount = parseFloat(points);
+    if (!recipient || !amount || amount <= 0) {
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await api.post('/v2/caring-community/regional-points/transfer', {
-        recipient_user_id: recipient,
+        recipient_user_id: recipient.id,
         points: amount,
         message: message.trim() || null,
       });
       if (res.success) {
         toast.success(t('regional_points.transfer.success'));
-        setRecipientId('');
+        setConfirmOpen(false);
+        setRecipient(null);
+        setRecipientQuery('');
         setPoints('');
         setMessage('');
         await load();
       } else {
+        setConfirmOpen(false);
         toast.error(res.error || t('regional_points.errors.transfer_failed'));
       }
     } catch (err) {
       logError('RegionalPointsPage: transfer failed', err);
+      setConfirmOpen(false);
       toast.error(t('regional_points.errors.transfer_failed'));
     } finally {
       setSubmitting(false);
     }
-  }, [recipientId, points, message, toast, t, load]);
+  }, [recipient, points, message, toast, t, load]);
 
   if (loading) {
     return (
@@ -300,13 +367,79 @@ export default function RegionalPointsPage() {
           <Separator />
           <CardBody className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label={t('regional_points.transfer.recipient_id')}
-                placeholder={t('regional_points.transfer.recipient_placeholder')}
-                type="number"
-                value={recipientId}
-                onValueChange={setRecipientId}
-              />
+              <div>
+                <p className="mb-1.5 text-sm font-medium text-foreground">
+                  {t('regional_points.transfer.recipient_label')}
+                </p>
+                {recipient ? (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-secondary px-3 py-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Avatar
+                        src={recipient.profile_photo ?? recipient.avatar_url ?? undefined}
+                        name={recipient.name}
+                        size="sm"
+                      />
+                      <span className="truncate font-medium text-foreground" data-testid="regional-points-recipient">
+                        {recipient.name}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      onPress={() => {
+                        setRecipient(null);
+                        setRecipientQuery('');
+                      }}
+                    >
+                      {t('regional_points.transfer.change_recipient')}
+                    </Button>
+                  </div>
+                ) : (
+                  <ComboBox
+                    aria-label={t('regional_points.transfer.recipient_label')}
+                    placeholder={t('regional_points.transfer.recipient_search_placeholder')}
+                    items={recipientResults}
+                    inputValue={recipientQuery}
+                    onInputChange={setRecipientQuery}
+                    menuTrigger="input"
+                    allowsEmptyCollection
+                    startContent={<Search className="h-4 w-4 text-muted" aria-hidden="true" />}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      const member = recipientResults.find((m) => String(m.id) === String(key));
+                      if (member) {
+                        setRecipient(member);
+                        setRecipientResults([]);
+                        setRecipientQuery('');
+                      }
+                    }}
+                    renderEmptyState={() =>
+                      searching ? (
+                        <div role="status" aria-busy="true" className="flex items-center gap-2 px-3 py-2 text-sm text-muted">
+                          <Spinner size="sm" /> {t('loading')}
+                        </div>
+                      ) : recipientQuery.trim().length < RECIPIENT_SEARCH_MIN_CHARS ? (
+                        <div className="px-3 py-2 text-sm text-muted">{t('regional_points.transfer.recipient_hint')}</div>
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-muted">{t('regional_points.transfer.recipient_no_results')}</div>
+                      )
+                    }
+                  >
+                    {(member: MemberSearchResult) => (
+                      <ComboBoxItem id={member.id} textValue={member.name}>
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            src={member.profile_photo ?? member.avatar_url ?? undefined}
+                            name={member.name}
+                            size="sm"
+                          />
+                          <span className="min-w-0 truncate text-sm">{member.name}</span>
+                        </div>
+                      </ComboBoxItem>
+                    )}
+                  </ComboBox>
+                )}
+              </div>
               <NumberField
                 minValue={0}
                 step={0.01}
@@ -336,7 +469,7 @@ export default function RegionalPointsPage() {
             <div className="flex justify-end">
               <Button
                 startContent={<Send className="w-4 h-4" />}
-                onPress={() => void handleTransfer()}
+                onPress={handleReview}
                 isLoading={submitting}
               >
                 {t('regional_points.transfer.submit')}
@@ -406,6 +539,40 @@ export default function RegionalPointsPage() {
           )}
         </CardBody>
       </Card>
+
+      {/* Transfer confirmation — the sender sees who the points go to */}
+      <Modal isOpen={confirmOpen} onOpenChange={setConfirmOpen} placement="center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                {recipient
+                  ? t('regional_points.transfer.confirm_title', {
+                      points: parseFloat(points) || 0,
+                      symbol,
+                      name: recipient.name,
+                    })
+                  : ''}
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-sm text-muted">{t('regional_points.transfer.confirm_body')}</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose} isDisabled={submitting}>
+                  {t('regional_points.transfer.cancel')}
+                </Button>
+                <Button
+                  color="primary"
+                  isLoading={submitting}
+                  onPress={() => void handleTransfer()}
+                >
+                  {t('regional_points.transfer.confirm_button')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

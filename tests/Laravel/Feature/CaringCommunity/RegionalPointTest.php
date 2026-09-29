@@ -331,12 +331,21 @@ class RegionalPointTest extends TestCase
         ]);
         $service->updateMarketplaceSellerSettings($seller, false, 10, 25);
 
-        $merchantDisabledQuote = $service->calculateMarketplaceDiscount($member, $seller, $listing, 100);
-        $this->assertFalse($merchantDisabledQuote['accepts']);
-        $this->assertSame('merchant_disabled', $merchantDisabledQuote['reason']);
+        // F-225: with the tenant toggle on, the quote still refuses because no
+        // checkout applies a regional-point discount yet.
+        $unavailableQuote = $service->calculateMarketplaceDiscount($member, $seller, $listing, 100);
+        $this->assertFalse($unavailableQuote['accepts']);
+        $this->assertSame('feature_unavailable', $unavailableQuote['reason']);
     }
 
-    public function test_marketplace_quote_caps_by_balance_and_seller_policy(): void
+    /**
+     * F-225: previously asserted that the quote capped a discount by balance
+     * and seller policy, computed from a client-supplied order total. The
+     * redemption path is switched off until a checkout integration derives the
+     * total server-side (CaringRegionalPointService::MARKETPLACE_REDEMPTION_AVAILABLE),
+     * so an opted-in seller now gets no usable points at all.
+     */
+    public function test_marketplace_quote_offers_nothing_while_redemption_is_unavailable(): void
     {
         $member = $this->makeUser('rp-market-cap-member-' . uniqid() . '@example.test');
         $seller = $this->makeUser('rp-market-cap-seller-' . uniqid() . '@example.test');
@@ -353,18 +362,17 @@ class RegionalPointTest extends TestCase
 
         $quote = $service->calculateMarketplaceDiscount($member, $seller, $listing, 100);
 
-        $this->assertTrue($quote['accepts']);
-        $this->assertEqualsWithDelta(80.0, $quote['member_points'], 0.001);
-        $this->assertEqualsWithDelta(80.0, $quote['max_points_usable'], 0.001);
-        $this->assertEqualsWithDelta(8.0, $quote['max_discount_chf'], 0.001);
-
-        $service->issue($member, 500, 'Top up member', $admin);
-        $policyQuote = $service->calculateMarketplaceDiscount($member, $seller, $listing, 100);
-        $this->assertEqualsWithDelta(250.0, $policyQuote['max_points_usable'], 0.001);
-        $this->assertEqualsWithDelta(25.0, $policyQuote['max_discount_chf'], 0.001);
+        $this->assertFalse($quote['accepts']);
+        $this->assertSame('feature_unavailable', $quote['reason']);
+        $this->assertEqualsWithDelta(0.0, $quote['max_points_usable'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $quote['max_discount_chf'], 0.001);
     }
 
-    public function test_marketplace_redemption_debits_only_regional_points(): void
+    /**
+     * F-225: previously asserted a successful 200-point redemption. It must now
+     * refuse before any write, so the member keeps every point.
+     */
+    public function test_marketplace_redemption_is_refused_and_debits_nothing(): void
     {
         $member = $this->makeUser('rp-market-redeem-member-' . uniqid() . '@example.test');
         $seller = $this->makeUser('rp-market-redeem-seller-' . uniqid() . '@example.test');
@@ -380,23 +388,28 @@ class RegionalPointTest extends TestCase
         $service->issue($member, 300, 'Seed member', $admin);
         $service->updateMarketplaceSellerSettings($seller, true, 10, 25);
 
-        $result = $service->redeemForMarketplaceDiscount($member, $seller, $listing, 200, 100);
+        $refusal = null;
+        try {
+            $service->redeemForMarketplaceDiscount($member, $seller, $listing, 200, 100);
+        } catch (\RuntimeException $e) {
+            $refusal = $e->getMessage();
+        }
 
-        $this->assertEqualsWithDelta(20.0, $result['discount_chf'], 0.001);
-        $this->assertEqualsWithDelta(100.0, $result['new_regional_point_balance'], 0.001);
+        $this->assertSame('Regional point marketplace redemptions are not available for this community.', $refusal);
+        $this->assertEqualsWithDelta(300.0, $service->memberSummary($member)['account']['balance'], 0.001);
         $this->assertEqualsWithDelta(12.0, (float) DB::table('users')->where('id', $member)->value('balance'), 0.001);
-        $this->assertDatabaseHas('caring_regional_point_transactions', [
-            'id' => $result['transaction_id'],
+        $this->assertDatabaseMissing('caring_regional_point_transactions', [
             'tenant_id' => self::TENANT_ID,
             'user_id' => $member,
             'type' => 'redemption',
-            'direction' => 'debit',
-            'reference_type' => 'marketplace_listing',
-            'reference_id' => $listing,
         ]);
     }
 
-    public function test_marketplace_redemption_rejects_own_listing(): void
+    /**
+     * F-225: the own-listing guard sits behind the unavailability refusal, so
+     * an own-listing attempt is now refused with the unavailability message.
+     */
+    public function test_marketplace_redemption_at_own_listing_is_refused(): void
     {
         $member = $this->makeUser('rp-market-own-member-' . uniqid() . '@example.test');
         $listing = $this->makeMarketplaceListing($member, 100);
@@ -407,7 +420,7 @@ class RegionalPointTest extends TestCase
         ]);
         $service->updateMarketplaceSellerSettings($member, true, 10, 25);
 
-        $this->expectExceptionMessage('You cannot redeem regional points at your own listing.');
+        $this->expectExceptionMessage('Regional point marketplace redemptions are not available for this community.');
         $service->redeemForMarketplaceDiscount($member, $member, $listing, 10, 100);
     }
 }

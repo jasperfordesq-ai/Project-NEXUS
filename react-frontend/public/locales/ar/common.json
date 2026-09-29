@@ -1653,8 +1653,6 @@
     },
     "transfer": {
       "title": "إرسال نقاط إلى عضو آخر",
-      "recipient_id": "معرّف العضو المستلم",
-      "recipient_placeholder": "مثال: 123",
       "amount": "المبلغ",
       "amount_placeholder": "0.00",
       "message": "الرسالة (اختيارية)",
@@ -1662,9 +1660,18 @@
       "submit": "إرسال التحويل",
       "success": "تم إرسال التحويل",
       "errors": {
-        "invalid_recipient": "أدخل معرّف عضو مستلم صالحًا",
-        "invalid_amount": "أدخل مبلغًا موجبًا"
-      }
+        "invalid_amount": "أدخل مبلغًا موجبًا",
+        "choose_recipient": "اختر عضوًا لإرسال النقاط إليه"
+      },
+      "recipient_label": "إلى من ترسل النقاط؟",
+      "recipient_search_placeholder": "ابحث بالاسم...",
+      "recipient_hint": "اكتب حرفين على الأقل للبحث",
+      "recipient_no_results": "لم يتم العثور على أعضاء",
+      "change_recipient": "تغيير",
+      "confirm_title": "إرسال {{points}} {{symbol}} إلى {{name}}؟",
+      "confirm_body": "تأكد من أنه الشخص الصحيح. لا يمكن التراجع عن التحويل بعد إرساله.",
+      "confirm_button": "نعم، أرسل النقاط",
+      "cancel": "إلغاء"
     },
     "history": {
       "types": {

@@ -12,8 +12,9 @@
  *   - Populated state: balance cards, history table, transfer form
  *   - Empty history (0 transactions → empty-state message)
  *   - Load error (Promise rejection → toast.error)
- *   - Transfer form: invalid-recipient guard, invalid-amount guard, success flow,
- *     and API-level error (res.success=false)
+ *   - Transfer form: recipient is picked by name (F-225), no-recipient guard,
+ *     invalid-amount guard, name-confirmation step before sending, success
+ *     flow, and API-level error (res.success=false)
  *   - Refresh button re-invokes the load pair
  *   - Transfer form hidden when member_transfers_enabled=false
  */
@@ -21,6 +22,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, userEvent } from '@/test/test-utils';
 import { api } from '@/lib/api';
+import type { ReactNode } from 'react';
 
 // ── API mock ──────────────────────────────────────────────────────────────────
 vi.mock('@/lib/api', () => ({
@@ -104,6 +106,47 @@ vi.mock('@/contexts', () => ({
   usePresenceOptional: () => null,
 }));
 
+// ── ComboBox / Modal stubs ────────────────────────────────────────────────────
+// The recipient picker is a HeroUI ComboBox (React Aria listbox in a popover),
+// which jsdom drives unreliably. The stub keeps the contract the page relies
+// on: onInputChange for typing, onSelectionChange(id) for picking a member.
+vi.mock('@/components/ui/ComboBox', () => ({
+  ComboBox: (props: {
+    'aria-label'?: string;
+    placeholder?: string;
+    items?: Array<{ id: number; name: string }>;
+    onInputChange?: (v: string) => void;
+    onSelectionChange?: (key: number | string | null) => void;
+    renderEmptyState?: () => unknown;
+  }) => (
+    <div>
+      <input
+        aria-label={props['aria-label']}
+        placeholder={props.placeholder}
+        onChange={(e) => props.onInputChange?.(e.target.value)}
+      />
+      {(props.items ?? []).length === 0
+        ? (props.renderEmptyState?.() as ReactNode)
+        : (props.items ?? []).map((m) => (
+            <button key={m.id} type="button" role="option" aria-selected={false} onClick={() => props.onSelectionChange?.(m.id)}>
+              {m.name}
+            </button>
+          ))}
+    </div>
+  ),
+}));
+
+vi.mock('@/components/ui/Modal', () => ({
+  Modal: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
+    isOpen ? <div role="dialog">{children}</div> : null,
+  ModalContent: ({ children }: { children: ReactNode | ((onClose: () => void) => ReactNode) }) => (
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>
+  ),
+  ModalHeader: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
+  ModalBody: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  ModalFooter: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}));
+
 // ── Page import (after mocks) ─────────────────────────────────────────────────
 import RegionalPointsPage from './RegionalPointsPage';
 
@@ -164,8 +207,34 @@ function mockLoadSuccess(
     if (url.includes('/history')) {
       return Promise.resolve({ success: true, data: { items: historyItems } });
     }
+    if (url.startsWith('/v2/users?')) {
+      // Member directory search — includes the viewer (42), who must be filtered out.
+      return Promise.resolve({ success: true, data: MEMBER_SEARCH_RESULTS });
+    }
     return Promise.resolve({ success: false, error: 'unknown' });
   });
+}
+
+const MEMBER_SEARCH_RESULTS = [
+  { id: 42, name: 'Myself', avatar_url: null },
+  { id: 77, name: 'Aoife', avatar_url: null },
+];
+
+/** Search the directory by name and pick "Aoife" (member 77). */
+async function pickRecipient() {
+  fireEvent.change(screen.getByPlaceholderText('Search by name...'), { target: { value: 'Ao' } });
+  const option = await screen.findByRole('option', { name: 'Aoife' });
+  fireEvent.click(option);
+  await waitFor(() => {
+    expect(screen.getByTestId('regional-points-recipient')).toHaveTextContent('Aoife');
+  });
+}
+
+async function enterAmount(user: ReturnType<typeof userEvent.setup>, value: string) {
+  const amountInput = screen.getByPlaceholderText('0.00');
+  await user.clear(amountInput);
+  await user.type(amountInput, value);
+  fireEvent.blur(amountInput);
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -288,8 +357,27 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send points to another member')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Recipient member ID')).toBeInTheDocument();
+    // F-225: the recipient is chosen by name, never typed as a raw member id.
+    expect(screen.getByText('Who are you sending points to?')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search by name...')).toBeInTheDocument();
+    expect(screen.queryByText('Recipient member ID')).not.toBeInTheDocument();
     expect(screen.getByText('Send transfer')).toBeInTheDocument();
+  });
+
+  it('searches the member directory and never offers the viewer as a recipient', async () => {
+    mockLoadSuccess();
+
+    render(<RegionalPointsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Search by name...')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText('Search by name...'), { target: { value: 'Ao' } });
+
+    expect(await screen.findByRole('option', { name: 'Aoife' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Myself' })).not.toBeInTheDocument();
+    expect(vi.mocked(api.get)).toHaveBeenCalledWith('/v2/users?q=Ao&limit=8');
   });
 
   it('hides the transfer form when member_transfers_enabled is false', async () => {
@@ -365,7 +453,7 @@ describe('RegionalPointsPage', () => {
 
   // ── Transfer form guards ───────────────────────────────────────────────────
 
-  it('shows an error toast for an invalid recipient (empty field)', async () => {
+  it('shows an error toast when no recipient has been chosen', async () => {
     mockLoadSuccess();
 
     render(<RegionalPointsPage />);
@@ -374,15 +462,12 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send transfer')).toBeInTheDocument();
     });
 
-    // Click "Send transfer" with no recipient filled in
     fireEvent.click(screen.getByRole('button', { name: /send transfer/i }));
 
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith(
-        'Enter a valid recipient member ID',
-      );
+      expect(mockToast.error).toHaveBeenCalledWith('Choose a member to send points to');
     });
-    // Must NOT call api.post
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(vi.mocked(api.post)).not.toHaveBeenCalled();
   });
 
@@ -395,9 +480,8 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send transfer')).toBeInTheDocument();
     });
 
-    // Fill recipient but leave amount empty
-    const recipientInput = screen.getByPlaceholderText('e.g. 123');
-    fireEvent.change(recipientInput, { target: { value: '99' } });
+    // Pick a recipient but leave the amount empty
+    await pickRecipient();
 
     fireEvent.click(screen.getByRole('button', { name: /send transfer/i }));
 
@@ -407,7 +491,7 @@ describe('RegionalPointsPage', () => {
     expect(vi.mocked(api.post)).not.toHaveBeenCalled();
   });
 
-  it('posts to the transfer endpoint and shows success toast on valid submission', async () => {
+  it('shows the recipient name for confirmation and only posts after the sender confirms', async () => {
     mockLoadSuccess();
     vi.mocked(api.post).mockResolvedValue({ success: true });
 
@@ -418,35 +502,26 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send transfer')).toBeInTheDocument();
     });
 
-    // Fill recipient ID via userEvent so React synthetic events fire correctly
-    const recipientInput = screen.getByPlaceholderText('e.g. 123');
-    await user.clear(recipientInput);
-    await user.type(recipientInput, '77');
-
-    // Drive the HeroUI NumberField (React Aria spinbutton) with userEvent.type.
-    // After typing, blur the input so React Aria commits the number value via
-    // its onChange callback (which updates the `points` state string).
-    const amountInput = screen.getByPlaceholderText('0.00');
-    await user.clear(amountInput);
-    await user.type(amountInput, '25');
-    fireEvent.blur(amountInput);
-
-    // Wait for state to settle after blur (React Aria onChange + setState)
-    await waitFor(() => {
-      // React Aria announces the committed value in the live region
-      // so we know onChange has fired before proceeding.
-      expect(screen.getByText('Send transfer')).toBeInTheDocument();
-    });
+    await pickRecipient();
+    await enterAmount(user, '25');
 
     // Use fireEvent.click rather than userEvent.click to avoid focus-trap
-    // interference from React Aria when tabbing/clicking buttons after NumberField.
+    // interference from React Aria when clicking buttons after NumberField.
     fireEvent.click(screen.getByRole('button', { name: /send transfer/i }));
+
+    // F-225: the confirmation names the person before anything is sent.
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Send 25 CC to Aoife?');
+    expect(vi.mocked(api.post)).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /yes, send points/i }));
 
     await waitFor(() => {
       expect(vi.mocked(api.post)).toHaveBeenCalledWith(
         '/v2/caring-community/regional-points/transfer',
         expect.objectContaining({
           recipient_user_id: 77,
+          points: 25,
         }),
       );
     });
@@ -467,20 +542,11 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send transfer')).toBeInTheDocument();
     });
 
-    const recipientInput = screen.getByPlaceholderText('e.g. 123');
-    await user.clear(recipientInput);
-    await user.type(recipientInput, '55');
-
-    const amountInput = screen.getByPlaceholderText('0.00');
-    await user.clear(amountInput);
-    await user.type(amountInput, '999');
-    fireEvent.blur(amountInput);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /send transfer/i })).toBeInTheDocument();
-    });
+    await pickRecipient();
+    await enterAmount(user, '999');
 
     fireEvent.click(screen.getByRole('button', { name: /send transfer/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /yes, send points/i }));
 
     await waitFor(() => {
       expect(vi.mocked(api.post)).toHaveBeenCalled();
@@ -502,20 +568,11 @@ describe('RegionalPointsPage', () => {
       expect(screen.getByText('Send transfer')).toBeInTheDocument();
     });
 
-    const recipientInput = screen.getByPlaceholderText('e.g. 123');
-    await user.clear(recipientInput);
-    await user.type(recipientInput, '12');
-
-    const amountInput = screen.getByPlaceholderText('0.00');
-    await user.clear(amountInput);
-    await user.type(amountInput, '10');
-    fireEvent.blur(amountInput);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /send transfer/i })).toBeInTheDocument();
-    });
+    await pickRecipient();
+    await enterAmount(user, '10');
 
     fireEvent.click(screen.getByRole('button', { name: /send transfer/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /yes, send points/i }));
 
     await waitFor(() => {
       expect(vi.mocked(api.post)).toHaveBeenCalled();

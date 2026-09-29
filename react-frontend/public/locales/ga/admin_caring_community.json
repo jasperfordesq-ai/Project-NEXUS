@@ -3596,6 +3596,7 @@
       "transfer_in": "Aistriú faighte",
       "transfer_out": "Aistriú seolta",
       "unknown": "Gnóthas anaithnid"
-    }
+    },
+    "marketplace_redemption_unavailable": "Níl sé ar fáil fós: ní féidir le seiceáil amach an mhargaidh lascainí pointí réigiúnacha a chur i bhfeidhm, mar sin ní féidir le comhaltaí pointí a fhuascailt."
   }
 }

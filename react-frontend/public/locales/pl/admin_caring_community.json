@@ -3565,6 +3565,7 @@
       "transfer_in": "Otrzymano przelew",
       "transfer_out": "Wysłano przelew",
       "unknown": "Nieznana transakcja"
-    }
+    },
+    "marketplace_redemption_unavailable": "Jeszcze niedostępne: kasa na rynku nie może stosować zniżek za punkty regionalne, więc członkowie nie mogą wymieniać punktów."
   }
 }

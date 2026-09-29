@@ -1642,8 +1642,6 @@
     },
     "transfer": {
       "title": "Seol pointí chuig ball eile",
-      "recipient_id": "Aitheantas an bhaill is faighteoir",
-      "recipient_placeholder": "m.sh. 123",
       "amount": "Méid",
       "amount_placeholder": "0.00",
       "message": "Teachtaireacht (roghnach)",
@@ -1651,9 +1649,18 @@
       "submit": "Seol an t-aistriú",
       "success": "Aistriú seolta",
       "errors": {
-        "invalid_recipient": "Cuir isteach aitheantas bailí an bhaill is faighteoir",
-        "invalid_amount": "Cuir isteach méid dearfach"
-      }
+        "invalid_amount": "Cuir isteach méid dearfach",
+        "choose_recipient": "Roghnaigh comhalta chun pointí a sheoladh chuige"
+      },
+      "recipient_label": "Cé chuige a bhfuil tú ag seoladh pointí?",
+      "recipient_search_placeholder": "Cuardaigh de réir ainm...",
+      "recipient_hint": "Clóscríobh 2 litir ar a laghad chun cuardach a dhéanamh",
+      "recipient_no_results": "Níor aimsíodh aon chomhaltaí",
+      "change_recipient": "Athraigh",
+      "confirm_title": "{{points}} {{symbol}} a sheoladh chuig {{name}}?",
+      "confirm_body": "Deimhnigh gurb é seo an duine ceart. Ní féidir aistriú a chealú nuair a sheoltar é.",
+      "confirm_button": "Seol na pointí",
+      "cancel": "Cealaigh"
     },
     "history": {
       "types": {

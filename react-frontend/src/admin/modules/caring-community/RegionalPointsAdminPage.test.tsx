@@ -172,6 +172,31 @@ describe('RegionalPointsAdminPage', () => {
     });
   });
 
+  it('F-225: says marketplace redemption is not available and locks its switch', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('config')) {
+        return Promise.resolve(cfgRes(makeConfig({
+          marketplace_redemption_enabled: true,
+          marketplace_redemption_available: false,
+        })));
+      }
+      if (url.includes('ledger')) return Promise.resolve(ledRes());
+      return Promise.resolve({ success: true, data: {} });
+    });
+    const { default: Page } = await import('./RegionalPointsAdminPage');
+    render(<Page />);
+
+    expect(
+      await screen.findByText(/Not available yet: the marketplace checkout cannot apply regional-point discounts/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Allow members to redeem points as a CHF discount on participating sellers.'),
+    ).not.toBeInTheDocument();
+    const toggle = screen.getByRole('switch', { name: 'Marketplace redemption' });
+    expect(toggle).toBeDisabled();
+    expect(toggle).not.toBeChecked();
+  });
+
   it('renders MemberSearchPicker', async () => {
     const { default: Page } = await import('./RegionalPointsAdminPage');
     render(<Page />);

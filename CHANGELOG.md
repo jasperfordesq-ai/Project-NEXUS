@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Sending regional points now asks you to pick the recipient by name and confirm "Send … to …?" before anything is sent, and points can only go to active members of your community. Spending regional points in the marketplace is switched off until a checkout that honours the discount exists, so points can no longer be spent on a discount that never applied (F-225).
 - Every GitHub Actions step used by the build and release pipeline is now pinned to an exact, reviewed version, so a changed or hijacked tag upstream cannot alter what runs (F-008).
 - The Warmth Pass now says "Identity verified" only for members who have passed an ID check, no longer describes itself as proof a member is verified, and "Areas I help with" now lists help the member gives rather than help they receive (F-228).
 - A member's linked community sign-in now works only through the same sign-in system it was linked under. If a community admin later points the provider somewhere else, linked members have to link it again from their settings, so the change cannot be used to sign in as them (F-268).

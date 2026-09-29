@@ -1609,8 +1609,6 @@
     },
     "transfer": {
       "title": "Punkte an ein anderes Mitglied senden",
-      "recipient_id": "Empfänger-Mitglieds-ID",
-      "recipient_placeholder": "z. B. 123",
       "amount": "Betrag",
       "amount_placeholder": "0,00",
       "message": "Nachricht (optional)",
@@ -1618,9 +1616,18 @@
       "submit": "Übertragung senden",
       "success": "Übertragung gesendet",
       "errors": {
-        "invalid_recipient": "Geben Sie eine gültige Empfänger-Mitglieds-ID ein",
-        "invalid_amount": "Geben Sie einen positiven Betrag ein"
-      }
+        "invalid_amount": "Geben Sie einen positiven Betrag ein",
+        "choose_recipient": "Wählen Sie ein Mitglied aus, an das Sie Punkte senden möchten"
+      },
+      "recipient_label": "An wen möchten Sie Punkte senden?",
+      "recipient_search_placeholder": "Nach Namen suchen...",
+      "recipient_hint": "Geben Sie mindestens 2 Buchstaben ein, um zu suchen",
+      "recipient_no_results": "Keine Mitglieder gefunden",
+      "change_recipient": "Ändern",
+      "confirm_title": "{{points}} {{symbol}} an {{name}} senden?",
+      "confirm_body": "Prüfen Sie, ob dies die richtige Person ist. Eine gesendete Übertragung kann nicht rückgängig gemacht werden.",
+      "confirm_button": "Ja, Punkte senden",
+      "cancel": "Abbrechen"
     },
     "history": {
       "types": {
