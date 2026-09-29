@@ -403,9 +403,15 @@ class SocialNotificationService
     private static function shouldSendEmail($userId, $notificationType): bool
     {
         try {
+            // F-317: read the member's GLOBAL preference — the row
+            // UsersController::updateSettings() writes and
+            // NotificationDispatcher::getFrequencySetting() reads. This used to
+            // ask for context_type 'social', which the column's
+            // enum('global','group','thread') can never hold, so the member's
+            // "off" was never seen and every social email was sent.
             $setting = DB::table('notification_settings')
                 ->where('user_id', $userId)
-                ->where('context_type', 'social')
+                ->where('context_type', 'global')
                 ->where('context_id', 0)
                 ->value('frequency');
 
