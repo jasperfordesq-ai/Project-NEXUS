@@ -602,6 +602,7 @@ return [
     'legal_doc_delete_failed' => '法的文書の削除に失敗しました',
     'legal_doc_type_exists' => 'この種類の文書はすでにコミュニティに存在します。代わりに既存のものを編集してください。',
     'legal_doc_type_locked' => '文書の種類は作成後に変更できません。',
+    'legal_doc_has_published_record' => 'この文書は公開済み、またはメンバーが同意済みのため、削除すると同意の記録が失われます。代わりに無効にしてください。',
     'invalid_type' => '無効な種類の値です。',
     'insurance_cert_fetch_failed' => '保険証の取得に失敗しました',
     'insurance_cert_create_failed' => '保険証の作成に失敗しました',

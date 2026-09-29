@@ -602,6 +602,7 @@ return [
     'legal_doc_delete_failed' => 'Nie udało się usunąć dokumentu prawnego',
     'legal_doc_type_exists' => 'Dokument tego typu już istnieje dla Twojej społeczności. Zamiast tego edytuj istniejący.',
     'legal_doc_type_locked' => 'Typu dokumentu nie można zmienić po utworzeniu.',
+    'legal_doc_has_published_record' => 'Ten dokument został opublikowany lub zaakceptowany przez członków, więc jego usunięcie zniszczyłoby zapisy ich akceptacji. Zamiast tego go dezaktywuj.',
     'invalid_type' => 'Nieprawidłowa wartość typu.',
     'insurance_cert_fetch_failed' => 'Nie udało się pobrać certyfikatu ubezpieczenia',
     'insurance_cert_create_failed' => 'Nie udało się utworzyć certyfikatu ubezpieczenia',

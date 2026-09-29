@@ -1208,6 +1208,7 @@ return [
     'legal_doc_delete_failed'              => 'Failed to delete legal document',
     'legal_doc_type_exists' => 'A document of this type already exists for your community. Edit the existing one instead.',
     'legal_doc_type_locked' => 'The document type cannot be changed after creation.',
+    'legal_doc_has_published_record' => 'This document has been published or accepted by members, so deleting it would destroy their acceptance records. Deactivate it instead.',
     'invalid_type' => 'Invalid type value.',
 
     // ============================================

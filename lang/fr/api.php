@@ -587,6 +587,7 @@ return [
     'legal_doc_delete_failed' => 'Échec de la suppression du document juridique',
     'legal_doc_type_exists' => 'Un document de ce type existe déjà pour votre communauté. Modifiez plutôt celui existant.',
     'legal_doc_type_locked' => 'Le type de document ne peut pas être modifié après sa création.',
+    'legal_doc_has_published_record' => 'Ce document a été publié ou accepté par des membres ; le supprimer détruirait leurs enregistrements d\'acceptation. Désactivez-le plutôt.',
     'invalid_type' => 'Valeur de type non valide.',
     'insurance_cert_fetch_failed' => 'Impossible de récupérer le certificat d\'assurance',
     'insurance_cert_create_failed' => 'Échec de la création du certificat d\'assurance',

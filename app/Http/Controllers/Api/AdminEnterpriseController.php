@@ -2426,7 +2426,61 @@ class AdminEnterpriseController extends BaseApiController
         $tenantId = $this->getTenantId();
         $id = (int) $id;
         try {
-            DB::delete("DELETE FROM legal_documents WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            // F-276: legal_document_versions and user_legal_acceptances both
+            // cascade from this row, so a bare delete destroyed every published
+            // version and every member's acceptance record. Hold the same line
+            // as the version delete (drafts only): a document that was ever
+            // published, or that anyone accepted, is refused — the admin
+            // deactivates it instead (is_active via updateLegalDoc). A
+            // draft-only document may still be deleted, and that is audited.
+            $adminId = $this->getUserId();
+            $outcome = DB::transaction(function () use ($id, $tenantId, $adminId): array {
+                $doc = DB::selectOne(
+                    "SELECT id, document_type, title FROM legal_documents WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                    [$id, $tenantId]
+                );
+                if (!$doc) {
+                    return ['status' => 'not_found'];
+                }
+
+                $hasPublishedVersion = DB::selectOne(
+                    "SELECT 1 AS found FROM legal_document_versions WHERE document_id = ? AND is_draft = 0 LIMIT 1",
+                    [$id]
+                ) !== null;
+                $hasAcceptances = DB::selectOne(
+                    "SELECT 1 AS found FROM user_legal_acceptances WHERE document_id = ? LIMIT 1",
+                    [$id]
+                ) !== null;
+                if ($hasPublishedVersion || $hasAcceptances) {
+                    return ['status' => 'has_record'];
+                }
+
+                DB::delete("DELETE FROM legal_documents WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+
+                // Same transaction: no deletion without its audit entry.
+                // AuditLogService swallows its own failure and returns null.
+                $auditId = app(\App\Services\AuditLogService::class)->logAdminAction(
+                    'legal_document_deleted',
+                    $adminId,
+                    null,
+                    ['document_id' => $id, 'document_type' => $doc->document_type, 'title' => $doc->title]
+                );
+                if (!$auditId) {
+                    throw new \RuntimeException('Legal document deletion could not be audited.');
+                }
+
+                return ['status' => 'deleted'];
+            });
+
+            if ($outcome['status'] === 'not_found') {
+                return $this->respondWithError('NOT_FOUND', __('api.legal_doc_not_found'), null, 404);
+            }
+            if ($outcome['status'] === 'has_record') {
+                return $this->respondWithError('RESOURCE_CONFLICT', __('api.legal_doc_has_published_record'), null, 409);
+            }
+
+            \App\Services\LegalEnforcementService::bumpRevision($tenantId);
+
             return $this->respondWithData(['deleted' => true]);
         } catch (\Exception $e) {
             return $this->respondWithError('DELETE_FAILED', __('api.legal_doc_delete_failed'), null, 500);

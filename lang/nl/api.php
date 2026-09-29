@@ -602,6 +602,7 @@ return [
     'legal_doc_delete_failed' => 'Kan juridisch document niet verwijderen',
     'legal_doc_type_exists' => 'Er bestaat al een document van dit type voor je community. Bewerk in plaats daarvan het bestaande.',
     'legal_doc_type_locked' => 'Het documenttype kan na het aanmaken niet worden gewijzigd.',
+    'legal_doc_has_published_record' => 'Dit document is gepubliceerd of door leden geaccepteerd; verwijderen zou hun acceptatiegegevens vernietigen. Deactiveer het in plaats daarvan.',
     'invalid_type' => 'Ongeldige typewaarde.',
     'insurance_cert_fetch_failed' => 'Kan het verzekeringscertificaat niet ophalen',
     'insurance_cert_create_failed' => 'Kan verzekeringscertificaat niet aanmaken',

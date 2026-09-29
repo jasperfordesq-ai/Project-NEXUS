@@ -587,6 +587,7 @@ return [
     'legal_doc_delete_failed' => 'Impossibile eliminare il documento legale',
     'legal_doc_type_exists' => 'Un documento di questo tipo esiste già per la tua comunità. Modifica invece quello esistente.',
     'legal_doc_type_locked' => 'Il tipo di documento non può essere modificato dopo la creazione.',
+    'legal_doc_has_published_record' => 'Questo documento è stato pubblicato o accettato dai membri, quindi eliminarlo distruggerebbe i loro registri di accettazione. Disattivalo invece.',
     'invalid_type' => 'Valore del tipo non valido.',
     'insurance_cert_fetch_failed' => 'Impossibile recuperare il certificato di assicurazione',
     'insurance_cert_create_failed' => 'Impossibile creare il certificato assicurativo',

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -51,8 +51,11 @@ vi.mock('@/admin/api/adminApi', () => ({
 }));
 
 // ── mock @/contexts ───────────────────────────────────────────────────────────
+const toastError = vi.hoisted(() => vi.fn());
+
 vi.mock('@/contexts', () =>
   createMockContexts({
+    useToast: () => ({ success: vi.fn(), error: toastError, info: vi.fn(), warning: vi.fn() }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
@@ -197,6 +200,39 @@ describe('LegalDocList', () => {
       // This is noted as skipped due to HeroUI Modal portal rendering uncertainty
       expect(deleteMock).not.toHaveBeenCalled(); // acceptable — modal opened, that's verified above
     }
+  });
+
+  it('shows the server refusal message when a published document cannot be deleted', async () => {
+    // F-276: the API refuses to delete a document that was published or
+    // accepted and tells the admin to deactivate it. That message must reach
+    // the admin instead of a generic "failed to delete".
+    const user = userEvent.setup();
+    const refusal = 'This document has been published or accepted by members. Deactivate it instead.';
+    deleteMock.mockResolvedValueOnce({ success: false, error: refusal } as never);
+
+    render(<LegalDocList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Community Terms 2026')).toBeInTheDocument();
+    });
+
+    const [firstDeleteBtn] = screen.getAllByRole('button', { name: /delete/i });
+    if (!firstDeleteBtn) throw new Error('no delete button rendered');
+    await user.click(firstDeleteBtn);
+
+    const dialog = await screen.findByRole('dialog');
+    // Footer order is Cancel, then the confirm action.
+    const dialogButtons = within(dialog).getAllByRole('button');
+    const confirmBtn = dialogButtons[dialogButtons.length - 1];
+    if (!confirmBtn) throw new Error('no confirm button in the dialog');
+    await user.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteMock).toHaveBeenCalledWith(1);
+    });
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(refusal);
+    });
   });
 
   it('renders a "New Document" action button/link', async () => {

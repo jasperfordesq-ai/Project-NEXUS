@@ -587,6 +587,7 @@ return [
     'legal_doc_delete_failed' => 'Rechtsdokument konnte nicht gelöscht werden',
     'legal_doc_type_exists' => 'Ein Dokument dieses Typs existiert bereits für Ihre Community. Bearbeiten Sie stattdessen das vorhandene.',
     'legal_doc_type_locked' => 'Der Dokumenttyp kann nach der Erstellung nicht geändert werden.',
+    'legal_doc_has_published_record' => 'Dieses Dokument wurde veröffentlicht oder von Mitgliedern akzeptiert. Beim Löschen gingen ihre Zustimmungsnachweise verloren. Deaktivieren Sie es stattdessen.',
     'invalid_type' => 'Ungültiger Typwert.',
     'insurance_cert_fetch_failed' => 'Versicherungsbescheinigung konnte nicht abgerufen werden',
     'insurance_cert_create_failed' => 'Versicherungszertifikat konnte nicht erstellt werden',

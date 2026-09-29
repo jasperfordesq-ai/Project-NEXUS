@@ -95,8 +95,10 @@ export function LegalDocList() {
         setDeleteTarget(null);
         loadData();
       } else {
-        const error = t('enterprise.failed_to_delete_document');
-        toast.error(error);
+        // The server refuses to delete a document that was ever published or
+        // accepted (the acceptance records would cascade away) and says to
+        // deactivate it instead — show that message rather than a generic one.
+        toast.error(res.error || t('enterprise.failed_to_delete_document'));
       }
     } catch {
       toast.error(t('enterprise.failed_to_delete_document'));
