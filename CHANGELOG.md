@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-29
+
 ### Fixed
 
 - The native app's Expo Updates patch dependency now matches Expo SDK 55's required version, restoring the Android native release gate.
@@ -9678,7 +9680,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.8.0...v2.0.0
 [1.8.0]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v1.7.0...v1.8.0
