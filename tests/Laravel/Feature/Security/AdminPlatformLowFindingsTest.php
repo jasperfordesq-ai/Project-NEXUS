@@ -216,7 +216,8 @@ final class AdminPlatformLowFindingsTest extends TestCase
     public function test_f059_control_platform_super_admin_clears_all(): void
     {
         $platformCache = Mockery::mock(RedisCache::class)->shouldIgnoreMissing();
-        $platformCache->shouldReceive('clearTenant')->times(5)->andReturn(0);
+        // F-287: one clear per community that exists (it used to be a literal [1..5]).
+        $platformCache->shouldReceive('clearTenant')->times(DB::table('tenants')->count())->andReturn(0);
         $this->app->instance(RedisCache::class, $platformCache);
 
         $platformSuper = $this->user(['role' => 'admin', 'is_super_admin' => 1]);

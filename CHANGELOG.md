@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- "Clear all communities' cache" now clears every community. It used to clear only the first five, while telling the admin it had cleared them all (F-287).
 - The admin fraud-alert count now shows the open alerts on the Fraud Alerts screen. It was always zero before (F-318).
 - Members who switch notification emails off no longer get emails when someone likes, comments on, replies to or shares their content (F-317).
 - If a message's community has been removed before the safeguarding review check runs, the check is now skipped instead of running against another community's records (F-288).

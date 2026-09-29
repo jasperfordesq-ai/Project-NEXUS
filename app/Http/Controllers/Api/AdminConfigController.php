@@ -456,8 +456,11 @@ class AdminConfigController extends BaseApiController
 
         try {
             if ($type === 'all') {
-                foreach ([1, 2, 3, 4, 5] as $tid) {
-                    $this->redisCache->clearTenant($tid);
+                // F-287: every community that exists, not a literal [1..5] —
+                // ids are neither contiguous nor capped, so the old list left
+                // most communities serving cached settings.
+                foreach (DB::table('tenants')->orderBy('id')->pluck('id') as $tid) {
+                    $this->redisCache->clearTenant((int) $tid);
                 }
             } else {
                 $this->redisCache->clearTenant($tenantId);
