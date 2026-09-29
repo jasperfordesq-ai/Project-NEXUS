@@ -251,6 +251,28 @@ describe('EventAgendaEnterprisePanel', () => {
     ));
   });
 
+  // F-301: an organiser types resource.url; it must go through the app's one
+  // validating opener, so a script or app scheme never reaches the OS.
+  it.each([
+    'javascript:alert(1)',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'content://com.example.provider/secret',
+    'file:///data/user/0/app/files/x.json',
+  ])('never hands %s to the operating system', async (url) => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const base = session();
+    const current = session({
+      resources: (base.resources ?? []).map((resource) => ({ ...resource, url })),
+    });
+    const view = await renderReady(
+      <EventAgendaEnterprisePanel eventId={101} session={current} onSessionChange={jest.fn()} />,
+    );
+
+    fireEvent.press(view.getByLabelText('Open Workshop slides'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalled());
+    expect(openURL).not.toHaveBeenCalled();
+  });
+
   it('registers with the viewer version and replaces only the returned session projection', async () => {
     const current = session();
     const updated = session({

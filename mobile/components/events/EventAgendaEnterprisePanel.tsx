@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card } from 'heroui-native';
 import { Button } from '@/components/ui/NativeButton';
@@ -19,6 +19,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useEventSessionOperations } from '@/lib/hooks/useEventSessionOperations';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 
 interface EventAgendaEnterprisePanelProps {
   eventId: number;
@@ -103,13 +104,15 @@ function SessionPanel({
     });
   };
 
+  // F-301: the organiser types resource.url, so it goes through the app's one
+  // validating opener — never straight to Linking.openURL, which would hand a
+  // javascript:, intent:, content: or file: URL to whatever app claims it.
   const openResource = async (url: string) => {
-    try {
-      await Linking.openURL(url);
-    } catch (err) {
+    const outcome = await openExternalUrl(url);
+    if (outcome !== 'opened') {
       showToast({
         title: t('agenda.enterprise.resourceErrorTitle'),
-        description: describeApiError(err, t('agenda.enterprise.resourceErrorDescription')),
+        description: t('agenda.enterprise.resourceErrorDescription'),
         variant: 'danger',
       });
     }
