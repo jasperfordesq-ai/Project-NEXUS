@@ -79,6 +79,7 @@ describe('authenticated responses are never cached', () => {
     const setup = await request(app).get('/login/two-factor/setup');
     expect(setup.status).toBe(302);
     expect(setup.headers.location).toContain('/login?status=two-factor-expired');
+    await request(app).post('/login/two-factor/setup/start').type('form').send({}).expect(419);
     await request(app).post('/login/two-factor/setup').type('form').send({ code: '123456' }).expect(419);
     await request(app).post('/login/two-factor/setup/complete').type('form').send({}).expect(419);
   });
@@ -94,7 +95,12 @@ describe('authenticated responses are never cached', () => {
       return match[1];
     };
     await client.post('/login').type('form').send({ email: 'admin@example.test', password: 'password', tenant_slug: 'acme', _csrf: csrf(signIn.text) }).expect(302);
+    api.setupRequiredTwoFactor.mockClear();
+    const start = await client.get('/login/two-factor/setup').expect(200);
+    expect(start.text).toContain('/login/two-factor/setup/start');
+    expect(api.setupRequiredTwoFactor).not.toHaveBeenCalled();
     api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'JBSWY3DPEHPK3PXP', qr_code_url: 'data:image/svg+xml;base64,PHN2Zy8+' } });
+    await client.post('/login/two-factor/setup/start').type('form').send({ _csrf: csrf(start.text) }).expect(302);
     const setup = await client.get('/login/two-factor/setup').expect(200);
     expect(setup.text).toContain('JBSWY3DPEHPK3PXP');
     expect(setup.text).toContain('Set up two-factor authentication');

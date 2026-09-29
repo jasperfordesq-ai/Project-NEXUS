@@ -28,6 +28,11 @@
       </div>
       <button class="govuk-button" data-module="govuk-button">{{ t('security_2fa.verify_button') }}</button>
     </form>
+  {% elif canStartSetup %}
+    <form method="post" action="{{ urlFor('/login/two-factor/setup/start') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button" data-module="govuk-button">{{ t('mandatory_2fa.title') }}</button>
+    </form>
   {% endif %}
   <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/login') }}">{{ t('auth.login_title') }}</a></p>
 </div></div>

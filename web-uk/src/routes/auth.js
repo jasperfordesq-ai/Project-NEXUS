@@ -214,6 +214,7 @@ function clearPendingTwoFactor(req) {
   delete req.session.pending2faToken;
   delete req.session.pending2faSetup;
   delete req.session.pending2faCompletion;
+  delete req.session.pending2faSetupSeed;
   delete req.session.pending2faTenantSlug;
   delete req.session.pending2faAllowTrustedDevice;
   delete req.session.pending2faTrustedDeviceDays;
@@ -231,6 +232,14 @@ function rotatingSessionFrom(result) {
     });
   }
   return { accessToken, refreshToken, expiresIn, refreshExpiresIn };
+}
+
+function pendingTwoFactorSetupSeed(req) {
+  const seed = req.session?.pending2faSetupSeed;
+  if (!seed || typeof seed !== 'object') return null;
+  const secret = String(seed.secret || '');
+  const qrCodeUrl = String(seed.qr_code_url || '');
+  return secret || qrCodeUrl ? { secret, qr_code_url: qrCodeUrl } : null;
 }
 
 function pendingTwoFactorTenantSlug(req) {
@@ -454,13 +463,37 @@ router.get('/login/two-factor/setup', asyncRoute(async (req, res) => {
     clearPendingTwoFactor(req);
     return redirectTo(res, '/login?status=two-factor-expired');
   }
-  const result = completion ? null : await setupRequiredTwoFactor(req.session.pending2faToken, pendingTwoFactorTenantSlug(req));
+  // F-307 (F-115 residual): a GET only READS. Starting enrolment makes Laravel
+  // mint a new authenticator secret, so it happens only from the POST form below;
+  // the secret it returns is kept in the server-side session so every later GET
+  // (a reload, or the redirect after a mistyped code) shows the SAME one.
+  const setup = completion ? null : pendingTwoFactorSetupSeed(req);
   return res.render('auth/two-factor-setup', {
-    title: translate(req, 'mandatory_2fa.title'), setup: result?.data,
+    title: translate(req, 'mandatory_2fa.title'), setup,
+    canStartSetup: !completion && !setup,
     backupCodes: completion?.backupCodes,
     error: req.query.status === 'invalid' ? translate(req, 'auth.two_factor_invalid') : null,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
+}));
+
+router.post('/login/two-factor/setup/start', asyncRoute(async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
+  if (!req.session?.pending2faSetup || !req.session.pending2faToken) {
+    return redirectTo(res, '/login?status=two-factor-expired');
+  }
+  // A double-submitted form must not replace the secret the member may already
+  // have scanned.
+  if (req.session.pending2faCompletion || pendingTwoFactorSetupSeed(req)) {
+    return redirectTo(res, '/login/two-factor/setup');
+  }
+  const result = await setupRequiredTwoFactor(req.session.pending2faToken, pendingTwoFactorTenantSlug(req));
+  const secret = String(result?.data?.secret || '');
+  const qrCodeUrl = String(result?.data?.qr_code_url || '');
+  if (secret || qrCodeUrl) {
+    req.session.pending2faSetupSeed = { secret, qr_code_url: qrCodeUrl };
+  }
+  return redirectTo(res, '/login/two-factor/setup');
 }));
 
 router.post('/login/two-factor/setup', asyncRoute(async (req, res) => {
@@ -476,6 +509,7 @@ router.post('/login/two-factor/setup', asyncRoute(async (req, res) => {
     if (!result.data?.login_complete) throw new ApiError('Invalid enrollment response', 502);
     const session = rotatingSessionFrom(result.data);
     req.session.pending2faCompletion = { session, backupCodes: result.data.backup_codes, expiresAt: Date.now() + 300000 };
+    delete req.session.pending2faSetupSeed;
     return redirectTo(res, '/login/two-factor/setup');
   } catch (error) {
     if (error instanceof ApiError && error.status === 400) return redirectTo(res, '/login/two-factor/setup?status=invalid');

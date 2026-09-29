@@ -2193,6 +2193,7 @@ app.post('/login', authLimiter, doubleCsrfProtection, authRoutes);
 app.get('/login/two-factor', authRoutes);
 app.post('/login/two-factor', authLimiter, doubleCsrfProtection, authRoutes);
 app.get('/login/two-factor/setup', authRoutes);
+app.post('/login/two-factor/setup/start', authLimiter, doubleCsrfProtection, authRoutes);
 app.post('/login/two-factor/setup', authLimiter, doubleCsrfProtection, authRoutes);
 app.post('/login/two-factor/setup/complete', authLimiter, doubleCsrfProtection, authRoutes);
 app.post('/login/resend-verification', authLimiter, doubleCsrfProtection, authRoutes);

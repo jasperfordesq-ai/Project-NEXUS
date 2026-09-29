@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- On the accessible site, opening the two-step sign-in set-up page no longer replaces a code you may already have scanned; you now press "Set up" first (F-307).
 - The accessible site's automated check that page addresses are built safely now covers every part of every address (F-306).
 - In the mobile app, links on an event's agenda now go through the app's link safety check before they open (F-301).
 - In the mobile app, the picture viewer now shows only pictures from the web and can no longer be opened by a link from outside the app (F-300).

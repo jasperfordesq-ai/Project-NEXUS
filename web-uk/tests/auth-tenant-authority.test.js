@@ -117,8 +117,11 @@ describe('auth tenant authority', () => {
       .expect(302).expect('Location', '/acme/accessible/login/two-factor/setup');
     expect(setAuthCookies).not.toHaveBeenCalled();
     api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'test-secret', qr_code_url: 'data:image/svg+xml;base64,abc' } });
+    await client.post('/acme/accessible/login/two-factor/setup/start').type('form').send({}).expect(302)
+      .expect('Location', '/acme/accessible/login/two-factor/setup');
     const setup = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
     expect(setup.headers['cache-control']).toBe('private, no-store');
+    expect(setup.body.locals.setup).toEqual({ secret: 'test-secret', qr_code_url: 'data:image/svg+xml;base64,abc' });
     expect(api.setupRequiredTwoFactor).toHaveBeenCalledWith('setup-challenge', 'acme');
     api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: {
       login_complete: true, access_token: 'access', refresh_token: 'refresh', expires_in: 900,
@@ -134,6 +137,45 @@ describe('auth tenant authority', () => {
       .expect('Location', '/acme/accessible/dashboard');
     expect(setAuthCookies).toHaveBeenCalledWith(expect.anything(), 'access', 'refresh', expect.objectContaining({ tenantSlug: 'acme' }));
     await client.get('/acme/accessible/login/two-factor/setup').expect(302);
+  });
+
+  // F-307 (F-115 residual): starting enrolment makes Laravel mint a NEW
+  // authenticator secret, so a GET — a link, a prefetch, a forced top-level
+  // navigation, or simply reloading the page after a mistyped code — must never
+  // start it. Only the POST form does, once, and every later GET shows the same
+  // secret.
+  it('never starts mandatory enrolment on a GET and keeps one secret across reloads', async () => {
+    const client = request.agent(app);
+    api.login.mockResolvedValue({ requires_2fa_setup: true, two_factor_token: 'setup-challenge' });
+    await client.post('/acme/accessible/login').type('form').send({ email: 'admin@example.com', password: 'password' })
+      .expect(302).expect('Location', '/acme/accessible/login/two-factor/setup');
+
+    const beforeStart = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
+    await client.get('/acme/accessible/login/two-factor/setup').expect(200);
+    expect(api.setupRequiredTwoFactor).not.toHaveBeenCalled();
+    expect(beforeStart.body.view).toBe('auth/two-factor-setup');
+    expect(beforeStart.body.locals.setup).toBeFalsy();
+    expect(beforeStart.body.locals.canStartSetup).toBe(true);
+
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'first-secret', qr_code_url: 'data:image/svg+xml;base64,one' } });
+    api.setupRequiredTwoFactor.mockResolvedValueOnce({ data: { secret: 'second-secret', qr_code_url: 'data:image/svg+xml;base64,two' } });
+    await client.post('/acme/accessible/login/two-factor/setup/start').type('form').send({}).expect(302);
+    // A double-submitted start form does not replace the secret already shown.
+    await client.post('/acme/accessible/login/two-factor/setup/start').type('form').send({}).expect(302);
+    expect(api.setupRequiredTwoFactor).toHaveBeenCalledTimes(1);
+
+    const shown = await client.get('/acme/accessible/login/two-factor/setup').expect(200);
+    const afterTypo = await client.get('/acme/accessible/login/two-factor/setup?status=invalid').expect(200);
+    expect(api.setupRequiredTwoFactor).toHaveBeenCalledTimes(1);
+    expect(shown.body.locals.setup.secret).toBe('first-secret');
+    expect(afterTypo.body.locals.setup.secret).toBe('first-secret');
+    expect(afterTypo.body.locals.canStartSetup).toBe(false);
+  });
+
+  it('refuses to start mandatory enrolment without restricted enrollment state', async () => {
+    await request(app).post('/login/two-factor/setup/start').type('form').send({}).expect(302)
+      .expect('Location', '/login?status=two-factor-expired');
+    expect(api.setupRequiredTwoFactor).not.toHaveBeenCalled();
   });
 
   it('does not accept completion or verification without restricted enrollment state', async () => {
