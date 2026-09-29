@@ -451,12 +451,10 @@ class JobVacancyService
             return false;
         }
 
-        $role = (string) ($user->role ?? '');
-        return in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($user->is_admin ?? false)
-            || (bool) ($user->is_super_admin ?? false)
-            || (bool) ($user->is_tenant_super_admin ?? false)
-            || (bool) ($user->is_god ?? false);
+        // E-062 F-309: the canonical predicate. A local copy here omitted the
+        // broker/coordinator exclusion, so a broker with a stale legacy admin
+        // flag could read any vacancy's applicants.
+        return \App\Support\Authorization\AdminTier::allows($user);
     }
 
     /**

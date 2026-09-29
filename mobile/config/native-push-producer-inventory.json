@@ -2279,9 +2279,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:946:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Services/JobVacancyService.php:944:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Services/JobVacancyService.php",
-            "line": 946,
+            "line": 944,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,
