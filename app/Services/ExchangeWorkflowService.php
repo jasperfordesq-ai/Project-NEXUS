@@ -1090,6 +1090,23 @@ class ExchangeWorkflowService
                 ]);
             }
 
+            // XP for both parties. The transactions row above is written directly,
+            // not through WalletService, so TransactionCompleted never fires and
+            // its UpdateWalletBalance listener (send/receive XP) never ran for an
+            // exchange — completing one earned nothing. The event is deliberately
+            // NOT fired here: its other listeners would send a second "credits
+            // received" email on top of exchange_completed and push to federation
+            // partners. The exchange reference makes the award idempotent.
+            // EngagementService is fault-isolated: XP can never fail a completion.
+            foreach ([(int) $exchange->requester_id, (int) $exchange->provider_id] as $partyId) {
+                EngagementService::record(
+                    $partyId,
+                    'complete_transaction',
+                    'exchange:' . $exchangeId,
+                    'Completed exchange #' . $exchangeId
+                );
+            }
+
             // If this was a disputed exchange, also send a dispute-resolved email
             if ($wasDisputed) {
                 try {
