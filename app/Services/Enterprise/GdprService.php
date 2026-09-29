@@ -1523,17 +1523,56 @@ class GdprService
             } catch (\Throwable $e) {
                 // email_log table may not exist on older deployments
             }
-            // Clear the platform-wide suppression cache for this address.
-            // We captured the original email at step 1b before anonymisation.
-            if (!empty($originalEmail) && strpos($originalEmail, '@anonymized.local') === false) {
-                try {
+            // 🔴 email_suppression is deliberately NOT deleted (F-274). It is
+            // the platform-wide do-not-send record for this address (a bounce,
+            // block, complaint or opt-out). Erasure used to delete it, which
+            // removed the one thing that would stop mail reaching the erased
+            // person's real inbox if the address ever re-entered a list. A
+            // suppression entry is the minimum needed to honour that objection,
+            // so it survives erasure.
+
+            // 3d-ter. Newsletter list and unsent newsletter copies (F-274).
+            // newsletter_subscribers and newsletter_queue hold the member's
+            // real email and name in columns of their own (not a view of
+            // users), and the subscribers_only / both audiences read them with
+            // no join to users — so leaving them kept the erased member on the
+            // list at their real address. Match on user_id and on the original
+            // address (an imported or pre-registration subscription carries the
+            // address but no user_id). Unsent queue rows go; sent rows are
+            // anonymised like email_log so newsletter statistics stay intact.
+            // Always scoped to this community. Failure is CRITICAL: the real
+            // address would survive and keep being mailed.
+            try {
+                $newsletterEmail = (!empty($originalEmail) && strpos($originalEmail, '@anonymized.local') === false)
+                    ? $originalEmail
+                    : null;
+                if (\Illuminate\Support\Facades\Schema::hasTable('newsletter_subscribers')) {
                     $this->query(
-                        "DELETE FROM email_suppression WHERE email = ?",
-                        [$originalEmail]
+                        "DELETE FROM newsletter_subscribers
+                          WHERE tenant_id = ? AND (user_id = ? OR (? IS NOT NULL AND email = ?))",
+                        [$this->tenantId, $userId, $newsletterEmail, $newsletterEmail]
                     );
-                } catch (\Throwable $e) {
-                    // Table may not exist on older deployments
                 }
+                if (\Illuminate\Support\Facades\Schema::hasTable('newsletter_queue')) {
+                    $this->query(
+                        "DELETE FROM newsletter_queue
+                          WHERE tenant_id = ? AND status IN ('pending', 'processing', 'failed')
+                            AND (user_id = ? OR (? IS NOT NULL AND email = ?))",
+                        [$this->tenantId, $userId, $newsletterEmail, $newsletterEmail]
+                    );
+                    $this->query(
+                        "UPDATE newsletter_queue
+                            SET email = ?, name = '', first_name = '', last_name = ''
+                          WHERE tenant_id = ? AND (user_id = ? OR (? IS NOT NULL AND email = ?))",
+                        ["deleted_{$userId}@anonymized.local", $this->tenantId, $userId, $newsletterEmail, $newsletterEmail]
+                    );
+                }
+            } catch (\Throwable $e) {
+                $criticalErasureFailed = true;
+                $this->logger->error('GDPR CRITICAL erasure step failed (newsletter subscription)', [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // 3e. Remove connections (personal relationship data)
