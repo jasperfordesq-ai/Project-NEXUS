@@ -150,6 +150,8 @@ class PaperOnboardingIntakeService
         $newUserId = User::createWithTenant([
             'first_name' => $firstName,
             'last_name' => $lastName,
+            // F-320: the date of birth validated above is stored on the account.
+            'date_of_birth' => $dateOfBirth !== '' ? $dateOfBirth : null,
             'email' => $email,
             'password' => $tempPassword,
             'phone' => $phone !== '' ? $phone : null,

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A date of birth entered from a paper sign-up form is now saved on the member's account, so the adults-only check applies to these members like everyone else (F-320).
 - Accounts an administrator creates, including from a spreadsheet, are approved straight away but still have to pass the community's ID check if it requires one, unless the administrator confirms they checked the person's identity themselves, which is recorded. A spreadsheet can now only create ordinary members, not administrators or brokers (F-278).
 - Several admin screens (creating an account, sign-in provider settings, webhooks) and a partner connection now refuse values that are too long, instead of silently cutting them short and leaving a record that doesn't work (F-327).
 - Accounts created on an administrator's behalf are no longer made live by default: the code that creates them now has to say whether each account is approved (F-319).

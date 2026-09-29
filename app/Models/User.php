@@ -359,6 +359,9 @@ class User extends Authenticatable
                 $firstName,
                 $lastName,
             ),
+            // E-062 F-320: a date of birth the caller validated is stored, so
+            // every later age check (MinimumAge) can see it.
+            'date_of_birth' => \App\Support\Authorization\MinimumAge::normalise($data['date_of_birth'] ?? null),
             'email' => $email,
             'password_hash' => $hash,
             'role' => $data['role'] ?? 'member',
