@@ -2177,12 +2177,21 @@
     "connected_accounts": {
       "title": "接続済みアカウント",
       "subtitle": "Google、Apple、Facebookのアカウントを接続するとサインインが速くなります。",
-      "security_confirm_description": "新しいサインイン方法を接続する前に、本人確認を行ってください。"
+      "security_confirm_description": "新しいサインイン方法を接続する前に、本人確認を行ってください。",
+      "community_title": "コミュニティのサインインプロバイダー",
+      "community_subtitle": "コミュニティが設定したサインインプロバイダーを連携すると、このアカウントへのサインインに使用できます。"
     },
     "connect_modal": {
       "confirm": "これは残された唯一のサインイン方法です。切断するとロックアウトされます。先にパスワードを設定するかパスキーを追加してください。続行しますか？"
     },
-    "sign_in_with_provider": "{{name}} でサインインします"
+    "sign_in_with_provider": "{{name}} でサインインします",
+    "callback_linking": "アカウントを連携しています…",
+    "linked": "サインインプロバイダーを連携しました。",
+    "link_failed_title": "サインインプロバイダーを連携できませんでした",
+    "link_failed": "このサインインプロバイダーを連携できませんでした。アカウント設定からもう一度お試しください。",
+    "link_identity_in_use": "このプロバイダーのアカウントは、このコミュニティの別のアカウントに既に連携されています。",
+    "sso_link_required": "このコミュニティのアカウントを既にお持ちの場合は、まずいつもの方法でサインインし、アカウント設定からこのプロバイダーを連携してください。",
+    "back_to_settings": "アカウント設定に戻る"
   },
   "verein_dues": {
     "my_page_title": "私の Verein 会員会費",

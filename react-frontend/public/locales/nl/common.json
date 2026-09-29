@@ -2177,12 +2177,21 @@
     "connected_accounts": {
       "title": "Gekoppelde accounts",
       "subtitle": "Meld u sneller aan door uw Google-, Apple- of Facebookaccount te koppelen.",
-      "security_confirm_description": "Bevestig uw identiteit voordat u een nieuwe aanmeldmethode koppelt."
+      "security_confirm_description": "Bevestig uw identiteit voordat u een nieuwe aanmeldmethode koppelt.",
+      "community_title": "Inlogproviders van uw community",
+      "community_subtitle": "Koppel een inlogprovider die uw community heeft ingesteld, zodat u daarmee kunt inloggen op dit account."
     },
     "connect_modal": {
       "confirm": "Dit is uw enige resterende aanmeldmethode. Als u deze ontkoppelt, kunt u niet meer inloggen tenzij u eerst een wachtwoord instelt of een passkey toevoegt. Doorgaan?"
     },
-    "sign_in_with_provider": "Log in met {{name}}"
+    "sign_in_with_provider": "Log in met {{name}}",
+    "callback_linking": "Uw account wordt gekoppeld…",
+    "linked": "Inlogprovider gekoppeld.",
+    "link_failed_title": "Inlogprovider kon niet worden gekoppeld",
+    "link_failed": "We konden deze inlogprovider niet koppelen. Probeer het opnieuw via uw accountinstellingen.",
+    "link_identity_in_use": "Dit provideraccount is al gekoppeld aan een ander account in deze community.",
+    "sso_link_required": "Hebt u al een account in deze community? Log dan eerst in op uw gebruikelijke manier en koppel deze provider daarna via uw accountinstellingen.",
+    "back_to_settings": "Terug naar accountinstellingen"
   },
   "verein_dues": {
     "my_page_title": "Mijn Verein-ledencontributie",

@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Auth;
 
 use Illuminate\Routing\Controller;
 use App\Services\Auth\SocialAuthService;
+use App\Services\Auth\SsoOidcService;
 use App\Services\TokenService;
 use App\Core\TenantContext;
 use Illuminate\Http\JsonResponse;
@@ -311,6 +312,10 @@ class SocialAuthController extends Controller
             'identities' => $identities,
             'enabled_providers' => $enabled,
             'supported_providers' => SocialAuthService::SUPPORTED_PROVIDERS,
+            // The community's own SSO providers and whether this member has
+            // linked each (linked via /v2/auth/sso/{key}/link). Additive: the
+            // Google/Facebook keys above keep their shape.
+            'sso_providers' => app(SsoOidcService::class)->connectedProviders($tenantId, (int) $user->id),
         ]);
     }
 }

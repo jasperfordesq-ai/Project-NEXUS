@@ -2189,12 +2189,21 @@
     "connected_accounts": {
       "title": "Comptes connectés",
       "subtitle": "Connectez-vous plus rapidement en associant votre compte Google, Apple ou Facebook.",
-      "security_confirm_description": "Confirmez votre identité avant d'associer une nouvelle méthode de connexion."
+      "security_confirm_description": "Confirmez votre identité avant d'associer une nouvelle méthode de connexion.",
+      "community_title": "Fournisseurs de connexion de votre communauté",
+      "community_subtitle": "Associez un fournisseur de connexion configuré par votre communauté afin de pouvoir l’utiliser pour vous connecter à ce compte."
     },
     "connect_modal": {
       "confirm": "C’est votre seule méthode de connexion restante. La déconnecter vous empêchera de vous reconnecter, sauf si vous définissez d’abord un mot de passe ou ajoutez une passkey. Continuer ?"
     },
-    "sign_in_with_provider": "Connectez-vous avec {{name}}"
+    "sign_in_with_provider": "Connectez-vous avec {{name}}",
+    "callback_linking": "Association de votre compte…",
+    "linked": "Fournisseur de connexion associé.",
+    "link_failed_title": "Impossible d'associer le fournisseur de connexion",
+    "link_failed": "Nous n'avons pas pu associer ce fournisseur de connexion. Veuillez réessayer depuis les paramètres de votre compte.",
+    "link_identity_in_use": "Ce compte du fournisseur est déjà associé à un autre compte de cette communauté.",
+    "sso_link_required": "Si vous avez déjà un compte dans cette communauté, connectez-vous d'abord avec votre méthode habituelle, puis associez ce fournisseur depuis les paramètres de votre compte.",
+    "back_to_settings": "Retour aux paramètres du compte"
   },
   "verein_dues": {
     "my_page_title": "Mes cotisations de membre Verein",

@@ -628,4 +628,46 @@ describe('OauthCallbackPage', () => {
       ).toBeInTheDocument();
     });
   });
+
+  // ── Community SSO link flow (F-244 follow-up) ─────────────────────────────
+
+  it('tells an existing member to sign in and link from settings (sso_link_required)', async () => {
+    mockSearchParams.mockReturnValue(makeParams('error=sso_link_required&message=spoofed'));
+
+    render(<OauthCallbackPage />);
+
+    expect(await screen.findByText('oauth.sso_link_required')).toBeInTheDocument();
+    expect(screen.queryByText('spoofed')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /back_to_login/ })).toHaveAttribute('href', '/test/login');
+  });
+
+  it('returns a completed link to the connected-accounts settings tab', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(makeResponse({ success: true, token: 'tok', tenant_id: 2 })),
+    );
+    mockSearchParams.mockReturnValue(
+      makeParams(`code=link-code&flow=${BROWSER_CHALLENGE}&provider=sso:entra&intent=link`),
+    );
+
+    render(<OauthCallbackPage />);
+
+    await waitFor(() => {
+      expect(capturedHref).toBe('/test/settings?tab=connected-accounts&linked=1');
+    });
+  });
+
+  it.each([
+    ['sso_identity_in_use', 'oauth.link_identity_in_use'],
+    ['sso_link_failed', 'oauth.link_failed'],
+  ])('shows a link failure (%s) with a way back to settings', async (code, message) => {
+    mockSearchParams.mockReturnValue(makeParams(`error=${code}&intent=link`));
+
+    render(<OauthCallbackPage />);
+
+    expect(await screen.findByRole('heading', { name: 'oauth.link_failed_title' })).toBeInTheDocument();
+    expect(screen.getByText(message)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /oauth\.back_to_settings/ }))
+      .toHaveAttribute('href', '/test/settings?tab=connected-accounts');
+  });
 });

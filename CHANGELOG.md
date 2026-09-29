@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Members can now link their community's own sign-in provider from Settings → Connected accounts while signed in, and then sign in with it. Someone who already has an account and tries that provider first is told to sign in the usual way and link it from their settings (completes F-244).
+
 ### Security
 
 - Added an optional safeguard so that visitor addresses forwarded by Cloudflare are trusted only when the request comes through this platform's own Cloudflare account. It is off until the operator configures it, and changes nothing until then (F-248).

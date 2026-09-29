@@ -2189,12 +2189,21 @@
     "connected_accounts": {
       "title": "Cuentas conectadas",
       "subtitle": "Inicia sesión más rápido conectando tu cuenta de Google, Apple o Facebook.",
-      "security_confirm_description": "Confirma tu identidad antes de conectar un nuevo método de inicio de sesión."
+      "security_confirm_description": "Confirma tu identidad antes de conectar un nuevo método de inicio de sesión.",
+      "community_title": "Proveedores de inicio de sesión de su comunidad",
+      "community_subtitle": "Vincule un proveedor de inicio de sesión que haya configurado su comunidad para poder usarlo al iniciar sesión en esta cuenta."
     },
     "connect_modal": {
       "confirm": "Este es tu único método de inicio de sesión restante. Si lo desconectas, perderás el acceso a menos que primero establezcas una contraseña o añadas una clave de acceso. ¿Continuar?"
     },
-    "sign_in_with_provider": "Inicia sesión con {{name}}"
+    "sign_in_with_provider": "Inicia sesión con {{name}}",
+    "callback_linking": "Vinculando su cuenta…",
+    "linked": "Proveedor de inicio de sesión vinculado.",
+    "link_failed_title": "No se pudo vincular el proveedor de inicio de sesión",
+    "link_failed": "No pudimos vincular este proveedor de inicio de sesión. Inténtelo de nuevo desde la configuración de su cuenta.",
+    "link_identity_in_use": "Esta cuenta del proveedor ya está vinculada a otra cuenta de esta comunidad.",
+    "sso_link_required": "Si ya tiene una cuenta en esta comunidad, inicie sesión primero con su método habitual y después vincule este proveedor desde la configuración de su cuenta.",
+    "back_to_settings": "Volver a la configuración de la cuenta"
   },
   "verein_dues": {
     "my_page_title": "Mis cuotas de miembro de Verein",

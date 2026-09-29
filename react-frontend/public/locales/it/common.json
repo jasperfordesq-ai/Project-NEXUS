@@ -2189,12 +2189,21 @@
     "connected_accounts": {
       "title": "Account collegati",
       "subtitle": "Accedi più velocemente collegando il tuo account Google, Apple o Facebook.",
-      "security_confirm_description": "Conferma la tua identità prima di collegare un nuovo metodo di accesso."
+      "security_confirm_description": "Conferma la tua identità prima di collegare un nuovo metodo di accesso.",
+      "community_title": "Provider di accesso della tua community",
+      "community_subtitle": "Collega un provider di accesso configurato dalla tua community, così potrai usarlo per accedere a questo account."
     },
     "connect_modal": {
       "confirm": "Questo è il tuo unico metodo di accesso rimasto. Se lo disconnetti, non potrai più entrare a meno che tu non imposti prima una password o aggiunga una passkey. Continuare?"
     },
-    "sign_in_with_provider": "Accedi con {{name}}"
+    "sign_in_with_provider": "Accedi con {{name}}",
+    "callback_linking": "Collegamento del tuo account…",
+    "linked": "Provider di accesso collegato.",
+    "link_failed_title": "Impossibile collegare il provider di accesso",
+    "link_failed": "Non è stato possibile collegare questo provider di accesso. Riprova dalle impostazioni del tuo account.",
+    "link_identity_in_use": "Questo account del provider è già collegato a un altro account di questa community.",
+    "sso_link_required": "Se hai già un account in questa community, accedi prima con il tuo metodo abituale, poi collega questo provider dalle impostazioni del tuo account.",
+    "back_to_settings": "Torna alle impostazioni dell’account"
   },
   "verein_dues": {
     "my_page_title": "Le mie quote associative Verein",

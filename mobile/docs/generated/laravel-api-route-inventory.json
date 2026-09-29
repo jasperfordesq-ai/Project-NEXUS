@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2740,
-  "api_route_rows": 2705,
-  "distinct_api_paths": 2250,
+  "total_registered_routes": 2742,
+  "api_route_rows": 2707,
+  "distinct_api_paths": 2252,
   "route_source_fingerprint": {
-    "digest": "2fd09edffba29fc34d6c475bbbc94b3570e576c75ba049185e0b04fcc97337b7",
+    "digest": "9961dbca7cdd89f93905170bd382098689b0dc393a36406175aef022ba0217ca",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "604e76936352b2d1db0520aa5f82bda1201ac7fe402b33377dc1b9e634f43c69"
+        "sha256": "7ebe2d707c6939c9f926e70bc022eade156794ee1f96116ed3f489190575bb08"
       },
       {
         "file": "routes/channels.php",
@@ -3506,6 +3506,12 @@
     ],
     "/api/v2/auth/sso/providers": [
       "GET"
+    ],
+    "/api/v2/auth/sso/{providerKey}/link": [
+      "POST"
+    ],
+    "/api/v2/auth/sso/{providerKey}/unlink": [
+      "DELETE"
     ],
     "/api/v2/auth/sso/{provider}/redirect": [
       "GET"

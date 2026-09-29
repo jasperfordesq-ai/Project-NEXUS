@@ -107,11 +107,25 @@ function exchangeOAuthCode(code: string, flow: string | null): Promise<OAuthExch
   return exchange;
 }
 
+/**
+ * Our own wording for a callback error code. `intent=link` marks a provider
+ * being linked from account settings (community SSO), which fails with
+ * link-specific codes and returns the member to settings rather than login.
+ */
+function errorMessageKey(errCode: string, isLink: boolean): string {
+  if (errCode === 'sso_link_required') return 'oauth.sso_link_required';
+  if (isLink) {
+    return errCode === 'sso_identity_in_use' ? 'oauth.link_identity_in_use' : 'oauth.link_failed';
+  }
+  return 'oauth.callback_failed';
+}
+
 export function OauthCallbackPage() {
   const { t } = useTranslation('common');
   const { t: tAuth } = useTranslation('auth');
-  usePageTitle(t('oauth.callback_signing_in'));
   const [params] = useSearchParams();
+  const isLink = params.get('intent') === 'link';
+  usePageTitle(t(isLink ? 'oauth.callback_linking' : 'oauth.callback_signing_in'));
   const { tenantPath } = useTenant();
   const { beginTwoFactorChallenge } = useAuth();
   const navigate = useNavigate();
@@ -129,12 +143,12 @@ export function OauthCallbackPage() {
       // only decides THAT sign-in failed; the wording is always ours.
       setError(errCode === ACCOUNT_UNDER_MINIMUM_AGE
         ? tAuth('login.under_minimum_age')
-        : t('oauth.callback_failed'));
+        : t(errorMessageKey(errCode, isLink)));
       return;
     }
 
     if (!code) {
-      setError(t('oauth.callback_failed'));
+      setError(t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
       return;
     }
 
@@ -171,13 +185,17 @@ export function OauthCallbackPage() {
           return;
         }
         clearOAuthBrowserVerifier(flow);
-        window.location.href = tenantPath('/dashboard');
+        // A completed link returns the member to the settings tab they
+        // started from, which confirms the link.
+        window.location.href = tenantPath(isLink
+          ? '/settings?tab=connected-accounts&linked=1'
+          : '/dashboard');
       },
       (failure: unknown) => {
         if (!cancelled) {
           setError(failure instanceof MinimumAgeRefusal
             ? failure.serverMessage ?? tAuth('login.under_minimum_age')
-            : t('oauth.callback_failed'));
+            : t(isLink ? 'oauth.link_failed' : 'oauth.callback_failed'));
         }
       },
     );
@@ -185,23 +203,24 @@ export function OauthCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [params, tenantPath, t, tAuth, beginTwoFactorChallenge, navigate]);
+  }, [params, isLink, tenantPath, t, tAuth, beginTwoFactorChallenge, navigate]);
 
   if (error) {
+    const title = t(isLink ? 'oauth.link_failed_title' : 'oauth.callback_failed');
     return (
       <>
-        <PageMeta title={t('oauth.callback_failed')} noIndex />
+        <PageMeta title={title} noIndex />
         <div className="min-h-screen flex items-center justify-center p-4">
           <GlassCard className="p-6 max-w-md w-full">
-            <h1 className="text-xl font-bold text-theme-primary mb-3">{t('oauth.callback_failed')}</h1>
+            <h1 className="text-xl font-bold text-theme-primary mb-3">{title}</h1>
             <p className="text-theme-muted text-sm mb-6">{error}</p>
             <Button
               as={Link}
-              to={tenantPath('/login')}
+              to={tenantPath(isLink ? '/settings?tab=connected-accounts' : '/login')}
               variant="bordered"
               startContent={<ArrowLeft className="w-4 h-4" />}
             >
-              {t('back_to_login')}
+              {isLink ? t('oauth.back_to_settings') : t('back_to_login')}
             </Button>
           </GlassCard>
         </div>
@@ -211,11 +230,11 @@ export function OauthCallbackPage() {
 
   return (
     <>
-      <PageMeta title={t('oauth.callback_signing_in')} noIndex />
+      <PageMeta title={t(isLink ? 'oauth.callback_linking' : 'oauth.callback_signing_in')} noIndex />
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <Spinner size="lg" aria-hidden="true" />
-          <p className="text-theme-muted mt-3">{t('oauth.callback_signing_in')}</p>
+          <p className="text-theme-muted mt-3">{t(isLink ? 'oauth.callback_linking' : 'oauth.callback_signing_in')}</p>
         </div>
       </div>
     </>

@@ -510,7 +510,10 @@ class SocialAuthService
      */
     public function unlinkProvider(int $userId, string $provider): void
     {
-        $this->assertProviderSupported($provider);
+        $isSsoIdentity = str_starts_with($provider, 'sso:');
+        if (! $isSsoIdentity) {
+            $this->assertProviderSupported($provider);
+        }
 
         $user = User::find($userId);
         if (! $user) {
@@ -518,6 +521,11 @@ class SocialAuthService
         }
 
         $tenantId = (int) $user->tenant_id;
+        // Community SSO identities are tenant-qualified ("sso:{tenant}:{key}");
+        // a member can only ever remove one of their own community's.
+        if ($isSsoIdentity && ! str_starts_with($provider, 'sso:' . $tenantId . ':')) {
+            throw new \InvalidArgumentException('SSO identity does not belong to this community.');
+        }
         DB::transaction(function () use ($provider, $tenantId, $userId): void {
             if (!AuthenticationMethodGuard::hasAlternativeToOauthProvider(
                 $userId,
@@ -654,7 +662,13 @@ class SocialAuthService
      * state or minting credentials. The final exchange consumes this context
      * only after the initiating tab proves possession of the verifier.
      *
+     * Community SSO providers (`sso:{key}`) use the same mechanism; they must
+     * pass the provider context of the tenant they belong to, which the
+     * exchange re-checks (host approval for privileged accounts) under the
+     * member's row lock. Upstream MFA is never carried into a link.
+     *
      * @param array<string,mixed> $identityLink
+     * @param array<string,mixed>|null $ssoProviderContext
      * @return array{status:string,callback_code:string}
      */
     public function issuePendingLinkCallbackCode(
@@ -663,9 +677,22 @@ class SocialAuthService
         string $provider,
         int $authenticationStartedAt,
         string $browserChallenge,
-        array $identityLink
+        array $identityLink,
+        ?array $ssoProviderContext = null
     ): array {
-        $this->assertProviderSupported($provider);
+        if (str_starts_with($provider, 'sso:')) {
+            if (
+                $ssoProviderContext === null
+                || (int) ($ssoProviderContext['tenant_id'] ?? 0) !== $tenantId
+                || (string) ($ssoProviderContext['provider_key'] ?? '') !== substr($provider, 4)
+            ) {
+                throw new \InvalidArgumentException('SSO link issuance context is invalid.');
+            }
+            $identityLink['sso_provider_context'] = $ssoProviderContext;
+        } else {
+            $this->assertProviderSupported($provider);
+            $ssoProviderContext = null;
+        }
         return $this->issuePendingIdentityCallbackCode(
             $userId,
             $tenantId,
@@ -673,7 +700,10 @@ class SocialAuthService
             false,
             $authenticationStartedAt,
             $browserChallenge,
-            $identityLink
+            $identityLink,
+            false,
+            null,
+            $ssoProviderContext
         );
     }
 

@@ -3525,6 +3525,12 @@ Route::delete('/v2/auth/oauth/{provider}/unlink', [\App\Http\Controllers\Auth\So
     ->where('provider', 'google|facebook')->middleware('throttle:nexus-route-10-per-1m');
 Route::get('/v2/auth/oauth/me/identities', [\App\Http\Controllers\Auth\SocialAuthController::class, 'identities'])
     ->middleware('throttle:nexus-route-30-per-1m');
+// Community SSO link/unlink for the signed-in member (F-244 follow-up) —
+// same auth, throttle and fresh security confirmation as the OAuth link.
+Route::post('/v2/auth/sso/{providerKey}/link', [\App\Http\Controllers\Auth\SsoAuthController::class, 'link'])
+    ->where('providerKey', '[a-z0-9_-]{2,20}')->middleware('throttle:nexus-route-10-per-1m');
+Route::delete('/v2/auth/sso/{providerKey}/unlink', [\App\Http\Controllers\Auth\SsoAuthController::class, 'unlink'])
+    ->where('providerKey', '[a-z0-9_-]{2,20}')->middleware('throttle:nexus-route-10-per-1m');
 
 Route::get('/v2/auth/2fa/status', [\App\Http\Controllers\Api\TwoFactorController::class, 'status'])->middleware('throttle:nexus-route-30-per-1m');
 Route::post('/v2/auth/2fa/disable', [\App\Http\Controllers\Api\TwoFactorController::class, 'disable'])->middleware('throttle:nexus-route-5-per-1m');

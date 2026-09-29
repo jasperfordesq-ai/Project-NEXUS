@@ -2177,12 +2177,21 @@
     "connected_accounts": {
       "title": "Connected accounts",
       "subtitle": "Sign in faster by connecting your Google, Apple, or Facebook account.",
-      "security_confirm_description": "Confirm your identity before connecting a new sign-in method."
+      "security_confirm_description": "Confirm your identity before connecting a new sign-in method.",
+      "community_title": "Your community's sign-in providers",
+      "community_subtitle": "Link a sign-in provider your community has set up, so you can use it to sign in to this account."
     },
     "connect_modal": {
       "confirm": "This is your only remaining sign-in method. Disconnecting it will lock you out unless you set a password or add a passkey first. Continue?"
     },
-    "sign_in_with_provider": "Sign in with {{name}}"
+    "sign_in_with_provider": "Sign in with {{name}}",
+    "callback_linking": "Linking your account…",
+    "linked": "Sign-in provider linked.",
+    "link_failed_title": "Could not link sign-in provider",
+    "link_failed": "We could not link this sign-in provider. Please try again from your account settings.",
+    "link_identity_in_use": "This provider account is already linked to a different account in this community.",
+    "sso_link_required": "If you already have an account with this community, sign in with your usual method first, then link this provider from your account settings.",
+    "back_to_settings": "Back to account settings"
   },
   "verein_dues": {
     "my_page_title": "My Verein membership dues",

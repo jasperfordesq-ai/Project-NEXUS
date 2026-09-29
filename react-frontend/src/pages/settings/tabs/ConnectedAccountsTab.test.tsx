@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const {
@@ -341,6 +341,146 @@ describe('ConnectedAccountsTab', () => {
     });
     expect(disconnectBtn).toBeTruthy();
   });
+  // Community SSO providers (F-244 follow-up): an existing member links one
+  // here, while signed in, before they can use it to sign in.
+  describe('community SSO providers', () => {
+    const ssoEntry = (overrides = {}) => ({
+      key: 'entra',
+      display_name: 'Council Staff Login',
+      preset: 'entra',
+      linked: false,
+      provider_email: null,
+      linked_at: null,
+      last_used_at: null,
+      ...overrides,
+    });
+
+    let originalLocation: Location;
+    beforeEach(() => {
+      originalLocation = window.location;
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+      window.history.replaceState({}, '', '/');
+    });
+
+    it('lists the community providers under their own heading with link state', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: makeIdentitiesResponse({
+          sso_providers: [
+            ssoEntry(),
+            ssoEntry({
+              key: 'hive',
+              display_name: 'Hivebrite',
+              linked: true,
+              provider_email: 'member@council.example',
+              linked_at: '2026-09-01T10:00:00Z',
+            }),
+          ],
+        } as never),
+      });
+
+      render(<ConnectedAccountsTab />);
+
+      expect(await screen.findByText('Council Staff Login')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: "Your community's sign-in providers" })).toBeInTheDocument();
+      expect(screen.getByText('Hivebrite')).toBeInTheDocument();
+      expect(screen.getByText('member@council.example')).toBeInTheDocument();
+      // Google + Facebook + two community providers.
+      expect(screen.getAllByRole('listitem')).toHaveLength(4);
+    });
+
+    it('shows no community section when the community has no SSO providers', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: makeIdentitiesResponse({ sso_providers: [] } as never),
+      });
+
+      render(<ConnectedAccountsTab />);
+
+      await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(2));
+      expect(screen.queryByText("Your community's sign-in providers")).not.toBeInTheDocument();
+    });
+
+    it('starts the SSO link with the browser challenge and a fresh confirmation', async () => {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { ...originalLocation, href: '' },
+      });
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: makeIdentitiesResponse({
+          enabled_providers: [],
+          sso_providers: [ssoEntry()],
+        } as never),
+      });
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: true,
+        data: { redirect_url: 'https://login.example.test/authorize?x=1' },
+      });
+      const user = userEvent.setup();
+
+      render(<ConnectedAccountsTab />);
+      const row = (await screen.findByText('Council Staff Login')).closest('li') as HTMLElement;
+      const connect = within(row).getByRole('button', { name: 'Connect' });
+      await waitFor(() => expect(connect).not.toBeDisabled());
+      await user.click(connect);
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/v2/auth/sso/entra/link', {
+          browser_challenge: CHALLENGE,
+          security_confirmation_token: 'silent-token',
+        });
+      });
+      expect(window.location.href).toBe('https://login.example.test/authorize?x=1');
+    });
+
+    it('unlinks a linked community provider through the SSO unlink endpoint', async () => {
+      vi.mocked(api.get)
+        .mockResolvedValueOnce({
+          success: true,
+          data: makeIdentitiesResponse({
+            identities: [makeIdentity('google'), makeIdentity('sso:2:entra')],
+            sso_providers: [ssoEntry({ linked: true, provider_email: 'member@council.example' })],
+          } as never),
+        })
+        .mockResolvedValueOnce({
+          success: true,
+          data: makeIdentitiesResponse({
+            identities: [makeIdentity('google')],
+            sso_providers: [ssoEntry()],
+          } as never),
+        });
+      vi.mocked(api.delete).mockResolvedValueOnce({ success: true });
+      const user = userEvent.setup();
+
+      render(<ConnectedAccountsTab />);
+      const row = (await screen.findByText('Council Staff Login')).closest('li') as HTMLElement;
+      await user.click(within(row).getByRole('button', { name: 'Disconnect' }));
+
+      await waitFor(() => {
+        expect(api.delete).toHaveBeenCalledWith('/v2/auth/sso/entra/unlink');
+      });
+      expect(mockToast.success).toHaveBeenCalled();
+    });
+
+    it('confirms a completed link once when returning with ?linked=1', async () => {
+      window.history.replaceState({}, '', '/settings?tab=connected-accounts&linked=1');
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: makeIdentitiesResponse({ sso_providers: [ssoEntry({ linked: true })] } as never),
+      });
+
+      render(<ConnectedAccountsTab />);
+
+      await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Sign-in provider linked.'));
+      await waitFor(() => expect(window.location.search).not.toContain('linked='));
+      expect(window.location.search).toContain('tab=connected-accounts');
+      expect(mockToast.success).toHaveBeenCalledTimes(1);
+    });
+  });
+
   // F-056: linking a provider needs a fresh security confirmation.
   describe('security confirmation before linking (F-056)', () => {
     const renderWithNoLinks = async () => {

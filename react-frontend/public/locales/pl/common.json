@@ -2201,12 +2201,21 @@
     "connected_accounts": {
       "title": "Połączone konta",
       "subtitle": "Loguj się szybciej, łącząc konto Google, Apple lub Facebook.",
-      "security_confirm_description": "Potwierdź swoją tożsamość przed połączeniem nowej metody logowania."
+      "security_confirm_description": "Potwierdź swoją tożsamość przed połączeniem nowej metody logowania.",
+      "community_title": "Dostawcy logowania Twojej społeczności",
+      "community_subtitle": "Połącz dostawcę logowania skonfigurowanego przez Twoją społeczność, aby móc używać go do logowania się na to konto."
     },
     "connect_modal": {
       "confirm": "To jedyna pozostała metoda logowania. Odłączenie jej spowoduje zablokowanie dostępu, chyba że najpierw ustawisz hasło lub dodasz passkey. Kontynuować?"
     },
-    "sign_in_with_provider": "Zaloguj się za pomocą {{name}}"
+    "sign_in_with_provider": "Zaloguj się za pomocą {{name}}",
+    "callback_linking": "Łączenie konta…",
+    "linked": "Dostawca logowania został połączony.",
+    "link_failed_title": "Nie udało się połączyć dostawcy logowania",
+    "link_failed": "Nie udało nam się połączyć tego dostawcy logowania. Spróbuj ponownie w ustawieniach konta.",
+    "link_identity_in_use": "To konto dostawcy jest już połączone z innym kontem w tej społeczności.",
+    "sso_link_required": "Jeśli masz już konto w tej społeczności, najpierw zaloguj się w zwykły sposób, a następnie połącz tego dostawcę w ustawieniach konta.",
+    "back_to_settings": "Wróć do ustawień konta"
   },
   "verein_dues": {
     "my_page_title": "Moje składki członkowskie Verein",

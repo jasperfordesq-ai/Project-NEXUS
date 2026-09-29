@@ -194,6 +194,9 @@ class AuthCallbackIssuanceTest extends TestCase
             ->once()
             ->with($state)
             ->andReturn($this->testTenantId);
+        // A sign-in state: the controller must not take the link branch.
+        $sso->shouldReceive('isLinkState')->once()->with($state)->andReturn(false);
+        $sso->shouldNotReceive('handleLinkCallback');
         $sso->shouldReceive('handleCallback')
             ->once()
             ->with($state, 'oidc-code')
@@ -248,6 +251,7 @@ class AuthCallbackIssuanceTest extends TestCase
 
         $sso = Mockery::mock(SsoOidcService::class);
         $sso->shouldReceive('tenantIdFromState')->once()->andReturn($this->testTenantId);
+        $sso->shouldReceive('isLinkState')->once()->andReturn(false);
         $sso->shouldReceive('handleCallback')->once()->andReturn([
             'user' => $user,
             'is_new' => false,

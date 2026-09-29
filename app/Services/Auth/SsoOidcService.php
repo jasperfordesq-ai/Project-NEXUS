@@ -53,6 +53,9 @@ class SsoOidcService
     public const PRESETS = ['generic', 'entra', 'hivebrite'];
 
     private const STATE_TTL_SECONDS = 900;
+    /** State intents. Link states use a value the social OAuth state parser rejects. */
+    private const INTENT_LOGIN = 'login';
+    private const INTENT_LINK = 'sso_link';
     private const DISCOVERY_CACHE_SECONDS = 3600;
     private const JWKS_CACHE_SECONDS = 3600;
     private const HTTP_TIMEOUT_SECONDS = 10;
@@ -90,6 +93,40 @@ class SsoOidcService
         ?string $browserChallenge = null
     ): array
     {
+        return $this->buildAuthorizationRedirect($tenantId, $providerKey, $browserChallenge, null);
+    }
+
+    /**
+     * Build the upstream authorization URL for a signed-in member linking
+     * this provider to their own account. The signed state carries a LINK
+     * intent bound to the member and tenant; the callback then binds the
+     * verified subject to that member and never signs anyone in by email.
+     *
+     * @return array{url:string, state:string}
+     */
+    public function linkRedirectUrl(
+        int $tenantId,
+        string $providerKey,
+        int $userId,
+        ?string $browserChallenge = null
+    ): array {
+        if ($userId < 1) {
+            throw new \InvalidArgumentException('SSO link intent requires a user.');
+        }
+        $this->requireActiveTenantUser($tenantId, $userId);
+
+        return $this->buildAuthorizationRedirect($tenantId, $providerKey, $browserChallenge, $userId);
+    }
+
+    /**
+     * @return array{url:string, state:string}
+     */
+    private function buildAuthorizationRedirect(
+        int $tenantId,
+        string $providerKey,
+        ?string $browserChallenge,
+        ?int $linkUserId
+    ): array {
         $browserChallenge = OAuthBrowserBinding::requireChallenge($browserChallenge);
         $provider = $this->getEnabledProvider($tenantId, $providerKey);
         $discovery = $this->discover($provider->issuer_url);
@@ -101,17 +138,28 @@ class SsoOidcService
         $oidcNonce = Str::random(32);
         $codeVerifier = Str::random(96);
 
-        Cache::put($this->flowCacheKey($stateNonce), [
+        $flow = [
             'code_verifier' => $codeVerifier,
             'oidc_nonce' => $oidcNonce,
             'browser_challenge' => $browserChallenge,
-        ], self::STATE_TTL_SECONDS);
+            'intent' => $linkUserId === null ? self::INTENT_LOGIN : self::INTENT_LINK,
+        ];
+        if ($linkUserId !== null) {
+            // Pin the exact provider configuration the member agreed to link.
+            // An admin edit while the member is at the IdP must not let a
+            // different issuer or client bind an identity to their account.
+            $flow['link_user_id'] = $linkUserId;
+            $flow['issuer_url'] = (string) $provider->issuer_url;
+            $flow['client_id'] = (string) $provider->client_id;
+        }
+        Cache::put($this->flowCacheKey($stateNonce), $flow, self::STATE_TTL_SECONDS);
 
         $state = $this->buildState(
             $tenantId,
             $providerKey,
             $stateNonce,
-            $browserChallenge
+            $browserChallenge,
+            $linkUserId
         );
 
         $params = http_build_query([
@@ -161,15 +209,37 @@ class SsoOidcService
         }
     }
 
+    /**
+     * True when the signed state carries a LINK intent. Signature and expiry
+     * are verified; an invalid state is reported as not-a-link (the callback
+     * then fails on the sign-in path, which re-verifies it).
+     */
+    public function isLinkState(string $state): bool
+    {
+        try {
+            return $this->verifyState($state)['intent'] === self::INTENT_LINK;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     public function handleCallback(string $state, string $code): array
     {
         $payload = $this->verifyState($state);
         $tenantId = $payload['tenant_id'];
         $providerKey = $payload['provider_key'];
+        // A link state must never complete a sign-in. Checked before the flow
+        // is consumed so a misrouted state cannot burn the member's link.
+        if ($payload['intent'] !== self::INTENT_LOGIN) {
+            throw new \RuntimeException('SSO state is not a sign-in state.');
+        }
 
         $flow = Cache::pull($this->flowCacheKey($payload['state_nonce']));
         if (! is_array($flow) || empty($flow['code_verifier']) || empty($flow['oidc_nonce'])) {
             throw new \RuntimeException('SSO flow state expired or already used.');
+        }
+        if (($flow['intent'] ?? self::INTENT_LOGIN) !== self::INTENT_LOGIN) {
+            throw new \RuntimeException('SSO flow is not a sign-in flow.');
         }
         $flowBrowserChallenge = $flow['browser_challenge'] ?? null;
         if (
@@ -209,6 +279,172 @@ class SsoOidcService
         $result['authentication_started_at'] = $payload['authentication_started_at'];
         $result['browser_challenge'] = $payload['browser_challenge'];
         return $result;
+    }
+
+    /**
+     * Handle the OIDC callback for a LINK state: validate the ID token and
+     * resolve the pending identity link for the member named in the state.
+     *
+     * Never signs anyone in and never matches by email — the verified
+     * subject is bound only to the state's member. Nothing durable changes
+     * here: the caller publishes a browser-bound pending-link code, and the
+     * identity is written only when the initiating tab exchanges it.
+     *
+     * @return array{
+     *   user:User,
+     *   tenant_id:int,
+     *   provider_key:string,
+     *   identity_link:array<string,mixed>,
+     *   sso_provider_context:array<string,mixed>,
+     *   authentication_started_at:int,
+     *   browser_challenge:string
+     * }
+     */
+    public function handleLinkCallback(string $state, string $code): array
+    {
+        $payload = $this->verifyState($state);
+        $tenantId = $payload['tenant_id'];
+        $providerKey = $payload['provider_key'];
+        $userId = (int) ($payload['user_id'] ?? 0);
+        if ($payload['intent'] !== self::INTENT_LINK || $userId < 1) {
+            throw new \RuntimeException('SSO state is not a link state.');
+        }
+
+        $flow = Cache::pull($this->flowCacheKey($payload['state_nonce']));
+        if (! is_array($flow) || empty($flow['code_verifier']) || empty($flow['oidc_nonce'])) {
+            throw new \RuntimeException('SSO flow state expired or already used.');
+        }
+        $flowBrowserChallenge = $flow['browser_challenge'] ?? null;
+        if (
+            ($flow['intent'] ?? null) !== self::INTENT_LINK
+            || (int) ($flow['link_user_id'] ?? 0) !== $userId
+            || ! is_string($flowBrowserChallenge)
+            || ! hash_equals($payload['browser_challenge'], $flowBrowserChallenge)
+        ) {
+            throw new \RuntimeException('SSO link flow does not match its signed state.');
+        }
+
+        $provider = $this->getEnabledProvider($tenantId, $providerKey);
+        if (
+            ! hash_equals((string) ($flow['issuer_url'] ?? ''), (string) $provider->issuer_url)
+            || ! hash_equals((string) ($flow['client_id'] ?? ''), (string) $provider->client_id)
+        ) {
+            throw new \RuntimeException('SSO provider configuration changed during the link.');
+        }
+
+        $user = $this->requireActiveTenantUser($tenantId, $userId);
+        // Privileged accounts may use only a host-approved provider; refuse
+        // now with a clear outcome rather than at the exchange.
+        self::assertPrivilegedProviderTrusted($user, (array) $provider);
+
+        $discovery = $this->discover($provider->issuer_url);
+        $claims = $this->exchangeAndValidate($provider, $discovery, $code, $flow);
+
+        $email = $this->extractEmail($claims);
+        $emailVerified = $this->emailIsVerified($claims);
+        // Every later sign-in through the provider enforces the domain gate,
+        // so a link that could never be used is refused up front.
+        $this->assertDomainAllowed($provider, $email, $emailVerified);
+
+        $identityProvider = $this->identityProviderString($tenantId, (string) $provider->provider_key);
+        $subject = (string) $claims['sub'];
+
+        $owner = DB::table('oauth_identities')
+            ->where('provider', $identityProvider)
+            ->where('provider_user_id', $subject)
+            ->first(['user_id', 'tenant_id']);
+        if ($owner !== null && ((int) $owner->user_id !== $userId || (int) $owner->tenant_id !== $tenantId)) {
+            throw new SsoIdentityInUseException('This SSO identity is already linked to another account.');
+        }
+        $current = DB::table('oauth_identities')
+            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->where('provider', $identityProvider)
+            ->value('provider_user_id');
+        if ($current !== null && (string) $current !== $subject) {
+            throw new \RuntimeException('A different identity is already linked for this provider; unlink it first.');
+        }
+
+        $context = [
+            'tenant_id' => (int) $provider->tenant_id, 'provider_key' => (string) $provider->provider_key,
+            'issuer_url' => (string) $provider->issuer_url, 'client_id' => (string) $provider->client_id,
+        ];
+
+        return [
+            'user' => $user,
+            'tenant_id' => $tenantId,
+            'provider_key' => $providerKey,
+            'identity_link' => [
+                'provider' => $identityProvider,
+                'provider_user_id' => $subject,
+                // Metadata only — never an ownership signal on this path.
+                'provider_email' => $emailVerified ? $email : null,
+                'avatar_url' => null,
+                'raw_payload' => $this->safeClaims($claims),
+                'authentication_started_at' => $payload['authentication_started_at'],
+                'expected_verified_email' => null,
+                'sso_provider_context' => $context,
+            ],
+            'sso_provider_context' => $context,
+            'authentication_started_at' => $payload['authentication_started_at'],
+            'browser_challenge' => $payload['browser_challenge'],
+        ];
+    }
+
+    /**
+     * The community's enabled SSO providers and whether this member has
+     * linked each one (connected-accounts settings).
+     *
+     * @return array<int, array{
+     *   key:string, display_name:string, preset:string, linked:bool,
+     *   provider_email:?string, linked_at:mixed, last_used_at:mixed
+     * }>
+     */
+    public function connectedProviders(int $tenantId, int $userId): array
+    {
+        $providers = $this->enabledProviders($tenantId);
+        if ($providers === []) {
+            return [];
+        }
+        $identities = DB::table('oauth_identities')
+            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->where('provider', 'like', 'sso:' . $tenantId . ':%')
+            ->get(['provider', 'provider_email', 'linked_at', 'last_used_at'])
+            ->keyBy('provider');
+
+        return array_map(function (array $provider) use ($identities, $tenantId): array {
+            $identity = $identities->get($this->identityProviderString($tenantId, $provider['key']));
+
+            return [
+                'key' => $provider['key'],
+                'display_name' => $provider['display_name'],
+                'preset' => $provider['preset'],
+                'linked' => $identity !== null,
+                'provider_email' => $identity->provider_email ?? null,
+                'linked_at' => $identity->linked_at ?? null,
+                'last_used_at' => $identity->last_used_at ?? null,
+            ];
+        }, $providers);
+    }
+
+    /**
+     * The member a link is bound to must still exist and be active in the
+     * state's community.
+     */
+    private function requireActiveTenantUser(int $tenantId, int $userId): User
+    {
+        $user = User::query()
+            ->whereKey($userId)
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->whereNull('anonymized_at')
+            ->first();
+        if ($user === null || strtolower(trim((string) ($user->status ?? 'active'))) !== 'active') {
+            throw new \RuntimeException('SSO link member is not an active member of this community.');
+        }
+
+        return $user;
     }
 
     // ------------------------------------------------------------ admin CRUD
@@ -661,7 +897,9 @@ class SsoOidcService
                         'provider_key' => (string) $provider->provider_key,
                         'user_id' => (int) $emailMatch->id,
                     ]);
-                    throw new \RuntimeException(__('api.sso_login_failed'));
+                    // Same exception as "provisioning disabled" below, so the
+                    // outcome is not an account-existence oracle there.
+                    throw new SsoLinkRequiredException(__('api.sso_account_exists_link_required'));
                 }
                 if (! empty($emailMatch->email_verified_at)) {
                     $user = (new User())->newFromBuilder((array) $emailMatch);
@@ -689,7 +927,10 @@ class SsoOidcService
 
         // 3. Create a new user — only when the provider allows it.
         if (! (bool) $provider->auto_provision) {
-            throw new \RuntimeException(__('api.sso_provisioning_disabled'));
+            // Reported exactly like the F-244 email-match refusal above: when
+            // provisioning is off, "no account" and "account exists" must be
+            // indistinguishable to whoever controls the ID token.
+            throw new SsoLinkRequiredException(__('api.sso_account_exists_link_required'));
         }
         if (! $email) {
             throw new \RuntimeException(__('api.sso_email_missing'));
@@ -823,7 +1064,8 @@ class SsoOidcService
         int $tenantId,
         string $providerKey,
         string $stateNonce,
-        string $browserChallenge
+        string $browserChallenge,
+        ?int $linkUserId = null
     ): string {
         $payload = [
             't' => $tenantId,
@@ -832,6 +1074,12 @@ class SsoOidcService
             'x' => now()->timestamp,
             'b' => OAuthBrowserBinding::requireChallenge($browserChallenge),
         ];
+        if ($linkUserId !== null) {
+            // Sign-in states carry no intent (the historical format), so an
+            // older in-flight state still reads as a sign-in.
+            $payload['i'] = self::INTENT_LINK;
+            $payload['u'] = $linkUserId;
+        }
         $body = base64_encode((string) json_encode($payload));
         $sig = hash_hmac('sha256', $body, (string) config('app.key'));
         return $body . '.' . $sig;
@@ -843,7 +1091,9 @@ class SsoOidcService
      *   provider_key:string,
      *   state_nonce:string,
      *   authentication_started_at:int,
-     *   browser_challenge:string
+     *   browser_challenge:string,
+     *   intent:string,
+     *   user_id:?int
      * }
      */
     private function verifyState(string $state): array
@@ -872,12 +1122,25 @@ class SsoOidcService
         ) {
             throw new \RuntimeException('SSO state token has expired.');
         }
+        $intent = isset($decoded['i']) ? $decoded['i'] : self::INTENT_LOGIN;
+        if (! in_array($intent, [self::INTENT_LOGIN, self::INTENT_LINK], true)) {
+            throw new \RuntimeException('Malformed SSO state token.');
+        }
+        $linkUserId = null;
+        if ($intent === self::INTENT_LINK) {
+            if (! isset($decoded['u']) || ! is_int($decoded['u']) || $decoded['u'] < 1) {
+                throw new \RuntimeException('Malformed SSO state token.');
+            }
+            $linkUserId = $decoded['u'];
+        }
         return [
             'tenant_id' => (int) $decoded['t'],
             'provider_key' => (string) $decoded['p'],
             'state_nonce' => (string) $decoded['n'],
             'authentication_started_at' => $authenticationStartedAt,
             'browser_challenge' => $browserChallenge,
+            'intent' => $intent,
+            'user_id' => $linkUserId,
         ];
     }
 

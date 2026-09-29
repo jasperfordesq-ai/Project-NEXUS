@@ -216,7 +216,9 @@ class F244SsoNoEmailAutoLinkTest extends TestCase
      */
     private function assertRefusedWithoutLink(array $query, string $subject, User $target): void
     {
-        $this->assertSame('sso_failed', $query['error'] ?? null, 'The callback must refuse, not sign in.');
+        // Since the SSO link flow the refusal carries its own code, so the
+        // frontend can tell the person to sign in and link from settings.
+        $this->assertSame('sso_link_required', $query['error'] ?? null, 'The callback must refuse, not sign in.');
         $this->assertArrayNotHasKey('code', $query, 'No one-time sign-in code may be issued.');
         $this->assertDatabaseMissing('oauth_identities', [
             'provider' => $this->identityProvider(),

@@ -2213,12 +2213,21 @@
     "connected_accounts": {
       "title": "Cuntais cheangailte",
       "subtitle": "Sínigh isteach níos tapúla trí do chuntas Google, Apple, nó Facebook a cheangal.",
-      "security_confirm_description": "Deimhnigh d'aitheantas sula gceanglaíonn tú modh nua sínithe isteach."
+      "security_confirm_description": "Deimhnigh d'aitheantas sula gceanglaíonn tú modh nua sínithe isteach.",
+      "community_title": "Soláthraithe sínithe isteach do phobail",
+      "community_subtitle": "Nasc soláthraí sínithe isteach atá socraithe ag do phobal, ionas gur féidir leat é a úsáid chun síniú isteach sa chuntas seo."
     },
     "connect_modal": {
       "confirm": "Is é seo an t-aon mhodh sínithe isteach atá fágtha agat. Má dhícheanglaíonn tú é, cuirfear glas ar do chuntas mura socraíonn tú pasfhocal nó mura gcuireann tú paseochair leis ar dtús. Lean ar aghaidh?"
     },
-    "sign_in_with_provider": "Sínigh isteach le {{name}}"
+    "sign_in_with_provider": "Sínigh isteach le {{name}}",
+    "callback_linking": "Do chuntas á nascadh…",
+    "linked": "Soláthraí sínithe isteach nasctha.",
+    "link_failed_title": "Níorbh fhéidir an soláthraí sínithe isteach a nascadh",
+    "link_failed": "Níorbh fhéidir linn an soláthraí sínithe isteach seo a nascadh. Bain triail eile as ó shocruithe do chuntais.",
+    "link_identity_in_use": "Tá cuntas an tsoláthraí seo nasctha cheana féin le cuntas eile sa phobal seo.",
+    "sso_link_required": "Má tá cuntas agat sa phobal seo cheana féin, logáil isteach ar dtús leis an ngnáthmhodh a úsáideann tú, ansin nasc an soláthraí seo ó shocruithe do chuntais.",
+    "back_to_settings": "Ar ais chuig socruithe an chuntais"
   },
   "verein_dues": {
     "my_page_title": "Mo tháillí ballraíochta Verein",

@@ -2177,12 +2177,21 @@
     "connected_accounts": {
       "title": "Verbundene Konten",
       "subtitle": "Melden Sie sich schneller an, indem Sie Ihr Google-, Apple- oder Facebook-Konto verbinden.",
-      "security_confirm_description": "Bestätigen Sie Ihre Identität, bevor Sie eine neue Anmeldemethode verbinden."
+      "security_confirm_description": "Bestätigen Sie Ihre Identität, bevor Sie eine neue Anmeldemethode verbinden.",
+      "community_title": "Anmeldeanbieter Ihrer Community",
+      "community_subtitle": "Verknüpfen Sie einen Anmeldeanbieter, den Ihre Community eingerichtet hat, damit Sie sich damit bei diesem Konto anmelden können."
     },
     "connect_modal": {
       "confirm": "Dies ist Ihre einzig verbleibende Anmeldemethode. Wenn Sie sie trennen, werden Sie ausgesperrt, sofern Sie nicht zuerst ein Passwort festlegen oder einen Passkey hinzufügen. Fortfahren?"
     },
-    "sign_in_with_provider": "Melden Sie sich mit {{name}} an"
+    "sign_in_with_provider": "Melden Sie sich mit {{name}} an",
+    "callback_linking": "Ihr Konto wird verknüpft…",
+    "linked": "Anmeldeanbieter verknüpft.",
+    "link_failed_title": "Anmeldeanbieter konnte nicht verknüpft werden",
+    "link_failed": "Wir konnten diesen Anmeldeanbieter nicht verknüpfen. Bitte versuchen Sie es in Ihren Kontoeinstellungen erneut.",
+    "link_identity_in_use": "Dieses Anbieterkonto ist bereits mit einem anderen Konto in dieser Community verknüpft.",
+    "sso_link_required": "Wenn Sie bereits ein Konto in dieser Community haben, melden Sie sich zuerst mit Ihrer gewohnten Methode an und verknüpfen Sie diesen Anbieter dann in Ihren Kontoeinstellungen.",
+    "back_to_settings": "Zurück zu den Kontoeinstellungen"
   },
   "verein_dues": {
     "my_page_title": "Meine Vereinsmitgliedsbeiträge",

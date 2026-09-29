@@ -2189,12 +2189,21 @@
     "connected_accounts": {
       "title": "Contas ligadas",
       "subtitle": "Inicie sessão mais rapidamente ligando a sua conta Google, Apple ou Facebook.",
-      "security_confirm_description": "Confirme a sua identidade antes de ligar um novo método de início de sessão."
+      "security_confirm_description": "Confirme a sua identidade antes de ligar um novo método de início de sessão.",
+      "community_title": "Fornecedores de início de sessão da sua comunidade",
+      "community_subtitle": "Associe um fornecedor de início de sessão configurado pela sua comunidade para o poder utilizar ao iniciar sessão nesta conta."
     },
     "connect_modal": {
       "confirm": "Este é o seu único método de início de sessão restante. Se o desligar, ficará bloqueado a menos que defina primeiro uma senha ou adicione uma passkey. Continuar?"
     },
-    "sign_in_with_provider": "Faça login com {{name}}"
+    "sign_in_with_provider": "Faça login com {{name}}",
+    "callback_linking": "A associar a sua conta…",
+    "linked": "Fornecedor de início de sessão associado.",
+    "link_failed_title": "Não foi possível associar o fornecedor de início de sessão",
+    "link_failed": "Não conseguimos associar este fornecedor de início de sessão. Tente novamente a partir das definições da sua conta.",
+    "link_identity_in_use": "Esta conta do fornecedor já está associada a outra conta nesta comunidade.",
+    "sso_link_required": "Se já tem uma conta nesta comunidade, inicie sessão primeiro com o seu método habitual e depois associe este fornecedor nas definições da sua conta.",
+    "back_to_settings": "Voltar às definições da conta"
   },
   "verein_dues": {
     "my_page_title": "As minhas quotas de membro Verein",
