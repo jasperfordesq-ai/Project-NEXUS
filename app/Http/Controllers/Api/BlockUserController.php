@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\Services\BlockUserService;
+use App\Services\FederationPartnershipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -38,13 +39,18 @@ class BlockUserController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.block_user.cannot_block_self'), null, 400);
         }
 
-        // Verify the target user belongs to the current tenant — prevents cross-tenant blocks.
-        $tenantId = TenantContext::getId();
-        $targetExists = DB::table('users')
-            ->where('id', $id)
-            ->where('tenant_id', $tenantId)
-            ->exists();
-        if (!$targetExists) {
+        // The target must be in this community, or (F-284, owner decision
+        // 29 Sep 2026) in a community this one has a federation partnership
+        // with — those are the members internal federation can put in front of
+        // this member. Anyone else answers the same 404 as a missing id, so the
+        // endpoint is not an installation-wide "does this id exist" oracle.
+        $tenantId = (int) TenantContext::getId();
+        $targetTenantId = DB::table('users')->where('id', $id)->value('tenant_id');
+        $targetIsReachable = $targetTenantId !== null && (
+            (int) $targetTenantId === $tenantId
+            || FederationPartnershipService::getPartnership($tenantId, (int) $targetTenantId) !== null
+        );
+        if (!$targetIsReachable) {
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 

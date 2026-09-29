@@ -47,6 +47,17 @@ class FederatedConnectionService
             return ['success' => false, 'error' => __('api.cannot_send_request_to_user')];
         }
 
+        // F-284: a block between the two members, made in either community,
+        // stops the request and its bell, push and email. Checked before the
+        // receiver's own settings so a blocked requester learns nothing more.
+        if (BlockUserService::isBlockedEitherAcrossCommunities($requesterId, $receiverId)) {
+            return [
+                'success' => false,
+                'error_code' => 'BLOCKED',
+                'error' => __('api.cannot_send_request_to_user'),
+            ];
+        }
+
         $receiver = DB::selectOne(
             "SELECT u.id, fus.federation_optin, fus.messaging_enabled_federated
              FROM users u

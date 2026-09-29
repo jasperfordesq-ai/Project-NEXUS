@@ -21,7 +21,13 @@ use App\Support\UserDisplayName;
 /**
  * BlockUserService — manages user blocking/unblocking.
  *
- * Block relationships are tenant-scoped to avoid cross-community effects.
+ * A block row belongs to the BLOCKER's community: `user_blocks.tenant_id` is
+ * the blocker's tenant when the block was made, and every same-community read
+ * below is scoped to it. Since F-284 (owner decision, 29 Sep 2026) a member may
+ * also block a member of a partner community on the same installation; such a
+ * row still carries the blocker's tenant, so it is enforced on the internal
+ * federation paths through isBlockedEitherAcrossCommunities(), which honours a
+ * row only while it matches its blocker's current community.
  */
 class BlockUserService
 {
@@ -70,17 +76,21 @@ class BlockUserService
         // a silent no-op, so the member was told "blocked" and nothing was
         // enforced. Re-home that stale row into this community.
         //
-        // Only a row whose tenant is not the blocked member's current one is
-        // re-homed, so a live block elsewhere can never be moved, and a repeat
-        // block in the same community stays the idempotent no-op it always was.
+        // A row belongs to its blocker's community, and a member is in exactly
+        // one community. So the pair's row is stale only when it carries a
+        // community other than the one the BLOCKER is in now — and only then is
+        // it re-homed. A repeat block in the same community stays the
+        // idempotent no-op it always was, and (F-284) a cross-community block,
+        // whose row carries the blocker's own community while the blocked
+        // member is elsewhere, is never moved or dropped by this.
         if ($inserted === 0 && $hasTenantColumn) {
             $tenantId = (int) TenantContext::getId();
-            $blockedIsHere = DB::table('users')
-                ->where('id', $blockedUserId)
+            $blockerIsHere = DB::table('users')
+                ->where('id', $userId)
                 ->where('tenant_id', $tenantId)
                 ->exists();
 
-            if ($blockedIsHere) {
+            if ($blockerIsHere) {
                 DB::table('user_blocks')
                     ->where('user_id', $userId)
                     ->where('blocked_user_id', $blockedUserId)
@@ -109,6 +119,27 @@ class BlockUserService
                 ->delete();
         } catch (\Throwable $e) {
             Log::warning('Failed to auto-disconnect on block', [
+                'user_id' => $userId,
+                'blocked_user_id' => $blockedUserId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // F-284: the same for an internal cross-community connection, pending or
+        // accepted, so the blocked member's request no longer sits with the
+        // blocker. User ids are installation-wide, so the pair identifies it.
+        try {
+            DB::table('federation_connections')
+                ->where(function ($q) use ($userId, $blockedUserId) {
+                    $q->where(function ($q2) use ($userId, $blockedUserId) {
+                        $q2->where('requester_user_id', $userId)->where('receiver_user_id', $blockedUserId);
+                    })->orWhere(function ($q2) use ($userId, $blockedUserId) {
+                        $q2->where('requester_user_id', $blockedUserId)->where('receiver_user_id', $userId);
+                    });
+                })
+                ->delete();
+        } catch (\Throwable $e) {
+            Log::warning('Failed to remove federated connection on block', [
                 'user_id' => $userId,
                 'blocked_user_id' => $blockedUserId,
                 'error' => $e->getMessage(),
@@ -152,6 +183,40 @@ class BlockUserService
                 });
             })
             ->exists();
+    }
+
+    /**
+     * F-284: is there a block, in either direction, between two members who may
+     * be in DIFFERENT communities? Used on the internal federation paths, where
+     * the tenant context is the acting member's community while the other
+     * member's block row carries theirs, so isBlockedEither() cannot see it.
+     *
+     * A row counts only while it matches its blocker's current community — the
+     * same rule the tenant-scoped reads apply, so a row left behind by a
+     * community move stays inert here too until the member blocks again
+     * (see the F-285 re-home in block()).
+     */
+    public static function isBlockedEitherAcrossCommunities(int $userA, int $userB): bool
+    {
+        if ($userA <= 0 || $userB <= 0 || $userA === $userB) {
+            return false;
+        }
+
+        $query = DB::table('user_blocks as ub')
+            ->where(function ($q) use ($userA, $userB) {
+                $q->where(function ($inner) use ($userA, $userB) {
+                    $inner->where('ub.user_id', $userA)->where('ub.blocked_user_id', $userB);
+                })->orWhere(function ($inner) use ($userA, $userB) {
+                    $inner->where('ub.user_id', $userB)->where('ub.blocked_user_id', $userA);
+                });
+            });
+
+        if (Schema::hasColumn('user_blocks', 'tenant_id')) {
+            $query->join('users as blocker', 'blocker.id', '=', 'ub.user_id')
+                ->whereColumn('blocker.tenant_id', 'ub.tenant_id');
+        }
+
+        return $query->exists();
     }
 
     /**
@@ -248,10 +313,13 @@ class BlockUserService
     {
         $tenantId = TenantContext::getId();
 
+        // The blocked member's own community is deliberately NOT filtered: a
+        // block of a partner-community member (F-284) belongs to this list too,
+        // so the member can see it and remove it. The row's tenant_id (below)
+        // is what scopes the list to blocks made in this community.
         $query = DB::table('user_blocks')
             ->join('users', 'user_blocks.blocked_user_id', '=', 'users.id')
-            ->where('user_blocks.user_id', $userId)
-            ->where('users.tenant_id', $tenantId);
+            ->where('user_blocks.user_id', $userId);
 
         if (Schema::hasColumn('user_blocks', 'tenant_id')) {
             $query->where('user_blocks.tenant_id', $tenantId);

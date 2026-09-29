@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
+use App\Services\BlockUserService;
 use App\Services\FederatedConnectionService;
 use App\Services\FederationAuditService;
 use App\Services\FederationFeatureService;
@@ -2647,6 +2648,14 @@ class FederationV2Controller extends BaseApiController
                 return $this->respondWithError('RECIPIENT_NOT_FOUND', __('api.fed_recipient_not_found'), null, 404);
             }
 
+            // F-284: a block between the two members, made in either community,
+            // stops the message (and its email, push and bell). Checked before
+            // any other recipient setting so a blocked sender learns nothing
+            // more; the answer is direction-neutral, as it is locally.
+            if (BlockUserService::isBlockedEitherAcrossCommunities($userId, (int) $receiverId)) {
+                return $this->respondWithError('BLOCKED', __('api.message_blocked_user'), null, 403);
+            }
+
             if (!$receiver['federation_optin'] || !$receiver['messaging_enabled_federated']) {
                 return $this->respondWithError('MESSAGING_DISABLED', __('api.fed_messaging_disabled'), null, 403);
             }
@@ -3458,7 +3467,7 @@ class FederationV2Controller extends BaseApiController
             $code = (string) ($result['error_code'] ?? 'CONNECTION_ERROR');
             $status = $code === 'SAFEGUARDING_POLICY_UNAVAILABLE'
                 ? 503
-                : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED'], true) ? 403 : 400);
+                : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED', 'BLOCKED'], true) ? 403 : 400);
 
             return $this->respondWithError($code, $result['error'], null, $status);
         }
@@ -3650,6 +3659,12 @@ class FederationV2Controller extends BaseApiController
                 [$receiverIdInt, $receiverTenantIdInt]
             );
             if (!$receiver) return $this->respondWithError('RECIPIENT_NOT_FOUND', __('api.fed_recipient_not_found'), null, 404);
+            // F-284: a transfer carries free text and fires a bell, push and
+            // email to the recipient, so a block between the pair refuses it
+            // before any credit moves.
+            if (BlockUserService::isBlockedEitherAcrossCommunities($userId, $receiverIdInt)) {
+                return $this->respondWithError('BLOCKED', __('safeguarding.errors.blocked_interaction'), null, 403);
+            }
             if (!$receiver->transactions_enabled_federated) {
                 return $this->respondWithError('RECIPIENT_TRANSACTIONS_DISABLED', __('api.fed_recipient_transactions_disabled'), null, 403);
             }

@@ -515,4 +515,69 @@ describe('FederationMemberProfilePage', () => {
     expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
   });
+
+  // F-284: a member can block a member of a partner community. The server
+  // enforces the block on federated messages, connection requests and credit
+  // transfers; the page offers the control and stops offering contact.
+  describe('blocking a partner-community member', () => {
+    function setupBlockStatus(isBlocked: boolean) {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.includes('/v2/users/20/block-status')) {
+          return Promise.resolve({ success: true, data: { is_blocked: isBlocked, is_blocked_by: false } });
+        }
+        if (url.includes('/v2/federation/status')) {
+          return Promise.resolve({ success: true, data: { enabled: true, federation_optin: true } });
+        }
+        if (url.includes('/v2/federation/members/20/reviews')) {
+          return Promise.resolve({ success: true, data: [] });
+        }
+        if (url.includes('/v2/federation/connections/status/')) {
+          return Promise.resolve({ success: true, data: mockConnectionStatus });
+        }
+        return Promise.resolve({ success: true, data: mockMember });
+      });
+    }
+
+    it('blocks the member after confirmation and stops offering contact', async () => {
+      setupBlockStatus(false);
+      vi.mocked(api.post).mockResolvedValue({ success: true, data: { success: true } });
+
+      render(<FederationMemberProfilePage />);
+
+      const blockButton = await screen.findByRole('button', { name: 'block_user' });
+      fireEvent.click(blockButton);
+      fireEvent.click(await screen.findByRole('button', { name: 'block_confirm' }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/v2/users/20/block');
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'unblock_user' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'member_profile.send_message' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'member_profile.send_credits' })).toBeDisabled();
+      expect(toastMock.success).toHaveBeenCalledWith('blocked_success');
+    });
+
+    it('shows an existing block and lets the member remove it', async () => {
+      setupBlockStatus(true);
+      vi.mocked(api.delete).mockResolvedValue({ success: true, data: { success: true } });
+
+      render(<FederationMemberProfilePage />);
+
+      const unblock = await screen.findByRole('button', { name: 'unblock_user' });
+      expect(screen.getByText('blocked_by_you')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'member_profile.send_message' })).toBeDisabled();
+
+      fireEvent.click(unblock);
+
+      await waitFor(() => {
+        expect(api.delete).toHaveBeenCalledWith('/v2/users/20/block');
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'block_user' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'member_profile.send_message' })).not.toBeDisabled();
+    });
+  });
 });

@@ -28,6 +28,7 @@ import UserPlus from 'lucide-react/icons/user-plus';
 import Coins from 'lucide-react/icons/coins';
 import Star from 'lucide-react/icons/star';
 import Settings from 'lucide-react/icons/settings';
+import ShieldOff from 'lucide-react/icons/shield-off';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -64,6 +65,8 @@ function createFederationTransferIdempotencyKey(): string {
 
 export function FederationMemberProfilePage() {
   const { t } = useTranslation('federation');
+  // Block / unblock reuse the profile page's existing strings (F-284).
+  const { t: tProfile } = useTranslation('profile');
   usePageTitle(t('member_profile.page_title'));
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -88,6 +91,8 @@ export function FederationMemberProfilePage() {
   // Stable refs for t/toast — avoids re-creating callbacks when i18n namespace loads
   const tRef = useRef(t);
   tRef.current = t;
+  const tProfileRef = useRef(tProfile);
+  tProfileRef.current = tProfile;
   const toastRef = useRef(toast);
   toastRef.current = toast;
 
@@ -95,6 +100,13 @@ export function FederationMemberProfilePage() {
   const [connectLoading, setConnectLoading] = useState(false);
   const [userOptedIn, setUserOptedIn] = useState<boolean | null>(null);
   const memberTenantIdParam = searchParams.get('tenant_id');
+
+  // F-284: a member can block a member of a partner community. The block stops
+  // that member's federated messages, connection requests, credit transfers and
+  // the notifications they send, in both directions (the server enforces it).
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const blockModal = useDisclosure();
 
   // Transaction modal
   const txModal = useDisclosure();
@@ -159,6 +171,62 @@ export function FederationMemberProfilePage() {
   useEffect(() => {
     if (member) loadConnectionStatus();
   }, [member, loadConnectionStatus]);
+
+  useEffect(() => {
+    if (!member || !isAuthenticated) return;
+    let cancelled = false;
+    api.get<{ is_blocked: boolean; is_blocked_by: boolean }>(`/v2/users/${member.id}/block-status`)
+      .then((response) => {
+        if (!cancelled && response.success && response.data) {
+          setIsBlocked(response.data.is_blocked === true);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the server still refuses contact across a block.
+      });
+    return () => { cancelled = true; };
+  }, [member, isAuthenticated]);
+
+  const handleBlock = async () => {
+    if (!member) return;
+    try {
+      setIsBlocking(true);
+      const response = await api.post(`/v2/users/${member.id}/block`);
+      if (response.success) {
+        setIsBlocked(true);
+        setConnectionStatus('none');
+        blockModal.onClose();
+        toastRef.current.success(tProfileRef.current('blocked_success'));
+      } else {
+        toastRef.current.error(tProfileRef.current('block_failed'));
+      }
+    } catch (err) {
+      logError('Failed to block federated member', err);
+      toastRef.current.error(tProfileRef.current('block_failed'));
+    } finally {
+      setIsBlocking(false);
+    }
+  };
+
+  const handleUnblock = async () => {
+    if (!member) return;
+    try {
+      setIsBlocking(true);
+      const response = await api.delete(`/v2/users/${member.id}/block`);
+      if (response.success) {
+        setIsBlocked(false);
+        toastRef.current.success(tProfileRef.current('unblocked_success'));
+        loadConnectionStatus();
+      } else {
+        toastRef.current.error(tProfileRef.current('unblock_failed'));
+      }
+    } catch (err) {
+      logError('Failed to unblock federated member', err);
+      toastRef.current.error(tProfileRef.current('unblock_failed'));
+    } finally {
+      setIsBlocking(false);
+    }
+  };
 
   // Check the current user's federation opt-in status
   useEffect(() => {
@@ -337,7 +405,7 @@ export function FederationMemberProfilePage() {
   }
 
   const skills = member.skills ?? [];
-  const canUseFederationActions = isAuthenticated && userOptedIn === true;
+  const canUseFederationActions = isAuthenticated && userOptedIn === true && !isBlocked;
 
   // The recipient's community safeguarding policy is the last gate the send
   // endpoints apply, and it refuses with 403/503. The profile used to offer both
@@ -516,6 +584,26 @@ export function FederationMemberProfilePage() {
                     </Button>
                   </Tooltip>
                 )}
+                {isAuthenticated && (isBlocked ? (
+                  <Button
+                    variant="flat"
+                    className="bg-theme-elevated text-theme-primary"
+                    startContent={<ShieldOff className="w-4 h-4" aria-hidden="true" />}
+                    isLoading={isBlocking}
+                    onPress={() => void handleUnblock()}
+                  >
+                    {tProfile('unblock_user')}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="flat"
+                    color="danger"
+                    startContent={<ShieldOff className="w-4 h-4" aria-hidden="true" />}
+                    onPress={blockModal.onOpen}
+                  >
+                    {tProfile('block_user')}
+                  </Button>
+                ))}
                 <Button
                   variant="flat"
                   className="bg-theme-elevated text-theme-primary"
@@ -525,6 +613,9 @@ export function FederationMemberProfilePage() {
                   {t('member_profile.back_to_members')}
                 </Button>
               </div>
+              {isAuthenticated && isBlocked && (
+                <p className="mt-2 text-xs text-theme-muted max-w-prose">{tProfile('blocked_by_you')}</p>
+              )}
 
               {/* Why an action above is unavailable — one line per distinct
                   reason, and none of them `sm:hidden`.
@@ -603,6 +694,32 @@ export function FederationMemberProfilePage() {
           <FederationReviewsPanel memberId={member.id} tenantId={member.timebank?.id ?? member.tenant_id} />
         </GlassCard>
       </motion.div>
+
+      {/* Block confirmation (F-284) */}
+      <Modal isOpen={blockModal.isOpen} onOpenChange={blockModal.onOpenChange} size="sm">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="text-theme-primary">
+                {tProfile('block_modal_title', { name: displayName })}
+              </ModalHeader>
+              <ModalFooter>
+                <Button variant="flat" className="bg-theme-elevated text-theme-primary" onPress={onClose}>
+                  {tProfile('block_cancel')}
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={() => void handleBlock()}
+                  isLoading={isBlocking}
+                  startContent={<ShieldOff className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {tProfile('block_confirm')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Send Credits Modal */}
       {member && (

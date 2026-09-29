@@ -31,6 +31,29 @@ class FederatedConnectionServiceTest extends TestCase
             ->zeroOrMoreTimes()
             ->andReturn($this->allowed());
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+
+        $this->stubNoBlockBetweenThePair();
+    }
+
+    /**
+     * F-284: sendRequest() now asks BlockUserService::isBlockedEitherAcrossCommunities()
+     * before the receiver lookup. Answer "no block" so these tests keep exercising the
+     * paths they were written for; the block refusal itself is covered end to end by
+     * tests/Laravel/Feature/Security/E062/F284CrossCommunityBlockTest.php.
+     */
+    private function stubNoBlockBetweenThePair(): void
+    {
+        $blocks = Mockery::mock();
+        $blocks->shouldReceive('where')->andReturnSelf();
+        $blocks->shouldReceive('join')->andReturnSelf();
+        $blocks->shouldReceive('whereColumn')->andReturnSelf();
+        $blocks->shouldReceive('exists')->andReturn(false);
+        DB::shouldReceive('table')->with('user_blocks as ub')->andReturn($blocks);
+        // The schema builder resolves through the (now mocked) DB manager too,
+        // so swap in a stub rather than resolving the real one.
+        $schema = Mockery::mock(\Illuminate\Database\Schema\Builder::class);
+        $schema->shouldReceive('hasColumn')->with('user_blocks', 'tenant_id')->andReturn(true);
+        \Illuminate\Support\Facades\Schema::swap($schema);
     }
 
     // =========================================================================

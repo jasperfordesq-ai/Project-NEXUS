@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Members can now block someone from a partner community. The block stops that person's messages, connection requests and credit transfers, and the emails and notifications they would send, in both directions, and removes any connection between the two. Blocked partner-community members appear in your blocked list, and their profile page has a Block button. Blocks made in the past that never took effect across communities now do (F-284).
 - Opening an unsubscribe link in an email no longer switches your emails off by itself: it now asks you to confirm with a button. Email security scanners that open links automatically were turning people's notifications off without them knowing (F-321).
 - Reviews of an employer now follow the employer's "who can see my profile" setting, as other reviews already do (F-286).
 - The public version page no longer shows the server's PHP version or the text of the latest change, which named the security fix it contained. It still shows the version identifier the deploy tools rely on (F-314).

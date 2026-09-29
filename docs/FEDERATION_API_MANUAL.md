@@ -44,7 +44,12 @@ Two things this table does *not* cover, deliberately:
   federation is ungated by design, so this is deliberate rather than a bug; do not
   "harden" it without an explicit decision. Note also that a member exchange still
   requires the partnership to be active and **each member** to have opted in
-  individually.
+  individually. A member can also block an individual member of a partner
+  community (owner decision, 29 September 2026): a block made in either
+  community stops federated messages, connection requests and credit transfers
+  between the two members, together with the email, push and in-app
+  notifications they would send, and removes any federated connection between
+  them. Nothing else about the internal surface changes.
 - The Partner API has its **own** switch, independent of the federation one.
   Turning external federation on does not turn the Partner API on, or vice versa.
 
