@@ -22,13 +22,20 @@ $deployDir = dirname(__DIR__);
 // (httpdocs/ is bind-mounted, but the project root is not)
 $versionFile = __DIR__ . '/.build-version';
 
+// F-314: this endpoint is public and unauthenticated. It answers only what the
+// deploy tooling and the security register read — the commit identifiers are
+// load-bearing (bluegreen-deploy.sh candidate + cutover checks,
+// candidate-journeys.sh, deploy-drift-watchdog.yml) — and no longer the PHP
+// patch level (CVE matching) or the commit message (security fixes are titled
+// with their finding id, so the message said which fix was live). Anything
+// else .build-version carries is dropped by the allowlist below.
+const VERSION_PUBLIC_KEYS = ['service', 'commit', 'commit_short', 'deployed_at', 'deploy_mode', 'environment'];
+
 $version = [
     'service' => 'nexus-php-api',
     'commit' => 'unknown',
-    'commit_message' => '',
     'deployed_at' => '',
     'environment' => getenv('APP_ENV') ?: 'production',
-    'php_version' => PHP_VERSION,
 ];
 
 // Try reading the build version file (written by safe-deploy.sh)
@@ -42,14 +49,14 @@ if (file_exists($versionFile)) {
     $gitDir = $deployDir . '/.git';
     if (is_dir($gitDir)) {
         $commit = trim(shell_exec("cd \"$deployDir\" && git rev-parse HEAD 2>/dev/null") ?? '');
-        $message = trim(shell_exec("cd \"$deployDir\" && git log -1 --format='%s' 2>/dev/null") ?? '');
         if ($commit) {
             $version['commit'] = $commit;
             $version['commit_short'] = substr($commit, 0, 8);
-            $version['commit_message'] = $message;
             $version['deployed_at'] = 'development';
         }
     }
 }
+
+$version = array_intersect_key($version, array_flip(VERSION_PUBLIC_KEYS));
 
 echo json_encode($version, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
