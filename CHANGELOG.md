@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Accounts created on an administrator's behalf are no longer made live by default: the code that creates them now has to say whether each account is approved (F-319).
 - "Clear all communities' cache" now clears every community. It used to clear only the first five, while telling the admin it had cleared them all (F-287).
 - The admin fraud-alert count now shows the open alerts on the Fraud Alerts screen. It was always zero before (F-318).
 - Members who switch notification emails off no longer get emails when someone likes, comments on, replies to or shares their content (F-317).

@@ -336,6 +336,17 @@ class User extends Authenticatable
         $password = $data['password'] ?? '';
         $hash = password_hash($password, PASSWORD_ARGON2ID);
 
+        // E-062 F-319: admission is never inherited from a default. This used to
+        // default is_approved to 1 and write no status at all, so every caller
+        // got an active, approved account (the `users.status` column default)
+        // unless it remembered to say otherwise. A caller now states both; one
+        // that states neither gets a pending, unapproved account.
+        $isApproved = !empty($data['is_approved']) ? 1 : 0;
+        $status = $data['status'] ?? ($isApproved === 1 ? 'active' : 'pending');
+        if (!in_array($status, ['active', 'pending'], true)) {
+            $status = 'pending';
+        }
+
         $userId = DB::table('users')->insertGetId([
             'tenant_id' => $tenantId,
             'first_name' => $firstName,
@@ -355,7 +366,8 @@ class User extends Authenticatable
             'phone' => $data['phone'] ?? null,
             'profile_type' => $data['profile_type'] ?? 'individual',
             'organization_name' => $data['organization_name'] ?? null,
-            'is_approved' => $data['is_approved'] ?? 1,
+            'is_approved' => $isApproved,
+            'status' => $status,
             'is_tenant_super_admin' => $data['is_tenant_super_admin'] ?? 0,
             'created_at' => now(),
         ]);
