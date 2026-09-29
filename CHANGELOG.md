@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Unused code that could have created volunteering credits without any checks has been removed (F-293).
 - A donation refund can no longer be started twice at the same time (F-292).
 - An administrator's grant of time credits can no longer be applied twice by pressing the button twice (F-294).
 - A marketplace payment, refund or payout can no longer be sent twice if the platform loses Stripe's reply. Every money movement is now recorded before Stripe is contacted, and before anything is sent again the platform checks with Stripe whether it already went through. Anything that can't be confirmed is flagged for staff instead of being retried blindly (F-283).

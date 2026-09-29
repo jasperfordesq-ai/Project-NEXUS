@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 230,
+    "producer_count": 229,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -2851,22 +2851,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolOrgWalletService.php:531:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolOrgWalletService.php:505:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolOrgWalletService.php",
-            "line": 531,
-            "transport": "NotificationDispatcher::fanOutPush",
-            "role": "producer",
-            "recipient_expression": "(int) $volunteerId",
-            "title_expression": null,
-            "body_expression": "$message",
-            "type_expression": "volunteer_payment",
-            "link_expression": "$walletLink",
-            "data_expression": null
-        },
-        {
-            "id": "app/Services/VolOrgWalletService.php:663:NotificationDispatcher::fanOutPush",
-            "file": "app/Services/VolOrgWalletService.php",
-            "line": 663,
+            "line": 505,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $recipient->id",

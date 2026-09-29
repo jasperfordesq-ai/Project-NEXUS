@@ -46,10 +46,22 @@ class VolOrgWalletServiceTest extends TestCase
     public function test_has_public_methods(): void
     {
         $ref = new \ReflectionClass(\App\Services\VolOrgWalletService::class);
-        foreach (['getBalance', 'getTransactions', 'getWalletSummary', 'depositFromUser', 'payVolunteer', 'adminAdjustment'] as $m) {
+        foreach (['getBalance', 'getTransactions', 'getWalletSummary', 'depositFromUser', 'adminAdjustment'] as $m) {
             $this->assertTrue($ref->hasMethod($m), "Missing method: {$m}");
             $this->assertTrue($ref->getMethod($m)->isPublic(), "Not public: {$m}");
         }
+    }
+
+    /**
+     * F-293: payVolunteer() minted credits with no authorisation, rank,
+     * self-payment or cap check and allowed a negative org balance, yet nothing
+     * called it — verifyHours() mints inline. Dead money-moving code is deleted
+     * rather than secured; this keeps it from being quietly restored and wired up.
+     */
+    public function test_unreferenced_pay_volunteer_path_is_gone(): void
+    {
+        $ref = new \ReflectionClass(\App\Services\VolOrgWalletService::class);
+        $this->assertFalse($ref->hasMethod('payVolunteer'));
     }
 
     // -------- Helpers --------
@@ -349,99 +361,6 @@ class VolOrgWalletServiceTest extends TestCase
         $retry = VolOrgWalletService::depositFromUser($user->id, $orgId, 5.0, null, $key);
         $this->assertTrue($retry['success'], $retry['message'] ?? '');
         $this->assertEquals(0, (int) DB::table('users')->where('id', $user->id)->value('balance'));
-    }
-
-    public function test_pay_volunteer_debits_org_credits_volunteer_and_writes_audit(): void
-    {
-        $admin = User::factory()->forTenant(2)->create();
-        $volunteer = User::factory()->forTenant(2)->create(['balance' => 10]);
-        $orgId = $this->makeOrg(2, 100.0, $admin->id);
-        $this->pinTenant();
-
-        $result = VolOrgWalletService::payVolunteer($orgId, $volunteer->id, 20.0, $admin->id, 'Test pay');
-
-        $this->assertTrue($result['success'], $result['message'] ?? '');
-        $this->assertEquals(80.0, $result['new_balance']);
-
-        $this->assertEquals(80.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
-        $this->assertEquals(30, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
-
-        $tx = DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->orderByDesc('id')->first();
-        $this->assertEquals('volunteer_payment', $tx->type);
-        $this->assertEquals(-20.00, (float) $tx->amount);
-        $this->assertEquals(80.00, (float) $tx->balance_after);
-
-        // Paired audit in main transactions table
-        $this->assertTrue(
-            DB::table('transactions')
-                ->where('tenant_id', 2)
-                ->where('receiver_id', $volunteer->id)
-                ->where('amount', 20)
-                ->where('transaction_type', 'volunteer')
-                ->exists()
-        );
-    }
-
-    public function test_payVolunteer_rejects_sub_whole_hour_amount(): void
-    {
-        // VOL-BE-009: 0.5 floors to 0 whole hours — must not phantom-succeed with
-        // a zero-amount transaction and a "0 hours paid" email.
-        $admin = User::factory()->forTenant(2)->create();
-        $volunteer = User::factory()->forTenant(2)->create(['balance' => 0]);
-        $orgId = $this->makeOrg(2, 10.0, $admin->id);
-        $this->pinTenant();
-
-        $result = VolOrgWalletService::payVolunteer($orgId, $volunteer->id, 0.5, $admin->id);
-
-        $this->assertFalse($result['success']);
-        $this->assertEquals(10.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
-        $this->assertEquals(0, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
-        $this->assertFalse(
-            DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->exists()
-        );
-    }
-
-    public function test_fractional_pay_volunteer_does_not_lose_or_overpay_hours(): void
-    {
-        $admin = User::factory()->forTenant(2)->create();
-        $volunteer = User::factory()->forTenant(2)->create(['balance' => 0]);
-        $orgId = $this->makeOrg(2, 10.0, $admin->id);
-        $this->pinTenant();
-
-        $result = VolOrgWalletService::payVolunteer($orgId, $volunteer->id, 2.75, $admin->id);
-
-        $this->assertTrue($result['success'], $result['message'] ?? '');
-        $this->assertEquals(8.0, (float) $result['new_balance']);
-        $this->assertEquals(8.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
-        $this->assertEquals(2, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
-
-        $orgTx = DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->orderByDesc('id')->first();
-        $this->assertEquals(-2.00, (float) $orgTx->amount);
-        $this->assertEquals(8.00, (float) $orgTx->balance_after);
-
-        $mainTx = DB::table('transactions')->where('receiver_id', $volunteer->id)->orderByDesc('id')->first();
-        $this->assertEquals(2, (int) $mainTx->amount);
-    }
-
-    public function test_pay_volunteer_allows_negative_reconciliation_balance(): void
-    {
-        $admin = User::factory()->forTenant(2)->create();
-        $volunteer = User::factory()->forTenant(2)->create(['balance' => 0]);
-        $orgId = $this->makeOrg(2, 5.0, $admin->id);
-        $this->pinTenant();
-
-        $result = VolOrgWalletService::payVolunteer($orgId, $volunteer->id, 50.0, $admin->id);
-
-        $this->assertTrue($result['success'], $result['message'] ?? '');
-        $this->assertEquals(-45.00, (float) $result['new_balance']);
-        $this->assertEquals(-45.00, (float) DB::table('vol_organizations')->where('id', $orgId)->value('balance'));
-        $this->assertEquals(50, (int) DB::table('users')->where('id', $volunteer->id)->value('balance'));
-
-        $tx = DB::table('vol_org_transactions')->where('vol_organization_id', $orgId)->orderByDesc('id')->first();
-        $this->assertNotNull($tx);
-        $this->assertEquals('volunteer_payment', $tx->type);
-        $this->assertEquals(-50.00, (float) $tx->amount);
-        $this->assertEquals(-45.00, (float) $tx->balance_after);
     }
 
     public function test_admin_adjustment_positive_and_negative_track_balance_after(): void

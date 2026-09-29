@@ -92,10 +92,10 @@ All three pin tenant context with `TenantContext::setById()` / `restoreAfterScop
 `VolOrgWalletService` manages each `vol_organization`'s time-credit balance.
 
 - **All balance mutations** use `DB::transaction()` + `FOR UPDATE` locks and write a `vol_org_transactions` row with `balance_after` for audit integrity.
-- **Lock order is fixed (user → org)** across `depositFromUser()` and `payVolunteer()` to avoid deadlock when a deposit and payout race.
-- **Operations:** `depositFromUser` (member tops up the org from personal credits, capped at 1000), `payVolunteer` (manual payout; pays only the integer floor and retains the fractional remainder), `adminAdjustment` (admin top-up/deduct; refuses to push the balance below zero).
+- **Lock order is fixed (user → org)** across `depositFromUser()` and the hours-approval mint in `VolunteerService::verifyHours()` (and the admin approval path in `AdminVolunteerController`) to avoid deadlock when a deposit and payout race.
+- **Operations:** `depositFromUser` (member tops up the org from personal credits, capped at 1000), `adminAdjustment` (admin top-up/deduct; refuses to push the balance below zero). There is no manual "pay a volunteer" operation: the unreferenced `payVolunteer()` was deleted in September 2026 (security finding F-293) because it minted credits with no authorisation or cap check; volunteers are paid only through hours approval.
 - **Whole-hour invariant:** `users.balance` stores whole hours, so every cross-account move floors to an integer and debits/credits the **same** integer — no phantom credits are created or destroyed.
-- The mint inside `verifyHours()` debits the org wallet **directly** (allowing negative balances), independently of `payVolunteer()`.
+- The mint inside `verifyHours()` debits the org wallet **directly** (allowing negative balances); it is the only path that pays a volunteer from an org wallet.
 
 ## Certificates
 

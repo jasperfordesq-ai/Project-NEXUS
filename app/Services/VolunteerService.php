@@ -2308,8 +2308,8 @@ class VolunteerService
                     // Lock the volunteer's USER row FIRST, then the org row —
                     // VolOrgWalletService::depositFromUser() locks user -> org,
                     // so locking org -> user here is a lock-order inversion
-                    // deadlock when a deposit and a payout race (the exact
-                    // inversion documented in payVolunteer()).
+                    // deadlock when a deposit and a payout race (lock order is
+                    // documented in docs/modules/volunteering.md).
                     DB::selectOne(
                         "SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
                         [$volunteerId, $tenantId]
@@ -3173,7 +3173,7 @@ class VolunteerService
         // Lock the volunteer's USER row FIRST, then the org row —
         // VolOrgWalletService::depositFromUser() locks user -> org, so locking
         // org -> user here is a lock-order inversion deadlock when a deposit
-        // and a payout race (the exact inversion documented in payVolunteer()).
+        // and a payout race (lock order is documented in docs/modules/volunteering.md).
         DB::selectOne(
             "SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
             [$volunteerId, $tenantId]
