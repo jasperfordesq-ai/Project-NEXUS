@@ -18,6 +18,7 @@ use App\Services\AuditLogService;
 use App\Services\EmailDispatchService;
 use App\Services\Enterprise\GdprService;
 use App\Services\GamificationService;
+use App\Services\Identity\RegistrationPolicyService;
 use App\Services\PasswordHistoryService;
 use App\Services\StartingBalanceService;
 use App\Services\TenantSettingsService;
@@ -825,7 +826,7 @@ class AdminUsersController extends BaseApiController
 
         $approval = DB::transaction(function () use ($adminId, $id, $tenantId): array {
             $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
-            if ($target === null) {
+            if ($target === null || $this->brokerMayNotAdmit($target, $tenantId)) {
                 return ['status' => 'denied'];
             }
 
@@ -892,6 +893,44 @@ class AdminUsersController extends BaseApiController
             "UPDATE users SET status = 'active' WHERE id = ? AND tenant_id = ? AND LOWER(TRIM(status)) = 'pending'",
             [$userId, $tenantId]
         );
+    }
+
+    /**
+     * F-277: releasing an account that identity verification is holding is an
+     * admin-tier decision (AdminTier). A broker/coordinator is deliberately
+     * not an admin, so it may clear the ordinary approval queue and lift an
+     * ordinary suspension, but not admit a member the community's identity
+     * policy is holding.
+     *
+     * An account is being admitted when it is unapproved or still pending. It
+     * is held for identity when its own verification is unfinished or refused,
+     * or when the community requires identity verification and the member has
+     * not passed it.
+     *
+     * @param array<string,mixed> $target the (locked) users row
+     */
+    private function brokerMayNotAdmit(array $target, int $tenantId): bool
+    {
+        if ($this->callerIsAdminTier()) {
+            return false;
+        }
+
+        $status = strtolower(trim((string) ($target['status'] ?? '')));
+        if (!empty($target['is_approved']) && $status !== 'pending') {
+            return false;
+        }
+
+        $verification = strtolower(trim((string) ($target['verification_status'] ?? 'none')));
+        if ($verification === 'passed') {
+            return false;
+        }
+        if (in_array($verification, ['pending', 'failed', 'expired'], true)) {
+            return true;
+        }
+
+        $mode = (string) (RegistrationPolicyService::getEffectivePolicy($tenantId)['registration_mode'] ?? '');
+
+        return in_array($mode, ['verified_identity', 'government_id'], true);
     }
 
     // =========================================================================
@@ -1060,6 +1099,11 @@ class AdminUsersController extends BaseApiController
                 return null;
             }
             if (($target['status'] ?? '') === 'banned' && !$callerIsAdmin) {
+                return null;
+            }
+            // F-277: reactivate also approves, so it must not become a broker's
+            // way round an identity-verification hold.
+            if ($this->brokerMayNotAdmit($target, $tenantId)) {
                 return null;
             }
             DB::update("UPDATE users SET status = 'active', is_approved = 1 WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
@@ -2765,6 +2809,7 @@ class AdminUsersController extends BaseApiController
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $eligible = DB::select(
             "SELECT id, email, first_name, preferred_language, tenant_id, role, is_approved,
+                    status, verification_status,
                     is_admin, is_super_admin, is_tenant_super_admin, is_god
              FROM users WHERE tenant_id = ? AND id IN ({$placeholders})",
             array_merge([$tenantId], $ids)
@@ -2792,6 +2837,13 @@ class AdminUsersController extends BaseApiController
                 $failed++;
                 continue;
             }
+            // F-277: a broker skips members an identity-verification policy is
+            // holding; re-checked under the lock below.
+            if ($this->brokerMayNotAdmit((array) $row, (int) $tenantId)) {
+                $skippedIds[] = $id;
+                $failed++;
+                continue;
+            }
             if (!empty($row->is_approved)) {
                 // Repair pre-fix approvals that left status='pending'.
                 $this->activatePendingStatus((int) $id, (int) $tenantId);
@@ -2800,7 +2852,8 @@ class AdminUsersController extends BaseApiController
             }
             try {
                 $updated = DB::transaction(function () use ($adminId, $id, $tenantId): bool {
-                    if ($this->lockManageableSecurityTarget($adminId, $id, $tenantId) === null) {
+                    $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
+                    if ($target === null || $this->brokerMayNotAdmit($target, (int) $tenantId)) {
                         return false;
                     }
                     User::updateAdminFields($id, [
