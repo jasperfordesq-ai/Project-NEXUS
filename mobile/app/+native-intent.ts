@@ -169,11 +169,42 @@ export function isBrowserOnlyPath(rawPath: string | null): boolean {
  */
 const MAX_DEEP_LINK_LENGTH = 2048;
 
+/**
+ * Screens the app opens only itself, with values it chose (router.push), and that an
+ * outside link must never reach.
+ *
+ * 🔴 F-300. An unmapped path is handed to Expo Router unchanged (the fall-through at the
+ * end of redirectSystemPath), so without this every screen file is deep-link reachable.
+ * `image-viewer` loads and displays whatever `uri` it is given inside the app's own
+ * chrome: any web page could make the member's phone fetch a chosen host and show a
+ * chosen picture with a chosen caption. Expo Router ignores `(group)` segments, so the
+ * check does too.
+ */
+const IN_APP_ONLY_ROUTES = new Set(['image-viewer']);
+
+export function isInAppOnlyRoute(rawPath: string | null): boolean {
+  const trimmed = rawPath?.trim();
+  if (!trimmed) return false;
+  try {
+    const normalized = trimmed.includes('://') || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    const url = new URL(normalized, 'https://app.project-nexus.ie');
+    const segments = [url.host, ...url.pathname.split('/')]
+      .filter(Boolean)
+      .map((segment) => decodeURIComponent(segment))
+      .filter((segment) => !/^\(.*\)$/.test(segment) && segment !== 'app.project-nexus.ie');
+    return segments.some((segment) => IN_APP_ONLY_ROUTES.has(segment));
+  } catch {
+    // Unparseable is not one of ours either; refuse rather than let the router guess.
+    return true;
+  }
+}
+
 export function redirectSystemPath({ path }: RedirectEvent): string {
   // Refused before it reaches the router's query parser. Returning the app's root is the
   // safe answer: an oversized or malformed link is not one of ours.
   if (shouldRejectNativeLinkInput(path)) return '/';
   try {
+    if (isInAppOnlyRoute(path)) return '/';
     // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
     // lets Android carry on to the browser instead of stranding the member here.
     if (isBrowserOnlyPath(path)) return path ?? '/';

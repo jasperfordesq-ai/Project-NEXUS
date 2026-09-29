@@ -102,3 +102,24 @@ it('fits the remaining canvas and labels an untitled image independently of Clos
   fireEvent(screen.getByTestId('viewer-canvas'), 'layout', { nativeEvent: { layout: { width: 320, height: 500 } } });
   expect(screen.getByTestId('viewer-image').props.style).toEqual({ width: 320, height: 500 });
 });
+
+// F-300: the viewer loads and shares whatever `uri` it is given. Only a web
+// image may be shown or shared — never a local file, content provider or data
+// URI (Share.share({ url }) with a file:// URI would hand an app-private file to
+// any share target).
+it.each([
+  'file:///data/user/0/ie.projectnexus.app/files/public-nexus_tenant_config_2.json',
+  'content://com.example.provider/secret',
+  'data:image/svg+xml;base64,PHN2Zy8+',
+  'javascript:alert(1)',
+])('refuses to show or share %s', async (uri) => {
+  jest.requireMock('expo-router').router.back.mockClear();
+  mockParams = { uri, title: 'Attacker title' };
+  const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as never);
+  share.mockClear();
+  const screen = render(<ImageViewerScreen />);
+  expect(jest.requireMock('expo-router').router.back).toHaveBeenCalled();
+  expect(screen.queryByTestId('viewer-image')).toBeNull();
+  expect(screen.queryByLabelText('Share image')).toBeNull();
+  expect(share).not.toHaveBeenCalled();
+});

@@ -105,6 +105,20 @@ describe('native intent route rewriting', () => {
     expect(redirectSystemPath({ path: '/(modals)/exchange-detail?id=90877', initial: false })).toBe('/(modals)/exchange-detail?id=90877');
   });
 
+  // F-300: the image viewer shows whatever `uri` it is given inside the app's
+  // own chrome, so no outside link may open it — any web page or app could
+  // otherwise make the member's phone fetch a chosen host and display a chosen
+  // picture with a chosen caption. The app opens it itself with router.push.
+  it.each([
+    'nexus:///(modals)/image-viewer?uri=https://attacker.example/x.png&title=Sign%20in',
+    '/(modals)/image-viewer?uri=https://attacker.example/x.png',
+    'nexus:///image-viewer?uri=https://attacker.example/x.png',
+    '/image-viewer?uri=https://attacker.example/x.png',
+    'https://app.project-nexus.ie/image-viewer?uri=https://attacker.example/x.png',
+  ])('never opens the image viewer from an outside link: %s', (path) => {
+    expect(redirectSystemPath({ path, initial: false })).toBe('/');
+  });
+
   it('rejects untrusted web origins and non-https links', () => {
     expect(mapSystemPathToNativeRoute('https://evil.example/messages/123')).toBeNull();
     expect(mapSystemPathToNativeRoute('http://app.project-nexus.ie/messages/123')).toBeNull();

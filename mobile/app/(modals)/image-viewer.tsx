@@ -18,10 +18,28 @@ import { useAppToast } from '@/components/ui/AppToast';
 import ErrorState from '@/components/ui/ErrorState';
 import { describeApiError } from '@/lib/api/describeApiError';
 
+/**
+ * F-300: only a web image is shown or shared. The route is reachable with any
+ * `uri` (a deep link, or any caller), and `Share.share({ url })` with a file://
+ * URI would hand an app-private file to whatever share target the member picks.
+ */
+function webImageUri(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  try {
+    const parsed = new URL(trimmed);
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.hostname ? trimmed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function ImageViewerScreenInner() {
   const { t } = useTranslation('home');
   const { show: showToast } = useAppToast();
-  const { uri, title } = useLocalSearchParams<{ uri: string; title?: string }>();
+  const params = useLocalSearchParams<{ uri: string; title?: string }>();
+  const uri = webImageUri(params.uri);
+  const { title } = params;
 
   const [canvas, setCanvas] = useState({ width: 0, height: 0 });
   const [failed, setFailed] = useState(false);

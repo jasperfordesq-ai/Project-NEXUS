@@ -262,7 +262,9 @@ export const UNGATED_ROUTES: Readonly<Record<string, string>> = {
   'static-page': 'About/contact pages — public content.',
   'legal-acceptance': 'A legal refusal must be resolvable whatever is switched on.',
   'legal-document': 'Legal documents must always be readable.',
-  'image-viewer': 'Presentation-only lightbox for images already on screen.',
+  // F-300: this rationale holds only because redirectSystemPath refuses outside links to
+  // it (IN_APP_ONLY_ROUTES in app/+native-intent.ts) and the screen shows only web images.
+  'image-viewer': 'Presentation-only lightbox the app opens itself for images already on screen; outside links to it are refused.',
   onboarding: 'First-run onboarding — precedes any module use.',
   'change-password': 'Account security is never optional.',
   'settings-blocked-users': 'Safety control; React leaves it ungated too.',
