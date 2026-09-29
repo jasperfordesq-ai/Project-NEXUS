@@ -496,6 +496,15 @@ class SsoOidcService
             throw new \InvalidArgumentException(__('api.sso_client_id_required'));
         }
 
+        // E-062 F-327: the connection is non-strict, so an over-long value would
+        // be silently shortened and the stored client_id / issuer would never
+        // match the identity provider's. Refuse it instead of truncating.
+        foreach (['issuer_url' => [$issuer, 500], 'client_id' => [$clientId, 255]] as $field => [$value, $max]) {
+            if (mb_strlen($value) > $max) {
+                throw new \InvalidArgumentException(__('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]));
+            }
+        }
+
         $preset = (string) ($input['preset'] ?? 'generic');
         if (! in_array($preset, self::PRESETS, true)) {
             $preset = 'generic';

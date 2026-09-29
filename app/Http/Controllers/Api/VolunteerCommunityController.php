@@ -1031,7 +1031,12 @@ class VolunteerCommunityController extends BaseApiController
         $this->requireAdmin();
 
         $data = $this->getAllInput();
-        $result = $this->webhookDispatchService->updateWebhook((int) $id, $data);
+        try {
+            $result = $this->webhookDispatchService->updateWebhook((int) $id, $data);
+        } catch (\InvalidArgumentException $e) {
+            // Same refusal as createWebhook (a bad URL here used to be a 500).
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        }
         return $this->respondWithData(['success' => $result]);
     }
 

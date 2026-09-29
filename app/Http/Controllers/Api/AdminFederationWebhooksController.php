@@ -89,6 +89,10 @@ class AdminFederationWebhooksController extends BaseApiController
         if (!str_starts_with($url, 'https://')) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.url_must_use_https'), 'url', 422);
         }
+        // E-062 F-327: refuse, never silently truncate, a value longer than its column.
+        if ($tooLong = $this->tooLongForColumn($input, $url)) {
+            return $tooLong;
+        }
 
         // SSRF protection: reject URLs targeting private/internal IPs
         if (!OutboundUrlGuard::isSafeHttpUrl($url, requireHttps: true)) {
@@ -132,6 +136,25 @@ class AdminFederationWebhooksController extends BaseApiController
     }
 
     /**
+     * E-062 F-327: federation_webhooks.url is varchar(500) and description is
+     * varchar(255); the connection is non-strict, so a longer value would be
+     * stored shortened. The signing secret is generated here, never supplied.
+     *
+     * @param array<string,mixed> $input
+     */
+    private function tooLongForColumn(array $input, string $url): ?JsonResponse
+    {
+        $description = is_scalar($input['description'] ?? null) ? trim((string) $input['description']) : '';
+        foreach (['url' => [$url, 500], 'description' => [$description, 255]] as $field => [$value, $max]) {
+            if (mb_strlen($value) > $max) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]), $field, 422);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * PUT /api/v2/admin/federation/webhooks/{id}
      *
      * Update an existing webhook.
@@ -153,6 +176,11 @@ class AdminFederationWebhooksController extends BaseApiController
         }
 
         $updates = [];
+
+        // E-062 F-327: refuse, never silently truncate, a value longer than its column.
+        if ($tooLong = $this->tooLongForColumn($input, isset($input['url']) ? trim((string) $input['url']) : '')) {
+            return $tooLong;
+        }
 
         // URL
         if (isset($input['url'])) {

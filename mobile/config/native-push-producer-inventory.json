@@ -576,9 +576,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:1749:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:1752:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationExternalWebhookController.php",
-            "line": 1749,
+            "line": 1752,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverUserId",

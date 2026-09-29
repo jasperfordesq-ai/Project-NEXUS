@@ -188,6 +188,7 @@ class WebhookDispatchService
         if (empty($data['events']) || !is_array($data['events'])) {
             throw new \InvalidArgumentException('At least one event type is required.');
         }
+        self::assertFitsColumns($data);
 
         $id = DB::table('outbound_webhooks')->insertGetId([
             'tenant_id' => $tenantId,
@@ -211,6 +212,27 @@ class WebhookDispatchService
     }
 
     /**
+     * E-062 F-327: the connection is non-strict, so a value longer than its
+     * column would be silently shortened. A truncated secret can never produce
+     * the signature the receiving system computes from the secret the admin
+     * actually pasted, so an over-long value is refused rather than stored.
+     *
+     * @param array<string,mixed> $data
+     * @throws \InvalidArgumentException
+     */
+    private static function assertFitsColumns(array $data): void
+    {
+        foreach (['name' => 255, 'url' => 2048, 'secret' => 255] as $field => $max) {
+            if (!isset($data[$field]) || !is_scalar($data[$field])) {
+                continue;
+            }
+            if (mb_strlen((string) $data[$field]) > $max) {
+                throw new \InvalidArgumentException(__('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]));
+            }
+        }
+    }
+
+    /**
      * Update an existing webhook.
      *
      * @throws \InvalidArgumentException
@@ -229,6 +251,7 @@ class WebhookDispatchService
                 throw new \InvalidArgumentException('Webhook URL must not target private or internal IP addresses.');
             }
         }
+        self::assertFitsColumns($data);
 
         $updateData = [];
         $allowedFields = ['name', 'url', 'secret', 'is_active'];

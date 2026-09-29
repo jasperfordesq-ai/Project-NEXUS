@@ -531,14 +531,17 @@ class FederationExternalWebhookController extends BaseApiController
      * Require a string field from the payload, throwing InboundValidationException
      * if it is missing or empty.
      */
-    private function requireString(array $data, string $field): string
+    private function requireString(array $data, string $field, int $max = 10000): string
     {
         $value = $data[$field] ?? null;
         if ($value === null || $value === '' || !is_scalar($value)) {
             throw new InboundValidationException("Missing required field: {$field}", $field);
         }
         $value = (string) $value;
-        if (mb_strlen($value) > 10000) {
+        // E-062 F-327: callers pass the column width. The connection is
+        // non-strict, so a longer value would be stored shortened and every
+        // later update or retraction keyed on the full value would miss it.
+        if (mb_strlen($value) > $max) {
             throw new InboundValidationException("Field '{$field}' exceeds maximum length", $field);
         }
         return $value;
@@ -575,7 +578,7 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundReview(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
+        $externalId = $this->requireString($data, 'external_id', 128);
         $rating = (int) ($data['rating'] ?? 0);
         if ($rating < 1 || $rating > 5) {
             throw new InboundValidationException('rating must be between 1 and 5', 'rating');
@@ -702,8 +705,8 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundListing(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
-        $title = $this->requireString($data, 'title');
+        $externalId = $this->requireString($data, 'external_id', 128);
+        $title = $this->requireString($data, 'title', 500);
         $tenantId = (int) TenantContext::getId();
 
         $row = [
@@ -746,8 +749,8 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundCommunityEvent(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
-        $title = $this->requireString($data, 'title');
+        $externalId = $this->requireString($data, 'external_id', 128);
+        $title = $this->requireString($data, 'title', 500);
         $tenantId = (int) TenantContext::getId();
 
         $row = [
@@ -787,8 +790,8 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundGroup(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
-        $name = $this->requireString($data, 'name');
+        $externalId = $this->requireString($data, 'external_id', 128);
+        $name = $this->requireString($data, 'name', 500);
         $tenantId = (int) TenantContext::getId();
 
         $row = [
@@ -827,7 +830,7 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundGroupMembership(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
+        $externalId = $this->requireString($data, 'external_id', 128);
         $tenantId = (int) TenantContext::getId();
 
         // Increment the shadow group's member_count if we have it
@@ -957,8 +960,8 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundVolunteering(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
-        $title = $this->requireString($data, 'title');
+        $externalId = $this->requireString($data, 'external_id', 128);
+        $title = $this->requireString($data, 'title', 500);
         $tenantId = (int) TenantContext::getId();
 
         $row = [
@@ -1036,7 +1039,7 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handleInboundMemberSync(array $data, object $partner): array
     {
-        $externalId = $this->requireString($data, 'external_id');
+        $externalId = $this->requireString($data, 'external_id', 128);
         $tenantId = (int) TenantContext::getId();
 
         $row = [
