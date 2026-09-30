@@ -76,6 +76,7 @@ CLAUDE.md
 !/scripts/check-dockerfile-drift.sh
 !/scripts/check-production-image-allowlist.mjs
 !/scripts/check-help-staleness.mjs
+!/scripts/check-seed-credentials.mjs
 !/scripts/check-duplicate-security-headers.mjs
 !/scripts/uptime-check.mjs
 !/scripts/uptime-targets.json
