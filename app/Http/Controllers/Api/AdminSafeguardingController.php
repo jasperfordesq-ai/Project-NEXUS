@@ -146,7 +146,7 @@ class AdminSafeguardingController extends BaseApiController
      */
     public function flaggedMessages(): JsonResponse
     {
-        $this->requireSafeguardingStaff('view');
+        $staffUserId = $this->requireSafeguardingStaff('view');
         $tenantId = $this->getTenantId();
 
         $page = $this->queryInt('page', 1, 1);
@@ -154,8 +154,20 @@ class AdminSafeguardingController extends BaseApiController
         $offset = ($page - 1) * $limit;
 
         try {
+            // F-455: the fifth read path onto broker_message_copies, and the
+            // one F-436 does not name. The queue had no party filter at all,
+            // so the subject of covert monitoring found their own row in it —
+            // copy_reason, the derived severity, the reviewing administrator's
+            // private review_notes and that administrator's NAME. This is a
+            // work queue rather than a single-record route, so the caller's
+            // own rows are withheld instead of the request being refused.
+            // The filter is applied before the count so the row cannot
+            // reappear on another page, and so the total does not itself
+            // disclose that a record exists.
             $baseQuery = DB::table('broker_message_copies as bmc')
-                ->where('bmc.tenant_id', $tenantId);
+                ->where('bmc.tenant_id', $tenantId)
+                ->where('bmc.sender_id', '!=', $staffUserId)
+                ->where('bmc.receiver_id', '!=', $staffUserId);
 
             $total = (int) (clone $baseQuery)->count();
 
