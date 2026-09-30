@@ -268,6 +268,26 @@ class AdminSafeguardingController extends BaseApiController
         $notes = $request->input('notes', '');
 
         try {
+            // F-404: the same subject check as F-403 on AdminBrokerController,
+            // on the same table through a different gate. A copy is taken
+            // because someone is being watched, and the copy rules exclude no
+            // one — staff accounts included — so a member of safeguarding staff
+            // could close the monitoring record of their own message, clearing
+            // it from the pending queue and into the retention purge.
+            $copy = DB::table('broker_message_copies')
+                ->where('id', $id)
+                ->where('tenant_id', $tenantId)
+                ->first(['sender_id', 'receiver_id']);
+            if ($copy !== null
+                && ((int) $copy->sender_id === $adminId || (int) $copy->receiver_id === $adminId)) {
+                return $this->respondWithError(
+                    'AUTH_INSUFFICIENT_PERMISSIONS',
+                    __('api.broker_cannot_moderate_own_content'),
+                    null,
+                    403
+                );
+            }
+
             $updateData = [
                 'reviewed_by' => $adminId,
                 'reviewed_at' => now(),
