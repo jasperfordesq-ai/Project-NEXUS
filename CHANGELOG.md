@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A web address typed into the platform — an interview link, an evidence link, an order tracking link, a venue website — can no longer be written in a form that sends whoever clicks it to an unrelated website. One shared safety check covers all of these, and it had a gap (F-380).
 - A web address typed into a support report can no longer send an administrator to an outside website when they open it from the support console (F-358).
 - When a member deletes their own account, the community's safeguarding vetting decision about them, its history and any open review are now kept, in the same way safeguarding reports already were. Blocks that other members placed on them are also kept, so those members do not silently lose their protection. The account itself is still erased and the email address is still freed (F-339).
 - If a supported member revokes their carer while a payment by that carer is already in progress, the payment is now refused instead of completing (F-342).

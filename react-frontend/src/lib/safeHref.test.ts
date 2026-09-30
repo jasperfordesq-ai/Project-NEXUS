@@ -27,6 +27,36 @@ describe('safeHref (F-298)', () => {
     expect(safeHref(value)).toBeUndefined();
   });
 
+  // F-380. A protocol-relative URL has no scheme, so the "looks relative" fast
+  // path accepted it — and a browser then resolves `//attacker.example/x` to
+  // `https://attacker.example/x`. That is the platform's ONE scheme allow-list
+  // being walked past by a value a member typed, on every sink that uses it:
+  // interview meeting links, safeguarding evidence links, order tracking, venue
+  // and organisation websites.
+  //
+  // Found while fixing F-358, which closed the same hole server-side for support
+  // reports only.
+  it.each([
+    '//attacker.example/collect',
+    '  //attacker.example/collect  ',
+    '/\\attacker.example/collect',
+    '\\/attacker.example/collect',
+    '\\\\attacker.example\\collect',
+    '/\t/attacker.example/collect',
+  ])('refuses the protocol-relative address %j (F-380)', (value) => {
+    expect(safeHref(value)).toBeUndefined();
+    expect(isSafeUrl(value)).toBe(false);
+  });
+
+  it('still keeps an ordinary rooted path with a following slash (F-380 control)', () => {
+    // The fix must not refuse every path whose second character is a slash-like
+    // thing; only the protocol-relative form.
+    expect(safeHref('/hour-timebank/events/7')).toBe('/hour-timebank/events/7');
+    expect(safeHref('/a//b')).toBe('/a//b');
+    expect(safeHref('./relative')).toBe('./relative');
+    expect(safeHref('../up')).toBe('../up');
+  });
+
   it.each([
     ['https://meet.example.com/abc?x=1#y', 'https://meet.example.com/abc?x=1#y'],
     ['http://example.org', 'http://example.org'],

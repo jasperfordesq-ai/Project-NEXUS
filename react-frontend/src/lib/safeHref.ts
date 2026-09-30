@@ -18,7 +18,8 @@
  *
  * Accepts: absolute http(s), mailto:, and relative paths / fragments.
  * Rejects: javascript:, data:, vbscript:, file:, blob:, intent:, any other
- * scheme, and whitespace/control-character tricks such as "java\tscript:".
+ * scheme, whitespace/control-character tricks such as "java\tscript:", and
+ * protocol-relative addresses such as "//attacker.example/x" (F-380).
  *
  * React 19 already refuses to navigate to a `javascript:` href, so this is not
  * the last line against script execution; it also stops data:, file: and
@@ -26,6 +27,9 @@
  */
 
 const SAFE_URL_REGEX = /^(?:(?:https?|mailto):|[#/?]|[a-z0-9._~%!$&'()*+,;=@-]+(?:[/?#]|$))/i;
+/** F-380: `//host`, `/\host`, `\/host`, `\\host` — the protocol-relative forms. */
+const PROTOCOL_RELATIVE_REGEX = /^[/\\]{2}/;
+
 const RELATIVE_OR_FRAGMENT_REGEX = /^(?:[#/?]|\.{1,2}\/|[a-z0-9._~%!$&'()*+,;=@-]+\/)/i;
 
 /**
@@ -36,6 +40,22 @@ export function isSafeUrl(value: string): boolean {
   // eslint-disable-next-line no-control-regex
   const cleaned = value.replace(/[\x00-\x20]+/g, '').trim();
   if (cleaned === '') return false;
+
+  // F-380: a protocol-relative address has no scheme, so it used to take the
+  // "looks relative" fast path below — and a browser then resolves
+  // `//attacker.example/x` to `https://attacker.example/x`. That walked straight
+  // past the one scheme allow-list this file exists to be, on every sink that
+  // uses it: interview meeting links, safeguarding evidence links, order
+  // tracking, venue and organisation websites.
+  //
+  // Backslashes are included because browsers treat `\` as `/` in the authority
+  // position, so `/\host`, `\/host` and `\\host` are the same attack spelled
+  // differently. Checked AFTER the control-character strip above, so
+  // `/<tab>/host` cannot slip through either.
+  //
+  // This refuses only the authority form. An ordinary rooted path keeps working,
+  // including one that contains a double slash later (`/a//b`).
+  if (PROTOCOL_RELATIVE_REGEX.test(cleaned)) return false;
 
   // Fast path: relative URL or fragment
   if (RELATIVE_OR_FRAGMENT_REGEX.test(cleaned)) return true;
