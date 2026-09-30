@@ -787,6 +787,40 @@ class AdminSafeguardingController extends BaseApiController
     // ============================================
 
     /**
+     * F-456: the per-member safeguarding trail is an oversight tool, not a
+     * self-service one, so nobody reads the record kept about themselves.
+     *
+     * collectMemberAuditEvents() returns every `safeguarding_member_activity_viewed`
+     * row keyed to the subject with the ACTOR's name resolved, so the subject
+     * would otherwise be handed the list of colleagues who have opened their
+     * safeguarding record and when — plus the fact that their own messages are
+     * being copied and under which copy_reason. Oversight of an administrator
+     * stops being covert the moment the administrator can enumerate it.
+     *
+     * Refusal rather than redaction: a partly-served trail still confirms that
+     * a record exists and shows how much of it was withheld. Deliberately NOT
+     * tier-exempt, for the same reason as F-403/F-404 on this table — the
+     * administrator tier is exactly who this reaches.
+     *
+     * 🔴 Both readers must call this. memberActivityCsv() is a second door
+     * onto the same collector; guarding only the JSON route would close
+     * nothing.
+     */
+    private function guardNotOwnSafeguardingTrail(int $subjectUserId, int $callerId): ?JsonResponse
+    {
+        if ($subjectUserId !== $callerId) {
+            return null;
+        }
+
+        return $this->respondWithError(
+            'AUTH_INSUFFICIENT_PERMISSIONS',
+            __('api.access_denied'),
+            null,
+            403
+        );
+    }
+
+    /**
      * GET /v2/admin/safeguarding/members/{userId}/activity
      *
      * Returns the combined audit trail for a single member:
@@ -802,6 +836,10 @@ class AdminSafeguardingController extends BaseApiController
     {
         $adminId = $this->requireSafeguardingStaff('view');
         $tenantId = $this->getTenantId();
+
+        if (($refusal = $this->guardNotOwnSafeguardingTrail($userId, $adminId)) !== null) {
+            return $refusal;
+        }
 
         $member = DB::table('users')
             ->where('id', $userId)
@@ -850,6 +888,10 @@ class AdminSafeguardingController extends BaseApiController
     {
         $adminId = $this->requireSafeguardingStaff('view');
         $tenantId = $this->getTenantId();
+
+        if (($refusal = $this->guardNotOwnSafeguardingTrail($userId, $adminId)) !== null) {
+            return $refusal;
+        }
 
         $member = DB::table('users')
             ->where('id', $userId)
