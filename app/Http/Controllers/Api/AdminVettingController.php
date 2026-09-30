@@ -151,6 +151,7 @@ class AdminVettingController extends BaseApiController
                         $tenantId,
                         $policy['preset'],
                         $previousPolicy['jurisdiction'] !== $policy['jurisdiction'],
+                        $adminId,
                     )
                     : SafeguardingPreferenceService::preservePresetProtectionsForUnavailablePolicy(
                         $tenantId,

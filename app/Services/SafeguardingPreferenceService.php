@@ -70,8 +70,11 @@ class SafeguardingPreferenceService
     /**
      * Create a new safeguarding option for a tenant.
      */
-    public static function createOption(int $tenantId, array $data): TenantSafeguardingOption
-    {
+    public static function createOption(
+        int $tenantId,
+        array $data,
+        ?int $actorUserId = null,
+    ): TenantSafeguardingOption {
         $data['label'] = strip_tags(trim($data['label']));
         if (isset($data['description'])) {
             $data['description'] = strip_tags(trim($data['description']));
@@ -92,7 +95,7 @@ class SafeguardingPreferenceService
             'preset_source' => $data['preset_source'] ?? null,
         ]);
 
-        self::logActivity(null, 'safeguarding_option_created', 'safeguarding_option', $option->id, [
+        self::logActivity($actorUserId, 'safeguarding_option_created', 'safeguarding_option', $option->id, [
             'option_key' => $option->option_key,
             'label' => $option->label,
         ]);
@@ -103,7 +106,7 @@ class SafeguardingPreferenceService
     /**
      * Update an existing safeguarding option.
      */
-    public static function updateOption(int $optionId, array $data): bool
+    public static function updateOption(int $optionId, array $data, ?int $actorUserId = null): bool
     {
         $tenantId = TenantContext::getId();
         $result = DB::transaction(function () use ($optionId, $data, $tenantId): ?array {
@@ -174,7 +177,7 @@ class SafeguardingPreferenceService
             SafeguardingTriggerService::activateTriggersForUser((int) $userId, $tenantId);
         }
 
-        self::logActivity(null, 'safeguarding_option_updated', 'safeguarding_option', $optionId, [
+        self::logActivity($actorUserId, 'safeguarding_option_updated', 'safeguarding_option', $optionId, [
             'option_key' => $option->option_key,
             'changes' => $result['changes'],
         ]);
@@ -185,7 +188,7 @@ class SafeguardingPreferenceService
     /**
      * Soft-delete (deactivate) a safeguarding option. Keeps data for audit trail.
      */
-    public static function deleteOption(int $optionId): bool
+    public static function deleteOption(int $optionId, ?int $actorUserId = null): bool
     {
         $tenantId = TenantContext::getId();
         $result = DB::transaction(function () use ($optionId, $tenantId): ?array {
@@ -248,7 +251,7 @@ class SafeguardingPreferenceService
             }
         }
 
-        self::logActivity(null, 'safeguarding_option_deleted', 'safeguarding_option', $optionId, [
+        self::logActivity($actorUserId, 'safeguarding_option_deleted', 'safeguarding_option', $optionId, [
             'option_key'    => $option->option_key,
             'auto_revoked'  => count($affectedUserIds),
         ]);
@@ -396,9 +399,12 @@ class SafeguardingPreferenceService
      *
      * @return array List of option keys that were newly created.
      */
-    public static function applyCountryPreset(int $tenantId, string $presetKey): array
-    {
-        return self::replaceCountryPreset($tenantId, $presetKey)['created'];
+    public static function applyCountryPreset(
+        int $tenantId,
+        string $presetKey,
+        ?int $actorUserId = null,
+    ): array {
+        return self::replaceCountryPreset($tenantId, $presetKey, false, $actorUserId)['created'];
     }
 
     /**
@@ -408,6 +414,7 @@ class SafeguardingPreferenceService
         int $tenantId,
         string $presetKey,
         bool $requireMemberReview = false,
+        ?int $actorUserId = null,
     ): array
     {
         $presets = config('safeguarding_presets', []);
@@ -549,7 +556,7 @@ class SafeguardingPreferenceService
             self::notifyJurisdictionReviewRequired($tenantId, $reviewUserIds);
         }
 
-        self::logActivity(null, 'safeguarding_preset_applied', 'tenant', $tenantId, [
+        self::logActivity($actorUserId, 'safeguarding_preset_applied', 'tenant', $tenantId, [
             'preset' => $presetKey,
             'options_created' => $created,
             'options_updated' => $updated,

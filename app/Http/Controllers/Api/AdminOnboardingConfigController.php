@@ -189,7 +189,7 @@ class AdminOnboardingConfigController extends BaseApiController
     /** POST /v2/admin/config/onboarding/apply-preset */
     public function applyPreset(): JsonResponse
     {
-        $this->requireAdmin();
+        $adminId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $presetKey = $this->input('preset');
 
@@ -202,10 +202,9 @@ class AdminOnboardingConfigController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_preset', ['preset' => $presetKey]), 'preset', 422);
         }
 
-        $created = SafeguardingPreferenceService::applyCountryPreset($tenantId, $presetKey);
+        $created = SafeguardingPreferenceService::applyCountryPreset($tenantId, $presetKey, $adminId);
 
         // Also update the country_preset setting
-        $adminId = $this->requireAdmin();
         DB::statement(
             "INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, setting_type, updated_by)
              VALUES (?, 'onboarding.country_preset', ?, 'string', ?)

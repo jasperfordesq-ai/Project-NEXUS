@@ -48,7 +48,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
     /** POST /v2/admin/safeguarding/options */
     public function store(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $actorUserId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
         $optionKey = trim($this->input('option_key', ''));
@@ -138,7 +138,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
         }
 
         try {
-            $option = SafeguardingPreferenceService::createOption($tenantId, $data);
+            $option = SafeguardingPreferenceService::createOption($tenantId, $data, $actorUserId);
             return $this->respondWithData($option->toArray(), null, 201);
         } catch (\Illuminate\Database\QueryException $e) {
             if (str_contains($e->getMessage(), 'Duplicate entry')) {
@@ -151,7 +151,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
     /** PUT /v2/admin/safeguarding/options/{id} */
     public function update(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $actorUserId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
         $option = TenantSafeguardingOption::where('tenant_id', $tenantId)
@@ -218,7 +218,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
         }
 
         try {
-            $success = SafeguardingPreferenceService::updateOption($id, $data);
+            $success = SafeguardingPreferenceService::updateOption($id, $data, $actorUserId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
@@ -233,10 +233,10 @@ class AdminSafeguardingOptionsController extends BaseApiController
     /** DELETE /v2/admin/safeguarding/options/{id} */
     public function destroy(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $actorUserId = $this->requireBrokerOrAdmin();
 
         try {
-            $success = SafeguardingPreferenceService::deleteOption($id);
+            $success = SafeguardingPreferenceService::deleteOption($id, $actorUserId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
         }
