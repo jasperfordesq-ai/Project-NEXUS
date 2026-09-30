@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Asking a partner-federation address for \"an account\" without naming one no longer returns community-wide totals; it now asks which account (F-365).
 - The summaries a partner community can read about a member now cover only their cross-community activity, not their whole exchange history inside their own community (F-346).
 - A partner community can no longer add time credits to this community's balances without limit. Inbound credit now requires an active credit agreement and stops at a monthly ceiling. Partner federation is switched off and no partner is connected (F-345).
 - The currency named in a partner community's web address is now checked against the currency this community actually issues, instead of being ignored (F-357).

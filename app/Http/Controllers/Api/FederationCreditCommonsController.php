@@ -163,6 +163,16 @@ class FederationCreditCommonsController extends BaseApiController
             return $this->ccError('UnresolvedAccountnameViolation', "Account '{$accId}' not found", 400);
         }
 
+        // F-365: with no account named this degraded into a community-wide
+        // aggregate — total exchanges and total time-credit volume, trendable
+        // with ?since= — reached without consulting any member's opt-in,
+        // because no member was named. The node's own totals are published by
+        // the protocol-mandated GET /cc/about; this endpoint is per-account and
+        // now says so, exactly as its sibling accountHistory() already did.
+        if (!$userId) {
+            return $this->ccError('MissingParameter', 'Account ID required for account stats', 400);
+        }
+
         $query = DB::table('transactions')
             ->where('tenant_id', $tenantId)
             // F-346: summarise only the federated subset of the ledger. Over the
