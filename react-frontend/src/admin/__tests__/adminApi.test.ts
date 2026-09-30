@@ -561,9 +561,10 @@ describe('adminApi', () => {
       expect(mockDelete).toHaveBeenCalledWith('/v2/admin/super/tenants/5');
     });
 
-    it('purgeTenant calls POST /purge', async () => {
-      await adminSuper.purgeTenant(5);
-      expect(mockPost).toHaveBeenCalledWith('/v2/admin/super/tenants/5/purge', {});
+    it('purgeTenant calls POST /purge with the typed confirmation slug', async () => {
+      // F-353: the server now requires the community's slug, typed by the admin.
+      await adminSuper.purgeTenant(5, 'hour-timebank');
+      expect(mockPost).toHaveBeenCalledWith('/v2/admin/super/tenants/5/purge', { confirm_slug: 'hour-timebank' });
     });
 
     it('emergencyLockdown calls POST', async () => {
