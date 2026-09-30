@@ -734,9 +734,31 @@ class User extends Authenticatable
                 ->where('user_id', $userId)
                 ->delete();
 
+            // F-453: a tenant move is a change of which community the account
+            // belongs to, so the authority it holds OVER a community must not
+            // travel with it. An administrator of A moved into B used to arrive
+            // administering B, appointed by nobody there, and a network
+            // administrator kept is_tenant_super_admin — which SuperPanelAccess
+            // evaluates against the account's CURRENT tenant, so their regional
+            // scope silently became B's subtree.
+            //
+            // Cleared here rather than in the controllers so every caller is
+            // covered: AdminSuperController::userMoveTenant(), bulkMoveUsers()
+            // and userMoveAndPromote(). The two that deliberately promote on
+            // arrival re-grant immediately after this call.
+            //
+            // is_super_admin and is_god are PLATFORM authority, not authority
+            // over the community the account sits in, so a move says nothing
+            // about whether they should still be held and they are deliberately
+            // left alone (is_god additionally by O-113: no route clears it).
             $affected = DB::table('users')
                 ->where('id', $userId)
-                ->update(['tenant_id' => $newTenantId]);
+                ->update([
+                    'tenant_id' => $newTenantId,
+                    'role' => DB::raw("CASE WHEN role IN ('admin','tenant_admin') THEN 'member' ELSE role END"),
+                    'is_admin' => 0,
+                    'is_tenant_super_admin' => 0,
+                ]);
 
             // Solely-owned content follows the member in the SAME transaction:
             // listings (categories remapped into the destination taxonomy),

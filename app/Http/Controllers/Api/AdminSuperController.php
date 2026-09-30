@@ -1737,13 +1737,30 @@ class AdminSuperController extends BaseApiController
             }
 
             $userName = UserDisplayName::resolve($lockedUser) ?: $lockedUser['email'];
+            // F-453: the audit entry recorded tenant_id old→new and nothing
+            // else, so the authority the move takes away was invisible — while
+            // the sibling userMoveAndPromote() below does record the flag it
+            // grants. User::moveTenant() drops the community-scoped authority;
+            // record both sides of that here.
+            $oldRole = (string) ($lockedUser['role'] ?? 'member');
+            $newRole = in_array($oldRole, ['admin', 'tenant_admin'], true) ? 'member' : $oldRole;
             $this->superAdminAuditService->log(
                 'user_moved',
                 'user',
                 $id,
                 $userName,
-                ['tenant_id' => $oldTenantId],
-                ['tenant_id' => $newTenantId],
+                [
+                    'tenant_id' => $oldTenantId,
+                    'role' => $oldRole,
+                    'is_admin' => (int) ($lockedUser['is_admin'] ?? 0),
+                    'is_tenant_super_admin' => (int) ($lockedUser['is_tenant_super_admin'] ?? 0),
+                ],
+                [
+                    'tenant_id' => $newTenantId,
+                    'role' => $newRole,
+                    'is_admin' => 0,
+                    'is_tenant_super_admin' => 0,
+                ],
                 "Moved '{$userName}' to tenant '{$lockedNewTenant['name']}'"
             );
 
