@@ -1908,11 +1908,32 @@ class FederationExternalWebhookController extends BaseApiController
 
         // Every externally-originated credit this community has taken in this
         // month — the exact shape both money handlers below write.
+        //
+        // 🔴 F-428 — do NOT filter this by status. The first version of this
+        // control summed only `status = 'completed'`, and the same authenticated
+        // partner moves a row out of 'completed' whenever it likes:
+        // handleTransactionCancelled() writes 'disputed' when the member has
+        // already spent the credit (nothing is taken back) and 'cancelled' when
+        // the reversal succeeds. Both dropped out of this sum, so every
+        // cancellation handed the month's budget back — 72 hours were delivered
+        // against a 30-hour agreement in three credit/spend/cancel rounds.
+        //
+        // Both credit paths insert 'completed' inside the same database
+        // transaction as the balance change and roll back together, so every row
+        // in this shape is a credit that really was delivered. An unfiltered sum
+        // therefore means "every hour this community took from outside this
+        // month", which is exactly what the agreement bounds. A cancellation is
+        // not evidence the same credit came back either — the reversal only
+        // checks `balance >= amount` on the receiving member, so it can take
+        // hours that member earned locally. This matches the sound model this
+        // control was copied from (FederationCreditCommonsController::
+        // inboundCreditCeilingRefusal, which has never filtered) and the v1
+        // partner API's F-440 fix. Consequence, deliberate: a partner that
+        // cancels in good faith does not get that budget back until next month.
         $alreadyCredited = (float) DB::table('federation_transactions')
             ->where('receiver_tenant_id', $tenantId)
             ->where('sender_tenant_id', 0)
             ->whereNotNull('external_partner_id')
-            ->where('status', 'completed')
             ->where('created_at', '>=', now()->startOfMonth())
             ->sum('amount');
 
