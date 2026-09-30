@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Blocking is now enforced in one place rather than being added by hand to each feature, so a blocked member is refused on any path that goes through the platform's contact rules — including ones nobody has checked individually. Two deliberate exceptions: posts to a whole group are unchanged, and blocked members now stop appearing in each other's match suggestions and match emails (F-336).
 - A blocked volunteer can no longer send a shift swap request to the volunteer who blocked them (F-369).
 - A blocked member can no longer make an offer, or send the message attached to it, on a listing belonging to the person who blocked them (F-368).
 - The ranked-poll voting service now refuses a blocked pair in its own right, not only on the web address that reaches it (F-367).

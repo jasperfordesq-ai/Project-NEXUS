@@ -17,6 +17,34 @@ use Illuminate\Support\Facades\Log;
  *
  * The evaluator is a pure read. Callers record attempted writes separately so
  * opening a conversation never alerts staff or creates an audit event.
+ *
+ * 🔴 F-336: two questions are answered here, not one.
+ *
+ *  1. Safeguarding vetting — does the recipient's community require the sender
+ *     to hold an attestation before contacting them?
+ *  2. Blocking — has either member blocked the other?
+ *
+ * Until 2026-09-30 this class answered only the first, while its name and this
+ * docblock told every author it was "the" contact boundary. 52 files call it;
+ * 17 also checked blocks by hand; 35 did not, and each of those was a bypass
+ * waiting to be found (F-070, F-158, F-246, F-271, F-279, F-285, F-332 …).
+ * The block check now lives on the DIRECTED member-to-member entry points, so
+ * a new interaction path is protected by calling this class at all.
+ *
+ * Two entry points deliberately do NOT apply it, and neither omission is an
+ * oversight:
+ *
+ *  - evaluateExternalContact() has no sender user id — an external partner
+ *    actor is not a member, so no block row can describe the pair.
+ *  - evaluateManyLocalContacts() is the INDIVISIBLE group-broadcast path, where
+ *    one denied recipient denies the whole send. Applying blocking there would
+ *    let any member veto another member's group participation by blocking
+ *    them. Blocking hides an individual interaction; it is not a group ban.
+ *    Group paths that need it apply their own per-recipient rule.
+ *
+ * Hand-placed BlockUserService checks in callers are kept: they run before this
+ * class, they answer with the same BLOCKED code, and a path that owns its own
+ * check does not depend on remembering to reach this one.
  */
 class SafeguardingInteractionPolicy
 {
@@ -39,6 +67,13 @@ class SafeguardingInteractionPolicy
         int $tenantId,
         string $channel = 'direct_message',
     ): SafeguardingInteractionDecision {
+        // F-336: blocking is decided first, so a blocked member cannot use the
+        // answer to probe the other member's safeguarding settings.
+        $blocked = $this->blockedDecision($senderId, $recipientId, $tenantId, crossCommunity: false);
+        if ($blocked !== null) {
+            return $blocked;
+        }
+
         return $this->evaluate(
             senderUserId: $senderId,
             senderTenantId: $tenantId,
@@ -62,6 +97,13 @@ class SafeguardingInteractionPolicy
         int $tenantId,
         string $channel = 'direct_message',
     ): SafeguardingInteractionDecision {
+        // F-336: decided before any row is locked — a block needs no lock, and
+        // refusing first keeps a blocked member out of the lock order entirely.
+        $blocked = $this->blockedDecision($senderId, $recipientId, $tenantId, crossCommunity: false);
+        if ($blocked !== null) {
+            return $blocked;
+        }
+
         try {
             $policy = $this->jurisdictions->lockPolicyForUpdate($tenantId);
         } catch (\Throwable $e) {
@@ -107,6 +149,21 @@ class SafeguardingInteractionPolicy
         int $recipientTenantId,
         string $channel = 'federated_message',
     ): SafeguardingInteractionDecision {
+        // F-336 + F-284 (owner decision, 29 Sep 2026): a member may block a
+        // member of a partner community, and that block stops their internal
+        // federated contact. isBlockedEitherAcrossCommunities() is used when the
+        // two members are in different communities because the tenant-scoped
+        // read cannot see the other side's row.
+        $blocked = $this->blockedDecision(
+            $senderId,
+            $recipientId,
+            $recipientTenantId,
+            crossCommunity: $senderTenantId !== $recipientTenantId,
+        );
+        if ($blocked !== null) {
+            return $blocked;
+        }
+
         return $this->evaluate(
             senderUserId: $senderId,
             senderTenantId: $senderTenantId,
@@ -169,6 +226,13 @@ class SafeguardingInteractionPolicy
      * entire send. Unavailable takes precedence over an ordinary denial because
      * it must be reported as a retryable policy failure, not missing vetting.
      *
+     * 🔴 F-336: this path deliberately evaluates SAFEGUARDING ONLY. It calls
+     * evaluate() directly rather than evaluateLocalContact(), so the block
+     * check is not folded into the all-or-nothing decision. Folding it in would
+     * mean one member could silence another across a whole group simply by
+     * blocking them, which is not what blocking means here. Do not "tidy" this
+     * back into a call to evaluateLocalContact().
+     *
      * @param list<int> $recipientIds
      */
     public function evaluateManyLocalContacts(
@@ -183,7 +247,14 @@ class SafeguardingInteractionPolicy
                 continue;
             }
 
-            $decision = $this->evaluateLocalContact($senderId, $recipientId, $tenantId, $channel);
+            $decision = $this->evaluate(
+                senderUserId: $senderId,
+                senderTenantId: $tenantId,
+                recipientId: $recipientId,
+                recipientTenantId: $tenantId,
+                channel: $channel,
+                externalActor: false,
+            );
             if ($decision->isUnavailable()) {
                 return $decision;
             }
@@ -213,6 +284,53 @@ class SafeguardingInteractionPolicy
             $tenantId,
             $channel,
         ));
+    }
+
+    /**
+     * F-336: the block half of "may A interact with B".
+     *
+     * Returns a DENY decision when either member has blocked the other, and
+     * null when there is nothing to say — so a caller reads it as "no objection
+     * from this half", not as "allowed".
+     *
+     * The answer is deliberately direction-neutral (BlockUserService's own rule)
+     * so the actor cannot tell whether they were blocked or are the blocker, and
+     * it carries the same BLOCKED code and message the 20 hand-placed
+     * assertNoBlockBetween() call sites already produce.
+     *
+     * canRequestCoordinator is false: a block is the other member's own
+     * decision, not a vetting gap a coordinator can help with, so the UI must
+     * not offer to escalate it.
+     */
+    private function blockedDecision(
+        ?int $senderUserId,
+        int $recipientId,
+        int $recipientTenantId,
+        bool $crossCommunity,
+    ): ?SafeguardingInteractionDecision {
+        // An external partner actor has no sender user id, and a self-contact
+        // or a non-positive id can never have a block row.
+        if ($senderUserId === null || $senderUserId <= 0 || $recipientId <= 0 || $senderUserId === $recipientId) {
+            return null;
+        }
+
+        $blocked = $crossCommunity
+            ? BlockUserService::isBlockedEitherAcrossCommunities($senderUserId, $recipientId)
+            : BlockUserService::isBlockedEither($senderUserId, $recipientId);
+
+        if (! $blocked) {
+            return null;
+        }
+
+        return new SafeguardingInteractionDecision(
+            status: SafeguardingInteractionDecision::DENY,
+            code: 'BLOCKED',
+            recipientTenantId: $recipientTenantId,
+            purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
+            scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
+            scopeIdentifier: '',
+            canRequestCoordinator: false,
+        );
     }
 
     private function evaluate(
@@ -394,6 +512,9 @@ class SafeguardingInteractionPolicy
         }
 
         $message = match ($decision->code) {
+            // F-336: the same message the 20 hand-placed assertNoBlockBetween()
+            // call sites throw, so a member sees one sentence for one situation.
+            'BLOCKED' => __('safeguarding.errors.blocked_interaction'),
             'SAFEGUARDING_POLICY_UNAVAILABLE' => __('safeguarding.errors.policy_unavailable'),
             'VETTING_REQUIRED' => __('safeguarding.errors.vetting_required', [
                 'types' => implode(', ', $decision->requiredAttestationLabels),
