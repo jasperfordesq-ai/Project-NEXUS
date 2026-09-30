@@ -1548,6 +1548,17 @@ class AdminConfigController extends BaseApiController
 
                 foreach ($kvUpdates as $key => $value) {
                     $this->upsertSetting($tenantId, 'general.' . $key, (string) $value, $adminId);
+
+                    // E-073 F-458: member approval and email verification are
+                    // enforced from the BARE key (TenantSettingsService
+                    // ::requiresAdminApproval / ::requiresEmailVerification),
+                    // which the community seed and every registration-policy
+                    // save also write. Writing only the prefixed row here left
+                    // the toggle showing its new state while the sign-up and
+                    // login gates kept the old one. Write both, identically.
+                    if (in_array($key, TenantSettingsService::DUAL_KEY_GATE_SETTINGS, true)) {
+                        $this->upsertSetting($tenantId, $key, (string) $value, $adminId, 'boolean');
+                    }
                 }
 
                 $invalidator = app(PrerenderContentInvalidator::class);

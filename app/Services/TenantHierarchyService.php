@@ -1211,11 +1211,17 @@ class TenantHierarchyService
         //    regime.
         $defaultSettings = [
             ['tenant_id' => $tenantId, 'setting_key' => 'general.registration_mode', 'setting_value' => 'open', 'setting_type' => 'string'],
-            // Bare key — matches what TenantSettingsService::requiresAdminApproval()
-            // and AdminConfigController read/write. The historical `general.`
-            // prefix was orphaned (reader never looked it up).
+            // E-073 F-458: BOTH forms of each key, seeded identically. The bare
+            // key is what TenantSettingsService::requiresAdminApproval() and
+            // ::requiresEmailVerification() enforce; the `general.`-prefixed one
+            // is what the admin Settings page writes and reads back. Seeding
+            // only the bare form (the comment here used to claim the prefix was
+            // orphaned) is what made the administrator's toggle inert on every
+            // community created through this path.
             ['tenant_id' => $tenantId, 'setting_key' => 'admin_approval', 'setting_value' => 'true', 'setting_type' => 'boolean'],
+            ['tenant_id' => $tenantId, 'setting_key' => 'general.admin_approval', 'setting_value' => 'true', 'setting_type' => 'boolean'],
             ['tenant_id' => $tenantId, 'setting_key' => 'email_verification', 'setting_value' => 'true', 'setting_type' => 'boolean'],
+            ['tenant_id' => $tenantId, 'setting_key' => 'general.email_verification', 'setting_value' => 'true', 'setting_type' => 'boolean'],
             ['tenant_id' => $tenantId, 'setting_key' => 'general.maintenance_mode', 'setting_value' => 'false', 'setting_type' => 'boolean'],
             // SEO defaults — ensure every new tenant has sitemap, canonical, OG, and Twitter cards enabled
             ['tenant_id' => $tenantId, 'setting_key' => 'seo_auto_sitemap', 'setting_value' => '1', 'setting_type' => 'boolean'],

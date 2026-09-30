@@ -305,6 +305,11 @@ class RegistrationPolicyService
         $adminApproval = self::modeRequiresApproval($mode);
 
         $tss->set($tenantId, 'registration_mode', $registrationMode, 'string');
+        // E-073 F-458: these two settings are stored under both a bare and a
+        // `general.`-prefixed key (the gates read one, the admin Settings page
+        // writes and displays the other). TenantSettingsService::set() writes
+        // both names for them, so a policy save can no longer leave the Settings
+        // page showing the opposite of what the sign-up gate enforces.
         $tss->set($tenantId, 'admin_approval', $adminApproval ? 'true' : 'false', 'boolean');
         $tss->set($tenantId, 'email_verification', $requireEmailVerify ? 'true' : 'false', 'boolean');
         $tss->clearCache();

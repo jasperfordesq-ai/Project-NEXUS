@@ -24,6 +24,22 @@ class TenantSettingsService
     private const CACHE_PREFIX = 'tenant_settings:';
     private const CACHE_TTL = 300; // 5 minutes
 
+    /**
+     * The two settings that decide whether a stranger who signs up may use the
+     * community, and which are stored under BOTH a bare key and a `general.`-
+     * prefixed one.
+     *
+     * E-073 F-458: the admin Settings page persisted only `general.<key>` while
+     * these gates read only the bare `<key>` unless it was NULL — and two live
+     * paths (TenantHierarchyService's community seed, RegistrationPolicyService's
+     * policy save) write the bare key, so on most communities the administrator's
+     * toggle was inert. Writing either name through set() now writes the other
+     * name with it (AdminConfigController::updateSettings() does the same for
+     * its own raw upsert), and gateSettingIsRequired() resolves any historical
+     * disagreement in the SAFE direction.
+     */
+    public const DUAL_KEY_GATE_SETTINGS = ['admin_approval', 'email_verification'];
+
     public function __construct()
     {
     }
@@ -59,20 +75,12 @@ class TenantSettingsService
      * approve a new account before it can log in. A tenant can opt out
      * explicitly by writing `admin_approval=false` via the admin UI.
      *
-     * Reads the bare `admin_approval` key first; falls back to the
-     * historical `general.admin_approval` prefix so legacy tenants whose
-     * settings were seeded via TenantHierarchyService still resolve.
+     * Resolved from BOTH the bare `admin_approval` key and the historical
+     * `general.admin_approval` prefix — see gateSettingIsRequired().
      */
     public function requiresAdminApproval(int $tenantId): bool
     {
-        $value = $this->get($tenantId, 'admin_approval');
-        if ($value === null) {
-            $value = $this->get($tenantId, 'general.admin_approval');
-        }
-        if ($value === null) {
-            return true;
-        }
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+        return $this->gateSettingIsRequired($tenantId, 'admin_approval');
     }
 
     /**
@@ -81,26 +89,98 @@ class TenantSettingsService
      * Defaults to TRUE (fail-closed). Email verification is a platform-wide
      * security baseline. Only God (platform super-admin) may disable it.
      *
-     * Reads the bare `email_verification` key first; falls back to the
-     * historical `general.email_verification` prefix so legacy tenants whose
-     * settings were seeded with the old key form still resolve.
+     * Resolved from BOTH the bare `email_verification` key and the historical
+     * `general.email_verification` prefix — see gateSettingIsRequired().
      */
     public function requiresEmailVerification(int $tenantId): bool
     {
-        $value = $this->get($tenantId, 'email_verification');
-        if ($value === null) {
-            $value = $this->get($tenantId, 'general.email_verification');
+        return $this->gateSettingIsRequired($tenantId, 'email_verification');
+    }
+
+    /**
+     * Resolve one of the DUAL_KEY_GATE_SETTINGS from both of its stored keys.
+     *
+     * Every writer now keeps the bare and `general.`-prefixed rows identical,
+     * so for anything written after E-073 F-458 this is simply "read the
+     * value". The rule below exists for rows written BEFORE the fix, where the
+     * two keys can already disagree, and it deliberately resolves such a
+     * disagreement towards screening the new member:
+     *
+     *  - neither key present  → required (the platform's fail-closed baseline);
+     *  - either key says required → required;
+     *  - a value that is not a recognisable boolean at all → required, because
+     *    "we cannot tell" must never mean "let strangers in";
+     *  - required only when every key that IS present plainly says false.
+     *
+     * Checked against the old bare-key-wins behaviour, this changes the answer
+     * in exactly one combination — bare `false` with prefixed `true`, the state
+     * an administrator reached by turning the toggle back ON and being ignored.
+     * No other combination moves, and none moves in the loosening direction.
+     */
+    private function gateSettingIsRequired(int $tenantId, string $key): bool
+    {
+        $sawExplicitOptOut = false;
+
+        foreach ([$key, 'general.' . $key] as $storedKey) {
+            $value = $this->get($tenantId, $storedKey);
+            if ($value === null) {
+                continue;
+            }
+
+            if (filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== false) {
+                return true;
+            }
+
+            $sawExplicitOptOut = true;
         }
-        if ($value === null) {
-            return true;
+
+        return !$sawExplicitOptOut;
+    }
+
+    /**
+     * The other stored key holding the same gate setting, or null for every
+     * setting that is stored under one key only.
+     */
+    private function gateSettingMirrorKey(string $key): ?string
+    {
+        if (in_array($key, self::DUAL_KEY_GATE_SETTINGS, true)) {
+            return 'general.' . $key;
         }
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+
+        $bareKey = substr($key, strlen('general.'));
+        if (str_starts_with($key, 'general.')
+            && in_array($bareKey, self::DUAL_KEY_GATE_SETTINGS, true)
+        ) {
+            return $bareKey;
+        }
+
+        return null;
     }
 
     /**
      * Set a tenant setting value.
+     *
+     * E-073 F-458: the two DUAL_KEY_GATE_SETTINGS are stored under both a bare
+     * and a `general.`-prefixed key — the enforcement gates historically read
+     * one and the admin Settings page wrote and displayed the other, so a save
+     * through either name changed what an administrator was shown without
+     * changing what the platform enforced. Writing one of those two names here
+     * now writes the other name with it, so the pair cannot drift apart again
+     * and no caller has to know that there are two of them.
      */
     public function set(int $tenantId, string $key, string $value, string $type = 'string'): void
+    {
+        $this->writeSetting($tenantId, $key, $value, $type);
+
+        $mirrorKey = $this->gateSettingMirrorKey($key);
+        if ($mirrorKey !== null) {
+            $this->writeSetting($tenantId, $mirrorKey, $value, $type);
+        }
+
+        $this->clearCacheForTenant($tenantId);
+    }
+
+    private function writeSetting(int $tenantId, string $key, string $value, string $type): void
     {
         $existing = DB::selectOne(
             "SELECT id FROM tenant_settings WHERE tenant_id = ? AND setting_key = ?",
@@ -118,8 +198,6 @@ class TenantSettingsService
                 [$tenantId, $key, $value, $type]
             );
         }
-
-        $this->clearCacheForTenant($tenantId);
     }
 
     /**
