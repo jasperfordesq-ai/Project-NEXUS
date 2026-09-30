@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Removing a permission from a role in the admin screen now actually removes it. Previously, for any role created through that screen, the screen reported success and the permission stayed live (F-350).
 - A reviewer whose permission has expired can no longer auto-approve caring hours, which creates time credits (F-364).
 - Permission to view the cross-community comparison dashboard now only works in the community where it was granted, instead of in any community (F-371).
 - A grant that gives someone the "official notices" badge now stops working when it expires. Previously an expired grant kept working indefinitely (F-370).

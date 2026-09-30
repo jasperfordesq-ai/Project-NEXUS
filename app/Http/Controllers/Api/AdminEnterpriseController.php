@@ -233,7 +233,11 @@ class AdminEnterpriseController extends BaseApiController
                 foreach ($permissions as $permName) {
                     $perm = DB::selectOne("SELECT id FROM permissions WHERE name = ? LIMIT 1", [$permName]);
                     if (!empty($perm)) {
-                        DB::insert("INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)", [$roleId, $perm->id]);
+                        // F-350: the tenant_id MUST be written here. Without it the row
+                        // landed NULL and updateRole()'s tenant-scoped DELETE could never
+                        // match it, so the permission could not be taken back and the
+                        // editor still reported success.
+                        DB::insert("INSERT IGNORE INTO role_permissions (role_id, permission_id, tenant_id) VALUES (?, ?, ?)", [$roleId, $perm->id, $tenantId]);
                     }
                 }
             }
@@ -291,11 +295,19 @@ class AdminEnterpriseController extends BaseApiController
             if (isset($data['permissions']) && is_array($data['permissions'])) {
                 $roleCheck = DB::selectOne("SELECT id FROM roles WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
                 if (!$roleCheck) { DB::rollBack(); return $this->respondWithError('NOT_FOUND', __('api.role_not_found_in_tenant'), null, 404); }
-                DB::delete("DELETE FROM role_permissions WHERE role_id = ? AND tenant_id = ?", [$id, $tenantId]);
+                // F-350: also clear rows left with a NULL tenant_id by the old
+                // createRole(). The role itself is already pinned to this tenant by the
+                // check above, so every one of its permission rows belongs to it
+                // whatever the column says. Without the NULL arm those rows survived
+                // their own removal and the editor still returned 200.
+                DB::delete(
+                    "DELETE FROM role_permissions WHERE role_id = ? AND (tenant_id = ? OR tenant_id IS NULL)",
+                    [$id, $tenantId]
+                );
                 foreach ($data['permissions'] as $permName) {
                     $perm = DB::selectOne("SELECT id FROM permissions WHERE name = ? LIMIT 1", [$permName]);
                     if (!empty($perm)) {
-                        DB::insert("INSERT INTO role_permissions (role_id, permission_id, tenant_id) VALUES (?, ?, ?)", [$id, $perm->id, $tenantId]);
+                        DB::insert("INSERT IGNORE INTO role_permissions (role_id, permission_id, tenant_id) VALUES (?, ?, ?)", [$id, $perm->id, $tenantId]);
                     }
                 }
             }
