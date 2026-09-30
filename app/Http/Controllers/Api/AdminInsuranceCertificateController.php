@@ -181,6 +181,16 @@ class AdminInsuranceCertificateController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.insurance_cert_not_found'), null, 404);
             }
 
+            // F-401: the F-389 guard was missed on this sibling write path.
+            // update() permits expiry_date, so a broker whose own verified
+            // certificate had expired pushed the expiry out (or nulled it) and
+            // the insurance requirement an administrator attached to the
+            // broker's own listing stopped firing — no re-verification, no new
+            // evidence. Same line store() and verify() draw.
+            if ($refusal = $this->guardBrokerNotSubject((int) ($existing['user_id'] ?? 0), $adminId)) {
+                return $refusal;
+            }
+
             $allInput = $this->getAllInput();
 
             if (array_key_exists('insurance_type', $allInput) && $allInput['insurance_type'] !== null) {
@@ -352,6 +362,12 @@ class AdminInsuranceCertificateController extends BaseApiController
             $existing = $this->insuranceCertificateService->getById($id);
             if (!$existing) {
                 return $this->respondWithError('NOT_FOUND', __('api.insurance_cert_not_found'), null, 404);
+            }
+
+            // F-401: the same missed sibling. Deleting your own record erases
+            // an administrator's rejection of your insurance along with it.
+            if ($refusal = $this->guardBrokerNotSubject((int) ($existing['user_id'] ?? 0), $adminId)) {
+                return $refusal;
             }
 
             $this->insuranceCertificateService->delete($id);
