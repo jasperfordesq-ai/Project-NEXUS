@@ -66,6 +66,7 @@ class ManageLegacyVettingEvidenceCommandTest extends TestCase
         $exit = Artisan::call('safeguarding:legacy-vetting-evidence', [
             '--delete' => true,
             '--all-tenants' => true,
+            '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
             '--dpo-authorisation' => 'DPO-TEST-1',
             // Exact --confirm phrase deliberately omitted.
         ]);
@@ -100,6 +101,7 @@ class ManageLegacyVettingEvidenceCommandTest extends TestCase
         $this->artisan('safeguarding:legacy-vetting-evidence', [
             '--tenant' => (string) $this->testTenantId,
             '--delete' => true,
+            '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
             '--dpo-authorisation' => 'DPO-TEST-METADATA',
             '--confirm' => 'DELETE-LEGACY-VETTING-EVIDENCE',
         ])->expectsOutputToContain('legacy rows with prohibited metadata redacted')
@@ -123,6 +125,7 @@ class ManageLegacyVettingEvidenceCommandTest extends TestCase
         $rerunExit = Artisan::call('safeguarding:legacy-vetting-evidence', [
             '--tenant' => (string) $this->testTenantId,
             '--delete' => true,
+            '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
             '--dpo-authorisation' => 'DPO-TEST-METADATA-RERUN',
             '--confirm' => 'DELETE-LEGACY-VETTING-EVIDENCE',
         ]);
@@ -168,6 +171,7 @@ class ManageLegacyVettingEvidenceCommandTest extends TestCase
         $this->artisan('safeguarding:legacy-vetting-evidence', [
             '--tenant' => (string) $this->testTenantId,
             '--delete' => true,
+            '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
             '--dpo-authorisation' => 'DPO-TEST-EXACT-CREDENTIAL-TYPES',
             '--confirm' => 'DELETE-LEGACY-VETTING-EVIDENCE',
         ])->expectsOutputToContain('unknown volunteering credential rows requiring manual review')
@@ -198,6 +202,7 @@ class ManageLegacyVettingEvidenceCommandTest extends TestCase
         $exit = Artisan::call('safeguarding:legacy-vetting-evidence', [
             '--tenant' => (string) $this->testTenantId,
             '--delete' => true,
+            '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
             '--dpo-authorisation' => 'DPO-TEST-TOMBSTONE',
             '--confirm' => 'DELETE-LEGACY-VETTING-EVIDENCE',
         ]);

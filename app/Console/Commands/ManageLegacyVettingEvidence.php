@@ -20,12 +20,31 @@ use Illuminate\Support\Facades\Schema;
  * Inventory retired vetting upload paths without inspecting file content.
  *
  * Deletion is deliberately cumbersome: it requires an explicit tenant scope
- * (or all-tenants scope), a DPO authorisation reference, and a fixed confirmation
- * phrase. Nothing is deleted in the default mode.
+ * (or all-tenants scope), a named operator, a DPO authorisation reference, and
+ * a fixed confirmation phrase. Nothing is deleted in the default mode.
+ *
+ * 🔴 F-409 — every destructive run is now recorded in `gdpr_audit_log`, twice:
+ * an `..._authorised` row written BEFORE anything is touched (so a run that
+ * dies part-way still leaves evidence that it happened) and a `..._completed`
+ * row carrying the counts and the outcome. Until this was added the command
+ * unlinked evidence files, nulled `vetting_records` metadata and hard-deleted
+ * `vol_credentials` rows while writing nothing anywhere, and the
+ * `--dpo-authorisation` reference it demanded was checked for non-emptiness
+ * and then discarded. A community could not be told what had been destroyed on
+ * its behalf, and a wrong or malicious run looked exactly like a correct one.
+ *
+ * If the audit record cannot be written, nothing is destroyed. That ordering is
+ * the point: no record, no destruction.
  */
 class ManageLegacyVettingEvidence extends Command
 {
     public const CONFIRMATION_PHRASE = 'DELETE-LEGACY-VETTING-EVIDENCE';
+
+    /** Audit table the destructive run is recorded in. */
+    private const AUDIT_TABLE = 'gdpr_audit_log';
+    private const AUDIT_ENTITY_TYPE = 'legacy_vetting_evidence';
+    private const AUDIT_ACTION_AUTHORISED = 'legacy_vetting_evidence_destruction_authorised';
+    private const AUDIT_ACTION_COMPLETED = 'legacy_vetting_evidence_destruction_completed';
 
     /**
      * Evidence-content fields that are prohibited in the replacement
@@ -50,6 +69,7 @@ class ManageLegacyVettingEvidence extends Command
         {--all-tenants : Explicitly select every tenant and the unscoped legacy root}
         {--show-paths : Print relative file paths (may itself be sensitive)}
         {--delete : Delete inventoried evidence, clear verified-local pointers, and redact prohibited legacy metadata}
+        {--actor= : Required operator identity recorded against a --delete run}
         {--dpo-authorisation= : Required DPO approval/ticket reference for --delete}
         {--confirm= : Required exact destructive confirmation phrase for --delete}';
 
@@ -149,6 +169,19 @@ class ManageLegacyVettingEvidence extends Command
             return self::FAILURE;
         }
 
+        // F-409: recorded BEFORE the first irreversible act, so a run that dies
+        // part-way through still leaves proof that it started and under whose
+        // authority. The counts here are what the run intends to destroy.
+        $this->recordDestructiveRun(self::AUDIT_ACTION_AUTHORISED, $scope, [
+            'phase' => 'authorised',
+            'planned' => [
+                'evidence_files' => count($entries),
+                'legacy_document_pointers' => $pointers->count(),
+                'legacy_rows_with_prohibited_metadata' => $sensitiveMetadataRows->count(),
+                'retired_volunteering_credential_rows' => $volunteerPointers->count(),
+            ],
+        ]);
+
         $deletion = $this->evidence->deleteInventoried($entries);
         $clearedPointers = 0;
         $outstandingPointers = 0;
@@ -215,6 +248,21 @@ class ManageLegacyVettingEvidence extends Command
                 ->delete();
         }
 
+        $counts = [
+            'files_deleted' => $deletion['deleted'],
+            'files_already_missing' => $deletion['missing'],
+            'paths_refused_by_containment_checks' => $deletion['refused'],
+            'file_deletions_failed' => $deletion['failed'],
+            'local_database_pointers_cleared' => $clearedPointers,
+            'database_pointers_still_requiring_review' => $outstandingPointers,
+            'legacy_rows_metadata_redacted' => $sensitiveMetadataRowsRedacted,
+            'retired_volunteering_credential_files_deleted' => $privateDeleted,
+            'retired_volunteering_credential_files_already_missing' => $privateMissing,
+            'retired_volunteering_credential_paths_refused' => $privateRefused,
+            'retired_volunteering_credential_deletions_failed' => $privateFailed,
+            'retired_volunteering_credential_rows_deleted' => $retiredCredentialRowsDeleted,
+        ];
+
         $this->table(['Cleanup metric', 'Count'], [
             ['files deleted', $deletion['deleted']],
             ['files already missing', $deletion['missing']],
@@ -230,11 +278,22 @@ class ManageLegacyVettingEvidence extends Command
             ['retired volunteering credential rows deleted', $retiredCredentialRowsDeleted],
         ]);
 
-        if ($deletion['refused'] > 0
+        $incomplete = $deletion['refused'] > 0
             || $deletion['failed'] > 0
             || $outstandingPointers > 0
             || $privateRefused > 0
-            || $privateFailed > 0) {
+            || $privateFailed > 0;
+
+        // F-409: recorded whether the run finished cleanly or not — an
+        // incomplete destruction is exactly the state a community most needs a
+        // record of.
+        $this->recordDestructiveRun(self::AUDIT_ACTION_COMPLETED, $scope, [
+            'phase' => 'completed',
+            'outcome' => $incomplete ? 'incomplete' : 'complete',
+            'counts' => $counts,
+        ]);
+
+        if ($incomplete) {
             $this->components->error(
                 'Cleanup is incomplete. Preserve the DPO case and resolve refused, failed, external, or unrecognised paths.'
             );
@@ -298,6 +357,15 @@ class ManageLegacyVettingEvidence extends Command
             return false;
         }
 
+        // F-409: the audit record has to be able to answer "who ran this".
+        // Nothing else on a CLI run can — inside the container every process is
+        // www-data — so the operator names themselves or the run is refused.
+        if ($this->operatorIdentity() === '') {
+            $this->error('--delete requires a non-empty --actor operator identity for the audit record.');
+
+            return false;
+        }
+
         $authorisation = trim((string) ($this->option('dpo-authorisation') ?? ''));
         if ($authorisation === '') {
             $this->error('--delete requires a non-empty --dpo-authorisation approval/ticket reference.');
@@ -311,7 +379,58 @@ class ManageLegacyVettingEvidence extends Command
             return false;
         }
 
+        if (! Schema::hasTable(self::AUDIT_TABLE)) {
+            $this->error(
+                'Cleanup refused: the ' . self::AUDIT_TABLE . ' audit table is missing, so the destruction could not be recorded.'
+            );
+
+            return false;
+        }
+
         return true;
+    }
+
+    private function operatorIdentity(): string
+    {
+        return trim((string) ($this->option('actor') ?? ''));
+    }
+
+    private function dpoAuthorisation(): string
+    {
+        return trim((string) ($this->option('dpo-authorisation') ?? ''));
+    }
+
+    /**
+     * Write one durable record of a destructive run. Deliberately NOT wrapped in
+     * a swallowing catch: if the destruction cannot be recorded, the caller must
+     * stop rather than proceed unrecorded (see the class docblock).
+     *
+     * `gdpr_audit_log` is the platform's existing erasure/minimisation trail —
+     * the same table `GdprService::logAction()` writes to — so this run appears
+     * alongside the other data-protection actions a community can be shown.
+     *
+     * @param array{tenant_id: int|null, tenant_slug: string|null, label: string} $scope
+     * @param array<string, mixed>                                                $payload
+     */
+    private function recordDestructiveRun(string $action, array $scope, array $payload): void
+    {
+        DB::table(self::AUDIT_TABLE)->insert([
+            // `tenant_id` is NOT NULL; 0 denotes the explicit all-tenants scope,
+            // which the `scope` key below states in words.
+            'tenant_id' => $scope['tenant_id'] ?? 0,
+            'user_id' => null,
+            'admin_id' => null,
+            'action' => $action,
+            'entity_type' => self::AUDIT_ENTITY_TYPE,
+            'entity_id' => $scope['tenant_id'],
+            'new_value' => json_encode(array_merge([
+                'actor' => $this->operatorIdentity(),
+                'dpo_authorisation' => $this->dpoAuthorisation(),
+                'scope' => $scope['label'],
+                'tenant_id' => $scope['tenant_id'],
+            ], $payload), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
+            'created_at' => now(),
+        ]);
     }
 
     /** @return Collection<int, object> */

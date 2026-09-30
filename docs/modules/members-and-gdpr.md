@@ -173,7 +173,12 @@ so it nests safely under test transactions). The steps, as implemented:
    A legacy row that still carries `document_url` is reduced to a revoked,
    minimised cleanup tombstone until the DPO-authorised legacy-evidence command
    (`php artisan safeguarding:legacy-vetting-evidence`) removes the referenced
-   object; dropping that pointer first could orphan the most sensitive copy. The
+   object; dropping that pointer first could orphan the most sensitive copy.
+   That command's `--delete` mode requires `--actor`, `--dpo-authorisation` and
+   the exact `--confirm` phrase, and writes two `gdpr_audit_log` rows per run —
+   `legacy_vetting_evidence_destruction_authorised` before anything is touched
+   and `legacy_vetting_evidence_destruction_completed` with the counts. If the
+   audit row cannot be written, nothing is destroyed (F-409). The
    retired legacy insurance directory is also removed defensively if it still
    exists. **Safeguarding reports are deliberately retained** under legal hold
    — they are not in this set.
