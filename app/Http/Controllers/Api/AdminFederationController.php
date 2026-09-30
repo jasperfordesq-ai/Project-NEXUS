@@ -14,6 +14,7 @@ use App\Services\FederationFeatureService;
 use App\Services\FederationInternalLedgerService;
 use App\Services\FederationPartnershipService;
 use App\Models\Notification;
+use App\Support\Federation\FederationScopes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1046,12 +1047,15 @@ class AdminFederationController extends BaseApiController
         if (!$name) { return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_federation.api_key_name_required'), 'name'); }
         if (!$this->tableExists('federation_api_keys')) { return $this->respondWithError('TABLE_MISSING', __('api_controllers_1.admin_federation.api_keys_table_not_configured'), null, 503); }
 
-        // Scope allow-list + privilege gate. Validate against the known federation
-        // scope vocabulary, and require a PLATFORM super-admin to issue value-bearing
-        // scopes — a tenant admin must not be able to self-mint a key that can move
-        // credits (transactions:write) or act as admin across the federation surface.
-        $validScopes = ['members:read', 'members:write', 'transactions:read', 'transactions:write', 'ingest:write', 'admin'];
-        $privilegedScopes = ['members:write', 'transactions:write', 'ingest:write', 'admin'];
+        // Scope allow-list + privilege gate. Both come from FederationScopes, the
+        // single vocabulary the enforcement sites are checked against — this list
+        // used to be a local literal and had drifted from the scopes the routes
+        // actually enforce (F-451). A PLATFORM super-admin is still required for
+        // value-bearing scopes: a tenant admin must not be able to self-mint a key
+        // that can move credits (transactions:write), write on a member's behalf,
+        // read private correspondence, or act as admin across the federation surface.
+        $validScopes = FederationScopes::issuable();
+        $privilegedScopes = FederationScopes::privileged();
         $scopes = is_array($scopes) ? array_values(array_unique(array_map('strval', $scopes))) : [];
         $invalidScopes = array_diff($scopes, $validScopes);
         if (!empty($invalidScopes)) {
