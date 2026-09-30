@@ -2397,6 +2397,31 @@ class AdminEnterpriseController extends BaseApiController
                 $features = json_decode($row->features ?? '{}', true) ?: [];
                 $features[$key] = $value;
                 DB::update("UPDATE tenants SET features = ? WHERE id = ?", [json_encode($features), $tenantId]);
+
+                // F-461: federation is NOT enforced from this JSON. Every outbound
+                // push listener and the partnership check ask
+                // FederationFeatureService::isTenantFederationEnabled(), which reads
+                // `federation_tenant_features`. Writing only the JSON closed the
+                // member-facing gate — the community LOOKED un-federated — while it
+                // carried on pushing listings, messages, transactions, profile
+                // updates, groups and reviews outward and carried on answering as a
+                // valid federation target for other communities.
+                // AdminConfigController::updateFeature() keeps the two in step; this
+                // route must do the same, in both directions.
+                if ($key === 'federation') {
+                    $federationFeatures = app(\App\Services\FederationFeatureService::class);
+                    if ($value) {
+                        $federationFeatures->enableTenantFeature(
+                            \App\Services\FederationFeatureService::TENANT_FEDERATION_ENABLED,
+                            $tenantId
+                        );
+                    } else {
+                        $federationFeatures->disableTenantFeature(
+                            \App\Services\FederationFeatureService::TENANT_FEDERATION_ENABLED,
+                            $tenantId
+                        );
+                    }
+                }
             } else {
                 $configuration = json_decode($row->configuration ?? '{}', true) ?: [];
                 $modules = $configuration['modules'] ?? [];
