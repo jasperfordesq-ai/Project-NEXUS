@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - The platform's main framework (Laravel) and two supporting packages (Flysystem for file storage, phpseclib for encryption) are updated to versions that fix newly published weaknesses: a display issue on the debug error page (never switched on in production), mishandling of unusual characters in file paths, and a timing weakness in one encryption method.
+- Deleting a group no longer destroys the abuse reports filed about it, the moderator's decisions on those reports, or the group's own record of who did what — and the deletion itself is now recorded with the name of whoever ordered it. The files members uploaded to the group are now removed with it instead of being left on the server (F-337, F-360).
 - Clearing an application log from the admin screen is now recorded, with who did it, before the log is cleared — and is refused if that record cannot be written (F-355).
 - Removing a permission from a role in the admin screen now actually removes it. Previously, for any role created through that screen, the screen reported success and the permission stayed live (F-350).
 - A reviewer whose permission has expired can no longer auto-approve caring hours, which creates time credits (F-364).

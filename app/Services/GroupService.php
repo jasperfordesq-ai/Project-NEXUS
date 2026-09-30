@@ -15,6 +15,7 @@ use App\Events\GroupDeleted;
 use App\Events\GroupMemberJoined;
 use App\Events\GroupMemberLeft;
 use App\Events\GroupUpdated;
+use App\Exceptions\GroupStorageQuarantineException;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
 use App\Models\Group;
@@ -1587,7 +1588,13 @@ class GroupService
         // inherit scoping from these tenant-filtered parent-id lists.
         $tenantId = (int) TenantContext::getId();
 
-        $deleted = DB::transaction(function () use ($group, $id, $userId, $groupName, $tenantId): bool {
+        // F-360: the per-file path (GroupFileService::delete) quarantines the
+        // bytes inside the transaction and purges them only after it commits.
+        // The whole-group cascade used to delete the group_files / group_media
+        // ROWS only, leaving members' private documents on disk for ever with
+        // nothing naming them. Same quarantine engine, same rollback guarantee.
+        try {
+            $deleted = (new GroupStorageQuarantine())->run(function (\Closure $quarantine) use ($group, $id, $userId, $groupName, $tenantId): bool {
             ActivityLog::log(
                 $userId,
                 'group_deleted',
@@ -1653,13 +1660,39 @@ class GroupService
                 DB::table('group_chatrooms')->where('group_id', $id)->where('tenant_id', $tenantId)->delete();
             }
 
-            self::deleteRelatedGroupRecords($id, $tenantId);
+            self::deleteRelatedGroupRecords($id, $tenantId, $quarantine);
+
+            // F-337: the group's own audit trail now outlives the group, so end
+            // it with an entry naming the member who ordered the deletion. This
+            // is the "record who did it" half of the pattern copied from
+            // AdminSafeguardingController::deleteAssignment.
+            GroupAuditService::log(
+                GroupAuditService::ACTION_GROUP_DELETED,
+                $id,
+                $userId,
+                ['group_name' => $groupName],
+            );
 
             // Delete the group itself
             $group->delete();
 
             return true;
-        });
+            });
+        } catch (GroupStorageQuarantineException $exception) {
+            // The rows are still there — the bytes could not be moved out of the
+            // way, so nothing was deleted. Report the failure rather than a
+            // success-shaped false.
+            Log::error('GroupService: storage quarantine failed on group delete', [
+                'group_id' => $id,
+                'error' => $exception->getMessage(),
+            ]);
+            self::$errors[] = [
+                'code' => 'STORAGE_DELETE_FAILED',
+                'message' => __('api.group_file_delete_storage_failed'),
+            ];
+
+            return false;
+        }
 
         if ($deleted) {
             DB::afterCommit(static function () use ($id, $tenantId, $groupName): void {
@@ -1677,8 +1710,17 @@ class GroupService
         return $deleted;
     }
 
-    private static function deleteRelatedGroupRecords(int $groupId, int $tenantId): void
+    /**
+     * @param \Closure(list<array{disk: string, path: string}>): void $quarantine
+     */
+    private static function deleteRelatedGroupRecords(int $groupId, int $tenantId, \Closure $quarantine): void
     {
+        // F-360: move the uploaded bytes out of the way BEFORE the rows that
+        // name them are deleted. GroupStorageQuarantine restores them if the
+        // transaction rolls back and purges them only after it commits, so the
+        // database and the disk cannot disagree.
+        self::quarantineGroupUploads($groupId, $tenantId, $quarantine);
+
         if (Schema::hasTable('group_wiki_pages')) {
             $pageIds = DB::table('group_wiki_pages')->where('group_id', $groupId)->where('tenant_id', $tenantId)->pluck('id')->all();
             if (! empty($pageIds) && Schema::hasTable('group_wiki_revisions')) {
@@ -1714,10 +1756,18 @@ class GroupService
             }
         }
 
+        // 🔴 F-337: group_audit_log, group_approval_requests and
+        // group_content_flags are DELIBERATELY absent from this list. They are
+        // the community's record of what was complained about and what a
+        // moderator decided, and the actor here need only be the group's own
+        // owner (any member may create a group — F-093), so cascading them away
+        // let the subject of a complaint erase the complaint. They have no
+        // foreign key to `groups`, so they simply outlive the group — the same
+        // way listing reports outlive a deleted listing. The model is
+        // AdminSafeguardingController::deleteAssignment: preserve the trail and
+        // record who ended it (the group_deleted entry written in delete()).
         foreach ([
             'group_announcements',
-            'group_audit_log',
-            'group_approval_requests',
             'group_challenges',
             'group_chatrooms',
             'group_files',
@@ -1733,20 +1783,87 @@ class GroupService
             }
         }
 
-        if (Schema::hasTable('group_content_flags')) {
-            DB::table('group_content_flags')
-                ->where('content_type', 'group')
-                ->where('content_id', $groupId)
-                ->where('tenant_id', $tenantId)
-                ->delete();
-        }
-
         if (Schema::hasTable('group_policies')) {
             DB::table('group_policies')
                 ->whereIn('policy_key', GroupWelcomeService::policyKeysForGroup($groupId))
                 ->where('tenant_id', $tenantId)
                 ->delete();
         }
+    }
+
+    /**
+     * F-360: hand every private upload belonging to this group to the storage
+     * quarantine so the bytes go with the rows.
+     *
+     * Mirrors GroupFileService::delete() and GroupMediaController::destroy():
+     * `local` for documents, `local` + `public` for media (the media path has
+     * lived on both disks across deployments, and the quarantine skips a disk
+     * that does not hold the file).
+     *
+     * @param \Closure(list<array{disk: string, path: string}>): void $quarantine
+     */
+    private static function quarantineGroupUploads(int $groupId, int $tenantId, \Closure $quarantine): void
+    {
+        /** @var list<array{disk: string, path: string}> $assets */
+        $assets = [];
+
+        if (Schema::hasTable('group_files')) {
+            $paths = DB::table('group_files')
+                ->where('group_id', $groupId)
+                ->where('tenant_id', $tenantId)
+                ->pluck('file_path')
+                ->all();
+            foreach ($paths as $storedPath) {
+                if (is_string($storedPath) && self::isSafeGroupStoragePath($storedPath, $tenantId, $groupId)) {
+                    $assets[] = ['disk' => 'local', 'path' => $storedPath];
+                }
+            }
+        }
+
+        if (Schema::hasTable('group_media')) {
+            $rows = DB::table('group_media')
+                ->where('group_id', $groupId)
+                ->where('tenant_id', $tenantId)
+                ->get(['file_path', 'thumbnail_path']);
+            foreach ($rows as $row) {
+                foreach ([$row->file_path ?? null, $row->thumbnail_path ?? null] as $storedPath) {
+                    if (! is_string($storedPath) || ! self::isSafeGroupStoragePath($storedPath, $tenantId, $groupId)) {
+                        continue;
+                    }
+                    foreach (['local', 'public'] as $diskName) {
+                        $assets[] = ['disk' => $diskName, 'path' => $storedPath];
+                    }
+                }
+            }
+        }
+
+        if ($assets !== []) {
+            $quarantine($assets);
+        }
+    }
+
+    /**
+     * Same predicate as GroupFileService::isSafeStoragePath() — a stored path is
+     * only ever touched when it is relative, traversal-free and inside this
+     * group's own folder. A corrupted or hand-edited row can never point the
+     * deletion at another group's (or another community's) bytes.
+     */
+    private static function isSafeGroupStoragePath(string $path, int $tenantId, int $groupId): bool
+    {
+        if ($path === '' || str_contains($path, "\0")) {
+            return false;
+        }
+        $normalized = str_replace('\\', '/', $path);
+        if (str_starts_with($normalized, '/') || preg_match('/^[A-Za-z]:\//', $normalized) === 1) {
+            return false;
+        }
+        foreach (explode('/', $normalized) as $segment) {
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                return false;
+            }
+        }
+
+        return str_starts_with($normalized, "groups/{$tenantId}/{$groupId}/");
     }
 
     // -----------------------------------------------------------------
