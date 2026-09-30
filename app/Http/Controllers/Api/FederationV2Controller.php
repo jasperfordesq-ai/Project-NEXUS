@@ -3817,6 +3817,35 @@ class FederationV2Controller extends BaseApiController
                 return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
             }
 
+            // ── F-376: re-check the RECIPIENT inside the transaction ──
+            // Their account status and federation settings were also read
+            // unlocked, so credits landed on a member who had just withdrawn
+            // consent to federation, or on an account an administrator had just
+            // deactivated. Deliberately NOT joining `tenants` here: that row is
+            // a platform-wide hotspot and must not be locked on a money path.
+            $lockedReceiver = DB::selectOne(
+                "SELECT u.status, fus.federation_optin, fus.transactions_enabled_federated
+                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id
+                 WHERE u.id = ? AND u.tenant_id = ? FOR UPDATE",
+                [$receiverIdInt, $receiverTenantIdInt]
+            );
+            if (!$lockedReceiver
+                || (string) $lockedReceiver->status !== 'active'
+                || !$lockedReceiver->federation_optin) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('RECIPIENT_NOT_FOUND', __('api.fed_recipient_not_found'), null, 404);
+            }
+            if (!$lockedReceiver->transactions_enabled_federated) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('RECIPIENT_TRANSACTIONS_DISABLED', __('api.fed_recipient_transactions_disabled'), null, 403);
+            }
+
             $deducted = DB::update("UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND balance >= ?", [$amount, $userId, $tenantId, $amount]);
             if ($deducted === 0) {
                 DB::rollBack();
@@ -3829,7 +3858,12 @@ class FederationV2Controller extends BaseApiController
             // Guard the credit like the debit above: if the receiver row vanished
             // between the SELECT and this UPDATE, roll back rather than debiting
             // the sender with no matching credit.
-            $credited = DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ?", [$amount, $receiverIdInt, $receiverTenantIdInt]);
+            // F-376: the debit was conditional on `balance >= ?` while the credit
+            // was conditional on nothing but existence, so it would land on a
+            // non-active account. `status = 'active'` matches the recipient
+            // pre-check and the locked re-read above — the F-105 shape, closed on
+            // the federated path.
+            $credited = DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'", [$amount, $receiverIdInt, $receiverTenantIdInt]);
             if ($credited === 0) {
                 DB::rollBack();
                 if ($idemCacheKey !== null) {
