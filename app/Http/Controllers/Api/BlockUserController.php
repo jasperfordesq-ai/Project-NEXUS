@@ -40,15 +40,17 @@ class BlockUserController extends BaseApiController
         }
 
         // The target must be in this community, or (F-284, owner decision
-        // 29 Sep 2026) in a community this one has a federation partnership
-        // with — those are the members internal federation can put in front of
-        // this member. Anyone else answers the same 404 as a missing id, so the
-        // endpoint is not an installation-wide "does this id exist" oracle.
+        // 29 Sep 2026) a member internal federation can actually put in front
+        // of this member: an ACTIVE partnership and a target who has opted in
+        // (F-381 — any partnership row in any status used to be enough, which
+        // let the block list name members who never joined federation).
+        // Anyone else answers the same 404 as a missing id, so the endpoint is
+        // not a "does this id exist" oracle.
         $tenantId = (int) TenantContext::getId();
         $targetTenantId = DB::table('users')->where('id', $id)->value('tenant_id');
         $targetIsReachable = $targetTenantId !== null && (
             (int) $targetTenantId === $tenantId
-            || FederationPartnershipService::getPartnership($tenantId, (int) $targetTenantId) !== null
+            || BlockUserService::isReachableAcrossCommunities($tenantId, $id)
         );
         if (!$targetIsReachable) {
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);

@@ -309,6 +309,48 @@ class BlockUserService
     /**
      * Get all users blocked by the given user.
      */
+    /**
+     * F-381: whether a member of ANOTHER community may be blocked by a member
+     * of $tenantId. Only while internal federation could actually put them in
+     * front of that member: an ACTIVE partnership between the two communities
+     * and a target who has opted in to federation (every cross-community
+     * channel — messages, connection requests, transfers — requires the sender
+     * to be opted in). Anyone else is answered as a missing id, so blocking is
+     * neither an existence check nor a way to put a hidden member's name into
+     * the block list.
+     */
+    public static function isReachableAcrossCommunities(int $tenantId, int $targetUserId): bool
+    {
+        $targetTenantId = DB::table('users as u')
+            ->join('federation_user_settings as fus', 'fus.user_id', '=', 'u.id')
+            ->where('u.id', $targetUserId)
+            ->where('u.tenant_id', '<>', $tenantId)
+            ->where('fus.federation_optin', 1)
+            ->value('u.tenant_id');
+
+        return $targetTenantId !== null && self::hasActivePartnership($tenantId, (int) $targetTenantId);
+    }
+
+    private static function hasActivePartnership(int $tenantA, int $tenantB): bool
+    {
+        return DB::table('federation_partnerships')
+            ->where('status', 'active')
+            ->where(function ($q) use ($tenantA, $tenantB) {
+                $q->where(fn ($p) => $p->where('tenant_id', $tenantA)->where('partner_tenant_id', $tenantB))
+                    ->orWhere(fn ($p) => $p->where('tenant_id', $tenantB)->where('partner_tenant_id', $tenantA));
+            })
+            ->exists();
+    }
+
+    /** F-381: the federated-member visibility rule, applied to a block-list row. */
+    private static function isVisibleAcrossCommunities(object $row, int $tenantId): bool
+    {
+        return (int) ($row->federation_optin ?? 0) === 1
+            && (int) ($row->profile_visible_federated ?? 0) === 1
+            && ($row->blocked_status ?? null) === 'active'
+            && self::hasActivePartnership($tenantId, (int) $row->blocked_tenant_id);
+    }
+
     public static function getBlockedUsers(int $userId): Collection
     {
         $tenantId = TenantContext::getId();
@@ -319,6 +361,7 @@ class BlockUserService
         // is what scopes the list to blocks made in this community.
         $query = DB::table('user_blocks')
             ->join('users', 'user_blocks.blocked_user_id', '=', 'users.id')
+            ->leftJoin('federation_user_settings as fus', 'fus.user_id', '=', 'users.id')
             ->where('user_blocks.user_id', $userId);
 
         if (Schema::hasColumn('user_blocks', 'tenant_id')) {
@@ -336,10 +379,34 @@ class BlockUserService
                 'users.profile_type',
                 'user_blocks.reason',
                 'user_blocks.created_at as blocked_at',
+                'users.tenant_id as blocked_tenant_id',
+                'users.status as blocked_status',
+                'fus.federation_optin',
+                'fus.profile_visible_federated',
             ])
             ->orderByDesc('user_blocks.created_at')
             ->get()
-            ->map(function ($row) {
+            ->map(function ($row) use ($tenantId) {
+                // F-381: a partner-community member is named only while they
+                // are visible across communities — the rule the federated
+                // member profile applies. A block made earlier of someone who
+                // has since hidden stays listed (so it can be removed) under
+                // a neutral label, with no surname or photo.
+                if ((int) $row->blocked_tenant_id !== (int) $tenantId
+                    && !self::isVisibleAcrossCommunities($row, (int) $tenantId)
+                ) {
+                    return [
+                        'block_id' => $row->block_id,
+                        'user_id' => $row->user_id,
+                        'name' => __('api.group_welcome_member_fallback'),
+                        'first_name' => '',
+                        'last_name' => '',
+                        'avatar_url' => null,
+                        'reason' => $row->reason,
+                        'blocked_at' => $row->blocked_at,
+                    ];
+                }
+
                 $name = ($row->profile_type === 'organisation' && !empty($row->organization_name))
                     ? $row->organization_name
                     : UserDisplayName::resolve($row);
