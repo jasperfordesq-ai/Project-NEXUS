@@ -229,6 +229,7 @@
   "podcasts.support_show": "Steun deze show",
   "podcasts.report_reason_required": "Kies een reden voor deze melding.",
   "podcasts.invalid_report_status": "Ongeldige meldingsstatus.",
+  "podcasts.delete_blocked_open_report": "Deze podcastinhoud kan niet worden verwijderd zolang er een melding over openstaat. Je kunt de inhoud in plaats daarvan archiveren of wachten tot een moderator de melding heeft beoordeeld.",
   "merchant_coupon.code_required": "Couponcode is verplicht.",
   "merchant_coupon.code_in_use": "De couponcode is al in gebruik voor deze tenant.",
   "push.device_unregistered": "Apparaat afgemeld",

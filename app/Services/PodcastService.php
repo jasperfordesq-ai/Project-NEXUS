@@ -18,15 +18,18 @@ use App\Models\PodcastShow;
 use App\Models\User;
 use App\Jobs\ProcessPodcastEpisodeMedia;
 use App\Helpers\UrlHelper;
+use App\Support\Authorization\AdminTier;
 use Carbon\Carbon;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class PodcastService
 {
@@ -839,6 +842,9 @@ class PodcastService
     public static function deleteShow(PodcastShow $show): void
     {
         $episodes = PodcastEpisode::where('show_id', $show->id)->get();
+        // F-338: deleting the whole show must not be a way round the
+        // open-complaint guard applied to a single episode.
+        self::guardOpenReportsBeforeDeletion($episodes->pluck('id')->map(fn ($id): int => (int) $id)->all());
         $cleanup = $episodes->map(fn (PodcastEpisode $episode): array => [
             'disk' => (string) ($episode->audio_storage_disk ?: 'local'),
             'path' => $episode->audio_storage_path,
@@ -876,6 +882,8 @@ class PodcastService
 
     public static function deleteEpisode(PodcastEpisode $episode, bool $refreshShow = true): void
     {
+        self::guardOpenReportsBeforeDeletion([(int) $episode->id]);
+
         $disk = (string) ($episode->audio_storage_disk ?: 'local');
         $path = $episode->audio_storage_path;
         $coverImage = $episode->getRawOriginal('cover_image_url');
@@ -2575,12 +2583,93 @@ class PodcastService
         PodcastEpisodeChapter::where('episode_id', $episode->id)->delete();
         PodcastEpisodeListen::where('episode_id', $episode->id)->delete();
         PodcastEpisodeReaction::where('episode_id', $episode->id)->delete();
-        DB::table('podcast_episode_reports')
-            ->where('tenant_id', TenantContext::getId())
-            ->where('episode_id', $episode->id)
-            ->delete();
+
+        // 🔴 F-338: podcast_episode_reports is DELIBERATELY not deleted here.
+        // These rows are the community's record that somebody complained about
+        // this episode and what a moderator decided about it — and the actor on
+        // both member-reachable delete routes is the show owner, i.e. the
+        // subject of the complaint. The table has no foreign key to
+        // podcast_episodes, and adminIndex()'s open-report queue reaches it
+        // through a LEFT JOIN, so the rows stay visible to staff after the
+        // episode is gone. Open complaints additionally block the deletion
+        // outright — see guardOpenReportsBeforeDeletion().
+        self::recordReportedEpisodeDeletion($episode);
+
         app(FeedActivityService::class)->removeActivity('podcast_episode', (int) $episode->id);
         $episode->delete();
+    }
+
+    /**
+     * F-338: refuse to hard-delete podcast content that still has an OPEN
+     * complaint against it.
+     *
+     * This is what closes the re-upload loop. maybeFlagEpisodeFromReports()
+     * auto-hides an episode once enough DISTINCT members have reported it, and
+     * the counter is keyed on episode_id — so before this guard a creator could
+     * delete a reported episode, re-upload the same audio, and start the count
+     * again from zero. While a complaint is open the episode cannot be removed,
+     * so the count cannot be reset; once staff have resolved or dismissed every
+     * complaint the creator may delete it again and the report rows survive.
+     *
+     * Archiving (archiveEpisode / archiveShow) is unaffected, so a creator can
+     * always take reported content out of public, feed and RSS visibility.
+     * Admins are moderators here and are not blocked.
+     *
+     * @param  list<int>  $episodeIds
+     */
+    private static function guardOpenReportsBeforeDeletion(array $episodeIds): void
+    {
+        if ($episodeIds === []) {
+            return;
+        }
+
+        if (AdminTier::allows(Auth::user())) {
+            return;
+        }
+
+        $hasOpenReport = DB::table('podcast_episode_reports')
+            ->where('tenant_id', TenantContext::getId())
+            ->whereIn('episode_id', $episodeIds)
+            ->where('status', 'open')
+            ->exists();
+
+        if ($hasOpenReport) {
+            throw new ConflictHttpException(__('api_controllers_2.podcasts.delete_blocked_open_report'));
+        }
+    }
+
+    /**
+     * F-338: record that an episode carrying complaints was deleted, and by
+     * whom. Copied from AdminSafeguardingController::deleteAssignment — the
+     * trail survives and it names the actor.
+     */
+    private static function recordReportedEpisodeDeletion(PodcastEpisode $episode): void
+    {
+        $tenantId = (int) TenantContext::getId();
+        $reportCount = (int) DB::table('podcast_episode_reports')
+            ->where('tenant_id', $tenantId)
+            ->where('episode_id', $episode->id)
+            ->count();
+
+        if ($reportCount === 0) {
+            return;
+        }
+
+        DB::table('activity_log')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => Auth::id(),
+            'action' => 'podcast_episode_deleted_with_reports',
+            'action_type' => 'moderation',
+            'entity_type' => 'podcast_episode',
+            'entity_id' => (int) $episode->id,
+            'details' => json_encode([
+                'show_id' => (int) $episode->show_id,
+                'episode_title' => (string) $episode->title,
+                'reports_preserved' => $reportCount,
+            ], JSON_THROW_ON_ERROR),
+            'ip_address' => request()?->ip(),
+            'created_at' => now(),
+        ]);
     }
 
     private static function deleteStorageObject(string $disk, string $path, bool $required): bool

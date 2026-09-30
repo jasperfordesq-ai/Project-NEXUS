@@ -39,6 +39,7 @@
   "podcasts.support_show": "Support this show",
   "podcasts.report_reason_required": "Choose a reason for this report.",
   "podcasts.invalid_report_status": "Invalid report status.",
+  "podcasts.delete_blocked_open_report": "This podcast content cannot be deleted while a report about it is still open. You can archive it instead, or wait for a moderator to review the report.",
   "podcasts.invalid_storage_driver": "Storage driver must be either 'local' or 'cloud'.",
   "podcasts.invalid_storage_disk": "The selected storage disk is not configured on this server.",
   "podcasts.storage_driver_unavailable": "The cloud storage driver is not installed on this server.",

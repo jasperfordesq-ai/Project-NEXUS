@@ -229,6 +229,7 @@
   "podcasts.support_show": "Diese Show unterstützen",
   "podcasts.report_reason_required": "Wählen Sie einen Grund für diese Meldung.",
   "podcasts.invalid_report_status": "Ungültiger Meldungsstatus.",
+  "podcasts.delete_blocked_open_report": "Dieser Podcast-Inhalt kann nicht gelöscht werden, solange eine Meldung dazu offen ist. Sie können ihn stattdessen archivieren oder warten, bis eine moderierende Person die Meldung geprüft hat.",
   "merchant_coupon.code_required": "Ein Gutscheincode ist erforderlich.",
   "merchant_coupon.code_in_use": "Der Gutscheincode wird bereits für diesen Mandanten verwendet.",
   "push.device_unregistered": "Gerät abgemeldet",

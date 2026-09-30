@@ -229,6 +229,7 @@
   "podcasts.support_show": "Soutenir cette émission",
   "podcasts.report_reason_required": "Choisissez un motif pour ce signalement.",
   "podcasts.invalid_report_status": "Statut de signalement non valide.",
+  "podcasts.delete_blocked_open_report": "Ce contenu de podcast ne peut pas être supprimé tant qu'un signalement le concernant est ouvert. Vous pouvez l'archiver à la place, ou attendre qu'une personne modératrice examine le signalement.",
   "merchant_coupon.code_required": "Le code promotionnel est obligatoire.",
   "merchant_coupon.code_in_use": "Le code promotionnel est déjà utilisé pour ce locataire.",
   "push.device_unregistered": "Appareil désinscrit",

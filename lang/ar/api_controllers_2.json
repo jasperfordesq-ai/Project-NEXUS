@@ -229,6 +229,7 @@
   "podcasts.support_show": "ادعم هذا البرنامج",
   "podcasts.report_reason_required": "اختر سببًا لهذا البلاغ.",
   "podcasts.invalid_report_status": "حالة البلاغ غير صالحة.",
+  "podcasts.delete_blocked_open_report": "لا يمكن حذف محتوى البودكاست هذا ما دام هناك بلاغ مفتوح بشأنه. يمكنك أرشفته بدلاً من ذلك، أو انتظار مراجعة المشرف للبلاغ.",
   "merchant_coupon.code_required": "رمز القسيمة مطلوب.",
   "merchant_coupon.code_in_use": "رمز القسيمة مستخدم بالفعل لهذا المستأجر.",
   "push.device_unregistered": "تم إلغاء تسجيل الجهاز",

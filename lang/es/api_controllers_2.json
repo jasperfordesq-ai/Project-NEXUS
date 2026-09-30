@@ -229,6 +229,7 @@
   "podcasts.support_show": "Apoyar este programa",
   "podcasts.report_reason_required": "Elija un motivo para esta denuncia.",
   "podcasts.invalid_report_status": "Estado de denuncia no válido.",
+  "podcasts.delete_blocked_open_report": "Este contenido de pódcast no se puede eliminar mientras haya una denuncia abierta sobre él. Puedes archivarlo en su lugar o esperar a que una persona moderadora revise la denuncia.",
   "merchant_coupon.code_required": "El código del cupón es obligatorio.",
   "merchant_coupon.code_in_use": "El código del cupón ya está en uso en esta instancia.",
   "push.device_unregistered": "Dispositivo dado de baja",

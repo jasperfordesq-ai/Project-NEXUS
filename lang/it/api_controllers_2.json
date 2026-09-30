@@ -229,6 +229,7 @@
   "podcasts.support_show": "Sostieni questo programma",
   "podcasts.report_reason_required": "Scegli un motivo per questa segnalazione.",
   "podcasts.invalid_report_status": "Stato della segnalazione non valido.",
+  "podcasts.delete_blocked_open_report": "Questo contenuto del podcast non può essere eliminato finché una segnalazione a suo carico è ancora aperta. Puoi archiviarlo invece, oppure attendere che una persona moderatrice esamini la segnalazione.",
   "merchant_coupon.code_required": "Il codice del buono è obbligatorio.",
   "merchant_coupon.code_in_use": "Il codice del buono è già in uso per questo tenant.",
   "push.device_unregistered": "Dispositivo non registrato",

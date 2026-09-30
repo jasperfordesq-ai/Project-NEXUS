@@ -229,6 +229,7 @@
   "podcasts.support_show": "この番組を支援する",
   "podcasts.report_reason_required": "この報告の理由を選択してください。",
   "podcasts.invalid_report_status": "無効な報告ステータスです。",
+  "podcasts.delete_blocked_open_report": "このポッドキャストのコンテンツについて未対応の報告があるため、削除できません。代わりにアーカイブするか、モデレーターが報告を確認するまでお待ちください。",
   "merchant_coupon.code_required": "クーポンコードは必須です。",
   "merchant_coupon.code_in_use": "このテナントではクーポンコードがすでに使用されています。",
   "push.device_unregistered": "端末の登録を解除しました",
