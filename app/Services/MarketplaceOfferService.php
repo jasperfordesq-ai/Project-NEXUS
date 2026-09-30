@@ -76,6 +76,12 @@ class MarketplaceOfferService
                 }
                 $amount = self::normalizeOfferAmount((float) $data['amount'], $currency);
 
+                // F-368: an offer stores the buyer's free-text message and
+                // emails and bells the seller naming the buyer, so a block in
+                // either direction refuses it. Checked before the safeguarding
+                // policy so a blocked member cannot probe it.
+                BlockUserService::assertNoBlockBetween($buyerId, (int) $listing->user_id);
+
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $buyerId,
                     (int) $listing->user_id,
