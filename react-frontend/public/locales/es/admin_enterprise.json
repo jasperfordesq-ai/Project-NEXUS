@@ -202,6 +202,7 @@
     "failed": "Fallido",
     "failed_to_create_role": "No se pudo crear el rol",
     "failed_to_delete_document": "No se pudo eliminar el documento",
+    "document_has_published_record": "Este documento se ha publicado o los miembros lo han aceptado, así que eliminarlo destruiría sus registros de aceptación. Desactívalo en su lugar.",
     "failed_to_delete_role": "No se pudo eliminar el rol",
     "failed_to_load_breaches": "No se pudieron cargar las infracciones",
     "failed_to_load_configuration": "No se pudo cargar la configuración",

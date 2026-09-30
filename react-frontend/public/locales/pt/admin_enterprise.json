@@ -202,6 +202,7 @@
     "failed": "Falha",
     "failed_to_create_role": "Falha ao criar função",
     "failed_to_delete_document": "Falha ao excluir documento",
+    "document_has_published_record": "Este documento foi publicado ou aceite pelos membros, por isso eliminá-lo destruiria os registos de aceitação. Desative-o em vez disso.",
     "failed_to_delete_role": "Falha ao excluir função",
     "failed_to_load_breaches": "Falha ao carregar violações",
     "failed_to_load_configuration": "Falha ao carregar a configuração",

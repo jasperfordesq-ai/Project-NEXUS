@@ -202,6 +202,7 @@
     "failed": "فشل",
     "failed_to_create_role": "فشل إنشاء الدور",
     "failed_to_delete_document": "فشل في حذف المستند",
+    "document_has_published_record": "تم نشر هذه الوثيقة أو قبلها الأعضاء، لذا فإن حذفها سيُتلف سجلات قبولهم. قم بإلغاء تفعيلها بدلاً من ذلك.",
     "failed_to_delete_role": "فشل حذف الدور",
     "failed_to_load_breaches": "فشل في تحميل الخروقات",
     "failed_to_load_configuration": "فشل تحميل التكوين",

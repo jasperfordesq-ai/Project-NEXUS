@@ -202,6 +202,7 @@
     "failed": "Theip",
     "failed_to_create_role": "Theip ar ról a chruthú",
     "failed_to_delete_document": "Theip ar an doiciméad a scriosadh",
+    "document_has_published_record": "Foilsíodh an doiciméad seo nó ghlac baill leis, mar sin scriosfadh a scriosadh a dtaifid ghlactha. Díghníomhachtaigh é ina ionad sin.",
     "failed_to_delete_role": "Theip ar an ról a scriosadh",
     "failed_to_load_breaches": "Theip ar sháruithe a luchtú",
     "failed_to_load_configuration": "Theip ar an chumraíocht a lódáil",

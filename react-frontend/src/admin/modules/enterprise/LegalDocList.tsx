@@ -95,10 +95,15 @@ export function LegalDocList() {
         setDeleteTarget(null);
         loadData();
       } else {
-        // The server refuses to delete a document that was ever published or
-        // accepted (the acceptance records would cascade away) and says to
-        // deactivate it instead — show that message rather than a generic one.
-        toast.error(res.error || t('enterprise.failed_to_delete_document'));
+        // The server refuses (409 RESOURCE_CONFLICT) to delete a document that
+        // was ever published or accepted — the acceptance records would
+        // cascade away — so tell the admin to deactivate it instead (F-276).
+        const hasPublishedRecord = res.code === 'RESOURCE_CONFLICT';
+        toast.error(
+          hasPublishedRecord
+            ? t('enterprise.document_has_published_record')
+            : t('enterprise.failed_to_delete_document')
+        );
       }
     } catch {
       toast.error(t('enterprise.failed_to_delete_document'));

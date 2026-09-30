@@ -202,6 +202,7 @@
     "failed": "Échec",
     "failed_to_create_role": "Échec de la création du rôle",
     "failed_to_delete_document": "Échec de la suppression du document",
+    "document_has_published_record": "Ce document a été publié ou accepté par des membres ; le supprimer détruirait leurs enregistrements d'acceptation. Désactivez-le plutôt.",
     "failed_to_delete_role": "Échec de la suppression du rôle",
     "failed_to_load_breaches": "Échec du chargement des violations",
     "failed_to_load_configuration": "Échec du chargement de la configuration",

@@ -202,6 +202,7 @@
     "failed": "Fehlgeschlagen",
     "failed_to_create_role": "Rolle konnte nicht erstellt werden",
     "failed_to_delete_document": "Dokument konnte nicht gelöscht werden",
+    "document_has_published_record": "Dieses Dokument wurde veröffentlicht oder von Mitgliedern akzeptiert. Beim Löschen gingen ihre Zustimmungsnachweise verloren. Deaktivieren Sie es stattdessen.",
     "failed_to_delete_role": "Die Rolle konnte nicht gelöscht werden",
     "failed_to_load_breaches": "Verstöße konnten nicht geladen werden",
     "failed_to_load_configuration": "Die Konfiguration konnte nicht geladen werden",

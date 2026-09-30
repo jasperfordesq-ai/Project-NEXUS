@@ -202,13 +202,13 @@ describe('LegalDocList', () => {
     }
   });
 
-  it('shows the server refusal message when a published document cannot be deleted', async () => {
-    // F-276: the API refuses to delete a document that was published or
-    // accepted and tells the admin to deactivate it. That message must reach
-    // the admin instead of a generic "failed to delete".
+  it('tells the admin to deactivate a published document that cannot be deleted', async () => {
+    // F-276: the API refuses (409 RESOURCE_CONFLICT) to delete a document that
+    // was published or accepted. The admin must be told to deactivate it, in
+    // the admin UI's own translated words — never the raw server string.
     const user = userEvent.setup();
-    const refusal = 'This document has been published or accepted by members. Deactivate it instead.';
-    deleteMock.mockResolvedValueOnce({ success: false, error: refusal } as never);
+    const serverText = 'raw server text that must not be shown';
+    deleteMock.mockResolvedValueOnce({ success: false, error: serverText, code: 'RESOURCE_CONFLICT' } as never);
 
     render(<LegalDocList />);
 
@@ -231,8 +231,12 @@ describe('LegalDocList', () => {
       expect(deleteMock).toHaveBeenCalledWith(1);
     });
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith(refusal);
+      expect(toastError).toHaveBeenCalledTimes(1);
     });
+    const shown = String(toastError.mock.calls[0]?.[0] ?? '');
+    expect(shown).not.toBe(serverText);
+    expect(shown).toMatch(/deactivate it instead|document_has_published_record/i);
+    expect(shown).not.toMatch(/failed to delete/i);
   });
 
   it('renders a "New Document" action button/link', async () => {

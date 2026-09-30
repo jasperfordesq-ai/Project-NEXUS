@@ -202,6 +202,7 @@
     "failed": "Failed",
     "failed_to_create_role": "Failed to create role",
     "failed_to_delete_document": "Failed to delete document",
+    "document_has_published_record": "This document has been published or accepted by members, so deleting it would destroy their acceptance records. Deactivate it instead.",
     "failed_to_delete_role": "Failed to delete role",
     "failed_to_load_breaches": "Failed to load breaches",
     "failed_to_load_configuration": "Failed to load configuration",

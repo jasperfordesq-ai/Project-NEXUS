@@ -202,6 +202,7 @@
     "failed": "Nie udało się",
     "failed_to_create_role": "Nie udało się utworzyć roli",
     "failed_to_delete_document": "Nie udało się usunąć dokumentu",
+    "document_has_published_record": "Ten dokument został opublikowany lub zaakceptowany przez członków, więc jego usunięcie zniszczyłoby zapisy ich akceptacji. Zamiast tego go dezaktywuj.",
     "failed_to_delete_role": "Nie udało się usunąć roli",
     "failed_to_load_breaches": "Nie udało się załadować naruszeń",
     "failed_to_load_configuration": "Nie udało się załadować konfiguracji",

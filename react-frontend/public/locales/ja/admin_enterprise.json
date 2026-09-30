@@ -202,6 +202,7 @@
     "failed": "失敗しました",
     "failed_to_create_role": "ロールの作成に失敗しました",
     "failed_to_delete_document": "文書の削除に失敗しました",
+    "document_has_published_record": "この文書は公開済み、またはメンバーが同意済みのため、削除すると同意の記録が失われます。代わりに無効にしてください。",
     "failed_to_delete_role": "ロールの削除に失敗しました",
     "failed_to_load_breaches": "違反をロードできませんでした",
     "failed_to_load_configuration": "構成のロードに失敗しました",

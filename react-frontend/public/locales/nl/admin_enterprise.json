@@ -202,6 +202,7 @@
     "failed": "Mislukt",
     "failed_to_create_role": "Kan rol niet maken",
     "failed_to_delete_document": "Kan document niet verwijderen",
+    "document_has_published_record": "Dit document is gepubliceerd of door leden geaccepteerd; verwijderen zou hun acceptatiegegevens vernietigen. Deactiveer het in plaats daarvan.",
     "failed_to_delete_role": "Kan rol niet verwijderen",
     "failed_to_load_breaches": "Kan inbreuken niet laden",
     "failed_to_load_configuration": "Kan configuratie niet laden",

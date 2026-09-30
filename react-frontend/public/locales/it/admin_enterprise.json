@@ -202,6 +202,7 @@
     "failed": "Fallito",
     "failed_to_create_role": "Impossibile creare il ruolo",
     "failed_to_delete_document": "Impossibile eliminare il documento",
+    "document_has_published_record": "Questo documento è stato pubblicato o accettato dai membri, quindi eliminarlo distruggerebbe i loro registri di accettazione. Disattivalo invece.",
     "failed_to_delete_role": "Impossibile eliminare il ruolo",
     "failed_to_load_breaches": "Impossibile caricare le violazioni",
     "failed_to_load_configuration": "Impossibile caricare la configurazione",
