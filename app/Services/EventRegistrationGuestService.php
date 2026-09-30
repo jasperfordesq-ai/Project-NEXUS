@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Core\Validator;
 use App\Enums\EventRegistrationSettingsStatus;
+use App\Enums\EventWaitlistQueueState;
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Models\EventRegistrationGuest;
 use App\Models\User;
@@ -184,8 +185,33 @@ final class EventRegistrationGuestService
                     ->where('event_id', $eventId)
                     ->whereIn('status', self::CAPACITY_CONSUMING_GUEST_STATES)
                     ->count();
+                // F-397: a place the registration gate already treats as taken
+                // is taken here too — an outstanding waitlist offer, and a
+                // legacy RSVP with no canonical registration
+                // (EventRegistrationService::occupiedUserIdsLocked). Without
+                // this a guest could be captured into a seat already offered to
+                // a waitlisted member, who was then refused it.
+                $outstandingOffers = (int) DB::table('event_waitlist_entries')
+                    ->where('tenant_id', $tenantId)
+                    ->where('event_id', $eventId)
+                    ->where('queue_state', EventWaitlistQueueState::Offered->value)
+                    ->where('offer_expires_at', '>', now())
+                    ->distinct()
+                    ->count('user_id');
+                $legacyAttendees = (int) DB::table('event_rsvps')
+                    ->where('tenant_id', $tenantId)
+                    ->where('event_id', $eventId)
+                    ->whereIn('status', ['going', 'attended'])
+                    ->whereNotExists(function ($canonical) use ($tenantId, $eventId): void {
+                        $canonical->selectRaw('1')
+                            ->from('event_registrations as canonical_registration')
+                            ->whereColumn('canonical_registration.user_id', 'event_rsvps.user_id')
+                            ->where('canonical_registration.tenant_id', $tenantId)
+                            ->where('canonical_registration.event_id', $eventId);
+                    })
+                    ->count();
 
-                if ($activeRegistrations + $activeGuests >= (int) $capacity) {
+                if ($activeRegistrations + $activeGuests + $outstandingOffers + $legacyAttendees >= (int) $capacity) {
                     throw new EventRegistrationFoundationException('event_registration_guest_capacity_full');
                 }
             }

@@ -276,8 +276,28 @@ final class EventPeopleService
     {
         $tenantId = $this->assertScope($event);
 
-        return $this->capacityOccupiedIds($tenantId, (int) $event->getKey())
-            ->count('user_id');
+        $eventId = (int) $event->getKey();
+
+        // F-397: seated guests occupy places too. This is the floor an
+        // organiser may lower max_attendees to (EventService), and without the
+        // guests it allowed a capacity below the number of people already
+        // seated. Counted as the registration gate counts them: captured
+        // guests of a confirmed registration.
+        $seatedGuests = (int) DB::table('event_registration_guests')
+            ->where('event_registration_guests.tenant_id', $tenantId)
+            ->where('event_registration_guests.event_id', $eventId)
+            ->whereIn('event_registration_guests.status', EventRegistrationGuestService::CAPACITY_CONSUMING_GUEST_STATES)
+            ->whereExists(function ($query) use ($tenantId, $eventId): void {
+                $query->selectRaw('1')
+                    ->from('event_registrations as guest_registration')
+                    ->whereColumn('guest_registration.id', 'event_registration_guests.registration_id')
+                    ->where('guest_registration.tenant_id', $tenantId)
+                    ->where('guest_registration.event_id', $eventId)
+                    ->where('guest_registration.registration_state', EventCapacityRegistrationState::Confirmed->value);
+            })
+            ->count();
+
+        return $this->capacityOccupiedIds($tenantId, $eventId)->count('user_id') + $seatedGuests;
     }
 
     private function filteredPeopleFacts(

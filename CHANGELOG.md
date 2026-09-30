@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A guest can no longer be added into an event seat that has already been offered to a member on the waiting list. An organiser also can no longer lower an event's capacity below the number of people already seated, guests included (F-397).
 - A cross-community time-credit transfer already in progress is now refused if the sender's community switches off cross-community transfers, or the sender opts out of cross-community sharing, before the credits move. The same re-check already applied to the receiving side (F-395).
 - If a member withdraws or lowers a carer's permission to spend their time credits while a payment by that carer is already in progress, the payment is now refused instead of completing (F-392).
 - Submitting the same caring-support visit twice at the same moment (for example a double-click) can no longer record and pay it twice (F-391).
