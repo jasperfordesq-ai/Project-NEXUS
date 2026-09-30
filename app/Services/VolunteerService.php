@@ -2011,9 +2011,10 @@ class VolunteerService
             $status = self::resolveCaringHourLogStatus($userId, $tenantId, $policy);
             $logId = null;
             $dailyCapExceeded = false;
+            $organizationNotActive = false;
             $logDateString = $logDate->toDateString();
 
-            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, $logDateString, &$logId, &$dailyCapExceeded): void {
+            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, $logDateString, &$logId, &$dailyCapExceeded, &$organizationNotActive): void {
                 // Serialise every hour log for this member (across all
                 // organisations and opportunities) so the day total read
                 // below cannot be raced by a concurrent submission. The
@@ -2027,6 +2028,25 @@ class VolunteerService
                 if (self::dailyHoursCapExceeded($tenantId, $userId, $logDateString, (float) $data['hours'])) {
                     $dailyCapExceeded = true;
                     return;
+                }
+
+                // F-385: an auto-approved log mints below. The organisation's
+                // status was read unlocked at the top of this method, so a
+                // suspension committed since then would still pay out — the
+                // F-343 race, on the member-facing path. Re-apply the hard
+                // freeze with the organisation row locked (the same user → org
+                // lock order applyVolunteerAutoPayment() already uses), before
+                // anything is written. A pending log mints nothing now and is
+                // re-checked when it is verified.
+                if ($status === 'approved') {
+                    $orgLocked = DB::selectOne(
+                        'SELECT status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE',
+                        [$organizationId, $tenantId]
+                    );
+                    if (!$orgLocked || !self::isApprovedOrganizationStatus($orgLocked->status ?? null)) {
+                        $organizationNotActive = true;
+                        return;
+                    }
                 }
 
                 DB::insert(
@@ -2070,6 +2090,11 @@ class VolunteerService
 
             if ($dailyCapExceeded) {
                 // dailyHoursCapExceeded() already recorded the error.
+                return null;
+            }
+
+            if ($organizationNotActive) {
+                self::$errors[] = ['code' => 'ORG_NOT_ACTIVE', 'message' => __('api.volunteer_org_not_active')];
                 return null;
             }
 

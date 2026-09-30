@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- When a community approves volunteering hours automatically, an organisation that is suspended while a member's hours are being submitted can no longer pay them out. The same check already applied when hours are approved by hand (F-385).
 - Volunteering hours logged by a coordinator for a caring-support relationship can no longer be paid by an organisation that has been suspended, or has not yet been approved. This was the third way round the organisation freeze (F-384).
 - When a podcast creator deletes their own account, the complaints other members made about their episodes, and the moderators' decisions on them, are now kept. Previously the account deletion removed them along with the episodes (F-383).
 - A club organiser importing members from a spreadsheet can no longer create accounts that skip the community's identity check. Imported accounts now follow the same joining rule as accounts an administrator creates: where the community requires an identity check, the account waits for it (F-382).
