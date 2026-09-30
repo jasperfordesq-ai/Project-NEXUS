@@ -518,7 +518,11 @@ export default function SupportReportsPage() {
                     <Button
                       variant="secondary"
                       startContent={<ExternalLink className="h-4 w-4" aria-hidden="true" />}
-                      onPress={() => window.open(selectedReport.sentry_issue_url ?? undefined, '_blank', 'noopener,noreferrer')}
+                      // F-358: route this through the shared scheme guard, as the
+                      // page address beside it already is. The server now refuses
+                      // a non-http(s) sentry_issue_url, but rows stored before
+                      // that fix are still in the database.
+                      onPress={() => openSafeUrl(selectedReport.sentry_issue_url)}
                     >
                       {t('support_reports.actions.open_sentry')}
                     </Button>

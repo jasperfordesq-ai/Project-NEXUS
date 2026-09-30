@@ -102,7 +102,7 @@ class SupportReportController extends BaseApiController
             'route' => $this->pathOnly($this->nullableString($validated['route'] ?? null)),
             'page_url' => $this->safePageUrl($this->nullableString($validated['page_url'] ?? null)),
             'sentry_event_id' => $this->nullableString($validated['sentry_event_id'] ?? null),
-            'sentry_issue_url' => $this->nullableString($validated['sentry_issue_url'] ?? null),
+            'sentry_issue_url' => $this->safeSentryIssueUrl($this->nullableString($validated['sentry_issue_url'] ?? null)),
             'diagnostics' => $diagnostics,
             'user_agent' => $this->nullableString($request->userAgent(), 512),
             'ip_hash' => $this->hashIpAddress($request->ip()),
@@ -257,11 +257,43 @@ class SupportReportController extends BaseApiController
             return null;
         }
 
-        if (preg_match('~^https?://~i', $path) || str_starts_with($path, '/')) {
+        if (preg_match('~^https?://~i', $path)) {
+            return $path;
+        }
+
+        // F-358: a site-relative address must actually be site-relative.
+        // "//attacker.example/collect" starts with "/" and was therefore kept,
+        // but it is PROTOCOL-relative: window.open() resolves it against the
+        // admin console's own scheme and lands on the attacker's host. The URL
+        // parser treats "\" as "/" for special schemes, so "/\host", "\/host"
+        // and "\\host" are the same shape and are refused with it.
+        if (preg_match('~^[/\\\\][/\\\\]~', $path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, '/')) {
             return $path;
         }
 
         return null;
+    }
+
+    /**
+     * F-358: the Sentry issue address is opened by staff in a new window from
+     * the same admin console, but it was written straight from the request body
+     * with no scheme check at all — so `javascript:`, a protocol-relative host
+     * and a credential-bearing query all reached window.open. A Sentry issue
+     * always lives on an absolute http(s) address, so there is no site-relative
+     * form to allow.
+     */
+    private function safeSentryIssueUrl(?string $issueUrl): ?string
+    {
+        $path = $this->pathOnly($issueUrl);
+        if ($path === null) {
+            return null;
+        }
+
+        return preg_match('~^https?://~i', $path) ? $path : null;
     }
 
     /**
