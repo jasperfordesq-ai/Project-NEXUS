@@ -416,6 +416,24 @@ jobs:
           BROADCAST_CONNECTION: "null"
           BROADCAST_DRIVER: "null"
 
+      # Targeted argument-type check. The PHPStan step above runs at level 1,
+      # which does NOT check argument types — so a call passing an array to a
+      # parameter declared ?string is invisible to it. That is security finding
+      # F-372: four live endpoints, one reachable by any member, answering
+      # invalid input with HTTP 500. It is the same class as the getJsonInput()
+      # episode, whose *undefined method* half is caught by reportMagicMethods.
+      #
+      # Offered "raise the level" or "add a targeted check" on 30 September 2026,
+      # the owner chose the targeted check. This runs level 5 via
+      # phpstan-argtypes.neon and reads only two identifiers — argument.type and
+      # arguments.count — discarding the other 1,665 level-5 reports unread. It
+      # is not a level raise in disguise, and must not be turned into one.
+      - name: "BLOCKING: Argument types and counts match the signatures called"
+        run: node scripts/check-argument-types.mjs
+        env:
+          BROADCAST_CONNECTION: "null"
+          BROADCAST_DRIVER: "null"
+
       # TD15: Validate that all required env vars referenced in config/ are
       # documented in .env.example. WARNING-ONLY (see history); surfaces new
       # gaps without blocking.

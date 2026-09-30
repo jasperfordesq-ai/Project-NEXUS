@@ -264,6 +264,19 @@ if (areas.php.length) {
   if (files.some((f) => f.startsWith('app/') || f.startsWith('database/') || f.startsWith('migrations/'))) {
     sh('DB column references', 'node scripts/check-db-column-references.mjs');
   }
+  // Argument types (PHPStan level 5, two identifiers only — see
+  // scripts/check-argument-types.mjs). It boots the Laravel app, so on Windows
+  // it runs itself inside nexus-php-app; the host vendor/ is incomplete. The
+  // script exits 2 when it could not run at all, which preflight reports as
+  // UNAVAILABLE rather than as a pass.
+  if (phpApp.length) {
+    if (docker) {
+      sh('Argument types', 'node scripts/check-argument-types.mjs',
+        { timeout: 900_000, unavailableExit: 2 });
+    } else {
+      record('Argument types', 'UNAVAILABLE', 'nexus-php-app container not running — this check has NOT been run');
+    }
+  }
 } else {
   record('PHP checks', 'SKIP', 'no PHP-area changes');
 }

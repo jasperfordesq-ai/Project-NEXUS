@@ -1,0 +1,462 @@
+{
+  "_comment": "Shrink-only baseline for scripts/check-argument-types.mjs. A NEW entry fails the gate; an entry that no longer occurs ALSO fails, so a fix must remove its line. Give every entry an honest `status` and `note` saying what was checked.",
+  "generated": "2026-09-30",
+  "entries": [
+    {
+      "file": "app/Core/Mailer.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $prefix of function uniqid expects string, int<1, max> given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/AdminConfigController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $message of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string, int given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/AdminPrerenderController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $target of method App\\Services\\PrerenderService::expectedRoutesForTenant() expects array{tenant_id: int, slug: string, host: string, prefix: string, features: mixed, configuration: mixed}, array{tenant_id: int, slug: string, host: string, prefix: string} given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/EmergencyAlertController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $field of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string|null, array given.",
+      "count": 1,
+      "status": "open — security finding F-372",
+      "note": "A live HTTP 500 on invalid input: the call site passes $validator->errors()->toArray() to a parameter declared ?string, under declare(strict_types=1). Being fixed in E-066. Remove this entry with the fix."
+    },
+    {
+      "file": "app/Http/Controllers/Api/FederationController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #5 $isImportant of static method App\\Models\\Notification::createNotification() expects bool, int given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/JobVacanciesController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $vacancy of method App\\Http\\Controllers\\Api\\JobVacanciesController::canManageVacancy() expects App\\Models\\JobVacancy, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/LegalController.php",
+      "identifier": "arguments.count",
+      "message": "Method App\\Services\\LegalDocumentService::getVersions() invoked with 2 parameters, 1 required.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "LegalController::getVersions() is not routed. `php artisan route:list --path=legal` serves apiGetVersions/apiGetDocument/apiCompareVersions/apiGetVersion/accept/acceptAll/status only. The call would throw a TypeError on a non-numeric slug if it were ever routed. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/LegalController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $documentId of method App\\Services\\LegalDocumentService::getVersions() expects int, string given.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "LegalController::getVersions() is not routed. `php artisan route:list --path=legal` serves apiGetVersions/apiGetDocument/apiCompareVersions/apiGetVersion/accept/acceptAll/status only. The call would throw a TypeError on a non-numeric slug if it were ever routed. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/MemberDataExportController.php",
+      "identifier": "arguments.count",
+      "message": "Function __ invoked with 3 parameters, 1-2 required.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Http/Controllers/Api/MentionController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $cursor of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithCollection() expects string|null, array given.",
+      "count": 1,
+      "status": "false positive — imprecise docblock",
+      "note": "MentionService::getMentionsForUser() is annotated `@return array[]`, so PHPStan types every offset of the returned array as `array`. At runtime it returns {items: array, cursor: ?string, has_more: bool} and the call is correct. The honest fix is to correct the docblock, which would also clear these two entries. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/MentionController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #4 $hasMore of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithCollection() expects bool, array given.",
+      "count": 1,
+      "status": "false positive — imprecise docblock",
+      "note": "MentionService::getMentionsForUser() is annotated `@return array[]`, so PHPStan types every offset of the returned array as `array`. At runtime it returns {items: array, cursor: ?string, has_more: bool} and the call is correct. The honest fix is to correct the docblock, which would also clear these two entries. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/MunicipalSurveyController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $field of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string|null, array given.",
+      "count": 3,
+      "status": "open — security finding F-372",
+      "note": "A live HTTP 500 on invalid input: the call site passes $validator->errors()->toArray() to a parameter declared ?string, under declare(strict_types=1). Being fixed in E-066. Remove this entry with the fix."
+    },
+    {
+      "file": "app/Http/Controllers/Api/NewsletterController.php",
+      "identifier": "arguments.count",
+      "message": "Method App\\Services\\NewsletterService::getAll() invoked with 4 parameters, 0-1 required.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "Only unsubscribe/trackOpen/trackClick are routed on this controller (routes/api.php:3421-3424); the methods reported here are unrouted. They were written against an older NewsletterService signature. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/NewsletterController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $filters of method App\\Services\\NewsletterService::getAll() expects array, int given.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "Only unsubscribe/trackOpen/trackClick are routed on this controller (routes/api.php:3421-3424); the methods reported here are unrouted. They were written against an older NewsletterService signature. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/NewsletterController.php",
+      "identifier": "arguments.count",
+      "message": "Method App\\Services\\NewsletterService::getById() invoked with 2 parameters, 1 required.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "Only unsubscribe/trackOpen/trackClick are routed on this controller (routes/api.php:3421-3424); the methods reported here are unrouted. They were written against an older NewsletterService signature. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/NewsletterController.php",
+      "identifier": "arguments.count",
+      "message": "Method App\\Services\\NewsletterService::send() invoked with 2 parameters, 1 required.",
+      "count": 1,
+      "status": "latent — not reachable",
+      "note": "Only unsubscribe/trackOpen/trackClick are routed on this controller (routes/api.php:3421-3424); the methods reported here are unrouted. They were written against an older NewsletterService signature. Checked E-066, 30 Sep 2026."
+    },
+    {
+      "file": "app/Http/Controllers/Api/PodcastController.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $show of static method App\\Services\\PodcastService::canViewEpisode() expects App\\Models\\PodcastShow, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 3,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Middleware/RedirectMiddleware.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $previous of class Symfony\\Component\\HttpKernel\\Exception\\HttpException constructor expects Throwable|null, array<string, mixed> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Middleware/RedirectMiddleware.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $previous of class Symfony\\Component\\HttpKernel\\Exception\\HttpException constructor expects Throwable|null, array<string, string> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/BalanceAlertService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $operator of method Illuminate\\Database\\Query\\Builder::whereDate() expects DateTimeInterface|string|null, Illuminate\\Contracts\\Database\\Query\\Expression given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ConnectionService.php",
+      "identifier": "argument.type",
+      "message": "Parameter $requester of class App\\Events\\ConnectionRequested constructor expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ConnectionService.php",
+      "identifier": "argument.type",
+      "message": "Parameter $target of class App\\Events\\ConnectionRequested constructor expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ConnectionService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $requester of event class App\\Events\\ConnectionAccepted constructor expects App\\Models\\User in App\\Events\\ConnectionAccepted::dispatch(), Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ConnectionService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $acceptor of event class App\\Events\\ConnectionAccepted constructor expects App\\Models\\User in App\\Events\\ConnectionAccepted::dispatch(), Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/CourseService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $callback of method Illuminate\\Database\\Eloquent\\Collection<int,Illuminate\\Database\\Eloquent\\Model>::map() expects callable(Illuminate\\Database\\Eloquent\\Model, int): array, Closure(App\\Models\\CourseLesson): array given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/CronJobRunner.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $previous of class Symfony\\Component\\HttpKernel\\Exception\\HttpException constructor expects Throwable|null, array given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/EventWaitlistService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #7 $registration of class App\\Support\\Events\\EventWaitlistTransitionResult constructor expects App\\Models\\EventRegistration|null, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/GroupSearchService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $typoTolerance of method Meilisearch\\Endpoints\\Indexes::updateTypoTolerance() expects array{enabled: bool, minWordSizeForTypos: array{oneTypo: int, twoTypos: int}, disableOnWords: list<non-empty-string>, disableOnAttributes: list<non-empty-string>, disableOnNumbers: bool}, array{enabled: true, minWordSizeForTypos: array{oneTypo: 5, twoTypos: 8}} given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/JobExpiryNotificationService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $user of static method App\\Services\\JobExpiryNotificationService::sendExpiryEmail() expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ListingService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $user of class App\\Events\\ListingUpdated constructor expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/MarketplaceDisputeService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $order of method App\\Services\\MarketplaceTimeCreditSettlementService::refund() expects App\\Models\\MarketplaceOrder, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/MarketplaceDisputeService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $order of static method App\\Services\\MarketplacePaymentService::processRefund() expects App\\Models\\MarketplaceOrder, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/MarketplaceListingService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $listing of static method App\\Services\\MarketplaceListingService::formatLoadedListingDetail() expects App\\Models\\MarketplaceListing|null, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 3,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/MatchApprovalWorkflowService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $column of method Illuminate\\Database\\Query\\Builder::value() expects string, Illuminate\\Contracts\\Database\\Query\\Expression given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/MessageService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $user of static method App\\Services\\MessageService::withoutOtherUserSurname() expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/NotificationDispatcher.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $column of method Illuminate\\Database\\Query\\Builder::value() expects string, Illuminate\\Contracts\\Database\\Query\\Expression given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PodcastService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $callback of method Illuminate\\Support\\Collection<int,Illuminate\\Database\\Eloquent\\Model>::each() expects callable(Illuminate\\Database\\Eloquent\\Model, int): mixed, Closure(App\\Models\\PodcastEpisode): void given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PodcastService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $show of static method App\\Services\\PodcastService::refreshEpisodeCount() expects App\\Models\\PodcastShow, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 3,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PodcastService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $show of static method App\\Services\\PodcastService::refreshEpisodeCount() expects App\\Models\\PodcastShow, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PodcastService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $key of method Illuminate\\Database\\Eloquent\\Collection<int,Illuminate\\Database\\Eloquent\\Model>::contains() expects (callable(Illuminate\\Database\\Eloquent\\Model, int): bool)|Illuminate\\Database\\Eloquent\\Model|int|string, Closure(App\\Models\\PodcastEpisode): bool given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PodcastService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $show of static method App\\Services\\PodcastService::canViewEpisode() expects App\\Models\\PodcastShow, Illuminate\\Database\\Eloquent\\Model given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PrerenderService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $target of method App\\Services\\PrerenderService::expectedRoutesForTenant() expects array{tenant_id: int, slug: string, host: string, prefix: string, features: mixed, configuration: mixed}, array{tenant_id: int, slug: string, host: string, prefix: string} given.",
+      "count": 3,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PresenceService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $options of static method Redis::set() expects array|int, string given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/PresenceService.php",
+      "identifier": "arguments.count",
+      "message": "Static method Redis::set() invoked with 5 parameters, 2-3 required.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/RedisCache.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $pattern of method Redis::scan() expects string|null, array<string, int|string> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/RedisCache.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $value of function count expects array|Countable, string given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ReviewService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $user of static method App\\Services\\ReviewService::withoutMemberSurname() expects App\\Models\\User|null, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/ReviewService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $user of method App\\Services\\ReviewService::shapeMember() expects App\\Models\\User|null, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 2,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/SearchService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $typoTolerance of method Meilisearch\\Endpoints\\Indexes::updateTypoTolerance() expects array{enabled: bool, minWordSizeForTypos: array{oneTypo: int, twoTypos: int}, disableOnWords: list<non-empty-string>, disableOnAttributes: list<non-empty-string>, disableOnNumbers: bool}, array{enabled: true, minWordSizeForTypos: array{oneTypo: 5, twoTypos: 8}} given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/StripeMoneyOperationService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $page of static method App\\Services\\StripeMoneyOperationService::scan() expects Stripe\\Collection<Stripe\\StripeObject>, Stripe\\Collection<Stripe\\Transfer> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/StripeMoneyOperationService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $page of static method App\\Services\\StripeMoneyOperationService::scan() expects Stripe\\Collection<Stripe\\StripeObject>, Stripe\\Collection<Stripe\\Refund> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/StripeMoneyOperationService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $page of static method App\\Services\\StripeMoneyOperationService::scan() expects Stripe\\Collection<Stripe\\StripeObject>, Stripe\\Collection<Stripe\\TransferReversal> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/StripeMoneyOperationService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $page of static method App\\Services\\StripeMoneyOperationService::scan() expects Stripe\\Collection<Stripe\\StripeObject>, Stripe\\Collection<Stripe\\ApplicationFeeRefund> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/TenantSettingsService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $pattern of method Redis::scan() expects string|null, array<string, int|string> given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/WalletService.php",
+      "identifier": "argument.type",
+      "message": "Parameter #1 $u of closure expects App\\Models\\User|null, Illuminate\\Database\\Eloquent\\Model|null given.",
+      "count": 3,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/WebAuthnChallengeStore.php",
+      "identifier": "argument.type",
+      "message": "Parameter #2 $args of method Redis::eval() expects array, int given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    },
+    {
+      "file": "app/Services/WebAuthnChallengeStore.php",
+      "identifier": "argument.type",
+      "message": "Parameter #3 $num_keys of method Redis::eval() expects int, string given.",
+      "count": 1,
+      "status": "pre-existing — not yet reviewed",
+      "note": ""
+    }
+  ]
+}

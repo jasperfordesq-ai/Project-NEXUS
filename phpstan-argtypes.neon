@@ -1,0 +1,80 @@
+# PHPStan configuration for the TARGETED argument-type check.
+#
+# This is NOT a second opinion on the whole codebase. `phpstan.neon` remains the
+# blocking gate and stays at level 1. This config exists only so that
+# `scripts/check-argument-types.mjs` can ask PHPStan one question it cannot
+# answer at level 1:
+#
+#     is this call passing the wrong kind of argument, or the wrong number?
+#
+# The script runs this config at level 5 and then DISCARDS every error except
+# the two identifiers `argument.type` and `arguments.count`. Everything else
+# level 5 reports (nullCoalesce narrowing, instanceof analysis, dead code — 1,665
+# of the 1,743 errors measured on 30 September 2026) is thrown away unread. Do
+# not be tempted to "use the rest while we are here": that would be a level raise
+# by the back door, with a backlog nobody has agreed to work through.
+#
+# WHY THIS EXISTS
+#   - The `getJsonInput()` episode: six live endpoints called a method that had
+#     been removed, and threw a fatal on every request for months. The *undefined
+#     method* half of that class is caught by `reportMagicMethods: true` in
+#     phpstan.neon.
+#   - Security finding F-372 (engagement E-065): four live endpoints, one
+#     reachable by any member, answer invalid input with HTTP 500 because they
+#     pass an array to a parameter declared `?string`. `reportMagicMethods`
+#     cannot see that — the method exists, it is being handed the wrong thing.
+#
+# The owner chose "add a targeted check" over "raise the level" on 30 September
+# 2026. This is that check.
+#
+# SCOPE. All of `app/`, deliberately — the whole-app population is only 78
+# reports, so there is no reason to confine it to the controller layer where the
+# symptom happens to be most visible.
+#
+# The larastan extension is included so Eloquent and facade calls resolve; the
+# level-1 baseline (`phpstan-baseline.neon`) is deliberately NOT included,
+# because this check keeps its own shrink-only baseline at
+# `.github/argument-type-baseline.json` and must not inherit suppressions
+# generated for a different question.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+
+    # Off here on purpose. The undefined-method question is phpstan.neon's job
+    # and it already answers it; repeating it would produce two reports for one
+    # defect and two places to baseline it.
+    reportMagicMethods: false
+
+    paths:
+        - app
+
+    excludePaths:
+        - vendor
+
+    # getID3 is classmap-autoloaded with no PSR-4 namespace; PHPStan needs the
+    # hint to discover the class symbol.
+    scanFiles:
+        - vendor/james-heinrich/getid3/getid3/getid3.php
+
+    parallel:
+        processTimeout: 3600.0
+        maximumNumberOfProcesses: 6
+        jobSize: 20
+
+    reportUnmatchedIgnoredErrors: false
+
+    # These silence Laravel/Eloquent magic that PHPStan cannot resolve, and the
+    # missing-type noise that level 5 would otherwise emit in volume. None of
+    # them can hide an `argument.type` or `arguments.count` report, which are the
+    # only two identifiers the script reads.
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        - '#Access to an undefined property#'
+        - identifier: missingType.iterableValue
+        - identifier: missingType.parameter
+        - identifier: missingType.return
+        - '#Call to an undefined static method#'
+        - '#Call to static method [a-zA-Z_]+\(\) on an unknown class#'
+        - '#Static call to instance method#'
