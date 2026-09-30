@@ -77,6 +77,11 @@ class PurgeUndeliverableUsersTest extends TestCase
 
         $this->mx = \Mockery::mock(MxRecordValidator::class);
         $this->mx->shouldReceive('isResolvable')->andReturn(true)->byDefault();
+        // F-375: the command now asks for the three-way state so it can tell
+        // "DNS says no" from "DNS did not answer".
+        $this->mx->shouldReceive('resolveState')
+            ->andReturn(MxRecordValidator::STATE_RESOLVABLE)
+            ->byDefault();
 
         // Bind via container so the command's constructor receives the mocks.
         $this->app->instance(DisposableEmailService::class, $this->disposable);
@@ -232,9 +237,9 @@ class PurgeUndeliverableUsersTest extends TestCase
     {
         $email = 'user@no-mx-domain.com';
 
-        $this->mx->shouldReceive('isResolvable')
+        $this->mx->shouldReceive('resolveState')
             ->with($email)
-            ->andReturn(false);
+            ->andReturn(MxRecordValidator::STATE_UNDELIVERABLE);
 
         $id = $this->seedUnverifiedUser(['email' => $email]);
 

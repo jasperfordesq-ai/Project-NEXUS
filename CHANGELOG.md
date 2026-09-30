@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Deleting a job advert now also deletes the CVs applicants uploaded to it. They were previously left on the server with nothing pointing at them, so no later deletion or data-erasure request could find them (F-361).
+- A maintenance command that deletes accounts with dead email addresses can no longer delete them during a name-lookup outage — it now tells the difference between \"this address does not exist\" and \"the lookup service is not answering\", and leaves the second alone. It also now protects the platform's most senior administrator accounts, which it previously missed (F-375).
 - Removing the block that stops the platform emailing someone is now recorded, with who did it. If the block is there because the person asked not to be emailed, removing it is refused unless the administrator explicitly confirms they are overriding that request (F-374).
 - The platform's main framework (Laravel) and two supporting packages (Flysystem for file storage, phpseclib for encryption) are updated to versions that fix newly published weaknesses: a display issue on the debug error page (never switched on in production), mishandling of unusual characters in file paths, and a timing weakness in one encryption method.
 - Deleting a group no longer destroys the abuse reports filed about it, the moderator's decisions on those reports, or the group's own record of who did what — and the deletion itself is now recorded with the name of whoever ordered it. The files members uploaded to the group are now removed with it instead of being left on the server (F-337, F-360).

@@ -66,8 +66,12 @@ class MxRecordValidatorTest extends TestCase
 
     public function test_reserved_domain_result_is_written_to_cache(): void
     {
+        // F-375: the cached value is now the three-way state rather than a
+        // boolean, because "DNS did not answer" had to stop looking like
+        // "this domain cannot receive mail". Pre-F-375 boolean entries are
+        // still read — see test_negative_cache_hit_short_circuits_dns above.
         $this->assertFalse($this->svc->isResolvable('x@example.com'));
-        $this->assertSame(false, Cache::get('mx:example.com'));
+        $this->assertSame(MxRecordValidator::STATE_UNDELIVERABLE, Cache::get('mx:example.com'));
     }
 
     public function test_domain_is_lowercased_for_cache_key(): void

@@ -32,10 +32,22 @@ use Illuminate\Support\Facades\Log;
  *   - Only considers `email_verified_at IS NULL` users. A verified user
  *     proved their email works at some point; we will not delete them
  *     even if their domain is briefly broken now.
- *   - Skips role in (god / super_admin) and is_super_admin = 1 — admin
- *     accounts are off-limits regardless of email domain.
+ *   - 🔴 Skips every admin tier, by BOOLEAN FLAG: is_super_admin, is_god and
+ *     is_tenant_super_admin, plus the role strings for completeness. Until
+ *     F-375 this read `role IN ('god','super_admin')` plus is_super_admin —
+ *     and those two role strings are never written to `users.role` by the API
+ *     (those tiers are flags), so is_god and is_tenant_super_admin accounts
+ *     were in scope. The pattern copied here is
+ *     TenantPurgeService::platformSuperAdminScope(), which gets it right.
+ *   - 🔴 A DNS outage no longer deletes anybody. MxRecordValidator now answers
+ *     resolvable / undeliverable / UNKNOWN, and only `undeliverable` — DNS
+ *     answered, and the answer was "this domain cannot receive mail" — counts
+ *     as a match. Addresses that could not be checked are reported and left
+ *     alone (F-375).
  *   - Defaults to --dry-run. --soft sets `deleted_at = NOW()`. --hard
- *     issues a real DELETE.
+ *     issues a real DELETE, which fires the ~99 ON DELETE CASCADE children of
+ *     `users` — including broker_message_copies and
+ *     member_vetting_attestations. Treat it accordingly.
  *   - `--since` defaults to 90 days so we don't touch ancient signups.
  *   - Per-row try/catch so one bad row never aborts the run.
  */
@@ -101,13 +113,25 @@ class PurgeUndeliverableUsers extends Command
         ));
 
         // Pull the candidate cohort: unverified, recent, not admin, not deleted.
+        // 🔴 F-375: the admin exclusion is by BOOLEAN FLAG. The role strings are
+        // kept for completeness but carry nothing on their own — the API never
+        // writes 'god' or 'super_admin' to users.role.
         $q = DB::table('users')
             ->whereNull('email_verified_at')
             ->whereNull('deleted_at')
             ->where('created_at', '>=', $since)
-            ->whereNotIn('role', ['god', 'super_admin'])
+            ->whereNotIn('role', ['god', 'super_admin', 'tenant_admin', 'admin'])
             ->where(function ($q) {
                 $q->whereNull('is_super_admin')->orWhere('is_super_admin', 0);
+            })
+            ->where(function ($q) {
+                $q->whereNull('is_god')->orWhere('is_god', 0);
+            })
+            ->where(function ($q) {
+                $q->whereNull('is_tenant_super_admin')->orWhere('is_tenant_super_admin', 0);
+            })
+            ->where(function ($q) {
+                $q->whereNull('is_admin')->orWhere('is_admin', 0);
             })
             ->orderBy('id')
             ->limit($limit);
@@ -123,11 +147,22 @@ class PurgeUndeliverableUsers extends Command
         }
 
         $matches = [];
+        $unchecked = 0;
         foreach ($candidates as $u) {
-            $reason = $this->classifyUndeliverable((string) ($u->email ?? ''));
+            $reason = $this->classifyUndeliverable((string) ($u->email ?? ''), $unchecked);
             if ($reason !== null) {
                 $matches[] = ['user' => $u, 'reason' => $reason];
             }
+        }
+
+        // 🔴 F-375: say out loud how many addresses could not be checked. A large
+        // number here means DNS is broken, not that the platform is clean — and
+        // before the fix those same addresses would have been DELETED.
+        if ($unchecked > 0) {
+            $this->warn(sprintf(
+                '%d address(es) could not be checked because DNS did not answer. They were left alone.',
+                $unchecked
+            ));
         }
 
         if (empty($matches)) {
@@ -199,10 +234,15 @@ class PurgeUndeliverableUsers extends Command
      *   reserved_domain    — exact-match RFC 2606/6761 (example.com, etc.)
      *   reserved_tld       — ends with .test / .example / .invalid / .localhost
      *   disposable         — known throwaway provider (DisposableEmailService)
-     *   no_mx_no_a         — MxRecordValidator fail
+     *   no_mx_no_a         — MxRecordValidator says DNS answered "no mail here"
      *   malformed          — no @ or empty local/domain
+     *
+     * 🔴 F-375: an address whose DNS lookup could not be completed is NOT a
+     * match. It is counted in $unchecked and left alone. This used to return
+     * 'no_mx_no_a' for it, so a DNS outage classified every in-scope member as
+     * undeliverable and --hard deleted them.
      */
-    private function classifyUndeliverable(string $email): ?string
+    private function classifyUndeliverable(string $email, int &$unchecked = 0): ?string
     {
         $email = strtolower(trim($email));
         if ($email === '') {
@@ -230,7 +270,12 @@ class PurgeUndeliverableUsers extends Command
             return 'disposable_provider';
         }
 
-        if (!$this->mx->isResolvable($email)) {
+        $state = $this->mx->resolveState($email);
+        if ($state === MxRecordValidator::STATE_UNKNOWN) {
+            $unchecked++;
+            return null;
+        }
+        if ($state === MxRecordValidator::STATE_UNDELIVERABLE) {
             return 'no_mx_no_a';
         }
 
