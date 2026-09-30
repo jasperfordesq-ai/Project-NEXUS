@@ -3451,6 +3451,14 @@ class FederationV2Controller extends BaseApiController
         if ($blocked = $this->requireFederationOperation('profiles')) {
             return $blocked;
         }
+        // F-373: the five connection routes were the only federated routes that
+        // never asked whether the caller is in federation at all, so a member
+        // the platform reports as opted out could still open a cross-community
+        // connection and put a bell, a push and an email in front of someone in
+        // another community. `connections()` above has always called this.
+        if ($blocked = $this->requireFederationOptIn()) {
+            return $blocked;
+        }
 
         $userId = $this->getUserId();
         $receiverId = (int) $this->input('receiver_id');
@@ -3481,6 +3489,10 @@ class FederationV2Controller extends BaseApiController
         if ($blocked = $this->requireFederationOperation('profiles')) {
             return $blocked;
         }
+        // F-373: see sendConnectionRequest().
+        if ($blocked = $this->requireFederationOptIn()) {
+            return $blocked;
+        }
 
         $userId = $this->getUserId();
         $result = $this->federatedConnectionService->acceptRequest($id, $userId);
@@ -3505,6 +3517,10 @@ class FederationV2Controller extends BaseApiController
         if ($blocked = $this->requireFederationOperation('profiles')) {
             return $blocked;
         }
+        // F-373: see sendConnectionRequest().
+        if ($blocked = $this->requireFederationOptIn()) {
+            return $blocked;
+        }
 
         $userId = $this->getUserId();
         $result = $this->federatedConnectionService->rejectRequest($id, $userId);
@@ -3521,6 +3537,13 @@ class FederationV2Controller extends BaseApiController
     public function removeConnection(int $id): JsonResponse
     {
         if ($blocked = $this->requireFederationOperation('profiles')) {
+            return $blocked;
+        }
+        // F-373: see sendConnectionRequest(). An opted-out member is not left
+        // stranded with connections they can no longer delete: F-352 severs
+        // them at the moment of opting out, every time, so there is nothing
+        // here for them to reach.
+        if ($blocked = $this->requireFederationOptIn()) {
             return $blocked;
         }
 
@@ -3545,6 +3568,10 @@ class FederationV2Controller extends BaseApiController
     public function connectionStatus(int $userId, int $tenantId): JsonResponse
     {
         if ($blocked = $this->requireFederationOperation('profiles')) {
+            return $blocked;
+        }
+        // F-373: see sendConnectionRequest().
+        if ($blocked = $this->requireFederationOptIn()) {
             return $blocked;
         }
 

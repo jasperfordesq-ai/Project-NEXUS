@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A member who has opted out of cross-community sharing can no longer use any of the cross-community connection features — sending, accepting, rejecting or removing a connection, or checking its status (F-373).
 - Turning off cross-community sharing now ends the connections you already have with people in other communities, instead of leaving them live. Erasing your account does the same. Previously those connections stayed, the other community kept reading your name and photo, and turning the setting off also removed your ability to delete them (F-352).
 - Switching off \"visible to other communities\" now also stops people in other communities sending you a connection request, and hides your name and photo in their connection lists. It previously only affected search and profile pages (F-351).
 - Permanently purging a community now also deletes the private group chat messages, AI chat conversations and consent records — including the IP addresses in them — that it previously left behind for ever. The routine's description now states exactly what it does and does not remove, and says so in its report on every run (F-354).
