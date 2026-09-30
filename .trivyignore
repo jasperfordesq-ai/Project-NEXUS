@@ -148,6 +148,17 @@ CVE-2026-25645
 # file pins urllib3==2.2.1.
 CVE-2026-44431
 
+# ── urllib3 CVE-2026-97687 / CVE-2026-97689 (HIGH) — same mockery docs file ──
+# GHSA-8988-9cw3-xx77 (HTTPS proxy TLS override, >= 1.26.0, < 2.8.0) and
+# GHSA-vxq7-64xx-v4gw (chunk-parser memory DoS, >= 1.10.3, < 2.8.0), both
+# fixed in 2.8.0. Same file and same false-positive class as CVE-2026-44431
+# above: urllib3==2.2.1 is pinned in vendor/mockery/mockery/docs/requirements.txt,
+# a Python docs build file inside a PHP test library. Nothing installs it, there
+# is no Python in the stack, and vendor/ docs never reach an image. (added
+# 2026-09-30, first reported by the fs scan on 3a1cd1164)
+CVE-2026-97687
+CVE-2026-97689
+
 # ── image-size 1.2.1 DoS (HIGH ×2) — no fixed release exists at all ──────────
 # CVE-2025-71329 (crafted image buffer with zero-valued size) and CVE-2025-71330
 # (crafted ICNS buffer). Trivy reports NO fixed version for either — 1.2.1 is

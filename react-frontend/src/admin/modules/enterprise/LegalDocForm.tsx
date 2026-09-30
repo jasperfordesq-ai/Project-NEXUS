@@ -104,6 +104,8 @@ export function LegalDocForm() {
           toast.success(t('legal_doc_form.document_updated'));
           navigate(tenantPath('/admin/legal-documents'));
         } else {
+          // admin-i18n-ignore: localized server message — updateLegalDoc returns
+          // every refusal through __() in the caller's locale (AdminEnterpriseController).
           toast.error(res.error || t('legal_doc_form.save_failed_generic'));
         }
       } else {
@@ -120,6 +122,8 @@ export function LegalDocForm() {
           // Land straight in the version editor to author the first version.
           navigate(tenantPath(`/admin/legal-documents/${(res.data as LegalDocument).id}/versions/new`));
         } else {
+          // admin-i18n-ignore: localized server message — createLegalDoc returns
+          // every refusal through __() in the caller's locale (AdminEnterpriseController).
           toast.error(res.error || t('legal_doc_form.save_failed_generic'));
         }
       }
