@@ -2601,6 +2601,7 @@ Route::post('/v2/admin/enterprise/config/secrets/test-vault', [\App\Http\Control
 Route::get('/v2/admin/legal-documents', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'legalDocs']);
 Route::post('/v2/admin/legal-documents', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'createLegalDoc']);
 Route::get('/v2/admin/legal-documents/compliance', [\App\Http\Controllers\Api\AdminLegalDocController::class, 'getComplianceStats']);
+Route::get('/v2/admin/legal-documents/publication-emails', [\App\Http\Controllers\Api\AdminLegalDocController::class, 'publicationEmails']);
 Route::get('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'showLegalDoc']);
 Route::put('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateLegalDoc']);
 Route::delete('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteLegalDoc']);

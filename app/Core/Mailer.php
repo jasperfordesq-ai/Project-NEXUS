@@ -448,7 +448,7 @@ class Mailer
      * Public so retrying senders (e.g. VolunteerReminderService) can treat a
      * suppressed recipient as a permanent failure instead of retrying forever.
      */
-    public static function isSuppressed(string $email): bool
+    public static function isSuppressed(string $email, ?string $category = null): bool
     {
         try {
             if (!\Illuminate\Support\Facades\Schema::hasTable('email_suppression')) {
@@ -456,6 +456,9 @@ class Mailer
             }
             return \Illuminate\Support\Facades\DB::table('email_suppression')
                 ->where('email', $email)
+                ->when($category === 'legal_document', fn ($query) => $query->where(
+                    fn ($reasons) => $reasons->whereNull('reason')->orWhere('reason', '!=', 'unsubscribe')
+                ))
                 ->exists();
         } catch (\Throwable $e) {
             return false;
@@ -644,7 +647,9 @@ class Mailer
         // so they would also receive the header — that's fine; modern clients
         // ignore it on visibly-transactional messages and there's no spec
         // forbidding its presence on transactional mail.
-        if ($unsubscribeUrl === null && $this->tenantId !== null) {
+        // Mandatory policy notices must not advertise a marketing opt-out that
+        // does not apply to this category.
+        if ($unsubscribeUrl === null && $this->tenantId !== null && $category !== 'legal_document') {
             $unsubscribeUrl = $this->autoDetectUnsubscribeUrl($to);
         }
 
@@ -653,7 +658,7 @@ class Mailer
         // protects sender reputation, and avoids confusion when an admin
         // wonders "why didn't this email arrive?". The suppression table is
         // hydrated by the Postmark event webhook.
-        if (self::isSuppressed($to)) {
+        if (self::isSuppressed($to, $category)) {
             self::logEmail($to, $subject, 'suppressed', null, 'recipient on local suppression list', $this->tenantId, $category, $this->driver, $metadata);
             \Illuminate\Support\Facades\Log::info(
                 'Mailer: refusing to send to suppressed address',

@@ -54,7 +54,6 @@ export function LegalDocForm() {
   const [type, setType] = useState('terms');
   const [requiresAcceptance, setRequiresAcceptance] = useState(true);
   const [acceptanceRequiredFor, setAcceptanceRequiredFor] = useState('registration');
-  const [notifyOnUpdate, setNotifyOnUpdate] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -70,7 +69,6 @@ export function LegalDocForm() {
         setType(doc.type || 'terms');
         setRequiresAcceptance(Boolean(doc.requires_acceptance));
         setAcceptanceRequiredFor(doc.acceptance_required_for || 'registration');
-        setNotifyOnUpdate(Boolean(doc.notify_on_update));
         setIsActive(Boolean(doc.is_active));
       }
     } catch {
@@ -97,7 +95,7 @@ export function LegalDocForm() {
           title: title.trim(),
           requires_acceptance: requiresAcceptance,
           acceptance_required_for: acceptanceRequiredFor,
-          notify_on_update: notifyOnUpdate,
+          notify_on_update: true,
           is_active: isActive,
         });
         if (res.success) {
@@ -114,7 +112,7 @@ export function LegalDocForm() {
           type,
           requires_acceptance: requiresAcceptance,
           acceptance_required_for: acceptanceRequiredFor,
-          notify_on_update: notifyOnUpdate,
+          notify_on_update: true,
           is_active: isActive,
         });
         if (res.success && res.data) {
@@ -222,9 +220,9 @@ export function LegalDocForm() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-medium">{t('legal_doc_form.label_notify_on_update')}</p>
-                <p className="text-sm text-[var(--color-text-secondary)]">{t('legal_doc_form.notify_on_update_desc')}</p>
+                <p className="text-sm text-[var(--color-text-secondary)]">{t('legal_versions.publication_email_info')}</p>
               </div>
-              <Switch isSelected={notifyOnUpdate} onValueChange={setNotifyOnUpdate} />
+              <Switch isSelected isDisabled />
             </div>
 
             <div className="flex items-center justify-between gap-4">

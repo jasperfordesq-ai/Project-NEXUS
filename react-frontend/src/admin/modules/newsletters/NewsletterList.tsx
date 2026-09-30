@@ -30,6 +30,7 @@ import { DataTable, StatusBadge, type Column } from '../../components/DataTable'
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { NewsletterResend } from './NewsletterResend';
+import { PolicyEmailActivity } from './PolicyEmailActivity';
 
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip } from '@/components/ui';
 interface NewsletterItem {
@@ -251,6 +252,7 @@ export function NewsletterList() {
           </div>
         }
       />
+      <PolicyEmailActivity />
       <DataTable
         columns={columns}
         data={items}

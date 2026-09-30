@@ -840,6 +840,7 @@ export interface LegalDocumentVersion {
   published_at?: string | null;
   is_draft: boolean;
   is_current: boolean;
+  email_delivery?: Record<string, number>;
   notification_sent?: boolean;
   notification_sent_at?: string | null;
   created_by: number;

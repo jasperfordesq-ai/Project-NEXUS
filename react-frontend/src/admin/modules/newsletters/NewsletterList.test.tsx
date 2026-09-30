@@ -25,14 +25,16 @@ vi.mock('@/lib/api', () => {
 });
 
 // Mock adminApi so we can control adminNewsletters directly
-const { mockNLList, mockNLDelete, mockNLSend, mockNLDuplicate } = vi.hoisted(() => ({
+const { mockNLList, mockNLDelete, mockNLSend, mockNLDuplicate, mockPolicyEmails } = vi.hoisted(() => ({
   mockNLList: vi.fn(),
   mockNLDelete: vi.fn(),
   mockNLSend: vi.fn(),
   mockNLDuplicate: vi.fn(),
+  mockPolicyEmails: vi.fn(),
 }));
 
 vi.mock('../../api/adminApi', () => ({
+  adminLegalDocs: { publicationEmails: mockPolicyEmails },
   adminNewsletters: {
     list: mockNLList,
     delete: mockNLDelete,
@@ -105,6 +107,19 @@ function resolveList(items: unknown[], meta: { total?: number; total_pages?: num
 describe('NewsletterList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPolicyEmails.mockResolvedValue({ success: true, data: [] });
+  });
+
+  it('shows policy submissions and provider delivery alongside newsletter campaigns', async () => {
+    resolveList([]);
+    mockPolicyEmails.mockResolvedValue({ success: true, data: [{
+      document_id: 5, title: 'Privacy policy', version_id: 9, version_number: '2.0',
+      published_at: '2026-09-30T20:00:00Z', recipients: 10, queued: 2,
+      submitted: 7, delivered: 6, bounced: 1, exceptions: 1,
+    }] });
+    render(<NewsletterList />);
+    expect(await screen.findByText('Privacy policy · version 2.0')).toBeInTheDocument();
+    expect(screen.getByText(/Submitted 7 · Delivered 6 · Bounced 1/)).toBeInTheDocument();
   });
 
   it('shows a loading spinner while fetching', () => {

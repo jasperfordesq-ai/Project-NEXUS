@@ -313,6 +313,13 @@ class LegalDocumentService
         // document start blocking every member who has not accepted it — without a
         // bump this publish is invisible to the gate until each verdict expires.
         $published = DB::transaction(function () use ($vid, $version) {
+            // Serialize publication for a document before changing its current pointer.
+            DB::table('legal_documents')->where('id', $version['document_id'])
+                ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first();
+            $draft = DB::table('legal_document_versions')->where('id', $vid)->lockForUpdate()->first();
+            if (!$draft || !(bool) $draft->is_draft) {
+                return false;
+            }
             // Unset current flag on all other versions
             DB::table('legal_document_versions')
                 ->where('document_id', $version['document_id'])
@@ -332,6 +339,8 @@ class LegalDocumentService
             DB::table('legal_documents')
                 ->where('id', $version['document_id'])
                 ->update(['current_version_id' => $vid]);
+
+            LegalPublicationDeliveryService::record($vid);
 
             return true;
         });

@@ -32,11 +32,24 @@ class AdminLegalDocController extends BaseApiController
         $this->requireAdmin();
         try {
             $versions = $this->legalDocumentService->getVersions($docId);
+            foreach ($versions as &$version) {
+                $version['email_delivery'] = \App\Services\LegalPublicationDeliveryService::summary(
+                    TenantContext::getId(), (int) $version['id']
+                );
+            }
+            unset($version);
             return $this->respondWithData($versions);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminLegalDocController] getVersions error: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.fetch_failed', ['resource' => 'versions']), null, 500);
         }
+    }
+
+    /** GET /api/v2/admin/legal-documents/publication-emails */
+    public function publicationEmails(): JsonResponse
+    {
+        $this->requireAdmin();
+        return $this->respondWithData(\App\Services\LegalPublicationDeliveryService::recent((int) TenantContext::getId()));
     }
 
     /** GET /api/v2/admin/legal-docs/{docId}/compare */
@@ -116,6 +129,10 @@ class AdminLegalDocController extends BaseApiController
             }
             if (!(bool) ($version['is_draft'] ?? false)) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.only_draft_can_be_edited'), null, 400);
+            }
+
+            if (trim(strip_tags($version['summary_of_changes'] ?? '')) === '') {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.policy_summary_required'), 'summary_of_changes', 422);
             }
 
             $success = $this->legalDocumentService->publishVersion($vid);
@@ -245,8 +262,10 @@ class AdminLegalDocController extends BaseApiController
         }
 
         try {
-            $count = $this->legalDocumentService->notifyUsersOfUpdate($docId, $vid, true, $target);
-            return $this->respondWithData(['notified' => true, 'count' => $count]);
+            $count = \App\Services\LegalPublicationDeliveryService::record($vid);
+            // Keep the existing in-app reminder; email delivery belongs to the ledger.
+            $this->legalDocumentService->notifyUsersOfUpdate($docId, $vid, false, $target);
+            return $this->respondWithData(['queued' => true, 'count' => $count]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminLegalDocController] notifyUsers error: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'notifications']), null, 500);

@@ -1347,6 +1347,8 @@ export const adminEnterprise = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const adminLegalDocs = {
+  publicationEmails: () =>
+    api.get<Array<{ document_id: number; title: string; version_id: number; version_number: string; published_at: string | null; recipients: number; queued: number; submitted: number; delivered: number; bounced: number; exceptions: number }>>('/v2/admin/legal-documents/publication-emails'),
   list: () =>
     api.get<LegalDocument[]>('/v2/admin/legal-documents'),
 
@@ -1408,7 +1410,7 @@ export const adminLegalDocs = {
 
   // Notifications
   notifyUsers: (docId: number, versionId: number, notify: { target: 'all' | 'non_accepted' }) =>
-    api.post<{ notified: boolean }>(`/v2/admin/legal-documents/${docId}/versions/${versionId}/notify`, notify),
+    api.post<{ queued: boolean; count: number }>(`/v2/admin/legal-documents/${docId}/versions/${versionId}/notify`, notify),
 
   getUsersPendingCount: (docId: number, versionId: number) =>
     api.get<{ count: number }>(`/v2/admin/legal-documents/${docId}/versions/${versionId}/pending-count`),

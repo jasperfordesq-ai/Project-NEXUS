@@ -1,0 +1,173 @@
+<?php
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+namespace Tests\Laravel\Feature\Legal;
+
+use App\Core\Mailer;
+use App\Core\TenantContext;
+use App\Models\User;
+use App\Services\EmailDispatchService;
+use App\Services\LegalDocumentService;
+use App\Services\LegalPublicationDeliveryService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
+use Tests\Laravel\TestCase;
+
+class LegalPublicationDeliveryTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    private function draft(string $summary = 'Updated privacy contact and retention information.'): int
+    {
+        $doc = DB::table('legal_documents')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'document_type' => 'acceptable_use',
+            'title' => 'Policy test', 'slug' => 'acceptable-use', 'is_active' => 1,
+            'requires_acceptance' => 0, 'notify_on_update' => 0, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        return DB::table('legal_document_versions')->insertGetId([
+            'document_id' => $doc, 'version_number' => '2.0', 'content' => '<p>Policy</p>',
+            'content_plain' => 'Policy', 'summary_of_changes' => $summary,
+            'effective_date' => '2026-09-30', 'is_draft' => 1, 'is_current' => 0, 'created_at' => now(),
+        ]);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        DB::table('legal_documents')->where('tenant_id', $this->testTenantId)->where('document_type', 'acceptable_use')->delete();
+        // Isolate the worker from other fixtures and pending developer work.
+        DB::table('legal_publication_deliveries')->delete();
+    }
+
+    public function test_publication_records_admins_and_members_independent_of_acceptance_and_opt_in(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $deleted = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'deleted_at' => now()]);
+        $version = $this->draft();
+        $this->assertSame(0, LegalPublicationDeliveryService::record($version));
+        $this->assertTrue(LegalDocumentService::publishVersion($version));
+        foreach ([$admin, $member] as $user) {
+            $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'user_id' => $user->id, 'status' => 'pending']);
+        }
+        $this->assertDatabaseMissing('legal_publication_deliveries', ['version_id' => $version, 'user_id' => $deleted->id]);
+        $this->assertSame(0, LegalPublicationDeliveryService::record($version));
+        $this->assertFalse(LegalDocumentService::publishVersion($version));
+    }
+
+    public function test_worker_renders_summary_link_and_does_not_resend(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'email' => 'policy-reader@example.org', 'preferred_language' => 'de']);
+        app('translator')->addLines(['emails.policy_publication.subject' => 'DE :document'], 'de');
+        DB::table('email_suppression')->insert(['email' => $user->email, 'reason' => 'unsubscribe', 'suppressed_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        $version = $this->draft('Changed <script>unsafe</script> contact details.');
+        LegalDocumentService::publishVersion($version);
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        $captured = [];
+        $this->mock(EmailDispatchService::class, function ($mock) use (&$captured) {
+            $mock->shouldReceive('send')->once()->andReturnUsing(function ($to, $subject, $html, $options) use (&$captured) {
+                $captured = compact('to', 'subject', 'html', 'options');
+                return true;
+            });
+        });
+        $service = app(LegalPublicationDeliveryService::class);
+        $service->processBatch();
+        $service->processBatch();
+        $this->assertSame($user->email, $captured['to']);
+        $this->assertSame('DE Policy test', $captured['subject']);
+        $this->assertStringContainsString('contact details.', $captured['html']);
+        $this->assertStringNotContainsString('<script>', $captured['html']);
+        $this->assertStringContainsString('/legal/acceptable-use', $captured['html']);
+        $this->assertSame('legal_document', $captured['options']['category']);
+        $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'user_id' => $user->id, 'status' => 'sent', 'attempts' => 1]);
+    }
+
+    public function test_transaction_rollback_does_not_leave_emails_to_send(): void
+    {
+        $version = $this->draft();
+        DB::beginTransaction();
+        LegalDocumentService::publishVersion($version);
+        DB::rollBack();
+        $this->assertDatabaseMissing('legal_publication_deliveries', ['version_id' => $version]);
+    }
+
+    public function test_a_later_version_has_its_own_delivery_and_cannot_be_queued_from_another_tenant(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $first = $this->draft();
+        LegalDocumentService::publishVersion($first);
+        $docId = DB::table('legal_document_versions')->where('id', $first)->value('document_id');
+        $this->actingAs($user);
+        $next = LegalDocumentService::createVersion($docId, [
+            'version_number' => '3.0', 'content' => '<p>Updated</p>',
+            'effective_date' => '2026-10-01', 'summary_of_changes' => 'New retention period.',
+        ]);
+        $this->assertTrue(LegalDocumentService::publishVersion($next));
+        $this->assertSame(2, DB::table('legal_publication_deliveries')->where('user_id', $user->id)->count());
+        TenantContext::setById(1);
+        $this->assertSame(0, LegalPublicationDeliveryService::record($next));
+        TenantContext::setById($this->testTenantId);
+    }
+
+    public function test_interrupted_submission_is_flagged_for_review_without_resending(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $version = $this->draft();
+        LegalDocumentService::publishVersion($version);
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        DB::table('legal_publication_deliveries')->update(['status' => 'sending', 'claimed_at' => now()->subMinutes(11)]);
+        $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldNotReceive('send'));
+        app(LegalPublicationDeliveryService::class)->processBatch();
+        $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'status' => 'unknown']);
+    }
+
+    public function test_admin_email_overview_separates_submitted_delivered_and_other_tenants(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);
+        Sanctum::actingAs($admin);
+        $version = $this->draft();
+        LegalDocumentService::publishVersion($version);
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $admin->id)->delete();
+        $deliveryId = DB::table('legal_publication_deliveries')->where('version_id', $version)->value('id');
+        DB::table('legal_publication_deliveries')->where('id', $deliveryId)->update(['status' => 'sent']);
+        DB::table('email_log')->insert([
+            'tenant_id' => $this->testTenantId, 'recipient_email' => $admin->email,
+            'idempotency_key' => 'legal-publication:' . $deliveryId,
+            'category' => 'legal_document', 'status' => 'delivered', 'created_at' => now(),
+        ]);
+        $response = $this->apiGet('/v2/admin/legal-documents/publication-emails');
+        $response->assertStatus(200);
+        $row = collect($response->json('data'))->firstWhere('version_id', $version);
+        $this->assertNotNull($row);
+        $this->assertEquals(1, $row['recipients']);
+        $this->assertEquals(1, $row['submitted']);
+        $this->assertEquals(1, $row['delivered']);
+        $this->assertEquals(0, $row['queued']);
+    }
+
+    public function test_marketing_unsubscribe_does_not_override_service_mail_but_bounces_do(): void
+    {
+        $email = 'unsubscribed-policy@example.org';
+        $row = ['email' => $email, 'reason' => 'unsubscribe', 'suppressed_at' => now(), 'created_at' => now(), 'updated_at' => now()];
+        DB::table('email_suppression')->insert($row);
+        $this->assertTrue(Mailer::isSuppressed($email));
+        $this->assertFalse(Mailer::isSuppressed($email, 'legal_document'));
+        DB::table('email_suppression')->insert(array_replace($row, ['reason' => 'bounce']));
+        $this->assertTrue(Mailer::isSuppressed($email, 'legal_document'));
+    }
+
+    public function test_rejected_send_is_retried_and_not_reported_as_sent(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'email' => 'retry-policy@example.org']);
+        $version = $this->draft();
+        LegalDocumentService::publishVersion($version);
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->once()->andReturn(false));
+        app(LegalPublicationDeliveryService::class)->processBatch();
+        $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'status' => 'retry', 'sent_at' => null]);
+    }
+}

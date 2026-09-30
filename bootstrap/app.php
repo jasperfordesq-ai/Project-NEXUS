@@ -200,6 +200,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('events-process-federation');
 
+        // Policy publication and the recipient ledger commit together.
+        $schedule->command('legal:process-publication-emails --limit=100')
+            ->everyMinute()->withoutOverlapping(10)->onOneServer()
+            ->name('legal-publication-emails');
+
         // Message rows and this outbox fact commit together. This consumer
         // repairs a Redis/event enqueue outage without asking the sender to
         // create another message or silently abandoning recipient delivery.

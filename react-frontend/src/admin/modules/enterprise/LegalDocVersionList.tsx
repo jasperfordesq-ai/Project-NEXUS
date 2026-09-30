@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Button, Spinner, Chip, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Tooltip, RadioGroup, Radio } from '@/components/ui';
+import { Card, CardBody, CardHeader, Button, Spinner, Chip, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Tooltip } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -23,7 +23,6 @@ import type { LegalDocumentVersion } from '@/admin/api/types';
 import LegalDocVersionComparison from './LegalDocVersionComparison';
 import { sanitizeRichText } from '@/lib/sanitize';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { logError } from '@/lib/logger';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -46,8 +45,6 @@ export default function LegalDocVersionList() {
   const [showNotifyModal, setShowNotifyModal] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<LegalDocumentVersion | null>(null);
   const [compareVersions, setCompareVersions] = useState<{ v1: number; v2: number } | null>(null);
-  const [notifyTarget, setNotifyTarget] = useState<'all' | 'non_accepted'>('non_accepted');
-  const [pendingCount, setPendingCount] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingVersion, setViewingVersion] = useState<LegalDocumentVersion | null>(null);
@@ -93,7 +90,7 @@ export default function LegalDocVersionList() {
         setSelectedVersion(null);
         loadVersions();
       } else {
-        error(t('enterprise.failed_to_publish_version'));
+        error(response.error || t('enterprise.failed_to_publish_version'));
       }
     } catch {
       error(t('enterprise.failed_to_publish_version'));
@@ -129,10 +126,11 @@ export default function LegalDocVersionList() {
 
     try {
       setSubmitting(true);
-      const response = await adminLegalDocs.notifyUsers(documentId, selectedVersion.id, { target: notifyTarget });
+      const response = await adminLegalDocs.notifyUsers(documentId, selectedVersion.id, { target: 'all' });
 
       if (response.success) {
-        success(notifyTarget === 'all' ? t('enterprise.notification_sent_all') : t('enterprise.notification_sent_non_accepted'));
+        success(t('legal_versions.emails_queued'));
+        loadVersions();
         setShowNotifyModal(false);
         setSelectedVersion(null);
       } else {
@@ -145,19 +143,8 @@ export default function LegalDocVersionList() {
     }
   };
 
-  const openNotifyModal = async (version: LegalDocumentVersion) => {
+  const openNotifyModal = (version: LegalDocumentVersion) => {
     setSelectedVersion(version);
-
-    // Fetch pending count
-    try {
-      const response = await adminLegalDocs.getUsersPendingCount(documentId, version.id);
-      if (response.success && response.data) {
-        setPendingCount(response.data.count);
-      }
-    } catch {
-      logError('Failed to fetch pending count', error);
-    }
-
     setShowNotifyModal(true);
   };
 
@@ -262,6 +249,18 @@ export default function LegalDocVersionList() {
                       )}
                     </div>
 
+                    {!version.is_draft && version.email_delivery && (
+                      <p className="text-sm text-theme-muted" role="status">
+                        {t('legal_versions.email_delivery_summary', {
+                          pending: (version.email_delivery.pending ?? 0) + (version.email_delivery.retry ?? 0) + (version.email_delivery.sending ?? 0),
+                          sent: version.email_delivery.sent ?? 0,
+                          failed: version.email_delivery.failed ?? 0,
+                          suppressed: version.email_delivery.suppressed ?? 0,
+                          skipped: version.email_delivery.skipped ?? 0,
+                          unknown: version.email_delivery.unknown ?? 0,
+                        })}
+                      </p>
+                    )}
                     {version.summary_of_changes && (
                       <div className="mt-3 p-3 bg-[var(--color-surface)] rounded-lg">
                         <p className="text-sm font-medium mb-1">{t('enterprise.summary_of_changes')}</p>
@@ -404,6 +403,7 @@ export default function LegalDocVersionList() {
                       </ul>
                     </div>
                   </div>
+                  <p>{t('legal_versions.publication_email_info')}</p>
                   <p>{t('enterprise.publish_version_confirm')}</p>
                 </div>
               </ModalBody>
@@ -490,37 +490,8 @@ export default function LegalDocVersionList() {
               <ModalBody>
                 <div className="space-y-4">
                   <p className="text-sm text-[var(--color-text-secondary)]">
-                    {t('enterprise.notify_modal_intro')}
+                    {t('legal_versions.publication_email_info')}
                   </p>
-
-                  <RadioGroup
-                    value={notifyTarget}
-                    onValueChange={(val) => setNotifyTarget(val as 'all' | 'non_accepted')}
-                    aria-label={t('enterprise.label_notification_target')}
-                    classNames={{ wrapper: 'gap-3' }}
-                  >
-                    <Radio
-                      value="non_accepted"
-                      classNames={{
-                        base: 'flex items-start gap-3 p-3 border border-[var(--color-border)] rounded-lg cursor-pointer hover:bg-[var(--color-surface)] max-w-full',
-                        label: 'flex-1',
-                      }}
-                      description={pendingCount > 0 ? t('enterprise.pending_users_count', { count: pendingCount }) : t('enterprise.loading_pending_users')}
-                    >
-                      <span className="font-medium">{t('enterprise.notify_non_accepted')}</span>
-                    </Radio>
-
-                    <Radio
-                      value="all"
-                      classNames={{
-                        base: 'flex items-start gap-3 p-3 border border-[var(--color-border)] rounded-lg cursor-pointer hover:bg-[var(--color-surface)] max-w-full',
-                        label: 'flex-1',
-                      }}
-                      description={t('enterprise.desc_send_to_everyone_may_be_redundant')}
-                    >
-                      <span className="font-medium">{t('enterprise.notify_all_active')}</span>
-                    </Radio>
-                  </RadioGroup>
                 </div>
               </ModalBody>
               <ModalFooter>

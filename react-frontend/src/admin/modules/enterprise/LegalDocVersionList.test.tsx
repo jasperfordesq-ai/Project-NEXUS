@@ -324,6 +324,17 @@ describe('LegalDocVersionList', () => {
     });
   });
 
+  it('distinguishes queued mail from submission and delivery exceptions', async () => {
+    mockAdminLegalDocs.getVersions.mockResolvedValue({
+      success: true,
+      data: [makeVersion({ email_delivery: { pending: 2, retry: 1, sent: 4, failed: 1, unknown: 1 } })],
+    });
+    const LegalDocVersionList = (await import('./LegalDocVersionList')).default;
+    render(<LegalDocVersionList />);
+    expect(await screen.findByText(/queued: 3; submitted to mail service: 4; failed: 1/)).toBeInTheDocument();
+    expect(screen.getByText(/needs review: 1/)).toBeInTheDocument();
+  });
+
   it('does not offer notifications for a historical published version', async () => {
     mockAdminLegalDocs.getVersions.mockResolvedValue({
       success: true,

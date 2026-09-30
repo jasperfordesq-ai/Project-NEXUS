@@ -73,6 +73,15 @@
     "total_count": "{{count}} total"
   },
   "newsletters": {
+    "policy_email_title": "Policy emails",
+    "policy_email_description": "Automatic service notices sent when a policy is published. These include members who opted out of newsletters.",
+    "policy_email_empty": "No policy publication emails have been queued yet.",
+    "policy_email_error": "Policy email activity could not be loaded.",
+    "policy_email_recipients": "{{count}} recipients",
+    "policy_email_version": "{{title}} · version {{version}}",
+    "policy_email_counts": "Queued {{queued}} · Submitted {{submitted}} · Delivered {{delivered}} · Bounced {{bounced}} · Other exceptions {{exceptions}}",
+    "policy_email_status_note": "Submitted means the mail service accepted the message. Delivered is confirmed by the provider; unconfirmed submissions are not proof of inbox delivery.",
+    "policy_email_view": "View policy versions",
     "an_unexpected_error_occurred": "An unexpected error occurred",
     "available_merge_variables": "Available Merge Variables",
     "back_to_templates": "Back to Templates",

@@ -442,6 +442,7 @@ class AdminLegalDocControllerTest extends TestCase
             'version_number' => '1.0',
             'content' => '<p>Original</p>',
             'content_plain' => 'Original',
+            'summary_of_changes' => 'Initial publication of this policy.',
             'effective_date' => '2026-04-01',
             'is_draft' => 1,
             'is_current' => 0,
@@ -562,6 +563,17 @@ class AdminLegalDocControllerTest extends TestCase
         $this->assertSame(0, (int) $version['is_current']);
     }
 
+    public function test_publish_requires_a_change_summary_before_queueing_mail(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $docId = $this->seedDocument($this->testTenantId, $admin->id);
+        $vid = $this->seedVersion($docId, $admin->id, ['summary_of_changes' => '']);
+        $this->apiPost("/v2/admin/legal-documents/versions/{$vid}/publish", [])->assertStatus(422);
+        $this->assertDatabaseHas('legal_document_versions', ['id' => $vid, 'is_draft' => 1]);
+        $this->assertDatabaseMissing('legal_publication_deliveries', ['version_id' => $vid]);
+    }
+
     public function test_publish_version_refuses_to_republish_a_historical_version(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -635,6 +647,7 @@ class AdminLegalDocControllerTest extends TestCase
         $versionRes = $this->apiPost("/v2/admin/legal-documents/{$docId}/versions", [
             'version_number' => '1.0',
             'content' => '<p>Our lawful basis is consent.</p>',
+            'summary_of_changes' => 'Initial publication explaining our lawful basis.',
             'effective_date' => '2026-04-01',
             'is_draft' => true,
         ]);

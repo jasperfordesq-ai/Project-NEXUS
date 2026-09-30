@@ -1254,7 +1254,11 @@
     "only_drafts_editable": "Only draft versions can be edited. Published versions are locked.",
     "unsaved_changes_title": "Discard unsaved changes?",
     "unsaved_changes_message": "You have unsaved changes. If you leave now, they will be lost.",
-    "discard_changes": "Discard changes"
+    "discard_changes": "Discard changes",
+    "emails_queued": "Policy emails queued. Check the delivery totals for progress.",
+    "email_summary_help": "Required before publishing. This text is included in the email sent to every active account. For a new policy, explain its purpose; for an update, describe what changed.",
+    "publication_email_info": "Publishing a policy automatically queues an informational email to all active accounts, including administrators and newsletter-unsubscribed members. This action queues missing recipients only; it does not resend successful emails. Invalid and suppressed addresses remain blocked.",
+    "email_delivery_summary": "Email delivery — queued: {{pending}}; submitted to mail service: {{sent}}; failed: {{failed}}; suppressed: {{suppressed}}; skipped: {{skipped}}; needs review: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Download",

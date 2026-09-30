@@ -262,6 +262,7 @@ export function LegalDocVersionEditor() {
 
             <Textarea
               label={t('enterprise.version_form.label_summary_of_changes')}
+              description={t('legal_versions.email_summary_help')}
               placeholder={t('enterprise.version_form.placeholder_summary')}
               value={formData.summary_of_changes}
               onChange={(e) => patch({ summary_of_changes: e.target.value })}

@@ -681,5 +681,14 @@
   "mfa_changed": {
     "subject": "Your account security changed",
     "body": "Your recovery codes or authenticator settings have changed. If you did not request this, contact your community administrator immediately."
+  },
+  "policy_publication": {
+    "subject": ":community: :document published",
+    "title": "A policy has been published",
+    "intro": ":community has published :document, version :version. Please read the policy to understand how it applies to you.",
+    "changes": "What has changed",
+    "no_summary": "This policy has been published. Please read the full document for the details.",
+    "read": "Read the policy",
+    "service_notice": "This is an informational service email about your community policies. Newsletter subscription preferences do not affect these notices."
   }
 }
