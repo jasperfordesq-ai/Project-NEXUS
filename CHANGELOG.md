@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A member who has been blocked can no longer notify the person who blocked them by @mentioning them in a group they both belong to (F-387).
 - A member who has been blocked can no longer find out who blocked them by checking another member's block status. The block-status answer now only tells you whom you have blocked (F-388).
 - When a community approves volunteering hours automatically, an organisation that is suspended while a member's hours are being submitted can no longer pay them out. The same check already applied when hours are approved by hand (F-385).
 - Volunteering hours logged by a coordinator for a caring-support relationship can no longer be paid by an organisation that has been suspended, or has not yet been approved. This was the third way round the organisation freeze (F-384).

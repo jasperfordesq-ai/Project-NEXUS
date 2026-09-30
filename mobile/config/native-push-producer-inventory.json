@@ -1915,9 +1915,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/GroupMentionService.php:131:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/GroupMentionService.php:140:NotificationDispatcher::fanOutPush",
             "file": "app/Services/GroupMentionService.php",
-            "line": 131,
+            "line": 140,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $mention['user_id']",

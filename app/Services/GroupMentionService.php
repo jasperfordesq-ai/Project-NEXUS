@@ -113,9 +113,18 @@ class GroupMentionService
         $groupName = (string) $group->name;
         $link = '/groups/' . $groupId;
 
+        // F-387: a mention is a notification aimed at one named member, so a
+        // block between the author and that member stops it — the same filter
+        // feed and comment mentions apply (F-070, MentionService). This is not
+        // the group broadcast F-336 deliberately leaves unfiltered.
+        $blockedPairIds = array_map('intval', BlockUserService::getBlockedPairIds($authorId));
+
         foreach ($mentions as $mention) {
             // Don't notify the author about their own mention
             if ($mention['user_id'] === $authorId) {
+                continue;
+            }
+            if (in_array((int) $mention['user_id'], $blockedPairIds, true)) {
                 continue;
             }
 
