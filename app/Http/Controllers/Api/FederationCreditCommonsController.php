@@ -682,11 +682,52 @@ class FederationCreditCommonsController extends BaseApiController
             }
         }
 
-        // Scrub = delete the record entirely
+        // F-366: a scrub clears the free-text content; it does NOT delete the
+        // record. This row is the only local evidence that a relay hop
+        // happened, and a relay-through entry (local_settlement: false) moves
+        // no local balance, so it reaches E without any member's approval —
+        // which meant the partner that created the record could then erase it
+        // outright and GET /cc/transaction/{uuid} would report it had never
+        // existed. The pattern is AdminSafeguardingController::deleteAssignment:
+        // revoke rather than delete, keep an append-only trail, record the
+        // actor. Payer, payee, amount and uuid survive as the evidence.
         if ($destState === CreditCommonsAdapter::STATE_SCRUBBED) {
-            DB::table('federation_cc_entries')
+            $partnerKeyId = (int) (\App\Core\FederationApiMiddleware::getPartner()['id'] ?? 0);
+            $metadata = json_decode((string) ($entry->metadata ?? ''), true);
+            $metadata = is_array($metadata) ? $metadata : [];
+            $metadata['scrubbed_by_partner_key_id'] = $partnerKeyId;
+            $metadata['scrubbed_at'] = now()->toIso8601String();
+
+            $scrubbed = DB::table('federation_cc_entries')
                 ->where('id', $entry->id)
-                ->delete();
+                ->where('state', $entry->state)
+                ->update([
+                    'state' => CreditCommonsAdapter::STATE_SCRUBBED,
+                    'description' => null,
+                    'metadata' => json_encode($metadata),
+                    'updated_at' => now(),
+                ]);
+
+            if ($scrubbed === 0) {
+                return $this->ccError('InvalidStateTransition',
+                    "Cannot transition from {$entry->state} to X (transaction was concurrently transitioned)", 400);
+            }
+
+            \App\Services\FederationAuditService::log(
+                'credit_commons_transaction_scrubbed',
+                $tenantId,
+                null,
+                null,
+                [
+                    'transaction_uuid' => $uuid,
+                    'entry_id' => (int) $entry->id,
+                    'partner_key_id' => $partnerKeyId,
+                    'payer' => (string) $entry->payer,
+                    'payee' => (string) $entry->payee,
+                    'quant' => (float) $entry->quant,
+                ],
+                \App\Services\FederationAuditService::LEVEL_WARNING
+            );
 
             return response()->json(null, 204);
         }
