@@ -2205,6 +2205,27 @@ class AdminEnterpriseController extends BaseApiController
         }
 
         try {
+            // F-355: no truncation without its audit entry. Blanking an application
+            // log destroys the only compensating trace for several other actions
+            // (F-353's `PurgeTenantJob: tenant purged` among them), so the record of
+            // WHO blanked WHAT has to survive it. The audit row is written first —
+            // the file operation cannot be rolled back, and AuditLogService swallows
+            // its own failure and returns null, so an unauditable clear is refused
+            // outright. Same line as deleteLegalDoc() (the F-276 fix) below.
+            $auditId = app(\App\Services\AuditLogService::class)->logAdminAction(
+                'admin_log_file_cleared',
+                $this->getUserId(),
+                null,
+                ['filename' => $filename, 'bytes_cleared' => (int) @filesize($filePath)]
+            );
+            if (!$auditId) {
+                Log::error('[AdminEnterprise] Refusing to clear log file: the action could not be audited.', [
+                    'filename' => $filename,
+                ]);
+
+                return $this->respondWithError('CLEAR_FAILED', __('api_controllers_1.admin_enterprise.log_file_clear_failed'), null, 500);
+            }
+
             file_put_contents($filePath, '');
             return $this->respondWithData(['filename' => $filename, 'cleared' => true, 'message' => __('api_controllers_1.admin_enterprise.log_file_cleared')]);
         } catch (\Exception $e) {

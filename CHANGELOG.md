@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Clearing an application log from the admin screen is now recorded, with who did it, before the log is cleared — and is refused if that record cannot be written (F-355).
 - Removing a permission from a role in the admin screen now actually removes it. Previously, for any role created through that screen, the screen reported success and the permission stayed live (F-350).
 - A reviewer whose permission has expired can no longer auto-approve caring hours, which creates time credits (F-364).
 - Permission to view the cross-community comparison dashboard now only works in the community where it was granted, instead of in any community (F-371).
