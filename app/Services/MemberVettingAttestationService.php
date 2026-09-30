@@ -305,6 +305,15 @@ class MemberVettingAttestationService
                 throw new SafeguardingPolicyException('VETTING_REVIEW_REQUEST_NOT_FOUND');
             }
 
+            // F-402: the same self-decision line confirmForCurrentPolicy() and
+            // revokeForCurrentPolicy() draw through assertActorMayDecideForMember().
+            // A pending row is the community's standing instruction to re-check
+            // this member's safeguarding clearance; without this, the member it
+            // is about closed it themselves and nobody was prompted again.
+            if ((int) $review->user_id === $actorUserId) {
+                throw new SafeguardingPolicyException('VETTING_SELF_CONFIRMATION_FORBIDDEN');
+            }
+
             if ($review->status !== SafeguardingVettingReviewRequest::STATUS_PENDING) {
                 return $this->getReviewById($reviewRequestId, $tenantId) ?? [];
             }
