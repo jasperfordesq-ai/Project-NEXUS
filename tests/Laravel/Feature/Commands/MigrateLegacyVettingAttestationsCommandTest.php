@@ -234,6 +234,7 @@ class MigrateLegacyVettingAttestationsCommandTest extends TestCase
             $cleanupArguments = [
                 '--tenant' => (string) $this->testTenantId,
                 '--delete' => true,
+                '--actor' => 'Automated test operator', // F-409: a destructive run must name its operator
                 '--dpo-authorisation' => 'DPO-TEST-CLEANUP-IMPORT',
                 '--confirm' => 'DELETE-LEGACY-VETTING-EVIDENCE',
             ];

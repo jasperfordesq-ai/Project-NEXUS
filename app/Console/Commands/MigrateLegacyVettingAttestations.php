@@ -253,13 +253,28 @@ class MigrateLegacyVettingAttestations extends Command
      * A null-expiry presence predicate is intentionally conservative: legacy
      * records that carry any certificate-date lifecycle are routed to review.
      *
+     * 🔴 F-410 — the gate below vets the candidate row thoroughly but used to
+     * ask nothing about the REST of that member's history, so an old `verified`
+     * row produced `decision = confirmed` even when the same member's later
+     * criminal-record check had been rejected or revoked. The words `rejected`
+     * and `revoked` appeared nowhere in this command. The minted row carries the
+     * tenant-scope contact triple that `SafeguardingInteractionPolicy` reads to
+     * ALLOW direct contact with members who declared a safeguarding need. (It
+     * does NOT open a DBS-gated listing — that gate asks for `listing_role` /
+     * `listing` scope, which this command never writes.)
+     *
+     * `contradictedByAnotherRecord()` below now routes any such member to the
+     * existing broker-review branch, which confers no access. That is the
+     * contract this class's own docblock already states: ambiguous legacy rows
+     * create a review task.
+     *
      * @return Collection<int, object>
      */
     private function trustedLegacyRows(int $tenantId): Collection
     {
         $requiredVettingColumns = [
-            'tenant_id', 'user_id', 'vetting_type', 'status', 'verified_by',
-            'verified_at', 'expiry_date', 'deleted_at',
+            'id', 'tenant_id', 'user_id', 'vetting_type', 'status', 'verified_by',
+            'verified_at', 'expiry_date', 'deleted_at', 'created_at', 'updated_at',
             LegacyVettingEvidenceManager::LEGACY_REDACTION_MARKER_COLUMN,
         ];
         $requiredLogColumns = [
@@ -317,6 +332,9 @@ class MigrateLegacyVettingAttestations extends Command
                         . 'AND DATE_ADD(vr.verified_at, INTERVAL 15 MINUTE)'
                     );
             })
+            ->whereNotExists(function (Builder $query): void {
+                $this->contradictedByAnotherRecord($query);
+            })
             ->select([
                 'vr.user_id',
                 'vr.verified_by',
@@ -328,6 +346,44 @@ class MigrateLegacyVettingAttestations extends Command
             ->get();
 
         return $rows->unique(static fn (object $row): int => (int) $row->user_id)->values();
+    }
+
+    /**
+     * F-410 — a legacy `verified` row is only trustworthy if nothing else in the
+     * same member's history for the same check type contradicts it. Two things
+     * count as a contradiction, and both route the member to broker review
+     * rather than to a minted clearance:
+     *
+     *  1. Any other record with `status` `rejected` or `revoked`, whatever its
+     *     date. Legacy imported data carries unreliable ordering, and a refused
+     *     or withdrawn criminal-record check anywhere in the history is exactly
+     *     the "ambiguous" case this command promises to escalate rather than
+     *     decide. `revoked` is also the value the platform's own GDPR erasure
+     *     path writes, so it is not a hypothetical.
+     *  2. Any other record dated after the trusted row's `verified_at` — a later
+     *     check that is pending, submitted or expired means the community has
+     *     re-opened the question and has no answer yet. Promoting the old
+     *     decision would answer it on their behalf.
+     *
+     * Deliberately scoped to the SAME tenant, member and `vetting_type`: another
+     * community's records, and a different check type, say nothing about this
+     * decision.
+     */
+    private function contradictedByAnotherRecord(Builder $query): void
+    {
+        $query->selectRaw('1')
+            ->from('vetting_records as superseding')
+            ->whereColumn('superseding.tenant_id', 'vr.tenant_id')
+            ->whereColumn('superseding.user_id', 'vr.user_id')
+            ->whereColumn('superseding.vetting_type', 'vr.vetting_type')
+            ->whereColumn('superseding.id', '!=', 'vr.id')
+            ->whereNull('superseding.deleted_at')
+            ->where(function (Builder $contradiction): void {
+                $contradiction
+                    ->whereIn('superseding.status', ['rejected', 'revoked'])
+                    ->orWhereRaw('superseding.created_at > vr.verified_at')
+                    ->orWhereRaw('superseding.updated_at > vr.verified_at');
+            });
     }
 
     /** @return list<int> */
