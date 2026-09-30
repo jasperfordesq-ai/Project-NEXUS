@@ -30,7 +30,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -38,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/lib/hooks/useTheme';
 import type { UpdateRequirement } from '@/lib/updates/updateRequiredStore';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 
 interface Props {
   requirement: UpdateRequirement;
@@ -94,10 +95,18 @@ export default function UpdateRequiredScreen({ requirement }: Props) {
 
   const openUpdate = useCallback(() => {
     if (!requirement.updateUrl) return;
-    // Guarded: Linking.openURL REJECTS when nothing can handle the URL, and an
-    // unhandled rejection on the one screen offering a way forward would be the
-    // worst possible place for it.
-    void Linking.openURL(requirement.updateUrl).catch(() => undefined);
+    // F-445: the store URL goes through the app's one validating opener — never
+    // straight to Linking.openURL, which would hand a javascript:, data:, file:
+    // or content: URL to whatever app claims that scheme. The opener never
+    // throws and never leaves an unhandled rejection, which matters more here
+    // than anywhere: this screen sits outside the provider tree, so it has no
+    // toast, and it is the one screen offering a way forward.
+    //
+    // 🔴 The store schemes are named explicitly for that same reason. The
+    // configured value is an https URL today, but an operator may point
+    // MOBILE_EXPO_UPDATE_URL straight at the store, and a silently dead button
+    // here leaves the member with no way out at all.
+    void openExternalUrl(requirement.updateUrl, { allowSchemes: ['market:', 'itms-apps:'] });
   }, [requirement.updateUrl]);
 
   // 🔴 Layout note, learned twice on app/+not-found.tsx: do NOT wrap this content in

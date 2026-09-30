@@ -37,20 +37,33 @@ const SEARCH_DIRS = ['app', 'components'];
 const OWN_HANDLING: Record<string, string> = {
   'app/+not-found.tsx':
     'The last-resort escape for a path this build has no screen for. Catches, and silence is the only option left.',
-  'app/(modals)/marketplace-detail.tsx':
-    'Stripe checkout. On failure it says the payment may already have been taken and sends the member to their orders — far better than "could not open link".',
-  'app/(modals)/marketplace-orders.tsx':
-    'Same Stripe checkout recovery in continuePayment(). The tracking-link button does use the helper.',
-  'app/(modals)/marketplace-stripe-onboarding.tsx':
-    'Seller onboarding: reports the specific step that failed so the seller knows where they stopped.',
-  'app/(modals)/verify-identity.tsx':
-    'Stripe Identity: the failure is folded into the verification error and the status is refreshed.',
   'components/FeedItem.tsx':
     'Link preview card. Checks the scheme, and stays silent by design — the card is still readable and there is nothing to recover.',
-  'components/UpdateRequiredScreen.tsx':
-    'Store link on the blocking update screen, which sits outside the provider tree and so has no toast.',
   'components/courses/LessonContent.tsx':
     'Shows an inline failure state on the lesson itself, which the member can see without a transient toast.',
+};
+
+/**
+ * 🔴 F-445. Five screens were on the allowlist above because each had a BETTER
+ * failure message than a generic toast — which was true, and beside the point.
+ * Exempting them from the helper's failure handling also exempted them from its
+ * SCHEME CHECK, so the app would have handed a `javascript:`, `data:`, `file:`
+ * or `content:` URL from one of these server fields straight to whatever app on
+ * the phone claims that scheme.
+ *
+ * No member-controlled path to any of those values was found when this was
+ * recorded — the checkout URLs are Stripe's own session URLs and `updateUrl` is
+ * platform config — so this is defence in depth being put back, not a hole
+ * being plugged. They now call the helper AND keep their own recovery, which is
+ * the shape `components/events/EventAgendaEnterprisePanel.tsx` already uses
+ * (F-301, the same finding at one earlier site).
+ */
+const FORMERLY_EXEMPT: Record<string, string> = {
+  'app/(modals)/marketplace-detail.tsx': 'payment.data.checkout_url',
+  'app/(modals)/marketplace-orders.tsx': 'payment.data.checkout_url',
+  'app/(modals)/marketplace-stripe-onboarding.tsx': 'the onboarding response url',
+  'app/(modals)/verify-identity.tsx': 'data.redirect_url',
+  'components/UpdateRequiredScreen.tsx': 'requirement.updateUrl',
 };
 
 interface SourceFile {
@@ -112,6 +125,23 @@ describe('external links', () => {
 
     expect(unhandled).toEqual([]);
   });
+
+  it.each(Object.entries(FORMERLY_EXEMPT))(
+    'routes %s through the validating opener, not the OS (F-445)',
+    (relative, value) => {
+      const file = files.find((candidate) => candidate.relative === relative);
+      expect(file).toBeDefined();
+      const code = stripComments(file!.source);
+
+      // `value` names the field this screen opens, so a failure reads as
+      // "marketplace-detail.tsx still opens payment.data.checkout_url itself".
+      expect({ opens: value, rawLinkingCall: /Linking\.openURL\s*\(/.test(code) })
+        .toEqual({ opens: value, rawLinkingCall: false });
+      expect({ opens: value, callsTheOpener: /openExternalUrl\s*\(/.test(code) })
+        .toEqual({ opens: value, callsTheOpener: true });
+      expect(code).toContain("from '@/lib/utils/openExternalUrl'");
+    },
+  );
 
   it('keeps the helper as the only place that decides which schemes are allowed', () => {
     const helper = fs.readFileSync(path.join(MOBILE_ROOT, 'lib/utils/openExternalUrl.ts'), 'utf8');

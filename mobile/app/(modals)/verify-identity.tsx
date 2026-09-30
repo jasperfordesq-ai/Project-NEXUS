@@ -5,7 +5,7 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, RefreshControl, ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@/components/ui/Icon';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { presentIdentityPayment } from '@/lib/payments/identityPayment';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -168,7 +169,15 @@ function VerifyIdentityScreenInner() {
       if (data?.redirect_url) {
         setPageState('in_progress');
         startPolling();
-        await Linking.openURL(data.redirect_url);
+        // F-445: the Stripe Identity redirect goes through the app's one
+        // validating opener — never straight to Linking.openURL, which would hand
+        // a javascript:, data:, file: or content: URL to whatever app claims that
+        // scheme. A failure still folds into the verification error below and the
+        // status is still refreshed. The catch translates it, exactly as it did
+        // when Linking's own rejection landed there.
+        if (await openExternalUrl(data.redirect_url) !== 'opened') {
+          throw new Error('identity redirect_url could not be opened');
+        }
         return;
       }
       setPageState('in_progress');

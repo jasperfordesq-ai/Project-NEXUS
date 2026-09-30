@@ -6,7 +6,7 @@
 import ErrorState from '@/components/ui/ErrorState';
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Linking, ScrollView, Share, View } from 'react-native';
+import { ScrollView, Share, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBottomInset } from '@/lib/ui/rootInsets';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -59,6 +59,7 @@ import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 import { ApiResponseError } from '@/lib/api/client';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
@@ -617,11 +618,14 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (!isMountedRef.current) return;
       if (payment.data.checkout_url) {
-        try {
-          await Linking.openURL(payment.data.checkout_url);
-        } catch (err) {
+        // F-445: the checkout URL goes through the app's one validating opener —
+        // never straight to Linking.openURL, which would hand a javascript:,
+        // data:, file: or content: URL to whatever app claims that scheme. The
+        // recovery below is unchanged: it says the payment may already have been
+        // taken and sends the member to their orders.
+        if (await openExternalUrl(payment.data.checkout_url) !== 'opened') {
           if (!isMountedRef.current) return;
-          showToast({ title: t('checkout.paymentRecoveryTitle'), description: describeApiError(err, t('checkout.paymentRecoveryHint', { order: orderNumber })), variant: 'danger' });
+          showToast({ title: t('checkout.paymentRecoveryTitle'), description: t('checkout.paymentRecoveryHint', { order: orderNumber }), variant: 'danger' });
           router.push({ pathname: '/(modals)/marketplace-orders', params: { mode: 'purchases' } } as unknown as Href);
         }
         return;

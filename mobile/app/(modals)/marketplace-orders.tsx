@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
-import { FlatList, Linking, RefreshControl, useWindowDimensions, View } from 'react-native';
+import { FlatList, RefreshControl, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -56,6 +56,7 @@ import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 import RemoteImage from '@/components/ui/RemoteImage';
 import { responsiveActionStyle } from '@/lib/layout/responsiveActions';
 
@@ -340,7 +341,14 @@ function MarketplaceOrdersScreen() {
       }
       if (!isMountedRef.current) return;
       if (payment.data.checkout_url) {
-        await Linking.openURL(payment.data.checkout_url);
+        // F-445: the checkout URL goes through the app's one validating opener —
+        // never straight to Linking.openURL, which would hand a javascript:,
+        // data:, file: or content: URL to whatever app claims that scheme.
+        // Throwing keeps the existing recovery: the catch below tells the member
+        // the payment may already have been taken.
+        if (await openExternalUrl(payment.data.checkout_url) !== 'opened') {
+          throw new Error('checkout_url could not be opened');
+        }
       } else if (payment.data.client_secret) {
         const paymentResult = await presentMarketplacePayment({
           clientSecret: payment.data.client_secret,

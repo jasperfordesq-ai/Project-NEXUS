@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { Linking, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -31,6 +31,7 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { formatMarketplaceCurrency } from '@/lib/utils/marketplaceCurrency';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
@@ -106,7 +107,15 @@ function MarketplaceStripeOnboardingScreen() {
       const response = await startMarketplaceStripeOnboarding();
       const url = response.data.onboarding_url ?? response.data.url;
       if (!url) throw new Error(t('stripeOnboarding.startFailed'));
-      await Linking.openURL(url);
+      // F-445: the onboarding URL goes through the app's one validating opener —
+      // never straight to Linking.openURL, which would hand a javascript:, data:,
+      // file: or content: URL to whatever app claims that scheme. The seller is
+      // still told which step failed, and now in their own language rather than
+      // in whatever string the operating system returned.
+      const outcome = await openExternalUrl(url);
+      if (outcome !== 'opened') {
+        throw new Error(t(outcome === 'invalid' ? 'common:errors.linkUnavailable' : 'common:errors.linkOpenFailed'));
+      }
     } catch (err) {
       showToast({ title: t('common:errors.alertTitle'), description: err instanceof Error ? err.message : t('stripeOnboarding.startFailed'), variant: 'danger' });
     } finally {
