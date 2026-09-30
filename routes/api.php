@@ -123,12 +123,27 @@ Route::get('/v2/categories', function (\Illuminate\Http\Request $request) {
         ? ['event', 'events']
         : [$type];
     $canonicalType = in_array($type, ['event', 'events'], true) ? 'event' : $type;
+    // 🔴 This route is PUBLIC (no auth:sanctum). Name every published field
+    // explicitly — never return the model whole. The `categories` table carries
+    // columns that do not belong to it (`blocker_user_id`, `clicked_at`,
+    // `match`, `reset_token`), and an unselected query published all of them to
+    // the internet, so any column added to the table in future would be
+    // published without a code change (F-438).
     $categories = \App\Models\Category::whereIn('type', $categoryTypes)
         ->where('tenant_id', \App\Core\TenantContext::getId())
         ->where('is_active', 1)
         ->orderBy('name')
         ->orderBy('id')
-        ->get()
+        ->get([
+            'id',
+            'name',
+            'slug',
+            'type',
+            'color',
+            'parent_id',
+            'sort_order',
+            'is_active',
+        ])
         ->map(function (\App\Models\Category $category) use ($canonicalType) {
             $category->setAttribute('type', $canonicalType);
 
