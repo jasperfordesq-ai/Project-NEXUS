@@ -160,9 +160,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFeedController.php:326:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFeedController.php:350:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFeedController.php",
-            "line": 326,
+            "line": 350,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $feedItem->user_id",
@@ -173,9 +173,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFeedController.php:410:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFeedController.php:435:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFeedController.php",
-            "line": 410,
+            "line": 435,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $creatorUserId",

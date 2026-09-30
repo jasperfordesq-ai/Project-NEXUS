@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A broker who has been reviewed can no longer hide or delete that review from the community feed. Deleting it that way also deleted other members' comments on the review; the review-moderation page already refused this (F-390).
 - A broker can no longer clear the compliance controls an administrator placed on the broker's own listing: they cannot record or verify their own insurance certificate, or change or remove the risk tag on their own listing. An insurance certificate recorded as already verified now also records who verified it (F-389).
 - A group marked private or secret is no longer sent to external partner platforms, and neither is who joins it. A group made private after being shared is withdrawn from them without its details. External partner connections are switched off by default and none is connected today (F-386).
 - An administrator of one community is no longer treated as an administrator of every other community when member profiles are shown. This could not be reached through the platform today, but would have exposed members' exact locations and surnames to other communities' administrators if a profile page were ever opened to signed-out visitors (F-394).

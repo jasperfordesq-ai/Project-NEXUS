@@ -85,6 +85,29 @@ class AdminFeedController extends BaseApiController
         return null;
     }
 
+    /**
+     * F-390: a feed card's AUTHOR is not always the person it is about. A
+     * review card is authored by the reviewer and is about the receiver, so
+     * guardBrokerNotAuthor() let a broker who had been reviewed hide or delete
+     * the card — and, on delete, every other member's comment on it. Refuse a
+     * broker who is the subject of the review, as AdminReviewsController does.
+     */
+    private function guardBrokerNotSubject(string $sourceType, int $sourceId, int $itemTenantId, int $callerId): ?JsonResponse
+    {
+        if ($sourceType !== 'review' || $this->callerIsAdminTier()) {
+            return null;
+        }
+        $receiverId = (int) DB::table('reviews')
+            ->where('id', $sourceId)
+            ->where('tenant_id', $itemTenantId)
+            ->value('receiver_id');
+        if ($receiverId === $callerId) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
+        }
+
+        return null;
+    }
+
     public function index(): JsonResponse
     {
         $this->requireBrokerOrAdmin();
@@ -281,6 +304,7 @@ class AdminFeedController extends BaseApiController
         }
 
         if ($guard = $this->guardBrokerNotAuthor((int) $row->user_id, $adminId)) return $guard;
+        if ($guard = $this->guardBrokerNotSubject((string) $sourceType, $id, (int) $row->tenant_id, $adminId)) return $guard;
 
         $itemTenantId = (int) $row->tenant_id;
 
@@ -363,6 +387,7 @@ class AdminFeedController extends BaseApiController
         }
 
         if ($guard = $this->guardBrokerNotAuthor((int) $row->user_id, $adminId)) return $guard;
+        if ($guard = $this->guardBrokerNotSubject((string) $sourceType, $id, (int) $row->tenant_id, $adminId)) return $guard;
 
         $itemTenantId = (int) $row->tenant_id;
 
