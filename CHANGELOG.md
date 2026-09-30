@@ -181,6 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
 - Security-assurance guidance now distinguishes the contracted independent penetration test from a test that has actually begun or produced a report.
 
 - Android release metadata now records the verified live Play build 20 / 1.8.1, published on 27 September 2026 at 7:31 PM from exact source commit `86adbf3391972f5c6b6cf863adda734bcfb6eda0`, after internal testing, zero supported-device losses, Play quick checks and production submission 15.

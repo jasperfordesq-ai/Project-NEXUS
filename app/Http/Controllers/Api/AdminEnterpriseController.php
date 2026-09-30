@@ -25,7 +25,52 @@ class AdminEnterpriseController extends BaseApiController
         private readonly LegalDocumentService $legalDocumentService,
     ) {}
 
-    private const PERMISSIONS = [
+    /**
+     * F-363 / F-348: the permissions a community administrator may attach to a
+     * community role through this editor.
+     *
+     * The list is derived from what the platform actually ENFORCES through
+     * `role_permissions`, not from what the panel used to offer:
+     *
+     *   volunteering.hours.review — read by
+     *     app/Services/VolunteerService.php:3152 and :3242 and by
+     *     app/Services/CaringSupportRelationshipService.php:477, both through a
+     *     `role_permissions` join. It decides whether a trusted reviewer may
+     *     auto-approve volunteer and caring-support hours.
+     *
+     * Deliberately NOT here:
+     *   - verein.members.import / verein.members.manage / verein.dues.manage.
+     *     These ARE enforced, but only ever for ONE named club: the grant must
+     *     carry `user_roles.scope_organization_id`, which only the admin-gated
+     *     `assignVereinAdmin` endpoint writes. A role grant carries no club, so
+     *     attaching one here was the F-348 / F-349 escalation and nothing else.
+     *   - safeguarding.view / safeguarding.manage. Every reader of these looks
+     *     in `user_permissions`, not `role_permissions`, so a role grant is inert.
+     *   - national.kiss_dashboard.view. Its check demands a platform-global
+     *     system role, which this editor cannot touch.
+     *   - the further slugs listed in self::WITHDRAWN_PERMISSIONS, which no code
+     *     reads at all.
+     */
+    private const GRANTABLE_PERMISSIONS = [
+        'volunteering' => ['volunteering.hours.review'],
+    ];
+
+    /**
+     * F-363: the 65 slugs this panel published until E-066 and which no code reads
+     * as a permission. Kept verbatim as the record of what was withdrawn, and so
+     * that restoring one is a single edit the day something enforces it. They are
+     * NOT offered by permissions() and NOT accepted by createRole()/updateRole():
+     * granting one delegated nothing while telling the administrator it had.
+     *
+     * `safeguarding.view` is in this list rather than the grantable one because
+     * every reader of it queries `user_permissions`, so a grant made here never
+     * reached the gate it was meant to open.
+     *
+     * Referenced by documentation only — deliberately not read at runtime.
+     *
+     * @see self::GRANTABLE_PERMISSIONS
+     */
+    private const WITHDRAWN_PERMISSIONS = [
         'users' => ['users.view','users.create','users.edit','users.delete','users.suspend','users.ban','users.impersonate'],
         'listings' => ['listings.view','listings.create','listings.edit','listings.delete','listings.approve'],
         'content' => ['content.blog.manage','content.pages.manage','content.categories.manage','content.menus.manage'],
@@ -36,7 +81,7 @@ class AdminEnterpriseController extends BaseApiController
         'gamification' => ['gamification.manage','gamification.award_badges','gamification.campaigns'],
         'matching' => ['matching.config','matching.approvals','matching.analytics'],
         'caring' => ['caring.view','caring.configure','caring.workflow.review','caring.workflow.assign','caring.reports.view','caring.reports.export'],
-        'volunteering' => ['volunteering.hours.review','volunteering.organisations.manage','volunteering.opportunities.manage'],
+        'volunteering' => ['volunteering.organisations.manage','volunteering.opportunities.manage'],
         'safeguarding' => ['safeguarding.view'],
         'federation' => ['federation.nodes.view','federation.manage','federation.partnerships','federation.api_keys'],
         'gdpr' => ['gdpr.requests','gdpr.consents','gdpr.breaches','gdpr.audit'],
@@ -257,11 +302,38 @@ class AdminEnterpriseController extends BaseApiController
         }
     }
 
-    /** GET /api/v2/admin/enterprise/permissions */
+    /**
+     * GET /api/v2/admin/enterprise/permissions
+     *
+     * F-363: publishes exactly what createRole()/updateRole() will accept, so the
+     * panel can no longer offer a permission that grants nothing.
+     */
     public function permissions(): JsonResponse
     {
         $this->requireAdmin();
-        return $this->respondWithData(self::PERMISSIONS);
+        return $this->respondWithData(self::GRANTABLE_PERMISSIONS);
+    }
+
+    /**
+     * Permission names in $requested that may NOT be attached to a community role.
+     *
+     * @param  array<int|string,mixed>  $requested
+     * @return string[] the rejected names, in the order they were requested
+     */
+    private function rejectedPermissions(array $requested): array
+    {
+        $grantable = array_merge(...array_values(self::GRANTABLE_PERMISSIONS));
+
+        $rejected = [];
+        foreach ($requested as $name) {
+            $name = is_scalar($name) ? trim((string) $name) : '';
+            if ($name === '' || in_array($name, $grantable, true)) {
+                continue;
+            }
+            $rejected[$name] = $name;
+        }
+
+        return array_values($rejected);
     }
 
     /** GET /api/v2/admin/enterprise/gdpr */
