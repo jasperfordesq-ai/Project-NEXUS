@@ -381,6 +381,7 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.use_super_admin_endpoints'), 'role', 422);
         }
 
+        $newRole = null;
         $fieldMap = ['first_name', 'last_name', 'email', 'role', 'location', 'phone', 'bio', 'tagline', 'organization_name'];
         foreach ($fieldMap as $field) {
             if (isset($input[$field])) {
@@ -392,8 +393,52 @@ class AdminUsersController extends BaseApiController
                 if ($field === 'role' && !in_array($value, $allowedRoles, true)) {
                     return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_role'), 'role', 422);
                 }
+                if ($field === 'role') {
+                    $newRole = (string) $value;
+                }
                 $updates[] = "{$field} = ?";
                 $params[] = $value;
+            }
+        }
+
+        // F-399 / F-400: a demotion through this route must actually demote.
+        // The grant paths write BOTH a boolean flag and a role — setSuperAdmin()
+        // writes is_tenant_super_admin = 1 plus role = 'admin', and
+        // AdminSuperController::userGrantGlobalSuperAdmin() writes
+        // is_super_admin = 1 and promotes the role — but the whitelist above
+        // carries `role` and no flag. Lowering `role` therefore used to leave
+        // the flags set, and every gate reads the raw flag
+        // (AdminTier::allows()/securityRank(), EnsureIsTenantSuperAdmin — the
+        // impersonation gate — and App\Core\SuperPanelAccess). The panel showed
+        // "member" and the audit log recorded the demotion while the account
+        // kept community-wide impersonation and the cross-community panel.
+        //
+        // Only a role value that carries no admin authority clears the flags, so
+        // an administrator editing an administrator's phone number, or a role
+        // write that keeps the account at `admin`, is unaffected. `broker` and
+        // `coordinator` are operational roles, not lesser admins — AdminTier
+        // deliberately refuses them — so they clear the flags too.
+        //
+        // Authorisation is already covered: `role` is one of the security fields
+        // checked at the top of this method, so canManageSecurityTarget() has
+        // refused any caller that does not strictly outrank the target, and
+        // lockManageableSecurityTarget() re-checks the same hierarchy under the
+        // row lock around the UPDATE below. Because securityTier() derives the
+        // target's rank from these very flags, a lower-ranked caller can never
+        // reach the write that would strip them.
+        //
+        // is_god is deliberately NOT cleared here: no route anywhere clears it
+        // (E-069 O-113), this route refuses `role = 'god'` so it could not
+        // restore it, and securityTier() ranks a god at 4 whatever the role
+        // says. Revoking god needs its own route and an owner decision.
+        $nonAdminRoles = ['member', 'broker', 'coordinator'];
+        $clearedAdminFlags = [];
+        if ($newRole !== null && in_array($newRole, $nonAdminRoles, true)) {
+            foreach (['is_tenant_super_admin', 'is_super_admin', 'is_admin'] as $flag) {
+                $updates[] = "{$flag} = 0";
+                if (!empty($user[$flag])) {
+                    $clearedAdminFlags[] = $flag;
+                }
             }
         }
 
@@ -472,6 +517,20 @@ class AdminUsersController extends BaseApiController
 
         if (isset($input['role']) && ($user['role'] ?? 'member') !== $input['role']) {
             $this->auditLogService->logAdminRoleChanged($adminId, $id, $user['role'] ?? 'member', $input['role']);
+        }
+
+        // F-399 / F-400: record the flags the demotion actually revoked, so the
+        // audit trail shows the loss of authority and not just the role string.
+        if ($clearedAdminFlags !== []) {
+            ActivityLog::log(
+                $adminId,
+                'admin_revoke_admin_flags',
+                'Cleared ' . implode(', ', $clearedAdminFlags) . " for user #{$id} on demotion to '{$newRole}'"
+            );
+            $this->auditLogService->logAdminAction('revoke_admin_flags', $adminId, $id, [
+                'cleared_flags' => $clearedAdminFlags,
+                'new_role' => $newRole,
+            ]);
         }
 
         // Notify user when status changes to suspended/banned via the generic update path

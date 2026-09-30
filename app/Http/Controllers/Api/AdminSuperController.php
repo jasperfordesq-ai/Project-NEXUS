@@ -1306,6 +1306,39 @@ class AdminSuperController extends BaseApiController
                     $changedValues[$field] = $newValue;
                 }
             }
+
+            // F-399 / F-400: a demotion must actually demote. This UPDATE writes
+            // six columns and no boolean flag, so lowering `role` used to leave
+            // is_tenant_super_admin / is_super_admin / is_admin set while the
+            // panel and the audit trail both showed the demotion. Every gate
+            // reads the raw flag (AdminTier, EnsureIsTenantSuperAdmin,
+            // App\Core\SuperPanelAccess), so the account kept its authority.
+            // This is the same defect as AdminUsersController::update(), on the
+            // route the super panel's own user form actually calls.
+            //
+            // Only role values that carry no admin authority clear the flags —
+            // `broker`/`coordinator` are operational roles, not lesser admins.
+            // Recording the clears in $changedValues means they survive the
+            // "nothing changed" early return below, are covered by the
+            // canManageSecurityTarget() re-check against the locked rows (whose
+            // securityTier() is derived from these very flags, so a lower-ranked
+            // caller can never reach the write), and land in the super-admin
+            // audit entry.
+            //
+            // is_god is deliberately NOT cleared: no route anywhere clears it
+            // (E-069 O-113), 'god' is not an assignable role here so this route
+            // could not restore it, and securityTier() ranks a god at 4 whatever
+            // the role says. Revoking god needs its own route.
+            $clearAdminFlags = in_array((string) $role, ['member', 'broker', 'coordinator'], true);
+            if ($clearAdminFlags) {
+                foreach (['is_tenant_super_admin', 'is_super_admin', 'is_admin'] as $flag) {
+                    if (!empty($target[$flag])) {
+                        $oldValues[$flag] = 1;
+                        $changedValues[$flag] = 0;
+                    }
+                }
+            }
+
             if ($lockedRoleChanged && $id === $actorId) {
                 throw new HttpResponseException($this->respondWithError(
                     ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
@@ -1342,8 +1375,16 @@ class AdminSuperController extends BaseApiController
                 return;
             }
 
+            // F-399 / F-400: see the note above. Idempotent, so it is safe to
+            // append whenever the resulting role carries no admin authority.
+            $clearAdminFlagsSql = $clearAdminFlags
+                ? ', is_tenant_super_admin = 0, is_super_admin = 0, is_admin = 0'
+                : '';
+
             DB::update(
-                "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, location = ?, phone = ?, updated_at = NOW() WHERE id = ?",
+                "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, location = ?, phone = ?"
+                    . $clearAdminFlagsSql
+                    . ", updated_at = NOW() WHERE id = ?",
                 [$firstName, $lastName, $email, $role, $location ?: null, $phone ?: null, $id]
             );
 
