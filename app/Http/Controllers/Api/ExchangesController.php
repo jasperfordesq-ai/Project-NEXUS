@@ -403,6 +403,12 @@ class ExchangesController extends BaseApiController
                 // credit transfer cannot land, so nothing was moved.
                 return $this->respondWithError('EXCHANGE_PARTY_UNAVAILABLE', __('api.exchange_party_unavailable'), null, 409);
             }
+            if (str_contains($e->getMessage(), 'EXCHANGE_PARTY_CANNOT_RECEIVE')) {
+                // F-442: the party who would be paid has been suspended or
+                // banned, so the credit cannot land. Nothing moved and the
+                // exchange is still confirmable once the suspension is lifted.
+                return $this->respondWithError('EXCHANGE_PARTY_CANNOT_RECEIVE', __('api.wallet_transfer_recipient_inactive'), null, 409);
+            }
             throw $e;
         }
         if (!$success) {

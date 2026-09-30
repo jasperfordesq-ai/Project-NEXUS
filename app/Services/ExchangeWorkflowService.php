@@ -1283,6 +1283,24 @@ class ExchangeWorkflowService
                 throw new \RuntimeException('EXCHANGE_PARTY_UNAVAILABLE');
             }
 
+            // F-442: exchange completion is a path that moves credits TO a
+            // member, so it obeys the same rule as every other one — an account
+            // an administrator has suspended or banned may not be paid. The
+            // status is read from the row already re-read under lockForUpdate()
+            // above, inside this transaction, so it cannot go stale between the
+            // check and the credit (reading it outside the lock is F-411).
+            // Shared predicate, deliberately NOT a restated status list: the
+            // whole point of WalletService::NON_RECEIVING_STATUSES is that the
+            // rule cannot drift between paths (F-105/F-106).
+            if (!WalletService::canReceiveCredits($payee->status ?? null)) {
+                Log::warning("Exchange #{$exchangeId}: payee #{$payeeId} has status '{$payee->status}' and may not receive credits — refusing to move credits");
+                // Typed signal, like INSUFFICIENT_BALANCE above: the surrounding
+                // DB::transaction rolls back, so neither balance moves and the
+                // exchange stays at pending_confirmation — it completes normally
+                // once the suspension is lifted.
+                throw new \RuntimeException('EXCHANGE_PARTY_CANNOT_RECEIVE');
+            }
+
             $debited = DB::table('users')->where('id', $payerId)->where('tenant_id', $tenantId)
                 ->decrement('balance', $hours);
             $credited = DB::table('users')->where('id', $payeeId)->where('tenant_id', $tenantId)
@@ -1312,7 +1330,7 @@ class ExchangeWorkflowService
             // to a null return.
             if (
                 $e instanceof \RuntimeException
-                && in_array($e->getMessage(), ['INSUFFICIENT_BALANCE', 'EXCHANGE_PARTY_UNAVAILABLE'], true)
+                && in_array($e->getMessage(), ['INSUFFICIENT_BALANCE', 'EXCHANGE_PARTY_UNAVAILABLE', 'EXCHANGE_PARTY_CANNOT_RECEIVE'], true)
             ) {
                 throw $e;
             }
