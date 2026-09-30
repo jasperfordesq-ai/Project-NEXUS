@@ -158,6 +158,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Tooling: `js-yaml` is now declared in the root `devDependencies`. `scripts/preflight.mjs` and the deploy check gate `scripts/predeploy-ci-verify.mjs` both `require()` it, but it was only named in `overrides`, so it resolved only while a stray copy sat in `node_modules`; any `npm update`/`npm ci` at the root removed it and both scripts crashed with "Cannot find module js-yaml" — for the deploy gate, a refusal indistinguishable from "not checked". Same class of fault as the undeclared `minimatch` fixed in `9794618e1`.
 - Three places where an action was stopped because of a block now say \"not allowed\" rather than \"bad request\". The action was refused either way; only the explanation was wrong (F-336 follow-up).
 - Submitting a community survey response, or an emergency alert, with something missing now returns a clear message about what is missing instead of a server error (F-372).
 - Pausing or resuming an achievement campaign no longer shows an error; the pause or resume always worked, but the screen said it had failed.
