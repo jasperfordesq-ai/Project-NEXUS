@@ -17,9 +17,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Console/Commands/ProcessSavedSearchAlerts.php:186:NotificationDispatcher::fanOutPush",
+            "id": "app/Console/Commands/ProcessSavedSearchAlerts.php:222:NotificationDispatcher::fanOutPush",
             "file": "app/Console/Commands/ProcessSavedSearchAlerts.php",
-            "line": 186,
+            "line": 222,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $search->user_id",
@@ -1785,9 +1785,9 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1485:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:1503:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1485,
+            "line": 1503,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "$counterpartyId",
@@ -1798,9 +1798,9 @@
             "data_expression": "$data"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1502:NotificationDispatcher::notifyAdmins",
+            "id": "app/Services/ExchangeWorkflowService.php:1520:NotificationDispatcher::notifyAdmins",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1502,
+            "line": 1520,
             "transport": "NotificationDispatcher::notifyAdmins",
             "role": "producer",
             "recipient_expression": null,
