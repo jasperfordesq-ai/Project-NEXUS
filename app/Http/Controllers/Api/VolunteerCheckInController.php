@@ -12,6 +12,7 @@ use App\Services\VolunteerCheckInService;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\WebhookDispatchService;
 use App\Core\TenantContext;
+use App\Support\Authorization\AdminTier;
 
 /**
  * VolunteerCheckInController -- QR check-in, check-out, and verification.
@@ -90,10 +91,17 @@ class VolunteerCheckInController extends BaseApiController
                 return true;
             }
 
-            $roleRow = DB::selectOne("SELECT role FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
-            $role = $roleRow->role ?? '';
+            // Admin authority is the four boolean flags as well as the role
+            // string — a network administrator holds is_tenant_super_admin and
+            // role 'member' — so the flags have to be selected and AdminTier
+            // asked. It still refuses broker and coordinator.
+            $roleRow = DB::selectOne(
+                "SELECT role, is_admin, is_super_admin, is_tenant_super_admin, is_god
+                 FROM users WHERE id = ? AND tenant_id = ?",
+                [$userId, $tenantId]
+            );
 
-            return in_array($role, ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'], true);
+            return $roleRow !== null && AdminTier::allows((array) $roleRow);
         } catch (\Throwable $e) {
             return false;
         }

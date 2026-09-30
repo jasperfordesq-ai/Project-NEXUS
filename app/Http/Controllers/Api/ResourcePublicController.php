@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Services\PrerenderContentInvalidator;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
@@ -384,8 +385,10 @@ class ResourcePublicController extends BaseApiController
 
         $isOwner = (int) $resource->user_id === $userId;
         $user = \Illuminate\Support\Facades\Auth::user();
-        $role = $user->role ?? 'member';
-        $isAdmin = in_array($role, ['admin', 'super_admin', 'tenant_admin'], true);
+        // Admin authority is the four boolean flags as well as the role string
+        // — a network administrator holds the flag alone — so AdminTier is the
+        // only safe predicate. It still refuses broker and coordinator.
+        $isAdmin = AdminTier::allows($user);
 
         if (!$isOwner && !$isAdmin) {
             return $this->respondWithError('FORBIDDEN', __('api.no_permission_edit_resource'), null, 403);
@@ -458,11 +461,12 @@ class ResourcePublicController extends BaseApiController
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.resource_not_found'), null, 404);
         }
 
-        // Check ownership or admin role
+        // Check ownership or admin authority. AdminTier honours the four
+        // boolean flags as well as the role string — a network administrator
+        // holds the flag alone — and still refuses broker and coordinator.
         $isOwner = (int) $resource->user_id === $userId;
         $user = \Illuminate\Support\Facades\Auth::user();
-        $role = $user->role ?? 'member';
-        $isAdmin = in_array($role, ['admin', 'super_admin', 'tenant_admin'], true);
+        $isAdmin = AdminTier::allows($user);
 
         if (!$isOwner && !$isAdmin) {
             return $this->respondWithError('FORBIDDEN', __('api.no_permission_delete_resource'), null, 403);

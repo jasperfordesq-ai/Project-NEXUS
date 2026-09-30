@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Services\KnowledgeBaseService;
 use App\Services\KnowledgeBaseAttachmentService;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
@@ -48,11 +49,12 @@ class KnowledgeBaseController extends BaseApiController
             $filters['category_id'] = $this->queryInt('category_id');
         }
 
-        // Admins can see unpublished articles
+        // Admins can see unpublished articles. Admin authority is the four
+        // boolean flags as well as the role string — a network administrator
+        // is granted the flag alone — so AdminTier is the only safe predicate.
         if ($this->queryBool('include_unpublished') && $userId) {
             $user = \Illuminate\Support\Facades\Auth::user();
-            $role = $user->role ?? 'member';
-            if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'])) {
+            if (AdminTier::allows($user)) {
                 $filters['published_only'] = false;
             }
         }
@@ -87,8 +89,7 @@ class KnowledgeBaseController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.kb_article_not_found'), null, 404);
             }
             $user = \Illuminate\Support\Facades\Auth::user();
-            $role = $user->role ?? 'member';
-            if (! in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'])) {
+            if (! AdminTier::allows($user)) {
                 return $this->respondWithError('NOT_FOUND', __('api.kb_article_not_found'), null, 404);
             }
         }
@@ -135,8 +136,7 @@ class KnowledgeBaseController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.kb_article_not_found'), null, 404);
             }
             $user = \Illuminate\Support\Facades\Auth::user();
-            $role = $user->role ?? 'member';
-            if (! in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'])) {
+            if (! AdminTier::allows($user)) {
                 return $this->respondWithError('NOT_FOUND', __('api.kb_article_not_found'), null, 404);
             }
             $isAdminPreview = true;
