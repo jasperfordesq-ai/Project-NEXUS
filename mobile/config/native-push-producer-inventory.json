@@ -134,9 +134,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFederationController.php:90:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFederationController.php:91:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFederationController.php",
-            "line": 90,
+            "line": 91,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $admin->id",
@@ -563,9 +563,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:1997:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:2018:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationExternalWebhookController.php",
-            "line": 1997,
+            "line": 2018,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverUserId",
