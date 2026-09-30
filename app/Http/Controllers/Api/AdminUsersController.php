@@ -2956,8 +2956,15 @@ class AdminUsersController extends BaseApiController
                     if ($target === null || $this->brokerMayNotAdmit($target, (int) $tenantId)) {
                         return false;
                     }
+                    // F-429: approving is not demoting. This wrote `member`
+                    // unconditionally, which silently demoted a pending broker
+                    // or administrator (O-111) and — because
+                    // User::updateAdminFields() writes no flags — left an
+                    // account holding is_tenant_super_admin reading `member`
+                    // while it kept full authority. Preserve the existing role,
+                    // exactly as the single-record approve() does.
                     User::updateAdminFields($id, [
-                        'role' => 'member',
+                        'role' => $target['role'] ?? 'member',
                         'is_approved' => 1,
                         'tenant_id' => $tenantId,
                     ]);
