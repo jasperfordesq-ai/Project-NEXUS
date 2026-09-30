@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- An outside partner community can no longer read transactions it is not party to. It previously received the whole community's exchange history, including private exchanges between members who never joined cross-community sharing. Partner federation is switched off and no partner is connected, so nothing was exposed (F-329).
 - A cross-community transfer now stops if the person receiving it withdraws from cross-community sharing, or their account is deactivated, while the transfer is in progress (F-376).
 - If a community link is suspended, or a partner community switches its cross-community transfers off, a transfer already in progress now stops instead of completing (F-344).
 - A community administrator can no longer approve hours for a suspended volunteering organisation from the admin page, which was creating time credits for an organisation the community had switched off. Declining those hours still works, so the queue can still be cleared (F-379).

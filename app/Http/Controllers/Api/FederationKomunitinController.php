@@ -513,6 +513,11 @@ class FederationKomunitinController extends BaseApiController
         $query = DB::table('transactions')
             ->where('tenant_id', $tenantId);
 
+        // F-329: the collection is the paging form of the same disclosure the
+        // single read had, so it carries the same boundary — a partner sees the
+        // external transfers it is party to, never the community's own ledger.
+        $this->scopeToPartnerOwnedTransfers($query, $tenantId);
+
         // Filters
         $filterAccount = $request->query('filter')['account'] ?? $request->query('filter_account');
         $filterState = $request->query('filter')['state'] ?? $request->query('filter_state');
@@ -595,12 +600,19 @@ class FederationKomunitinController extends BaseApiController
         $tenantId = TenantContext::getId();
         $baseUrl = $request->getSchemeAndHttpHost();
 
+        // F-329: scope the read exactly as updateTransfer()/deleteTransfer()
+        // scope the writes on this same route pair. Resolving on id + tenant_id
+        // alone published the whole community ledger — both parties, the amount
+        // and the member-authored description — to any external partner,
+        // including wholly internal exchanges between members who never opted
+        // into federation.
         $tx = DB::table('transactions')
             ->where('id', (int) $id)
             ->where('tenant_id', $tenantId)
             ->first();
 
-        if (!$tx) {
+        if (!$tx || $tx->transaction_type !== 'komunitin_external'
+            || !$this->partnerOwnsTransfer($tenantId, (int) $id)) {
             return $this->jsonApiError('NotFound', 'Not Found',
                 "Transfer id {$id} not found in currency {$code}", 404);
         }
@@ -1064,6 +1076,29 @@ class FederationKomunitinController extends BaseApiController
             ->where('tenant_id', $tenantId)->where('protocol', 'komunitin')
             ->where('reference_id', (string) $transferId)->where('partner_key_id', $partnerKeyId)
             ->exists();
+    }
+
+    /**
+     * F-329 — the collection form of partnerOwnsTransfer().
+     *
+     * Restricts a `transactions` query to the external transfers the calling
+     * partner is party to: the row must be a komunitin transfer AND carry a
+     * debit-approval record naming this partner key. An unauthenticated or
+     * unrecognised caller has partner key id 0, which matches no approval row,
+     * so the query yields nothing — it fails closed.
+     */
+    private function scopeToPartnerOwnedTransfers(\Illuminate\Database\Query\Builder $query, int $tenantId): void
+    {
+        $partnerKeyId = (int) (FederationApiMiddleware::getPartner()['id'] ?? 0);
+
+        $query->where('transactions.transaction_type', 'komunitin_external')
+            ->whereExists(function ($sub) use ($tenantId, $partnerKeyId) {
+                $sub->from('federation_debit_approvals as fda')
+                    ->whereColumn('fda.reference_id', 'transactions.id')
+                    ->where('fda.tenant_id', $tenantId)
+                    ->where('fda.protocol', 'komunitin')
+                    ->where('fda.partner_key_id', $partnerKeyId);
+            });
     }
 
     // ─────────────────────────────────────────────────────────────────────────
