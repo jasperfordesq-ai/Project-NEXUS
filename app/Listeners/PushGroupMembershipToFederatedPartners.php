@@ -63,6 +63,10 @@ class PushGroupMembershipToFederatedPartners implements ShouldQueue
             if (!in_array($visibility, ['listed', 'public'], true)) {
                 return;
             }
+            // F-386: who joins a private or secret group is never pushed.
+            if (in_array((string) ($group->visibility ?? ''), ['private', 'secret'], true)) {
+                return;
+            }
 
             $partners = FederationExternalPartnerService::getActivePartnersWithFlag($tenantId, 'allow_groups');
             if (empty($partners)) {

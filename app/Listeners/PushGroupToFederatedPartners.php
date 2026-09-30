@@ -55,9 +55,14 @@ class PushGroupToFederatedPartners implements ShouldQueue
 
             $storedStatus = $group->status;
             $status = $storedStatus instanceof GroupStatus ? $storedStatus : GroupStatus::tryFrom((string) $storedStatus);
-            $isRetraction = $event instanceof GroupUpdated && $status !== GroupStatus::Active;
 
-            if ($event instanceof GroupCreated && $status !== GroupStatus::Active) {
+            // F-386: a private or secret group is never published to external
+            // partners — the rule the internal listing follows since F-377. A
+            // group made private or secret after it was published is withdrawn.
+            $isHidden = in_array((string) ($group->visibility ?? ''), ['private', 'secret'], true);
+            $isRetraction = $event instanceof GroupUpdated && ($status !== GroupStatus::Active || $isHidden);
+
+            if ($event instanceof GroupCreated && ($status !== GroupStatus::Active || $isHidden)) {
                 return;
             }
 
@@ -86,6 +91,13 @@ class PushGroupToFederatedPartners implements ShouldQueue
                 'tenant_id'   => $tenantId,
                 'created_at'  => $group->created_at?->toISOString(),
             ];
+            if ($isHidden) {
+                // Withdrawing a now-private group must not publish its details.
+                $payload['name'] = null;
+                $payload['description'] = null;
+                $payload['visibility'] = null;
+                $payload['owner_id'] = null;
+            }
 
             foreach ($partners as $partner) {
                 $partnerId = (int) ($partner['id'] ?? 0);
