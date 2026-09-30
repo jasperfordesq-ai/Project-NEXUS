@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Permission to view the cross-community comparison dashboard now only works in the community where it was granted, instead of in any community (F-371).
 - A grant that gives someone the "official notices" badge now stops working when it expires. Previously an expired grant kept working indefinitely (F-370).
 - A club-management permission recorded against no community can no longer be used to act inside a community. One of the two places that checks this had been fixed; its duplicate had not (F-362).
 - An ordinary member can no longer be given access to every club's dues register — including other members' email addresses — dues waivers, reminder emails sent from the community's address, or federation consent, through the roles screen (F-349).

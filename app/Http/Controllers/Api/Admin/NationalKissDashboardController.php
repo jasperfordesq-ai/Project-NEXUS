@@ -137,6 +137,17 @@ class NationalKissDashboardController extends BaseApiController
             return false;
         }
 
+        // F-371: ur.tenant_id must match the community the request is being made
+        // from. Without it a grant made in ONE community satisfied this check from
+        // ANY community — and the four routes it guards are the cross-cooperative
+        // comparison views. Same missing filter that commit 0cb8be769 added to
+        // EnsureIsAdmin. The role itself stays platform-global (r.tenant_id IS
+        // NULL); it is the GRANT that must be local.
+        $tenantId = \App\Core\TenantContext::getId();
+        if ($tenantId <= 0) {
+            return false;
+        }
+
         $row = DB::selectOne(
             "SELECT 1 AS ok
              FROM user_roles ur
@@ -144,13 +155,14 @@ class NationalKissDashboardController extends BaseApiController
              JOIN role_permissions rp ON rp.role_id = ur.role_id
              JOIN permissions p ON p.id = rp.permission_id
              WHERE ur.user_id = ?
+               AND ur.tenant_id = ?
                AND p.name = 'national.kiss_dashboard.view'
                AND r.name = 'kiss_national_admin'
                AND r.is_system = 1
                AND r.tenant_id IS NULL
                AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
              LIMIT 1",
-            [$userId]
+            [$userId, $tenantId]
         );
 
         return $row !== null;
