@@ -315,14 +315,7 @@ class CaringSupportRelationshipService
             return ['success' => false, 'code' => 'VALIDATION_ERROR'];
         }
 
-        $duplicate = DB::table('vol_logs')
-            ->where('tenant_id', $tenantId)
-            ->where('user_id', (int) $relationship->supporter_id)
-            ->where('caring_support_relationship_id', $relationshipId)
-            ->where('date_logged', $date)
-            ->whereNotIn('status', ['declined', 'rejected'])
-            ->exists();
-        if ($duplicate) {
+        if ($this->hasLogForDay($tenantId, $relationshipId, (int) $relationship->supporter_id, $date)) {
             return ['success' => false, 'code' => 'ALREADY_EXISTS'];
         }
 
@@ -346,9 +339,25 @@ class CaringSupportRelationshipService
         $paymentResult = null;
         $regionalPointsResult = null;
         $organizationNotActive = false;
-        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $organizationId, $date, $hours, $description, $status, &$logId, &$paymentResult, &$organizationNotActive): void {
-            // First statement in the transaction, before any write, so an
-            // early return leaves nothing behind.
+        $duplicateInFlight = false;
+        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $organizationId, $date, $hours, $description, $status, &$logId, &$paymentResult, &$organizationNotActive, &$duplicateInFlight): void {
+            // F-391: serialise submissions for this relationship and repeat the
+            // one-log-per-day check under the lock. The check above is an
+            // unlocked read and vol_logs has no unique key behind it, so two
+            // simultaneous submissions (a double-click, a client retry) both
+            // passed it and the visit was paid twice.
+            DB::table('caring_support_relationships')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $relationshipId)
+                ->lockForUpdate()
+                ->first(['id']);
+            if ($this->hasLogForDay($tenantId, $relationshipId, (int) $relationship->supporter_id, $date)) {
+                $duplicateInFlight = true;
+                return;
+            }
+
+            // These checks come before any write, so an early return leaves
+            // nothing behind.
             if ($organizationId !== null && !$this->organizationAcceptsHours($tenantId, $organizationId, true)) {
                 $organizationNotActive = true;
                 return;
@@ -401,6 +410,9 @@ class CaringSupportRelationshipService
                 ]);
         });
 
+        if ($duplicateInFlight) {
+            return ['success' => false, 'code' => 'ALREADY_EXISTS'];
+        }
         if ($organizationNotActive) {
             return ['success' => false, 'code' => 'ORG_NOT_ACTIVE'];
         }
@@ -539,6 +551,18 @@ class CaringSupportRelationshipService
             ->where(function ($query): void {
                 $query->whereNull('ur.expires_at')->orWhere('ur.expires_at', '>', now());
             })
+            ->exists();
+    }
+
+    /** Whether the supporter already has a live (not declined/rejected) log for this relationship on this day. */
+    private function hasLogForDay(int $tenantId, int $relationshipId, int $supporterId, string $date): bool
+    {
+        return DB::table('vol_logs')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $supporterId)
+            ->where('caring_support_relationship_id', $relationshipId)
+            ->where('date_logged', $date)
+            ->whereNotIn('status', ['declined', 'rejected'])
             ->exists();
     }
 
