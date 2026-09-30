@@ -648,6 +648,22 @@ class FederationExternalWebhookController extends BaseApiController
             return ['status' => 'duplicate', 'local_id' => (int) $existing->id];
         }
 
+        // 🔴 Ordering matters, and CI caught this. The safeguarding policy is
+        // evaluated BEFORE the F-406 exchange check below, because
+        // SAFEGUARDING_POLICY_UNAVAILABLE answers a retryable 503: while the
+        // platform cannot evaluate its own safeguarding rules it must make NO
+        // determination at all. Refusing first on a missing exchange would hand
+        // the partner a definitive rejection during a safeguarding outage, which
+        // it would treat as final and never retry.
+        if ($blocked = $this->externalRecipientSafeguardingBlock(
+            $receiverId,
+            (int) $partner->id,
+            $reviewerExternalId > 0 ? (string) $reviewerExternalId : $externalId,
+            'external_federated_review',
+        )) {
+            return $blocked;
+        }
+
         // F-406 — an inbound review must describe a real exchange with THIS
         // member, recorded by THIS partner, and one exchange earns one review.
         //
@@ -703,15 +719,6 @@ class FederationExternalWebhookController extends BaseApiController
                 'status' => 'rejected',
                 'reason' => 'This partner has already reached the daily limit of reviews for this member',
             ];
-        }
-
-        if ($blocked = $this->externalRecipientSafeguardingBlock(
-            $receiverId,
-            (int) $partner->id,
-            $reviewerExternalId > 0 ? (string) $reviewerExternalId : $externalId,
-            'external_federated_review',
-        )) {
-            return $blocked;
         }
 
         $comment = $this->optionalString($data, 'comment', 5000);

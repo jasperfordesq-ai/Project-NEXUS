@@ -143,10 +143,36 @@ class SafeguardingSlaEscalateCommand extends Command
 
                 $tenantsProcessed++;
             } catch (Throwable $e) {
-                Log::error('[SafeguardingSlaEscalate] tenant failure', [
+                // 🔴 Local log ONLY, plus one explicit fingerprinted capture.
+                // A plain error-level log forwards to Sentry unfingerprinted, and this
+                // command now also raises an explicit capture in
+                // alertOnDisabledModules(), so a bare one here would
+                // open a second, ungrouped issue for every occurrence.
+                // AlarmSentryFingerprintTest enforces that rule and caught this
+                // in CI — the plain log call predates F-408, but the capture that
+                // turned it into a double report did not.
+                OperatorLog::withoutSentry()->error('[SafeguardingSlaEscalate] tenant failure', [
                     'tenant_id' => $tenantId,
                     'error'     => $e->getMessage(),
                 ]);
+
+                try {
+                    if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {
+                        $failureContext = ['tenant_id' => $tenantId, 'error' => $e->getMessage()];
+                        \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($failureContext): void {
+                            $scope->setTag('alert', 'safeguarding_sla_tenant_failure');
+                            $scope->setFingerprint(['safeguarding_sla_escalation_tenant_failure']);
+                            $scope->setContext('safeguarding_sla_escalation', $failureContext);
+                        });
+                        \Sentry\captureMessage(
+                            'Safeguarding SLA escalation failed for a community',
+                            \Sentry\Severity::error()
+                        );
+                    }
+                } catch (Throwable $sentryFailure) {
+                    Log::debug('safeguarding:sla-escalate Sentry capture failed: ' . $sentryFailure->getMessage());
+                }
+
                 continue;
             }
         }
