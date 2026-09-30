@@ -676,6 +676,13 @@ class WalletService
             throw new \RuntimeException(__('api.wallet_transfer_recipient_inactive'));
         }
 
+        // F-332: a transfer carries the sender's free-text description into the
+        // recipient's bell, push and email (NotifyTransactionCompleted), so a
+        // block in either direction refuses it before any credit moves — the
+        // same rule F-279 applied to ratings and F-070 to reviews. Checked
+        // before the safeguarding policy so a blocked member cannot probe it.
+        BlockUserService::assertNoBlockBetween($senderId, (int) $receiver->id);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,
             (int) $receiver->id,

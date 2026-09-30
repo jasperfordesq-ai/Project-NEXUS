@@ -59,6 +59,13 @@ class CreditDonationService
             return false;
         }
 
+        // F-332: a donation carries the donor's free-text message to the
+        // recipient (DonationEmailService emails it), so a block in either
+        // direction refuses it before any credit moves — the same rule as the
+        // transfer path. Checked before the safeguarding policy so a blocked
+        // member cannot probe it.
+        BlockUserService::assertNoBlockBetween($fromUserId, $toUserId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $fromUserId,
             $toUserId,
