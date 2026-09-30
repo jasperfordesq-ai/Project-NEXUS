@@ -431,9 +431,18 @@ class AdminUsersController extends BaseApiController
         // (E-069 O-113), this route refuses `role = 'god'` so it could not
         // restore it, and securityTier() ranks a god at 4 whatever the role
         // says. Revoking god needs its own route and an owner decision.
+        //
+        // F-452: "present in the body" is not the same as "demoted". The super
+        // panel's user form submits `role` on every save, loaded from the
+        // record, so a save that only changed a phone number still sent
+        // `role: 'member'` — and for an account granted through
+        // TenantHierarchyService::assignTenantSuperAdmin() (the flag, no role)
+        // that resubmitted, unchanged `member` silently revoked a network
+        // administrator. The role must therefore have actually CHANGED.
         $nonAdminRoles = ['member', 'broker', 'coordinator'];
         $clearedAdminFlags = [];
-        if ($newRole !== null && in_array($newRole, $nonAdminRoles, true)) {
+        $roleDemoted = $newRole !== null && $newRole !== (string) ($user['role'] ?? 'member');
+        if ($roleDemoted && in_array($newRole, $nonAdminRoles, true)) {
             foreach (['is_tenant_super_admin', 'is_super_admin', 'is_admin'] as $flag) {
                 $updates[] = "{$flag} = 0";
                 if (!empty($user[$flag])) {

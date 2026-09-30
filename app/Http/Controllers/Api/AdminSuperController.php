@@ -1201,6 +1201,10 @@ class AdminSuperController extends BaseApiController
         $lastName = trim($input['last_name'] ?? $user['last_name'] ?? '');
         $email = trim($input['email'] ?? $user['email']);
         $role = $input['role'] ?? $user['role'];
+        // F-452: `$role` falls back to the STORED role, so it cannot on its own
+        // tell a demotion from an edit that never mentioned the role. Remember
+        // whether the caller actually submitted one.
+        $roleSubmitted = array_key_exists('role', $input);
         $location = isset($input['location']) ? trim($input['location']) : ($user['location'] ?? null);
         $phone = isset($input['phone']) ? trim($input['phone']) : ($user['phone'] ?? null);
 
@@ -1253,6 +1257,7 @@ class AdminSuperController extends BaseApiController
             $lastName,
             $email,
             $role,
+            $roleSubmitted,
             $location,
             $phone
         ): void {
@@ -1329,7 +1334,18 @@ class AdminSuperController extends BaseApiController
             // (E-069 O-113), 'god' is not an assignable role here so this route
             // could not restore it, and securityTier() ranks a god at 4 whatever
             // the role says. Revoking god needs its own route.
-            $clearAdminFlags = in_array((string) $role, ['member', 'broker', 'coordinator'], true);
+            //
+            // F-452: this must fire on a DEMOTION, not on every save. $role above
+            // falls back to the STORED role, so for an account sitting at
+            // role='member' the old test was true on EVERY edit — including one
+            // that only changed a phone number. `role='member'` plus
+            // is_tenant_super_admin=1 is a supported state: it is exactly what
+            // TenantHierarchyService::assignTenantSuperAdmin() writes, which is
+            // the super panel's own grant route. So the operator has to have
+            // submitted a role AND changed it before any flag is touched.
+            $clearAdminFlags = $roleSubmitted
+                && $lockedRoleChanged
+                && in_array((string) $role, ['member', 'broker', 'coordinator'], true);
             if ($clearAdminFlags) {
                 foreach (['is_tenant_super_admin', 'is_super_admin', 'is_admin'] as $flag) {
                     if (!empty($target[$flag])) {
