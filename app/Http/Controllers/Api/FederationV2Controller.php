@@ -1150,7 +1150,18 @@ class FederationV2Controller extends BaseApiController
                   AND fus_owner.profile_visible_federated = 1
                   AND fus_owner.appear_in_federated_search = 1
                   AND (g.federated_visibility IN ('listed', 'joinable') OR g.allow_federated_members = 1)
-                  AND g.visibility <> 'secret'
+                  -- F-377: only PUBLIC groups reach partner communities. This
+                  -- excluded 'secret' alone, so a group its owner had marked
+                  -- private was published cross-community with its name,
+                  -- description, cover image and member count — while the
+                  -- sibling events() query above already excluded both, which
+                  -- is what the F-190 fix established. GroupService::update()
+                  -- lets visibility and federated_visibility change
+                  -- independently, so a group published while public and later
+                  -- made private stayed published. Kept as its own AND conjunct
+                  -- so it still holds if `allow_federated_members` ever gains a
+                  -- writer (it has none today — E-065 O-098).
+                  AND g.visibility NOT IN ('private', 'secret')
             " . $partnerClause;
             $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
