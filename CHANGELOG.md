@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The ranked-poll voting service now refuses a blocked pair in its own right, not only on the web address that reaches it (F-367).
 - Regional point transfers now respect blocking, so a blocked member can no longer write a message into the blocker's points history (F-335).
 - Goal buddy requests, acceptances and notes now respect blocking, so a blocked member can no longer use them to notify the person who blocked them (F-334).
 - A blocked member can no longer send an hours gift, or the message attached to it, to the person who blocked them (F-333).

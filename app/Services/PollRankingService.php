@@ -64,6 +64,12 @@ class PollRankingService
             }
 
             if ((int) $poll->user_id !== $userId) {
+                // F-367: F-158 put this check on the standard poll vote and on
+                // PollsController::rank, but not inside this service, so any
+                // future caller repeated the gap. A ranked ballot notifies the
+                // poll's creator, so it obeys the block rule as well as the
+                // safeguarding contact rule.
+                BlockUserService::assertNoBlockBetween($userId, (int) $poll->user_id);
                 app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                     $userId, (int) $poll->user_id, (int) $tenantId, 'poll_ranking',
                 );
