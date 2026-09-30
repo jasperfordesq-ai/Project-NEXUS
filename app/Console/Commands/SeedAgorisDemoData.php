@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Support\Console\RefusesUnsafeSeeding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,21 +25,25 @@ use Illuminate\Support\Str;
  */
 class SeedAgorisDemoData extends Command
 {
+    use RefusesUnsafeSeeding;
+
     protected $signature = 'tenant:seed-agoris-demo
         {slug=agoris : Tenant slug to seed}
         {--dry-run : Show what would be seeded without writing anything}';
 
     protected $description = 'Seed the Agoris/KISS caring-community demo tenant with rich sample data';
 
-    /**
-     * Shared strong demo password for ALL seeded Agoris demo accounts.
+    /*
+     * 🔴 The shared demo password used to live here as a `const` literal, in a
+     * PUBLIC repository, and this command had no environment guard. It had been
+     * run against the live `agoris` community, leaving 22 production member
+     * accounts that accepted a password anyone could read on GitHub (F-398).
      *
-     * 23 chars, mixed case, digit, symbol — meets every reasonable strong-password rule.
-     * The same passphrase is used by `SeedAgorisRealisticContent` and `SeedAgorisPolish`
-     * so a pilot evaluator can sign in as any seeded persona without a per-user lookup.
-     * Rotate if Agoris ever moves from a demo/pilot tenant to a production one.
+     * The credential now comes from {@see RefusesUnsafeSeeding::resolveSeedPassword()}
+     * — environment variable, or randomly generated per run — and the command
+     * refuses to run outside local/development/testing. Do not reintroduce a
+     * literal: `npm run check:seed-credentials` fails the build if you do.
      */
-    public const DEMO_PASSWORD = 'Cham-Caring-Pilot-2026!';
 
     /** @var array<string, list<string>> */
     private array $columns = [];
@@ -48,6 +53,10 @@ class SeedAgorisDemoData extends Command
 
     public function handle(): int
     {
+        if (($refusal = $this->refuseUnlessSafeSeedingEnvironment()) !== null) {
+            return $refusal;
+        }
+
         $slug = ltrim((string) $this->argument('slug'), '/');
         $dryRun = (bool) $this->option('dry-run');
 
@@ -86,8 +95,7 @@ class SeedAgorisDemoData extends Command
         foreach ($this->counts as $label => $count) {
             $this->line(sprintf('  %-24s %d', $label, $count));
         }
-        $this->newLine();
-        $this->line('Demo admin: agoris.admin@example.test / ' . self::DEMO_PASSWORD);
+        $this->reportSeedPassword('agoris.admin@example.test');
 
         return self::SUCCESS;
     }
@@ -190,7 +198,7 @@ class SeedAgorisDemoData extends Command
                 'first_name' => $row['first'],
                 'last_name' => $row['last'],
                 'name' => "{$row['first']} {$row['last']}",
-                'password_hash' => Hash::make(self::DEMO_PASSWORD),
+                'password_hash' => Hash::make(self::resolveSeedPassword()),
                 'role' => $row['role'],
                 'status' => 'active',
                 'bio' => $row['bio'],

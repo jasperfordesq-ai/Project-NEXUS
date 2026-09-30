@@ -1081,6 +1081,9 @@ jobs:
       - name: "BLOCKING: DB column references resolve against the schema dump"
         run: node scripts/check-db-column-references.mjs
 
+      - name: "BLOCKING: No credential literals in runnable seeders (F-398)"
+        run: node scripts/check-seed-credentials.mjs
+
       - name: "WARNING: Schema dump drift detection"
         run: bash scripts/check-schema-drift.sh || true
 

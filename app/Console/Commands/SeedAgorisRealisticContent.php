@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Services\CaringCommunityRolePresetService;
+use App\Support\Console\RefusesUnsafeSeeding;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,8 @@ use Illuminate\Support\Str;
  */
 class SeedAgorisRealisticContent extends Command
 {
+    use RefusesUnsafeSeeding;
+
     protected $signature = 'tenant:seed-agoris-realistic
         {tenant_slug=agoris : Tenant slug to seed}
         {--dry-run : Show what would be seeded without writing}';
@@ -51,6 +54,10 @@ class SeedAgorisRealisticContent extends Command
 
     public function handle(): int
     {
+        if (($refusal = $this->refuseUnlessSafeSeedingEnvironment()) !== null) {
+            return $refusal;
+        }
+
         $slug = ltrim((string) $this->argument('tenant_slug'), '/');
         $dryRun = (bool) $this->option('dry-run');
 
@@ -192,7 +199,7 @@ class SeedAgorisRealisticContent extends Command
                 'first_name' => $row['first'],
                 'last_name' => $row['last'],
                 'name' => "{$row['first']} {$row['last']}",
-                'password_hash' => Hash::make(SeedAgorisDemoData::DEMO_PASSWORD),
+                'password_hash' => Hash::make(self::resolveSeedPassword()),
                 'role' => 'member',
                 'status' => 'active',
                 'bio' => $row['bio'],

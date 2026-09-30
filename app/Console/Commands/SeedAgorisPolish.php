@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Services\CaringCommunity\CivicDigestService;
+use App\Support\Console\RefusesUnsafeSeeding;
 use App\Services\CaringCommunity\LeadNurtureService;
 use App\Services\CaringCommunity\MunicipalCommunicationCopilotService;
 use App\Services\CaringCommunity\SuccessStoryService;
@@ -28,7 +29,7 @@ use Illuminate\Support\Str;
  *
  * Adds, on top of `tenant:seed-agoris-demo` and `tenant:seed-agoris-realistic`:
  *   - Strong demo password rotation (idempotent — sets every Agoris user to the
- *     shared `SeedAgorisDemoData::DEMO_PASSWORD` so the platform's password
+ *     shared `self::resolveSeedPassword()` so the platform's password
  *     policy is satisfied AND a demo viewer can sign in as anyone)
  *   - Local merchant marketplace — Hofladen, Bäckerei, Schreinerei, Imker,
  *     Bibliothek, Reparatur-Café — opted into time-credit + regional-points
@@ -57,6 +58,8 @@ use Illuminate\Support\Str;
  */
 class SeedAgorisPolish extends Command
 {
+    use RefusesUnsafeSeeding;
+
     protected $signature = 'tenant:seed-agoris-polish
         {tenant_slug=agoris : Tenant slug to polish}
         {--dry-run : Show what would be seeded without writing}
@@ -72,6 +75,10 @@ class SeedAgorisPolish extends Command
 
     public function handle(): int
     {
+        if (($refusal = $this->refuseUnlessSafeSeedingEnvironment()) !== null) {
+            return $refusal;
+        }
+
         $slug = ltrim((string) $this->argument('tenant_slug'), '/');
         $dryRun = (bool) $this->option('dry-run');
         $skipPasswords = (bool) $this->option('skip-passwords');
@@ -126,7 +133,7 @@ class SeedAgorisPolish extends Command
             $this->line(sprintf('  %-32s %d', $label, $count));
         }
         $this->newLine();
-        $this->line('Demo password for ALL Agoris users: ' . SeedAgorisDemoData::DEMO_PASSWORD);
+        $this->line('Demo password for ALL Agoris users: ' . self::resolveSeedPassword());
         $this->line('Sign in as: agoris.admin@example.test  (admin)');
         $this->line('Sign in as: marlies.iten@demo-agoris.ch  (KISS coordinator)');
         $this->line('Sign in as: thomas.risi@demo-agoris.ch  (Gemeinde Cham)');
@@ -213,7 +220,7 @@ class SeedAgorisPolish extends Command
      */
     private function rotatePasswords(int $tenantId, array $userIds): void
     {
-        $hash = Hash::make(SeedAgorisDemoData::DEMO_PASSWORD);
+        $hash = Hash::make(self::resolveSeedPassword());
         $ids = array_values($userIds);
         if ($ids === []) {
             return;

@@ -210,6 +210,14 @@ if (files.some((f) => /\.(php|ts|tsx|mjs)$/.test(f))) {
   record('SPDX headers', 'SKIP', 'no source files changed');
 }
 
+// Seed-credential gate (F-398): cheap, and it protects against putting a
+// published password onto a real platform. Run whenever runnable PHP changed.
+if (files.some((f) => /^(app\/Console|database\/seeders)\/.*\.php$/.test(f))) {
+  sh('Seed credentials', 'node scripts/check-seed-credentials.mjs');
+} else {
+  record('Seed credentials', 'SKIP', 'no console/seeder files changed');
+}
+
 // Changelog guard reads COMMITTED state, so it is only meaningful when there
 // are commits to judge; working-tree-only changes get a reminder instead.
 if (files.includes('CHANGELOG.md') || areas.php.length || areas.frontend.length) {

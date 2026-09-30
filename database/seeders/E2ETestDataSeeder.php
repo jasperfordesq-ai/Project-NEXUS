@@ -34,10 +34,23 @@ use Illuminate\Support\Facades\DB;
  */
 class E2ETestDataSeeder extends Seeder
 {
+    /** Only environments in which known-credential fixtures may be created. Fail closed (F-398). */
+    private const SAFE_SEEDING_ENVIRONMENTS = ['local', 'development', 'testing'];
+
     public function run(): void
     {
-        if (app()->environment('production')) {
-            $this->command?->warn('E2ETestDataSeeder refuses to run in production (creates known-credential accounts). Aborting.');
+        // 🔴 Fail CLOSED (F-398). This used to refuse only when the environment was
+        // spelled exactly `production`, so any other value — a typo, `staging`, or an
+        // unset APP_ENV — created known-credential accounts. An allow-list refuses
+        // everything it does not explicitly recognise.
+        $environment = trim((string) app()->environment());
+        if (! in_array($environment, self::SAFE_SEEDING_ENVIRONMENTS, true)) {
+            $this->command?->warn(sprintf(
+                '%s refuses to run in environment "%s" (creates known-credential accounts). It runs only in %s. Aborting.',
+                class_basename($this),
+                $environment === '' ? '(empty)' : $environment,
+                implode(', ', self::SAFE_SEEDING_ENVIRONMENTS)
+            ));
             return;
         }
 

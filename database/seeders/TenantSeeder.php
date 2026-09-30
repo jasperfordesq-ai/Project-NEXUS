@@ -14,7 +14,31 @@ class TenantSeeder extends Seeder
 {
     public const MASTER_TENANT_ID = 1;
     public const DEFAULT_ADMIN_EMAIL = 'admin@project-nexus.local';
+
+    /**
+     * First-run development password for the bootstrap platform administrator.
+     *
+     * This is a documented placeholder, not a secret: it appears in `README.md`,
+     * `docs/TUTORIAL.md`, `docs/DATABASE.md` and both `.env.example` files so a
+     * new contributor can sign in after `migrate --seed`. It is overridable with
+     * `NEXUS_BOOTSTRAP_ADMIN_PASSWORD`.
+     *
+     * 🔴 It is only safe because {@see SAFE_BOOTSTRAP_ENVIRONMENTS} refuses to
+     * seed it anywhere else. That guard used to be a DENY-list
+     * (`if (app()->environment('production'))`), which passed for every
+     * environment that was not spelled exactly `production` — including an
+     * unset APP_ENV. It now fails CLOSED. Do not weaken it back: this account
+     * carries `is_god = 1`, which is full platform access across every
+     * community. (Tightened under F-398, 30 September 2026.)
+     */
     public const DEFAULT_ADMIN_PASSWORD = 'ChangeMe123!';
+
+    /**
+     * The only environments in which the documented default password may be
+     * seeded. Anything else — including an empty or unrecognised value — must
+     * supply `NEXUS_BOOTSTRAP_ADMIN_PASSWORD` explicitly or gets no admin.
+     */
+    private const SAFE_BOOTSTRAP_ENVIRONMENTS = ['local', 'development', 'testing'];
 
     /**
      * Seed the master tenant and first-run platform administrator.
@@ -93,10 +117,22 @@ class TenantSeeder extends Seeder
         $email = (string) env('NEXUS_BOOTSTRAP_ADMIN_EMAIL', self::DEFAULT_ADMIN_EMAIL);
         $password = (string) env('NEXUS_BOOTSTRAP_ADMIN_PASSWORD', self::DEFAULT_ADMIN_PASSWORD);
 
-        if (app()->environment('production') && $password === self::DEFAULT_ADMIN_PASSWORD) {
-            $this->command?->warn(
-                'Skipping bootstrap admin: set NEXUS_BOOTSTRAP_ADMIN_EMAIL and NEXUS_BOOTSTRAP_ADMIN_PASSWORD in production.'
-            );
+        // 🔴 Fail CLOSED (F-398). The documented default may only be seeded in an
+        // explicitly safe environment. Previously this refused only when the
+        // environment was spelled exactly `production`, so any other value — a
+        // typo, `staging`, or an unset APP_ENV — created a full `is_god`
+        // platform administrator with a password published in this repository.
+        $environment = trim((string) app()->environment());
+        $usingDocumentedDefault = $password === self::DEFAULT_ADMIN_PASSWORD;
+
+        if ($usingDocumentedDefault && ! in_array($environment, self::SAFE_BOOTSTRAP_ENVIRONMENTS, true)) {
+            $this->command?->warn(sprintf(
+                'Skipping bootstrap admin: environment is "%s". The documented default password is '
+                . 'only seeded in %s. Set NEXUS_BOOTSTRAP_ADMIN_EMAIL and NEXUS_BOOTSTRAP_ADMIN_PASSWORD '
+                . 'to create a platform administrator here.',
+                $environment === '' ? '(empty)' : $environment,
+                implode(', ', self::SAFE_BOOTSTRAP_ENVIRONMENTS)
+            ));
 
             return;
         }
