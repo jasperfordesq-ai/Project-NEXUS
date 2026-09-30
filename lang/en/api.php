@@ -207,6 +207,7 @@ return [
     'enabled_required'             => 'Enabled value is required',
     'field_required'               => 'This field is required.',
     'role_name_required'           => 'Role name is required',
+    'role_permission_not_grantable' => 'These permissions cannot be granted to a community role: :permissions',
     'breach_type_required'         => 'Breach type is required',
     'policy_key_required'          => 'Policy key is required',
     'support_reports_summary_required' => 'Please add a short summary of the problem.',

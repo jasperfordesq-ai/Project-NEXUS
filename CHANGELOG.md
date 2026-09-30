@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A community administrator can no longer attach a permission the roles screen does not offer, and a permission recorded against no specific club now grants nothing rather than everything. Together these closed a route by which one save could let an ordinary member create accounts in every club (F-348).
 - When a partner community scrubs a cross-community transaction, the record of it is now kept with its text removed, rather than deleted outright — so there is still evidence the transaction happened, and who scrubbed it (F-366).
 - Asking a partner-federation address for \"an account\" without naming one no longer returns community-wide totals; it now asks which account (F-365).
 - The summaries a partner community can read about a member now cover only their cross-community activity, not their whole exchange history inside their own community (F-346).

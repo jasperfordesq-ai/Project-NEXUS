@@ -304,9 +304,14 @@ class VereinMemberImportService
             ->where(function ($query) use ($tenantId): void {
                 $query->where('p.tenant_id', $tenantId)->orWhereNull('p.tenant_id');
             })
-            ->where(function ($query) use ($organizationId): void {
-                $query->where('ur.scope_organization_id', $organizationId)->orWhereNull('ur.scope_organization_id');
-            })
+            // F-348 / F-349: a grant that names NO organisation is NO access, not
+            // "every club in the community". assignVereinAdmin() — the only endpoint
+            // that may hand out these permissions — always names the club. A grant
+            // reaching this query without one came from somewhere else, and reading it
+            // as a wildcard let one save in the roles editor hand a plain member member
+            // import, the dues register and federation consent for every club.
+            ->whereNotNull('ur.scope_organization_id')
+            ->where('ur.scope_organization_id', $organizationId)
             ->where(function ($query): void {
                 $query->whereNull('ur.expires_at')->orWhere('ur.expires_at', '>', now());
             })

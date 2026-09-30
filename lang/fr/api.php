@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Le nom du module est requis',
     'enabled_required' => 'La valeur activée est requise',
     'role_name_required' => 'Le nom du rôle est requis',
+    'role_permission_not_grantable' => 'Ces autorisations ne peuvent pas être accordées à un rôle de communauté (:permissions)',
     'breach_type_required' => 'Le type de violation est requis',
     'policy_key_required' => 'La clé de stratégie est requise',
     'status_must_be_draft_or_published' => 'Le statut doit être brouillon ou publié',

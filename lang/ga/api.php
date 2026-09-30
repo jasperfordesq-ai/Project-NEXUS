@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Tá ainm an mhodúil ag teastáil',
     'enabled_required' => 'Tá luach cumasaithe ag teastáil',
     'role_name_required' => 'Tá ainm róil ag teastáil',
+    'role_permission_not_grantable' => 'Ní féidir na ceadanna seo a bhronnadh ar ról pobail: :permissions',
     'breach_type_required' => 'Tá cineál sáraithe ag teastáil',
     'policy_key_required' => 'Tá eochair bheartais ag teastáil',
     'status_must_be_draft_or_published' => 'Ní mór don stádas a bheith dréachtaithe nó foilsithe',

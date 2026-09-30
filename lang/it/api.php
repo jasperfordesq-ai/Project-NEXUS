@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Il nome del modulo è obbligatorio',
     'enabled_required' => 'Il valore abilitato è obbligatorio',
     'role_name_required' => 'Il nome del ruolo è obbligatorio',
+    'role_permission_not_grantable' => 'Questi permessi non possono essere concessi a un ruolo della comunità: :permissions',
     'breach_type_required' => 'Il tipo di violazione è obbligatorio',
     'policy_key_required' => 'La chiave dei criteri è obbligatoria',
     'status_must_be_draft_or_published' => 'Lo stato deve essere bozza o pubblicato',

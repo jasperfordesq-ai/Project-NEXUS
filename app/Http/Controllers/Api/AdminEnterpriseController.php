@@ -208,7 +208,21 @@ class AdminEnterpriseController extends BaseApiController
         $displayName = $data['display_name'] ?? $name;
         $description = $data['description'] ?? null;
         $level = (int)($data['level'] ?? 10);
-        $permissions = $data['permissions'] ?? [];
+        $permissions = is_array($data['permissions'] ?? null) ? $data['permissions'] : [];
+
+        // F-348 / F-349: refuse anything outside the grantable allowlist rather
+        // than resolving arbitrary names out of the platform-global permissions
+        // table. Refusing loudly also keeps F-363 honest — the administrator is
+        // told the permission was not granted instead of believing it was.
+        $rejected = $this->rejectedPermissions($permissions);
+        if ($rejected !== []) {
+            return $this->respondWithError(
+                'PERMISSION_NOT_GRANTABLE',
+                __('api.role_permission_not_grantable', ['permissions' => implode(', ', $rejected)]),
+                'permissions',
+                422
+            );
+        }
 
         try {
             DB::beginTransaction();
@@ -246,6 +260,20 @@ class AdminEnterpriseController extends BaseApiController
         $this->requireAdmin();
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
+
+        // F-348 / F-349: the allowlist is checked BEFORE anything is written, so a
+        // refused save changes nothing at all.
+        if (isset($data['permissions']) && is_array($data['permissions'])) {
+            $rejected = $this->rejectedPermissions($data['permissions']);
+            if ($rejected !== []) {
+                return $this->respondWithError(
+                    'PERMISSION_NOT_GRANTABLE',
+                    __('api.role_permission_not_grantable', ['permissions' => implode(', ', $rejected)]),
+                    'permissions',
+                    422
+                );
+            }
+        }
 
         try {
             DB::beginTransaction();

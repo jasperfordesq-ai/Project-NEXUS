@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Modulenaam is vereist',
     'enabled_required' => 'Ingeschakelde waarde is vereist',
     'role_name_required' => 'Rolnaam is vereist',
+    'role_permission_not_grantable' => 'Deze rechten kunnen niet aan een communityrol worden toegekend: :permissions',
     'breach_type_required' => 'Type inbreuk is vereist',
     'policy_key_required' => 'Beleidssleutel is vereist',
     'status_must_be_draft_or_published' => 'De status moet concept of gepubliceerd zijn',

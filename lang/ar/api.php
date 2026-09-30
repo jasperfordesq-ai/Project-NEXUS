@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'اسم الوحدة مطلوب',
     'enabled_required' => 'القيمة الممكّنة مطلوبة',
     'role_name_required' => 'اسم الدور مطلوب',
+    'role_permission_not_grantable' => 'لا يمكن منح هذه الأذونات لدور في المجتمع: :permissions',
     'breach_type_required' => 'نوع الخرق مطلوب',
     'policy_key_required' => 'مفتاح السياسة مطلوب',
     'status_must_be_draft_or_published' => 'يجب أن تكون الحالة مسودة أو منشورة',

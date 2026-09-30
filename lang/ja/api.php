@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'モジュール名は必須です',
     'enabled_required' => '有効な値は必須です',
     'role_name_required' => 'ロール名は必須です',
+    'role_permission_not_grantable' => 'これらの権限はコミュニティのロールには付与できません: :permissions',
     'breach_type_required' => '違反タイプは必須です',
     'policy_key_required' => 'ポリシーキーが必要です',
     'status_must_be_draft_or_published' => 'ステータスはドラフトまたは公開済みでなければなりません',

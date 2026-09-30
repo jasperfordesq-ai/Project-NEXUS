@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Nazwa modułu jest wymagana',
     'enabled_required' => 'Wymagana jest włączona wartość',
     'role_name_required' => 'Nazwa roli jest wymagana',
+    'role_permission_not_grantable' => 'Tych uprawnień nie można przyznać roli społeczności: :permissions',
     'breach_type_required' => 'Typ naruszenia jest wymagany',
     'policy_key_required' => 'Klucz zasad jest wymagany',
     'status_must_be_draft_or_published' => 'Status musi być wersją roboczą lub opublikowaną',

@@ -136,6 +136,7 @@ return [
     'module_name_required' => 'Modulname ist erforderlich',
     'enabled_required' => 'Der aktivierte Wert ist erforderlich',
     'role_name_required' => 'Rollenname ist erforderlich',
+    'role_permission_not_grantable' => 'Diese Berechtigungen können einer Community-Rolle nicht erteilt werden: :permissions',
     'breach_type_required' => 'Art des Verstoßes ist erforderlich',
     'policy_key_required' => 'Richtlinienschlüssel ist erforderlich',
     'status_must_be_draft_or_published' => 'Der Status muss „Entwurf“ oder „veröffentlicht“ sein',
