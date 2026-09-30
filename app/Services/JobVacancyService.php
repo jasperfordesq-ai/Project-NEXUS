@@ -19,6 +19,7 @@ use App\Services\JobSpamDetectionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Support\UserDisplayName;
 use App\Support\VideoEmbedUrl;
 
@@ -1242,6 +1243,22 @@ class JobVacancyService
         try {
             $tenantId = TenantContext::getId();
 
+            // 🔴 F-361: collect the applicants' CV paths BEFORE the transaction
+            // removes the only rows that name them. These files carry the
+            // applicant's home address, date of birth and employment history,
+            // they belong to the APPLICANTS rather than to the person deleting
+            // the vacancy, and an orphaned file is invisible to every retention
+            // and erasure process, all of which work from the database. Same
+            // order of operations as JobGdprService::eraseUserData().
+            $cvPaths = JobApplication::where('tenant_id', $tenantId)
+                ->where('vacancy_id', $id)
+                ->whereNotNull('cv_path')
+                ->pluck('cv_path')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
             // Remove all dependent records in one transaction. DB-level ON DELETE CASCADE
             // covers some of these once the FK-repair migration is applied, but several
             // job tables shipped without working foreign keys (BIGINT-vs-INT mismatch),
@@ -1260,6 +1277,21 @@ class JobVacancyService
                 JobApplication::where('tenant_id', $tenantId)->where('vacancy_id', $id)->delete();
                 $vacancy->delete();
             });
+
+            // F-361: the rows are committed gone, so remove the bytes. A single
+            // file failure is logged, never fatal — the deletion itself already
+            // succeeded and must not be reported as failed.
+            foreach ($cvPaths as $path) {
+                try {
+                    Storage::disk('local')->delete((string) $path);
+                } catch (\Throwable $e) {
+                    Log::warning('JobVacancyService::delete failed to remove an applicant CV file', [
+                        'vacancy_id' => $id,
+                        'path' => $path,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             return true;
         } catch (\Throwable $e) {
