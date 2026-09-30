@@ -175,7 +175,13 @@ class StuckStripeWebhookCheck extends Command
                     // OverdueGdprRequestCheck. The message carries a count and
                     // an age, so without this each nightly run opens a new
                     // Sentry issue instead of adding an event to this one.
-                    $scope->setFingerprint([$alertTag]);
+                    // Literal per alarm, as AlarmSentryFingerprintTest requires,
+                    // so a fingerprint can never be built from a runtime value.
+                    if ($alertTag === 'stripe_money_operation_unresolved') {
+                        $scope->setFingerprint(['stripe_money_operation_unresolved']);
+                    } else {
+                        $scope->setFingerprint(['stripe_webhook_stuck']);
+                    }
                     $scope->setContext('stripe_webhooks', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::error());
