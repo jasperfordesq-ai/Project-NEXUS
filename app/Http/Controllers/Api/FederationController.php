@@ -401,15 +401,25 @@ class FederationController extends BaseApiController
             array_push($params, $term, $term, $term, $term);
         }
         if ($timebankId) { $baseCondition .= " AND u.tenant_id = ?"; $params[] = $timebankId; }
-        foreach ($skills as $skill) { $baseCondition .= " AND u.skills LIKE ?"; $params[] = "%{$skill}%"; }
-        if (!empty($location)) { $baseCondition .= " AND u.location LIKE ?"; $params[] = "%{$location}%"; }
+        // F-447: a member who switched a field off must not be findable BY it
+        // either — FederationSearchService gates the same two filters (:135-145).
+        foreach ($skills as $skill) { $baseCondition .= " AND fus.show_skills_federated = 1 AND u.skills LIKE ?"; $params[] = "%{$skill}%"; }
+        if (!empty($location)) { $baseCondition .= " AND fus.show_location_federated = 1 AND u.location LIKE ?"; $params[] = "%{$location}%"; }
 
         // COUNT query uses same WHERE conditions without LIMIT
         $countStmt = $db->prepare("SELECT COUNT(*) " . $baseCondition);
         $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
-        $sql = "SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar, u.location, u.bio, u.skills, u.created_at, u.tenant_id, fus.service_reach, t.name as timebank_name " . $baseCondition;
+        // F-447: `show_location_federated` and `show_skills_federated` both
+        // default to OFF (FederationUserService::DEFAULT_SETTINGS) and every
+        // other federated surface honours them. Same CASE WHEN shape as
+        // FederationSearchService::searchMembers() (:84-87).
+        $sql = "SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar,
+                    CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location,
+                    u.bio,
+                    CASE WHEN fus.show_skills_federated = 1 THEN u.skills ELSE NULL END as skills,
+                    u.created_at, u.tenant_id, fus.service_reach, t.name as timebank_name " . $baseCondition;
         $sql .= " ORDER BY u.first_name ASC, u.last_name ASC LIMIT ?, ?";
         $paginatedParams = array_merge($params, [(int) (($page - 1) * $perPage), (int) $perPage]);
 
@@ -442,7 +452,11 @@ class FederationController extends BaseApiController
 
         if ($isExternal) {
             $stmt = $db->prepare("
-                SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar, u.location, u.bio, u.skills, u.created_at, u.tenant_id,
+                SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar,
+                       CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location,
+                       u.bio,
+                       CASE WHEN fus.show_skills_federated = 1 THEN u.skills ELSE NULL END as skills,
+                       u.created_at, u.tenant_id,
                        fus.service_reach, fus.messaging_enabled_federated, fus.transactions_enabled_federated, t.name as timebank_name
                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                 WHERE u.id = ? AND u.tenant_id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND u.status = 'active'
@@ -451,7 +465,11 @@ class FederationController extends BaseApiController
         } else {
             // FED-005: Also check profiles_enabled on partnership
             $stmt = $db->prepare("
-                SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar, u.location, u.bio, u.skills, u.created_at, u.tenant_id,
+                SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar,
+                       CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location,
+                       u.bio,
+                       CASE WHEN fus.show_skills_federated = 1 THEN u.skills ELSE NULL END as skills,
+                       u.created_at, u.tenant_id,
                        fus.service_reach, fus.messaging_enabled_federated, fus.transactions_enabled_federated, t.name as timebank_name
                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                 JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id))
@@ -549,7 +567,7 @@ class FederationController extends BaseApiController
 
         if ($isExternal) {
             $stmt = $db->prepare("
-                SELECT l.id, l.title, l.description, l.type, l.status, l.category_id, c.name as category_name, l.price, l.user_id, l.tenant_id, l.created_at, l.updated_at, u.first_name, u.last_name, u.avatar_url as avatar, u.location, t.name as timebank_name
+                SELECT l.id, l.title, l.description, l.type, l.status, l.category_id, c.name as category_name, l.price, l.user_id, l.tenant_id, l.created_at, l.updated_at, u.first_name, u.last_name, u.avatar_url as avatar, CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location, t.name as timebank_name
                 FROM listings l JOIN users u ON u.id = l.user_id JOIN tenants t ON t.id = l.tenant_id JOIN federation_user_settings fus ON fus.user_id = l.user_id LEFT JOIN categories c ON c.id = l.category_id
                 WHERE l.id = ? AND l.tenant_id = ? AND l.status = 'active' AND l.federated_visibility IN ('listed', 'bookable') AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1
             ");
@@ -557,7 +575,7 @@ class FederationController extends BaseApiController
         } else {
             // FED-006: Also check listings_enabled on partnership
             $stmt = $db->prepare("
-                SELECT l.id, l.title, l.description, l.type, l.status, l.category_id, c.name as category_name, l.price, l.user_id, l.tenant_id, l.created_at, l.updated_at, u.first_name, u.last_name, u.avatar_url as avatar, u.location, t.name as timebank_name
+                SELECT l.id, l.title, l.description, l.type, l.status, l.category_id, c.name as category_name, l.price, l.user_id, l.tenant_id, l.created_at, l.updated_at, u.first_name, u.last_name, u.avatar_url as avatar, CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location, t.name as timebank_name
                 FROM listings l JOIN users u ON u.id = l.user_id JOIN tenants t ON t.id = l.tenant_id JOIN federation_user_settings fus ON fus.user_id = l.user_id LEFT JOIN categories c ON c.id = l.category_id
                 JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = l.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = l.tenant_id))
                 WHERE l.id = ? AND l.status = 'active' AND l.federated_visibility IN ('listed', 'bookable') AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND fp.status = 'active' AND fp.listings_enabled = 1
@@ -668,8 +686,21 @@ class FederationController extends BaseApiController
         $sanitizedSubject = htmlspecialchars(substr($input['subject'], 0, 500), ENT_QUOTES, 'UTF-8');
         $sanitizedBody = htmlspecialchars(substr($input['body'], 0, 10000), ENT_QUOTES, 'UTF-8');
 
+        // F-448: the sender check above is deliberately skipped for an external
+        // partner because the sender really is on the remote server — but the
+        // partner-supplied `sender_id` was then written verbatim, so naming a
+        // real local member attributed the partner's text to that member in the
+        // stored row, in the federation inbox, on the read route and in the
+        // notification email the platform sends. A remote sender has no local
+        // row, so store none: `sender_name` (free text, sanitised below) is what
+        // identifies them, which is what the bell and the federation inbox
+        // already use. `messages.sender_id` is NOT NULL, so 0 is the sentinel —
+        // the same one `federation_messages.sender_tenant_id` already uses for
+        // an inbound external message.
+        $storedMessageSenderId = $isExternal ? 0 : (int) $input['sender_id'];
+
         $stmt = $db->prepare("INSERT INTO messages (tenant_id, sender_id, receiver_id, subject, body, is_federated, created_at) VALUES (?, ?, ?, ?, ?, 1, NOW())");
-        $stmt->execute([$recipient['tenant_id'], $input['sender_id'], $input['recipient_id'], $sanitizedSubject, $sanitizedBody]);
+        $stmt->execute([$recipient['tenant_id'], $storedMessageSenderId, $input['recipient_id'], $sanitizedSubject, $sanitizedBody]);
         $messageId = $db->lastInsertId();
 
         // For external inbound messages, also insert into federation_messages so
@@ -710,7 +741,7 @@ class FederationController extends BaseApiController
                      external_partner_id, external_receiver_name, external_message_id, created_at)
                     VALUES (0, ?, ?, ?, ?, ?, 'inbound', 'unread', ?, ?, ?, NOW())
                 ", [
-                    (int) $input['sender_id'],
+                    $storedMessageSenderId,
                     (int) $recipient['tenant_id'], (int) $input['recipient_id'],
                     $sanitizedSubject, $sanitizedBody,
                     $externalPartnerId,
@@ -738,7 +769,7 @@ class FederationController extends BaseApiController
         }
 
         try {
-            if (!$this->federationEmailService->sendNewMessageNotification((int) $input['recipient_id'], (int) $input['sender_id'], (int) $partnerTenantId, substr($input['body'], 0, 200), (int) $recipient['tenant_id'])) {
+            if (!$this->federationEmailService->sendNewMessageNotification((int) $input['recipient_id'], $storedMessageSenderId, (int) $partnerTenantId, substr($input['body'], 0, 200), (int) $recipient['tenant_id'])) {
                 \Illuminate\Support\Facades\Log::warning('FederationV1: email service returned false', [
                     'recipient_id' => $input['recipient_id'] ?? null,
                     'sender_id' => $input['sender_id'] ?? null,
@@ -746,7 +777,7 @@ class FederationController extends BaseApiController
                 ]);
             }
         } catch (\Exception $e) { \Illuminate\Support\Facades\Log::warning("FederationV1: email failed: " . $e->getMessage()); }
-        try { $this->federationRealtimeService->broadcastNewMessage((int) $input['sender_id'], (int) $partnerTenantId, (int) $input['recipient_id'], (int) $recipient['tenant_id'], ['message_id' => (int) $messageId, 'sender_name' => $senderName, 'sender_tenant_name' => $senderTenantName, 'subject' => $sanitizedSubject, 'body' => $sanitizedBody]); } catch (\Exception $e) { \Log::warning('[Federation] broadcastNewMessage failed', ['error' => $e->getMessage()]); }
+        try { $this->federationRealtimeService->broadcastNewMessage($storedMessageSenderId, (int) $partnerTenantId, (int) $input['recipient_id'], (int) $recipient['tenant_id'], ['message_id' => (int) $messageId, 'sender_name' => $senderName, 'sender_tenant_name' => $senderTenantName, 'subject' => $sanitizedSubject, 'body' => $sanitizedBody]); } catch (\Exception $e) { \Log::warning('[Federation] broadcastNewMessage failed', ['error' => $e->getMessage()]); }
         try {
             // Render the federation-message bell under the recipient's
             // preferred_language — the federation API caller is an external
@@ -876,7 +907,21 @@ class FederationController extends BaseApiController
             ]);
         $clientKey = hash('sha256', $rawKey);
         $nonce = 'tx:' . $partnerTenantId . ':' . $clientKey; // 'tx:' + N + ':' + 64 hex = always < 128
-        $partnerKeyId = $isExternal ? (int) ($auth['platform_id'] ?? 0) : 0;
+        // F-450: the dedup namespace must belong to the ACTUAL partner.
+        // `federation_api_keys.platform_id` is a VARCHAR partner name, so the
+        // old `(int) $auth['platform_id']` was 0 for every partner and
+        // collapsed all of them into one namespace under the unique key
+        // uk_fwn_partner_nonce (partner_id, nonce) — the first caller to claim
+        // a partner-chosen idempotency key owned it for ever, and nothing
+        // prunes the table. The authenticated key's own row id is the
+        // distinguishing integer.
+        $partnerKeyId = (int) ($auth['id'] ?? 0);
+        if ($partnerKeyId <= 0) {
+            // Fail closed, as the catch below does: without a real namespace
+            // this partner would share one with every other partner.
+            \Illuminate\Support\Facades\Log::error('FederationV1::createTransaction could not resolve the partner key id for idempotency (fail-closed)');
+            return $this->fedError(503, 'Idempotency service unavailable; please retry', 'IDEMPOTENCY_UNAVAILABLE');
+        }
         try {
             $inserted = DB::affectingStatement(
                 "INSERT IGNORE INTO federation_webhook_nonces (partner_id, nonce, seen_at) VALUES (?, ?, NOW())",
@@ -943,8 +988,28 @@ class FederationController extends BaseApiController
             $validatedRecipientId = (int) $recipient['id'];
             $validatedRecipientTenantId = (int) $recipient['tenant_id'];
 
+            // F-440: an external partner's credit has no local debit behind it,
+            // so the community's published monthly ceiling is the only thing
+            // bounding how much can be created. Checked inside the open
+            // transaction so the agreement row is locked.
+            if ($isExternal) {
+                $ceilingRefusal = $this->inboundCreditCeilingRefusal($validatedRecipientTenantId, (float) $amount);
+                if ($ceilingRefusal !== null) {
+                    DB::rollBack();
+                    return $ceilingRefusal;
+                }
+            }
+
+            // F-440 (second facet): `sender_id` used to be written verbatim from
+            // the payload. An EXTERNAL partner's sender lives on the remote
+            // server and has no local row, so naming a real local member made
+            // that member's wallet summary report spending they never did. Store
+            // no local sender for an external transfer — which is also the shape
+            // FederationCreditCommonsController records a relayed credit in.
+            $storedSenderId = $isExternal ? null : $senderId;
+
             $stmt = $db->prepare("INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, status, is_federated, sender_tenant_id, receiver_tenant_id, created_at) VALUES (?, ?, ?, ?, ?, 'pending', 1, ?, ?, NOW())");
-            $stmt->execute([$validatedRecipientTenantId, $senderId, $validatedRecipientId, $amount, $input['description'], $partnerTenantId, $validatedRecipientTenantId]);
+            $stmt->execute([$validatedRecipientTenantId, $storedSenderId, $validatedRecipientId, $amount, $input['description'], $partnerTenantId, $validatedRecipientTenantId]);
             $transactionId = $db->lastInsertId();
 
             $status = 'pending';
@@ -1065,6 +1130,7 @@ class FederationController extends BaseApiController
         }
 
         $revieweeTenantId = (int) $reviewee['tenant_id'];
+
         $safeguardingDecision = $isExternal
             ? app(SafeguardingInteractionPolicy::class)->evaluateExternalContact(
                 (int) $input['reviewee_id'],
@@ -1097,24 +1163,73 @@ class FederationController extends BaseApiController
             );
         }
 
+        // F-441: bring this path up to the platform's own local standard.
+        // `ReviewService::create()` (:568-604) refuses a review that is not
+        // attached to an exchange BOTH named parties took part in — its own
+        // comment names review-bombing as the reason — and refuses a second
+        // review of the same exchange. The v1 partner path had neither, yet
+        // wrote rows already 'approved' with show_cross_tenant = 1, which
+        // `ReviewService::getStats()` counts into the member's public average.
+        $transactionId = isset($input['transaction_id']) ? (int) $input['transaction_id'] : 0;
+        if ($transactionId <= 0) {
+            return $this->fedError(400, 'A review must name the exchange it is about', 'TRANSACTION_REQUIRED');
+        }
+
+        // Tenant-scoped, so an exchange in another community cannot be borrowed.
+        $reviewedExchange = DB::selectOne(
+            "SELECT sender_id, receiver_id FROM transactions WHERE id = ? AND tenant_id = ?",
+            [$transactionId, $revieweeTenantId]
+        );
+        $parties = $reviewedExchange
+            ? [(int) $reviewedExchange->sender_id, (int) $reviewedExchange->receiver_id]
+            : [];
+        if (!$reviewedExchange
+            || !in_array((int) $input['reviewer_id'], $parties, true)
+            || !in_array((int) $reviewee['id'], $parties, true)
+        ) {
+            return $this->fedError(
+                403,
+                'A review may only be written by the other party of that exchange',
+                'NOT_TRANSACTION_PARTY'
+            );
+        }
+
+        $duplicateReview = DB::selectOne(
+            "SELECT id FROM reviews WHERE reviewer_id = ? AND transaction_id = ? LIMIT 1",
+            [(int) $input['reviewer_id'], $transactionId]
+        );
+        if ($duplicateReview) {
+            return $this->fedError(409, 'This exchange has already been reviewed', 'DUPLICATE_REVIEW');
+        }
+
         // Sanitize comment
         $comment = isset($input['comment']) ? htmlspecialchars(substr($input['comment'], 0, 5000), ENT_QUOTES, 'UTF-8') : null;
-        $transactionId = isset($input['transaction_id']) ? (int) $input['transaction_id'] : null;
 
         $stmt = $db->prepare("
             INSERT INTO reviews (tenant_id, reviewer_id, reviewer_tenant_id, receiver_id, receiver_tenant_id, rating, comment, review_type, status, show_cross_tenant, transaction_id, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, 'federated', 'approved', 1, ?, NOW())
         ");
-        $stmt->execute([
-            $reviewee['tenant_id'],
-            (int) $input['reviewer_id'],
-            $partnerTenantId,
-            (int) $input['reviewee_id'],
-            (int) $reviewee['tenant_id'],
-            $rating,
-            $comment,
-            $transactionId,
-        ]);
+        try {
+            $stmt->execute([
+                $reviewee['tenant_id'],
+                (int) $input['reviewer_id'],
+                $partnerTenantId,
+                (int) $input['reviewee_id'],
+                (int) $reviewee['tenant_id'],
+                $rating,
+                $comment,
+                $transactionId,
+            ]);
+        } catch (\PDOException $e) {
+            // F-441: the unique index (reviewer_id, transaction_id) is the
+            // backstop for a concurrent duplicate that got past the check
+            // above. Surface the same answer, as ReviewService::create() does.
+            if ((string) $e->getCode() === '23000') {
+                return $this->fedError(409, 'This exchange has already been reviewed', 'DUPLICATE_REVIEW');
+            }
+
+            throw $e;
+        }
         $reviewId = $db->lastInsertId();
 
         $this->federationAuditService->log('api_review_created', $partnerTenantId, (int) $reviewee['tenant_id'], null, [
@@ -1244,6 +1359,7 @@ class FederationController extends BaseApiController
         if ($auth instanceof JsonResponse) return $auth;
 
         $partnerTenantId = $auth['tenant_id'];
+        $isExternal = !empty($auth['platform_id']);
         $db = DB::getPdo();
 
         $since = request()->query('since');
@@ -1251,7 +1367,58 @@ class FederationController extends BaseApiController
         $page = max(1, (int) request()->query('page', 1));
         $perPage = min(100, max(1, (int) request()->query('per_page', 20)));
 
-        $baseCondition = "FROM messages m
+        if ($isExternal) {
+            // F-446: for an EXTERNAL key `$partnerTenantId` is the LOCAL
+            // community, so filtering on it matched every federated message in
+            // the community — one partner read another partner's private
+            // correspondence, and read bodies the recipient's own member API
+            // will not return to them (MessageService filters is_federated = 0
+            // on every conversation read). This was the only v1 read with no
+            // `$isExternal` branch at all; its siblings members()/listings()
+            // each require an active partnership with the matching switch.
+            //
+            // An external partner is a party to exactly the messages it
+            // delivered, which are recorded against its own partner record in
+            // `federation_messages`. Resolve that record the same way
+            // sendMessage() does — by the authenticated key's platform_id —
+            // and fail closed when there is none: the "most recently synced
+            // partner" fallback sendMessage() uses for a WRITE must never be
+            // used for a READ, because it would hand one partner another
+            // partner's messages.
+            $externalPartnerId = null;
+            $platformId = $auth['platform_id'] ?? null;
+            if ($platformId) {
+                $epRow = DB::selectOne(
+                    "SELECT id FROM federation_external_partners WHERE tenant_id = ? AND status = 'active' AND name = ? LIMIT 1",
+                    [(int) $partnerTenantId, $platformId]
+                );
+                if ($epRow) {
+                    $externalPartnerId = (int) $epRow->id;
+                }
+            }
+
+            if ($externalPartnerId === null) {
+                return $this->fedPaginated([], 0, $page, $perPage);
+            }
+
+            // The sender is on the remote server and has no local row (F-448),
+            // so the sender side is joined leniently; the participation filter,
+            // not the sender's identity, is what scopes this read.
+            $baseCondition = "FROM messages m
+                JOIN federation_messages fm ON fm.external_message_id = m.id AND fm.external_partner_id = ?
+                LEFT JOIN users su ON su.id = m.sender_id
+                JOIN users ru ON ru.id = m.receiver_id
+                LEFT JOIN federation_user_settings rfus ON rfus.user_id = m.receiver_id
+                LEFT JOIN tenants st ON st.id = su.tenant_id
+                LEFT JOIN tenants rt ON rt.id = ru.tenant_id
+                WHERE m.is_federated = 1
+                  AND ru.tenant_id = ?
+                  AND rfus.federation_optin = 1";
+            $params = [$externalPartnerId, $partnerTenantId];
+            // `direction` is not applied for an external partner: every row it
+            // may read is one it delivered into this community.
+        } else {
+            $baseCondition = "FROM messages m
                 JOIN users su ON su.id = m.sender_id
                 JOIN users ru ON ru.id = m.receiver_id
                 JOIN federation_user_settings sfus ON sfus.user_id = m.sender_id
@@ -1261,19 +1428,21 @@ class FederationController extends BaseApiController
                 WHERE m.is_federated = 1
                   AND sfus.federation_optin = 1
                   AND rfus.federation_optin = 1";
-        $params = [];
+            $params = [];
 
-        // Filter to messages involving the partner's tenant
-        if ($direction === 'inbound') {
-            $baseCondition .= " AND ru.tenant_id = ?";
-            $params[] = $partnerTenantId;
-        } elseif ($direction === 'outbound') {
-            $baseCondition .= " AND su.tenant_id = ?";
-            $params[] = $partnerTenantId;
-        } else {
-            $baseCondition .= " AND (su.tenant_id = ? OR ru.tenant_id = ?)";
-            $params[] = $partnerTenantId;
-            $params[] = $partnerTenantId;
+            // An internal partner is another community: one of its own members
+            // being a party IS the participation check.
+            if ($direction === 'inbound') {
+                $baseCondition .= " AND ru.tenant_id = ?";
+                $params[] = $partnerTenantId;
+            } elseif ($direction === 'outbound') {
+                $baseCondition .= " AND su.tenant_id = ?";
+                $params[] = $partnerTenantId;
+            } else {
+                $baseCondition .= " AND (su.tenant_id = ? OR ru.tenant_id = ?)";
+                $params[] = $partnerTenantId;
+                $params[] = $partnerTenantId;
+            }
         }
 
         if (!empty($since)) {
@@ -1293,7 +1462,11 @@ class FederationController extends BaseApiController
                        ru.first_name as receiver_first_name, ru.last_name as receiver_last_name,
  ru.profile_type as receiver_profile_type,
  ru.organization_name as receiver_organization_name, ru.tenant_id as receiver_tenant_id,
-                       st.name as sender_tenant_name, rt.name as receiver_tenant_name " . $baseCondition;
+                       st.name as sender_tenant_name, rt.name as receiver_tenant_name"
+            // F-448: an external partner's sender has no local row, so the name
+            // it supplied on delivery is the one to show back to it.
+            . ($isExternal ? ", fm.external_receiver_name as external_sender_name" : '')
+            . " " . $baseCondition;
         $sql .= " ORDER BY m.created_at DESC LIMIT ?, ?";
         $paginatedParams = array_merge($params, [(int) (($page - 1) * $perPage), (int) $perPage]);
 
@@ -1307,7 +1480,9 @@ class FederationController extends BaseApiController
             'body' => $m['body'],
             'sender' => [
                 'id' => (int) $m['sender_id'],
-                'name' => UserDisplayName::resolvePrefixed($m, 'sender_'),
+                'name' => !empty($m['external_sender_name'])
+                    ? (string) $m['external_sender_name']
+                    : UserDisplayName::resolvePrefixed($m, 'sender_'),
                 'tenant_id' => (int) $m['sender_tenant_id'],
                 'tenant_name' => $m['sender_tenant_name'] ?? null,
             ],
@@ -1344,7 +1519,7 @@ class FederationController extends BaseApiController
  ru.organization_name as receiver_organization_name,
                    st.name as sender_tenant_name, rt.name as receiver_tenant_name
             FROM transactions t
-            JOIN users su ON su.id = t.sender_id
+            LEFT JOIN users su ON su.id = t.sender_id
             JOIN users ru ON ru.id = t.receiver_id
             LEFT JOIN tenants st ON st.id = t.sender_tenant_id
             LEFT JOIN tenants rt ON rt.id = t.receiver_tenant_id
@@ -1450,6 +1625,96 @@ class FederationController extends BaseApiController
     private function mapActivityType(string $rawType): string
     {
         return ['message' => 'message_received', 'transaction' => 'transaction_received', 'new_partner' => 'partnership_approved'][$rawType] ?? 'member_joined';
+    }
+
+    /**
+     * F-440 — fallback monthly ceiling, in hours, on externally-originated
+     * credit arriving at this community with no local debit.
+     *
+     * Mirrors the constant of the same name in
+     * `FederationCreditCommonsController` and
+     * `FederationExternalWebhookController`, introduced by F-345/F-407.
+     * `federation_credit_agreements.max_monthly_credits` is nullable, and "no
+     * number recorded" must not mean "unlimited": unbounded inbound credit is
+     * counterfeit currency inside the community. An agreement that states a
+     * limit always wins over this value.
+     */
+    private const DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS = 200.0;
+
+    /**
+     * F-440 — refuse an inbound external credit that would take this community
+     * past the monthly total its credit agreement publishes.
+     *
+     * Before this, `createTransaction()` checked only that an active agreement
+     * EXISTED and never read `max_monthly_credits`, so ten calls against a
+     * published 10-hour agreement created 1,000 hours out of nothing.
+     *
+     * Copied from `FederationCreditCommonsController::inboundCreditCeilingRefusal()`,
+     * which is the sound model. 🔴 It deliberately does NOT copy
+     * `FederationExternalWebhookController`'s version, whose month-to-date sum
+     * filters on `status = 'completed'` — that is the defect recorded as F-428,
+     * where a partner refunds its own budget by cancelling its own rows.
+     *
+     * Scope note: the ceiling is per community, not per partner, because the
+     * agreement row is keyed on the community. Every externally-originated
+     * credit counts against the one budget, so a second partner does not double
+     * it. It counts rows in `transactions` with no local payer — the same shape
+     * Credit Commons writes — so a community running both protocols has one
+     * shared budget rather than one each.
+     *
+     * 🔴 Call with a database transaction already open. The agreement row is
+     * locked so two concurrent inbound credits cannot both read the same
+     * "already credited" total and both pass it.
+     */
+    private function inboundCreditCeilingRefusal(int $tenantId, float $amountInHours): ?JsonResponse
+    {
+        $agreement = DB::table('federation_credit_agreements')
+            ->where('to_tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first(['id', 'max_monthly_credits']);
+
+        if (!$agreement) {
+            \Illuminate\Support\Facades\Log::warning('FederationV1: inbound credit refused — no active credit agreement', [
+                'tenant_id' => $tenantId,
+                'amount_hours' => $amountInHours,
+            ]);
+
+            return $this->fedError(403, 'No active credit agreement between tenants', 'NO_CREDIT_AGREEMENT');
+        }
+
+        $ceiling = $agreement->max_monthly_credits === null
+            ? self::DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS
+            : (float) $agreement->max_monthly_credits;
+
+        // Every federated credit this month that carried no local debit — the
+        // exact shape an external v1 transfer writes. No status filter: a
+        // cancelled row must not hand the partner its budget back (F-428).
+        $alreadyCredited = (float) DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('is_federated', 1)
+            ->whereNull('sender_id')
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->sum('amount');
+
+        if ($alreadyCredited + $amountInHours > $ceiling) {
+            \Illuminate\Support\Facades\Log::warning('FederationV1: inbound credit refused — monthly ceiling reached', [
+                'tenant_id' => $tenantId,
+                'agreement_id' => (int) $agreement->id,
+                'ceiling_hours' => $ceiling,
+                'already_credited_hours' => $alreadyCredited,
+                'requested_hours' => $amountInHours,
+            ]);
+
+            return $this->fedError(
+                403,
+                'Inbound credit would exceed this community\'s monthly credit ceiling',
+                'CREDIT_CEILING_EXCEEDED'
+            );
+        }
+
+        return null;
     }
 
     /**
