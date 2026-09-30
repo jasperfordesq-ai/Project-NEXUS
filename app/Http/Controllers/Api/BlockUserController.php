@@ -120,7 +120,11 @@ class BlockUserController extends BaseApiController
 
         return $this->respondWithData([
             'is_blocked' => BlockUserService::isBlocked($userId, $id),
-            'is_blocked_by' => BlockUserService::isBlocked($id, $userId),
+            // F-388: deprecated and always false. It told a blocked member
+            // exactly who had blocked them, while every interaction path
+            // refuses a blocked pair direction-neutrally so that cannot be
+            // learned. Kept in the shape only because existing clients read it.
+            'is_blocked_by' => false,
         ]);
     }
 }
