@@ -25,7 +25,7 @@ use RuntimeException;
  *   GET  /v2/caring-community/surveys/{id}         → getSurvey()
  *   POST /v2/caring-community/surveys/{id}/respond → submitSurvey()
  *
- * Admin-facing endpoints (admin or municipality_announcer):
+ * Admin-facing endpoints (community administrators only — F-347):
  *   GET  /v2/admin/caring-community/surveys           → adminListSurveys()
  *   POST /v2/admin/caring-community/surveys           → adminCreateSurvey()
  *   GET  /v2/admin/caring-community/surveys/{id}      → adminGetSurvey()
@@ -51,34 +51,37 @@ class MunicipalSurveyController extends BaseApiController
         return null;
     }
 
-    // ─── Auth helper — mirrors EmergencyAlertController::hasAnnouncerAccess ──
+    // ─── Auth helper ─────────────────────────────────────────────────────────
 
-    private function hasAnnouncerAccess(int $userId, int $tenantId): bool
+    /**
+     * Survey administration requires a community administrator.
+     *
+     * F-347: this used to accept the bare `municipality_announcer` ROLE NAME as
+     * well, and the survey admin routes strip `EnsureIsAdmin`
+     * (routes/api.php:4223-4234), so that name was the only check there was. The
+     * grant behind it is a feed capability and nothing more: the migration that
+     * creates the role attaches only feed.post / feed.pin / feed.badge_official /
+     * members.view, `AdminFeedController::grantAnnouncer()` is the only endpoint
+     * that writes it, and the admin toggle that calls it reads "Posts by this user
+     * will display an Official badge and be pinned to the top of the feed". It
+     * nevertheless conferred survey authoring and `adminExportCsv()`, which
+     * returns every response with the respondent's user id and free-text answers.
+     *
+     * Nothing anywhere grants a "may run municipal surveys" capability, so no
+     * legitimate holder loses one here.
+     */
+    private function hasSurveyAdminAccess(int $userId, int $tenantId): bool
     {
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
             ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
 
-        if ($user) {
-            $role = (string) ($user->role ?? '');
-            if (
-                in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-                || (bool) ($user->is_admin ?? false)
-                || (bool) ($user->is_super_admin ?? false)
-                || (bool) ($user->is_tenant_super_admin ?? false)
-                || (bool) ($user->is_god ?? false)
-            ) {
-                return true;
-            }
+        if (! $user) {
+            return false;
         }
 
-        return (bool) DB::table('user_roles')
-            ->join('roles', 'roles.id', '=', 'user_roles.role_id')
-            ->where('user_roles.user_id', $userId)
-            ->where('user_roles.tenant_id', $tenantId)
-            ->where('roles.name', 'municipality_announcer')
-            ->exists();
+        return \App\Support\Authorization\AdminTier::allows($user);
     }
 
     // =========================================================================
@@ -193,7 +196,7 @@ class MunicipalSurveyController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -218,7 +221,7 @@ class MunicipalSurveyController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -259,7 +262,7 @@ class MunicipalSurveyController extends BaseApiController
             return $err;
         }
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -311,7 +314,7 @@ class MunicipalSurveyController extends BaseApiController
             return $err;
         }
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -375,7 +378,7 @@ class MunicipalSurveyController extends BaseApiController
             return $err;
         }
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -400,7 +403,7 @@ class MunicipalSurveyController extends BaseApiController
             return $err;
         }
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
@@ -430,7 +433,7 @@ class MunicipalSurveyController extends BaseApiController
             return $this->respondWithError('SERVICE_UNAVAILABLE', __('api.service_unavailable'), null, 503);
         }
 
-        if (! $this->hasAnnouncerAccess($userId, $tenantId)) {
+        if (! $this->hasSurveyAdminAccess($userId, $tenantId)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
         }
 
