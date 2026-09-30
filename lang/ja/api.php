@@ -2746,6 +2746,7 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'caring_pilot_launch_failed' => 'パイロットを開始できませんでした。',
     'configuration_key_unknown' => '不明な設定キーです: :key',
     'email_suppression_not_found' => '配信停止エントリが見つかりません。',
+    'email_suppression_records_objection' => 'このアドレスは、本人がメールの受信を望まないと申し出たためブロックされています。解除する前に、その意思をあえて無視することを確認してください。',
     'federation_peer_not_found' => 'フェデレーションピアが見つかりません。',
     'federation_peers_unavailable' => 'フェデレーションピアは現在利用できません。',
     'fee_cents_non_negative' => 'fee_cents は 0 以上である必要があります。',

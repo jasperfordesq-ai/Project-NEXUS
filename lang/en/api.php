@@ -3249,6 +3249,7 @@ return [
     'caring_pilot_launch_failed' => 'The pilot could not be launched.',
     'configuration_key_unknown' => 'Unknown configuration key: :key',
     'email_suppression_not_found' => 'Suppression entry not found.',
+    'email_suppression_records_objection' => 'This address is blocked because the person asked not to be emailed. Confirm that you are deliberately overriding their request before removing it.',
     'federation_peer_not_found' => 'Federation peer not found.',
     'federation_peers_unavailable' => 'Federation peers are currently unavailable.',
     'fee_cents_non_negative' => 'fee_cents must be 0 or greater.',

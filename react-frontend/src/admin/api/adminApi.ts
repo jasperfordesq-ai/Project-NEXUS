@@ -2614,8 +2614,16 @@ export const adminSuper = {
 
   // God-only, irreversible. Enqueues a full purge of the tenant and all its data.
   // The tenant must already be deactivated.
-  purgeTenant: (id: number) =>
-    api.post<{ purge_started: boolean; tenant_id: number }>(`/v2/admin/super/tenants/${id}/purge`, {}),
+  //
+  // F-353: the slug the admin typed back is sent to the server. The modal has
+  // always compared it locally, but a local comparison is not a confirmation —
+  // anything that can call this endpoint could skip it. The server now requires
+  // it and answers 422 without it.
+  purgeTenant: (id: number, confirmSlug: string) =>
+    api.post<{ purge_started: boolean; tenant_id: number }>(
+      `/v2/admin/super/tenants/${id}/purge`,
+      { confirm_slug: confirmSlug },
+    ),
 
   reactivateTenant: (id: number) =>
     api.post<{ success: boolean }>(`/v2/admin/super/tenants/${id}/reactivate`),

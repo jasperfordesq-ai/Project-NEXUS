@@ -837,6 +837,17 @@ class AdminSuperController extends BaseApiController
      * God-only, irreversible. Enqueues a background purge of the tenant and ALL
      * of its data. The tenant must already be deactivated. Returns 202 — the work
      * runs on the queue because a full purge can take minutes.
+     *
+     * 🔴 F-353, three changes, all about the RECORD this leaves:
+     *   1. The caller must type the community's slug back in `confirm_slug`.
+     *      The CLI twin (`php artisan tenant:purge`) has always demanded this;
+     *      the API relied on the client-side dialog alone, so a direct API call
+     *      needed no confirmation at all.
+     *   2. An audit row is written HERE, at the point the purge is ordered, so
+     *      the record survives even if the queued job never runs.
+     *   3. The actor is carried onto the job, because the completion row is
+     *      written by a queue worker that has no session and no super-panel
+     *      access — it used to read actor_user_id = 0, actor_name = 'System'.
      */
     public function tenantPurge(int $id): JsonResponse
     {
@@ -863,7 +874,41 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_purge_has_children'), null, 422);
         }
 
-        \App\Jobs\PurgeTenantJob::dispatch($id);
+        // F-353 (1): server-side typed-name confirmation, matching the CLI twin.
+        $input = $this->getAllInput();
+        $slug = (string) ($tenant->slug ?: ('tenant-' . $id));
+        $typed = trim((string) ($input['confirm_slug'] ?? $input['confirmation'] ?? ''));
+        if ($typed === '' || $typed !== $slug) {
+            return $this->respondWithError(
+                ApiErrorCodes::VALIDATION_ERROR,
+                __('api.super_purge_confirm_slug_mismatch'),
+                'confirm_slug',
+                422
+            );
+        }
+
+        // F-353 (2): record the ORDER now, in-request, where the acting admin is
+        // resolvable. If the queue never runs, this row is still the answer to
+        // "who ordered this?".
+        SuperAdminAuditService::log(
+            'tenant_purged',
+            'tenant',
+            $id,
+            (string) $tenant->name,
+            ['is_active' => $tenant->is_active, 'slug' => $slug],
+            ['stage' => 'ordered'],
+            "Permanent purge ORDERED for tenant '{$tenant->name}' ({$slug}) — queued for background execution"
+        );
+
+        // F-353 (3): carry the actor onto the job so the completion row written
+        // by the worker names them too.
+        \App\Jobs\PurgeTenantJob::dispatch(
+            $id,
+            $userId,
+            (int) $this->getTenantId(),
+            request()->ip(),
+            request()->userAgent(),
+        );
 
         return $this->respondWithData([
             'purge_started' => true,

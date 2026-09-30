@@ -52,7 +52,12 @@ class TenantPurgeService
      * Purge a tenant. With ['dry_run' => true] nothing is deleted and the returned
      * report contains the row counts / external resources that WOULD be removed.
      *
-     * @param  array{dry_run?: bool}  $opts
+     * F-353: $opts['actor'] carries the admin who ORDERED the purge. The audit
+     * row is written here, where the work happens — which in production is a
+     * queue worker with no HTTP session and no super-panel access — so without
+     * it the row names nobody.
+     *
+     * @param  array{dry_run?: bool, actor?: array{user_id?: int|null, tenant_id?: int|null, ip_address?: string|null, user_agent?: string|null}|null}  $opts
      * @return array{
      *     success: bool, error?: string, dry_run: bool,
      *     tenant?: array{id:int,name:string,slug:string},
@@ -65,6 +70,7 @@ class TenantPurgeService
     public static function purge(int $tenantId, array $opts = []): array
     {
         $dryRun = (bool) ($opts['dry_run'] ?? false);
+        $actor  = is_array($opts['actor'] ?? null) ? $opts['actor'] : null;
 
         $report = [
             'success'          => false,
@@ -206,8 +212,9 @@ class TenantPurgeService
             $tenantId,
             (string) $tenant->name,
             ['is_active' => $tenant->is_active, 'slug' => $slug],
-            ['rows_deleted' => $totalRows, 'members_deleted' => $membersDeleted, 'tables' => count($report['tables'])],
-            "Permanently purged tenant '{$tenant->name}' ({$slug}) — {$totalRows} rows across " . count($report['tables']) . ' tables, ' . $membersDeleted . ' members deleted'
+            ['stage' => 'completed', 'rows_deleted' => $totalRows, 'members_deleted' => $membersDeleted, 'tables' => count($report['tables'])],
+            "Permanently purged tenant '{$tenant->name}' ({$slug}) — {$totalRows} rows across " . count($report['tables']) . ' tables, ' . $membersDeleted . ' members deleted',
+            $actor
         );
         if (!$audited) {
             $report['warnings'][] = 'Audit entry for this purge was not recorded faithfully — check the application log.';

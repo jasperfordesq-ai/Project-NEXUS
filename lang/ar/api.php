@@ -2746,6 +2746,7 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'caring_pilot_launch_failed' => 'تعذّر إطلاق البرنامج التجريبي.',
     'configuration_key_unknown' => 'مفتاح إعداد غير معروف: :key',
     'email_suppression_not_found' => 'لم يتم العثور على إدخال منع الإرسال.',
+    'email_suppression_records_objection' => 'هذا العنوان محظور لأن صاحبه طلب عدم إرسال رسائل إليه. أكِّد أنك تتجاوز طلبه عن قصد قبل إزالة الحظر.',
     'federation_peer_not_found' => 'لم يتم العثور على نظير الاتحاد.',
     'federation_peers_unavailable' => 'نظراء الاتحاد غير متاحين حاليًا.',
     'fee_cents_non_negative' => 'يجب أن تكون قيمة fee_cents صفرًا أو أكبر.',

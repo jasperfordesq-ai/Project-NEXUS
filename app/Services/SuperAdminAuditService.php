@@ -105,6 +105,15 @@ class SuperAdminAuditService
      * 🔴 FALSE does not imply "nothing was written". Callers performing
      * destructive work should surface a warning on FALSE rather than assume
      * either outcome; see TenantProvisioning\TenantPurgeService.
+     *
+     * 🔴 F-353: $actorOverride exists because this class normally resolves the
+     * acting admin from SuperPanelAccess / $_SESSION, and a QUEUE WORKER has
+     * neither — so work dispatched to the queue was recorded as
+     * actor_user_id = 0, actor_name = 'System'. A caller that runs outside the
+     * ordering request MUST carry the actor forward on its job payload and
+     * pass it here.
+     *
+     * @param array{user_id?: int|null, tenant_id?: int|null, ip_address?: string|null, user_agent?: string|null}|null $actorOverride
      */
     public static function log(
         string $actionType,
@@ -113,7 +122,8 @@ class SuperAdminAuditService
         ?string $targetName = null,
         ?array $oldValues = null,
         ?array $newValues = null,
-        ?string $description = null
+        ?string $description = null,
+        ?array $actorOverride = null
     ): bool {
         try {
             // Validate BEFORE the insert. Checking the insert's own outcome cannot
@@ -130,9 +140,17 @@ class SuperAdminAuditService
                 ]);
             }
 
-            $access = SuperPanelAccess::getAccess();
-            $actorUserId = $access['user_id'] ?? ($_SESSION['user_id'] ?? 0);
-            $actorTenantId = $access['tenant_id'] ?? ($_SESSION['tenant_id'] ?? 0);
+            // An explicitly supplied actor wins: it is the only source that can
+            // be right when this runs on the queue (F-353).
+            $explicitUserId = isset($actorOverride['user_id']) ? (int) $actorOverride['user_id'] : 0;
+            if ($explicitUserId > 0) {
+                $actorUserId = $explicitUserId;
+                $actorTenantId = (int) ($actorOverride['tenant_id'] ?? 0);
+            } else {
+                $access = SuperPanelAccess::getAccess();
+                $actorUserId = $access['user_id'] ?? ($_SESSION['user_id'] ?? 0);
+                $actorTenantId = $access['tenant_id'] ?? ($_SESSION['tenant_id'] ?? 0);
+            }
 
             // Resolve actor name and email
             $actor = null;
@@ -160,8 +178,11 @@ class SuperAdminAuditService
                 'old_values'     => $oldValues ? json_encode($oldValues) : null,
                 'new_values'     => $newValues ? json_encode($newValues) : null,
                 'description'    => $description,
-                'ip_address'     => request()->ip(),
-                'user_agent'     => request()->userAgent(),
+                // A queue worker's request() is a synthetic console request with
+                // no real client address, so prefer the one captured when the
+                // action was ordered (F-353).
+                'ip_address'     => $actorOverride['ip_address'] ?? request()->ip(),
+                'user_agent'     => $actorOverride['user_agent'] ?? request()->userAgent(),
                 'created_at'     => now(),
             ]);
 

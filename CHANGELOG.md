@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Permanently purging a community is now recorded twice — once when it is ordered and once when it completes — and both entries name the administrator who ordered it. The record previously said the action was taken by \"System\". The administrator must also type the community's short name to confirm, which the server now checks rather than trusting the screen (F-353).
 - Deleting a job advert now also deletes the CVs applicants uploaded to it. They were previously left on the server with nothing pointing at them, so no later deletion or data-erasure request could find them (F-361).
 - A maintenance command that deletes accounts with dead email addresses can no longer delete them during a name-lookup outage — it now tells the difference between \"this address does not exist\" and \"the lookup service is not answering\", and leaves the second alone. It also now protects the platform's most senior administrator accounts, which it previously missed (F-375).
 - Removing the block that stops the platform emailing someone is now recorded, with who did it. If the block is there because the person asked not to be emailed, removing it is refused unless the administrator explicitly confirms they are overriding that request (F-374).

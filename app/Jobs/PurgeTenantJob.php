@@ -26,6 +26,13 @@ use Throwable;
  * enforced inside TenantPurgeService, so they hold even if this job is replayed.
  * $tries = 1: a purge must never auto-retry — it is idempotent but re-running on
  * a transient failure would double-log and re-hit external APIs needlessly.
+ *
+ * 🔴 F-353: the job carries the ACTOR as well as the tenant id. The audit row
+ * for a purge is written where the work happens — here, in a worker process
+ * that has no HTTP session and no resolved super-panel access — so without
+ * this payload the most destructive action the platform offers was recorded
+ * against actor_user_id = 0, actor_name = 'System'. Production runs
+ * QUEUE_CONNECTION=redis, so that was the only branch that ever ran live.
  */
 class PurgeTenantJob implements ShouldQueue
 {
@@ -39,12 +46,24 @@ class PurgeTenantJob implements ShouldQueue
 
     public function __construct(
         public readonly int $tenantId,
+        public readonly ?int $actorUserId = null,
+        public readonly ?int $actorTenantId = null,
+        public readonly ?string $actorIpAddress = null,
+        public readonly ?string $actorUserAgent = null,
     ) {}
 
     public function handle(): void
     {
         try {
-            $report = TenantPurgeService::purge($this->tenantId, ['dry_run' => false]);
+            $report = TenantPurgeService::purge($this->tenantId, [
+                'dry_run' => false,
+                'actor'   => [
+                    'user_id'    => $this->actorUserId,
+                    'tenant_id'  => $this->actorTenantId,
+                    'ip_address' => $this->actorIpAddress,
+                    'user_agent' => $this->actorUserAgent,
+                ],
+            ]);
 
             if (!($report['success'] ?? false)) {
                 Log::error('PurgeTenantJob: purge refused', [
@@ -55,9 +74,10 @@ class PurgeTenantJob implements ShouldQueue
             }
 
             Log::warning('PurgeTenantJob: tenant purged', [
-                'tenant_id' => $this->tenantId,
-                'totals'    => $report['totals'] ?? null,
-                'warnings'  => $report['warnings'] ?? [],
+                'tenant_id'      => $this->tenantId,
+                'actor_user_id'  => $this->actorUserId,
+                'totals'         => $report['totals'] ?? null,
+                'warnings'       => $report['warnings'] ?? [],
             ]);
         } catch (Throwable $e) {
             Log::error('PurgeTenantJob failed', [

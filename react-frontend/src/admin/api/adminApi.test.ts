@@ -1869,10 +1869,15 @@ describe('adminSuper', () => {
     expect(mockDelete).toHaveBeenCalledWith('/v2/admin/super/tenants/5');
   });
 
-  it('purgeTenant posts to the purge endpoint', async () => {
+  it('purgeTenant sends the typed slug the server now requires', async () => {
     mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminSuper.purgeTenant(5);
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/super/tenants/5/purge', {});
+    await adminSuper.purgeTenant(5, 'hour-timebank');
+    // F-353: the modal always compared the typed slug locally, but a local
+    // comparison is not a confirmation. The server requires it and answers 422
+    // without it, so it has to be on the wire.
+    expect(mockPost).toHaveBeenCalledWith('/v2/admin/super/tenants/5/purge', {
+      confirm_slug: 'hour-timebank',
+    });
   });
 
   it('purgeTenantPreview gets the dry-run report', async () => {

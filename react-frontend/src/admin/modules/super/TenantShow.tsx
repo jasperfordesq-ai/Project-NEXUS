@@ -186,7 +186,7 @@ export function TenantShow() {
     if (!tenant || purgeConfirmText !== tenant.slug) return;
     setPurging(true);
     try {
-      const res = await adminSuper.purgeTenant(tenant.id);
+      const res = await adminSuper.purgeTenant(tenant.id, purgeConfirmText);
       if (res.success) {
         toast.success(t('super.purge_started'));
         purgeModal.onClose();
