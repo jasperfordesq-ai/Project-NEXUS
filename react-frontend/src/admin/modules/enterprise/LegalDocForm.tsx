@@ -104,7 +104,7 @@ export function LegalDocForm() {
           toast.success(t('legal_doc_form.document_updated'));
           navigate(tenantPath('/admin/legal-documents'));
         } else {
-          toast.error(t('legal_doc_form.save_failed_generic'));
+          toast.error(res.error || t('legal_doc_form.save_failed_generic'));
         }
       } else {
         const res = await adminLegalDocs.create({
@@ -120,7 +120,7 @@ export function LegalDocForm() {
           // Land straight in the version editor to author the first version.
           navigate(tenantPath(`/admin/legal-documents/${(res.data as LegalDocument).id}/versions/new`));
         } else {
-          toast.error(t('legal_doc_form.save_failed_generic'));
+          toast.error(res.error || t('legal_doc_form.save_failed_generic'));
         }
       }
     } catch {

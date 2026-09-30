@@ -145,9 +145,10 @@ describe('LegalDocForm — create mode (no id)', () => {
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/legal-documents/99/versions/new'));
   });
 
-  it('shows error toast when create API fails', async () => {
+  it('shows the duplicate-document explanation returned by the API', async () => {
     const user = userEvent.setup();
-    vi.mocked(adminLegalDocs.create).mockResolvedValue({ success: false, error: 'Save failed' });
+    const message = 'A document of this type already exists for your community. Edit the existing one instead.';
+    vi.mocked(adminLegalDocs.create).mockResolvedValue({ success: false, error: message });
 
     render(<LegalDocForm />);
 
@@ -155,7 +156,7 @@ describe('LegalDocForm — create mode (no id)', () => {
     await user.click(screen.getByRole('button', { name: /create document/i }));
 
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+      expect(mockToast.error).toHaveBeenCalledWith(message);
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
