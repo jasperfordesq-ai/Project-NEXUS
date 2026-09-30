@@ -307,7 +307,7 @@ class AdminCrmController extends BaseApiController
     /** PUT /api/v2/admin/crm/notes/{id} */
     public function updateNote($id): JsonResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -352,6 +352,23 @@ class AdminCrmController extends BaseApiController
              WHERE mn.id = ? AND mn.tenant_id = ?",
             [$id, $tenantId]
         );
+
+        // F-457: this response re-serialises the stored note, so editing an
+        // unrelated field (pinning it, say) returned the text and the author of
+        // a concern note the caller is not allowed to read. Withhold the same
+        // two fields the read routes withhold.
+        if (
+            $updated !== null
+            && (string) ($updated->category ?? '') === self::CONCERN_CATEGORY
+            && in_array(
+                (int) ($updated->user_id ?? 0),
+                $this->concernSubjectsHiddenFromCaller($callerId, $tenantId),
+                true,
+            )
+        ) {
+            $updated->content = null;
+            $updated->author_name = null;
+        }
 
         return $this->respondWithData($updated);
     }
@@ -738,7 +755,7 @@ class AdminCrmController extends BaseApiController
     /** GET /api/v2/admin/crm/timeline */
     public function timeline(): JsonResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
 
         $userId = $this->queryInt('user_id');
@@ -835,6 +852,17 @@ class AdminCrmController extends BaseApiController
                 $p = [$tenantId]; $cp = [$tenantId];
                 if ($userId) { $sql .= " AND mn.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND mn.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
+                // F-457: the same concern-note exclusion listNotes() applies.
+                // Without it the timeline handed the subject of a concern the
+                // first 80 characters of it and the name of its author.
+                $hiddenSubjects = $this->concernSubjectsHiddenFromCaller($callerId, $tenantId);
+                if ($hiddenSubjects !== []) {
+                    $placeholders = implode(',', array_fill(0, count($hiddenSubjects), '?'));
+                    $sql .= " AND NOT (mn.category = ? AND mn.user_id IN ({$placeholders}))";
+                    $exclusionParams = array_merge([self::CONCERN_CATEGORY], $hiddenSubjects);
+                    $p = array_merge($p, $exclusionParams);
+                    $cp = array_merge($cp, $exclusionParams);
+                }
                 $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
             } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
         }
@@ -919,15 +947,28 @@ class AdminCrmController extends BaseApiController
     /** GET /api/v2/admin/crm/export/notes */
     public function exportNotes(): StreamedResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
+
+        // F-457: the same concern-note exclusion listNotes() applies. Without
+        // it the CSV handed the subject of a concern its full text and the
+        // name of the operator who wrote it.
+        $where = "mn.tenant_id = ?";
+        $params = [$tenantId];
+        $hiddenSubjects = $this->concernSubjectsHiddenFromCaller($callerId, $tenantId);
+        if ($hiddenSubjects !== []) {
+            $placeholders = implode(',', array_fill(0, count($hiddenSubjects), '?'));
+            $where .= " AND NOT (mn.category = ? AND mn.user_id IN ({$placeholders}))";
+            $params[] = self::CONCERN_CATEGORY;
+            array_push($params, ...$hiddenSubjects);
+        }
 
         $notes = DB::select(
             "SELECT mn.id, mn.user_id, u.name as user_name, mn.content, mn.category,
                     mn.is_pinned, a.name as author_name, mn.created_at, mn.updated_at
              FROM member_notes mn LEFT JOIN users u ON u.id = mn.user_id LEFT JOIN users a ON a.id = mn.author_id
-             WHERE mn.tenant_id = ? ORDER BY mn.created_at DESC",
-            [$tenantId]
+             WHERE {$where} ORDER BY mn.created_at DESC",
+            $params
         );
         $notes = array_map(fn($r) => (array)$r, $notes);
 
@@ -980,21 +1021,24 @@ class AdminCrmController extends BaseApiController
 
     /**
      * F-252: ids of the note subjects whose concern notes the caller may not
-     * read. Admin tiers see every note (empty list). A caller below admin
-     * tier (broker / coordinator) never sees a concern note about themselves
-     * or about anyone they do not strictly outrank (AdminTier::outranks, the
-     * rank rule F-219 applies to balance changes) — i.e. a fellow broker or
-     * any admin. If the caller's own row cannot be read they are ranked as a
-     * member, which hides every concern note (fails closed).
+     * read. A caller never sees a concern note about themselves or about
+     * anyone they do not strictly outrank (AdminTier::outranks, the rank rule
+     * F-219 applies to balance changes). If the caller's own row cannot be
+     * read they are ranked as a member, which hides every concern note (fails
+     * closed).
+     *
+     * F-457: this opened with `if ($this->callerIsAdminTier()) return [];`,
+     * which short-circuited before the rank comparison below, so a community
+     * administrator read the concern note a platform super-admin had written
+     * about them. The rank machinery already answers this correctly once it is
+     * reached — outranks() requires a strictly higher rank, so an admin does
+     * not outrank a fellow admin, while a platform super-admin (rank 3) and a
+     * god (rank 4) still outrank one, and every tier still outranks a member.
      *
      * @return list<int>
      */
     private function concernSubjectsHiddenFromCaller(int $callerId, int $tenantId): array
     {
-        if ($this->callerIsAdminTier()) {
-            return [];
-        }
-
         $actor = DB::selectOne(
             "SELECT id, role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ?",
             [$callerId]

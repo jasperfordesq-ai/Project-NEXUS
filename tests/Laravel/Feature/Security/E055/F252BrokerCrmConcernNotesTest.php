@@ -19,7 +19,11 @@ use Tests\Laravel\TestCase;
  * concern note whose subject is themselves or an account at or above their
  * own tier (AdminTier::outranks — the rank rule F-219 uses for balance
  * changes). Hidden notes are filtered silently and do not count towards the
- * list total. Admins see everything; other note categories are unchanged.
+ * list total. Other note categories are unchanged.
+ *
+ * F-457 (E-073) extended the same rule upwards: the exclusion used to return
+ * early for any admin-tier caller, so an administrator read the concern note
+ * written about them. The rank rule now applies at every tier.
  */
 class F252BrokerCrmConcernNotesTest extends TestCase
 {
@@ -109,16 +113,24 @@ class F252BrokerCrmConcernNotesTest extends TestCase
         $this->assertContains($notes['member'], $contents);
     }
 
-    public function test_admin_receives_every_concern_note(): void
+    /**
+     * F-457 changed this case. The exclusion used to return early for every
+     * admin-tier caller, so an administrator was served the concern note about
+     * themselves. It now applies the same rank rule to every tier, and an
+     * administrator does not strictly outrank themselves, so their own note is
+     * hidden. Everything the administrator does outrank is unchanged.
+     */
+    public function test_admin_receives_every_concern_note_except_the_one_about_themselves(): void
     {
         $notes = $this->seedConcernNotes();
 
         [$contents, $total] = $this->listAs($this->admin);
 
-        foreach ($notes as $content) {
-            $this->assertContains($content, $contents);
-        }
-        $this->assertSame(4, $total);
+        $this->assertContains($notes['self'], $contents);
+        $this->assertContains($notes['broker'], $contents);
+        $this->assertContains($notes['member'], $contents);
+        $this->assertNotContains($notes['admin'], $contents, 'admin read the concern note about themselves');
+        $this->assertSame(3, $total);
     }
 
     public function test_non_concern_notes_are_unchanged_for_brokers(): void
