@@ -27,14 +27,6 @@
       "note": ""
     },
     {
-      "file": "app/Http/Controllers/Api/EmergencyAlertController.php",
-      "identifier": "argument.type",
-      "message": "Parameter #3 $field of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string|null, array given.",
-      "count": 1,
-      "status": "open — security finding F-372",
-      "note": "A live HTTP 500 on invalid input: the call site passes $validator->errors()->toArray() to a parameter declared ?string, under declare(strict_types=1). Being fixed in E-066. Remove this entry with the fix."
-    },
-    {
       "file": "app/Http/Controllers/Api/FederationController.php",
       "identifier": "argument.type",
       "message": "Parameter #5 $isImportant of static method App\\Models\\Notification::createNotification() expects bool, int given.",
@@ -89,14 +81,6 @@
       "count": 1,
       "status": "false positive — imprecise docblock",
       "note": "MentionService::getMentionsForUser() is annotated `@return array[]`, so PHPStan types every offset of the returned array as `array`. At runtime it returns {items: array, cursor: ?string, has_more: bool} and the call is correct. The honest fix is to correct the docblock, which would also clear these two entries. Checked E-066, 30 Sep 2026."
-    },
-    {
-      "file": "app/Http/Controllers/Api/MunicipalSurveyController.php",
-      "identifier": "argument.type",
-      "message": "Parameter #3 $field of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string|null, array given.",
-      "count": 3,
-      "status": "open — security finding F-372",
-      "note": "A live HTTP 500 on invalid input: the call site passes $validator->errors()->toArray() to a parameter declared ?string, under declare(strict_types=1). Being fixed in E-066. Remove this entry with the fix."
     },
     {
       "file": "app/Http/Controllers/Api/NewsletterController.php",
