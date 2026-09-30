@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services\CaringCommunity;
 
 use App\Core\TenantContext;
+use App\Services\BlockUserService;
 use App\Services\SafeguardingInteractionPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -89,6 +90,14 @@ class CaringHourGiftService
             if (!$recipient) {
                 throw new RuntimeException(__('api.caring_hour_gift_recipient_not_found'));
             }
+
+            // F-333: a gift carries up to 500 characters of the sender's free
+            // text into the recipient's gift inbox and into the shared ledger,
+            // so a block in either direction refuses it — the rule F-130
+            // already applies to caregiver links in this same module. Checked
+            // before the safeguarding policy so a blocked member cannot probe
+            // it.
+            BlockUserService::assertNoBlockBetween($senderId, $recipientId);
 
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                 $senderId,

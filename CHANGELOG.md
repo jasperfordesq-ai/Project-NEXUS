@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A blocked member can no longer send an hours gift, or the message attached to it, to the person who blocked them (F-333).
 - A member who has been blocked can no longer send time credits, or a message attached to them, to the person who blocked them — through either a transfer or a donation (F-332).
 - The mobile app's third-party "brace-expansion" package is updated to a version that fixes a newly published weakness that could make it hang on certain input. It reaches phones with the next app release.
 - The website now hangs up on a request that stops sending part-way through, instead of holding the connection open indefinitely. Normal uploads, including large videos on a slow connection, are unaffected (F-359).
