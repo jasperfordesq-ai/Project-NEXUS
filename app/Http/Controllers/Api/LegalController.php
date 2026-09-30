@@ -63,13 +63,20 @@ class LegalController extends BaseApiController
      * POST /api/v2/legal/accept-all
      *
      * Accept all current legal documents for the authenticated user.
+     *
+     * 🔴 F-378. The second argument is the acceptance METHOD, not the tenant id.
+     * This passed $tenantId, and because `user_legal_acceptances.acceptance_method`
+     * is an ENUM, MariaDB read that number as a POSITION in the enum rather than
+     * as a label — so community 1 recorded 'registration', community 2 recorded
+     * 'login_prompt', and so on. Plausible, valid, and untrue: the field is
+     * consent evidence. The service already scopes by TenantContext internally,
+     * so it never needed the tenant id.
      */
     public function acceptAll(): JsonResponse
     {
         $userId = $this->requireAuth();
-        $tenantId = $this->getTenantId();
 
-        $this->legalService->acceptAll($userId, $tenantId);
+        $this->legalService->acceptAll($userId, 'api');
 
         return $this->respondWithData(['message' => __('api_controllers_2.legal.all_accepted')]);
     }
