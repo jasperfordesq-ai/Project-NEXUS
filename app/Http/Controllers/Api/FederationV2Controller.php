@@ -3764,6 +3764,59 @@ class FederationV2Controller extends BaseApiController
                     return $this->respondWithData(['transaction_id' => (int) $receipt->id, 'status' => 'completed', 'amount' => (int) $receipt->amount], null, 201);
                 }
             }
+
+            // ── F-344: re-check the partnership INSIDE the transaction ──
+            // The partnership status, `transactions_enabled` and the F-156
+            // partner-community check were all read before this transaction
+            // opened, and none was consulted again; the only rows locked were
+            // the two members'. An administrator suspending the partnership —
+            // or the partner community switching its own federated
+            // transactions off — therefore could not stop a transfer that was
+            // already past the pre-check.
+            //
+            // The partnership row is LOCKED, not merely re-read, so a
+            // suspension cannot commit between this check and the credit
+            // movement. Lock order on this path is now:
+            //   users (both, ascending id) -> transactions (receipt)
+            //   -> federation_partnerships -> federation_user_settings.
+            // Nothing else in app/ locks the last two, so no cycle exists.
+            // This mirrors getPartnership(), which matches the pair in either
+            // direction.
+            $lockedPartnership = DB::table('federation_partnerships')
+                ->where(function ($q) use ($tenantId, $receiverTenantIdInt) {
+                    $q->where('tenant_id', $tenantId)->where('partner_tenant_id', $receiverTenantIdInt);
+                })
+                ->orWhere(function ($q) use ($tenantId, $receiverTenantIdInt) {
+                    $q->where('tenant_id', $receiverTenantIdInt)->where('partner_tenant_id', $tenantId);
+                })
+                ->lockForUpdate()
+                ->first();
+            if (!$lockedPartnership
+                || (string) $lockedPartnership->status !== 'active'
+                || !$lockedPartnership->transactions_enabled) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
+            }
+
+            // F-344, second arm (extends F-156): the partner community's own
+            // federation switches. FederationFeatureService memoises system
+            // controls, the whitelist and tenant features per instance, so
+            // calling it again would simply hand back the pre-check's answer —
+            // clear the memo first so this really reads the database. This is
+            // the transaction's first consistent read, so its snapshot is taken
+            // here, after anything that committed during the window.
+            $this->federationFeatureService->clearCache();
+            if (! $this->partnerTenantAllowsOperation('transactions', $receiverTenantIdInt)) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
+            }
+
             $deducted = DB::update("UPDATE users SET balance = balance - ? WHERE id = ? AND tenant_id = ? AND balance >= ?", [$amount, $userId, $tenantId, $amount]);
             if ($deducted === 0) {
                 DB::rollBack();
