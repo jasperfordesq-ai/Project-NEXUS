@@ -1183,22 +1183,14 @@ class UserService
     // ================================================================
 
     /**
-     * Check whether the given viewer user ID belongs to an admin.
-     * Bypasses tenant scope so super-admins from other tenants are recognised.
+     * Check whether the given viewer is an administrator of this community,
+     * or a platform administrator. One predicate with
+     * MemberProfileVisibility::viewerIsAdmin() (F-394: the copy here accepted
+     * an ordinary admin of ANY community).
      */
     private static function isViewerAdmin(int $viewerId): bool
     {
-        $viewer = User::withoutGlobalScope(TenantScope::class)
-            ->select(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
-            ->find($viewerId);
-        if (!$viewer) {
-            return false;
-        }
-        return in_array($viewer->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($viewer->is_admin ?? false)
-            || (bool) ($viewer->is_super_admin ?? false)
-            || (bool) ($viewer->is_tenant_super_admin ?? false)
-            || (bool) ($viewer->is_god ?? false);
+        return MemberProfileVisibility::viewerIsAdmin($viewerId);
     }
 
     /**

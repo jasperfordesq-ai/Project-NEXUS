@@ -49,7 +49,10 @@ final class MemberProfileVisibility
     /** Decimal places a member's coordinates are shown to other members at (about 1 km). */
     public const PUBLIC_COORDINATE_DECIMALS = 2;
 
-    /** True when the viewer is a tenant or platform administrator. */
+    /**
+     * True when the viewer is an administrator OF THIS COMMUNITY, or a
+     * platform administrator (super-admin, god) acting on any community.
+     */
     public static function viewerIsAdmin(?int $viewerId): bool
     {
         if ($viewerId === null || $viewerId <= 0) {
@@ -57,12 +60,19 @@ final class MemberProfileVisibility
         }
 
         // Bypass the tenant scope so a platform super-admin acting on another
-        // community is still recognised, as UserService::isViewerAdmin does.
+        // community is still recognised.
         $viewer = User::withoutGlobalScope(TenantScope::class)
-            ->select(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+            ->select(['id', 'tenant_id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
             ->find($viewerId);
+        if (!AdminTier::allows($viewer)) {
+            return false;
+        }
 
-        return AdminTier::allows($viewer);
+        // F-394: only platform-level authority crosses communities. An
+        // ordinary community administrator is an administrator of their own
+        // community, not of every community the request may resolve to.
+        return AdminTier::securityRank($viewer) >= 3
+            || (int) $viewer->tenant_id === (int) TenantContext::getId();
     }
 
     /** True when the two members have an accepted connection in the current community. */

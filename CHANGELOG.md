@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- An administrator of one community is no longer treated as an administrator of every other community when member profiles are shown. This could not be reached through the platform today, but would have exposed members' exact locations and surnames to other communities' administrators if a profile page were ever opened to signed-out visitors (F-394).
 - Story highlights now respect blocking. A member on either side of a block could still see the other's highlighted stories, although their ordinary stories were already hidden (F-393).
 - A member who has been blocked can no longer notify the person who blocked them by @mentioning them in a group they both belong to (F-387).
 - A member who has been blocked can no longer find out who blocked them by checking another member's block status. The block-status answer now only tells you whom you have blocked (F-388).
