@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The website now hangs up on a request that stops sending part-way through, instead of holding the connection open indefinitely. Normal uploads, including large videos on a slow connection, are unaffected (F-359).
 - When a member accepts all of a community's policies in one go, the record of *how* they accepted now says so honestly. It was being filled in from the community's own number, which the database read as a position in a list — so community 1 recorded "registration", community 2 recorded "login prompt", and so on. The values looked reasonable, which is why this went unnoticed. Existing records are unchanged; new ones are correct (F-378).
 - The accessible site's HTML cleaner now has its own tests, so a change that weakened it would be caught (F-316).
 - The accessible site now has an automated check that stops any page from showing member text as raw HTML without cleaning it first (F-315).
