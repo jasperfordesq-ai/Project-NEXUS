@@ -17,12 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Guests now count towards an event's limit, so an event shows fewer places available and can refuse a booking it would previously have accepted — the stated limit is now actually enforced, which matters where it is a fire limit. Cancelling a booking now also cancels the guests brought with it and frees their places for someone else (F-356).
 - A podcast episode or show that someone has reported can no longer be deleted by its creator while the report is still open — they are asked to archive it instead, or wait for a moderator. The reports themselves are now never deleted, so a creator can no longer clear their record by deleting and re-uploading the same audio (F-338).
 - Creating, editing, publishing, closing and exporting community surveys now requires a community administrator. The "official notices" switch previously granted this as well, which was never intended and let someone download every survey answer with the respondent's identity attached (F-347).
 - The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
 
 ### Security
 
+- When a member deletes their own account, the community's safeguarding vetting decision about them, its history and any open review are now kept, in the same way safeguarding reports already were. Blocks that other members placed on them are also kept, so those members do not silently lose their protection. The account itself is still erased and the email address is still freed (F-339).
 - If a supported member revokes their carer while a payment by that carer is already in progress, the payment is now refused instead of completing (F-342).
 - A group marked private is no longer listed to partner communities. Its name, description, cover image and member count were previously published to them, which is the rule events have followed since an earlier fix (F-377).
 - A member who has opted out of cross-community sharing can no longer use any of the cross-community connection features — sending, accepting, rejecting or removing a connection, or checking its status (F-373).

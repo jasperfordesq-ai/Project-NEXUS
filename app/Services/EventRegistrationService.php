@@ -36,6 +36,7 @@ final class EventRegistrationService
     private readonly EventPolicy $policy;
     private readonly EventReminderScheduleService $reminderSchedules;
     private readonly EventTicketEntitlementService $ticketEntitlements;
+    private readonly EventRegistrationGuestService $guests;
 
     public function __construct(
         ?EventDomainOutboxService $outbox = null,
@@ -43,12 +44,14 @@ final class EventRegistrationService
         ?EventPolicy $policy = null,
         ?EventReminderScheduleService $reminderSchedules = null,
         ?EventTicketEntitlementService $ticketEntitlements = null,
+        ?EventRegistrationGuestService $guests = null,
     ) {
         $this->outbox = $outbox ?? new EventDomainOutboxService();
         $this->eligibility = $eligibility ?? app(EventParticipationEligibilityService::class);
         $this->policy = $policy ?? app(EventPolicy::class);
         $this->reminderSchedules = $reminderSchedules ?? app(EventReminderScheduleService::class);
         $this->ticketEntitlements = $ticketEntitlements ?? app(EventTicketEntitlementService::class);
+        $this->guests = $guests ?? app(EventRegistrationGuestService::class);
     }
 
     public function transition(
@@ -467,12 +470,24 @@ final class EventRegistrationService
             throw new EventRegistrationException('event_registration_capacity_invalid');
         }
 
-        return max(0, $limit - $this->occupiedUserIdsLocked(
-            (int) $event->tenant_id,
-            (int) $event->getKey(),
+        $tenantId = (int) $event->tenant_id;
+        $eventId = (int) $event->getKey();
+
+        // F-356: guests are bodies in the room. EventRegistrationGuestService
+        // has counted them against max_attendees since 2026-08-02, but this
+        // helper — which every member-facing registration and every waitlist
+        // decision goes through — did not, so the two gates disagreed about
+        // the same room and a capacity-2 event held 3 people. The count lives
+        // here, in the shared helper, rather than in a third copy of the
+        // arithmetic at each call site.
+        $occupied = $this->occupiedUserIdsLocked(
+            $tenantId,
+            $eventId,
             $capacityPoolKey,
             $excludeWaitlistEntryId,
-        )->count());
+        )->count() + $this->occupiedGuestCountLocked($tenantId, $eventId, $capacityPoolKey);
+
+        return max(0, $limit - $occupied);
     }
 
     private function transitionLocked(
@@ -664,6 +679,7 @@ final class EventRegistrationService
 
         $cancelledPendingReminders = $this->reconcileReminderState($registration, $target);
         $releasedTicketEntitlements = 0;
+        $withdrawnGuests = 0;
         if ($wasConsuming && ! $target->consumesCapacity()) {
             $releasedTicketEntitlements = $this->ticketEntitlements
                 ->cancelConfirmedForRegistrationExitWithinTransaction(
@@ -673,6 +689,18 @@ final class EventRegistrationService
                     $reason ?? 'registration_cancelled',
                     $idempotencyKey,
                 );
+
+            // F-356, part (b): give the guests' seats back too. Ticket
+            // entitlements were released here and reminders cancelled above,
+            // but guests were not, so a cancelled member's guest went on
+            // occupying a place for ever and could deny one to a member who
+            // really was coming.
+            $withdrawnGuests = $this->guests->withdrawForRegistrationExitWithinTransaction(
+                $eventId,
+                (int) $registration->getKey(),
+                (int) $actor->getKey(),
+                $reason ?? 'registration_cancelled',
+            );
         }
 
         $action = $canonicalizing ? 'canonicalized' : $target->value;
@@ -697,6 +725,7 @@ final class EventRegistrationService
                     'accepted_waitlist_entry_id' => $acceptedWaitlistEntryId,
                     'cancelled_pending_reminders' => $cancelledPendingReminders,
                     'released_ticket_entitlements' => $releasedTicketEntitlements,
+                    'withdrawn_guests' => $withdrawnGuests,
                 ], JSON_THROW_ON_ERROR),
                 'created_at' => $now,
             ]);
@@ -1027,6 +1056,43 @@ final class EventRegistrationService
         return EventRegistrationCompatibility::registrationFromLegacy(
             is_string($status) ? $status : null,
         );
+    }
+
+    /**
+     * Guests seated by a registration that still occupies a place in this pool.
+     *
+     * F-356. Counted separately from occupiedUserIdsLocked() because a guest
+     * has no user id — they are an extra body attached to a member's place, not
+     * a member — so they cannot be merged into a set of user ids.
+     *
+     * Only guests of a registration that itself consumes capacity are counted,
+     * which keeps this gate consistent with occupiedUserIdsLocked(): a guest
+     * attached to an `invited` or `pending` registration occupies no place
+     * because the registration that brought them occupies none either.
+     */
+    private function occupiedGuestCountLocked(int $tenantId, int $eventId, string $pool): int
+    {
+        return DB::table('event_registration_guests')
+            ->where('event_registration_guests.tenant_id', $tenantId)
+            ->where('event_registration_guests.event_id', $eventId)
+            ->whereIn(
+                'event_registration_guests.status',
+                EventRegistrationGuestService::CAPACITY_CONSUMING_GUEST_STATES,
+            )
+            ->whereExists(function ($query) use ($tenantId, $eventId, $pool): void {
+                $query->selectRaw('1')
+                    ->from('event_registrations as guest_registration')
+                    ->whereColumn('guest_registration.id', 'event_registration_guests.registration_id')
+                    ->where('guest_registration.tenant_id', $tenantId)
+                    ->where('guest_registration.event_id', $eventId)
+                    ->where('guest_registration.capacity_pool_key', $pool)
+                    ->where(
+                        'guest_registration.registration_state',
+                        EventCapacityRegistrationState::Confirmed->value,
+                    );
+            })
+            ->lockForUpdate()
+            ->count();
     }
 
     private function occupiedUserIdsLocked(

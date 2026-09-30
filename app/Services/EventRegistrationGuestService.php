@@ -27,8 +27,13 @@ final class EventRegistrationGuestService
      * Guest rows that occupy a seat. 'withdrawn' and 'anonymised' guests have
      * given their place back (the schema CHECK constrains status to exactly
      * these three values).
+     *
+     * F-356: public because EventRegistrationService::availableSlotsLocked()
+     * now counts guests against the same venue capacity. There must be exactly
+     * one definition of "a guest occupying a seat" — the two gates disagreeing
+     * about the same room is the whole finding.
      */
-    private const CAPACITY_CONSUMING_GUEST_STATES = ['captured'];
+    public const CAPACITY_CONSUMING_GUEST_STATES = ['captured'];
     private const SUPPORTED_LOCALES = [
         'ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt',
     ];
@@ -400,6 +405,99 @@ final class EventRegistrationGuestService
         }
 
         return $locale;
+    }
+
+    /**
+     * Withdraw every seated guest of a registration that has just left the
+     * capacity pool, inside the caller's transaction and under the caller's
+     * Event row lock.
+     *
+     * F-356, part (b). EventRegistrationService::transitionLocked() released a
+     * cancelled registration's ticket entitlements and cancelled its reminders,
+     * but nothing gave its guests' seats back: the guest stayed `captured` and
+     * went on occupying one of the room's places for ever, so a member who
+     * really was coming could be refused a guest by the guest of somebody who
+     * was not.
+     *
+     * Withdrawn, never deleted: the consent record, its text hash and the
+     * capture audit are what `withdrawn` preserves and a delete would destroy,
+     * and the retention sweep already owns removal.
+     *
+     * @return int how many guests gave a seat back
+     */
+    public function withdrawForRegistrationExitWithinTransaction(
+        int $eventId,
+        int $registrationId,
+        int $actorUserId,
+        string $reason,
+    ): int {
+        if (DB::transactionLevel() <= 0) {
+            throw new EventRegistrationFoundationException('event_registration_guest_transaction_required');
+        }
+        if (! Schema::hasTable('event_registration_guests')) {
+            return 0;
+        }
+
+        $tenantId = $this->support->tenantId();
+        $guests = DB::table('event_registration_guests')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->where('registration_id', $registrationId)
+            ->whereIn('status', self::CAPACITY_CONSUMING_GUEST_STATES)
+            ->lockForUpdate()
+            ->get();
+        if ($guests->isEmpty()) {
+            return 0;
+        }
+
+        $now = CarbonImmutable::now('UTC');
+        $withdrawn = 0;
+        foreach ($guests as $guest) {
+            $guestId = (int) $guest->id;
+            $revision = (int) $guest->revision;
+
+            // Conditional UPDATE guarded on the revision the row was read at,
+            // exactly as the member-facing cancel() path does: a concurrent
+            // host cancellation of the same guest must not be double-counted.
+            $changed = DB::table('event_registration_guests')
+                ->where('tenant_id', $tenantId)
+                ->where('event_id', $eventId)
+                ->where('id', $guestId)
+                ->where('revision', $revision)
+                ->where('status', 'captured')
+                ->update([
+                    'status' => 'withdrawn',
+                    'revision' => $revision + 1,
+                    'withdrawn_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            if ($changed !== 1) {
+                continue;
+            }
+            $withdrawn++;
+
+            $this->outbox->record(
+                $tenantId,
+                $eventId,
+                $revision + 1,
+                'event.registration_guest.withdrawn',
+                "event-registration-guest-withdrawn:{$tenantId}:{$eventId}:{$guestId}:" . ($revision + 1),
+                [
+                    'guest_id' => $guestId,
+                    'registration_id' => $registrationId,
+                    'guest_revision' => $revision + 1,
+                    'actor_user_id' => $actorUserId,
+                    'reason' => $reason,
+                    'notification_consent' => (bool) ($guest->notification_consent ?? false),
+                    'recipient_locale' => $guest->preferred_locale,
+                    'external_email_ciphertext' => $guest->email_ciphertext,
+                    'occurred_at' => $now->format('Y-m-d\TH:i:s.u\Z'),
+                ],
+                aggregateStream: "event:{$eventId}:registration-guest:{$guestId}",
+            );
+        }
+
+        return $withdrawn;
     }
 
     private function assertSchema(): void
