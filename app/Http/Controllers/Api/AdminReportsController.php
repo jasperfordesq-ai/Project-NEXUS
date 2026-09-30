@@ -143,7 +143,7 @@ class AdminReportsController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $callerId = $this->requireBrokerOrAdmin();
         $superAdmin = $this->isSuperAdmin();
         $tenantId = $this->getTenantId();
 
@@ -203,6 +203,20 @@ class AdminReportsController extends BaseApiController
             array_merge($params, [$limit, $offset])
         );
 
+        // F-454: the read side of F-218. A caller below admin tier does not see
+        // reports they are a party to — the queue would otherwise hand the
+        // reported person the complainant's name and the complaint itself.
+        // This is a list, so the row is excluded rather than the route refused;
+        // the caller could not resolve or dismiss those reports in any case.
+        if (! $this->callerIsAdminTier()) {
+            $visible = array_values(array_filter(
+                $reports,
+                fn ($report) => $this->guardBrokerNotParty($report, $callerId) === null,
+            ));
+            $total = max(0, $total - (count($reports) - count($visible)));
+            $reports = $visible;
+        }
+
         $targets = ReportTargetResolver::resolveMany($reports);
         $formatted = array_map(fn ($report) => $this->formatReport($report, $targets), $reports);
 
@@ -214,7 +228,7 @@ class AdminReportsController extends BaseApiController
      */
     public function show(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $callerId = $this->requireBrokerOrAdmin();
         $superAdmin = $this->isSuperAdmin();
         $tenantId = $this->getTenantId();
 
@@ -240,6 +254,14 @@ class AdminReportsController extends BaseApiController
 
         if (!$report) {
             return $this->respondWithError('NOT_FOUND', __('api.report_not_found'), null, 404);
+        }
+
+        // F-454: the reported person, and the owner of the reported content,
+        // must not read the complaint — it names who filed it and what they
+        // wrote. The platform already withholds exactly this from a reported
+        // seller (MarketplaceReportService::formatReportForViewer()).
+        if ($refusal = $this->guardBrokerNotParty($report, $callerId)) {
+            return $refusal;
         }
 
         $targets = ReportTargetResolver::resolveMany([$report]);
