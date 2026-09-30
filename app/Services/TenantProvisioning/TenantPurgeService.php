@@ -20,7 +20,9 @@ use Illuminate\Support\Facades\Log;
 /**
  * TenantPurgeService — the inverse of {@see TenantProvisioningService}.
  *
- * Permanently and irreversibly removes a tenant and ALL of its data. This is a
+ * Permanently and irreversibly removes a tenant and every row this schema can
+ * connect to it — see "What it removes" and "What it deliberately does NOT do"
+ * below, which are exhaustive and are meant to stay that way. This is a
  * god-only, high-stakes operation. Deactivation (is_active = 0) remains the
  * default reversible action; a purge is a deliberate second stage that only runs
  * on an ALREADY-DEACTIVATED tenant.
@@ -29,7 +31,13 @@ use Illuminate\Support\Facades\Log;
  *   - Every row in every base table that has a `tenant_id` column (discovered
  *     dynamically from INFORMATION_SCHEMA, so it can't rot as tables are added).
  *   - The tenant's own members (platform super-admins are reassigned to the
- *     parent tenant instead of being deleted).
+ *     parent tenant instead of being deleted), and everything that hangs off a
+ *     `users` row by an ON DELETE CASCADE foreign key.
+ *   - Rows in tables that have NO `tenant_id` column of their own but DO hang
+ *     off a tenant-scoped table by an ON DELETE CASCADE foreign key — private
+ *     group chat messages, AI chat content, legal acceptances and the like.
+ *     Also discovered dynamically. See purgeOrphanedCascadeChildren() and
+ *     F-354 for why this needs its own pass.
  *   - The `tenants` row itself.
  *   - External state: Stripe subscriptions + customer, the tenant's documents in
  *     the shared Meilisearch indices, Redis cache keys, and the on-disk upload
@@ -39,6 +47,11 @@ use Illuminate\Support\Facades\Log;
  *   - Remove the custom domain / Plesk vhost / DNS / SSL (managed outside Laravel).
  *   - Delete prerender snapshot files (bot-only; reaped by TTL, or force-purge via
  *     the prerender admin).
+ *   - 🔴 Reach a table that has NEITHER a `tenant_id` column NOR a foreign key
+ *     into tenant-scoped data. Nothing in the schema connects such a row to a
+ *     community, so this routine cannot identify it. That residue is reported
+ *     as a manual follow-up rather than described as removed — the previous
+ *     wording of this docblock ("a tenant and ALL of its data") was not true.
  *
  * The whole operation is idempotent and re-runnable: re-purging a partially-purged
  * tenant simply deletes whatever remains.
@@ -129,6 +142,21 @@ class TenantPurgeService
                 }
             }
 
+            // F-354: the children that have no tenant_id column of their own.
+            foreach (self::orphanedCascadeChildren() as $target) {
+                try {
+                    $count = self::orphanedChildQuery($target, $tenantId)->count();
+                } catch (\Throwable $e) {
+                    $report['warnings'][] = "Count failed for {$target['child_table']}: " . $e->getMessage();
+                    continue;
+                }
+                if ($count > 0) {
+                    $report['tables'][$target['child_table']] = ($report['tables'][$target['child_table']] ?? 0) + $count;
+                    $totalRows += $count;
+                    $touched++;
+                }
+            }
+
             $totalUsers   = DB::table('users')->where('tenant_id', $tenantId)->count();
             $platformSas  = DB::table('users')->where('tenant_id', $tenantId)->where(self::platformSuperAdminScope())->count();
             $report['members_to_delete']       = max(0, $totalUsers - $platformSas);
@@ -166,11 +194,47 @@ class TenantPurgeService
             $report['warnings'][] = "{$reassigned} platform super-admin account(s) were reassigned to parent tenant {$parentId} — review and move them to their correct community.";
         }
 
+        $totalRows = 0;
+
+        // 2b. 🔴 F-354. Step 3 below disables FOREIGN_KEY_CHECKS, and with them
+        //     off ON DELETE CASCADE never fires — so every table that has no
+        //     `tenant_id` column of its own but hangs off one that does was
+        //     left behind for ever: private group chat message bodies, AI chat
+        //     content, and legal acceptances carrying the member's IP address
+        //     and the user_id of a member whose `users` row had just been
+        //     deleted. Clear those FIRST, while their parents still exist and
+        //     referential integrity is still ON, so that (a) the parent id is
+        //     still resolvable and (b) anything hanging off THEM in turn
+        //     cascades away by itself.
+        //
+        //     Each delete is scoped by "this child's foreign key points at a
+        //     parent row belonging to THIS tenant", so a community standing
+        //     beside the one being purged cannot lose a row.
+        foreach (self::orphanedCascadeChildren() as $target) {
+            try {
+                $rows = 0;
+                do {
+                    $n = self::orphanedChildQuery($target, $tenantId)->limit(self::CHUNK)->delete();
+                    $rows += $n;
+                } while ($n >= self::CHUNK);
+                if ($rows > 0) {
+                    $report['tables'][$target['child_table']] = ($report['tables'][$target['child_table']] ?? 0) + $rows;
+                    $totalRows += $rows;
+                }
+            } catch (\Throwable $e) {
+                $report['warnings'][] = "Delete failed for orphaned child {$target['child_table']}: " . $e->getMessage();
+                Log::error('TenantPurgeService: orphaned child delete failed', [
+                    'table' => $target['child_table'],
+                    'tenant_id' => $tenantId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // 3. Delete every tenant-scoped row. FK checks are disabled for THIS
         //    connection only (session-scoped) so we don't have to topologically
         //    sort ~600 tables; we are removing the tenant's data wholesale, so
         //    intra-tenant referential integrity is irrelevant.
-        $totalRows = 0;
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         try {
             foreach ($tables as $table) {
@@ -253,6 +317,109 @@ class TenantPurgeService
             ->unique()
             ->values()
             ->all();
+    }
+
+    /**
+     * F-354: every single-column ON DELETE CASCADE foreign key from a table
+     * WITHOUT a `tenant_id` column into a table WITH one.
+     *
+     * These are the rows the database would have removed by itself if the purge
+     * did not disable referential integrity, and they are exactly the ones that
+     * used to survive it. Discovered from INFORMATION_SCHEMA for the same reason
+     * tenantScopedTables() is: a hand-maintained list of table names rots the
+     * moment somebody adds a table, and this list would rot silently.
+     *
+     * Deliberate exclusions:
+     *   - `users` as the parent. Members are deleted in step 2 with referential
+     *     integrity still ON, so their ~99 cascade children go with them.
+     *   - Composite (multi-column) foreign keys. None exist in this schema
+     *     today; if one appears, skipping it is the safe direction — a row left
+     *     behind is a retention defect, a row deleted on a half-matched key
+     *     could belong to somebody else.
+     *
+     * @return list<array{child_table: string, child_column: string, parent_table: string, parent_column: string}>
+     */
+    private static function orphanedCascadeChildren(): array
+    {
+        // Memoised per process: the schema cannot change under a running purge,
+        // and this reads INFORMATION_SCHEMA, which is expensive on a ~700-table
+        // database. A CORRELATED subquery here (to count a constraint's columns
+        // in SQL) measured >120 s on the test clone — the grouping is done in
+        // PHP for that reason. Do not reintroduce one.
+        static $cache = null;
+        if (is_array($cache)) {
+            return $cache;
+        }
+
+        $scoped = array_flip(self::tenantScopedTables());
+
+        $rows = DB::select(
+            'SELECT k.TABLE_NAME AS child_table,
+                    k.COLUMN_NAME AS child_column,
+                    k.CONSTRAINT_NAME AS constraint_name,
+                    k.REFERENCED_TABLE_NAME AS parent_table,
+                    k.REFERENCED_COLUMN_NAME AS parent_column
+               FROM information_schema.KEY_COLUMN_USAGE k
+               JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
+                 ON rc.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA
+                AND rc.CONSTRAINT_NAME = k.CONSTRAINT_NAME
+                AND rc.TABLE_NAME = k.TABLE_NAME
+              WHERE k.TABLE_SCHEMA = DATABASE()
+                AND k.REFERENCED_TABLE_NAME IS NOT NULL
+                AND rc.DELETE_RULE = ?',
+            ['CASCADE']
+        );
+
+        // Group by constraint so composite keys can be identified and skipped.
+        $byConstraint = [];
+        foreach ($rows as $row) {
+            $byConstraint[$row->child_table . "\0" . $row->constraint_name][] = $row;
+        }
+
+        $targets = [];
+        foreach ($byConstraint as $columns) {
+            if (count($columns) !== 1) {
+                continue;   // composite foreign key — see the note above
+            }
+            $row = $columns[0];
+            $child = (string) $row->child_table;
+            $parent = (string) $row->parent_table;
+
+            if (isset($scoped[$child])) {
+                continue;   // step 3 deletes it directly by tenant_id
+            }
+            if (!isset($scoped[$parent]) || $parent === 'users') {
+                continue;   // not tenant-resolvable, or already handled in step 2
+            }
+
+            $targets[] = [
+                'child_table'   => $child,
+                'child_column'  => (string) $row->child_column,
+                'parent_table'  => $parent,
+                'parent_column' => (string) $row->parent_column,
+            ];
+        }
+
+        $cache = $targets;
+
+        return $targets;
+    }
+
+    /**
+     * "Rows of this child whose foreign key points at a parent row owned by
+     * THIS tenant." The tenant filter lives on the parent, which is what keeps
+     * another community's rows out of the delete.
+     *
+     * @param  array{child_table: string, child_column: string, parent_table: string, parent_column: string}  $target
+     */
+    private static function orphanedChildQuery(array $target, int $tenantId): \Illuminate\Database\Query\Builder
+    {
+        return DB::table($target['child_table'])
+            ->whereIn($target['child_column'], function ($query) use ($target, $tenantId): void {
+                $query->select($target['parent_column'])
+                    ->from($target['parent_table'])
+                    ->where('tenant_id', $tenantId);
+            });
     }
 
     /**
@@ -360,6 +527,11 @@ class TenantPurgeService
                 . ' manually — Plesk vhost, DNS records and SSL certificates are managed outside the platform.';
         }
         $out[] = 'Prerender snapshots (bot-only) are reaped by TTL; force-purge via /admin/prerender if you need them gone immediately.';
+        // F-354: stated on every run so the deletion claim stays honest. A table
+        // with neither a tenant_id column nor a foreign key into tenant-scoped
+        // data has nothing in the schema tying its rows to a community, so this
+        // routine cannot find them.
+        $out[] = 'Rows in tables that have neither a tenant_id column nor a foreign key into tenant-scoped data are NOT removed by this purge — nothing in the schema links them to a community. Review them by hand if the deletion has to be exhaustive.';
         return $out;
     }
 }

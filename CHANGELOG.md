@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Permanently purging a community now also deletes the private group chat messages, AI chat conversations and consent records — including the IP addresses in them — that it previously left behind for ever. The routine's description now states exactly what it does and does not remove, and says so in its report on every run (F-354).
 - Permanently purging a community is now recorded twice — once when it is ordered and once when it completes — and both entries name the administrator who ordered it. The record previously said the action was taken by \"System\". The administrator must also type the community's short name to confirm, which the server now checks rather than trusting the screen (F-353).
 - Deleting a job advert now also deletes the CVs applicants uploaded to it. They were previously left on the server with nothing pointing at them, so no later deletion or data-erasure request could find them (F-361).
 - A maintenance command that deletes accounts with dead email addresses can no longer delete them during a name-lookup outage — it now tells the difference between \"this address does not exist\" and \"the lookup service is not answering\", and leaves the second alone. It also now protects the platform's most senior administrator accounts, which it previously missed (F-375).
