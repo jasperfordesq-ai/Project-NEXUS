@@ -139,6 +139,9 @@ final class WalletReplayConcurrencyTest extends TestCase
                             $features->shouldReceive('isOperationAllowed')->with('transactions', $tenantId)->andReturn(['allowed' => true]);
                             // E-035 F-156: the receiving community's own switch is checked too.
                             $features->shouldReceive('isOperationAllowed')->with('transactions', $federationTenant->id)->andReturn(['allowed' => true]);
+                            // F-344: the transfer clears the feature cache and re-checks
+                            // the link under the lock; the stub has nothing cached.
+                            $features->shouldReceive('clearCache')->andReturnNull();
                             app()->instance(\App\Services\FederationFeatureService::class, $features);
                             auth()->setUser(\App\Models\User::findOrFail($users[0]));
                             app()->instance('request', \Illuminate\Http\Request::create('/api/v2/federation/transactions', 'POST', [
