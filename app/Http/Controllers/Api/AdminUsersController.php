@@ -1798,11 +1798,13 @@ class AdminUsersController extends BaseApiController
                 return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
             }
 
-            // F-255: a grant writes role='admin', which demotes a target whose god
-            // or super-admin authority is held in the role string. Apply the same
-            // hierarchy as every other security action here: the caller must
-            // strictly outrank the target (god may act on anyone). Re-checked
-            // under the row lock below.
+            // F-255: a grant used to write role='admin', which demotes a target
+            // whose god or super-admin authority is held in the role string.
+            // Apply the same hierarchy as every other security action here: the
+            // caller must strictly outrank the target (god may act on anyone).
+            // Re-checked under the row lock below. The role write is gone
+            // (F-431, see the UPDATE), but the check stays: granting or revoking
+            // network-admin on another account is a security action either way.
             if (!$this->canManageSecurityTarget($adminId, (array) $user)) {
                 return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
             }
@@ -1813,8 +1815,25 @@ class AdminUsersController extends BaseApiController
                     return false;
                 }
                 if ($grant) {
+                    // F-431: the grant writes the FLAG ONLY. It used to write
+                    // `role = 'admin'` as well, and the revoke below clears the
+                    // flag alone — so granting and then revoking left an
+                    // ordinary member sitting at role='admin', which
+                    // AdminTier::allows() accepts. The account kept full
+                    // community-administrator authority while the panel, the
+                    // button and the audit entry all said it had been removed.
+                    //
+                    // Restoring the role on revoke is not possible from the row:
+                    // an account promoted by this grant and an account that was
+                    // already an administrator are byte-identical afterwards. So
+                    // the asymmetry is removed at its source. The flag alone is
+                    // sufficient authority everywhere — AdminTier::allows() and
+                    // securityRank() both read it, and
+                    // TenantHierarchyService::assignTenantSuperAdmin(), the super
+                    // panel's own grant route for the same privilege, has always
+                    // written the flag and no role.
                     DB::update(
-                        "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ? AND tenant_id = ?",
+                        "UPDATE users SET is_tenant_super_admin = 1 WHERE id = ? AND tenant_id = ?",
                         [$id, $tenantId]
                     );
                 } else {

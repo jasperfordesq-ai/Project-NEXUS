@@ -1507,8 +1507,18 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.user_not_found'), null, 404);
         }
 
+        // F-431: the grant writes the FLAG ONLY. It used to promote
+        // `role = 'member'` to `'admin'` as well, while
+        // userRevokeGlobalSuperAdmin() below clears the flag alone — so granting
+        // and then revoking left an ordinary member sitting at role='admin',
+        // which AdminTier::allows() accepts as full community-administrator
+        // authority. The revoke cannot undo that from the row: an account this
+        // grant promoted and an account that was already an administrator are
+        // byte-identical afterwards. The flag on its own is sufficient
+        // authority everywhere (AdminTier::allows(), securityRank()), so the
+        // asymmetry is removed at its source rather than guessed at on revoke.
         DB::update(
-            "UPDATE users SET is_super_admin = 1, role = CASE WHEN role = 'member' THEN 'admin' ELSE role END WHERE id = ?",
+            "UPDATE users SET is_super_admin = 1 WHERE id = ?",
             [$id]
         );
 

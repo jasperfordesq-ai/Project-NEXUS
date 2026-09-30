@@ -370,7 +370,12 @@ final class F399RoleDemotionClearsAdminFlagsTest extends TestCase
 
         $row = DB::table('users')->where('id', $target->id)->first(['role', 'is_tenant_super_admin']);
         self::assertSame(1, (int) $row->is_tenant_super_admin);
-        self::assertSame('admin', (string) $row->role, 'the grant still promotes the role');
+        // F-431 changed this deliberately: the grant writes the FLAG ONLY. It
+        // used to promote the role as well, while the revoke cleared the flag
+        // alone, so granting and revoking left an ordinary member sitting at
+        // role='admin' with full administrator authority. The flag on its own is
+        // sufficient authority everywhere (AdminTier::allows()).
+        self::assertSame('member', (string) $row->role, 'the grant no longer promotes the role (F-431)');
     }
 
     /** CONTROL — `PUT /v2/admin/users/{id}/super-admin` still revokes. */

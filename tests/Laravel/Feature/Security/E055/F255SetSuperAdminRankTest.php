@@ -125,7 +125,11 @@ class F255SetSuperAdminRankTest extends TestCase
 
         $this->apiPut("/v2/admin/users/{$target->id}/super-admin", ['grant' => true])->assertStatus(200);
         $row = $this->row((int) $target->id);
-        $this->assertSame('admin', $row->role);
+        // F-431 changed this deliberately: the grant writes the FLAG ONLY. It
+        // used to promote the role as well, while the revoke cleared the flag
+        // alone, so granting and revoking left an ordinary member at
+        // role='admin' with full administrator authority.
+        $this->assertSame('member', $row->role);
         $this->assertSame(1, (int) $row->is_tenant_super_admin);
     }
 
