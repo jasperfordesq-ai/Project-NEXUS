@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A community administrator who is the buyer or the seller on a marketplace order can no longer decide that order's dispute themselves (F-341).
 - Time credits can no longer move on an exchange that one of the two members cancelled while a broker was settling its dispute — a case the platform's own reversal tool could not undo afterwards (F-340).
 - Blocking is now enforced in one place rather than being added by hand to each feature, so a blocked member is refused on any path that goes through the platform's contact rules — including ones nobody has checked individually. Two deliberate exceptions: posts to a whole group are unchanged, and blocked members now stop appearing in each other's match suggestions and match emails (F-336).
 - A blocked volunteer can no longer send a shift swap request to the volunteer who blocked them (F-369).

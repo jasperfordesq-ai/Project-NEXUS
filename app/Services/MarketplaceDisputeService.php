@@ -70,6 +70,19 @@ final class MarketplaceDisputeService
             throw new InvalidArgumentException(__('api.marketplace_dispute_already_resolved'));
         }
 
+        // F-341: separation of duties. `$adminId` was used only to claim the case
+        // and to stamp `resolved_by`; it was never compared with the order's own
+        // parties. An administrator who is the seller could close the buyer's
+        // dispute against themselves and release the disputed escrow hold, and an
+        // administrator who is the buyer could award themselves the refund.
+        // Refused BEFORE the claim below, so an interested party cannot even take
+        // the case off the queue. Same remedy as F-237 for safeguarding cases.
+        $disputedOrder = $dispute->order;
+        if ($disputedOrder !== null
+            && ((int) $disputedOrder->buyer_id === $adminId || (int) $disputedOrder->seller_id === $adminId)) {
+            throw new InvalidArgumentException(__('api.insufficient_permissions'));
+        }
+
         $claimed = MarketplaceDispute::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($disputeId)
