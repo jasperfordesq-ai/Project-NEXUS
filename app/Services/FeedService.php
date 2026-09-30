@@ -1532,12 +1532,18 @@ class FeedService
             ]);
         }
 
-        // AG14: check if the author has the municipality_announcer role
+        // AG14: check if the author has the municipality_announcer role.
+        // F-370: honour ur.expires_at, as EnsureIsAdmin, VereinMemberImportService,
+        // TwoFactorPolicy and Enterprise\PermissionService all do. Without it a
+        // grant that had expired still badged posts as official municipal notices.
         $isMunicipalityAnnouncer = DB::table('user_roles as ur')
             ->join('roles as r', 'ur.role_id', '=', 'r.id')
             ->where('ur.user_id', $userId)
             ->where('ur.tenant_id', $tenantId)
             ->where('r.name', 'municipality_announcer')
+            ->where(function ($query): void {
+                $query->whereNull('ur.expires_at')->orWhere('ur.expires_at', '>', now());
+            })
             ->exists();
 
         $post = $this->feedPost->newInstance([
