@@ -51,8 +51,6 @@ const OWN_HANDLING: Record<string, string> = {
     'Store link on the blocking update screen, which sits outside the provider tree and so has no toast.',
   'components/courses/LessonContent.tsx':
     'Shows an inline failure state on the lesson itself, which the member can see without a transient toast.',
-  'components/events/EventAgendaEnterprisePanel.tsx':
-    'Names the resource that could not be opened, which a generic message would lose.',
 };
 
 interface SourceFile {
