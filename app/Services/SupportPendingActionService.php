@@ -235,7 +235,27 @@ class SupportPendingActionService
         $witness = ($witness !== null && trim($witness) !== '') ? mb_substr(trim($witness), 0, 160) : null;
 
         return $this->confirm(
-            fn ($q) => $q->where('id', $actionId),
+            // 🔴 F-405: staff prepare, the member confirms — staff never act
+            // alone (see App\Support\Safeguarding\SupportTiers). A staff
+            // account that is ALSO the supporter on this relationship may not
+            // record the supported member's consent to its OWN request. Before
+            // this condition existed, a staff supporter signed off their own
+            // prepared credit transfer as "confirmed by the member, offline",
+            // and real credits left a supported member's wallet with no act of
+            // consent by that member anywhere in the record.
+            //
+            // The condition lives in the SCOPE, not in a pre-check, for two
+            // reasons: it is then evaluated inside the `lockForUpdate` in
+            // confirm(), so it cannot be raced; and an excluded row reports
+            // `support_action_not_found` rather than confirming to the caller
+            // that the action exists and is theirs.
+            function ($q) use ($actionId, $staffUserId): void {
+                $q->where('id', $actionId)
+                    ->where(function ($inner) use ($staffUserId): void {
+                        $inner->whereNull('supporter_user_id')
+                            ->orWhere('supporter_user_id', '!=', $staffUserId);
+                    });
+            },
             'attested_offline',
             ['attested_by_user_id' => $staffUserId, 'attested_channel' => $channel, 'attested_witness' => $witness],
         );
