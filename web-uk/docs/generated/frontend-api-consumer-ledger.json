@@ -1,24 +1,24 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-26T18:17:54.544Z",
+  "generatedAt": "2026-09-30T06:55:39.378Z",
   "provenance": {
-    "generatedAt": "2026-09-26T18:17:54.544Z",
+    "generatedAt": "2026-09-30T06:55:39.378Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
+    "laravelCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
+    "webUkRepositoryCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "sources": {
     "api": "src/lib/api.js",
-    "apiSha256": "16712f486d5f9e43b7a2c02fee983938dc7ba17f8d996f1ad64231049826c273",
+    "apiSha256": "ac6a98c210bf4e279f0b5168a37edd81d07431cd2e337da69d4b8c57bf1fc0ca",
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
     "laravelOpenApiSha256": "e60992f5ac21058988b49e3c96375ebc43f3d570d1b52b18d699aaa4e2b3ba7b",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
-    "laravelApiRoutesSha256": "3a6ef24849368cc8ad306bf65278dbf97fb8b04919c63758b67f93e28043fc2b"
+    "laravelApiRoutesSha256": "7ebe2d707c6939c9f926e70bc022eade156794ee1f96116ed3f489190575bb08"
   },
   "summary": {
     "contracts": 715,
@@ -64,6 +64,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -204,7 +205,7 @@
       "source": "src/lib/api.js:486",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable; request tenant context still applies",
-      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "requestShape": "JSON object: email, experience",
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
@@ -1491,6 +1492,7 @@
         "tests/password-strength-i18n.test.js",
         "tests/registration-contract.test.js",
         "tests/routes.test.js",
+        "tests/safe-filter-census.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/template-source.test.js",
@@ -9604,6 +9606,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9679,6 +9682,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9717,6 +9721,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9792,6 +9797,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9826,6 +9832,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9864,6 +9871,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9935,6 +9943,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9973,6 +9982,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10007,6 +10017,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10041,6 +10052,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10075,6 +10087,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10113,6 +10126,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10188,6 +10202,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10226,6 +10241,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10264,6 +10280,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/i18n-fixes-locale.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -12246,6 +12263,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -15857,6 +15875,7 @@
         "tests/api.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/safe-filter-census.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16064,6 +16083,7 @@
         "tests/form-input-preserved-on-error.test.js",
         "tests/ledger-token-crosscheck.test.js",
         "tests/listings-saved-tag-and-group-membership-states.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16180,6 +16200,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16254,6 +16275,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16288,6 +16310,7 @@
         "tests/api.test.js",
         "tests/character-count-contract.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16325,6 +16348,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16362,6 +16386,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16431,6 +16456,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/route-id-param-guard.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,

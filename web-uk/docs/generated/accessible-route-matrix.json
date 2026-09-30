@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-09-26T18:17:53.795Z",
+  "generatedAt": "2026-09-30T06:55:36.340Z",
   "provenance": {
-    "generatedAt": "2026-09-26T18:17:53.795Z",
+    "generatedAt": "2026-09-30T06:55:36.340Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
+    "laravelCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "eb3c9ce1a1437368acd8b92d5fe29011a8138c03",
+    "webUkRepositoryCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-09-26T18:17:53.795Z",
+    "generatedAt": "2026-09-30T06:55:36.340Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 748,
+    "webUkRoutes": 749,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 38,
+    "extraWebUkRoutes": 39,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -91,7 +91,7 @@
       "login": {
         "matched": 7,
         "missing": 0,
-        "extraWebUk": 3,
+        "extraWebUk": 4,
         "ignoredInfrastructure": 0
       },
       "marketplace": {
@@ -1068,6 +1068,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/login/two-factor/setup/complete",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/login/two-factor/setup/start",
+      "family": "login",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/login/two-factor/setup/start",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
       "webUkRouteKind": ""
