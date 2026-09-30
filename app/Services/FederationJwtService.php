@@ -228,7 +228,7 @@ class FederationJwtService
         try {
             // Validate client credentials against federation API keys
             $apiKey = DB::selectOne(
-                "SELECT fak.id, fak.tenant_id, fak.name, fak.permissions, fak.status, fak.expires_at
+                "SELECT fak.id, fak.tenant_id, fak.name, fak.permissions, fak.status, fak.expires_at, fak.signing_enabled
                  FROM federation_api_keys fak
                  WHERE fak.key_prefix = ? AND fak.key_hash = ? AND fak.status = 'active'",
                 [substr($clientId, 0, 8), hash('sha256', $clientSecret)]
@@ -238,6 +238,21 @@ class FederationJwtService
                 return [
                     'error' => 'invalid_client',
                     'error_description' => 'Unknown client or invalid credentials.',
+                ];
+            }
+
+            // A key that requires request signing must not be exchangeable for a
+            // bearer token. FederationApiMiddleware refuses such a key presented
+            // on its own (401 HMAC_REQUIRED) precisely because possession of the
+            // key is not sufficient; minting a signature-free JWT from it would
+            // collapse that second factor back into one.
+            if (!empty($apiKey->signing_enabled)) {
+                Log::warning('[FederationJwt] Refused token request for a signing-required API key', [
+                    'api_key_id' => (int) $apiKey->id,
+                ]);
+                return [
+                    'error' => 'invalid_client',
+                    'error_description' => 'This API key requires signed requests and cannot be exchanged for a bearer token.',
                 ];
             }
 

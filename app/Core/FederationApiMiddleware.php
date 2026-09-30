@@ -136,7 +136,7 @@ class FederationApiMiddleware
 
         // Verify partner is still active in DB (may have been revoked since token issuance)
         $dbPartner = DB::selectOne("
-            SELECT id, name, tenant_id, status, permissions, platform_id FROM federation_api_keys
+            SELECT id, name, tenant_id, status, permissions, platform_id, signing_enabled FROM federation_api_keys
             WHERE id = ? AND status = 'active'
             AND (expires_at IS NULL OR expires_at > NOW())
         ", [$partnerId]);
@@ -144,6 +144,16 @@ class FederationApiMiddleware
         if (!$dbPartner) {
             Log::warning('[FederationApiMiddleware] JWT partner no longer active in DB', ['partner_id' => $partnerId]);
             return self::sendError(401, 'Partner account has been revoked or suspended', 'PARTNER_REVOKED');
+        }
+
+        // The key behind this token may have been switched to signing-required
+        // since the token was minted. A bearer token carries no signature,
+        // nonce or timestamp, so it must stop working the moment the operator
+        // turns request signing on — otherwise a token issued a moment earlier
+        // outlives the control by up to its full lifetime.
+        if (!empty($dbPartner->signing_enabled)) {
+            Log::warning('[FederationApiMiddleware] JWT refused: partner key requires request signing', ['partner_id' => $partnerId]);
+            return self::sendError(401, 'HMAC signing required for this API key', 'HMAC_REQUIRED');
         }
 
         $partner = [
