@@ -480,7 +480,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/exchanges/{id} */
     public function showExchange(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
 
@@ -528,6 +528,16 @@ class AdminBrokerController extends BaseApiController
             $exchange = (array) $exchange;
             $exchange['tenant_name'] = $exchange['tenant_name'] ?? 'Unknown';
             $exchangeTenantId = (int) $exchange['tenant_id'];
+
+            // F-436: the four exchange write methods already refuse a party to
+            // the exchange (approve, reject, dispute, reverse). This read did
+            // not, and it publishes the counterparty's email address and the
+            // listing's internal broker risk_notes — the private half of the
+            // risk tag F-389 stops a broker writing on their own listing.
+            if ((int) $exchange['requester_id'] === $viewerId
+                || (int) $exchange['provider_id'] === $viewerId) {
+                return $this->respondWithError('FORBIDDEN', __('api.cannot_broker_own_exchange'), null, 403);
+            }
 
             $history = [];
             try {
@@ -1070,7 +1080,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/messages */
     public function messages(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
         $page = $this->queryInt('page', 1, 1);
@@ -1087,6 +1097,14 @@ class AdminBrokerController extends BaseApiController
                 $conditions[] = 'bmc.tenant_id = ?';
                 $params[] = $effectiveTenantId;
             }
+
+            // F-436: the caller's own monitoring rows are not in the queue they
+            // are shown. This is a list, so the row is excluded rather than the
+            // route refused — the queue still works, the caller's own row is
+            // simply absent, and the total reflects that.
+            $conditions[] = 'bmc.sender_id <> ? AND bmc.receiver_id <> ?';
+            $params[] = $viewerId;
+            $params[] = $viewerId;
 
             if ($filter === 'unreviewed') {
                 $conditions[] = 'bmc.reviewed_at IS NULL';
@@ -1161,6 +1179,15 @@ class AdminBrokerController extends BaseApiController
             $copy['flagged'] = (bool) ($copy['flagged'] ?? false);
             $copy['tenant_name'] = $copy['tenant_name'] ?? 'Unknown';
             $copyTenantId = (int) $copy['tenant_id'];
+
+            // F-436: the read side of F-403. The subject of the monitoring
+            // record must not read the assessment written about them — the
+            // copy reason, the concern, its severity, the reviewer's private
+            // notes or the reviewer's identity. Refused before the read is
+            // performed or audited.
+            if ($refusal = $this->guardNotMessageParty((int) $copy['sender_id'], (int) $copy['receiver_id'], $viewerId)) {
+                return $refusal;
+            }
 
             $thread = $this->reviewContext($copy);
 
@@ -1606,7 +1633,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/archives */
     public function archives(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
 
@@ -1652,6 +1679,12 @@ class AdminBrokerController extends BaseApiController
                 $conditions[] = 'bra.tenant_id = ?';
                 $params[] = $effectiveTenantId;
             }
+            // F-436: as for the message queue above, the caller's own archived
+            // decision is excluded from the list rather than the route refused.
+            $conditions[] = 'bra.sender_id <> ? AND bra.receiver_id <> ?';
+            $params[] = $viewerId;
+            $params[] = $viewerId;
+
             if ($decision && $decision !== 'all') {
                 $conditions[] = 'bra.decision = ?';
                 $params[] = $decision;
@@ -1704,7 +1737,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/archives/{id} */
     public function showArchive(int $id): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
 
@@ -1727,6 +1760,13 @@ class AdminBrokerController extends BaseApiController
 
             $archive = (array) $archive;
             $archive['tenant_name'] = $archive['tenant_name'] ?? 'Unknown';
+
+            // F-436: the subject of the archived decision must not read it —
+            // it carries the decision, the decision notes, the deciding
+            // administrator's name and the conversation snapshot.
+            if ($refusal = $this->guardNotMessageParty((int) $archive['sender_id'], (int) $archive['receiver_id'], $viewerId)) {
+                return $refusal;
+            }
 
             if (!empty($archive['conversation_snapshot'])) {
                 $archive['conversation_snapshot'] = json_decode($archive['conversation_snapshot'], true) ?? [];
