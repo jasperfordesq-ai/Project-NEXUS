@@ -72,6 +72,31 @@ class FederationExternalWebhookController extends BaseApiController
     private const RATE_LIMIT_PER_MINUTE = 200;
 
     /**
+     * F-406 — the most reviews one external partner may leave on one local
+     * member inside 24 hours.
+     *
+     * The local path throttles an unattached review to one per (reviewer,
+     * receiver) per day. Inbound, the reviewer identity is supplied by the
+     * sender and so cannot be a throttle key; the authenticated partner row is
+     * the only identity it cannot forge. A partner is one remote community, and
+     * a community reviewing the same local member more often than this in a day
+     * is review-bombing rather than feedback.
+     */
+    private const MAX_INBOUND_REVIEWS_PER_MEMBER_PER_DAY = 5;
+
+    /**
+     * F-407 — fallback monthly ceiling, in hours, on externally-originated
+     * credit arriving at this community with no local debit.
+     *
+     * Mirrors FederationCreditCommonsController's constant of the same name,
+     * introduced by F-345. `federation_credit_agreements.max_monthly_credits`
+     * is nullable, and "no number recorded" must not mean "unlimited" — an
+     * unbounded inbound credit is counterfeit currency inside the community. An
+     * agreement that states a limit always wins over this value.
+     */
+    private const DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS = 200.0;
+
+    /**
      * POST /api/v2/federation/external/webhooks/receive
      */
     public function receive(Request $request): JsonResponse
@@ -600,9 +625,10 @@ class FederationExternalWebhookController extends BaseApiController
             throw new InboundValidationException("Receiver user #{$receiverId} not found in this tenant", 'receiver_id');
         }
 
-        // Dedup by durable external identity. Older schemas did not have these
-        // columns, so retain the transaction-based fallback until every env has
-        // run the migration.
+        // Dedup by durable external identity, so a partner retrying the same
+        // event is answered 'duplicate' rather than writing twice. Older schemas
+        // do not have these columns; the exchange binding below covers that case
+        // and is not optional.
         $externalTxId = $this->optionalString($data, 'external_transaction_id', 128);
         $reviewerExternalId = (int) ($data['reviewer_external_id'] ?? $data['reviewer_id'] ?? 0);
         $reviewerTenantId = (int) ($data['reviewer_tenant_id'] ?? 0);
@@ -618,24 +644,65 @@ class FederationExternalWebhookController extends BaseApiController
                 ->first(['id']);
         }
 
-        if ($externalTxId) {
-            $tx = DB::table('federation_transactions')
-                ->where('external_transaction_id', $externalTxId)
-                ->where('external_partner_id', $partner->id)
-                ->where('receiver_tenant_id', $tenantId)
-                ->first(['id']);
-            if ($tx) {
-                $existing = DB::table('reviews')
-                    ->where('tenant_id', $tenantId)
-                    ->where('federation_transaction_id', $tx->id)
-                    ->where('reviewer_id', $reviewerExternalId)
-                    ->where('receiver_id', $receiverId)
-                    ->first(['id']);
-            }
-        }
-
         if ($existing) {
             return ['status' => 'duplicate', 'local_id' => (int) $existing->id];
+        }
+
+        // F-406 — an inbound review must describe a real exchange with THIS
+        // member, recorded by THIS partner, and one exchange earns one review.
+        //
+        // The local path (ReviewService::create) already refuses a review
+        // attached to a transaction the reviewer was not party to, and its own
+        // comment says why: "fabricating reviews for exchanges they never took
+        // part in, and bypassing the 24h no-transaction throttle below by
+        // cycling through transaction ids (review-bombing)". This path had
+        // neither control. `external_transaction_id` was optional and a miss was
+        // ignored, so a partner planted approved, publicly counted, one-star
+        // reviews carrying its own text on any local member it had never
+        // exchanged with, at 200 requests a minute.
+        //
+        // This path cannot key its controls on the reviewer. The remote reviewer
+        // is not a local `users` row and every reviewer field in the payload is
+        // chosen by the sender, so `reviewer_id` is written NULL. (The dedup
+        // that used to live here compared `reviews.reviewer_id` against the
+        // partner-supplied reviewer id, which no inserted row can ever match, so
+        // it never fired.) The authenticated partner row is the only identity
+        // the sender cannot forge, so it is what both controls key on.
+        $reviewedExchange = $this->federatedReviewExchange($externalTxId, $partner, $tenantId, $receiverId);
+        if ($reviewedExchange === null) {
+            return [
+                'status' => 'rejected',
+                'reason' => 'A federated review must reference a completed exchange recorded between this partner and this member',
+            ];
+        }
+
+        $existingForExchange = DB::table('reviews')
+            ->where('tenant_id', $tenantId)
+            ->where('federation_transaction_id', $reviewedExchange)
+            ->first(['id']);
+        if ($existingForExchange) {
+            return ['status' => 'duplicate', 'local_id' => (int) $existingForExchange->id];
+        }
+
+        // Defence in depth. A valid inbound credit may be as small as 0.01
+        // hours, so the exchange requirement alone still leaves thousands of
+        // reviewable exchanges inside the monthly credit ceiling (F-407). One
+        // remote community reviewing one local member more often than this in a
+        // day is not a pattern the platform needs to support; the local path's
+        // equivalent bound is one review per reviewer per 24 hours.
+        if ($this->recentInboundReviewCount($partner, $tenantId, $receiverId, $hasExternalIdentity)
+            >= self::MAX_INBOUND_REVIEWS_PER_MEMBER_PER_DAY
+        ) {
+            Log::warning('[FederationExternalWebhook] Inbound review refused: daily cap reached', [
+                'partner_id' => (int) $partner->id,
+                'tenant_id' => $tenantId,
+                'receiver_id' => $receiverId,
+            ]);
+
+            return [
+                'status' => 'rejected',
+                'reason' => 'This partner has already reached the daily limit of reviews for this member',
+            ];
         }
 
         if ($blocked = $this->externalRecipientSafeguardingBlock(
@@ -658,6 +725,10 @@ class FederationExternalWebhookController extends BaseApiController
             'reviewer_tenant_id' => $reviewerTenantId ?: null,
             'receiver_id'        => $receiverId,
             'receiver_tenant_id' => $tenantId,
+            // F-406: bind the review to the exchange it describes, so a second
+            // review of the same exchange is refused whatever `external_id` the
+            // partner picks.
+            'federation_transaction_id' => $reviewedExchange,
             'rating'             => $rating,
             'comment'            => $comment,
             'status'             => 'approved',
@@ -701,6 +772,71 @@ class FederationExternalWebhookController extends BaseApiController
         event(new FederatedReviewReceived($tenantId, (int) $partner->id, (int) $localId, $shadowRow));
 
         return ['status' => 'handled', 'local_id' => (int) $localId];
+    }
+
+    /**
+     * F-406 — resolve the exchange an inbound review claims to describe.
+     *
+     * Returns the local `federation_transactions.id` when the reference names a
+     * completed exchange that this partner recorded with this member in this
+     * tenant, and null otherwise — which includes "no reference was sent at
+     * all", "that reference is unknown", "that exchange belongs to another
+     * member" and "that exchange belongs to another partner".
+     *
+     * Every `federation_transactions` row written by this controller carries
+     * `sender_tenant_id = 0` and the local member in `receiver_user_id`, so
+     * "involves this member" is exactly `receiver_user_id`. If a future outbound
+     * path ever records the local member as the sender, that branch has to be
+     * added here — and it must test `sender_tenant_id` too, because
+     * `sender_user_id` holds a REMOTE id on every row this controller writes and
+     * would otherwise match a local member by coincidence.
+     */
+    private function federatedReviewExchange(
+        ?string $externalTxId,
+        object $partner,
+        int $tenantId,
+        int $receiverId
+    ): ?int {
+        if ($externalTxId === null || trim($externalTxId) === '') {
+            return null;
+        }
+
+        $tx = DB::table('federation_transactions')
+            ->where('external_transaction_id', trim($externalTxId))
+            ->where('external_partner_id', (int) $partner->id)
+            ->where('receiver_tenant_id', $tenantId)
+            ->where('receiver_user_id', $receiverId)
+            ->where('status', 'completed')
+            ->first(['id']);
+
+        return $tx ? (int) $tx->id : null;
+    }
+
+    /**
+     * F-406 — how many reviews this partner has already left on this member in
+     * the last 24 hours.
+     *
+     * Older schemas have no `reviews.external_partner_id`; there the count falls
+     * back to every federated review of this member in the window, which is
+     * stricter rather than looser.
+     */
+    private function recentInboundReviewCount(
+        object $partner,
+        int $tenantId,
+        int $receiverId,
+        bool $hasExternalIdentity
+    ): int {
+        $query = DB::table('reviews')
+            ->where('tenant_id', $tenantId)
+            ->where('receiver_id', $receiverId)
+            ->where('review_type', 'federated')
+            ->where('created_at', '>=', now()->subDay());
+
+        if ($hasExternalIdentity) {
+            $query->where('external_partner_id', (int) $partner->id);
+        }
+
+        return (int) $query->count();
     }
 
     private function handleInboundListing(array $data, object $partner): array
@@ -1354,6 +1490,14 @@ class FederationExternalWebhookController extends BaseApiController
             // Credit the receiver's balance and record the transaction
             DB::beginTransaction();
             try {
+                // F-407 — inside the transaction, with the agreement row locked,
+                // or two concurrent credits both pass the same stale total.
+                if ($refusal = $this->inboundCreditCeilingRefusal((int) TenantContext::getId(), $amount)) {
+                    DB::rollBack();
+
+                    return $refusal;
+                }
+
                 $transactionRow = [
                     'sender_tenant_id'       => 0, // External origin
                     'sender_user_id'         => (int) $senderId,
@@ -1603,6 +1747,14 @@ class FederationExternalWebhookController extends BaseApiController
         // Record the transaction AND credit the user immediately — atomically
         DB::beginTransaction();
         try {
+            // F-407 — inside the transaction, with the agreement row locked, or
+            // two concurrent credits both pass the same stale total.
+            if ($refusal = $this->inboundCreditCeilingRefusal((int) TenantContext::getId(), $amountInHours)) {
+                DB::rollBack();
+
+                return $refusal;
+            }
+
             $transactionRow = [
                 'sender_tenant_id'        => 0,
                 'sender_user_id'          => (int) ($data['sender_id'] ?? 0),
@@ -1687,6 +1839,92 @@ class FederationExternalWebhookController extends BaseApiController
             'amount_credited' => $amountInHours,
             'recipient_id' => $receiverUserId,
         ];
+    }
+
+    /**
+     * F-407 — the aggregate ceiling on externally-originated credit arriving
+     * through the external-webhook / native-ingest protocol.
+     *
+     * An inbound credit here creates spendable balance with no matching local
+     * debit: `sender_tenant_id` is literally 0, so nothing on this installation
+     * balances it. `SecurityBounds::MAX_SINGLE_EXTERNAL_CREDIT_HOURS` caps a
+     * SINGLE transfer at 24 hours, and the only accumulation control was
+     * idempotency on `external_transaction_id` — a string the sending partner
+     * chooses freely, so repeating the call under a fresh identifier minted
+     * without limit.
+     *
+     * This is F-345's defect in its fourth protocol. The bound is the same table
+     * the other three already use: the v1 partner API refuses outright without
+     * an active agreement (`FederationController::createTransaction`,
+     * NO_CREDIT_AGREEMENT), Komunitin publishes its credit limit from
+     * `max_monthly_credits`, and Credit Commons enforces it as a monthly total
+     * (`FederationCreditCommonsController::inboundCreditCeilingRefusal`).
+     *
+     * Scope note: the ceiling is per community, not per partner, because the
+     * agreement row is keyed on `to_tenant_id`. Every externally-originated
+     * credit into this community counts against the one budget, so a second
+     * partner does not double it. It counts this protocol's own ledger
+     * (`federation_transactions`); Credit Commons counts its own rows in
+     * `transactions`, so a community running both protocols has a budget under
+     * each. Consolidating the two is a wider change than this fix.
+     *
+     * 🔴 Call with a database transaction already open. The agreement row is
+     * locked so two concurrent inbound credits cannot both read the same
+     * "already credited" total and both pass it.
+     *
+     * @return array<string,string>|null a refusal to return to the partner, or null to proceed
+     */
+    private function inboundCreditCeilingRefusal(int $tenantId, float $amountInHours): ?array
+    {
+        $agreement = DB::table('federation_credit_agreements')
+            ->where('to_tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first(['id', 'max_monthly_credits']);
+
+        if (!$agreement) {
+            Log::warning('[FederationExternalWebhook] Inbound credit refused: no active credit agreement', [
+                'tenant_id' => $tenantId,
+                'amount_hours' => $amountInHours,
+            ]);
+
+            return [
+                'status' => 'rejected',
+                'reason' => 'No active credit agreement authorises inbound credit to this community',
+            ];
+        }
+
+        $ceiling = $agreement->max_monthly_credits === null
+            ? self::DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS
+            : (float) $agreement->max_monthly_credits;
+
+        // Every externally-originated credit this community has taken in this
+        // month — the exact shape both money handlers below write.
+        $alreadyCredited = (float) DB::table('federation_transactions')
+            ->where('receiver_tenant_id', $tenantId)
+            ->where('sender_tenant_id', 0)
+            ->whereNotNull('external_partner_id')
+            ->where('status', 'completed')
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->sum('amount');
+
+        if ($alreadyCredited + $amountInHours > $ceiling) {
+            Log::warning('[FederationExternalWebhook] Inbound credit refused: monthly ceiling reached', [
+                'tenant_id' => $tenantId,
+                'agreement_id' => (int) $agreement->id,
+                'ceiling_hours' => $ceiling,
+                'already_credited_hours' => $alreadyCredited,
+                'requested_hours' => $amountInHours,
+            ]);
+
+            return [
+                'status' => 'rejected',
+                'reason' => 'Inbound credit would exceed this community\'s monthly credit ceiling',
+            ];
+        }
+
+        return null;
     }
 
     private function externalTransactionIdempotencyKey(object $partner, mixed $externalTxId): ?string

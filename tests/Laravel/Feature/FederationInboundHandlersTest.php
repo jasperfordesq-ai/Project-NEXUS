@@ -99,6 +99,45 @@ class FederationInboundHandlersTest extends TestCase
     }
 
     /**
+     * F-406 — record a completed federated exchange between the test partner
+     * and a local member, the way handleTransactionCompleted() writes one. An
+     * inbound review must name one of these.
+     */
+    private function recordFederatedExchange(int $receiverUserId, string $externalTxId): int
+    {
+        return (int) DB::table('federation_transactions')->insertGetId([
+            'sender_tenant_id' => 0,
+            'sender_user_id' => 0,
+            'receiver_tenant_id' => $this->testTenantId,
+            'receiver_user_id' => $receiverUserId,
+            'amount' => 1.0,
+            'description' => 'Fixture federated exchange',
+            'status' => 'completed',
+            'completed_at' => now(),
+            'external_partner_id' => $this->partnerId,
+            'external_receiver_name' => 'Remote Sender',
+            'external_transaction_id' => $externalTxId,
+            'created_at' => now(),
+        ]);
+    }
+
+    /**
+     * F-407 — inbound external credit is bounded by an active credit agreement
+     * for this community, so the money handlers need one to proceed.
+     */
+    private function activeCreditAgreement(?float $maxMonthlyCredits = 100.0): void
+    {
+        DB::table('federation_credit_agreements')->insert([
+            'from_tenant_id' => 0,
+            'to_tenant_id' => $this->testTenantId,
+            'exchange_rate' => 1.0,
+            'status' => 'active',
+            'max_monthly_credits' => $maxMonthlyCredits,
+            'created_at' => now(),
+        ]);
+    }
+
+    /**
      * Post a webhook payload with the partner's Bearer token.
      *
      * @param array<string, mixed> $data
@@ -148,9 +187,13 @@ class FederationInboundHandlersTest extends TestCase
         // reviews.reviewer_id → users.id). In production the identity-sync
         // subsystem pre-provisions a stub user for external reviewers.
         $reviewerStub = User::factory()->forTenant(999)->create();
+        // F-406: a federated review must describe a completed exchange this
+        // partner recorded with this member.
+        $this->recordFederatedExchange((int) $receiver->id, 'ext-review-123-tx');
 
         $response = $this->postWebhook('review.created', [
             'external_id'          => 'ext-review-123',
+            'external_transaction_id' => 'ext-review-123-tx',
             'rating'               => 4,
             'receiver_id'          => $receiver->id,
             'reviewer_external_id' => $reviewerStub->id,
@@ -171,16 +214,25 @@ class FederationInboundHandlersTest extends TestCase
         Event::assertDispatched(FederatedReviewReceived::class);
     }
 
-    public function test_review_created_replay_is_idempotent_without_transaction_match(): void
+    /**
+     * Was `..._without_transaction_match` — a replay whose
+     * `external_transaction_id` matched no local exchange. F-406 refuses that
+     * payload outright (it is the review-bomb shape), so the replay is now
+     * exercised against a real exchange. What the test pins is unchanged: a
+     * repeated payload returns `duplicate` and writes one row and one event.
+     */
+    public function test_review_created_replay_is_idempotent(): void
     {
         Event::fake([FederatedReviewReceived::class]);
 
         $receiver = User::factory()->forTenant($this->testTenantId)->create();
         $reviewerStub = User::factory()->forTenant(999)->create();
+        $externalTxId = 'federated-tx-' . uniqid();
+        $this->recordFederatedExchange((int) $receiver->id, $externalTxId);
 
         $payload = [
             'external_id' => 'ext-review-retry-' . uniqid(),
-            'external_transaction_id' => 'unknown-federated-tx-' . uniqid(),
+            'external_transaction_id' => $externalTxId,
             'rating' => 5,
             'receiver_id' => $receiver->id,
             'reviewer_external_id' => $reviewerStub->id,
@@ -223,8 +275,12 @@ class FederationInboundHandlersTest extends TestCase
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         $externalId = 'ext-review-safeguarding-denied-' . uniqid();
+        // F-406: the exchange requirement is evaluated before the safeguarding
+        // policy, so the payload needs a real exchange to reach the policy.
+        $this->recordFederatedExchange((int) $receiver->id, $externalId . '-tx');
         $response = $this->postWebhook('review.created', [
             'external_id' => $externalId,
+            'external_transaction_id' => $externalId . '-tx',
             'rating' => 5,
             'receiver_id' => $receiver->id,
             'reviewer_external_id' => 501,
@@ -261,8 +317,12 @@ class FederationInboundHandlersTest extends TestCase
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         $externalId = 'ext-review-policy-unavailable-' . uniqid();
+        // F-406: the exchange requirement is evaluated before the safeguarding
+        // policy, so the payload needs a real exchange to reach the policy.
+        $this->recordFederatedExchange((int) $receiver->id, $externalId . '-tx');
         $response = $this->postWebhook('review.created', [
             'external_id' => $externalId,
+            'external_transaction_id' => $externalId . '-tx',
             'rating' => 4,
             'receiver_id' => $receiver->id,
             'reviewer_external_id' => 502,
@@ -568,7 +628,11 @@ class FederationInboundHandlersTest extends TestCase
         $this->assertStringContainsString("->where('id', \$existing->id)\n                ->where('tenant_id', \$tenantId)", $source);
         $this->assertStringContainsString("->where('external_idempotency_key', \$idempotencyKey)\n                ->where('receiver_tenant_id', (int) \$partner->tenant_id)", $source);
         $this->assertStringContainsString("->where('external_partner_id', \$partner->id)\n            ->where('receiver_tenant_id', (int) \$partner->tenant_id)", $source);
-        $this->assertStringContainsString("->where('external_transaction_id', \$externalTxId)\n                ->where('external_partner_id', \$partner->id)\n                ->where('receiver_tenant_id', \$tenantId)", $source);
+        // F-406 moved this lookup into federatedReviewExchange() and narrowed
+        // it further: the exchange must also belong to the member being
+        // reviewed and must be completed. The tenant predicate this assertion
+        // exists to protect is unchanged.
+        $this->assertStringContainsString("->where('external_transaction_id', trim(\$externalTxId))\n            ->where('external_partner_id', (int) \$partner->id)\n            ->where('receiver_tenant_id', \$tenantId)\n            ->where('receiver_user_id', \$receiverId)", $source);
         $this->assertStringContainsString("->where('id', \$tx->id)\n                            ->where('receiver_tenant_id', (int) \$tx->receiver_tenant_id)", $source);
         $this->assertStringContainsString("->where('id', \$transactionId)\n                    ->where('receiver_tenant_id', \$receiverTenantId)", $source);
     }
@@ -809,6 +873,8 @@ class FederationInboundHandlersTest extends TestCase
             'updated_at' => now(),
         ]);
         $mailer = $this->fakeEmailDispatchService();
+        // F-407: inbound external credit needs an active credit agreement.
+        $this->activeCreditAgreement();
 
         $payload = [
             'external_transaction_id' => 'ext-tx-email-1',
@@ -859,6 +925,9 @@ class FederationInboundHandlersTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // F-407: inbound external credit needs an active credit agreement.
+        $this->activeCreditAgreement();
 
         $payload = [
             'external_transaction_id' => 'ext-tx-repair-1',
