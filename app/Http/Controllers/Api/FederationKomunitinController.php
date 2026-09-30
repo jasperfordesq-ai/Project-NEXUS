@@ -464,11 +464,21 @@ class FederationKomunitinController extends BaseApiController
         $baseUrl = $request->getSchemeAndHttpHost();
         $payload = $request->json()->all();
 
-        $user = DB::table('users')
-            ->where('id', (int) $id)
-            ->where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->first(['id', 'name', 'username', 'balance', 'created_at', 'updated_at']);
+        // F-330: this returns the full account resource — balance, credit limit,
+        // account code — so it is a read as well as a write and carries the same
+        // opt-in scope the GET on this object applies. Resolving on id +
+        // tenant_id alone let a partner read any active member by using the
+        // write verb.
+        $user = $this->discoverableFederatedAccountQuery($tenantId)
+            ->where('users.id', (int) $id)
+            ->first([
+                'users.id',
+                'users.name',
+                'users.username',
+                'users.balance',
+                'users.created_at',
+                'users.updated_at',
+            ]);
 
         if (!$user) {
             return $this->jsonApiError('NotFound', 'Not Found',
