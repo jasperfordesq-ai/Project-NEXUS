@@ -142,12 +142,17 @@ class MenuController extends BaseApiController
                 $mobileMenu = MenuManager::getMenu(MenuManager::LOCATION_HEADER_MAIN, null, true);
             }
 
-            // Simplify structure for mobile
+            // Simplify structure for mobile.
+            // 🔴 `id` is optional: MenuManager's built-in fallback menus
+            // (getDefaultMobileMenu / getOriginalNavigation) are hand-written
+            // arrays, not database rows, so they carry no id. Reading the key
+            // unguarded raised an ErrorException that this method's own
+            // catch turned into a 500 for every caller (F-439).
             $simplified = [];
             foreach ($mobileMenu as $menu) {
                 foreach ($menu['items'] as $item) {
                     $simplified[] = [
-                        'id'       => $item['id'],
+                        'id'       => $item['id'] ?? null,
                         'label'    => $item['label'],
                         'icon'     => $item['icon'] ?? null,
                         'url'      => $item['url'] ?? '#',
@@ -193,7 +198,7 @@ class MenuController extends BaseApiController
         $simplified = [];
         foreach ($children as $child) {
             $simplified[] = [
-                'id'    => $child['id'],
+                'id'    => $child['id'] ?? null,
                 'label' => $child['label'],
                 'icon'  => $child['icon'] ?? null,
                 'url'   => $child['url'] ?? '#',
