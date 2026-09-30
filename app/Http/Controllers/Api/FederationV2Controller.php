@@ -3510,11 +3510,15 @@ class FederationV2Controller extends BaseApiController
 
         if (!$result['success']) {
             $code = (string) ($result['error_code'] ?? 'CONNECTION_ERROR');
+            // 'BLOCKED' is SafeguardingInteractionPolicy's own refusal code
+            // (F-336). BaseApiController::safeguardingPolicyError() maps it to
+            // 403; this explicit list must agree, or a refusal that is really a
+            // block is reported as a bad request.
             $status = $code === 'SAFEGUARDING_POLICY_UNAVAILABLE'
                 ? 503
                 : ($code === 'CONNECTION_STATE_CHANGED'
                     ? 409
-                    : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED'], true) ? 403 : 400));
+                    : (in_array($code, ['VETTING_REQUIRED', 'SAFEGUARDING_CONTACT_RESTRICTED', 'BLOCKED'], true) ? 403 : 400));
 
             return $this->respondWithError($code, $result['error'], null, $status);
         }
