@@ -36,8 +36,9 @@ final class LegalPublicationDeliveryService
             DB::table('users')->where('tenant_id', $version->tenant_id)
                 ->where('status', 'active')->whereNull('deleted_at')
                 ->select('id')->orderBy('id')->chunkById(250, function ($users) use ($version, $url, &$count) {
+                    $rows = [];
                     foreach ($users as $user) {
-                        $count += DB::table('legal_publication_deliveries')->insertOrIgnore([
+                        $rows[] = [
                             'tenant_id' => $version->tenant_id, 'version_id' => $version->id,
                             'user_id' => $user->id, 'document_title' => $version->title,
                             'version_number' => $version->version_number,
@@ -45,8 +46,9 @@ final class LegalPublicationDeliveryService
                             'review_url' => $url, 'community_name' => TenantContext::getName(),
                             'status' => 'pending', 'attempts' => 0,
                             'created_at' => now(), 'updated_at' => now(),
-                        ]);
+                        ];
                     }
+                    $count += DB::table('legal_publication_deliveries')->insertOrIgnore($rows);
                 });
             return $count;
         });
@@ -88,28 +90,38 @@ final class LegalPublicationDeliveryService
         } catch (\Throwable $e) {
             Log::warning('Policy email engagement event could not be recorded', ['delivery_id' => $deliveryId, 'event' => $event]);
         }
-        return $row->review_url;
+        return filter_var($row->review_url, FILTER_VALIDATE_URL)
+            && in_array(strtolower((string) parse_url($row->review_url, PHP_URL_SCHEME)), ['http', 'https'], true)
+            ? $row->review_url : null;
     }
 
-    private static function eventCounts(int $tenantId): \Illuminate\Database\Query\Builder
+    private static function eventCounts(int $tenantId, array $versionIds): \Illuminate\Database\Query\Builder
     {
-        return DB::table('legal_publication_events')
-            ->where('tenant_id', $tenantId)
-            ->selectRaw('tenant_id, delivery_id')
-            ->selectRaw("SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END) as opens")
-            ->selectRaw("SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END) as clicks")
-            ->selectRaw("MIN(CASE WHEN event_type = 'open' THEN occurred_at END) as first_opened")
-            ->selectRaw("MIN(CASE WHEN event_type = 'click' THEN occurred_at END) as first_clicked")
-            ->groupBy('tenant_id', 'delivery_id');
+        return DB::table('legal_publication_events as evlog')
+            ->join('legal_publication_deliveries as delivery', 'delivery.id', '=', 'evlog.delivery_id')
+            ->where('evlog.tenant_id', $tenantId)
+            ->where('delivery.tenant_id', $tenantId)
+            ->whereIn('delivery.version_id', $versionIds)
+            ->selectRaw('evlog.tenant_id, evlog.delivery_id')
+            ->selectRaw("SUM(CASE WHEN evlog.event_type = 'open' THEN 1 ELSE 0 END) as opens")
+            ->selectRaw("SUM(CASE WHEN evlog.event_type = 'click' THEN 1 ELSE 0 END) as clicks")
+            ->selectRaw("MIN(CASE WHEN evlog.event_type = 'open' THEN evlog.occurred_at END) as first_opened")
+            ->selectRaw("MIN(CASE WHEN evlog.event_type = 'click' THEN evlog.occurred_at END) as first_clicked")
+            ->groupBy('evlog.tenant_id', 'evlog.delivery_id');
     }
 
     /** Recent policy sends for the admin email overview. Provider delivery is
      * separate from transport submission: a submitted email can still bounce. */
     public static function recent(int $tenantId, int $limit = 20): array
     {
-        $versionIds = DB::table('legal_publication_deliveries')
-            ->where('tenant_id', $tenantId)->distinct()
-            ->orderByDesc('version_id')->limit($limit)->pluck('version_id');
+        $versionIds = DB::table('legal_document_versions as v')
+            ->join('legal_documents as d', 'd.id', '=', 'v.document_id')
+            ->where('d.tenant_id', $tenantId)
+            ->whereExists(function ($query) use ($tenantId) {
+                $query->selectRaw('1')->from('legal_publication_deliveries as l')
+                    ->whereColumn('l.version_id', 'v.id')->where('l.tenant_id', $tenantId);
+            })
+            ->orderByDesc('v.published_at')->limit($limit)->pluck('v.id');
         if ($versionIds->isEmpty()) {
             return [];
         }
@@ -123,11 +135,11 @@ final class LegalPublicationDeliveryService
                 $join->on('e.tenant_id', '=', 'l.tenant_id')
                     ->on('e.idempotency_key', '=', DB::raw("CONCAT('legal-publication:', l.id)"));
             })
-            ->leftJoinSub(self::eventCounts($tenantId), 'ev', function ($join) {
+            ->leftJoinSub(self::eventCounts($tenantId, $versionIds->all()), 'ev', function ($join) {
                 $join->on('ev.tenant_id', '=', 'l.tenant_id')->on('ev.delivery_id', '=', 'l.id');
             })
             ->where('l.tenant_id', $tenantId)->whereIn('l.version_id', $versionIds)
-            ->selectRaw('d.id as document_id, d.title, v.id as version_id, v.version_number, v.published_at')
+            ->selectRaw('d.id as document_id, MIN(l.document_title) as title, v.id as version_id, v.version_number, v.published_at')
             ->selectRaw('COUNT(DISTINCT l.id) as recipients')
             ->selectRaw("COUNT(DISTINCT CASE WHEN l.status IN ('pending','retry','sending') THEN l.id END) as queued")
             ->selectRaw("COUNT(DISTINCT CASE WHEN l.status = 'sent' THEN l.id END) as submitted")
@@ -136,7 +148,7 @@ final class LegalPublicationDeliveryService
             ->selectRaw("COUNT(DISTINCT CASE WHEN e.status = 'bounced' THEN l.id END) as bounced")
             ->selectRaw('COUNT(DISTINCT CASE WHEN ev.opens > 0 THEN l.id END) as unique_opens')
             ->selectRaw('COUNT(DISTINCT CASE WHEN ev.clicks > 0 THEN l.id END) as unique_clicks')
-            ->groupBy('d.id', 'd.title', 'v.id', 'v.version_number', 'v.published_at')
+            ->groupBy('d.id', 'v.id', 'v.version_number', 'v.published_at')
             ->orderByDesc('v.published_at')->get()->map(fn ($row) => (array) $row)->all();
     }
 
@@ -149,11 +161,14 @@ final class LegalPublicationDeliveryService
         if (!$version) {
             return null;
         }
+        $version->title = DB::table('legal_publication_deliveries')
+            ->where('tenant_id', $tenantId)->where('version_id', $versionId)
+            ->value('document_title') ?? $version->title;
         $base = DB::table('legal_publication_deliveries as l')
             ->leftJoin('users as u', function ($join) {
                 $join->on('u.id', '=', 'l.user_id')->on('u.tenant_id', '=', 'l.tenant_id');
             })
-            ->leftJoinSub(self::eventCounts($tenantId), 'ev', function ($join) {
+            ->leftJoinSub(self::eventCounts($tenantId, [$versionId]), 'ev', function ($join) {
                 $join->on('ev.tenant_id', '=', 'l.tenant_id')->on('ev.delivery_id', '=', 'l.id');
             })
             ->where('l.tenant_id', $tenantId)->where('l.version_id', $versionId);

@@ -59,6 +59,14 @@ class LegalPublicationDeliveryTest extends TestCase
         $this->assertFalse(LegalDocumentService::publishVersion($version));
     }
 
+    public function test_service_refuses_a_blank_summary_without_publishing_or_queueing(): void
+    {
+        $version = $this->draft('');
+        $this->assertFalse(LegalDocumentService::publishVersion($version));
+        $this->assertDatabaseHas('legal_document_versions', ['id' => $version, 'is_draft' => 1]);
+        $this->assertDatabaseMissing('legal_publication_deliveries', ['version_id' => $version]);
+    }
+
     public function test_worker_renders_summary_link_and_does_not_resend(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'email' => 'policy-reader@example.org', 'preferred_language' => 'de']);
@@ -141,14 +149,19 @@ class LegalPublicationDeliveryTest extends TestCase
             'idempotency_key' => 'legal-publication:' . $deliveryId,
             'category' => 'legal_document', 'status' => 'delivered', 'created_at' => now(),
         ]);
+        DB::table('legal_documents')->where('id', DB::table('legal_document_versions')
+            ->where('id', $version)->value('document_id'))->update(['title' => 'Renamed policy']);
         $response = $this->apiGet('/v2/admin/legal-documents/publication-emails');
         $response->assertStatus(200);
         $row = collect($response->json('data'))->firstWhere('version_id', $version);
         $this->assertNotNull($row);
+        $this->assertSame('Policy test', $row['title']);
         $this->assertEquals(1, $row['recipients']);
         $this->assertEquals(1, $row['submitted']);
         $this->assertEquals(1, $row['delivered']);
         $this->assertEquals(0, $row['queued']);
+        $stats = $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats");
+        $stats->assertJsonPath('data.version.title', 'Policy test');
     }
 
     public function test_signed_open_and_click_record_recipient_activity_and_reject_tampering(): void
@@ -181,6 +194,20 @@ class LegalPublicationDeliveryTest extends TestCase
         $this->assertEquals(1, $overview['unique_clicks']);
         $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats?filter=not_opened")
             ->assertJsonPath('data.meta.total', 0);
+    }
+
+    public function test_signed_tracking_works_without_a_login_but_admin_stats_do_not(): void
+    {
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $version = $this->draft();
+        LegalDocumentService::publishVersion($version);
+        $deliveryId = DB::table('legal_publication_deliveries')->where('version_id', $version)
+            ->where('user_id', $recipient->id)->value('id');
+        $openPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'open'), PHP_URL_PATH);
+        $clickPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'click'), PHP_URL_PATH);
+        $this->apiGet($openPath)->assertStatus(200);
+        $this->apiGet($clickPath)->assertRedirect();
+        $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats")->assertStatus(401);
     }
 
     public function test_marketing_unsubscribe_does_not_override_service_mail_but_bounces_do(): void

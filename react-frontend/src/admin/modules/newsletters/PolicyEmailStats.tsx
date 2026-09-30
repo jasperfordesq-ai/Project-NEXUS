@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
+import { usePageTitle } from '@/hooks';
 import { getFormattingLocale } from '@/lib/helpers';
 import { Button, Card, CardBody, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 import { PageHeader } from '../../components/PageHeader';
@@ -20,6 +21,7 @@ export function PolicyEmailStats() {
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
   const { t } = useTranslation('admin_newsletters');
+  usePageTitle(t('newsletters.policy_email_stats_title'));
   const [data, setData] = useState<Stats | null>(null);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<Filter>('all');

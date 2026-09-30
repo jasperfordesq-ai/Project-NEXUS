@@ -303,7 +303,8 @@ class LegalDocumentService
     public static function publishVersion(int $vid): bool
     {
         $version = self::getVersion($vid);
-        if (! $version || ! (bool) $version['is_draft']) {
+        if (! $version || ! (bool) $version['is_draft']
+            || trim(strip_tags((string) ($version['summary_of_changes'] ?? ''))) === '') {
             return false;
         }
 
@@ -317,7 +318,8 @@ class LegalDocumentService
             DB::table('legal_documents')->where('id', $version['document_id'])
                 ->where('tenant_id', TenantContext::getId())->lockForUpdate()->first();
             $draft = DB::table('legal_document_versions')->where('id', $vid)->lockForUpdate()->first();
-            if (!$draft || !(bool) $draft->is_draft) {
+            if (!$draft || !(bool) $draft->is_draft
+                || trim(strip_tags((string) ($draft->summary_of_changes ?? ''))) === '') {
                 return false;
             }
             // Unset current flag on all other versions

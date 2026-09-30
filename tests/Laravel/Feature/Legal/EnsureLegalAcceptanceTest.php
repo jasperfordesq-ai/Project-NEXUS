@@ -476,6 +476,7 @@ class EnsureLegalAcceptanceTest extends TestCase
             'version_number' => '3.0',
             'content' => '<p>Updated wording.</p>',
             'content_plain' => 'Updated wording.',
+            'summary_of_changes' => 'Updated wording that members need to accept.',
             'effective_date' => '2026-06-01',
             'is_draft' => 1,
         ]);
