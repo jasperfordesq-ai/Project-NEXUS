@@ -101,6 +101,9 @@ class FederationKomunitinController extends BaseApiController
     public function currency(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         return $this->jsonApiResponse($this->buildCurrencyResource($tenantId), null, true);
     }
 
@@ -110,6 +113,9 @@ class FederationKomunitinController extends BaseApiController
     public function currencySettings(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
 
         return $this->jsonApiResponse([
             'type' => 'currency-settings',
@@ -159,6 +165,9 @@ class FederationKomunitinController extends BaseApiController
     public function updateCurrency(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $payload = $request->json()->all();
         $attrs = $payload['data']['attributes'] ?? [];
 
@@ -181,6 +190,9 @@ class FederationKomunitinController extends BaseApiController
     public function updateCurrencySettings(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $payload = $request->json()->all();
         $attrs = $payload['data']['attributes'] ?? [];
 
@@ -221,6 +233,9 @@ class FederationKomunitinController extends BaseApiController
     public function accounts(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $pageSize = min((int) ($request->query('page')['size'] ?? $request->query('page_size', '25')), 100);
         $afterCursor = $request->query('page')['after'] ?? $request->query('page_after');
         $filterCode = $request->query('filter')['code'] ?? $request->query('filter_code');
@@ -288,6 +303,9 @@ class FederationKomunitinController extends BaseApiController
     public function account(Request $request, string $code, string $id): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
 
         $user = $this->discoverableFederatedAccountQuery($tenantId)
@@ -321,6 +339,9 @@ class FederationKomunitinController extends BaseApiController
     public function createAccount(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
         $payload = $request->json()->all();
 
@@ -369,6 +390,9 @@ class FederationKomunitinController extends BaseApiController
         }
 
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
 
         DB::table('tenant_settings')->updateOrInsert(
             [
@@ -404,6 +428,9 @@ class FederationKomunitinController extends BaseApiController
         }
 
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
 
         // F-331: a partner may only deactivate an account it can legitimately
         // see. Resolving on id + tenant_id alone let a partner switch off any
@@ -465,6 +492,9 @@ class FederationKomunitinController extends BaseApiController
     public function updateAccount(Request $request, string $code, string $id): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
         $payload = $request->json()->all();
 
@@ -519,6 +549,9 @@ class FederationKomunitinController extends BaseApiController
     public function transfers(Request $request, string $code): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $pageSize = min((int) ($request->query('page')['size'] ?? $request->query('page_size', '25')), 100);
         $afterCursor = $request->query('page')['after'] ?? $request->query('page_after');
         $sort = $request->query('sort', '-created');
@@ -612,6 +645,9 @@ class FederationKomunitinController extends BaseApiController
     public function transfer(Request $request, string $code, string $id): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
 
         // F-329: scope the read exactly as updateTransfer()/deleteTransfer()
@@ -650,6 +686,9 @@ class FederationKomunitinController extends BaseApiController
         }
 
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
         $payload = $request->json()->all();
 
@@ -793,6 +832,9 @@ class FederationKomunitinController extends BaseApiController
     public function updateTransfer(Request $request, string $code, string $id): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
         $baseUrl = $request->getSchemeAndHttpHost();
         $payload = $request->json()->all();
 
@@ -982,6 +1024,9 @@ class FederationKomunitinController extends BaseApiController
     public function deleteTransfer(Request $request, string $code, string $id): JsonResponse
     {
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->currencyCodeRefusal($tenantId, $code)) {
+            return $refusal; // F-357
+        }
 
         $tx = DB::table('transactions')
             ->where('id', (int) $id)
@@ -1118,6 +1163,43 @@ class FederationKomunitinController extends BaseApiController
     // ─────────────────────────────────────────────────────────────────────────
     // Resource builders
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * F-357 — refuse a `{code}` this community has not issued.
+     *
+     * Before this check the parameter was decorative on every `/{code}/…`
+     * route: the tenant came from the partner key and `{code}` reached only
+     * 404 message text and `self` links, so a partner could address any
+     * resource under any currency string. That is a correctness defect in the
+     * partner contract on its own, and it meant the route's parent parameter
+     * offered no protection anywhere in this controller — so any later fix
+     * assuming it did would have been wrong.
+     *
+     * Two values are accepted, case-insensitively:
+     *   - the community's published code, `strtoupper($tenant->slug)`, which is
+     *     exactly what buildCurrencyResource() emits;
+     *   - the literal `HOURS`, the platform's single fixed currency. That is
+     *     the name this controller publishes as the resource id
+     *     (`hours-{tenantId}`) and its own fallback when a tenant has no slug,
+     *     and it is the code the whole existing partner contract uses on the
+     *     wire, so it stays a valid alias deliberately rather than by accident.
+     */
+    private function currencyCodeRefusal(int $tenantId, string $code): ?JsonResponse
+    {
+        $normalised = strtoupper(trim($code));
+
+        if ($normalised === 'HOURS') {
+            return null;
+        }
+
+        $slug = (string) (DB::table('tenants')->where('id', $tenantId)->value('slug') ?? '');
+        if ($slug !== '' && $normalised === strtoupper($slug)) {
+            return null;
+        }
+
+        return $this->jsonApiError('NotFound', 'Not Found',
+            "Currency {$code} is not issued by this community", 404);
+    }
 
     private function buildCurrencyResource(int $tenantId): array
     {
