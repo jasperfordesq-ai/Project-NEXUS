@@ -83,6 +83,20 @@ class AdminInsuranceCertificateController extends BaseApiController
         }
     }
 
+    /**
+     * F-389: brokers and coordinators may not act on their own insurance
+     * record. The administrator tier is not restricted (the same line
+     * F-218/F-219 drew for brokers acting on their own affairs).
+     */
+    private function guardBrokerNotSubject(int $subjectUserId, int $callerId): ?JsonResponse
+    {
+        if ($this->callerIsAdminTier() || $subjectUserId !== $callerId) {
+            return null;
+        }
+
+        return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
+    }
+
     /** POST /api/v2/admin/insurance-certificates */
     public function store(): JsonResponse
     {
@@ -109,6 +123,14 @@ class AdminInsuranceCertificateController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), 'user_id', 404);
         }
 
+        // F-389: a broker may not record insurance for themselves — that is
+        // how a broker cleared the insurance gate an administrator put on the
+        // broker's own listing. (The vetting controller refuses the same
+        // self-confirmation.)
+        if ($refusal = $this->guardBrokerNotSubject($userId, $adminId)) {
+            return $refusal;
+        }
+
         $validTypes = ['public_liability', 'professional_indemnity', 'employers_liability',
                         'product_liability', 'personal_accident', 'other'];
         if ($insuranceType && !in_array($insuranceType, $validTypes, true)) {
@@ -122,16 +144,22 @@ class AdminInsuranceCertificateController extends BaseApiController
         }
 
         try {
+            // F-389: a certificate recorded as already verified goes through
+            // verify(), so who verified it and when are recorded (it used to be
+            // written 'verified' with verified_by NULL).
             $data = [
                 'user_id' => $userId,
                 'insurance_type' => $insuranceType ?? 'public_liability',
-                'status' => $status,
+                'status' => $status === 'verified' ? 'submitted' : $status,
                 'provider_name' => $this->input('provider_name'),
                 'start_date' => $this->input('start_date'),
                 'expiry_date' => $this->input('expiry_date'),
             ];
 
             $id = $this->insuranceCertificateService->create($data);
+            if ($status === 'verified') {
+                $this->insuranceCertificateService->verify($id, $adminId);
+            }
             $record = $this->insuranceCertificateService->getById($id);
 
             ActivityLog::log($adminId, 'insurance_cert_created', "Created insurance certificate #{$id} for user #{$userId} ({$data['insurance_type']})", false, null, 'admin', 'insurance_cert', $id);
@@ -206,6 +234,10 @@ class AdminInsuranceCertificateController extends BaseApiController
             }
             if ($existing['status'] === 'verified') {
                 return $this->respondWithError('INVALID_STATUS', __('api.certificate_already_verified'));
+            }
+            // F-389: a broker may not verify their own certificate.
+            if ($refusal = $this->guardBrokerNotSubject((int) ($existing['user_id'] ?? 0), $adminId)) {
+                return $refusal;
             }
 
             $this->insuranceCertificateService->verify($id, $adminId);

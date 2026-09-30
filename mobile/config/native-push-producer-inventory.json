@@ -30,9 +30,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1490:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1518:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1490,
+            "line": 1518,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -43,9 +43,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1529:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1557:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1529,
+            "line": 1557,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -225,9 +225,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php:235:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php:267:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php",
-            "line": 235,
+            "line": 267,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -238,9 +238,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php:294:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php:326:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminInsuranceCertificateController.php",
-            "line": 294,
+            "line": 326,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

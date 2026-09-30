@@ -915,10 +915,35 @@ class AdminBrokerController extends BaseApiController
     }
 
     /** POST /api/v2/admin/broker/listings/{lid}/risk-tag */
+    /**
+     * F-389: a broker may not tag, re-tag or untag their OWN listing — the
+     * risk tag is a control an administrator puts on that listing (its
+     * insurance and approval requirements). The administrator tier is not
+     * restricted.
+     */
+    private function guardBrokerNotListingOwner(int $listingId, int $callerId): ?JsonResponse
+    {
+        if ($this->callerIsAdminTier()) {
+            return null;
+        }
+        $ownerId = (int) DB::table('listings')
+            ->where('id', $listingId)
+            ->where('tenant_id', TenantContext::getId())
+            ->value('user_id');
+        if ($ownerId === $callerId) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
+        }
+
+        return null;
+    }
+
     public function saveRiskTag(int $listingId): JsonResponse
     {
         $adminId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->guardBrokerNotListingOwner($listingId, $adminId)) {
+            return $refusal;
+        }
 
         $riskLevel = $this->input('risk_level', 'low');
         $riskCategory = trim($this->input('risk_category', ''));
@@ -1013,6 +1038,9 @@ class AdminBrokerController extends BaseApiController
     {
         $adminId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
+        if ($refusal = $this->guardBrokerNotListingOwner($listingId, $adminId)) {
+            return $refusal;
+        }
 
         // Always operate on caller's tenant — see approveExchange comment.
         try {
