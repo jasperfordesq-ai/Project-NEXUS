@@ -336,11 +336,13 @@ return [
     'appreciation_received' => ':name le envió una nota de agradecimiento',
     'caring_caregiver_link_requested' => ':name solicitó vincularse como tu cuidador. Revisa la solicitud antes de conceder acceso.',
     'caring_caregiver_link_confirmed' => 'La persona que recibe cuidados confirmó la solicitud. Está esperando la revisión de protección del personal.',
-    'caring_caregiver_link_approved'  => 'La relación de cuidado fue aprobada. Las herramientas de cuidador ya están disponibles.',
-    'caring_caregiver_link_rejected'  => 'La relación de cuidado no fue aprobada. Motivo: :reason',
-
+    'caring_caregiver_link_approved' => 'La relación de cuidado fue aprobada. Las herramientas de cuidador ya están disponibles.',
+    'caring_caregiver_link_rejected' => 'La relación de cuidado no fue aprobada. Motivo: :reason',
     'marketplace' => [
         'low_stock' => 'Pocas existencias de ":title" (quedan :count).',
         'restocked' => '":title" vuelve a estar disponible.',
     ],
+    'saved_search_default_name' => 'Búsqueda guardada',
+    'saved_search_alert_one' => '1 anuncio nuevo coincide con tu búsqueda guardada ":search"',
+    'saved_search_alert_many' => ':count nuevos anuncios coinciden con tu búsqueda guardada ":search"',
 ];

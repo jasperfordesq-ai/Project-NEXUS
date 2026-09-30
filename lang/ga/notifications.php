@@ -343,4 +343,11 @@ return [
         'low_stock' => 'Stoc íseal do ":title" (:count fágtha).',
         'restocked' => 'Tá ":title" ar fáil arís.',
     ],
+
+    // =========================================================================
+    // ProcessSavedSearchAlerts — saved-search match alerts
+    // =========================================================================
+    'saved_search_default_name' => 'Cuardach sábháilte',
+    'saved_search_alert_one'  => 'Tagann 1 liostú nua le do chuardach sábháilte ":search"',
+    'saved_search_alert_many' => 'Tagann :count liostú nua le do chuardach sábháilte ":search"',
 ];

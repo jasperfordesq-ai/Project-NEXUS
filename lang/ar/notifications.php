@@ -336,11 +336,13 @@ return [
     'appreciation_received' => 'أرسل لك :name رسالة شكر',
     'caring_caregiver_link_requested' => 'طلب :name الارتباط بصفته مقدم رعايتك. راجع الطلب قبل منح أي صلاحيات.',
     'caring_caregiver_link_confirmed' => 'أكد متلقي الرعاية الطلب. وهو بانتظار مراجعة الحماية من الموظفين.',
-    'caring_caregiver_link_approved'  => 'تم اعتماد علاقة الرعاية. أصبحت أدوات مقدم الرعاية متاحة الآن.',
-    'caring_caregiver_link_rejected'  => 'لم يتم اعتماد علاقة الرعاية. السبب: :reason',
-
+    'caring_caregiver_link_approved' => 'تم اعتماد علاقة الرعاية. أصبحت أدوات مقدم الرعاية متاحة الآن.',
+    'caring_caregiver_link_rejected' => 'لم يتم اعتماد علاقة الرعاية. السبب: :reason',
     'marketplace' => [
         'low_stock' => 'مخزون منخفض لـ ":title" (المتبقي :count).',
         'restocked' => '":title" متوفر في المخزون من جديد.',
     ],
+    'saved_search_default_name' => 'البحث المحفوظ',
+    'saved_search_alert_one' => 'قائمة جديدة واحدة تطابق بحثك المحفوظ ":search"',
+    'saved_search_alert_many' => ':count قوائم جديدة تطابق بحثك المحفوظ ":search"',
 ];

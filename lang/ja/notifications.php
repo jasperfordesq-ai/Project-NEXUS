@@ -336,11 +336,13 @@ return [
     'appreciation_received' => ':name さんからお礼のメッセージが届きました',
     'caring_caregiver_link_requested' => ':name さんがあなたの介護者としてのリンクを申請しました。権限を付与する前に確認してください。',
     'caring_caregiver_link_confirmed' => '被介護者が申請を確認しました。スタッフの安全確認を待っています。',
-    'caring_caregiver_link_approved'  => '介護関係が承認されました。介護者ツールを利用できます。',
-    'caring_caregiver_link_rejected'  => '介護関係は承認されませんでした。理由: :reason',
-
+    'caring_caregiver_link_approved' => '介護関係が承認されました。介護者ツールを利用できます。',
+    'caring_caregiver_link_rejected' => '介護関係は承認されませんでした。理由: :reason',
     'marketplace' => [
         'low_stock' => '":title" の在庫が残りわずかです(残り :count)。',
         'restocked' => '":title" が再入荷しました。',
     ],
+    'saved_search_default_name' => '保存された検索',
+    'saved_search_alert_one' => '保存された検索条件「:search」に一致する新しいリスティングが 1 件あります',
+    'saved_search_alert_many' => '保存された検索条件「:search」に一致する新しいリスティングが :count 件あります',
 ];

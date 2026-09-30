@@ -10,7 +10,10 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\I18n\LocaleContext;
+use App\Models\Listing;
 use App\Models\Notification;
+use App\Services\ListingService;
 
 /**
  * Process saved search alerts — find new listings matching saved searches
@@ -38,24 +41,35 @@ class ProcessSavedSearchAlerts extends Command
 
         $totalAlerts = 0;
         $totalSearches = 0;
+        $previousTenantId = TenantContext::currentId();
 
-        foreach ($tenantIds as $tenantId) {
-            TenantContext::setById($tenantId);
+        try {
+            foreach ($tenantIds as $tenantId) {
+                TenantContext::setById($tenantId);
 
-            try {
-                [$alerts, $searches] = $this->processTenantsSearches($tenantId);
-                $totalAlerts += $alerts;
-                $totalSearches += $searches;
+                try {
+                    [$alerts, $searches] = $this->processTenantsSearches($tenantId);
+                    $totalAlerts += $alerts;
+                    $totalSearches += $searches;
 
-                if ($alerts > 0) {
-                    $this->info("Tenant {$tenantId}: {$alerts} alert(s) sent for {$searches} saved search(es).");
+                    if ($alerts > 0) {
+                        $this->info("Tenant {$tenantId}: {$alerts} alert(s) sent for {$searches} saved search(es).");
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('[ProcessSavedSearchAlerts] Failed for tenant', [
+                        'tenant_id' => $tenantId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error("Tenant {$tenantId}: Error — {$e->getMessage()}");
                 }
-            } catch (\Throwable $e) {
-                Log::error('[ProcessSavedSearchAlerts] Failed for tenant', [
-                    'tenant_id' => $tenantId,
-                    'error' => $e->getMessage(),
-                ]);
-                $this->error("Tenant {$tenantId}: Error — {$e->getMessage()}");
+            }
+        } finally {
+            // Never leave the caller looking at the last tenant we happened to
+            // loop over — same shape as GroupScheduledPostService::publishDue().
+            if ($previousTenantId !== null) {
+                TenantContext::setById($previousTenantId);
+            } else {
+                TenantContext::reset();
             }
         }
 
@@ -118,13 +132,28 @@ class ProcessSavedSearchAlerts extends Command
             return false;
         }
 
-        // Build the query to find new matching listings
-        $query = DB::table('listings')
+        // The alert is only for a member whose account is in good standing. A
+        // suspended, banned, rejected or deleted member is not notified — same
+        // rule, and the same two columns, as EventBroadcastDeliveryConsumer.
+        $recipient = DB::table('users')
             ->where('tenant_id', $tenantId)
-            ->where('created_at', '>', $cutoff)
-            ->where(function ($q) {
-                $q->whereNull('status')->orWhere('status', 'active');
-            });
+            ->where('id', (int) $search->user_id)
+            ->first(['id', 'preferred_language', 'status', 'deleted_at']);
+
+        if ($recipient === null
+            || (string) ($recipient->status ?? '') !== 'active'
+            || ($recipient->deleted_at ?? null) !== null) {
+            return false;
+        }
+
+        // Build the query to find new matching listings. The visibility rule is
+        // the canonical one every other listing read uses, so the member is never
+        // told about listings moderators rejected or have not yet approved.
+        $query = ListingService::applyPublicVisibility(Listing::query())
+            ->where('tenant_id', $tenantId)
+            // A GDPR-erased listing carries deleted_at; it must not be counted.
+            ->whereNull('deleted_at')
+            ->where('created_at', '>', $cutoff);
 
         // Apply filters from saved search params
         if (!empty($queryParams['q'])) {
@@ -166,24 +195,32 @@ class ProcessSavedSearchAlerts extends Command
             return false;
         }
 
-        // Create a notification for the user
-        $searchName = $search->name ?: 'Saved search';
-        $searchName = htmlspecialchars($searchName, ENT_QUOTES, 'UTF-8');
-
-        $message = $newCount === 1
-            ? "1 new listing matches your saved search \"{$searchName}\""
-            : "{$newCount} new listings match your saved search \"{$searchName}\"";
-
         $link = '/search?' . http_build_query($queryParams);
 
-        Notification::createNotification(
-            userId: (int) $search->user_id,
-            message: $message,
-            link: $link,
-            type: 'saved_search_alert',
-            tenantId: $tenantId,
-        );
-        \App\Services\NotificationDispatcher::fanOutPush((int) ($search->user_id), 'saved_search_alert', $message, $link);
+        // Render AND send inside the recipient's locale — this runs from an hourly
+        // cron worker, which otherwise renders everything in the worker's default.
+        LocaleContext::withLocale($recipient, function () use ($search, $newCount, $link, $tenantId): void {
+            // The unnamed-search fallback is part of the message, so it belongs
+            // inside the recipient's locale too.
+            $searchName = htmlspecialchars(
+                $search->name ?: __('notifications.saved_search_default_name'),
+                ENT_QUOTES,
+                'UTF-8'
+            );
+
+            $message = $newCount === 1
+                ? __('notifications.saved_search_alert_one', ['search' => $searchName])
+                : __('notifications.saved_search_alert_many', ['count' => $newCount, 'search' => $searchName]);
+
+            Notification::createNotification(
+                userId: (int) $search->user_id,
+                message: $message,
+                link: $link,
+                type: 'saved_search_alert',
+                tenantId: $tenantId,
+            );
+            \App\Services\NotificationDispatcher::fanOutPush((int) ($search->user_id), 'saved_search_alert', $message, $link);
+        });
 
         // Update the saved search timestamps
         DB::table('saved_searches')

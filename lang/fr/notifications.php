@@ -336,11 +336,13 @@ return [
     'appreciation_received' => ':name vous a envoyé un mot de remerciement',
     'caring_caregiver_link_requested' => ':name a demandé à être lié comme votre aidant. Examinez la demande avant tout accès d’aidant.',
     'caring_caregiver_link_confirmed' => 'La personne accompagnée a confirmé la demande. Elle attend l’examen de protection de l’équipe.',
-    'caring_caregiver_link_approved'  => 'La relation d’aide a été approuvée. Les outils d’aidant sont maintenant disponibles.',
-    'caring_caregiver_link_rejected'  => 'La relation d’aide n’a pas été approuvée. Motif : :reason',
-
+    'caring_caregiver_link_approved' => 'La relation d’aide a été approuvée. Les outils d’aidant sont maintenant disponibles.',
+    'caring_caregiver_link_rejected' => 'La relation d’aide n’a pas été approuvée. Motif : :reason',
     'marketplace' => [
         'low_stock' => 'Stock faible pour « :title » (:count restants).',
         'restocked' => '« :title » est de nouveau en stock.',
     ],
+    'saved_search_default_name' => 'Recherche enregistrée',
+    'saved_search_alert_one' => '1 nouvelle annonce correspond à votre recherche enregistrée ":search"',
+    'saved_search_alert_many' => ':count nouvelles annonces correspondent à votre recherche enregistrée ":search"',
 ];

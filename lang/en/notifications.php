@@ -416,4 +416,11 @@ return [
     'period_weekly' => 'weekly',
     'period_fortnightly' => 'fortnightly',
     'period_monthly' => 'monthly',
+
+    // =========================================================================
+    // ProcessSavedSearchAlerts — saved-search match alerts
+    // =========================================================================
+    'saved_search_default_name' => 'Saved search',
+    'saved_search_alert_one'  => '1 new listing matches your saved search ":search"',
+    'saved_search_alert_many' => ':count new listings match your saved search ":search"',
 ];

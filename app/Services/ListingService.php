@@ -41,7 +41,14 @@ class ListingService
         private readonly Listing $listing,
     ) {}
 
-    private static function applyPublicVisibility(Builder $query): Builder
+    /**
+     * The canonical "may a member see this listing" rule.
+     *
+     * Public so that every read which shows listings to a member — including the
+     * hourly saved-search alert in App\Console\Commands\ProcessSavedSearchAlerts —
+     * applies this one rule instead of hand-writing its own copy of it.
+     */
+    public static function applyPublicVisibility(Builder $query): Builder
     {
         return $query
             ->where(function (Builder $q) {

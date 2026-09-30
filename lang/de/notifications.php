@@ -336,11 +336,13 @@ return [
     'appreciation_received' => ':name hat Ihnen eine Dankesnachricht gesendet',
     'caring_caregiver_link_requested' => ':name möchte als Ihre Betreuungsperson verknüpft werden. Prüfen Sie die Anfrage, bevor Betreuungszugriff gewährt wird.',
     'caring_caregiver_link_confirmed' => 'Die betreute Person hat die Anfrage bestätigt. Sie wartet auf die Schutzprüfung durch Mitarbeitende.',
-    'caring_caregiver_link_approved'  => 'Die Betreuungsbeziehung wurde genehmigt. Die Betreuungswerkzeuge sind jetzt verfügbar.',
-    'caring_caregiver_link_rejected'  => 'Die Betreuungsbeziehung wurde nicht genehmigt. Grund: :reason',
-
+    'caring_caregiver_link_approved' => 'Die Betreuungsbeziehung wurde genehmigt. Die Betreuungswerkzeuge sind jetzt verfügbar.',
+    'caring_caregiver_link_rejected' => 'Die Betreuungsbeziehung wurde nicht genehmigt. Grund: :reason',
     'marketplace' => [
         'low_stock' => 'Geringer Lagerbestand für ":title" (:count verbleibend).',
         'restocked' => '":title" ist wieder auf Lager.',
     ],
+    'saved_search_default_name' => 'Gespeicherte Suche',
+    'saved_search_alert_one' => '1 neuer Eintrag entspricht Ihrer gespeicherten Suche „:search“',
+    'saved_search_alert_many' => ':count neue Einträge entsprechen Ihrer gespeicherten Suche „:search“',
 ];

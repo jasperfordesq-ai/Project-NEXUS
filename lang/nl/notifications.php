@@ -336,11 +336,13 @@ return [
     'appreciation_received' => ':name heeft u een bedankje gestuurd',
     'caring_caregiver_link_requested' => ':name heeft gevraagd om als uw verzorger gekoppeld te worden. Beoordeel het verzoek voordat toegang wordt verleend.',
     'caring_caregiver_link_confirmed' => 'De zorgontvanger heeft het verzoek bevestigd. Het wacht op de veiligheidsbeoordeling door medewerkers.',
-    'caring_caregiver_link_approved'  => 'De zorgrelatie is goedgekeurd. De verzorgersfuncties zijn nu beschikbaar.',
-    'caring_caregiver_link_rejected'  => 'De zorgrelatie is niet goedgekeurd. Reden: :reason',
-
+    'caring_caregiver_link_approved' => 'De zorgrelatie is goedgekeurd. De verzorgersfuncties zijn nu beschikbaar.',
+    'caring_caregiver_link_rejected' => 'De zorgrelatie is niet goedgekeurd. Reden: :reason',
     'marketplace' => [
         'low_stock' => 'Lage voorraad voor ":title" (:count resterend).',
         'restocked' => '":title" is weer op voorraad.',
     ],
+    'saved_search_default_name' => 'Opgeslagen zoekopdracht',
+    'saved_search_alert_one' => '1 nieuwe vermelding komt overeen met uw opgeslagen zoekopdracht \':search\'',
+    'saved_search_alert_many' => ':count nieuwe vermeldingen komen overeen met uw opgeslagen zoekopdracht \':search\'',
 ];
