@@ -33,6 +33,7 @@ final class AdminCreatedAccountAdmission
     public const SOURCE_ASSISTED_ONBOARDING = 'assisted_onboarding';
     public const SOURCE_PAPER_ONBOARDING = 'paper_onboarding';
     public const SOURCE_SUPER_ADMIN_CREATE = 'super_admin_create';
+    public const SOURCE_VEREIN_IMPORT = 'verein_import';
 
     /** The request field an administrator sets to attest an identity check. */
     public const ATTESTATION_FIELD = 'identity_checked_by_admin';

@@ -10,6 +10,7 @@ namespace App\Services\CaringCommunity;
 
 use App\Jobs\SendPasswordResetEmail;
 use App\Models\User;
+use App\Services\Identity\AdminCreatedAccountAdmission;
 use App\Services\TenantSettingsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -134,14 +135,21 @@ class VereinMemberImportService
         // approval is required the account waits in the approval queue.
         $requiresApproval = $this->tenantSettings->requiresAdminApproval($tenantId);
 
+        // F-382: and they keep the community's identity check, exactly as the
+        // other administrator creation paths do since F-278. A club organiser
+        // cannot attest a member's identity — that is the community
+        // administrator's decision — so no attestation is accepted here.
+        $admission = AdminCreatedAccountAdmission::decide($tenantId, false);
+
         $created = 0;
         $skipped = 0;
         $existingAccounts = 0;
         $notCreated = 0;
         $members = [];
         $passwordEmails = [];
+        $createdUserIds = [];
 
-        DB::transaction(function () use ($tenantId, $organizationId, $preview, $requiresApproval, &$created, &$skipped, &$existingAccounts, &$notCreated, &$members, &$passwordEmails): void {
+        DB::transaction(function () use ($tenantId, $organizationId, $preview, $requiresApproval, $admission, &$created, &$skipped, &$existingAccounts, &$notCreated, &$members, &$passwordEmails, &$createdUserIds): void {
             foreach ($preview['items'] as $item) {
                 if ($item['action'] === 'already_member') {
                     $skipped++;
@@ -167,7 +175,7 @@ class VereinMemberImportService
                     'password' => Str::password(32),
                     'phone' => $item['phone'],
                     'role' => 'member',
-                    'is_approved' => $requiresApproval ? 0 : 1,
+                    'is_approved' => $requiresApproval ? 0 : $admission['columns']['is_approved'],
                 ], $tenantId);
 
                 if (!$userId) {
@@ -179,7 +187,7 @@ class VereinMemberImportService
 
                 $update = [
                     'username' => $this->uniqueUsername($tenantId, $item['email']),
-                    'status' => $requiresApproval ? 'pending' : 'active',
+                    'status' => $requiresApproval ? 'pending' : $admission['columns']['status'],
                     'updated_at' => now(),
                 ];
                 if ($item['first_name'] === '' && $item['last_name'] === '') {
@@ -201,6 +209,7 @@ class VereinMemberImportService
                 ]);
 
                 $created++;
+                $createdUserIds[] = (int) $userId;
                 $passwordEmails[] = $item['email'];
                 $members[] = [
                     'email' => $item['email'],
@@ -209,6 +218,19 @@ class VereinMemberImportService
                 ];
             }
         });
+
+        // F-382: once the rows are committed, start the identity check for each
+        // account the community's rules hold (the same orchestration
+        // self-registration runs). A failure leaves the account pending.
+        foreach ($createdUserIds as $createdUserId) {
+            AdminCreatedAccountAdmission::afterCreate(
+                $admission,
+                $tenantId,
+                $createdUserId,
+                $actorId,
+                AdminCreatedAccountAdmission::SOURCE_VEREIN_IMPORT
+            );
+        }
 
         // Queued only after commit, through the same job as "forgot password",
         // so each new member sets their own password. A delivery failure never

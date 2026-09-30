@@ -113,6 +113,11 @@ class CaringVereinImportTest extends TestCase
     public function test_import_without_approval_rule_creates_active_account_control(): void
     {
         $this->setAdminApproval(false);
+        // Since F-382 the import also honours an identity-check joining rule,
+        // so this control must be an open community, not inherit whatever
+        // policy the test database happens to hold for the tenant.
+        DB::table('tenant_registration_policies')->where('tenant_id', $this->testTenantId)->delete();
+        app(\App\Services\TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         $vereinId = $this->verein($admin->id);
         Sanctum::actingAs($admin);
