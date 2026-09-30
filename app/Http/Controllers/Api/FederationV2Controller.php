@@ -3859,6 +3859,46 @@ class FederationV2Controller extends BaseApiController
                 return $this->respondWithError('TRANSACTIONS_NOT_ALLOWED', __('api.fed_partnership_no_transactions'), null, 403);
             }
 
+            // ── F-395: re-check the SENDER's side inside the transaction ──
+            // The mirror image of F-344/F-376. The sender's OWN community gate
+            // (requireFederationOperation) and the sender's own federation
+            // settings were read before this transaction opened, so a transfer
+            // already past the pre-check still went through after the
+            // sender's community switched federated transactions off, or after
+            // the sender opted out of federation. The memo was cleared above,
+            // so this reads the database.
+            $ownCommunityCheck = $this->federationFeatureService->isOperationAllowed('transactions', $tenantId);
+            if (!($ownCommunityCheck['allowed'] ?? false)) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('FORBIDDEN', __('api.federation.feature_disabled'), null, 403);
+            }
+            // The sender's users row is already locked; lock their federation
+            // settings row too (the same users -> federation_user_settings
+            // order the recipient check below uses).
+            $lockedSender = DB::selectOne(
+                "SELECT fus.federation_optin, fus.transactions_enabled_federated
+                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id
+                 WHERE u.id = ? AND u.tenant_id = ? FOR UPDATE",
+                [$userId, $tenantId]
+            );
+            if (!$lockedSender || !$lockedSender->federation_optin) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('SENDER_NOT_OPTED_IN', __('api.fed_must_opt_in_first'), null, 403);
+            }
+            if (!$lockedSender->transactions_enabled_federated) {
+                DB::rollBack();
+                if ($idemCacheKey !== null) {
+                    try { \Illuminate\Support\Facades\Cache::forget($idemCacheKey); } catch (\Throwable $e) {}
+                }
+                return $this->respondWithError('SENDER_TRANSACTIONS_DISABLED', __('api.fed_transactions_not_enabled'), null, 403);
+            }
+
             // ── F-376: re-check the RECIPIENT inside the transaction ──
             // Their account status and federation settings were also read
             // unlocked, so credits landed on a member who had just withdrawn
