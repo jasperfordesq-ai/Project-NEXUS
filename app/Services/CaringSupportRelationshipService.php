@@ -510,6 +510,13 @@ class CaringSupportRelationshipService
             ->where('ur.tenant_id', $tenantId)
             ->where('ur.user_id', $userId)
             ->where('p.name', $permission)
+            // F-364: honour the grant's expiry, as the twin in
+            // VolunteerService::hasCaringWorkflowPermission() (line 3261) does.
+            // Without it an expired trusted-reviewer grant still auto-approved
+            // caring-support hour logs, and approval mints credits.
+            ->where(function ($query): void {
+                $query->whereNull('ur.expires_at')->orWhere('ur.expires_at', '>', now());
+            })
             ->exists();
     }
 
