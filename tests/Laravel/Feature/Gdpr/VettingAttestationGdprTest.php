@@ -131,9 +131,16 @@ class VettingAttestationGdprTest extends TestCase
         $this->assertNotFalse($start);
         $deletion = substr($source, $start, $end !== false ? $end - $start : null);
 
-        $this->assertStringContainsString('DELETE FROM safeguarding_vetting_review_requests', $deletion);
-        $this->assertStringContainsString('DELETE FROM member_vetting_attestation_events', $deletion);
-        $this->assertStringContainsString('DELETE FROM member_vetting_attestations', $deletion);
+        // F-339 (owner decision, 30 September 2026): the vetting decision, its
+        // event trail and an open review are now held exactly as safeguarding
+        // reports are — the erasure routine issues no DELETE against them.
+        // These three assertions were the reverse until that decision.
+        $this->assertStringNotContainsString('DELETE FROM safeguarding_vetting_review_requests', $deletion);
+        $this->assertStringNotContainsString('DELETE FROM member_vetting_attestation_events', $deletion);
+        $this->assertStringNotContainsString('DELETE FROM member_vetting_attestations', $deletion);
+
+        // Certificate-bearing legacy rows are still minimised, and the routine
+        // still must not read the evidence pointer it is about to drop.
         $this->assertStringContainsString('DELETE FROM vetting_records', $deletion);
         $this->assertStringNotContainsString('SELECT document_url FROM vetting_records', $deletion);
     }

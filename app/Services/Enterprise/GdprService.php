@@ -1700,11 +1700,17 @@ class GdprService
                 );
             } catch (\Throwable $e) { $this->logger->warning('GDPR deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
 
-            // 3m. Delete user blocks (in both directions)
+            // 3m. Delete the blocks this member PLACED (user_id = the blocker).
+            // F-339: this used to delete both directions. A row another member
+            // created naming this member is that member's own safeguarding
+            // protection and their own data — deleting it silently removes their
+            // protection if the account is ever restored or the id reused, and
+            // nothing notifies them. Rows where blocked_user_id = $userId are
+            // therefore preserved under the same hold as safeguarding reports.
             try {
                 $this->query(
-                    "DELETE FROM user_blocks WHERE tenant_id = ? AND (user_id = ? OR blocked_user_id = ?)",
-                    [$this->tenantId, $userId, $userId]
+                    "DELETE FROM user_blocks WHERE tenant_id = ? AND user_id = ?",
+                    [$this->tenantId, $userId]
                 );
             } catch (\Throwable $e) { $this->logger->warning('GDPR deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
 
@@ -2158,19 +2164,26 @@ class GdprService
             }
 
             // 3y. Identity and compliance records. Safeguarding reports remain
-            // governed by their separate legal-hold workflow.
-            // Metadata-only safeguarding records do not contain certificate
-            // evidence, but the anonymized users row means FK cascades do not
-            // run. Delete the subject's workflow and decision history directly.
-            try {
-                $this->query("DELETE FROM safeguarding_vetting_review_requests WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
-            } catch (\Throwable $e) { $this->logger->warning('GDPR vetting-review deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
-            try {
-                $this->query("DELETE FROM member_vetting_attestation_events WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
-            } catch (\Throwable $e) { $this->logger->warning('GDPR vetting-event deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
-            try {
-                $this->query("DELETE FROM member_vetting_attestations WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
-            } catch (\Throwable $e) { $this->logger->warning('GDPR vetting-attestation deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
+            // governed by their separate legal-hold workflow — that hold is
+            // expressed here by this routine simply never issuing a DELETE
+            // against them.
+            //
+            // F-339 (owner decision, 30 September 2026): the staff vetting
+            // DECISION, its before/after trail and an OPEN review are held the
+            // same way and are no longer deleted. Erasure used to remove all
+            // three, so the subject of a refused vetting decision could erase
+            // the community's record of it themselves. These rows are
+            // metadata-only — scheme/attestation/purpose codes, a decision and
+            // the staff member who made it — and they carry no certificate
+            // evidence, which is what made the hold defensible for reports and
+            // makes it defensible here. Certificate-bearing rows are handled
+            // separately immediately below: vetting_records is still minimised,
+            // and pointer-bearing rows still become tombstones.
+            //
+            // Deliberately NOT changed: the anonymisation of the users row, so
+            // the email and username are still freed. The owner did not choose
+            // the variant that keeps an identifier to link a re-registered
+            // account to the old record, so no identifier survives erasure.
 
             // Rows without an evidence pointer can be erased immediately.
             // Pointer-bearing rows must remain as minimised cleanup tombstones
