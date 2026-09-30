@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A club-management permission recorded against no community can no longer be used to act inside a community. One of the two places that checks this had been fixed; its duplicate had not (F-362).
 - An ordinary member can no longer be given access to every club's dues register — including other members' email addresses — dues waivers, reminder emails sent from the community's address, or federation consent, through the roles screen (F-349).
 - A community administrator can no longer attach a permission the roles screen does not offer, and a permission recorded against no specific club now grants nothing rather than everything. Together these closed a route by which one save could let an ordinary member create accounts in every club (F-348).
 - When a partner community scrubs a cross-community transaction, the record of it is now kept with its text removed, rather than deleted outright — so there is still evidence the transaction happened, and who scrubbed it (F-366).

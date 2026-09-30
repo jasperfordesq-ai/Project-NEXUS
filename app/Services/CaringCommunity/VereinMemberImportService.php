@@ -295,9 +295,13 @@ class VereinMemberImportService
             ->join('permissions as p', 'p.id', '=', 'rp.permission_id')
             ->where('ur.user_id', $userId)
             ->where('p.name', $permission)
-            ->where(function ($query) use ($tenantId): void {
-                $query->where('ur.tenant_id', $tenantId)->orWhereNull('ur.tenant_id');
-            })
+            // F-362: ur.tenant_id MUST match the current tenant. This is the twin of
+            // EnsureIsAdmin::allowsScopedVereinAdmin(), hardened the same way by commit
+            // 0cb8be769 and missed here: assignVereinAdmin() always writes a concrete
+            // tenant_id, so a NULL ('global') row can only be a malicious or
+            // misconfigured grant and must not bypass tenant isolation.
+            // (rp/p tenant_id keep orWhereNull: the migration seeds those rows with NULL.)
+            ->where('ur.tenant_id', $tenantId)
             ->where(function ($query) use ($tenantId): void {
                 $query->where('rp.tenant_id', $tenantId)->orWhereNull('rp.tenant_id');
             })

@@ -576,9 +576,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:2915:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:2926:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 2915,
+            "line": 2926,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverId",
@@ -589,9 +589,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:3964:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:3975:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 3964,
+            "line": 3975,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverIdInt",
