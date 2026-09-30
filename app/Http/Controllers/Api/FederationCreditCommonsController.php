@@ -164,7 +164,14 @@ class FederationCreditCommonsController extends BaseApiController
         }
 
         $query = DB::table('transactions')
-            ->where('tenant_id', $tenantId);
+            ->where('tenant_id', $tenantId)
+            // F-346: summarise only the federated subset of the ledger. Over the
+            // whole table this reported gross in/out and a counterparty count
+            // built from the member's purely internal exchanges, including
+            // exchanges with members who never opted into federation. Opting in
+            // to trade across communities is not consent to publish an internal
+            // trading history to a third-party node.
+            ->where('is_federated', 1);
 
         if ($since) {
             $query->where('created_at', '>=', $since);
@@ -225,6 +232,10 @@ class FederationCreditCommonsController extends BaseApiController
         $transactions = DB::table('transactions')
             ->where('tenant_id', $tenantId)
             ->where('status', 'completed')
+            // F-346: the federated subset only. Over the whole table this
+            // reconstructed a timestamped curve of the member's internal
+            // balance movements and published it to a partner.
+            ->where('is_federated', 1)
             ->where(function ($q) use ($userId) {
                 $q->where('sender_id', $userId)->orWhere('receiver_id', $userId);
             })

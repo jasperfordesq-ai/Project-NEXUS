@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- The summaries a partner community can read about a member now cover only their cross-community activity, not their whole exchange history inside their own community (F-346).
 - A partner community can no longer add time credits to this community's balances without limit. Inbound credit now requires an active credit agreement and stops at a monthly ceiling. Partner federation is switched off and no partner is connected (F-345).
 - The currency named in a partner community's web address is now checked against the currency this community actually issues, instead of being ignored (F-357).
 - An outside partner community can no longer switch off a member's account unless that member has agreed to cross-community sharing (F-331).
