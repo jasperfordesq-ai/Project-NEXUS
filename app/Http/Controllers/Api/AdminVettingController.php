@@ -39,6 +39,15 @@ class AdminVettingController extends BaseApiController
         'works_with_children', 'works_with_vulnerable_adults', 'requires_enhanced_check',
     ];
 
+    /**
+     * F-437: fields of an attestation that are never returned to its own
+     * subject, mirroring what MemberVettingAttestationService::getMemberStatus()
+     * already withholds on the member-facing route.
+     */
+    private const SELF_WITHHELD_FIELDS = [
+        'private_notes', 'scope_summary', 'revocation_reason_code', 'confirmed_by_name',
+    ];
+
     public function __construct(
         private readonly MemberVettingAttestationService $attestations,
         private readonly SafeguardingJurisdictionService $jurisdictions,
@@ -73,25 +82,28 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting/{id} */
     public function show(int $id): JsonResponse
     {
-        $this->requireVettingDecisionMaker();
+        $callerId = $this->requireVettingDecisionMaker();
         $record = $this->attestations->getById($id, TenantContext::getId());
 
         if ($record === null) {
             return $this->respondWithError('NOT_FOUND', __('api.vetting_confirmation_not_found'), null, 404);
         }
 
-        return $this->respondWithData($record);
+        return $this->respondWithData($this->withholdOwnPrivateFields($record, $callerId));
     }
 
     /** GET /v2/admin/vetting/user/{userId} */
     public function getUserRecords(int $userId): JsonResponse
     {
-        $this->requireVettingDecisionMaker();
+        $callerId = $this->requireVettingDecisionMaker();
 
         try {
-            return $this->respondWithData(
-                $this->attestations->getUserRecords($userId, TenantContext::getId())
-            );
+            $records = $this->attestations->getUserRecords($userId, TenantContext::getId());
+
+            return $this->respondWithData(array_map(
+                fn (array $record): array => $this->withholdOwnPrivateFields($record, $callerId),
+                $records,
+            ));
         } catch (SafeguardingPolicyException $e) {
             return $this->policyError($e);
         }
@@ -350,6 +362,38 @@ class AdminVettingController extends BaseApiController
         }
 
         return null;
+    }
+
+    /**
+     * F-437: a vetting decision-maker may read their own clearance state, but
+     * never the private fields recorded about them. `requireVettingDecisionMaker()`
+     * admits a broker deliberately, and neither read route compared the record's
+     * subject with the caller, so the subject received the officer's decrypted
+     * `private_notes` and `scope_summary`, the internal `revocation_reason_code`
+     * and the deciding officer's name.
+     *
+     * These are exactly the four fields the platform's own member-facing route
+     * already withholds — `MemberVettingAttestationService::getMemberStatus()`
+     * returns only the policy, the decision, the review status and four dates.
+     * Withholding rather than refusing keeps the decision-maker's legitimate
+     * view of their own clearance state.
+     *
+     * @param array<string, mixed> $record
+     * @return array<string, mixed>
+     */
+    private function withholdOwnPrivateFields(array $record, int $callerId): array
+    {
+        if ((int) ($record['user_id'] ?? 0) !== $callerId) {
+            return $record;
+        }
+
+        foreach (self::SELF_WITHHELD_FIELDS as $field) {
+            if (array_key_exists($field, $record)) {
+                $record[$field] = null;
+            }
+        }
+
+        return $record;
     }
 
     private function optionalPositiveInt(string $key): ?int
