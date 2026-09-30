@@ -1042,15 +1042,23 @@ class ExchangeWorkflowService
 
         // Run the financial transaction first — notifications must NEVER be inside this block.
         // If notifications threw inside the transaction, the credit transfer would roll back.
-        $transactionSucceeded = DB::transaction(function () use ($exchangeId, $exchange, $finalHours) {
+        $transactionSucceeded = DB::transaction(function () use ($exchangeId, $exchange, $finalHours, $allowedStatuses) {
             // Re-read with lock to prevent double-completion race condition
             $lockedExchange = DB::table('exchange_requests')
                 ->where('id', $exchangeId)
                 ->lockForUpdate()
                 ->first();
 
-            if (!$lockedExchange || $lockedExchange->status === self::STATUS_COMPLETED) {
-                Log::warning("Exchange #$exchangeId: already completed (race condition prevented)");
+            // F-340: re-test the FULL allowed-status set under the lock, not just
+            // `completed`. The guard above ran on an unlocked read, so an exchange
+            // a party cancelled (or that expired) in the window between the two
+            // reads used to pass straight through this check and have its credits
+            // moved — on a row whose status stayed `cancelled`, which
+            // reverseCompletedExchange() then refused to correct.
+            if (!$lockedExchange || !in_array($lockedExchange->status, $allowedStatuses, true)) {
+                Log::warning("Exchange #$exchangeId: cannot complete from status '"
+                    . ($lockedExchange->status ?? 'missing')
+                    . "' when re-read under lock (race condition prevented)");
                 return false;
             }
 
@@ -1065,7 +1073,16 @@ class ExchangeWorkflowService
                 throw new \RuntimeException("Exchange #$exchangeId: failed to create financial transaction");
             }
 
-            self::updateStatus($exchangeId, self::STATUS_COMPLETED, null, 'system', "Completed with $finalHours hours");
+            // F-340: do NOT discard this. `false` here is the platform correctly
+            // refusing an illegal transition (TRANSITIONS['cancelled'] is empty),
+            // and swallowing it left the credits moved on a row that never became
+            // `completed` — a state reverseCompletedExchange() cannot undo. Throw
+            // so the whole transaction, including createTransaction()'s balance
+            // movement, rolls back. Deliberately not "fixed" by loosening
+            // updateStatus().
+            if (!self::updateStatus($exchangeId, self::STATUS_COMPLETED, null, 'system', "Completed with $finalHours hours")) {
+                throw new \RuntimeException("Exchange #$exchangeId: refused the transition to completed; credits rolled back");
+            }
 
             return true;
         });
@@ -1561,6 +1578,26 @@ class ExchangeWorkflowService
         $maxHours = $proposed * (1 + $varianceFactor);
         $clamped = round(max($minHours, min($maxHours, $finalHours)), 2);
 
+        // completeExchange() moves the credits, flips the status and — because it
+        // sees the pre-existing `disputed` status — sends the dispute-resolved
+        // notifications rather than the ordinary completion ones.
+        //
+        // F-340: it can now refuse under its own row lock, when a party cancelled
+        // the exchange while this resolution was in flight. The arbitration is
+        // therefore recorded AFTER it succeeds — writing the history row first
+        // left both members looking at a "dispute resolved" entry on an exchange
+        // that was never resolved and whose credits never moved.
+        if (!self::completeExchange($exchangeId, $clamped)) {
+            $currentStatus = (string) (DB::table('exchange_requests')
+                ->where('id', $exchangeId)
+                ->value('status') ?? '');
+
+            return [
+                'ok' => false,
+                'error' => $currentStatus !== self::STATUS_DISPUTED ? 'NOT_DISPUTED' : 'COMPLETE_FAILED',
+            ];
+        }
+
         self::logHistory(
             $exchangeId,
             'dispute_resolved',
@@ -1576,13 +1613,6 @@ class ExchangeWorkflowService
                 $notes
             )
         );
-
-        // completeExchange() moves the credits, flips the status and — because it
-        // sees the pre-existing `disputed` status — sends the dispute-resolved
-        // notifications rather than the ordinary completion ones.
-        if (!self::completeExchange($exchangeId, $clamped)) {
-            return ['ok' => false, 'error' => 'COMPLETE_FAILED'];
-        }
 
         return ['ok' => true, 'final_hours' => $clamped];
     }
