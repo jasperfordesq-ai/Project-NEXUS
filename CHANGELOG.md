@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- When a podcast creator deletes their own account, the complaints other members made about their episodes, and the moderators' decisions on them, are now kept. Previously the account deletion removed them along with the episodes (F-383).
 - A club organiser importing members from a spreadsheet can no longer create accounts that skip the community's identity check. Imported accounts now follow the same joining rule as accounts an administrator creates: where the community requires an identity check, the account waits for it (F-382).
 - Blocking a member of a partner community no longer reveals the name and photo of someone who has not chosen to be visible to other communities. Only members who have joined cross-community sharing, in a partnership that is active, can be blocked across communities, and the block list names them only while they stay visible (F-381).
 - A web address typed into the platform — an interview link, an evidence link, an order tracking link, a venue website — can no longer be written in a form that sends whoever clicks it to an unrelated website. One shared safety check covers all of these, and it had a gap (F-380).

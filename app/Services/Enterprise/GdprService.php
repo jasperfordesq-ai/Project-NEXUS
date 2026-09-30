@@ -1996,8 +1996,9 @@ class GdprService
             } catch (\Throwable $e) { $this->logger->warning('GDPR courses deletion step skipped', ['user_id' => $userId, 'error' => $e->getMessage()]); }
 
             // 3x. Podcasts â€” shows/episodes are creator-owned personal
-            // content, while listens, reactions, subscriptions and reports are
-            // behavioural data. Remove both the rows and hosted audio. If a
+            // content, while listens, reactions and subscriptions are
+            // behavioural data. Remove both the rows and hosted audio; keep
+            // other members' complaints about the content (F-383). If a
             // storage object cannot be removed, retain a private, archived
             // tombstone containing only its storage pointer so the DPO can
             // retry cleanup; never orphan the only pointer to surviving media.
@@ -2120,7 +2121,18 @@ class GdprService
                         if ($episodeIds !== []) {
                             $episodePlaceholders = implode(',', array_fill(0, count($episodeIds), '?'));
                             $episodeParams = array_merge([$this->tenantId], $episodeIds);
-                            foreach (['podcast_episode_chapters', 'podcast_episode_listens', 'podcast_episode_reactions', 'podcast_episode_reports'] as $table) {
+                            // 🔴 F-383: podcast_episode_reports is deliberately NOT
+                            // in this list. Those rows are OTHER members'
+                            // complaints about this content and the moderators'
+                            // decisions on them — not the erased member's own
+                            // data. Deleting them let a creator wipe every
+                            // complaint with one self-service call, then
+                            // re-register and re-upload with the auto-hide count
+                            // back at zero (the loop F-338 closed on the delete
+                            // routes). The table has no foreign key to
+                            // podcast_episodes and the staff queue reaches it by
+                            // LEFT JOIN, so the complaints survive the episode.
+                            foreach (['podcast_episode_chapters', 'podcast_episode_listens', 'podcast_episode_reactions'] as $table) {
                                 $this->query(
                                     "DELETE FROM {$table} WHERE tenant_id = ? AND episode_id IN ({$episodePlaceholders})",
                                     $episodeParams
