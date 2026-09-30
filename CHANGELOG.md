@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Regional point transfers now respect blocking, so a blocked member can no longer write a message into the blocker's points history (F-335).
 - Goal buddy requests, acceptances and notes now respect blocking, so a blocked member can no longer use them to notify the person who blocked them (F-334).
 - A blocked member can no longer send an hours gift, or the message attached to it, to the person who blocked them (F-333).
 - A member who has been blocked can no longer send time credits, or a message attached to them, to the person who blocked them — through either a transfer or a donation (F-332).

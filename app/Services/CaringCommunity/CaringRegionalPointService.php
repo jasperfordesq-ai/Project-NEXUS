@@ -495,6 +495,13 @@ class CaringRegionalPointService
         if (!$this->activeTenantUserExists($tenantId, $recipientId)) {
             throw new InvalidArgumentException(__('api.user_not_found'));
         }
+        // F-335: the sender's message becomes the description of BOTH ledger
+        // rows, including the recipient's credit row, which the recipient's own
+        // history endpoint reads — a persistent attacker-authored line. A block
+        // in either direction refuses the transfer, checked before the
+        // safeguarding policy so a blocked member cannot probe it.
+        \App\Services\BlockUserService::assertNoBlockBetween($senderId, $recipientId);
+
         app(\App\Services\SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $senderId,
             $recipientId,
