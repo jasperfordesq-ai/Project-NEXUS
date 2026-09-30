@@ -204,27 +204,73 @@ class FederationUserService
                 return false;
             }
 
-            DB::table('federation_user_settings')->updateOrInsert(
-                ['user_id' => $userId],
-                [
-                    'federation_optin'               => 0,
-                    'profile_visible_federated'      => 0,
-                    'messaging_enabled_federated'    => 0,
-                    'transactions_enabled_federated' => 0,
-                    'appear_in_federated_search'     => 0,
-                    'show_skills_federated'          => 0,
-                    'show_location_federated'        => 0,
-                    'show_reviews_federated'         => 0,
-                    'email_notifications'            => 0,
-                    'updated_at'                     => now(),
-                ]
-            );
+            $tenantId = (int) TenantContext::getId();
+
+            DB::transaction(function () use ($userId, $tenantId): void {
+                DB::table('federation_user_settings')->updateOrInsert(
+                    ['user_id' => $userId],
+                    [
+                        'federation_optin'               => 0,
+                        'profile_visible_federated'      => 0,
+                        'messaging_enabled_federated'    => 0,
+                        'transactions_enabled_federated' => 0,
+                        'appear_in_federated_search'     => 0,
+                        'show_skills_federated'          => 0,
+                        'show_location_federated'        => 0,
+                        'show_reviews_federated'         => 0,
+                        'email_notifications'            => 0,
+                        'updated_at'                     => now(),
+                    ]
+                );
+
+                // F-352: opting out ENDS existing cross-community connections
+                // (owner decision, 30 September 2026 — sever them, do not just
+                // show a notice). Until this ran, the flags above were the only
+                // effect of an opt-out, so the partner community carried on
+                // reading the leaver's name and avatar from their connection
+                // list — and, because the delete route sits behind the
+                // federation gate the opt-out had just closed, the member could
+                // no longer remove the connections themselves. Severing here,
+                // in the same transaction as the flags, means they never need to.
+                self::severInternalFederatedConnections($userId, $tenantId);
+            });
 
             return true;
         } catch (\Throwable $e) {
             Log::warning('Failed to opt out of federation', ['user_id' => $userId, 'error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    /**
+     * Remove every INTERNAL cross-community connection this member is part of,
+     * in either direction.
+     *
+     * Internal (cross-tenant, one installation) federation has no
+     * `federated_identities` row, so `PushFederationDataRetraction` — the
+     * listener whose own comment promises retraction reaches "all federated
+     * partners" — never touched it. This is the internal half of that promise;
+     * the listener calls it too, so account erasure is covered as well as a
+     * deliberate opt-out.
+     *
+     * @return int number of connections removed
+     */
+    public static function severInternalFederatedConnections(int $userId, int $tenantId): int
+    {
+        if ($userId <= 0 || $tenantId <= 0) {
+            return 0;
+        }
+
+        return DB::table('federation_connections')
+            ->where(function ($query) use ($userId, $tenantId) {
+                $query->where('requester_user_id', $userId)
+                    ->where('requester_tenant_id', $tenantId);
+            })
+            ->orWhere(function ($query) use ($userId, $tenantId) {
+                $query->where('receiver_user_id', $userId)
+                    ->where('receiver_tenant_id', $tenantId);
+            })
+            ->delete();
     }
 
     /**

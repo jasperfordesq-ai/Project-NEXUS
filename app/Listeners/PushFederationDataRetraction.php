@@ -59,6 +59,40 @@ class PushFederationDataRetraction implements ShouldQueue
         $previousTenantId = TenantContext::currentId();
         $failedPartners = [];
 
+        // F-352: INTERNAL cross-community connections first, and before every
+        // gate below. This listener's own comment promises retraction reaches
+        // "all federated partners", but `federated_identities` rows exist only
+        // for EXTERNAL partners, so internal cross-tenant federation — which is
+        // live and ungated by design — was never reached and the partner
+        // community carried on reading the member's name and avatar.
+        //
+        // It runs ahead of the tenant/feature checks deliberately: a community
+        // that has since switched federation off, or lost the feature, still
+        // holds connection rows that this member's opt-out or erasure must end.
+        // The delete is idempotent, so running it here as well as in
+        // FederationUserService::optOut() is safe.
+        try {
+            $severed = \App\Services\FederationUserService::severInternalFederatedConnections($userId, $tenantId);
+            if ($severed > 0) {
+                Log::info('PushFederationDataRetraction: internal cross-community connections severed', [
+                    'tenant_id' => $tenantId,
+                    'user_id'   => $userId,
+                    'reason'    => $event->reason,
+                    'severed'   => $severed,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Not swallowed into a success: re-thrown so the queue retries and
+            // `failed()` surfaces it if every retry is exhausted. A consent
+            // withdrawal that silently did nothing is the defect being fixed.
+            Log::error('PushFederationDataRetraction: internal connection severing failed', [
+                'tenant_id' => $tenantId,
+                'user_id'   => $userId,
+                'error'     => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+
         try {
             if (!TenantContext::setById($tenantId)) {
                 Log::warning('PushFederationDataRetraction: tenant not found, skipping', [
