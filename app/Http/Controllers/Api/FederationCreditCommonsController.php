@@ -49,6 +49,17 @@ class FederationCreditCommonsController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * F-345 — fallback monthly ceiling, in hours, on externally-originated
+     * credit arriving at this community with no local debit.
+     *
+     * `federation_credit_agreements.max_monthly_credits` is nullable, and "no
+     * number recorded" must not mean "unlimited" — an unbounded inbound credit
+     * is counterfeit currency inside the community. An agreement that states a
+     * limit always wins over this value.
+     */
+    private const DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS = 200.0;
+
     // ─────────────────────────────────────────────────────────────────────────
     // GET /about — Node metadata
     // ─────────────────────────────────────────────────────────────────────────
@@ -900,6 +911,16 @@ class FederationCreditCommonsController extends BaseApiController
 
             DB::beginTransaction();
             try {
+                // F-345: this branch credits a local member with no local debit
+                // — correctly, because the debit belongs to the remote node —
+                // so the only thing bounding how much value a partner can
+                // introduce is this ceiling. Inside the transaction, because it
+                // locks the agreement row to serialise concurrent relays.
+                if ($refusal = $this->inboundCreditCeilingRefusal($tenantId, $quant)) {
+                    DB::rollBack();
+                    return $refusal;
+                }
+
                 // Credit the local payee
                 DB::update("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ?",
                     [$quant, $payeeId, $tenantId]);
@@ -1589,6 +1610,90 @@ class FederationCreditCommonsController extends BaseApiController
             Log::error('[FederationCC] Completion failed', ['error' => $e->getMessage()]);
             return $this->ccError('Other', 'Completion processing failed', 500);
         }
+    }
+
+    /**
+     * F-345 — the aggregate ceiling on externally-originated credit.
+     *
+     * A relayed transfer credits a local member with no matching local debit,
+     * so nothing on this installation balances it. `SecurityBounds` caps a
+     * single transfer at 24 hours; before this check nothing capped the total,
+     * and a partner repeated the call with a fresh UUID.
+     *
+     * The bound is `federation_credit_agreements` — the same table the other
+     * two inbound protocols already use, rather than a new mechanism. The
+     * legacy v1 path refuses outright without an active agreement
+     * (`FederationController::createTransaction`) and Komunitin derives its
+     * published credit limit from `max_monthly_credits` on the row whose
+     * `to_tenant_id` is this community (`FederationKomunitinController`).
+     * Credit Commons now reads the same row and enforces it as a real monthly
+     * total.
+     *
+     * Scope note: the ceiling is per community, not per partner, because
+     * `federation_cc_entries` has no partner column and a community has one
+     * Credit Commons parent node. If a second CC partner is ever added this
+     * needs a per-partner column to stay meaningful.
+     *
+     * Only this relay branch can introduce unbacked credit.
+     * `completeTransactionEntry()` already refuses a remote-only payer crediting
+     * a local payee, so it cannot reach this shape.
+     *
+     * 🔴 Call with a database transaction open. The agreement row is locked so
+     * two concurrent relays cannot both read the same "already credited" total
+     * and both pass it.
+     */
+    private function inboundCreditCeilingRefusal(int $tenantId, float $quant): ?JsonResponse
+    {
+        $agreement = DB::table('federation_credit_agreements')
+            ->where('to_tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first(['id', 'max_monthly_credits']);
+
+        if (!$agreement) {
+            Log::warning('[FederationCC] Inbound credit refused: no active credit agreement', [
+                'tenant_id' => $tenantId,
+                'quant' => $quant,
+            ]);
+
+            return $this->ccError(
+                'PermissionViolation',
+                'No active credit agreement authorises inbound credit to this community',
+                403
+            );
+        }
+
+        $ceiling = $agreement->max_monthly_credits === null
+            ? self::DEFAULT_MONTHLY_INBOUND_CREDIT_HOURS
+            : (float) $agreement->max_monthly_credits;
+
+        // Every federated credit this month that carried no local debit — the
+        // exact shape recordFederatedTransactionLedger() writes on this path.
+        $alreadyCredited = (float) DB::table('transactions')
+            ->where('tenant_id', $tenantId)
+            ->where('is_federated', 1)
+            ->whereNull('sender_id')
+            ->where('created_at', '>=', Carbon::now()->startOfMonth())
+            ->sum('amount');
+
+        if ($alreadyCredited + $quant > $ceiling) {
+            Log::warning('[FederationCC] Inbound credit refused: monthly ceiling reached', [
+                'tenant_id' => $tenantId,
+                'agreement_id' => (int) $agreement->id,
+                'ceiling_hours' => $ceiling,
+                'already_credited_hours' => $alreadyCredited,
+                'requested_hours' => $quant,
+            ]);
+
+            return $this->ccError(
+                'PermissionViolation',
+                'Inbound credit would exceed this community\'s monthly credit ceiling',
+                403
+            );
+        }
+
+        return null;
     }
 
     private function recordFederatedTransactionLedger(

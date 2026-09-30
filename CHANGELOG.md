@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A partner community can no longer add time credits to this community's balances without limit. Inbound credit now requires an active credit agreement and stops at a monthly ceiling. Partner federation is switched off and no partner is connected (F-345).
 - The currency named in a partner community's web address is now checked against the currency this community actually issues, instead of being ignored (F-357).
 - An outside partner community can no longer switch off a member's account unless that member has agreed to cross-community sharing (F-331).
 - An outside partner community can no longer read a member's balance and credit limit by using the edit address instead of the view address. The two now apply the same rule about who has agreed to be visible (F-330).
