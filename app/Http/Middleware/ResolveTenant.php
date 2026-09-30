@@ -57,7 +57,15 @@ class ResolveTenant
         }
 
         try {
-            TenantContext::resolve();
+            // F-444: a refusal comes back as a response object rather than
+            // being echoed and exited inside the resolver, so returning it here
+            // lets SecurityHeaders and EnsureCorsHeaders decorate it — and lets
+            // the refusal keep its own status and error code instead of being
+            // flattened into the generic failure below.
+            $refusal = TenantContext::resolve();
+            if ($refusal instanceof Response) {
+                return $refusal;
+            }
         } catch (\Throwable $e) {
             return response()->json([
                 'errors' => [

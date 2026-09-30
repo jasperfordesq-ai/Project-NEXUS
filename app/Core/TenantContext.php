@@ -78,7 +78,16 @@ class TenantContext
     }
 
     /**
-     * Resolve the current tenant based on Path
+     * Resolve the current tenant based on Path.
+     *
+     * Returns NULL when a tenant was resolved. When resolution is REFUSED —
+     * unknown community, community mismatch, switched-off community — it
+     * returns the refusal as a response object for the caller
+     * (App\Http\Middleware\ResolveTenant) to return through the middleware
+     * stack. It used to `echo` and `exit` instead, which ended the process
+     * before the response-phase security and CORS middleware could run (F-444).
+     *
+     * @return \Symfony\Component\HttpFoundation\Response|null
      */
     public static function resolve()
     {
@@ -118,8 +127,7 @@ class TenantContext
             if ($domainTenant && $domainTenant['id'] != 1) {
                 // Check if tenant is active
                 if (empty($domainTenant['is_active'])) {
-                    self::showInactiveTenantError($domainTenant['name'] ?? 'This community');
-                    return;
+                    return self::showInactiveTenantError($domainTenant['name'] ?? 'This community');
                 }
 
                 // Remember that this request arrived on a dedicated accessible
@@ -178,8 +186,7 @@ class TenantContext
                         $tokenTenantId = self::extractTenantIdFromBearerToken();
                         if ($tokenTenantId !== null && $tokenTenantId !== (int) $childRow->id
                             && !self::isTokenUserSuperAdmin()) {
-                            self::respondWithTenantMismatchError();
-                            return;
+                            return self::respondWithTenantMismatchError();
                         }
                         self::$headerTenantId = (int) $childRow->id;
                         self::$tokenTenantId = $tokenTenantId;
@@ -217,8 +224,7 @@ class TenantContext
                 if ($tokenTenantId !== $headerTenantId) {
                     // Check if user is a super admin before rejecting
                     if (!self::isTokenUserSuperAdmin()) {
-                        self::respondWithTenantMismatchError();
-                        return;
+                        return self::respondWithTenantMismatchError();
                     }
                     // Super admin accessing different tenant - this is allowed
                 }
@@ -228,14 +234,12 @@ class TenantContext
             $headerTenant = self::fetchTenant('id', $headerTenantId);
 
             if (!$headerTenant) {
-                self::respondWithInvalidTenantError($headerTenantId);
-                return;
+                return self::respondWithInvalidTenantError($headerTenantId);
             }
 
             // Check if tenant is active
             if (empty($headerTenant['is_active'])) {
-                self::showInactiveTenantError($headerTenant['name'] ?? 'This community');
-                return;
+                return self::showInactiveTenantError($headerTenant['name'] ?? 'This community');
             }
 
             self::$tenant = $headerTenant;
@@ -258,21 +262,32 @@ class TenantContext
                 if ($tokenTenantId !== null) {
                     self::$tokenTenantId = $tokenTenantId;
                     if ($tokenTenantId !== $slugTenantId && !self::isTokenUserSuperAdmin()) {
-                        self::respondWithTenantMismatchError();
-                        return;
+                        return self::respondWithTenantMismatchError();
                     }
                 }
 
                 if (empty($slugTenant['is_active'])) {
-                    self::showInactiveTenantError($slugTenant['name'] ?? 'This community');
-                    return;
+                    return self::showInactiveTenantError($slugTenant['name'] ?? 'This community');
                 }
 
                 self::$tenant = $slugTenant;
                 self::$basePath = '';
                 return;
             }
-            // Unknown slug — fall through to other resolution methods
+
+            // F-443: an explicitly supplied community name that matches no
+            // community must FAIL CLOSED. This branch used to end here and let
+            // execution fall through to step 5's master-tenant fallback, so a
+            // sign-up addressed to a removed or renamed community was created
+            // in the master community and answered "registration successful".
+            // Both sibling paths already refuse the same input: an unrecognised
+            // Host (PlatformHostPolicy, the F-035 fix) and an unknown `?slug=`
+            // on the very same endpoint (TenantBootstrapController, TRS-001).
+            // An INACTIVE community's slug was refused here too, so the header
+            // failed closed for "exists but switched off" and open for "does
+            // not exist". Step 5 is untouched: it still serves the root and the
+            // platform's own pages, which name no community at all.
+            return self::respondWithInvalidTenantError(trim($headerSlug));
         }
 
         // 2.5. Bearer Token Tenant Resolution (fallback if no header)
@@ -288,8 +303,7 @@ class TenantContext
 
                 if ($tokenTenant) {
                     if (empty($tokenTenant['is_active'])) {
-                        self::showInactiveTenantError($tokenTenant['name'] ?? 'This community');
-                        return;
+                        return self::showInactiveTenantError($tokenTenant['name'] ?? 'This community');
                     }
 
                     self::$tenant = $tokenTenant;
@@ -312,8 +326,7 @@ class TenantContext
             if ($tenant) {
                 // Check if tenant is active
                 if (empty($tenant['is_active'])) {
-                    self::showInactiveTenantError($tenant['name'] ?? 'This community');
-                    return;
+                    return self::showInactiveTenantError($tenant['name'] ?? 'This community');
                 }
 
                 self::$tenant = $tenant;
@@ -323,12 +336,13 @@ class TenantContext
                 // STRICT ISOLATION:
                 // If path looks like a tenant slug but isn't one, 404.
                 // (Legacy custom-page fallthrough removed — views/ is decommissioned.)
-                if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'testing' || (function_exists('app') && app()->environment('testing'))) {
-                    throw new \Symfony\Component\HttpKernel\Exception\HttpException(404, 'The requested tenant or page does not exist.');
-                }
-                http_response_code(404);
-                echo "<h1>404 Not Found</h1><p>The requested tenant or page does not exist.</p>";
-                exit;
+                // Returned rather than echoed + exited, so the response-phase
+                // security headers reach it (F-444).
+                return new \Symfony\Component\HttpFoundation\Response(
+                    '<h1>404 Not Found</h1><p>The requested tenant or page does not exist.</p>',
+                    404,
+                    ['Content-Type' => 'text/html; charset=UTF-8']
+                );
             }
         }
 
@@ -339,8 +353,7 @@ class TenantContext
             if ($sessionTenant) {
                 // Check if tenant is active (except for super-admin routes)
                 if (empty($sessionTenant['is_active']) && $firstSegment !== 'super-admin') {
-                    self::showInactiveTenantError($sessionTenant['name'] ?? 'This community');
-                    return;
+                    return self::showInactiveTenantError($sessionTenant['name'] ?? 'This community');
                 }
 
                 self::$tenant = $sessionTenant;
@@ -416,9 +429,10 @@ class TenantContext
     {
         // Reflects the result of the resolution that already ran (ResolveTenant
         // middleware resolves before any caller here). Deliberately does NOT
-        // re-resolve: on an unknown-tenant request resolve() throws, and
-        // re-triggering it from a response/guard path would surface as a 404/500
-        // instead of the intended 400 the resolver already returned.
+        // re-resolve: on an unknown-tenant request resolve() produces a refusal
+        // response, and re-triggering it from a response/guard path would redo
+        // that work and discard it, instead of reporting the refusal the
+        // resolver already returned.
         return self::$viaAccessibleDomain;
     }
 
@@ -961,11 +975,19 @@ class TenantContext
     }
 
     /**
-     * Respond with JSON error for invalid tenant ID
+     * Refusal: the caller named a community that does not exist.
      *
-     * @param int $tenantId
+     * 🔴 F-444: this used to `echo` and `exit`. `SecurityHeaders` and
+     * `EnsureCorsHeaders` set their headers on the RESPONSE phase and sit
+     * outside `ResolveTenant`, so the process ended before either could run —
+     * the refusal reached the client with no CSP, no `nosniff` and no CORS
+     * headers, which a browser reports as an opaque network failure rather
+     * than the real status. It now RETURNS the response; `ResolveTenant`
+     * returns it through the stack, so it is decorated like any other.
+     *
+     * @param int|string $tenantIdentifier The id or slug the caller supplied.
      */
-    private static function respondWithInvalidTenantError(int $tenantId): void
+    private static function respondWithInvalidTenantError($tenantIdentifier): \Symfony\Component\HttpFoundation\Response
     {
         // Set a minimal tenant context so later code doesn't break
         self::$tenant = [
@@ -976,29 +998,23 @@ class TenantContext
         ];
         self::$basePath = '';
 
-        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'testing' || (function_exists('app') && app()->environment('testing'))) {
-            throw new \Symfony\Component\HttpKernel\Exception\HttpException(400, json_encode([
-                'data' => null,
-                'errors' => [['code' => ApiErrorCodes::INVALID_TENANT, 'message' => 'Invalid tenant ID', 'field' => null]]
-            ]));
-        }
-        header('Content-Type: application/json');
-        http_response_code(400);
-        echo json_encode([
+        return new \Illuminate\Http\JsonResponse([
             'data' => null,
             'errors' => [[
                 'code' => ApiErrorCodes::INVALID_TENANT,
                 'message' => 'Invalid tenant ID',
                 'field' => null
             ]]
-        ]);
-        exit;
+        ], 400);
     }
 
     /**
-     * Respond with JSON error for tenant mismatch (header vs token)
+     * Refusal: the Bearer token's community and the requested community differ.
+     *
+     * Returns the response rather than writing it to the output buffer — see
+     * respondWithInvalidTenantError() for why (F-444).
      */
-    private static function respondWithTenantMismatchError(): void
+    private static function respondWithTenantMismatchError(): \Symfony\Component\HttpFoundation\Response
     {
         // Set a minimal tenant context so later code doesn't break
         self::$tenant = [
@@ -1009,23 +1025,14 @@ class TenantContext
         ];
         self::$basePath = '';
 
-        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'testing' || (function_exists('app') && app()->environment('testing'))) {
-            throw new \Symfony\Component\HttpKernel\Exception\HttpException(403, json_encode([
-                'data' => null,
-                'errors' => [['code' => ApiErrorCodes::TENANT_MISMATCH, 'message' => 'Token tenant does not match requested tenant', 'field' => null]]
-            ]));
-        }
-        header('Content-Type: application/json');
-        http_response_code(403);
-        echo json_encode([
+        return new \Illuminate\Http\JsonResponse([
             'data' => null,
             'errors' => [[
                 'code' => ApiErrorCodes::TENANT_MISMATCH,
                 'message' => 'Token tenant does not match requested tenant',
                 'field' => null
             ]]
-        ]);
-        exit;
+        ], 403);
     }
 
     /**
@@ -1076,15 +1083,15 @@ class TenantContext
     }
 
     /**
-     * Show error page for inactive tenants
+     * Refusal: the named community exists but is switched off.
+     *
+     * Returns the same page it has always rendered, as a response object rather
+     * than buffer output, so the response-phase security headers are applied to
+     * it (F-444). The page body is unchanged, including the `htmlspecialchars()`
+     * escape on the community name.
      */
-    private static function showInactiveTenantError(string $tenantName): void
+    private static function showInactiveTenantError(string $tenantName): \Symfony\Component\HttpFoundation\Response
     {
-        if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'testing' || (function_exists('app') && app()->environment('testing'))) {
-            throw new \Symfony\Component\HttpKernel\Exception\HttpException(503, 'Community Unavailable: ' . $tenantName);
-        }
-        http_response_code(503);
-
         // Set a minimal tenant context so the app doesn't break
         self::$tenant = [
             'id' => 0,
@@ -1094,7 +1101,7 @@ class TenantContext
         ];
         self::$basePath = '';
 
-        echo '<!DOCTYPE html>
+        $html = '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1158,6 +1165,11 @@ class TenantContext
     </div>
 </body>
 </html>';
-        exit;
+
+        return new \Symfony\Component\HttpFoundation\Response(
+            $html,
+            503,
+            ['Content-Type' => 'text/html; charset=UTF-8']
+        );
     }
 }
