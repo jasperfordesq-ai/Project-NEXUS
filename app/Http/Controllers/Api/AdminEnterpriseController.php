@@ -2431,9 +2431,36 @@ class AdminEnterpriseController extends BaseApiController
             }
 
             // Invalidate tenant bootstrap cache
+            // O-143: the public tenant-list caches are busted here too, so this
+            // page and PUT /v2/admin/config/features leave the platform in the
+            // same cache state (AdminConfigController::updateFeature :310-312).
             try {
-                app(\App\Services\RedisCache::class)->delete('tenant_bootstrap', $tenantId);
+                $redisCache = app(\App\Services\RedisCache::class);
+                $redisCache->delete('tenant_bootstrap', $tenantId);
+                $redisCache->delete('tenants_list_public');
+                $redisCache->delete('tenants_list_public_all');
             } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
+
+            // F-460: every feature toggle is audited on THIS route too, not just
+            // the passkey one below. F-408 added this record to
+            // AdminConfigController::updateFeature() because switching off a
+            // module with safeguarding consequences — notably `caring_community`
+            // — left no admin audit entry at all, so "who turned this off, and
+            // when" had no answer. That fix reached one of the two routes that
+            // write `tenants.features`; this is the other one. The write must not
+            // be conditional on the feature name, and must not be swallowed.
+            if ($type === 'feature') {
+                app(\App\Services\AuditLogService::class)->logAdminAction(
+                    $value ? 'tenant_feature_enabled' : 'tenant_feature_disabled',
+                    $this->getUserId(),
+                    null,
+                    [
+                        'tenant_id' => $tenantId,
+                        'feature' => $key,
+                        'enabled' => $value,
+                    ]
+                );
+            }
 
             if ($type === 'feature' && $key === 'biometric_login') {
                 try {
