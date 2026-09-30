@@ -157,6 +157,7 @@ const NewsletterSendTimeOptimizer = lazy(() => import('./modules/newsletters/New
 const NewsletterDiagnostics = lazy(() => import('./modules/newsletters/NewsletterDiagnostics'));
 const NewsletterStats = lazy(() => import('./modules/newsletters/NewsletterStats'));
 const NewsletterActivity = lazy(() => import('./modules/newsletters/NewsletterActivity'));
+const PolicyEmailStats = lazy(() => import('./modules/newsletters/PolicyEmailStats'));
 
 // Volunteering module
 const VolunteeringOverview = lazy(() => import('./modules/volunteering/VolunteeringOverview'));
@@ -429,6 +430,7 @@ export function AdminRoutes() {
       <Route path="newsletters/bounces" element={<Lazy><NewsletterBounces /></Lazy>} />
       <Route path="newsletters/send-time-optimizer" element={<Lazy><NewsletterSendTimeOptimizer /></Lazy>} />
       <Route path="newsletters/diagnostics" element={<Lazy><NewsletterDiagnostics /></Lazy>} />
+      <Route path="newsletters/policy-emails/:versionId" element={<Lazy><PolicyEmailStats /></Lazy>} />
       <Route path="newsletters/:id/stats" element={<Lazy><NewsletterStats /></Lazy>} />
       <Route path="newsletters/:id/activity" element={<Lazy><NewsletterActivity /></Lazy>} />
       </Route>

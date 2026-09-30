@@ -115,11 +115,12 @@ describe('NewsletterList', () => {
     mockPolicyEmails.mockResolvedValue({ success: true, data: [{
       document_id: 5, title: 'Privacy policy', version_id: 9, version_number: '2.0',
       published_at: '2026-09-30T20:00:00Z', recipients: 10, queued: 2,
-      submitted: 7, delivered: 6, bounced: 1, exceptions: 1,
+      submitted: 7, delivered: 6, bounced: 1, exceptions: 1, unique_opens: 4, unique_clicks: 2,
     }] });
     render(<NewsletterList />);
     expect(await screen.findByText('Privacy policy · version 2.0')).toBeInTheDocument();
     expect(screen.getByText(/Submitted 7 · Delivered 6 · Bounced 1/)).toBeInTheDocument();
+    expect(screen.getByText('Opened 4 · Clicked 2')).toBeInTheDocument();
   });
 
   it('shows a loading spinner while fetching', () => {

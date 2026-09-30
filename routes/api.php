@@ -2602,6 +2602,7 @@ Route::get('/v2/admin/legal-documents', [\App\Http\Controllers\Api\AdminEnterpri
 Route::post('/v2/admin/legal-documents', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'createLegalDoc']);
 Route::get('/v2/admin/legal-documents/compliance', [\App\Http\Controllers\Api\AdminLegalDocController::class, 'getComplianceStats']);
 Route::get('/v2/admin/legal-documents/publication-emails', [\App\Http\Controllers\Api\AdminLegalDocController::class, 'publicationEmails']);
+Route::get('/v2/admin/legal-documents/versions/{vid}/email-stats', [\App\Http\Controllers\Api\AdminLegalDocController::class, 'emailStats']);
 Route::get('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'showLegalDoc']);
 Route::put('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateLegalDoc']);
 Route::delete('/v2/admin/legal-documents/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteLegalDoc']);
@@ -3437,6 +3438,8 @@ Route::middleware('throttle:nexus-route-60-per-1m')->group(function () {
 Route::get('/v2/newsletter/unsubscribe', [\App\Http\Controllers\Api\NewsletterController::class, 'unsubscribe'])->middleware('throttle:nexus-route-30-per-1m');
 Route::post('/v2/newsletter/unsubscribe', [\App\Http\Controllers\Api\NewsletterController::class, 'unsubscribe'])->middleware('throttle:nexus-route-30-per-1m');
 Route::get('/v2/newsletter/pixel/{token}', [\App\Http\Controllers\Api\NewsletterController::class, 'trackOpen']);
+Route::get('/v2/legal-publication/open/{deliveryId}/{signature}', [\App\Http\Controllers\Api\LegalPublicationTrackingController::class, 'open'])->middleware('throttle:nexus-route-120-per-1m');
+Route::get('/v2/legal-publication/click/{deliveryId}/{signature}', [\App\Http\Controllers\Api\LegalPublicationTrackingController::class, 'click'])->middleware('throttle:nexus-route-120-per-1m');
 Route::get('/v2/newsletter/click/{token}', [\App\Http\Controllers\Api\NewsletterController::class, 'trackClick'])->middleware('throttle:nexus-route-120-per-1m');
 
 // SOC13 — Social login (OAuth). Redirect/callback are public so anonymous

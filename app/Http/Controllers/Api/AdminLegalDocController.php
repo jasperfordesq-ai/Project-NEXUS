@@ -52,6 +52,21 @@ class AdminLegalDocController extends BaseApiController
         return $this->respondWithData(\App\Services\LegalPublicationDeliveryService::recent((int) TenantContext::getId()));
     }
 
+    /** GET /api/v2/admin/legal-documents/versions/{vid}/email-stats */
+    public function emailStats(int $vid): JsonResponse
+    {
+        $this->requireAdmin();
+        $filter = (string) $this->query('filter', 'all');
+        if (!in_array($filter, ['all', 'opened', 'clicked', 'not_opened'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_type'), 'filter', 422);
+        }
+        $data = \App\Services\LegalPublicationDeliveryService::engagement(
+            (int) TenantContext::getId(), $vid, $this->queryInt('page', 1, 1), $filter
+        );
+        return $data ? $this->respondWithData($data)
+            : $this->respondWithError('NOT_FOUND', __('api.version_not_found'), null, 404);
+    }
+
     /** GET /api/v2/admin/legal-docs/{docId}/compare */
     public function compareVersions(int $docId): JsonResponse
     {

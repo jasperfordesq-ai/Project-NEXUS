@@ -1348,7 +1348,9 @@ export const adminEnterprise = {
 
 export const adminLegalDocs = {
   publicationEmails: () =>
-    api.get<Array<{ document_id: number; title: string; version_id: number; version_number: string; published_at: string | null; recipients: number; queued: number; submitted: number; delivered: number; bounced: number; exceptions: number }>>('/v2/admin/legal-documents/publication-emails'),
+    api.get<Array<{ document_id: number; title: string; version_id: number; version_number: string; published_at: string | null; recipients: number; queued: number; submitted: number; delivered: number; bounced: number; exceptions: number; unique_opens: number; unique_clicks: number }>>('/v2/admin/legal-documents/publication-emails'),
+  emailStats: (versionId: number, page = 1, filter = 'all') =>
+    api.get<{ version: { title: string; version_number: string; published_at: string | null }; totals: { recipients: number; submitted: number; total_opens: number; unique_opens: number; total_clicks: number; unique_clicks: number }; recipients: Array<{ id: number; email: string | null; first_name: string | null; status: string; sent_at: string | null; first_opened: string | null; first_clicked: string | null; opens: number | null; clicks: number | null }>; meta: { total: number; page: number; per_page: number; total_pages: number } }>(`/v2/admin/legal-documents/versions/${versionId}/email-stats${buildQuery({ page, filter })}`),
   list: () =>
     api.get<LegalDocument[]>('/v2/admin/legal-documents'),
 

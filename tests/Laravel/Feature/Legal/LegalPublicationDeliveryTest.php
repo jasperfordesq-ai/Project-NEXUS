@@ -81,7 +81,9 @@ class LegalPublicationDeliveryTest extends TestCase
         $this->assertSame('DE Policy test', $captured['subject']);
         $this->assertStringContainsString('contact details.', $captured['html']);
         $this->assertStringNotContainsString('<script>', $captured['html']);
-        $this->assertStringContainsString('/legal/acceptable-use', $captured['html']);
+        $this->assertStringContainsString('/v2/legal-publication/click/', $captured['html']);
+        $this->assertStringContainsString('/v2/legal-publication/open/', $captured['html']);
+        $this->assertStringContainsString('/v2/legal-publication/click/', $captured['options']['textBody']);
         $this->assertSame('legal_document', $captured['options']['category']);
         $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'user_id' => $user->id, 'status' => 'sent', 'attempts' => 1]);
     }
@@ -147,6 +149,38 @@ class LegalPublicationDeliveryTest extends TestCase
         $this->assertEquals(1, $row['submitted']);
         $this->assertEquals(1, $row['delivered']);
         $this->assertEquals(0, $row['queued']);
+    }
+
+    public function test_signed_open_and_click_record_recipient_activity_and_reject_tampering(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);
+        Sanctum::actingAs($admin);
+        $version = $this->draft();
+        LegalDocumentService::publishVersion($version);
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $admin->id)->delete();
+        $deliveryId = DB::table('legal_publication_deliveries')->where('version_id', $version)->value('id');
+        $openPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'open'), PHP_URL_PATH);
+        $clickPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'click'), PHP_URL_PATH);
+        $this->apiGet($openPath)->assertStatus(200);
+        $this->apiGet($openPath)->assertStatus(200);
+        $this->apiGet($clickPath)->assertRedirect();
+        $this->assertDatabaseHas('legal_publication_events', ['delivery_id' => $deliveryId, 'event_type' => 'open']);
+        $this->assertDatabaseHas('legal_publication_events', ['delivery_id' => $deliveryId, 'event_type' => 'click']);
+        $this->apiGet($openPath . 'bad')->assertStatus(200);
+        $this->assertSame(3, DB::table('legal_publication_events')->where('delivery_id', $deliveryId)->count());
+
+        $response = $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats?filter=opened");
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('data.totals.unique_opens'));
+        $this->assertEquals(2, $response->json('data.totals.total_opens'));
+        $this->assertEquals(1, $response->json('data.totals.unique_clicks'));
+        $this->assertSame($admin->email, $response->json('data.recipients.0.email'));
+        $overview = collect($this->apiGet('/v2/admin/legal-documents/publication-emails')->json('data'))
+            ->firstWhere('version_id', $version);
+        $this->assertEquals(1, $overview['unique_opens']);
+        $this->assertEquals(1, $overview['unique_clicks']);
+        $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats?filter=not_opened")
+            ->assertJsonPath('data.meta.total', 0);
     }
 
     public function test_marketing_unsubscribe_does_not_override_service_mail_but_bounces_do(): void

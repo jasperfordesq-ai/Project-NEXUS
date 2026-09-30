@@ -60,6 +60,49 @@ final class LegalPublicationDeliveryService
             ->pluck('total', 'status')->map(fn ($n) => (int) $n)->all();
     }
 
+    public static function trackingUrl(int $deliveryId, string $event): string
+    {
+        $signature = hash_hmac('sha256', "legal-publication:{$event}:{$deliveryId}", (string) config('app.key'));
+        return rtrim((string) config('app.url'), '/')
+            . "/v2/legal-publication/{$event}/{$deliveryId}/{$signature}";
+    }
+
+    /** Record a signed recipient event without exposing account information. */
+    public static function recordEvent(int $deliveryId, string $event, string $signature): ?string
+    {
+        if (!in_array($event, ['open', 'click'], true) || !hash_equals(
+            hash_hmac('sha256', "legal-publication:{$event}:{$deliveryId}", (string) config('app.key')),
+            $signature
+        )) {
+            return null;
+        }
+        $row = DB::table('legal_publication_deliveries')->where('id', $deliveryId)->first();
+        if (!$row) {
+            return null;
+        }
+        try {
+            DB::table('legal_publication_events')->insert([
+                'tenant_id' => $row->tenant_id, 'delivery_id' => $deliveryId,
+                'event_type' => $event, 'occurred_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Policy email engagement event could not be recorded', ['delivery_id' => $deliveryId, 'event' => $event]);
+        }
+        return $row->review_url;
+    }
+
+    private static function eventCounts(int $tenantId): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('legal_publication_events')
+            ->where('tenant_id', $tenantId)
+            ->selectRaw('tenant_id, delivery_id')
+            ->selectRaw("SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END) as opens")
+            ->selectRaw("SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END) as clicks")
+            ->selectRaw("MIN(CASE WHEN event_type = 'open' THEN occurred_at END) as first_opened")
+            ->selectRaw("MIN(CASE WHEN event_type = 'click' THEN occurred_at END) as first_clicked")
+            ->groupBy('tenant_id', 'delivery_id');
+    }
+
     /** Recent policy sends for the admin email overview. Provider delivery is
      * separate from transport submission: a submitted email can still bounce. */
     public static function recent(int $tenantId, int $limit = 20): array
@@ -80,6 +123,9 @@ final class LegalPublicationDeliveryService
                 $join->on('e.tenant_id', '=', 'l.tenant_id')
                     ->on('e.idempotency_key', '=', DB::raw("CONCAT('legal-publication:', l.id)"));
             })
+            ->leftJoinSub(self::eventCounts($tenantId), 'ev', function ($join) {
+                $join->on('ev.tenant_id', '=', 'l.tenant_id')->on('ev.delivery_id', '=', 'l.id');
+            })
             ->where('l.tenant_id', $tenantId)->whereIn('l.version_id', $versionIds)
             ->selectRaw('d.id as document_id, d.title, v.id as version_id, v.version_number, v.published_at')
             ->selectRaw('COUNT(DISTINCT l.id) as recipients')
@@ -88,8 +134,46 @@ final class LegalPublicationDeliveryService
             ->selectRaw("COUNT(DISTINCT CASE WHEN l.status IN ('failed','suppressed','skipped','unknown') THEN l.id END) as exceptions")
             ->selectRaw("COUNT(DISTINCT CASE WHEN e.status IN ('delivered','opened','clicked') THEN l.id END) as delivered")
             ->selectRaw("COUNT(DISTINCT CASE WHEN e.status = 'bounced' THEN l.id END) as bounced")
+            ->selectRaw('COUNT(DISTINCT CASE WHEN ev.opens > 0 THEN l.id END) as unique_opens')
+            ->selectRaw('COUNT(DISTINCT CASE WHEN ev.clicks > 0 THEN l.id END) as unique_clicks')
             ->groupBy('d.id', 'd.title', 'v.id', 'v.version_number', 'v.published_at')
             ->orderByDesc('v.published_at')->get()->map(fn ($row) => (array) $row)->all();
+    }
+
+    public static function engagement(int $tenantId, int $versionId, int $page, string $filter): ?array
+    {
+        $version = DB::table('legal_document_versions as v')
+            ->join('legal_documents as d', 'd.id', '=', 'v.document_id')
+            ->where('v.id', $versionId)->where('d.tenant_id', $tenantId)
+            ->first(['d.id as document_id', 'd.title', 'v.version_number', 'v.published_at']);
+        if (!$version) {
+            return null;
+        }
+        $base = DB::table('legal_publication_deliveries as l')
+            ->leftJoin('users as u', function ($join) {
+                $join->on('u.id', '=', 'l.user_id')->on('u.tenant_id', '=', 'l.tenant_id');
+            })
+            ->leftJoinSub(self::eventCounts($tenantId), 'ev', function ($join) {
+                $join->on('ev.tenant_id', '=', 'l.tenant_id')->on('ev.delivery_id', '=', 'l.id');
+            })
+            ->where('l.tenant_id', $tenantId)->where('l.version_id', $versionId);
+        $totals = (clone $base)->selectRaw('COUNT(*) as recipients')
+            ->selectRaw("SUM(CASE WHEN l.status = 'sent' THEN 1 ELSE 0 END) as submitted")
+            ->selectRaw('SUM(COALESCE(ev.opens, 0)) as total_opens, SUM(COALESCE(ev.clicks, 0)) as total_clicks')
+            ->selectRaw('SUM(CASE WHEN ev.opens > 0 THEN 1 ELSE 0 END) as unique_opens')
+            ->selectRaw('SUM(CASE WHEN ev.clicks > 0 THEN 1 ELSE 0 END) as unique_clicks')->first();
+        if ($filter === 'opened') $base->where('ev.opens', '>', 0);
+        if ($filter === 'clicked') $base->where('ev.clicks', '>', 0);
+        if ($filter === 'not_opened') $base->whereNull('ev.first_opened');
+        $rows = $base->select('l.id', 'l.status', 'l.sent_at', 'u.email', 'u.first_name',
+            'ev.first_opened', 'ev.first_clicked', 'ev.opens', 'ev.clicks')
+            ->orderBy('l.id')->paginate(25, ['*'], 'page', $page);
+        return [
+            'version' => (array) $version,
+            'totals' => (array) $totals,
+            'recipients' => $rows->items(),
+            'meta' => ['total' => $rows->total(), 'page' => $rows->currentPage(), 'per_page' => $rows->perPage(), 'total_pages' => $rows->lastPage()],
+        ];
     }
 
     public function processBatch(int $limit = 100): int
@@ -159,14 +243,17 @@ final class LegalPublicationDeliveryService
                             ->paragraph(e(__('emails.policy_publication.intro', $vars)))
                             ->paragraph('<strong>' . e(__('emails.policy_publication.changes')) . '</strong>')
                             ->paragraph(nl2br(e($row->summary ?: __('emails.policy_publication.no_summary'))))
-                            ->button(__('emails.policy_publication.read'), $row->review_url)
+                            ->button(__('emails.policy_publication.read'), self::trackingUrl((int) $row->id, 'click'))
                             ->paragraph(e(__('emails.policy_publication.service_notice')))->render();
+                        $pixel = '<img src="' . e(self::trackingUrl((int) $row->id, 'open')) . '" width="1" height="1" alt="" style="display:block;width:1px;height:1px" />';
+                        $html = str_replace('</body>', $pixel . '</body>', $html);
                         return EmailDispatchService::sendRaw($user->email,
                             __('emails.policy_publication.subject', $vars), $html,
                             null, null, null, 'legal_document', [
                                 'tenant_id' => $row->tenant_id,
                                 'idempotency_key' => 'legal-publication:' . $row->id,
                                 'source' => self::class,
+                                'textBody' => __('emails.policy_publication.intro', $vars) . "\n\n" . $row->summary . "\n\n" . self::trackingUrl((int) $row->id, 'click'),
                             ]);
                     });
                     $status = $sent ? 'sent' : ((int) $row->attempts >= 5 ? 'failed' : 'retry');

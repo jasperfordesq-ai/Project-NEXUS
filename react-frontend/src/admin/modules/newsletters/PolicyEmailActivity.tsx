@@ -23,6 +23,8 @@ type PolicyEmailRow = {
   delivered: number;
   bounced: number;
   exceptions: number;
+  unique_opens: number;
+  unique_clicks: number;
 };
 
 export function PolicyEmailActivity() {
@@ -76,9 +78,12 @@ export function PolicyEmailActivity() {
                       delivered: Number(row.delivered), bounced: Number(row.bounced),
                       exceptions: Number(row.exceptions),
                     })}</p>
+                    <p className="text-sm">{t('newsletters.policy_email_engagement', {
+                      opens: Number(row.unique_opens), clicks: Number(row.unique_clicks),
+                    })}</p>
                   </div>
-                  <Button variant="tertiary" size="sm" onPress={() => navigate(tenantPath(`/admin/legal-documents/${row.document_id}/versions`))}>
-                    {t('newsletters.policy_email_view')}
+                  <Button variant="tertiary" size="sm" onPress={() => navigate(tenantPath(`/admin/newsletters/policy-emails/${row.version_id}`))}>
+                    {t('newsletters.policy_email_stats')}
                   </Button>
                 </CardBody>
               </Card>
