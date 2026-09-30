@@ -1230,6 +1230,22 @@ class AdminBrokerController extends BaseApiController
         })->values()->all();
     }
 
+    /**
+     * F-403: the subject of a monitored message may not decide its own
+     * monitoring record. Unlike guardBrokerNotListingOwner() this is NOT
+     * tier-exempt — the exchange-party guards above refuse an administrator
+     * who is a party too, and F-404 is the same defect reached by an
+     * administrator through AdminSafeguardingController.
+     */
+    private function guardNotMessageParty(int $senderId, int $receiverId, int $callerId): ?JsonResponse
+    {
+        if ($senderId !== $callerId && $receiverId !== $callerId) {
+            return null;
+        }
+
+        return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
+    }
+
     /** POST /api/v2/admin/broker/messages/{id}/review */
     public function reviewMessage(int $id): JsonResponse
     {
@@ -1241,12 +1257,16 @@ class AdminBrokerController extends BaseApiController
         // who need to act in another tenant should switch context first.
         try {
             $message = DB::selectOne(
-                "SELECT id, tenant_id FROM broker_message_copies WHERE id = ? AND tenant_id = ?",
+                "SELECT id, tenant_id, sender_id, receiver_id FROM broker_message_copies WHERE id = ? AND tenant_id = ?",
                 [$id, $tenantId]
             );
 
             if (!$message) {
                 return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Message']), null, 404);
+            }
+
+            if ($refusal = $this->guardNotMessageParty((int) $message->sender_id, (int) $message->receiver_id, $adminId)) {
+                return $refusal;
             }
 
             DB::update(
@@ -1290,6 +1310,13 @@ class AdminBrokerController extends BaseApiController
 
             $copy = (array) $copy;
             $copyTenantId = (int) $copy['tenant_id'];
+
+            // F-403: the subject may not archive their own monitoring record —
+            // it also wrote them into broker_review_archives.decided_by as the
+            // person who decided their own case.
+            if ($refusal = $this->guardNotMessageParty((int) $copy['sender_id'], (int) $copy['receiver_id'], $adminId)) {
+                return $refusal;
+            }
 
             if (!empty($copy['archive_id'])) {
                 return $this->respondWithError('ALREADY_ARCHIVED', __('api.already_archived'), null, 409);
@@ -1364,12 +1391,19 @@ class AdminBrokerController extends BaseApiController
         // Always operate on caller's tenant — see approveExchange comment.
         try {
             $message = DB::selectOne(
-                "SELECT id, tenant_id FROM broker_message_copies WHERE id = ? AND tenant_id = ?",
+                "SELECT id, tenant_id, sender_id, receiver_id FROM broker_message_copies WHERE id = ? AND tenant_id = ?",
                 [$id, $tenantId]
             );
 
             if (!$message) {
                 return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Message']), null, 404);
+            }
+
+            // F-403: flagging stamps reviewed_at too, so the subject could take
+            // their own copy out of the unreviewed queue while authoring the
+            // only narrative a later reader sees, at a severity of their choice.
+            if ($refusal = $this->guardNotMessageParty((int) $message->sender_id, (int) $message->receiver_id, $adminId)) {
+                return $refusal;
             }
 
             DB::update(
