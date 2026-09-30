@@ -41,6 +41,9 @@ class StripeAsyncCheckoutRoutingTest extends TestCase
         $slug = 'e035-async-' . uniqid();
         $this->billingTenantId = (int) DB::table('tenants')->insertGetId([
             'name' => 'E-035 Async Billing', 'slug' => $slug, 'domain' => $slug . '.example.test',
+            // F-289: a checkout is credited to the community owning the paying
+            // customer, which createCheckoutSession() stores before redirecting.
+            'stripe_customer_id' => 'cus_e035_async_' . $slug,
             'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
         ]);
         User::factory()->forTenant($this->billingTenantId)->create([
@@ -67,6 +70,7 @@ class StripeAsyncCheckoutRoutingTest extends TestCase
             'id' => 'cs_e035_' . uniqid(),
             'payment_status' => 'paid',
             'subscription' => $subId,
+            'customer' => (string) DB::table('tenants')->where('id', $this->billingTenantId)->value('stripe_customer_id'),
             'metadata' => (object) $meta,
         ];
     }
