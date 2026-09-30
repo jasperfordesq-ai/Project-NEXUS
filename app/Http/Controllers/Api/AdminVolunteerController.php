@@ -324,6 +324,10 @@ class AdminVolunteerController extends BaseApiController
         }
         $tenantId = $this->getTenantId();
 
+        // F-379: declared before the try so the catch below can read it whatever
+        // point the transaction failed at.
+        $guardFailure = null;
+
         $action = $this->input('action');
         if (!$action || !in_array($action, ['approve', 'decline'], true)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.decision_required'), 'action', 400);
@@ -359,7 +363,7 @@ class AdminVolunteerController extends BaseApiController
             $paymentOutcome = null; // null | 'paid' | 'no_whole_hours' | 'already_paid' | 'no_org'
             $alreadyProcessed = false;
 
-            DB::transaction(function () use ($id, $tenantId, $newStatus, $action, $log, &$paymentOutcome, &$alreadyProcessed) {
+            DB::transaction(function () use ($id, $tenantId, $newStatus, $action, $log, &$paymentOutcome, &$alreadyProcessed, &$guardFailure) {
                 // Flip status conditional on the log still being pending. The status
                 // pre-check above runs OUTSIDE this transaction, so two concurrent
                 // approvals can both pass it. The row lock taken by this UPDATE
@@ -416,12 +420,37 @@ class AdminVolunteerController extends BaseApiController
                 // auto_pay flag; the org wallet is a reconciliation figure (it may go
                 // negative), not a spending limit. Mirrors VolunteerService::verifyHours().
                 $org = DB::selectOne(
-                    "SELECT id, balance, user_id FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                    "SELECT id, balance, user_id, status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
                     [$orgId, $tenantId]
                 );
                 if (!$org) {
                     $paymentOutcome = 'no_org';
                     return;
+                }
+
+                // F-379: the hard freeze. This method's comments say it mirrors
+                // VolunteerService::verifyHours(), and it does mirror that
+                // method's self-verification guard and its idempotency gate —
+                // but it had NO organisation-status test at all. `status` was
+                // not even in the column list above. So a community
+                // administrator could approve a suspended organisation's hours
+                // and mint time credits, with no race and no unusual timing.
+                //
+                // That is not F-343: F-343 is the narrow window where a
+                // suspension commits between the service path's unlocked read
+                // and its locked one. Here there was no freeze to race.
+                //
+                // Tested under the same lock that serialises payouts, and the
+                // vol_logs status flip above is rolled back with it, so the
+                // hours stay pending rather than being marked approved with
+                // nothing minted.
+                if (!VolunteerService::isApprovedOrganizationStatus($org->status ?? null)) {
+                    $guardFailure = [
+                        'code' => 'ORG_NOT_ACTIVE',
+                        'message' => __('api.volunteer_org_not_active'),
+                    ];
+
+                    throw new \RuntimeException($guardFailure['message']);
                 }
 
                 // users.balance stores whole hours; mint the integer-floor portion
@@ -548,6 +577,17 @@ class AdminVolunteerController extends BaseApiController
                 'payment_outcome' => $paymentOutcome,
             ]);
         } catch (\Exception $e) {
+            // F-379: a guard inside the transaction refused deliberately. It
+            // throws rather than returns, because returning would COMMIT the
+            // vol_logs status flip and leave the hours marked approved with
+            // nothing minted. Report the refusal, not a server error — an
+            // administrator being told "something went wrong" would try again.
+            if ($guardFailure !== null) {
+                Log::info('AdminVolunteerController::verifyHours refused under lock: ' . $e->getMessage());
+
+                return $this->respondWithError($guardFailure['code'], $guardFailure['message'], null, 403);
+            }
+
             Log::error("AdminVolunteerController::verifyHours error: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'hours verification']), null, 500);
         }

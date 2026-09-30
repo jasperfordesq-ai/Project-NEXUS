@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A community administrator can no longer approve hours for a suspended volunteering organisation from the admin page, which was creating time credits for an organisation the community had switched off. Declining those hours still works, so the queue can still be cleared (F-379).
 - A volunteering organisation that a community suspends can no longer create time credits through an approval that was already in progress, and neither can an approver whose rights were withdrawn at the same moment (F-343).
 - A community administrator who is the buyer or the seller on a marketplace order can no longer decide that order's dispute themselves (F-341).
 - Time credits can no longer move on an exchange that one of the two members cancelled while a broker was settling its dispute — a case the platform's own reversal tool could not undo afterwards (F-340).
