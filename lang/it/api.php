@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Inquilino non trovato',
     'super_purge_requires_deactivation' => 'Disattivare il tenant prima di eliminarlo. L\'eliminazione è consentita solo su un tenant disattivato.',
     'super_purge_has_children' => 'Questo inquilino ha sub-inquilini. Spostali o eliminali prima di eliminarli.',
+    'super_purge_confirm_slug_mismatch' => 'Digita lo slug esatto della comunità per confermare questa eliminazione definitiva.',
     'super_disable_hub_has_children' => 'Sposta o elimina tutti i tenant secondari prima di disabilitare la funzionalità Hub.',
     'super_hard_delete_disabled' => 'L’eliminazione definitiva di basso livello è disabilitata. Usa il flusso di eliminazione sottoposto a controllo per rimuovere definitivamente un tenant.',
     'super_parent_not_found' => 'Inquilino principale non trovato',

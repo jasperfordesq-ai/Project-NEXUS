@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Inquilino não encontrado',
     'super_purge_requires_deactivation' => 'Desative o locatário antes de limpá-lo. A eliminação só é permitida em um locatário desativado.',
     'super_purge_has_children' => 'Este inquilino tem subinquilinos. Mova ou exclua-os antes de eliminá-los.',
+    'super_purge_confirm_slug_mismatch' => 'Escreva o identificador exato da comunidade para confirmar esta eliminação permanente.',
     'super_disable_hub_has_children' => 'Mova ou elimine todos os inquilinos subordinados antes de desativar a funcionalidade de Hub.',
     'super_hard_delete_disabled' => 'A eliminação definitiva de baixo nível está desativada. Utiliza o fluxo de eliminação auditado para remover permanentemente um tenant.',
     'super_parent_not_found' => 'Inquilino pai não encontrado',

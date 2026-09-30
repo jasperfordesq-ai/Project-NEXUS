@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Huurder niet gevonden',
     'super_purge_requires_deactivation' => 'Deactiveer de tenant voordat u deze opschoont. Opschonen is alleen toegestaan ​​op een gedeactiveerde tenant.',
     'super_purge_has_children' => 'Deze huurder heeft onderhuurders. Verplaats of verwijder ze voordat u ze opschoont.',
+    'super_purge_confirm_slug_mismatch' => 'Typ de exacte slug van de gemeenschap om deze definitieve verwijdering te bevestigen.',
     'super_disable_hub_has_children' => 'Verplaats of verwijder alle onderliggende tenants voordat u de Hub-functionaliteit uitschakelt.',
     'super_hard_delete_disabled' => 'Direct definitief verwijderen is uitgeschakeld. Gebruik de gecontroleerde verwijderprocedure om een tenant permanent te verwijderen.',
     'super_parent_not_found' => 'Bovenliggende huurder niet gevonden',

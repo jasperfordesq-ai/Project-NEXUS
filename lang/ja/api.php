@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'テナントが見つかりません',
     'super_purge_requires_deactivation' => 'テナントを削除する前に、テナントを非アクティブ化します。パージは、非アクティブ化されたテナントでのみ許可されます。',
     'super_purge_has_children' => 'このテナントにはサブテナントが存在します。パージする前に、それらを移動または削除してください。',
+    'super_purge_confirm_slug_mismatch' => 'この完全削除を確認するには、コミュニティの正確なスラッグを入力してください。',
     'super_disable_hub_has_children' => 'Hub 機能を無効にする前に、すべての子テナントを移動または削除してください。',
     'super_hard_delete_disabled' => '低レベルの完全削除は無効です。テナントを完全に削除するには、監査対象のパージ手順を使用してください。',
     'super_parent_not_found' => '親テナントが見つかりません',

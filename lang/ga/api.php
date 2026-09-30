@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Níor aimsíodh an tionónta',
     'super_purge_requires_deactivation' => 'Díghníomhachtaigh an tionónta roimh é a ghlanadh. Ní cheadaítear glantachán ach amháin ar thionónta díghníomhaithe.',
     'super_purge_has_children' => 'Tá fo-thionóntaí ag an tionónta seo. Bog nó scrios iad sula nglantar iad.',
+    'super_purge_confirm_slug_mismatch' => 'Clóscríobh sliogán cruinn an phobail chun an scriosadh buan seo a dhearbhú.',
     'super_disable_hub_has_children' => 'Bog nó scrios gach tionónta linbh sula ndíchumasaítear cumas an Mhoil.',
     'super_hard_delete_disabled' => 'Tá scriosadh buan ar leibhéal íseal díchumasaithe. Úsáid an sreabhadh glanta iniúchta chun tionónta a scriosadh go buan.',
     'super_parent_not_found' => 'Níor aimsíodh an tionónta tuismitheora',

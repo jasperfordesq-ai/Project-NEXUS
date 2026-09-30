@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Inquilino no encontrado',
     'super_purge_requires_deactivation' => 'Desactive el inquilino antes de purgarlo. La depuración solo se permite en un inquilino desactivado.',
     'super_purge_has_children' => 'Este inquilino tiene subarrendatarios. Muévalos o elimínelos antes de purgarlos.',
+    'super_purge_confirm_slug_mismatch' => 'Escribe el identificador exacto de la comunidad para confirmar esta eliminación permanente.',
     'super_disable_hub_has_children' => 'Mueva o elimine todos los inquilinos secundarios antes de deshabilitar la función de concentrador.',
     'super_hard_delete_disabled' => 'La eliminación definitiva de bajo nivel está desactivada. Usa el flujo de purga auditado para eliminar un tenant de forma permanente.',
     'super_parent_not_found' => 'Inquilino principal no encontrado',

@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Locataire introuvable',
     'super_purge_requires_deactivation' => 'Désactivez le locataire avant de le purger. La purge n’est autorisée que sur un locataire désactivé.',
     'super_purge_has_children' => 'Ce locataire a des sous-locataires. Déplacez-les ou supprimez-les avant de les purger.',
+    'super_purge_confirm_slug_mismatch' => 'Saisissez le slug exact de la communauté pour confirmer cette suppression définitive.',
     'super_disable_hub_has_children' => 'Déplacez ou supprimez tous les locataires enfants avant de désactiver la fonctionnalité de hub.',
     'super_hard_delete_disabled' => 'La suppression définitive de bas niveau est désactivée. Utilisez le processus de purge audité pour supprimer définitivement un tenant.',
     'super_parent_not_found' => 'Locataire parent introuvable',

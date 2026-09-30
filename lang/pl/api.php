@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Nie znaleziono najemcy',
     'super_purge_requires_deactivation' => 'Dezaktywuj dzierżawcę przed jego wyczyszczeniem. Czyszczenie jest dozwolone tylko w przypadku dezaktywowanej dzierżawy.',
     'super_purge_has_children' => 'Ten najemca ma podnajemców. Przenieś je lub usuń przed czyszczeniem.',
+    'super_purge_confirm_slug_mismatch' => 'Wpisz dokładny identyfikator (slug) społeczności, aby potwierdzić to trwałe usunięcie.',
     'super_disable_hub_has_children' => 'Przenieś lub usuń wszystkich podrzędnych dzierżawców przed wyłączeniem funkcji koncentratora.',
     'super_hard_delete_disabled' => 'Niskopoziomowe trwałe usuwanie jest wyłączone. Aby trwale usunąć tenanta, użyj audytowanego procesu czyszczenia.',
     'super_parent_not_found' => 'Nie znaleziono dzierżawcy nadrzędnego',

@@ -2524,6 +2524,7 @@ return [
     'super_tenant_not_found' => 'Mieter nicht gefunden',
     'super_purge_requires_deactivation' => 'Deaktivieren Sie den Mandanten, bevor Sie ihn löschen. Die Bereinigung ist nur für einen deaktivierten Mandanten zulässig.',
     'super_purge_has_children' => 'Dieser Mieter hat Untermieter. Verschieben oder löschen Sie sie vor dem Löschen.',
+    'super_purge_confirm_slug_mismatch' => 'Geben Sie den exakten Slug der Community ein, um diese endgültige Löschung zu bestätigen.',
     'super_disable_hub_has_children' => 'Verschieben oder löschen Sie alle untergeordneten Mandanten, bevor Sie die Hub-Funktion deaktivieren.',
     'super_hard_delete_disabled' => 'Die direkte endgültige Löschung ist deaktiviert. Verwenden Sie für die dauerhafte Löschung eines Mandanten den protokollierten Löschvorgang.',
     'super_parent_not_found' => 'Hauptmieter nicht gefunden',

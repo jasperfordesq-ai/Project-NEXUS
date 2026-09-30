@@ -31,6 +31,17 @@ class AdminEmailDeliverabilityController extends BaseApiController
     protected bool $isV2Api = true;
 
     /**
+     * F-374: the `email_suppression.reason` values that record a decision by the
+     * MEMBER rather than a technical delivery fact. Removing one of these puts
+     * the platform back in touch with somebody who asked it not to be, so it
+     * needs an explicit acknowledgement. The rest ('bounce', 'block', 'invalid')
+     * are what this endpoint exists to clear.
+     *
+     * @var list<string>
+     */
+    private const OBJECTION_SUPPRESSION_REASONS = ['unsubscribe', 'spam_report'];
+
+    /**
      * GET /api/v2/admin/email-deliverability/summary
      *
      * Headline metrics for the tenant: counts by status over the last 7 / 30
@@ -2668,17 +2679,72 @@ class AdminEmailDeliverabilityController extends BaseApiController
      * the next send isn't immediately re-suppressed. Local cache will refill
      * on the next hourly sync if the address is still bad upstream at the
      * provider. Platform super-admin only.
+     *
+     * 🔴 F-374. Two changes, and one thing that could NOT be done:
+     *
+     *   1. Every removal now writes an activity_log row naming the admin. This
+     *      used to leave no trace at all, which mattered because F-274's fix
+     *      deliberately KEEPS the suppression row on account erasure
+     *      (GdprService.php:1526) — it is the one thing that stops mail
+     *      reaching an erased person's real inbox.
+     *   2. A suppression recorded because the member OBJECTED (`unsubscribe`,
+     *      `spam_report`) is refused unless the caller passes
+     *      `acknowledge_objection: true`. The technical reasons (`bounce`,
+     *      `block`, `invalid`) are exactly what this endpoint is for and are
+     *      unaffected. The override is recorded as an override.
+     *
+     * 🔴 "Refuse when the suppression exists because the account was erased"
+     * is NOT implementable and deliberately so: erasure rewrites the member's
+     * address and severs every identifier (the owner's F-339 decision was that
+     * no identifier survives erasure), so nothing links a suppressed address
+     * back to an erased account. The objection reasons above are the closest
+     * enforceable proxy. Do not add a lookup that reintroduces that link.
      */
     public function removeSuppression(int $id): JsonResponse
     {
-        $this->requirePlatformSuperAdmin();
+        $adminId = $this->requirePlatformSuperAdmin();
 
         $row = DB::table('email_suppression')->where('id', $id)->first();
         if (!$row) {
             return $this->respondWithError('NOT_FOUND', __('api.email_suppression_not_found'), null, 404);
         }
 
+        $reason = (string) $row->reason;
+        $isObjection = in_array($reason, self::OBJECTION_SUPPRESSION_REASONS, true);
+        $input = $this->getAllInput();
+        $override = filter_var($input['acknowledge_objection'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        if ($isObjection && !$override) {
+            return $this->respondWithError(
+                'SUPPRESSION_RECORDS_OBJECTION',
+                __('api.email_suppression_records_objection'),
+                'acknowledge_objection',
+                409
+            );
+        }
+
         DB::table('email_suppression')->where('id', $id)->delete();
+
+        // The address itself is deliberately NOT written into the audit row:
+        // this record has to outlive the suppression, and an erased member's
+        // real address must not be reintroduced into a long-lived table. The
+        // reason code, the admin and the suppression id are what an auditor
+        // needs, and the address is still returned to the caller who asked.
+        DB::table('activity_log')->insert([
+            'tenant_id' => $this->getTenantId(),
+            'user_id' => $adminId,
+            'action' => 'email_suppression_removed',
+            'action_type' => 'admin',
+            'entity_type' => 'email_suppression',
+            'entity_id' => $id,
+            'details' => json_encode([
+                'reason_code' => $reason,
+                'objection_override' => $isObjection && $override,
+                'note' => is_string($input['reason'] ?? null) ? mb_substr($input['reason'], 0, 500) : null,
+            ], JSON_THROW_ON_ERROR),
+            'ip_address' => request()?->ip(),
+            'created_at' => now(),
+        ]);
 
         return $this->respondWithData(['removed' => true, 'email' => $row->email, 'reason' => $row->reason]);
     }
