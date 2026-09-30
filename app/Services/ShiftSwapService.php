@@ -180,6 +180,12 @@ class ShiftSwapService
             return null;
         }
 
+        // F-369: a swap request is addressed at one named volunteer and carries
+        // the requester's free-text message to them, so a block in either
+        // direction refuses it. Checked before the safeguarding policy so a
+        // blocked member cannot probe it.
+        BlockUserService::assertNoBlockBetween($fromUserId, $toUserId);
+
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $fromUserId,
             $toUserId,

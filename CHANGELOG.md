@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- A blocked volunteer can no longer send a shift swap request to the volunteer who blocked them (F-369).
 - A blocked member can no longer make an offer, or send the message attached to it, on a listing belonging to the person who blocked them (F-368).
 - The ranked-poll voting service now refuses a blocked pair in its own right, not only on the web address that reaches it (F-367).
 - Regional point transfers now respect blocking, so a blocked member can no longer write a message into the blocker's points history (F-335).
