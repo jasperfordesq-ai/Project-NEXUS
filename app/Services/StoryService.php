@@ -710,9 +710,14 @@ class StoryService
      * @param int $userId
      * @return array
      */
-    public function getHighlights(int $userId): array
+    public function getHighlights(int $userId, ?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
+
+        // F-393: no highlights across a block, in either direction (F-158).
+        if ($viewerId && $viewerId !== $userId && BlockUserService::isBlockedEither($viewerId, $userId)) {
+            return [];
+        }
 
         $highlights = DB::select(
             'SELECT h.*,
@@ -809,6 +814,17 @@ class StoryService
     public function getHighlightStories(int $highlightId, ?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
+
+        // F-393: no highlighted stories across a block, in either direction (F-158).
+        if ($viewerId) {
+            $ownerId = (int) DB::table('story_highlights')
+                ->where('id', $highlightId)
+                ->where('tenant_id', $tenantId)
+                ->value('user_id');
+            if ($ownerId > 0 && $ownerId !== $viewerId && BlockUserService::isBlockedEither($viewerId, $ownerId)) {
+                return [];
+            }
+        }
 
         // Fix 11: filter out expired and inactive stories from highlights
         $stories = DB::select(

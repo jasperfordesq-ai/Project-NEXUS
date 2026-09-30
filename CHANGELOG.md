@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Story highlights now respect blocking. A member on either side of a block could still see the other's highlighted stories, although their ordinary stories were already hidden (F-393).
 - A member who has been blocked can no longer notify the person who blocked them by @mentioning them in a group they both belong to (F-387).
 - A member who has been blocked can no longer find out who blocked them by checking another member's block status. The block-status answer now only tells you whom you have blocked (F-388).
 - When a community approves volunteering hours automatically, an organisation that is suspended while a member's hours are being submitted can no longer pay them out. The same check already applied when hours are approved by hand (F-385).

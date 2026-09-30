@@ -370,10 +370,10 @@ class StoryController extends BaseApiController
      */
     public function highlights(int $userId): JsonResponse
     {
-        $this->requireAuth();
+        $viewerId = $this->requireAuth();
 
         try {
-            $highlights = $this->storyService->getHighlights($userId);
+            $highlights = $this->storyService->getHighlights($userId, $viewerId);
             return $this->respondWithData($highlights);
         } catch (\Throwable $e) {
             Log::error('StoryController::highlights failed', ['error' => $e->getMessage()]);

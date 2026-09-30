@@ -2630,9 +2630,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/StoryService.php:1343:NotificationDispatcher::dispatch",
+            "id": "app/Services/StoryService.php:1359:NotificationDispatcher::dispatch",
             "file": "app/Services/StoryService.php",
-            "line": 1343,
+            "line": 1359,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$friendId",
