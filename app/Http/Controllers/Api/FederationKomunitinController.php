@@ -405,10 +405,14 @@ class FederationKomunitinController extends BaseApiController
 
         $tenantId = TenantContext::getId();
 
-        $user = DB::table('users')
-            ->where('id', (int) $id)
-            ->where('tenant_id', $tenantId)
-            ->first(['id', 'status']);
+        // F-331: a partner may only deactivate an account it can legitimately
+        // see. Resolving on id + tenant_id alone let a partner switch off any
+        // active member — including members who deliberately stayed out of
+        // federation — over a walkable id range. The admin scope gate above is
+        // a separate, correct control and is unchanged.
+        $user = $this->discoverableFederatedAccountQuery($tenantId)
+            ->where('users.id', (int) $id)
+            ->first(['users.id', 'users.status']);
 
         if (!$user) {
             return $this->jsonApiError('NotFound', 'Not Found',

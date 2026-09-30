@@ -181,6 +181,24 @@ class FederationProtocolEndpointsTest extends TestCase
             $this->markTestSkipped('No active user in test tenant to deactivate');
         }
 
+        // F-331. This case used to pick ANY active member, which is precisely
+        // the defect: a partner could switch off a member who had deliberately
+        // stayed out of federation, over a walkable id range. A partner may now
+        // only deactivate an account it can legitimately see, so the member has
+        // to be opted in for this endpoint to reach them at all. The refusal
+        // side is covered by
+        // tests/Laravel/Feature/Security/E065/F331KomunitinAccountDeleteOptInTest.php.
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => $userId],
+            [
+                'federation_optin' => 1,
+                'profile_visible_federated' => 1,
+                'appear_in_federated_search' => 1,
+                'transactions_enabled_federated' => 1,
+                'updated_at' => now(),
+            ]
+        );
+
         $response = $this->json('DELETE',
             "/api/v2/federation/komunitin/HOURS/accounts/{$userId}",
             [], $this->authHeaders()
