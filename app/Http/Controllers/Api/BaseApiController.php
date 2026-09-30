@@ -142,6 +142,41 @@ abstract class BaseApiController extends Controller
     }
 
     /**
+     * Turn a failed Laravel validator into a v2 error response.
+     *
+     * F-372: four live endpoints — one of them member-facing — passed
+     * `$validator->errors()->toArray()` straight into respondWithError()'s
+     * `?string $field` parameter. Under `declare(strict_types=1)` that is a
+     * TypeError, so an ordinary member sending an incomplete body got HTTP 500
+     * and a stack trace instead of a validation message. Use this helper instead
+     * of hand-rolling the conversion at each call site.
+     *
+     * @param  \Illuminate\Contracts\Validation\Validator  $validator  a validator whose validation has failed
+     */
+    protected function respondWithValidationErrors(
+        \Illuminate\Contracts\Validation\Validator $validator,
+        string $code = 'VALIDATION_ERROR',
+        int $status = 422
+    ): JsonResponse {
+        $errors = [];
+        foreach ($validator->errors()->toArray() as $field => $messages) {
+            foreach ((array) $messages as $message) {
+                $errors[] = [
+                    'code' => $code,
+                    'message' => (string) $message,
+                    'field' => (string) $field,
+                ];
+            }
+        }
+
+        if ($errors === []) {
+            $errors[] = ['code' => $code, 'message' => __('api.validation_failed')];
+        }
+
+        return $this->respondWithErrors($errors, $status);
+    }
+
+    /**
      * Semantic error helpers — prefer these over respondWithError() with magic
      * status numbers. Each helper sets a consistent default error code for the
      * failure class while still allowing caller customization.

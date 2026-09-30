@@ -156,12 +156,9 @@ class MunicipalSurveyController extends BaseApiController
         ]);
 
         if ($validator->fails()) {
-            return $this->respondWithError(
-                'VALIDATION_ERROR',
-                __('api.validation_failed'),
-                $validator->errors()->toArray(),
-                422
-            );
+            // F-372: an array was passed as the ?string $field, which is a TypeError
+            // under strict_types and answered invalid input with HTTP 500.
+            return $this->respondWithValidationErrors($validator);
         }
 
         // Keyed IP hash (HMAC) — never stored in plain text or as a bare sha256
@@ -283,12 +280,9 @@ class MunicipalSurveyController extends BaseApiController
         ]);
 
         if ($validator->fails()) {
-            return $this->respondWithError(
-                'VALIDATION_ERROR',
-                __('api.validation_failed'),
-                $validator->errors()->toArray(),
-                422
-            );
+            // F-372: an array was passed as the ?string $field, which is a TypeError
+            // under strict_types and answered invalid input with HTTP 500.
+            return $this->respondWithValidationErrors($validator);
         }
 
         try {
@@ -349,12 +343,9 @@ class MunicipalSurveyController extends BaseApiController
         ]);
 
         if ($validator->fails()) {
-            return $this->respondWithError(
-                'VALIDATION_ERROR',
-                __('api.validation_failed'),
-                $validator->errors()->toArray(),
-                422
-            );
+            // F-372: an array was passed as the ?string $field, which is a TypeError
+            // under strict_types and answered invalid input with HTTP 500.
+            return $this->respondWithValidationErrors($validator);
         }
 
         try {

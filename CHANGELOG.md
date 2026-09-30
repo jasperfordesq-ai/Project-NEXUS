@@ -116,6 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Submitting a community survey response, or an emergency alert, with something missing now returns a clear message about what is missing instead of a server error (F-372).
 - Pausing or resuming an achievement campaign no longer shows an error; the pause or resume always worked, but the screen said it had failed.
 - Uploading a photo or file larger than 1 MB works again on every community's website. Since 24 September the web server in front of the platform refused any upload over 1 MB before it reached the platform, so an ordinary phone photo could not become a profile picture — which also stopped new members finishing the welcome steps. The web server now accepts uploads up to 105 MB, the same limit the platform itself uses, and each kind of upload keeps its own size limit.
 - "Was this article helpful?" answers in the Help Centre are now kept with the community whose article was rated. Every community's answers were being filed under the platform's main community.
