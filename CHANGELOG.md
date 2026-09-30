@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Dependencies: the accessible frontend (`web-uk`) now uses `morgan` 1.12.1, which escapes a double quote in logged request fields, so a visitor can no longer forge extra fields in the access log through their User-Agent or Referer header (GHSA-9f6g-j8ch-79g4, Dependabot #139). Developer-tool copies of `brace-expansion` in the root, `react-frontend` and `web-uk` lockfiles are updated to patched releases (GHSA-q2hr-2g5m-vwhr, Dependabot #145/#150/#151/#158–#160); none ships in a production image. Lockfile-only; no code change.
 - A guest can no longer be added into an event seat that has already been offered to a member on the waiting list. An organiser also can no longer lower an event's capacity below the number of people already seated, guests included (F-397).
 - A cross-community time-credit transfer already in progress is now refused if the sender's community switches off cross-community transfers, or the sender opts out of cross-community sharing, before the credits move. The same re-check already applied to the receiving side (F-395).
 - If a member withdraws or lowers a carer's permission to spend their time credits while a payment by that carer is already in progress, the payment is now refused instead of completing (F-392).
