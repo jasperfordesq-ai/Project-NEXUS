@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- An automatic check now confirms the web server will actually start on its configuration files before anything is built. A change made earlier the same day would have stopped the website's web server starting, and was only caught late in testing.
 - A new automatic check now catches a kind of mistake that has twice put live pages out of action: code calling something with the wrong kind of value, or the wrong number of values. It runs on every change alongside the existing checks, and it already found one real fault (`npm run check:arg-types`).
 - Members can now link their community's own sign-in provider from Settings → Connected accounts while signed in, and then sign in with it. Someone who already has an account and tries that provider first is told to sign in the usual way and link it from their settings (completes F-244).
 

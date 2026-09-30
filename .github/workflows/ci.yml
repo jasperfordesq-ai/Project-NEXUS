@@ -709,6 +709,24 @@ jobs:
           path: react-frontend/dist
           retention-days: 1
 
+      # 🔴 Does nginx actually START on these files?
+      #
+      # On 30 Sep 2026 a security fix (F-359) added `client_header_timeout`
+      # inside the /api/ location of both React nginx configs. That directive is
+      # valid only at http/server level, so nginx refused to start — and nothing
+      # in the repository caught it. ProductionFrontendApiProxyTest reads the
+      # configs as TEXT, which answers "is the policy still there" and cannot
+      # answer "will this parse". E2E Smoke Tests found it three jobs later, and
+      # a deploy of that commit would have left the React container unable to
+      # start on every community hostname.
+      #
+      # The deploy scripts do run `nginx -t`, but only inside a container already
+      # being built from these files, by which point the bad config is on its way
+      # to production. This runs the same check against the committed files, in
+      # about ten seconds, before anything is built.
+      - name: "BLOCKING: React nginx configs parse (nginx -t)"
+        run: bash scripts/test/test-react-nginx-config-syntax.sh
+
   # ─────────────────────────────────────────────────────────────────
   # Stage 2b: API Contract Validation
   # Runs Zod schema contract tests to detect frontend/backend schema drift.
