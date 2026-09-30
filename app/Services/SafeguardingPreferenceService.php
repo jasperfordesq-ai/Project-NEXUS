@@ -299,6 +299,10 @@ class SafeguardingPreferenceService
             && ! filter_var($updates['is_active'], FILTER_VALIDATE_BOOLEAN)) {
             return true;
         }
+        if (array_key_exists('option_type', $updates)
+            && self::optionTypeDropsLiveSelections($option, $updates['option_type'])) {
+            return true;
+        }
         if (! array_key_exists('triggers', $updates)) {
             return false;
         }
@@ -319,6 +323,38 @@ class SafeguardingPreferenceService
         }
 
         return false;
+    }
+
+    /**
+     * Whether retyping the option would make a live selection stop counting.
+     *
+     * Enforcement reads a stored response through
+     * UserSafeguardingPreference::isEffectivelySelected(), which switches on
+     * option_type and answers false for any other type. Changing the type is
+     * therefore a third way to weaken a live protection, alongside
+     * deactivation and trigger removal: the consent row, the active flag and
+     * the triggers all stay intact while SafeguardingTriggerService silently
+     * stops merging the trigger. Judged on the outcome, not on the type name,
+     * so a change that keeps every live response affirmative is still allowed.
+     */
+    private static function optionTypeDropsLiveSelections(
+        TenantSafeguardingOption $option,
+        mixed $nextType,
+    ): bool {
+        $currentType = $option->option_type;
+        $nextType = is_string($nextType) ? $nextType : null;
+        if (strtolower(trim((string) $nextType)) === strtolower(trim((string) $currentType))) {
+            return false;
+        }
+
+        return UserSafeguardingPreference::withoutGlobalScopes()
+            ->where('tenant_id', $option->tenant_id)
+            ->where('option_id', $option->id)
+            ->whereNull('revoked_at')
+            ->get(['selected_value'])
+            ->contains(static fn (UserSafeguardingPreference $preference): bool =>
+                UserSafeguardingPreference::isEffectivelySelected($currentType, $preference->selected_value)
+                && ! UserSafeguardingPreference::isEffectivelySelected($nextType, $preference->selected_value));
     }
 
     /** @param array<string, mixed> $triggers */
