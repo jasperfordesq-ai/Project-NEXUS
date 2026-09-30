@@ -268,7 +268,18 @@ class SafeguardingSlaEscalateCommandTest extends TestCase
     // -----------------------------------------------------------------------
     // 10. Tenant with caring_community disabled is skipped
     // -----------------------------------------------------------------------
-    public function test_tenant_without_caring_community_feature_is_skipped(): void
+    /**
+     * 🔴 REVERSED by F-408 (E-069). This test previously asserted that a
+     * community without the `caring_community` feature was SKIPPED — which was
+     * the vulnerability, not the contract. The feature switch is reachable by an
+     * ordinary community administrator, so skipping let one unaudited API call
+     * silence the SLA breach alert for concerns that were already open. The
+     * sweep is now driven by the overdue reports themselves; the module switch
+     * governs what a community can do next, not whether an existing safeguarding
+     * obligation is escalated.
+     * Regression pin: tests/Laravel/Feature/Security/E069/F408SafeguardingSlaEscalationCannotBeSilencedTest.php
+     */
+    public function test_tenant_without_caring_community_feature_is_still_escalated(): void
     {
         // Create a second tenant WITHOUT caring_community
         $otherTenantId = 99703;
@@ -299,7 +310,7 @@ class SafeguardingSlaEscalateCommandTest extends TestCase
             'reporter_user_id' => $reporterInOther,
             'category'         => 'other',
             'severity'         => 'medium',
-            'description'      => 'Should not be escalated',
+            'description'      => 'Overdue concern in a community with the module switched off',
             'status'           => 'submitted',
             'escalated'        => 0,
             'escalated_at'     => null,
@@ -311,14 +322,20 @@ class SafeguardingSlaEscalateCommandTest extends TestCase
             ->assertExitCode(0);
 
         $report = DB::table('safeguarding_reports')->find($reportId);
-        $this->assertSame(0, (int) $report->escalated, 'Report in non-CC tenant should not be escalated');
-        $this->assertNull($report->escalated_at);
+        $this->assertSame(1, (int) $report->escalated, 'An overdue concern is escalated even with caring_community off');
+        $this->assertNotNull($report->escalated_at);
     }
 
     // -----------------------------------------------------------------------
-    // 11. Inactive tenant is skipped
+    // 11. An inactive community's overdue concern is STILL escalated (F-408)
     // -----------------------------------------------------------------------
-    public function test_inactive_tenant_is_skipped(): void
+    /**
+     * 🔴 REVERSED by F-408 (E-069), for the same reason as the test above:
+     * deactivating a community was a second, equally unaudited route to the same
+     * silence. Deactivation stops new activity; it does not retire a
+     * safeguarding concern that is already open and already past its deadline.
+     */
+    public function test_inactive_tenant_is_still_escalated(): void
     {
         $inactiveTenantId = 99704;
         DB::table('tenants')->insertOrIgnore([
@@ -348,7 +365,7 @@ class SafeguardingSlaEscalateCommandTest extends TestCase
             'reporter_user_id' => $reporterInInactive,
             'category'         => 'other',
             'severity'         => 'medium',
-            'description'      => 'Should not be escalated',
+            'description'      => 'Overdue concern in a deactivated community',
             'status'           => 'submitted',
             'escalated'        => 0,
             'escalated_at'     => null,
@@ -360,8 +377,8 @@ class SafeguardingSlaEscalateCommandTest extends TestCase
             ->assertExitCode(0);
 
         $report = DB::table('safeguarding_reports')->find($reportId);
-        $this->assertSame(0, (int) $report->escalated, 'Report in inactive tenant should not be escalated');
-        $this->assertNull($report->escalated_at);
+        $this->assertSame(1, (int) $report->escalated, 'An overdue concern is escalated even in a deactivated community');
+        $this->assertNotNull($report->escalated_at);
     }
 
     // -----------------------------------------------------------------------

@@ -311,6 +311,23 @@ class AdminConfigController extends BaseApiController
         $this->redisCache->delete('tenants_list_public');
         $this->redisCache->delete('tenants_list_public_all');
 
+        // F-408: every feature toggle is audited, not just the passkey one.
+        // The audit write below used to be conditional on `biometric_login`, so
+        // switching off a module with safeguarding consequences — notably
+        // `caring_community`, which governs the automatic safeguarding SLA
+        // escalation sweep — left no admin audit entry at all. A public-sector
+        // customer asking "who turned this off, and when" had no answer.
+        app(AuditLogService::class)->logAdminAction(
+            $enabled ? 'tenant_feature_enabled' : 'tenant_feature_disabled',
+            (int) auth()->id(),
+            null,
+            [
+                'tenant_id' => $tenantId,
+                'feature' => $featureName,
+                'enabled' => (bool) $enabled,
+            ]
+        );
+
         if ($featureName === 'biometric_login') {
             app(AuditLogService::class)->logAdminAction(
                 $enabled ? 'passkey_authentication_enabled' : 'passkey_authentication_disabled',
