@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- If a member withdraws or lowers a carer's permission to spend their time credits while a payment by that carer is already in progress, the payment is now refused instead of completing (F-392).
 - Submitting the same caring-support visit twice at the same moment (for example a double-click) can no longer record and pay it twice (F-391).
 - A broker who has been reviewed can no longer hide or delete that review from the community feed. Deleting it that way also deleted other members' comments on the review; the review-moderation page already refused this (F-390).
 - A broker can no longer clear the compliance controls an administrator placed on the broker's own listing: they cannot record or verify their own insurance certificate, or change or remove the risk tag on their own listing. An insurance certificate recorded as already verified now also records who verified it (F-389).

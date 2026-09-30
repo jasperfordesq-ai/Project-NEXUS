@@ -1412,7 +1412,9 @@ class SubAccountService
         try {
             $txn = DB::transaction(function () use ($childUserId, $data, $parentUserId): array {
                 // Sender is the DEPENDENT; the supporter is the acting user.
-                $txn = app(WalletService::class)->transfer($childUserId, $data, $parentUserId);
+                // F-392: an immediate carer transfer needs `represent` for
+                // credits, re-checked under the relationship lock in transfer().
+                $txn = app(WalletService::class)->transfer($childUserId, $data, $parentUserId, SupportTiers::REPRESENT);
 
                 $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_transfer_sent', [
                     'transaction_id' => $txn['id'] ?? null,

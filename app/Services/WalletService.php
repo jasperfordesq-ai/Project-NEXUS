@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Safeguarding\SupportTiers;
 use App\Support\UserDisplayName;
 
 /**
@@ -615,7 +616,7 @@ class WalletService
      *        owner of the credits stays the sender either way, but a proxy debit
      *        must never be indistinguishable from the member's own.
      */
-    public function transfer(int $senderId, array $data, ?int $actingUserId = null): array
+    public function transfer(int $senderId, array $data, ?int $actingUserId = null, string $requiredProxyTier = SupportTiers::REPRESENT): array
     {
         $recipient = $data['recipient'] ?? $data['user_id'] ?? $data['username'] ?? $data['email'] ?? null;
         $amount = (float) ($data['amount'] ?? 0);
@@ -771,7 +772,7 @@ class WalletService
 
         $replayed = false;
         try {
-            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId, $actingUserId, $hasExplicitKey, $receiptQuery, $fingerprint, &$replayed) {
+            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId, $actingUserId, $requiredProxyTier, $hasExplicitKey, $receiptQuery, $fingerprint, &$replayed) {
                 // Lock both user rows in consistent ID order to prevent deadlocks
                 // when two users transfer to each other simultaneously
                 $minId = min($senderId, $receiver->id);
@@ -799,11 +800,14 @@ class WalletService
                 // account_relationships while holding a `users` row, so no cycle
                 // exists.
                 //
-                // Only `status` is re-tested, deliberately: the two callers
-                // require different capability tiers (act-alone vs co-decide),
-                // and re-running either caller's tier test here would refuse the
-                // other. Revocation is what both have in common, and it is the
-                // member's only self-service way to stop a carer spending.
+                // F-392: the credits TIER is re-tested too, not only `status`.
+                // Revoking is not the member's only way to stop a carer
+                // spending — they can keep the relationship and withdraw or
+                // lower the credits permission — and that change did not stop a
+                // transfer already in flight. The two callers need different
+                // tiers (an immediate carer transfer: `represent`; the co-decide
+                // confirmation: `co_decide`), so each passes its own as
+                // $requiredProxyTier and that exact tier is re-checked here.
                 if ($actingUserId !== null && $actingUserId !== $senderId) {
                     $relationship = DB::table('account_relationships')
                         ->where('tenant_id', $tenantId)
@@ -813,6 +817,11 @@ class WalletService
                         ->first();
 
                     if (! $relationship || (string) $relationship->status !== 'active') {
+                        throw new \RuntimeException(__('api_controllers_2.sub_account.no_permission'));
+                    }
+
+                    $permissions = json_decode((string) ($relationship->permissions ?? ''), true);
+                    if (! SupportTiers::atLeast(SupportTiers::resolve($permissions), 'credits', $requiredProxyTier)) {
                         throw new \RuntimeException(__('api_controllers_2.sub_account.no_permission'));
                     }
                 }

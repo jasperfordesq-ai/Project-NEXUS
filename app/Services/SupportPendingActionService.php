@@ -734,6 +734,9 @@ class SupportPendingActionService
                     (int) $action->supported_user_id,
                     $payload,
                     (int) $action->supporter_user_id,
+                    // F-392: the confirmation path needs co_decide, re-checked
+                    // under the relationship lock inside transfer().
+                    SupportTiers::CO_DECIDE,
                 );
 
                 return isset($txn['id']) ? (int) $txn['id'] : null;
