@@ -104,7 +104,7 @@ class FederatedConnectionServiceTest extends TestCase
         // Ordered selectOne sequence: (1) requester active, (2) receiver opted-in, (3) existing connection.
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1]);
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn(
-            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1]
+            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1, 'profile_visible_federated' => 1]
         );
         $this->stubActivePartnership();
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1, 'status' => 'accepted']);
@@ -118,7 +118,7 @@ class FederatedConnectionServiceTest extends TestCase
     {
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1]);
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn(
-            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1]
+            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1, 'profile_visible_federated' => 1]
         );
         $this->stubActivePartnership();
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1, 'status' => 'pending']);
@@ -132,7 +132,7 @@ class FederatedConnectionServiceTest extends TestCase
     {
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1]);
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn(
-            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1]
+            (object) ['id' => 2, 'federation_optin' => 1, 'messaging_enabled_federated' => 1, 'profile_visible_federated' => 1]
         );
         $this->stubActivePartnership();
         DB::shouldReceive('selectOne')->once()->ordered()->andReturn((object) ['id' => 1, 'status' => 'rejected']);

@@ -14,8 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new automatic check now catches a kind of mistake that has twice put live pages out of action: code calling something with the wrong kind of value, or the wrong number of values. It runs on every change alongside the existing checks, and it already found one real fault (`npm run check:arg-types`).
 - Members can now link their community's own sign-in provider from Settings → Connected accounts while signed in, and then sign in with it. Someone who already has an account and tries that provider first is told to sign in the usual way and link it from their settings (completes F-244).
 
+### Changed
+
+- A podcast episode or show that someone has reported can no longer be deleted by its creator while the report is still open — they are asked to archive it instead, or wait for a moderator. The reports themselves are now never deleted, so a creator can no longer clear their record by deleting and re-uploading the same audio (F-338).
+- Creating, editing, publishing, closing and exporting community surveys now requires a community administrator. The "official notices" switch previously granted this as well, which was never intended and let someone download every survey answer with the respondent's identity attached (F-347).
+- The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
+
 ### Security
 
+- Switching off \"visible to other communities\" now also stops people in other communities sending you a connection request, and hides your name and photo in their connection lists. It previously only affected search and profile pages (F-351).
 - Permanently purging a community now also deletes the private group chat messages, AI chat conversations and consent records — including the IP addresses in them — that it previously left behind for ever. The routine's description now states exactly what it does and does not remove, and says so in its report on every run (F-354).
 - Permanently purging a community is now recorded twice — once when it is ordered and once when it completes — and both entries name the administrator who ordered it. The record previously said the action was taken by \"System\". The administrator must also type the community's short name to confirm, which the server now checks rather than trusting the screen (F-353).
 - Deleting a job advert now also deletes the CVs applicants uploaded to it. They were previously left on the server with nothing pointing at them, so no later deletion or data-erasure request could find them (F-361).
@@ -197,9 +204,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- A podcast episode or show that someone has reported can no longer be deleted by its creator while the report is still open — they are asked to archive it instead, or wait for a moderator. The reports themselves are now never deleted, so a creator can no longer clear their record by deleting and re-uploading the same audio (F-338).
-- Creating, editing, publishing, closing and exporting community surveys now requires a community administrator. The "official notices" switch previously granted this as well, which was never intended and let someone download every survey answer with the respondent's identity attached (F-347).
-- The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
 - Security-assurance guidance now distinguishes the contracted independent penetration test from a test that has actually begun or produced a report.
 
 - Android release metadata now records the verified live Play build 20 / 1.8.1, published on 27 September 2026 at 7:31 PM from exact source commit `86adbf3391972f5c6b6cf863adda734bcfb6eda0`, after internal testing, zero supported-device losses, Play quick checks and production submission 15.

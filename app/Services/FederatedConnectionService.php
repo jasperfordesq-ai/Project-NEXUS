@@ -58,14 +58,30 @@ class FederatedConnectionService
             ];
         }
 
+        // F-351: `profile_visible_federated` is the flag a member sets to stop
+        // being visible to other communities, and it must gate this path too.
+        // Until it was read here, a member who had switched it off was still
+        // reachable by connection request — and `getConnections()` then handed
+        // their name and avatar back to the requester — while the documented
+        // read surface for the same id answered 404
+        // (FederationV2Controller::member()). The single-member read is the
+        // right parallel: `appear_in_federated_search` is deliberately NOT
+        // required here, because it governs appearing in a SEARCH, and a member
+        // met through a shared listing, group or event may legitimately be sent
+        // a request without being searchable.
         $receiver = DB::selectOne(
-            "SELECT u.id, fus.federation_optin, fus.messaging_enabled_federated
+            "SELECT u.id, fus.federation_optin, fus.messaging_enabled_federated, fus.profile_visible_federated
              FROM users u
              JOIN federation_user_settings fus ON fus.user_id = u.id
              WHERE u.id = ? AND u.tenant_id = ? AND u.status = 'active'",
             [$receiverId, $receiverTenantId]
         );
-        if (!$receiver || empty($receiver->federation_optin) || empty($receiver->messaging_enabled_federated)) {
+        if (
+            !$receiver
+            || empty($receiver->federation_optin)
+            || empty($receiver->messaging_enabled_federated)
+            || empty($receiver->profile_visible_federated)
+        ) {
             return ['success' => false, 'error' => __('api.cannot_send_request_to_user')];
         }
 
@@ -539,10 +555,19 @@ class FederatedConnectionService
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.avatar_url ELSE qu.avatar_url END as other_avatar,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN ru.id ELSE qu.id END as other_user_id,
                         CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN fc.receiver_tenant_id ELSE fc.requester_tenant_id END as other_tenant_id,
-                        CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN rt.name ELSE qt.name END as other_tenant_name
+                        CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ? THEN rt.name ELSE qt.name END as other_tenant_name,
+                        -- F-351: whether the OTHER party still consents to being
+                        -- seen from another community. Mirrors the CASE above, so
+                        -- it always describes the counterparty, never the caller.
+                        CASE WHEN fc.requester_user_id = ? AND fc.requester_tenant_id = ?
+                             THEN (rfus.federation_optin = 1 AND rfus.profile_visible_federated = 1)
+                             ELSE (qfus.federation_optin = 1 AND qfus.profile_visible_federated = 1)
+                        END as other_federation_visible
                  FROM federation_connections fc
                  LEFT JOIN users qu ON fc.requester_user_id = qu.id AND fc.requester_tenant_id = qu.tenant_id
                  LEFT JOIN users ru ON fc.receiver_user_id = ru.id AND fc.receiver_tenant_id = ru.tenant_id
+                 LEFT JOIN federation_user_settings qfus ON qfus.user_id = fc.requester_user_id
+                 LEFT JOIN federation_user_settings rfus ON rfus.user_id = fc.receiver_user_id
                  LEFT JOIN tenants qt ON fc.requester_tenant_id = qt.id
                  LEFT JOIN tenants rt ON fc.receiver_tenant_id = rt.id
                  WHERE ";
@@ -551,6 +576,7 @@ class FederatedConnectionService
             // only the COUNT matters -- but it must match, or every placeholder
             // after the mismatch binds the wrong value.
             $params = [
+                $userId, $tenantId,
                 $userId, $tenantId,
                 $userId, $tenantId,
                 $userId, $tenantId,
@@ -589,11 +615,22 @@ class FederatedConnectionService
             // Map field names to match frontend FederationConnection interface
             return array_map(function ($row) use ($userId, $tenantId) {
                 $direction = ($row->requester_user_id == $userId && $row->requester_tenant_id == $tenantId) ? 'outgoing' : 'incoming';
+
+                // F-351: a counterparty who has switched off being visible to
+                // other communities — or opted out of federation entirely — is
+                // not named or pictured. The row itself is kept so this member
+                // can still see and remove the connection; only the other
+                // person's identity is withheld, which is the same answer
+                // FederationV2Controller::member() gives for the same person.
+                $otherVisible = (bool) ($row->other_federation_visible ?? false);
+
                 return [
                     'id' => (int) $row->id,
                     'user_id' => (int) $row->other_user_id,
-                    'name' => UserDisplayName::resolvePrefixed($row, 'other_'),
-                    'avatar_url' => $row->other_avatar,
+                    'name' => $otherVisible
+                        ? UserDisplayName::resolvePrefixed($row, 'other_')
+                        : __('emails.common.fallback_someone'),
+                    'avatar_url' => $otherVisible ? $row->other_avatar : null,
                     'tenant_id' => (int) $row->other_tenant_id,
                     'tenant_name' => $row->other_tenant_name,
                     'status' => $row->status,
