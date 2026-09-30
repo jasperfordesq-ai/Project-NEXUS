@@ -280,6 +280,9 @@ class CaringSupportRelationshipServiceTest extends TestCase
             'tenant_id' => $this->testTenantId,
             'user_id' => $owner->id,
             'name' => 'KISS Zug',
+            // An approved organisation: since F-384 a pending or suspended one
+            // cannot accept hours at all (the column defaults to 'pending').
+            'status' => 'approved',
             'balance' => 1, // far less than the 3 owed
             'auto_pay_enabled' => 0, // auto-pay OFF — approval must still mint
             'created_at' => now(),

@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Volunteering hours logged by a coordinator for a caring-support relationship can no longer be paid by an organisation that has been suspended, or has not yet been approved. This was the third way round the organisation freeze (F-384).
 - When a podcast creator deletes their own account, the complaints other members made about their episodes, and the moderators' decisions on them, are now kept. Previously the account deletion removed them along with the episodes (F-383).
 - A club organiser importing members from a spreadsheet can no longer create accounts that skip the community's identity check. Imported accounts now follow the same joining rule as accounts an administrator creates: where the community requires an identity check, the account waits for it (F-382).
 - Blocking a member of a partner community no longer reveals the name and photo of someone who has not chosen to be visible to other communities. Only members who have joined cross-community sharing, in a partnership that is active, can be blocked across communities, and the block list names them only while they stay visible (F-381).

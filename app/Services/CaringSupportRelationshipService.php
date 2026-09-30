@@ -332,10 +332,28 @@ class CaringSupportRelationshipService
             $description = (string) $relationship->title;
         }
 
+        // F-384: a suspended (non-approved) organisation cannot accept hours —
+        // the same freeze VolunteerService applies (F-343) and the admin
+        // approval page applies (F-379). Checked here for a clean refusal, and
+        // again under the organisation row lock below, so a suspension that
+        // lands while this request is in flight also stops it.
+        $organizationId = $relationship->organization_id ? (int) $relationship->organization_id : null;
+        if ($organizationId !== null && !$this->organizationAcceptsHours($tenantId, $organizationId, false)) {
+            return ['success' => false, 'code' => 'ORG_NOT_ACTIVE'];
+        }
+
         $logId = 0;
         $paymentResult = null;
         $regionalPointsResult = null;
-        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $date, $hours, $description, $status, &$logId, &$paymentResult): void {
+        $organizationNotActive = false;
+        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $organizationId, $date, $hours, $description, $status, &$logId, &$paymentResult, &$organizationNotActive): void {
+            // First statement in the transaction, before any write, so an
+            // early return leaves nothing behind.
+            if ($organizationId !== null && !$this->organizationAcceptsHours($tenantId, $organizationId, true)) {
+                $organizationNotActive = true;
+                return;
+            }
+
             DB::table('vol_logs')->insert([
                 'tenant_id' => $tenantId,
                 'user_id' => (int) $relationship->supporter_id,
@@ -382,6 +400,10 @@ class CaringSupportRelationshipService
                     'updated_at' => now(),
                 ]);
         });
+
+        if ($organizationNotActive) {
+            return ['success' => false, 'code' => 'ORG_NOT_ACTIVE'];
+        }
 
         if ($status === 'approved') {
             try {
@@ -518,6 +540,21 @@ class CaringSupportRelationshipService
                 $query->whereNull('ur.expires_at')->orWhere('ur.expires_at', '>', now());
             })
             ->exists();
+    }
+
+    /**
+     * F-384: whether the organisation may accept hours (and so be debited for
+     * them). With $lock the row is read FOR UPDATE, so inside a transaction the
+     * answer holds until commit.
+     */
+    private function organizationAcceptsHours(int $tenantId, int $organizationId, bool $lock): bool
+    {
+        $org = DB::selectOne(
+            'SELECT status FROM vol_organizations WHERE id = ? AND tenant_id = ?' . ($lock ? ' FOR UPDATE' : ''),
+            [$organizationId, $tenantId]
+        );
+
+        return $org !== null && VolunteerService::isApprovedOrganizationStatus($org->status ?? null);
     }
 
     private function applyOrganizationPayment(
