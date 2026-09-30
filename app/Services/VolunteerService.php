@@ -2248,6 +2248,12 @@ class VolunteerService
             return false;
         }
 
+        // F-343: set inside the minting transaction when a guard re-checked under
+        // the organisation row lock refuses the approval. Declared out here so the
+        // catch below can tell a deliberate refusal (which rolls the transaction
+        // back by throwing) from a genuine server error.
+        $guardFailure = null;
+
         try {
             $hours = (float) $log->hours;
             $volunteerId = (int) $log->user_id;
@@ -2257,7 +2263,7 @@ class VolunteerService
             $conflictingDecision = false;
 
             // DB transaction for data mutations only — notifications sent AFTER commit
-            DB::transaction(function () use ($logId, $tenantId, $status, $action, $log, $org, $adminUserId, $hours, $volunteerId, &$paymentResult, &$transitioned, &$conflictingDecision) {
+            DB::transaction(function () use ($logId, $tenantId, $status, $action, $log, $org, $adminUserId, $hours, $volunteerId, &$paymentResult, &$transitioned, &$conflictingDecision, &$guardFailure) {
                 // 1. Flip status — conditional on the log still being pending. This is
                 //    the idempotency gate: a concurrent or retried approval finds 0 rows
                 //    affected and aborts without paying again. The org-row lock below
@@ -2316,10 +2322,63 @@ class VolunteerService
                     );
 
                     // Then lock the org row (serialises concurrent payouts).
+                    // F-343: `status` is now in the column list. It was not, so the
+                    // hard freeze above — which runs on an UNLOCKED read — was the
+                    // only organisation-status test in the whole method, and a
+                    // suspension that committed inside the window minted anyway.
                     $orgLocked = DB::selectOne(
-                        "SELECT id, balance, user_id FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                        "SELECT id, balance, user_id, status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
                         [(int) $org->id, $tenantId]
                     );
+
+                    // F-343 (first arm): re-apply the hard freeze under the lock.
+                    // A suspension committed since the unlocked read now stops the
+                    // mint, and a vanished organisation does too.
+                    if (!$orgLocked || !self::isApprovedOrganizationStatus($orgLocked->status ?? null)) {
+                        $guardFailure = ['code' => 'ORG_NOT_ACTIVE', 'message' => __('api.volunteer_org_not_active')];
+
+                        // Throw, not return: returning would COMMIT the vol_logs
+                        // status flip above and leave the hours marked approved
+                        // with nothing minted.
+                        //
+                        // The diagnostic detail goes to the log, and the exception
+                        // carries the translated message the admin will actually
+                        // see. A hardcoded English exception message would reach a
+                        // non-English admin verbatim through
+                        // respondWithError($e->getMessage()) — see
+                        // tests/Laravel/Unit/Services/ApiErrorLocalisationTest.php.
+                        Log::warning('[VolunteerService] verifyHours refused under lock: organisation not approved', [
+                            'vol_log_id' => $logId,
+                            'organization_id' => (int) $org->id,
+                            'tenant_id' => $tenantId,
+                        ]);
+
+                        throw new \RuntimeException($guardFailure['message']);
+                    }
+
+                    // F-343 (second arm): re-test the approver's authority over the
+                    // organisation under the same lock. The org-admin read at the
+                    // top of this method is unlocked too, so an administrator whose
+                    // rights were withdrawn inside the window still completed the
+                    // approval. This is a locking read on purpose: a consistent read
+                    // could be served from a snapshot older than the withdrawal.
+                    $orgAdminRoleLocked = DB::selectOne(
+                        "SELECT role FROM org_members WHERE tenant_id = ? AND organization_id = ? AND org_type = 'volunteer' AND user_id = ? AND status = 'active' FOR UPDATE",
+                        [$tenantId, (int) $org->id, $adminUserId]
+                    );
+                    if ((int) $orgLocked->user_id !== $adminUserId
+                        && !in_array($orgAdminRoleLocked->role ?? '', ['owner', 'admin'], true)) {
+                        $guardFailure = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_org_manage_forbidden')];
+
+                        Log::warning('[VolunteerService] verifyHours refused under lock: approver no longer manages the organisation', [
+                            'vol_log_id' => $logId,
+                            'organization_id' => (int) $org->id,
+                            'approver_user_id' => $adminUserId,
+                            'tenant_id' => $tenantId,
+                        ]);
+
+                        throw new \RuntimeException($guardFailure['message']);
+                    }
 
                     // Debit the org wallet unconditionally — allow it to go NEGATIVE.
                     $startBalance = $orgLocked ? (float) $orgLocked->balance : 0.0;
@@ -2440,6 +2499,16 @@ class VolunteerService
 
             return true;
         } catch (\Exception $e) {
+            // F-343: a guard re-checked under the organisation row lock refused
+            // this approval and rolled the whole transaction back, so the hours
+            // are still pending and nothing was minted. That is a refusal with a
+            // specific reason, not a server error — report it as one.
+            if ($guardFailure !== null) {
+                Log::info("VolunteerService::verifyHours refused under lock: " . $e->getMessage());
+                self::$errors[] = $guardFailure;
+                return false;
+            }
+
             Log::warning("VolunteerService::verifyHours error: " . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.volunteer_verify_hours_failed')];
             return false;
