@@ -543,6 +543,12 @@ class GoalService
                 return null;
             }
 
+            // F-334: a buddy offer bell- and push-notifies the goal owner with
+            // the offering member's editable display name, so a block in either
+            // direction refuses it. Checked before the safeguarding policy so a
+            // blocked member cannot probe it.
+            BlockUserService::assertNoBlockBetween($userId, (int) $goal->user_id);
+
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                 $userId,
                 (int) $goal->user_id,
@@ -664,6 +670,10 @@ class GoalService
             if (! User::query()->where('id', $requesterId)->exists()) {
                 return ['status' => 'conflict'];
             }
+
+            // F-334: a request made before the block was placed must not be
+            // turned into a live buddy relationship afterwards.
+            BlockUserService::assertNoBlockBetween($requesterId, (int) $goal->user_id);
 
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
                 $requesterId,
@@ -810,6 +820,10 @@ class GoalService
         if (! $goal || (int) ($goal->mentor_id ?? 0) !== $buddyId) {
             return null;
         }
+
+        // F-334: a buddy note is free text the goal owner is shown, so a block
+        // placed after the buddy relationship began still stops it.
+        BlockUserService::assertNoBlockBetween($buddyId, (int) $goal->user_id);
 
         app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
             $buddyId,
