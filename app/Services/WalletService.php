@@ -779,6 +779,44 @@ class WalletService
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($minId);
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($maxId);
 
+                // ── F-342: re-check the PROXY AUTHORITY inside the transaction ──
+                // A non-null acting user means a linked-account carer/supporter
+                // is spending someone else's balance. Every caller that does so
+                // (SubAccountService::transferForChild, and the co-decide confirm
+                // in SupportPendingActionService::execute) checks the
+                // relationship BEFORE this transaction opens, on an unlocked
+                // read. SubAccountService::revoke() locks neither `users` row,
+                // so the two never serialised: a member who revoked their carer
+                // while a proxy transfer was in flight still had their credits
+                // spent, recorded as a legitimate proxy debit.
+                //
+                // The relationship row is LOCKED, not merely re-read, so a
+                // revoke cannot commit between this check and the balance move.
+                // Lock order on this path is:
+                //   users (both, ascending id) -> account_relationships,
+                // matching F-343 (users -> vol_organizations) and F-344
+                // (users -> federation_partnerships). Nothing else in app/ locks
+                // account_relationships while holding a `users` row, so no cycle
+                // exists.
+                //
+                // Only `status` is re-tested, deliberately: the two callers
+                // require different capability tiers (act-alone vs co-decide),
+                // and re-running either caller's tier test here would refuse the
+                // other. Revocation is what both have in common, and it is the
+                // member's only self-service way to stop a carer spending.
+                if ($actingUserId !== null && $actingUserId !== $senderId) {
+                    $relationship = DB::table('account_relationships')
+                        ->where('tenant_id', $tenantId)
+                        ->where('parent_user_id', $actingUserId)
+                        ->where('child_user_id', $senderId)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $relationship || (string) $relationship->status !== 'active') {
+                        throw new \RuntimeException(__('api_controllers_2.sub_account.no_permission'));
+                    }
+                }
+
                 // All transfers by this sender serialize on its user row. A
                 // locking read sees the latest committed receipt even when two
                 // requests both missed it before either obtained those locks.
