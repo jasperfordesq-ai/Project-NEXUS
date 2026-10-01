@@ -172,20 +172,25 @@ class LegalPublicationDeliveryTest extends TestCase
         LegalDocumentService::publishVersion($version);
         DB::table('legal_publication_deliveries')->where('user_id', '!=', $admin->id)->delete();
         $deliveryId = DB::table('legal_publication_deliveries')->where('version_id', $version)->value('id');
+        // F-469: only a sent email can be read, and not in the arrival window.
+        DB::table('legal_publication_deliveries')->where('id', $deliveryId)
+            ->update(['status' => 'sent', 'sent_at' => now()->subHour(), 'updated_at' => now()]);
+        // O-175: the paths are used exactly as the email carries them.
         $openPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'open'), PHP_URL_PATH);
         $clickPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'click'), PHP_URL_PATH);
-        $this->apiGet($openPath)->assertStatus(200);
-        $this->apiGet($openPath)->assertStatus(200);
-        $this->apiGet($clickPath)->assertRedirect();
+        $this->get($openPath)->assertStatus(200);
+        $this->get($openPath)->assertStatus(200);
+        $this->get($clickPath)->assertRedirect();
         $this->assertDatabaseHas('legal_publication_events', ['delivery_id' => $deliveryId, 'event_type' => 'open']);
         $this->assertDatabaseHas('legal_publication_events', ['delivery_id' => $deliveryId, 'event_type' => 'click']);
-        $this->apiGet($openPath . 'bad')->assertStatus(200);
-        $this->assertSame(3, DB::table('legal_publication_events')->where('delivery_id', $deliveryId)->count());
+        $this->get($openPath . 'bad')->assertStatus(200);
+        // F-469: a repeated open is the same reader, not a second one.
+        $this->assertSame(2, DB::table('legal_publication_events')->where('delivery_id', $deliveryId)->count());
 
         $response = $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats?filter=opened");
         $response->assertStatus(200);
         $this->assertEquals(1, $response->json('data.totals.unique_opens'));
-        $this->assertEquals(2, $response->json('data.totals.total_opens'));
+        $this->assertEquals(1, $response->json('data.totals.total_opens'));
         $this->assertEquals(1, $response->json('data.totals.unique_clicks'));
         $this->assertSame($admin->email, $response->json('data.recipients.0.email'));
         $overview = collect($this->apiGet('/v2/admin/legal-documents/publication-emails')->json('data'))
@@ -205,8 +210,8 @@ class LegalPublicationDeliveryTest extends TestCase
             ->where('user_id', $recipient->id)->value('id');
         $openPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'open'), PHP_URL_PATH);
         $clickPath = parse_url(LegalPublicationDeliveryService::trackingUrl($deliveryId, 'click'), PHP_URL_PATH);
-        $this->apiGet($openPath)->assertStatus(200);
-        $this->apiGet($clickPath)->assertRedirect();
+        $this->get($openPath)->assertStatus(200);
+        $this->get($clickPath)->assertRedirect();
         $this->apiGet("/v2/admin/legal-documents/versions/{$version}/email-stats")->assertStatus(401);
     }
 

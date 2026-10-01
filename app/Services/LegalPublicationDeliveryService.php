@@ -62,11 +62,23 @@ final class LegalPublicationDeliveryService
             ->pluck('total', 'status')->map(fn ($n) => (int) $n)->all();
     }
 
+    /**
+     * F-469: a fetch this soon after the message was handed to the mail transport
+     * is a mail-security gateway or image proxy scanning it on arrival, not a
+     * member reading it. Counting it would drop the member off the "not opened"
+     * chase list — the dangerous direction to be wrong in — so it is ignored. A
+     * member who genuinely opens within the window simply stays on the list.
+     */
+    private const AUTOMATED_FETCH_WINDOW_SECONDS = 120;
+
     public static function trackingUrl(int $deliveryId, string $event): string
     {
         $signature = hash_hmac('sha256', "legal-publication:{$event}:{$deliveryId}", (string) config('app.key'));
+        // O-175: routes/api.php is mounted under the global `/api` prefix, so the
+        // address must carry it. Without it the "read the policy" button and the
+        // pixel in every policy email led to a 404.
         return rtrim((string) config('app.url'), '/')
-            . "/v2/legal-publication/{$event}/{$deliveryId}/{$signature}";
+            . "/api/v2/legal-publication/{$event}/{$deliveryId}/{$signature}";
     }
 
     /** Record a signed recipient event without exposing account information. */
@@ -82,17 +94,45 @@ final class LegalPublicationDeliveryService
         if (!$row) {
             return null;
         }
-        try {
-            DB::table('legal_publication_events')->insert([
-                'tenant_id' => $row->tenant_id, 'delivery_id' => $deliveryId,
-                'event_type' => $event, 'occurred_at' => now(),
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('Policy email engagement event could not be recorded', ['delivery_id' => $deliveryId, 'event' => $event]);
+        // F-469: the figures are compliance evidence, so only a read that can
+        // have happened is recorded, and only once per recipient per kind.
+        if (self::isCountableEvent($row)) {
+            try {
+                DB::transaction(function () use ($row, $deliveryId, $event) {
+                    // Serialise concurrent fetches of the same link on the
+                    // delivery row so the existence test below cannot race.
+                    DB::table('legal_publication_deliveries')->where('id', $deliveryId)
+                        ->lockForUpdate()->first(['id']);
+                    $already = DB::table('legal_publication_events')
+                        ->where('delivery_id', $deliveryId)->where('event_type', $event)->exists();
+                    if (!$already) {
+                        DB::table('legal_publication_events')->insert([
+                            'tenant_id' => $row->tenant_id, 'delivery_id' => $deliveryId,
+                            'event_type' => $event, 'occurred_at' => now(),
+                        ]);
+                    }
+                });
+            } catch (\Throwable $e) {
+                Log::warning('Policy email engagement event could not be recorded', ['delivery_id' => $deliveryId, 'event' => $event]);
+            }
         }
         return filter_var($row->review_url, FILTER_VALIDATE_URL)
             && in_array(strtolower((string) parse_url($row->review_url, PHP_URL_SCHEME)), ['http', 'https'], true)
             ? $row->review_url : null;
+    }
+
+    /**
+     * F-469: an email that has not been handed to a mail transport cannot have
+     * been read, and a fetch inside the arrival window is an automated scan.
+     */
+    private static function isCountableEvent(object $row): bool
+    {
+        if (($row->status ?? null) !== 'sent' || empty($row->sent_at)) {
+            return false;
+        }
+
+        return \Illuminate\Support\Carbon::parse($row->sent_at)
+            ->lte(now()->subSeconds(self::AUTOMATED_FETCH_WINDOW_SECONDS));
     }
 
     private static function eventCounts(int $tenantId, array $versionIds): \Illuminate\Database\Query\Builder
