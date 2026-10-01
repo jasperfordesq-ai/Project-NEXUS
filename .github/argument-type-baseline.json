@@ -11,14 +11,6 @@
       "note": ""
     },
     {
-      "file": "app/Http/Controllers/Api/AdminConfigController.php",
-      "identifier": "argument.type",
-      "message": "Parameter #2 $message of method App\\Http\\Controllers\\Api\\BaseApiController::respondWithError() expects string, int given.",
-      "count": 1,
-      "status": "pre-existing — not yet reviewed",
-      "note": ""
-    },
-    {
       "file": "app/Http/Controllers/Api/AdminPrerenderController.php",
       "identifier": "argument.type",
       "message": "Parameter #1 $target of method App\\Services\\PrerenderService::expectedRoutesForTenant() expects array{tenant_id: int, slug: string, host: string, prefix: string, features: mixed, configuration: mixed}, array{tenant_id: int, slug: string, host: string, prefix: string} given.",
@@ -214,14 +206,6 @@
       "file": "app/Services/JobExpiryNotificationService.php",
       "identifier": "argument.type",
       "message": "Parameter #1 $user of static method App\\Services\\JobExpiryNotificationService::sendExpiryEmail() expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
-      "count": 1,
-      "status": "pre-existing — not yet reviewed",
-      "note": ""
-    },
-    {
-      "file": "app/Services/ListingService.php",
-      "identifier": "argument.type",
-      "message": "Parameter #2 $user of class App\\Events\\ListingUpdated constructor expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given.",
       "count": 1,
       "status": "pre-existing — not yet reviewed",
       "note": ""

@@ -1411,7 +1411,7 @@ class ListingService
 
         // Dispatch ListingUpdated so federation partners receive the edit
         try {
-            $owner = $freshListing->user ?? User::find($freshListing->user_id);
+            $owner = $freshListing->user instanceof User ? $freshListing->user : User::find($freshListing->user_id);
             if ($owner) {
                 event(new ListingUpdated($freshListing, $owner, TenantContext::getId(), $previousFederatedVisibility));
             }
@@ -1446,7 +1446,7 @@ class ListingService
         // retraction. The listener sends only the identifiers, never the
         // content. Wrapped so a federation problem can never fail the delete.
         try {
-            $owner = $listing->user ?? User::find($listing->user_id);
+            $owner = $listing->user instanceof User ? $listing->user : User::find($listing->user_id);
             if ($owner) {
                 event(new ListingUpdated($listing, $owner, TenantContext::getId(), $previousFederatedVisibility));
             }
