@@ -61,6 +61,16 @@ class User extends Authenticatable
     protected $hidden = [
         'password_hash', 'totp_secret', 'totp_backup_codes',
         'remember_token', 'api_token', 'verification_token', 'two_factor_secret',
+        // F-417: `users.password` is a SECOND, legacy credential column beside
+        // `password_hash`. Nothing writes it now (createWithTenant writes only
+        // password_hash) but historical rows still hold real bcrypt/argon2
+        // hashes, so a whole-model serialisation would emit a crackable hash.
+        // `reset_token`/`reset_token_expiry` are the legacy reset pair (the live
+        // flow uses the `password_resets` table); the remaining three are
+        // internal billing/permission bookkeeping no response builds from.
+        'password', 'reset_token', 'reset_token_expiry',
+        'stripe_customer_id', 'max_permission_level', 'permissions_last_updated',
+        'rejection_reason',
         'tenant_id', 'is_god', 'is_super_admin', 'is_tenant_super_admin',
         'balance', 'notification_preferences',
         // Legacy safeguarding/vetting fields remain private even if a model is
