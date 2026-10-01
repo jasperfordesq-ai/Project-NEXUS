@@ -156,7 +156,11 @@ class AdminFederationPeerController extends BaseApiController
         }
 
         try {
-            $this->peers->delete(TenantContext::getId(), $id);
+            // F-482: the delete count was discarded, so a peer belonging to
+            // another community was reported deleted. Zero rows is not a deletion.
+            if ($this->peers->delete(TenantContext::getId(), $id) === 0) {
+                return $this->respondWithError('PEER_NOT_FOUND', __('api.federation_peer_not_found'), null, 404);
+            }
         } catch (RuntimeException $e) {
             Log::warning('Federation peer deletion failed', [
                 'tenant_id' => TenantContext::getId(),

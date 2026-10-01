@@ -103,6 +103,14 @@ class SkillTaxonomyController extends BaseApiController
     {
         $this->requireAdmin();
 
+        // F-482: deleteCategory() returns true even when its tenant-filtered
+        // statements matched nothing, so a category belonging to another
+        // community was reported deleted. getCategoryById() is community-scoped;
+        // refuse the id outright, as getCategoryById() above already does.
+        if (! $this->skillTaxonomyService->getCategoryById((int) $id)) {
+            return $this->respondWithError('NOT_FOUND', __('api.category_not_found'), null, 404);
+        }
+
         $hard = $this->queryBool('hard', false);
         $success = $this->skillTaxonomyService->deleteCategory((int) $id, $hard);
 

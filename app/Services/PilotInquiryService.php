@@ -322,8 +322,23 @@ class PilotInquiryService
     /**
      * Update the admin-only internal notes on an inquiry.
      */
-    public static function updateInternalNotes(int $id, int $tenantId, string $notes): void
+    /**
+     * @return bool false when the inquiry is not this tenant's, so the caller
+     *              can refuse rather than report a note it did not save (F-482).
+     *              An existence check rather than the affected-row count,
+     *              because re-saving the same note changes no row.
+     */
+    public static function updateInternalNotes(int $id, int $tenantId, string $notes): bool
     {
+        $exists = DB::table(self::TABLE)
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if (! $exists) {
+            return false;
+        }
+
         DB::table(self::TABLE)
             ->where('id', $id)
             ->where('tenant_id', $tenantId)
@@ -331,6 +346,8 @@ class PilotInquiryService
                 'internal_notes' => $notes,
                 'updated_at'     => now(),
             ]);
+
+        return true;
     }
 
     // ─── Pipeline analytics ───────────────────────────────────────────────────

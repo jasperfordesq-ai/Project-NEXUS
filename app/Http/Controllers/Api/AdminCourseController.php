@@ -156,7 +156,12 @@ class AdminCourseController extends BaseApiController
         $this->ensureCoursesFeature();
         $this->requireAdmin();
 
-        CourseCategoryService::delete($id);
+        // F-482: the service's boolean was discarded, so a category belonging to
+        // another community was reported deleted. Refuse the id the same way
+        // updateCategory() above already does.
+        if (! CourseCategoryService::delete($id)) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api_controllers_2.courses.not_found'), null, 404);
+        }
 
         return $this->respondWithData(['deleted' => true]);
     }

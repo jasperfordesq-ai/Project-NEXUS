@@ -335,7 +335,12 @@ class AdminEnterpriseController extends BaseApiController
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
         try {
-            DB::delete("DELETE FROM roles WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            // F-482: the delete count was discarded, so a role belonging to
+            // another community was reported deleted. Zero rows is not a deletion.
+            $deleted = DB::delete("DELETE FROM roles WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            if ($deleted === 0) {
+                return $this->respondWithError('NOT_FOUND', __('api.role_not_found'), null, 404);
+            }
             return $this->respondWithData(['deleted' => true]);
         } catch (\Exception $e) {
             return $this->respondWithError('DELETE_FAILED', __('api.role_delete_failed'), null, 500);
@@ -923,7 +928,16 @@ class AdminEnterpriseController extends BaseApiController
         'locale' => 'general.default_locale',
         'onboarding_enabled' => 'onboarding.enabled',
         // Wallet
-        'max_transaction' => 'wallet.max_transaction',
+        // F-492: this field is the "Maximum transfer" control on the System
+        // Config page, and it used to save to `wallet.max_transaction` — a key
+        // nothing reads. The key the platform enforces is `wallet.max_transfer`
+        // (WalletService::maxTransferAmount(), applied in transfer()), and it
+        // had no admin route that could write it, so a cap an administrator set
+        // was silently inert and the ceiling stayed at the platform default of
+        // 1,000 hours. Fourth dead key found in this map (see F-459), first on
+        // money. The GET above reads the same map, so the page still reads back
+        // what it saves.
+        'max_transaction' => 'wallet.max_transfer',
         'currency_name' => 'wallet.currency_name',
         'currency_symbol' => 'wallet.currency_symbol',
         // Content & Moderation
@@ -2457,6 +2471,25 @@ class AdminEnterpriseController extends BaseApiController
                     [
                         'tenant_id' => $tenantId,
                         'feature' => $key,
+                        'enabled' => $value,
+                    ]
+                );
+            } else {
+                // F-493: the `type === 'feature'` guard above left the MODULE arm
+                // of this same handler silent, and AdminConfigController::updateModule()
+                // — the other route that writes tenants.configuration['modules'] —
+                // had no audit call at all. The eight modules include `messages`,
+                // `wallet` and `listings`: switching one off removes that capability
+                // from every member of a community, and nothing recorded who did it.
+                // Same shape and same rules as the feature write above: not
+                // conditional on the module name, and not swallowed.
+                app(\App\Services\AuditLogService::class)->logAdminAction(
+                    $value ? 'tenant_module_enabled' : 'tenant_module_disabled',
+                    $this->getUserId(),
+                    null,
+                    [
+                        'tenant_id' => $tenantId,
+                        'module' => $key,
                         'enabled' => $value,
                     ]
                 );

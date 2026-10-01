@@ -147,7 +147,12 @@ class GroupCollectionService
             ->where('id', $id)->where('tenant_id', $tenantId)->delete() > 0;
     }
 
-    public static function setGroups(int $collectionId, array $groupIds): void
+    /**
+     * @return bool false when the collection is not this tenant's, so the
+     *              caller can refuse rather than report a recomposition that
+     *              did not happen (F-482)
+     */
+    public static function setGroups(int $collectionId, array $groupIds): bool
     {
         $tenantId = TenantContext::getId();
 
@@ -157,7 +162,7 @@ class GroupCollectionService
             ->where('tenant_id', $tenantId)
             ->first();
         if (!$collection) {
-            return;
+            return false;
         }
 
         // Validate group IDs belong to current tenant
@@ -175,5 +180,7 @@ class GroupCollectionService
                 'sort_order' => $i,
             ]);
         }
+
+        return true;
     }
 }

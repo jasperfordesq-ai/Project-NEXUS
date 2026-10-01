@@ -243,10 +243,26 @@ class EmergencyAlertService
     /**
      * Deactivate (soft-delete) an alert so it no longer shows on the banner.
      */
-    public static function deactivate(int $id, int $tenantId): void
+    /**
+     * @return bool false when the alert is not this tenant's, so the caller can
+     *              refuse rather than report a deactivation it did not make
+     *              (F-482). An existence check rather than the affected-row
+     *              count, because deactivating an already-inactive alert changes
+     *              no row and must not be mistaken for a missing one.
+     */
+    public static function deactivate(int $id, int $tenantId): bool
     {
         if (!self::isAvailable()) {
             throw new \RuntimeException(__('api.caring_emergency_alerts_unavailable'));
+        }
+
+        $exists = DB::table(self::TABLE)
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if (!$exists) {
+            return false;
         }
 
         DB::table(self::TABLE)
@@ -256,6 +272,8 @@ class EmergencyAlertService
                 'is_active'  => 0,
                 'updated_at' => Carbon::now(),
             ]);
+
+        return true;
     }
 
     /**

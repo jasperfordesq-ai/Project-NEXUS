@@ -212,7 +212,12 @@ class PilotInquiryController extends BaseApiController
 
         $notes = $this->input('internal_notes', '');
 
-        PilotInquiryService::updateInternalNotes($id, $this->getTenantId(), (string) $notes);
+        // F-482: the service's result was discarded, so a note was reported
+        // saved against an inquiry belonging to another community. Refuse the
+        // id the same way adminGet() above does.
+        if (! PilotInquiryService::updateInternalNotes($id, $this->getTenantId(), (string) $notes)) {
+            return $this->respondNotFound(__('api.pilot_inquiry_not_found'));
+        }
 
         return $this->respondWithData(['success' => true]);
     }

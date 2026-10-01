@@ -1483,8 +1483,14 @@ class AdminGroupsController extends BaseApiController
         $adminId = $this->requireAdmin();
         $groupIds = request()->input('group_ids', []);
         if (!is_array($groupIds)) return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'group_ids', 422);
-        DB::transaction(function () use ($adminId, $id, $groupIds): void {
-            \App\Services\GroupCollectionService::setGroups($id, $groupIds);
+        // F-482: setGroups() silently did nothing for a collection belonging to
+        // another community, yet this method reported success AND wrote an
+        // activity_log row naming that community's collection id. Refuse before
+        // the log is written, exactly as deleteCollection() above does.
+        $success = DB::transaction(function () use ($adminId, $id, $groupIds): bool {
+            if (! \App\Services\GroupCollectionService::setGroups($id, $groupIds)) {
+                return false;
+            }
             ActivityLog::log(
                 $adminId,
                 'admin_set_group_collection_groups',
@@ -1495,8 +1501,12 @@ class AdminGroupsController extends BaseApiController
                 'group_collection',
                 $id,
             );
+
+            return true;
         });
-        return $this->successResponse(['message' => __('api_controllers_1.admin_groups.collection_groups_set')]);
+        return $success
+            ? $this->successResponse(['message' => __('api_controllers_1.admin_groups.collection_groups_set')])
+            : $this->respondWithError('NOT_FOUND', __('api.group_collection_not_found'), null, 404);
     }
 
     // =========================================================================

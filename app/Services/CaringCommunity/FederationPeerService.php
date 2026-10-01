@@ -179,10 +179,15 @@ class FederationPeerService
         return $this->castRow($row, redactSecret: false);
     }
 
-    public function delete(int $tenantId, int $id): void
+    /**
+     * @return int the number of peer rows actually removed, so the caller can
+     *             refuse rather than report a deletion it did not make (F-482)
+     */
+    public function delete(int $tenantId, int $id): int
     {
         $this->assertAvailable();
-        DB::table(self::TABLE)
+
+        return DB::table(self::TABLE)
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->delete();

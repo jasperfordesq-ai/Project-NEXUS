@@ -1217,6 +1217,16 @@ class AdminNewsletterController extends BaseApiController
             return $this->respondWithError('TABLE_MISSING', __('api.template_not_configured'), null, 503);
         }
 
+        // F-482: destroyTemplate() below checks its row count and answers 404;
+        // this method discarded its UPDATE count and answered {"updated":true}
+        // for a template belonging to another community. Refuse the id the same
+        // way. An existence check rather than the affected-row count, because an
+        // UPDATE that sets the same values reports zero rows changed and must
+        // not be mistaken for a missing template.
+        if (! DB::table('newsletter_templates')->where('id', $id)->where('tenant_id', $tenantId)->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Template']), null, 404);
+        }
+
         try {
             $fields = [];
             $params = [];

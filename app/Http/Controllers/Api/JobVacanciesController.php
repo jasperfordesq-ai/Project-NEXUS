@@ -43,6 +43,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Authorization\AdminTier;
 use App\Support\UserDisplayName;
 
 /**
@@ -701,8 +702,14 @@ class JobVacanciesController extends BaseApiController
         $isPoster = $application->vacancy && (int) $application->vacancy->user_id === $userId;
 
         if (!$isApplicant && !$isPoster) {
-            $user = \App\Models\User::where('id', $userId)->first(['id', 'role']);
-            $isAdmin = $user && in_array($user->role, ['admin', 'super_admin', 'tenant_admin']);
+            // F-466: admin authority is the four boolean flags as well as the
+            // role string — a network administrator is granted the flag alone —
+            // so AdminTier is the only safe predicate, and the flag columns
+            // have to be selected for it to read. The file's two other admin
+            // helpers (canManageVacancy, canSearchTalent) already did both.
+            $user = \App\Models\User::where('id', $userId)
+                ->first(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            $isAdmin = $user && AdminTier::allows($user);
             if (!$isAdmin) {
                 return $this->respondWithError('RESOURCE_FORBIDDEN', __('api.job_access_denied'), null, 403);
             }

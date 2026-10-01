@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
+use App\Support\Authorization\AdminTier;
 use App\Support\FeedItemTables;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -43,8 +44,12 @@ class PostAnalyticsController extends BaseApiController
         }
 
         // Check ownership or admin
+        // F-466: admin authority is the four boolean flags as well as the role
+        // string — a network administrator is granted the flag alone — so
+        // AdminTier is the only safe predicate. It still refuses broker and
+        // coordinator.
         $user = \Illuminate\Support\Facades\Auth::user();
-        $isAdmin = $user && in_array($user->role ?? 'member', ['admin', 'tenant_admin', 'super_admin', 'god']);
+        $isAdmin = AdminTier::allows($user);
 
         if ((int) $post->user_id !== $userId && !$isAdmin) {
             return $this->respondWithError('FORBIDDEN', __('api.post_analytics_own_only'), null, 403);

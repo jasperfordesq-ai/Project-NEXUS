@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\Services\CaringCommunity\EmergencyAlertService;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -161,7 +162,12 @@ class EmergencyAlertController extends BaseApiController
         }
 
         try {
-            EmergencyAlertService::deactivate($id, $tenantId);
+            // F-482: the service's result was discarded, so an alert belonging
+            // to another community was reported deactivated. Zero rows is not a
+            // deactivation.
+            if (! EmergencyAlertService::deactivate($id, $tenantId)) {
+                return $this->respondNotFound();
+            }
             return $this->respondWithData(['ok' => true]);
         } catch (\RuntimeException $e) {
             return $this->respondWithError('SERVICE_ERROR', $e->getMessage(), null, 503);
@@ -178,13 +184,18 @@ class EmergencyAlertController extends BaseApiController
      */
     private function hasAnnouncerAccess(int $userId, int $tenantId): bool
     {
-        $hasAdminRole = DB::table('users')
+        // F-466: admin authority is the four boolean flags as well as the role
+        // string — a network administrator is granted the flag alone — so
+        // AdminTier is the only safe predicate. These routes sit inside the
+        // EnsureIsAdmin group, which already uses AdminTier, so without this the
+        // account passed the gate at the door and was refused here. AdminTier
+        // still fails closed for broker and coordinator.
+        $account = DB::table('users')
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
-            ->whereIn('role', ['admin', 'tenant_admin', 'super_admin', 'god'])
-            ->exists();
+            ->first(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
 
-        if ($hasAdminRole) {
+        if ($account !== null && AdminTier::allows((array) $account)) {
             return true;
         }
 

@@ -435,6 +435,26 @@ class AdminConfigController extends BaseApiController
         }
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
 
+        // F-493: every module toggle is audited, on this route and on
+        // AdminEnterpriseController::updateFeatureFlag()'s `type=module` arm.
+        // F-408 and F-460 made the two FEATURE routes record who switched a
+        // feature off; neither touched the modules half, so this route recorded
+        // nothing at all. The eight modules include `messages`, `wallet` and
+        // `listings` — switching one off removes that capability from every
+        // member of the community, and "who turned this off, and when" had no
+        // answer. The write is deliberately not conditional on the module name
+        // and not wrapped in a catch, matching the feature write above.
+        app(AuditLogService::class)->logAdminAction(
+            $enabled ? 'tenant_module_enabled' : 'tenant_module_disabled',
+            (int) auth()->id(),
+            null,
+            [
+                'tenant_id' => $tenantId,
+                'module' => $moduleName,
+                'enabled' => (bool) $enabled,
+            ]
+        );
+
         return $this->respondWithData(['module' => $moduleName, 'enabled' => (bool) $enabled]);
     }
 
@@ -552,7 +572,12 @@ class AdminConfigController extends BaseApiController
         ];
 
         if (!isset($methodMap[$id])) {
-            return $this->respondWithError('Unknown job: ' . $id, 400);
+            // F-470: the arguments were transposed against
+            // respondWithError(string $code, string $message, ?string $field, int $status),
+            // so the caller's own path segment became the machine error code and
+            // the literal 400 became the human message. Matches the sibling
+            // cron-job trigger below, which already uses this code and key.
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_id', ['resource' => 'job']), 'id', 400);
         }
 
         RunAdminCronJob::dispatch($methodMap[$id]);
