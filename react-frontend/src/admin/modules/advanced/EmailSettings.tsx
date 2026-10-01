@@ -13,6 +13,7 @@ import { useToast } from '@/contexts';
 import { PageHeader } from '../../components/PageHeader';
 import { adminSettings } from '../../api/adminApi';
 import type { ApiResponse } from '@/lib/api';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -280,7 +281,7 @@ export function EmailSettings() {
               </h3>
             </CardHeader>
             <CardBody className="gap-4">
-              <Input
+              <SecretInput
                 label={t('label_a_p_i_key')}
                 type="password"
                 placeholder={t('placeholder_s_gxxxxx')}
@@ -347,7 +348,7 @@ export function EmailSettings() {
                 value={formData.gmail_client_id}
                 onValueChange={(v) => updateField('gmail_client_id', v)}
               />
-              <Input
+              <SecretInput
                 label={t('label_client_secret')}
                 type="password"
                 placeholder={t('placeholder_gocspx')}
@@ -356,7 +357,7 @@ export function EmailSettings() {
                 value={formData.gmail_client_secret}
                 onValueChange={(v) => updateField('gmail_client_secret', v)}
               />
-              <Input
+              <SecretInput
                 label={t('label_refresh_token')}
                 type="password"
                 variant="secondary"
@@ -412,7 +413,7 @@ export function EmailSettings() {
                 value={formData.smtp_user}
                 onValueChange={(v) => updateField('smtp_user', v)}
               />
-              <Input
+              <SecretInput
                 label={t('label_password')}
                 type="password"
                 variant="secondary"

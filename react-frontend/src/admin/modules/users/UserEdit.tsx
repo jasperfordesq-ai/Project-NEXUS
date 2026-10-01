@@ -24,6 +24,7 @@ import { adminUsers, adminTimebanking, adminVetting, adminInsurance } from '../.
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import type { AdminUserDetail, AdminBadge, UpdateUserPayload, UserConsent, VettingAttestation, InsuranceCertificate } from '../../api/types';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -1142,7 +1143,7 @@ export function UserEdit() {
             <p className="text-sm text-muted">
               {t('modals.set_password.body')}
             </p>
-            <Input
+            <SecretInput
               label={t('fields.new_password')}
               type="password"
               placeholder={t('placeholders.new_password')}

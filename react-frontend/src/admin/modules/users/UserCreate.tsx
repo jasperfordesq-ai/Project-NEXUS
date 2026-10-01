@@ -21,6 +21,7 @@ import { useTenant, useToast } from '@/contexts';
 import { adminUsers } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { CreateUserPayload } from '../../api/types';
+import { SecretInput } from '../../components/SecretInput';
 
 export function UserCreate() {
   const { t } = useTranslation('admin_users');
@@ -211,7 +212,7 @@ export function UserCreate() {
             </div>
 
             {/* Password */}
-            {!sendWelcomeEmail && <Input
+            {!sendWelcomeEmail && <SecretInput
               label={t('users.label_password')}
               type="password"
               placeholder={t('users.placeholder_password')}

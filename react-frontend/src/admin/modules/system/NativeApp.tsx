@@ -10,6 +10,7 @@ import { usePageTitle } from '@/hooks';
 import { PageHeader } from '../../components/PageHeader';
 import { NativeAppInstallStats } from './NativeAppInstallStats';
 import { adminSettings } from '../../api/adminApi';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -210,8 +211,8 @@ export function NativeApp() {
               <Switch isSelected={!!formData.native_app_push_enabled} onValueChange={(v) => updateField('native_app_push_enabled', v)} aria-label={t('system.native_app.push_notifications')} />
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Input label={t('system.native_app.fcm_server_key')} type="password" variant="secondary" value={fieldValue(formData, 'native_app_fcm_server_key')} onValueChange={(v) => updateField('native_app_fcm_server_key', v)} />
-              <Input label={t('system.native_app.apns_key_id')} type="password" variant="secondary" value={fieldValue(formData, 'native_app_apns_key_id')} onValueChange={(v) => updateField('native_app_apns_key_id', v)} />
+              <SecretInput label={t('system.native_app.fcm_server_key')} type="password" variant="secondary" value={fieldValue(formData, 'native_app_fcm_server_key')} onValueChange={(v) => updateField('native_app_fcm_server_key', v)} />
+              <SecretInput label={t('system.native_app.apns_key_id')} type="password" variant="secondary" value={fieldValue(formData, 'native_app_apns_key_id')} onValueChange={(v) => updateField('native_app_apns_key_id', v)} />
               <Input label={t('system.native_app.apns_team_id')} variant="secondary" value={fieldValue(formData, 'native_app_apns_team_id')} onValueChange={(v) => updateField('native_app_apns_team_id', v)} />
               <Input label={t('system.native_app.push_sender_id')} variant="secondary" value={fieldValue(formData, 'native_app_push_sender_id')} onValueChange={(v) => updateField('native_app_push_sender_id', v)} />
               <Input label={t('system.native_app.tenant_channel_prefix')} variant="secondary" value={fieldValue(formData, 'native_app_tenant_channel_prefix')} onValueChange={(v) => updateField('native_app_tenant_channel_prefix', v)} className="md:col-span-2" />

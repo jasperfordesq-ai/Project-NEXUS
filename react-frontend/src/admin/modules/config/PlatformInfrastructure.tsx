@@ -15,6 +15,7 @@ import { languageDisplayName } from '@/lib/languageDisplayName';
 const GOOGLE_API_KEY_EXAMPLE_PREFIX = 'AIza…';
 import { adminConfig, adminSettings } from '../../api/adminApi';
 import type { TenantConfig } from '../../api/types';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -465,14 +466,13 @@ export default function PlatformInfrastructure({ config: _config, onConfigChange
                 {t('tenant_features.google_maps_api_key_hint')}
               </p>
               <div className="flex gap-2">
-                <Input
+                <SecretInput
                   aria-label={t('tenant_features.google_maps_api_key_label')}
                   placeholder={googleMapsKeySet ? googleMapsKeyDisplay : GOOGLE_API_KEY_EXAMPLE_PREFIX}
                   value={googleMapsKeyInput}
                   onValueChange={setGoogleMapsKeyInput}
                   type={showGoogleKey ? 'text' : 'password'}
                   size="sm"
-                  autoComplete="off"
                   isDisabled={savingKeys}
                   endContent={
                     <Button
@@ -536,14 +536,13 @@ export default function PlatformInfrastructure({ config: _config, onConfigChange
                 {t('tenant_features.maptiler_api_key_hint')}
               </p>
               <div className="flex gap-2">
-                <Input
+                <SecretInput
                   aria-label={t('tenant_features.maptiler_api_key_label')}
                   placeholder={maptilerKeySet ? maptilerKeyDisplay : '…'}
                   value={maptilerKeyInput}
                   onValueChange={setMaptilerKeyInput}
                   type={showMaptilerKey ? 'text' : 'password'}
                   size="sm"
-                  autoComplete="off"
                   isDisabled={savingKeys}
                   endContent={
                     <Button
@@ -588,14 +587,13 @@ export default function PlatformInfrastructure({ config: _config, onConfigChange
                 {t('tenant_features.os_maps_api_key_hint')}
               </p>
               <div className="flex gap-2">
-                <Input
+                <SecretInput
                   aria-label={t('tenant_features.os_maps_api_key_label')}
                   placeholder={osMapsKeySet ? osMapsKeyDisplay : '…'}
                   value={osMapsKeyInput}
                   onValueChange={setOsMapsKeyInput}
                   type={showOsMapsKey ? 'text' : 'password'}
                   size="sm"
-                  autoComplete="off"
                   isDisabled={savingKeys}
                   endContent={
                     <Button

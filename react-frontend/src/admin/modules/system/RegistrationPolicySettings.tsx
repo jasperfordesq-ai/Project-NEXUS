@@ -33,6 +33,7 @@ import { useToast,
   useAuth } from '@/contexts';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -599,7 +600,7 @@ export function RegistrationPolicySettings() {
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <Input
+                          <SecretInput
                             label={t('system.label_a_p_i_key_secret_key')}
                             placeholder={p.has_credentials ? t('system.reg.placeholder_saved') : t('system.reg.placeholder_api_key')}
                             value={inputs.api_key}
@@ -614,7 +615,7 @@ export function RegistrationPolicySettings() {
                               </Button>
                             }
                           />
-                          <Input
+                          <SecretInput
                             label={t('system.label_webhook_secret')}
                             placeholder={p.has_credentials ? t('system.reg.placeholder_saved') : t('system.reg.placeholder_webhook')}
                             value={inputs.webhook_secret}

@@ -14,6 +14,7 @@ import { useTenant, useToast } from '@/contexts';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { SuperAdminUserDetail, SuperAdminTenant } from '../../api/types';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -175,7 +176,7 @@ export function SuperUserForm() {
               </div>
               <Input label={t('super.label_email')} type="email" isRequired value={form.email}
                 onValueChange={(v) => update('email', v)} />
-              <Input label={t('super.label_password')} type="password" isRequired value={form.password}
+              <SecretInput label={t('super.label_password')} type="password" isRequired value={form.password}
                 onValueChange={(v) => update('password', v)} />
               <Select label={t('super.label_role')} selectedKeys={[form.role]}
                 onSelectionChange={(keys) => update('role', Array.from(keys)[0])}>

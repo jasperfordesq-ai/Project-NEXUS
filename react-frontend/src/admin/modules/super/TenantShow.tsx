@@ -37,6 +37,7 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import type { SuperAdminTenantDetail, TenantPurgePreview } from '../../api/types';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { safeHref } from '@/lib/safeHref';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -768,7 +769,7 @@ export function TenantShow() {
                     value={adminForm.email}
                     onValueChange={(v) => setAdminForm({ ...adminForm, email: v })}
                   />
-                  <Input
+                  <SecretInput
                     size="sm"
                     variant="secondary"
                     label={t('super.label_password')}

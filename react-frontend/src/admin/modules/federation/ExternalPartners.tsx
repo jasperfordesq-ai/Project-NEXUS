@@ -34,6 +34,7 @@ import { BrokerEmptyState } from '@/broker/components';
 
 import { useTranslation } from 'react-i18next';
 import { PartnerTimebankGuidance } from './PartnerTimebankGuidance';
+import { SecretInput } from '../../components/SecretInput';
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Types
@@ -630,7 +631,7 @@ export function ExternalPartners() {
 
                 {/* Credential fields â€” shown based on auth_method */}
                 {(form.auth_method === 'api_key' || form.auth_method === 'oauth2') && (
-                  <Input
+                  <SecretInput
                     label={t('federation.label_api_key')}
                     placeholder={editingId ? t('federation.placeholder_leave_blank') : ''}
                     value={form.api_key}
@@ -639,7 +640,7 @@ export function ExternalPartners() {
                   />
                 )}
                 {form.auth_method === 'hmac' && (
-                  <Input
+                  <SecretInput
                     label={t('federation.label_signing_secret')}
                     placeholder={editingId ? t('federation.placeholder_leave_blank') : ''}
                     value={form.signing_secret}
@@ -654,7 +655,7 @@ export function ExternalPartners() {
                       value={form.oauth_client_id}
                       onValueChange={(v) => updateForm('oauth_client_id', v)}
                     />
-                    <Input
+                    <SecretInput
                       label={t('federation.label_oauth_client_secret')}
                       placeholder={editingId ? t('federation.placeholder_leave_blank') : ''}
                       value={form.oauth_client_secret}

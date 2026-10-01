@@ -41,6 +41,7 @@ import {
 } from '@/components/ui';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { PageHeader } from '../../components/PageHeader';
+import { SecretInput } from '../../components/SecretInput';
 
 interface AdminSsoProvider {
   id: number;
@@ -431,7 +432,7 @@ export function SsoProviders() {
               onValueChange={(v) => updateForm('client_id', v)}
               variant="secondary"
             />
-            <Input
+            <SecretInput
               type="password"
               label={t('sso.field_client_secret')}
               value={form.client_secret}
@@ -439,7 +440,6 @@ export function SsoProviders() {
               variant="secondary"
               placeholder={editingKey && editingHasSecret ? t('sso.secret_keep_placeholder') : undefined}
               description={editingKey && editingHasSecret ? t('sso.secret_keep_desc') : undefined}
-              autoComplete="new-password"
             />
             <Input
               label={t('sso.field_scopes')}

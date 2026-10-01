@@ -13,6 +13,7 @@ import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { PageHeader } from '../../components/PageHeader';
 import { adminSettings } from '../../api/adminApi';
+import { SecretInput } from '../../components/SecretInput';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -346,7 +347,7 @@ export function AiSettings() {
                   </div>
 
                   {!isOllama ? (
-                    <Input
+                    <SecretInput
                       label={t('label_a_p_i_key')}
                       type="password"
                       placeholder={hasKeySet ? t('placeholder_current_key', { masked }) : t('placeholder_enter_api_key')}
