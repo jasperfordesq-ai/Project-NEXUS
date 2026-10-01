@@ -742,7 +742,13 @@ class StoryController extends BaseApiController
         $userId = $this->requireAuth();
 
         try {
-            $this->storyService->removeFromHighlight($id, $storyId, $userId);
+            $removed = $this->storyService->removeFromHighlight($id, $storyId, $userId);
+            // F-418: nothing removed is not a removal. The message is the same
+            // whether the story exists elsewhere or nowhere, so this stays a
+            // refusal and not an existence oracle.
+            if ($removed === 0) {
+                return $this->respondWithError('NOT_FOUND', __('api.story_not_found'), null, 404);
+            }
             return $this->respondWithData(['removed' => true]);
         } catch (\RuntimeException $e) {
             return $this->respondWithError('REMOVE_FAILED', $e->getMessage(), null, 403);

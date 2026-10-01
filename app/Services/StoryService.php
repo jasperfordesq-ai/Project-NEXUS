@@ -1198,8 +1198,11 @@ class StoryService
 
     /**
      * Remove a story from a highlight.
+     *
+     * @return int the number of highlight items actually removed (F-418: the
+     *             caller must be able to tell a real removal from a no-op)
      */
-    public function removeFromHighlight(int $highlightId, int $storyId, int $userId): void
+    public function removeFromHighlight(int $highlightId, int $storyId, int $userId): int
     {
         $tenantId = TenantContext::getId();
 
@@ -1213,7 +1216,7 @@ class StoryService
             throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
 
-        DB::delete(
+        return DB::delete(
             'DELETE FROM story_highlight_items WHERE highlight_id = ? AND story_id = ?',
             [$highlightId, $storyId]
         );

@@ -67,6 +67,40 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
 {
     use DatabaseTransactions;
 
+    /**
+     * `DELETE stories/highlights/{id}/items/{storyId}` removes a STORY from a
+     * HIGHLIGHT, so the control only exercises it when the owner's story is
+     * really in the owner's highlight. Until F-418 (E-076) the route answered
+     * 200 for every id, so the gap did not show and the route was pinned as a
+     * known no-op; now that it refuses a story the highlight does not hold, the
+     * control answers 404 too unless the two are linked, and the route measures
+     * nothing.
+     *
+     * {@inheritDoc}
+     */
+    protected function linkChildFixtures(array $ids, int $tenantId): void
+    {
+        if (! isset($ids['story_highlight'], $ids['story'])) {
+            return;
+        }
+
+        try {
+            DB::table('story_highlight_items')->insert([
+                'highlight_id' => $ids['story_highlight'],
+                'story_id' => $ids['story'],
+                'display_order' => 0,
+            ]);
+        } catch (\Throwable $e) {
+            fwrite(STDERR, sprintf(
+                "[sweep] could not link story %s into highlight %s in tenant %d: %s\n",
+                $ids['story'],
+                $ids['story_highlight'],
+                $tenantId,
+                mb_substr($e->getMessage(), 0, 200)
+            ));
+        }
+    }
+
     /** @var array<string,int> fixture key => victim record id (tenant 999) */
     private array $victimIds = [];
 

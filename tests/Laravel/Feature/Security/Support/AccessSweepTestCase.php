@@ -463,28 +463,13 @@ abstract class AccessSweepTestCase extends TestCase
         // ::test_remove_collection_item_refuses_a_collection_the_caller_does_not_own (404).
         'DELETE api/v2/marketplace/collections/{id}/items/{listingId}',
         //
-        // StoryService::removeFromHighlight() proves the HIGHLIGHT is
-        // `id = ? AND user_id = ? AND tenant_id = ?` before deleting from
-        // story_highlight_items by (highlight_id, story_id), so a foreign story
-        // matches nothing and $storyId never shapes the response.
-        //
-        // 🔴 PROVED before pinning. See
-        // StoryControllerTest::test_remove_highlight_item_answers_identically_for_a_foreign_story_and_a_nonexistent_one
-        // and ::test_remove_highlight_item_refuses_a_highlight_the_caller_does_not_own.
-        //
-        // 🔴 History worth keeping: this entry and its fixture were WITHDRAWN once,
-        // because making the endpoint reachable also made
-        // `DELETE stories/highlights/{id}` reachable in the SAME-community write
-        // sweep, where CI reported 2xx against another member's highlight
-        // (run 35769131661) while two local runs of identical code passed. The
-        // platform was never at fault —
-        // StoryControllerTest::test_cannot_delete_highlight_belonging_to_another_member
-        // shows a member is refused and the victim's row survives. The harness was:
-        // it re-seeded ids without re-checking who owned them, so the sweep probed
-        // the caller's OWN record while believing it was someone else's. That is
-        // fixed in recordsBelongTo(), and the fixture is restored on top of the fix
-        // rather than in place of it.
-        'DELETE api/v2/stories/highlights/{id}/items/{storyId}',
+        // 'DELETE api/v2/stories/highlights/{id}/items/{storyId}' was pinned here
+        // until F-418 (E-076). It no longer answers 2xx for a story the caller's
+        // highlight does not hold — StoryController::removeHighlightItem() now
+        // reads the affected-row count and refuses 404 — so the entry is removed
+        // rather than kept. The refusal is still byte-identical for a foreign
+        // story and an invented id, which is what kept the severity Low; see
+        // F418StoryHighlightRemovalReportsWhatItRemovedTest.
     ];
 
     /**
@@ -1119,7 +1104,25 @@ abstract class AccessSweepTestCase extends TestCase
             }
         }
 
+        $this->linkChildFixtures($ids, $tenantId);
+
         return $ids;
+    }
+
+    /**
+     * Join rows between two seeded fixtures, for routes whose child parameter
+     * only resolves when the two are already related.
+     *
+     * No-op by default and overridden per sweep ON PURPOSE. Linking changes
+     * what OTHER routes observe — putting a story inside a highlight, for
+     * instance, makes `GET stories/highlights/{id}/stories` return content
+     * where it previously returned an empty list — so a sweep opts in only
+     * where it needs the link, rather than every sweep inheriting it.
+     *
+     * @param  array<string,int|string>  $ids  fixture key => id
+     */
+    protected function linkChildFixtures(array $ids, int $tenantId): void
+    {
     }
 
     /** Direct insert for a module that has no factory. Fills only NOT NULL columns without defaults. */
