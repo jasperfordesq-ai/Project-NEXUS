@@ -725,6 +725,8 @@ class AdminCaringCommunityController extends BaseApiController
                 'RELATIONSHIP_INACTIVE' => __('api.caring_support_relationship_inactive'),
                 'ALREADY_EXISTS' => __('api.caring_support_relationship_log_duplicate'),
                 'ORG_NOT_ACTIVE' => __('api.volunteer_org_not_active'),
+                // F-505: the supporter's account may not receive credits.
+                'RECIPIENT_NOT_ACTIVE' => __('api.wallet_transfer_recipient_inactive'),
                 default => __('api.caring_support_relationship_log_failed'),
             };
 

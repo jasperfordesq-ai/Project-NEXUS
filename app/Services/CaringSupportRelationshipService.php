@@ -340,7 +340,8 @@ class CaringSupportRelationshipService
         $regionalPointsResult = null;
         $organizationNotActive = false;
         $duplicateInFlight = false;
-        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $organizationId, $date, $hours, $description, $status, &$logId, &$paymentResult, &$organizationNotActive, &$duplicateInFlight): void {
+        $supporterCannotReceive = false;
+        DB::transaction(function () use ($tenantId, $relationshipId, $relationship, $organizationId, $date, $hours, $description, $status, &$logId, &$paymentResult, &$organizationNotActive, &$duplicateInFlight, &$supporterCannotReceive): void {
             // F-391: serialise submissions for this relationship and repeat the
             // one-log-per-day check under the lock. The check above is an
             // unlocked read and vol_logs has no unique key behind it, so two
@@ -361,6 +362,23 @@ class CaringSupportRelationshipService
             if ($organizationId !== null && !$this->organizationAcceptsHours($tenantId, $organizationId, true)) {
                 $organizationNotActive = true;
                 return;
+            }
+
+            // F-505: an auto-approved log mints immediately, so the SUPPORTER's
+            // account must be able to receive credits — the half of this route
+            // F-384 did not reach (it checks only the organisation). Read under
+            // the supporter's row lock with the shared rule, as F-475 did for the
+            // four volunteering arms; refusing here writes no log, so no
+            // approved-but-unpaid row is left behind.
+            if ($status === 'approved' && $organizationId !== null) {
+                $supporterLocked = DB::selectOne(
+                    'SELECT id, status FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE',
+                    [(int) $relationship->supporter_id, $tenantId]
+                );
+                if (!$supporterLocked || !WalletService::canReceiveCredits($supporterLocked->status ?? null)) {
+                    $supporterCannotReceive = true;
+                    return;
+                }
             }
 
             DB::table('vol_logs')->insert([
@@ -415,6 +433,9 @@ class CaringSupportRelationshipService
         }
         if ($organizationNotActive) {
             return ['success' => false, 'code' => 'ORG_NOT_ACTIVE'];
+        }
+        if ($supporterCannotReceive) {
+            return ['success' => false, 'code' => 'RECIPIENT_NOT_ACTIVE'];
         }
 
         if ($status === 'approved') {
