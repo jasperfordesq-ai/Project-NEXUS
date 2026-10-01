@@ -162,11 +162,88 @@ export function hasFailClosedGuard(code) {
     .some((line) => GUARD_INVOCATION.test(line) && !GUARD_RESULT_DISCARDED.test(line));
 }
 
+/**
+ * Split stripped PHP into its methods: name, visibility, body.
+ *
+ * Brace matching ignores braces inside string literals only roughly (no PHP
+ * string in a runnable file here contains one); a method it cannot close is
+ * returned with the rest of the file as its body, which errs towards
+ * reporting rather than absolving.
+ */
+export function splitMethods(code) {
+  const methods = [];
+  const signature = /^([^\n]*?)\bfunction\s+(\w+)\s*\(/gm;
+  let match;
+  while ((match = signature.exec(code)) !== null) {
+    const prefix = match[1];
+    const name = match[2];
+    let i = signature.lastIndex;
+    // Skip to the body's opening brace; an abstract or interface method ends in `;`.
+    while (i < code.length && code[i] !== '{' && code[i] !== ';') i++;
+    if (code[i] !== '{') continue;
+    let depth = 0;
+    let end = i;
+    for (; end < code.length; end++) {
+      if (code[end] === '{') depth++;
+      else if (code[end] === '}') {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
+    methods.push({
+      name,
+      isPublic: !/\b(?:private|protected)\b/.test(prefix),
+      body: code.slice(i, end + 1),
+    });
+    signature.lastIndex = end + 1;
+  }
+  return methods;
+}
+
+/**
+ * F-494: the methods that create a credential without a fail-closed guard on
+ * their path.
+ *
+ * The guard used to be judged once per FILE, so a guard in `run()` absolved a
+ * second PUBLIC method in the same class that created a `role='god'` account
+ * from a published constant — F-398's own shape, which an operator or another
+ * class can call directly. A credential-creating method now counts as guarded
+ * only if it calls the guard itself, or it is private/protected and every
+ * method in the class that calls it is itself guarded.
+ */
+export function unguardedCredentialMethods(code) {
+  const methods = splitMethods(code);
+  const guarded = new Map(methods.map((m) => [m.name, hasFailClosedGuard(m.body)]));
+  const callsTo = (caller, callee) =>
+    new RegExp(`(?:\\$this\\s*->|self\\s*::|static\\s*::)\\s*${callee}\\s*\\(`).test(caller.body);
+
+  // Fixed point: a non-public method becomes guarded once every caller is.
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const m of methods) {
+      if (guarded.get(m.name) || m.isPublic) continue;
+      const callers = methods.filter((c) => c.name !== m.name && callsTo(c, m.name));
+      if (callers.length > 0 && callers.every((c) => guarded.get(c.name))) {
+        guarded.set(m.name, true);
+        changed = true;
+      }
+    }
+  }
+
+  return methods
+    .filter((m) => SETS_CREDENTIAL.test(m.body) && !guarded.get(m.name))
+    .map((m) => m.name);
+}
+
 /** Every problem this gate finds in one file. */
 export function auditSource(file, source) {
   const problems = [];
   const code = stripComments(source);
-  const failsClosed = hasFailClosedGuard(code);
+  // A file-level guard is still required, and is no longer sufficient on its
+  // own: every method that creates a credential must have one on its path.
+  const unguarded = unguardedCredentialMethods(code);
+  const failsClosed = hasFailClosedGuard(code) && unguarded.length === 0;
 
   // Always wrong: there is no reason to hash an inline literal.
   if (LITERAL_HASH.test(code)) {
@@ -198,7 +275,9 @@ export function auditSource(file, source) {
   if (SETS_CREDENTIAL.test(code) && !failsClosed) {
     problems.push({
       file,
-      problem: 'creates credentials but has no FAIL-CLOSED environment guard',
+      problem: unguarded.length > 0 && hasFailClosedGuard(code)
+        ? `creates credentials in ${unguarded.map((m) => `${m}()`).join(', ')} with no FAIL-CLOSED environment guard on that path`
+        : 'creates credentials but has no FAIL-CLOSED environment guard',
       fix: 'use App\\Support\\Console\\RefusesUnsafeSeeding and CALL refuseUnlessSafeSeedingEnvironment() first — importing it is not a guard.',
     });
   }

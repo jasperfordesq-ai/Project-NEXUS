@@ -231,3 +231,54 @@ test('a real call counts', () => {
     true,
   );
 });
+
+// ── F-494: the guard is judged per METHOD, not per file ──────────────────────
+//
+// A guard in run() used to absolve every other method in the same file, so a
+// second PUBLIC method creating a `role = 'god'` account from a published
+// constant — F-398's own shape, hashed through the constant so the
+// inline-literal rule cannot see it — passed the gate. A public method can be
+// called by an operator or another class without going through run().
+
+const SPLIT_GUARD = (helperVisibility, helperGuard = '') => `<?php
+class PilotCommunitySeeder extends Seeder
+{
+    use RefusesUnsafeSeeding;
+
+    public const DEMO_PASSWORD = 'PilotAccess2026!';
+
+    public function run(): void
+    {
+        if (($refusal = $this->refuseUnlessSafeSeedingEnvironment()) !== null) {
+            return;
+        }
+        $this->seedPlatformOperator('demo');
+    }
+
+    ${helperVisibility} function seedPlatformOperator(string $tenantSlug): void
+    {
+        ${helperGuard}
+        DB::table('users')->insert([
+            'role' => 'god',
+            'password_hash' => Hash::make(self::DEMO_PASSWORD),
+        ]);
+    }
+}
+`;
+
+test('F-494: a guard in run() does not absolve a PUBLIC credential method beside it', () => {
+  const problems = auditSource('database/seeders/PilotCommunitySeeder.php', SPLIT_GUARD('public'));
+  const kinds = problems.map((p) => p.problem).join(' | ');
+
+  assert.ok(kinds.includes('default credential'), `the published constant is reported: ${kinds}`);
+  assert.ok(kinds.includes('seedPlatformOperator()'), `the unguarded method is named: ${kinds}`);
+});
+
+test('F-494 allowed: a PRIVATE helper reached only from the guarded run() passes', () => {
+  assert.deepEqual(auditSource('database/seeders/PilotCommunitySeeder.php', SPLIT_GUARD('private')), []);
+});
+
+test('F-494 allowed: a public credential method that calls the guard itself passes', () => {
+  const guard = 'if (($refusal = $this->refuseUnlessSafeSeedingEnvironment()) !== null) { return; }';
+  assert.deepEqual(auditSource('database/seeders/PilotCommunitySeeder.php', SPLIT_GUARD('public', guard)), []);
+});
