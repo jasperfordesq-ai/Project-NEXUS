@@ -102,9 +102,18 @@ class SafeguardingCorrectiveAuditCommandsTest extends TestCase
             '--acknowledge' => 'CLEAR_UNSUPPORTED_ROLE_FLAGS',
         ]));
 
+        // F-427: an --apply run now names its operator, so the change can be
+        // recorded in gdpr_audit_log.
+        $this->assertSame(2, Artisan::call('safeguarding:audit-listing-vetting-flags', [
+            '--tenant' => (string) $this->testTenantId,
+            '--apply' => true,
+            '--acknowledge' => 'CLEAR_UNSUPPORTED_ROLE_FLAGS',
+        ]));
+
         $this->assertSame(0, Artisan::call('safeguarding:audit-listing-vetting-flags', [
             '--tenant' => (string) $this->testTenantId,
             '--apply' => true,
+            '--actor' => 'Corrective audit command test operator',
             '--acknowledge' => 'CLEAR_UNSUPPORTED_ROLE_FLAGS',
         ]), Artisan::output());
         $this->assertSame(0, (int) DB::table('listing_risk_tags')
