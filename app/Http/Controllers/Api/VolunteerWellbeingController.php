@@ -457,7 +457,8 @@ class VolunteerWellbeingController extends BaseApiController
             $status = $this->query('status');
             $page = $this->queryInt('page', 1, 1, 1000);
             $perPage = $this->queryInt('per_page', 20, 1, 50);
-            $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage);
+            // F-507: an administrator never sees an incident about themselves.
+            $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $userId);
         } else {
             $result = $this->safeguardingService->getIncidentsByReporter($userId, $tenantId);
         }
@@ -479,6 +480,16 @@ class VolunteerWellbeingController extends BaseApiController
 
         // Ownership check: only the reporter or an admin can view
         $isAdmin = $this->isModuleAdmin();
+
+        // F-507: an incident about the viewer is not found for them, admin or
+        // not — unless they reported it, in which case they get the reporter's
+        // whitelisted view below, never the investigators' record.
+        if (\App\Services\SafeguardingService::isIncidentAboutUser($incident, $userId)) {
+            if ((int) ($incident['reported_by'] ?? 0) !== $userId) {
+                return $this->respondWithError('NOT_FOUND', __('api.vol_incident_not_found'), null, 404);
+            }
+            $isAdmin = false;
+        }
         if ((int) ($incident['reported_by'] ?? 0) !== $userId && !$isAdmin) {
             return $this->respondWithError('FORBIDDEN', __('api.vol_incident_view_forbidden'), null, 403);
         }
@@ -502,7 +513,8 @@ class VolunteerWellbeingController extends BaseApiController
         $page = $this->queryInt('page', 1, 1, 1000);
         $perPage = $this->queryInt('per_page', 20, 1, 50);
 
-        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage);
+        // F-507: an administrator never sees an incident about themselves.
+        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $this->getUserId());
         $incidents = $result['items'] ?? [];
 
         return $this->respondWithData([

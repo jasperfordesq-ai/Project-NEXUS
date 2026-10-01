@@ -657,7 +657,25 @@ class SafeguardingService
      *
      * @return array{items: array, total: int, page: int, per_page: int}
      */
-    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null): array
+    /**
+     * F-507: is this incident about the given person — its subject or the person
+     * involved? Nobody handles a safeguarding record about themselves: the same
+     * rule concern notes (F-457/F-462) and caring-community reports (F-213) apply.
+     */
+    public static function isIncidentAboutUser(object|array $incident, int $userId): bool
+    {
+        $incident = (object) $incident;
+        return $userId > 0 && (
+            (int) ($incident->subject_user_id ?? 0) === $userId
+            || (int) ($incident->involved_user_id ?? 0) === $userId
+        );
+    }
+
+    /**
+     * @param int|null $excludeAboutUserId F-507: omit incidents about this person
+     *                                     (the viewing administrator).
+     */
+    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null, ?int $excludeAboutUserId = null): array
     {
         $page = max(1, $page ?? 1);
         $perPage = min(100, max(1, $perPage ?? 20));
@@ -669,6 +687,12 @@ class SafeguardingService
 
             if ($status !== null) {
                 $query->where('si.status', $status);
+            }
+
+            if ($excludeAboutUserId !== null && $excludeAboutUserId > 0) {
+                foreach (['si.subject_user_id', 'si.involved_user_id'] as $column) {
+                    $query->where(fn ($q) => $q->whereNull($column)->orWhere($column, '!=', $excludeAboutUserId));
+                }
             }
 
             $total = (int) (clone $query)->count();
@@ -866,6 +890,17 @@ class SafeguardingService
                 return false;
             }
 
+            // F-507: the subject or involved person may not handle the incident
+            // (treated as not found, like caring reportDetail()), and nobody may
+            // hand it to them.
+            if (self::isIncidentAboutUser($currentIncident, $adminId)) {
+                return false;
+            }
+            if (isset($updates['assigned_to']) && $updates['assigned_to'] !== null
+                && self::isIncidentAboutUser($currentIncident, (int) $updates['assigned_to'])) {
+                return false;
+            }
+
             if (isset($updates['status'])) {
                 $currentStatus = (string) ($currentIncident->status ?? '');
                 $nextStatus = (string) $updates['status'];
@@ -1047,6 +1082,11 @@ class SafeguardingService
                 ->first();
 
             if (!$incident) {
+                return false;
+            }
+
+            // F-507: same rule as updateIncident() (no caller today).
+            if (self::isIncidentAboutUser($incident, $adminId) || self::isIncidentAboutUser($incident, $dlpUserId)) {
                 return false;
             }
 
