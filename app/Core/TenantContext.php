@@ -210,6 +210,28 @@ class TenantContext
         // 2. X-Tenant-ID Header Resolution (for API requests)
         // This allows stateless API clients to specify tenant without URL manipulation
         $headerTenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? null;
+
+        // F-481: an explicitly supplied community name that matches nothing is
+        // refused — but only after step 2.5 has had its chance to read the
+        // caller's own signed token. Held here, returned below. See the block
+        // after step 2.5 for why the refusal is deferred rather than immediate.
+        $unmatchedCommunityName = null;
+
+        // F-479: a community identifier that is PRESENT but cannot be parsed as
+        // a number must FAIL CLOSED, exactly as an unknown-but-numeric one a few
+        // lines below already does. The branch condition used to be the only
+        // test, so an unparseable value skipped the whole branch — including all
+        // of its refusals — and fell through to step 5's master-community
+        // fallback. A sign-up addressed to a community the header could not name
+        // was created in the master community and answered "registration
+        // successful": F-443's harm reached through the sibling header. An EMPTY
+        // value still counts as "no community named" (the X-Tenant-Slug branch
+        // below treats '' the same way), so step 5 keeps serving the root and
+        // the platform's own pages.
+        if ($headerTenantId !== null && $headerTenantId !== '' && !is_numeric($headerTenantId)) {
+            $unmatchedCommunityName = (string) $headerTenantId;
+        }
+
         if ($headerTenantId !== null && is_numeric($headerTenantId)) {
             $headerTenantId = (int) $headerTenantId;
             self::$headerTenantId = $headerTenantId;
@@ -287,7 +309,10 @@ class TenantContext
             // failed closed for "exists but switched off" and open for "does
             // not exist". Step 5 is untouched: it still serves the root and the
             // platform's own pages, which name no community at all.
-            return self::respondWithInvalidTenantError(trim($headerSlug));
+            //
+            // F-481: the refusal is HELD rather than returned here, so that step
+            // 2.5 below can still read the caller's own signed token. See there.
+            $unmatchedCommunityName = trim($headerSlug);
         }
 
         // 2.5. Bearer Token Tenant Resolution (fallback if no header)
@@ -311,6 +336,26 @@ class TenantContext
                     return;
                 }
             }
+        }
+
+        // F-481: an explicitly supplied community name that matches no community
+        // is refused here — after the Bearer-token fallback above, and before
+        // every remaining step. F-443 and F-479 returned this refusal the moment
+        // the name failed to match, which sits BEFORE step 2.5, so a signed-in
+        // member whose client still held a renamed community's name was hard
+        // refused on every request instead of being served the community their
+        // own signed token names. The mobile app stores and sends this header,
+        // and web-uk uses it as its only community signal on the production
+        // path, so a rename took those clients down until they were updated.
+        //
+        // 🔴 This is NOT a reversal of F-443. Failing closed is still the rule:
+        // an ANONYMOUS caller naming a community that does not exist is refused
+        // exactly as before, and the only thing that can now rescue such a
+        // request is the caller's own signature-validated token naming their own
+        // community. Nothing below this line (path slug, session, the master
+        // fallback) can rescue it.
+        if ($unmatchedCommunityName !== null) {
+            return self::respondWithInvalidTenantError($unmatchedCommunityName);
         }
 
         // 3. Path-Based Resolution (for Master/Platform Domain)
