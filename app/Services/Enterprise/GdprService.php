@@ -10,6 +10,7 @@ namespace App\Services\Enterprise;
 
 use App\Core\AudioUploader;
 use App\Services\LegacyVettingEvidenceManager;
+use App\Services\SafeguardingService;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use App\Services\Enterprise\LoggerService;
@@ -622,14 +623,30 @@ class GdprService
         )->fetchAll();
 
         // vol_safeguarding_incidents (reported by user)
-        $safeguardingIncidents = $this->query(
-            "SELECT id, opportunity_id, incident_type, severity, description,
-                    action_taken, status, resolution_notes, created_at
-             FROM vol_safeguarding_incidents
-             WHERE reported_by = ? AND tenant_id = ?
-             ORDER BY created_at DESC",
-            [$userId, $t]
-        )->fetchAll();
+        //
+        // F-488 — the reporter is NOT entitled to the investigators' record.
+        // `action_taken` and `resolution_notes` are written by staff about the
+        // SUBJECT of the concern, and the API has always withheld them from the
+        // reporter (SafeguardingService::REPORTER_VIEW_FIELDS, applied by
+        // VolunteerWellbeingController). This export selected them anyway, so
+        // the Article 15 ZIP disclosed another member's safeguarding outcome.
+        //
+        // The reduction reuses that one shared whitelist rather than a second
+        // hand-written column list — two lists is exactly how the export drifted
+        // away from the API in the first place — so a column added to the table
+        // later cannot leak here without being added to the whitelist too.
+        $reporterVisibleFields = array_flip(SafeguardingService::REPORTER_VIEW_FIELDS);
+        $safeguardingIncidents = array_map(
+            static fn (array $row): array => array_intersect_key($row, $reporterVisibleFields),
+            $this->query(
+                "SELECT id, opportunity_id, incident_type, severity, description,
+                        action_taken, status, resolution_notes, created_at
+                 FROM vol_safeguarding_incidents
+                 WHERE reported_by = ? AND tenant_id = ?
+                 ORDER BY created_at DESC",
+                [$userId, $t]
+            )->fetchAll()
+        );
 
         // vol_custom_field_values (custom form data submitted by user)
         $customFieldValues = $this->query(
@@ -1784,7 +1801,32 @@ class GdprService
                 $this->query("DELETE FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_accessibility_needs WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_guardian_consents WHERE minor_user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
-                $this->query("DELETE FROM vol_safeguarding_training WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+                // F-489 — a safeguarding-training row that records a STAFF
+                // REFUSAL is held, for exactly the reason F-339 gives below for
+                // holding the vetting decision: the subject of a refused staff
+                // decision must not be able to erase the community's record of
+                // it. Everything else the member submitted here is still
+                // deleted, and the held row is minimised to the decision — the
+                // member's own course name, provider, certificate reference and
+                // both evidence pointers go, the same way F-339 minimises a
+                // pointer-bearing vetting_records row.
+                //
+                // Deliberately narrow: whether a VERIFIED or still-pending
+                // training certificate should also survive is an owner policy
+                // question and is not decided here.
+                $this->query(
+                    "DELETE FROM vol_safeguarding_training
+                     WHERE user_id = ? AND tenant_id = ? AND status <> 'rejected'",
+                    [$userId, $this->tenantId]
+                );
+                $this->query(
+                    "UPDATE vol_safeguarding_training
+                     SET training_name = NULL, provider = NULL, certificate_reference = NULL,
+                         certificate_url = NULL, document_path = NULL, expires_at = NULL,
+                         updated_at = NOW()
+                     WHERE user_id = ? AND tenant_id = ? AND status = 'rejected'",
+                    [$userId, $this->tenantId]
+                );
                 $this->query("DELETE FROM vol_certificates WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_shift_waitlist WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_emergency_alert_recipients WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
