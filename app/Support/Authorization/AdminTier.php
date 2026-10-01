@@ -22,6 +22,33 @@ final class AdminTier
     /** @var list<string> */
     public const OPERATIONAL_ROLES = ['broker', 'coordinator'];
 
+    /**
+     * F-508: the same rule as allows(), as a users query constraint — for
+     * choosing the RECIPIENTS of an admin-only alert. A role string alone misses
+     * every administrator granted by flag (the canonical grant since E-074), so
+     * an alert selected by `role IN (...)` can reach nobody. Broker-and-admin
+     * alerts use SafeguardingStaff::scope() instead. The caller still scopes by
+     * tenant_id and status.
+     *
+     * @template TBuilder of \Illuminate\Contracts\Database\Query\Builder
+     * @param TBuilder $query
+     * @return TBuilder
+     */
+    public static function scopeRecipients(\Illuminate\Contracts\Database\Query\Builder $query, string $alias = ''): \Illuminate\Contracts\Database\Query\Builder
+    {
+        $col = $alias !== '' ? $alias . '.' : '';
+
+        return $query
+            ->where(function ($q) use ($col): void {
+                $q->whereIn($col . 'role', self::ROLES)
+                    ->orWhere($col . 'is_admin', 1)
+                    ->orWhere($col . 'is_super_admin', 1)
+                    ->orWhere($col . 'is_tenant_super_admin', 1)
+                    ->orWhere($col . 'is_god', 1);
+            })
+            ->where(fn ($q) => $q->whereNull($col . 'role')->orWhereNotIn($col . 'role', self::OPERATIONAL_ROLES));
+    }
+
     /** @param object|array<string,mixed>|null $user */
     public static function allows(object|array|null $user): bool
     {

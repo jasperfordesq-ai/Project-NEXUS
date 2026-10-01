@@ -86,7 +86,8 @@ class NotifyAdminOfNewGroup implements ShouldQueue
 
             $admins = DB::table('users')
                 ->where('tenant_id', $event->tenantId)
-                ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                // F-508: the shared staff-alert recipient rule (flags included).
+                ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
                 ->where('status', 'active')
                 ->select(['id', 'email', 'first_name', 'name', 'preferred_language'])
                 ->get();

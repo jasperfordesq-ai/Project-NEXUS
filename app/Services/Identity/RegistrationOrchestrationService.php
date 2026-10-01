@@ -509,7 +509,8 @@ class RegistrationOrchestrationService
                 // through sendExchangeEmailImmediately.
                 $admins = \Illuminate\Support\Facades\DB::table('users')
                     ->where('tenant_id', $tenantId)
-                    ->whereIn('role', ['admin', 'broker', 'coordinator'])
+                    // F-508: the shared staff-alert recipient rule (flags included).
+                    ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
                     ->where('status', 'active')
                     ->select(['id', 'preferred_language'])
                     ->get();

@@ -1062,7 +1062,9 @@ class NotificationDispatcher
 
         $admins = DB::table('users')
             ->where('tenant_id', $tenantId)
-            ->whereIn('role', ['admin', 'broker', 'coordinator'])
+            // F-508: broker-and-admin alert — the shared recipient rule, not a
+            // role list that misses flag-granted administrators.
+            ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
             ->where('status', 'active')
             ->select(['id', 'preferred_language'])
             ->get();
@@ -1111,7 +1113,9 @@ class NotificationDispatcher
 
         $admins = DB::table('users')
             ->where('tenant_id', $tenantId)
-            ->whereIn('role', ['admin', 'broker', 'coordinator'])
+            // F-508: broker-and-admin alert — the shared recipient rule, not a
+            // role list that misses flag-granted administrators.
+            ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
             ->where('status', 'active')
             ->select(['id', 'email', 'preferred_language'])
             ->get();
@@ -1647,7 +1651,8 @@ class NotificationDispatcher
 
         $admins = DB::table('users')
             ->where('tenant_id', $tenantId)
-            ->whereIn('role', ['admin', 'super_admin'])
+            // F-508: admin-only alert — AdminTier's rule, flags included.
+            ->where(fn ($q) => \App\Support\Authorization\AdminTier::scopeRecipients($q))
             ->where('status', 'active')
             ->select(['id', 'preferred_language'])
             ->get();
