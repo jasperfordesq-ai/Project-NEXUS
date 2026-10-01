@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Support\Authorization\AdminTier;
 use App\Support\Authorization\SafeguardingStaff;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
@@ -45,6 +46,34 @@ class SafeguardingService
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    /**
+     * F-467 — constrain a user query to the BROKER TIER: everyone who can act
+     * on a safeguarding assignment. The bell points at /broker/safeguarding,
+     * which BrokerRoute gates for admins, brokers and coordinators alike, so
+     * brokers and coordinators are deliberately eligible here and this is NOT
+     * AdminTier::allows().
+     *
+     * The three callers used to list role strings alone. Admin authority is the
+     * four boolean flags as well as the role string — a network administrator
+     * is granted the flag and no role (AdminTier, docs/ROLES-AND-PERMISSIONS.md)
+     * — so without the flags a real network administrator could not be given a
+     * safeguarding case at all, and the incident was left with nobody
+     * responsible for it. Ordinary members remain excluded.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<\App\Models\User>|\Illuminate\Database\Query\Builder $query
+     */
+    private static function scopeToBrokerTier($query): void
+    {
+        $query->whereIn('role', [
+            ...AdminTier::ROLES,
+            ...AdminTier::OPERATIONAL_ROLES,
+        ])
+            ->orWhere('is_admin', 1)
+            ->orWhere('is_super_admin', 1)
+            ->orWhere('is_tenant_super_admin', 1)
+            ->orWhere('is_god', 1);
     }
 
     // =========================================================================
@@ -849,7 +878,7 @@ class SafeguardingService
                 $assigneeExists = User::where('id', (int) $updates['assigned_to'])
                     ->where('tenant_id', $tenantId)
                     ->where('status', 'active')
-                    ->whereIn('role', ['admin', 'tenant_admin', 'super_admin', 'broker', 'coordinator'])
+                    ->where(fn ($q) => self::scopeToBrokerTier($q))
                     ->exists();
 
                 if (!$assigneeExists) {
@@ -960,7 +989,7 @@ class SafeguardingService
             $dlpUser = User::where('id', $dlpUserId)
                 ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
-                ->whereIn('role', ['admin', 'tenant_admin', 'super_admin', 'broker', 'coordinator'])
+                ->where(fn ($q) => self::scopeToBrokerTier($q))
                 ->first();
 
             if (!$dlpUser) {
@@ -1001,7 +1030,7 @@ class SafeguardingService
             $dlpUser = User::where('id', $dlpUserId)
                 ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
-                ->whereIn('role', ['admin', 'tenant_admin', 'super_admin', 'broker', 'coordinator'])
+                ->where(fn ($q) => self::scopeToBrokerTier($q))
                 ->first();
 
             if (!$dlpUser) {

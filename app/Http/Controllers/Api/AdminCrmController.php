@@ -184,8 +184,14 @@ class AdminCrmController extends BaseApiController
         $this->requireAdmin();
         $tenantId = TenantContext::getId();
 
+        // F-467: admin authority is all FOUR boolean flags as well as the role
+        // string — a network administrator is granted is_tenant_super_admin and
+        // no role at all (AdminTier, docs/ROLES-AND-PERMISSIONS.md). Only
+        // is_admin was read here, so a real administrator was missing from the
+        // roster and no work could be routed to them. Brokers and coordinators
+        // are deliberately still absent: this roster is admin-tier.
         $admins = DB::select(
-            "SELECT id, name, email, avatar_url, role FROM users WHERE tenant_id = ? AND (role IN ('admin','tenant_admin','super_admin') OR is_admin = 1) ORDER BY name ASC",
+            "SELECT id, name, email, avatar_url, role FROM users WHERE tenant_id = ? AND (role IN ('admin','tenant_admin','super_admin','god') OR is_admin = 1 OR is_super_admin = 1 OR is_tenant_super_admin = 1 OR is_god = 1) ORDER BY name ASC",
             [$tenantId]
         );
         $admins = array_map(fn($r) => (array)$r, $admins);
@@ -376,12 +382,33 @@ class AdminCrmController extends BaseApiController
     /** DELETE /api/v2/admin/crm/notes/{id} */
     public function deleteNote($id): JsonResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
-        $note = DB::selectOne("SELECT id FROM member_notes WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+        $note = DB::selectOne(
+            "SELECT id, category, user_id FROM member_notes WHERE id = ? AND tenant_id = ?",
+            [$id, $tenantId]
+        );
         if (!$note) {
+            return $this->respondWithError('NOT_FOUND', __('api.note_not_found'), null, 404);
+        }
+
+        // F-462: this route had no self-check, while listNotes(), timeline(),
+        // exportNotes() and updateNote() all exclude a concern note about the
+        // caller (or about anyone the caller does not strictly outrank) under
+        // F-457. The combined effect was that the subject could no longer READ
+        // the concern recorded about them and could still DESTROY it. The same
+        // guard answers it; the refusal is the 404 the read side already gives
+        // for a note this caller cannot see, so it discloses nothing new.
+        if (
+            (string) ($note->category ?? '') === self::CONCERN_CATEGORY
+            && in_array(
+                (int) ($note->user_id ?? 0),
+                $this->concernSubjectsHiddenFromCaller($callerId, $tenantId),
+                true,
+            )
+        ) {
             return $this->respondWithError('NOT_FOUND', __('api.note_not_found'), null, 404);
         }
 
