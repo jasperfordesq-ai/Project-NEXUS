@@ -156,7 +156,8 @@ export function CronJobs() {
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter((j) => j.status === 'active').length;
   const recentSuccesses = jobs.filter((j) => j.last_status === 'success').length;
-  const recentFailures = jobs.filter((j) => j.last_status === 'failed').length;
+  // cron_logs records a failed run as 'error' (enum success/error/running).
+  const recentFailures = jobs.filter((j) => j.last_status === 'error').length;
 
   return (
     <div>
@@ -454,7 +455,7 @@ export function CronJobs() {
                         {job.last_status === 'success' && (
                           <CheckCircle aria-hidden="true" size={12} className="text-success" />
                         )}
-                        {job.last_status === 'failed' && (
+                        {job.last_status === 'error' && (
                           <XCircle aria-hidden="true" size={12} className="text-danger" />
                         )}
                         <span className="text-xs text-foreground" title={formatDate(job.last_run_at)}>

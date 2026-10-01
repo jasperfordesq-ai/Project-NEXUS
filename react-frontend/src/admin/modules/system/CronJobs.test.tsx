@@ -268,6 +268,46 @@ describe('CronJobs', () => {
     ).toBe(true);
   });
 
+  // cron_logs.status is enum('success','error','running'); the API passes a
+  // failed run through as 'error', never 'failed'. Counting only 'failed'
+  // made every failure invisible: no red mark and a "Last Failed" of 0.
+  it('counts a job whose last run recorded "error" as a failure', async () => {
+    mockAdminSystem.getCronJobs.mockResolvedValue({
+      success: true,
+      data: [
+        makeJob({ id: 1, slug: 'daily-digest', translation_key: 'daily_digest', last_status: 'success' }),
+        makeJob({ id: 2, slug: 'notify-hot-matches', translation_key: 'notify_hot_matches', last_status: 'error' }),
+      ],
+    });
+    const { CronJobs } = await import('./CronJobs');
+    render(<CronJobs />);
+    await waitFor(() => {
+      expect(screen.getByText('Hot match notifications')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Last Failed').nextElementSibling).toHaveTextContent('1');
+    expect(screen.getByText('Last Succeeded').nextElementSibling).toHaveTextContent('1');
+  });
+
+  // The page imports StatusBadge from components/DataTable, which the
+  // ../../components mock above does not intercept, so this is the real label.
+  it('labels the last-run status instead of showing "Unknown"', async () => {
+    mockAdminSystem.getCronJobs.mockResolvedValue({
+      success: true,
+      data: [
+        makeJob({ id: 1, slug: 'daily-digest', translation_key: 'daily_digest', last_status: 'success' }),
+        makeJob({ id: 2, slug: 'notify-hot-matches', translation_key: 'notify_hot_matches', last_status: 'error' }),
+      ],
+    });
+    const { CronJobs } = await import('./CronJobs');
+    render(<CronJobs />);
+    await waitFor(() => {
+      expect(screen.getByText('Hot match notifications')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Success')).toBeInTheDocument();
+    expect(screen.getByText('Error')).toBeInTheDocument();
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+  });
+
   it('groups jobs by category', async () => {
     mockAdminSystem.getCronJobs.mockResolvedValue({
       success: true,

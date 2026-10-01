@@ -318,6 +318,19 @@ describe('StatusBadge', () => {
     expect(chip).toHaveAttribute('data-color', color);
   });
 
+  // cron_logs records a run as 'success' or 'error'. Neither had a label, so
+  // the Cron Jobs page showed "Unknown" for every job.
+  it.each([
+    ['success', 'Success', 'success'],
+    ['error', 'Error', 'danger'],
+  ])('renders the cron run status %s as %s', async (status, label, color) => {
+    const { StatusBadge } = await import('./DataTable');
+    render(<StatusBadge status={status} />);
+    const chip = screen.getByTestId('chip');
+    expect(chip).toHaveTextContent(label);
+    expect(chip).toHaveAttribute('data-color', color);
+  });
+
   it('renders with default color for unknown status', async () => {
     const { StatusBadge } = await import('./DataTable');
     render(<StatusBadge status="unknown_xyz" />);

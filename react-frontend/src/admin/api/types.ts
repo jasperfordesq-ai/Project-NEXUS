@@ -1238,7 +1238,8 @@ export interface CronJob {
   /** @deprecated Display copy is translated client-side from translation_key. */
   description?: string;
   last_run_at: string | null;
-  last_status: 'success' | 'failed' | null;
+  /** cron_logs.status; a run still in progress is reported as null. */
+  last_status: 'success' | 'error' | null;
   next_run_at: string | null;
 }
 
