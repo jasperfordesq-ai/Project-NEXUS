@@ -1258,7 +1258,11 @@
     "only_drafts_editable": "Somente versões de rascunho podem ser editadas. As versões publicadas estão bloqueadas.",
     "unsaved_changes_title": "Descartar alterações não salvas?",
     "unsaved_changes_message": "Você tem alterações não salvas. Se você sair agora, eles estarão perdidos.",
-    "discard_changes": "Descartar alterações"
+    "discard_changes": "Descartar alterações",
+    "publication_email_info": "Publicar uma política coloca automaticamente em fila um e-mail informativo para todas as contas ativas, incluindo administradores e membros que cancelaram a subscrição das newsletters. Esta ação só coloca em fila os destinatários em falta; não reenvia e-mails já enviados com êxito. Endereços inválidos e suprimidos continuam bloqueados.",
+    "emails_queued": "E-mails de políticas colocados em fila. Consulte os totais de entrega para acompanhar o progresso.",
+    "email_summary_help": "Obrigatório antes de publicar. Este texto é incluído no e-mail enviado a cada conta ativa. Para uma política nova, explique a sua finalidade; para uma atualização, descreva o que mudou.",
+    "email_delivery_summary": "Entrega de e-mails — em fila: {{pending}}; enviados ao serviço de e-mail: {{sent}}; falhados: {{failed}}; suprimidos: {{suppressed}}; ignorados: {{skipped}}; a rever: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Baixar",

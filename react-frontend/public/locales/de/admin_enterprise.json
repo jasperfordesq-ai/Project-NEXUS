@@ -1254,7 +1254,11 @@
     "only_drafts_editable": "Es können nur Entwurfsversionen bearbeitet werden. Veröffentlichte Versionen sind gesperrt.",
     "unsaved_changes_title": "Nicht gespeicherte Änderungen verwerfen?",
     "unsaved_changes_message": "Sie haben nicht gespeicherte Änderungen. Wenn Sie jetzt gehen, gehen sie verloren.",
-    "discard_changes": "Änderungen verwerfen"
+    "discard_changes": "Änderungen verwerfen",
+    "publication_email_info": "Beim Veröffentlichen einer Richtlinie wird automatisch eine Informations-E-Mail an alle aktiven Konten eingereiht, einschließlich Administratoren und Mitgliedern, die Newsletter abbestellt haben. Diese Aktion reiht nur fehlende Empfänger ein; erfolgreich versendete E-Mails werden nicht erneut gesendet. Ungültige und gesperrte Adressen bleiben blockiert.",
+    "emails_queued": "Richtlinien-E-Mails eingereiht. Den Fortschritt sehen Sie in den Zustellsummen.",
+    "email_summary_help": "Vor dem Veröffentlichen erforderlich. Dieser Text wird in die E-Mail an jedes aktive Konto aufgenommen. Erläutern Sie bei einer neuen Richtlinie ihren Zweck; beschreiben Sie bei einer Aktualisierung, was sich geändert hat.",
+    "email_delivery_summary": "E-Mail-Zustellung — eingereiht: {{pending}}; an den E-Mail-Dienst übermittelt: {{sent}}; fehlgeschlagen: {{failed}}; gesperrt: {{suppressed}}; übersprungen: {{skipped}}; zu prüfen: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Herunterladen",

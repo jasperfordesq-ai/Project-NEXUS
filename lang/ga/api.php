@@ -588,6 +588,7 @@ return [
     'legal_doc_update_failed' => 'Theip ar an doiciméad dlíthiúil a nuashonrú',
     'legal_doc_delete_failed' => 'Theip ar an doiciméad dlíthiúil a scriosadh',
     'legal_doc_type_exists' => 'Tá cáipéis den chineál seo ann cheana féin do do phobal. Cuir an ceann atá ann in eagar ina áit.',
+    'policy_summary_required' => 'Cuir achoimre ar na hathruithe leis sula bhfoilsíonn tú. Cuirfear é sa ríomhphost a sheoltar chuig gach cuntas gníomhach.',
     'legal_doc_type_locked' => 'Ní féidir cineál na cáipéise a athrú tar éis é a chruthú.',
     'legal_doc_has_published_record' => 'Foilsíodh an doiciméad seo nó ghlac baill leis, mar sin scriosfadh a scriosadh a dtaifid ghlactha. Díghníomhachtaigh é ina ionad sin.',
     'invalid_type' => 'Luach cineáil neamhbhailí.',

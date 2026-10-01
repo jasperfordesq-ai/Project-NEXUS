@@ -588,6 +588,7 @@ return [
     'legal_doc_update_failed' => 'Échec de la mise à jour du document juridique',
     'legal_doc_delete_failed' => 'Échec de la suppression du document juridique',
     'legal_doc_type_exists' => 'Un document de ce type existe déjà pour votre communauté. Modifiez plutôt celui existant.',
+    'policy_summary_required' => 'Ajoutez un résumé des modifications avant de publier. Il sera inclus dans l’e-mail envoyé à tous les comptes actifs.',
     'legal_doc_type_locked' => 'Le type de document ne peut pas être modifié après sa création.',
     'legal_doc_has_published_record' => 'Ce document a été publié ou accepté par des membres ; le supprimer détruirait leurs enregistrements d\'acceptation. Désactivez-le plutôt.',
     'invalid_type' => 'Valeur de type non valide.',

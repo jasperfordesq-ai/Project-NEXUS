@@ -1254,7 +1254,11 @@
     "only_drafts_editable": "Alleen conceptversies kunnen worden bewerkt. Gepubliceerde versies zijn vergrendeld.",
     "unsaved_changes_title": "Niet-opgeslagen wijzigingen verwijderen?",
     "unsaved_changes_message": "U heeft niet-opgeslagen wijzigingen. Als je nu weggaat, zijn ze verloren.",
-    "discard_changes": "Wijzigingen negeren"
+    "discard_changes": "Wijzigingen negeren",
+    "publication_email_info": "Bij het publiceren van een beleid wordt automatisch een informatieve e-mail in de wachtrij gezet voor alle actieve accounts, inclusief beheerders en leden die zich voor nieuwsbrieven hebben afgemeld. Deze actie zet alleen ontbrekende ontvangers in de wachtrij; geslaagde e-mails worden niet opnieuw verstuurd. Ongeldige en geblokkeerde adressen blijven geblokkeerd.",
+    "emails_queued": "Beleidsmails in de wachtrij gezet. Bekijk de afleveringstotalen voor de voortgang.",
+    "email_summary_help": "Verplicht vóór publicatie. Deze tekst wordt opgenomen in de e-mail aan elk actief account. Leg bij een nieuw beleid het doel uit; beschrijf bij een update wat er is gewijzigd.",
+    "email_delivery_summary": "E-mailaflevering — in wachtrij: {{pending}}; aangeboden aan de e-maildienst: {{sent}}; mislukt: {{failed}}; geblokkeerd: {{suppressed}}; overgeslagen: {{skipped}}; te controleren: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Downloaden",

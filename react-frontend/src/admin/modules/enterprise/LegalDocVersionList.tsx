@@ -90,6 +90,8 @@ export default function LegalDocVersionList() {
         setSelectedVersion(null);
         loadVersions();
       } else {
+        // admin-i18n-ignore: localized server message — AdminLegalDocController's
+        // publish refusals (including the missing change summary) all go through __().
         error(response.error || t('enterprise.failed_to_publish_version'));
       }
     } catch {

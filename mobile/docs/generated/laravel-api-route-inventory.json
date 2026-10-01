@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2742,
-  "api_route_rows": 2707,
-  "distinct_api_paths": 2252,
+  "total_registered_routes": 2746,
+  "api_route_rows": 2711,
+  "distinct_api_paths": 2256,
   "route_source_fingerprint": {
-    "digest": "d77cdc9c56750bb91a853fd5ce53c4cba7436350c39be4f95d16b1a39a133110",
+    "digest": "1f9a1cda113301240b34c112176a5888d79e58b1549661a8df918634db90a892",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "cd5bc688e3c6e124a114a835b8f31e1d18ec1459c5113fd29af7507da0e87fab"
+        "sha256": "3c045cab029a7b9a2d0196047e9c02d432c0346a8a792126282563891600a2fa"
       },
       {
         "file": "routes/channels.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "e508d68f1571ff7ee5cd1627268110ea968f0f462bec61b8e31a022e12ac632a"
+        "sha256": "66afe90422d7ef13db4cdb41558cae5adb6df7e171be59f0e8006da39c260f5f"
       }
     ]
   },
@@ -2132,11 +2132,17 @@
     "/api/v2/admin/legal-documents/compliance": [
       "GET"
     ],
+    "/api/v2/admin/legal-documents/publication-emails": [
+      "GET"
+    ],
     "/api/v2/admin/legal-documents/versions/{versionId}/acceptances": [
       "GET"
     ],
     "/api/v2/admin/legal-documents/versions/{versionId}/publish": [
       "POST"
+    ],
+    "/api/v2/admin/legal-documents/versions/{vid}/email-stats": [
+      "GET"
     ],
     "/api/v2/admin/legal-documents/{docId}/acceptances/export": [
       "GET"
@@ -5564,6 +5570,12 @@
     ],
     "/api/v2/kb/{id}/feedback": [
       "POST"
+    ],
+    "/api/v2/legal-publication/click/{deliveryId}/{signature}": [
+      "GET"
+    ],
+    "/api/v2/legal-publication/open/{deliveryId}/{signature}": [
+      "GET"
     ],
     "/api/v2/legal/acceptance/accept-all": [
       "POST"

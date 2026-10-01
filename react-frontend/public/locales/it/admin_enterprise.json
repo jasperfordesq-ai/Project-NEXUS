@@ -1258,7 +1258,11 @@
     "only_drafts_editable": "È possibile modificare solo le versioni bozza. Le versioni pubblicate sono bloccate.",
     "unsaved_changes_title": "Eliminare le modifiche non salvate?",
     "unsaved_changes_message": "Sono presenti modifiche non salvate. Se te ne vai adesso, saranno perduti.",
-    "discard_changes": "Annulla modifiche"
+    "discard_changes": "Annulla modifiche",
+    "publication_email_info": "La pubblicazione di un’informativa mette automaticamente in coda un’email informativa per tutti gli account attivi, compresi gli amministratori e i membri che hanno annullato l’iscrizione alle newsletter. Questa azione mette in coda solo i destinatari mancanti; non reinvia le email già inviate correttamente. Gli indirizzi non validi e soppressi restano bloccati.",
+    "emails_queued": "Email sulle informative messe in coda. Controlla i totali di consegna per l’avanzamento.",
+    "email_summary_help": "Obbligatorio prima della pubblicazione. Questo testo è incluso nell’email inviata a ogni account attivo. Per una nuova informativa spiegane lo scopo; per un aggiornamento descrivi cosa è cambiato.",
+    "email_delivery_summary": "Consegna email — in coda: {{pending}}; inoltrate al servizio di posta: {{sent}}; non riuscite: {{failed}}; soppresse: {{suppressed}}; saltate: {{skipped}}; da verificare: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Scarica",

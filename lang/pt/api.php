@@ -588,6 +588,7 @@ return [
     'legal_doc_update_failed' => 'Falha ao atualizar o documento legal',
     'legal_doc_delete_failed' => 'Falha ao excluir documento legal',
     'legal_doc_type_exists' => 'Já existe um documento deste tipo para a sua comunidade. Edite o existente.',
+    'policy_summary_required' => 'Adicione um resumo das alterações antes de publicar. Será incluído no e-mail enviado a todas as contas ativas.',
     'legal_doc_type_locked' => 'O tipo de documento não pode ser alterado após a criação.',
     'legal_doc_has_published_record' => 'Este documento foi publicado ou aceite pelos membros, por isso eliminá-lo destruiria os registos de aceitação. Desative-o em vez disso.',
     'invalid_type' => 'Valor de tipo inválido.',

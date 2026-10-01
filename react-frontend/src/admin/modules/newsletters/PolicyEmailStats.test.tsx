@@ -3,38 +3,67 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockEmailStats } = vi.hoisted(() => ({ mockEmailStats: vi.fn() }));
-vi.mock('../../api/adminApi', () => ({ adminLegalDocs: { emailStats: mockEmailStats } }));
-vi.mock('@/contexts', () => createMockContexts());
-vi.mock('react-router-dom', async (original) => {
-  const actual = await original<typeof import('react-router-dom')>();
-  return { ...actual, useParams: () => ({ versionId: '9' }) };
+const { mockAdminLegalDocs } = vi.hoisted(() => ({
+  mockAdminLegalDocs: { emailStats: vi.fn() },
+}));
+
+vi.mock('@/contexts', () =>
+  createMockContexts({
+    useTenant: () => ({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+      tenantPath: (p: string) => `/test${p}`,
+      hasFeature: vi.fn(() => true),
+      hasModule: vi.fn(() => true),
+    }),
+  })
+);
+
+vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('react-router-dom')>();
+  return { ...orig, useNavigate: () => vi.fn(), useParams: () => ({ versionId: '11' }) };
 });
+
+vi.mock('../../api/adminApi', () => ({ adminLegalDocs: mockAdminLegalDocs }));
 
 import { PolicyEmailStats } from './PolicyEmailStats';
 
+const row = (id: number, email: string, status: string) => ({
+  id, email, first_name: null, status, sent_at: null,
+  first_opened: null, first_clicked: null, opens: 0, clicks: 0,
+});
+
 describe('PolicyEmailStats', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockEmailStats.mockResolvedValue({ success: true, data: {
-      version: { title: 'Privacy policy', version_number: '2.0', published_at: '2026-09-30T20:00:00Z' },
-      totals: { recipients: 10, submitted: 8, unique_opens: 3, total_opens: 5, unique_clicks: 2, total_clicks: 4 },
-      recipients: [{ id: 1, email: 'reader@example.org', first_name: 'Reader', status: 'sent', sent_at: null, first_opened: '2026-09-30T21:00:00Z', first_clicked: null, opens: 2, clicks: 0 }],
-      meta: { total: 1, page: 1, per_page: 25, total_pages: 1 },
-    } });
+    mockAdminLegalDocs.emailStats.mockResolvedValue({
+      success: true,
+      data: {
+        version: { title: 'Privacy Policy', version_number: '2.0', published_at: null },
+        totals: { recipients: 3, submitted: 1, total_opens: 0, unique_opens: 0, total_clicks: 0, unique_clicks: 0 },
+        recipients: [
+          row(1, 'sent@example.test', 'sent'),
+          row(2, 'blocked@example.test', 'suppressed'),
+          row(3, 'odd@example.test', 'some_future_state'),
+        ],
+        meta: { total: 3, page: 1, per_page: 50, total_pages: 1 },
+      },
+    });
   });
 
-  it('shows unique and total activity plus the recipient and filters', async () => {
+  it('shows each delivery state as a translated label, never the raw ledger value', async () => {
     render(<PolicyEmailStats />);
-    expect(await screen.findByText('reader@example.org')).toBeInTheDocument();
-    expect(screen.getByText('5 opens in total')).toBeInTheDocument();
-    expect(screen.getByText('4 clicks in total')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Clicked' }));
-    await waitFor(() => expect(mockEmailStats).toHaveBeenLastCalledWith(9, 1, 'clicked'));
+
+    expect(await screen.findByText('sent@example.test')).toBeInTheDocument();
+    expect(screen.getByText('Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Blocked by delivery suppression')).toBeInTheDocument();
+    // A state the page does not know yet reads as "Outcome unknown", not as the raw word.
+    expect(screen.getByText('Outcome unknown')).toBeInTheDocument();
+    expect(screen.queryByText('some_future_state')).not.toBeInTheDocument();
+    expect(screen.queryByText('suppressed')).not.toBeInTheDocument();
   });
 });

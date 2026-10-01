@@ -16,6 +16,13 @@ import { adminLegalDocs } from '../../api/adminApi';
 type Stats = NonNullable<Awaited<ReturnType<typeof adminLegalDocs.emailStats>>['data']>;
 type Filter = 'all' | 'opened' | 'clicked' | 'not_opened';
 
+// Delivery-ledger states written by LegalPublicationDeliveryService. Anything
+// else (a state added server-side later) shows as "unknown" rather than raw.
+const DELIVERY_STATUSES = ['pending', 'retry', 'sending', 'sent', 'failed', 'skipped', 'suppressed', 'unknown'] as const;
+type DeliveryStatus = typeof DELIVERY_STATUSES[number];
+const deliveryStatus = (value: string | null | undefined): DeliveryStatus =>
+  (DELIVERY_STATUSES as readonly string[]).includes(value ?? '') ? value as DeliveryStatus : 'unknown';
+
 export function PolicyEmailStats() {
   const { versionId } = useParams<{ versionId: string }>();
   const navigate = useNavigate();
@@ -78,7 +85,7 @@ export function PolicyEmailStats() {
           <TableBody items={data.recipients} isLoading={loading} emptyContent={t('newsletters.policy_email_empty')}>
             {(row) => <TableRow key={row.id}>
               <TableCell>{row.email ?? row.first_name ?? '—'}</TableCell>
-              <TableCell>{row.status}</TableCell>
+              <TableCell>{t(`newsletters.policy_email_delivery_status_${deliveryStatus(row.status)}`)}</TableCell>
               <TableCell>{Number(row.opens ?? 0)}</TableCell>
               <TableCell>{Number(row.clicks ?? 0)}</TableCell>
               <TableCell>{date(row.first_opened)}</TableCell>

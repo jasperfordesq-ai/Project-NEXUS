@@ -1258,7 +1258,11 @@
     "only_drafts_editable": "Seules les versions brouillon peuvent être modifiées. Les versions publiées sont verrouillées.",
     "unsaved_changes_title": "Supprimer les modifications non enregistrées ?",
     "unsaved_changes_message": "Vous avez des modifications non enregistrées. Si vous partez maintenant, ils seront perdus.",
-    "discard_changes": "Ignorer les modifications"
+    "discard_changes": "Ignorer les modifications",
+    "publication_email_info": "La publication d’une politique met automatiquement en file d’attente un e-mail d’information pour tous les comptes actifs, y compris les administrateurs et les membres désabonnés des newsletters. Cette action ne met en file que les destinataires manquants ; elle ne renvoie pas les e-mails déjà envoyés avec succès. Les adresses invalides et bloquées restent bloquées.",
+    "emails_queued": "E-mails de politique mis en file d’attente. Consultez les totaux de distribution pour suivre la progression.",
+    "email_summary_help": "Obligatoire avant la publication. Ce texte est inclus dans l’e-mail envoyé à chaque compte actif. Pour une nouvelle politique, expliquez son objet ; pour une mise à jour, décrivez ce qui a changé.",
+    "email_delivery_summary": "Distribution des e-mails — en file : {{pending}} ; transmis au service de messagerie : {{sent}} ; échecs : {{failed}} ; bloqués : {{suppressed}} ; ignorés : {{skipped}} ; à vérifier : {{unknown}}."
   },
   "log_files_labels": {
     "download": "Télécharger",

@@ -1262,7 +1262,11 @@
     "only_drafts_editable": "Można edytować tylko wersje robocze. Opublikowane wersje są zablokowane.",
     "unsaved_changes_title": "Odrzucić niezapisane zmiany?",
     "unsaved_changes_message": "Masz niezapisane zmiany. Jeśli teraz odejdziesz, oni będą zgubieni.",
-    "discard_changes": "Odrzuć zmiany"
+    "discard_changes": "Odrzuć zmiany",
+    "publication_email_info": "Opublikowanie zasad automatycznie dodaje do kolejki informacyjny e-mail do wszystkich aktywnych kont, w tym administratorów i członków wypisanych z newsletterów. Ta czynność dodaje do kolejki tylko brakujących odbiorców; nie wysyła ponownie e-maili, które zostały już wysłane. Nieprawidłowe i zablokowane adresy pozostają zablokowane.",
+    "emails_queued": "E-maile o zasadach dodano do kolejki. Postęp sprawdzisz w sumach doręczeń.",
+    "email_summary_help": "Wymagane przed publikacją. Ten tekst zostanie dołączony do e-maila wysyłanego do każdego aktywnego konta. W przypadku nowych zasad wyjaśnij ich cel; w przypadku aktualizacji opisz, co się zmieniło.",
+    "email_delivery_summary": "Doręczanie e-maili — w kolejce: {{pending}}; przekazane do usługi pocztowej: {{sent}}; nieudane: {{failed}}; zablokowane: {{suppressed}}; pominięte: {{skipped}}; do sprawdzenia: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Pobierz",

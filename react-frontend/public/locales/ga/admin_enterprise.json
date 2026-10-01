@@ -1266,7 +1266,11 @@
     "only_drafts_editable": "Ní féidir ach dréachtleaganacha a chur in eagar. Tá leaganacha foilsithe faoi ghlas.",
     "unsaved_changes_title": "An bhfuil fonn ort na hathruithe gan sábháil a scriosadh?",
     "unsaved_changes_message": "Tá athruithe gan sábháil agat. Má fhágann tú anois, beidh siad caillte.",
-    "discard_changes": "Scrios na hathruithe"
+    "discard_changes": "Scrios na hathruithe",
+    "publication_email_info": "Nuair a fhoilsítear polasaí, cuirtear ríomhphost faisnéise sa scuaine go huathoibríoch do gach cuntas gníomhach, lena n-áirítear riarthóirí agus baill a dhíliostáil ó nuachtlitreacha. Ní chuireann an gníomh seo ach faighteoirí atá in easnamh sa scuaine; ní sheolann sé arís ríomhphoist a seoladh go rathúil. Fanann seoltaí neamhbhailí agus seoltaí faoi chosc blocáilte.",
+    "emails_queued": "Cuireadh ríomhphoist pholasaí sa scuaine. Féach ar na hiomláin seachadta chun an dul chun cinn a fheiceáil.",
+    "email_summary_help": "Riachtanach roimh fhoilsiú. Cuirtear an téacs seo sa ríomhphost a sheoltar chuig gach cuntas gníomhach. I gcás polasaí nua, mínigh a chuspóir; i gcás nuashonraithe, déan cur síos ar a bhfuil athraithe.",
+    "email_delivery_summary": "Seachadadh ríomhphoist — sa scuaine: {{pending}}; curtha isteach chuig an tseirbhís ríomhphoist: {{sent}}; theip: {{failed}}; faoi chosc: {{suppressed}}; scipeáilte: {{skipped}}; le hathbhreithniú: {{unknown}}."
   },
   "log_files_labels": {
     "download": "Íosluchtaigh",

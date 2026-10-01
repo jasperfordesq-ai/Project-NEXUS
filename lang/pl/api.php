@@ -603,6 +603,7 @@ return [
     'legal_doc_update_failed' => 'Nie udało się zaktualizować dokumentu prawnego',
     'legal_doc_delete_failed' => 'Nie udało się usunąć dokumentu prawnego',
     'legal_doc_type_exists' => 'Dokument tego typu już istnieje dla Twojej społeczności. Zamiast tego edytuj istniejący.',
+    'policy_summary_required' => 'Przed publikacją dodaj podsumowanie zmian. Zostanie ono dołączone do e-maila wysyłanego do wszystkich aktywnych kont.',
     'legal_doc_type_locked' => 'Typu dokumentu nie można zmienić po utworzeniu.',
     'legal_doc_has_published_record' => 'Ten dokument został opublikowany lub zaakceptowany przez członków, więc jego usunięcie zniszczyłoby zapisy ich akceptacji. Zamiast tego go dezaktywuj.',
     'invalid_type' => 'Nieprawidłowa wartość typu.',

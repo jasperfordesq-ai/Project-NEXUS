@@ -494,7 +494,15 @@
     "status_draft": "Draft",
     "status_scheduled": "Scheduled",
     "status_sending": "Sending",
-    "status_sent": "Sent"
+    "status_sent": "Sent",
+    "policy_email_delivery_status_pending": "Queued",
+    "policy_email_delivery_status_retry": "Waiting to retry",
+    "policy_email_delivery_status_sending": "Sending",
+    "policy_email_delivery_status_sent": "Submitted",
+    "policy_email_delivery_status_failed": "Failed",
+    "policy_email_delivery_status_skipped": "Skipped",
+    "policy_email_delivery_status_suppressed": "Blocked by delivery suppression",
+    "policy_email_delivery_status_unknown": "Outcome unknown"
   },
   "newsletter_form": {
     "ab_test_label": "Ab Test",
