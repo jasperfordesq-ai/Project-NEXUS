@@ -74,7 +74,12 @@ class SafeguardingReviewFlagsCommand extends Command
     private function processReminders(Carbon $olderThan, Carbon $now, bool $dryRun): int
     {
         $dueRows = DB::table('user_safeguarding_preferences as p')
-            ->join('users as u', 'u.id', '=', 'p.user_id')
+            // F-424: the member must still belong to the record's community.
+            // User::moveTenant() moves users.tenant_id only, so joining on id
+            // alone alerted the FORMER community's staff about a member who left.
+            ->join('users as u', function ($join): void {
+                $join->on('u.id', '=', 'p.user_id')->on('u.tenant_id', '=', 'p.tenant_id');
+            })
             ->join('tenants as t', 't.id', '=', 'p.tenant_id')
             ->join('tenant_safeguarding_options as o', 'o.id', '=', 'p.option_id')
             ->whereNull('p.revoked_at')
@@ -162,7 +167,12 @@ class SafeguardingReviewFlagsCommand extends Command
     private function processEscalations(Carbon $olderThan, Carbon $now, bool $dryRun): int
     {
         $dueRows = DB::table('user_safeguarding_preferences as p')
-            ->join('users as u', 'u.id', '=', 'p.user_id')
+            // F-424: the member must still belong to the record's community.
+            // User::moveTenant() moves users.tenant_id only, so joining on id
+            // alone alerted the FORMER community's staff about a member who left.
+            ->join('users as u', function ($join): void {
+                $join->on('u.id', '=', 'p.user_id')->on('u.tenant_id', '=', 'p.tenant_id');
+            })
             ->join('tenant_safeguarding_options as o', 'o.id', '=', 'p.option_id')
             ->whereNull('p.revoked_at')
             ->whereNull('p.review_confirmed_at')

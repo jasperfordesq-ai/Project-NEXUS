@@ -30,7 +30,9 @@ class VettingRenewalRemindersCommand extends Command
         $today = CarbonImmutable::today();
         $rows = DB::table('member_vetting_attestations as a')
             ->join('users as member', function ($join): void {
+                // F-424: same community as the attestation — see SafeguardingReviewFlagsCommand.
                 $join->on('member.id', '=', 'a.user_id')
+                    ->on('member.tenant_id', '=', 'a.tenant_id')
                     ->whereNotIn('member.status', ['deleted', 'deactivated']);
             })
             ->join('tenants as tenant', 'tenant.id', '=', 'a.tenant_id')
