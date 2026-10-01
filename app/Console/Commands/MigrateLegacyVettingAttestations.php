@@ -427,6 +427,9 @@ class MigrateLegacyVettingAttestations extends Command
                 'user_id' => $memberId,
                 'scheme_code' => $policy['scheme_code'],
                 'attestation_code' => $policy['attestation_code'],
+                // F-426 — say which check this is a clearance for, the same way
+                // the ordinary broker route does.
+                'certification_codes' => json_encode($this->certificationCodes($policy), JSON_THROW_ON_ERROR),
                 'purpose_code' => $policy['purpose_code'],
                 'scope_type' => $policy['scope_type'],
                 'scope_identifier' => $policy['scope_identifier'],
@@ -581,6 +584,41 @@ class MigrateLegacyVettingAttestations extends Command
             && ($policy['scheme_code'] ?? null) === 'dbs_england_wales'
             && ($policy['attestation_code'] ?? null) === self::LEGACY_TYPE
             && is_string($policy['policy_version'] ?? null)
-            && $policy['policy_version'] !== '';
+            && $policy['policy_version'] !== ''
+            // F-426 — a clearance this command cannot NAME is not minted at all.
+            && count($this->certificationCodes($policy)) === 1;
+    }
+
+    /**
+     * F-426 — the certification code(s) the community's configured jurisdiction
+     * defines, derived exactly as the ordinary broker route derives them: when a
+     * jurisdiction offers a single option that option is the decision's code,
+     * and a decision that names no code is refused outright
+     * (`INVALID_VETTING_CERTIFICATION_CODE` in
+     * `MemberVettingAttestationService::normalizeCertificationDetails()`).
+     *
+     * The import supplied no `certification_codes` at all, so every imported
+     * clearance was stored NULL — a confirmed clearance that does not say which
+     * check it is a clearance for, on a column brokers read on the vetting
+     * roster. Every human-made attestation carries the code; now so does every
+     * imported one.
+     *
+     * @param  array<string, mixed>  $policy
+     * @return list<string>
+     */
+    private function certificationCodes(array $policy): array
+    {
+        $options = is_array($policy['certification_options'] ?? null)
+            ? $policy['certification_options']
+            : [];
+
+        $codes = [];
+        foreach ($options as $option) {
+            if (is_array($option) && is_string($option['code'] ?? null) && $option['code'] !== '') {
+                $codes[] = (string) $option['code'];
+            }
+        }
+
+        return array_values(array_unique($codes));
     }
 }
