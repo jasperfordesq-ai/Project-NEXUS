@@ -162,7 +162,8 @@ class TenantContext
                 // accept it only when its full active ancestry reaches this
                 // host's tenant, never an unrelated community.
                 $apiTenantId = $_SERVER['HTTP_X_TENANT_ID'] ?? null;
-                if (str_starts_with((string) $path, '/api/') && is_numeric($apiTenantId)) {
+                // F-504: a whole community number only — `1.9` must not become 1.
+                if (str_starts_with((string) $path, '/api/') && self::isCanonicalTenantId($apiTenantId)) {
                     $childRow = DB::table('tenants')
                         ->where('id', (int) $apiTenantId)
                         ->where('is_active', 1)
@@ -228,12 +229,19 @@ class TenantContext
         // value still counts as "no community named" (the X-Tenant-Slug branch
         // below treats '' the same way), so step 5 keeps serving the root and
         // the platform's own pages.
-        if ($headerTenantId !== null && $headerTenantId !== '' && !is_numeric($headerTenantId)) {
+        //
+        // F-504: "parseable" means a WHOLE community number. The test used to be
+        // `is_numeric()`, which also accepts `1.9`, `1e0` and `+1`; the `(int)`
+        // cast below then truncated them, so `1.9` was served — and could sign
+        // up in — community 1, the master community. F-479 fixed the refusing
+        // half of that one-line test; this is the accepting half. Anything that
+        // is not a canonical integer now takes F-479's refusal path.
+        if ($headerTenantId !== null && $headerTenantId !== '' && !self::isCanonicalTenantId($headerTenantId)) {
             $unmatchedCommunityName = (string) $headerTenantId;
         }
 
-        if ($headerTenantId !== null && is_numeric($headerTenantId)) {
-            $headerTenantId = (int) $headerTenantId;
+        if ($headerTenantId !== null && self::isCanonicalTenantId($headerTenantId)) {
+            $headerTenantId = (int) trim((string) $headerTenantId);
             self::$headerTenantId = $headerTenantId;
 
             // Extract tenant_id from Bearer token (if present) for mismatch detection
@@ -1017,6 +1025,24 @@ class TenantContext
         }
 
         return (int) $payload['tenant_id'];
+    }
+
+    /**
+     * F-504: is this header value a whole community number?
+     *
+     * `is_numeric()` is the wrong test for an identifier: it accepts `1.9`,
+     * `1e0` and `+1`, which `(int)` then truncates to a different community.
+     * Surrounding whitespace is tolerated because HTTP strips it anyway.
+     */
+    private static function isCanonicalTenantId(mixed $value): bool
+    {
+        if (!is_string($value) && !is_int($value)) {
+            return false;
+        }
+
+        $value = trim((string) $value);
+
+        return $value !== '' && ctype_digit($value);
     }
 
     /**
