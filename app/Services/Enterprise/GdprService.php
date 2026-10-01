@@ -11,7 +11,6 @@ namespace App\Services\Enterprise;
 use App\Core\AudioUploader;
 use App\Services\LegacyVettingEvidenceManager;
 use App\Services\SafeguardingService;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use App\Services\Enterprise\LoggerService;
 use App\Services\Enterprise\MetricsService;
@@ -3206,8 +3205,16 @@ class GdprService
     /**
      * Get safeguarding attestations for a user (GDPR Article 15).
      *
-     * Certificate evidence remains excluded. Operational certification codes,
-     * scope, private notes and renewal dates are personal data and are included.
+     * Certificate evidence remains excluded. The subject's own facts — the
+     * decision, its dates, the clearance and certification codes and renewal
+     * dates — are included.
+     *
+     * F-509: the officer's side of the record is NOT, matching F-437's rule and
+     * the member-facing MemberVettingAttestationService::getMemberStatus(): the
+     * private notes, the scope summary, the revocation/decision reason and the
+     * identity of the staff who decided or handled it. This used to say private
+     * notes "are personal data and are included", contradicting F-437; the
+     * owner chose F-437's rule (1 Oct 2026).
      *
      * @return array{attestations: array<int, array<string, mixed>>, events: array<int, array<string, mixed>>, review_requests: array<int, array<string, mixed>>}
      */
@@ -3219,9 +3226,8 @@ class GdprService
             $data['attestations'] = $this->query(
                 "SELECT id, scheme_code, attestation_code, certification_codes,
                         purpose_code, scope_type, scope_identifier,
-                        scope_summary_encrypted, private_notes_encrypted,
-                        review_due_at, authority_expires_at, decision, confirmed_by, confirmed_at,
-                        revoked_by, revoked_at, revocation_reason_code, policy_version,
+                        review_due_at, authority_expires_at, decision, confirmed_at,
+                        revoked_at, policy_version,
                         created_at, updated_at
                  FROM member_vetting_attestations
                  WHERE user_id = ? AND tenant_id = ?
@@ -3233,9 +3239,6 @@ class GdprService
                 $attestation['certification_codes'] = is_array($codes)
                     ? array_values(array_filter($codes, 'is_string'))
                     : [];
-                $attestation['scope_summary'] = $this->decryptVettingText($attestation['scope_summary_encrypted'] ?? null);
-                $attestation['private_notes'] = $this->decryptVettingText($attestation['private_notes_encrypted'] ?? null);
-                unset($attestation['scope_summary_encrypted'], $attestation['private_notes_encrypted']);
             }
             unset($attestation);
         } catch (\Throwable $e) {
@@ -3249,7 +3252,7 @@ class GdprService
             $data['events'] = $this->query(
                 "SELECT id, attestation_id, scheme_code, attestation_code, purpose_code,
                         scope_type, scope_identifier, event_type, decision_before,
-                        decision_after, reason_code, actor_user_id, policy_version, created_at
+                        decision_after, policy_version, created_at
                  FROM member_vetting_attestation_events
                  WHERE user_id = ? AND tenant_id = ?
                  ORDER BY created_at DESC",
@@ -3266,7 +3269,7 @@ class GdprService
             $data['review_requests'] = $this->query(
                 "SELECT id, jurisdiction, scheme_code, attestation_code, purpose_code,
                         scope_type, scope_identifier, policy_version, status, request_source,
-                        requested_by, requested_at, handled_by, handled_at, resolution_code,
+                        requested_at, handled_at, resolution_code,
                         created_at, updated_at
                  FROM safeguarding_vetting_review_requests
                  WHERE user_id = ? AND tenant_id = ?
@@ -3281,19 +3284,6 @@ class GdprService
         }
 
         return $data;
-    }
-
-    private function decryptVettingText(mixed $value): ?string
-    {
-        if (! is_string($value) || $value === '') {
-            return null;
-        }
-
-        try {
-            return Crypt::decryptString($value);
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     /**
