@@ -230,24 +230,47 @@ class HourEstateService
 
             $hours = max(0.0, round((float) $member->balance, 2));
             if ($hours > 0) {
-                DB::table('users')
-                    ->where('tenant_id', $tenantId)
-                    ->where('id', (int) $member->id)
-                    ->decrement('balance', $hours);
-
+                // F-506: settle the beneficiary BEFORE taking anything from the
+                // estate. Their status was never read, so a suspended or banned
+                // beneficiary was paid; and the credit's row count was discarded,
+                // so a beneficiary moved to another community matched nothing
+                // while the member was debited, a ledger row named the transfer
+                // and the estate was marked settled — the hours were destroyed
+                // (F-476's two shapes). The beneficiary must still be in this
+                // community and pass the shared WalletService rule; any refusal
+                // throws, which rolls the whole settlement back.
                 $receiverId = null;
                 if ((string) $estate->policy_action === 'transfer_to_beneficiary') {
                     $beneficiaryId = (int) ($estate->beneficiary_user_id ?? 0);
                     if ($beneficiaryId <= 0) {
                         throw new RuntimeException(__('api.caring_hour_estate_beneficiary_required'));
                     }
-
-                    DB::table('users')
+                    $beneficiary = DB::table('users')
                         ->where('tenant_id', $tenantId)
                         ->where('id', $beneficiaryId)
                         ->lockForUpdate()
-                        ->increment('balance', $hours);
+                        ->first(['id', 'status']);
+                    if (!$beneficiary || !\App\Services\WalletService::canReceiveCredits($beneficiary->status ?? null)) {
+                        throw new RuntimeException(__('api.wallet_transfer_recipient_inactive'));
+                    }
                     $receiverId = $beneficiaryId;
+                }
+
+                DB::table('users')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', (int) $member->id)
+                    ->decrement('balance', $hours);
+
+                if ($receiverId !== null) {
+                    $credited = DB::table('users')
+                        ->where('tenant_id', $tenantId)
+                        ->where('id', $receiverId)
+                        ->increment('balance', $hours);
+                    if ($credited !== 1) {
+                        // Locked above, so this cannot normally happen; if it
+                        // does, refuse rather than destroy the hours.
+                        throw new RuntimeException(__('api.wallet_transfer_recipient_inactive'));
+                    }
                 }
 
                 // F-140: every balance move needs its ledger row, or wallet
