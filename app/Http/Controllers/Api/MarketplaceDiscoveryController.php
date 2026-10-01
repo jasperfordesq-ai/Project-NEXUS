@@ -279,7 +279,12 @@ class MarketplaceDiscoveryController extends BaseApiController
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.marketplace_collection_not_found'), null, 404);
         }
 
-        MarketplaceDiscoveryService::removeFromCollection($id, $listingId);
+        // F-503: a delete path, so the affected-row count is the right test
+        // (O-174 — it is update paths where zero rows can still mean success).
+        // Same refusal for a foreign listing and an invented id: no oracle.
+        if (!MarketplaceDiscoveryService::removeFromCollection($id, $listingId)) {
+            return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.marketplace_listing_not_found'), null, 404);
+        }
 
         return $this->respondWithData(['removed' => true]);
     }

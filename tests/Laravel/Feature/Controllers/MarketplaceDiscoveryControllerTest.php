@@ -357,8 +357,10 @@ class MarketplaceDiscoveryControllerTest extends TestCase
     //  allow-list entry is an edit to a security control that makes a hit
     //  disappear.
     //
-    //  Both halves are tested: nothing of anyone else's is touched, and the
-    //  answer does not reveal whether the listing exists.
+    //  F-503 (E-077) removed that pin: the endpoint now refuses 404 when
+    //  nothing was removed, rather than answering `removed: true`. These two
+    //  properties still hold and are still tested: nothing of anyone else's is
+    //  touched, and the answer does not reveal whether the listing exists.
     // -----------------------------------------------------------------
 
     public function test_remove_collection_item_answers_identically_for_a_foreign_listing_and_a_nonexistent_one(): void

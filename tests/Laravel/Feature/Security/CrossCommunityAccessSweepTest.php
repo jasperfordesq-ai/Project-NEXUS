@@ -76,10 +76,39 @@ class CrossCommunityAccessSweepTest extends AccessSweepTestCase
      * control answers 404 too unless the two are linked, and the route measures
      * nothing.
      *
+     * `DELETE marketplace/collections/{id}/items/{listingId}` is the same shape
+     * since F-503 (E-077): it refuses a listing the collection does not hold, so
+     * the owner's listing is put in the owner's collection for the control.
+     *
      * {@inheritDoc}
      */
     protected function linkChildFixtures(array $ids, int $tenantId): void
     {
+        if (isset($ids['marketplace_collection'], $ids['marketplace_listing'])) {
+            try {
+                DB::table('marketplace_collection_items')->insert([
+                    'tenant_id' => $tenantId,
+                    'collection_id' => $ids['marketplace_collection'],
+                    'marketplace_listing_id' => $ids['marketplace_listing'],
+                    'created_at' => now(),
+                ]);
+                // Keep the counter consistent, as addToCollection() would: it is
+                // UNSIGNED, so removing an item from a collection whose counter
+                // is still 0 is an out-of-range error rather than a removal.
+                DB::table('marketplace_collections')
+                    ->where('id', $ids['marketplace_collection'])
+                    ->increment('item_count');
+            } catch (\Throwable $e) {
+                fwrite(STDERR, sprintf(
+                    "[sweep] could not link listing %s into collection %s in tenant %d: %s\n",
+                    $ids['marketplace_listing'],
+                    $ids['marketplace_collection'],
+                    $tenantId,
+                    mb_substr($e->getMessage(), 0, 200)
+                ));
+            }
+        }
+
         if (! isset($ids['story_highlight'], $ids['story'])) {
             return;
         }

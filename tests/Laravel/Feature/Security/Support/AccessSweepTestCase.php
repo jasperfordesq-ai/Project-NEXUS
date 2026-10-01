@@ -449,19 +449,15 @@ abstract class AccessSweepTestCase extends TestCase
     }
 
     protected const KNOWN_CHILD_ACCEPTED_NO_CHANGE = [
-        // E-022. MarketplaceDiscoveryController::removeCollectionItem() proves the
-        // COLLECTION is `id = ? AND user_id = ?`, and both MarketplaceCollection
-        // and MarketplaceCollectionItem carry HasTenantScope, so the lookup and
-        // the delete are community-bounded twice over. A foreign listing id
-        // matches no row; item_count is only decremented when something was
-        // actually deleted; and $listingId never reaches a branch that shapes
-        // the response.
-        //
-        // 🔴 PROVED before pinning. See
-        // MarketplaceDiscoveryControllerTest::test_remove_collection_item_answers_identically_for_a_foreign_listing_and_a_nonexistent_one
-        // (byte-identical body and status, foreign listing row survives) and
-        // ::test_remove_collection_item_refuses_a_collection_the_caller_does_not_own (404).
-        'DELETE api/v2/marketplace/collections/{id}/items/{listingId}',
+        // 'DELETE api/v2/marketplace/collections/{id}/items/{listingId}' was
+        // pinned here from E-022 until F-503 (E-077). The sweep had been saying
+        // "should refuse" about it all along; the pin absorbed that. It now
+        // refuses 404 when nothing was removed —
+        // MarketplaceDiscoveryService::removeFromCollection() returns the delete
+        // count instead of discarding it — so the entry is removed rather than
+        // kept. The refusal is still byte-identical for a foreign listing and an
+        // invented id; see F503CollectionItemRemovalReportsWhatItRemovedTest and
+        // MarketplaceDiscoveryControllerTest.
         //
         // 'DELETE api/v2/stories/highlights/{id}/items/{storyId}' was pinned here
         // until F-418 (E-076). It no longer answers 2xx for a story the caller's

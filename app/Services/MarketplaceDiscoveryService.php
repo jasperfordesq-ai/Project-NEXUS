@@ -218,8 +218,12 @@ class MarketplaceDiscoveryService
 
     /**
      * Remove a listing from a collection.
+     *
+     * F-503: returns whether anything was removed. The count was computed here
+     * and then thrown away at a `void` return type, so the controller answered
+     * `removed: true` for a listing the collection never held.
      */
-    public static function removeFromCollection(int $collectionId, int $listingId): void
+    public static function removeFromCollection(int $collectionId, int $listingId): bool
     {
         $deleted = MarketplaceCollectionItem::where('collection_id', $collectionId)
             ->where('marketplace_listing_id', $listingId)
@@ -228,6 +232,8 @@ class MarketplaceDiscoveryService
         if ($deleted) {
             MarketplaceCollection::where('id', $collectionId)->decrement('item_count');
         }
+
+        return $deleted > 0;
     }
 
     /**
