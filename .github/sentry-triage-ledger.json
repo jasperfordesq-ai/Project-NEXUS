@@ -1,15 +1,15 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-09-19T12:23:49.960Z",
+  "lastRunAt": "2026-10-01T18:15:41.651Z",
   "issues": {
     "120262618": {
-      "title": "ErrorException: Warning: require(/var/www/html/bootstrap/cache/routes-v7.php): Failed to open stream: No such file or directory",
+      "title": "ErrorException: Warning: Redis::connect(): php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
       "culprit": "/artisan in ?",
       "decision": "needs-owner",
-      "note": "Not a code bug. All 100+ events land inside one hour on 2026-09-06 and stop 8 seconds after Redis came back. Proven from the host: apt upgraded containerd.io/docker-ce/docker-ce-cli/docker-compose-plugin between 06:27:37 and 06:31:19, which stopped and restarted containerd and dockerd; nexus-php-redis/db/meilisearch all restarted at 06:31:17. The routes-v7.php fatal is collateral of the restart loop re-running 'artisan optimize' while a lingering child artisan still reads the file, exactly as diagnosed on 2026-08-07. 0 members affected (all sapi:cli). OWNER ACTION: production Docker is being upgraded unattended - pin/hold docker-ce and containerd.io, or schedule engine upgrades into a window, because the restart takes every container down for about four minutes. Note this was NOT Ubuntu unattended-upgrades (which found nothing at 06:08); the Docker repo is outside its allowed origins, so something else (likely the Plesk update task) ran apt at 06:27:37.",
+      "note": "Third occurrence of the same host event: 6 Sep, 16 Sep and now 1 Oct, each between 06:27 and 06:36 UTC. 100 events in 34 s on 1 Oct, all CLI, 0 members. Same signature as before: the Docker engine restarts and Redis/DB/name resolution vanish for a few minutes. Not a code bug. OWNER ACTION still outstanding: stop unattended Docker engine upgrades on production (hold docker-ce/containerd.io, or move them into a window) - the fixed time of day points at a scheduled update task.",
       "sha": null,
-      "decidedAt": "2026-09-07T13:06:35.028Z",
-      "decidedAtRelease": "nexus-php@d7db2fad466c"
+      "decidedAt": "2026-10-01T18:47:40.363Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
     },
     "123575422": {
       "title": "Support report submitted",
@@ -22,21 +22,21 @@
     },
     "128022136": {
       "title": "Exception: Scheduled command ['/usr/local/bin/php' 'artisan' queue:verify-liveness] failed with exit code [1].",
-      "culprit": "/vendor/laravel/framework/src/Illuminate/Console/Scheduling/ScheduleRunCommand.php in Illuminate\\Console\\Scheduling\\ScheduleRunCommand::Illuminate\\Console\\Scheduling\\{closure}",
-      "decision": "fixed",
-      "note": "The scheduler's wrapper around queue:verify-liveness, which exits non-zero by design when workers are dead. Same root cause and fix as NEXUS-PHP-2F (dead queue watchdog, 6b198eb27).",
-      "sha": "6b198eb27",
-      "decidedAt": "2026-09-07T13:06:18.239Z",
-      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
+      "culprit": "/artisan in ?",
+      "decision": "watching",
+      "note": "Scheduler wrapper of queue:verify-liveness; same three short blips as NEXUS-PHP-2F (19 Sep, 24 Sep, 1 Oct). Earlier watchdog fix held - recovery within one check.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:46.376Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
     },
     "129111072": {
-      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-09-06T11:20:30+00:00 but last processed at 2026-09-06T06:25:54+00:00. Check `ps aux | grep horizon:work` in the queue container.",
+      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-10-01T06:40:29+00:00 but last processed at 2026-10-01T06:25:28+00:00. Check `ps aux | grep horizon:work` in the queue container.",
       "culprit": "/app/Console/Commands/VerifyQueueLiveness.php in App\\Console\\Commands\\VerifyQueueLiveness::handle",
-      "decision": "fixed",
-      "note": "Correct alarm for a real outage: production queue workers processed no jobs between 06:25:54 and 11:18 UTC on 2026-09-06. Trigger was an apt upgrade of docker-ce/containerd.io restarting the container engine at 06:27:37-06:31:19; the queue container did not come back. It stayed down for five hours because scripts/watchdog-queue.sh was tracked mode 100644 while cron invokes it directly, so cron had got 'Permission denied' on every run since 2026-05-22 and the watchdog had never run once. Fixed by tracking it 100755 plus a new BLOCKING gate (check-host-cron-scripts.mjs). The trigger itself is host config and is owner-held - see NEXUS-PHP-10.",
-      "sha": "6b198eb27",
-      "decidedAt": "2026-09-07T13:06:14.492Z",
-      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
+      "decision": "watching",
+      "note": "Came back after 'fixed' - but the earlier fix held. 1 Oct alarm at 06:40 is the correct alarm for the 06:33 engine restart (NEXUS-PHP-10); workers recovered before the next check, so the outage was ~15 min, not 5 h as on 6 Sep. Single alarms on 19 Sep 12:40 and 24 Sep 08:31 also cleared by the next check. Nothing to change unless an alarm repeats on consecutive checks.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:44.760Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
     },
     "130353163": {
       "title": "Geocoding exception",
@@ -59,11 +59,20 @@
     "136097019": {
       "title": "QUEUE LIVENESS FAILED: heartbeats dispatched but not processed — workers are dead or stuck.",
       "culprit": null,
-      "decision": "fixed",
-      "note": "Same 2026-09-06 five-hour queue outage as NEXUS-PHP-2F. The alarm behaved correctly; what failed was recovery, because the queue watchdog was installed non-executable and had never run. Fixed in 6b198eb27.",
-      "sha": "6b198eb27",
-      "decidedAt": "2026-09-07T13:06:16.329Z",
-      "decidedAtRelease": "nexus-php@b43e68ccdb4c"
+      "decision": "watching",
+      "note": "Same three short queue blips as NEXUS-PHP-2F; alarm correct, recovery within one check. Earlier fix held.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:48.006Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
+    },
+    "137783510": {
+      "title": "RedisException: Connection refused",
+      "culprit": "/vendor/laravel/framework/src/Illuminate/Redis/Connectors/PhpRedisConnector.php in Redis::connect",
+      "decision": "needs-owner",
+      "note": "Collateral of the 1 Oct 06:33 UTC engine restart (see NEXUS-PHP-10): one 'Connection refused' to Redis while it restarted. No code change. Fix is the NEXUS-PHP-10 owner action.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:41.937Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
     },
     "138843429": {
       "title": "Sentry\\Exception\\FatalErrorException: Error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legal_document_id' in 'SELECT' in /var/www/html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420",
@@ -645,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "SENSITIVE (safeguarding) - diagnosed only, no code touched. This is a working daily pager (SafeguardingPolicyHealthCheck), and its own docblock says the fix is an admin action, not code. It came back after the 2026-09-04 needs-owner because nobody has done that action. Context on the 2026-09-07 08:05 event names exactly one community: tenant_id 2 (hour-timebank), jurisdiction 'unconfigured'. Consequence: a member there has asked that only vetted people may contact them, and because the jurisdiction is unset the contact gate fails closed - that member is dropped from everyone's matches and cannot be contacted, and is not told. OWNER ACTION: broker panel -> Vetting -> Jurisdiction for hour-timebank. Related: NEXUS-PHP-39 (134069538), parked needs-owner for the same gap.",
+      "note": "Still firing every day at 08:05 (14 days running). Owner action still not done: set the safeguarding jurisdiction for hour-timebank (broker panel -> Vetting -> Jurisdiction). Until then members who asked for vetted-only contact are dropped from matches and cannot be contacted.",
       "sha": null,
-      "decidedAt": "2026-09-07T13:06:50.400Z",
-      "decidedAtRelease": "nexus-php@db249f98208e"
+      "decidedAt": "2026-10-01T18:47:50.601Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -708,10 +717,91 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "Real but negligible, and the fix is riskier than the problem. CronJobRunner::forEachTenant already has each tenant's id and slug, then calls TenantContext::setById(), which re-reads 'select * from tenants where id = ?' - 13 rows, 7ms total across the whole hourly nexus:run-all. Avoiding it means adding a seed-from-row path to TenantContext, the tenant-isolation boundary, and a mistake there is a cross-tenant bug. Not worth that for 7ms. Revisit only if tenant count grows enough to matter.",
+      "note": "Unchanged: the ~7 ms hourly tenant re-read in nexus:run-all. Still not worth touching TenantContext for. Re-recorded so the ongoing events are not flagged as a return.",
       "sha": null,
-      "decidedAt": "2026-09-07T13:06:38.102Z",
-      "decidedAtRelease": "nexus-php@db249f98208e"
+      "decidedAt": "2026-10-01T18:47:49.311Z",
+      "decidedAtRelease": "nexus-php@a2f09dd1d594"
+    },
+    "145943666": {
+      "title": "ApiResponseError: Your session has expired. Please log in again.",
+      "culprit": "_construct(index.android)",
+      "decision": "watching",
+      "note": "One Android user (app 1.7.4) on 18 Sep: the push-notifications module got 'session expired' and reported it as an error. Expected when a login lapses; arguably should not be reported. Too rare to change a mobile build for.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:57.554Z",
+      "decidedAtRelease": "ie.project.nexus@1.7.4+17"
+    },
+    "146574974": {
+      "title": "[APP LOG] Event: mobile_error | Version: 1.7.4 | Platform: mobile | Data: {\"message\":\"Your session has expired. Please log in again.\",\"name\":\"ApiResponseError\",\"tags\":\"{\\\"module\\\":\\\"push-notifications\\\"}\"}",
+      "culprit": "http://api.project-nexus.ie/api/app/log",
+      "decision": "watching",
+      "note": "Server-side copy of NEXUS-MOBILE-5 (same event relayed via /api/app/log).",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:58.711Z",
+      "decidedAtRelease": "nexus-php@0c38709d6e8f"
+    },
+    "148854497": {
+      "title": "RuntimeException: Password reset email dispatch failed.",
+      "culprit": "/app/Jobs/SendPasswordResetEmail.php in App\\Jobs\\SendPasswordResetEmail::processPasswordResetRequest",
+      "decision": "watching",
+      "note": "SENSITIVE - diagnosed only. One password-reset request on 23 Sep 09:20 UTC: the job's email send failed 6 times in 2 s (SendPasswordResetEmail.php:159), then nothing since. Looks like a one-off mail send failure; that member may not have got their reset link. Revisit if it repeats.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:56.431Z",
+      "decidedAtRelease": "nexus-php@44b79b5aa5ef"
+    },
+    "149353116": {
+      "title": "RuntimeException: Prerender cache mutation lock is unavailable",
+      "culprit": "/app/Services/PrerenderService.php in App\\Services\\PrerenderService::acquireCacheLock",
+      "decision": "fixed",
+      "note": "Already fixed before tonight, not by this run. Since release c184065 (25 Sep ~10:00 UTC) the scheduler ran as www-data and read an empty nested storage/prerendered dir instead of the snapshot volume, so fopen of the root-owned .mutation.lock failed on every drift sweep. b706ffad5 (#237) mounted the snapshot volume into queue and scheduler; last event 25 Sep 12:48 UTC, none in the 6 days since; b706ffad5 is in live a2f09dd1d.",
+      "sha": "b706ffad5",
+      "decidedAt": "2026-10-01T18:47:38.551Z",
+      "decidedAtRelease": "nexus-php@c184065bbe14"
+    },
+    "150620846": {
+      "title": "Illuminate\\Database\\QueryException: SQLSTATE[HY000] [2002] Connection refused (Connection: mysql, Host: nexus-php-db, Port: 3306, Database: nexus, SQL: select exists (select 1 from information_schema.tables where table_schema = schema() and table_name = 'event_federation_deliveries' and t...",
+      "culprit": "/app/Console/Commands/ProcessEventFederationDeliveries.php in App\\Console\\Commands\\ProcessEventFederationDeliveries::handle",
+      "decision": "needs-owner",
+      "note": "Collateral of the 1 Oct 06:33 UTC engine restart (see NEXUS-PHP-10): the DB was refusing connections for a moment while the federation-delivery command ran. 'sensitive' only because the SQL mentions information_schema; no schema problem. Fix is the NEXUS-PHP-10 owner action.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:43.195Z",
+      "decidedAtRelease": "nexus-php@d137f9989171"
+    },
+    "150681569": {
+      "title": "NotifySafeguardingStaff: email send returned false — safeguarding notification not delivered",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Same single failed safeguarding email as NEXUS-PHP-6R (1 Oct 10:32, staff 272). sendRaw returned false.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:55.275Z",
+      "decidedAtRelease": "nexus-php@ed24cb94480b"
+    },
+    "150681571": {
+      "title": "NotifySafeguardingStaff: failed to notify staff",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Same single failed safeguarding email as NEXUS-PHP-6R (1 Oct 10:32, staff 272).",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:54.074Z",
+      "decidedAtRelease": "nexus-php@ed24cb94480b"
+    },
+    "150681572": {
+      "title": "NotifySafeguardingStaff: PERMANENTLY FAILED",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Same single failed safeguarding email as NEXUS-PHP-6R (1 Oct 10:32, staff 272). Final 'permanently failed' log line.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:52.907Z",
+      "decidedAtRelease": "nexus-php@ed24cb94480b"
+    },
+    "150681573": {
+      "title": "RuntimeException: Safeguarding email failed to send to staff 272 (partner-demo@project-nexus.ie) — job will be marked failed",
+      "culprit": "/app/Listeners/NotifySafeguardingStaff.php in App\\Listeners\\NotifySafeguardingStaff::sendEmail",
+      "decision": "needs-owner",
+      "note": "SENSITIVE - diagnosed only. 1 Oct 10:32 UTC: a safeguarding onboarding-flag email (tenant 5, flagged user 698) to staff 272 partner-demo@project-nexus.ie was not delivered - EmailDispatchService::sendRaw returned false, the job retried and was marked failed. Sentry does not show which refusal path; check the app log for 'EmailDispatchService::send' at that time. Owner should confirm that address is a real staffed mailbox and that the flag reached a human by another route.",
+      "sha": null,
+      "decidedAt": "2026-10-01T18:47:51.720Z",
+      "decidedAtRelease": "nexus-php@ed24cb94480b"
     }
   }
 }
