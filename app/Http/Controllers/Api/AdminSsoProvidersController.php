@@ -69,7 +69,13 @@ class AdminSsoProvidersController extends BaseApiController
         $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        $this->sso->delete($tenantId, $providerKey);
+        // F-472: nothing deleted is not a deletion. Refuse before the audit log
+        // is written, so the assurance record never carries an action that did
+        // not happen. The refusal is identical for a key held by another
+        // community and a key held by nobody, so this is not an existence oracle.
+        if ($this->sso->delete($tenantId, $providerKey) === 0) {
+            return $this->respondWithError('NOT_FOUND', __('api.sso_provider_not_found'), 'provider', 404);
+        }
 
         $this->auditLogService->logAdminAction('sso_provider_deleted', $adminId, null, [
             'provider_key' => $providerKey,

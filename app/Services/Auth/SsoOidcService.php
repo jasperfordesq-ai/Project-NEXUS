@@ -553,9 +553,13 @@ class SsoOidcService
         return $this->adminRow($stored);
     }
 
-    public function delete(int $tenantId, string $providerKey): void
+    /**
+     * @return int the number of provider rows actually removed (F-472: the
+     *             caller must be able to tell a real deletion from a no-op)
+     */
+    public function delete(int $tenantId, string $providerKey): int
     {
-        DB::table('tenant_sso_providers')
+        return DB::table('tenant_sso_providers')
             ->where('tenant_id', $tenantId)
             ->where('provider_key', $providerKey)
             ->delete();
