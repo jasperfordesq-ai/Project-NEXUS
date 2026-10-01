@@ -1092,6 +1092,12 @@ jobs:
       - name: "BLOCKING: The seed-credential gate itself cannot be bypassed (F-430)"
         run: node --test scripts/test/check-seed-credentials.test.mjs
 
+      # owasp-suppressions.xml feeds the BLOCKING dependency scan. Three entries
+      # suppressed their advisory at ANY version, so a regression to a
+      # vulnerable release would have stayed silent (F-501). Pin the bounds.
+      - name: "BLOCKING: Dependency-scan suppressions stay version-bounded (F-501)"
+        run: node --test scripts/test/owasp-suppressions-bounds.test.mjs
+
       - name: "WARNING: Schema dump drift detection"
         run: bash scripts/check-schema-drift.sh || true
 

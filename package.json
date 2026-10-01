@@ -41,6 +41,7 @@
     "check:db-columns": "node scripts/check-db-column-references.mjs",
     "check:seed-credentials": "node scripts/check-seed-credentials.mjs",
     "test:seed-credentials-gate": "node --test scripts/test/check-seed-credentials.test.mjs",
+    "test:owasp-suppressions": "node --test scripts/test/owasp-suppressions-bounds.test.mjs",
     "check:arg-types": "node scripts/check-argument-types.mjs",
     "check:display-name": "node scripts/check-display-name.mjs",
     "check:licenses": "node scripts/check-licenses.mjs",
