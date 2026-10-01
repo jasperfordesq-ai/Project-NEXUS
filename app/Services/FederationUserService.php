@@ -233,6 +233,19 @@ class FederationUserService
                 // no longer remove the connections themselves. Severing here,
                 // in the same transaction as the flags, means they never need to.
                 self::severInternalFederatedConnections($userId, $tenantId);
+
+                // F-413: stand the member's listings down too. The flags above
+                // close every PULL path, but `listings.federated_visibility` is
+                // a separate per-listing flag that survived the withdrawal — so
+                // the next edit of an old listing pushed its title, description
+                // and the member's local user id to every active partner again.
+                // Reset in the same transaction as the flags, so a member can
+                // never be left consented-out with listings still marked shared.
+                DB::table('listings')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('federated_visibility', ['listed', 'bookable'])
+                    ->update(['federated_visibility' => 'none', 'updated_at' => now()]);
             });
 
             return true;

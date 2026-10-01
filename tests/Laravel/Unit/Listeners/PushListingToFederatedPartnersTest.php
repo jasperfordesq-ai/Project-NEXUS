@@ -154,6 +154,21 @@ class PushListingToFederatedPartnersTest extends TestCase
     /** Build a user stub for use as event->user. */
     private function makeUser(int $id = 1): User
     {
+        // F-413: the push now requires the listing OWNER's account-level
+        // federation consent, which every PULL path already required. Record
+        // that consent for the stub owner so these cases keep exercising the
+        // gate they were written for (status, moderation, visibility, partner
+        // flag) rather than stopping at the new consent check.
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => $id],
+            [
+                'federation_optin'           => 1,
+                'profile_visible_federated'  => 1,
+                'appear_in_federated_search' => 1,
+                'updated_at'                 => now(),
+            ]
+        );
+
         $user = new User();
         $user->id = $id;
         return $user;

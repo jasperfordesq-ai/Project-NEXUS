@@ -80,6 +80,10 @@ final class TwoWayFlowTest extends TestCase
         $partner = $this->setupPartner($protocol);
 
         $user = User::factory()->forTenant($this->testTenantId)->create();
+        // F-413: the outbound listing push now requires the OWNER's
+        // account-level federation consent, which every PULL path already
+        // required. This test is about the outbound protocol, so seed it.
+        $this->optInUserToFederation((int) $user->id);
         $listing = Listing::factory()->create([
             'tenant_id'            => $this->testTenantId,
             'user_id'              => $user->id,

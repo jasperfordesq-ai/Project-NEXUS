@@ -1342,6 +1342,11 @@ class ListingService
             $updates['hours_available'] = null;
         }
 
+        // F-414: captured BEFORE the save so the federation push listener can
+        // tell a share -> un-share transition from a listing that was never
+        // shared, and retract the listing from partners that already hold it.
+        $previousFederatedVisibility = $listing->federated_visibility;
+
         $listing->fill($updates);
         $listing->save();
 
@@ -1408,7 +1413,7 @@ class ListingService
         try {
             $owner = $freshListing->user ?? User::find($freshListing->user_id);
             if ($owner) {
-                event(new ListingUpdated($freshListing, $owner, TenantContext::getId()));
+                event(new ListingUpdated($freshListing, $owner, TenantContext::getId(), $previousFederatedVisibility));
             }
         } catch (\Throwable $e) {
             Log::warning('[ListingService] ListingUpdated event dispatch failed: ' . $e->getMessage());
@@ -1429,8 +1434,25 @@ class ListingService
             return false;
         }
 
+        $previousFederatedVisibility = $listing->federated_visibility;
+
         $listing->status = 'deleted';
         $listing->save();
+
+        // F-414: tell partners that already hold this listing to drop it.
+        // There is no ListingDeleted event; the delete path dispatches the
+        // update event with status = 'deleted' for exactly this purpose, which
+        // is how VolunteerService::deleteOpportunity() drives the volunteering
+        // retraction. The listener sends only the identifiers, never the
+        // content. Wrapped so a federation problem can never fail the delete.
+        try {
+            $owner = $listing->user ?? User::find($listing->user_id);
+            if ($owner) {
+                event(new ListingUpdated($listing, $owner, TenantContext::getId(), $previousFederatedVisibility));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[ListingService] ListingUpdated (delete) event dispatch failed: ' . $e->getMessage());
+        }
 
         // Clean up related records to avoid orphans.
         $tenantId = TenantContext::getId();

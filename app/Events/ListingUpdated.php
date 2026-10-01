@@ -25,5 +25,13 @@ class ListingUpdated
         public readonly Listing $listing,
         public readonly User $user,
         public readonly int $tenantId,
+        /**
+         * F-414: the listing's federated_visibility BEFORE this update, so the
+         * federation push listener can detect a share -> un-share transition
+         * and RETRACT the listing from partners that already hold it. Null when
+         * the prior value is unknown or irrelevant. Mirrors
+         * VolunteerOpportunityUpdated::$previousFederatedVisibility.
+         */
+        public readonly ?string $previousFederatedVisibility = null,
     ) {}
 }
