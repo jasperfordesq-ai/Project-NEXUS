@@ -4,12 +4,13 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const { createHash } = require('node:crypto');
-const { refreshToken: refreshTokenApi, validateToken, ApiError, ApiOfflineError } = require('../lib/api');
+const { refreshToken: refreshTokenApi, ApiError, ApiOfflineError } = require('../lib/api');
 const {
   ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH,
   endUnderAgeSession,
   isAccountUnderMinimumAgeError
 } = require('../lib/account-age-refusal');
+const { getRequestProfile } = require('../lib/request-profile');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -437,14 +438,44 @@ function withTokenRefresh(handler) {
   };
 }
 
+// F-498: mirrors the canonical backend predicate
+// `App\Support\Authorization\AdminTier::allows()`. `super_admin`, `god`,
+// `tenant_admin` and `coordinator` are NEVER written to `users.role` — they are
+// boolean flags — so a role-string test alone refuses a real network or
+// platform administrator. Broker and coordinator are operational roles and fail
+// closed even when a stale legacy admin flag remains on the account row.
+const ADMIN_TIER_ROLES = ['admin', 'tenant_admin', 'super_admin', 'god'];
+const OPERATIONAL_ROLES = ['broker', 'coordinator'];
+
+function isAdminTier(user) {
+  if (!user || typeof user !== 'object') return false;
+
+  const role = String(user.role || '');
+  if (OPERATIONAL_ROLES.includes(role)) return false;
+
+  return ADMIN_TIER_ROLES.includes(role)
+    || Boolean(user.is_admin)
+    || Boolean(user.is_super_admin)
+    || Boolean(user.is_tenant_super_admin)
+    || Boolean(user.is_god);
+}
+
 // Middleware to require admin role
 // Must be used after requireAuth
 async function requireAdmin(req, res, next) {
   try {
-    // Validate token and get user info
-    const user = await validateToken(req.token);
+    // F-498: the tier has to come from the profile endpoint. `validateToken`
+    // answers `user_id`, `tenant_id`, `type`, `expires_at`, `time_remaining`
+    // and `needs_refresh` (AuthController::validateToken) — no role and no
+    // flags at all — so authorising on its response refused every tier,
+    // administrators included. `GET /api/v2/users/me` returns `role`,
+    // `is_admin`, `is_super_admin`, `is_tenant_super_admin` and `is_god`.
+    const profileResponse = await getRequestProfile(req, req.token);
+    const user = profileResponse && profileResponse.data !== undefined
+      ? profileResponse.data
+      : profileResponse;
 
-    if (user.role !== 'admin' && user.role !== 'super_admin') {
+    if (!isAdminTier(user)) {
       return res.status(403).render('errors/403', {
         title: 'Access denied',
         message: 'You do not have permission to access this page. Admin access required.'
