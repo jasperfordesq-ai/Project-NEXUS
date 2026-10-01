@@ -239,6 +239,77 @@ class GroupsControllerTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  GROUP TYPES (directory filter + card label)
+    // ------------------------------------------------------------------
+
+    private function createGroupType(array $overrides = []): int
+    {
+        $name = $overrides['name'] ?? 'Type ' . uniqid();
+
+        return (int) DB::table('group_types')->insertGetId(array_merge([
+            'tenant_id' => $this->testTenantId,
+            'name' => $name,
+            'slug' => 'type-' . uniqid(),
+            'color' => '#10b981',
+            'sort_order' => 0,
+            'is_active' => 1,
+        ], $overrides));
+    }
+
+    public function test_group_types_lists_only_this_tenants_active_types_in_order(): void
+    {
+        $this->authenticatedUser();
+        $second = $this->createGroupType(['name' => 'Second type', 'sort_order' => 2]);
+        $first = $this->createGroupType(['name' => 'First type', 'sort_order' => 1]);
+        $inactive = $this->createGroupType(['name' => 'Retired type', 'is_active' => 0]);
+        $foreign = $this->createGroupType(['name' => 'Foreign type', 'tenant_id' => 999]);
+
+        $response = $this->apiGet('/v2/groups/types')->assertOk();
+
+        $ids = array_column($response->json('data'), 'id');
+        $this->assertNotContains($inactive, $ids);
+        $this->assertNotContains($foreign, $ids);
+        $this->assertLessThan(
+            array_search($second, $ids, true),
+            array_search($first, $ids, true),
+            'Types must follow the admin-defined sort order.'
+        );
+        $row = collect($response->json('data'))->firstWhere('id', $first);
+        $this->assertSame(['id', 'name', 'description', 'color'], array_keys($row));
+        $this->assertSame('First type', $row['name']);
+    }
+
+    public function test_group_types_requires_authentication(): void
+    {
+        $this->apiGet('/v2/groups/types')->assertStatus(401);
+    }
+
+    public function test_directory_filters_by_type_and_labels_each_card_with_its_type(): void
+    {
+        $user = $this->authenticatedUser();
+        $hobby = $this->createGroupType(['name' => 'Hobby']);
+        $retired = $this->createGroupType(['name' => 'Retired', 'is_active' => 0]);
+        $hobbyGroup = $this->createGroup(['owner_id' => $user->id, 'visibility' => 'public', 'type_id' => $hobby]);
+        $untyped = $this->createGroup(['owner_id' => $user->id, 'visibility' => 'public', 'type_id' => null]);
+        $retiredGroup = $this->createGroup(['owner_id' => $user->id, 'visibility' => 'public', 'type_id' => $retired]);
+
+        $filtered = $this->apiGet("/v2/groups?type_id={$hobby}&per_page=100")->assertOk();
+        $filteredIds = array_column($filtered->json('data'), 'id');
+        $this->assertContains($hobbyGroup->id, $filteredIds);
+        $this->assertNotContains($untyped->id, $filteredIds);
+        $this->assertNotContains($retiredGroup->id, $filteredIds);
+
+        $all = collect($this->apiGet('/v2/groups?per_page=100')->assertOk()->json('data'))->keyBy('id');
+        $this->assertSame(
+            ['id' => $hobby, 'name' => 'Hobby', 'color' => '#10b981'],
+            $all[$hobbyGroup->id]['type']
+        );
+        $this->assertNull($all[$untyped->id]['type']);
+        // A switched-off type is not offered as a filter, so it is not shown as a label either.
+        $this->assertNull($all[$retiredGroup->id]['type']);
+    }
+
+    // ------------------------------------------------------------------
     //  CREATE
     // ------------------------------------------------------------------
 

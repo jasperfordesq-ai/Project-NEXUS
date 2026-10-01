@@ -22,6 +22,8 @@
   "filter_public": "Poiblí",
   "filter_private": "Príobháideach",
   "filters_aria": "Scagairí grúpaí",
+  "type_filter_label": "Cineál grúpa",
+  "type_filter_all": "Gach cineál",
   "active_filters": "Á thaispeáint",
   "unable_to_load": "Ní féidir Grúpaí a Luchtú",
   "try_again": "Bain Triail Eile As",

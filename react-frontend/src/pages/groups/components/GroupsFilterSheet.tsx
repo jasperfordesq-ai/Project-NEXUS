@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * GroupsFilterSheet — phone-only bottom sheet holding the Groups directory's one
- * filter dimension (scope + visibility: all | joined | public | private).
+ * GroupsFilterSheet — phone-only bottom sheet holding the Groups directory's
+ * filters: scope + visibility (all | joined | public | private) and, when the
+ * community defines any, the group type.
  *
  * The SIMPLE archetype of the shared `FilterSheet`: no footer and deliberately no
- * draft machine. The four options are one mutually exclusive enum, so deferring a
+ * draft machine. Each dimension is one mutually exclusive enum, so deferring a
  * single tap behind an Apply button would cost an extra tap and deliver nothing,
  * and the endpoint (`GET /v2/groups`, `respondWithCollection`) exposes no total to
  * drive a live "Show N" count anyway. Each tap commits immediately and closes the
@@ -35,6 +36,14 @@ export interface GroupsFilterSheetProps {
   options: FilterChipOption[];
   /** Commits the tapped filter; the sheet closes itself straight afterwards. */
   onFilterChange: (key: string) => void;
+  /** Section heading for the group-type chips. */
+  typeLabel?: string;
+  /** Currently applied type key. */
+  typeFilter?: string;
+  /** Type options including the "all types" entry; empty hides the section. */
+  typeOptions?: FilterChipOption[];
+  /** Commits the tapped type; the sheet closes itself straight afterwards. */
+  onTypeChange?: (key: string) => void;
 }
 
 export function GroupsFilterSheet({
@@ -43,6 +52,10 @@ export function GroupsFilterSheet({
   filter,
   options,
   onFilterChange,
+  typeLabel,
+  typeFilter,
+  typeOptions = [],
+  onTypeChange,
 }: GroupsFilterSheetProps) {
   const { t } = useTranslation('groups');
 
@@ -50,16 +63,31 @@ export function GroupsFilterSheet({
     <FilterSheet isOpen={isOpen} onClose={onClose} title={t('filters_aria')} accent="indigo">
       {/* FilterChipGroup renders a <div>, never a <section>: glass.css paints every
           <section> inside a [role="dialog"] with an opaque solid background. */}
-      <FilterChipGroup
-        accent="indigo"
-        ariaLabel={t('filters_aria')}
-        selected={filter}
-        options={options}
-        onChange={(key) => {
-          onFilterChange(key);
-          onClose();
-        }}
-      />
+      <div className="flex flex-col gap-6 pb-2">
+        <FilterChipGroup
+          accent="indigo"
+          ariaLabel={t('filters_aria')}
+          selected={filter}
+          options={options}
+          onChange={(key) => {
+            onFilterChange(key);
+            onClose();
+          }}
+        />
+        {typeOptions.length > 0 && typeFilter !== undefined && onTypeChange && (
+          <FilterChipGroup
+            accent="indigo"
+            label={typeLabel}
+            ariaLabel={typeLabel}
+            selected={typeFilter}
+            options={typeOptions}
+            onChange={(key) => {
+              onTypeChange(key);
+              onClose();
+            }}
+          />
+        )}
+      </div>
     </FilterSheet>
   );
 }

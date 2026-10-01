@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@/lib/api';
 import type { Group } from '@/types/api';
 import { GroupApiError } from './core';
-import { listGroupDirectory } from './directory';
+import { listGroupDirectory, listGroupDirectoryTypes } from './directory';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -79,6 +79,21 @@ describe('listGroupDirectory', () => {
     expect(page.groups[0]?.is_member).toBe(true);
   });
 
+  it('maps the group type filter to the type_id query', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [group],
+      meta: { per_page: 20, has_more: false },
+    });
+
+    await listGroupDirectory({ typeId: 5, perPage: 20 });
+
+    expect(api.get).toHaveBeenCalledWith(
+      '/v2/groups?type_id=5&per_page=20',
+      { signal: undefined },
+    );
+  });
+
   it('rejects a resolved success:false envelope as a domain error', async () => {
     vi.mocked(api.get).mockResolvedValue({
       success: false,
@@ -111,5 +126,34 @@ describe('listGroupDirectory', () => {
       messageKey: 'api_errors.invalid_response',
       retryable: true,
     });
+  });
+});
+
+describe('listGroupDirectoryTypes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('reads the active types and drops malformed rows', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [
+        { id: 3, name: 'Hobby', description: 'Shared pastimes', color: '#10b981' },
+        { id: 4, name: 'Support', description: null, color: null },
+        { id: 'bad', name: 'Broken' },
+      ],
+    });
+
+    await expect(listGroupDirectoryTypes()).resolves.toEqual([
+      { id: 3, name: 'Hobby', description: 'Shared pastimes', color: '#10b981' },
+      { id: 4, name: 'Support', description: null, color: null },
+    ]);
+    expect(api.get).toHaveBeenCalledWith('/v2/groups/types', { signal: undefined });
+  });
+
+  it('rejects a non-list payload as an invalid response', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { id: 3 } });
+
+    await expect(listGroupDirectoryTypes()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
 });

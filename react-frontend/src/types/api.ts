@@ -915,6 +915,8 @@ export interface Group {
   latitude?: number | null;
   longitude?: number | null;
   type_id?: number | null;
+  /** Active group type label; null when the group has none or its type is switched off. */
+  type?: { id: number; name: string; color: string | null } | null;
   parent_id?: number | null;
   template_id?: number | null;
   template_features?: Record<string, boolean> | string[] | null;
@@ -961,12 +963,6 @@ export interface Group {
       can_manage_admins: boolean;
       can_delete: boolean;
     };
-  };
-  type?: {
-    id: number;
-    name?: string;
-    icon?: string;
-    color?: string;
   };
   is_featured?: boolean;
   federated_visibility?: 'none' | 'listed' | 'joinable';

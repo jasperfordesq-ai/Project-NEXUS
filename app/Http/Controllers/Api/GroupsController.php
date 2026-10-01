@@ -115,6 +115,14 @@ class GroupsController extends BaseApiController
         return $this->respondWithData($this->groupService->getFormCapabilities($userId));
     }
 
+    /** GET /api/v2/groups/types — active group types for the directory filter. */
+    public function types(): JsonResponse
+    {
+        $this->requireAuth();
+
+        return $this->respondWithData($this->groupService->getDirectoryTypes());
+    }
+
     // ================================================================
     // CREATE / UPDATE / DELETE
     // ================================================================

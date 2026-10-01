@@ -103,6 +103,18 @@ vi.mock('@/components/feedback', () => ({
 vi.mock('./components/RecommendedGroups', () => ({
   RecommendedGroups: () => null,
 }));
+// The type list has its own fetch (covered in api/directory.test.ts). Mocking the
+// hook keeps it from consuming the mockResolvedValueOnce() queued for list calls.
+let directoryTypes: Array<{ id: number; name: string; description: string | null; color: string | null }> = [];
+vi.mock('./useGroupDirectoryTypes', () => ({
+  useGroupDirectoryTypes: vi.fn(() => directoryTypes),
+}));
+const HOBBY_TYPE = { id: 3, name: 'Hobby', description: null, color: '#10b981' };
+const SUPPORT_TYPE = { id: 4, name: 'Support', description: null, color: null };
+function lastRequestUrl(): string {
+  const calls = vi.mocked(api.get).mock.calls;
+  return calls[calls.length - 1]?.[0] ?? '';
+}
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { GroupsPage } from './GroupsPage';
@@ -111,6 +123,7 @@ describe('GroupsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     isPhoneViewport = false;
+    directoryTypes = [];
     window.history.replaceState({}, '', '/groups');
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: {} });
   });
@@ -339,9 +352,123 @@ describe('GroupsPage', () => {
     expect(screen.getAllByText('Garden Crew')).toHaveLength(1);
   });
 
+  describe('group type filter', () => {
+    it('is hidden when the community defines no active group types', () => {
+      render(<GroupsPage />);
+      expect(screen.queryByText('Group type')).not.toBeInTheDocument();
+    });
+
+    it('offers every active type and writes the choice to the URL and the request', async () => {
+      directoryTypes = [HOBBY_TYPE, SUPPORT_TYPE];
+      const user = userEvent.setup();
+      render(<GroupsPage />);
+
+      const selectRoot = screen.getByText('Group type').closest('[data-slot="select"]');
+      expect(selectRoot).not.toBeNull();
+      await user.click(within(selectRoot as HTMLElement).getByRole('button'));
+      expect(await screen.findByRole('option', { name: 'All types' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Support' })).toBeInTheDocument();
+      await user.click(screen.getByRole('option', { name: 'Hobby' }));
+
+      expect(new URLSearchParams(window.location.search).get('type')).toBe('3');
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(
+          expect.stringContaining('type_id=3'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        );
+      });
+      expect(screen.getByText('Showing')).toBeInTheDocument();
+    });
+
+    it('restores the type filter from a shared link', async () => {
+      directoryTypes = [HOBBY_TYPE];
+      window.history.replaceState({}, '', '/groups?type=3');
+      render(<GroupsPage />);
+
+      await waitFor(() => {
+        expect(lastRequestUrl()).toContain('type_id=3');
+      });
+    });
+
+    it('ignores a malformed type value instead of sending it', async () => {
+      window.history.replaceState({}, '', '/groups?type=abc');
+      render(<GroupsPage />);
+
+      await waitFor(() => expect(api.get).toHaveBeenCalled());
+      expect(lastRequestUrl()).not.toContain('type_id');
+    });
+
+    it('labels each card with its group type', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: [
+          {
+            id: 42,
+            name: 'Garden Crew',
+            description: 'Grow food together.',
+            member_count: 3,
+            members_count: 3,
+            visibility: 'public',
+            type: { id: 3, name: 'Hobby', color: '#10b981' },
+            created_at: '2026-01-01T00:00:00Z',
+          },
+          {
+            id: 43,
+            name: 'Repair Circle',
+            description: 'Fix things.',
+            member_count: 2,
+            members_count: 2,
+            visibility: 'public',
+            type: null,
+            created_at: '2026-01-01T00:00:00Z',
+          },
+        ],
+        meta: { per_page: 20, has_more: false },
+      });
+
+      render(<GroupsPage />);
+
+      const card = (await screen.findByText('Garden Crew')).closest('article') as HTMLElement;
+      expect(within(card).getByText('Hobby')).toBeInTheDocument();
+      const untyped = screen.getByText('Repair Circle').closest('article') as HTMLElement;
+      expect(within(untyped).queryByText('Hobby')).not.toBeInTheDocument();
+    });
+  });
+
   describe('phone layout', () => {
     beforeEach(() => {
       isPhoneViewport = true;
+    });
+
+    it('offers the group types in the filter sheet and applies one on tap', async () => {
+      directoryTypes = [HOBBY_TYPE];
+      const user = userEvent.setup();
+      render(<GroupsPage />);
+
+      await user.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'Group type' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radio', { name: 'All types' })).toHaveAttribute('aria-checked', 'true');
+
+      await user.click(screen.getByRole('radio', { name: 'Hobby' }));
+
+      expect(new URLSearchParams(window.location.search).get('type')).toBe('3');
+      const bar = screen.getByTestId('groups-filter-bar');
+      expect(within(bar).getByRole('button', { name: 'Remove filter: Hobby' })).toBeInTheDocument();
+    });
+
+    it('clears the type with the other filters from Clear all', async () => {
+      directoryTypes = [HOBBY_TYPE];
+      const user = userEvent.setup();
+      window.history.replaceState({}, '', '/groups?type=3&visibility=public');
+      render(<GroupsPage />);
+
+      await user.click(within(screen.getByTestId('groups-filter-bar')).getByText('Clear all'));
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('type')).toBe(false);
+      expect(params.has('visibility')).toBe(false);
     });
 
     it('renders the sticky bar and drops the desktop hero, quick filters and search card', () => {

@@ -22,6 +22,8 @@
   "filter_public": "Openbaar",
   "filter_private": "Privé",
   "filters_aria": "Groepsfilters",
+  "type_filter_label": "Groepstype",
+  "type_filter_all": "Alle typen",
   "active_filters": "Weergeven",
   "unable_to_load": "Kon Groepen Niet Laden",
   "try_again": "Probeer Opnieuw",

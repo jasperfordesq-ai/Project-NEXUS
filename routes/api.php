@@ -175,6 +175,7 @@ Route::middleware(['auth:sanctum', 'feature:groups'])
     ->group(function () {
     Route::get('/v2/groups', [\App\Http\Controllers\Api\GroupsController::class, 'index']);
     Route::get('/v2/groups/form-capabilities', [\App\Http\Controllers\Api\GroupsController::class, 'formCapabilities']);
+    Route::get('/v2/groups/types', [\App\Http\Controllers\Api\GroupsController::class, 'types']);
     Route::get('/v2/groups/{id}', [\App\Http\Controllers\Api\GroupsController::class, 'show']);
     Route::get('/v2/groups/{id}/members', [\App\Http\Controllers\Api\GroupsController::class, 'members'])->middleware('group.tab:members');
 });

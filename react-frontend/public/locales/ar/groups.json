@@ -22,6 +22,8 @@
   "filter_public": "عام",
   "filter_private": "خاص",
   "filters_aria": "تصفية المجموعات",
+  "type_filter_label": "نوع المجموعة",
+  "type_filter_all": "كل الأنواع",
   "active_filters": "يعرض",
   "unable_to_load": "تعذر تحميل المجموعات",
   "try_again": "حاول مرة أخرى",

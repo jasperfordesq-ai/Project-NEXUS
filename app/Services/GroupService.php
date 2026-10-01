@@ -58,7 +58,7 @@ class GroupService
 
         $query = Group::query()
             ->active()
-            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url'])
+            ->with(['creator:id,first_name,last_name,profile_type,organization_name,avatar_url', 'type:id,name,color,is_active'])
             ->withCount('activeMembers');
 
         // Show featured groups (regardless of hierarchy) + top-level non-featured groups
@@ -391,7 +391,36 @@ class GroupService
         $data['member_count'] = $memberCount;
         $data['members_count'] = $memberCount;
 
+        // Type label for cards and the detail page. A switched-off type is not
+        // offered as a directory filter, so it is not shown as a label either.
+        $type = $group->type_id ? $group->type : null;
+        $data['type'] = $type !== null && $type->is_active
+            ? ['id' => (int) $type->id, 'name' => (string) $type->name, 'color' => $type->color !== null ? (string) $type->color : null]
+            : null;
+
         return $data;
+    }
+
+    /**
+     * Active group types for the directory filter, in the admin-defined order.
+     *
+     * @return list<array{id:int, name:string, description:string|null, color:string|null}>
+     */
+    public static function getDirectoryTypes(): array
+    {
+        return DB::table('group_types')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('is_active', 1)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'description', 'color'])
+            ->map(static fn (object $type): array => [
+                'id' => (int) $type->id,
+                'name' => (string) $type->name,
+                'description' => $type->description !== null ? (string) $type->description : null,
+                'color' => $type->color !== null ? (string) $type->color : null,
+            ])
+            ->all();
     }
 
     /** Authoritative Create/Edit/Settings choices and validation limits. */

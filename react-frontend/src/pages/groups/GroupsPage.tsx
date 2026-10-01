@@ -9,6 +9,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { MobileFilterBar, type MobileFilterBarChip } from '@/components/ui/MobileFilterBar';
 import { SearchField } from '@/components/ui/SearchField';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { GroupCardSkeleton } from '@/components/ui/Skeletons';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -16,7 +17,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
  * Groups Page - Community groups listing
  */
 
-import { lazy, Suspense, useState, useEffect, useCallback, useRef, memo } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useRef, memo, type CSSProperties } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
@@ -48,10 +49,14 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import type { Group } from '@/types/api';
 import { listGroupDirectory } from './api';
 import { GroupsFilterSheet } from './components/GroupsFilterSheet';
+import { useGroupDirectoryTypes } from './useGroupDirectoryTypes';
 
 type GroupFilter = 'all' | 'joined' | 'public' | 'private';
 
 const ITEMS_PER_PAGE = 20;
+const ALL_TYPES_KEY = '__all__';
+/** Admin-entered colours reach a CSS variable only in plain hex form. */
+const HEX_COLOR = /^#[0-9a-f]{3,8}$/i;
 const SEARCH_DEBOUNCE_MS = 300;
 const MAX_VISIBLE_TAGS = 3;
 const RecommendedGroups = lazy(() =>
@@ -77,6 +82,12 @@ function readDirectoryFilter(searchParams: URLSearchParams, isAuthenticated: boo
   if (isAuthenticated && searchParams.get('scope') === 'joined') return 'joined';
   const visibility = searchParams.get('visibility');
   return visibility === 'public' || visibility === 'private' ? visibility : 'all';
+}
+
+function readTypeFilter(searchParams: URLSearchParams): number | null {
+  const raw = searchParams.get('type');
+  if (!raw || !/^[1-9][0-9]*$/.test(raw)) return null;
+  return Number(raw);
 }
 
 function dedupeGroups(groups: Group[]): Group[] {
@@ -108,6 +119,9 @@ export function GroupsPage() {
   const searchQuery = searchParams.get('q') || '';
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
   const filter = readDirectoryFilter(searchParams, isAuthenticated);
+  const typeId = readTypeFilter(searchParams);
+  const groupTypes = useGroupDirectoryTypes(isAuthenticated);
+  const selectedType = typeId === null ? null : groupTypes.find((type) => type.id === typeId) ?? null;
 
   // Phone-only chrome: sticky filter bar + full-screen search overlay + filter sheet.
   const isPhone = useMediaQuery('(max-width: 639px)');
@@ -173,6 +187,7 @@ export function GroupsPage() {
         search: debouncedQuery || undefined,
         visibility: filter === 'public' || filter === 'private' ? filter : undefined,
         memberUserId: filter === 'joined' && user?.id ? user.id : undefined,
+        typeId: typeId ?? undefined,
         perPage: ITEMS_PER_PAGE,
         cursor: requestCursor,
         signal: controller.signal,
@@ -219,7 +234,7 @@ export function GroupsPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedQuery, filter, user?.id, t, toast]);
+  }, [debouncedQuery, filter, typeId, user?.id, t, toast]);
 
   // Load groups when filter or debounced query changes; reset cursor for a fresh page-1 fetch
   useEffect(() => {
@@ -233,7 +248,7 @@ export function GroupsPage() {
       }
       appendAbortControllerRef.current?.abort();
     };
-  }, [debouncedQuery, filter]); // eslint-disable-line react-hooks/exhaustive-deps -- reset on filter change; loadGroups excluded to avoid loop
+  }, [debouncedQuery, filter, typeId]); // eslint-disable-line react-hooks/exhaustive-deps -- reset on filter change; loadGroups excluded to avoid loop
 
   const loadMoreGroups = useCallback(() => {
     if (isLoadingMore || !hasMore || !cursor) return;
@@ -253,6 +268,13 @@ export function GroupsPage() {
     params.delete('visibility');
     if (value === 'joined') params.set('scope', 'joined');
     else if (value === 'public' || value === 'private') params.set('visibility', value);
+    setSearchParams(params);
+  }
+
+  function updateType(value: number | null) {
+    const params = new URLSearchParams(searchParams);
+    if (value === null) params.delete('type');
+    else params.set('type', String(value));
     setSearchParams(params);
   }
 
@@ -285,6 +307,7 @@ export function GroupsPage() {
     params.delete('q');
     params.delete('scope');
     params.delete('visibility');
+    params.delete('type');
     setSearchParams(params);
     setDebouncedQuery('');
   }
@@ -300,9 +323,19 @@ export function GroupsPage() {
 
   // Phone: the applied filter as a removable chip (the query shows in the search
   // pill instead, matching ListingsPage).
-  const phoneFilterChips: MobileFilterBarChip[] = filter === 'all'
-    ? []
-    : [{ key: 'filter', label: getFilterLabel(filter), onRemove: () => updateFilter('all') }];
+  const phoneFilterChips: MobileFilterBarChip[] = [
+    ...(filter === 'all'
+      ? []
+      : [{ key: 'filter', label: getFilterLabel(filter), onRemove: () => updateFilter('all') }]),
+    ...(selectedType
+      ? [{ key: 'type', label: selectedType.name, onRemove: () => updateType(null) }]
+      : []),
+  ];
+
+  const typeOptions = [
+    { key: ALL_TYPES_KEY, label: t('type_filter_all') },
+    ...groupTypes.map((type) => ({ key: String(type.id), label: type.name })),
+  ];
 
   return (
     <div className="space-y-6">
@@ -387,6 +420,7 @@ export function GroupsPage() {
       {/* Filters */}
       <GlassCard className="p-4">
         <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
             <SearchField
               placeholder={t('search_placeholder')}
@@ -401,11 +435,30 @@ export function GroupsPage() {
               }}
             />
           </div>
-          {(debouncedQuery || filter !== 'all') && (
+          {groupTypes.length > 0 && (
+            <Select
+              label={t('type_filter_label')}
+              className="sm:w-64"
+              selectedKeys={new Set([selectedType ? String(selectedType.id) : ALL_TYPES_KEY])}
+              onSelectionChange={(keys) => {
+                const [key] = Array.from(keys);
+                updateType(!key || key === ALL_TYPES_KEY ? null : Number(key));
+              }}
+            >
+              {typeOptions.map((option) => (
+                <SelectItem key={option.key} id={option.key} textValue={option.label}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </Select>
+          )}
+          </div>
+          {(debouncedQuery || filter !== 'all' || selectedType) && (
             <div className="flex flex-wrap items-center gap-2 text-xs text-theme-muted">
               <span>{t('active_filters')}</span>
               {debouncedQuery && <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-secondary">{debouncedQuery}</Chip>}
               {filter !== 'all' && <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-secondary">{getFilterLabel(filter)}</Chip>}
+              {selectedType && <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-secondary">{selectedType.name}</Chip>}
             </div>
           )}
         </div>
@@ -462,6 +515,10 @@ export function GroupsPage() {
           filter={filter}
           options={filterOptions}
           onFilterChange={(key) => updateFilter(key as GroupFilter)}
+          typeLabel={t('type_filter_label')}
+          typeFilter={selectedType ? String(selectedType.id) : ALL_TYPES_KEY}
+          typeOptions={groupTypes.length > 0 ? typeOptions : []}
+          onTypeChange={(key) => updateType(key === ALL_TYPES_KEY ? null : Number(key))}
         />
       )}
 
@@ -514,7 +571,7 @@ export function GroupsPage() {
             />
           ) : (
             <motion.div
-              key={debouncedQuery + filter}
+              key={`${debouncedQuery}|${filter}|${typeId ?? ''}`}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -667,6 +724,18 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
                   {t('featured_badge')}
                 </span>
               </div>
+            )}
+            {group.type && (
+              <span className="mb-2 inline-flex max-w-full items-center gap-1.5 self-start rounded-full bg-theme-elevated px-2 py-0.5 text-xs font-medium text-theme-secondary">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-[var(--group-type-color,var(--color-primary))]"
+                  style={group.type.color && HEX_COLOR.test(group.type.color)
+                    ? ({ '--group-type-color': group.type.color } as CSSProperties)
+                    : undefined}
+                  aria-hidden="true"
+                />
+                <span className="truncate">{group.type.name}</span>
+              </span>
             )}
             <h3 className="mb-3 line-clamp-2 text-lg font-semibold text-theme-primary">{group.name}</h3>
 

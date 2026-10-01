@@ -22,6 +22,8 @@
   "filter_public": "Públicos",
   "filter_private": "Privados",
   "filters_aria": "Filtros de grupos",
+  "type_filter_label": "Tipo de grupo",
+  "type_filter_all": "Todos os tipos",
   "active_filters": "A mostrar",
   "unable_to_load": "Não Foi Possível Carregar os Grupos",
   "try_again": "Tentar Novamente",

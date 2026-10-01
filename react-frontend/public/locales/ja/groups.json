@@ -22,6 +22,8 @@
   "filter_public": "公開",
   "filter_private": "非公開",
   "filters_aria": "グループフィルター",
+  "type_filter_label": "グループの種類",
+  "type_filter_all": "すべての種類",
   "active_filters": "表示中",
   "unable_to_load": "グループを読み込めません",
   "try_again": "再試行",
