@@ -550,9 +550,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationController.php:1278:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationController.php:1350:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationController.php",
-            "line": 1278,
+            "line": 1350,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $input['reviewee_id']",

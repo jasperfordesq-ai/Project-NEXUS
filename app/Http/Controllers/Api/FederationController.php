@@ -981,6 +981,71 @@ class FederationController extends BaseApiController
         // Fix 1: Wrap transaction creation in DB transaction for atomicity
         DB::beginTransaction();
         try {
+            // ── F-396: re-check every precondition INSIDE the transaction ──
+            // The recipient, sender, partnership and credit agreement above were
+            // read unlocked and never consulted again, so a change committed in
+            // the window — the recipient suspended or opted out, the sender
+            // opted out, the partnership or agreement suspended — did not stop
+            // the transfer. This is the F-344/F-376/F-395 shape from
+            // FederationV2Controller::sendTransaction(), in its lock order:
+            // users (ascending id) -> federation_partnerships ->
+            // federation_user_settings. Rows are LOCKED, not merely re-read.
+            $refuse = function (int $status, string $message, string $code): JsonResponse {
+                DB::rollBack();
+                return $this->fedError($status, $message, $code);
+            };
+            $lockUserIds = $isExternal ? [(int) $recipient['id']] : [$senderId, (int) $recipient['id']];
+            sort($lockUserIds);
+            foreach ($lockUserIds as $lockUserId) {
+                DB::selectOne('SELECT id FROM users WHERE id = ? FOR UPDATE', [$lockUserId]);
+            }
+
+            if (!$isExternal) {
+                $lockedPartnership = DB::selectOne(
+                    "SELECT id FROM federation_partnerships
+                     WHERE ((tenant_id = ? AND partner_tenant_id = ?) OR (partner_tenant_id = ? AND tenant_id = ?))
+                     AND status = 'active' AND (transactions_enabled = 1 OR federation_level >= 3)
+                     LIMIT 1 FOR UPDATE",
+                    [$partnerTenantId, $recipient['tenant_id'], $partnerTenantId, $recipient['tenant_id']]
+                );
+                if (!$lockedPartnership) {
+                    return $refuse(403, 'Partnership does not allow transactions', 'TRANSACTIONS_NOT_ALLOWED');
+                }
+
+                $lockedSender = DB::selectOne(
+                    "SELECT u.id FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id
+                     WHERE u.id = ? AND u.tenant_id = ? AND u.status = 'active'
+                     AND fus.federation_optin = 1 AND fus.transactions_enabled_federated = 1 FOR UPDATE",
+                    [$senderId, $partnerTenantId]
+                );
+                if (!$lockedSender) {
+                    return $refuse(403, 'Sender not found, not in your tenant, or has not opted into federation', 'SENDER_NOT_ELIGIBLE');
+                }
+            }
+
+            $lockedAgreement = DB::selectOne(
+                "SELECT id FROM federation_credit_agreements
+                 WHERE ((from_tenant_id = ? AND to_tenant_id = ?) OR (from_tenant_id = ? AND to_tenant_id = ?))
+                 AND status = 'active' LIMIT 1 FOR UPDATE",
+                [$partnerTenantId, $recipient['tenant_id'], $recipient['tenant_id'], $partnerTenantId]
+            );
+            if (!$lockedAgreement) {
+                return $refuse(403, 'No active credit agreement between tenants', 'NO_CREDIT_AGREEMENT');
+            }
+
+            $lockedRecipient = DB::selectOne(
+                "SELECT u.status, fus.federation_optin, fus.transactions_enabled_federated
+                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id
+                 WHERE u.id = ? AND u.tenant_id = ? FOR UPDATE",
+                [(int) $recipient['id'], (int) $recipient['tenant_id']]
+            );
+            if (!$lockedRecipient || (string) $lockedRecipient->status !== 'active' || !$lockedRecipient->federation_optin) {
+                return $refuse(404, 'Recipient not found or not accessible', 'RECIPIENT_NOT_FOUND');
+            }
+            if (!$lockedRecipient->transactions_enabled_federated) {
+                return $refuse(403, 'Recipient does not accept federated transactions', 'TRANSACTIONS_DISABLED');
+            }
+
             // Fix 2: Deduct sender balance (atomic double-spend prevention).
             // For external partners the sender lives on the remote server and has
             // no local row — skip the local deduction; the remote node is
@@ -1030,7 +1095,14 @@ class FederationController extends BaseApiController
 
             $status = 'pending';
             if ($isExternal) {
-                $db->prepare("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ?")->execute([$amount, $validatedRecipientId, $validatedRecipientTenantId]);
+                // F-396: conditional on the account still being active, like the
+                // v2 credit (F-376); a credit that lands on nothing rolls back.
+                $credit = $db->prepare("UPDATE users SET balance = balance + ? WHERE id = ? AND tenant_id = ? AND status = 'active'");
+                $credit->execute([$amount, $validatedRecipientId, $validatedRecipientTenantId]);
+                if ($credit->rowCount() === 0) {
+                    DB::rollBack();
+                    return $this->fedError(404, 'Recipient not found or not accessible', 'RECIPIENT_NOT_FOUND');
+                }
                 $db->prepare("UPDATE transactions SET status = 'completed' WHERE id = ?")->execute([$transactionId]);
                 $status = 'completed';
             }
