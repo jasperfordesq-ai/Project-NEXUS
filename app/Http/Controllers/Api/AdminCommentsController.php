@@ -81,6 +81,29 @@ class AdminCommentsController extends BaseApiController
         return null;
     }
 
+    /**
+     * F-420: a comment's AUTHOR is not always the person the thread is about.
+     * A review is authored by the reviewer and is about the receiver, so
+     * guardBrokerNotAuthor() let a broker who had been reviewed delete or hide
+     * every other member's comment on the review about themselves. Mirrors
+     * AdminFeedController::guardBrokerNotSubject() (added by F-390).
+     */
+    private function guardBrokerNotSubject(string $targetType, int $targetId, int $commentTenantId, int $callerId): ?JsonResponse
+    {
+        if ($targetType !== 'review' || $this->callerIsAdminTier()) {
+            return null;
+        }
+        $receiverId = (int) DB::table('reviews')
+            ->where('id', $targetId)
+            ->where('tenant_id', $commentTenantId)
+            ->value('receiver_id');
+        if ($receiverId === $callerId) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
+        }
+
+        return null;
+    }
+
     public function index(): JsonResponse
     {
         $this->requireBrokerOrAdmin();
@@ -231,6 +254,7 @@ class AdminCommentsController extends BaseApiController
         }
 
         if ($guard = $this->guardBrokerNotAuthor((int) $comment->user_id, $adminId)) return $guard;
+        if ($guard = $this->guardBrokerNotSubject((string) $comment->target_type, (int) $comment->target_id, (int) $comment->tenant_id, $adminId)) return $guard;
 
         $commentTenantId = (int) $comment->tenant_id;
 
@@ -298,6 +322,7 @@ class AdminCommentsController extends BaseApiController
         }
 
         if ($guard = $this->guardBrokerNotAuthor((int) $comment->user_id, $adminId)) return $guard;
+        if ($guard = $this->guardBrokerNotSubject((string) $comment->target_type, (int) $comment->target_id, (int) $comment->tenant_id, $adminId)) return $guard;
 
         $commentTenantId = (int) $comment->tenant_id;
 
