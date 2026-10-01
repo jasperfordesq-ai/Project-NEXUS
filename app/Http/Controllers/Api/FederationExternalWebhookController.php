@@ -664,6 +664,34 @@ class FederationExternalWebhookController extends BaseApiController
             return $blocked;
         }
 
+        // F-406 (second half) — the member's own decision about federated
+        // reviews, which the v1 partner API has always enforced here.
+        //
+        // The local path refuses a review where either party has blocked the
+        // other (BlockUserService::assertNoBlockBetween). That control cannot be
+        // carried across: a block is between two local `users` rows, the remote
+        // reviewer has none, and every reviewer field in the payload is chosen
+        // by the sender — which is why `reviewer_id` is written NULL below. A
+        // check keyed on a sender-chosen identifier would look like protection
+        // and be none.
+        //
+        // What the member CAN express, and what this platform already records,
+        // is whether they accept federated reviews at all.
+        // `FederationController::createReview()` reads exactly this pair before
+        // writing an inbound federated review and answers REVIEWS_DISABLED,
+        // "Reviewee does not accept federated reviews". The webhook route read
+        // neither flag.
+        //
+        // 🔴 Still not expressible: refusing ONE remote reviewer while accepting
+        // others. The levers today are all-or-nothing for the member, and
+        // partner suspension for the operator.
+        if (!$this->receiverAcceptsFederatedReviews($receiverId, $tenantId)) {
+            return [
+                'status' => 'rejected',
+                'reason' => 'This member does not accept federated reviews',
+            ];
+        }
+
         // F-406 — an inbound review must describe a real exchange with THIS
         // member, recorded by THIS partner, and one exchange earns one review.
         //
@@ -817,6 +845,25 @@ class FederationExternalWebhookController extends BaseApiController
             ->first(['id']);
 
         return $tx ? (int) $tx->id : null;
+    }
+
+    /**
+     * F-406 (second half) — does this member accept federated reviews?
+     *
+     * The same pair of recorded decisions `FederationController::createReview()`
+     * requires before writing an inbound federated review. The join is an inner
+     * one, as it is there: `federation_optin` defaults to 0, so a member with no
+     * settings row has recorded no consent and the absence is not permission.
+     */
+    private function receiverAcceptsFederatedReviews(int $userId, int $tenantId): bool
+    {
+        return DB::table('users')
+            ->join('federation_user_settings as fus', 'fus.user_id', '=', 'users.id')
+            ->where('users.id', $userId)
+            ->where('users.tenant_id', $tenantId)
+            ->where('fus.federation_optin', 1)
+            ->where('fus.show_reviews_federated', 1)
+            ->exists();
     }
 
     /**
@@ -1487,11 +1534,20 @@ class FederationExternalWebhookController extends BaseApiController
                     (float) $existingTransaction->amount,
                     (string) ($existingTransaction->description ?? '')
                 );
-                if (!$delivery['success']) {
-                    throw new \RuntimeException((string) ($delivery['error'] ?? 'Federated transaction delivery failed'));
-                }
 
-                return ['status' => 'duplicate', 'reason' => 'Transaction already recorded'];
+                return $this->withDeliveryOutcome(
+                    ['status' => 'duplicate', 'reason' => 'Transaction already recorded'],
+                    $delivery
+                );
+            }
+
+            // F-484 — the member's own recorded federation choice, which every
+            // other inbound credit protocol already reads. Deliberately after the
+            // idempotency branch: this guards the act of crediting, so a replay of
+            // a transfer we really did accept still gets its "duplicate" answer
+            // rather than a false failure the partner would reissue.
+            if (!$this->receiverAcceptsFederatedCredit($receiverUserId, (int) TenantContext::getId())) {
+                return ['status' => 'rejected', 'reason' => 'Recipient has not enabled federated transactions'];
             }
 
             // Credit the receiver's balance and record the transaction
@@ -1564,9 +1620,8 @@ class FederationExternalWebhookController extends BaseApiController
                 $amount,
                 (string) $description
             );
-            if (!$delivery['success']) {
-                throw new \RuntimeException((string) ($delivery['error'] ?? 'Federated transaction delivery failed'));
-            }
+
+            return $this->withDeliveryOutcome(['status' => 'acknowledged'], $delivery);
         }
 
         return ['status' => 'acknowledged'];
@@ -1744,11 +1799,20 @@ class FederationExternalWebhookController extends BaseApiController
                 (float) $existingTransaction->amount,
                 (string) ($existingTransaction->description ?? '')
             );
-            if (!$delivery['success']) {
-                throw new \RuntimeException((string) ($delivery['error'] ?? 'Federated transaction delivery failed'));
-            }
 
-            return ['status' => 'duplicate', 'reason' => 'Transaction already recorded'];
+            return $this->withDeliveryOutcome(
+                ['status' => 'duplicate', 'reason' => 'Transaction already recorded'],
+                $delivery
+            );
+        }
+
+        // F-484 — the member's own recorded federation choice, which every other
+        // inbound credit protocol already reads. Deliberately after the
+        // idempotency branch: this guards the act of crediting, so a replay of a
+        // transfer we really did accept still gets its "duplicate" answer rather
+        // than a false failure the partner would reissue.
+        if (!$this->receiverAcceptsFederatedCredit($receiverUserId, (int) TenantContext::getId())) {
+            return ['status' => 'rejected', 'reason' => 'Recipient has not enabled federated transactions'];
         }
 
         // Record the transaction AND credit the user immediately — atomically
@@ -1837,15 +1901,76 @@ class FederationExternalWebhookController extends BaseApiController
             $amountInHours,
             (string) ($data['reason'] ?? $data['description'] ?? '')
         );
-        if (!$delivery['success']) {
-            throw new \RuntimeException((string) ($delivery['error'] ?? 'Federated transaction delivery failed'));
-        }
 
-        return [
+        return $this->withDeliveryOutcome([
             'status' => 'completed',
             'amount_credited' => $amountInHours,
             'recipient_id' => $receiverUserId,
-        ];
+        ], $delivery);
+    }
+
+    /**
+     * F-422 — report a failed notification as a failed NOTIFICATION, never as a
+     * failed transfer.
+     *
+     * The money is already committed by the time
+     * `ensureExternalTransactionDelivery()` runs. A false return used to throw,
+     * and `receive()`'s generic `\Throwable` arm answers HTTP 500
+     * PROCESSING_FAILED — the response this controller's own docblock reserves
+     * for internal errors that "must stay retryable for the sending partner".
+     * So a partner that reads 500 as "this transfer did not happen" and reissues
+     * under a fresh `external_transaction_id` double-credits the member, and by
+     * F-407 only the community's monthly ceiling bounds the compounding.
+     *
+     * The delivery failure is not lost: `ensureExternalTransactionDelivery()`
+     * has already stamped `email_failed_at` / `email_last_error` on the row and
+     * logged it, `AdminEmailDeliverabilityController` reports those rows to an
+     * operator, and a later replay of the same identifier still repairs the
+     * notification. The partner is now told the transfer was accepted, with the
+     * delivery problem reported alongside it.
+     *
+     * @param array<string,mixed> $result
+     * @param array{success:bool,error?:string} $delivery
+     * @return array<string,mixed>
+     */
+    private function withDeliveryOutcome(array $result, array $delivery): array
+    {
+        if (($delivery['success'] ?? false) === true) {
+            return $result;
+        }
+
+        $result['delivery'] = 'failed';
+        $result['delivery_error'] = (string) ($delivery['error'] ?? 'Federated transaction delivery failed');
+
+        return $result;
+    }
+
+    /**
+     * F-484 — does this member accept time credit arriving from outside?
+     *
+     * `federation_user_settings.federation_optin` and
+     * `transactions_enabled_federated` are the member's own two recorded
+     * decisions, and every other inbound credit protocol reads them before
+     * moving money: Komunitin (`localAccountCanTransact()`), Credit Commons
+     * (`payerMayBeDebited()`), the v1 partner API (TRANSACTIONS_DISABLED) and
+     * the v2 member path. This protocol looked the receiver up on id, tenant and
+     * `status = 'active'` only, so credit from an outside organisation landed in
+     * the wallet of a member who had refused federation.
+     *
+     * The join is deliberately an inner one, matching the four surfaces above:
+     * every flag in `federation_user_settings` defaults to 0, so a member with
+     * no row has recorded no consent and the absence must not read as
+     * permission.
+     */
+    private function receiverAcceptsFederatedCredit(int $userId, int $tenantId): bool
+    {
+        return DB::table('users')
+            ->join('federation_user_settings as fus', 'fus.user_id', '=', 'users.id')
+            ->where('users.id', $userId)
+            ->where('users.tenant_id', $tenantId)
+            ->where('fus.federation_optin', 1)
+            ->where('fus.transactions_enabled_federated', 1)
+            ->exists();
     }
 
     /**
@@ -2106,14 +2231,42 @@ class FederationExternalWebhookController extends BaseApiController
 
     private function handlePartnershipActivated(object $partner): array
     {
+        // F-423: a SUSPENDED partner may not reinstate itself. VALID_TRANSITIONS
+        // above describes which status changes the protocol's state machine
+        // allows, not WHO may make them — and `suspended => active` is listed
+        // there because lifting a suspension is a legitimate transition for an
+        // OPERATOR to make from the federation admin. Suspension is the
+        // operator's only lever against a partner that is misbehaving, so it
+        // must never be liftable by a partner-initiated event.
+        //
+        // 🔴 This was latent, not live, and the reason must not be mistaken for
+        // a reason to drop either half. Both HTTP entry points already refuse a
+        // non-active partner before dispatch — receive() (:136-138) and
+        // FederationNativeIngestController (:177-179) — and those refusals stay.
+        // This check hardens the handler because processTrustedEvent() is
+        // PUBLIC and its contract carries no status check: a third caller that
+        // omitted that one line would hand a suspended partner its own
+        // reinstatement. Same shape as F-173.
+        if ((string) $partner->status === 'suspended') {
+            Log::warning("[FederationExternalWebhook] Refused self-reinstatement of suspended partner #{$partner->id}");
+            return ['status' => 'rejected', 'reason' => 'A suspended partner cannot reactivate itself'];
+        }
+
         if (!$this->canTransition($partner->status, 'active')) {
             Log::warning("[FederationExternalWebhook] Rejected activation of {$partner->status} partner #{$partner->id}");
             return ['status' => 'rejected', 'reason' => "Cannot activate a {$partner->status} partner"];
         }
+
+        // F-423: `error_count` and `last_error` are the OPERATOR's record of
+        // what this partner did wrong. They are cleared by the operator
+        // (AdminFederationExternalPartnersController :183, :191) and by a
+        // successful run of SyncFederationPartners — never by the partner
+        // itself. Clearing them here let a partner-initiated event erase the
+        // evidence behind its own suspension.
         DB::table('federation_external_partners')
             ->where('id', $partner->id)
             ->where('tenant_id', $partner->tenant_id)
-            ->update(['status' => 'active', 'verified_at' => now(), 'error_count' => 0, 'last_error' => null]);
+            ->update(['status' => 'active', 'verified_at' => now()]);
         return ['status' => 'activated'];
     }
 

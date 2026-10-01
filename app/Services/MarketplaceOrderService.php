@@ -748,9 +748,7 @@ class MarketplaceOrderService
             ->where('tenant_id', $tenantId)
             ->where('id', $listing->user_id)
             ->value('status');
-        if ($sellerStatus === null || in_array((string) $sellerStatus, [
-            'banned', 'suspended', 'inactive', 'deactivated',
-        ], true)) {
+        if ($sellerStatus === null || !WalletService::canReceiveCredits((string) $sellerStatus)) {
             throw new \InvalidArgumentException(__('api.marketplace_seller_transactions_unavailable'));
         }
     }

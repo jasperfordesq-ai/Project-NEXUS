@@ -111,6 +111,54 @@ class CaringCommunityWorkflowService
             }
             $log = $locked;
 
+            // F-475: approving MINTS time credits into the member's balance, so
+            // this is one of the paths WalletService::NON_RECEIVING_STATUSES
+            // exists for — "every path that moves credits to a member … so the
+            // rule cannot drift between them" (F-105/F-106, and F-442). Nothing
+            // in this service read the member's status. Tested BEFORE the log is
+            // flipped, so a refusal leaves the hours pending and decidable again
+            // once the suspension is lifted, rather than approved with nothing
+            // minted (the verify paths only ever reprocess 'pending' logs).
+            if ($action === 'approve') {
+                $payee = DB::table('users')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', (int) $locked->user_id)
+                    ->lockForUpdate()
+                    ->first(['id', 'status']);
+
+                if (!$payee || !WalletService::canReceiveCredits($payee->status ?? null)) {
+                    $aborted = true;
+                    return;
+                }
+            }
+
+            // F-478: the hard freeze — "a suspended (non-approved) org cannot
+            // mint new time credits". This is the fourth route in that family
+            // (F-343, F-379, F-384 closed the other three and none of their fix
+            // commits touched this file), and it had no organisation-status test
+            // at all: decideReview() read the organisation only as
+            // `if (!$org) return;` and applyOrganizationPayment() locked it
+            // without `status` in the column list. No race was needed.
+            //
+            // Tested BEFORE the log is flipped, for the same reason as the guard
+            // above, and only on `approve`: declining moves no value, so
+            // administrators can still clear the queue during a suspension —
+            // exactly as VolunteerService::verifyHours() allows.
+            if ($action === 'approve'
+                && !empty($locked->organization_id)
+                && Schema::hasTable('vol_organizations')) {
+                $orgStatus = DB::table('vol_organizations')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', (int) $locked->organization_id)
+                    ->value('status');
+
+                if ($orgStatus !== null
+                    && !VolunteerService::isApprovedOrganizationStatus((string) $orgStatus)) {
+                    $aborted = true;
+                    return;
+                }
+            }
+
             DB::table('vol_logs')
                 ->where('tenant_id', $tenantId)
                 ->where('id', $logId)
@@ -531,12 +579,39 @@ class CaringCommunityWorkflowService
             return 'no_payable_hours';
         }
 
+        // F-475: lock the member's USER row FIRST, then the organisation row —
+        // the documented lock order on this path, which
+        // VolunteerService::applyVolunteerAutoPayment() already follows. The
+        // credit below mints into users.balance, so an account an administrator
+        // has suspended or banned may not be paid. decideReview() refuses before
+        // the log is flipped; this is the money-path backstop, which also makes
+        // the guard travel with the credit if another caller appears.
+        $volunteerLocked = DB::selectOne(
+            "SELECT id, status FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
+            [$volunteerId, $tenantId]
+        );
+        if (!$volunteerLocked || !WalletService::canReceiveCredits($volunteerLocked->status ?? null)) {
+            // Nothing is debited and nothing is minted, like 'no_org' below.
+            return 'volunteer_cannot_receive';
+        }
+
+        // F-478: `status` is now in the column list — it was not, which is the
+        // exact shape F-343 was raised on, and nothing in this file called
+        // isApprovedOrganizationStatus at all, which is the exact evidence F-379
+        // was raised on.
         $orgLocked = DB::selectOne(
-            "SELECT id, balance FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
+            "SELECT id, balance, status FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
             [$organizationId, $tenantId]
         );
         if (!$orgLocked) {
             return 'no_org';
+        }
+
+        // F-478: re-apply the freeze under the organisation row lock, so a
+        // suspension committed since decideReview()'s unlocked read still stops
+        // the mint. Nothing is debited and nothing is minted, like 'no_org'.
+        if (!VolunteerService::isApprovedOrganizationStatus($orgLocked->status ?? null)) {
+            return 'org_not_active';
         }
 
         // Debit the org wallet UNCONDITIONALLY — allow it to go NEGATIVE. The org

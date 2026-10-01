@@ -1099,12 +1099,47 @@ class GroupExchangeService
 
                 // Providers earn credits, receivers spend them
                 if ($entry['role'] === 'provider') {
+                    // F-476: the participants' account state was read only when
+                    // they JOINED and never again, so settlement paid a member an
+                    // administrator had suspended or banned in the meantime. This
+                    // is a path that moves credits to a member, so it obeys the
+                    // shared rule — "every path that moves credits to a member …
+                    // so the rule cannot drift between them" (F-105/F-106, and
+                    // F-442, which made one-to-one exchange completion ask).
+                    // Read under lockForUpdate() inside this transaction, so it
+                    // cannot go stale between the check and the credit (reading
+                    // it outside the lock is F-411).
+                    $payee = DB::table('users')
+                        ->where('id', $entry['user_id'])
+                        ->where('tenant_id', $tenantId)
+                        ->lockForUpdate()
+                        ->first(['id', 'status']);
+
+                    if (!$payee || !WalletService::canReceiveCredits($payee->status ?? null)) {
+                        // Throw like the receiver debit below: the whole
+                        // settlement rolls back, so no balance moves and the
+                        // exchange stays at its previous status, settleable the
+                        // moment the suspension is lifted.
+                        throw new \RuntimeException('GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE');
+                    }
+
                     $creditCents[] = ['user_id' => (int) $entry['user_id'], 'cents' => (int) round($hours * 100)];
 
-                    DB::table('users')
+                    // F-476: this result was DISCARDED while the receiver debit
+                    // below is checked and throws. Both legs are scoped by
+                    // tenant_id, so a participant moved to another community
+                    // matched no row here: the receivers were debited, the
+                    // exchange was marked completed, a transactions row recorded
+                    // the credit — and the hours left the community's stock
+                    // entirely. Credits must be conserved or nothing moves.
+                    $credited = DB::table('users')
                         ->where('id', $entry['user_id'])
                         ->where('tenant_id', $tenantId)
                         ->increment('balance', $hours);
+
+                    if ($credited === 0) {
+                        throw new \RuntimeException('GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE');
+                    }
                 } else {
                     // Debit the receiver — guarded like every other debit path
                     // (balance >= amount) so receivers can't be driven negative;

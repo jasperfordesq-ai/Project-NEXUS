@@ -58,6 +58,11 @@ class CaringWorkflowDecisionMintingTest extends TestCase
             'tenant_id'        => $this->testTenantId,
             'user_id'          => $owner->id,
             'name'             => 'KISS Zug',
+            // F-478: vol_organizations.status defaults to 'pending', and a
+            // non-approved organisation may not mint. This test is about
+            // auto_pay and balance NOT gating the mint, so the organisation
+            // itself has to be one that is allowed to pay.
+            'status'           => 'approved',
             'balance'          => 1,   // far less than the 3 owed
             'auto_pay_enabled' => 0,   // auto-pay OFF — approval must still mint
             'created_at'       => now(),

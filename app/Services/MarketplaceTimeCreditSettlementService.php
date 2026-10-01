@@ -64,7 +64,7 @@ final class MarketplaceTimeCreditSettlementService
                     ->where('tenant_id', $tenantId)
                     ->whereKey($sellerId)
                     ->firstOrFail();
-                if (in_array((string) $seller->status, ['banned', 'suspended', 'inactive', 'deactivated'], true)) {
+                if (!WalletService::canReceiveCredits((string) $seller->status)) {
                     throw new RuntimeException(__('api.wallet_transfer_recipient_inactive'));
                 }
                 if ((float) $buyer->balance < $amount) {

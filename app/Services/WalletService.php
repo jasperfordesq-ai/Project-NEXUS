@@ -35,9 +35,17 @@ class WalletService
      * that moves credits to a member (transfer, member donation, community-fund
      * grant) so the rule cannot drift between them (F-105/F-106).
      *
+     * Every entry must be a value `users`.`status` can actually hold:
+     * 'active','inactive','suspended','banned','pending','rejected'. The list
+     * previously named 'deactivated', which the column cannot hold, and omitted
+     * 'rejected', which AdminUsersController::reject() writes when a community
+     * formally refuses an applicant (F-477). 'pending' is deliberately absent:
+     * a newly registered member must still receive their welcome credits and
+     * ordinary transfers before they verify.
+     *
      * @var list<string>
      */
-    public const NON_RECEIVING_STATUSES = ['banned', 'suspended', 'inactive', 'deactivated'];
+    public const NON_RECEIVING_STATUSES = ['banned', 'suspended', 'inactive', 'rejected'];
 
     /**
      * Whether an account in $status may receive time credits.
@@ -345,8 +353,8 @@ class WalletService
         // in the sender's tenant (invisible to the tenant-scoped native query above).
         // Cursor pagination stays keyed to the native transactions table; federation rows
         // appear as an overlay on page 1, re-sorted by created_at so they interleave correctly.
-        // Excluded for 'pending' as well as 'sent': both overlay sources hard-filter to
-        // status = completed, so they can never belong in a pending-only list.
+        // Excluded for 'pending' as well as 'sent': neither overlay source ever
+        // returns a pending row, so they can never belong in a pending-only list.
         if ($cursor === null && $type !== 'sent' && $type !== 'pending') {
             $fedItems = array_merge(
                 $this->getFederationTransactions($userId, $limit),
@@ -407,10 +415,14 @@ class WalletService
             $partnerName = $r->partner_name ?: __('api.external_partner_fallback');
             $createdAt = $r->created_at ? \Carbon\Carbon::parse($r->created_at)->toIso8601String() : null;
 
+            // F-491 — see getFederationTransactions(): a cancelled delivery was
+            // taken back off the member, so it reads as hours leaving.
+            $reversed = ($r->status ?? 'completed') === 'cancelled';
+
             return [
                 'id'               => -1 * (int) $r->id,
                 'source'           => 'federation',
-                'type'             => 'credit',
+                'type'             => $reversed ? 'debit' : 'credit',
                 'status'           => $r->status ?? 'completed',
                 'amount'           => (float) $r->amount,
                 'description'      => $r->description,
@@ -441,7 +453,13 @@ class WalletService
                 ->leftJoin('federation_external_partners as ep', 'ep.id', '=', 'ft.external_partner_id')
                 ->where('ft.receiver_user_id', $userId)
                 ->where('ft.receiver_tenant_id', $tenantId)
-                ->where('ft.status', 'completed')
+                // F-491 — a delivery the partner later cancelled used to be filtered
+                // out here the moment its status changed, so the hours left the
+                // member's balance with nothing on their wallet to account for it.
+                // No local `transactions` row is written for a federation credit or
+                // its reversal, so this overlay is the member's only record of either.
+                // 'pending' stays excluded: nothing has moved yet.
+                ->whereIn('ft.status', ['completed', 'cancelled', 'disputed'])
                 ->orderByDesc('ft.created_at')
                 ->limit($limit)
                 ->get([
@@ -464,10 +482,16 @@ class WalletService
                 // AND can never collide with native transaction ids. Callers detect federation
                 // rows via the `source` field rather than by id.
                 $syntheticId = -1 * (int) $r->id;
+                // F-491 — 'cancelled' means the partner withdrew the delivery AND
+                // the hours were taken back off the member, so to the member this
+                // row is hours leaving, not arriving. 'disputed' means the reversal
+                // did NOT complete and the member still holds the hours, so it stays
+                // a credit.
+                $reversed = ($r->status ?? 'completed') === 'cancelled';
                 $items[] = [
                     'id'               => $syntheticId,
                     'source'           => 'federation',
-                    'type'             => 'credit',
+                    'type'             => $reversed ? 'debit' : 'credit',
                     'status'           => $r->status ?? 'completed',
                     'amount'           => (float) $r->amount,
                     'description'      => $r->description,
@@ -779,6 +803,42 @@ class WalletService
                 $maxId = max($senderId, $receiver->id);
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($minId);
                 $this->user->newQuery()->where('tenant_id', $tenantId)->lockForUpdate()->findOrFail($maxId);
+
+                // ── F-411: re-read the RECIPIENT'S STATUS inside the transaction ──
+                // canReceiveCredits() above runs on an UNLOCKED read, before
+                // this transaction opens, and the credit below carries no
+                // status condition — so a suspension, ban or rejection that
+                // committed while the transfer was in flight did not stop it,
+                // and the hours landed in an account nobody can sign in to or
+                // spend from. CommunityFundService::adminWithdraw() (:184-200)
+                // is the in-house shape copied here: validate the recipient
+                // under the same lock the money move holds. The row is locked
+                // above, so this status cannot change before the credit.
+                $lockedReceiver = $this->user->newQuery()
+                    ->where('tenant_id', $tenantId)
+                    ->findOrFail((int) $receiver->id);
+
+                if (! self::canReceiveCredits($lockedReceiver->status)) {
+                    throw new \RuntimeException(__('api.wallet_transfer_recipient_inactive'));
+                }
+
+                // ── F-412: re-test the BLOCK and the SAFEGUARDING POLICY here ──
+                // Both are checked before this transaction opens and were never
+                // re-tested inside it, so a block committed while the transfer
+                // was in flight did not stop F-332's harm: the sender's free
+                // text reaching the blocker as a bell, a push and an email. The
+                // checks above stay where they are — they fail fast and keep a
+                // blocked member out of the lock order entirely (F-336) — and
+                // these repeat them under the `users` locks, so the window
+                // between the decision and the money move is closed.
+                BlockUserService::assertNoBlockBetween($senderId, (int) $receiver->id);
+
+                app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                    $senderId,
+                    (int) $receiver->id,
+                    $tenantId,
+                    'wallet_transfer',
+                );
 
                 // ── F-342: re-check the PROXY AUTHORITY inside the transaction ──
                 // A non-null acting user means a linked-account carer/supporter

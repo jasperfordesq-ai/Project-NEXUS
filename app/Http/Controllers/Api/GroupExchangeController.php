@@ -358,7 +358,19 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('FORBIDDEN', __('api.organizer_only_complete'), null, 403);
         }
 
-        $result = $this->groupExchangeService->complete($id);
+        try {
+            $result = $this->groupExchangeService->complete($id);
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE') {
+                // F-476: a participant who would be paid has been suspended or
+                // banned, or is no longer a member of this community, so the
+                // credit cannot land. The whole settlement rolled back, so no
+                // balance moved and no credits were destroyed; the exchange is
+                // still completable once the account is active again.
+                return $this->respondWithError('GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE', __('api.wallet_transfer_recipient_inactive'), null, 409);
+            }
+            throw $e;
+        }
 
         if (!$result['success']) {
             $code = (string) ($result['code'] ?? 'VALIDATION_ERROR');

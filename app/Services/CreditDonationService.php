@@ -84,6 +84,39 @@ class CreditDonationService
                 $replayed = true;
                 return true;
             }
+
+            // F-411: re-read the RECIPIENT'S STATUS under the lock just taken.
+            // The canReceiveCredits() check above runs on an unlocked read
+            // outside this transaction and the credit below carries no status
+            // condition, so a suspension, ban or rejection committed while the
+            // donation was in flight did not stop it. Checked after the replay
+            // guard so an already-completed donation still reports idempotently
+            // rather than being refused a second time.
+            $lockedRecipient = DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $toUserId)
+                ->first(['id', 'status']);
+
+            if (! $lockedRecipient || ! WalletService::canReceiveCredits($lockedRecipient->status)) {
+                return false;
+            }
+
+            // F-412: re-test the BLOCK and the SAFEGUARDING POLICY here too.
+            // Both are checked before this transaction opens and were never
+            // re-tested inside it, so a block committed while the donation was
+            // in flight did not stop F-332's harm: the donor's message reaching
+            // the blocker. The checks above stay where they are (they fail fast
+            // and keep a blocked member out of the lock order, F-336); these
+            // repeat them under the `users` locks.
+            BlockUserService::assertNoBlockBetween($fromUserId, $toUserId);
+
+            app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
+                $fromUserId,
+                $toUserId,
+                $tenantId,
+                'credit_donation',
+            );
+
             // Atomic deduct
             $affected = DB::table('users')
                 ->where('id', $fromUserId)

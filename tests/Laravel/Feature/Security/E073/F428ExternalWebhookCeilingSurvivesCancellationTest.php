@@ -341,11 +341,25 @@ final class F428ExternalWebhookCeilingSurvivesCancellationTest extends TestCase
 
     private function member(): User
     {
-        return User::factory()->forTenant($this->testTenantId)->create([
+        $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => 1,
             'balance' => 0,
         ]);
+
+        // F-484 — inbound external credit now requires the member's own recorded
+        // federation consent. This file is about the ceiling, not consent, so the
+        // fixture records the consenting case.
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => (int) $user->id],
+            [
+                'federation_optin' => 1,
+                'transactions_enabled_federated' => 1,
+                'updated_at' => now(),
+            ]
+        );
+
+        return $user;
     }
 
     private function creditAgreement(?float $maxMonthlyCredits): void

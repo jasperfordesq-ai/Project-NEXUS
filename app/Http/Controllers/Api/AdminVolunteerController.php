@@ -10,6 +10,7 @@ use App\Events\VolLogStatusChanged;
 use App\Events\VolunteerOrganisationStatusChanged;
 use App\Services\VolunteerService;
 use App\Services\VolunteerReminderService;
+use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -409,10 +410,31 @@ class AdminVolunteerController extends BaseApiController
                 // locking org -> user here is a lock-order inversion deadlock
                 // when a deposit and a payout race (lock order is documented
                 // in docs/modules/volunteering.md).
-                DB::selectOne(
-                    "SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                // F-475: `status` is now in the column list. Approving hours
+                // MINTS credits into users.balance, so this is one of the paths
+                // WalletService::NON_RECEIVING_STATUSES exists for — "every path
+                // that moves credits to a member … so the rule cannot drift
+                // between them" (F-105/F-106, and F-442 which made exchange
+                // completion ask). This method's comments say it mirrors
+                // VolunteerService::verifyHours(); neither of them read the
+                // MEMBER's status, only the organisation's (F-343/F-379/F-384).
+                $volunteerLocked = DB::selectOne(
+                    "SELECT id, status FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
                     [$volunteerId, $tenantId]
                 );
+
+                // Tested on the row locked inside this transaction, so it cannot
+                // go stale before the credit. Throwing rolls the vol_logs status
+                // flip back with it, so the hours stay pending and are approved
+                // normally once the suspension is lifted.
+                if (!$volunteerLocked || !WalletService::canReceiveCredits($volunteerLocked->status ?? null)) {
+                    $guardFailure = [
+                        'code' => 'RECIPIENT_NOT_ACTIVE',
+                        'message' => __('api.wallet_transfer_recipient_inactive'),
+                    ];
+
+                    throw new \RuntimeException($guardFailure['message']);
+                }
 
                 // Then lock the org row (serialises concurrent payouts). Approval
                 // ALWAYS mints credits — classic timebanking. Credits are minted on

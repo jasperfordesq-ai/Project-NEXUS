@@ -324,11 +324,25 @@ final class F407ExternalWebhookCreditCeilingTest extends TestCase
         // A routable synthetic domain: EmailDispatchService::isUnroutableRecipient()
         // refuses .test/.local/.example outright, which would make the delivery
         // half fail for a reason unrelated to this finding.
-        return User::factory()->forTenant($this->testTenantId)->create([
+        $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => 1,
             'balance' => 0,
             'email' => 'f407-' . bin2hex(random_bytes(6)) . '@f407-fixture.org',
         ]);
+
+        // F-484 — inbound external credit now requires the member's own recorded
+        // federation consent. This file is about the ceiling, not consent, so the
+        // fixture records the consenting case.
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => (int) $user->id],
+            [
+                'federation_optin' => 1,
+                'transactions_enabled_federated' => 1,
+                'updated_at' => now(),
+            ]
+        );
+
+        return $user;
     }
 }

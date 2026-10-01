@@ -400,9 +400,24 @@ final class F406InboundFederatedReviewRequiresExchangeTest extends TestCase
 
     private function member(): User
     {
-        return User::factory()->forTenant($this->testTenantId)->create([
+        $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => 1,
         ]);
+
+        // F-406 (second half) — an inbound federated review now requires the
+        // member's own recorded consent, the pair the v1 partner API already
+        // required. This file is about the exchange requirement, not consent, so
+        // the fixture records the consenting case.
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => (int) $user->id],
+            [
+                'federation_optin' => 1,
+                'show_reviews_federated' => 1,
+                'updated_at' => now(),
+            ]
+        );
+
+        return $user;
     }
 }

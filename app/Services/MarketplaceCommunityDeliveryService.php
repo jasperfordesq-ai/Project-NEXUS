@@ -419,7 +419,7 @@ class MarketplaceCommunityDeliveryService
             if ((float) $buyer->balance < $amount) {
                 throw new \RuntimeException(__('api.wallet_transfer_insufficient_balance'));
             }
-            if (in_array((string) $deliverer->status, ['banned', 'suspended', 'inactive', 'deactivated'], true)) {
+            if (!WalletService::canReceiveCredits((string) $deliverer->status)) {
                 throw new \RuntimeException(__('api.wallet_transfer_recipient_inactive'));
             }
 

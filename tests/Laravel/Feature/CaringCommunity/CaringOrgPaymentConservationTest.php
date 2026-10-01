@@ -55,6 +55,11 @@ class CaringOrgPaymentConservationTest extends TestCase
             'tenant_id'  => $this->testTenantId,
             'user_id'    => $ownerId,
             'name'       => 'Conservation test org',
+            // F-478: vol_organizations.status defaults to 'pending', and a
+            // non-approved organisation may not mint. This fixture is about
+            // conservation arithmetic, so it needs an organisation that is
+            // allowed to pay at all.
+            'status'     => 'approved',
             'balance'    => $balance,
             'created_at' => now(),
             'updated_at' => now(),

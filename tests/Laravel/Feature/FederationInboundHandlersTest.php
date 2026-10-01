@@ -122,6 +122,23 @@ class FederationInboundHandlersTest extends TestCase
     }
 
     /**
+     * F-406 (second half) — an inbound federated review now requires the
+     * member's own recorded consent, the pair the v1 partner API already
+     * required (`federation_optin` + `show_reviews_federated`).
+     */
+    private function allowFederatedReviews(int $userId): void
+    {
+        DB::table('federation_user_settings')->updateOrInsert(
+            ['user_id' => $userId],
+            [
+                'federation_optin' => 1,
+                'show_reviews_federated' => 1,
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    /**
      * F-407 — inbound external credit is bounded by an active credit agreement
      * for this community, so the money handlers need one to proceed.
      */
@@ -189,6 +206,7 @@ class FederationInboundHandlersTest extends TestCase
         $reviewerStub = User::factory()->forTenant(999)->create();
         // F-406: a federated review must describe a completed exchange this
         // partner recorded with this member.
+        $this->allowFederatedReviews((int) $receiver->id);
         $this->recordFederatedExchange((int) $receiver->id, 'ext-review-123-tx');
 
         $response = $this->postWebhook('review.created', [
@@ -228,6 +246,7 @@ class FederationInboundHandlersTest extends TestCase
         $receiver = User::factory()->forTenant($this->testTenantId)->create();
         $reviewerStub = User::factory()->forTenant(999)->create();
         $externalTxId = 'federated-tx-' . uniqid();
+        $this->allowFederatedReviews((int) $receiver->id);
         $this->recordFederatedExchange((int) $receiver->id, $externalTxId);
 
         $payload = [
@@ -277,6 +296,7 @@ class FederationInboundHandlersTest extends TestCase
         $externalId = 'ext-review-safeguarding-denied-' . uniqid();
         // F-406: the exchange requirement is evaluated before the safeguarding
         // policy, so the payload needs a real exchange to reach the policy.
+        $this->allowFederatedReviews((int) $receiver->id);
         $this->recordFederatedExchange((int) $receiver->id, $externalId . '-tx');
         $response = $this->postWebhook('review.created', [
             'external_id' => $externalId,
@@ -319,6 +339,7 @@ class FederationInboundHandlersTest extends TestCase
         $externalId = 'ext-review-policy-unavailable-' . uniqid();
         // F-406: the exchange requirement is evaluated before the safeguarding
         // policy, so the payload needs a real exchange to reach the policy.
+        $this->allowFederatedReviews((int) $receiver->id);
         $this->recordFederatedExchange((int) $receiver->id, $externalId . '-tx');
         $response = $this->postWebhook('review.created', [
             'external_id' => $externalId,
@@ -867,6 +888,8 @@ class FederationInboundHandlersTest extends TestCase
         DB::table('federation_user_settings')->insert([
             'user_id' => $recipient->id,
             'federation_optin' => 1,
+            // F-484: inbound external credit requires the member's own recorded consent.
+            'transactions_enabled_federated' => 1,
             'messaging_enabled_federated' => 1,
             'email_notifications' => 1,
             'created_at' => now(),
@@ -920,6 +943,8 @@ class FederationInboundHandlersTest extends TestCase
         DB::table('federation_user_settings')->insert([
             'user_id' => $recipient->id,
             'federation_optin' => 1,
+            // F-484: inbound external credit requires the member's own recorded consent.
+            'transactions_enabled_federated' => 1,
             'messaging_enabled_federated' => 1,
             'email_notifications' => 1,
             'created_at' => now(),
@@ -939,12 +964,20 @@ class FederationInboundHandlersTest extends TestCase
         ];
 
         $failingMailer = $this->fakeEmailDispatchService(false);
-        $this->postWebhook('transaction.completed', $payload)->assertStatus(500);
+        // F-422: the credit is already committed when the notification is
+        // attempted, so a failed notification is reported as a failed
+        // NOTIFICATION — not as a failed, retryable transfer. A partner that
+        // read the old 500 as "this did not happen" and reissued under a fresh
+        // external_transaction_id would have double-credited the member.
+        $this->postWebhook('transaction.completed', $payload)
+            ->assertStatus(200)
+            ->assertJsonPath('data.result.status', 'acknowledged')
+            ->assertJsonPath('data.result.delivery', 'failed');
 
         $this->assertDatabaseHas('federation_external_partner_logs', [
             'partner_id' => $this->partnerId,
-            'response_code' => 500,
-            'success' => 0,
+            'response_code' => 200,
+            'success' => 1,
         ]);
 
         $transaction = DB::table('federation_transactions')

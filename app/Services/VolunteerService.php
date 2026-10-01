@@ -2012,19 +2012,33 @@ class VolunteerService
             $logId = null;
             $dailyCapExceeded = false;
             $organizationNotActive = false;
+            $volunteerCannotReceive = false;
             $logDateString = $logDate->toDateString();
 
-            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, $logDateString, &$logId, &$dailyCapExceeded, &$organizationNotActive): void {
+            DB::transaction(function () use ($tenantId, $userId, $data, $status, $org, $organizationId, $oppId, $keyHash, $requestHash, $logDateString, &$logId, &$dailyCapExceeded, &$organizationNotActive, &$volunteerCannotReceive): void {
                 // Serialise every hour log for this member (across all
                 // organisations and opportunities) so the day total read
                 // below cannot be raced by a concurrent submission. The
                 // dedupe cache lock above is per org+opportunity and does
                 // not cover this (E-035 F-188).
-                DB::table('users')
+                $memberLocked = DB::table('users')
                     ->where('id', $userId)
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
-                    ->first(['id']);
+                    ->first(['id', 'status']);
+
+                // F-475: an auto-approved log mints below, so refuse here —
+                // BEFORE the log row is written — if the member may not be paid.
+                // Refusing inside applyVolunteerAutoPayment() alone would commit
+                // an 'approved' log with nothing minted, and the verify paths
+                // only ever reprocess 'pending' logs, so those hours could never
+                // be paid later. The member re-submits once the suspension is
+                // lifted.
+                if ($status === 'approved'
+                    && !WalletService::canReceiveCredits($memberLocked->status ?? null)) {
+                    $volunteerCannotReceive = true;
+                    return;
+                }
                 if (self::dailyHoursCapExceeded($tenantId, $userId, $logDateString, (float) $data['hours'])) {
                     $dailyCapExceeded = true;
                     return;
@@ -2095,6 +2109,14 @@ class VolunteerService
 
             if ($organizationNotActive) {
                 self::$errors[] = ['code' => 'ORG_NOT_ACTIVE', 'message' => __('api.volunteer_org_not_active')];
+                return null;
+            }
+
+            // F-475: the member's account may not receive credits, and this log
+            // would have been auto-approved and minted immediately. Nothing was
+            // written.
+            if ($volunteerCannotReceive) {
+                self::$errors[] = ['code' => 'RECIPIENT_NOT_ACTIVE', 'message' => __('api.wallet_transfer_recipient_inactive')];
                 return null;
             }
 
@@ -2341,10 +2363,39 @@ class VolunteerService
                     // so locking org -> user here is a lock-order inversion
                     // deadlock when a deposit and a payout race (lock order is
                     // documented in docs/modules/volunteering.md).
-                    DB::selectOne(
-                        "SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
+                    // F-475: `status` is now in the column list. Approving hours
+                    // MINTS credits into users.balance, so this is one of the
+                    // paths WalletService::NON_RECEIVING_STATUSES exists for —
+                    // "every path that moves credits to a member … so the rule
+                    // cannot drift between them" (F-105/F-106, and F-442 which
+                    // made exchange completion ask). Nothing here read the
+                    // MEMBER's status; the three registered findings on this
+                    // method (F-343/F-379/F-384) are all about the ORGANISATION.
+                    $volunteerLocked = DB::selectOne(
+                        "SELECT id, status FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
                         [$volunteerId, $tenantId]
                     );
+
+                    // F-475: read off the row already locked in this transaction,
+                    // so it cannot go stale between the check and the credit
+                    // (reading it outside the lock is F-411). Shared predicate,
+                    // deliberately not a restated status list.
+                    if (!$volunteerLocked || !WalletService::canReceiveCredits($volunteerLocked->status ?? null)) {
+                        $guardFailure = ['code' => 'RECIPIENT_NOT_ACTIVE', 'message' => __('api.wallet_transfer_recipient_inactive')];
+
+                        // Throw, not return: returning would COMMIT the vol_logs
+                        // status flip above and leave the hours marked approved
+                        // with nothing minted. Rolling back keeps them pending,
+                        // so they are approved normally once the suspension is
+                        // lifted — nothing is trapped and nothing is destroyed.
+                        Log::warning('[VolunteerService] verifyHours refused under lock: volunteer may not receive credits', [
+                            'vol_log_id' => $logId,
+                            'volunteer_user_id' => $volunteerId,
+                            'tenant_id' => $tenantId,
+                        ]);
+
+                        throw new \RuntimeException($guardFailure['message']);
+                    }
 
                     // Then lock the org row (serialises concurrent payouts).
                     // F-343: `status` is now in the column list. It was not, so the
@@ -3268,10 +3319,21 @@ class VolunteerService
         // VolOrgWalletService::depositFromUser() locks user -> org, so locking
         // org -> user here is a lock-order inversion deadlock when a deposit
         // and a payout race (lock order is documented in docs/modules/volunteering.md).
-        DB::selectOne(
-            "SELECT id FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
+        // F-475: `status` is now in the column list — the auto-pay twin of
+        // verifyHours() minted into users.balance without ever reading the
+        // member's status, so an account an administrator had suspended or
+        // banned was paid. Same shared predicate, read off the row locked in
+        // this transaction.
+        $volunteerLocked = DB::selectOne(
+            "SELECT id, status FROM users WHERE id = ? AND tenant_id = ? FOR UPDATE",
             [$volunteerId, $tenantId]
         );
+        if (!$volunteerLocked || !WalletService::canReceiveCredits($volunteerLocked->status ?? null)) {
+            // Nothing is debited and nothing is minted, like the 'no_org'
+            // outcome below. The caller refuses the whole log before it reaches
+            // here (see logHours()), so this is the money-path backstop.
+            return 'volunteer_cannot_receive';
+        }
 
         $orgLocked = DB::selectOne(
             "SELECT id, balance FROM vol_organizations WHERE id = ? AND tenant_id = ? FOR UPDATE",
