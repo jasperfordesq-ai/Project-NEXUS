@@ -251,7 +251,10 @@ class AdminSafeguardingOptionsController extends BaseApiController
     /** PUT /v2/admin/safeguarding/options/reorder */
     public function reorder(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        // F-495: the acting account is captured and passed through, as the
+        // create / update / delete handlers above already do, so the reorder
+        // leaves an activity record naming who made it.
+        $actorUserId = $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
         $order = $this->input('order', []);
@@ -269,7 +272,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.safeguarding_invalid_option_ids'), 'order', 422);
         }
 
-        SafeguardingPreferenceService::reorderOptions($tenantId, $order);
+        SafeguardingPreferenceService::reorderOptions($tenantId, $order, $actorUserId);
 
         return $this->respondWithData(['message' => __('api_controllers_1.admin_safeguarding_options.options_reordered')]);
     }

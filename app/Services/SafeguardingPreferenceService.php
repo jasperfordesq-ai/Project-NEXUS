@@ -375,15 +375,26 @@ class SafeguardingPreferenceService
     /**
      * Reorder options for a tenant.
      *
+     * F-495: this is the fifth staff mutation in this service, and the only one
+     * F-434 did not thread an actor through — it recorded nothing at all. "Who
+     * changed this safeguarding setting, and when" is the question F-434 exists
+     * to answer, so the reorder answers it too.
+     *
      * @param array $order Array of [id => sort_order]
+     * @param int|null $actorUserId The staff account making the change.
      */
-    public static function reorderOptions(int $tenantId, array $order): void
+    public static function reorderOptions(int $tenantId, array $order, ?int $actorUserId = null): void
     {
         foreach ($order as $optionId => $sortOrder) {
             TenantSafeguardingOption::where('id', (int) $optionId)
                 ->where('tenant_id', $tenantId)
                 ->update(['sort_order' => (int) $sortOrder]);
         }
+
+        self::logActivity($actorUserId, 'safeguarding_options_reordered', 'tenant', $tenantId, [
+            'option_count' => count($order),
+            'order' => array_map('intval', $order),
+        ]);
     }
 
     // =========================================================================
