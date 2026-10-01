@@ -176,15 +176,26 @@ class StartingBalanceService
     /**
      * Whether this user has already received a welcome grant via EITHER
      * mechanism: this service ('starting_balance' transaction type) or the
-     * admin-approval flow ('[Welcome Bonus]…' description, legacy 'transfer'
-     * type — see AdminUsersController::grantWelcomeCredits).
+     * admin-approval flow (which also writes 'starting_balance' today, and
+     * before commit 5eb2cacce wrote a SELF-transfer carrying a
+     * '[Welcome Bonus]…' description and no transaction type — see
+     * AdminUsersController::grantWelcomeCredits).
+     *
+     * F-474: the description arm is matched ONLY on a self-transfer row. The
+     * description of an ordinary member-to-member transfer is free text the
+     * sender supplies verbatim (WalletService::transfer), so a prefix match on
+     * it alone let any member deny a new member's welcome credits with one
+     * 0.01-credit transfer. WalletService::transfer refuses a self-transfer
+     * outright, so no member-reachable path can write a row that satisfies the
+     * legacy arm, while every legacy row still does.
      */
     private static function alreadyGranted(int $tenantId, int $userId): bool
     {
         $existing = DB::selectOne(
             "SELECT id FROM transactions
              WHERE tenant_id = ? AND receiver_id = ?
-               AND (transaction_type = 'starting_balance' OR description LIKE '[Welcome Bonus]%')
+               AND (transaction_type = 'starting_balance'
+                    OR (description LIKE '[Welcome Bonus]%' AND sender_id = receiver_id))
              LIMIT 1",
             [$tenantId, $userId]
         );

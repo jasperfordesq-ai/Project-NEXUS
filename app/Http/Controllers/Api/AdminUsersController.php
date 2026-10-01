@@ -2649,8 +2649,20 @@ class AdminUsersController extends BaseApiController
                 // Also treat a 'starting_balance' transaction as already-granted so
                 // this path can never stack on top of StartingBalanceService grants
                 // (self-serve verification / admin-created users).
+                //
+                // F-474: the description arm is matched ONLY on a self-transfer
+                // row — the shape this path itself wrote before commit 5eb2cacce
+                // gave these rows a transaction type. A member-to-member
+                // transfer's description is free text the sender supplies
+                // verbatim, so matching the prefix alone let any member deny a
+                // new member's welcome credits with one 0.01-credit transfer.
+                // WalletService::transfer refuses a self-transfer outright, so
+                // no member-reachable path can write a row that satisfies the
+                // legacy arm, while every legacy row still does. The same
+                // change is made in StartingBalanceService::alreadyGranted(),
+                // which must stay identical to this predicate.
                 $existing = DB::selectOne(
-                    "SELECT id FROM transactions WHERE tenant_id = ? AND receiver_id = ? AND (description LIKE '[Welcome Bonus]%' OR transaction_type = 'starting_balance') LIMIT 1",
+                    "SELECT id FROM transactions WHERE tenant_id = ? AND receiver_id = ? AND (transaction_type = 'starting_balance' OR (description LIKE '[Welcome Bonus]%' AND sender_id = receiver_id)) LIMIT 1",
                     [$userTenantId, $userId]
                 );
 
