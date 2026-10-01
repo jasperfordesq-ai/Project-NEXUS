@@ -104,7 +104,7 @@ describe('GroupRecommendations', () => {
     });
   });
 
-  it('shows avg_score formatted to 2 decimal places', async () => {
+  it('shows avg_score (a 0–1 ratio) as a percentage, like the row scores', async () => {
     vi.mocked(adminGroups.getRecommendationData).mockResolvedValueOnce({
       data: { recommendations: MOCK_RECS, stats: MOCK_STATS },
       success: true,
@@ -113,7 +113,7 @@ describe('GroupRecommendations', () => {
     render(<GroupRecommendations />);
 
     await waitFor(() => {
-      expect(screen.getByText('0.75')).toBeInTheDocument();
+      expect(screen.getByText('75%')).toBeInTheDocument();
     });
   });
 

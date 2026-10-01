@@ -997,52 +997,69 @@ class AdminGroupsController extends BaseApiController
         $limit = min(100, max(1, $this->queryInt('limit', 20)));
         $offset = $this->queryInt('offset', 0, 0);
 
+        // Source is group_match_cache, written by GroupMatchingService::warmUpCache()
+        // and served to members through /v2/matches/all. Until 2026-10-01 this read a
+        // `group_recommendations` table that has never existed; a swallowed catch
+        // turned that into a permanent "0 recommendations" page. match_score is
+        // stored 0–100; this endpoint reports scores as 0–1 ratios.
+        // "Joined" = the member recorded a join, or now holds an active membership.
+        $joinedExpr = "(gmc.status = 'joined' OR EXISTS (
+                SELECT 1 FROM group_members gm
+                WHERE gm.user_id = gmc.user_id AND gm.group_id = gmc.group_id
+                  AND gm.tenant_id = gmc.tenant_id AND gm.status = 'active'
+            ))";
+
         try {
-            $recommendations = [];
-            $stats = ['total' => 0, 'avg_score' => 0, 'joined_count' => 0];
+            $recommendations = array_map(fn($r) => (array) $r, DB::select(
+                "SELECT gmc.user_id, gmc.group_id, gmc.match_score, gmc.status, gmc.created_at, gmc.tenant_id,
+                    CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as user_name,
+                    g.name as group_name, t.name as tenant_name,
+                    {$joinedExpr} as joined
+                 FROM group_match_cache gmc
+                 JOIN users u ON u.id = gmc.user_id AND u.tenant_id = gmc.tenant_id
+                 JOIN `groups` g ON g.id = gmc.group_id AND g.tenant_id = gmc.tenant_id
+                 LEFT JOIN tenants t ON t.id = gmc.tenant_id
+                 WHERE gmc.tenant_id = ?
+                 ORDER BY gmc.created_at DESC, gmc.id DESC LIMIT ? OFFSET ?",
+                [$tenantId, $limit, $offset]
+            ));
 
-            try {
-                $recommendations = array_map(fn($r) => (array)$r, DB::select(
-                    "SELECT gr.user_id, gr.group_id, gr.score, gr.created_at, g.tenant_id, t.name as tenant_name,
-                        CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as user_name,
-                        g.name as group_name,
-                        (SELECT COUNT(*) FROM group_members gm WHERE gm.user_id = gr.user_id AND gm.group_id = gr.group_id) > 0 as joined
-                     FROM group_recommendations gr
-                     JOIN users u ON gr.user_id = u.id
-                     JOIN `groups` g ON gr.group_id = g.id
-                     LEFT JOIN tenants t ON g.tenant_id = t.id
-                     WHERE g.tenant_id = ?
-                     ORDER BY gr.created_at DESC LIMIT ? OFFSET ?",
-                    [$tenantId, $limit, $offset]
-                ));
-
-                $statsRow = DB::selectOne(
-                    "SELECT COUNT(*) as total, AVG(score) as avg_score,
-                        SUM(CASE WHEN EXISTS(SELECT 1 FROM group_members gm WHERE gm.user_id = gr.user_id AND gm.group_id = gr.group_id) THEN 1 ELSE 0 END) as joined_count
-                     FROM group_recommendations gr JOIN `groups` g ON gr.group_id = g.id WHERE g.tenant_id = ?",
-                    [$tenantId]
-                );
-                $stats = $statsRow ? (array)$statsRow : ['total' => 0, 'avg_score' => 0, 'joined_count' => 0];
-            } catch (\Throwable $e) {
-                // Table doesn't exist
-            }
-
-            $formatted = array_map(fn($row) => [
-                'user_id' => (int) $row['user_id'], 'user_name' => trim($row['user_name']),
-                'group_id' => (int) $row['group_id'], 'group_name' => $row['group_name'],
-                'tenant_id' => (int) $row['tenant_id'], 'tenant_name' => $row['tenant_name'] ?? 'Unknown',
-                'score' => (float) $row['score'], 'joined' => (bool) $row['joined'], 'created_at' => $row['created_at'],
-            ], $recommendations);
-
-            $joinRate = $stats['total'] > 0 ? round(($stats['joined_count'] / $stats['total']) * 100, 1) : 0;
-
-            return $this->respondWithData([
-                'recommendations' => $formatted,
-                'stats' => ['total' => (int) $stats['total'], 'avg_score' => round((float) ($stats['avg_score'] ?? 0), 2), 'join_rate' => $joinRate],
-            ]);
+            $statsRow = (array) DB::selectOne(
+                "SELECT COUNT(*) as total, AVG(gmc.match_score) as avg_score,
+                    COALESCE(SUM(CASE WHEN {$joinedExpr} THEN 1 ELSE 0 END), 0) as joined_count
+                 FROM group_match_cache gmc
+                 JOIN users u ON u.id = gmc.user_id AND u.tenant_id = gmc.tenant_id
+                 JOIN `groups` g ON g.id = gmc.group_id AND g.tenant_id = gmc.tenant_id
+                 WHERE gmc.tenant_id = ?",
+                [$tenantId]
+            );
         } catch (\Throwable $e) {
+            Log::error('[AdminGroupsController] getRecommendationData failed', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
             return $this->respondWithError('RECOMMENDATIONS_ERROR', __('api.server_error'), null, 500);
         }
+
+        $formatted = array_map(fn($row) => [
+            'user_id' => (int) $row['user_id'], 'user_name' => trim((string) $row['user_name']),
+            'group_id' => (int) $row['group_id'], 'group_name' => $row['group_name'],
+            'tenant_id' => (int) $row['tenant_id'], 'tenant_name' => $row['tenant_name'] ?? 'Unknown',
+            'score' => round((float) $row['match_score'] / 100, 4), 'joined' => (bool) $row['joined'],
+            'status' => (string) $row['status'], 'created_at' => $row['created_at'],
+        ], $recommendations);
+
+        $total = (int) ($statsRow['total'] ?? 0);
+        $joinRate = $total > 0 ? round(((int) $statsRow['joined_count'] / $total) * 100, 1) : 0;
+
+        return $this->respondWithData([
+            'recommendations' => $formatted,
+            'stats' => [
+                'total' => $total,
+                'avg_score' => round((float) ($statsRow['avg_score'] ?? 0) / 100, 2),
+                'join_rate' => $joinRate,
+            ],
+        ]);
     }
 
     /** GET /api/v2/admin/groups/featured */

@@ -75,7 +75,7 @@ export default function GroupRecommendations() {
             </div>
             <div>
               <div className="text-sm text-muted">{t('groups.avg_match_score')}</div>
-              <div className="text-2xl font-bold mt-1">{stats.avg_score.toFixed(2)}</div>
+              <div className="text-2xl font-bold mt-1">{formatPercentRatio(stats.avg_score, { maximumFractionDigits: 0 })}</div>
             </div>
           </div>
           </CardBody>
