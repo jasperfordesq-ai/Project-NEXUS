@@ -278,7 +278,14 @@ final class F453MoveTenantDropsCommunityAuthorityTest extends TestCase
 
         $after = $this->row($target);
         self::assertSame(self::HUB_B_ID, (int) $after->tenant_id);
-        self::assertSame('admin', (string) $after->role, 'control: move-and-promote still promotes');
+        // 🔴 REVERSED DELIBERATELY for F-464. This asserted `role === 'admin'`,
+        // which pinned F-464's defect as the contract: the grant wrote a role
+        // the revoke could not undo, so a "revoked" account kept full
+        // community-administrator authority. The grant now writes the FLAG
+        // ONLY, exactly as F-431 made the other two grant routes write it. What
+        // this control is actually about — that move-and-promote still confers
+        // real authority — is unchanged and asserted by the two lines below.
+        self::assertSame('member', (string) $after->role, 'control: the grant writes the flag, not a role (F-464)');
         self::assertSame(1, (int) $after->is_tenant_super_admin, 'control: and still grants the network flag');
         self::assertTrue(AdminTier::allows((array) $after));
     }

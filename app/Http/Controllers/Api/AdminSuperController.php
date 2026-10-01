@@ -1859,8 +1859,16 @@ class AdminSuperController extends BaseApiController
                 return $this->respondWithUserMoveFailure($moveResult);
             }
 
+            // F-464 (extends F-431): the grant writes the FLAG ONLY. It used to
+            // write `role = 'admin'` beside it, while every revoke of this
+            // privilege clears the flag alone — so granting and then revoking
+            // left the account sitting at role='admin', which
+            // AdminTier::allows() accepts as full community-administrator
+            // authority in a community that never appointed it. The flag on its
+            // own is sufficient authority everywhere (AdminTier::allows(),
+            // securityRank()), so grant and revoke are exact inverses.
             DB::update(
-                "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
+                "UPDATE users SET is_tenant_super_admin = 1 WHERE id = ?",
                 [$id]
             );
 
@@ -2000,8 +2008,12 @@ class AdminSuperController extends BaseApiController
                     }
 
                     if ($grantSuperAdmin) {
+                        // F-464 (extends F-431): the FLAG ONLY — see
+                        // userMoveAndPromote() above. The `role = 'admin'` this
+                        // used to write beside it survived the revoke, which
+                        // clears the flag alone.
                         DB::update(
-                            "UPDATE users SET is_tenant_super_admin = 1, role = 'admin' WHERE id = ?",
+                            "UPDATE users SET is_tenant_super_admin = 1 WHERE id = ?",
                             [$uid]
                         );
                     } elseif (!$lockedDestination['allows_subtenants']) {
