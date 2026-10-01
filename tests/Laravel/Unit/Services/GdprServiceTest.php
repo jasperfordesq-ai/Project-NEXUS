@@ -588,7 +588,7 @@ class GdprServiceTest extends \Tests\Laravel\TestCase
     public function testGetStatisticsReturnsExpectedKeys(): void
     {
         $this->mockStmt->method('fetchAll')->willReturn([]);
-        $this->mockStmt->method('fetch')->willReturn(['count' => 0, 'avg_hours' => null]);
+        $this->mockStmt->method('fetch')->willReturn(['count' => 0, 'avg_hours' => null, 'on_time' => 0, 'judged' => 0]);
 
         $result = $this->service->getStatistics();
 
@@ -598,6 +598,10 @@ class GdprServiceTest extends \Tests\Laravel\TestCase
         $this->assertArrayHasKey('consents', $result);
         $this->assertArrayHasKey('active_breaches', $result);
         $this->assertArrayHasKey('overdue_count', $result);
+        // The real-database checks of these figures are in
+        // Tests\Laravel\Unit\Services\Enterprise\GdprServiceTest.
+        $this->assertArrayHasKey('compliance_score', $result);
+        $this->assertArrayHasKey('consent_coverage_percent', $result);
     }
 
     // =========================================================================

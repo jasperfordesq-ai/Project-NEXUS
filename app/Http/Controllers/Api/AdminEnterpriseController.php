@@ -1902,119 +1902,18 @@ class AdminEnterpriseController extends BaseApiController
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        // There is one formula, in GdprService. This used to fall back to a
+        // second, hand-copied calculation with different field names when the
+        // service failed — so a failure produced a different "score" that the
+        // dashboard then read as zero. A failure is now reported as one.
         try {
-            $gdprService = new \App\Services\Enterprise\GdprService($tenantId);
-            $stats = $gdprService->getStatistics();
-            return $this->respondWithData($stats);
-        } catch (\Exception $e) {
-            // Fall back to manual computation
-            \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: GdprService::getStatistics failed, falling back to manual: ' . $e->getMessage());
+            $stats = (new \App\Services\Enterprise\GdprService($tenantId))->getStatistics();
+        } catch (\Throwable $e) {
+            Log::error('AdminEnterpriseController::gdprStatistics failed: ' . $e->getMessage(), ['tenant_id' => $tenantId]);
+            return $this->respondWithError('SERVER_ERROR', __('api.server_error'), null, 500);
         }
 
-        try {
-            // Request counts by status
-            $statusCounts = [];
-            $rows = DB::select(
-                "SELECT status, COUNT(*) as cnt FROM gdpr_requests WHERE tenant_id = ? GROUP BY status",
-                [$tenantId]
-            );
-            foreach ($rows as $row) {
-                $statusCounts[$row->status] = (int) $row->cnt;
-            }
-
-            // Request counts by type
-            $typeCounts = [];
-            $rows = DB::select(
-                "SELECT request_type, COUNT(*) as cnt FROM gdpr_requests WHERE tenant_id = ? GROUP BY request_type",
-                [$tenantId]
-            );
-            foreach ($rows as $row) {
-                $typeCounts[$row->request_type] = (int) $row->cnt;
-            }
-
-            // Average processing time
-            $avgRow = DB::selectOne(
-                "SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, processed_at)) as avg_hours
-                 FROM gdpr_requests WHERE tenant_id = ? AND status = 'completed' AND processed_at IS NOT NULL",
-                [$tenantId]
-            );
-            $avgProcessingHours = round((float) ($avgRow->avg_hours ?? 0), 1);
-
-            // Active breaches — same rule as GdprService::getStatistics(). The
-            // enum has no 'open'; a new report starts as 'detected'.
-            $activeBreaches = (int) (DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM data_breach_log WHERE tenant_id = ? AND status NOT IN ('resolved', 'closed')",
-                [$tenantId]
-            )->cnt ?? 0);
-
-            $totalBreaches = (int) (DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM data_breach_log WHERE tenant_id = ?",
-                [$tenantId]
-            )->cnt ?? 0);
-
-            // Overdue requests (pending/processing where created_at + 30 days < NOW())
-            $overdueCount = (int) (DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM gdpr_requests
-                 WHERE tenant_id = ? AND status IN ('pending', 'processing') AND DATE_ADD(created_at, INTERVAL 30 DAY) < NOW()",
-                [$tenantId]
-            )->cnt ?? 0);
-
-            // Consent coverage
-            $totalUsers = (int) (DB::selectOne("SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ?", [$tenantId])->cnt ?? 0);
-            $usersWithConsent = (int) (DB::selectOne(
-                "SELECT COUNT(DISTINCT user_id) as cnt FROM user_consents WHERE tenant_id = ? AND consent_given = 1",
-                [$tenantId]
-            )->cnt ?? 0);
-            $consentCoverage = $totalUsers > 0 ? round($usersWithConsent / $totalUsers, 4) : 0;
-
-            // Compliance score
-            $totalRequests = array_sum($statusCounts);
-            $completedOnTime = 0;
-            try {
-                $completedOnTime = (int) (DB::selectOne(
-                    "SELECT COUNT(*) as cnt FROM gdpr_requests
-                     WHERE tenant_id = ? AND status = 'completed' AND processed_at IS NOT NULL
-                     AND TIMESTAMPDIFF(DAY, created_at, processed_at) <= 30",
-                    [$tenantId]
-                )->cnt ?? 0);
-            } catch (\Exception $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
-
-            $complianceScore = 0;
-            if ($totalRequests > 0) {
-                $complianceScore += ($completedOnTime / $totalRequests) * 40;
-            } else {
-                $complianceScore += 40; // No requests = perfect request compliance
-            }
-            $complianceScore += $consentCoverage * 30;
-            $complianceScore += (1 - ($activeBreaches / max($totalBreaches, 1))) * 30;
-            $complianceScore = (int) min(100, max(0, round($complianceScore)));
-
-            return $this->respondWithData([
-                'requests_by_status' => $statusCounts,
-                'requests_by_type' => $typeCounts,
-                'avg_processing_hours' => $avgProcessingHours,
-                'active_breaches' => $activeBreaches,
-                'total_breaches' => $totalBreaches,
-                'overdue_requests' => $overdueCount,
-                'total_users' => $totalUsers,
-                'users_with_consent' => $usersWithConsent,
-                'consent_coverage' => $consentCoverage,
-                'compliance_score' => $complianceScore,
-            ]);
-        } catch (\Exception $e) {
-            return $this->respondWithData([
-                'requests_by_status' => [],
-                'requests_by_type' => [],
-                'avg_processing_hours' => 0,
-                'active_breaches' => 0,
-                'total_breaches' => 0,
-                'overdue_requests' => 0,
-                'total_users' => 0,
-                'users_with_consent' => 0,
-                'consent_coverage' => 0,
-                'compliance_score' => 0,
-            ]);
-        }
+        return $this->respondWithData($stats);
     }
 
     // ─── GDPR Trends ──────────────────────────────────────────────────

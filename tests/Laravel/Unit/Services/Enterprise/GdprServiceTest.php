@@ -602,4 +602,148 @@ class GdprServiceTest extends TestCase
             $this->assertArrayHasKey($key, $afterOwn);
         }
     }
+
+    // ── Dashboard compliance figures ─────────────────────────────────────────
+    //
+    // 🔴 Until 2026-10-01 getStatistics() returned none of the figures the GDPR
+    // dashboard reads (compliance_score, consent_coverage_percent,
+    // requests_by_status, requests_by_type). The page defaulted each missing
+    // field to zero, so every community was shown a compliance score of 0 and
+    // consent coverage of 0% regardless of its real position. These tests run in
+    // a freshly created tenant so every figure is fully determined by the rows
+    // the test writes.
+
+    /** @param array<string, mixed> $overrides */
+    private function insertRequest(int $tenantId, int $userId, array $overrides): void
+    {
+        DB::table('gdpr_requests')->insert(array_merge([
+            'user_id'      => $userId,
+            'tenant_id'    => $tenantId,
+            'request_type' => 'access',
+            'status'       => 'pending',
+            'requested_at' => now(),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ], $overrides));
+    }
+
+    /** Record acceptance of every active required consent type at its current version. */
+    private function acceptEveryRequiredConsent(User $user, int $tenantId, ?string $version = null): void
+    {
+        $required = DB::table('consent_types')->where('is_required', 1)->where('is_active', 1)->get();
+        foreach ($required as $type) {
+            DB::table('user_consents')->insert([
+                'user_id'         => $user->id,
+                'tenant_id'       => $tenantId,
+                'consent_type'    => $type->slug,
+                'consent_given'   => 1,
+                'consent_text'    => 'accepted in test',
+                'consent_version' => $version ?? $type->current_version,
+                'given_at'        => now(),
+                'created_at'      => now(),
+            ]);
+        }
+    }
+
+    public function test_statistics_carry_every_figure_the_dashboard_reads(): void
+    {
+        $stats = $this->service($this->otherTenantId)->getStatistics();
+
+        foreach ([
+            'compliance_score', 'consent_coverage_percent', 'requests_by_status',
+            'requests_by_type', 'total_requests', 'avg_processing_days',
+        ] as $key) {
+            $this->assertArrayHasKey($key, $stats, "the GDPR dashboard reads '{$key}'");
+        }
+        $this->assertIsInt($stats['compliance_score']);
+    }
+
+    /**
+     * A request counts as answered on time only when it was closed (completed
+     * or refused) within 30 days of being made. A closed request with no
+     * recorded closing date cannot be shown to have been answered on time, so it
+     * is not credited. Open requests count only once they are overdue; a
+     * withdrawn (cancelled) request is not judged at all.
+     */
+    public function test_compliance_score_credits_only_requests_answered_within_the_month(): void
+    {
+        $tenantId = $this->otherTenantId;
+        $member = $this->member($tenantId);
+        $this->consentType(required: true);
+        $this->acceptEveryRequiredConsent($member, $tenantId);
+
+        $uid = (int) $member->id;
+        $this->insertRequest($tenantId, $uid, ['status' => 'completed', 'requested_at' => now()->subDays(20), 'processed_at' => now()->subDays(10)]);
+        $this->insertRequest($tenantId, $uid, ['status' => 'completed', 'requested_at' => now()->subDays(60), 'processed_at' => now()->subDays(15)]);
+        $this->insertRequest($tenantId, $uid, ['status' => 'rejected', 'requested_at' => now()->subDays(50), 'processed_at' => null]);
+        $this->insertRequest($tenantId, $uid, ['status' => 'pending', 'requested_at' => now()->subDays(40)]);
+        $this->insertRequest($tenantId, $uid, ['status' => 'pending', 'requested_at' => now()->subDays(5)]);
+        $this->insertRequest($tenantId, $uid, ['status' => 'cancelled', 'requested_at' => now()->subDays(90)]);
+
+        $stats = $this->service($tenantId)->getStatistics();
+
+        // 1 of 4 judged requests on time (40 × 0.25 = 10) + full consent (30)
+        // + no breaches (30).
+        $this->assertSame(70, $stats['compliance_score']);
+        $this->assertSame(6, $stats['total_requests']);
+        $this->assertSame(2, $stats['requests_by_status']['pending']);
+        $this->assertSame(2, $stats['requests_by_status']['completed']);
+        $this->assertSame(6, $stats['requests_by_type']['access']);
+    }
+
+    /**
+     * Consent coverage is the share of members subject to the acceptance gate
+     * who have accepted every required consent at its current version.
+     * Administrators are left out, matching LegalDocumentService's compliance
+     * figures; withdrawn and out-of-date acceptances do not count.
+     */
+    public function test_consent_coverage_counts_current_acceptance_of_every_required_consent(): void
+    {
+        $tenantId = $this->otherTenantId;
+        $this->consentType(required: true, version: '2.0');
+
+        $accepted = $this->member($tenantId);
+        $this->acceptEveryRequiredConsent($accepted, $tenantId);
+
+        $outdated = $this->member($tenantId);
+        $this->acceptEveryRequiredConsent($outdated, $tenantId, '0.1');
+
+        $withdrawn = $this->member($tenantId);
+        $this->acceptEveryRequiredConsent($withdrawn, $tenantId);
+        DB::table('user_consents')->where('user_id', $withdrawn->id)->update(['consent_given' => 0]);
+
+        $this->member($tenantId); // never accepted anything
+
+        User::factory()->forTenant($tenantId)->admin()->create(['status' => 'active']); // excluded
+        User::factory()->forTenant($tenantId)->create(['status' => 'inactive']);         // excluded
+
+        $stats = $this->service($tenantId)->getStatistics();
+
+        $this->assertEqualsWithDelta(25.0, $stats['consent_coverage_percent'], 0.01);
+        // No requests (40) + 25% consent (7.5) + no breaches (30) = 77.5 → 78.
+        $this->assertSame(78, $stats['compliance_score']);
+    }
+
+    public function test_an_unresolved_breach_removes_the_breach_share_of_the_score(): void
+    {
+        $tenantId = $this->otherTenantId;
+        $service = $this->service($tenantId);
+        $before = $service->getStatistics()['compliance_score'];
+        $reporter = User::factory()->forTenant($tenantId)->admin()->create(['status' => 'active']);
+
+        DB::table('data_breach_log')->insert([
+            'created_by'               => $reporter->id,
+            'tenant_id'                => $tenantId,
+            'breach_id'                => 'TEST-' . substr(md5(uniqid('', true)), 0, 8),
+            'breach_type'              => 'test',
+            'severity'                 => 'low',
+            'description'              => 'test breach',
+            'data_categories_affected' => '[]',
+            'detected_at'              => now(),
+            'status'                   => 'detected',
+            'created_at'               => now(),
+        ]);
+
+        $this->assertSame($before - 30, $service->getStatistics()['compliance_score']);
+    }
 }

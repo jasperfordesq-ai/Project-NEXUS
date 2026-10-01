@@ -174,6 +174,34 @@ describe('GdprDashboard', () => {
     });
   });
 
+  it('shows completed-this-month from the monthly figure, not the all-time total', async () => {
+    mockAdminEnterprise.getGdprDashboard.mockResolvedValue(DASHBOARD_DATA);
+    mockAdminEnterprise.getGdprStatistics.mockResolvedValue(STATISTICS_DATA);
+    mockAdminEnterprise.getGdprTrends.mockResolvedValue({
+      ...TRENDS_DATA,
+      data: { ...TRENDS_DATA.data, comparison: { ...TRENDS_DATA.data.comparison, this_month_completed: 7 } },
+    });
+
+    render(<GdprDashboard />);
+
+    await waitFor(() => expect(screen.getByText('7')).toBeInTheDocument());
+    // 12 is the all-time completed count in requests_by_status.
+    expect(screen.queryByText('12')).toBeNull();
+  });
+
+  // Until 2026-10-01 a missing figure was rendered as 0, which is how every
+  // community was shown a compliance score of zero.
+  it('shows "not available" rather than 0 when the statistics fail to load', async () => {
+    mockAdminEnterprise.getGdprDashboard.mockResolvedValue(DASHBOARD_DATA);
+    mockAdminEnterprise.getGdprStatistics.mockResolvedValue({ success: false, data: null });
+    mockAdminEnterprise.getGdprTrends.mockResolvedValue(TRENDS_DATA);
+
+    render(<GdprDashboard />);
+
+    await waitFor(() => expect(screen.getAllByText('N/A').length).toBeGreaterThanOrEqual(2));
+    expect(screen.queryByText('0%')).toBeNull();
+  });
+
   it('does not render chart when trends data is null', async () => {
     mockAdminEnterprise.getGdprDashboard.mockResolvedValue(EMPTY_SUCCESS);
     mockAdminEnterprise.getGdprStatistics.mockResolvedValue({ success: true, data: null });

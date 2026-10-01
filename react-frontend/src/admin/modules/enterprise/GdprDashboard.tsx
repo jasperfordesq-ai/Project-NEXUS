@@ -1,4 +1,4 @@
-import { CardBody, Card, Button, Chip } from '@/components/ui';
+import { CardBody, Card, Button, Chip, Skeleton } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -112,8 +112,12 @@ export function GdprDashboard() {
 
   const activeBreaches = statistics?.active_breaches ?? 0;
   const overdueCount = statistics?.overdue_count ?? 0;
-  const complianceScore = statistics?.compliance_score ?? 0;
-  const consentCoverage = statistics?.consent_coverage_percent ?? 0;
+  // A figure that did not load is shown as "not available", never as 0: a
+  // missing field read as 0 is how every community was shown a compliance score
+  // of zero until 2026-10-01.
+  const complianceScore = statistics?.compliance_score ?? null;
+  const consentCoverage = statistics?.consent_coverage_percent ?? null;
+  const notAvailable = t('enterprise.not_available');
 
   // Build chart data from trends
   const chartData = trends ? trends.months.map((month, i) => ({
@@ -185,7 +189,13 @@ export function GdprDashboard() {
         <Card  className="lg:col-span-1">
           <CardBody className="flex flex-col items-center justify-center p-4 gap-2">
             <p className="text-sm font-medium text-muted">{t('enterprise.gdpr_compliance_score')}</p>
-            <ComplianceScoreRing score={complianceScore} scoreLabel={t('enterprise.gdpr_score')} />
+            {complianceScore !== null ? (
+              <ComplianceScoreRing score={complianceScore} scoreLabel={t('enterprise.gdpr_score')} />
+            ) : loading ? (
+              <Skeleton className="h-[120px] w-[120px] rounded-full" />
+            ) : (
+              <span className="text-2xl font-bold text-muted">{notAvailable}</span>
+            )}
           </CardBody>
         </Card>
 
@@ -202,7 +212,7 @@ export function GdprDashboard() {
           />
           <StatCard
             label={t('enterprise.gdpr_completed_this_month')}
-            value={statistics?.requests_by_status?.completed ?? 0}
+            value={trends?.comparison.this_month_completed ?? notAvailable}
             icon={UserCheck}
             color="default"
             loading={loading}
@@ -211,7 +221,7 @@ export function GdprDashboard() {
           />
           <StatCard
             label={t('enterprise.gdpr_consent_coverage')}
-            value={formatPercentValue(consentCoverage, { maximumFractionDigits: 0 })}
+            value={consentCoverage !== null ? formatPercentValue(consentCoverage, { maximumFractionDigits: 0 }) : notAvailable}
             icon={UserCheck}
             loading={loading}
           />

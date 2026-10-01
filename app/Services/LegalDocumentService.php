@@ -875,9 +875,10 @@ class LegalDocumentService
      *
      * Administrators are deliberately exempt in EnsureLegalAcceptance so they
      * can always repair a broken legal document. Compliance figures and update
-     * notifications must measure the same population as the gate.
+     * notifications must measure the same population as the gate — including
+     * the GDPR dashboard's consent coverage (GdprService::getStatistics()).
      */
-    private static function eligibleMemberQuery(int $tenantId): Builder
+    public static function eligibleMemberQuery(int $tenantId): Builder
     {
         return DB::table('users')
             ->where('tenant_id', $tenantId)

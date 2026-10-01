@@ -3082,14 +3082,135 @@ class GdprService
         )->fetch()['count'];
 
         // Overdue requests (pending for more than 30 days - GDPR requires response within 30 days)
-        $stats['overdue_count'] = $this->query(
+        $stats['overdue_count'] = (int) $this->query(
             "SELECT COUNT(*) as count FROM gdpr_requests
              WHERE tenant_id = ? AND status IN ('pending', 'processing')
              AND requested_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
             [$this->tenantId]
         )->fetch()['count'];
 
+        $stats['pending_count'] = (int) $stats['pending_count'];
+        $stats['active_breaches'] = (int) $stats['active_breaches'];
+
+        // ── Figures the admin GDPR dashboard reads ───────────────────────────
+        // 🔴 None of these were returned until 2026-10-01, and the dashboard
+        // defaults a missing field to zero, so every community was shown a
+        // compliance score of 0. Their names are pinned by
+        // GdprDashboardStatisticsContractTest against `GdprStatistics` in
+        // react-frontend/src/admin/api/types.ts.
+        $byStatus = [];
+        $byType = [];
+        foreach ($stats['requests'] as $row) {
+            $byStatus[$row['status']] = ($byStatus[$row['status']] ?? 0) + (int) $row['count'];
+            $byType[$row['request_type']] = ($byType[$row['request_type']] ?? 0) + (int) $row['count'];
+        }
+        $stats['requests_by_status'] = $byStatus;
+        $stats['requests_by_type'] = $byType;
+        $stats['total_requests'] = array_sum($byStatus);
+        $stats['avg_processing_days'] = $stats['avg_processing_time'] === null
+            ? null
+            : round((float) $stats['avg_processing_time'] / 24, 1);
+
+        $stats['consent_coverage_percent'] = $this->consentCoveragePercent();
+        $stats['compliance_score'] = $this->complianceScore($stats['consent_coverage_percent'], $stats['active_breaches']);
+
         return $stats;
+    }
+
+    /**
+     * Share (0–100) of members subject to the acceptance gate who have accepted
+     * every active required consent type at its current version (tenant
+     * override first). Withdrawn and out-of-date acceptances do not count.
+     *
+     * The population is LegalDocumentService::eligibleMemberQuery(), so
+     * administrators — exempt from the acceptance gate — are left out here
+     * exactly as they are in the legal-document compliance figures. With no
+     * eligible members or no required consent types, nobody is missing a
+     * required consent, so coverage is 100.
+     */
+    private function consentCoveragePercent(): float
+    {
+        $eligible = \App\Services\LegalDocumentService::eligibleMemberQuery($this->tenantId)
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+        if ($eligible === []) {
+            return 100.0;
+        }
+
+        $requiredTypes = $this->query(
+            "SELECT ct.slug, COALESCE(tco.current_version, ct.current_version) AS current_version
+             FROM consent_types ct
+             LEFT JOIN tenant_consent_overrides tco
+                    ON ct.slug = tco.consent_type_slug
+                   AND tco.tenant_id = ?
+                   AND tco.is_active = 1
+             WHERE ct.is_required = TRUE AND ct.is_active = TRUE",
+            [$this->tenantId]
+        )->fetchAll();
+        if ($requiredTypes === []) {
+            return 100.0;
+        }
+
+        $covered = array_fill_keys($eligible, true);
+        foreach ($requiredTypes as $type) {
+            $accepted = [];
+            $rows = $this->query(
+                "SELECT user_id, consent_version FROM user_consents
+                 WHERE tenant_id = ? AND consent_type = ? AND consent_given = 1",
+                [$this->tenantId, $type['slug']]
+            )->fetchAll();
+            foreach ($rows as $row) {
+                if (version_compare((string) $row['consent_version'], (string) $type['current_version'], '>=')) {
+                    $accepted[(int) $row['user_id']] = true;
+                }
+            }
+            $covered = array_intersect_key($covered, $accepted);
+        }
+
+        return round(count($covered) / count($eligible) * 100, 2);
+    }
+
+    /**
+     * Compliance score, 0–100:
+     *   40 — data requests answered on time: of the requests that are closed or
+     *        past their deadline, the share closed (completed or refused) within
+     *        30 days of being made. A closed request with no recorded closing
+     *        date cannot be shown to be on time, so it is not credited. Open
+     *        requests still inside their 30 days and withdrawn (cancelled)
+     *        requests are not judged. Nothing judged yet means nothing late.
+     *   30 — consent coverage (see consentCoveragePercent()).
+     *   30 — breaches: the share of recorded breaches that are resolved or
+     *        closed. None recorded means none outstanding.
+     */
+    private function complianceScore(float $consentCoveragePercent, int $activeBreaches): int
+    {
+        $timeliness = $this->query(
+            "SELECT
+                COALESCE(SUM(CASE WHEN status IN ('completed', 'rejected')
+                         AND processed_at IS NOT NULL
+                         AND processed_at <= DATE_ADD(COALESCE(requested_at, created_at), INTERVAL 30 DAY)
+                    THEN 1 ELSE 0 END), 0) AS on_time,
+                COALESCE(SUM(CASE WHEN status IN ('completed', 'rejected')
+                         OR (status IN ('pending', 'processing')
+                             AND COALESCE(requested_at, created_at) < DATE_SUB(NOW(), INTERVAL 30 DAY))
+                    THEN 1 ELSE 0 END), 0) AS judged
+             FROM gdpr_requests
+             WHERE tenant_id = ?",
+            [$this->tenantId]
+        )->fetch();
+        $judged = (int) $timeliness['judged'];
+        $requestShare = $judged > 0 ? (int) $timeliness['on_time'] / $judged : 1.0;
+
+        $totalBreaches = (int) $this->query(
+            "SELECT COUNT(*) as count FROM data_breach_log WHERE tenant_id = ?",
+            [$this->tenantId]
+        )->fetch()['count'];
+        $breachShare = $totalBreaches > 0 ? 1 - ($activeBreaches / $totalBreaches) : 1.0;
+
+        $score = $requestShare * 40 + ($consentCoveragePercent / 100) * 30 + $breachShare * 30;
+
+        return (int) min(100, max(0, round($score)));
     }
 
     // =========================================================================
