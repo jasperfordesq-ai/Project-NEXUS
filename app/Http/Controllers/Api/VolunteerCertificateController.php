@@ -161,16 +161,21 @@ class VolunteerCertificateController extends BaseApiController
                 $row->manual_review_required = false;
             });
 
-        // Only explicit prohibited aliases and cleanup tombstones are
-        // removal-only. Unknown/custom types are a distinct manual-review
-        // bucket and are never silently reclassified as vetting evidence.
+        // Only explicit prohibited aliases are removal-only. Unknown/custom
+        // types are a distinct manual-review bucket and are never silently
+        // reclassified as vetting evidence.
+        //
+        // F-425 — nor is a cleanup tombstone. A credential whose file deletion
+        // failed is stamped with GDPR_CLEANUP_PENDING_MARKER, and that marker
+        // alone used to put the row here, so a member's first-aid or
+        // food-hygiene certificate was shown back to them as retired
+        // criminal-record evidence. Classification follows the credential TYPE;
+        // a tombstone of any other type belongs in the manual-review bucket
+        // below, where the outstanding cleanup is still visible.
         $legacyCredentials = DB::table('vol_credentials')
             ->where('user_id', $userId)
             ->where('tenant_id', $tenantId)
-            ->where(function (Builder $query) use ($normalisedType): void {
-                $query->whereIn($normalisedType, VolunteerCredentialPolicy::PROHIBITED_VETTING_TYPES)
-                    ->orWhere('notes', LegacyVettingEvidenceManager::GDPR_CLEANUP_PENDING_MARKER);
-            })
+            ->whereIn($normalisedType, VolunteerCredentialPolicy::PROHIBITED_VETTING_TYPES)
             ->select(['id', 'credential_type', 'status', 'created_at', 'updated_at'])
             ->get()
             ->map(static function (object $row): object {
@@ -183,14 +188,17 @@ class VolunteerCertificateController extends BaseApiController
                 return $row;
             });
 
+        // Everything that is neither an ordinary credential nor a prohibited
+        // alias: unknown/custom types, plus (F-425) the cleanup tombstone of an
+        // ordinary credential whose file deletion failed. The file is withheld
+        // either way, so nothing the member asked to have deleted is re-offered.
         $manualReviewCredentials = DB::table('vol_credentials')
             ->where('user_id', $userId)
             ->where('tenant_id', $tenantId)
-            ->whereNotIn($normalisedType, VolunteerCredentialPolicy::ALLOWED_TYPES)
             ->whereNotIn($normalisedType, VolunteerCredentialPolicy::PROHIBITED_VETTING_TYPES)
-            ->where(function (Builder $query): void {
-                $query->whereNull('notes')
-                    ->orWhere('notes', '!=', LegacyVettingEvidenceManager::GDPR_CLEANUP_PENDING_MARKER);
+            ->where(function (Builder $query) use ($normalisedType): void {
+                $query->whereNotIn($normalisedType, VolunteerCredentialPolicy::ALLOWED_TYPES)
+                    ->orWhere('notes', LegacyVettingEvidenceManager::GDPR_CLEANUP_PENDING_MARKER);
             })
             ->select(['id', 'credential_type', 'status', 'created_at', 'updated_at'])
             ->get()
