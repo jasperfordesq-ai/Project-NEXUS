@@ -9,6 +9,7 @@ import { cleanup } from '@testing-library/react';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
+import type { User } from '@/types/api';
 
 // ─── API mock ────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -35,11 +36,14 @@ vi.mock('@/lib/safeStorage', () => ({
 // signature makes every one of those a TS2345 argument-type error.
 const mockHasFeature = vi.fn((_feature: string) => true);
 const mockHasModule = vi.fn((_module: string) => true);
+// Swappable per test (e.g. to a god user); reset to a plain admin in beforeEach.
+const ADMIN_USER = { id: 1, name: 'Admin User', role: 'admin' } as User;
+const authState = vi.hoisted(() => ({ user: null as User | null }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({
-      user: { id: 1, name: 'Admin User', role: 'admin' },
+      user: authState.user,
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
@@ -85,6 +89,7 @@ describe('AdminSidebar', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    authState.user = { ...ADMIN_USER };
     mockHasFeature.mockReturnValue(true);
     mockHasModule.mockReturnValue(true);
     // Safeguarding call
@@ -303,14 +308,34 @@ describe('AdminSidebar', () => {
       'href',
       '/test/admin/enterprise',
     );
-    expect(screen.getByRole('link', { name: 'Roles & Permissions' })).toHaveAttribute(
-      'href',
-      '/test/admin/enterprise/roles',
-    );
     expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toHaveAttribute(
       'href',
       '/test/admin/enterprise/gdpr',
     );
+    // Roles & Permissions is god-only — a plain admin must not see it.
+    expect(screen.queryByRole('link', { name: 'Roles & Permissions' })).not.toBeInTheDocument();
+  });
+
+  it('shows Roles & Permissions under Enterprise to god users only', async () => {
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
+    expect(screen.getByRole('link', { name: 'Roles & Permissions' })).toHaveAttribute(
+      'href',
+      '/test/admin/enterprise/roles',
+    );
+  });
+
+  it('hides Roles & Permissions from a platform super admin who is not god', async () => {
+    authState.user = { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true } as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
+    expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Roles & Permissions' })).not.toBeInTheDocument();
   });
 
   it('links Native App from Platform Operations', async () => {

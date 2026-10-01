@@ -554,7 +554,9 @@ function useAdminNav(): NavSection[] {
         zone: 'platform',
         items: [
           { label: t('enterprise_dashboard'), href: '/admin/enterprise', icon: Building2 },
-          { label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon },
+          // God-only in the sidebar (owner decision, 2026-10-01). This hides the
+          // link only — the API behind it is still gated on requireAdmin().
+          ...(isGod ? [{ label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon }] : []),
           { label: t('gdpr_dashboard'), href: '/admin/enterprise/gdpr', icon: ShieldCheck },
           { label: t('legal_documents'), href: '/admin/legal-documents', icon: FileText },
           { label: t('compliance_dashboard'), href: '/admin/legal-documents/compliance', icon: ShieldCheck },

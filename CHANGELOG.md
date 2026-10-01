@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A podcast episode or show that someone has reported can no longer be deleted by its creator while the report is still open — they are asked to archive it instead, or wait for a moderator. The reports themselves are now never deleted, so a creator can no longer clear their record by deleting and re-uploading the same audio (F-338).
 - Creating, editing, publishing, closing and exporting community surveys now requires a community administrator. The "official notices" switch previously granted this as well, which was never intended and let someone download every survey answer with the respondent's identity attached (F-347).
 - The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
+- The "Roles & Permissions" link under Enterprise in the admin sidebar is now shown only to platform god users. Community administrators no longer see it in the sidebar; the page and its API are unchanged.
 
 ### Security
 
