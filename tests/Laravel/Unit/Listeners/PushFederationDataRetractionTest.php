@@ -314,12 +314,16 @@ class PushFederationDataRetractionTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_handle_completes_without_throw_even_on_partner_500(): void
+    public function test_handle_throws_on_partner_500_so_the_erasure_is_retried(): void
     {
-        // NOTE: FederationExternalApiClient::request() catches ALL exceptions internally and
-        // always returns an array. Therefore retractMemberProfile() never throws, $failedPartners
-        // is never populated, and the RuntimeException path in this listener is dead code.
-        // This test documents the actual runtime behaviour.
+        // F-485: this test used to assert the OPPOSITE and said so — that
+        // FederationExternalApiClient::request() catches every exception and
+        // returns an array, "therefore ... the RuntimeException path in this
+        // listener is dead code". It was: the declared 4 tries / 5 min / 30 min
+        // / 2 h backoff never ran and failed() never paged an operator, so a
+        // refused GDPR erasure was recorded as a success. The listener now
+        // inspects the returned array, as PushTransactionToFederatedPartner
+        // already did, and fails the job so the retries can run.
         Http::fake([
             $this->partnerDeleteUrlWildcard() => Http::response('Gateway Error', 500),
         ]);
@@ -329,17 +333,24 @@ class PushFederationDataRetractionTest extends TestCase
 
         $event = new UserFederatedOptOut($userId, self::TENANT_ID, 'opt_out');
 
-        // Should NOT throw; retraction attempt IS still made despite 500.
-        $this->listener->handle($event);
+        $threw = null;
+        try {
+            $this->listener->handle($event);
+        } catch (\Throwable $e) {
+            $threw = $e;
+        }
 
+        $this->assertNotNull($threw, 'a refused erasure must fail the job so the queue retries it');
         Http::assertSent(fn ($req) => str_contains($req->url(), '/members'));
     }
 
     public function test_handle_sends_nothing_and_does_not_throw_for_suspended_partner(): void
     {
         // Suspended partners are excluded by getPartner() (only 'active'/'failed' are queried).
-        // retractMemberProfile returns success=false without throwing, so $failedPartners
-        // stays empty and the listener completes without a RuntimeException.
+        // F-485: that is an operator state on THIS side, not a transient partner
+        // fault, so it is logged at error and does NOT drive the retry loop —
+        // retrying could not reach the partner and would alert on every opt-out
+        // until the partner is reinstated or unlinked.
         Http::fake();
 
         $userId             = $this->insertUser(self::TENANT_ID);

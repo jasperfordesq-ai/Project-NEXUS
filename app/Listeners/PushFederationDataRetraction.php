@@ -127,11 +127,70 @@ class PushFederationDataRetraction implements ShouldQueue
                     continue;
                 }
 
+                // F-485: a partner the operator has suspended or removed cannot
+                // be dispatched to at all (FederationExternalApiClient::
+                // getPartner() queries only 'active'/'failed'). That is an
+                // operator state on THIS side, not a transient partner fault,
+                // so it must not drive the retry loop — but the erasure really
+                // was not propagated, so it is logged at error rather than
+                // passing silently.
+                $dispatchable = \Illuminate\Support\Facades\DB::table('federation_external_partners')
+                    ->where('id', $partnerId)
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('status', ['active', 'failed'])
+                    ->exists();
+
+                if (! $dispatchable) {
+                    Log::error('PushFederationDataRetraction: retraction NOT sent — partner is suspended or gone', [
+                        'partner_id' => $partnerId,
+                        'tenant_id'  => $tenantId,
+                        'user_id'    => $userId,
+                        'reason'     => $event->reason,
+                    ]);
+                    continue;
+                }
+
                 try {
-                    FederationExternalApiClient::retractMemberProfile($partnerId, $userId, [
+                    $result = FederationExternalApiClient::retractMemberProfile($partnerId, $userId, [
                         'external_user_id' => $identity->external_user_id,
                         'reason'           => $event->reason,
                     ]);
+
+                    // F-485: the client catches every transport exception
+                    // itself and RETURNS ['success' => false, …] — it does not
+                    // throw. Collecting a failure only in the catch below meant
+                    // $failedPartners always stayed empty, so the declared
+                    // retries never ran and failed() never fired: a refused
+                    // GDPR erasure was recorded as a success. Inspect the
+                    // returned array, exactly as
+                    // PushTransactionToFederatedPartner (:91-103) does.
+                    if (empty($result['success'])) {
+                        if (! empty($result['blocked'])) {
+                            // Refused by the external-federation kill switch —
+                            // a deliberate operator state, not a partner fault.
+                            // Retrying cannot help and would burn the attempts
+                            // and alert on every queued retraction until the
+                            // switch is turned back on (the same exception
+                            // PushTransactionToFederatedPartner documents).
+                            // Logged at error so it is still visible that an
+                            // erasure was not propagated.
+                            Log::error('PushFederationDataRetraction: retraction NOT sent — external federation is switched off', [
+                                'partner_id' => $partnerId,
+                                'tenant_id'  => $tenantId,
+                                'user_id'    => $userId,
+                                'reason'     => $event->reason,
+                            ]);
+                        } else {
+                            $failedPartners[] = $partnerId;
+                            Log::warning('PushFederationDataRetraction: partner refused the retraction', [
+                                'partner_id'  => $partnerId,
+                                'tenant_id'   => $tenantId,
+                                'user_id'     => $userId,
+                                'error'       => $result['error'] ?? null,
+                                'status_code' => $result['status_code'] ?? null,
+                            ]);
+                        }
+                    }
                 } catch (\Throwable $e) {
                     $failedPartners[] = $partnerId;
                     Log::warning('PushFederationDataRetraction: retraction failed for partner', [
