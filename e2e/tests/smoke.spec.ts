@@ -45,6 +45,41 @@ async function primeBrowserState(page: Page): Promise<void> {
   }, cookieConsent);
 }
 
+/**
+ * Accept any legal document awaiting this test account's acceptance.
+ *
+ * Publishing a new policy version (Privacy Policy 2.0, 30 Sep 2026) makes the app
+ * withhold page content until the member accepts it. The deploy gate's test member
+ * then rendered an empty <main>, and the wallet check failed on the live colour as
+ * well as the candidate — every later policy publication would block deploys the
+ * same way. This makes the same call the in-app acceptance prompt makes, for the
+ * signed-in test account only; with nothing pending it is a harmless no-op.
+ */
+async function acceptPendingLegalDocuments(
+  page: Page,
+  loginData: { data?: { access_token?: string }; access_token?: string } | null | undefined,
+  browserOrigin: string,
+  kind: 'user' | 'admin',
+): Promise<void> {
+  const accessToken = loginData?.data?.access_token || loginData?.access_token;
+  if (!accessToken) {
+    throw new Error(`E2E ${kind} login returned no access token to accept pending legal documents with`);
+  }
+  const response = await page.request.post(`${browserOrigin}/api/v2/legal/acceptance/accept-all`, {
+    data: {},
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      'X-Tenant-Slug': DEFAULT_TENANT,
+      Origin: browserOrigin,
+    },
+  });
+  if (!response.ok()) {
+    throw new Error(`E2E ${kind} could not accept pending legal documents (${response.status()}): ${await response.text()}`);
+  }
+}
+
 async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
   const email = kind === 'admin' ? process.env.E2E_ADMIN_EMAIL : process.env.E2E_USER_EMAIL;
   const password = kind === 'admin' ? process.env.E2E_ADMIN_PASSWORD : process.env.E2E_USER_PASSWORD;
@@ -80,6 +115,7 @@ async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
         origin: browserOrigin,
       };
       const loginData = await completeTwoFactorIfChallenged(await response.json(), loginContext);
+      await acceptPendingLegalDocuments(page, loginData, browserOrigin, kind);
       const sessionBinding = loginData?.data?.session_binding || loginData?.session_binding;
       const tenantId = await completedLoginTenantId(loginData, loginContext);
       if (typeof sessionBinding !== 'string' || !/^[a-f0-9]{64}$/.test(sessionBinding)) {
