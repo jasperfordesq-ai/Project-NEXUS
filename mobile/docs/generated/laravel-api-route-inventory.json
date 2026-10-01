@@ -6,7 +6,7 @@
   "api_route_rows": 2711,
   "distinct_api_paths": 2256,
   "route_source_fingerprint": {
-    "digest": "1f9a1cda113301240b34c112176a5888d79e58b1549661a8df918634db90a892",
+    "digest": "7c88afdad80bdddc87f2f3990c6456a1d43a898b07b9e890e4684cbf61019552",
     "files": [
       {
         "file": "routes/api.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "66afe90422d7ef13db4cdb41558cae5adb6df7e171be59f0e8006da39c260f5f"
+        "sha256": "3ac47fa4dd146ee271f7526a93af335ada9cb7cc70182bea48ca336d15eae1bd"
       }
     ]
   },
