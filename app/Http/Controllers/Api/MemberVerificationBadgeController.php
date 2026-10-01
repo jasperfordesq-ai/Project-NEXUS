@@ -106,6 +106,18 @@ class MemberVerificationBadgeController extends BaseApiController
     {
         $adminId = $this->requireAdmin();
 
+        // F-473: the read sibling getAdminBadgeList() below carries this check
+        // (CrossCommunityAccessSweepTest, 2026-09-10) and the grant sibling
+        // refuses in its service; only the revoke path was missed, so a
+        // community admin was told a member of ANOTHER community had been
+        // revoked when nothing happened. Refuse the id outright, the same way.
+        if (! \App\Models\User::query()
+            ->where('id', $id)
+            ->where('tenant_id', $this->getTenantId())
+            ->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+
         $this->memberVerificationBadgeService->revokeBadge($id, $type, $adminId);
 
         $badges = $this->memberVerificationBadgeService->getUserBadges($id);
