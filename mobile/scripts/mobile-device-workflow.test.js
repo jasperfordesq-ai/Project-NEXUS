@@ -69,8 +69,13 @@ describe('Android device screenshot evidence', () => {
 
 describe('Android persisted-effect journeys', () => {
   it('opens the message composer deterministically before asserting its contents', () => {
-    expect(coreEffectFlow).toContain('openLink: "nexus:///(modals)/new-message"');
+    // Messages tab, then the header compose button by its test id. Never the
+    // ambiguous text tap, and never an internal `(modals)` route spelling: since
+    // F-496 the app refuses those when they arrive from outside the app, by design.
+    expect(coreEffectFlow).toContain('openLink: "nexus://messages"');
+    expect(coreEffectFlow).toContain('id: "messages-new-message"');
     expect(coreEffectFlow).not.toContain('- tapOn: "New message"');
+    expect(coreEffectFlow).not.toMatch(/openLink: "nexus:\/\/\/?\(modals\)/);
   });
 
   it('creates and independently verifies a saved collection', () => {
