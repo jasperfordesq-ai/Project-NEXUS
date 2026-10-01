@@ -197,13 +197,15 @@ Group related entries under a shared comment block when multiple CVEs share the 
       CVE-2099-12345: affects the XML parser feature of example-lib; project
       does not use XML parsing. Suppressed until next release of example-lib.
     </notes>
-    <packageUrl regex="true">^pkg:npm/example-lib@.*$</packageUrl>
+    <packageUrl regex="true">^pkg:npm/example-lib@2\.4\.[0-9]+([?#].*)?$</packageUrl>
     <cve>CVE-2099-12345</cve>
   </suppress>
 </suppressions>
 ```
 
 The `until` date enforces expiry — OWASP Dependency-Check will re-surface the finding after that date even if the suppression file is not updated.
+
+**Bound the version to what was actually judged.** A `packageUrl` ending in `@.*$` suppresses the advisory at *every* version of the package, for ever, so a later regression to a vulnerable release would pass the blocking gate silently (security finding F-501). Match only the versions the reason covers: for "the installed version is already patched", the patched range and later; for "development tooling only", the versions reviewed — a new version then re-raises the finding for a fresh judgement. An unbounded `@.*$` is right only when the advisory cannot apply to the package at any version (a scanner mis-match). `scripts/test/owasp-suppressions-bounds.test.mjs` pins the bounded entries and runs as a blocking CI step.
 
 ### npm-audit exception format (`.npm-audit-exceptions.json`)
 
