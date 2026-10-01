@@ -7,7 +7,21 @@ import DOMPurify from 'dompurify';
 
 const BUILDER_SCOPE = '.nexus-custom-page-builder';
 
+/**
+ * F-499: the frame around published builder content. Paint containment makes it
+ * the containing block for fixed AND absolute descendants and clips everything
+ * they paint to its own box, and isolation keeps any z-index inside it, so no
+ * spelling of a full-page overlay — `position:absolute` with offsets, a non-zero
+ * `inset`, or the app's own Tailwind `fixed inset-0 z-50` borrowed through
+ * `class` — can cover the site's header, menus or footer. The page's own CSS
+ * cannot switch this off: every author selector is confined under
+ * BUILDER_SCOPE, which is the frame's CHILD, and this class deliberately does
+ * not start with BUILDER_SCOPE (scopeSelector() passes such selectors through).
+ */
+const BUILDER_FRAME = 'nexus-page-builder-frame';
+
 const PAGE_BUILDER_BASELINE_CSS = `
+.${BUILDER_FRAME}{contain:paint;isolation:isolate;position:relative}
 .nexus-custom-page-builder{background:var(--background,#ffffff);color:var(--foreground,#111827);color-scheme:inherit}
 .nexus-custom-page-builder a{color:var(--accent-color,var(--color-accent,#0891b2))}
 .nexus-custom-page-builder img{max-width:100%;height:auto}
@@ -115,6 +129,27 @@ type CssNode = CssRule | CssAtRule;
 
 function isUnsafeCss(css: string): boolean {
   return UNSAFE_CSS_PATTERNS.some((pattern) => pattern.test(css));
+}
+
+/**
+ * F-500: a `@media` / `@supports` prelude is copied into the generated
+ * stylesheet, so it gets an allow-list like selectors and declarations do.
+ * Media and feature queries need only letters, digits, spaces, parentheses,
+ * commas, colons, dots, hyphens, percent, slashes and comparison signs — never
+ * a brace, semicolon, at-sign, quote or backslash — and parentheses must
+ * balance. Anything else drops the whole at-rule.
+ */
+function isSafeAtRulePrelude(params: string): boolean {
+  const prelude = params.trim();
+  if (!prelude || prelude.length > 300) return false;
+  if (!/^[a-z0-9\s(),:.%/<>=-]+$/i.test(prelude)) return false;
+  if (isUnsafeCss(prelude)) return false;
+  let depth = 0;
+  for (const char of prelude) {
+    if (char === '(') depth++;
+    else if (char === ')' && --depth < 0) return false;
+  }
+  return depth === 0;
 }
 
 /** Remove CSS comments without treating comment markers inside strings as syntax. */
@@ -414,7 +449,7 @@ function scopeCssContainer(nodes: CssNode[]): string {
 
     if (node.type === 'atrule') {
       const atRuleName = node.name.toLowerCase();
-      if (!['media', 'supports'].includes(atRuleName)) return;
+      if (!['media', 'supports'].includes(atRuleName) || !isSafeAtRulePrelude(node.params)) return;
 
       const nested = scopeCssContainer(node.nodes);
       if (nested) output.push(`@${atRuleName} ${node.params}{${nested}}`);
@@ -441,7 +476,7 @@ function sanitizeCssContainerForStorage(nodes: CssNode[]): string {
     }
 
     const atRuleName = node.name.toLowerCase();
-    if (!['media', 'supports'].includes(atRuleName) || !node.params) return;
+    if (!['media', 'supports'].includes(atRuleName) || !isSafeAtRulePrelude(node.params)) return;
 
     const nested = sanitizeCssContainerForStorage(node.nodes);
     if (nested) output.push(`@${atRuleName} ${node.params}{${nested}}`);
@@ -593,7 +628,7 @@ export function scopePageBuilderHtml(html: string | null | undefined): string {
   const { bodyHtml, css: unscopedCss } = sanitizePageBuilderDocument(html);
   const scopedCss = scopePageBuilderCss(unscopedCss);
   const css = [PAGE_BUILDER_BASELINE_CSS, scopedCss, PAGE_BUILDER_THEME_OVERRIDE_CSS].filter(Boolean).join('\n');
-  return `${css ? `<style>${css}</style>` : ''}<div class="nexus-custom-page-builder">${bodyHtml}</div>`;
+  return `${css ? `<style>${css}</style>` : ''}<div class="${BUILDER_FRAME}"><div class="nexus-custom-page-builder">${bodyHtml}</div></div>`;
 }
 
 export function exportScopedPageBuilderHtml(bodyHtml: string, css: string): string {
@@ -604,6 +639,7 @@ export const __pageBuilderHtmlTesting = {
   BUILDER_SCOPE,
   PAGE_BUILDER_BASELINE_CSS,
   PAGE_BUILDER_THEME_OVERRIDE_CSS,
+  isSafeAtRulePrelude,
   isSafeCssDeclaration,
   scopeSelector,
   tokenizeLegacyNexusPageValue,
