@@ -389,14 +389,24 @@ class FederationController extends BaseApiController
             $params = [$partnerTenantId];
         } else {
             // FED-005: Check profiles_enabled on partnership to enforce permission boundaries
+            // F-483: `u.status = 'active'` was on the external arm only, so this arm
+            // published accounts the community had banned, suspended, refused at
+            // registration or never verified. Every other federated surface excludes
+            // them on the same data.
             $baseCondition = "FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                     JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id))
-                    WHERE fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1 AND u.tenant_id != ?";
+                    WHERE fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND u.status = 'active' AND fp.status = 'active' AND fp.profiles_enabled = 1 AND u.tenant_id != ?";
             $params = [$partnerTenantId, $partnerTenantId, $partnerTenantId];
         }
 
         if (!empty($query)) {
-            $baseCondition .= " AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ? OR u.skills LIKE ?)";
+            // F-465: the skills arm of the free-text term carried no visibility
+            // condition, so `?q=<hidden value>` still selected the member and the
+            // pagination total reported 1 — confirming a guessed skill without ever
+            // returning the field. Same condition F-447 applied to the `?skills=`
+            // filter below, and the same shape as
+            // FederationSearchService::searchMembers() (:172-180).
+            $baseCondition .= " AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ? OR (fus.show_skills_federated = 1 AND u.skills LIKE ?))";
             $term = "%{$query}%";
             array_push($params, $term, $term, $term, $term);
         }
@@ -464,6 +474,8 @@ class FederationController extends BaseApiController
             $stmt->execute([$id, $partnerTenantId]);
         } else {
             // FED-005: Also check profiles_enabled on partnership
+            // F-483: and `u.status = 'active'`, which sat on the external arm only —
+            // so this route returned a barred or refused account by id.
             $stmt = $db->prepare("
                 SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url as avatar,
                        CASE WHEN fus.show_location_federated = 1 THEN u.location ELSE NULL END as location,
@@ -473,7 +485,7 @@ class FederationController extends BaseApiController
                        fus.service_reach, fus.messaging_enabled_federated, fus.transactions_enabled_federated, t.name as timebank_name
                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                 JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id))
-                WHERE u.id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1
+                WHERE u.id = ? AND u.status = 'active' AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1
             ");
             $stmt->execute([$partnerTenantId, $partnerTenantId, $id]);
         }
@@ -637,7 +649,9 @@ class FederationController extends BaseApiController
             $stmt->execute([$input['recipient_id'], $recipientTenantId]);
         } else {
             // FED-004: Check messaging_enabled on partnership to prevent bypass
-            $stmt = $db->prepare("SELECT u.id, u.first_name, u.tenant_id, fus.messaging_enabled_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id)) WHERE u.id = ? AND fus.federation_optin = 1 AND fp.status = 'active' AND fp.messaging_enabled = 1");
+            // F-483: and `u.status = 'active'`, which sat on the external arm only —
+            // so a barred, suspended or refused account could still be addressed.
+            $stmt = $db->prepare("SELECT u.id, u.first_name, u.tenant_id, fus.messaging_enabled_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id)) WHERE u.id = ? AND u.status = 'active' AND fus.federation_optin = 1 AND fp.status = 'active' AND fp.messaging_enabled = 1");
             $stmt->execute([$partnerTenantId, $partnerTenantId, $input['recipient_id']]);
         }
 
@@ -838,7 +852,9 @@ class FederationController extends BaseApiController
             $stmt = $db->prepare("SELECT u.id, u.first_name, u.tenant_id, fus.transactions_enabled_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id WHERE u.id = ? AND u.tenant_id = ? AND fus.federation_optin = 1 AND u.status = 'active'");
             $stmt->execute([$input['recipient_id'], $partnerTenantId]);
         } else {
-            $stmt = $db->prepare("SELECT u.id, u.first_name, u.tenant_id, fus.transactions_enabled_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id)) WHERE u.id = ? AND fus.federation_optin = 1 AND fp.status = 'active'");
+            // F-483: `u.status = 'active'` sat on the external arm only, so credits
+            // could be moved into a banned, suspended or refused account.
+            $stmt = $db->prepare("SELECT u.id, u.first_name, u.tenant_id, fus.transactions_enabled_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id)) WHERE u.id = ? AND u.status = 'active' AND fus.federation_optin = 1 AND fp.status = 'active'");
             $stmt->execute([$partnerTenantId, $partnerTenantId, $input['recipient_id']]);
         }
 
@@ -1363,7 +1379,9 @@ class FederationController extends BaseApiController
         $db = DB::getPdo();
 
         $since = request()->query('since');
-        $direction = request()->query('direction', 'all');
+        // `direction` is accepted for compatibility and no longer read: neither
+        // arm below selects rows by the caller's own tenant any more (F-446,
+        // F-468), so there is no direction left for it to flip.
         $page = max(1, (int) request()->query('page', 1));
         $perPage = min(100, max(1, (int) request()->query('per_page', 20)));
 
@@ -1418,31 +1436,22 @@ class FederationController extends BaseApiController
             // `direction` is not applied for an external partner: every row it
             // may read is one it delivered into this community.
         } else {
-            $baseCondition = "FROM messages m
-                JOIN users su ON su.id = m.sender_id
-                JOIN users ru ON ru.id = m.receiver_id
-                JOIN federation_user_settings sfus ON sfus.user_id = m.sender_id
-                JOIN federation_user_settings rfus ON rfus.user_id = m.receiver_id
-                LEFT JOIN tenants st ON st.id = su.tenant_id
-                LEFT JOIN tenants rt ON rt.id = ru.tenant_id
-                WHERE m.is_federated = 1
-                  AND sfus.federation_optin = 1
-                  AND rfus.federation_optin = 1";
-            $params = [];
-
-            // An internal partner is another community: one of its own members
-            // being a party IS the participation check.
-            if ($direction === 'inbound') {
-                $baseCondition .= " AND ru.tenant_id = ?";
-                $params[] = $partnerTenantId;
-            } elseif ($direction === 'outbound') {
-                $baseCondition .= " AND su.tenant_id = ?";
-                $params[] = $partnerTenantId;
-            } else {
-                $baseCondition .= " AND (su.tenant_id = ? OR ru.tenant_id = ?)";
-                $params[] = $partnerTenantId;
-                $params[] = $partnerTenantId;
-            }
+            // F-468: this arm scoped on the key's own `tenant_id`, which
+            // `AdminFederationController::createApiKey()` sets to the ISSUING
+            // community — so "one of its own members is a party" resolved to
+            // the ISSUER's members, not the key holder's. It returned the
+            // subject and full body of the issuing community's members'
+            // federated correspondence, including exchanges with a THIRD
+            // community the holder is not party to, and content the recipient's
+            // own member API will not return to them (MessageService filters
+            // `is_federated = 0` on every conversation read).
+            //
+            // A key with no external-partner binding names no counterparty, so
+            // there is no participation to check and it is a party to nothing.
+            // Fail closed with an empty page — the same outcome the external
+            // arm above produces when its partner record cannot be resolved.
+            // Private correspondence is never the fallback-readable case.
+            return $this->fedPaginated([], 0, $page, $perPage);
         }
 
         if (!empty($since)) {
@@ -1508,6 +1517,39 @@ class FederationController extends BaseApiController
         $partnerTenantId = $auth['tenant_id'];
         $db = DB::getPdo();
 
+        // F-487: `transactions.receiver_tenant_id` carries TWO identifier spaces
+        // with no discriminator column — a real `tenants.id` on an INTERNAL
+        // cross-community transfer (FederationV2Controller::sendTransaction(),
+        // around line 3960) and a `federation_external_partners.id` on an
+        // OUTBOUND EXTERNAL one (sendExternalTransaction(), around line 4143 —
+        // the reading ReconcileFederationPendingTxJob relies on). Both are small
+        // auto-increment sequences from 1, so comparing the caller's own tenant
+        // id against this column served a community whose id merely COLLIDED
+        // with a partner id another community's transfer: its amount, the
+        // sending member's free-text description and the sender's name.
+        //
+        // The receiver arm below therefore matches only when the row is
+        // demonstrably NOT an outbound external transfer. The two IS NULL tests
+        // are the precise discriminator — only sendExternalTransaction() writes
+        // those two columns, the internal path never does. The NOT EXISTS is a
+        // belt for any legacy row written before they existed.
+        //
+        // 🔴 THAT NOT EXISTS FAILS CLOSED ON AN AMBIGUOUS ID, DELIBERATELY, and
+        // its cost is known and accepted: under the same double id collision
+        // this finding needs, a legitimate INTERNAL receiving community is
+        // refused its own transfer. That is the right price against disclosing
+        // one community's transfer to another. Do NOT remove the guard to "fix"
+        // the false negative — separate the id spaces instead.
+        //
+        // This change does not touch ReconcileFederationPendingTxJob and does
+        // not disturb the condition that today blocks the more dangerous arm of
+        // the same conflation; it uses the same discriminator from the other
+        // direction.
+        //
+        // 🔴 Keep every explanation OUT of the SQL string: PDO's emulated
+        // prepare reads `:something` inside a `--` comment as a named
+        // placeholder and the statement then fails at runtime with a mixed
+        // parameter style. That is how this fix first broke its own controls.
         $stmt = $db->prepare("
             SELECT t.id, t.amount, t.status, t.description, t.created_at, t.is_federated,
                    t.sender_id, t.receiver_id, t.sender_tenant_id, t.receiver_tenant_id,
@@ -1524,7 +1566,18 @@ class FederationController extends BaseApiController
             LEFT JOIN tenants st ON st.id = t.sender_tenant_id
             LEFT JOIN tenants rt ON rt.id = t.receiver_tenant_id
             WHERE t.id = ? AND t.is_federated = 1
-            AND (t.sender_tenant_id = ? OR t.receiver_tenant_id = ?)
+            AND (
+                t.sender_tenant_id = ?
+                OR (
+                    t.receiver_tenant_id = ?
+                    AND t.federation_partner_idempotency_key IS NULL
+                    AND t.external_transaction_id IS NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM federation_external_partners ep
+                        WHERE ep.id = t.receiver_tenant_id AND ep.tenant_id = t.tenant_id
+                    )
+                )
+            )
         ");
         $stmt->execute([(int) $id, $partnerTenantId, $partnerTenantId]);
 

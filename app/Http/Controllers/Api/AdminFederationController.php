@@ -71,8 +71,14 @@ class AdminFederationController extends BaseApiController
     private function notifyPartnerAdmins(int $partnerTenantId, string $messageKey, array $messageParams = [], string $type = 'federation', ?string $link = '/admin/federation'): void
     {
         try {
+            // F-490: admin authority is the four boolean flags as well as the
+            // role string, and both live grant routes write the flag and NO
+            // role — so a role-only recipient list silently loses real
+            // administrators of the partner community.
             $admins = DB::select(
-                "SELECT id, preferred_language FROM users WHERE tenant_id = ? AND role IN ('admin', 'tenant_admin') AND status = 'active'",
+                "SELECT id, preferred_language FROM users WHERE tenant_id = ? AND status = 'active'"
+                . " AND (role IN ('admin','tenant_admin','super_admin','god')"
+                . " OR is_admin = 1 OR is_super_admin = 1 OR is_tenant_super_admin = 1 OR is_god = 1)",
                 [$partnerTenantId]
             );
             foreach ($admins as $admin) {
@@ -1071,23 +1077,37 @@ class AdminFederationController extends BaseApiController
         // ingest endpoints resolve the acting partner (and its allow_* flags)
         // from this server-side link — never from a client header (audit M3).
         // Must reference a partner in THIS tenant.
+        //
+        // F-463: the binding is also what makes the key an EXTERNAL credential.
+        // Every read on the v1 partner API forks on
+        // `$isExternal = !empty($auth['platform_id'])`, and this INSERT — the
+        // only one into `federation_api_keys` in `app/` — wrote no
+        // `platform_id`, so a key issued for an outside organisation took the
+        // INTERNAL branch and `members()` returned PARTNERED communities'
+        // members instead of the issuer's own. `platform_id` is the partner
+        // identifier the same controller resolves against
+        // `federation_external_partners.name` (FederationController
+        // sendMessage():718, getMessages():1391), so it is taken from the
+        // server-side partner record, never from the client.
         $externalPartnerId = (int) $this->input('external_partner_id', 0);
+        $externalPlatformId = null;
         if ($externalPartnerId > 0) {
-            $partnerExists = DB::table('federation_external_partners')
+            $partnerRow = DB::table('federation_external_partners')
                 ->where('id', $externalPartnerId)
                 ->where('tenant_id', $tenantId)
-                ->exists();
-            if (!$partnerExists) {
+                ->first(['name']);
+            if (!$partnerRow) {
                 return $this->respondWithError('NOT_FOUND', __('api.federation.partner_not_found'), 'external_partner_id', 404);
             }
+            $externalPlatformId = (string) $partnerRow->name;
         }
 
         try {
             $keyValue = bin2hex(random_bytes(32));
             $prefix = substr($keyValue, 0, 8);
             DB::insert(
-                "INSERT INTO federation_api_keys (tenant_id, name, key_hash, key_prefix, permissions, status, expires_at, external_partner_id, created_by, created_at) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, NOW())",
-                [$tenantId, $name, hash('sha256', $keyValue), $prefix, json_encode($scopes), $expiresAt ?: null, $externalPartnerId > 0 ? $externalPartnerId : null, $this->getUserId()]
+                "INSERT INTO federation_api_keys (tenant_id, name, key_hash, key_prefix, permissions, status, expires_at, external_partner_id, platform_id, created_by, created_at) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, NOW())",
+                [$tenantId, $name, hash('sha256', $keyValue), $prefix, json_encode($scopes), $expiresAt ?: null, $externalPartnerId > 0 ? $externalPartnerId : null, $externalPlatformId, $this->getUserId()]
             );
             \Illuminate\Support\Facades\Log::info('[Federation] API key created', ['tenant_id' => $tenantId, 'key_prefix' => $prefix, 'external_partner_id' => $externalPartnerId ?: null, 'created_by' => $this->getUserId()]);
             return $this->respondWithData(['id' => DB::getPdo()->lastInsertId(), 'name' => $name, 'api_key' => $keyValue, 'key_prefix' => $prefix, 'external_partner_id' => $externalPartnerId ?: null, 'warning' => __('api_controllers_1.admin_federation.api_key_shown_once_warning')], null, 201);

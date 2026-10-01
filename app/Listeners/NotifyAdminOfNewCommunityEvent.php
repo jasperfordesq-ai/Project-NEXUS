@@ -72,9 +72,21 @@ class NotifyAdminOfNewCommunityEvent implements ShouldQueue
             $organizerId = (int) ($communityEvent->user_id ?? 0);
             $creatorName = $this->creatorName($tenantId, $organizerId);
 
+            // F-490: admin authority is the four boolean flags as well as the
+            // role string, and both live grant routes write the flag and NO
+            // role — so a role-only recipient list silently loses real
+            // administrators and new community events go unreviewed. Mirrors
+            // NotifyAdminOfNewRegistration::recipientsFor().
             $adminsQuery = DB::table('users')
                 ->where('tenant_id', $tenantId)
-                ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                ->where(function ($query) {
+                    $query
+                        ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                        ->orWhere('is_admin', 1)
+                        ->orWhere('is_super_admin', 1)
+                        ->orWhere('is_tenant_super_admin', 1)
+                        ->orWhere('is_god', 1);
+                })
                 ->where('status', 'active')
                 ->whereNull('deleted_at');
             if ($organizerId > 0) {

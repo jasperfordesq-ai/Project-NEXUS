@@ -81,9 +81,21 @@ class NotifyAdminOfNewVolunteerOpportunity implements ShouldQueue
                     }
                 }
 
+                // F-490: admin authority is the four boolean flags as well as
+                // the role string, and both live grant routes write the flag
+                // and NO role — so a role-only recipient list silently loses
+                // real administrators and new volunteering goes unreviewed.
+                // Mirrors NotifyAdminOfNewRegistration::recipientsFor().
                 $admins = DB::table('users')
                     ->where('tenant_id', $event->tenantId)
-                    ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                    ->where(function ($query) {
+                        $query
+                            ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                            ->orWhere('is_admin', 1)
+                            ->orWhere('is_super_admin', 1)
+                            ->orWhere('is_tenant_super_admin', 1)
+                            ->orWhere('is_god', 1);
+                    })
                     ->where('status', 'active')
                     ->select(['id', 'email', 'first_name', 'name', 'preferred_language'])
                     ->get();

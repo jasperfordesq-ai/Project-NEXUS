@@ -79,9 +79,22 @@ class NotifyAdminOfGdprAction implements ShouldQueue
             // anonymised, so we rely on the name captured at dispatch time.
             $memberName = $this->resolveMemberName($event, $tenantId);
 
+            // F-490: admin authority is the four boolean flags as well as the
+            // role string, and both live grant routes write the flag and NO
+            // role — so a role-only recipient list can leave a statutory
+            // data-subject request alerting NOBODY. This mirrors
+            // NotifyAdminOfNewRegistration::recipientsFor(), the predicate
+            // already fixed for exactly this after a real community reported it.
             $admins = DB::table('users')
                 ->where('tenant_id', $tenantId)
-                ->whereIn('role', self::RECIPIENT_ROLES)
+                ->where(function ($query) {
+                    $query
+                        ->whereIn('role', self::RECIPIENT_ROLES)
+                        ->orWhere('is_admin', 1)
+                        ->orWhere('is_super_admin', 1)
+                        ->orWhere('is_tenant_super_admin', 1)
+                        ->orWhere('is_god', 1);
+                })
                 ->where('status', 'active')
                 ->select(['id', 'email', 'first_name', 'name', 'preferred_language'])
                 ->get();

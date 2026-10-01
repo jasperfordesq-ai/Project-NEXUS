@@ -544,9 +544,15 @@ class FederationEmailService
             // Get admin users for target tenant — include preferred_language so each admin's
             // notification renders in their own locale rather than whoever's last touched
             // the app locale.
+            // F-490: admin authority is the four boolean flags as well as the
+            // role string, and both live grant routes write the flag and NO
+            // role — so a role-only recipient list silently loses real
+            // administrators of the partner community.
             $admins = DB::select(
                 "SELECT id, email, first_name, last_name, preferred_language FROM users
-                 WHERE tenant_id = ? AND role IN ('admin', 'super_admin') AND status = 'active' AND email IS NOT NULL
+                 WHERE tenant_id = ? AND status = 'active' AND email IS NOT NULL
+                   AND (role IN ('admin','tenant_admin','super_admin','god')
+                        OR is_admin = 1 OR is_super_admin = 1 OR is_tenant_super_admin = 1 OR is_god = 1)
                  LIMIT 5",
                 [$targetTenantId]
             );

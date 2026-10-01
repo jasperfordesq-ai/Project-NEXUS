@@ -164,8 +164,14 @@ class PushTransactionToFederatedPartnerTest extends TestCase
     /**
      * Build a TransactionCompleted event with the given partner id attached.
      *
-     * The Transaction model does NOT have an `external_partner_id` DB column so we
-     * set it as a dynamic attribute directly on the model instance.
+     * F-486: this used to set a dynamic `external_partner_id` attribute, a
+     * column `transactions` does not have — which is exactly why no outbound
+     * transfer was ever pushed in production. The row is now recorded the way
+     * FederationV2Controller::sendExternalTransaction() records one: the
+     * partner id in `receiver_tenant_id`, plus the
+     * `federation_partner_idempotency_key` that only the external path writes
+     * and which tells an outbound EXTERNAL transfer apart from an INTERNAL
+     * cross-community one sharing the same column (F-487).
      */
     private function makeEvent(
         float $amount           = 2.75,
@@ -175,21 +181,21 @@ class PushTransactionToFederatedPartnerTest extends TestCase
         ?int  $receiverOverride = null
     ): TransactionCompleted {
         $txId = (int) DB::table('transactions')->insertGetId([
-            'tenant_id'        => self::TENANT_ID,
-            'sender_id'        => $senderOverride  ?? $this->senderId,
-            'receiver_id'      => $receiverOverride ?? $this->receiverId,
-            'amount'           => $amount,
-            'status'           => 'completed',
-            'is_federated'     => $isFederated ? 1 : 0,
-            'transaction_type' => 'transfer',
-            'created_at'       => now(),
+            'tenant_id'          => self::TENANT_ID,
+            'sender_id'          => $senderOverride  ?? $this->senderId,
+            'receiver_id'        => $receiverOverride ?? $this->receiverId,
+            'amount'             => $amount,
+            'status'             => 'completed',
+            'is_federated'       => $isFederated ? 1 : 0,
+            'transaction_type'   => 'transfer',
+            'sender_tenant_id'   => self::TENANT_ID,
+            'receiver_tenant_id' => ($partnerId > 0) ? $partnerId : $this->partnerId,
+            'federation_partner_idempotency_key' => 'test-outbound-' . uniqid('', true),
+            'created_at'         => now(),
         ]);
 
         /** @var Transaction $tx */
         $tx = Transaction::withoutGlobalScopes()->find($txId);
-        // Attach external_partner_id as a dynamic attribute — the column does not
-        // exist in the DB schema but the listener reads it from the model.
-        $tx->external_partner_id = ($partnerId > 0) ? $partnerId : $this->partnerId;
 
         $sender   = User::withoutGlobalScopes()->find($senderOverride  ?? $this->senderId);
         $receiver = User::withoutGlobalScopes()->find($receiverOverride ?? $this->receiverId);
@@ -286,7 +292,7 @@ class PushTransactionToFederatedPartnerTest extends TestCase
 
         $event = $this->makeEvent();
         // Override to 0 AFTER makeEvent() populates it (makeEvent defaults to $this->partnerId)
-        $event->transaction->external_partner_id = 0;
+        $event->transaction->receiver_tenant_id = 0;
 
         $this->listener->handle($event);
 

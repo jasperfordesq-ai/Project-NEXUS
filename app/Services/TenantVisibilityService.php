@@ -262,10 +262,15 @@ class TenantVisibilityService
         try {
             $admins = DB::table('users')
                 ->where('tenant_id', $tenantId)
+                // F-490: this read two of the four admin flags. `is_admin` and
+                // `is_god` were missing, so an administrator granted either way
+                // was absent from the roster a partner community is shown.
                 ->where(function ($q) {
-                    $q->whereIn('role', ['admin', 'tenant_admin', 'super_admin'])
+                    $q->whereIn('role', ['admin', 'tenant_admin', 'super_admin', 'god'])
+                      ->orWhere('is_admin', 1)
                       ->orWhere('is_tenant_super_admin', 1)
-                      ->orWhere('is_super_admin', 1);
+                      ->orWhere('is_super_admin', 1)
+                      ->orWhere('is_god', 1);
                 })
                 ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'email', 'role', 'is_tenant_super_admin', 'is_super_admin', 'last_login_at'])
                 ->orderBy('role')

@@ -63,7 +63,16 @@ class PushTransactionToFederatedPartner implements ShouldQueue
                 return;
             }
 
-            $partnerId = (int) ($transaction->external_partner_id ?? 0);
+            // F-486: this read `$transaction->external_partner_id`, a column
+            // `transactions` does not have, so it returned on EVERY transaction
+            // and no completed transfer was ever pushed — silently, with the
+            // retry and circuit-breaker machinery below left unreached.
+            //
+            // The outbound partner lives in `receiver_tenant_id`: that is the
+            // position FederationV2Controller::sendExternalTransaction()
+            // (:4143-4156) binds the partner id into, and how
+            // ReconcileFederationPendingTxJob (:70-73) finds it.
+            $partnerId = $this->resolveExternalPartnerId($transaction, $event->tenantId);
 
             if ($partnerId <= 0) {
                 // Nothing to push â€” transaction is flagged federated but has
@@ -112,6 +121,49 @@ class PushTransactionToFederatedPartner implements ShouldQueue
         } finally {
             TenantContext::restoreAfterScopedListener($previousTenantId);
         }
+    }
+
+    /**
+     * Resolve the EXTERNAL partner this transaction was addressed to, or 0.
+     *
+     * 🔴 `transactions.receiver_tenant_id` carries two identifier spaces with no
+     * discriminator column (F-487): a real `tenants.id` on an INTERNAL
+     * cross-community transfer (`FederationV2Controller::sendTransaction()`
+     * :3960-3963) and a `federation_external_partners.id` on an outbound
+     * EXTERNAL one (`sendExternalTransaction()` :4143-4156). The id spaces are
+     * small auto-increment sequences from 1, so they collide readily.
+     *
+     * Treating the value as a partner id on its own would therefore push an
+     * internal community-to-community transfer — its amount and the sending
+     * member's free-text description — to an unrelated external partner. Two
+     * conditions must BOTH hold:
+     *
+     *   1. `federation_partner_idempotency_key` is set. Only
+     *      `sendExternalTransaction()` writes it; the internal path never does.
+     *   2. the value resolves to an active partner of THIS community, which is
+     *      the reconcile job's own join.
+     */
+    private function resolveExternalPartnerId(object $transaction, int $tenantId): int
+    {
+        $candidate = (int) ($transaction->receiver_tenant_id ?? 0);
+
+        if ($candidate <= 0) {
+            return 0;
+        }
+
+        // (1) Only an outbound EXTERNAL transfer carries a partner idempotency key.
+        if (trim((string) ($transaction->federation_partner_idempotency_key ?? '')) === '') {
+            return 0;
+        }
+
+        // (2) And the id must name an active external partner of this community.
+        $partner = \Illuminate\Support\Facades\DB::table('federation_external_partners')
+            ->where('id', $candidate)
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->value('id');
+
+        return $partner ? (int) $partner : 0;
     }
 
     /**
