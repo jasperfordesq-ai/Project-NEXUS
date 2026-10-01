@@ -190,13 +190,85 @@ export function isInAppOnlyRoute(rawPath: string | null): boolean {
     const url = new URL(normalized, 'https://app.project-nexus.ie');
     const segments = [url.host, ...url.pathname.split('/')]
       .filter(Boolean)
-      .map((segment) => decodeURIComponent(segment))
-      .filter((segment) => !/^\(.*\)$/.test(segment) && segment !== 'app.project-nexus.ie');
+      /*
+        🔴 F-497. This was a single `decodeURIComponent` compared with a case-sensitive
+        `Set.has`, so `IMAGE-VIEWER` and `image-viewer%2F` both read as "not one of ours"
+        and walked past the F-300 refusal. Decoding can also reveal a slash
+        (`%2F` -> `/`), which is a segment boundary the first split never saw, so split
+        again afterwards and fold case before comparing.
+      */
+      .flatMap((segment) => decodeURIComponent(segment).split('/'))
+      .map((segment) => segment.trim().toLowerCase())
+      .filter((segment) => segment && !/^\(.*\)$/.test(segment) && segment !== 'app.project-nexus.ie');
     return segments.some((segment) => IN_APP_ONLY_ROUTES.has(segment));
   } catch {
     // Unparseable is not one of ours either; refuse rather than let the router guess.
     return true;
   }
+}
+
+/**
+ * Raw paths the app hands to another system and gets handed back, which therefore cannot
+ * go through the section mapper.
+ *
+ * 🔴 Both are produced by `ExpoLinking.createURL(...)` in
+ * `lib/payments/marketplacePayment.native.ts` and `lib/payments/identityPayment.native.ts`
+ * as the return URL Stripe sends the member back to after a 3-D Secure or bank-app
+ * redirect. Refusing one strands a member in the middle of a payment, which is worse than
+ * anything the refusal below prevents.
+ */
+const APP_RETURN_PATHS = new Set(['marketplace-payment-return', 'stripe-redirect']);
+
+/**
+ * Whether a link the mapper did not recognise may still be handed to Expo Router.
+ *
+ * 🔴 F-496. `redirectSystemPath` used to end `?? path ?? '/'`. `parseSystemPath` returns
+ * `null` BOTH when it cannot map a link and when its host allow-list REFUSES one, so the
+ * refusal was thrown away and the attacker's own string went to the router — defeating the
+ * `name` scrub (F-118/F-198), the BROWSER_ONLY refusals and the marketplace id checks in
+ * one step. `app.json` registers the `nexus` scheme with no host and no path prefix, so
+ * any web page, email or other app can send one.
+ *
+ * The two other callers of the mapper already fail closed on the same `null`:
+ * `lib/notifications.ts` sends the member to `/notifications`, and
+ * `lib/utils/navigateToLink.ts` does not navigate at all. This is the one that did not.
+ *
+ * 🔴 What is deliberately still allowed through, and why — refusing any of these would
+ * break something a member relies on:
+ *   - the two Stripe return paths above;
+ *   - a real web URL on the one origin this app answers for, so a page with no native
+ *     screen still reaches `+not-found`, which offers to open it in the browser
+ *     (the contract `+native-intent.coverage.test.ts` enforces);
+ *   - `exp:`/`exps:` development links. Only Expo Go registers those schemes, so a
+ *     production build never receives one.
+ *
+ * 🔴 Residual, stated rather than hidden: an UNMAPPED path on the trusted web origin is
+ * still passed on, so a screen whose Expo Router name happens to match an unmapped web
+ * path stays deep-link reachable. Closing that needs either a maintained inventory of the
+ * app's own screen names or a way to reach `+not-found` without handing it the raw path.
+ */
+function mayFallThroughToRouter(rawPath: string | null): boolean {
+  const trimmed = rawPath?.trim();
+  if (!trimmed) return false;
+  let url: URL;
+  try {
+    const normalized = trimmed.includes('://') || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    url = new URL(normalized, 'https://app.project-nexus.ie');
+  } catch {
+    return false;
+  }
+  if (url.protocol === 'exp:' || url.protocol === 'exps:') return true;
+
+  const segments = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  // `(modals)`, `(tabs)`, `(auth)` are the app's own internal route spellings. Expo Router
+  // ignores them when matching, so an outside link has no reason to carry one.
+  if (segments.some((segment) => /^\(.*\)$/.test(segment))) return false;
+
+  if (url.protocol === 'nexus:') {
+    const entry = url.host ? [url.host, ...segments] : segments;
+    return entry.length === 1 && APP_RETURN_PATHS.has(entry[0]!);
+  }
+  return url.protocol === 'https:' && url.hostname === 'app.project-nexus.ie';
 }
 
 export function redirectSystemPath({ path }: RedirectEvent): string {
@@ -208,7 +280,11 @@ export function redirectSystemPath({ path }: RedirectEvent): string {
     // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
     // lets Android carry on to the browser instead of stranding the member here.
     if (isBrowserOnlyPath(path)) return path ?? '/';
-    return mapSystemPathToNativeRoute(path) ?? path ?? '/';
+    const mapped = mapSystemPathToNativeRoute(path);
+    if (mapped) return mapped;
+    // 🔴 F-496 — the mapper's `null` is a refusal as often as it is a miss. See
+    // `mayFallThroughToRouter` for what is still allowed through and why.
+    return mayFallThroughToRouter(path) ? path ?? '/' : '/';
   } catch {
     return '/';
   }

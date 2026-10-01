@@ -3,7 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { isBrowserOnlyPath, mapSystemPathToNativeRoute, redirectSystemPath } from './+native-intent';
+import {
+  isBrowserOnlyPath,
+  isInAppOnlyRoute,
+  mapSystemPathToNativeRoute,
+  redirectSystemPath,
+} from './+native-intent';
 
 describe('native intent route rewriting', () => {
   it('maps Android listing and group app links to implemented modal routes', () => {
@@ -100,9 +105,20 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/platform/privacy')).toBe('/(modals)/support?doc=privacy');
   });
 
-  it('preserves unknown paths so Expo Router can handle native routes normally', () => {
+  /*
+    🔴 CHANGED 2026-10-01 for F-496, deliberately. This test used to be named "preserves
+    unknown paths so Expo Router can handle native routes normally" and asserted that
+    `redirectSystemPath` returned `/(modals)/exchange-detail?id=90877` unchanged. That
+    fail-open IS the finding: the same `null` means "I could not map this" and "my host
+    allow-list refused this", so the refusal was being handed to the router. An internal
+    `(modals)` spelling only ever arrives from outside the app, because expo-router calls
+    `redirectSystemPath` for system URLs only — `router.push` never goes through it.
+  */
+  it('refuses an internal route spelling that arrived from outside the app', () => {
     expect(mapSystemPathToNativeRoute('/(modals)/exchange-detail?id=90877')).toBeNull();
-    expect(redirectSystemPath({ path: '/(modals)/exchange-detail?id=90877', initial: false })).toBe('/(modals)/exchange-detail?id=90877');
+    expect(redirectSystemPath({ path: '/(modals)/exchange-detail?id=90877', initial: false })).toBe('/');
+    // The control: the member-facing link for the same screen still works.
+    expect(redirectSystemPath({ path: '/listings/90877', initial: false })).toBe('/(modals)/exchange-detail?id=90877');
   });
 
   // F-300: the image viewer shows whatever `uri` it is given inside the app's
@@ -188,5 +204,96 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/podcasts/time-stories')).toBe('/(modals)/podcast-show?slug=time-stories');
     expect(mapSystemPathToNativeRoute('/podcasts/time-stories/first-hour'))
       .toBe('/(modals)/podcast-episode?showSlug=time-stories&episodeSlug=first-hour');
+  });
+});
+
+/*
+  🔴 F-496. `redirectSystemPath` used to end `?? path ?? '/'`. `parseSystemPath` returns
+  null BOTH when it cannot map a link and when its host allow-list REFUSES one, so the
+  refusal was thrown away and the original string was handed to Expo Router. `app.json`
+  registers the `nexus` scheme with no host and no path prefix, so any web page, email or
+  other app can send one. Measured against the bundled expo-router 55.0.18 matcher,
+  `https://evil.example/(modals)/exchange-detail?id=1` resolved to the exchange-detail
+  screen, so this is a real door, not a theoretical one.
+
+  🔴 F-497. `IN_APP_ONLY_ROUTES` was compared with a case-sensitive exact `Set.has`, so
+  `IMAGE-VIEWER` and `image-viewer%2F` walked past the F-300 refusal into that same door.
+
+  These assert the CORRECT behaviour: a link the mapper does not recognise is refused,
+  while every link the app is meant to answer — including Stripe's own payment returns and
+  a web page that has no native screen — still goes where it went before.
+*/
+describe('unmapped deep links are refused rather than handed to the router (F-496/F-497)', () => {
+  it.each([
+    // The host allow-list refuses these inside parseSystemPath; the refusal must be acted on.
+    'https://evil.example/(modals)/exchange-detail?id=1',
+    'http://app.project-nexus.ie/(modals)/exchange-detail?id=1',
+    // The custom scheme is reachable from any web page and must not be a free pass.
+    'nexus://x/(modals)/volunteer-checkin?token=AAAA',
+    'nexus:///volunteer-checkin?token=AAAA',
+    'nexus:///marketplace-pickup-scan',
+    // The app's own internal route spellings. No link from outside the app uses these.
+    '/(modals)/marketplace-pickup-scan',
+  ])('refuses %s', (path) => {
+    expect(redirectSystemPath({ path, initial: false })).toBe('/');
+  });
+
+  // F-497, at the gate itself: the spellings must be caught, not just stopped later.
+  it.each([
+    'nexus:///IMAGE-VIEWER?uri=https://attacker.example/x.png',
+    'nexus:///image-viewer%2F?uri=https://attacker.example/x.png',
+    'https://app.project-nexus.ie/Image-Viewer?uri=https://attacker.example/x.png',
+  ])('treats %s as the in-app-only image viewer', (path) => {
+    expect(isInAppOnlyRoute(path)).toBe(true);
+    expect(redirectSystemPath({ path, initial: false })).toBe('/');
+  });
+
+  // Legitimate-access controls. Each differs from the refused cases only in being a link
+  // the app is meant to answer.
+  it('still maps the links members actually follow', () => {
+    expect(redirectSystemPath({ path: 'https://app.project-nexus.ie/members/42', initial: false }))
+      .toBe('/(modals)/member-profile?id=42');
+    expect(redirectSystemPath({ path: 'nexus://reset-password?token=abc123', initial: false }))
+      .toBe('/(auth)/reset-password?token=abc123');
+    expect(redirectSystemPath({ path: '/listings/90877', initial: false }))
+      .toBe('/(modals)/exchange-detail?id=90877');
+    /*
+      Not a fall-through: `parseSystemPath` treats an unrecognised first segment as a
+      community slug and looks at the second, so this is MAPPED to the real reset screen
+      with its token — the same place `nexus://reset-password?token=…` goes. Asserted so a
+      later reader does not mistake it for the refusal above.
+    */
+    expect(redirectSystemPath({ path: '/(auth)/reset-password?token=AAAA', initial: false }))
+      .toBe('/(auth)/reset-password?token=AAAA');
+  });
+
+  it("still carries Stripe's own payment return URLs through untouched", () => {
+    // lib/payments/marketplacePayment.native.ts and identityPayment.native.ts hand these
+    // to Stripe as the 3-D Secure return URL. Refusing one strands a member mid-payment.
+    expect(redirectSystemPath({ path: 'nexus:///marketplace-payment-return', initial: false }))
+      .toBe('nexus:///marketplace-payment-return');
+    expect(redirectSystemPath({ path: 'nexus://marketplace-payment-return', initial: false }))
+      .toBe('nexus://marketplace-payment-return');
+    expect(redirectSystemPath({ path: 'nexus:///stripe-redirect', initial: false }))
+      .toBe('nexus:///stripe-redirect');
+  });
+
+  it('still lets a web page with no native screen reach the not-found screen', () => {
+    // +not-found offers to open the real page in the browser, and it can only do that
+    // because the web path reaches it. +native-intent.coverage.test.ts contracts for this.
+    const webOnly = 'https://app.project-nexus.ie/hour-timebank/some-web-only-page';
+    expect(redirectSystemPath({ path: webOnly, initial: false })).toBe(webOnly);
+  });
+
+  it('still declines browser-only sections unchanged', () => {
+    const console_ = 'https://app.project-nexus.ie/admin/dashboard';
+    expect(redirectSystemPath({ path: console_, initial: false })).toBe(console_);
+  });
+
+  it('still lets an Expo Go development link through', () => {
+    // Only Expo Go registers `exp:`; a production build never receives it, because
+    // app.json registers https://app.project-nexus.ie and `nexus:` and nothing else.
+    const devLink = 'exp://192.168.1.5:8081/--/listings/90877';
+    expect(redirectSystemPath({ path: devLink, initial: false })).toBe(devLink);
   });
 });
