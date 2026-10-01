@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-30T06:55:39.378Z",
+  "generatedAt": "2026-10-01T09:07:51.332Z",
   "provenance": {
-    "generatedAt": "2026-09-30T06:55:39.378Z",
+    "generatedAt": "2026-10-01T09:07:51.332Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
+    "laravelCommitSha": "803e4cd9ff3fc8a16844c9dbd69be378c0992536",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "bed974c43016f696e2f517214c02d10ce2c95e53",
+    "webUkRepositoryCommitSha": "803e4cd9ff3fc8a16844c9dbd69be378c0992536",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -18,13 +18,13 @@
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
     "laravelOpenApiSha256": "e60992f5ac21058988b49e3c96375ebc43f3d570d1b52b18d699aaa4e2b3ba7b",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
-    "laravelApiRoutesSha256": "7ebe2d707c6939c9f926e70bc022eade156794ee1f96116ed3f489190575bb08"
+    "laravelApiRoutesSha256": "3c045cab029a7b9a2d0196047e9c02d432c0346a8a792126282563891600a2fa"
   },
   "summary": {
-    "contracts": 715,
+    "contracts": 714,
     "matchedOpenApi": 470,
-    "missingOpenApi": 245,
-    "routeDeclaredOpenApiOmissions": 245,
+    "missingOpenApi": 244,
+    "routeDeclaredOpenApiOmissions": 244,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
     "stateChanging": 393,
@@ -408,6 +408,7 @@
       ],
       "tests": [
         "tests/account-under-minimum-age-session.test.js",
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/auth-foreign-community-refresh.test.js",
         "tests/auth-host-prefixed-cookies.test.js",
@@ -488,49 +489,6 @@
         "tests/auth-route-localization.test.js",
         "tests/auth-tenant-authority.test.js",
         "tests/registration-contract.test.js",
-        "tests/shared-accessible-shell.test.js"
-      ],
-      "directApiHelperAssertion": true,
-      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
-    },
-    {
-      "id": "GET /api/auth/validate-token [validateToken]",
-      "method": "GET",
-      "path": "/api/auth/validate-token",
-      "apiHelper": "validateToken",
-      "source": "src/lib/api.js:300",
-      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
-      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
-      "requestShape": "query/path parameters; no request body expected",
-      "responseShape": "JSON/text response via ApiError-aware request",
-      "statusCodes": [],
-      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/middleware/auth.js",
-      "sideEffects": "read-only by HTTP method",
-      "cleanup": "not applicable",
-      "laravel": {
-        "status": "route-declared-openapi-omission",
-        "path": "/api/auth/validate-token",
-        "operationId": "",
-        "controllerAction": "",
-        "tags": []
-      },
-      "frontendConsumers": [
-        "src/middleware/auth.js"
-      ],
-      "tests": [
-        "tests/account-under-minimum-age-session.test.js",
-        "tests/api.test.js",
-        "tests/auth-foreign-community-refresh.test.js",
-        "tests/auth-host-prefixed-cookies.test.js",
-        "tests/auth-localization.test.js",
-        "tests/auth-session-rotation.test.js",
-        "tests/authenticated-no-store-cache.test.js",
-        "tests/csrf-session-binding.test.js",
-        "tests/localization.test.js",
-        "tests/relative-date-future-values.test.js",
-        "tests/routes.test.js",
-        "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -22734,6 +22692,7 @@
         "src/routes/members.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
@@ -22772,6 +22731,7 @@
         "src/routes/members.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
@@ -22812,6 +22772,7 @@
         "src/routes/messages.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/caring-caregiver-consent.test.js",
         "tests/jobs-owner-lookup.test.js",
@@ -23241,6 +23202,7 @@
         "src/routes/settings.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/auth-localization.test.js",
         "tests/error-title-prefix-invalid-status.test.js",
@@ -23293,6 +23255,7 @@
       ],
       "tests": [
         "tests/account-under-minimum-age-session.test.js",
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/auth-localization.test.js",
         "tests/authenticated-no-store-cache.test.js",
@@ -23362,6 +23325,7 @@
         "src/routes/profile.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/auth-localization.test.js",
         "tests/error-title-prefix-invalid-status.test.js",
@@ -23413,6 +23377,7 @@
         "src/routes/onboarding-posts.js"
       ],
       "tests": [
+        "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/settings-contract-parity.test.js",
