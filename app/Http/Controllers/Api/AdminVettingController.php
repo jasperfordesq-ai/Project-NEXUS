@@ -413,7 +413,9 @@ class AdminVettingController extends BaseApiController
     {
         $status = match ($e->reasonCode) {
             'MEMBER_NOT_FOUND', 'VETTING_CONFIRMATION_NOT_FOUND', 'VETTING_REVIEW_REQUEST_NOT_FOUND' => 404,
-            'VETTING_SELF_CONFIRMATION_FORBIDDEN', 'VETTING_DECISION_ACTOR_NOT_FOUND' => 403,
+            'VETTING_SELF_CONFIRMATION_FORBIDDEN', 'VETTING_DECISION_ACTOR_NOT_FOUND',
+            // F-421: the decision maker does not outrank the subject.
+            'INSUFFICIENT_PERMISSIONS' => 403,
             'SAFEGUARDING_POLICY_UNAVAILABLE', 'SAFEGUARDING_JURISDICTION_REQUIRED' => 409,
             default => 422,
         };

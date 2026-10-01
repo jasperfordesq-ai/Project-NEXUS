@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Models\MemberVettingAttestation;
 use App\Models\SafeguardingVettingReviewRequest;
+use App\Support\Authorization\AdminTier;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Query\Builder;
@@ -769,13 +770,30 @@ class MemberVettingAttestationService
             throw new SafeguardingPolicyException('VETTING_SELF_CONFIRMATION_FORBIDDEN');
         }
 
-        $actorExists = DB::table('users')
+        $actor = DB::table('users')
             ->where('id', $actorUserId)
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
-            ->exists();
-        if (! $actorExists) {
+            ->first(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+        if ($actor === null) {
             throw new SafeguardingPolicyException('VETTING_DECISION_ACTOR_NOT_FOUND');
+        }
+
+        // F-421: a broker/coordinator may decide an ordinary member's vetting,
+        // never a fellow broker's or an administrator's — otherwise an
+        // operational role could revoke an administrator's confirmation and cut
+        // them off from the members a vetted-only contact gate protects. Same
+        // rank rule as the F-219 guard on AdminTimebankingController::adjustBalance()
+        // and AdminUsersController::canManageSecurityTarget(); admin tiers keep
+        // full latitude, including over peers.
+        if (! AdminTier::allows($actor)) {
+            $member = DB::table('users')
+                ->where('id', $memberId)
+                ->where('tenant_id', $tenantId)
+                ->first(['id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            if ($member === null || ! AdminTier::outranks($actor, $member)) {
+                throw new SafeguardingPolicyException('INSUFFICIENT_PERMISSIONS');
+            }
         }
     }
 
