@@ -74,7 +74,11 @@ class LegalPublicationDeliveryTest extends TestCase
         DB::table('email_suppression')->insert(['email' => $user->email, 'reason' => 'unsubscribe', 'suppressed_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
         $version = $this->draft('Changed <script>unsafe</script> contact details.');
         LegalDocumentService::publishVersion($version);
-        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        // Isolate one recipient WITHOUT deleting the others' rows: since F-471 the
+        // send command resumes a fan-out that is missing members, so deleted rows
+        // would be written again and emailed. A non-pending status is never sent.
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)
+            ->update(['status' => 'skipped', 'reason' => 'test_isolation']);
         $captured = [];
         $this->mock(EmailDispatchService::class, function ($mock) use (&$captured) {
             $mock->shouldReceive('send')->once()->andReturnUsing(function ($to, $subject, $html, $options) use (&$captured) {
@@ -128,7 +132,11 @@ class LegalPublicationDeliveryTest extends TestCase
         $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
         $version = $this->draft();
         LegalDocumentService::publishVersion($version);
-        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        // Isolate one recipient WITHOUT deleting the others' rows: since F-471 the
+        // send command resumes a fan-out that is missing members, so deleted rows
+        // would be written again and emailed. A non-pending status is never sent.
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)
+            ->update(['status' => 'skipped', 'reason' => 'test_isolation']);
         DB::table('legal_publication_deliveries')->update(['status' => 'sending', 'claimed_at' => now()->subMinutes(11)]);
         $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldNotReceive('send'));
         app(LegalPublicationDeliveryService::class)->processBatch();
@@ -231,7 +239,11 @@ class LegalPublicationDeliveryTest extends TestCase
         $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'email' => 'retry-policy@example.org']);
         $version = $this->draft();
         LegalDocumentService::publishVersion($version);
-        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)->delete();
+        // Isolate one recipient WITHOUT deleting the others' rows: since F-471 the
+        // send command resumes a fan-out that is missing members, so deleted rows
+        // would be written again and emailed. A non-pending status is never sent.
+        DB::table('legal_publication_deliveries')->where('user_id', '!=', $user->id)
+            ->update(['status' => 'skipped', 'reason' => 'test_isolation']);
         $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->once()->andReturn(false));
         app(LegalPublicationDeliveryService::class)->processBatch();
         $this->assertDatabaseHas('legal_publication_deliveries', ['version_id' => $version, 'status' => 'retry', 'sent_at' => null]);

@@ -200,7 +200,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('events-process-federation');
 
-        // Policy publication and the recipient ledger commit together.
+        // Policy publication and the start of its recipient ledger commit
+        // together; a queued job writes the rest (F-471), and this command
+        // also resumes any fan-out whose job was lost before sending.
         $schedule->command('legal:process-publication-emails --limit=100')
             ->everyMinute()->withoutOverlapping(10)->onOneServer()
             ->name('legal-publication-emails');

@@ -13,9 +13,37 @@ use App\I18n\LocaleContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/** Publication and its recipient ledger commit together; the scheduler sends later. */
+/**
+ * Publication and the START of its recipient ledger commit together; the rest
+ * of the ledger is written in the background and the scheduler sends later.
+ *
+ * F-471: the whole ledger — one row per active member — used to be written
+ * inside the administrator's request and inside the publication transaction,
+ * which holds a row lock on the version. Now only the first chunk is written
+ * there. That chunk is also the durable marker: a version with at least one
+ * delivery row is known to be mid-fan-out, so if the background job is lost
+ * (queue down, worker killed) the every-minute send command resumes it. A
+ * version with no delivery row at all is never touched by that repair, so a
+ * policy published before this feature existed can never start emailing.
+ */
 final class LegalPublicationDeliveryService
 {
+    /** Rows per insert, and the number written synchronously at publication. */
+    public const FANOUT_CHUNK = 250;
+
+    /** How far back the scheduler looks for a fan-out to resume. */
+    private const FANOUT_REPAIR_DAYS = 3;
+
+    /** Resume work done per scheduler run, so one run cannot stall sending. */
+    private const FANOUT_REPAIR_MAX_ROWS = 2000;
+
+    /**
+     * Start the recipient ledger for a just-published version in the current
+     * community: write the first chunk now, queue the rest after commit.
+     *
+     * @return int rows written now; any remainder is written by
+     *             RecordLegalPublicationDeliveries.
+     */
     public static function record(int $versionId): int
     {
         return DB::transaction(function () use ($versionId) {
@@ -29,29 +57,146 @@ final class LegalPublicationDeliveryService
             if (!$version) {
                 return 0;
             }
-            $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix()
-                . LegalDocumentService::documentPath((array) $version);
-            $count = 0;
-            // Service announcements include administrators and marketing opt-outs.
-            DB::table('users')->where('tenant_id', $version->tenant_id)
-                ->where('status', 'active')->whereNull('deleted_at')
-                ->select('id')->orderBy('id')->chunkById(250, function ($users) use ($version, $url, &$count) {
-                    $rows = [];
-                    foreach ($users as $user) {
-                        $rows[] = [
-                            'tenant_id' => $version->tenant_id, 'version_id' => $version->id,
-                            'user_id' => $user->id, 'document_title' => $version->title,
-                            'version_number' => $version->version_number,
-                            'summary' => trim(strip_tags($version->summary_of_changes ?? '')),
-                            'review_url' => $url, 'community_name' => TenantContext::getName(),
-                            'status' => 'pending', 'attempts' => 0,
-                            'created_at' => now(), 'updated_at' => now(),
-                        ];
+            $template = [
+                'document_title' => $version->title,
+                'version_number' => $version->version_number,
+                'summary' => trim(strip_tags($version->summary_of_changes ?? '')),
+                'review_url' => TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix()
+                    . LegalDocumentService::documentPath((array) $version),
+                'community_name' => TenantContext::getName(),
+            ];
+            $tenantId = (int) $version->tenant_id;
+            $cutoff = now()->toDateTimeString();
+
+            $written = self::fanOut($tenantId, (int) $version->id, $template, $cutoff, self::FANOUT_CHUNK);
+
+            if ($written >= self::FANOUT_CHUNK) {
+                // More members may remain. Queued only once the publication has
+                // committed; a lost dispatch is resumed by repairFanouts().
+                DB::afterCommit(static function () use ($tenantId, $versionId, $cutoff): void {
+                    try {
+                        \App\Jobs\RecordLegalPublicationDeliveries::dispatch($tenantId, $versionId, $cutoff);
+                    } catch (\Throwable $e) {
+                        Log::error('Policy email recipient fan-out could not be queued; the scheduler will resume it', [
+                            'tenant_id' => $tenantId, 'version_id' => $versionId, 'exception' => get_class($e),
+                        ]);
                     }
-                    $count += DB::table('legal_publication_deliveries')->insertOrIgnore($rows);
                 });
-            return $count;
+            }
+
+            return $written;
         });
+    }
+
+    /**
+     * Write the rest of a version's ledger, copying the denormalised fields
+     * from a row the publication already wrote. Each chunk commits on its own:
+     * no transaction and no lock span the fan-out.
+     *
+     * @return int rows written
+     */
+    public static function continueFanout(int $tenantId, int $versionId, string $cutoff, int $maxRows = PHP_INT_MAX): int
+    {
+        $stillCurrent = DB::table('legal_document_versions as v')
+            ->join('legal_documents as d', 'd.id', '=', 'v.document_id')
+            ->where('v.id', $versionId)->where('d.tenant_id', $tenantId)
+            ->where('v.is_draft', 0)->where('d.is_active', 1)
+            ->whereColumn('d.current_version_id', 'v.id')
+            ->exists();
+        if (!$stillCurrent) {
+            return 0;
+        }
+        $template = DB::table('legal_publication_deliveries')
+            ->where('tenant_id', $tenantId)->where('version_id', $versionId)
+            ->orderBy('id')
+            ->first(['document_title', 'version_number', 'summary', 'review_url', 'community_name']);
+        if (!$template) {
+            return 0;
+        }
+
+        return self::fanOut($tenantId, $versionId, (array) $template, $cutoff, $maxRows);
+    }
+
+    /**
+     * Scheduler backstop for a lost or failed fan-out job: resume any recent
+     * version that has started its ledger but still misses an eligible member.
+     */
+    public static function repairFanouts(): int
+    {
+        $versions = DB::table('legal_document_versions as v')
+            ->join('legal_documents as d', 'd.id', '=', 'v.document_id')
+            ->where('v.is_draft', 0)->where('d.is_active', 1)
+            ->whereColumn('d.current_version_id', 'v.id')
+            ->where('v.published_at', '>=', now()->subDays(self::FANOUT_REPAIR_DAYS))
+            ->whereExists(function ($q) {
+                $q->selectRaw('1')->from('legal_publication_deliveries as l')
+                    ->whereColumn('l.version_id', 'v.id')->whereColumn('l.tenant_id', 'd.tenant_id');
+            })
+            ->orderBy('v.published_at')
+            ->get(['v.id', 'd.tenant_id', 'v.published_at']);
+
+        $written = 0;
+        foreach ($versions as $version) {
+            $budget = self::FANOUT_REPAIR_MAX_ROWS - $written;
+            if ($budget <= 0) {
+                break;
+            }
+            $written += self::continueFanout(
+                (int) $version->tenant_id,
+                (int) $version->id,
+                (string) $version->published_at,
+                $budget,
+            );
+        }
+
+        return $written;
+    }
+
+    /**
+     * Insert pending deliveries for eligible members who have none yet, in
+     * chunks. Service announcements include administrators and marketing
+     * opt-outs. Members who joined after `$cutoff` are not part of this
+     * publication's audience.
+     *
+     * @param array<string, mixed> $template
+     */
+    private static function fanOut(int $tenantId, int $versionId, array $template, string $cutoff, int $maxRows): int
+    {
+        $written = 0;
+        while ($written < $maxRows) {
+            $limit = (int) min(self::FANOUT_CHUNK, $maxRows - $written);
+            $userIds = DB::table('users as u')
+                ->where('u.tenant_id', $tenantId)
+                ->where('u.status', 'active')->whereNull('u.deleted_at')
+                ->where(fn ($q) => $q->whereNull('u.created_at')->orWhere('u.created_at', '<=', $cutoff))
+                ->whereNotExists(function ($q) use ($tenantId, $versionId) {
+                    $q->selectRaw('1')->from('legal_publication_deliveries as l')
+                        ->where('l.tenant_id', $tenantId)->where('l.version_id', $versionId)
+                        ->whereColumn('l.user_id', 'u.id');
+                })
+                ->orderBy('u.id')->limit($limit)->pluck('u.id');
+            if ($userIds->isEmpty()) {
+                break;
+            }
+            $now = now();
+            $rows = [];
+            foreach ($userIds as $userId) {
+                $rows[] = array_merge($template, [
+                    'tenant_id' => $tenantId, 'version_id' => $versionId, 'user_id' => $userId,
+                    'status' => 'pending', 'attempts' => 0,
+                    'created_at' => $now, 'updated_at' => $now,
+                ]);
+            }
+            $inserted = DB::table('legal_publication_deliveries')->insertOrIgnore($rows);
+            $written += $inserted;
+            // Stop on a short page, and on a page that wrote nothing: an ignored
+            // row would otherwise be selected again on every pass.
+            if ($inserted === 0 || $userIds->count() < $limit) {
+                break;
+            }
+        }
+
+        return $written;
     }
 
     public static function summary(int $tenantId, int $versionId): array
@@ -233,6 +378,13 @@ final class LegalPublicationDeliveryService
 
     public function processBatch(int $limit = 100): int
     {
+        // F-471: resume any recipient fan-out whose background job was lost.
+        try {
+            self::repairFanouts();
+        } catch (\Throwable $e) {
+            Log::error('Policy email recipient fan-out repair failed', ['exception' => get_class($e)]);
+        }
+
         // A crashed worker might already have submitted the email. Reconcile its
         // transport log; never blindly resend a send with an unknown outcome.
         $stale = DB::table('legal_publication_deliveries')->where('status', 'sending')
