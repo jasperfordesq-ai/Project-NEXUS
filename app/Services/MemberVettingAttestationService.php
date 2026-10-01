@@ -311,9 +311,12 @@ class MemberVettingAttestationService
             // A pending row is the community's standing instruction to re-check
             // this member's safeguarding clearance; without this, the member it
             // is about closed it themselves and nobody was prompted again.
-            if ((int) $review->user_id === $actorUserId) {
-                throw new SafeguardingPolicyException('VETTING_SELF_CONFIRMATION_FORBIDDEN');
-            }
+            //
+            // F-502: and the same RANK line F-421 added to those decisions. The
+            // self-only test stopped there, so a broker could discharge the
+            // re-check instruction about an administrator who outranks them.
+            // The shared helper carries both rules (self first, same reason code).
+            $this->assertActorMayDecideForMember($actorUserId, (int) $review->user_id, $tenantId);
 
             if ($review->status !== SafeguardingVettingReviewRequest::STATUS_PENDING) {
                 return $this->getReviewById($reviewRequestId, $tenantId) ?? [];
