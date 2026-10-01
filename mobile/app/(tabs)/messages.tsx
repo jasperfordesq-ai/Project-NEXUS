@@ -396,7 +396,7 @@ function MessagesHeader({
         <HeroButton isIconOnly variant="secondary" style={{ minHeight: 48, minWidth: 48 }} accessibilityLabel={t('newGroup')} onPress={onNewGroup}>
           <Ionicons name="people-outline" size={20} color={primary} />
         </HeroButton>
-        <HeroButton isIconOnly variant="primary" style={{ minHeight: 48, minWidth: 48 }} accessibilityLabel={t('newMessage')} onPress={onNewMessage}>
+        <HeroButton testID="messages-new-message" isIconOnly variant="primary" style={{ minHeight: 48, minWidth: 48 }} accessibilityLabel={t('newMessage')} onPress={onNewMessage}>
           <AccentIcon name="create-outline" size={20} />
         </HeroButton>
       </View>
