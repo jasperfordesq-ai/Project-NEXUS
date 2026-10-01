@@ -197,6 +197,54 @@ function jobFor(name, wf) {
   return (def.workflow ?? 'ci.yml') === wf.file ? def : null;
 }
 
+// Per-commit verdicts from that commit's completed runs, NEWEST RUN FIRST.
+// Pure (no gh, no git) so scripts/test/predeploy-ci-verify.test.mjs can drive it.
+// Returns { verdicts: Map(prefix -> {conclusion, runId}), unknown: [names] }.
+//
+// The NEWEST run in which a job actually ran decides for this commit (a rerun
+// updates the same run in place, so newest = latest attempt). 'skipped' and
+// 'cancelled' are NOT evidence either way: skipped means CI chose not to run
+// it, cancelled means it never finished — neither proves nor disproves
+// anything, so older runs (and older commits) are consulted and the
+// path-staleness check still guards correctness. Anything else that is not
+// 'success' (failure, timed_out, …) is a hard verdict and refuses.
+//
+// 🔴 Matrix shards share one prefix and one run, and the check passed in that
+// run only if EVERY shard passed. So within one run: any failed shard is a
+// failure (fail-fast routinely cancels the siblings of a failed shard, and that
+// must still refuse); otherwise a cancelled or conclusion-less shard beside
+// green ones means the run never produced a full pass, and it is not evidence
+// for that prefix AT ALL. Until 2026-10-01 cancelled shards were dropped before
+// this rule ran, so on run 36777243634 eight green PHP shards out of ten
+// counted as "PHP Tests passed" and a later deploy inherited it.
+function commitVerdicts(runs) {
+  const verdicts = new Map();
+  const unknown = [];
+  for (const { runId, wf, jobs } of runs) {
+    const inRun = new Map(); // prefix -> { failed, incomplete, passed }
+    for (const j of jobs) {
+      const def = jobFor(j.name, wf);
+      if (def === null) continue;
+      if (def === undefined) {
+        unknown.push(`${j.name}  (${wf.file})`);
+        continue;
+      }
+      const st = inRun.get(def.prefix) ?? { failed: null, incomplete: false, passed: false };
+      if (j.conclusion === 'success') st.passed = true;
+      else if (j.conclusion === 'cancelled' || j.conclusion === null) st.incomplete = true;
+      else if (j.conclusion !== 'skipped') st.failed ??= j.conclusion;
+      inRun.set(def.prefix, st);
+    }
+    for (const [prefix, st] of inRun) {
+      if (verdicts.has(prefix)) continue; // a newer run already decided
+      if (st.failed) verdicts.set(prefix, { conclusion: st.failed, runId });
+      else if (st.passed && !st.incomplete) verdicts.set(prefix, { conclusion: 'success', runId });
+      // otherwise nothing ran to completion here: not evidence, keep looking
+    }
+  }
+  return { verdicts, unknown };
+}
+
 function main() {
   const shaArg = process.argv.indexOf('--sha');
   if (shaArg === -1 || !process.argv[shaArg + 1]) {
@@ -231,15 +279,8 @@ function main() {
     if (unresolved.size === 0) break;
     if (runLookups >= MAX_RUN_LOOKUPS) break;
 
-    // Per-commit verdicts across its completed runs, newest run first.
-    // The NEWEST run in which a job actually ran decides for this commit
-    // (a rerun updates the same run in place, so newest = latest attempt).
-    // 'skipped' and 'cancelled' are NOT evidence either way: skipped means CI
-    // chose not to run it, cancelled means it never finished — neither proves
-    // nor disproves anything, so the walk continues to older evidence and the
-    // path-staleness check still guards correctness. Anything else that is
-    // not 'success' (failure, timed_out, …) is a hard verdict and refuses.
-    const verdicts = new Map(); // prefix -> {conclusion, runId}
+    // Per-commit verdicts across its completed runs — see commitVerdicts() for
+    // the newest-run-decides, not-evidence and matrix-shard rules.
     // Both watched workflows contribute verdicts for the same commit. Run ids are
     // globally unique, so the newest-run-decides and matrix-shard rules below hold
     // across workflows exactly as they did within one.
@@ -269,37 +310,20 @@ function main() {
       for (const r of list.filter((r) => r.status === 'completed')) runsForCommit.push({ r, wf });
     }
 
+    const fetched = []; // { runId, wf, jobs }, newest first
     for (const { r, wf } of runsForCommit) {
       if (runLookups >= MAX_RUN_LOOKUPS) break;
       runLookups += 1;
-      let jobs;
       try {
-        jobs = JSON.parse(gh(['run', 'view', String(r.databaseId), '--json', 'jobs']))
+        const jobs = JSON.parse(gh(['run', 'view', String(r.databaseId), '--json', 'jobs']))
           .jobs.map((j) => ({ name: j.name, conclusion: j.conclusion }));
+        fetched.push({ runId: r.databaseId, wf, jobs });
       } catch {
-        continue; // unreadable run: not evidence, keep looking
-      }
-      for (const j of jobs) {
-        const def = jobFor(j.name, wf);
-        if (def === null) continue;
-        if (def === undefined) {
-          if (commit === deploySha) unknownOnDeploy.add(`${j.name}  (${wf.file})`);
-          continue;
-        }
-        if (j.conclusion === 'skipped' || j.conclusion === 'cancelled' || j.conclusion === null) continue;
-        const prev = verdicts.get(def.prefix);
-        const isSuccess = j.conclusion === 'success';
-        // Matrix shards share one job prefix and one runId: ALL shards must
-        // succeed, so within the deciding run a failed shard overrides a
-        // passed one. Across runs, the newest run was recorded first and
-        // stands — an older run never overrides a newer verdict.
-        if (!prev) {
-          verdicts.set(def.prefix, { conclusion: j.conclusion, runId: r.databaseId });
-        } else if (prev.runId === r.databaseId && !isSuccess) {
-          verdicts.set(def.prefix, { conclusion: j.conclusion, runId: r.databaseId });
-        }
+        // unreadable run: not evidence, keep looking
       }
     }
+    const { verdicts, unknown } = commitVerdicts(fetched);
+    if (commit === deploySha) for (const n of unknown) unknownOnDeploy.add(n);
 
     // First commit where a job ran DECIDES for that job.
     for (const [prefix, v] of verdicts) {
@@ -371,9 +395,18 @@ function main() {
   process.exit(0);
 }
 
-try {
-  main();
-} catch (e) {
-  bad(`internal error: ${e.message}`);
-  process.exit(2);
+export { commitVerdicts, WORKFLOWS };
+
+// Only verify when run as a command. Importing this file for commitVerdicts()
+// must not call gh or process.exit().
+const invokedDirectly = process.argv[1]
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  try {
+    main();
+  } catch (e) {
+    bad(`internal error: ${e.message}`);
+    process.exit(2);
+  }
 }

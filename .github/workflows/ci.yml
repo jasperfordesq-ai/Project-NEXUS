@@ -1319,6 +1319,14 @@ jobs:
       - name: "BLOCKING: Prove the release tool cannot corrupt a manifest"
         run: npm run test:release-manifest
 
+      # scripts/predeploy-ci-verify.mjs decides whether a deploy commit was
+      # checked. On 2026-09-30 it counted run 36777243634 as "PHP Tests passed"
+      # although two of its ten shards had been cancelled by a later push and
+      # never ran. This pins the matrix rule: a run only counts for a sharded
+      # check when every shard in it finished, and a failed shard still refuses.
+      - name: "BLOCKING: Prove the deploy verifier cannot count a half-run matrix"
+        run: npm run test:predeploy-verify
+
       - name: "BLOCKING: Require changelog for release-relevant changes"
         shell: bash
         run: |
