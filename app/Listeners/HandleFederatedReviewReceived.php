@@ -61,11 +61,19 @@ class HandleFederatedReviewReceived implements ShouldQueue
                 return;
             }
 
-            $receiver = DB::table('users')
-                ->where('id', $receiverId)
-                ->where('tenant_id', $event->tenantId)
-                ->where('status', 'active')
-                ->select(['id', 'email', 'first_name', 'name', 'preferred_language', 'federation_notifications_enabled'])
+            // F-419: `federation_user_settings.email_notifications` is joined in
+            // because it is the flag FederationUserService::optOut() actually
+            // writes — `users.federation_notifications_enabled` is left alone by
+            // an opt-out and defaults to 1.
+            $receiver = DB::table('users as u')
+                ->leftJoin('federation_user_settings as fus', 'fus.user_id', '=', 'u.id')
+                ->where('u.id', $receiverId)
+                ->where('u.tenant_id', $event->tenantId)
+                ->where('u.status', 'active')
+                ->select([
+                    'u.id', 'u.email', 'u.first_name', 'u.name', 'u.preferred_language',
+                    'u.federation_notifications_enabled', 'fus.email_notifications',
+                ])
                 ->first();
             if (! $receiver) {
                 Log::info('[HandleFederatedReviewReceived] receiver not found locally', [
@@ -76,13 +84,21 @@ class HandleFederatedReviewReceived implements ShouldQueue
                 return;
             }
 
-            // Honour the receiver's federation-notifications preference. The
-            // column defaults to 1; only members who explicitly opted out
-            // (via Settings → Notifications) are skipped. The bell + email
-            // are both suppressed because the whole notification is about
-            // federated activity.
-            if (isset($receiver->federation_notifications_enabled)
-                && (int) $receiver->federation_notifications_enabled === 0) {
+            // Honour the receiver's federation-notifications preference — BOTH
+            // flags, the same pair FederationEmailService::getUserWithEmail()
+            // (:784-796) reads. Each defaults to allowed; only members who
+            // explicitly opted out (via Settings → Notifications, or by
+            // withdrawing federation consent entirely) are skipped. The bell +
+            // email are both suppressed because the whole notification is about
+            // federated activity. F-419: this read only
+            // `users.federation_notifications_enabled`, which
+            // FederationUserService::optOut() never touches, so a member who
+            // withdrew federation consent was still notified of an inbound
+            // partner review.
+            $notificationsAllowed = (int) ($receiver->federation_notifications_enabled ?? 1) === 1
+                && (int) ($receiver->email_notifications ?? 1) === 1;
+
+            if (! $notificationsAllowed) {
                 Log::info('[HandleFederatedReviewReceived] receiver opted out of federation notifications', [
                     'tenant_id'   => $event->tenantId,
                     'receiver_id' => $receiverId,

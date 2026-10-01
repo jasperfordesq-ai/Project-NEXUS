@@ -53,11 +53,19 @@ class HandleFederatedConnectionReceived implements ShouldQueue
                 return;
             }
 
-            $localUser = DB::table('users')
-                ->where('id', $localUserId)
-                ->where('tenant_id', $event->tenantId)
-                ->where('status', 'active')
-                ->select(['id', 'first_name', 'name', 'preferred_language', 'federation_notifications_enabled'])
+            // F-419: `federation_user_settings.email_notifications` is joined in
+            // because it is the flag FederationUserService::optOut() actually
+            // writes — `users.federation_notifications_enabled` is left alone by
+            // an opt-out and defaults to 1.
+            $localUser = DB::table('users as u')
+                ->leftJoin('federation_user_settings as fus', 'fus.user_id', '=', 'u.id')
+                ->where('u.id', $localUserId)
+                ->where('u.tenant_id', $event->tenantId)
+                ->where('u.status', 'active')
+                ->select([
+                    'u.id', 'u.first_name', 'u.name', 'u.preferred_language',
+                    'u.federation_notifications_enabled', 'fus.email_notifications',
+                ])
                 ->first();
             if (! $localUser) {
                 Log::info('[HandleFederatedConnectionReceived] local user gone', [
@@ -68,9 +76,19 @@ class HandleFederatedConnectionReceived implements ShouldQueue
                 return;
             }
 
-            // Honour the user's federation-notifications preference.
-            if (isset($localUser->federation_notifications_enabled)
-                && (int) $localUser->federation_notifications_enabled === 0) {
+            // Honour the user's federation-notifications preference — BOTH
+            // flags, the same pair FederationEmailService::getUserWithEmail()
+            // (:784-796) reads before sending the email half of this very
+            // notification. F-419: this half read only
+            // `users.federation_notifications_enabled`, which an opt-out never
+            // touches, so a member who withdrew federation consent was still
+            // bell- and push-notified by an external partner while the email
+            // was correctly suppressed. NULL means "not set", which is allowed —
+            // the same COALESCE(..., 1) semantics as the email query.
+            $notificationsAllowed = (int) ($localUser->federation_notifications_enabled ?? 1) === 1
+                && (int) ($localUser->email_notifications ?? 1) === 1;
+
+            if (! $notificationsAllowed) {
                 Log::info('[HandleFederatedConnectionReceived] user opted out of federation notifications', [
                     'tenant_id'     => $event->tenantId,
                     'local_user_id' => $localUserId,
