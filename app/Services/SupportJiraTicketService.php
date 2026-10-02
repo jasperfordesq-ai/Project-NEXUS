@@ -240,7 +240,8 @@ class SupportJiraTicketService
 
     public function issueUrl(?string $issueKey): ?string
     {
-        $base = (string) config('support_jira.base_url', '');
+        // Always the site address: the API gateway serves no browser pages.
+        $base = (string) config('support_jira.site_url', '');
         if (!$issueKey || $base === '') {
             return null;
         }
@@ -420,13 +421,33 @@ class SupportJiraTicketService
     private function missingSettings(): array
     {
         $missing = [];
-        foreach (['base_url', 'service_desk_id', 'email', 'api_token'] as $key) {
+        foreach (['site_url', 'service_desk_id', 'email', 'api_token'] as $key) {
             if (trim((string) config('support_jira.' . $key, '')) === '') {
                 $missing[] = 'SUPPORT_JIRA_' . strtoupper($key);
             }
         }
 
+        // The cloud id is built into a URL, so anything but a UUID is refused
+        // outright rather than trusted.
+        $cloudId = (string) config('support_jira.cloud_id', '');
+        if ($cloudId !== '' && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $cloudId)) {
+            $missing[] = 'SUPPORT_JIRA_CLOUD_ID (not a valid cloud id)';
+        }
+
         return $missing;
+    }
+
+    /**
+     * A service-account (scoped) token only works through the Atlassian
+     * platform gateway; a classic user token works on the site address.
+     */
+    private function apiBaseUrl(): string
+    {
+        $cloudId = (string) config('support_jira.cloud_id', '');
+
+        return $cloudId !== ''
+            ? 'https://api.atlassian.com/ex/jira/' . strtolower($cloudId)
+            : (string) config('support_jira.site_url', '');
     }
 
     /**
@@ -435,7 +456,7 @@ class SupportJiraTicketService
      */
     private function client(bool $json = true): PendingRequest
     {
-        $client = Http::baseUrl((string) config('support_jira.base_url'))
+        $client = Http::baseUrl($this->apiBaseUrl())
             ->withBasicAuth((string) config('support_jira.email'), (string) config('support_jira.api_token'))
             ->acceptJson()
             ->timeout(max(1, (int) config('support_jira.timeout_seconds', 15)));

@@ -31,7 +31,8 @@ class SupportReportJiraTicketTest extends TestCase
         config([
             'support_jira.enabled' => true,
             'support_jira.send_member_email' => false,
-            'support_jira.base_url' => self::BASE,
+            'support_jira.site_url' => self::BASE,
+            'support_jira.cloud_id' => '',
             'support_jira.service_desk_id' => '2',
             'support_jira.email' => 'service-account@example.test',
             'support_jira.api_token' => self::TOKEN,

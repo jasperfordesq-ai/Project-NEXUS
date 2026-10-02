@@ -19,13 +19,25 @@
  *   Atlassian as a processor.
  *
  * The API token belongs to a dedicated Atlassian service account. It lives in
- * the server .env only — never commit it, never log it.
+ * the server .env only — never commit it, never log it. Service-account tokens
+ * are scoped, expire after at most 365 days, and need these scopes:
+ * read:servicedesk-request, write:servicedesk-request, read:jira-work,
+ * write:jira-work, and manage:servicedesk-customer once
+ * SUPPORT_JIRA_SEND_MEMBER_EMAIL is on.
  */
 return [
     'enabled' => (bool) env('SUPPORT_JIRA_ENABLED', false),
     'send_member_email' => (bool) env('SUPPORT_JIRA_SEND_MEMBER_EMAIL', false),
 
-    'base_url' => rtrim((string) env('SUPPORT_JIRA_BASE_URL', ''), '/'),
+    // The Jira site, e.g. https://hour-timebank.atlassian.net. Used for the
+    // "Open in Jira" links admins see, and for API calls when no cloud id is set.
+    'site_url' => rtrim((string) env('SUPPORT_JIRA_SITE_URL', ''), '/'),
+
+    // The site's cloud id. When set, API calls go through the Atlassian
+    // platform gateway, https://api.atlassian.com/ex/jira/{cloud_id} — which is
+    // the ONLY address a service-account (scoped) API token works on. Leave it
+    // empty only when using a classic user API token against the site address.
+    'cloud_id' => trim((string) env('SUPPORT_JIRA_CLOUD_ID', '')),
     'service_desk_id' => (string) env('SUPPORT_JIRA_SERVICE_DESK_ID', ''),
     'email' => (string) env('SUPPORT_JIRA_EMAIL', ''),
     'api_token' => (string) env('SUPPORT_JIRA_API_TOKEN', ''),
