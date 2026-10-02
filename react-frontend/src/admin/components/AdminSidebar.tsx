@@ -470,7 +470,9 @@ function useAdminNav(): NavSection[] {
           ...(hasFeature('newsletter') ? [{ label: t('newsletters'), href: '/admin/newsletters/analytics', icon: Mail }] : []),
           ...(hasFeature('exchange_workflow') ? [{ label: t('smart_matching'), href: '/admin/smart-matching/analytics', icon: Zap }] : []),
           { label: t('nexus_score'), href: '/admin/nexus-score/analytics', icon: Activity },
-          { label: t('performance'), href: '/admin/performance', icon: Activity },
+          // God accounts only (owner decision 2026-10-02). The route is guarded
+          // by GodOnlyRoute too, so a typed URL does not reach the page.
+          ...(isGod ? [{ label: t('performance'), href: '/admin/performance', icon: Activity }] : []),
         ],
       },
       {

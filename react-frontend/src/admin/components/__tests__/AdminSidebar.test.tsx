@@ -444,6 +444,35 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Deliverability' })).toHaveAttribute('href', '/test/admin/deliverability');
   });
 
+  it('hides the Performance link from non-god super admins', () => {
+    // Owner decision 2026-10-02: /admin/performance is god-only.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Community Analytics' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Performance' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Performance link to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Performance' })).toHaveAttribute('href', '/test/admin/performance');
+  });
+
   it('shows the Module Configuration link to super admins', () => {
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>

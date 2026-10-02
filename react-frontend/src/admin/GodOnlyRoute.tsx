@@ -11,7 +11,8 @@
  * page. Anyone who is not a god is sent back to the admin dashboard.
  *
  * Currently wraps the Communications section (email settings, email
- * deliverability, deliverability) — owner decision 2026-10-02.
+ * deliverability, deliverability) and the Performance page — owner decisions
+ * 2026-10-02.
  */
 
 import { Navigate, Outlet } from 'react-router-dom';

@@ -513,8 +513,10 @@ export function AdminRoutes() {
       <Route path="enterprise/monitoring/log-files/:filename" element={<Lazy><LogFileViewer /></Lazy>} />
       <Route path="enterprise/monitoring/requirements" element={<Lazy><SystemRequirements /></Lazy>} />
 
-      {/* ─── PERFORMANCE ─── */}
-      <Route path="performance" element={<Lazy><PerformanceDashboard /></Lazy>} />
+      {/* ─── PERFORMANCE ─── god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="performance" element={<Lazy><PerformanceDashboard /></Lazy>} />
+      </Route>
       <Route path="legal-documents" element={<Lazy><LegalDocList /></Lazy>} />
       <Route path="legal-documents/create" element={<Lazy><LegalDocForm /></Lazy>} />
       <Route path="legal-documents/compliance" element={<Lazy><LegalDocComplianceDashboard /></Lazy>} />
