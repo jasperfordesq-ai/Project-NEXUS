@@ -502,6 +502,35 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Monitoring' })).toHaveAttribute('href', '/test/admin/enterprise/monitoring');
   });
 
+  it('hides the Regional Analytics link from non-god super admins', () => {
+    // Owner decision 2026-10-02: god-only until the page is reworked.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Community Analytics' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Regional Analytics' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Regional Analytics link to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Regional Analytics' })).toHaveAttribute('href', '/test/admin/analytics/regional');
+  });
+
   it('shows the Module Configuration link to super admins', () => {
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>

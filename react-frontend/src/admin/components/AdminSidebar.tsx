@@ -462,7 +462,10 @@ function useAdminNav(): NavSection[] {
           // Previously reachable only by typing the URL.
           ...(hasModule('wallet') ? [{ label: t('user_report'), href: '/admin/timebanking/user-report', icon: Clock }] : []),
           ...(hasFeature('caring_community') ? [{ label: t('municipal_impact'), href: '/caring/municipal-impact', icon: FileText }] : []),
-          { label: t('regional_analytics'), href: '/admin/analytics/regional', icon: BarChart3 },
+          // God accounts only until it is reworked (owner decision 2026-10-02):
+          // its figures come from volunteering + Caring Community data, so a
+          // timebank sees a page of zeros. The route and API are god-only too.
+          ...(isGod ? [{ label: t('regional_analytics'), href: '/admin/analytics/regional', icon: BarChart3 }] : []),
           // Each of these mirrors the gate on its own module's section — an
           // analytics link for a disabled module is a dead end, and there is a
           // regression test asserting exactly that for newsletters.

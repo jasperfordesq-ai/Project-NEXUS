@@ -657,7 +657,11 @@ export function AdminRoutes() {
       <Route path="agents/runs" element={<Lazy><AgentRunsPage /></Lazy>} />
 
       {/* AG59 — Regional analytics product */}
-      <Route path="analytics/regional" element={<Lazy><RegionalAnalyticsPage /></Lazy>} />
+      {/* God accounts only until it is reworked (owner decision 2026-10-02) — its
+          figures come from volunteering + Caring Community data, so a timebank sees zeros. */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="analytics/regional" element={<Lazy><RegionalAnalyticsPage /></Lazy>} />
+      </Route>
 
       {/* AG71 — Pilot region inquiry funnel */}
       <Route path="platform/pilot-inquiries" element={<TenantRedirect to="/super-admin/platform/pilot-inquiries" />} />
