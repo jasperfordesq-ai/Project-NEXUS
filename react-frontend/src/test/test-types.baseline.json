@@ -329,7 +329,7 @@
       "TS2322": 2
     },
     "src/admin/modules/crm/CoordinatorTasks.test.tsx": {
-      "TS2345": 7
+      "TS2345": 5
     },
     "src/admin/modules/crm/MemberNotes.test.tsx": {
       "TS2345": 1
@@ -1915,6 +1915,6 @@
   },
   "totals": {
     "fileCount": 565,
-    "errorCount": 1730
+    "errorCount": 1728
   }
 }
