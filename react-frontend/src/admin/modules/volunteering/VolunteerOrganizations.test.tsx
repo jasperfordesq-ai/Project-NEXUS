@@ -5,7 +5,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
@@ -163,177 +164,102 @@ describe('VolunteerOrganizations', () => {
     });
   });
 
-  it('renders Edit button for each org row', async () => {
+  // Edit, Members, wallet and status actions live in each row's Manage menu.
+  async function chooseFromManageMenu(orgName: string, item: RegExp) {
+    await userEvent.click(screen.getByRole('button', { name: `Manage ${orgName}` }));
+    const menuItem = (await screen.findAllByRole('menuitem')).find((m) => item.test(m.textContent ?? ''));
+    expect(menuItem).toBeDefined();
+    await userEvent.click(menuItem!);
+  }
+
+  it('opens the edit dialog from the Manage menu', async () => {
     const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
     render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
 
+    await chooseFromManageMenu('Green Volunteers', /edit/i);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByDisplayValue('Green Volunteers')).toBeInTheDocument();
+  });
+
+  it('opens the adjust balance dialog from the Manage menu', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
+
+    await chooseFromManageMenu('Green Volunteers', /adjust/i);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog.querySelector('input[type="number"]')).toBeTruthy();
+    expect(dialog.querySelector('textarea')).toBeTruthy();
+  });
+
+  it('opens the transaction history from the Manage menu', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
+
+    await chooseFromManageMenu('Green Volunteers', /transactions/i);
+    await screen.findByRole('dialog');
     await waitFor(() => {
-      const btns = screen.getAllByRole('button');
-      const editBtn = btns.find((b) => b.textContent?.toLowerCase().includes('edit'));
-      expect(editBtn).toBeInTheDocument();
+      expect(mockAdminVolunteering.getOrgTransactions).toHaveBeenCalledWith(1);
     });
   });
 
-  it('renders Adjust Balance button for super-admin users', async () => {
+  it('opens the members list from the Manage menu', async () => {
+    mockAdminVolunteering.getOrgMembers.mockResolvedValue(makeOk([
+      { id: 1, user_id: 10, first_name: 'Jane', last_name: 'Doe', role: 'volunteer', total_hours: 20 },
+    ]));
     const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
     render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
 
+    await chooseFromManageMenu('Green Volunteers', /members/i);
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('Jane Doe')).toBeInTheDocument();
+    expect(mockAdminVolunteering.getOrgMembers).toHaveBeenCalledWith(10);
+  });
+
+  it('suspends an active organisation only after the confirmation is accepted', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
+
+    await chooseFromManageMenu('Green Volunteers', /suspend/i);
+    const dialog = await screen.findByRole('dialog');
+    expect(mockAdminVolunteering.updateOrgStatus).not.toHaveBeenCalled();
+
+    const confirm = Array.from(dialog.querySelectorAll('button')).find((b) => /suspend/i.test(b.textContent ?? ''));
+    expect(confirm).toBeDefined();
+    fireEvent.click(confirm!);
     await waitFor(() => {
-      const btns = screen.getAllByRole('button');
-      const adjustBtn = btns.find((b) => b.textContent?.toLowerCase().includes('adjust') || b.textContent?.toLowerCase().includes('balance'));
-      expect(adjustBtn).toBeInTheDocument();
-    });
-  });
-
-  it('opens adjust balance modal and submits amount + reason', async () => {
-    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
-    render(<VolunteerOrganizations />);
-
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const btns = screen.getAllByRole('button');
-    const adjustBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('adjust') || b.textContent?.toLowerCase().includes('balance')
-    );
-    if (adjustBtn) fireEvent.click(adjustBtn);
-
-    await waitFor(() => {
-      const dialog = document.querySelector('[role="dialog"]');
-      expect(dialog).toBeTruthy();
-    });
-
-    // HeroUI Input/Textarea use onValueChange — target the native <input>/<textarea>
-    // amount field is a number input; reason field is a <textarea>
-    const amountInput = document.querySelector('[role="dialog"] input[type="number"]');
-    const reasonTextarea = document.querySelector('[role="dialog"] textarea');
-    if (amountInput) fireEvent.change(amountInput, { target: { value: '10' } });
-    if (reasonTextarea) fireEvent.change(reasonTextarea, { target: { value: 'Top-up' } });
-
-    const confirmBtns = screen.getAllByRole('button').filter((b) =>
-      b.textContent?.toLowerCase().includes('submit') ||
-      b.textContent?.toLowerCase().includes('adjustment') ||
-      b.textContent?.toLowerCase().includes('confirm') ||
-      b.textContent?.toLowerCase().includes('save')
-    );
-    if (confirmBtns[0]) {
-      fireEvent.click(confirmBtns[0]);
-      await waitFor(() => {
-        // If inputs wired correctly, adjustOrgWallet is called; if not, toast.error fires.
-        // Either way the modal should still be present or the API called — just verify no crash.
-        expect(
-          mockAdminVolunteering.adjustOrgWallet.mock.calls.length >= 0
-        ).toBe(true);
-      });
-    }
-    // Note: HeroUI onValueChange in jsdom may not propagate from fireEvent.change;
-    // the meaningful coverage here is that the modal opens and the submit button exists.
-  });
-
-  it('opens transaction history modal on Transactions button click', async () => {
-    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
-    render(<VolunteerOrganizations />);
-
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const btns = screen.getAllByRole('button');
-    const txBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('transaction') || b.textContent?.toLowerCase().includes('history')
-    );
-    if (txBtn) {
-      fireEvent.click(txBtn);
-      await waitFor(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        expect(dialog).toBeTruthy();
-      });
-    }
-  });
-
-  it('shows suspend button for active org and calls status toggle only after confirming', async () => {
-    // Source uses updateOrgStatus (not toggleOrgStatus)
-    mockAdminVolunteering.updateOrgStatus.mockResolvedValue({ success: true });
-    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
-    render(<VolunteerOrganizations />);
-
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const btns = screen.getAllByRole('button');
-    const suspendBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('suspend') || b.textContent?.toLowerCase().includes('deactivate')
-    );
-    expect(suspendBtn).toBeDefined();
-    if (suspendBtn) {
-      fireEvent.click(suspendBtn);
-
-      // Suspending now requires confirmation — the API must NOT fire yet
-      await waitFor(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        expect(dialog).toBeTruthy();
-      });
-      expect(mockAdminVolunteering.updateOrgStatus).not.toHaveBeenCalled();
-      expect(mockAdminVolunteering.toggleOrgStatus).not.toHaveBeenCalled();
-
-      // Confirm inside the dialog
-      const dialog = document.querySelector('[role="dialog"]')!;
-      const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
-        b.textContent?.toLowerCase().includes('suspend')
-      );
-      expect(confirmBtn).toBeDefined();
-      fireEvent.click(confirmBtn!);
-
-      await waitFor(() => {
-        // Source calls updateOrgStatus; check either alias
-        expect(
-          mockAdminVolunteering.updateOrgStatus.mock.calls.length > 0 ||
-          mockAdminVolunteering.toggleOrgStatus.mock.calls.length > 0
-        ).toBe(true);
-      });
       expect(mockAdminVolunteering.updateOrgStatus).toHaveBeenCalledWith(1, 'suspended');
-    }
+    });
   });
 
-  it('cancelling the suspend confirmation does not toggle status', async () => {
+  it('cancelling the suspend confirmation does not change the status', async () => {
     const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
     render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
 
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const suspendBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('suspend')
-    );
-    expect(suspendBtn).toBeDefined();
-    fireEvent.click(suspendBtn!);
-
-    await waitFor(() => {
-      expect(document.querySelector('[role="dialog"]')).toBeTruthy();
-    });
-
-    const dialog = document.querySelector('[role="dialog"]')!;
-    const cancelBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
-      b.textContent?.toLowerCase().includes('cancel')
-    );
-    expect(cancelBtn).toBeDefined();
-    fireEvent.click(cancelBtn!);
+    await chooseFromManageMenu('Green Volunteers', /suspend/i);
+    const dialog = await screen.findByRole('dialog');
+    const cancel = Array.from(dialog.querySelectorAll('button')).find((b) => /cancel/i.test(b.textContent ?? ''));
+    expect(cancel).toBeDefined();
+    fireEvent.click(cancel!);
 
     await waitFor(() => {
-      expect(document.querySelector('[role="dialog"]')).toBeFalsy();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
     expect(mockAdminVolunteering.updateOrgStatus).not.toHaveBeenCalled();
-    expect(mockAdminVolunteering.toggleOrgStatus).not.toHaveBeenCalled();
   });
 
-  it('activating a suspended org fires directly without a confirmation dialog', async () => {
+  it('reactivates a suspended organisation directly, without a confirmation', async () => {
     mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([makeOrg({ status: 'suspended' })]));
     const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
     render(<VolunteerOrganizations />);
+    await screen.findByText('Green Volunteers');
 
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const activateBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('activate') && !b.textContent?.toLowerCase().includes('deactivate')
-    );
-    expect(activateBtn).toBeDefined();
-    fireEvent.click(activateBtn!);
-
+    await chooseFromManageMenu('Green Volunteers', /^activate/i);
     await waitFor(() => {
       expect(mockAdminVolunteering.updateOrgStatus).toHaveBeenCalledWith(1, 'active');
     });
@@ -375,41 +301,6 @@ describe('VolunteerOrganizations', () => {
     });
   });
 
-  it('shows activate button for suspended org', async () => {
-    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([makeOrg({ status: 'suspended' })]));
-    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
-    render(<VolunteerOrganizations />);
-
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const btns = screen.getAllByRole('button');
-    const activateBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('activate') || b.textContent?.toLowerCase().includes('enable')
-    );
-    expect(activateBtn).toBeInTheDocument();
-  });
-
-  it('renders Members button which opens members modal', async () => {
-    mockAdminVolunteering.getOrgMembers.mockResolvedValue(makeOk([
-      { id: 1, user_id: 10, first_name: 'Jane', last_name: 'Doe', role: 'volunteer', total_hours: 20 },
-    ]));
-
-    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
-    render(<VolunteerOrganizations />);
-
-    await waitFor(() => screen.getByText('Green Volunteers'));
-
-    const btns = screen.getAllByRole('button');
-    const membersBtn = btns.find((b) => b.textContent?.toLowerCase().includes('member'));
-    if (membersBtn) {
-      fireEvent.click(membersBtn);
-      await waitFor(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        expect(dialog).toBeTruthy();
-      });
-    }
-  });
-
   it('shows balance value in org row', async () => {
     const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
     render(<VolunteerOrganizations />);
@@ -420,6 +311,167 @@ describe('VolunteerOrganizations', () => {
       // Verify 50 is rendered (balance column)
       expect(document.body.textContent).toMatch(/50/);
     });
+  });
+
+  // ─── Waiting-for-approval panel ────────────────────────────────────────────
+  // Regression (owner report, 2026-10-02): Approve and Decline sat in the last
+  // column of an eight-column table, off-screen to the right behind a
+  // horizontal scrollbar many people never noticed. A pending organisation is
+  // somebody waiting on an admin, so the decision must be visible on arrival.
+  const PENDING = makeOrg({ id: 7, org_id: 70, org_name: 'Developer test organisation', status: 'pending' });
+
+  it('puts pending organisations in a panel above the table with clearly labelled Approve and Decline buttons', async () => {
+    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([makeOrg(), PENDING]));
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    const panel = await screen.findByRole('region', { name: 'Waiting for your approval' });
+    expect(within(panel).getByText('Developer test organisation')).toBeInTheDocument();
+    // Only the pending organisation is in the panel.
+    expect(within(panel).queryByText('Green Volunteers')).not.toBeInTheDocument();
+
+    const approve = within(panel).getByRole('button', { name: 'Approve Developer test organisation' });
+    const decline = within(panel).getByRole('button', { name: 'Decline Developer test organisation' });
+    expect(approve).toBeVisible();
+    expect(decline).toBeVisible();
+
+    // The panel comes before the table in reading order.
+    const table = screen.getByRole('table');
+    expect(panel.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('approves straight from the panel', async () => {
+    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([PENDING]));
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    const panel = await screen.findByRole('region', { name: 'Waiting for your approval' });
+    await userEvent.click(within(panel).getByRole('button', { name: 'Approve Developer test organisation' }));
+
+    await waitFor(() => {
+      expect(mockAdminVolunteering.updateOrgStatus).toHaveBeenCalledWith(7, 'active');
+    });
+  });
+
+  it('declines from the panel only after the reason dialog is confirmed', async () => {
+    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([PENDING]));
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    const panel = await screen.findByRole('region', { name: 'Waiting for your approval' });
+    await userEvent.click(within(panel).getByRole('button', { name: 'Decline Developer test organisation' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(mockAdminVolunteering.updateOrgStatus).not.toHaveBeenCalled();
+    await userEvent.type(within(dialog).getByRole('textbox'), 'Not a local group');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Decline' }));
+
+    await waitFor(() => {
+      expect(mockAdminVolunteering.updateOrgStatus).toHaveBeenCalledWith(7, 'declined', 'Not a local group');
+    });
+  });
+
+  it('keeps pending rows in the table narrow: decisions are in the panel and the Manage menu', async () => {
+    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([PENDING]));
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    await screen.findByRole('region', { name: 'Waiting for your approval' });
+    // One Approve button on the page — the panel's — not a second in the row.
+    expect(screen.getAllByRole('button', { name: 'Approve Developer test organisation' })).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Manage Developer test organisation' }));
+    const items = (await screen.findAllByRole('menuitem')).map((i) => i.textContent ?? '');
+    expect(items.some((i) => i.includes('Approve'))).toBe(true);
+    // "Activate" would be a second, unlabelled way of approving.
+    expect(items.some((i) => /^activate/i.test(i.trim()))).toBe(false);
+
+    const decline = (await screen.findAllByRole('menuitem')).find((i) => i.textContent?.includes('Decline'));
+    await userEvent.click(decline!);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(mockAdminVolunteering.updateOrgStatus).not.toHaveBeenCalled();
+  });
+
+  it('shows no approval panel when nothing is waiting', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    await screen.findByText('Green Volunteers');
+    expect(screen.queryByRole('region', { name: 'Waiting for your approval' })).not.toBeInTheDocument();
+  });
+
+  // ─── A lighter table ───────────────────────────────────────────────────────
+  it('shows five columns instead of eight', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    await screen.findByText('Green Volunteers');
+    const headers = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    expect(headers).toEqual(['Organization', 'Status', 'Activity', 'Wallet balance', 'Actions']);
+    // Opportunities, volunteers and hours are combined into the Activity cell.
+    expect(screen.getByText('Volunteers: 5')).toBeInTheDocument();
+    expect(screen.getByText('Opportunities: 3')).toBeInTheDocument();
+    expect(screen.getByText('Hours logged: 120')).toBeInTheDocument();
+  });
+
+  it('filters with status tabs that show how many are in each', async () => {
+    mockAdminVolunteering.getOrganizations.mockResolvedValue(makeOk([
+      makeOrg({ id: 1, org_name: 'Green Volunteers', status: 'active' }),
+      // 'approved' is the server's synonym for active.
+      makeOrg({ id: 2, org_name: 'Blue Club', status: 'approved' }),
+      makeOrg({ id: 3, org_name: 'Red Cross', status: 'suspended' }),
+      makeOrg({ id: 4, org_name: 'New Group', status: 'pending' }),
+    ]));
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    const tabs = await screen.findByRole('tablist', { name: 'Filter organisations by status' });
+    expect(within(tabs).getByRole('tab', { name: 'All (4)' })).toBeInTheDocument();
+    expect(within(tabs).getByRole('tab', { name: 'Waiting for approval (1)' })).toBeInTheDocument();
+    expect(within(tabs).getByRole('tab', { name: 'Active (2)' })).toBeInTheDocument();
+
+    await userEvent.click(within(tabs).getByRole('tab', { name: 'Suspended (1)' }));
+    await waitFor(() => {
+      const rows = screen.getAllByTestId('org-row');
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toHaveTextContent('Red Cross');
+    });
+  });
+
+  it('keeps the rarer actions in a Manage menu for each organisation', async () => {
+    const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+    render(<VolunteerOrganizations />);
+
+    await screen.findByText('Green Volunteers');
+    // No row of red Suspend buttons down the page.
+    expect(screen.queryByRole('button', { name: /suspend/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Manage Green Volunteers' }));
+    const items = (await screen.findAllByRole('menuitem')).map((i) => i.textContent);
+    expect(items).toEqual(expect.arrayContaining([
+      expect.stringContaining('Edit'),
+      expect.stringContaining('Members'),
+      expect.stringContaining('Adjust'),
+      expect.stringContaining('Transactions'),
+      expect.stringContaining('Suspend'),
+    ]));
+  });
+
+  it('hides wallet actions from an admin who cannot manage organisation wallets', async () => {
+    const saved = { ...mockUser };
+    Object.assign(mockUser, { is_super_admin: false, role: 'admin' });
+    try {
+      const { VolunteerOrganizations } = await import('./VolunteerOrganizations');
+      render(<VolunteerOrganizations />);
+
+      await screen.findByText('Green Volunteers');
+      await userEvent.click(screen.getByRole('button', { name: 'Manage Green Volunteers' }));
+      const items = (await screen.findAllByRole('menuitem')).map((i) => i.textContent ?? '');
+      expect(items.some((i) => i.includes('Edit'))).toBe(true);
+      expect(items.some((i) => i.includes('Adjust') || i.includes('Transactions'))).toBe(false);
+    } finally {
+      Object.assign(mockUser, saved);
+    }
   });
 
   it('calls getOrganizations on mount', async () => {

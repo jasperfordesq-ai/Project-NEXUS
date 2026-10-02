@@ -4,11 +4,23 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { formatNumber, getFormattingLocale } from '@/lib/helpers';
-import { Select, SelectItem, useDisclosure, Button, Chip, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui';
+import { Select, SelectItem, useDisclosure, Button, Chip, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui';
 
 /**
  * Volunteer Organizations — Full CRUD management page.
- * Lists organizations with search/filter, wallet adjustments, * transaction history, and status toggling.
+ * Lists organizations with search/filter, wallet adjustments, transaction
+ * history, and status changes.
+ *
+ * 🔴 Layout (reworked 2026-10-02 after an owner report). Approve and Decline
+ * used to sit in the last column of an eight-column table, off-screen behind a
+ * horizontal scrollbar that many people never noticed, beside a column of red
+ * Suspend buttons. Now:
+ *  - every pending organisation is listed in a "Waiting for your approval"
+ *    panel ABOVE the table, with full-size Approve / Decline buttons;
+ *  - the table has five columns, so it fits without scrolling sideways;
+ *  - the rarer actions (edit, members, wallet, suspend) are in one Manage menu
+ *    per row;
+ *  - a status tab bar with counts replaces the cramped status dropdown.
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -23,6 +35,11 @@ import Search from 'lucide-react/icons/search';
 import Pencil from 'lucide-react/icons/pencil';
 import Users from 'lucide-react/icons/users';
 import Plus from 'lucide-react/icons/plus';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import Check from 'lucide-react/icons/check';
+import X from 'lucide-react/icons/x';
+import Mail from 'lucide-react/icons/mail';
+import Hourglass from 'lucide-react/icons/hourglass';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useToast } from '@/contexts';
 import { adminVolunteering } from '../../api/adminApi';
@@ -83,9 +100,24 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const STATUS_COLORS: Record<string, 'success' | 'danger' | 'warning' | 'default'> = {
   active: 'success',
+  approved: 'success',
   suspended: 'danger',
   pending: 'warning',
+  declined: 'default',
 };
+
+type StatusFilter = 'all' | 'pending' | 'active' | 'suspended' | 'declined';
+
+// The server accepts 'approved' as a synonym of 'active' and both spellings are
+// in the data (AdminVolunteerController::updateOrgStatus), so the Active tab
+// and the Suspend action must treat them as one.
+const isActiveStatus = (status: string) => status === 'active' || status === 'approved';
+
+function matchesFilter(status: string, filter: StatusFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'active') return isActiveStatus(status);
+  return status === filter;
+}
 
 export function VolunteerOrganizations() {
   const { t } = useTranslation('admin_volunteering');
@@ -103,7 +135,7 @@ export function VolunteerOrganizations() {
   const [items, setItems] = useState<VolOrg[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   // Adjust balance modal
   const adjustModal = useDisclosure();
@@ -175,10 +207,29 @@ export function VolunteerOrganizations() {
       result = result.filter((item) => item.org_name?.toLowerCase().includes(q));
     }
     if (statusFilter !== 'all') {
-      result = result.filter((item) => item.status === statusFilter);
+      result = result.filter((item) => matchesFilter(item.status, statusFilter));
     }
     return result;
   }, [items, searchQuery, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusFilter, number> = { all: items.length, pending: 0, active: 0, suspended: 0, declined: 0 };
+    for (const item of items) {
+      for (const key of ['pending', 'active', 'suspended', 'declined'] as const) {
+        if (matchesFilter(item.status, key)) counts[key] += 1;
+      }
+    }
+    return counts;
+  }, [items]);
+
+  // Every pending organisation, whatever the search or tab: this panel is the
+  // admin's to-do list, so narrowing the table must never hide it.
+  const pendingItems = useMemo(() => items.filter((item) => item.status === 'pending'), [items]);
+
+  const formatDate = useCallback((value: string | null | undefined) => (
+    // dateStyle 'medium' gives "8 Jan 2026" rather than the ambiguous 8/1/2026.
+    value ? new Date(value).toLocaleDateString(getFormattingLocale(), { dateStyle: 'medium' }) : '--'
+  ), []);
 
   // --- Adjust Balance ---
   const openAdjustModal = useCallback((org: VolOrg) => {
@@ -435,170 +486,173 @@ export function VolunteerOrganizations() {
     setCreateSubmitting(false);
   }, [createForm, toast, t, createModal, loadData]);
 
+  const openDecline = useCallback((org: VolOrg) => {
+    setDeclineReason('');
+    setDeclineTarget(org);
+  }, []);
+
+  const handleManageAction = useCallback((org: VolOrg, action: string) => {
+    switch (action) {
+      case 'edit': openEditModal(org); break;
+      case 'members': openMembersModal(org); break;
+      case 'adjust': openAdjustModal(org); break;
+      case 'transactions': openTxModal(org); break;
+      case 'suspend': setSuspendTarget(org); break;
+      case 'activate':
+      case 'approve': applyStatus(org, 'active'); break;
+      case 'decline': openDecline(org); break;
+    }
+  }, [openEditModal, openMembersModal, openAdjustModal, openTxModal, applyStatus, openDecline]);
+
+  // Approve / Decline pair for the approval panel. The accessible name carries the organisation's name: a screen-reader user
+  // tabbing through several pending organisations otherwise hears "Approve"
+  // with no way to tell which one it applies to.
+  const renderDecisionButtons = (org: VolOrg, size: 'sm' | 'md') => (
+    <>
+      <Button
+        size={size}
+        variant="primary"
+        startContent={<Check size={size === 'md' ? 16 : 14} />}
+        aria-label={t('volunteering.orgs_approve_aria', { name: org.org_name })}
+        onPress={() => applyStatus(org, 'active')}
+        isLoading={statusToggleId === org.id}
+        isDisabled={statusToggleId !== null && statusToggleId !== org.id}
+      >
+        {t('volunteering.approve')}
+      </Button>
+      <Button
+        size={size}
+        variant="danger"
+        startContent={<X size={size === 'md' ? 16 : 14} />}
+        aria-label={t('volunteering.orgs_decline_aria', { name: org.org_name })}
+        onPress={() => openDecline(org)}
+        isDisabled={statusToggleId !== null}
+      >
+        {t('volunteering.decline')}
+      </Button>
+    </>
+  );
+
+  const renderManageMenu = (org: VolOrg) => (
+    <Dropdown placement="bottom end">
+      <DropdownTrigger>
+        <Button
+          size="sm"
+          variant="secondary"
+          endContent={<ChevronDown size={14} />}
+          aria-label={t('volunteering.orgs_manage_aria', { name: org.org_name })}
+          isDisabled={statusToggleId === org.id}
+        >
+          {t('volunteering.orgs_manage')}
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label={t('volunteering.orgs_manage_aria', { name: org.org_name })}
+        onAction={(key) => handleManageAction(org, String(key))}
+      >
+        {/* The approval panel above the table is the main place to decide a
+            pending organisation; these repeat it for someone working from the
+            table. They are menu items, not buttons, so the column stays narrow
+            enough that the table never needs a sideways scrollbar. */}
+        {org.status === 'pending' ? (
+          <DropdownItem key="approve" id="approve" startContent={<Check size={14} />}>
+            {t('volunteering.approve')}
+          </DropdownItem>
+        ) : null}
+        {org.status === 'pending' ? (
+          <DropdownItem key="decline" id="decline" color="danger" startContent={<X size={14} />}>
+            {t('volunteering.decline')}
+          </DropdownItem>
+        ) : null}
+        <DropdownItem key="edit" id="edit" startContent={<Pencil size={14} />}>
+          {t('volunteering.edit')}
+        </DropdownItem>
+        <DropdownItem key="members" id="members" startContent={<Users size={14} />}>
+          {t('volunteering.members')}
+        </DropdownItem>
+        {canManageOrgWallet ? (
+          <DropdownItem key="adjust" id="adjust" startContent={<Wallet size={14} />}>
+            {t('volunteering.orgs_adjust_wallet')}
+          </DropdownItem>
+        ) : null}
+        {canManageOrgWallet ? (
+          <DropdownItem key="transactions" id="transactions" startContent={<ArrowLeftRight size={14} />}>
+            {t('volunteering.transactions')}
+          </DropdownItem>
+        ) : null}
+        {isActiveStatus(org.status) ? (
+          <DropdownItem key="suspend" id="suspend" color="danger" startContent={<ShieldOff size={14} />}>
+            {t('volunteering.suspend')}
+          </DropdownItem>
+        ) : null}
+        {/* A pending organisation is decided with Approve / Decline above;
+            "Activate" would be a second, unlabelled way of approving it. */}
+        {!isActiveStatus(org.status) && org.status !== 'pending' ? (
+          <DropdownItem key="activate" id="activate" startContent={<ShieldCheck size={14} />}>
+            {t('volunteering.activate')}
+          </DropdownItem>
+        ) : null}
+      </DropdownMenu>
+    </Dropdown>
+  );
+
   const columns: Column<VolOrg>[] = [
-    { key: 'org_name', label: t('volunteering.col_organization'), sortable: true },
+    {
+      key: 'org_name',
+      label: t('volunteering.col_organization'),
+      sortable: true,
+      render: (item) => (
+        // Bounded width so long names wrap instead of widening the table.
+        <div className="min-w-[11rem] max-w-[18rem] whitespace-normal">
+          <p className="font-semibold text-foreground">{item.org_name}</p>
+          {item.contact_email ? (
+            <p className="truncate text-xs text-muted">{item.contact_email}</p>
+          ) : null}
+          <p className="text-xs text-muted">{t('volunteering.orgs_registered', { date: formatDate(item.created_at) })}</p>
+        </div>
+      ),
+    },
     {
       key: 'status',
       label: t('volunteering.col_status'),
       sortable: true,
       render: (item) => (
-        <Chip size="sm" variant="soft" color={STATUS_COLORS[item.status] || 'default'} className="capitalize">
+        <Chip size="sm" variant="soft" color={STATUS_COLORS[item.status] || 'default'}>
           {t(`volunteering.status_${item.status || 'unknown'}`)}
         </Chip>
       ),
     },
     {
-      key: 'balance',
-      label: t('volunteering.col_balance'),
-      sortable: true,
-      render: (item) => <span className="font-mono">{t('volunteering.hours_value', { value: (item.balance ?? 0).toLocaleString(getFormattingLocale()) })}</span>,
-    },
-    {
-      key: 'opportunity_count',
-      label: t('volunteering.col_opportunities'),
-      sortable: true,
-      render: (item) => <span>{item.opportunity_count ?? 0}</span>,
-    },
-    {
-      key: 'member_count',
-      label: t('volunteering.col_volunteers'),
-      sortable: true,
-      render: (item) => <span>{item.member_count ?? 0}</span>,
-    },
-    {
-      key: 'total_hours',
-      label: t('volunteering.col_total_hours'),
-      sortable: true,
-      render: (item) => <span className="font-mono">{(item.total_hours ?? 0).toLocaleString(getFormattingLocale())}</span>,
-    },
-    {
-      key: 'created_at',
-      label: t('volunteering.col_created'),
-      sortable: true,
+      key: 'activity',
+      label: t('volunteering.col_activity'),
       render: (item) => (
-        <span className="text-sm text-muted">
-          {item.created_at ? new Date(item.created_at).toLocaleDateString(getFormattingLocale()) : '--'}
-        </span>
+        <ul className="space-y-0.5 text-xs text-muted">
+          <li>{t('volunteering.orgs_stat_volunteers', { value: formatNumber(item.member_count ?? 0) })}</li>
+          <li>{t('volunteering.orgs_stat_opportunities', { value: formatNumber(item.opportunity_count ?? 0) })}</li>
+          <li>{t('volunteering.orgs_stat_hours', { value: formatNumber(item.total_hours ?? 0) })}</li>
+        </ul>
       ),
+    },
+    {
+      key: 'balance',
+      label: t('volunteering.col_wallet_balance'),
+      sortable: true,
+      render: (item) => <span className="whitespace-nowrap">{t('volunteering.hours_value', { value: (item.balance ?? 0).toLocaleString(getFormattingLocale()) })}</span>,
     },
     {
       key: 'actions',
       label: t('volunteering.col_actions'),
-      render: (item) => (
-        <div className="flex gap-1 flex-wrap">
-          <Button
-            size="sm"
-            variant="tertiary"
-            startContent={<Pencil size={14} />}
-            onPress={() => openEditModal(item)}
-          >
-            {t('volunteering.edit')}
-          </Button>
-          <Button
-            size="sm"
-            variant="tertiary"
-            startContent={<Users size={14} />}
-            onPress={() => openMembersModal(item)}
-          >
-            {t('volunteering.members')}
-          </Button>
-          {canManageOrgWallet && (
-            <>
-              <Button
-                size="sm"
-                variant="secondary"
-                startContent={<Wallet size={14} />}
-                onPress={() => openAdjustModal(item)}
-              >
-                {t('volunteering.adjust_balance')}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                startContent={<ArrowLeftRight size={14} />}
-                onPress={() => openTxModal(item)}
-              >
-                {t('volunteering.transactions')}
-              </Button>
-            </>
-          )}
-          {item.status === 'pending' ? (
-            <>
-              <Button
-                size="sm"
-                variant="primary"
-                startContent={<ShieldCheck size={14} />}
-                onPress={() => applyStatus(item, 'active')}
-                isLoading={statusToggleId === item.id}
-                isDisabled={statusToggleId !== null && statusToggleId !== item.id}
-              >
-                {t('volunteering.approve')}
-              </Button>
-              <Button
-                size="sm"
-                variant="danger"
-                startContent={<ShieldOff size={14} />}
-                onPress={() => { setDeclineReason(''); setDeclineTarget(item); }}
-                isDisabled={statusToggleId !== null}
-              >
-                {t('volunteering.decline')}
-              </Button>
-            </>
-          ) : (
-            <Button
-              size="sm"
-              variant={item.status === 'active' ? 'danger' : 'secondary'}
-              startContent={item.status === 'active' ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
-              onPress={() => {
-                if (item.status === 'active') {
-                  setSuspendTarget(item);
-                } else {
-                  applyStatus(item, 'active');
-                }
-              }}
-              isLoading={statusToggleId === item.id}
-              isDisabled={statusToggleId !== null && statusToggleId !== item.id}
-            >
-              {item.status === 'active'
-                ? t('volunteering.suspend')
-                : t('volunteering.activate')}
-            </Button>
-          )}
-        </div>
-      ),
+      render: (item) => renderManageMenu(item),
     },
   ];
 
-  // Top content: search + filter
-  const topContent = useMemo(() => (
-    <div className="flex flex-col gap-4 rounded-2xl border border-divider/70 bg-surface p-3 shadow-sm shadow-black/[0.03] sm:flex-row sm:items-center sm:justify-between">
-      <Input type="search" name="admin-search" autoComplete="off"
-        className="max-w-xs"
-        placeholder={t('volunteering.search_organizations')}
-        aria-label={t('volunteering.search_organizations')}
-        startContent={<Search size={16} className="text-muted" />}
-        value={searchQuery}
-        onValueChange={setSearchQuery}
-        isClearable
-        onClear={() => setSearchQuery('')}
-      />
-      <Select
-        className="max-w-[180px]"
-        label={t('volunteering.filter_status')}
-        size="sm"
-        selectedKeys={new Set([statusFilter])}
-        onSelectionChange={(keys) => {
-          const val = Array.from(keys)[0] as string;
-          setStatusFilter(val || 'all');
-        }}
-      >
-        <SelectItem key="all" id="all">{t('volunteering.tab_all')}</SelectItem>
-        <SelectItem key="active" id="active">{t('volunteering.status_active')}</SelectItem>
-        <SelectItem key="suspended" id="suspended">{t('volunteering.status_suspended')}</SelectItem>
-        <SelectItem key="pending" id="pending">{t('volunteering.tab_pending')}</SelectItem>
-      </Select>
-    </div>
-  ), [searchQuery, statusFilter, t]);
+  const filterTabs: Array<{ key: StatusFilter; label: string }> = [
+    { key: 'all', label: t('volunteering.tab_all') },
+    { key: 'pending', label: t('volunteering.orgs_tab_waiting') },
+    { key: 'active', label: t('volunteering.status_active') },
+    { key: 'suspended', label: t('volunteering.status_suspended') },
+    { key: 'declined', label: t('volunteering.status_declined') },
+  ];
 
   if (!loading && items.length === 0) {
     return (
@@ -633,13 +687,87 @@ export function VolunteerOrganizations() {
         }
       />
 
+      {pendingItems.length > 0 && (
+        <section
+          aria-labelledby="orgs-awaiting-title"
+          className="rounded-2xl border border-warning/40 bg-warning/5 p-4 shadow-sm sm:p-5"
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/15 text-warning">
+              <Hourglass size={20} aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id="orgs-awaiting-title" className="text-lg font-semibold text-foreground">
+                  {t('volunteering.orgs_awaiting_title')}
+                </h2>
+                <Chip size="sm" color="warning" variant="primary">{formatNumber(pendingItems.length)}</Chip>
+              </div>
+              <p className="mt-1 text-sm text-muted">{t('volunteering.orgs_awaiting_intro')}</p>
+            </div>
+          </div>
+
+          <ul className="mt-4 space-y-3">
+            {pendingItems.map((org) => (
+              <li
+                key={org.id}
+                className="flex flex-col gap-4 rounded-xl border border-divider/70 bg-surface p-4 lg:flex-row lg:items-center lg:justify-between"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-base font-semibold text-foreground">{org.org_name}</p>
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                    <span>{t(`volunteering.org_type_${org.org_type === 'club' ? 'club' : 'organisation'}`)}</span>
+                    {org.contact_email ? (
+                      <a href={`mailto:${org.contact_email}`} className="inline-flex items-center gap-1 text-accent hover:underline">
+                        <Mail size={14} aria-hidden="true" />
+                        {org.contact_email}
+                      </a>
+                    ) : null}
+                    <span>{t('volunteering.orgs_registered', { date: formatDate(org.created_at) })}</span>
+                  </p>
+                  {org.description ? (
+                    <p className="line-clamp-2 text-sm text-foreground/80">{org.description}</p>
+                  ) : null}
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {renderDecisionButtons(org, 'md')}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-divider/70 bg-surface p-3 shadow-sm shadow-black/[0.03] lg:flex-row lg:items-center lg:justify-between">
+        <Tabs
+          aria-label={t('volunteering.orgs_filter_aria')}
+          selectedKey={statusFilter}
+          onSelectionChange={(key) => setStatusFilter(String(key) as StatusFilter)}
+          variant="underlined"
+          size="sm"
+        >
+          {filterTabs.map((tab) => (
+            <Tab key={tab.key} title={`${tab.label} (${formatNumber(statusCounts[tab.key])})`} />
+          ))}
+        </Tabs>
+        <Input type="search" name="admin-search" autoComplete="off"
+          className="w-full lg:max-w-xs"
+          placeholder={t('volunteering.search_organizations')}
+          aria-label={t('volunteering.search_organizations')}
+          startContent={<Search size={16} className="text-muted" />}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          isClearable
+          onClear={() => setSearchQuery('')}
+        />
+      </div>
+
       <DataTable
         columns={columns}
         data={filteredItems}
         isLoading={loading}
-        onRefresh={loadData}
         searchable={false}
-        topContent={topContent}
+        emptyContent={<span className="text-muted">{t('volunteering.orgs_no_match')}</span>}
       />
 
       {/* Adjust Balance Modal */}
