@@ -238,6 +238,148 @@ class SupportJiraTicketService
         return $changed;
     }
 
+    /**
+     * Read-only connection check for `support:jira-check`. Deliberately does
+     * NOT look at support_jira.enabled: it exists to prove the connection
+     * while the member-facing switch is still off.
+     *
+     * @return array{
+     *     ok: bool,
+     *     missing: list<string>,
+     *     api_base: string,
+     *     service_desk: array{ok: bool, status: int|null, project_key: string|null, name: string|null},
+     *     request_types: array<string, array{configured: string, found: bool, name: string|null}>
+     * }
+     */
+    public function checkConnection(): array
+    {
+        $result = [
+            'ok' => false,
+            'missing' => $this->missingSettings(),
+            'api_base' => $this->apiBaseUrl(),
+            'service_desk' => ['ok' => false, 'status' => null, 'project_key' => null, 'name' => null],
+            'request_types' => [],
+        ];
+        if ($result['missing'] !== []) {
+            return $result;
+        }
+
+        $deskPath = '/rest/servicedeskapi/servicedesk/' . rawurlencode((string) config('support_jira.service_desk_id'));
+        try {
+            $desk = $this->client()->get($deskPath);
+        } catch (\Throwable $e) {
+            Log::error('[SupportJiraTicketService] connection check could not reach Jira', ['error' => $this->scrub($e->getMessage())]);
+
+            return $result;
+        }
+
+        $result['service_desk']['status'] = $desk->status();
+        if (!$desk->successful()) {
+            return $result;
+        }
+        $result['service_desk'] = [
+            'ok' => true,
+            'status' => $desk->status(),
+            'project_key' => is_string($desk->json('projectKey')) ? $desk->json('projectKey') : null,
+            'name' => is_string($desk->json('projectName')) ? $desk->json('projectName') : null,
+        ];
+
+        $types = $this->client()->get($deskPath . '/requesttype', ['limit' => 100]);
+        $available = [];
+        if ($types->successful()) {
+            foreach ((array) $types->json('values', []) as $type) {
+                if (is_array($type) && isset($type['id'])) {
+                    $available[(string) $type['id']] = is_string($type['name'] ?? null) ? $type['name'] : null;
+                }
+            }
+        }
+
+        $allFound = $types->successful();
+        foreach ((array) config('support_jira.request_types', []) as $kind => $id) {
+            $found = array_key_exists((string) $id, $available);
+            $allFound = $allFound && $found;
+            $result['request_types'][(string) $kind] = [
+                'configured' => (string) $id,
+                'found' => $found,
+                'name' => $found ? $available[(string) $id] : null,
+            ];
+        }
+
+        $result['ok'] = $allFound;
+
+        return $result;
+    }
+
+    /**
+     * Raises exactly one ticket marked TEST, through the same steps a real
+     * report takes (create, priority + labels, internal JSON attachment), and
+     * stores nothing on the platform. Ignores support_jira.enabled on purpose.
+     * Never raised in a member's name.
+     *
+     * @return array{ok: bool, issue_key: string|null, issue_url: string|null, steps: list<array{step: string, ok: bool, detail: string|null}>}
+     */
+    public function createTestTicket(): array
+    {
+        $serviceDeskId = (string) config('support_jira.service_desk_id');
+        $result = ['ok' => false, 'issue_key' => null, 'issue_url' => null, 'steps' => []];
+
+        $description = implode("\n", [
+            'This is a TEST ticket raised by the Project NEXUS platform to check its connection to this help desk.',
+            'It is safe to close. No member is involved.',
+            '',
+            '----',
+            'Raised by: php artisan support:jira-check --create-test-ticket',
+            'At: ' . now()->toIso8601String(),
+            'App version: ' . (string) config('app.version', 'unknown'),
+        ]);
+
+        try {
+            $created = $this->client()->post('/rest/servicedeskapi/request', [
+                'serviceDeskId' => $serviceDeskId,
+                'requestTypeId' => (string) config('support_jira.request_types.broken'),
+                'requestFieldValues' => [
+                    'summary' => 'TEST - platform connection check, please ignore',
+                    'description' => $description,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            $result['steps'][] = ['step' => 'create the ticket', 'ok' => false, 'detail' => $this->scrub($e->getMessage())];
+
+            return $result;
+        }
+
+        $issueKey = $created->successful() ? (string) ($created->json('issueKey') ?? '') : '';
+        if ($issueKey === '') {
+            $detail = 'HTTP ' . $created->status();
+            $jira = $this->jiraErrorDetail($created);
+            $result['steps'][] = ['step' => 'create the ticket', 'ok' => false, 'detail' => $jira !== '' ? $detail . ': ' . $jira : $detail];
+
+            return $result;
+        }
+
+        $result['issue_key'] = $issueKey;
+        $result['issue_url'] = $this->issueUrl($issueKey);
+        $result['steps'][] = ['step' => 'create the ticket', 'ok' => true, 'detail' => $issueKey];
+
+        $edit = $this->editIssueFields($issueKey, [
+            'labels' => ['nexus-in-app', 'nexus-test'],
+            'priority' => ['name' => (string) config('support_jira.priorities.cosmetic', 'Low')],
+        ]);
+        $result['steps'][] = ['step' => 'set priority and labels', 'ok' => $edit === null, 'detail' => $edit];
+
+        $attach = $this->attachJsonFile(
+            $serviceDeskId,
+            $issueKey,
+            (string) json_encode(['test' => true, 'note' => 'Connection check; no member data.'], JSON_PRETTY_PRINT),
+            'diagnostics-TEST.json',
+        );
+        $result['steps'][] = ['step' => 'attach a technical-details file', 'ok' => $attach === null, 'detail' => $attach];
+
+        $result['ok'] = $edit === null && $attach === null;
+
+        return $result;
+    }
+
     public function issueUrl(?string $issueKey): ?string
     {
         // Always the site address: the API gateway serves no browser pages.
@@ -313,13 +455,25 @@ class SupportJiraTicketService
             $fields['priority'] = ['name' => $priority];
         }
 
+        $error = $this->editIssueFields($issueKey, $fields);
+
+        return $error === null ? null : $this->warn($report, 'set priority and labels', $error);
+    }
+
+    /**
+     * Returns an error detail on failure, null on success.
+     *
+     * @param array<string, mixed> $fields
+     */
+    private function editIssueFields(string $issueKey, array $fields): ?string
+    {
         try {
             $response = $this->client()->put('/rest/api/3/issue/' . rawurlencode($issueKey), ['fields' => $fields]);
         } catch (\Throwable $e) {
-            return $this->warn($report, 'set priority and labels', $e->getMessage());
+            return $this->scrub($e->getMessage());
         }
 
-        return $response->successful() ? null : $this->warn($report, 'set priority and labels', 'HTTP ' . $response->status());
+        return $response->successful() ? null : 'HTTP ' . $response->status();
     }
 
     /**
@@ -333,12 +487,29 @@ class SupportJiraTicketService
 
         try {
             $json = json_encode($report->diagnostics, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            return $this->warn($report, 'attach technical details', $e->getMessage());
+        }
+
+        $error = $this->attachJsonFile($serviceDeskId, $issueKey, $json, $this->diagnosticsFilename($report));
+
+        return $error === null ? null : $this->warn($report, 'attach technical details', $error);
+    }
+
+    /**
+     * Uploads a JSON file and attaches it to the request, internal to agents
+     * (the member already has their own report). Returns an error detail on
+     * failure, null on success.
+     */
+    private function attachJsonFile(string $serviceDeskId, string $issueKey, string $json, string $filename): ?string
+    {
+        try {
             $upload = $this->client(json: false)
                 ->withHeaders(['X-Atlassian-Token' => 'no-check', 'X-ExperimentalApi' => 'opt-in'])
-                ->attach('file', $json, $this->diagnosticsFilename($report), ['Content-Type' => 'application/json'])
+                ->attach('file', $json, $filename, ['Content-Type' => 'application/json'])
                 ->post('/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/attachTemporaryFile');
             if (!$upload->successful()) {
-                return $this->warn($report, 'upload technical details', 'HTTP ' . $upload->status());
+                return 'upload refused (HTTP ' . $upload->status() . ')';
             }
 
             $temporaryIds = array_values(array_filter(array_map(
@@ -346,19 +517,18 @@ class SupportJiraTicketService
                 (array) $upload->json('temporaryAttachments', []),
             )));
             if ($temporaryIds === []) {
-                return $this->warn($report, 'upload technical details', 'no attachment id returned');
+                return 'no attachment id returned';
             }
 
             $attach = $this->client()->post('/rest/servicedeskapi/request/' . rawurlencode($issueKey) . '/attachment', [
                 'temporaryAttachmentIds' => $temporaryIds,
-                // Internal to agents: the member already has their own report.
                 'public' => false,
             ]);
         } catch (\Throwable $e) {
-            return $this->warn($report, 'attach technical details', $e->getMessage());
+            return $this->scrub($e->getMessage());
         }
 
-        return $attach->successful() ? null : $this->warn($report, 'attach technical details', 'HTTP ' . $attach->status());
+        return $attach->successful() ? null : 'HTTP ' . $attach->status();
     }
 
     /**
