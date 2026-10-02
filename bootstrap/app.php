@@ -59,6 +59,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->name('support-actions-expire');
 
+        // Support reports copied to the Jira help desk: mirror ticket status
+        // back (Jira → platform only; never writes to Jira). No-op while
+        // SUPPORT_JIRA_ENABLED is off.
+        $schedule->command('support:jira-sync-status')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('support-jira-sync-status');
+
         // SLO watch (docs/SLO.md): evaluate the exchange-completion success rate
         // daily and alert (log → Sentry → Slack) + exit non-zero when breached,
         // so a money-path regression is VISIBLE before users complain.

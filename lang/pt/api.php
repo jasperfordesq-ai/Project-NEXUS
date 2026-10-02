@@ -2470,6 +2470,7 @@ return [
     'support_reports_impact_invalid' => 'Escolha um nível de impacto válido.',
     'support_reports_request_type_invalid' => 'Escolha o tipo de ajuda de que precisa.',
     'support_reports_daily_limit' => 'Enviou :count relatórios nas últimas 24 horas. Aguarde um pouco antes de enviar outro ou responda a um que já tenha enviado.',
+    'support_reports_handled_in_jira' => 'Este relatório está a ser tratado no serviço de apoio do Jira, por isso o seu estado segue o do pedido no Jira. Ainda pode adicionar notas ou fechá-lo.',
     'support_report_not_found' => 'Relatório de suporte não encontrado.',
     'support_reports_status_invalid' => 'Escolha um estado de relatório válido.',
     'support_reports_assignment_invalid' => 'Atribua o relatório a um administrador ativo deste tenant.',

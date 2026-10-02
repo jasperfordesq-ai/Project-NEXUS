@@ -113,6 +113,25 @@ class AdminSupportReportController extends BaseApiController
         }
 
         $validated = $validator->validated();
+
+        // A report copied to Jira is answered there and its status mirrored
+        // back (support:jira-sync-status). Changing it here would be undone
+        // within 15 minutes, so only closing it (withdrawing it from the
+        // mirror, e.g. spam) is allowed. Notes and assignment stay editable.
+        if (
+            !empty($report->jira_issue_key)
+            && array_key_exists('status', $validated)
+            && $validated['status'] !== $report->status
+            && $validated['status'] !== 'closed'
+        ) {
+            return $this->respondWithError(
+                'SUPPORT_REPORT_HANDLED_IN_JIRA',
+                __('api.support_reports_handled_in_jira'),
+                'status',
+                422,
+            );
+        }
+
         $updates = $this->buildUpdates($validated, $report);
 
         if (array_key_exists('assigned_user_id', $validated)) {
@@ -226,6 +245,8 @@ class AdminSupportReportController extends BaseApiController
             'sr.jira_issue_key',
             'sr.jira_synced_at',
             'sr.jira_last_error',
+            'sr.jira_status',
+            'sr.jira_status_checked_at',
             'sr.created_at',
             'sr.updated_at',
             'tenant.name as tenant_name',
@@ -372,6 +393,8 @@ class AdminSupportReportController extends BaseApiController
             'jira_issue_url' => app(SupportJiraTicketService::class)->issueUrl($report->jira_issue_key),
             'jira_synced_at' => $report->jira_synced_at,
             'jira_last_error' => $report->jira_last_error,
+            'jira_status' => $report->jira_status,
+            'jira_status_checked_at' => $report->jira_status_checked_at,
             'created_at' => $report->created_at,
             'updated_at' => $report->updated_at,
             'reporter' => $report->user_id !== null ? $this->formatRelatedUser($report, 'reporter') : null,

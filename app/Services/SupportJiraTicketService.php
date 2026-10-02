@@ -104,6 +104,140 @@ class SupportJiraTicketService
         }
     }
 
+    /**
+     * Jira → platform status mirror (run every 15 minutes by
+     * support:jira-sync-status). Jira is the one place a copied report is
+     * answered, so the platform READS ticket status and never writes to Jira:
+     *
+     * - done in Jira                        → report 'resolved'
+     * - not done, but the report 'resolved' → 'triaged' (reopened in Jira)
+     * - a report an admin 'closed'          → left alone, not even asked about
+     *
+     * Runs across every community (it is a platform job), but each row is
+     * updated by id AND its own tenant_id. A failed batch changes nothing and
+     * is logged at error; the next run tries again.
+     *
+     * @return array{checked:int, updated:int, failed_batches:int}
+     */
+    public function syncStatuses(int $limit = 500): array
+    {
+        $result = ['checked' => 0, 'updated' => 0, 'failed_batches' => 0];
+        if (!self::isEnabled() || $this->missingSettings() !== []) {
+            return $result;
+        }
+
+        $reports = DB::table('support_reports')
+            ->whereNotNull('jira_issue_key')
+            ->where('status', '!=', 'closed')
+            ->orderBy('jira_status_checked_at')
+            ->orderByDesc('id')
+            ->limit(max(1, $limit))
+            ->get(['id', 'tenant_id', 'status', 'jira_issue_key']);
+
+        foreach ($reports->chunk(50) as $batch) {
+            $keys = $batch->pluck('jira_issue_key')
+                ->filter(fn ($key) => is_string($key) && preg_match('/^[A-Z][A-Z0-9_]*-\d+$/', $key))
+                ->unique()
+                ->values()
+                ->all();
+            if ($keys === []) {
+                continue;
+            }
+
+            $statuses = $this->fetchStatuses($keys);
+            if ($statuses === null) {
+                $result['failed_batches']++;
+                continue;
+            }
+
+            foreach ($batch as $row) {
+                $result['checked']++;
+                $status = $statuses[$row->jira_issue_key] ?? null;
+                if ($status === null) {
+                    continue;
+                }
+                if ($this->applyStatus($row, $status['name'], $status['done'])) {
+                    $result['updated']++;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param list<string> $keys
+     * @return array<string, array{name:string, done:bool}>|null null when Jira could not be asked
+     */
+    private function fetchStatuses(array $keys): ?array
+    {
+        try {
+            $response = $this->client()->post('/rest/api/3/search/jql', [
+                'jql' => 'key in (' . implode(',', $keys) . ')',
+                'fields' => ['status'],
+                'maxResults' => count($keys),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('[SupportJiraTicketService] status check could not reach Jira', ['error' => $this->scrub($e->getMessage())]);
+
+            return null;
+        }
+
+        if (!$response->successful()) {
+            Log::error('[SupportJiraTicketService] status check refused by Jira', [
+                'status' => $response->status(),
+                'detail' => $this->jiraErrorDetail($response),
+            ]);
+
+            return null;
+        }
+
+        $statuses = [];
+        foreach ((array) $response->json('issues', []) as $issue) {
+            $key = is_array($issue) ? ($issue['key'] ?? null) : null;
+            $name = is_array($issue) ? ($issue['fields']['status']['name'] ?? null) : null;
+            if (!is_string($key) || !is_string($name)) {
+                continue;
+            }
+            $statuses[$key] = [
+                'name' => $name,
+                'done' => ($issue['fields']['status']['statusCategory']['key'] ?? null) === 'done',
+            ];
+        }
+
+        return $statuses;
+    }
+
+    private function applyStatus(object $row, string $jiraStatus, bool $done): bool
+    {
+        $updates = [
+            'jira_status' => Str::limit($jiraStatus, 100, ''),
+            'jira_status_checked_at' => now(),
+        ];
+
+        $changed = false;
+        if ($done && $row->status !== 'resolved') {
+            $updates['status'] = 'resolved';
+            $updates['resolved_at'] = now();
+            $changed = true;
+        } elseif (!$done && $row->status === 'resolved') {
+            $updates['status'] = 'triaged';
+            $updates['resolved_at'] = null;
+            $changed = true;
+        }
+
+        if ($changed) {
+            $updates['updated_at'] = now();
+        }
+
+        DB::table('support_reports')
+            ->where('id', $row->id)
+            ->where('tenant_id', $row->tenant_id)
+            ->update($updates);
+
+        return $changed;
+    }
+
     public function issueUrl(?string $issueKey): ?string
     {
         $base = (string) config('support_jira.base_url', '');

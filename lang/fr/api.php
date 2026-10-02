@@ -2470,6 +2470,7 @@ return [
     'support_reports_impact_invalid' => 'Veuillez choisir un niveau d\'impact valide.',
     'support_reports_request_type_invalid' => 'Veuillez choisir le type d\'aide dont vous avez besoin.',
     'support_reports_daily_limit' => 'Vous avez envoyé :count signalements au cours des dernières 24 heures. Veuillez patienter un peu avant d\'en envoyer un autre, ou répondez à un signalement déjà envoyé.',
+    'support_reports_handled_in_jira' => 'Ce signalement est traité dans le service d\'assistance Jira : son statut suit donc celui du ticket Jira. Vous pouvez toujours ajouter des notes ou le clôturer.',
     'support_report_not_found' => 'Signalement au support introuvable.',
     'support_reports_status_invalid' => 'Veuillez choisir un statut de signalement valide.',
     'support_reports_assignment_invalid' => 'Veuillez attribuer le signalement à un administrateur actif de ce tenant.',

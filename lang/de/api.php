@@ -2470,6 +2470,7 @@ return [
     'support_reports_impact_invalid' => 'Bitte wählen Sie eine gültige Auswirkungsstufe.',
     'support_reports_request_type_invalid' => 'Bitte wählen Sie aus, welche Art von Hilfe Sie benötigen.',
     'support_reports_daily_limit' => 'Sie haben in den letzten 24 Stunden :count Meldungen gesendet. Bitte warten Sie etwas, bevor Sie eine weitere senden, oder antworten Sie auf eine bereits gesendete.',
+    'support_reports_handled_in_jira' => 'Diese Meldung wird im Jira-Helpdesk bearbeitet, daher folgt ihr Status dem Jira-Ticket. Sie können weiterhin Notizen hinzufügen oder sie schließen.',
     'support_report_not_found' => 'Support-Meldung nicht gefunden.',
     'support_reports_status_invalid' => 'Bitte wählen Sie einen gültigen Meldungsstatus.',
     'support_reports_assignment_invalid' => 'Bitte weisen Sie die Meldung einem aktiven Administrator dieses Mandanten zu.',
