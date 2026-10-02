@@ -511,7 +511,6 @@ describe('AdminSidebar', () => {
     '/test/admin/gamification/badge-config',
     '/test/admin/settings/registration-policy',
     '/test/admin/enterprise/fadp',
-    '/test/admin/help',
   ];
 
   it('links every previously unreachable admin page', async () => {
@@ -545,15 +544,18 @@ describe('AdminSidebar', () => {
     expect(hrefs).toContain('/test/admin/settings');
   });
 
-  // The admin help centre lists only Caring Community articles (2026-10-02).
-  it('points Help Centre at the full admin guide when Caring Community is off', async () => {
-    mockHasFeature.mockImplementation((feature: string) => feature !== 'caring_community');
+  // One Help Centre link only (2026-10-02): the pinned footer one. A second
+  // entry under System duplicated it for most communities.
+  it.each([true, false])('links the Help Centre exactly once (caring_community %s)', async (caringOn) => {
+    mockHasFeature.mockImplementation((feature: string) => caringOn || feature !== 'caring_community');
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
 
-    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    const links = screen.getAllByRole('link', { hidden: true });
+    expect(links.filter((l) => /Help Centre/.test(l.textContent ?? ''))).toHaveLength(1);
+    const hrefs = links.map((l) => l.getAttribute('href'));
+    expect(hrefs.filter((h) => h === '/test/help/admins')).toHaveLength(1);
     expect(hrefs).not.toContain('/test/admin/help');
-    expect(hrefs).toContain('/test/help/admins');
     // The general FAQ editor does not depend on the module.
     expect(hrefs).toContain('/test/admin/help/faqs');
   });
