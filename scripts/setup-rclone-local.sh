@@ -22,7 +22,17 @@ set -euo pipefail
 
 # Load local secrets if present. .secrets.local/deploy.env is gitignored.
 # shellcheck disable=SC1091
-[ -f "$(dirname "$0")/../.secrets.local/deploy.env" ] && . "$(dirname "$0")/../.secrets.local/deploy.env"
+# Parsed with grep/cut like scripts/deploy.sh, NOT sourced: sourcing strips the
+# backslashes from a Windows path such as C:\ssh-keys\project-nexus.pem.
+DEPLOY_ENV="$(dirname "$0")/../.secrets.local/deploy.env"
+if [ -f "$DEPLOY_ENV" ]; then
+    : "${PROD_SSH_HOST:=$(grep -m1 '^PROD_SSH_HOST=' "$DEPLOY_ENV" | cut -d= -f2- | tr -d "\"'\r")}"
+    : "${PROD_SSH_KEY:=$(grep -m1 '^PROD_SSH_KEY=' "$DEPLOY_ENV" | cut -d= -f2- | tr -d "\"'\r")}"
+fi
+# Git Bash: turn C:\… into /c/… so both ssh and scp accept it.
+if [ -n "${PROD_SSH_KEY:-}" ] && command -v cygpath >/dev/null 2>&1; then
+    PROD_SSH_KEY="$(cygpath -u "$PROD_SSH_KEY")"
+fi
 
 if [ -z "${PROD_SSH_HOST:-}" ] || [ -z "${PROD_SSH_KEY:-}" ]; then
     echo "ERROR: PROD_SSH_HOST and PROD_SSH_KEY must be set." >&2
