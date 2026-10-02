@@ -319,6 +319,8 @@
     "stage_unknown": "不明なステージ"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "ボランティア活動のインシデント",
+    "volunteering_incidents_description": "ボランティア活動を通じて報告されたセーフガーディングのインシデントです。更新や終了ができます。自分自身に関するインシデントは、誰も閲覧・対応できません。",
     "title": "セーフガーディング",
     "description": "セーフガーディング警告、保護者の割り当て、メンバーの設定を監視します。",
     "tab_flagged": "フラグ付きメッセージ",

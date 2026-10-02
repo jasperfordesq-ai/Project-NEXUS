@@ -102,7 +102,16 @@ function parsePayload<T>(raw: unknown): T {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export function VolunteerSafeguarding() {
+interface VolunteerSafeguardingProps {
+  /**
+   * Whether the viewer may assign an organisation's designated liaison person.
+   * The broker safeguarding page embeds this screen with `false`: brokers and
+   * coordinators handle incidents (F-536) but DLP assignment stays admin-only.
+   */
+  canAssignDlp?: boolean;
+}
+
+export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguardingProps = {}) {
   const { t } = useTranslation('admin_volunteering');
   usePageTitle(t('volunteering.safeguarding_page_title'));
   const toast = useToast();
@@ -390,15 +399,17 @@ export function VolunteerSafeguarding() {
                       )}
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="tertiary"
-                    onPress={() => openDlpAssign(assignment)}
-                  >
-                    {assignment.dlp_user_id
-                      ? t('volunteering.change_dlp')
-                      : t('volunteering.assign_dlp')}
-                  </Button>
+                  {canAssignDlp && (
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      onPress={() => openDlpAssign(assignment)}
+                    >
+                      {assignment.dlp_user_id
+                        ? t('volunteering.change_dlp')
+                        : t('volunteering.assign_dlp')}
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

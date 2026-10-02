@@ -26,12 +26,15 @@
 
 import { useTranslation } from 'react-i18next';
 import Shield from 'lucide-react/icons/shield';
+import { useTenant } from '@/contexts';
 import { SafeguardingDashboard } from '@/admin/modules/safeguarding/SafeguardingDashboard';
+import { VolunteerSafeguarding } from '@/admin/modules/volunteering/VolunteerSafeguarding';
 import { BrokerPageShell } from '../components';
 import { EMBED_RESTYLE } from '../components/adminEmbed';
 
 export default function SafeguardingPage() {
   const { t } = useTranslation('broker');
+  const { hasFeature } = useTenant();
 
   return (
     <BrokerPageShell
@@ -43,6 +46,19 @@ export default function SafeguardingPage() {
       <div className={EMBED_RESTYLE}>
         <SafeguardingDashboard routeBase="/broker/safeguarding" />
       </div>
+      {/* F-536: volunteering incidents alert brokers and coordinators and link
+          here, so they are handled here. DLP assignment stays admin-only. */}
+      {hasFeature('volunteering') && (
+        <section aria-labelledby="broker-volunteering-incidents" className="mt-8 space-y-2">
+          <h2 id="broker-volunteering-incidents" className="text-lg font-semibold">
+            {t('safeguarding.volunteering_incidents_title')}
+          </h2>
+          <p className="text-sm text-muted">{t('safeguarding.volunteering_incidents_description')}</p>
+          <div className={EMBED_RESTYLE}>
+            <VolunteerSafeguarding canAssignDlp={false} />
+          </div>
+        </section>
+      )}
     </BrokerPageShell>
   );
 }

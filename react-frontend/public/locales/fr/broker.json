@@ -327,6 +327,8 @@
     "stage_unknown": "Étape inconnue"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Incidents liés au bénévolat",
+    "volunteering_incidents_description": "Incidents de protection signalés dans le cadre du bénévolat. Vous pouvez les mettre à jour et les clôturer ; personne ne voit ni ne traite un incident qui le concerne.",
     "title": "Protection",
     "description": "Surveillez les alertes de protection, les attributions de gardiens et les préférences des membres.",
     "tab_flagged": "Messages signalés",

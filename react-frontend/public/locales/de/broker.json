@@ -319,6 +319,8 @@
     "stage_unknown": "Unbekannte Stufe"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Vorfälle im Ehrenamt",
+    "volunteering_incidents_description": "Schutzvorfälle, die über das Ehrenamt gemeldet wurden. Sie können sie bearbeiten und abschließen; niemand sieht oder bearbeitet einen Vorfall, der ihn selbst betrifft.",
     "title": "Schutzmaßnahmen",
     "description": "Überwachen Sie Sicherheitswarnungen, Betreuerzuweisungen und Mitgliederpräferenzen.",
     "tab_flagged": "Markierte Nachrichten",

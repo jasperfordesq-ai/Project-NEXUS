@@ -327,6 +327,8 @@
     "stage_unknown": "Estágio desconhecido"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Incidentes de voluntariado",
+    "volunteering_incidents_description": "Incidentes de proteção comunicados através do voluntariado. Pode atualizá-los e encerrá-los; ninguém vê nem trata um incidente que lhe diga respeito.",
     "title": "Proteção",
     "description": "Monitore alertas de proteção, atribuições de guardiões e preferências dos membros.",
     "tab_flagged": "Mensagens Sinalizadas",

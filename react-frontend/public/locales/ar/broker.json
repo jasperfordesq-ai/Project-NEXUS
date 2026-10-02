@@ -351,6 +351,8 @@
     "stage_unknown": "المرحلة غير معروفة"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "حوادث التطوع",
+    "volunteering_incidents_description": "حوادث الحماية المُبلَّغ عنها من خلال التطوع. يمكنك تحديثها وإغلاقها، ولا يرى أحد حادثة تخصّه ولا يتولّاها.",
     "title": "الحماية",
     "description": "راقب تنبيهات الحماية، وتعيينات الوصي، وتفضيلات الأعضاء.",
     "tab_flagged": "رسائل مرفوعة",

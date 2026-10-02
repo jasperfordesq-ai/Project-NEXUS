@@ -2757,8 +2757,13 @@ Route::get('/v2/admin/volunteering/guardian-consents', [\App\Http\Controllers\Ap
 Route::get('/v2/admin/volunteering/training', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminTraining']);
 Route::put('/v2/admin/volunteering/training/{id}/verify', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'verifyTraining']);
 Route::put('/v2/admin/volunteering/training/{id}/reject', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'rejectTraining']);
-Route::get('/v2/admin/volunteering/incidents', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminIncidents']);
-Route::put('/v2/admin/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateIncident']);
+// Volunteering safeguarding incidents — broker-or-admin (F-536, owner decision
+// 2 Oct 2026): brokers and coordinators are alerted to these and handle them from
+// the broker safeguarding page. Assigning an organisation's DLP stays admin-only.
+Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
+    Route::get('/v2/admin/volunteering/incidents', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminIncidents']);
+    Route::put('/v2/admin/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateIncident']);
+});
 Route::get('/v2/admin/volunteering/wellbeing/alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminWellbeingAlerts']);
 Route::put('/v2/admin/volunteering/wellbeing/alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateWellbeingAlert'])->whereNumber('id');
 Route::put('/v2/admin/volunteering/organizations/{id}/dlp', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'assignDlp']);

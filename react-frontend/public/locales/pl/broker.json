@@ -335,6 +335,8 @@
     "stage_unknown": "Nieznany etap"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Incydenty w wolontariacie",
+    "volunteering_incidents_description": "Incydenty dotyczące ochrony zgłoszone w ramach wolontariatu. Możesz je aktualizować i zamykać; nikt nie widzi ani nie prowadzi incydentu, który dotyczy jego samego.",
     "title": "Ochrona",
     "description": "Monitoruj alerty ochrony, przypisania opiekunów i preferencje członków.",
     "tab_flagged": "Oznaczone wiadomości",

@@ -327,6 +327,8 @@
     "stage_unknown": "Fase sconosciuta"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Incidenti nel volontariato",
+    "volunteering_incidents_description": "Incidenti di tutela segnalati tramite il volontariato. Puoi aggiornarli e chiuderli; nessuno vede né gestisce un incidente che lo riguarda.",
     "title": "Tutela",
     "description": "Monitora avvisi di protezione, assegnazioni di guardian e preferenze dei membri.",
     "tab_flagged": "Messaggi segnalati",

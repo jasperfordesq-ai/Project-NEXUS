@@ -191,6 +191,25 @@ describe('VolunteerSafeguarding', () => {
     expect(assignBtn).toBeDefined();
   });
 
+  it('hides DLP assignment when embedded for brokers (canAssignDlp=false, F-536)', async () => {
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ dlp_assignments: [makeDlpAssignment()] })
+    );
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding canAssignDlp={false} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Org Alpha')).toBeInTheDocument();
+    });
+
+    // The assignment is still listed, but there is no way to change it here.
+    const assignBtn = screen.queryAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('assign')
+    );
+    expect(assignBtn).toBeUndefined();
+  });
+
   it('opens DLP assignment modal when assign button is clicked', async () => {
     mockAdminVolunteering.getIncidents.mockResolvedValue(
       makeGetIncidentsResponse({ dlp_assignments: [makeDlpAssignment()] })

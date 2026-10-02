@@ -6,14 +6,27 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
-const { mockSafeguardingDashboard } = vi.hoisted(() => ({
+const { mockSafeguardingDashboard, mockVolunteerSafeguarding, mockHasFeature } = vi.hoisted(() => ({
   mockSafeguardingDashboard: vi.fn(({ routeBase }: { routeBase?: string }) => (
     <div data-testid="shared-safeguarding-dashboard" data-route-base={routeBase} />
   )),
+  mockVolunteerSafeguarding: vi.fn(({ canAssignDlp }: { canAssignDlp?: boolean }) => (
+    <div data-testid="volunteering-incidents" data-can-assign-dlp={String(canAssignDlp)} />
+  )),
+  mockHasFeature: vi.fn((feature: string) => feature === 'volunteering'),
 }));
 
 vi.mock('@/admin/modules/safeguarding/SafeguardingDashboard', () => ({
   SafeguardingDashboard: mockSafeguardingDashboard,
+}));
+
+vi.mock('@/admin/modules/volunteering/VolunteerSafeguarding', () => ({
+  VolunteerSafeguarding: mockVolunteerSafeguarding,
+}));
+
+vi.mock('@/contexts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts')>()),
+  useTenant: () => ({ hasFeature: mockHasFeature }),
 }));
 
 describe('SafeguardingPage (broker)', () => {
@@ -55,5 +68,28 @@ describe('SafeguardingPage (broker)', () => {
     const dashboard = screen.getByTestId('shared-safeguarding-dashboard');
     const wrapper = dashboard.parentElement;
     expect(wrapper?.className).toContain(':first-child]:hidden');
+  });
+
+  // F-536: volunteering incidents alert brokers and coordinators and link here.
+  it('shows volunteering incidents for brokers, without DLP assignment, when volunteering is on', async () => {
+    mockHasFeature.mockImplementation((feature: string) => feature === 'volunteering');
+    const mod = await import('./SafeguardingPage');
+    const Component = mod.default;
+
+    render(<Component />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Volunteering incidents' })).toBeInTheDocument();
+    expect(screen.getByTestId('volunteering-incidents')).toHaveAttribute('data-can-assign-dlp', 'false');
+  });
+
+  it('leaves volunteering incidents out when volunteering is switched off', async () => {
+    mockHasFeature.mockImplementation(() => false);
+    const mod = await import('./SafeguardingPage');
+    const Component = mod.default;
+
+    render(<Component />);
+
+    expect(screen.queryByTestId('volunteering-incidents')).not.toBeInTheDocument();
+    expect(screen.getByTestId('shared-safeguarding-dashboard')).toBeInTheDocument();
   });
 });

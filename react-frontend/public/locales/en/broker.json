@@ -319,6 +319,8 @@
     "empty_pending_title": "All caught up"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Volunteering incidents",
+    "volunteering_incidents_description": "Safeguarding incidents reported through volunteering. You can update and close them; nobody sees or handles an incident about themselves.",
     "title": "Safeguarding",
     "description": "Monitor safeguarding alerts, guardian assignments, and member preferences.",
     "tab_flagged": "Flagged Messages",

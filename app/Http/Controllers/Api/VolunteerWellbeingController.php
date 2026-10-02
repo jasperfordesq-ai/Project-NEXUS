@@ -506,7 +506,8 @@ class VolunteerWellbeingController extends BaseApiController
     public function adminIncidents(): JsonResponse
     {
         $this->ensureFeature();
-        $this->requireAdmin();
+        // F-536: brokers and coordinators handle volunteering incidents too.
+        $this->requireBrokerOrAdmin();
 
         $tenantId = TenantContext::getId();
         $status = $this->query('status');
@@ -531,7 +532,10 @@ class VolunteerWellbeingController extends BaseApiController
     public function updateIncident($id): JsonResponse
     {
         $this->ensureFeature();
-        $adminId = $this->requireAdmin();
+        // F-536: brokers and coordinators handle volunteering incidents too.
+        // F-507 (no one handles an incident about themselves) is enforced in
+        // SafeguardingService::updateIncident for every caller.
+        $adminId = $this->requireBrokerOrAdmin();
 
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();

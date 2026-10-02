@@ -343,6 +343,8 @@
     "stage_unknown": "Céim anaithnid"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Teagmhais oibre dheonaigh",
+    "volunteering_incidents_description": "Teagmhais chosanta a tuairiscíodh tríd an obair dheonach. Is féidir leat iad a nuashonrú agus a dhúnadh; ní fheiceann ná ní láimhseálann aon duine teagmhas a bhaineann leis féin.",
     "title": "Cosaint",
     "description": "Déan monatóireacht ar fholáirimh chosanta, sannadh caomhnóirí agus sainroghanna na mball.",
     "tab_flagged": "Teachtaireachtaí a bhfuil bratach orthu",

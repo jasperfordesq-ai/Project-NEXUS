@@ -319,6 +319,8 @@
     "stage_unknown": "Onbekend stadium"
   },
   "safeguarding": {
+    "volunteering_incidents_title": "Incidenten bij vrijwilligerswerk",
+    "volunteering_incidents_description": "Veiligheidsincidenten die via vrijwilligerswerk zijn gemeld. U kunt ze bijwerken en afsluiten; niemand ziet of behandelt een incident over zichzelf.",
     "title": "Bescherming",
     "description": "Houd waarschuwingen voor bescherming, toewijzingen van voogden en voorkeuren van leden in de gaten.",
     "tab_flagged": "Gemarkeerde Berichten",
