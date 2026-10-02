@@ -2579,17 +2579,33 @@ export interface CrmDashboardStats {
   retention_rate: number;
 }
 
+export interface CrmFunnelWaitingMember {
+  id: number;
+  name: string;
+  avatar_url: string | null;
+  joined_at: string | null;
+}
+
 export interface CrmFunnelStage {
   code: string;
   /** @deprecated Display copy is translated client-side from code. */
   name?: string;
+  /** Members who reached this step or went further — never rises down the list. */
   count: number;
   color: string;
+  /** Members whose furthest step is this one (always 0 on the final step). */
+  waiting?: number;
+  /** The newest of those members, capped server-side. */
+  waiting_members?: CrmFunnelWaitingMember[];
 }
 
 export interface CrmFunnelData {
+  /** Members counted by the funnel: banned, suspended and deleted accounts excluded. */
+  total_members?: number;
   stages: CrmFunnelStage[];
+  /** The last six calendar months, current month last, empty months included as 0. */
   monthly_registrations: Array<{ month: string; count: number }>;
+  new_last_30_days?: number;
 }
 
 export interface MemberNote {

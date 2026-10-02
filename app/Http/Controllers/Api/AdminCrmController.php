@@ -129,51 +129,162 @@ class AdminCrmController extends BaseApiController
     // Funnel
     // ─────────────────────────────────────────────────────────────────────────
 
+    /** Funnel stages in journey order, with the bar colour each is drawn in. */
+    private const FUNNEL_STAGES = [
+        'registered' => '#3b82f6',
+        'email_verified' => '#6366f1',
+        'profile_complete' => '#8b5cf6',
+        'first_listing' => '#a855f7',
+        'first_exchange' => '#d946ef',
+        'repeat_user' => '#ec4899',
+    ];
+
+    /** How many members waiting at a step are named in the response. */
+    private const FUNNEL_WAITING_SAMPLE = 8;
+
+    /**
+     * Credits with no member on the other side. They move balances but are
+     * not an exchange between two people, so they never advance the journey.
+     */
+    private const FUNNEL_NON_EXCHANGE_TYPES = ['starting_balance', 'admin_grant', 'community_fund'];
+
+    /**
+     * Each member is placed at the FURTHEST step they have reached, and a
+     * stage counts everyone at that step or beyond. The counts therefore only
+     * ever fall along the journey, and a member who trades without finishing
+     * their profile is not reported as stuck at "profile". Until 2026-10-02
+     * the six counts were unrelated totals (step rates of 500% appeared), the
+     * population included banned and deleted accounts, and a NULL counterparty
+     * on system credits was itself counted as a repeat user.
+     */
     public function funnel(): JsonResponse
     {
         $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
-        $registered = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ?", [$tenantId])->cnt;
-        $emailVerified = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND email_verified_at IS NOT NULL", [$tenantId])->cnt;
-        $profileCompleted = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND (bio IS NOT NULL AND bio != '') AND (location IS NOT NULL AND location != '')", [$tenantId])->cnt;
-
-        $firstListing = 0;
-        try { $firstListing = (int) DB::selectOne("SELECT COUNT(DISTINCT user_id) as cnt FROM listings WHERE tenant_id = ?", [$tenantId])->cnt; } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
-
-        $firstExchange = 0;
-        try {
-            $firstExchange = (int) DB::selectOne(
-                "SELECT COUNT(DISTINCT u) as cnt FROM (SELECT sender_id as u FROM transactions WHERE tenant_id = ? AND status = 'completed' UNION SELECT receiver_id as u FROM transactions WHERE tenant_id = ? AND status = 'completed') AS combined",
-                [$tenantId, $tenantId]
-            )->cnt;
-        } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
-
-        $repeatUser = 0;
-        try {
-            $repeatUser = (int) DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM (SELECT u, COUNT(*) as tx_count FROM (SELECT sender_id as u FROM transactions WHERE tenant_id = ? AND status = 'completed' UNION ALL SELECT receiver_id as u FROM transactions WHERE tenant_id = ? AND status = 'completed') AS all_tx GROUP BY u HAVING tx_count >= 2) AS repeat_users",
-                [$tenantId, $tenantId]
-            )->cnt;
-        } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
-
-        $monthlyRegistrations = DB::select(
-            "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count FROM users WHERE tenant_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH) GROUP BY DATE_FORMAT(created_at, '%Y-%m') ORDER BY month ASC",
+        $members = DB::select(
+            "SELECT id, name, avatar_url, created_at,
+                    email_verified_at IS NOT NULL AS verified,
+                    (COALESCE(bio, '') <> '' AND COALESCE(location, '') <> '') AS profile_complete
+             FROM users
+             WHERE tenant_id = ? AND deleted_at IS NULL AND anonymized_at IS NULL
+               AND (status IS NULL OR status NOT IN ('suspended', 'banned', 'rejected'))
+             ORDER BY created_at DESC, id DESC",
             [$tenantId]
         );
-        $monthlyRegistrations = array_map(fn($r) => (array)$r, $monthlyRegistrations);
+
+        $listers = array_flip(array_map(
+            fn ($row) => (int) $row->user_id,
+            DB::select("SELECT DISTINCT user_id FROM listings WHERE tenant_id = ?", [$tenantId])
+        ));
+
+        $typePlaceholders = implode(',', array_fill(0, count(self::FUNNEL_NON_EXCHANGE_TYPES), '?'));
+        $exchangeRows = DB::select(
+            "SELECT u, COUNT(*) AS exchanges FROM (
+                 SELECT sender_id AS u FROM transactions
+                 WHERE tenant_id = ? AND status = 'completed' AND sender_id IS NOT NULL
+                   AND receiver_id IS NOT NULL AND sender_id <> receiver_id
+                   AND transaction_type NOT IN ({$typePlaceholders})
+                 UNION ALL
+                 SELECT receiver_id AS u FROM transactions
+                 WHERE tenant_id = ? AND status = 'completed' AND sender_id IS NOT NULL
+                   AND receiver_id IS NOT NULL AND sender_id <> receiver_id
+                   AND transaction_type NOT IN ({$typePlaceholders})
+             ) AS parties GROUP BY u",
+            [$tenantId, ...self::FUNNEL_NON_EXCHANGE_TYPES, $tenantId, ...self::FUNNEL_NON_EXCHANGE_TYPES]
+        );
+        $exchanges = [];
+        foreach ($exchangeRows as $row) {
+            $exchanges[(int) $row->u] = (int) $row->exchanges;
+        }
+
+        $codes = array_keys(self::FUNNEL_STAGES);
+        $reached = array_fill(0, count($codes), 0);
+        $waiting = array_fill(0, count($codes), []);
+        $waitingCount = array_fill(0, count($codes), 0);
+
+        foreach ($members as $member) {
+            $id = (int) $member->id;
+            $done = [
+                true,
+                (bool) $member->verified,
+                (bool) $member->profile_complete,
+                isset($listers[$id]),
+                ($exchanges[$id] ?? 0) >= 1,
+                ($exchanges[$id] ?? 0) >= 2,
+            ];
+            $furthest = (int) max(array_keys(array_filter($done)));
+
+            for ($step = 0; $step <= $furthest; $step++) {
+                $reached[$step]++;
+            }
+            $waitingCount[$furthest]++;
+            if (count($waiting[$furthest]) < self::FUNNEL_WAITING_SAMPLE) {
+                $waiting[$furthest][] = [
+                    'id' => $id,
+                    'name' => $member->name,
+                    'avatar_url' => $member->avatar_url,
+                    'joined_at' => $member->created_at,
+                ];
+            }
+        }
+
+        $stages = [];
+        $lastStep = count($codes) - 1;
+        foreach ($codes as $step => $code) {
+            // Nobody "waits" at the final step: there is no next one.
+            $isLast = $step === $lastStep;
+            $stages[] = [
+                'code' => $code,
+                'count' => $reached[$step],
+                'color' => self::FUNNEL_STAGES[$code],
+                'waiting' => $isLast ? 0 : $waitingCount[$step],
+                'waiting_members' => $isLast ? [] : $waiting[$step],
+            ];
+        }
 
         return $this->respondWithData([
-            'stages' => [
-                ['code' => 'registered', 'count' => $registered, 'color' => '#3b82f6'],
-                ['code' => 'email_verified', 'count' => $emailVerified, 'color' => '#6366f1'],
-                ['code' => 'profile_complete', 'count' => $profileCompleted, 'color' => '#8b5cf6'],
-                ['code' => 'first_listing', 'count' => $firstListing, 'color' => '#a855f7'],
-                ['code' => 'first_exchange', 'count' => $firstExchange, 'color' => '#d946ef'],
-                ['code' => 'repeat_user', 'count' => $repeatUser, 'color' => '#ec4899'],
-            ],
-            'monthly_registrations' => $monthlyRegistrations,
+            'total_members' => count($members),
+            'stages' => $stages,
+            'monthly_registrations' => $this->funnelMonthlyRegistrations($tenantId),
+            'new_last_30_days' => count(array_filter(
+                $members,
+                fn ($member) => $member->created_at !== null
+                    && strtotime((string) $member->created_at) >= strtotime('-30 days')
+            )),
         ]);
+    }
+
+    /**
+     * Sign-ups for the last six calendar months, current month last. Months
+     * with no sign-ups are included as zero — the chart used to skip them, so
+     * May sat next to August as if they were consecutive.
+     *
+     * @return list<array{month: string, count: int}>
+     */
+    private function funnelMonthlyRegistrations(int $tenantId): array
+    {
+        $start = now()->startOfMonth()->subMonths(5);
+        $rows = DB::select(
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count
+             FROM users
+             WHERE tenant_id = ? AND created_at >= ? AND deleted_at IS NULL AND anonymized_at IS NULL
+               AND (status IS NULL OR status NOT IN ('suspended', 'banned', 'rejected'))
+             GROUP BY DATE_FORMAT(created_at, '%Y-%m')",
+            [$tenantId, $start->toDateTimeString()]
+        );
+        $byMonth = [];
+        foreach ($rows as $row) {
+            $byMonth[$row->month] = (int) $row->count;
+        }
+
+        $months = [];
+        for ($offset = 0; $offset < 6; $offset++) {
+            $key = $start->copy()->addMonths($offset)->format('Y-m');
+            $months[] = ['month' => $key, 'count' => $byMonth[$key] ?? 0];
+        }
+
+        return $months;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

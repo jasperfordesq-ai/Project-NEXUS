@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Mock adminApi (named export adminCrm) ──────────────────────────────────
@@ -26,20 +26,15 @@ vi.mock('recharts', async (importOriginal) => {
   return {
     ...orig,
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
-    Area: () => null,
+    BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+    Bar: () => null,
+    Cell: () => null,
     CartesianGrid: () => null,
     XAxis: () => null,
     YAxis: () => null,
     Tooltip: () => null,
   };
 });
-
-// ─── AdminMetaContext stub ───────────────────────────────────────────────────
-vi.mock('@/admin/modules/AdminMetaContext', () => ({
-  useAdminPageMeta: vi.fn(),
-  AdminMetaProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
 
 vi.mock('../../AdminMetaContext', () => ({
   useAdminPageMeta: vi.fn(),
@@ -64,20 +59,36 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
+// Counts are nested ("reached this step or further"), as the API now returns.
+const stuckMember = { id: 42, name: 'Aoife Byrne', avatar_url: null, joined_at: '2026-09-20 10:00:00' };
+
 const makeFunnelData = (overrides = {}) => ({
+  total_members: 200,
+  new_last_30_days: 12,
   stages: [
-    { code: 'registered', name: 'SERVER COPY MUST NOT RENDER', count: 500, color: '#3b82f6' },
-    { code: 'profile_complete', count: 350, color: '#10b981' },
-    { code: 'first_exchange', count: 200, color: '#f59e0b' },
-    { code: 'repeat_user', count: 120, color: '#8b5cf6' },
+    { code: 'registered', name: 'SERVER COPY MUST NOT RENDER', count: 200, color: '#3b82f6', waiting: 20, waiting_members: [] },
+    { code: 'email_verified', count: 180, color: '#6366f1', waiting: 100, waiting_members: [stuckMember] },
+    { code: 'profile_complete', count: 80, color: '#8b5cf6', waiting: 10, waiting_members: [] },
+    { code: 'first_listing', count: 70, color: '#a855f7', waiting: 20, waiting_members: [] },
+    { code: 'first_exchange', count: 50, color: '#d946ef', waiting: 20, waiting_members: [] },
+    { code: 'repeat_user', count: 30, color: '#ec4899', waiting: 0, waiting_members: [] },
   ],
   monthly_registrations: [
-    { month: '2024-10', count: 45 },
-    { month: '2024-11', count: 60 },
-    { month: '2024-12', count: 55 },
+    { month: '2026-05', count: 0 },
+    { month: '2026-06', count: 4 },
+    { month: '2026-07', count: 6 },
+    { month: '2026-08', count: 3 },
+    { month: '2026-09', count: 9 },
+    { month: '2026-10', count: 1 },
   ],
   ...overrides,
 });
+
+async function renderPage() {
+  const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
+  render(<OnboardingFunnel />);
+  await waitFor(() => expect(screen.getByText('The member journey')).toBeInTheDocument(), { timeout: 3000 });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('OnboardingFunnel', () => {
@@ -86,127 +97,97 @@ describe('OnboardingFunnel', () => {
     mockAdminCrm.getFunnel.mockResolvedValue({ success: true, data: makeFunnelData() });
   });
 
-  it('shows loading spinner while data is fetching', async () => {
+  it('shows a loading spinner while data is fetching', async () => {
     mockAdminCrm.getFunnel.mockImplementationOnce(() => new Promise(() => {}));
     const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
     render(<OnboardingFunnel />);
 
-    const statuses = screen.getAllByRole('status');
-    const busy = statuses.find((el) => el.getAttribute('aria-busy') === 'true');
+    const busy = screen.getAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
     expect(busy).toBeDefined();
   });
 
-  it('renders stage names after data loads', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
+  it('names each step in plain language, never the server copy', async () => {
+    await renderPage();
 
-    // Stage names appear in multiple places (caption + funnel card)
-    await waitFor(() => {
-      expect(screen.getAllByText('Registered').length).toBeGreaterThan(0);
-    }, { timeout: 3000 });
-    expect(screen.getAllByText('Profile Complete').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Repeat User').length).toBeGreaterThan(0);
+    for (const title of ['Joined', 'Confirmed email', 'Filled in profile', 'Posted a listing', 'First exchange']) {
+      expect(screen.getAllByText(title).length).toBeGreaterThan(0);
+    }
+    expect(screen.getAllByText('Regular member').length).toBeGreaterThan(0);
     expect(screen.queryByText('SERVER COPY MUST NOT RENDER')).not.toBeInTheDocument();
   });
 
-  it('renders member counts from stages', async () => {
+  it('shows every percentage as a share of all members, so none can exceed 100%', async () => {
+    await renderPage();
+
+    expect(screen.getByText('80 of 200 members')).toBeInTheDocument();
+    expect(screen.getByText('40%')).toBeInTheDocument();
+    const percentages = screen.getAllByText(/^\d+%$/).map((el) => Number.parseInt(el.textContent ?? '', 10));
+    expect(percentages.length).toBeGreaterThan(0);
+    expect(Math.max(...percentages)).toBeLessThanOrEqual(100);
+  });
+
+  it('summarises members, regulars and recent joiners once each', async () => {
+    await renderPage();
+
+    expect(screen.getByText('200')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('15% of members have made two or more exchanges.')).toBeInTheDocument();
+  });
+
+  it('calls out the step where most members are waiting', async () => {
+    await renderPage();
+
+    const callout = screen.getByText('Where most people get stuck').closest('div')!.parentElement!;
+    expect(within(callout).getByText('Confirmed email')).toBeInTheDocument();
+    expect(within(callout).getByText(/Waiting at this step: 100/)).toBeInTheDocument();
+  });
+
+  it('lists the waiting members with links to their admin profile', async () => {
+    await renderPage();
+
+    const step = document.getElementById('funnel-step-email_verified')!;
+    fireEvent.click(within(step).getByRole('button', { name: 'Show who' }));
+
+    const link = await within(step).findByRole('link', { name: /Aoife Byrne/ });
+    expect(link).toHaveAttribute('href', '/test/admin/users/42/edit');
+    expect(within(step).getByText('Showing the 1 newest of 100.')).toBeInTheDocument();
+  });
+
+  it('says so when nobody is waiting', async () => {
+    mockAdminCrm.getFunnel.mockResolvedValueOnce({
+      success: true,
+      data: makeFunnelData({
+        stages: makeFunnelData().stages.map((s) => ({ ...s, waiting: 0, waiting_members: [] })),
+      }),
+    });
+    await renderPage();
+
+    expect(screen.getByText('Nobody is waiting')).toBeInTheDocument();
+  });
+
+  it('shows an empty message when the community has no members', async () => {
+    mockAdminCrm.getFunnel.mockResolvedValueOnce({
+      success: true,
+      data: makeFunnelData({ total_members: 0, stages: [], monthly_registrations: [] }),
+    });
     const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
     render(<OnboardingFunnel />);
 
-    await waitFor(() => {
-      // Entry stage count shown in metric card and hero stats
-      const fiveHundreds = screen.getAllByText('500');
-      expect(fiveHundreds.length).toBeGreaterThan(0);
-    });
+    expect(await screen.findByText(/No members yet/)).toBeInTheDocument();
   });
 
-  it('shows error state and error toast when API fails', async () => {
+  it('renders the monthly chart', async () => {
+    await renderPage();
+
+    expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+  });
+
+  it('shows an error state with a retry button when the API fails', async () => {
     mockAdminCrm.getFunnel.mockRejectedValueOnce(new Error('network error'));
     const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
     render(<OnboardingFunnel />);
 
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
-    });
-    // Should show refresh button in error card
-    const buttons = screen.getAllByRole('button');
-    const refreshBtn = buttons.find((b) => b.textContent?.toLowerCase().includes('refresh'));
-    expect(refreshBtn).toBeDefined();
-  });
-
-  it('renders refresh button that triggers reload', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => expect(screen.getAllByText('Registered').length).toBeGreaterThan(0), { timeout: 3000 });
-
-    const buttons = screen.getAllByRole('button');
-    const refreshBtn = buttons.find((b) => b.textContent?.toLowerCase().includes('refresh'));
-    expect(refreshBtn).toBeDefined();
-  });
-
-  it('renders area chart when monthly registration data present', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('area-chart')).toBeInTheDocument();
-    });
-  });
-
-  it('shows no-stages fallback message when stages array is empty', async () => {
-    mockAdminCrm.getFunnel.mockResolvedValueOnce({
-      success: true,
-      data: makeFunnelData({ stages: [], monthly_registrations: [] }),
-    });
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => {
-      // "no stages available" text rendered in multiple sections
-      const msgs = screen.getAllByText(/no stages available/i);
-      expect(msgs.length).toBeGreaterThan(0);
-    });
-  });
-
-  it('calls adminCrm.getFunnel on mount', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => {
-      expect(mockAdminCrm.getFunnel).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('renders conversion rate between stages', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => expect(screen.getAllByText('Registered').length).toBeGreaterThan(0), { timeout: 3000 });
-
-    // Profile Complete / Registered = 350/500 = 70%; formatPercent strips .0 → "70%"
-    const seventyPct = screen.getAllByText(/70%/);
-    expect(seventyPct.length).toBeGreaterThan(0);
-  });
-
-  it('renders navigation links to CRM and members pages', async () => {
-    const { default: OnboardingFunnel } = await import('./OnboardingFunnel');
-    render(<OnboardingFunnel />);
-
-    await waitFor(() => expect(screen.getAllByText('Registered').length).toBeGreaterThan(0), { timeout: 3000 });
-
-    // The component renders <Link> elements (role="link") to CRM dashboard / all members
-    const links = screen.getAllByRole('link');
-    expect(links.length).toBeGreaterThan(0);
-    // At least one link should point to a CRM or users admin path
-    const hasCrmOrUsersLink = links.some(
-      (l) =>
-        l.getAttribute('href')?.includes('crm') ||
-        l.getAttribute('href')?.includes('users') ||
-        l.textContent?.toLowerCase().includes('crm') ||
-        l.textContent?.toLowerCase().includes('dashboard') ||
-        l.textContent?.toLowerCase().includes('member')
-    );
-    expect(hasCrmOrUsersLink).toBe(true);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
   });
 });

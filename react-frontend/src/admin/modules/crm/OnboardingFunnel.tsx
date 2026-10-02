@@ -1,243 +1,122 @@
-import { formatPercentValue, getFormattingLocale } from '@/lib/helpers';
-import { Button, Card, CardBody, CardHeader, Chip, Spinner, Progress } from '@/components/ui';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState } from 'react';
-import { Link } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
-import Activity from 'lucide-react/icons/activity';
-import ArrowDown from 'lucide-react/icons/arrow-down';
-import ArrowDownRight from 'lucide-react/icons/arrow-down-right';
-import ArrowRight from 'lucide-react/icons/arrow-right';
-import CalendarDays from 'lucide-react/icons/calendar-days';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import Filter from 'lucide-react/icons/filter';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import Target from 'lucide-react/icons/target';
-import TrendingDown from 'lucide-react/icons/trending-down';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Users from 'lucide-react/icons/users';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { useAdminPageMeta } from '../../AdminMetaContext';
-import { useTenant, useToast } from '@/contexts';
-import { adminCrm } from '../../api/adminApi';
-import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Onboarding Funnel Visualization
- * Shows member progression from signup to active participation.
+ * Onboarding Funnel
+ *
+ * How far members have got since joining, and who is waiting at each step.
  * Data source: GET /api/v2/admin/crm/funnel
+ *
+ * Every stage count is "members who reached this step OR went further", so
+ * the numbers only fall down the page and every percentage is a share of all
+ * members. The page used to divide each stage by the one before it, on counts
+ * that were not nested, and showed step rates such as 500%.
  */
 
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import CalendarDays from 'lucide-react/icons/calendar-days';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Hourglass from 'lucide-react/icons/hourglass';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Repeat from 'lucide-react/icons/repeat';
+import UserPlus from 'lucide-react/icons/user-plus';
+import Users from 'lucide-react/icons/users';
+import type { LucideIcon } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Avatar, Button, Card, CardBody, CardHeader, Progress, Spinner } from '@/components/ui';
+import { useTenant, useToast } from '@/contexts';
+import { formatPercentValue, getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
+import { useAdminPageMeta } from '../../AdminMetaContext';
+import { adminCrm } from '../../api/adminApi';
+import type { CrmFunnelData, CrmFunnelStage } from '../../api/types';
 
-interface FunnelStagePayload {
-  code: string;
-  name?: string;
-  count: number;
-  color: string;
+interface Step extends CrmFunnelStage {
+  title: string;
+  description: string;
+  waitingDescription: string;
+  percent: number;
+  isLast: boolean;
 }
 
-interface FunnelStage extends FunnelStagePayload {
-  name: string;
+function formatNumber(value: number): string {
+  return value.toLocaleString(getFormattingLocale());
 }
 
-interface FunnelData {
-  stages: FunnelStagePayload[];
-  monthly_registrations: Array<{ month: string; count: number }>;
+function formatPercent(value: number): string {
+  return formatPercentValue(value, { maximumFractionDigits: 0 });
 }
 
-interface StageInsight extends FunnelStage {
-  shareOfEntry: number;
-  conversionFromPrevious: number | null;
-  lossFromPrevious: number;
-  widthPercent: number;
+function parseDate(value: string): Date | null {
+  const parsed = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-interface MetricCardProps {
+function formatMonth(value: string): string {
+  const parsed = /^\d{4}-\d{2}$/.test(value) ? parseDate(`${value}-01`) : null;
+  return parsed
+    ? parsed.toLocaleDateString(getFormattingLocale(), { month: 'short', year: 'numeric' })
+    : value;
+}
+
+function formatDay(value: string): string {
+  const parsed = parseDate(value);
+  return parsed
+    ? parsed.toLocaleDateString(getFormattingLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
+    : value;
+}
+
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+interface StatTileProps {
   icon: LucideIcon;
   label: string;
   value: string;
-  caption: string;
+  hint: string;
   accentClassName: string;
 }
 
-interface GuideCardProps {
-  icon: LucideIcon;
-  title: string;
-  body: string;
-  accentClassName: string;
-}
-
-interface SnapshotCardProps {
-  eyebrow: string;
-  value: string;
-  body: string;
-  accentClassName: string;
-}
-
-function formatPercent(value: number, maximumFractionDigits = 1): string {
-  return formatPercentValue(value, {
-    maximumFractionDigits,
-    minimumFractionDigits: 0,
-  });
-}
-
-function formatSignedPercent(value: number, maximumFractionDigits = 1): string {
-  return formatPercentValue(value, {
-    maximumFractionDigits,
-    minimumFractionDigits: 0,
-    signDisplay: value > 0 ? 'always' : 'auto',
-  });
-}
-
-function formatMonthLabel(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return value;
-  }
-
-  const normalized = /^\d{4}-\d{2}$/.test(trimmed) ? `${trimmed}-01` : trimmed;
-  const parsed = new Date(normalized);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return parsed.toLocaleDateString(getFormattingLocale(), {
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const normalized = hex.replace('#', '').trim();
-
-  if (/^[\da-fA-F]{3}$/.test(normalized)) {
-    const [r, g, b] = normalized.split('').map((part) => parseInt(`${part}${part}`, 16));
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  if (/^[\da-fA-F]{6}$/.test(normalized)) {
-    const r = parseInt(normalized.slice(0, 2), 16);
-    const g = parseInt(normalized.slice(2, 4), 16);
-    const b = parseInt(normalized.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  return hex;
-}
-
-function getRateTone(rate: number): {
-  chipColor: 'success' | 'warning' | 'danger' | 'default';
-  progressColor: 'success' | 'warning' | 'danger' | 'default';
-  textClassName: string;
-} {
-  if (rate >= 70) {
-    return {
-      chipColor: 'success',
-      progressColor: 'success',
-      textClassName: 'text-success',
-    };
-  }
-
-  if (rate >= 40) {
-    return {
-      chipColor: 'warning',
-      progressColor: 'warning',
-      textClassName: 'text-warning',
-    };
-  }
-
-  return {
-    chipColor: 'danger',
-    progressColor: 'danger',
-    textClassName: 'text-danger',
-  };
-}
-
-function MetricCard({ icon: Icon, label, value, caption, accentClassName }: MetricCardProps) {
+function StatTile({ icon: Icon, label, value, hint, accentClassName }: StatTileProps) {
   return (
-    <Card className="border border-border bg-surface/85 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
-      <CardBody className="gap-4 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${accentClassName}`}>
-            <Icon size={20} />
-          </div>
-          <span className="text-xs font-medium uppercase tracking-[0.22em] text-muted">
-            {label}
-          </span>
+    <Card className="border border-border">
+      <CardBody className="flex flex-row items-start gap-4 p-5">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accentClassName}`}>
+          <Icon size={20} aria-hidden="true" />
         </div>
-
-        <div className="space-y-1">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-muted">{label}</p>
           <p className="text-3xl font-semibold tracking-tight text-foreground">{value}</p>
-          <p className="text-sm text-muted">{caption}</p>
+          <p className="mt-1 text-sm text-muted">{hint}</p>
         </div>
       </CardBody>
     </Card>
   );
 }
 
-function GuideCard({ icon: Icon, title, body, accentClassName }: GuideCardProps) {
-  return (
-    <div className="rounded-2xl border border-border bg-surface/70 p-4">
-      <div className="flex items-start gap-3">
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${accentClassName}`}>
-          <Icon size={18} />
-        </div>
-        <div className="space-y-1">
-          <p className="font-medium text-foreground">{title}</p>
-          <p className="text-sm leading-6 text-muted">{body}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SnapshotCard({ eyebrow, value, body, accentClassName }: SnapshotCardProps) {
-  return (
-    <div className="rounded-[26px] border border-border bg-surface/80 p-5">
-      <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accentClassName}`}>
-        {eyebrow}
-      </div>
-      <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
-      <p className="mt-3 text-sm leading-6 text-muted">{body}</p>
-    </div>
-  );
-}
-
 export default function OnboardingFunnel() {
   const { t } = useTranslation('admin_crm');
-  const { t: tNav } = useTranslation('admin_nav');
-  useAdminPageMeta({ title: tNav('crm') });
+  useAdminPageMeta({ title: t('crm.onboarding_funnel_title') });
 
   const toast = useToast();
   const { tenantPath } = useTenant();
 
-  const [data, setData] = useState<FunnelData | null>(null);
+  const [data, setData] = useState<CrmFunnelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openStep, setOpenStep] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const res = await adminCrm.getFunnel();
-      setData(res.data as FunnelData);
+      setData(res.data as CrmFunnelData);
     } catch {
       setError(t('crm.failed_to_load_onboarding_funnel_data'));
       toast.error(t('crm.failed_to_load_onboarding_funnel_data'));
@@ -246,844 +125,309 @@ export default function OnboardingFunnel() {
     }
   }, [t, toast]);
 
-
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const insights = useMemo(() => {
-    const stages: FunnelStage[] = (data?.stages ?? []).map((stage) => ({
+  const steps = useMemo<Step[]>(() => {
+    const stages = data?.stages ?? [];
+    const total = data?.total_members ?? stages[0]?.count ?? 0;
+    return stages.map((stage, index) => ({
       ...stage,
-      name: t(`crm.funnel_stage_${stage.code}`, {
-        defaultValue: t('crm.funnel_stage_unknown'),
-      }),
+      title: t(`crm.funnel_step_${stage.code}_title`, { defaultValue: t('crm.funnel_stage_unknown') }),
+      description: t(`crm.funnel_step_${stage.code}_desc`, { defaultValue: '' }),
+      waitingDescription: t(`crm.funnel_step_${stage.code}_waiting`, { defaultValue: '' }),
+      percent: total > 0 ? (stage.count / total) * 100 : 0,
+      isLast: index === stages.length - 1,
     }));
-    const monthlyRegistrations = data?.monthly_registrations ?? [];
-
-    const entryStage = stages[0] ?? null;
-    const finalStage = stages.length > 0 ? stages[stages.length - 1] ?? null : null;
-    const maxCount = Math.max(entryStage?.count ?? 0, 1);
-
-    const stageInsights: StageInsight[] = stages.map((stage, index) => {
-      const previous = index > 0 ? stages[index - 1] ?? null : null;
-      const conversionFromPrevious =
-        previous && previous.count > 0 ? (stage.count / previous.count) * 100 : null;
-      const lossFromPrevious =
-        previous && previous.count > stage.count ? previous.count - stage.count : 0;
-
-      return {
-        ...stage,
-        shareOfEntry: entryStage && entryStage.count > 0 ? (stage.count / entryStage.count) * 100 : 0,
-        conversionFromPrevious,
-        lossFromPrevious,
-        widthPercent: Math.max((stage.count / maxCount) * 100, 24),
-      };
-    });
-
-    const transitions = stageInsights
-      .map((stage, index) => {
-        if (index === 0) {
-          return null;
-        }
-
-        const previous = stageInsights[index - 1] ?? null;
-        if (!previous) {
-          return null;
-        }
-
-        return {
-          from: previous,
-          to: stage,
-          rate: stage.conversionFromPrevious ?? 0,
-          loss: stage.lossFromPrevious,
-        };
-      })
-      .filter(Boolean) as Array<{
-      from: StageInsight;
-      to: StageInsight;
-      rate: number;
-      loss: number;
-    }>;
-
-    const biggestDropoff = transitions.reduce<typeof transitions[number] | null>((largest, current) => {
-      if (!largest || current.loss > largest.loss) {
-        return current;
-      }
-
-      return largest;
-    }, null);
-
-    const weakestHandoff = transitions.reduce<typeof transitions[number] | null>((weakest, current) => {
-      if (!weakest || current.rate < weakest.rate) {
-        return current;
-      }
-
-      return weakest;
-    }, null);
-
-    const latestMonth =
-      monthlyRegistrations.length > 0 ? monthlyRegistrations[monthlyRegistrations.length - 1] ?? null : null;
-    const previousMonth =
-      monthlyRegistrations.length > 1 ? monthlyRegistrations[monthlyRegistrations.length - 2] ?? null : null;
-
-    const monthOverMonthChange =
-      latestMonth && previousMonth && previousMonth.count > 0
-        ? ((latestMonth.count - previousMonth.count) / previousMonth.count) * 100
-        : null;
-
-    return {
-      entryStage,
-      finalStage,
-      stageInsights,
-      transitions,
-      biggestDropoff,
-      weakestHandoff,
-      latestMonth,
-      previousMonth,
-      monthOverMonthChange,
-      overallConversion:
-        entryStage && finalStage && entryStage.count > 0
-          ? (finalStage.count / entryStage.count) * 100
-          : 0,
-      monthlyRegistrations,
-    };
   }, [data, t]);
 
-  if (loading) {
+  if (loading && !data) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner size="lg" label={t('crm.loading_funnel')} /></div>
+      <div className="flex min-h-[420px] items-center justify-center" role="status" aria-busy="true">
+        <Spinner size="lg" label={t('crm.loading_funnel')} />
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-5xl">
-        <Card className="overflow-hidden border border-danger/20 bg-surface/90 shadow-lg">
-          <CardBody className="gap-5 p-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10 text-danger">
-              <TrendingDown size={24} />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold text-foreground">
-                {t('crm.onboarding_funnel_title')}
-              </h1>
-              <p className="text-muted">{error || t('crm.no_data_available')}</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button onPress={fetchData} startContent={<RefreshCw size={16} />}>
-                {t('crm.refresh')}
-              </Button>
-              <Button
-                as={Link}
-                to={tenantPath('/admin/crm')}
-                variant="secondary"
-                endContent={<ChevronRight size={16} />}
-              >
-                {t('crm.crm_dashboard')}
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
+      <Card className="mx-auto max-w-3xl border border-danger/20">
+        <CardBody className="gap-4 p-8">
+          <h1 className="text-2xl font-semibold text-foreground">{t('crm.onboarding_funnel_title')}</h1>
+          <p className="text-muted">{error || t('crm.no_data_available')}</p>
+          <div>
+            <Button onPress={fetchData} startContent={<RefreshCw size={16} aria-hidden="true" />}>
+              {t('crm.refresh')}
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
     );
   }
 
-  const {
-    entryStage,
-    finalStage,
-    stageInsights,
-    transitions,
-    biggestDropoff,
-    weakestHandoff,
-    latestMonth,
-    previousMonth,
-    monthOverMonthChange,
-    overallConversion,
-    monthlyRegistrations,
-  } = insights;
+  const total = data.total_members ?? steps[0]?.count ?? 0;
+  const regulars = steps[steps.length - 1];
+  const holdUp = steps
+    .filter((step) => !step.isLast && (step.waiting ?? 0) > 0)
+    .reduce<Step | null>((largest, step) => (!largest || (step.waiting ?? 0) > (largest.waiting ?? 0) ? step : largest), null);
+  const thisMonth = currentMonthKey();
+  const monthLabel = (month: string) =>
+    month === thisMonth ? t('crm.funnel_month_so_far', { month: formatMonth(month) }) : formatMonth(month);
 
-  const heroStats = [
-    {
-      label: t('crm.entry_stage'),
-      value: entryStage?.count.toLocaleString(getFormattingLocale()) ?? '0',
-    },
-    {
-      label: t('crm.overall_conversion'),
-      value: formatPercent(overallConversion),
-    },
-    {
-      label: t('crm.latest_month'),
-      value: latestMonth ? latestMonth.count.toLocaleString(getFormattingLocale()) : '0',
-    },
-  ];
-
-  const guideCards: GuideCardProps[] = [
-    {
-      icon: Filter,
-      title: t('crm.guide_stage_width_title'),
-      body: t('crm.guide_stage_width_body'),
-      accentClassName: 'bg-accent/10 text-accent',
-    },
-    {
-      icon: ArrowDownRight,
-      title: t('crm.guide_conversion_title'),
-      body: t('crm.guide_conversion_body'),
-      accentClassName: 'bg-warning/10 text-warning',
-    },
-    {
-      icon: TrendingDown,
-      title: t('crm.guide_dropoff_title'),
-      body: t('crm.guide_dropoff_body'),
-      accentClassName: 'bg-danger/10 text-danger',
-    },
-  ];
-
-  const snapshotCards: SnapshotCardProps[] = [
-    {
-      eyebrow: t('crm.snapshot_conversion_title'),
-      value: formatPercent(overallConversion),
-      body: t('crm.snapshot_conversion_body', {
-        members: finalStage?.count.toLocaleString(getFormattingLocale()) ?? '0',
-        stage: finalStage?.name ?? t('crm.no_stages_available'),
-      }),
-      accentClassName: 'bg-success/10 text-success',
-    },
-    {
-      eyebrow: t('crm.snapshot_volume_title'),
-      value: latestMonth?.count.toLocaleString(getFormattingLocale()) ?? '0',
-      body: latestMonth
-        ? `${t('crm.snapshot_volume_body', {
-            members: latestMonth.count.toLocaleString(getFormattingLocale()),
-            month: formatMonthLabel(latestMonth.month),
-          })}${
-            monthOverMonthChange !== null
-              ? ` ${t('crm.snapshot_volume_delta', {
-                  change: formatSignedPercent(monthOverMonthChange),
-                })}`
-              : ''
-          }`
-        : t('crm.no_registration_data'),
-      accentClassName: 'bg-accent-soft text-accent',
-    },
-    {
-      eyebrow: t('crm.snapshot_priority_title'),
-      value: biggestDropoff
-        ? `${biggestDropoff.from.name} -> ${biggestDropoff.to.name}`
-        : t('crm.not_enough_stages'),
-      body: biggestDropoff
-        ? t('crm.snapshot_priority_body', {
-            loss: biggestDropoff.loss.toLocaleString(getFormattingLocale()),
-            rate: formatPercent(biggestDropoff.rate),
-          })
-        : t('crm.no_stages_available'),
-      accentClassName: 'bg-danger/10 text-danger',
-    },
-  ];
+  const showWho = (code: string) => {
+    setOpenStep(code);
+    document.getElementById(`funnel-step-${code}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-10">
-      <section className="relative overflow-hidden rounded-[32px] border border-black/5 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(241,245,249,0.88))] px-6 py-7 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.88))] dark:shadow-[0_24px_80px_rgba(2,6,23,0.45)] sm:px-8 sm:py-8">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.18),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.16),transparent_34%)]"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute right-[-10%] top-[-18%] h-56 w-56 rounded-full bg-accent/10 blur-3xl"
-          aria-hidden="true"
-        />
-
-        <div className="relative flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl space-y-5">
-            <Chip
-              variant="soft"
-              color="accent"
-              className="border border-accent/15 px-3"
-            >
-              {t('crm.crm_label')}
-            </Chip>
-
-            <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {t('crm.onboarding_funnel_title')}
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted">
-                {t('crm.onboarding_funnel_desc')}
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {heroStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/40 bg-white/65 p-4 backdrop-blur supports-[backdrop-filter]:bg-white/55 dark:border-white/10 dark:bg-white/5"
-                >
-                  <p className="text-xs font-medium uppercase tracking-[0.22em] text-muted">
-                    {stat.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-foreground">{stat.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[320px]">
-            <Button
-              onPress={fetchData}
-              isLoading={loading}
-              startContent={<RefreshCw size={16} />}
-            >
-              {t('crm.refresh')}
-            </Button>
-            <Button
-              as={Link}
-              to={tenantPath('/admin/crm')}
-              variant="secondary"
-              endContent={<ChevronRight size={16} />}
-            >
-              {t('crm.crm_dashboard')}
-            </Button>
-            <Button
-              as={Link}
-              to={tenantPath('/admin/users')}
-              variant="secondary"
-              endContent={<ChevronRight size={16} />}
-            >
-              {t('crm.all_members')}
-            </Button>
-            <Button
-              as={Link}
-              to={tenantPath('/admin/crm/tasks')}
-              variant="secondary"
-              endContent={<ChevronRight size={16} />}
-            >
-              {t('crm.crm_tasks')}
-            </Button>
-          </div>
+    <div className="mx-auto max-w-5xl space-y-6 pb-10">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t('crm.onboarding_funnel_title')}</h1>
+          <p className="max-w-2xl text-base text-muted">{t('crm.funnel_intro')}</p>
         </div>
-      </section>
+        <Button
+          variant="secondary"
+          onPress={fetchData}
+          isLoading={loading}
+          startContent={<RefreshCw size={16} aria-hidden="true" />}
+          className="shrink-0"
+        >
+          {t('crm.refresh')}
+        </Button>
+      </header>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatTile
           icon={Users}
-          label={t('crm.entry_stage')}
-          value={entryStage?.count.toLocaleString(getFormattingLocale()) ?? '0'}
-          caption={entryStage?.name ?? t('crm.no_stages_available')}
+          label={t('crm.funnel_stat_members')}
+          value={formatNumber(total)}
+          hint={t('crm.funnel_stat_members_hint')}
           accentClassName="bg-accent/10 text-accent"
         />
-        <MetricCard
-          icon={Target}
-          label={t('crm.completed_journey')}
-          value={finalStage?.count.toLocaleString(getFormattingLocale()) ?? '0'}
-          caption={finalStage?.name ?? t('crm.no_stages_available')}
+        <StatTile
+          icon={Repeat}
+          label={t('crm.funnel_stat_regulars')}
+          value={formatNumber(regulars?.count ?? 0)}
+          hint={t('crm.funnel_stat_regulars_hint', { percent: formatPercent(regulars?.percent ?? 0) })}
           accentClassName="bg-success/10 text-success"
         />
-        <MetricCard
-          icon={TrendingDown}
-          label={t('crm.biggest_dropoff')}
-          value={biggestDropoff?.loss.toLocaleString(getFormattingLocale()) ?? '0'}
-          caption={
-            biggestDropoff
-              ? `${biggestDropoff.from.name} -> ${biggestDropoff.to.name}`
-              : t('crm.not_enough_stages')
-          }
-          accentClassName="bg-danger/10 text-danger"
-        />
-        <MetricCard
-          icon={CalendarDays}
-          label={t('crm.latest_month')}
-          value={latestMonth?.count.toLocaleString(getFormattingLocale()) ?? '0'}
-          caption={
-            latestMonth
-              ? previousMonth && monthOverMonthChange !== null
-                ? `${formatSignedPercent(monthOverMonthChange)} ${t('crm.change_from_previous_month')}`
-                : formatMonthLabel(latestMonth.month)
-              : t('crm.no_registration_data')
-          }
-          accentClassName="bg-accent-soft text-accent"
+        <StatTile
+          icon={UserPlus}
+          label={t('crm.funnel_stat_new')}
+          value={formatNumber(data.new_last_30_days ?? 0)}
+          hint={t('crm.funnel_stat_new_hint')}
+          accentClassName="bg-warning/10 text-warning"
         />
       </div>
 
-      <Card className="border border-border bg-surface/90">
-        <CardHeader className="flex flex-col items-start gap-2 px-6 pb-0 pt-6">
-          <h2 className="text-lg font-semibold text-foreground">{t('crm.how_to_read_title')}</h2>
-          <p className="text-sm text-muted">{t('crm.how_to_read_desc')}</p>
-        </CardHeader>
-        <CardBody className="grid gap-4 px-6 pb-6 pt-5 md:grid-cols-3">
-          {guideCards.map((card) => (
-            <GuideCard key={card.title} {...card} />
-          ))}
-        </CardBody>
-      </Card>
-
-      <Card className="border border-border bg-surface/90">
-        <CardHeader className="flex flex-col items-start gap-2 px-6 pb-0 pt-6">
-          <h2 className="text-lg font-semibold text-foreground">{t('crm.funnel_summary_title')}</h2>
-          <p className="text-sm text-muted">{t('crm.funnel_summary_desc')}</p>
-        </CardHeader>
-        <CardBody className="grid gap-4 px-6 pb-6 pt-5 lg:grid-cols-3">
-          {snapshotCards.map((card) => (
-            <SnapshotCard key={card.eyebrow} {...card} />
-          ))}
-        </CardBody>
-      </Card>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.95fr)]">
-        <Card className="overflow-hidden border border-border bg-surface/90">
-          <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-                <Filter size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">{t('crm.member_funnel_title')}</h2>
-                <p className="text-sm text-muted">{t('crm.member_funnel_desc')}</p>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardBody className="gap-5 px-6 pb-6 pt-6">
-            {stageInsights.length > 0 ? (
-              <>
-                <div className="rounded-[28px] border border-accent/10 bg-accent/5 p-4 sm:p-5">
-                  <p className="text-sm leading-7 text-muted">
-                    {t('crm.member_funnel_help')}
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  {stageInsights.map((stage, index) => {
-                    const previous = index > 0 ? stageInsights[index - 1] ?? null : null;
-                    const stageTone = stage.conversionFromPrevious !== null
-                      ? getRateTone(stage.conversionFromPrevious)
-                      : getRateTone(100);
-
-                    return (
-                      <div key={stage.name} className="space-y-3">
-                        {previous && (
-                          <div className="flex items-center gap-3 px-2 text-sm text-muted">
-                            <div className="flex items-center gap-2">
-                              <ArrowDownRight size={15} className={stageTone.textClassName} />
-                              <Chip
-                                size="sm"
-                                color={stageTone.chipColor}
-                                variant="soft"
-                                className="font-medium"
-                              >
-                                {formatPercent(stage.conversionFromPrevious ?? 0)}
-                              </Chip>
-                            </div>
-                            <span>{t('crm.loss_between_stages', { count: stage.lossFromPrevious })}</span>
-                          </div>
-                        )}
-
-                        <div className="rounded-[28px] border border-border bg-surface-secondary p-4 sm:p-5">
-                          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-                            <div className="space-y-2">
-                              <Chip size="sm" variant="soft" className="w-fit">
-                                {t('crm.stage_number', { number: index + 1 })}
-                              </Chip>
-                              <p className="text-lg font-semibold text-foreground">{stage.name}</p>
-                              <p className="text-sm text-muted">
-                                {formatPercent(stage.shareOfEntry)} {t('crm.stage_share_label')}
-                              </p>
-                            </div>
-                            <div className="space-y-2 text-right">
-                              {index > 0 && (
-                                <Chip size="sm" color="danger" variant="soft" className="font-medium">
-                                  {t('crm.lost_since_previous_stage', { count: stage.lossFromPrevious })}
-                                </Chip>
-                              )}
-                              <p className="text-2xl font-semibold tracking-tight text-foreground">
-                                {stage.count.toLocaleString(getFormattingLocale())}
-                              </p>
-                              <p className="text-sm text-muted">{t('crm.members')}</p>
-                            </div>
-                          </div>
-
-                          <div
-                            className="relative overflow-hidden rounded-[22px] border border-black/5 p-4 text-white dark:border-white/10"
-                            style={{
-                              width: `${stage.widthPercent}%`,
-                              minWidth: '16rem',
-                              background: `linear-gradient(135deg, ${hexToRgba(stage.color, 0.98)} 0%, ${hexToRgba(stage.color, 0.72)} 100%)`,
-                              boxShadow: `0 18px 42px ${hexToRgba(stage.color, 0.18)}`,
-                            }}
-                          >
-                            <div
-                              className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.16),transparent_55%)]"
-                              aria-hidden="true"
-                            />
-                            <div className="relative flex items-center justify-between gap-4">
-                              <span className="text-sm font-medium text-white/85">
-                                {index === 0
-                                  ? t('crm.entry_stage')
-                                  : t('crm.conversion_from_previous')}
-                              </span>
-                              <span className="rounded-full bg-black/20 px-3 py-1 text-sm font-semibold text-white">
-                                {index === 0
-                                  ? formatPercent(stage.shareOfEntry)
-                                  : formatPercent(stage.conversionFromPrevious ?? 0)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {entryStage && finalStage && (
-                  <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-accent/10 bg-accent/5 px-5 py-4">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-muted">{t('crm.overall_conversion')}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted">
-                        <span>{entryStage.name}</span>
-                        <ArrowRight size={14} />
-                        <span>{finalStage.name}</span>
-                      </div>
-                    </div>
-                    <p className="text-3xl font-semibold text-foreground">{formatPercent(overallConversion)}</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="py-10 text-center text-sm text-muted">{t('crm.no_stages_available')}</p>
-            )}
-          </CardBody>
+      {total === 0 ? (
+        <Card className="border border-border">
+          <CardBody className="p-8 text-center text-muted">{t('crm.funnel_no_members')}</CardBody>
         </Card>
-
-        <div className="space-y-6">
-          <Card className="border border-border bg-surface/90">
-            <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-warning/10 text-warning">
-                  <TrendingDown size={18} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">{t('crm.funnel_focus_title')}</h2>
-                  <p className="text-sm text-muted">{t('crm.funnel_focus_desc')}</p>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardBody className="gap-4 px-6 pb-6 pt-6">
-              <div className="rounded-2xl border border-danger/10 bg-danger/5 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-foreground">
-                    {t('crm.biggest_dropoff')}
-                  </p>
-                  <Chip color="danger" variant="soft">
-                    {biggestDropoff?.loss.toLocaleString(getFormattingLocale()) ?? '0'}
-                  </Chip>
-                </div>
-                <p className="mt-3 text-base font-semibold text-foreground">
-                  {biggestDropoff
-                    ? `${biggestDropoff.from.name} -> ${biggestDropoff.to.name}`
-                    : t('crm.not_enough_stages')}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  {t('crm.biggest_dropoff_help')}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-warning/10 bg-warning/5 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-foreground">
-                    {t('crm.weakest_handoff')}
-                  </p>
-                  <Chip
-                    color={weakestHandoff ? getRateTone(weakestHandoff.rate).chipColor : undefined}
-                    variant="soft"
-                  >
-                    {weakestHandoff ? formatPercent(weakestHandoff.rate) : formatPercent(0)}
-                  </Chip>
-                </div>
-                <p className="mt-3 text-base font-semibold text-foreground">
-                  {weakestHandoff
-                    ? `${weakestHandoff.from.name} -> ${weakestHandoff.to.name}`
-                    : t('crm.not_enough_stages')}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  {t('crm.weakest_handoff_help')}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-success/10 bg-success/5 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-foreground">
-                    {t('crm.overall_conversion')}
-                  </p>
-                  <Chip color="success" variant="soft">
-                    {formatPercent(overallConversion)}
-                  </Chip>
-                </div>
-                <p className="mt-3 text-base font-semibold text-foreground">
-                  {finalStage?.name ?? t('crm.no_stages_available')}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  {t('crm.overall_conversion_help')}
-                </p>
-              </div>
-            </CardBody>
-          </Card>
-
-          <Card className="border border-border bg-surface/90">
-            <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/10 text-accent">
-                  <Activity size={18} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    {t('crm.stage_conversion_title')}
-                  </h2>
-                  <p className="text-sm text-muted">{t('crm.stage_conversion_desc')}</p>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardBody className="gap-4 px-6 pb-6 pt-6">
-              {transitions.length > 0 ? (
-                <>
-                  <p className="text-sm leading-7 text-muted">
-                    {t('crm.stage_conversion_help')}
-                  </p>
-
-                  {transitions.map((transition) => {
-                    const tone = getRateTone(transition.rate);
-
-                    return (
-                      <div
-                        key={`${transition.from.name}-${transition.to.name}`}
-                        className="rounded-2xl border border-border bg-surface-secondary p-4"
-                      >
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-medium text-foreground">{transition.from.name}</p>
-                            <div className="mt-1 flex items-center gap-2 text-sm text-muted">
-                              <ArrowDown size={13} />
-                              <span>{transition.to.name}</span>
-                            </div>
-                          </div>
-                          <p className={`text-xl font-semibold ${tone.textClassName}`}>
-                            {formatPercent(transition.rate)}
-                          </p>
-                        </div>
-
-                        <div className="mb-3 flex items-center justify-between gap-3 text-sm text-muted">
-                          <span>{t('crm.members_lost_at_step', { count: transition.loss })}</span>
-                          <Chip size="sm" color={tone.chipColor} variant="soft">
-                            {transition.loss.toLocaleString(getFormattingLocale())} {t('crm.dropped_off')}
-                          </Chip>
-                        </div>
-
-                        <Progress
-                          value={transition.rate}
-                          color={tone.progressColor}
-                          aria-label={t('crm.transition_progress_label', { from: transition.from.name, to: transition.to.name })}
-                          classNames={{
-                            track: 'h-2',
-                            indicator: 'rounded-full',
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </>
-              ) : (
-                <p className="py-6 text-center text-sm text-muted">{t('crm.not_enough_stages')}</p>
-              )}
-            </CardBody>
-          </Card>
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <Card className="border border-border bg-surface/90">
-          <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-                <CalendarDays size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {t('crm.monthly_registrations_title')}
-                </h2>
-                <p className="text-sm text-muted">{t('crm.monthly_registrations_desc')}</p>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardBody className="gap-5 px-6 pb-6 pt-6">
-            {monthlyRegistrations.length > 0 ? (
-              <>
-                <p className="text-sm leading-7 text-muted">{t('crm.monthly_registrations_help')}</p>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border bg-surface-secondary p-4">
-                    <p className="text-sm font-medium text-muted">{t('crm.latest_month')}</p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {latestMonth?.count.toLocaleString(getFormattingLocale()) ?? '0'}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">
-                      {latestMonth ? formatMonthLabel(latestMonth.month) : t('crm.no_registration_data')}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-surface-secondary p-4">
-                    <p className="text-sm font-medium text-muted">{t('crm.change_from_previous_month')}</p>
-                    <p className="mt-2 text-2xl font-semibold text-foreground">
-                      {monthOverMonthChange !== null ? formatSignedPercent(monthOverMonthChange) : formatSignedPercent(0)}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">
-                      {previousMonth ? formatMonthLabel(previousMonth.month) : t('crm.no_registration_data')}
+      ) : (
+        <>
+          {holdUp ? (
+            <Card className="border border-warning/30 bg-warning/5">
+              <CardBody className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <Hourglass size={22} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-warning">{t('crm.funnel_hold_up_title')}</p>
+                    <h2 className="text-lg font-semibold text-foreground">{holdUp.title}</h2>
+                    <p className="text-foreground">{holdUp.waitingDescription}</p>
+                    <p className="text-sm font-medium text-muted">
+                      {t('crm.funnel_waiting_label', { waiting: formatNumber(holdUp.waiting ?? 0) })}
                     </p>
                   </div>
                 </div>
-
-                <div className="h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={monthlyRegistrations} margin={{ top: 12, right: 10, left: -12, bottom: 6 }}>
-                      <defs>
-                        <linearGradient id="crmRegistrationsFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="var(--accent)" stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} strokeDasharray="4 4" className="opacity-20" />
-                      <XAxis
-                        dataKey="month"
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => formatMonthLabel(String(value))}
-                      />
-                      <YAxis tickLine={false} axisLine={false} allowDecimals={false} tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        labelFormatter={(value) => formatMonthLabel(String(value))}
-                        formatter={(value) => [
-                          Number(value ?? 0).toLocaleString(getFormattingLocale()),
-                          t('crm.members'),
-                        ] as [string, string]}
-                        contentStyle={{
-                          borderRadius: '16px',
-                          border: '1px solid var(--border)',
-                          backgroundColor: 'var(--overlay)',
-                          color: 'var(--overlay-foreground)',
-                          boxShadow: '0 18px 50px rgba(15, 23, 42, 0.12)',
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="count"
-                        stroke="var(--accent)"
-                        strokeWidth={3}
-                        fill="url(#crmRegistrationsFill)"
-                        activeDot={{ r: 5 }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                <Button variant="secondary" className="shrink-0" onPress={() => showWho(holdUp.code)}>
+                  {t('crm.funnel_show_who')}
+                </Button>
+              </CardBody>
+            </Card>
+          ) : (
+            <Card className="border border-success/30 bg-success/5">
+              <CardBody className="flex flex-row items-start gap-3 p-5">
+                <CheckCircle2 size={22} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold text-foreground">{t('crm.funnel_all_clear_title')}</h2>
+                  <p className="text-sm text-muted">{t('crm.funnel_all_clear_body')}</p>
                 </div>
-              </>
-            ) : (
-              <p className="py-10 text-center text-sm text-muted">{t('crm.no_registration_data')}</p>
-            )}
-          </CardBody>
-        </Card>
+              </CardBody>
+            </Card>
+          )}
 
-        <Card className="border border-border bg-surface/90">
-          <CardHeader className="flex flex-col items-start gap-3 px-6 pb-0 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-success/10 text-success">
-                <TrendingUp size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {t('crm.stage_health_title')}
-                </h2>
-                <p className="text-sm text-muted">{t('crm.stage_health_desc')}</p>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardBody className="gap-5 px-6 pb-6 pt-6">
-            {stageInsights.length > 0 ? (
-              <>
-                <p className="text-sm leading-7 text-muted">{t('crm.stage_health_help')}</p>
-
-                {stageInsights.map((stage, index) => {
-                  const tone =
-                    stage.conversionFromPrevious !== null
-                      ? getRateTone(stage.conversionFromPrevious)
-                      : getRateTone(100);
+          <Card className="border border-border">
+            <CardHeader className="flex flex-col items-start gap-1 px-6 pb-0 pt-6">
+              <h2 className="text-xl font-semibold text-foreground">{t('crm.funnel_journey_title')}</h2>
+              <p className="text-sm text-muted">{t('crm.funnel_journey_help')}</p>
+            </CardHeader>
+            <CardBody className="px-6 pb-6 pt-5">
+              <ol className="space-y-3">
+                {steps.map((step, index) => {
+                  const waiting = step.waiting ?? 0;
+                  const members = step.waiting_members ?? [];
+                  const isOpen = openStep === step.code;
+                  const listId = `funnel-step-${step.code}-members`;
 
                   return (
-                    <div
-                      key={stage.name}
-                      className="rounded-2xl border border-border bg-surface-secondary p-4"
+                    <li
+                      key={step.code}
+                      id={`funnel-step-${step.code}`}
+                      className="scroll-mt-24 rounded-2xl border border-border bg-surface-secondary p-4 sm:p-5"
                     >
-                      <div className="mb-4 flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">{stage.name}</p>
-                          <p className="text-sm text-muted">{stage.count.toLocaleString(getFormattingLocale())}</p>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <span
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent"
+                            aria-hidden="true"
+                          >
+                            {index + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-foreground">{step.title}</h3>
+                            <p className="text-sm text-muted">{step.description}</p>
+                          </div>
                         </div>
-                        <Chip
-                          color={index === 0 ? 'accent' : tone.chipColor}
-                          variant="soft"
-                          className="font-medium"
-                        >
-                          {formatPercent(stage.shareOfEntry)}
-                        </Chip>
+                        <div className="flex items-baseline gap-2 pl-11 sm:block sm:shrink-0 sm:pl-0 sm:text-right">
+                          <p className="text-2xl font-semibold tracking-tight text-foreground">
+                            {formatPercent(step.percent)}
+                          </p>
+                          <p className="text-sm text-muted">
+                            {t('crm.funnel_step_reached', { reached: formatNumber(step.count), total: formatNumber(total) })}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                            <span>{t('crm.stage_share_label')}</span>
-                            <span>{formatPercent(stage.shareOfEntry)}</span>
-                          </div>
-                          <Progress
-                            value={stage.shareOfEntry}
-                            aria-label={t('crm.stage_share_progress_label', { stage: stage.name })}
-                            classNames={{
-                              track: 'h-2',
-                              indicator: 'rounded-full',
-                            }}
-                          />
-                        </div>
+                      <Progress
+                        value={step.percent}
+                        color={step.isLast ? 'success' : 'primary'}
+                        aria-label={t('crm.funnel_step_progress_label', { step: step.title, percent: formatPercent(step.percent) })}
+                        className="mt-3"
+                        classNames={{ track: 'h-2.5', indicator: 'rounded-full' }}
+                      />
 
-                        {index > 0 && (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                              <span>{t('crm.conversion_from_previous')}</span>
-                              <span className={tone.textClassName}>
-                                {formatPercent(stage.conversionFromPrevious ?? 0)}
-                              </span>
-                            </div>
-                            <Progress
-                              value={stage.conversionFromPrevious ?? 0}
-                              color={tone.progressColor}
-                              aria-label={t('crm.stage_conversion_progress_label', { stage: stage.name })}
-                              classNames={{
-                                track: 'h-2',
-                                indicator: 'rounded-full',
-                              }}
-                            />
+                      {step.isLast ? (
+                        <p className="mt-3 text-sm text-success">{t('crm.funnel_final_step_note')}</p>
+                      ) : waiting > 0 ? (
+                        <div className="mt-3 flex flex-col gap-3 rounded-xl border border-warning/20 bg-warning/5 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="text-sm">
+                            <p className="font-medium text-foreground">
+                              {t('crm.funnel_waiting_label', { waiting: formatNumber(waiting) })}
+                            </p>
+                            <p className="text-muted">{step.waitingDescription}</p>
                           </div>
-                        )}
-                      </div>
-                    </div>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="shrink-0"
+                            aria-expanded={isOpen}
+                            aria-controls={listId}
+                            onPress={() => setOpenStep(isOpen ? null : step.code)}
+                          >
+                            {isOpen ? t('crm.funnel_hide_who') : t('crm.funnel_show_who')}
+                          </Button>
+                        </div>
+                      ) : null}
+
+                      {isOpen && !step.isLast && (
+                        <div id={listId} className="mt-3 space-y-2">
+                          <ul className="grid gap-2 sm:grid-cols-2">
+                            {members.map((member) => (
+                              <li key={member.id}>
+                                <Link
+                                  to={tenantPath(`/admin/users/${member.id}/edit`)}
+                                  className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 transition-colors hover:border-accent/40 hover:bg-accent/5"
+                                >
+                                  <Avatar
+                                    src={member.avatar_url ? resolveAvatarUrl(member.avatar_url) : undefined}
+                                    name={member.name}
+                                    size="sm"
+                                    className="shrink-0"
+                                  />
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-sm font-medium text-foreground">{member.name}</span>
+                                    {member.joined_at && (
+                                      <span className="block text-xs text-muted">
+                                        {t('crm.funnel_joined_on', { date: formatDay(member.joined_at) })}
+                                      </span>
+                                    )}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                          {waiting > members.length && (
+                            <p className="text-xs text-muted">
+                              {t('crm.funnel_newest_shown', { shown: formatNumber(members.length), waiting: formatNumber(waiting) })}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </li>
                   );
                 })}
-              </>
-            ) : (
-              <p className="py-10 text-center text-sm text-muted">{t('crm.no_stages_available')}</p>
-            )}
-          </CardBody>
-        </Card>
-      </div>
+              </ol>
+            </CardBody>
+          </Card>
+        </>
+      )}
+
+      <Card className="border border-border">
+        <CardHeader className="flex flex-row items-start gap-3 px-6 pb-0 pt-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <CalendarDays size={18} aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">{t('crm.funnel_monthly_title')}</h2>
+            <p className="text-sm text-muted">{t('crm.funnel_monthly_desc')}</p>
+          </div>
+        </CardHeader>
+        <CardBody className="px-6 pb-6 pt-5">
+          {data.monthly_registrations.length > 0 ? (
+            <div className="h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.monthly_registrations} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" className="opacity-20" />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => monthLabel(String(value))}
+                  />
+                  <YAxis tickLine={false} axisLine={false} allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    cursor={{ fillOpacity: 0.08 }}
+                    labelFormatter={(value) => monthLabel(String(value))}
+                    formatter={(value) => [formatNumber(Number(value ?? 0)), t('crm.funnel_chart_series')] as [string, string]}
+                    contentStyle={{
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      backgroundColor: 'var(--overlay)',
+                      color: 'var(--overlay-foreground)',
+                    }}
+                  />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={56}>
+                    {data.monthly_registrations.map((entry) => (
+                      <Cell
+                        key={entry.month}
+                        fill="var(--accent)"
+                        fillOpacity={entry.month === thisMonth ? 0.45 : 1}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted">{t('crm.no_registration_data')}</p>
+          )}
+          <p className="mt-3 text-xs text-muted">{t('crm.funnel_monthly_partial_note')}</p>
+        </CardBody>
+      </Card>
     </div>
   );
 }

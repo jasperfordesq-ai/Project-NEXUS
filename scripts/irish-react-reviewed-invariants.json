@@ -769,10 +769,6 @@
       "value": "OK",
       "reason": "protocol-acronym-or-identifier"
     },
-    "admin_crm.crm.crm_label": {
-      "value": "CRM",
-      "reason": "protocol-acronym-or-identifier"
-    },
     "admin_crm.crm.page_title": {
       "value": "CRM",
       "reason": "protocol-acronym-or-identifier"

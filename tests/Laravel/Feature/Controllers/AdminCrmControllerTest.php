@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -77,6 +78,101 @@ class AdminCrmControllerTest extends TestCase
         $response = $this->apiGet('/v2/admin/crm/funnel');
 
         $response->assertStatus(403);
+    }
+
+    /**
+     * Each stage counts members who reached it OR went further, so the counts
+     * can only fall as the journey goes on. They used to be six unrelated
+     * totals, which put "500%" and "150%" step rates on the admin page.
+     */
+    public function test_funnel_places_each_member_at_the_furthest_step_reached(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $before = $this->funnelCounts();
+
+        $plain = ['email_verified_at' => null, 'bio' => null, 'location' => null];
+        User::factory()->forTenant($this->testTenantId)->create($plain); // joined, nothing else
+        $verified = User::factory()->forTenant($this->testTenantId)->create(['email_verified_at' => now()] + $plain);
+        // Posted a listing without confirming email or finishing a profile:
+        // still counted at every step up to "first listing".
+        $lister = User::factory()->forTenant($this->testTenantId)->create($plain);
+        DB::table('listings')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $lister->id,
+            'title' => 'Funnel fixture listing', 'type' => 'offer',
+        ]);
+        // Two members who have exchanged with each other twice.
+        $regularA = User::factory()->forTenant($this->testTenantId)->create($plain);
+        $regularB = User::factory()->forTenant($this->testTenantId)->create($plain);
+        $this->completedTransaction($regularA->id, $regularB->id);
+        $this->completedTransaction($regularB->id, $regularA->id);
+        // Credits with no counterpart are not exchanges. Two of them used to
+        // make the empty counterpart itself count as a "repeat user".
+        $this->completedTransaction(null, $verified->id, 'starting_balance');
+        $this->completedTransaction(null, $verified->id, 'admin_grant');
+        // Banned accounts are not part of anyone's onboarding.
+        User::factory()->forTenant($this->testTenantId)->create(['status' => 'banned'] + $plain);
+
+        $after = $this->funnelCounts();
+        $delta = array_map(fn ($code) => $after[$code] - $before[$code], array_keys($after));
+
+        // registered: joinedOnly, verified, lister, regularA, regularB.
+        // verified and beyond: all but joinedOnly. Profile: lister + regulars
+        // (they went further). Exchanges: the two regulars only.
+        $this->assertSame([5, 4, 3, 3, 2, 2], $delta);
+
+        $previous = PHP_INT_MAX;
+        foreach ($after as $count) {
+            $this->assertLessThanOrEqual($previous, $count);
+            $previous = $count;
+        }
+    }
+
+    public function test_funnel_names_the_members_waiting_at_each_step(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $stuck = User::factory()->forTenant($this->testTenantId)->create([
+            'email_verified_at' => now(), 'bio' => null, 'location' => null,
+            'created_at' => now()->addMinute(),
+        ]);
+
+        $stages = collect($this->apiGet('/v2/admin/crm/funnel')->assertOk()->json('data.stages'))->keyBy('code');
+
+        $waitingIds = array_column($stages['email_verified']['waiting_members'], 'id');
+        $this->assertContains($stuck->id, $waitingIds);
+        $this->assertGreaterThanOrEqual(1, $stages['email_verified']['waiting']);
+        $this->assertNotContains($stuck->id, array_column($stages['registered']['waiting_members'], 'id'));
+        $this->assertSame(0, $stages['repeat_user']['waiting']);
+    }
+
+    public function test_funnel_monthly_registrations_include_empty_months(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $months = $this->apiGet('/v2/admin/crm/funnel')->assertOk()->json('data.monthly_registrations');
+
+        $this->assertCount(6, $months);
+        $this->assertSame(now()->format('Y-m'), end($months)['month']);
+        $this->assertSame(now()->subMonths(5)->format('Y-m'), $months[0]['month']);
+    }
+
+    /** @return array<string, int> */
+    private function funnelCounts(): array
+    {
+        $stages = $this->apiGet('/v2/admin/crm/funnel')->assertOk()->json('data.stages');
+
+        return array_column($stages, 'count', 'code');
+    }
+
+    private function completedTransaction(?int $senderId, int $receiverId, string $type = 'exchange'): void
+    {
+        DB::table('transactions')->insert([
+            'tenant_id' => $this->testTenantId, 'sender_id' => $senderId, 'receiver_id' => $receiverId,
+            'amount' => 1, 'status' => 'completed', 'transaction_type' => $type,
+        ]);
     }
 
     // ================================================================
