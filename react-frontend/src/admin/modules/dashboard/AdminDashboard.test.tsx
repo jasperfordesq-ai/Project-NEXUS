@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
+import type { User } from '@/types/api';
 
 // ── @/contexts ────────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
@@ -15,7 +16,7 @@ const mockAuthUser = vi.hoisted(() => ({ current: { id: 1, role: 'admin' } as Re
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useAuth: () => ({ user: mockAuthUser.current, isAuthenticated: true, isLoading: false, status: 'authenticated' }),
+    useAuth: () => ({ user: mockAuthUser.current as unknown as User, isAuthenticated: true, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle' as const, error: null }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
