@@ -95,6 +95,23 @@ VISIBLE=$(rclone lsf "${RCLONE_REMOTE}" --max-depth 1 2>/dev/null | wc -l | tr -
 log "Files rclone can see in ${RCLONE_REMOTE}: ${VISIBLE}"
 
 # ---------------------------------------------------------------------------
+# Step 3b: Encryption keys (F-123) — nothing goes offsite unencrypted
+# ---------------------------------------------------------------------------
+header "Step 3b: Backup encryption keys"
+
+if [[ -s /opt/nexus-php/.backup-age-recipients ]]; then
+    success "Encryption keys already configured (/opt/nexus-php/.backup-age-recipients)"
+else
+    echo "  Paste the two PUBLIC keys (lines starting 'age1') printed by"
+    echo "  scripts/backup-keygen.sh on your own computer. Never paste a private key."
+    read -rp "  Public key A: " OWNER_KEY_A
+    read -rp "  Public key B: " OWNER_KEY_B
+    bash "$(dirname "${BASH_SOURCE[0]}")/setup-backup-encryption.sh" \
+        --owner-key "$OWNER_KEY_A" --owner-key "$OWNER_KEY_B" \
+        || fail "Encryption setup failed — the nightly backup will not upload until it succeeds."
+fi
+
+# ---------------------------------------------------------------------------
 # Step 4: Wire up cron job
 # ---------------------------------------------------------------------------
 header "Step 4: Configure nightly cron job"
