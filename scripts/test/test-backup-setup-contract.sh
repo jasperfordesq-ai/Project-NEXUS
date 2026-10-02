@@ -75,6 +75,24 @@ else
     failt "age not installed from apt"
 fi
 
+# The deploy installs the nightly cron in /etc/cron.d (with flock). A second,
+# un-locked root crontab entry made two backups run at 02:00 at once.
+if grep -qE 'printf .*CRON_CMD|echo .*CRON_CMD' <<<"$SERVER_CODE"; then
+    failt "server setup still writes its own root crontab entry for the nightly backup"
+else
+    pass "server setup does not add a second nightly cron"
+fi
+if grep -qE "grep -v .*server-nightly-backup|grep -v .*BACKUP_SCRIPT" <<<"$SERVER_CODE"; then
+    pass "server setup removes an old root crontab entry"
+else
+    failt "server setup does not remove an old root crontab entry"
+fi
+if grep -qE 'nexus_uploads_DATE\.tar\.gz /tmp|tar xzf /in/nexus_uploads_DATE\.tar\.gz' <<<"$SERVER_CODE"; then
+    failt "printed restore help still names the old unencrypted file"
+else
+    pass "printed restore help does not name unencrypted files"
+fi
+
 echo
 if [ "$FAILURES" -gt 0 ]; then echo "FAILED: $FAILURES check(s)" >&2; exit 1; fi
 echo "PASS: Drive setup scripts request the narrow scope and install from apt"

@@ -6,8 +6,9 @@
 #
 # PART B — Run this ON THE PRODUCTION SERVER (after running Part A locally)
 # ─────────────────────────────────────────────────────────────────────────
-# Installs rclone, verifies the token uploaded by Part A, wires up the
-# nightly cron job, and does an end-to-end test backup + Drive sync.
+# Installs rclone and age, verifies the token uploaded by Part A, sets up the
+# backup encryption keys, removes any old duplicate cron entry, and runs one
+# real backup followed by the restore drill.
 #
 # Run Part A first on your local machine:
 #   bash scripts/setup-rclone-local.sh
@@ -21,8 +22,6 @@ REMOTE_NAME="gdrive"
 DRIVE_FOLDER="nexus-backups"
 RCLONE_REMOTE="${REMOTE_NAME}:${DRIVE_FOLDER}"
 BACKUP_SCRIPT="/opt/nexus-php/scripts/server-nightly-backup.sh"
-BACKUP_LOG="/opt/nexus-php/backups/backup.log"
-CRON_SCHEDULE="0 2 * * *"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 log()     { echo -e "${CYAN}→ $1${NC}"; }
@@ -112,69 +111,63 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 4: Wire up cron job
+# Step 4: Nightly schedule — owned by the deploy, not by this script
 # ---------------------------------------------------------------------------
-header "Step 4: Configure nightly cron job"
+header "Step 4: Nightly schedule"
 
-CRON_ENV="RCLONE_REMOTE=${RCLONE_REMOTE}"
-CRON_CMD="${CRON_SCHEDULE} bash ${BACKUP_SCRIPT} >> ${BACKUP_LOG} 2>&1"
-
+# Every deploy writes /etc/cron.d/nexus-db-backup (02:00, with flock) and
+# /etc/cron.d/nexus-restore-drill (1st of the month, 04:00) from
+# scripts/deploy/phases/install-backup-cron.sh. This script used to add its own
+# root crontab entry as well, without flock, so two backups ran at 02:00 and
+# could delete each other's encrypted files mid-upload. Remove any such entry.
 CURRENT_CRON=$(crontab -l 2>/dev/null || true)
-
-if echo "$CURRENT_CRON" | grep -q "$BACKUP_SCRIPT"; then
-    log "Backup cron job already exists — updating to include RCLONE_REMOTE..."
-    NEW_CRON=$(echo "$CURRENT_CRON" \
-        | grep -v "RCLONE_REMOTE=" \
-        | grep -v "$BACKUP_SCRIPT")
-    printf '%s\n%s\n%s\n' "$NEW_CRON" "$CRON_ENV" "$CRON_CMD" \
-        | grep -v '^$' | crontab -
+if grep -q "$BACKUP_SCRIPT" <<<"$CURRENT_CRON"; then
+    log "Removing the old root crontab entry for the nightly backup (the deploy installs it)..."
+    grep -v "$BACKUP_SCRIPT" <<<"$CURRENT_CRON" | grep -v '^RCLONE_REMOTE=' | grep -v '^$' | crontab - || true
+    success "Old crontab entry removed"
+fi
+if [[ -f /etc/cron.d/nexus-db-backup ]]; then
+    success "Nightly backup schedule present: /etc/cron.d/nexus-db-backup"
 else
-    log "Adding backup cron job..."
-    printf '%s\n%s\n%s\n' "$CURRENT_CRON" "$CRON_ENV" "$CRON_CMD" \
-        | grep -v '^$' | crontab -
+    warn "No /etc/cron.d/nexus-db-backup yet — it is installed by the next deploy"
+fi
+if [[ -f /etc/cron.d/nexus-restore-drill ]]; then
+    success "Monthly restore drill schedule present: /etc/cron.d/nexus-restore-drill"
+else
+    warn "No /etc/cron.d/nexus-restore-drill yet — it is installed by the next deploy"
 fi
 
-success "Cron job set: runs every night at 02:00 server time"
-echo ""
-log "Current crontab:"
-crontab -l
-
 # ---------------------------------------------------------------------------
-# Step 5: End-to-end test run
+# Step 5: End-to-end test run — one real backup, then the restore drill
 # ---------------------------------------------------------------------------
 header "Step 5: End-to-end test"
 
 echo ""
-read -rp "Run a full backup + Google Drive sync now to confirm everything works? (Y/n): " RUN_NOW
+read -rp "Run a full backup now, then the restore drill, to prove everything works? (Y/n): " RUN_NOW
 if [[ ! "$RUN_NOW" =~ ^[Nn]$ ]]; then
-    log "Running backup — uploads volume is ~272MB, allow a couple of minutes..."
+    log "Running the nightly backup — the uploads archive is several hundred MB, allow a few minutes..."
     echo ""
-    RCLONE_REMOTE="$RCLONE_REMOTE" bash "$BACKUP_SCRIPT"
+    RCLONE_REMOTE="$RCLONE_REMOTE" bash "$BACKUP_SCRIPT" || fail "The backup failed — read the messages above."
     echo ""
-    success "Backup complete. Files now in Google Drive (${DRIVE_FOLDER}/):"
-    rclone ls "${RCLONE_REMOTE}" | sort
+    success "Backup complete. Encrypted files now in Google Drive (${DRIVE_FOLDER}/):"
+    rclone lsf "${RCLONE_REMOTE}" --files-only --include "nexus_*.age" | sort
+    echo ""
+    log "Running the restore drill (downloads, decrypts and test-restores the copy just uploaded)..."
+    bash "$(dirname "${BASH_SOURCE[0]}")/restore-drill.sh" || fail "The restore drill failed — read the messages above."
 fi
 
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 echo ""
-echo -e "${BOLD}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║  All done                                                ║${NC}"
-echo -e "${BOLD}╠══════════════════════════════════════════════════════════╣${NC}"
-echo -e "${BOLD}║  Schedule : every night at 02:00 server time             ║${NC}"
-echo -e "${BOLD}║  Backed up: database + uploads + storage                 ║${NC}"
-echo -e "${BOLD}║  Rotation : 7 days kept on server, synced to Drive       ║${NC}"
-echo -e "${BOLD}║  Location : My Drive / nexus-backups/                    ║${NC}"
-echo -e "${BOLD}╠══════════════════════════════════════════════════════════╣${NC}"
-echo -e "${BOLD}║  Useful commands:                                        ║${NC}"
-echo -e "${BOLD}║    List Drive files:                                     ║${NC}"
-echo -e "${BOLD}║      sudo rclone ls ${RCLONE_REMOTE}                     ║${NC}"
-echo -e "${BOLD}║    Restore uploads to server:                            ║${NC}"
-echo -e "${BOLD}║      sudo rclone copy ${RCLONE_REMOTE}/nexus_uploads_DATE.tar.gz /tmp/${NC}"
-echo -e "${BOLD}║      sudo docker run --rm \\                              ║${NC}"
-echo -e "${BOLD}║        -v nexus-php-uploads:/data \\                     ║${NC}"
-echo -e "${BOLD}║        -v /tmp:/in alpine \\                             ║${NC}"
-echo -e "${BOLD}║        tar xzf /in/nexus_uploads_DATE.tar.gz -C /data   ║${NC}"
-echo -e "${BOLD}╚══════════════════════════════════════════════════════════╝${NC}"
+echo -e "${BOLD}All done${NC}"
+echo "  Schedule : nightly backup 02:00, restore drill 04:00 on the 1st (server time)"
+echo "  Backed up: database + uploads + storage + server config (.env), ENCRYPTED"
+echo "  Rotation : 7 days on the server (plain) and on Drive (encrypted)"
+echo "  Location : My Drive / ${DRIVE_FOLDER}/"
+echo ""
+echo "  Restoring: download the *.age file you need from Drive and open it on your"
+echo "  own computer with your key:"
+echo "      bash scripts/backup-decrypt.sh nexus_uploads_DATE.tar.gz.age"
+echo "  Full steps: the owner guide 'Backup keys and how to restore'."
 echo ""
