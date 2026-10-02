@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2746,
-  "api_route_rows": 2711,
-  "distinct_api_paths": 2256,
+  "total_registered_routes": 2747,
+  "api_route_rows": 2712,
+  "distinct_api_paths": 2257,
   "route_source_fingerprint": {
-    "digest": "7c88afdad80bdddc87f2f3990c6456a1d43a898b07b9e890e4684cbf61019552",
+    "digest": "1c4a43ad31f3371aacc8ceae57e844d3f0023835ab84c8b49902873ca2f3c233",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "3c045cab029a7b9a2d0196047e9c02d432c0346a8a792126282563891600a2fa"
+        "sha256": "61720a64670c82f429ba6d65069af3f2756095936fc6f8a06d69e472c092a9b1"
       },
       {
         "file": "routes/channels.php",
@@ -4956,6 +4956,9 @@
     ],
     "/api/v2/groups/recommendations/track": [
       "POST"
+    ],
+    "/api/v2/groups/types": [
+      "GET"
     ],
     "/api/v2/groups/{groupId}/chatrooms/{chatroomId}/pin/{messageId}": [
       "DELETE",
