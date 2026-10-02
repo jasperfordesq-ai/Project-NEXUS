@@ -89,6 +89,13 @@ import BellRing from 'lucide-react/icons/bell-ring';
 import Bug from 'lucide-react/icons/bug';
 import HelpCircle from 'lucide-react/icons/help-circle';
 import HandCoins from 'lucide-react/icons/hand-coins';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
+import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
+import Receipt from 'lucide-react/icons/receipt';
+import FolderKanban from 'lucide-react/icons/folder-kanban';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
+import Gift from 'lucide-react/icons/gift';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -139,7 +146,7 @@ interface FilteredNavItem extends NavItem {
 const ZONES: NavZone[] = [
   { key: 'overview', label: 'zone_overview', sectionKeys: ['dashboard', 'broker-panel', 'super-admin', 'partner-timebanks-panel'] },
   { key: 'people', label: 'zone_people', sectionKeys: ['users', 'crm'] },
-  { key: 'community', label: 'zone_community', sectionKeys: ['community', 'listings', 'content', 'jobs'] },
+  { key: 'community', label: 'zone_community', sectionKeys: ['volunteering', 'community', 'listings', 'content', 'jobs'] },
   { key: 'communications', label: 'zone_communications', sectionKeys: ['communications', 'marketing', 'advertising'] },
   { key: 'growth', label: 'zone_growth', sectionKeys: ['engagement', 'analytics', 'discovery'] },
   { key: 'commerce', label: 'zone_commerce', sectionKeys: ['financial', 'marketplace'] },
@@ -177,6 +184,7 @@ function useAdminNav(): NavSection[] {
   // count service all existed, with nothing joining them up.
   const { counts } = useAdminBadgeCounts();
   const pendingUsersBadge = badgeForCount(counts.pending_users);
+  const pendingOrgsBadge = badgeForCount(counts.pending_orgs);
 
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
@@ -213,6 +221,11 @@ function useAdminNav(): NavSection[] {
     const communityItems: NavItem[] = [
       ...(hasFeature('groups') ? [
         { label: t('groups'), href: '/admin/groups', icon: Users, keywords: keyword(t('search_keywords.groups')) },
+        // Both queues existed with no sidebar entry (2026-10-02): join requests
+        // only behind a header button on the group list, and moderation behind
+        // nothing at all — it was reachable only by typing its address.
+        { label: t('group_join_requests'), href: '/admin/groups/approvals', icon: UserCheck, keywords: keyword(t('search_keywords.group_join_requests')) },
+        { label: t('group_moderation'), href: '/admin/groups/moderation', icon: ShieldCheck },
         { label: t('group_types'), href: '/admin/groups/types', icon: FolderTree },
         { label: t('group_recommendations'), href: '/admin/groups/recommendations', icon: Brain },
         { label: t('group_ranking'), href: '/admin/groups/ranking', icon: Trophy },
@@ -229,7 +242,9 @@ function useAdminNav(): NavSection[] {
       ...(hasFeature('goals') ? [{ label: t('goals'), href: '/admin/goals', icon: Target }] : []),
       ...(hasFeature('podcasts') ? [{ label: t('podcasts'), href: '/admin/podcasts', icon: Podcast, keywords: keyword(t('search_keywords.podcasts')) }] : []),
       ...(hasFeature('ideation_challenges') ? [{ label: t('ideation_challenges'), href: '/admin/ideation', icon: Lightbulb }] : []),
-      ...(hasFeature('volunteering') ? [{ label: t('volunteering'), href: '/admin/volunteering', icon: Heart }] : []),
+      // Previously reachable only via Module Configuration → Courses → Configure,
+      // which itself is shown to super admins only.
+      ...(hasFeature('courses') ? [{ label: t('courses'), href: '/admin/courses', icon: GraduationCap }] : []),
       ...(hasFeature('partner_venues') ? [{ label: t('partner_venues'), href: '/admin/partner-venues', icon: Store }] : []),
     ];
 
@@ -328,6 +343,51 @@ function useAdminNav(): NavSection[] {
         zone: 'community' as const,
         items: communityItems,
       }] : []),
+      /*
+       * 🔴 Volunteering is a main module, so it is a section of its own.
+       *
+       * Until 2026-10-02 it was ONE link, to the overview page, inside
+       * "Community". Its eleven working pages had no sidebar entry and no search
+       * keywords: an admin could reach Organisations, Applications, Hours and
+       * the rest only through shortcut cards below the trends chart on the
+       * overview — "it seems hard to find", as the owner put it. Every page
+       * under /admin/volunteering is now listed here, and nowhere else (Donation
+       * refunds moved in from Financial), so each has one obvious home.
+       *
+       * The gate mirrors routes.tsx: every one of these routes is wrapped in
+       * FeatureGatedElement feature="volunteering". If you add a volunteering
+       * page, add it to THIS list.
+       */
+      ...(hasFeature('volunteering') ? [{
+        key: 'volunteering',
+        label: t('volunteering'),
+        icon: HandHeart,
+        zone: 'community' as const,
+        items: [
+          { label: t('volunteering_nav.overview'), href: '/admin/volunteering', icon: LayoutDashboard, group: t('volunteering_nav.group_day_to_day') },
+          { label: t('volunteering_nav.applications'), href: '/admin/volunteering/approvals', icon: ClipboardCheck, keywords: keyword(t('volunteering_nav.keywords.applications')) },
+          { label: t('volunteering_nav.hours'), href: '/admin/volunteering/hours', icon: Clock, keywords: keyword(t('volunteering_nav.keywords.hours')) },
+          { label: t('volunteering_nav.shift_swaps'), href: '/admin/volunteering/swaps', icon: ArrowLeftRight, keywords: keyword(t('volunteering_nav.keywords.shift_swaps')) },
+          { label: t('volunteering_nav.expenses'), href: '/admin/volunteering/expenses', icon: Receipt, keywords: keyword(t('volunteering_nav.keywords.expenses')) },
+          { label: t('volunteering_nav.projects'), href: '/admin/volunteering/projects', icon: FolderKanban, keywords: keyword(t('volunteering_nav.keywords.projects')) },
+          {
+            label: t('volunteering_nav.organisations'),
+            href: '/admin/volunteering/organizations',
+            icon: Building2,
+            group: t('volunteering_nav.group_organisations_safety'),
+            keywords: keyword(t('volunteering_nav.keywords.organisations')),
+            // An organisation awaiting approval cannot post opportunities, so it
+            // is surfaced in "Needs attention" — the same count the dashboard
+            // card uses (AdminBadgeCountService::countPendingOrganizations).
+            ...(pendingOrgsBadge ? { badge: pendingOrgsBadge, attention: 'warning' } : {}),
+          },
+          { label: t('volunteering_nav.training'), href: '/admin/volunteering/training', icon: GraduationCap, keywords: keyword(t('volunteering_nav.keywords.training')) },
+          { label: t('volunteering_nav.safeguarding'), href: '/admin/volunteering/safeguarding', icon: ShieldAlert, keywords: keyword(t('volunteering_nav.keywords.safeguarding')) },
+          { label: t('volunteering_nav.giving_days'), href: '/admin/volunteering/giving-days', icon: Gift, group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.giving_days')) },
+          { label: t('donation_refunds'), href: '/admin/volunteering/donations', icon: HandCoins, keywords: keyword(t('search_keywords.donation_refunds')) },
+          { label: t('volunteering_nav.settings'), href: '/admin/volunteering/config', icon: Settings, group: t('volunteering_nav.group_setup'), keywords: keyword(t('volunteering_nav.keywords.settings')) },
+        ],
+      }] : []),
       ...(hasModule('listings') ? [{
         key: 'listings',
         label: t('listings'),
@@ -401,6 +461,7 @@ function useAdminNav(): NavSection[] {
           ...(hasFeature('newsletter') ? [
             { label: t('newsletters'), href: '/admin/newsletters', icon: Megaphone },
             { label: t('subscribers'), href: '/admin/newsletters/subscribers', icon: Users },
+            { label: t('newsletter_segments'), href: '/admin/newsletters/segments', icon: Filter },
             { label: t('templates'), href: '/admin/newsletters/templates', icon: FileText },
             { label: t('bounces'), href: '/admin/newsletters/bounces', icon: AlertTriangle, keywords: keyword(t('search_keywords.bounces')) },
             { label: t('send_time_optimizer'), href: '/admin/newsletters/send-time-optimizer', icon: Clock },
@@ -428,6 +489,7 @@ function useAdminNav(): NavSection[] {
           { label: t('challenges'), href: '/admin/gamification/challenges', icon: Trophy },
           { label: t('campaigns'), href: '/admin/gamification/campaigns', icon: Target },
           { label: t('custom_badges'), href: '/admin/custom-badges', icon: Medal },
+          { label: t('badge_settings'), href: '/admin/gamification/badge-config', icon: SlidersHorizontal },
           { label: t('analytics'), href: '/admin/gamification/analytics', icon: BarChart3 },
         ],
       }] : []),
@@ -487,6 +549,9 @@ function useAdminNav(): NavSection[] {
         zone: 'growth',
         items: [
           { label: t('seo_overview'), href: '/admin/seo', icon: Search },
+          // Neither page was linked from anywhere, the SEO overview included.
+          { label: t('seo_audit'), href: '/admin/seo/audit', icon: ListChecks },
+          { label: t('url_redirects'), href: '/admin/seo/redirects', icon: ArrowLeftRight, keywords: keyword(t('search_keywords.url_redirects')) },
           { label: t('search_analytics'), href: '/admin/search-analytics', icon: BarChart3, keywords: keyword(t('search_keywords.search_analytics')) },
           // God accounts only (owner decision 2026-10-02). The route is guarded
           // by GodOnlyRoute too, so a typed URL does not reach the page.
@@ -507,11 +572,12 @@ function useAdminNav(): NavSection[] {
             { label: t('org_wallets'), href: '/admin/timebanking/org-wallets', icon: Wallet },
             { label: t('starting_balances'), href: '/admin/timebanking/starting-balances', icon: Wallet },
           ] : []),
-          ...(hasFeature('volunteering') ? [
-            { label: t('donation_refunds'), href: '/admin/volunteering/donations', icon: HandCoins, keywords: keyword(t('search_keywords.donation_refunds')) },
-          ] : []),
+          // Donation refunds moved to the Volunteering section (2026-10-02):
+          // donations belong to volunteering giving days, and every
+          // /admin/volunteering page now lives in that one section.
           ...(isGod ? [
             { label: t('plans_pricing'), href: '/admin/plans', icon: CreditCard },
+            { label: t('subscriptions'), href: '/admin/plans/subscriptions', icon: CreditCard },
             { label: t('billing'), href: '/admin/billing', icon: CreditCard },
           ] : []),
           ...(hasFeature('member_premium') ? [
@@ -529,6 +595,9 @@ function useAdminNav(): NavSection[] {
           { label: t('marketplace_dashboard'), href: '/admin/marketplace', icon: ShoppingBag },
           { label: t('marketplace_moderation'), href: '/admin/marketplace/moderation', icon: ShieldCheck },
           { label: t('marketplace_sellers'), href: '/admin/marketplace/sellers', icon: Store },
+          { label: t('marketplace_cases'), href: '/admin/marketplace/cases', icon: AlertTriangle, keywords: keyword(t('search_keywords.marketplace_cases')) },
+          // AdminModuleGate checks merchant_coupons for this path, not marketplace.
+          ...(hasFeature('merchant_coupons') ? [{ label: t('marketplace_coupons'), href: '/admin/marketplace/coupons', icon: Tag }] : []),
         ],
       }] : []),
       {
@@ -538,6 +607,9 @@ function useAdminNav(): NavSection[] {
         zone: 'platform',
         items: [
           { label: t('settings'), href: '/admin/settings', icon: Settings },
+          // Who may join, and whether identity is checked — reachable before
+          // only through links inside the Settings page.
+          { label: t('registration_policy'), href: '/admin/settings/registration-policy', icon: UserCheck, keywords: keyword(t('search_keywords.registration_policy')) },
           { label: t('onboarding_settings'), href: '/admin/onboarding-settings', icon: Heart },
           // The page has existed at this route since the legacy admin was retired but
           // was never linked from anywhere, so it was reachable only by typing the URL.
@@ -546,6 +618,10 @@ function useAdminNav(): NavSection[] {
           ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: SlidersHorizontal }] : []),
           { label: t('operations'), href: '/admin/operations', icon: Activity },
           { label: t('support_reports'), href: '/admin/support-reports', icon: Bug, keywords: keyword(t('search_keywords.support_reports')) },
+          // The in-app admin help centre. Until 2026-10-02 only the Caring panel
+          // linked to it. It lives here rather than in the pinned footer, which is
+          // deliberately held at two entries.
+          { label: t('help_centre'), href: '/admin/help', icon: HelpCircle },
           { label: t('translation_config'), href: '/admin/translation-config', icon: Languages },
           { label: t('activity_log'), href: '/admin/activity-log', icon: Activity },
           { label: t('retention_policies'), href: '/admin/retention', icon: Activity, keywords: keyword(t('search_keywords.retention_policies')) },
@@ -570,10 +646,16 @@ function useAdminNav(): NavSection[] {
           { label: t('enterprise_dashboard'), href: '/admin/enterprise', icon: Building2 },
           // God-only in the sidebar (owner decision, 2026-10-01). This hides the
           // link only — the API behind it is still gated on requireAdmin().
-          ...(isGod ? [{ label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon }] : []),
+          ...(isGod ? [
+            { label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon },
+            // Read-only catalogue that sits beside Roles; it had no link at all.
+            { label: t('permissions_list'), href: '/admin/enterprise/permissions', icon: ListChecks },
+          ] : []),
           { label: t('gdpr_dashboard'), href: '/admin/enterprise/gdpr', icon: ShieldCheck },
           { label: t('legal_documents'), href: '/admin/legal-documents', icon: FileText },
           { label: t('compliance_dashboard'), href: '/admin/legal-documents/compliance', icon: ShieldCheck },
+          // Swiss data-protection register. Opt-in feature, off by default.
+          ...(hasFeature('fadp_compliance') ? [{ label: t('fadp'), href: '/admin/enterprise/fadp', icon: ShieldCheck, keywords: keyword(t('search_keywords.fadp')) }] : []),
           // God-only in the sidebar (owner decision, 2026-10-02). This hides the
           // link only — the page and its API keep their existing admin gates.
           ...(isGod ? [{ label: t('monitoring'), href: '/admin/enterprise/monitoring', icon: Heart }] : []),
@@ -619,7 +701,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingUsersBadge, t]);
+  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, t]);
 }
 
 interface AdminSidebarProps {

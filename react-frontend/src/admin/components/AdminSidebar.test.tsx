@@ -399,6 +399,163 @@ describe('AdminSidebar', () => {
     expect(hrefs.filter((h) => h?.includes('/admin/cron-jobs'))).toEqual([]);
   });
 
+  // ─── Volunteering ──────────────────────────────────────────────────────────
+  // Regression: Volunteering was a single link to its overview page. Its eleven
+  // working pages — organisations, applications, hours, expenses and the rest —
+  // had no sidebar entry and no search keywords, so an admin could reach them
+  // only through shortcut cards at the bottom of the overview (2026-10-02).
+  const VOLUNTEERING_LINKS: Array<[string, string]> = [
+    ['Overview', '/test/admin/volunteering'],
+    ['Applications', '/test/admin/volunteering/approvals'],
+    ['Hours to verify', '/test/admin/volunteering/hours'],
+    ['Shift swaps', '/test/admin/volunteering/swaps'],
+    ['Expenses', '/test/admin/volunteering/expenses'],
+    ['Community projects', '/test/admin/volunteering/projects'],
+    ['Organisations', '/test/admin/volunteering/organizations'],
+    ['Training', '/test/admin/volunteering/training'],
+    ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
+    ['Giving days', '/test/admin/volunteering/giving-days'],
+    ['Donation Refunds', '/test/admin/volunteering/donations'],
+    ['Settings', '/test/admin/volunteering/config'],
+  ];
+
+  it('gives Volunteering its own section linking every volunteering page', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const trigger = screen.getByRole('button', { name: 'Volunteering' });
+    await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    const panel = document.getElementById(trigger.getAttribute('aria-controls') ?? '');
+    expect(panel).not.toBeNull();
+    for (const [name, href] of VOLUNTEERING_LINKS) {
+      expect(within(panel as HTMLElement).getByRole('link', { name })).toHaveAttribute('href', href);
+    }
+  });
+
+  it('lists each volunteering page exactly once across the whole sidebar', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const [, href] of VOLUNTEERING_LINKS) {
+      expect(hrefs.filter((h) => h === href)).toHaveLength(1);
+    }
+  });
+
+  it.each([
+    ['charity', '/test/admin/volunteering/organizations'],
+    ['receipts', '/test/admin/volunteering/expenses'],
+    ['timesheets', '/test/admin/volunteering/hours'],
+    ['rota', '/test/admin/volunteering/swaps'],
+  ])('finds a volunteering page when searching "%s"', async (query, href) => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+    await userEvent.type(screen.getByRole('searchbox'), query);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('link').map((l) => l.getAttribute('href'))).toContain(href);
+    });
+  });
+
+  it('hides every volunteering page when the volunteering feature is off', async () => {
+    mockHasFeature.mockImplementation((feature: string) => feature !== 'volunteering');
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs.filter((h) => h?.includes('/admin/volunteering'))).toEqual([]);
+    expect(screen.queryByRole('button', { name: 'Volunteering' })).not.toBeInTheDocument();
+    // Control: the same query does reach links inside collapsed panels.
+    expect(hrefs).toContain('/test/admin/settings');
+  });
+
+  it('shows how many organisations are waiting for approval', async () => {
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/badge-counts'
+        ? { success: true, data: { pending_orgs: 3 } }
+        : { success: true, data: {} },
+    ));
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    // Surfaced in the "Needs attention" strip without opening the section.
+    await waitFor(() => {
+      const link = screen.getAllByRole('link').find(
+        (l) => l.getAttribute('href') === '/test/admin/volunteering/organizations',
+      );
+      expect(link).toBeDefined();
+      expect(link).toHaveTextContent('3');
+    });
+    expect(screen.getByText('Needs Attention')).toBeInTheDocument();
+  });
+
+  // ─── Pages that existed but were linked from nowhere ──────────────────────
+  // Regression (2026-10-02): each of these is a working admin page that no
+  // sidebar entry and no other admin page linked to, so it could only be
+  // reached by typing its address.
+  const PREVIOUSLY_UNLINKED = [
+    '/test/admin/groups/approvals',
+    '/test/admin/groups/moderation',
+    '/test/admin/courses',
+    '/test/admin/newsletters/segments',
+    '/test/admin/seo/audit',
+    '/test/admin/seo/redirects',
+    '/test/admin/marketplace/cases',
+    '/test/admin/marketplace/coupons',
+    '/test/admin/gamification/badge-config',
+    '/test/admin/settings/registration-policy',
+    '/test/admin/enterprise/fadp',
+    '/test/admin/help',
+  ];
+
+  it('links every previously unreachable admin page', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const href of PREVIOUSLY_UNLINKED) {
+      expect(hrefs).toContain(href);
+    }
+  });
+
+  it.each([
+    ['groups', ['/test/admin/groups/approvals', '/test/admin/groups/moderation']],
+    ['courses', ['/test/admin/courses']],
+    ['newsletter', ['/test/admin/newsletters/segments']],
+    ['marketplace', ['/test/admin/marketplace/cases', '/test/admin/marketplace/coupons']],
+    ['merchant_coupons', ['/test/admin/marketplace/coupons']],
+    ['gamification', ['/test/admin/gamification/badge-config']],
+    ['fadp_compliance', ['/test/admin/enterprise/fadp']],
+  ])('hides the new links that depend on "%s" when it is off', async (off, gone) => {
+    mockHasFeature.mockImplementation((feature: string) => feature !== off);
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const href of gone) {
+      expect(hrefs).not.toContain(href);
+    }
+    // Control: the same query does reach links inside collapsed panels.
+    expect(hrefs).toContain('/test/admin/settings');
+  });
+
+  it('shows the permissions list and subscriptions to god accounts only', async () => {
+    const GOD_ONLY = ['/test/admin/enterprise/permissions', '/test/admin/plans/subscriptions'];
+    const { AdminSidebar } = await import('./AdminSidebar');
+
+    const { unmount } = render(<AdminSidebar collapsed={false} />);
+    let hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const href of GOD_ONLY) expect(hrefs).not.toContain(href);
+    unmount();
+
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    render(<AdminSidebar collapsed={false} />);
+    hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const href of GOD_ONLY) expect(hrefs).toContain(href);
+  });
+
   it('shows all four cron job links to a god account', async () => {
     authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
     const { AdminSidebar } = await import('./AdminSidebar');
