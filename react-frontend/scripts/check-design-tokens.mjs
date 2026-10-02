@@ -68,6 +68,7 @@ const inlineStyleExceptionGroups = [
       'src/components/wallet/CategorySelect.tsx': 1,
       'src/pages/groups/components/GroupBrandingPicker.tsx': 3,
       'src/pages/groups/components/GroupHeader.tsx': 1,
+      'src/pages/groups/GroupsPage.tsx': 1,
       'src/pages/profile/CollectionDetailPage.tsx': 1,
       'src/pages/profile/MyCollectionsPage.tsx': 1,
       'src/pages/profile/UserCollectionsView.tsx': 1,
