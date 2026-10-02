@@ -429,8 +429,26 @@ class AdminCrmController extends BaseApiController
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
-        $note = DB::selectOne("SELECT id FROM member_notes WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+        $note = DB::selectOne(
+            "SELECT id, category, user_id FROM member_notes WHERE id = ? AND tenant_id = ?",
+            [$id, $tenantId]
+        );
         if (!$note) {
+            return $this->respondWithError('NOT_FOUND', __('api.note_not_found'), null, 404);
+        }
+
+        // F-544: F-457 withheld this note's text from the response and F-462
+        // refused the delete, but the subject (or anyone they do not strictly
+        // outrank) could still overwrite the content or re-file it out of the
+        // concern category. Same guard, same 404 the read side gives.
+        if (
+            (string) ($note->category ?? '') === self::CONCERN_CATEGORY
+            && in_array(
+                (int) ($note->user_id ?? 0),
+                $this->concernSubjectsHiddenFromCaller($callerId, $tenantId),
+                true,
+            )
+        ) {
             return $this->respondWithError('NOT_FOUND', __('api.note_not_found'), null, 404);
         }
 

@@ -142,7 +142,10 @@ final class F457ConcernNoteExclusionCoversEveryTierAndReaderTest extends TestCas
         Sanctum::actingAs($subjectAdmin, ['*']);
         $res = $this->apiPut('/v2/admin/crm/notes/' . $noteId, ['is_pinned' => 1]);
 
-        self::assertSame(200, $res->getStatusCode(), (string) $res->getContent());
+        // F-544 (E-082): the subject is now refused the edit outright, with the
+        // read side's 404; the response still must not carry the note.
+        self::assertSame(404, $res->getStatusCode(), (string) $res->getContent());
+        self::assertSame(0, (int) DB::table('member_notes')->where('id', $noteId)->value('is_pinned'));
         self::assertStringNotContainsString(self::CONCERN, (string) $res->getContent(),
             'the update response must not carry the text of a note the caller may not read');
         self::assertStringNotContainsString((string) $superAdmin->name, (string) $res->getContent(),
