@@ -135,6 +135,8 @@ CLAUDE.md
 !/scripts/server-nightly-backup.sh
 !/scripts/backup-alert.sh
 !/scripts/setup-backup-encryption.sh
+!/scripts/backup-keygen.sh
+!/scripts/backup-decrypt.sh
 !/scripts/setup-rclone-gdrive.sh
 !/scripts/setup-rclone-local.sh
 !/scripts/restore-drill.sh
