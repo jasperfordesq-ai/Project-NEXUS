@@ -14,11 +14,14 @@ use Illuminate\Support\Facades\DB;
  * Provides two mechanisms:
  * 1. Login-specific rate limiting (database-based, brute force protection)
  * 2. General API rate limiting (cache-based, request throttling)
+ *
+ * `login_attempts` is schema-managed (database/schema/mysql-schema.sql). Do not
+ * reintroduce a request-time `CREATE TABLE IF NOT EXISTS`: MariaDB implicitly
+ * commits the open transaction before any DDL, even a no-op one, which split
+ * callers' transactions and leaked test fixtures into nexus_test.
  */
 class RateLimiter
 {
-    private static bool $tableChecked = false;
-
     // Login rate limiting constants
     private const MAX_ATTEMPTS = 10;
     private const LOCKOUT_DURATION = 300;
@@ -45,7 +48,6 @@ class RateLimiter
      */
     public static function check(string $identifier, string $type = 'email'): array
     {
-        self::ensureTableExists();
         self::cleanupOldAttempts();
 
         $identifier = self::scopeLoginIdentifier($identifier, $type);
@@ -92,8 +94,6 @@ class RateLimiter
      */
     public static function recordAttempt(string $identifier, string $type = 'email', bool $success = false): void
     {
-        self::ensureTableExists();
-
         $identifier = self::scopeLoginIdentifier($identifier, $type);
 
         $ip = ClientIp::get();
@@ -170,32 +170,6 @@ class RateLimiter
 
         $cutoff = date('Y-m-d H:i:s', time() - (self::ATTEMPT_WINDOW * 4));
         DB::delete("DELETE FROM login_attempts WHERE attempted_at < ?", [$cutoff]);
-    }
-
-    /**
-     * Ensure the login_attempts table exists.
-     */
-    private static function ensureTableExists(): void
-    {
-
-        if (self::$tableChecked) {
-            return;
-        }
-
-        DB::statement("
-            CREATE TABLE IF NOT EXISTS login_attempts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                identifier VARCHAR(255) NOT NULL,
-                type ENUM('email', 'ip') NOT NULL DEFAULT 'email',
-                ip_address VARCHAR(45) NOT NULL,
-                success TINYINT(1) NOT NULL DEFAULT 0,
-                attempted_at DATETIME NOT NULL,
-                INDEX idx_identifier_type (identifier, type),
-                INDEX idx_attempted_at (attempted_at)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
-
-        self::$tableChecked = true;
     }
 
     // ============================================
