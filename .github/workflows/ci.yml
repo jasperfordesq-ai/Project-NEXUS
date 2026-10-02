@@ -1070,6 +1070,7 @@ jobs:
           bash scripts/test/test-setup-backup-encryption.sh
           bash scripts/test/test-backup-owner-tools.sh
           bash scripts/test/test-backup-setup-contract.sh
+          bash scripts/test/test-premigrate-backup-offsite.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4

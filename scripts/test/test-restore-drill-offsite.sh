@@ -100,12 +100,14 @@ setup_case happy
 put_encrypted "$OLD"
 put_encrypted "$TODAY"
 printf 'plain old file\n' | gzip > "$REMOTE/nexus_db_2026-04-01.sql.gz"
+printf 'plain pre-migrate\n' | gzip > "$REMOTE/pre-migrate-20260401-120000.sql.gz"
+printf 'old gpg copy\n' > "$REMOTE/pre-migrate-20260504-130018-bluegreen.sql.gz.gpg"
 DRILL_RC=0; run_drill || DRILL_RC=$?
 [ "$DRILL_RC" -eq 0 ] && pass "drill exits 0" || { failt "drill exited $DRILL_RC"; tail -20 "$CASE/out.log" >&2; }
 gunzip -c "$WORK/dump.sql.gz" | cmp -s - "$CASE/restored.sql" && pass "restored exactly the decrypted dump" || failt "restored content differs from the dump"
 grep -q "RESTORE DRILL PASSED" "$CASE/curl.log" && pass "Telegram 'passed' message sent" || failt "no Telegram 'passed' message"
 grep -q "nexus_db_${TODAY}.sql.gz.age" "$CASE/out.log" && pass "drilled the newest file" || failt "did not drill the newest file"
-grep -qi "unencrypted" "$CASE/curl.log" && pass "reports old unencrypted files still on Drive" || failt "did not report old unencrypted files on Drive"
+grep -q "2 unencrypted file(s)" "$CASE/curl.log" && pass "reports both unencrypted files on Drive (nightly + pre-migrate), not the .gpg one" || failt "unencrypted-file count wrong: $(grep -o '[0-9?]* unencrypted' "$CASE/curl.log")"
 [ -z "$(ls -A "$CASE/tmp")" ] && pass "no decrypted file left behind" || failt "decrypted file left behind"
 grep -q "uploads: nexus_uploads_${TODAY}.tar.gz.age" "$CASE/curl.log" && grep -q "storage: nexus_storage_${TODAY}.tar.gz.age" "$CASE/curl.log"     && pass "uploads and storage backups were unlocked and checked" || failt "uploads/storage not reported as checked"
 grep -q "$(head -c 16 <<<"$(grep -m1 '^age1' "$WORK/recipients")")" "$CASE/curl.log"     && pass "PASSED message lists the keys the server encrypts to" || failt "PASSED message does not list the keys"

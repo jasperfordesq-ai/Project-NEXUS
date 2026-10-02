@@ -170,10 +170,17 @@ if [ "$DRILL_SOURCE" = "offsite" ]; then
     [ -n "$LATEST" ] || fail "no encrypted database backup (nexus_db_*.sql.gz.age) found on $RCLONE_REMOTE"
     DRILLED="$LATEST"
 
-    PLAIN_LEFT="$(rclone lsf "$RCLONE_REMOTE" --include "nexus_*.gz" --max-depth 1 | wc -l | tr -d ' ')" || PLAIN_LEFT="?"
+    # Every file in the folder that is not encrypted (.age, or an older .gpg),
+    # whatever wrote it: nightly, pre-migration or one-off.
+    if REMOTE_FILES="$(rclone lsf "$RCLONE_REMOTE" --files-only --max-depth 1)"; then
+        PLAIN_LEFT="$(grep -vcE '\.(age|gpg)$' <<<"$REMOTE_FILES" || true)"
+        [ -n "$REMOTE_FILES" ] || PLAIN_LEFT=0
+    else
+        PLAIN_LEFT="?"
+    fi
     if [ "$PLAIN_LEFT" != "0" ]; then
         NOTES="
-Note: ${PLAIN_LEFT} old unencrypted backup file(s) are still on Google Drive. Remove them once encrypted backups are proven."
+Note: ${PLAIN_LEFT} unencrypted file(s) are still in the Google Drive backups folder. Remove them once encrypted backups are proven."
         warn "${PLAIN_LEFT} old unencrypted file(s) still on $RCLONE_REMOTE"
     fi
 

@@ -46,6 +46,11 @@ case "$cmd" in
         is_remote "$dst" || { echo "stub: $cmd only supports local → remote" >&2; exit 2; }
         [ -n "${STUB_RCLONE_FAIL_COPY:-}" ] && { echo "stub: simulated upload failure" >&2; exit 1; }
         mkdir -p "$(map "$dst")"
+        if [ -f "$src" ]; then   # single-file source
+            b="$(basename "$src")"
+            if matches "$b"; then cp -p "$src" "$(map "$dst")/$b"; fi
+            exit 0
+        fi
         for f in "$src"/*; do
             [ -f "$f" ] || continue
             b="$(basename "$f")"
