@@ -19,6 +19,8 @@ case "${1:-}" in
         case " $* " in
             *" mariadb-dump "*)
                 printf -- '-- fake dump\nCREATE TABLE t (id INT);\nINSERT INTO t VALUES (1);\n'
+                # STUB_DUMP_FAIL=1: the dump command itself dies part-way.
+                [ -z "${STUB_DUMP_FAIL:-}" ] || exit 2
                 # STUB_DUMP_INCOMPLETE=1: a dump cut short, no completion line.
                 [ -n "${STUB_DUMP_INCOMPLETE:-}" ] || printf -- '-- Dump completed on 2026-10-02 02:00:00\n'
                 ;;
@@ -41,6 +43,12 @@ case "${1:-}" in
     inspect)
         printf 'healthy\n'
         ;;
+    volume)
+        # STUB_VOLUME_MISSING=NAME: `docker volume inspect NAME` fails.
+        if [ "${2:-}" = "inspect" ] && [ -n "${STUB_VOLUME_MISSING:-}" ] && [ "${3:-}" = "$STUB_VOLUME_MISSING" ]; then
+            exit 1
+        fi
+        ;;
     run)
         out_host=""
         name=""
@@ -52,7 +60,8 @@ case "${1:-}" in
         done
         if [ -n "$out_host" ] && [ -n "$name" ]; then
             tmp="$(mktemp -d)"
-            printf 'volume contents for %s\n' "$name" > "$tmp/file.txt"
+            # STUB_EMPTY_VOLUME=1: the volume has no files at all.
+            [ -n "${STUB_EMPTY_VOLUME:-}" ] || printf 'volume contents for %s\n' "$name" > "$tmp/file.txt"
             tar czf "$out_host/$name" -C "$tmp" .
             rm -rf "$tmp"
         fi

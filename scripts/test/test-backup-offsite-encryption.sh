@@ -45,7 +45,7 @@ PUB_B="$(age-keygen -y "$WORK/key-b.txt")"
 setup_case() {
     CASE="$WORK/$1"
     mkdir -p "$CASE/backups" "$CASE/remote" "$CASE/bin"
-    printf 'DB_DATABASE=nexus\nDB_USERNAME=nexus\nDB_PASSWORD=secret\n' > "$CASE/.env"
+    printf 'APP_KEY=base64:dGVzdC1hcHAta2V5\nDB_DATABASE=nexus\nDB_USERNAME=nexus\nDB_PASSWORD=secret\n' > "$CASE/.env"
     printf 'TELEGRAM_BOT_TOKEN=123:abc\nTELEGRAM_CHAT_ID=42\n' > "$CASE/alerts.env"
     for s in docker rclone curl; do
         cp "$STUBS/$s" "$CASE/bin/$s"
@@ -64,6 +64,7 @@ run_backup() {
         FAKE_REMOTE_ROOT="$CASE/remote" \
         RCLONE_STUB_LOG="$CASE/rclone.log" \
         CURL_STUB_LOG="$CASE/curl.log" \
+        DRILL_IDENTITY_FILE="$CASE/no-drill-key" \
         "$@" \
         bash "$SCRIPT" > "$CASE/out.log" 2>&1
 }
@@ -105,6 +106,14 @@ if [ -s "$canary" ] && age -d -i "$WORK/key-b.txt" "$canary" | grep -q "Project 
 else
     failt "key-check canary missing or does not open"
 fi
+config="$remote/nexus_config_2026-10-02.tar.gz.age"
+if [ -s "$config" ] && age -d -i "$WORK/key-a.txt" "$config" | tar -xzOf - .env | grep -q '^APP_KEY=base64:dGVzdC1hcHAta2V5$'; then
+    pass "server config (.env with APP_KEY) uploaded encrypted and opens with key A"
+else
+    failt "server config backup missing, or does not contain the APP_KEY"
+fi
+[ -z "$(find "$CASE/backups" -maxdepth 1 -name 'nexus_config*')" ] && pass "no plain config copy kept in the backups folder" || failt "plain config copy left in the backups folder"
+[ -z "$(find "$CASE/backups" -name '*.partial')" ] && pass "no .partial files left" || failt ".partial files left behind"
 for n in "${plain_names[@]}"; do
     [ -s "$CASE/backups/$n" ] && pass "local copy $n kept, plain" || failt "local copy $n missing"
 done
@@ -152,14 +161,24 @@ grep -q "OFFSITE" "$CASE/curl.log" && pass "Telegram alert attempted" || failt "
 [ -d "$CASE/backups/offsite" ] && failt "encrypted staging folder left behind after failure" || pass "encrypted staging folder cleaned up after failure"
 
 # ---------------------------------------------------------------------------
-echo "case 5: no offsite remote configured — local backup only, exit 0"
+echo "case 5: offsite deliberately disabled (BACKUP_OFFSITE_REQUIRED=0) — local backup only, exit 0"
 setup_case no_remote
-if run_backup STUB_RCLONE_REMOTES="" BACKUP_AGE_RECIPIENTS_FILE="$CASE/does-not-exist"; then
+if run_backup STUB_RCLONE_REMOTES="" BACKUP_OFFSITE_REQUIRED=0 BACKUP_AGE_RECIPIENTS_FILE="$CASE/does-not-exist"; then
     pass "backup exits 0"
 else
     failt "backup exited non-zero with offsite disabled"; cat "$CASE/out.log" >&2
 fi
 [ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "nothing uploaded" || failt "uploaded with no remote"
+
+echo "case 5b: Drive sign-in missing on the server (default) — failure + alert, not a quiet skip"
+setup_case remote_missing
+printf '%s\n%s\n' "$PUB_A" "$PUB_B" > "$CASE/recipients"
+if run_backup STUB_RCLONE_REMOTES="" BACKUP_AGE_RECIPIENTS_FILE="$CASE/recipients"; then
+    failt "backup exited 0 with no offsite remote"
+else
+    pass "backup exits non-zero"
+fi
+grep -q "OFFSITE" "$CASE/curl.log" && pass "Telegram alert attempted" || failt "no alert for the missing remote"
 
 echo "case 6: database dump cut short — nothing uploaded, alert"
 setup_case incomplete_dump
@@ -171,6 +190,48 @@ else
 fi
 [ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "incomplete dump not uploaded" || failt "incomplete dump uploaded"
 grep -q "NIGHTLY BACKUP FAILED" "$CASE/curl.log" && pass "Telegram alert attempted" || failt "no alert for the failed dump"
+
+echo "case 7: one owner key + the drill key — refused (the drill key dies with the server)"
+setup_case owner_plus_drill
+age-keygen -o "$CASE/drill-key" 2>/dev/null
+printf '%s\n%s\n' "$PUB_A" "$(age-keygen -y "$CASE/drill-key")" > "$CASE/recipients"
+if run_backup BACKUP_AGE_RECIPIENTS_FILE="$CASE/recipients" DRILL_IDENTITY_FILE="$CASE/drill-key"; then
+    failt "backup exited 0 with only one owner key"
+else
+    pass "backup exits non-zero"
+fi
+[ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "nothing uploaded" || failt "uploaded with only one owner key"
+grep -qi "owner" "$CASE/out.log" && pass "says an owner key is missing" || failt "message does not mention owner keys"
+
+echo "case 7b: two owner keys + the drill key — accepted"
+setup_case two_owner_plus_drill
+age-keygen -o "$CASE/drill-key" 2>/dev/null
+printf '%s\n%s\n%s\n' "$PUB_A" "$PUB_B" "$(age-keygen -y "$CASE/drill-key")" > "$CASE/recipients"
+if run_backup BACKUP_AGE_RECIPIENTS_FILE="$CASE/recipients" DRILL_IDENTITY_FILE="$CASE/drill-key"; then
+    pass "backup exits 0"
+else
+    failt "backup failed with two owner keys + drill key"; tail -5 "$CASE/out.log" >&2
+fi
+age -d -i "$CASE/drill-key" "$CASE/remote/$REMOTE_DIR_NAME/nexus_db_2026-10-02.sql.gz.age" | cmp -s - "$CASE/backups/nexus_db_2026-10-02.sql.gz" \
+    && pass "drill key opens the uploaded database backup" || failt "drill key cannot open the upload"
+
+for spec in "8|dump command dies part-way|STUB_DUMP_FAIL=1" \
+            "9|uploads volume does not exist|STUB_VOLUME_MISSING=nexus-php-uploads" \
+            "10|volumes are empty|STUB_EMPTY_VOLUME=1"; do
+    IFS='|' read -r num what var <<<"$spec"
+    echo "case $num: $what — nothing uploaded, alert, no healthy-looking file left"
+    setup_case "case$num"
+    printf '%s\n%s\n' "$PUB_A" "$PUB_B" > "$CASE/recipients"
+    if run_backup BACKUP_AGE_RECIPIENTS_FILE="$CASE/recipients" "$var"; then
+        failt "case $num: backup exited 0"
+    else
+        pass "case $num: backup exits non-zero"
+    fi
+    [ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "case $num: nothing uploaded" || failt "case $num: something uploaded"
+    grep -q "NIGHTLY BACKUP FAILED" "$CASE/curl.log" && pass "case $num: Telegram alert attempted" || failt "case $num: no alert"
+    [ -z "$(find "$CASE/backups" -name '*.partial')" ] && pass "case $num: no .partial left" || failt "case $num: .partial left"
+done
+[ ! -e "$WORK/case8/backups/nexus_db_2026-10-02.sql.gz" ] && pass "case 8: no broken database file under the real name" || failt "case 8: broken database file left under the real name"
 
 echo
 if [ "$FAILURES" -gt 0 ]; then
