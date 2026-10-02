@@ -148,6 +148,13 @@ DRILL_RC=0; run_drill BACKUP_ALERT_ENV="$CASE/none.env" || DRILL_RC=$?
 [ "$DRILL_RC" -ne 0 ] && pass "drill exits non-zero when it cannot report" || failt "drill exited 0 with no way to report"
 grep -q "CANNOT SEND ALERT" "$CASE/out.log" && pass "says it cannot send alerts" || failt "silent about missing alert credentials"
 
+echo "case 9b: good drill but Telegram REJECTS the message (e.g. revoked bot token)"
+setup_case alert_rejected
+put_encrypted "$TODAY"
+DRILL_RC=0; run_drill STUB_CURL_HTTP_STATUS=401 || DRILL_RC=$?
+[ "$DRILL_RC" -ne 0 ] && pass "drill exits non-zero when Telegram rejects its message" || failt "drill exited 0 although the alert was rejected"
+grep -q "Telegram send failed" "$CASE/out.log" && pass "says the Telegram send failed" || failt "silent about the rejected alert"
+
 echo "case 10: DRILL_SOURCE=local still drills the plain local dump (dev use)"
 setup_case local_mode
 cp "$WORK/dump.sql.gz" "$CASE/backups/nexus_db_${TODAY}.sql.gz"

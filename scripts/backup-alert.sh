@@ -16,7 +16,9 @@
 #
 # The file is parsed, not sourced, so a bad line cannot run code as root. The
 # bot token goes to curl on stdin (`-K -`), so it never appears in `ps`. The
-# Telegram response is discarded, never echoed into a log.
+# Telegram response is discarded, never echoed into a log. `--fail` matters:
+# without it curl exits 0 when Telegram answers 401/400 (revoked token, wrong
+# chat), and a rejected alert would be counted as delivered.
 #
 # Returns non-zero when the alert could NOT be sent, and says so loudly on
 # stderr: a backup failure nobody hears about is the failure mode this exists
@@ -42,7 +44,7 @@ backup_alert() {
         return 1
     fi
     if ! printf 'url = "https://api.telegram.org/bot%s/sendMessage"\n' "$token" \
-        | curl -sS --max-time 20 --retry 2 -K - \
+        | curl --fail -sS --max-time 20 --retry 2 -K - \
             --data-urlencode "chat_id=${chat}" \
             --data-urlencode "text=${title}
 

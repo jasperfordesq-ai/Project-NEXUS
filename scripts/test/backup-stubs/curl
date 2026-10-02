@@ -6,6 +6,10 @@
 #
 # Test stub for `curl`: records the arguments and any config read from stdin
 # (`-K -`), so tests can assert an alert was sent without touching the network.
+#
+# STUB_CURL_HTTP_STATUS=401 simulates Telegram rejecting the message. Like real
+# curl, the stub then exits 0 UNLESS --fail/-f was given (exit 22) — which is
+# exactly the difference that decides whether a rejected alert is noticed.
 set -euo pipefail
 {
     printf 'curl %s\n' "$*"
@@ -15,3 +19,10 @@ set -euo pipefail
         fi
     done
 } >> "${CURL_STUB_LOG:-/dev/null}"
+status="${STUB_CURL_HTTP_STATUS:-200}"
+if [ "$status" -ge 400 ]; then
+    for arg in "$@"; do
+        case "$arg" in --fail|-f|-sSf|-fsS) exit 22 ;; esac
+    done
+fi
+exit 0
